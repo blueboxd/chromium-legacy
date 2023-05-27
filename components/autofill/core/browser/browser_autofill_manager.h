@@ -39,6 +39,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/single_field_form_fill_router.h"
 #include "components/autofill/core/browser/sync_utils.h"
+#include "components/autofill/core/browser/ui/fast_checkout_delegate.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
 #include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
 #include "components/autofill/core/common/dense_set.h"
@@ -245,7 +246,6 @@ class BrowserAutofillManager : public AutofillManager,
 
   // AutofillManager:
   base::WeakPtr<AutofillManager> GetWeakPtr() override;
-  AutofillOfferManager* GetOfferManager() override;
   CreditCardAccessManager* GetCreditCardAccessManager() override;
   bool ShouldClearPreviewedForm() override;
   void OnFocusNoLongerOnFormImpl(bool had_interacted_form) override;
@@ -331,6 +331,15 @@ class BrowserAutofillManager : public AutofillManager,
     touch_to_fill_delegate_ = std::move(touch_to_fill_delegate);
   }
 
+  FastCheckoutDelegate* fast_checkout_delegate() {
+    return fast_checkout_delegate_.get();
+  }
+
+  void set_fast_checkout_delegate(
+      std::unique_ptr<FastCheckoutDelegate> fast_checkout_delegate) {
+    fast_checkout_delegate_ = std::move(fast_checkout_delegate);
+  }
+
   void SetExternalDelegateForTest(
       std::unique_ptr<AutofillExternalDelegate> external_delegate) {
     external_delegate_ = std::move(external_delegate);
@@ -369,10 +378,6 @@ class BrowserAutofillManager : public AutofillManager,
 
   FormInteractionsFlowId address_form_interactions_flow_id_for_test() const {
     return address_form_event_logger_->form_interactions_flow_id_for_test();
-  }
-
-  PersonalDataManager& personal_data_manager_for_test() const {
-    return *personal_data_;
   }
 
   void set_single_field_form_fill_router_for_test(
@@ -449,7 +454,7 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Returns the card image for `credit_card`. If the `credit_card` has a card
   // art image linked, prefer it. Otherwise fall back to the network icon.
-  virtual const gfx::Image& GetCardImage(const CreditCard& credit_card) const;
+  virtual const gfx::Image& GetCardImage(const CreditCard& credit_card);
 
   // AutofillManager:
   void OnFormSubmittedImpl(const FormData& form,
@@ -742,25 +747,17 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Returns whether the form is considered parseable and meets a couple of
   // other requirements which makes uploading UKM data worthwhile. E.g. the
-  // form should not be a search form.
+  // form should not be a search form, the forms should have at least one
+  // focusable input field with a type from heuristics or the server.
   bool ShouldUploadUkm(const FormStructure& form_structure);
 
   // Delegates to perform external processing (display, selection) on
   // our behalf.
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
   std::unique_ptr<TouchToFillDelegate> touch_to_fill_delegate_;
+  std::unique_ptr<FastCheckoutDelegate> fast_checkout_delegate_;
 
   std::string app_locale_;
-
-  // The personal data manager, used to save and load personal data to/from the
-  // web database. Set when this BrowserAutofillManager is initialized. This is
-  // overridden by the BrowserAutofillManagerTest.
-  // Weak reference.
-  // May be nullptr. Nullptr indicates that we are on an unsupported platform,
-  // for example android webview.
-  // In OTR mode, on supported platforms, `personal_data_` will represent the
-  // original profile's PersonalDataManager.
-  raw_ptr<PersonalDataManager> personal_data_;
 
   // Used to help fill data into fields.
   FieldFiller field_filler_;
@@ -807,11 +804,6 @@ class BrowserAutofillManager : public AutofillManager,
 
   // The credit card access manager, used to access local and server cards.
   std::unique_ptr<CreditCardAccessManager> credit_card_access_manager_;
-
-  // The autofill offer manager, used to to retrieve offers for card
-  // suggestions. Initialized when BrowserAutofillManager is created.
-  // |offer_manager_| is never null.
-  raw_ptr<AutofillOfferManager> offer_manager_;
 
   // Helper class to generate Autofill suggestions.
   std::unique_ptr<AutofillSuggestionGenerator> suggestion_generator_;

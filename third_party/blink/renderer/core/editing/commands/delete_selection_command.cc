@@ -47,7 +47,8 @@
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
@@ -884,7 +885,7 @@ void DeleteSelectionCommand::FixupWhitespace(const Position& position) {
   if (IsRenderedCharacter(position))
     return;
   DCHECK(!text_node->GetLayoutObject() ||
-         text_node->GetLayoutObject()->Style()->CollapseWhiteSpace())
+         text_node->GetLayoutObject()->Style()->ShouldCollapseWhiteSpaces())
       << text_node;
   ReplaceTextInNode(text_node, position.ComputeOffsetInContainerNode(), 1,
                     NonBreakingSpaceString());

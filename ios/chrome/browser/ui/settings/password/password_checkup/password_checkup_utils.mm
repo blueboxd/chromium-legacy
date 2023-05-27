@@ -9,6 +9,7 @@
 #import "base/strings/utf_string_conversions.h"
 #import "base/time/time.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
+#import "components/password_manager/core/common/password_manager_features.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
@@ -25,11 +26,6 @@ namespace {
 // Amount of time after which the timestamp is shown instead of "just now".
 constexpr base::TimeDelta kJustCheckedTimeThreshold = base::Minutes(1);
 
-// Helper function to determine if a credential is compromised but not muted.
-bool IsCredentialUnmutedCompromised(const CredentialUIEntry& credential) {
-  return IsCompromised(credential) && !credential.IsMuted();
-}
-
 }  // anonymous namespace
 
 namespace password_manager {
@@ -43,6 +39,10 @@ bool operator==(const InsecurePasswordCounts& lhs,
   return lhs_tuple == rhs_tuple;
 }
 
+bool IsCredentialUnmutedCompromised(const CredentialUIEntry& credential) {
+  return IsCompromised(credential) && !credential.IsMuted();
+}
+
 WarningType GetWarningOfHighestPriority(
     const std::vector<CredentialUIEntry>& insecure_credentials) {
   bool has_reused_passwords = false;
@@ -54,7 +54,12 @@ WarningType GetWarningOfHighestPriority(
       has_muted_warnings = true;
     } else if (IsCompromised(credential)) {
       return WarningType::kCompromisedPasswordsWarning;
-    } else if (credential.IsReused()) {
+    }
+
+    // A reused password warning is of higher priority than a weak password
+    // warning. So, if the credential is reused, there is no need to verify if
+    // it is also weak.
+    if (credential.IsReused()) {
       has_reused_passwords = true;
     } else if (credential.IsWeak()) {
       has_weak_passwords = true;
@@ -76,6 +81,7 @@ InsecurePasswordCounts CountInsecurePasswordsPerInsecureType(
     const std::vector<password_manager::CredentialUIEntry>&
         insecure_credentials) {
   InsecurePasswordCounts counts{};
+  std::map<std::u16string, int> reused_passwords;
   for (const auto& credential : insecure_credentials) {
     // If a compromised credential is muted, we don't want to take it into
     // account in the compromised count.
@@ -85,12 +91,21 @@ InsecurePasswordCounts CountInsecurePasswordsPerInsecureType(
       counts.compromised_count++;
     }
     if (credential.IsReused()) {
-      counts.reused_count++;
+      reused_passwords[credential.password]++;
     }
     if (credential.IsWeak()) {
       counts.weak_count++;
     }
   }
+
+  // TODO(crbug.com/1434343): This is a temporary solution to filter out the
+  // reused password groups with only one remaining password.
+  for (const auto& password : reused_passwords) {
+    if (password.second > 1) {
+      counts.reused_count += password.second;
+    }
+  }
+
   return counts;
 }
 
@@ -114,11 +129,14 @@ int GetPasswordCountForWarningType(
   }
 }
 
-// TODO(crbug.com/1406540): Title case and update returned string for Password
-// Checkup homepage.
 NSString* FormatElapsedTimeSinceLastCheck(
-    absl::optional<base::Time> last_completed_check) {
+    absl::optional<base::Time> last_completed_check,
+    bool use_title_case) {
   if (!last_completed_check.has_value()) {
+    // The title case format is only used in the Password Checkup Homepage as of
+    // now and it is currently not possible to reach this page if no check has
+    // yet been completed. There is therefore no need for now to have a title
+    // case version of "Check never run."
     return l10n_util::GetNSString(IDS_IOS_CHECK_NEVER_RUN);
   }
 
@@ -129,14 +147,20 @@ NSString* FormatElapsedTimeSinceLastCheck(
   // If check finished in less than `kJustCheckedTimeThreshold` show
   // "just now" instead of timestamp.
   if (elapsed_time < kJustCheckedTimeThreshold) {
-    timestamp = l10n_util::GetStringUTF16(IDS_IOS_CHECK_FINISHED_JUST_NOW);
+    timestamp = l10n_util::GetStringUTF16(
+        use_title_case ? IDS_IOS_CHECK_FINISHED_JUST_NOW_TITLE_CASE
+                       : IDS_IOS_CHECK_FINISHED_JUST_NOW);
   } else {
     timestamp = ui::TimeFormat::SimpleWithMonthAndYear(
-        ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_LONG,
-        elapsed_time, true);
+        use_title_case ? ui::TimeFormat::FORMAT_TITLE_CASE_ELAPSED
+                       : ui::TimeFormat::FORMAT_ELAPSED,
+        ui::TimeFormat::LENGTH_LONG, elapsed_time, true);
   }
 
-  return l10n_util::GetNSStringF(IDS_IOS_LAST_COMPLETED_CHECK, timestamp);
+  return features::IsPasswordCheckupEnabled()
+             ? l10n_util::GetNSStringF(
+                   IDS_IOS_PASSWORD_CHECKUP_LAST_COMPLETED_CHECK, timestamp)
+             : l10n_util::GetNSStringF(IDS_IOS_LAST_COMPLETED_CHECK, timestamp);
 }
 
 std::vector<CredentialUIEntry> GetPasswordsForWarningType(
@@ -155,11 +179,24 @@ std::vector<CredentialUIEntry> GetPasswordsForWarningType(
                             std::back_inserter(filtered_credentials),
                             std::mem_fn(&CredentialUIEntry::IsWeak));
       break;
-    case WarningType::kReusedPasswordsWarning:
-      base::ranges::copy_if(insecure_credentials,
-                            std::back_inserter(filtered_credentials),
-                            std::mem_fn(&CredentialUIEntry::IsReused));
+    case WarningType::kReusedPasswordsWarning: {
+      // TODO(crbug.com/1434343): This is a temporary solution to filter out the
+      // reused password groups with only one remaining password.
+      std::map<std::u16string, std::vector<CredentialUIEntry>> reused_passwords;
+      for (const auto& credential : insecure_credentials) {
+        if (credential.IsReused()) {
+          reused_passwords[credential.password].push_back(credential);
+        }
+      }
+      for (const auto& password : reused_passwords) {
+        if (password.second.size() > 1) {
+          filtered_credentials.insert(filtered_credentials.end(),
+                                      password.second.begin(),
+                                      password.second.end());
+        }
+      }
       break;
+    }
     case WarningType::kDismissedWarningsWarning:
       base::ranges::copy_if(insecure_credentials,
                             std::back_inserter(filtered_credentials),

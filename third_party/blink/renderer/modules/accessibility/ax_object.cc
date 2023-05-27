@@ -503,35 +503,6 @@ void AddIntListAttributeFromOffsetVector(
     node_data->AddIntListAttribute(attr, offset_values);
 }
 
-blink::KeyboardEvent* CreateKeyboardEvent(
-    blink::LocalDOMWindow* local_dom_window,
-    blink::WebInputEvent::Type type,
-    ax::mojom::blink::Action action) {
-  blink::WebKeyboardEvent key(type,
-                              blink::WebInputEvent::Modifiers::kNoModifiers,
-                              base::TimeTicks::Now());
-  switch (action) {
-    case ax::mojom::blink::Action::kShowContextMenu:
-      key.dom_key = ui::DomKey::CONTEXT_MENU;
-      key.dom_code = static_cast<int>(ui::DomCode::CONTEXT_MENU);
-      key.native_key_code = key.windows_key_code = blink::VKEY_APPS;
-      break;
-    case ax::mojom::blink::Action::kScrollUp:
-      key.dom_key = ui::DomKey::PAGE_UP;
-      key.dom_code = static_cast<int>(ui::DomCode::PAGE_UP);
-      key.native_key_code = key.windows_key_code = blink::VKEY_PRIOR;
-      break;
-    case ax::mojom::blink::Action::kScrollDown:
-      key.dom_key = ui::DomKey::PAGE_DOWN;
-      key.dom_code = static_cast<int>(ui::DomCode::PAGE_DOWN);
-      key.native_key_code = key.windows_key_code = blink::VKEY_NEXT;
-      break;
-    default:
-      NOTREACHED();
-  }
-  return blink::KeyboardEvent::Create(key, local_dom_window, true);
-}
-
 }  // namespace
 
 int32_t ToAXMarkerType(DocumentMarker::MarkerType marker_type) {
@@ -692,19 +663,16 @@ void AXObject::Detach() {
     return;
   }
 
-#if DCHECK_IS_ON()
-  DCHECK(ax_object_cache_);
+#if defined(AX_FAIL_FAST_BUILD)
+  SANITIZER_CHECK(ax_object_cache_);
   // AXInlineTextBox objects are the only objects that are safe to remove during
   // serialization. This occurs when a the serializer reaches a static text
   // object and its ignored state changes. Ignored static text boxes should not
   // have any inline textbox children, and they are removed by ClearChildren().
-  DCHECK(!ax_object_cache_->IsFrozen() || IsAXInlineTextBox())
+  SANITIZER_CHECK(!ax_object_cache_->IsFrozen() || IsAXInlineTextBox())
       << "Do not detach children while the tree is frozen, in order to avoid "
          "an object detaching itself in the middle of computing its own "
          "accessibility properties.";
-#endif
-
-#if defined(AX_FAIL_FAST_BUILD)
   SANITIZER_CHECK(!is_adding_children_) << ToString(true, true);
 #endif
 
@@ -1765,16 +1733,6 @@ void AXObject::SerializeOtherScreenReaderAttributes(
   DCHECK_NE(node_data->role, ax::mojom::blink::Role::kUnknown);
   DCHECK_NE(node_data->role, ax::mojom::blink::Role::kNone);
 
-  if (node_data->role == ax::mojom::blink::Role::kFigure) {
-    AXObject* fig_caption = GetChildFigcaption();
-    if (fig_caption) {
-      std::vector<int32_t> ids;
-      ids.push_back(GetChildFigcaption()->AXObjectID());
-      node_data->AddIntListAttribute(
-          ax::mojom::blink::IntListAttribute::kDetailsIds, ids);
-    }
-  }
-
   if (IsA<Document>(GetNode())) {
     if (!IsLoaded()) {
       node_data->AddBoolAttribute(ax::mojom::blink::BoolAttribute::kBusy, true);
@@ -2269,16 +2227,7 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
     }
   }
 
-  // See if we need to add aria-details for a popover invoker.
-  if (!node_data->HasIntListAttribute(
-          ax::mojom::blink::IntListAttribute::kDetailsIds)) {
-    if (AXObject* popover = GetTargetPopoverForInvoker()) {
-      node_data->AddIntListAttribute(
-          ax::mojom::blink::IntListAttribute::kDetailsIds,
-          {static_cast<int32_t>(popover->AXObjectID())});
-    }
-  }
-
+  SerializeComputedDetailsRelation(node_data);
   // Try to get an aria-controls listbox for an <input role="combobox">.
   if (!node_data->HasIntListAttribute(
           ax::mojom::blink::IntListAttribute::kControlsIds)) {
@@ -2302,10 +2251,54 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
   }
 }
 
+void AXObject::SerializeComputedDetailsRelation(
+    ui::AXNodeData* node_data) const {
+  // aria-details was used -- it may have set a relation, unless the attribute
+  // value did not point to valid elements (e.g aria-details=""). Whether it
+  // actually set the relation or not, the author's intent in using the
+  // aria-details attribute is understood to mean that no automatic relation
+  // should be set.
+  if (HasAttribute(html_names::kAriaDetailsAttr)) {
+    return;
+  }
+
+  // Add details relation to <figure>, pointing at <figcaption>.
+  if (node_data->role == ax::mojom::blink::Role::kFigure) {
+    AXObject* fig_caption = GetChildFigcaption();
+    if (fig_caption) {
+      std::vector<int32_t> ids;
+      ids.push_back(GetChildFigcaption()->AXObjectID());
+      node_data->AddIntListAttribute(
+          ax::mojom::blink::IntListAttribute::kDetailsIds, ids);
+      return;
+    }
+  }
+
+  // Add aria-details for a popover invoker.
+  // TODO(https://crbug.com/1426607) Support this for non-plain hint popovers.
+  if (AXObject* popover = GetTargetPopoverForInvoker()) {
+    node_data->AddIntListAttribute(
+        ax::mojom::blink::IntListAttribute::kDetailsIds,
+        {static_cast<int32_t>(popover->AXObjectID())});
+  }
+}
+
+bool AXObject::IsPlainContent() const {
+  if (!ui::IsPlainContentElement(role_)) {
+    return false;
+  }
+  for (const auto& child : ChildrenIncludingIgnored()) {
+    if (!child->IsPlainContent()) {
+      return false;
+    }
+  }
+  return true;
+}
+
 // Popover invoking elements should have details relationships with their
 // target popover, when that popover is a) open, and b) not the next element
 // in the DOM (depth first search order).
-AXObject* AXObject::GetTargetPopoverForInvoker() {
+AXObject* AXObject::GetTargetPopoverForInvoker() const {
   auto* form_element = DynamicTo<HTMLFormControlElement>(GetElement());
   if (!form_element) {
     return nullptr;
@@ -5350,8 +5343,9 @@ AXObject* AXObject::ContainerWidget() const {
 AXObject* AXObject::ContainerListMarkerIncludingIgnored() const {
   AXObject* ancestor = ParentObject();
   while (ancestor && (!ancestor->GetLayoutObject() ||
-                      !ancestor->GetLayoutObject()->IsListMarkerIncludingAll()))
+                      !ancestor->GetLayoutObject()->IsListMarker())) {
     ancestor = ancestor->ParentObject();
+  }
 
   return ancestor;
 }
@@ -5526,9 +5520,10 @@ void AXObject::ClearChildren() const {
   if (slot)
     return;
 
-  // TODO(accessibility) Is this needed? Aren't image children already included?
-  if (Node* map = GetMapForImage(node))
+  Node* map = GetMapForImage(node);
+  if (map) {
     node = map;
+  }
 
   // Detach unincluded children from their parent (this).
   // These are children that were not cleared from first loop, as well as
@@ -5537,15 +5532,26 @@ void AXObject::ClearChildren() const {
        child_node;
        child_node = LayoutTreeBuilderTraversal::NextSibling(*child_node)) {
     // Get the child object that should be detached from this parent.
-    // Do not invalidate from layout, because it nay be  unsafe to check layout
+    // Do not invalidate from layout, because it may be unsafe to check layout
     // at this time. However, do allow invalidations if an object changes its
     // display locking (content-visibility: auto) status, as this may be the
     // only chance to do that, and it's safe to do now.
     AXObject* ax_child_from_node = AXObjectCache().SafeGet(child_node, true);
     if (ax_child_from_node &&
         ax_child_from_node->CachedParentObject() == this) {
-      // Check current parent first. It may be owned by another node.
-      ax_child_from_node->DetachFromParent();
+      if (map) {
+        // Children (and other descendants, recursively) of a <map> need to be
+        // fully removed, because they may no longer have a valid AX parent if
+        // the image is removed. See HTMLMapElement and HTMLImageElement-related
+        // code in AXObject::GetParentNodeForComputeParent.
+        // Since this code only runs when |map| is set, and therefore
+        // |node| is an image outside the map, this only needs to happen for
+        // the map descendants, not the image descendants.
+        AXObjectCache().RemoveSubtreeWithFlatTraversal(ax_child_from_node,
+                                                       false);
+      } else {
+        ax_child_from_node->DetachFromParent();
+      }
     }
   }
 }
@@ -5832,12 +5838,10 @@ void AXObject::Scroll(ax::mojom::blink::Action scroll_action) const {
     return;
 
   LocalDOMWindow* local_dom_window = GetDocument()->domWindow();
-  KeyboardEvent* keydown = CreateKeyboardEvent(
-      local_dom_window, WebInputEvent::Type::kRawKeyDown, scroll_action);
-  GetNode()->DispatchEvent(*keydown);
-  KeyboardEvent* keyup = CreateKeyboardEvent(
-      local_dom_window, WebInputEvent::Type::kKeyUp, scroll_action);
-  GetNode()->DispatchEvent(*keyup);
+  DispatchKeyboardEvent(local_dom_window, WebInputEvent::Type::kRawKeyDown,
+                        scroll_action);
+  DispatchKeyboardEvent(local_dom_window, WebInputEvent::Type::kKeyUp,
+                        scroll_action);
 }
 
 bool AXObject::IsTableLikeRole() const {
@@ -5904,7 +5908,7 @@ AXObject* AXObject::CellForColumnAndRow(unsigned target_column_index,
   if (!IsTableLikeRole())
     return nullptr;
 
-  // Note that this code is only triggered if this is not a LayoutTable,
+  // Note that this code is only triggered if this is not a LayoutNGTable,
   // i.e. it's an ARIA grid/table.
   //
   // TODO(dmazzoni): delete this code or rename it "for testing only"
@@ -6218,13 +6222,17 @@ LayoutRect AXObject::GetBoundsInFrameCoordinates() const {
 bool AXObject::PerformAction(const ui::AXActionData& action_data) {
   switch (action_data.action) {
     case ax::mojom::blink::Action::kBlur:
-      return RequestFocusAction();
+      return OnNativeBlurAction();
     case ax::mojom::blink::Action::kClearAccessibilityFocus:
       return InternalClearAccessibilityFocusAction();
+    case ax::mojom::blink::Action::kCollapse:
+      return RequestCollapseAction();
     case ax::mojom::blink::Action::kDecrement:
       return RequestDecrementAction();
     case ax::mojom::blink::Action::kDoDefault:
       return RequestClickAction();
+    case ax::mojom::blink::Action::kExpand:
+      return RequestExpandAction();
     case ax::mojom::blink::Action::kFocus:
       return RequestFocusAction();
     case ax::mojom::blink::Action::kIncrement:
@@ -6243,7 +6251,6 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
           WTF::String::FromUTF8(action_data.value.c_str()));
     case ax::mojom::blink::Action::kShowContextMenu:
       return RequestShowContextMenuAction();
-
     case ax::mojom::blink::Action::kScrollBackward:
     case ax::mojom::blink::Action::kScrollDown:
     case ax::mojom::blink::Action::kScrollForward:
@@ -6252,11 +6259,8 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kScrollUp:
       Scroll(action_data.action);
       return true;
-
     case ax::mojom::blink::Action::kAnnotatePageImages:
-    case ax::mojom::blink::Action::kCollapse:
     case ax::mojom::blink::Action::kCustomAction:
-    case ax::mojom::blink::Action::kExpand:
     case ax::mojom::blink::Action::kGetImageData:
     case ax::mojom::blink::Action::kGetTextLocation:
     case ax::mojom::blink::Action::kHideTooltip:
@@ -6402,6 +6406,30 @@ bool AXObject::RequestShowContextMenuAction() {
   return OnNativeShowContextMenuAction();
 }
 
+bool AXObject::RequestExpandAction() {
+  if (ui::SupportsArrowKeysForExpandCollapse(RoleValue())) {
+    return OnNativeKeyboardAction(ax::mojom::blink::Action::kExpand);
+  }
+  return RequestClickAction();
+}
+
+bool AXObject::RequestCollapseAction() {
+  if (ui::SupportsArrowKeysForExpandCollapse(RoleValue())) {
+    return OnNativeKeyboardAction(ax::mojom::blink::Action::kCollapse);
+  }
+  return RequestClickAction();
+}
+
+bool AXObject::OnNativeKeyboardAction(const ax::mojom::Action action) {
+  LocalDOMWindow* local_dom_window = GetDocument()->domWindow();
+
+  DispatchKeyboardEvent(local_dom_window, WebInputEvent::Type::kRawKeyDown,
+                        action);
+  DispatchKeyboardEvent(local_dom_window, WebInputEvent::Type::kKeyUp, action);
+
+  return true;
+}
+
 bool AXObject::InternalSetAccessibilityFocusAction() {
   return false;
 }
@@ -6421,6 +6449,47 @@ LayoutObject* AXObject::GetLayoutObjectForNativeScrollAction() const {
   GetDocument()->UpdateStyleAndLayoutForNode(
       node, DocumentUpdateReason::kDisplayLock);
   return node->GetLayoutObject();
+}
+
+void AXObject::DispatchKeyboardEvent(LocalDOMWindow* local_dom_window,
+                                     WebInputEvent::Type type,
+                                     ax::mojom::blink::Action action) const {
+  blink::WebKeyboardEvent key(type,
+                              blink::WebInputEvent::Modifiers::kNoModifiers,
+                              base::TimeTicks::Now());
+  switch (action) {
+    case ax::mojom::blink::Action::kExpand:
+      DCHECK(ui::SupportsArrowKeysForExpandCollapse(RoleValue()));
+      key.dom_key = ui::DomKey::ARROW_RIGHT;
+      key.dom_code = static_cast<int>(ui::DomCode::ARROW_RIGHT);
+      key.native_key_code = key.windows_key_code = blink::VKEY_RIGHT;
+      break;
+    case ax::mojom::blink::Action::kCollapse:
+      DCHECK(ui::SupportsArrowKeysForExpandCollapse(RoleValue()));
+      key.dom_key = ui::DomKey::ARROW_LEFT;
+      key.dom_code = static_cast<int>(ui::DomCode::ARROW_LEFT);
+      key.native_key_code = key.windows_key_code = blink::VKEY_LEFT;
+      break;
+    case ax::mojom::blink::Action::kShowContextMenu:
+      key.dom_key = ui::DomKey::CONTEXT_MENU;
+      key.dom_code = static_cast<int>(ui::DomCode::CONTEXT_MENU);
+      key.native_key_code = key.windows_key_code = blink::VKEY_APPS;
+      break;
+    case ax::mojom::blink::Action::kScrollUp:
+      key.dom_key = ui::DomKey::PAGE_UP;
+      key.dom_code = static_cast<int>(ui::DomCode::PAGE_UP);
+      key.native_key_code = key.windows_key_code = blink::VKEY_PRIOR;
+      break;
+    case ax::mojom::blink::Action::kScrollDown:
+      key.dom_key = ui::DomKey::PAGE_DOWN;
+      key.dom_code = static_cast<int>(ui::DomCode::PAGE_DOWN);
+      key.native_key_code = key.windows_key_code = blink::VKEY_NEXT;
+      break;
+    default:
+      NOTREACHED();
+  }
+  GetNode()->DispatchEvent(
+      *blink::KeyboardEvent::Create(key, local_dom_window, true));
 }
 
 bool AXObject::OnNativeScrollToMakeVisibleAction() const {
@@ -6497,6 +6566,10 @@ bool AXObject::OnNativeDecrementAction() {
   return false;
 }
 
+bool AXObject::OnNativeBlurAction() {
+  return false;
+}
+
 bool AXObject::OnNativeFocusAction() {
   return false;
 }
@@ -6529,10 +6602,8 @@ bool AXObject::OnNativeShowContextMenuAction() {
           SynthesizedKeyboardEventsForAccessibilityActionsEnabled()) {
     // To make less evident that the events are synthesized, we have to emit
     // them in this order: 1) keydown. 2) contextmenu. 3) keyup.
-    KeyboardEvent* keydown =
-        CreateKeyboardEvent(local_dom_window, WebInputEvent::Type::kRawKeyDown,
-                            ax::mojom::blink::Action::kShowContextMenu);
-    GetNode()->DispatchEvent(*keydown);
+    DispatchKeyboardEvent(local_dom_window, WebInputEvent::Type::kRawKeyDown,
+                          ax::mojom::blink::Action::kShowContextMenu);
   }
 
   ContextMenuAllowedScope scope;
@@ -6548,10 +6619,8 @@ bool AXObject::OnNativeShowContextMenuAction() {
   if (!IsDetached() && result != WebInputEventResult::kHandledSystem &&
       RuntimeEnabledFeatures::
           SynthesizedKeyboardEventsForAccessibilityActionsEnabled()) {
-    KeyboardEvent* keyup =
-        CreateKeyboardEvent(local_dom_window, WebInputEvent::Type::kKeyUp,
-                            ax::mojom::blink::Action::kShowContextMenu);
-    GetNode()->DispatchEvent(*keyup);
+    DispatchKeyboardEvent(local_dom_window, WebInputEvent::Type::kKeyUp,
+                          ax::mojom::blink::Action::kShowContextMenu);
   }
 
   return true;

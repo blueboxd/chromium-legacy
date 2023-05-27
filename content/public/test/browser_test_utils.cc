@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/no_destructor.h"
 #include "base/process/kill.h"
@@ -35,6 +34,7 @@
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
 #include "base/trace_event/typed_macros.h"
+#include "base/uuid.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/test/pixel_test_utils.h"
@@ -221,7 +221,8 @@ bool ExecuteScriptWithUserGestureControl(RenderFrameHost* frame,
 
   // TODO(nick): This function can't be replaced with a call to ExecJs(), since
   // ExecJs calls eval() which might be blocked by the page's CSP.
-  std::string expected_response = "ExecuteScript-" + base::GenerateGUID();
+  std::string expected_response =
+      "ExecuteScript-" + base::Uuid::GenerateRandomV4().AsLowercaseString();
   std::string new_script = base::StringPrintf(
       R"( %s;  // Original script.
           window.domAutomationController.send('%s'); )",
@@ -1470,22 +1471,6 @@ void ExecuteScriptAsyncWithoutUserGesture(const ToRenderFrameHost& adapter,
       base::UTF8ToUTF16(script), base::NullCallback());
 }
 
-bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
-                                const std::string& script, int* result) {
-  DCHECK(result);
-  std::unique_ptr<base::Value> value;
-  // Prerendering pages will never have user gesture.
-  bool user_gesture = adapter.render_frame_host()->GetLifecycleState() !=
-                      RenderFrameHost::LifecycleState::kPrerendering;
-  if (ExecuteScriptHelper(adapter.render_frame_host(), script, user_gesture,
-                          ISOLATED_WORLD_ID_GLOBAL, &value) &&
-      value && value->is_int() && result) {
-    *result = value->GetInt();
-    return true;
-  }
-  return false;
-}
-
 bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
                                  const std::string& script, bool* result) {
   DCHECK(result);
@@ -1514,39 +1499,6 @@ bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                            ISOLATED_WORLD_ID_GLOBAL, &value)) {
     return false;
   }
-  if (value && value->is_string()) {
-    *result = value->GetString();
-    return true;
-  }
-  return false;
-}
-
-bool ExecuteScriptWithoutUserGestureAndExtractBool(
-    const ToRenderFrameHost& adapter,
-    const std::string& script,
-    bool* result) {
-  DCHECK(result);
-  std::unique_ptr<base::Value> value;
-  if (ExecuteScriptHelper(adapter.render_frame_host(), script, false,
-                          ISOLATED_WORLD_ID_GLOBAL, &value) &&
-      value && value->is_bool()) {
-    *result = value->GetBool();
-    return true;
-  }
-  return false;
-}
-
-bool ExecuteScriptWithoutUserGestureAndExtractString(
-    const ToRenderFrameHost& adapter,
-    const std::string& script,
-    std::string* result) {
-  DCHECK(result);
-  std::unique_ptr<base::Value> value;
-  if (!ExecuteScriptHelper(adapter.render_frame_host(), script, false,
-                           ISOLATED_WORLD_ID_GLOBAL, &value)) {
-    return false;
-  }
-
   if (value && value->is_string()) {
     *result = value->GetString();
     return true;
@@ -2203,24 +2155,20 @@ void SetFileSystemAccessPermissionContext(
 bool WaitForRenderFrameReady(RenderFrameHost* rfh) {
   if (!rfh)
     return false;
-  // TODO(nick): This can't switch to EvalJs yet, because of hardcoded
-  // dependencies on 'pageLoadComplete' in some interstitial implementations.
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractString(
-      rfh,
-      "(async function() {"
-      "  if (document.readyState != 'complete') {"
-      "    await new Promise((resolve) =>"
-      "      document.addEventListener('readystatechange', event => {"
-      "        if (document.readyState == 'complete') {"
-      "          resolve();"
-      "        }"
-      "      }));"
-      "  }"
-      "})().then(() => {"
-      "  window.domAutomationController.send('pageLoadComplete');"
-      "});",
-      &result));
+  std::string result =
+      EvalJs(rfh,
+             "(async function() {"
+             "  if (document.readyState != 'complete') {"
+             "    await new Promise((resolve) =>"
+             "      document.addEventListener('readystatechange', event => {"
+             "        if (document.readyState == 'complete') {"
+             "          resolve();"
+             "        }"
+             "      }));"
+             "  }"
+             "})().then(() => 'pageLoadComplete');",
+             EXECUTE_SCRIPT_NO_USER_GESTURE)
+          .ExtractString();
   EXPECT_EQ("pageLoadComplete", result);
   return "pageLoadComplete" == result;
 }
@@ -3698,8 +3646,9 @@ void DevToolsInspectorLogWatcher::DispatchProtocolMessage(
     base::span<const uint8_t> message) {
   base::StringPiece message_str(reinterpret_cast<const char*>(message.data()),
                                 message.size());
-  auto parsed_message = base::JSONReader::Read(message_str);
-  absl::optional<int> command_id = parsed_message->FindIntPath("id");
+  auto parsed_message =
+      std::move(base::JSONReader::Read(message_str)->GetDict());
+  absl::optional<int> command_id = parsed_message.FindInt("id");
   if (command_id.has_value()) {
     switch (command_id.value()) {
       case kEnableLogMessageId:
@@ -3714,12 +3663,14 @@ void DevToolsInspectorLogWatcher::DispatchProtocolMessage(
     return;
   }
 
-  std::string* notification = parsed_message->FindStringPath("method");
+  std::string* notification = parsed_message.FindString("method");
   if (notification && *notification == "Log.entryAdded") {
-    std::string* text = parsed_message->FindStringPath("params.entry.text");
+    std::string* text =
+        parsed_message.FindStringByDottedPath("params.entry.text");
     DCHECK(text);
     last_message_ = *text;
-    std::string* url = parsed_message->FindStringPath("params.entry.url");
+    std::string* url =
+        parsed_message.FindStringByDottedPath("params.entry.url");
     if (url) {
       last_url_ = GURL(*url);
     }

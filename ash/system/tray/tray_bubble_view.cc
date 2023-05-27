@@ -19,6 +19,7 @@
 #include "ash/style/system_shadow.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -132,7 +133,7 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
     }
   }
 
-  TrayBubbleView* bubble_view_;
+  raw_ptr<TrayBubbleView, ExperimentalAsh> bubble_view_;
 };
 
 }  // namespace
@@ -323,9 +324,13 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     SetAnchorView(nullptr);
     SetAnchorRect(init_params.anchor_rect);
   }
+
+  message_center::MessageCenter::Get()->AddObserver(this);
 }
 
 TrayBubbleView::~TrayBubbleView() {
+  message_center::MessageCenter::Get()->RemoveObserver(this);
+
   mouse_watcher_.reset();
 
   if (delegate_) {
@@ -538,8 +543,7 @@ void TrayBubbleView::OnThemeChanged() {
       params_.corner_radius,
       chromeos::features::IsJellyrollEnabled()
           ? views::HighlightBorder::Type::kHighlightBorderOnShadow
-          : views::HighlightBorder::Type::kHighlightBorder1,
-      /*use_light_colors=*/false));
+          : views::HighlightBorder::Type::kHighlightBorder1));
   set_color(GetColorProvider()->GetColor(
       chromeos::features::IsJellyEnabled()
           ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated)
@@ -561,6 +565,17 @@ bool TrayBubbleView::ShouldUseFixedHeight() const {
 
 void TrayBubbleView::SetShouldUseFixedHeight(bool shoud_use_fixed_height) {
   params_.use_fixed_height = shoud_use_fixed_height;
+}
+
+void TrayBubbleView::OnNotificationDisplayed(
+    const std::string& notification_id,
+    const message_center::DisplaySource source) {
+  // Stack bubble view at the bottom when a new popup is displayed so popup
+  // collection can be shown in the front.
+  if (source == message_center::DISPLAY_SOURCE_POPUP) {
+    aura::Window* tray_window = GetWidget()->GetNativeView();
+    tray_window->parent()->StackChildAtBottom(tray_window);
+  }
 }
 
 void TrayBubbleView::ChildPreferredSizeChanged(View* child) {

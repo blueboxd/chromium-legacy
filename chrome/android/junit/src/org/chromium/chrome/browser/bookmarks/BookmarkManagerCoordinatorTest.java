@@ -26,7 +26,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.bookmarks.BookmarkListEntry.ViewType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -78,6 +77,8 @@ public class BookmarkManagerCoordinatorTest {
     IdentityManager mIdentityManager;
     @Mock
     BookmarkModel mBookmarkModel;
+    @Mock
+    BookmarkUiPrefs mBookmarkUiPrefs;
 
     private Activity mActivity;
     private BookmarkManagerCoordinator mCoordinator;
@@ -97,10 +98,11 @@ public class BookmarkManagerCoordinatorTest {
 
         mActivityScenarioRule.getScenario().onActivity((activity) -> {
             mActivity = activity;
-            mCoordinator = new BookmarkManagerCoordinator(activity,
+            mCoordinator = new BookmarkManagerCoordinator(mActivity,
                     /*openBookmarkComponentName=*/null,
-                    /*isDialogUi=*/!DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity),
-                    /*isIncognito=*/false, mSnackbarManager, mProfile);
+                    /*isDialogUi=*/!DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity),
+                    /*isIncognito=*/false, mSnackbarManager, mProfile, mBookmarkUiPrefs);
+            mActivity.setContentView(mCoordinator.getView());
         });
     }
 
@@ -116,13 +118,13 @@ public class BookmarkManagerCoordinatorTest {
     @Test
     public void testCreateView() {
         FrameLayout parent = new FrameLayout(mActivity);
-        Assert.assertNotNull(mCoordinator.createView(parent, ViewType.PERSONALIZED_SIGNIN_PROMO));
-        Assert.assertNotNull(mCoordinator.createView(parent, ViewType.SYNC_PROMO));
-        Assert.assertNotNull(mCoordinator.createView(parent, ViewType.SECTION_HEADER));
-        Assert.assertNotNull(mCoordinator.createView(parent, ViewType.FOLDER));
-        Assert.assertNotNull(mCoordinator.createView(parent, ViewType.BOOKMARK));
-        Assert.assertNotNull(mCoordinator.createView(parent, ViewType.SHOPPING_POWER_BOOKMARK));
-        Assert.assertNotNull(mCoordinator.createView(parent, ViewType.DIVIDER));
-        Assert.assertNotNull(mCoordinator.createView(parent, ViewType.SHOPPING_FILTER));
+        Assert.assertNotNull(mCoordinator.buildPersonalizedPromoView(parent));
+        Assert.assertNotNull(mCoordinator.buildLegacyPromoView(parent));
+        Assert.assertNotNull(BookmarkManagerCoordinator.buildSectionHeaderView(parent));
+        Assert.assertNotNull(mCoordinator.buildAndInitBookmarkFolderView(parent));
+        Assert.assertNotNull(mCoordinator.buildAndInitBookmarkItemRow(parent));
+        Assert.assertNotNull(mCoordinator.buildAndInitShoppingItemView(parent));
+        Assert.assertNotNull(BookmarkManagerCoordinator.buildDividerView(parent));
+        Assert.assertNotNull(BookmarkManagerCoordinator.buildShoppingFilterView(parent));
     }
 }

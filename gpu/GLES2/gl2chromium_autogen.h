@@ -379,6 +379,7 @@
   GLES2_GET_FUN(CopySharedImageToTextureINTERNAL)
 #define glReadbackARGBImagePixelsINTERNAL \
   GLES2_GET_FUN(ReadbackARGBImagePixelsINTERNAL)
+#define glWritePixelsINTERNAL GLES2_GET_FUN(WritePixelsINTERNAL)
 #define glEnableiOES GLES2_GET_FUN(EnableiOES)
 #define glDisableiOES GLES2_GET_FUN(DisableiOES)
 #define glBlendEquationiOES GLES2_GET_FUN(BlendEquationiOES)
@@ -402,6 +403,10 @@
 #define glEndPixelLocalStorageANGLE GLES2_GET_FUN(EndPixelLocalStorageANGLE)
 #define glPixelLocalStorageBarrierANGLE \
   GLES2_GET_FUN(PixelLocalStorageBarrierANGLE)
+#define glFramebufferPixelLocalStorageInterruptANGLE \
+  GLES2_GET_FUN(FramebufferPixelLocalStorageInterruptANGLE)
+#define glFramebufferPixelLocalStorageRestoreANGLE \
+  GLES2_GET_FUN(FramebufferPixelLocalStorageRestoreANGLE)
 #define glGetFramebufferPixelLocalStorageParameterfvANGLE \
   GLES2_GET_FUN(GetFramebufferPixelLocalStorageParameterfvANGLE)
 #define glGetFramebufferPixelLocalStorageParameterivANGLE \

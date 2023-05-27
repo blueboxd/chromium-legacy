@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Kuvien dekooderi</translation>
 <translation id="1785415724048343560">Suositellaan parhaan kokemuksen saamiseksi</translation>
 <translation id="1818308510395330587">Laita kamera päälle myös <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />, jotta <ph name="APP_NAME" /> voi käyttää AR:ää.</translation>
-<translation id="1864927262126810325">Lähde: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Tähän liittyvät sivustot voivat nähdä toimintasi ryhmässä</translation>
 <translation id="1887786770086287077">Sijainti on pois päältä tällä laitteella. Voit laittaa sen päälle <ph name="BEGIN_LINK" />Android-asetuksista<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Katkaise puhelu</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Lataus valmis <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Joidenkin sivustojen ominaisuudet eivät välttämättä toimi incognito-tilassa</translation>
 <translation id="2442870161001914531">Pyydä aina tietokonesivustoa</translation>
+<translation id="2479148705183875116">Avaa Asetukset</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
 <translation id="2485422356828889247">Poista</translation>
 <translation id="2490684707762498678">Ylläpitäjä: <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Sähköpostiosoitteet</translation>
 <translation id="2750481671343847896">Sivustot voivat näyttää henkilöllisyyspalveluiden sisäänkirjautumiskehotteita.</translation>
 <translation id="2822354292072154809">Haluatko varmasti nollata kaikki sivuston käyttöoikeudet (<ph name="CHOSEN_OBJECT_NAME" />)?</translation>
+<translation id="2850913818900871965">Pyydä mobiilinäkymää</translation>
 <translation id="2870560284913253234">Sivusto</translation>
 <translation id="2874939134665556319">Edellinen kappale</translation>
 <translation id="2891975107962658722">Estä sivustoa tallentamasta dataa laitteellesi</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Sivustot voivat käyttää evästeitä selauskokemuksesi parantamiseen, esimerkiksi pitää sinut kirjautuneena tai muistaa ostoskorisi sisällön</translation>
 <translation id="3165022941318558018">Salli sivuston käyttää kolmannen osapuolen evästeitä</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> tallennettua tietoa</translation>
-<translation id="3203366800380907218">Verkosta</translation>
 <translation id="321187648315454507">Ota ilmoitukset käyttöön myös <ph name="BEGIN_LINK" />Androidin asetuksista<ph name="END_LINK" />, jotta <ph name="APP_NAME" /> voi lähettää sinulle ilmoituksia.</translation>
 <translation id="3227137524299004712">Mikrofoni</translation>
 <translation id="3248611290851046188">Tämä sivusto päättelee kiinnostuksen kohteitasi, joita muut sivustot voivat käyttää näyttäessään sinulle mainoksia. Sivusto myös saa kiinnostuksen kohteesi Chromesta, jotta voit nähdä osuvampia mainoksia.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Pyydä tietokonenäkymää</translation>
 <translation id="5100237604440890931">Tiivistetty – laajenna klikkaamalla.</translation>
 <translation id="5123685120097942451">Incognito-välilehti</translation>
-<translation id="5134599672855298214">Pyydä mobiilinäkymää (suositus)</translation>
 <translation id="5186036860380548585">Toiminto on käytettävissä näytön yläosassa</translation>
 <translation id="5197729504361054390"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> saa valitsemasi yhteystiedot.</translation>
 <translation id="5216942107514965959">Viimeksi avattu tänään</translation>

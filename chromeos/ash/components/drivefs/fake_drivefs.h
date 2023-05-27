@@ -86,6 +86,12 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
                drivefs::mojom::QueryParametersPtr query_params),
               (override));
 
+  MOCK_METHOD(
+      void,
+      GetOfflineFilesSpaceUsage,
+      (drivefs::mojom::DriveFs::GetOfflineFilesSpaceUsageCallback callback),
+      (override));
+
   const base::FilePath& mount_path() { return mount_path_; }
 
   absl::optional<bool> IsItemPinned(const std::string& path);
@@ -199,6 +205,13 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
   void PollHostedFilePinStates() override;
 
   void CancelUploadByPath(const base::FilePath& path) override;
+
+  void SetDocsOfflineEnabled(
+      bool enabled,
+      drivefs::mojom::DriveFs::SetDocsOfflineEnabledCallback callback) override;
+
+  void ClearOfflineFiles(
+      drivefs::mojom::DriveFs::ClearOfflineFilesCallback) override;
 
   const base::FilePath mount_path_;
   int64_t next_stable_id_ = 1;

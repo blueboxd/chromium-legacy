@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import {sendWithPromise} from 'chrome://resources/ash/common/cr.m.js';
-import {addSingletonGetter} from 'chrome://resources/ash/common/cr_deprecated.js';
 
 /**
  * To use the browser proxy, please import this module and call
@@ -18,12 +17,6 @@ export class ProjectorBrowserProxy {
    * @return {Promise<Array<!projectorApp.Account>>}
    */
   getAccounts() {}
-
-  /**
-   * Checks whether the SWA can trigger a new Projector session.
-   * @return {Promise<!projectorApp.NewScreencastPreconditionState>}
-   */
-  getNewScreencastPreconditionState() {}
 
   /**
    * Launches the Projector recording session. Returns true if a projector
@@ -65,21 +58,6 @@ export class ProjectorBrowserProxy {
   sendXhr(
       url, method, requestBody, useCredentials, useApiKey, headers,
       accountEmail) {}
-
-  /**
-   * Returns true if the "install speech recognition" button should be shown to
-   * the user.
-   * @return {!Promise<boolean>}
-   */
-  shouldDownloadSoda() {}
-
-  /**
-   * Triggers the installation of on device speech recognition binary and
-   * language packs for the user's locale. Returns true if download and
-   * installation started.
-   * @return {!Promise<boolean>}
-   */
-  installSoda() {}
 
   /**
    * Gets the list of pending screencasts that are uploading to drive.
@@ -125,17 +103,27 @@ export class ProjectorBrowserProxy {
 }
 
 /**
+ * @type {ProjectorBrowserProxyImpl}
+ */
+let browserProxy;
+
+/**
  * @implements {ProjectorBrowserProxy}
  */
 export class ProjectorBrowserProxyImpl {
-  /** @override */
-  getAccounts() {
-    return sendWithPromise('getAccounts');
+  /**
+   * @returns {ProjectorBrowserProxyImpl}
+   */
+  static getInstance() {
+    if (!browserProxy) {
+      browserProxy = new ProjectorBrowserProxyImpl();
+    }
+    return browserProxy;
   }
 
   /** @override */
-  getNewScreencastPreconditionState() {
-    return sendWithPromise('getNewScreencastPreconditionState');
+  getAccounts() {
+    return sendWithPromise('getAccounts');
   }
 
   /** @override */
@@ -169,16 +157,6 @@ export class ProjectorBrowserProxyImpl {
   }
 
   /** @override */
-  shouldDownloadSoda() {
-    return sendWithPromise('shouldDownloadSoda');
-  }
-
-  /** @override */
-  installSoda() {
-    return sendWithPromise('installSoda');
-  }
-
-  /** @override */
   getPendingScreencasts() {
     return sendWithPromise('getPendingScreencasts');
   }
@@ -202,5 +180,3 @@ export class ProjectorBrowserProxyImpl {
     return sendWithPromise('getVideo', [videoFileId, resourceKey]);
   }
 }
-
-addSingletonGetter(ProjectorBrowserProxyImpl);

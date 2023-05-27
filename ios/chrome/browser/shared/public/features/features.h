@@ -50,6 +50,13 @@ BASE_DECLARE_FEATURE(kDefaultBrowserIntentsShowSettings);
 // Feature flag to log metrics for the edit menu.
 BASE_DECLARE_FEATURE(kIOSBrowserEditMenuMetrics);
 
+// Feature flag that allows full screen default browser promos to be added to
+// the promo manager.
+BASE_DECLARE_FEATURE(kDefaultBrowserRefactoringPromoManager);
+
+// Feature flag that enables the default browser video promo.
+BASE_DECLARE_FEATURE(kDefaultBrowserVideoPromo);
+
 // Feature flag to use the new Edit menu API for browser view.
 BASE_DECLARE_FEATURE(kIOSCustomBrowserEditMenu);
 
@@ -58,9 +65,28 @@ extern const char kIOSEditMenuPartialTranslateNoIncognitoParam[];
 // Feature flag to enable partial translate in the edit menu.
 BASE_DECLARE_FEATURE(kIOSEditMenuPartialTranslate);
 
+// Helper function to check if kIOSEditMenuPartialTranslate is enabled and on
+// supported OS.
+bool IsPartialTranslateEnabled();
+
 // Helper function to check if kIOSEditMenuPartialTranslate is enabled in
 // incognito.
 bool ShouldShowPartialTranslateInIncognito();
+
+// Feature param under kIOSEditMenuSearchWith to select the title.
+extern const char kIOSEditMenuSearchWithTitleParamTitle[];
+extern const char kIOSEditMenuSearchWithTitleSearchParam[];
+extern const char kIOSEditMenuSearchWithTitleSearchWithParam[];
+extern const char kIOSEditMenuSearchWithTitleWebSearchParam[];
+// Feature flag to enable search with in the edit menu.
+BASE_DECLARE_FEATURE(kIOSEditMenuSearchWith);
+
+// Helper function to check if kIOSEditMenuSearchWith is enabled and on
+// supported OS.
+bool IsSearchWithEnabled();
+
+// Feature flag to hide search web in the edit menu.
+BASE_DECLARE_FEATURE(kIOSEditMenuHideSearchWeb);
 
 // Feature flag that shows iOS 15 context menu, instead of tooltip popover,
 // during a location bar long press gesture.
@@ -68,9 +94,6 @@ BASE_DECLARE_FEATURE(kIOSLocationBarUseNativeContextMenu);
 
 // Feature flag that swaps the omnibox textfield implementation.
 BASE_DECLARE_FEATURE(kIOSNewOmniboxImplementation);
-
-// Feature flag that removes the crash infobar.
-BASE_DECLARE_FEATURE(kRemoveCrashInfobar);
 
 // Feature flag to enable using Lens to search for images.
 BASE_DECLARE_FEATURE(kUseLensToSearchForImage);
@@ -107,10 +130,7 @@ BASE_DECLARE_FEATURE(kEnableShortenedPasswordAutoFillInstruction);
 BASE_DECLARE_FEATURE(kUseSFSymbolsInOmnibox);
 
 // Feature flag for the follow up of the SF Symbols.
-BASE_DECLARE_FEATURE(kSFSymbolsFollowup);
-
-// Feature flag to enable Calendar event in experience kit.
-BASE_DECLARE_FEATURE(kCalendarExperienceKit);
+BASE_DECLARE_FEATURE(kSFSymbolsFollowUp);
 
 // Feature flag to enable Apple Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kEnableExpKitAppleCalendar);
@@ -161,26 +181,6 @@ bool ShouldAddToHomeScreen(bool in_incognito);
 // Feature flag to enable the new layout of the NTP omnibox.
 BASE_DECLARE_FEATURE(kNewNTPOmniboxLayout);
 
-// Feature flag to turn on the prompt that brings the user's Android tabs to iOS
-// Chrome.
-BASE_DECLARE_FEATURE(kBringYourOwnTabsIOS);
-
-// Enum for "Bring Your Own Tabs" experiment groups (control/experiment) and its
-// param.
-enum class BringYourOwnTabsPromptType {
-  // "Bring Your Own Tabs" enabled with half sheet modal prompt.
-  kHalfSheet = 0,
-  // "Bring Your Own Tabs" enabled with bottom message prompt.
-  kBottomMessage,
-  // "Bring Your Own Tabs" not enabled.
-  kDisabled,
-};
-extern const char kBringYourOwnTabsIOSParam[];
-
-// Returns the current BringYourOwnTabsPromptType according to the feature flag
-// and experiment "BringYourOwnTabsIOS".
-BringYourOwnTabsPromptType GetBringYourOwnTabsPromptType();
-
 // Whether the email is shown in the snackbar indicating that a new bookmark
 // or reading list item is added.
 BASE_DECLARE_FEATURE(kEnableEmailInBookmarksReadingListSnackbar);
@@ -191,5 +191,12 @@ BASE_DECLARE_FEATURE(kIndicateSyncErrorInOverflowMenu);
 
 // Returns true if the `kIndicateSyncErrorInOverflowMenu` feature is enabled.
 bool IsIndicateSyncErrorInOverflowMenuEnabled();
+
+// Feature flag to move the steady-state (unfocused) omnibox to the bottom.
+BASE_DECLARE_FEATURE(kBottomOmniboxSteadyState);
+
+// Feature flag to put all clipboard access onto a background thread. Any
+// synchronous clipboard access will always return nil/false.
+BASE_DECLARE_FEATURE(kOnlyAccessClipboardAsync);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

@@ -265,8 +265,16 @@ class NavigationHandler implements TouchEventObserver {
      */
     void navigate(boolean forward) {
         if (!isValidState()) return;
+        if (mTabOnBackGestureHandler != null) {
+            // Delegate navigation to native side: supposed to be triggered after animation.
+            return;
+        }
         if (forward) {
-            mTab.goForward();
+            // Session history may have changed since the beginning of the gesture such that it's no
+            // longer possible to go forward.
+            if (mTab.canGoForward()) {
+                mTab.goForward();
+            }
         } else {
             // Perform back action at the next UI thread execution. The back action can
             // potentially close the tab we're running on, which causes use-after-destroy

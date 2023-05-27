@@ -31,12 +31,12 @@
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
+#include "chrome/browser/ui/url_identity.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -298,6 +298,65 @@ bool PatternAppliesToWebUISchemes(const ContentSettingPatternSource& pattern) {
              ContentSettingsPattern::SchemeType::SCHEME_DEVTOOLS;
 }
 
+// If the given |pattern| represents an individual origin, Isolated Web App, or
+// extension, retrieve a string to display it as such. If not, return the
+// pattern as a string.
+std::string GetDisplayNameForPattern(Profile* profile,
+                                     const ContentSettingsPattern& pattern) {
+  GURL url(pattern.ToString());
+  if (url.SchemeIs(extensions::kExtensionScheme) ||
+      url.SchemeIs(chrome::kIsolatedAppScheme)) {
+    return GetDisplayNameForGURL(profile, url, /*hostname_only=*/false);
+  }
+  return pattern.ToString();
+}
+
+// Returns exceptions constructed from the policy-set allowed URLs
+// for the content settings |type| mic or camera.
+void GetPolicyAllowedUrls(ContentSettingsType type,
+                          std::vector<base::Value::Dict>* exceptions,
+                          content::WebUI* web_ui,
+                          bool incognito) {
+  DCHECK(type == ContentSettingsType::MEDIASTREAM_MIC ||
+         type == ContentSettingsType::MEDIASTREAM_CAMERA);
+
+  Profile* profile = Profile::FromWebUI(web_ui);
+  PrefService* prefs = profile->GetPrefs();
+  const base::Value::List& policy_urls =
+      prefs->GetList(type == ContentSettingsType::MEDIASTREAM_MIC
+                         ? prefs::kAudioCaptureAllowedUrls
+                         : prefs::kVideoCaptureAllowedUrls);
+
+  // Convert the URLs to |ContentSettingsPattern|s. Ignore any invalid ones.
+  std::vector<ContentSettingsPattern> patterns;
+  for (const auto& entry : policy_urls) {
+    const std::string* url = entry.GetIfString();
+    if (!url) {
+      continue;
+    }
+
+    ContentSettingsPattern pattern = ContentSettingsPattern::FromString(*url);
+    if (!pattern.IsValid()) {
+      continue;
+    }
+
+    patterns.push_back(pattern);
+  }
+
+  // The patterns are shown in the UI in a reverse order defined by
+  // |ContentSettingsPattern::operator<|.
+  std::sort(patterns.begin(), patterns.end(),
+            std::greater<ContentSettingsPattern>());
+
+  for (const ContentSettingsPattern& pattern : patterns) {
+    std::string display_name = GetDisplayNameForPattern(profile, pattern);
+    exceptions->push_back(GetExceptionForPage(
+        type, profile, pattern, ContentSettingsPattern(), display_name,
+        CONTENT_SETTING_ALLOW,
+        SiteSettingSourceToString(SiteSettingSource::kPolicy), incognito));
+  }
+}
+
 // Retrieves the source of a chooser exception as a string. This method uses the
 // CalculateSiteSettingSource method above to calculate the correct string to
 // use.
@@ -359,6 +418,17 @@ const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
     {&GetSerialChooserContext, kSerialChooserDataGroupType},
     {&GetHidChooserContext, kHidChooserDataGroupType},
     {&GetBluetoothChooserContext, kBluetoothChooserDataGroupType}};
+
+// There are two FormatOptions to support both hostname-only and schemeful URL
+// formatting, both of which are used in Site Settings.
+constexpr UrlIdentity::FormatOptions kUrlIdentityOptionsWithScheme = {
+    .default_options = {
+        UrlIdentity::DefaultFormatOptions::kOmitCryptographicScheme}};
+constexpr UrlIdentity::FormatOptions kUrlIdentityOptionsHostnameOnly = {
+    .default_options = {UrlIdentity::DefaultFormatOptions::kHostname}};
+constexpr UrlIdentity::TypeSet kUrlIdentityAllowedTypes = {
+    UrlIdentity::Type::kDefault, UrlIdentity::Type::kFile,
+    UrlIdentity::Type::kIsolatedWebApp, UrlIdentity::Type::kChromeExtension};
 
 }  // namespace
 
@@ -521,11 +591,6 @@ base::Value::Dict GetFileSystemExceptionForPage(
   exception.Set(kSource, provider_name);
   exception.Set(kIncognito, incognito);
   exception.Set(kIsEmbargoed, is_embargoed);
-  absl::optional<std::string> isolated_web_app_name =
-      GetIsolatedWebAppName(profile, GURL(origin));
-  if (isolated_web_app_name.has_value()) {
-    exception.Set(kIsolatedWebAppName, isolated_web_app_name.value());
-  }
   return exception;
 }
 
@@ -557,55 +622,29 @@ base::Value::Dict GetExceptionForPage(
   exception.Set(kSource, provider_name);
   exception.Set(kIncognito, incognito);
   exception.Set(kIsEmbargoed, is_embargoed);
-  absl::optional<std::string> isolated_web_app_name =
-      GetIsolatedWebAppName(profile, GURL(pattern.ToString()));
-  if (isolated_web_app_name.has_value()) {
-    exception.Set(kIsolatedWebAppName, isolated_web_app_name.value());
-  }
   return exception;
 }
 
-// Takes |url| and converts it into an individual origin string or retrieves
-// name of the extension it belongs to.
-std::string GetDisplayNameForGURL(Profile* profile, const GURL& url) {
-  const url::Origin origin = url::Origin::Create(url);
-  if (origin.opaque())
+std::string GetDisplayNameForGURL(Profile* profile,
+                                  const GURL& url,
+                                  bool hostname_only) {
+  auto origin = url::Origin::Create(url);
+  if (origin.opaque()) {
     return url.spec();
-
-  absl::optional<std::string> extension_display_name =
-      GetExtensionDisplayName(profile, url);
-  if (extension_display_name.has_value()) {
-    return extension_display_name.value();
   }
-  auto url_16 = url_formatter::FormatUrl(
-      url,
-      url_formatter::kFormatUrlOmitDefaults |
-          url_formatter::kFormatUrlOmitHTTPS |
-          url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
-      base::UnescapeRule::NONE, nullptr, nullptr, nullptr);
-  auto url_string = base::UTF16ToUTF8(url_16);
-  return url_string;
+
+  auto url_identity = UrlIdentity::CreateFromUrl(
+      profile, origin.GetURL(), kUrlIdentityAllowedTypes,
+      hostname_only ? kUrlIdentityOptionsHostnameOnly
+                    : kUrlIdentityOptionsWithScheme);
+  return base::UTF16ToUTF8(url_identity.name);
 }
 
-// If the given |pattern| represents an individual origin or extension, retrieve
-// a string to display it as such. If not, return the pattern as a string.
-std::string GetDisplayNameForPattern(Profile* profile,
-                                     const ContentSettingsPattern& pattern) {
-  absl::optional<std::string> extension_display_name =
-      GetExtensionDisplayName(profile, GURL(pattern.ToString()));
-  if (extension_display_name.has_value()) {
-    return extension_display_name.value();
-  }
-  return pattern.ToString();
-}
-
-void GetExceptionsForContentType(
-    ContentSettingsType type,
-    Profile* profile,
-    const extensions::ExtensionRegistry* extension_registry,
-    content::WebUI* web_ui,
-    bool incognito,
-    base::Value::List* exceptions) {
+void GetExceptionsForContentType(ContentSettingsType type,
+                                 Profile* profile,
+                                 content::WebUI* web_ui,
+                                 bool incognito,
+                                 base::Value::List* exceptions) {
   ContentSettingsForOneType all_settings;
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
@@ -722,8 +761,7 @@ void GetExceptionsForContentType(
         [HostContentSettingsMap::GetProviderTypeFromSource(
             SiteSettingSourceToString(SiteSettingSource::kPolicy))];
     DCHECK(policy_exceptions.empty());
-    GetPolicyAllowedUrls(type, &policy_exceptions, extension_registry, web_ui,
-                         incognito);
+    GetPolicyAllowedUrls(type, &policy_exceptions, web_ui, incognito);
   }
 
   // Display the URLs with File System entries that are granted
@@ -799,19 +837,21 @@ ContentSetting GetContentSettingForOrigin(Profile* profile,
   // Retrieve the source of the content setting.
   *source_string = SiteSettingSourceToString(
       CalculateSiteSettingSource(profile, content_type, origin, info, result));
-  *display_name = GetDisplayNameForGURL(profile, origin);
+  *display_name =
+      GetDisplayNameForGURL(profile, origin, /*hostname_only=*/false);
 
   if (info.metadata.session_model == content_settings::SessionModel::OneTime) {
-    DCHECK_EQ(content_type, ContentSettingsType::GEOLOCATION);
+    DCHECK(
+        permissions::PermissionUtil::CanPermissionBeAllowedOnce(content_type));
     DCHECK_EQ(result.content_setting, CONTENT_SETTING_ALLOW);
     return CONTENT_SETTING_DEFAULT;
   }
   return result.content_setting;
 }
 
-std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
-    HostContentSettingsMap* map,
-    ContentSettingsType content_type) {
+std::vector<ContentSettingPatternSource>
+GetSingleOriginExceptionsForContentType(HostContentSettingsMap* map,
+                                        ContentSettingsType content_type) {
   ContentSettingsForOneType entries;
   map->GetSettingsForOneType(content_type, &entries);
   // Exclude any entries that don't represent a single webby top-frame origin.
@@ -851,50 +891,6 @@ void GetFileSystemGrantedEntries(std::vector<base::Value::Dict>* exceptions,
                                      const base::Value::Dict& rhs) {
     return lhs.Find(kOrigin)->GetString() < rhs.Find(kOrigin)->GetString();
   });
-}
-
-void GetPolicyAllowedUrls(
-    ContentSettingsType type,
-    std::vector<base::Value::Dict>* exceptions,
-    const extensions::ExtensionRegistry* extension_registry,
-    content::WebUI* web_ui,
-    bool incognito) {
-  DCHECK(type == ContentSettingsType::MEDIASTREAM_MIC ||
-         type == ContentSettingsType::MEDIASTREAM_CAMERA);
-
-  Profile* profile = Profile::FromWebUI(web_ui);
-  PrefService* prefs = profile->GetPrefs();
-  const base::Value::List& policy_urls =
-      prefs->GetList(type == ContentSettingsType::MEDIASTREAM_MIC
-                         ? prefs::kAudioCaptureAllowedUrls
-                         : prefs::kVideoCaptureAllowedUrls);
-
-  // Convert the URLs to |ContentSettingsPattern|s. Ignore any invalid ones.
-  std::vector<ContentSettingsPattern> patterns;
-  for (const auto& entry : policy_urls) {
-    const std::string* url = entry.GetIfString();
-    if (!url)
-      continue;
-
-    ContentSettingsPattern pattern = ContentSettingsPattern::FromString(*url);
-    if (!pattern.IsValid())
-      continue;
-
-    patterns.push_back(pattern);
-  }
-
-  // The patterns are shown in the UI in a reverse order defined by
-  // |ContentSettingsPattern::operator<|.
-  std::sort(patterns.begin(), patterns.end(),
-            std::greater<ContentSettingsPattern>());
-
-  for (const ContentSettingsPattern& pattern : patterns) {
-    std::string display_name = GetDisplayNameForPattern(profile, pattern);
-    exceptions->push_back(GetExceptionForPage(
-        type, profile, pattern, ContentSettingsPattern(), display_name,
-        CONTENT_SETTING_ALLOW,
-        SiteSettingSourceToString(SiteSettingSource::kPolicy), incognito));
-  }
 }
 
 const ChooserTypeNameEntry* ChooserTypeFromGroupName(base::StringPiece name) {
@@ -1037,21 +1033,6 @@ base::Value::List GetChooserExceptionListFromProfile(
   }
 
   return exceptions;
-}
-
-absl::optional<std::string> GetIsolatedWebAppName(Profile* profile,
-                                                  GURL origin) {
-  absl::optional<std::string> app_name;
-  if (auto* provider = web_app::WebAppProvider::GetForWebApps(profile)) {
-    if (absl::optional<web_app::AppId> app_id =
-            provider->registrar_unsafe().FindAppWithUrlInScope(origin)) {
-      if (!provider->registrar_unsafe().IsIsolated(*app_id)) {
-        return app_name;
-      }
-      app_name = provider->registrar_unsafe().GetAppShortName(*app_id);
-    }
-  }
-  return app_name;
 }
 
 absl::optional<std::string> GetExtensionDisplayName(Profile* profile,

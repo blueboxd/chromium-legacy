@@ -460,6 +460,17 @@ std::string SitePerProcessBrowserTestBase::DepictFrameTree(
   return visualizer_.DepictFrameTree(node);
 }
 
+std::string SitePerProcessBrowserTestBase::WaitForMessageScript(
+    const std::string& result_expression) {
+  return base::StringPrintf(
+      "var onMessagePromise = new Promise(resolve => {"
+      "  window.addEventListener('message', function(event) {"
+      "    resolve(%s);"
+      "  });"
+      "});",
+      result_expression.c_str());
+}
+
 void SitePerProcessBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
   ContentBrowserTest::SetUpCommandLine(command_line);
@@ -543,10 +554,8 @@ class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
   bool AutoplayAllowed(const ToRenderFrameHost& adapter,
                        bool with_user_gesture) {
     return EvalJs(adapter, "attemptPlay();",
-                  with_user_gesture ? EXECUTE_SCRIPT_DEFAULT_OPTIONS |
-                                          EXECUTE_SCRIPT_USE_MANUAL_REPLY
-                                    : EXECUTE_SCRIPT_NO_USER_GESTURE |
-                                          EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+                  with_user_gesture ? EXECUTE_SCRIPT_DEFAULT_OPTIONS
+                                    : EXECUTE_SCRIPT_NO_USER_GESTURE)
         .ExtractBool();
   }
 };
@@ -3965,8 +3974,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Focus the main frame's text field.  The return value "input-focus"
   // indicates that the focus event was fired correctly.
-  EXPECT_EQ("input-focus", EvalJs(shell(), "focusInputField()",
-                                  EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  EXPECT_EQ("input-focus", EvalJs(shell(), "focusInputField()"));
 
   // The main frame should be focused.
   EXPECT_EQ(root, root->frame_tree().GetFocusedFrame());
@@ -3979,11 +3987,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Check that the main frame lost focus and fired blur event on the input
   // text field.
-  std::string status;
-  while (msg_queue.WaitForMessage(&status)) {
-    if (status == "\"input-blur\"")
-      break;
-  }
+  EXPECT_EQ(true, EvalJs(shell(), "waitForBlur()"));
 
   // The subframe should now be focused.
   EXPECT_EQ(root->child_at(0), root->frame_tree().GetFocusedFrame());
@@ -3998,6 +4002,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Check that the subframe lost focus and fired blur event on its
   // document's body.
+  std::string status;
   while (msg_queue.WaitForMessage(&status)) {
     if (status == "\"document-blur\"")
       break;
@@ -7311,8 +7316,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   const blink::ParsedPermissionsPolicy initial_effective_policy =
       root->child_at(2)->effective_frame_policy().container_policy;
   EXPECT_EQ(1UL, initial_effective_policy[0].allowed_origins.size());
-  EXPECT_FALSE(
-      initial_effective_policy[0].allowed_origins.begin()->origin.opaque());
 
   // Set the "sandbox" attribute; pending policy should update, and should now
   // be flagged as matching the opaque origin of the frame (without containing
@@ -7325,8 +7328,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   const blink::ParsedPermissionsPolicy updated_pending_policy =
       root->child_at(2)->pending_frame_policy().container_policy;
   EXPECT_EQ(1UL, updated_effective_policy[0].allowed_origins.size());
-  EXPECT_FALSE(
-      updated_effective_policy[0].allowed_origins.begin()->origin.opaque());
   EXPECT_TRUE(updated_pending_policy[0].matches_opaque_src);
   EXPECT_EQ(0UL, updated_pending_policy[0].allowed_origins.size());
 
@@ -7515,8 +7516,7 @@ IN_PROC_BROWSER_TEST_P(RequestDelayingSitePerProcessBrowserTest,
                                   "numSubresources=3",
                                   path.c_str())));
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  EXPECT_EQ(true,
-            EvalJs(shell(), "createFrames()", EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  EXPECT_EQ(true, EvalJs(shell(), "createFrames()"));
 }
 
 IN_PROC_BROWSER_TEST_P(RequestDelayingSitePerProcessBrowserTest,
@@ -7532,8 +7532,7 @@ IN_PROC_BROWSER_TEST_P(RequestDelayingSitePerProcessBrowserTest,
                                   "numSubresources=3",
                                   path0.c_str(), path1.c_str())));
   EXPECT_TRUE(NavigateToURL(shell(), url));
-  EXPECT_EQ(true,
-            EvalJs(shell(), "createFrames()", EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  EXPECT_EQ(true, EvalJs(shell(), "createFrames()"));
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -7946,12 +7945,13 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // Attempt to change focus in the inert subframe. This should work.
   // The setTimeout ensures that the inert bit can propagate before the
   // test JS code runs.
-  EXPECT_EQ(
-      "text2",
-      EvalJs(iframe_node,
-             "window.setTimeout(() => {text2.focus();"
-             "domAutomationController.send(document.activeElement.id);}, 0)",
-             EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  EXPECT_EQ("text2", EvalJs(iframe_node,
+                            "new Promise(resolve => {"
+                            "  window.setTimeout(() => {"
+                            "    text2.focus();"
+                            "    resolve(document.activeElement.id);"
+                            "  }, 0);"
+                            "});"));
 
   // Navigate the child frame to another site, so that it moves into a new
   // process.
@@ -7970,11 +7970,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       "text1.focus();"));
 
   // Verify we can still set focus after the navigation.
-  EXPECT_EQ("text2",
-            EvalJs(iframe_node,
-                   "text2.focus();"
-                   "domAutomationController.send(document.activeElement.id);",
-                   EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  EXPECT_EQ("text2", EvalJs(iframe_node,
+                            "text2.focus();"
+                            "document.activeElement.id;"));
 
   // Navigate the subframe back into its parent process to verify that the
   // new local frame remains non-inert.
@@ -7988,11 +7986,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       "text1.focus();"));
 
   // Verify we can still set focus after the navigation.
-  EXPECT_EQ("text2",
-            EvalJs(iframe_node,
-                   "text2.focus();"
-                   "domAutomationController.send(document.activeElement.id);",
-                   EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  EXPECT_EQ("text2", EvalJs(iframe_node,
+                            "text2.focus();"
+                            "document.activeElement.id;"));
 }
 
 // Tests that IsInert frame flag is correctly updated and propagated.
@@ -8381,26 +8377,29 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // Make sure the subframe can communicate to both the root remote frame
   // (where the postMessage should go to the current RenderFrameHost rather
   // than the pending one) and its sibling remote frame in the a.com process.
-  EXPECT_TRUE(ExecJs(child->current_frame_host(),
-                     "window.addEventListener('message', function(event) {\n"
-                     "  domAutomationController.send(event.data);\n"
-                     "});"));
+  EXPECT_TRUE(
+      ExecJs(child->current_frame_host(), WaitForMessageScript("event.data")));
+  EXPECT_TRUE(ExecJs(child, "parent.postMessage('root-ping', '*')"));
   EXPECT_EQ("root-ping-reply",
-            EvalJs(child, "parent.postMessage('root-ping', '*')",
-                   EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+            EvalJs(child->current_frame_host(), "onMessagePromise"));
 
+  EXPECT_TRUE(
+      ExecJs(child->current_frame_host(), WaitForMessageScript("event.data")));
+  EXPECT_TRUE(
+      ExecJs(child, "parent.frames[1].postMessage('sibling-ping', '*')"));
   EXPECT_EQ("sibling-ping-subframe-reply",
-            EvalJs(child, "parent.frames[1].postMessage('sibling-ping', '*')",
-                   EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+            EvalJs(child->current_frame_host(), "onMessagePromise"));
 
   // Cancel the pending main frame navigation, and verify that the subframe can
   // still communicate with the (old) main frame.
   root->navigator().CancelNavigation(root, NavigationDiscardReason::kCancelled);
   EXPECT_FALSE(root->render_manager()->speculative_frame_host());
 
+  EXPECT_TRUE(
+      ExecJs(child->current_frame_host(), WaitForMessageScript("event.data")));
+  EXPECT_TRUE(ExecJs(child, "parent.postMessage('root-ping', '*')"));
   EXPECT_EQ("root-ping-reply",
-            EvalJs(child, "parent.postMessage('root-ping', '*')",
-                   EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+            EvalJs(child->current_frame_host(), "onMessagePromise"));
 }
 
 // Similar to TwoCrossSitePendingNavigations* tests above, but checks the case
@@ -8449,25 +8448,25 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   // Make sure the second tab can communicate to its (old) opener remote frame.
   // The postMessage should go to the current RenderFrameHost rather than the
   // pending one in the first tab's main frame.
-  EXPECT_TRUE(ExecJs(popup_shell->web_contents(),
-                     "window.addEventListener('message', function(event) {\n"
-                     "  domAutomationController.send(event.data);\n"
-                     "});"));
+  EXPECT_TRUE(
+      ExecJs(popup_shell->web_contents(), WaitForMessageScript("event.data")));
 
+  EXPECT_TRUE(ExecJs(popup_shell->web_contents(),
+                     "opener.postMessage('opener-ping', '*');"));
   EXPECT_EQ("opener-ping-reply",
-            EvalJs(popup_shell->web_contents(),
-                   "opener.postMessage('opener-ping', '*');",
-                   EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+            EvalJs(popup_shell->web_contents(), "onMessagePromise"));
 
   // Cancel the pending main frame navigation, and verify that the subframe can
   // still communicate with the (old) main frame.
   root->navigator().CancelNavigation(root, NavigationDiscardReason::kCancelled);
   EXPECT_FALSE(root->render_manager()->speculative_frame_host());
 
+  EXPECT_TRUE(
+      ExecJs(popup_shell->web_contents(), WaitForMessageScript("event.data")));
+  EXPECT_TRUE(ExecJs(popup_shell->web_contents(),
+                     "opener.postMessage('opener-ping', '*')"));
   EXPECT_EQ("opener-ping-reply",
-            EvalJs(popup_shell->web_contents(),
-                   "opener.postMessage('opener-ping', '*')",
-                   EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+            EvalJs(popup_shell->web_contents(), "onMessagePromise"));
 }
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
@@ -9355,10 +9354,9 @@ class TouchSelectionControllerClientAndroidSiteIsolationTest
 
   gfx::PointF GetPointInChild() {
     gfx::PointF point_f;
-    std::string str =
-        EvalJs(child_frame_tree_node_->current_frame_host(),
-               "get_point_inside_text()", EXECUTE_SCRIPT_USE_MANUAL_REPLY)
-            .ExtractString();
+    std::string str = EvalJs(child_frame_tree_node_->current_frame_host(),
+                             "get_point_inside_text()")
+                          .ExtractString();
     ConvertJSONToPoint(str, &point_f);
     point_f = child_rwhv()->TransformPointToRootCoordSpaceF(point_f);
     return point_f;
@@ -10726,20 +10724,18 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
 
   // Add an onmessage handler to the subframe to send back a bool of whether
   // the subframe has focus.
-  EXPECT_TRUE(ExecJs(root->child_at(0),
-                     "window.addEventListener('message', function(event) {\n"
-                     "  domAutomationController.send(document.hasFocus());\n"
-                     "});"));
+  EXPECT_TRUE(
+      ExecJs(root->child_at(0), WaitForMessageScript("document.hasFocus()")));
 
   // Now, send a postMessage from main frame to subframe, and then focus the
   // subframe in the same script.  postMessage should be scheduled after the
   // focus() call, so the IPC to focus the subframe should arrive before the
   // postMessage IPC, and the subframe should already know that it's focused in
   // the onmessage handler.
-  EXPECT_EQ(true, EvalJs(root,
+  EXPECT_EQ(true, ExecJs(root,
                          "frames[0].postMessage('','*');\n"
-                         "frames[0].focus();\n",
-                         EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+                         "frames[0].focus();\n"));
+  EXPECT_EQ(true, EvalJs(root->child_at(0), "onMessagePromise"));
 }
 
 // Ensure that if a cross-process postMessage is scheduled, and then the target
@@ -10765,8 +10761,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
       true,
       EvalJs(
           root,
-          "setTimeout(() => { window.domAutomationController.send(true); }, 0)",
-          EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+          "new Promise(resolve => setTimeout(() => { resolve(true); }, 0))"));
 }
 
 // Tests that the last committed URL is preserved on an RFH even after the RFH
@@ -12234,23 +12229,18 @@ IN_PROC_BROWSER_TEST_P(CrossProcessNavigationObjectElementTest, FallbackShown) {
 
   // Load the contents of <object> (first navigation which is to a valid
   // existing resource) and wait for 'load' event on <object>.
-  ASSERT_EQ(
-      "OBJECT_LOAD",
-      EvalJs(web_contents(), JsReplace("setUrl($1, true);", object_valid_url),
-             EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  ASSERT_EQ("OBJECT_LOAD",
+            EvalJs(web_contents(), JsReplace("setUrl($1);", object_valid_url)));
 
   // Verify fallback content is not shown.
-  ASSERT_EQ(false, EvalJs(web_contents(), "fallbackVisible(true)",
-                          EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  ASSERT_EQ(false, EvalJs(web_contents(), "fallbackVisible()"));
 
   // Navigate the <object>'s frame to invalid origin. Make sure we do not report
   // the 'load' event (the 404 content loads inside the <object>'s frame and the
   // 'load' event might fire before fallback is detected).
-  ASSERT_EQ(true, EvalJs(web_contents(),
-                         JsReplace("setUrl($1, false);"
-                                   "notifyWhenFallbackShown();",
-                                   object_invalid_url),
-                         EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  ASSERT_EQ(true, EvalJs(web_contents(), JsReplace("setUrl($1);"
+                                                   "notifyWhenFallbackShown();",
+                                                   object_invalid_url)));
 }
 
 INSTANTIATE_TEST_SUITE_P(SitePerProcess,
@@ -12356,19 +12346,19 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
   ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
   GURL cross_origin(embedded_test_server()->GetURL("b.com", "/title1.html"));
   std::string msg =
-      EvalJs(shell(),
-             JsReplace("var object = document.createElement('object');"
-                       "document.body.appendChild(object);"
-                       "object.data = $1;"
-                       "object.type='text/html';"
-                       "object.notify = true;"
-                       "object.onload = () => {"
-                       "  if (!object.notify) return;"
-                       "  object.notify = false;"
-                       "  window.domAutomationController.send('done');"
-                       "};",
-                       cross_origin),
-             EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+      EvalJs(shell(), JsReplace("var object = document.createElement('object');"
+                                "document.body.appendChild(object);"
+                                "object.data = $1;"
+                                "object.type='text/html';"
+                                "object.notify = true;"
+                                "new Promise(resolve => {"
+                                "  object.onload = () => {"
+                                "    if (!object.notify) return;"
+                                "    object.notify = false;"
+                                "    resolve('done');"
+                                "  };"
+                                "});",
+                                cross_origin))
           .ExtractString();
   ASSERT_EQ("done", msg);
   // To track the frame's visibility an EmbeddedContentView is needed. The
@@ -12775,7 +12765,7 @@ IN_PROC_BROWSER_TEST_P(InnerWebContentsAttachTest, PrepareFrame) {
   if (test_beforeunload) {
     EXPECT_TRUE(ExecJs(child_node,
                        "window.addEventListener('beforeunload', (e) => {"
-                       "e.returnValue = ''; return e; });"));
+                       "e.preventDefault(); return e; });"));
   }
   auto* original_child_frame = child_node->current_frame_host();
   RenderFrameDeletedObserver original_child_frame_observer(

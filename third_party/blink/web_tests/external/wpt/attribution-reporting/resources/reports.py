@@ -9,11 +9,11 @@ from wptserve.utils import isomorphic_decode, isomorphic_encode
 # Key used to access the reports in the stash.
 REPORTS = "4691a2d7fca5430fb0f33b1bd8a9d388"
 
+CLEAR_STASH = isomorphic_encode("clear_stash")
+
 Header = Tuple[str, str]
 Status = Tuple[int, str]
 Response = Tuple[Status, List[Header], str]
-
-CLEAR_STASH = isomorphic_encode("clear_stash")
 
 
 def decode_headers(headers: dict) -> dict:
@@ -84,6 +84,10 @@ def store_report(stash: Stash, origin: str, report: str) -> None:
     stash.put(REPORTS, reports_dict)
   return None
 
+def clear_stash(stash: Stash) -> None:
+  "Clears the stash."
+  stash.take(REPORTS)
+  return None
 
 def take_reports(stash: Stash, origin: str) -> List[str]:
   """Takes all the reports from the stash and returns them."""
@@ -95,12 +99,6 @@ def take_reports(stash: Stash, origin: str) -> List[str]:
     reports = reports_dict.pop(origin, [])
     stash.put(REPORTS, reports_dict)
   return reports
-
-
-def clear_stash(stash: Stash) -> None:
-  "Clears the stash."
-  stash.take(REPORTS)
-  return None
 
 
 def handle_reports(request: Request) -> Response:

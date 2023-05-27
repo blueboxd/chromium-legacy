@@ -176,7 +176,7 @@ AutofillWalletSyncBridge::CreateMetadataChangeList() {
                           change_processor()->GetWeakPtr()));
 }
 
-absl::optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
+absl::optional<syncer::ModelError> AutofillWalletSyncBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   // We want to notify the metadata bridge about all changes so that the
@@ -188,7 +188,8 @@ absl::optional<syncer::ModelError> AutofillWalletSyncBridge::MergeSyncData(
   return absl::nullopt;
 }
 
-absl::optional<syncer::ModelError> AutofillWalletSyncBridge::ApplySyncChanges(
+absl::optional<syncer::ModelError>
+AutofillWalletSyncBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   // This bridge does not support incremental updates, so whenever this is
@@ -231,16 +232,14 @@ bool AutofillWalletSyncBridge::SupportsIncrementalUpdates() const {
   return false;
 }
 
-void AutofillWalletSyncBridge::ApplyStopSyncChanges(
+void AutofillWalletSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  // If a metadata change list gets passed in, that means sync is actually
-  // disabled, so we want to delete the payments data.
-  if (delete_metadata_change_list) {
-    // Do not notify the metadata bridge because we do not want to upstream the
-    // deletions. The metadata bridge deletes its data independently when sync
-    // gets stopped.
-    SetSyncData(syncer::EntityChangeList(), /*notify_metadata_bridge=*/false);
-  }
+  // Sync is disabled, so we want to delete the payments data.
+
+  // Do not notify the metadata bridge because we do not want to upstream the
+  // deletions. The metadata bridge deletes its data independently when sync
+  // gets stopped.
+  SetSyncData(syncer::EntityChangeList(), /*notify_metadata_bridge=*/false);
 }
 
 void AutofillWalletSyncBridge::GetAllDataForTesting(DataCallback callback) {

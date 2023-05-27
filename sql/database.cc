@@ -415,7 +415,7 @@ void Database::CloseInternal(bool forced) {
 
 void Database::Close() {
   TRACE_EVENT0("sql", "Database::Close");
-  // If the database was already closed by RazeAndClose(), then no
+  // If the database was already closed by RazeAndPoison(), then no
   // need to close again.  Clear the |poisoned_| bit so that incorrect
   // API calls are caught.
   if (poisoned_) {
@@ -434,6 +434,9 @@ void Database::Preload() {
     DCHECK(poisoned_) << "Cannot preload null db";
     return;
   }
+
+  CHECK(!options_.exclusive_database_file_lock)
+      << "Cannot preload an exclusively locked database.";
 
   absl::optional<base::ScopedBlockingCall> scoped_blocking_call;
   InitScopedBlockingCall(FROM_HERE, &scoped_blocking_call);
@@ -979,8 +982,6 @@ bool Database::Raze() {
       .exclusive_locking = true,
       .page_size = options_.page_size,
       .cache_size = 0,
-      .enable_foreign_keys_discouraged =
-          options_.enable_foreign_keys_discouraged,
       .enable_views_discouraged = options_.enable_views_discouraged,
       .enable_virtual_tables_discouraged =
           options_.enable_virtual_tables_discouraged,
@@ -1092,8 +1093,8 @@ bool Database::Raze() {
   return CheckpointDatabase();
 }
 
-bool Database::RazeAndClose() {
-  TRACE_EVENT0("sql", "Database::RazeAndClose");
+bool Database::RazeAndPoison() {
+  TRACE_EVENT0("sql", "Database::RazeAndPoison");
 
   if (!db_) {
     DCHECK(poisoned_) << "Cannot raze null db";
@@ -1797,7 +1798,7 @@ bool Database::OpenInternal(const std::string& db_file_path,
   EnsureSqliteInitialized();
 
   // If |poisoned_| is set, it means an error handler called
-  // RazeAndClose().  Until regular Close() is called, the caller
+  // RazeAndPoison().  Until regular Close() is called, the caller
   // should be treating the database as open, but is_open() currently
   // only considers the sqlite3 handle's state.
   // TODO(shess): Revise is_open() to consider poisoned_, and review
@@ -1820,8 +1821,25 @@ bool Database::OpenInternal(const std::string& db_file_path,
   // https://www.sqlite.org/rescode.html for details.
   int open_flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE |
                    SQLITE_OPEN_EXRESCODE | SQLITE_OPEN_PRIVATECACHE;
+  std::string uri_file_path = db_file_path;
+  if (options_.exclusive_database_file_lock) {
+#if BUILDFLAG(IS_WIN)
+    if (mode == OpenMode::kNone || mode == OpenMode::kRetryOnPoision) {
+      // Do not allow query injection.
+      if (db_file_path.find('?') != std::string::npos) {
+        return false;
+      }
+      open_flags |= SQLITE_OPEN_URI;
+      uri_file_path = base::StrCat({"file:", db_file_path, "?exclusive=true"});
+    }
+#else
+    NOTREACHED_NORETURN()
+        << "exclusive_database_file_lock is only supported on Windows.";
+#endif  // BUILDFLAG(IS_WIN)
+  }
+
   auto sqlite_result_code = ToSqliteResultCode(
-      sqlite3_open_v2(db_file_path.c_str(), &db_, open_flags, vfs_name));
+      sqlite3_open_v2(uri_file_path.c_str(), &db_, open_flags, vfs_name));
   if (sqlite_result_code != SqliteResultCode::kOk) {
     OnSqliteError(ToSqliteErrorCode(sqlite_result_code), nullptr,
                   "-- sqlite3_open_v2()");
@@ -2007,9 +2025,8 @@ void Database::ConfigureSqliteDatabaseObject() {
   DCHECK_EQ(sqlite_result_code, SqliteResultCode::kOk)
       << "sqlite3_db_config(SQLITE_DBCONFIG_DQS_DML) should not fail";
 
-  sqlite_result_code = ToSqliteResultCode(sqlite3_db_config(
-      db_, SQLITE_DBCONFIG_ENABLE_FKEY,
-      options_.enable_foreign_keys_discouraged ? 1 : 0, nullptr));
+  sqlite_result_code = ToSqliteResultCode(
+      sqlite3_db_config(db_, SQLITE_DBCONFIG_ENABLE_FKEY, 0, nullptr));
   DCHECK_EQ(sqlite_result_code, SqliteResultCode::kOk)
       << "sqlite3_db_config(SQLITE_DBCONFIG_ENABLE_FKEY) should not fail";
 

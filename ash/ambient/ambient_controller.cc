@@ -14,8 +14,7 @@
 #include "ash/ambient/ambient_ui_launcher.h"
 #include "ash/ambient/ambient_ui_settings.h"
 #include "ash/ambient/ambient_video_ui_launcher.h"
-#include "ash/ambient/ambient_weather_controller.h"
-#include "ash/ambient/metrics/ambient_multi_screen_metrics_recorder.h"
+#include "ash/ambient/metrics/ambient_session_metrics_recorder.h"
 #include "ash/ambient/model/ambient_animation_photo_config.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ambient/model/ambient_slideshow_photo_config.h"
@@ -89,6 +88,15 @@ namespace {
 // Used by wake lock APIs.
 constexpr char kWakeLockReason[] = "AmbientMode";
 
+// Time taken from releasing wake lock to turning off display.
+// NOTE: This value was found experimentally and is temporarily here until the
+// source of the delay is resolved.
+// TODO(b/278939395): Find the code that causes this delay.
+constexpr base::TimeDelta kReleaseWakeLockDelay = base::Seconds(38);
+
+// kAmbientModeRunningDurationMinutes with value 0 means "forever".
+constexpr int kDurationForever = 0;
+
 std::unique_ptr<AmbientBackendController> CreateAmbientBackendController() {
 #if BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
   return std::make_unique<AmbientBackendControllerImpl>();
@@ -129,6 +137,20 @@ PrefService* GetPrimaryUserPrefService() {
   return Shell::Get()->session_controller()->GetPrimaryUserPrefService();
 }
 
+PrefService* GetSigninPrefService() {
+  return Shell::Get()->session_controller()->GetSigninScreenPrefService();
+}
+
+PrefService* GetActivePrefService() {
+  if (GetPrimaryUserPrefService()) {
+    return GetPrimaryUserPrefService();
+  }
+  if (ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+    return GetSigninPrefService();
+  }
+  return nullptr;
+}
+
 bool IsUserAmbientModeEnabled() {
   if (!AmbientClient::Get()->IsAmbientModeAllowed()) {
     return false;
@@ -139,15 +161,9 @@ bool IsUserAmbientModeEnabled() {
          pref_service->GetBoolean(ambient::prefs::kAmbientModeEnabled);
 }
 
-bool IsAmbientModeAllowed() {
-  return ash::features::IsAmbientModeManagedScreensaverEnabled() ||
-         AmbientClient::Get()->IsAmbientModeAllowed();
-}
-
 bool IsAmbientModeManagedScreensaverEnabled() {
-  // TODO(fahadmansoor): Consider adding additional client side checks to
-  // keep behavior consistent with the consumer ambient mode.
-  auto* pref_service = GetPrimaryUserPrefService();
+  PrefService* pref_service = GetActivePrefService();
+
   return ash::features::IsAmbientModeManagedScreensaverEnabled() &&
          pref_service &&
          pref_service->GetBoolean(
@@ -235,6 +251,12 @@ void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       ambient::prefs::kAmbientModeManagedScreensaverImageDisplayIntervalSeconds,
       kManagedScreensaverImageRefreshInterval.InSeconds());
+
+  if (ash::features::IsScreenSaverDurationEnabled()) {
+    registry->RegisterIntegerPref(
+        ambient::prefs::kAmbientModeRunningDurationMinutes,
+        kDefaultScreenSaverDuration.InMinutes());
+  }
 }
 
 AmbientController::AmbientController(
@@ -258,19 +280,12 @@ void AmbientController::OnAmbientUiVisibilityChanged(
     AmbientUiVisibility visibility) {
   switch (visibility) {
     case AmbientUiVisibility::kShown:
-      // Record metrics on ambient mode usage.
-      ambient::RecordAmbientModeActivation(
-          /*ui_mode=*/LockScreen::HasInstance() ? AmbientUiMode::kLockScreenUi
-                                                : AmbientUiMode::kInSessionUi,
-          /*tablet_mode=*/Shell::Get()->IsInTabletMode());
-
-      DCHECK(!start_time_);
-      start_time_ = base::Time::Now();
-
       // Cancels the timer upon shown.
       inactivity_timer_.Stop();
 
-      if (IsChargerConnected()) {
+      if (ash::features::IsScreenSaverDurationEnabled()) {
+        StartTimerToReleaseWakeLock();
+      } else if (IsChargerConnected()) {
         // Requires wake lock to prevent display from sleeping.
         AcquireWakeLock();
       }
@@ -287,9 +302,6 @@ void AmbientController::OnAmbientUiVisibilityChanged(
     }
     case AmbientUiVisibility::kHidden:
     case AmbientUiVisibility::kClosed: {
-      bool ambient_ui_was_rendering =
-          Shell::GetPrimaryRootWindowController()->HasAmbientWidget();
-
       // TODO(wutao): This will clear the image cache currently. It will not
       // work with `kHidden` if the token has expired and ambient mode is shown
       // again.
@@ -298,32 +310,15 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       // Should do nothing if the wake lock has already been released.
       ReleaseWakeLock();
 
+      if (ash::features::IsScreenSaverDurationEnabled()) {
+        screensaver_running_timer_.Stop();
+      }
+
       Shell::Get()->RemovePreTargetHandler(this);
 
       // Should stop observing AssistantInteractionModel when ambient screen is
       // not shown.
       AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
-
-      frame_rate_controller_.reset();
-      multi_screen_metrics_recorder_.reset();
-
-      // |start_time_| may be empty in case of |AmbientUiVisibility::kHidden| if
-      // ambient mode has just started.
-      if (start_time_) {
-        auto elapsed = base::Time::Now() - start_time_.value();
-        AmbientTheme theme = GetCurrentUiSettings().theme();
-        DVLOG(2) << "Exit ambient mode. Elapsed time: " << elapsed;
-        ambient::RecordAmbientModeTimeElapsed(
-            elapsed, Shell::Get()->IsInTabletMode(), theme);
-
-        if (!ambient_ui_was_rendering &&
-            elapsed >= ambient::kMetricsStartupTimeMax) {
-          LOG(ERROR) << "Ambient UI completely failed to start";
-          ambient::RecordAmbientModeStartupTime(elapsed, theme);
-        }
-
-        start_time_.reset();
-      }
 
       if (visibility == AmbientUiVisibility::kHidden) {
         if (LockScreen::HasInstance()) {
@@ -354,6 +349,17 @@ void AmbientController::OnAutoShowTimeOut() {
 
   // Show ambient screen after time out.
   ShowUi();
+}
+
+void AmbientController::OnLoginOrLockScreenCreated() {
+  if (!LockScreen::HasInstance() ||
+      LockScreen::Get()->screen_type() != LockScreen::ScreenType::kLogin ||
+      !IsAmbientModeManagedScreensaverEnabled() ||
+      ambient_ui_model_.ui_visibility() != AmbientUiVisibility::kClosed) {
+    return;
+  }
+
+  ShowHiddenUi();
 }
 
 void AmbientController::OnLockStateChanged(bool locked) {
@@ -404,7 +410,7 @@ void AmbientController::OnLockStateChanged(bool locked) {
 
 void AmbientController::OnActiveUserPrefServiceChanged(
     PrefService* pref_service) {
-  if (!IsAmbientModeAllowed() || GetPrimaryUserPrefService() != pref_service) {
+  if (GetPrimaryUserPrefService() != pref_service) {
     return;
   }
 
@@ -413,17 +419,32 @@ void AmbientController::OnActiveUserPrefServiceChanged(
   if (pref_change_registrar_)
     return;
 
-  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(pref_service);
+  // Once logged in just remove the sign in pref registrations. So that we
+  // don't react to device policy changes. Note: we do not need to re-add it
+  // on logout because the chrome process is destroyed on logout.
+  if (sign_in_pref_change_registrar_) {
+    sign_in_pref_change_registrar_.reset();
+  }
 
-  pref_change_registrar_->Add(
-      ambient::prefs::kAmbientModeEnabled,
-      base::BindRepeating(&AmbientController::OnEnabledPrefChanged,
-                          weak_ptr_factory_.GetWeakPtr()));
+  bool ambient_mode_allowed = AmbientClient::Get()->IsAmbientModeAllowed();
+  bool managed_screensaver_flag_enabled =
+      ash::features::IsAmbientModeManagedScreensaverEnabled();
 
-  OnEnabledPrefChanged();
+  if (ambient_mode_allowed || managed_screensaver_flag_enabled) {
+    pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+    pref_change_registrar_->Init(pref_service);
+  }
 
-  if (ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+  if (ambient_mode_allowed) {
+    pref_change_registrar_->Add(
+        ambient::prefs::kAmbientModeEnabled,
+        base::BindRepeating(&AmbientController::OnEnabledPrefChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
+
+    OnEnabledPrefChanged();
+  }
+
+  if (managed_screensaver_flag_enabled) {
     pref_change_registrar_->Add(
         ambient::prefs::kAmbientModeManagedScreensaverEnabled,
         base::BindRepeating(
@@ -434,8 +455,34 @@ void AmbientController::OnActiveUserPrefServiceChanged(
   }
 }
 
+void AmbientController::OnSigninScreenPrefServiceInitialized(
+    PrefService* pref_service) {
+  if (!ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+    return;
+  }
+
+  // Do not re-create the registrars if any registrar exists. This is done
+  // so that in case the user pref registrar already exists it takes
+  // priority.
+  if (sign_in_pref_change_registrar_ || pref_change_registrar_) {
+    return;
+  }
+
+  sign_in_pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+  sign_in_pref_change_registrar_->Init(pref_service);
+
+  sign_in_pref_change_registrar_->Add(
+      ambient::prefs::kAmbientModeManagedScreensaverEnabled,
+      base::BindRepeating(
+          &AmbientController::OnManagedScreensaverEnabledPrefChanged,
+          weak_ptr_factory_.GetWeakPtr()));
+
+  OnManagedScreensaverEnabledPrefChanged();
+}
+
 void AmbientController::OnPowerStatusChanged() {
-  if (ambient_ui_model_.ui_visibility() != AmbientUiVisibility::kShown) {
+  if (ambient_ui_model_.ui_visibility() != AmbientUiVisibility::kShown ||
+      ash::features::IsScreenSaverDurationEnabled()) {
     // No action needed if ambient screen is not shown.
     return;
   }
@@ -529,8 +576,11 @@ void AmbientController::OnAuthScanDone(
 
 void AmbientController::OnUserActivity(const ui::Event* event) {
   // The following events are handled separately so that we can consume them.
-  if (IsShown() && (event->IsMouseEvent() || event->IsTouchEvent() ||
-                    event->IsKeyEvent() || event->IsFlingScrollEvent())) {
+  // In case events come from external sources (i.e. Chrome extensions), the
+  // event will be nullptr.
+  if (IsShown() && event &&
+      (event->IsMouseEvent() || event->IsTouchEvent() || event->IsKeyEvent() ||
+       event->IsFlingScrollEvent())) {
     return;
   }
   // While |kPreview| is loading, don't |DismissUI| on user activity.
@@ -600,6 +650,14 @@ void AmbientController::ShowUi() {
     return;
   }
 
+  // If the ambient ui launcher is not ready to be started then do not change
+  // the visibility. This will disabled the ui launcher until the next AmbientUi
+  // starting event occurs. Right now the only ambient ui starting events are
+  // screen lock/unlock, screen dim, preview and screen backlight off.
+  if (ambient_ui_launcher_ && !ambient_ui_launcher_->IsReady()) {
+    return;
+  }
+
   ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
 }
 
@@ -649,6 +707,44 @@ void AmbientController::ToggleInSessionUi() {
     ShowUi();
   else
     CloseUi();
+}
+
+void AmbientController::SetScreenSaverDuration(int minutes) {
+  auto* pref_service = GetPrimaryUserPrefService();
+  if (!pref_service) {
+    return;
+  }
+  pref_service->Set(ambient::prefs::kAmbientModeRunningDurationMinutes,
+                    base::Value(minutes));
+}
+
+absl::optional<int> AmbientController::GetScreenSaverDuration() {
+  auto* pref_service = GetPrimaryUserPrefService();
+  if (!pref_service) {
+    return absl::nullopt;
+  }
+  return pref_service->GetInteger(
+      ambient::prefs::kAmbientModeRunningDurationMinutes);
+}
+
+void AmbientController::StartTimerToReleaseWakeLock() {
+  AcquireWakeLock();
+
+  auto* pref_service = GetPrimaryUserPrefService();
+  if (!pref_service) {
+    return;
+  }
+
+  const int session_duration_in_minutes = pref_service->GetInteger(
+      ambient::prefs::kAmbientModeRunningDurationMinutes);
+  DCHECK(session_duration_in_minutes >= 0);
+
+  if (session_duration_in_minutes != kDurationForever) {
+    const base::TimeDelta delay =
+        base::Minutes(session_duration_in_minutes) - kReleaseWakeLockDelay;
+    screensaver_running_timer_.Start(FROM_HERE, delay, this,
+                                     &AmbientController::ReleaseWakeLock);
+  }
 }
 
 bool AmbientController::IsShown() const {
@@ -701,15 +797,28 @@ void AmbientController::CloseAllWidgets(bool immediately) {
   }
 }
 
+PrefChangeRegistrar* AmbientController::GetActivePrefChangeRegistrar() {
+  if (pref_change_registrar_) {
+    return pref_change_registrar_.get();
+  }
+
+  if (ash::features::IsAmbientModeManagedScreensaverEnabled()) {
+    return sign_in_pref_change_registrar_.get();
+  }
+  return nullptr;
+}
+
 void AmbientController::AddManagedScreensaverPolicyPrefObservers() {
-  pref_change_registrar_->Add(
+  PrefChangeRegistrar* registrar = GetActivePrefChangeRegistrar();
+  CHECK(registrar);
+  registrar->Add(
       ambient::prefs::kAmbientModeManagedScreensaverIdleTimeoutSeconds,
       base::BindRepeating(
           &AmbientController::
               OnManagedScreensaverLockScreenIdleTimeoutPrefChanged,
           weak_ptr_factory_.GetWeakPtr()));
 
-  pref_change_registrar_->Add(
+  registrar->Add(
       ambient::prefs::kAmbientModeManagedScreensaverImageDisplayIntervalSeconds,
       base::BindRepeating(
           &AmbientController::
@@ -730,23 +839,30 @@ void AmbientController::RemoveAmbientModeSettingsPrefObservers() {
         ambient::prefs::kAmbientModeManagedScreensaverIdleTimeoutSeconds,
         ambient::prefs::
             kAmbientModeManagedScreensaverImageDisplayIntervalSeconds}) {
-    if (pref_change_registrar_->IsObserved(pref_name)) {
+    if (pref_change_registrar_ &&
+        pref_change_registrar_->IsObserved(pref_name)) {
       pref_change_registrar_->Remove(pref_name);
+    }
+    if (sign_in_pref_change_registrar_ &&
+        sign_in_pref_change_registrar_->IsObserved(pref_name)) {
+      sign_in_pref_change_registrar_->Remove(pref_name);
     }
   }
 }
 
 void AmbientController::OnManagedScreensaverLockScreenIdleTimeoutPrefChanged() {
-  DCHECK(GetPrimaryUserPrefService());
+  PrefService* pref_service = GetActivePrefService();
+  CHECK(pref_service);
   ambient_ui_model_.SetLockScreenInactivityTimeout(
-      base::Seconds(GetPrimaryUserPrefService()->GetInteger(
+      base::Seconds(pref_service->GetInteger(
           ambient::prefs::kAmbientModeManagedScreensaverIdleTimeoutSeconds)));
 }
 
 void AmbientController::OnManagedScreensaverPhotoRefreshIntervalPrefChanged() {
-  DCHECK(GetPrimaryUserPrefService());
+  PrefService* pref_service = GetActivePrefService();
+  CHECK(pref_service);
   ambient_ui_model_.SetPhotoRefreshInterval(
-      base::Seconds(GetPrimaryUserPrefService()->GetInteger(
+      base::Seconds(pref_service->GetInteger(
           ambient::prefs::
               kAmbientModeManagedScreensaverImageDisplayIntervalSeconds)));
 }
@@ -755,14 +871,29 @@ void AmbientController::OnManagedScreensaverEnabledPrefChanged() {
   ResetAmbientControllerResources();
   OnEnabledPrefChanged();
 
-  if (IsAmbientModeManagedScreensaverEnabled()) {
-    RemoveAmbientModeSettingsPrefObservers();
-    AddManagedScreensaverPolicyPrefObservers();
+  if (!IsAmbientModeManagedScreensaverEnabled()) {
     return;
   }
+  RemoveAmbientModeSettingsPrefObservers();
+  AddManagedScreensaverPolicyPrefObservers();
+  if (!LockScreen::HasInstance()) {
+    return;
+  }
+  // Start hidden ambient mode immediately if the lock screen has an instance
+  // and ambient mode is enabled.
+  ShowHiddenUi();
 }
 
 void AmbientController::AddAmbientModeUserSettingsPolicyPrefObservers() {
+  // Note: in case we ever want to enable the consumer screensaver on the
+  // login screen we should change the pref_change_registrar here with
+  // `GetActivePrefChangeRegistrar()` and the corresponding
+  // `GetPrimaryUserPrefService()` with `GetActivePrefService()` in the actual
+  // method calls.
+  if (!pref_change_registrar_) {
+    return;
+  }
+
   pref_change_registrar_->Add(
       ambient::prefs::kAmbientModeLockScreenInactivityTimeoutSeconds,
       base::BindRepeating(
@@ -804,10 +935,6 @@ void AmbientController::OnEnabledPrefChanged() {
       return;
     }
     DVLOG(1) << "Ambient mode enabled";
-    // TODO(b/274165045): Remove this temporary way of circulating the video
-    // theme throughout the system once the hub supports the video theme. This
-    // is just for experimentation purposes until then.
-    SetUiSettingsForExperimentation();
 
     AddAmbientModeUserSettingsPolicyPrefObservers();
 
@@ -994,7 +1121,7 @@ std::unique_ptr<views::Widget> AmbientController::CreateWidget(
   if (ambient_ui_launcher_) {
     container_view = std::make_unique<AmbientContainerView>(
         current_theme, ambient_ui_launcher_->CreateView(),
-        multi_screen_metrics_recorder_.get());
+        session_metrics_recorder_.get());
   } else {
     // TODO(b/274164306): Everything should use
     // |AmbientUiLauncher::CreateView()| when slideshow and animation themes
@@ -1003,7 +1130,7 @@ std::unique_ptr<views::Widget> AmbientController::CreateWidget(
         &delegate_, ambient_animation_progress_tracker_.get(),
         AmbientAnimationStaticResources::Create(current_theme,
                                                 /*serializable=*/true),
-        multi_screen_metrics_recorder_.get(), frame_rate_controller_.get());
+        session_metrics_recorder_.get(), frame_rate_controller_.get());
   }
   auto* widget_delegate = new AmbientWidgetDelegate();
   widget_delegate->SetInitiallyFocusedView(container_view.get());
@@ -1032,12 +1159,6 @@ std::unique_ptr<views::Widget> AmbientController::CreateWidget(
 
   widget->Show();
 
-  if (ambient_ui_model_.ui_visibility() == AmbientUiVisibility::kShown) {
-    DCHECK(start_time_);
-    ambient::RecordAmbientModeStartupTime(base::Time::Now() - *start_time_,
-                                          current_theme);
-  }
-
   // Only announce for the primary window.
   if (Shell::GetPrimaryRootWindow() == container->GetRootWindow()) {
     contents_view->GetViewAccessibility().AnnounceText(
@@ -1045,6 +1166,18 @@ std::unique_ptr<views::Widget> AmbientController::CreateWidget(
   }
 
   return widget;
+}
+
+void AmbientController::OnUiLauncherInitialized(bool success) {
+  if (!success) {
+    // Success = false denotes a case where the screensaver is in a permanent
+    // error state and such that the UI and any further attempts to launch the
+    // UI will also result in this failure.
+    // TODO (b/175142676) Add metrics for cases where success = false.
+    LOG(ERROR) << "AmbientUiLauncher failed to initialize";
+    return;
+  }
+  CreateAndShowWidgets();
 }
 
 void AmbientController::CreateAndShowWidgets() {
@@ -1092,10 +1225,14 @@ void AmbientController::StartRefreshingImages() {
 
 void AmbientController::StopScreensaver() {
   CloseAllWidgets(close_widgets_immediately_);
+  frame_rate_controller_.reset();
+  session_metrics_recorder_.reset();
+
   if (ambient_ui_launcher_) {
     ambient_ui_launcher_->Finalize();
     return;
   }
+  weather_refresher_.reset();
   DCHECK(ambient_photo_controller_);
   ambient_photo_controller_->StopScreenUpdate();
 }
@@ -1112,9 +1249,8 @@ void AmbientController::MaybeStartScreenSaver() {
   // Add observer for assistant interaction model
   AssistantInteractionController::Get()->GetModel()->AddObserver(this);
 
-  multi_screen_metrics_recorder_ =
-      std::make_unique<AmbientMultiScreenMetricsRecorder>(
-          GetCurrentUiSettings().theme());
+  session_metrics_recorder_ = std::make_unique<AmbientSessionMetricsRecorder>(
+      GetCurrentUiSettings().theme());
   frame_rate_controller_ =
       std::make_unique<AmbientAnimationFrameRateController>(
           Shell::Get()->frame_throttling_controller());
@@ -1122,25 +1258,19 @@ void AmbientController::MaybeStartScreenSaver() {
   Shell::Get()->AddPreTargetHandler(this);
   if (ambient_ui_launcher_) {
     ambient_ui_launcher_->Initialize(
-        base::BindOnce(&AmbientController::CreateAndShowWidgets,
+        base::BindOnce(&AmbientController::OnUiLauncherInitialized,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     StartRefreshingImages();
+    // TODO(b/274164306): Move `weather_refresher_` to `AmbientUiLauncher`
+    // implementation for slideshow and animation themes.
+    weather_refresher_ = ambient_weather_controller_->CreateScopedRefresher();
   }
 }
 
 AmbientUiSettings AmbientController::GetCurrentUiSettings() const {
-  CHECK(GetPrimaryUserPrefService());
-  return AmbientUiSettings::ReadFromPrefService(*GetPrimaryUserPrefService());
-}
-
-void AmbientController::SetUiSettingsForExperimentation() {
-  if (features::IsTimeOfDayScreenSaverEnabled()) {
-    CHECK(GetPrimaryUserPrefService());
-    AmbientUiSettings(AmbientTheme::kVideo,
-                      features::kTimeOfDayScreenSaverVideo.Get())
-        .WriteToPrefService(*GetPrimaryUserPrefService());
-  }
+  CHECK(GetActivePrefService());
+  return AmbientUiSettings::ReadFromPrefService(*GetActivePrefService());
 }
 
 void AmbientController::MaybeDismissUIOnMouseMove() {
@@ -1177,8 +1307,8 @@ void AmbientController::CreateUiLauncher() {
     ambient_ui_launcher_ =
         std::make_unique<AmbientManagedSlideshowUiLauncher>(&delegate_);
   } else if (GetCurrentUiSettings().theme() == AmbientTheme::kVideo) {
-    ambient_ui_launcher_ =
-        std::make_unique<AmbientVideoUiLauncher>(GetPrimaryUserPrefService());
+    ambient_ui_launcher_ = std::make_unique<AmbientVideoUiLauncher>(
+        GetPrimaryUserPrefService(), &delegate_);
   } else {
     // TODO(b/274164306): Remove when slideshow and animation themes are
     // migrated to AmbientUiLauncher.

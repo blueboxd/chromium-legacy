@@ -77,13 +77,15 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
                         "device-help-content-id"));
 
   // Add any features that have been enabled.
-  source->AddBoolean("colorThemes",
-                     chromeos::features::IsDarkLightModeEnabled());
+  source->AddBoolean("colorThemes", true);
   source->AddBoolean("HelpAppReleaseNotes", true);
   source->AddBoolean(
       "HelpAppLauncherSearch",
       base::FeatureList::IsEnabled(features::kHelpAppLauncherSearch) &&
           base::FeatureList::IsEnabled(features::kEnableLocalSearchService));
+  source->AddBoolean(
+      "HelpAppAppsDiscovery",
+      base::FeatureList::IsEnabled(features::kHelpAppAppsDiscovery));
   source->AddBoolean(
       "HelpAppSearchServiceIntegration",
       base::FeatureList::IsEnabled(features::kEnableLocalSearchService));
@@ -151,7 +153,8 @@ HelpAppUntrustedUIConfig::HelpAppUntrustedUIConfig()
 HelpAppUntrustedUIConfig::~HelpAppUntrustedUIConfig() = default;
 
 std::unique_ptr<content::WebUIController>
-HelpAppUntrustedUIConfig::CreateWebUIController(content::WebUI* web_ui) {
+HelpAppUntrustedUIConfig::CreateWebUIController(content::WebUI* web_ui,
+                                                const GURL& url) {
   base::RepeatingCallback<void(content::WebUIDataSource*)> callback =
       base::BindRepeating(&PopulateLoadTimeData, web_ui);
 

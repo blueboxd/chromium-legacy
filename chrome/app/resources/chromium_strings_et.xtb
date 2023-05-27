@@ -79,7 +79,6 @@ Load, mille olete juba veebisaitidele ja rakendustele andnud, võivad selle kont
 <translation id="2928420929544864228">Installimine lõpetati.</translation>
 <translation id="2977470724722393594">Chromium on ajakohane</translation>
 <translation id="2977506796191543575">Kui sait üritab teie parooli varastada või laadite alla kahjuliku faili, võib Chromium saata URL-id ja lehe sisu osad teenusele Google'i ohutu sirvimine.</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium on ühendatud HID-seadmega}other{Chromium on ühendatud HID-seadmetega}}</translation>
 <translation id="3032706164202344641">Chromium ei saa teie paroole kontrollida. Proovige hiljem uuesti.</translation>
 <translation id="3032787606318309379">Chromiumi lisamine ...</translation>
 <translation id="3038232873781883849">Installimise ootamine …</translation>
@@ -94,7 +93,6 @@ Load, mille olete juba veebisaitidele ja rakendustele andnud, võivad selle kont
 <translation id="3258596308407688501">Chromium ei saa andmekataloogi lugeda ega sellesse kirjutada:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">See juhend aitab teil oma valikuid mõista, et Chromium töötaks teie soovitud moel</translation>
 <translation id="3283186697780795848">Chromiumi versioon <ph name="PRODUCT_VERSION" /> on installitud</translation>
 <translation id="3286538390144397061">Taaskäivitada kohe</translation>
 <translation id="328888136576916638">Google API võtmed on puudu. Teatud Chromiumi funktsioonid keelatakse.</translation>
@@ -246,8 +244,10 @@ Load, mille olete juba veebisaitidele ja rakendustele andnud, võivad selle kont
 <translation id="6442900851116057561">Chromium OS-i taaskäivitamine</translation>
 <translation id="6455857529632101747">Tere tulemast kasutama Chromiumi profiile</translation>
 <translation id="6475912303565314141">Lisaks juhib see seda, mis leht kuvatakse Chromiumi käivitamisel.</translation>
+<translation id="648319183876919572">Täiustatud ohutu sirvimine kaitseb teid paremini ohtlike veebisaitide ja allalaadimiste eest</translation>
 <translation id="6510925080656968729">Desinstalli Chromium</translation>
 <translation id="6542839706527980775">Igal profiilil on oma Chromiumi teave, nagu järjehoidjad, ajalugu, paroolid ja muu</translation>
+<translation id="656935081669708576">Saate lülituda, et näha paroole teiselt Chromiumi profiililt</translation>
 <translation id="6570579332384693436">Õigekirjavigade parandamiseks saadab Chromium teie tekstiväljadel sisestatud teksti Google'ile</translation>
 <translation id="6598877126913850652">Ava Chromiumi märguandeseaded</translation>
 <translation id="6613594504749178791">Teie muudatused jõustuvad järgmine kord, kui Chromiumi taaskäivitate.</translation>
@@ -382,7 +382,6 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="924957577793602335">Isikupärastage Chromium</translation>
 <translation id="93478295209880648">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam Windows XP-s ega Windows Vistas</translation>
 <translation id="942598560705308788">Chromiumi hallatavad sertifikaadid</translation>
-<translation id="959579472876010517">Chromiumi kasutamine parimal moel</translation>
 <translation id="965162752251293939">Kes kasutab Chromiumi?</translation>
 <translation id="967427899662692980">Hankige Chromiumi parimad turbefunktsioonid</translation>
 <translation id="9792300276217204">Saidi andmed kustutatakse alati seadmest, kui Chromiumi sulgete</translation>

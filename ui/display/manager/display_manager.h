@@ -20,6 +20,7 @@
 #include "base/check_op.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "build/chromeos_buildflags.h"
@@ -209,14 +210,17 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // |overscan_insets| is null if the display has no custom overscan insets.
   // |touch_calibration_data| is null if the display has no touch calibration
   // associated data.
-  void RegisterDisplayProperty(int64_t display_id,
-                               Display::Rotation rotation,
-                               const gfx::Insets* overscan_insets,
-                               const gfx::Size& resolution_in_pixels,
-                               float device_scale_factor,
-                               float display_zoom_factor,
-                               float refresh_rate,
-                               bool is_interlaced);
+  void RegisterDisplayProperty(
+      int64_t display_id,
+      Display::Rotation rotation,
+      const gfx::Insets* overscan_insets,
+      const gfx::Size& resolution_in_pixels,
+      float device_scale_factor,
+      float display_zoom_factor,
+      float refresh_rate,
+      bool is_interlaced,
+      VariableRefreshRateState variable_refresh_rate_state,
+      const absl::optional<uint16_t>& vsync_rate_min);
 
   // Register stored rotation properties for the internal display.
   void RegisterDisplayRotationProperties(bool rotation_lock,
@@ -514,7 +518,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     ~BeginEndNotifier();
 
    private:
-    DisplayManager* display_manager_;
+    raw_ptr<DisplayManager, ExperimentalAsh> display_manager_;
   };
 
   void set_change_display_upon_host_resize(bool value) {
@@ -583,7 +587,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   void UpdateLayoutForMixedMode();
 
-  Delegate* delegate_ = nullptr;  // not owned.
+  raw_ptr<Delegate, ExperimentalAsh> delegate_ = nullptr;  // not owned.
 
   // When set to true, DisplayManager will use DisplayConfigurator to configure
   // displays. By default, this is set to true when running on device and false

@@ -81,7 +81,6 @@ Posibleng malapat sa account na ito ang mga pahintulot na naibigay mo na sa mga 
 <translation id="2928420929544864228">Tapos na ang pag-install.</translation>
 <translation id="2977470724722393594">Napapanahon ang Chromium</translation>
 <translation id="2977506796191543575">Kung susubukan ng site na nakawin ang iyong password, o kapag nag-download ka ng mapaminsalang file, posible ring magpadala ang Chromium sa Ligtas na Pag-browse ng mga URL, kabilang ang ilang content ng page</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Nakakonekta ang Chromium sa isang HID device}one{Nakakonekta ang Chromium sa mga HID device}other{Nakakonekta ang Chromium sa mga HID device}}</translation>
 <translation id="3032706164202344641">Hindi masuri ng Chromium ang iyong mga password. Subukan ulit sa ibang pagkakataon.</translation>
 <translation id="3032787606318309379">Idinaragdag sa Chromium...</translation>
 <translation id="3038232873781883849">Naghihintay sa pag-install...</translation>
@@ -96,7 +95,6 @@ Posibleng malapat sa account na ito ang mga pahintulot na naibigay mo na sa mga 
 <translation id="3258596308407688501">Hindi makakapag-read at makakapag-write ang Chromium sa direktoryo ng data nito:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Tinutulungan ka ng gabay na ito na maunawaan ang iyong mga pinili, para gumana ang Chromium sa paraang gusto mo</translation>
 <translation id="3283186697780795848">Na-install na ang bersyong <ph name="PRODUCT_VERSION" /> ng Chrome</translation>
 <translation id="3286538390144397061">I-restart Ngayon</translation>
 <translation id="328888136576916638">Nawawala ang mga Google API key. Madi-disable ang ilang pagpapagana ng Chromium.</translation>
@@ -241,6 +239,7 @@ Posibleng malapat sa account na ito ang mga pahintulot na naibigay mo na sa mga 
 <translation id="6327105987658262776">Walang available na update.</translation>
 <translation id="6333502561965082103">May kasalukuyang isinasagawang isa pang pagpapatakbo sa Chromium. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="6334986366598267305">Ngayon, mas madali nang gamitin ang Chromium sa iyong Google Account at sa mga nakabahaging computer.</translation>
+<translation id="6335615313501343197">{NUM_DEVICES,plural, =0{Nag-a-access ang Chromium ng HID device}=1{Nag-a-access ang Chromium ng HID device}one{Nag-a-access ang Chromium ng mga HID device}other{Nag-a-access ang Chromium ng mga HID device}}</translation>
 <translation id="6365489425007284765">{COUNT,plural, =1{Awtomatikong dine-delete ng iyong administrator ang data mula sa pag-browse kapag hindi ito nagamit nang 1 minuto. Posibleng kasama rito ang history, autofill, at mga download. Mananatiling bukas ang iyong mga kasalukuyang tab.}one{Awtomatikong dine-delete ng iyong administrator ang data mula sa pag-browse kapag hindi ito nagamit nang # minuto. Posibleng kasama rito ang history, autofill, at mga download. Mananatiling bukas ang iyong mga kasalukuyang tab.}other{Awtomatikong dine-delete ng iyong administrator ang data mula sa pag-browse kapag hindi ito nagamit nang # na minuto. Posibleng kasama rito ang history, autofill, at mga download. Mananatiling bukas ang iyong mga kasalukuyang tab.}}</translation>
 <translation id="6373523479360886564">Sigurado ka bang nais mong i-uninstall ang Chromium?</translation>
 <translation id="6384011394608460044"><ph name="BEGIN_BOLD" />Paano namin ginagamit ang data na ito:<ph name="END_BOLD" /> Puwedeng tantyahin ng Chromium ang iyong mga interes. Sa ibang pagkakataon, puwedeng hilingin ng site na binibisita mo sa Chromium na makita ang iyong mga interes para ma-personalize ang mga ad na nakikita mo.</translation>
@@ -248,8 +247,10 @@ Posibleng malapat sa account na ito ang mga pahintulot na naibigay mo na sa mga 
 <translation id="6442900851116057561">I-restart ang ChromiumOS</translation>
 <translation id="6455857529632101747">Welcome sa mga profile sa Chromium</translation>
 <translation id="6475912303565314141">Kinokontrol din nito kung anong pahina ang ipinapakita kapag sinimulan mo ang Chromium.</translation>
+<translation id="648319183876919572">Mas maraming magagawa ang Pinahusay na Ligtas na Pag-browse para protektahan ka laban sa mga mapanganib na website at download</translation>
 <translation id="6510925080656968729">I-uninstall ang Chromium</translation>
 <translation id="6542839706527980775">Ang bawat profile ay may sariling impormasyon sa Chromium tulad ng mga bookmark, history, mga password, at iba pa</translation>
+<translation id="656935081669708576">Puwede kang lumipat para makita ang mga password mula sa ibang profile sa Chromium</translation>
 <translation id="6570579332384693436">Para maayos ang mga error sa pagbabaybay, ipinapadala ng Chromium sa Google ang text na na-type mo sa mga text field</translation>
 <translation id="6598877126913850652">Pumunta sa mga setting ng notification ng Chromium</translation>
 <translation id="6613594504749178791">Magkakabisa ang iyong mga pagbabago sa susunod na ilunsad mong muli ang Chromium.</translation>
@@ -385,7 +386,6 @@ Hindi mabawi ng Chromium ang iyong mga setting.</translation>
 <translation id="924957577793602335">Gawing iyo ang Chromium</translation>
 <translation id="93478295209880648">Maaaring hindi gumana nang maayos ang Chromium dahil hindi na ito sinusuportahan sa Windows XP o Windows Vista</translation>
 <translation id="942598560705308788">Mga certificate na pinapamahalaan ng Chromium</translation>
-<translation id="959579472876010517">Sulitin ang Chromium</translation>
 <translation id="965162752251293939">Sino ang gumagamit ng Chromium?</translation>
 <translation id="967427899662692980">Kunin ang pinakamahusay na seguridad ng Chromium</translation>
 <translation id="9792300276217204">Palaging i-clear ang data ng site mula sa iyong device kapag isinara mo ang Chromium</translation>

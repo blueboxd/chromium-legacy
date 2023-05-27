@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">স্থানীয়ভাবে যাচাইকরণ সার্টিফিকেট বাতিল করা হয়েছে</translation>
 <translation id="1775381402323441512">ভিডিওর তথ্য</translation>
 <translation id="180035236176489073">এই ফাইলগুলিতে অ্যাক্সেস পেতে আপনাকে অনলাইন হতে হবে৷</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{আইডি সহ একটি এক্সটেনশন}one{আইডি সহ একটি এক্সটেনশন}other{আইডি সহ একটি এক্সটেনশন}}</translation>
 <translation id="1807938677607439181">সবকটি ফাইল</translation>
 <translation id="1810764548349082891">কোনো প্রিভিউ উপলভ্য নেই</translation>
 <translation id="1812302367230252929">আমহারিক লিপ্যন্তর</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">সাবজেক্টের অন্য নামের সাথে মিল থাকা এন্ট্রি ভুল</translation>
 <translation id="1838709767668011582">Google সাইট</translation>
 <translation id="1853795129690976061">এই ফোল্ডার Linux-এর সাথে শেয়ার করা হয়েছে</translation>
-<translation id="1859422890169495746">শুধু এই Chromebook</translation>
 <translation id="1864756863218646478">ফাইলটি পাওয়া যায়নি৷</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" />টির মধ্যে <ph name="NETWORK_INDEX" /> নম্বর নেটওয়ার্ক, <ph name="NETWORK_NAME" />, কানেক্ট করুন</translation>
 <translation id="1920670151694390848">মালয়ালাম লিপ্যন্তর</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">গ্রহ</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> সরিয়ে দেওয়া হয়েছে।</translation>
 <translation id="2307462900900812319">নেটওয়ার্ক কনফিগার করুন</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{আইডি সহ <ph name="BEGIN_LIST" /><ph name="END_LIST" /> একটি এক্সটেনশন শনাক্ত করা যাবে না। আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।}one{আইডি সহ <ph name="BEGIN_LIST" /><ph name="END_LIST" /> একটি এক্সটেনশন শনাক্ত করা যাবে না। আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।}other{আইডি সহ <ph name="BEGIN_LIST" /><ph name="END_LIST" /> একটি এক্সটেনশন শনাক্ত করা যাবে না। আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।}}</translation>
 <translation id="2325650632570794183">এই ফাইল প্রকারটি সমর্থিত নয়৷ এই ধরণের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে অনুগ্রহ করে Chrome ওয়েব স্টোর দেখুন৷</translation>
 <translation id="2326539130272988168">বুলগেরিয়ান</translation>
 <translation id="2337715497728194187">Bruschetta-এর মাধ্যমে শেয়ার করুন</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">সুরক্ষিত নেই</translation>
 <translation id="3291218047831493686">সিম লক সেটিং পরিবর্তন করতে এই নেটওয়ার্কে কানেক্ট করুন</translation>
 <translation id="3293023191599135697">WEP নেটওয়ার্ক কাজ করবে না</translation>
+<translation id="3295006446256079333">এই ভলিউম</translation>
 <translation id="3295357220137379386">ডিভাইসটি আগেই অন্য কোথাও কানেক্ট রয়েছে</translation>
 <translation id="3296763833017966289">জর্জিয়ান</translation>
 <translation id="3307875152560779385">ইউক্রেনিয়ান</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="485316830061041779">জার্মান</translation>
+<translation id="4862885579661885411">Files সেটিংস</translation>
 <translation id="4867079195717347957">কলামের মানগুলি বড় থেকে ছোট ক্রমানুযায়ী সাজাতে ক্লিক করুন।</translation>
 <translation id="4867297348137739678">গত সপ্তাহ</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> বাইট</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" />টি আইটেম কপি করা হচ্ছে…</translation>
 <translation id="7375951387215729722">ফাইলের তালিকা <ph name="COLUMN_NAME" />-এর মানের উপর নির্ভর করে বড় থেকে ছোট ক্রমানুযায়ী সাজানো আছে।</translation>
 <translation id="7377161162143020057">অ্যাডমিনিস্ট্রেটরের সেট করা নীতি অনুযায়ী এই ফাইল কপি করার সুবিধা ব্লক করা হয়েছে</translation>
-<translation id="7392500733467492920">অবস্থিত করা যাবে না। আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
 <translation id="7402503521691663770">ChromeOS Flex ডিভাইস</translation>
 <translation id="7408870451288633753">চেক ভাষা</translation>
 <translation id="7417453074306512035">ইথিওপিক কীবোর্ড</translation>

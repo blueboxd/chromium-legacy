@@ -4,13 +4,13 @@
 
 #include "ui/native_theme/native_theme_base.h"
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/fixed_flat_set.h"
-#include "base/cxx17_backports.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -133,7 +133,7 @@ ui::NativeTheme::ColorScheme ColorSchemeForAccentColor(
 SkColor AdjustLuminance(const SkColor& color, double luminance) {
   color_utils::HSL hsl;
   color_utils::SkColorToHSL(color, &hsl);
-  hsl.l = base::clamp(hsl.l + luminance, 0., 1.);
+  hsl.l = std::clamp(hsl.l + luminance, 0., 1.);
   return color_utils::HSLToSkColor(hsl, SkColorGetA(color));
 }
 
@@ -1254,8 +1254,8 @@ SkColor NativeThemeBase::SaturateAndBrighten(SkScalar* hsv,
                                              SkScalar brighten_amount) const {
   SkScalar color[3];
   color[0] = hsv[0];
-  color[1] = base::clamp(hsv[1] + saturate_amount, SkScalar{0}, SK_Scalar1);
-  color[2] = base::clamp(hsv[2] + brighten_amount, SkScalar{0}, SK_Scalar1);
+  color[1] = std::clamp(hsv[1] + saturate_amount, SkScalar{0}, SK_Scalar1);
+  color[2] = std::clamp(hsv[2] + brighten_amount, SkScalar{0}, SK_Scalar1);
   return SkHSVToColor(color);
 }
 
@@ -1335,8 +1335,8 @@ SkColor NativeThemeBase::OutlineColor(SkScalar* hsv1, SkScalar* hsv2) const {
   //
   // The following code has been tested to look OK with all of the
   // default GTK themes.
-  SkScalar min_diff = base::clamp((hsv1[1] + hsv2[1]) * 1.2f, 0.28f, 0.5f);
-  SkScalar diff = base::clamp(fabsf(hsv1[2] - hsv2[2]) / 2, min_diff, 0.5f);
+  SkScalar min_diff = std::clamp((hsv1[1] + hsv2[1]) * 1.2f, 0.28f, 0.5f);
+  SkScalar diff = std::clamp(fabsf(hsv1[2] - hsv2[2]) / 2, min_diff, 0.5f);
 
   if (hsv1[2] + hsv2[2] > 1.0)
     diff = -diff;
@@ -1535,6 +1535,8 @@ SkColor NativeThemeBase::GetControlColor(
       return SkColorSetRGB(0x50, 0x50, 0x50);
     case kScrollbarArrowPressed:
       return SK_ColorWHITE;
+    case kScrollbarCornerControlColorId:
+      return SkColorSetRGB(0xDC, 0xDC, 0xDC);
     case kScrollbarThumbInactive:
       return SkColorSetRGB(0xEA, 0xEA, 0xEA);
     case kScrollbarThumbHovered:
@@ -1614,6 +1616,8 @@ SkColor NativeThemeBase::GetDarkModeControlColor(
       return SK_ColorWHITE;
     case kScrollbarArrowPressed:
       return SK_ColorBLACK;
+    case kScrollbarCornerControlColorId:
+      return SkColorSetRGB(0x12, 0x12, 0x12);
     case kScrollbarTrack:
       return SkColorSetRGB(0x42, 0x42, 0x42);
     case kScrollbarThumbInactive:
@@ -1671,6 +1675,7 @@ SkColor NativeThemeBase::GetHighContrastControlColor(
       case kAutoCompleteBackground:
       case kLightenLayer:
       case kScrollbarArrowBackground:
+      case kScrollbarCornerControlColorId:
       case kScrollbarTrack:
         return system_colors_[SystemThemeColor::kWindow];
       case kScrollbarArrow:
@@ -1682,7 +1687,7 @@ SkColor NativeThemeBase::GetHighContrastControlColor(
         return system_colors_[SystemThemeColor::kButtonFace];
     }
   } else {
-    //   // Default high contrast colors (used in web test mode)
+    // Default high contrast colors (used in web test mode)
     switch (color_id) {
       case kDisabledBorder:
       case kDisabledAccent:
@@ -1723,6 +1728,7 @@ SkColor NativeThemeBase::GetHighContrastControlColor(
       case kScrollbarArrow:
       case kScrollbarArrowHovered:
       case kScrollbarArrowPressed:
+      case kScrollbarCornerControlColorId:
         return SK_ColorBLACK;
       case kScrollbarThumbHovered:
       case kScrollbarThumbPressed:
@@ -1752,6 +1758,8 @@ SkColor NativeThemeBase::GetControlColorFromColorProvider(
       return color_provider->GetColor(kColorScrollbarArrowForeground);
     case kScrollbarArrowPressed:
       return color_provider->GetColor(kColorScrollbarArrowForegroundPressed);
+    case kScrollbarCornerControlColorId:
+      return color_provider->GetColor(kColorScrollbarCorner);
     case kScrollbarThumb:
       return color_provider->GetColor(kColorScrollbarThumb);
     case kScrollbarThumbHovered:
@@ -1796,12 +1804,15 @@ SkRect NativeThemeBase::AlignSliderTrack(
   SkRect aligned_rect;
 
   if (slider.vertical) {
-    const float top = is_value ? slider_rect.y() + slider.thumb_y + kAlignment
-                               : slider_rect.y();
+    const float top = is_value && slider.right_to_left
+                          ? slider_rect.y() + slider.thumb_y + kAlignment
+                          : slider_rect.y();
+    const float bottom = is_value && !slider.right_to_left
+                             ? slider_rect.y() + slider.thumb_y + kAlignment
+                             : slider_rect.bottom();
     aligned_rect.setLTRB(
         std::max(float(slider_rect.x()), mid_x - kAlignment), top,
-        std::min(float(slider_rect.right()), mid_x + kAlignment),
-        slider_rect.bottom());
+        std::min(float(slider_rect.right()), mid_x + kAlignment), bottom);
   } else {
     const float right = is_value && !slider.right_to_left
                             ? slider_rect.x() + slider.thumb_x + kAlignment
@@ -1830,8 +1841,9 @@ bool NativeThemeBase::IsColorPipelineSupportedForControlColorId(
       base::MakeFixedFlatSet<ControlColorId>(
           {kScrollbarArrowBackground, kScrollbarArrowBackgroundHovered,
            kScrollbarArrowBackgroundPressed, kScrollbarArrow,
-           kScrollbarArrowHovered, kScrollbarArrowPressed, kScrollbarTrack,
-           kScrollbarThumb, kScrollbarThumbHovered, kScrollbarThumbPressed,
+           kScrollbarArrowHovered, kScrollbarArrowPressed,
+           kScrollbarCornerControlColorId, kScrollbarTrack, kScrollbarThumb,
+           kScrollbarThumbHovered, kScrollbarThumbPressed,
            kScrollbarThumbInactive});
   return kControlColorIdsSet.contains(color_id);
 }

@@ -7,14 +7,14 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {DomIf, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {AutofillManagerImpl, PasswordsSectionElement, PasswordListItemElement, PaymentsManagerImpl, SettingsAutofillSectionElement, SettingsPaymentsSectionElement} from 'chrome://settings/lazy_load.js';
 import {buildRouter, Router, routes} from 'chrome://settings/settings.js';
-import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, SettingsAutofillPageElement, SettingsPluralStringProxyImpl, SettingsPrefsElement, SettingsRoutes} from 'chrome://settings/settings.js';
+import {CrSettingsPrefs, OpenWindowProxyImpl, PasswordManagerImpl, SettingsAutofillPageElement, SettingsPluralStringProxyImpl, SettingsPrefsElement, SettingsRoutes, PasswordManagerPage} from 'chrome://settings/settings.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {FakeSettingsPrivate} from 'chrome://webui-test/fake_settings_private.js';
 import {TestPluralStringProxy} from 'chrome://webui-test/test_plural_string_proxy.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 import {TestOpenWindowProxy} from 'chrome://webui-test/test_open_window_proxy.js';
 
-import {FakeSettingsPrivate} from './fake_settings_private.js';
-import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createIbanEntry, createPasswordEntry, PaymentsManagerExpectations, TestAutofillManager, TestPaymentsManager} from './passwords_and_autofill_fake_data.js';
+import {AutofillManagerExpectations, createAddressEntry, createCreditCardEntry, createExceptionEntry, createIbanEntry, createPasswordEntry, PaymentsManagerExpectations, STUB_USER_ACCOUNT_INFO, TestAutofillManager, TestPaymentsManager} from './passwords_and_autofill_fake_data.js';
 import {makeInsecureCredential} from './passwords_and_autofill_fake_data.js';
 import {PasswordManagerExpectations,TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 
@@ -251,7 +251,7 @@ suite('PasswordsAndForms', function() {
       const cardList = [createCreditCardEntry(), createCreditCardEntry()];
       const ibanList = [createIbanEntry(), createIbanEntry()];
       const accountInfo = {
-        email: 'stub-user@example.com',
+        ...STUB_USER_ACCOUNT_INFO,
         isSyncEnabledForAutofillProfiles: true,
       };
       autofillManager.lastCallback.setPersonalDataManagerListener!
@@ -282,7 +282,7 @@ suite('PasswordsAndForms', function() {
       const cardList = [createCreditCardEntry(), createCreditCardEntry()];
       const ibanList = [createIbanEntry(), createIbanEntry()];
       const accountInfo = {
-        email: 'stub-user@example.com',
+        ...STUB_USER_ACCOUNT_INFO,
         isSyncEnabledForAutofillProfiles: true,
       };
       paymentsManager.lastCallback.setPersonalDataManagerListener!
@@ -313,7 +313,7 @@ suite('PasswordsAndForms', function() {
       const cardList = [createCreditCardEntry(), createCreditCardEntry()];
       const ibanList = [createIbanEntry(), createIbanEntry()];
       const accountInfo = {
-        email: 'stub-user@example.com',
+        ...STUB_USER_ACCOUNT_INFO,
         isSyncEnabledForAutofillProfiles: true,
       };
       paymentsManager.lastCallback.setPersonalDataManagerListener!
@@ -511,8 +511,8 @@ suite('PasswordsUITest', function() {
     assertTrue(autofillSection.$.passwordManagerButton.external);
 
     autofillSection.$.passwordManagerButton.click();
-    const url = await openWindowProxy.whenCalled('openUrl');
-    assertEquals(url, 'chrome://password-manager');
+    const param = await passwordManager.whenCalled('showPasswordManager');
+    assertEquals(PasswordManagerPage.PASSWORDS, param);
   });
 
   test('New Password Manager UI disabled', async function() {

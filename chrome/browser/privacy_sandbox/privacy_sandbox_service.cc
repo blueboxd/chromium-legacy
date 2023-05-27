@@ -29,6 +29,7 @@
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/first_party_sets_handler.h"
@@ -245,11 +246,14 @@ PrivacySandboxService::PrivacySandboxService(
     // Disable trials prefs.
     pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, false);
 
-    // Disable M1 prefs.
+    // Disable M1 prefs. Measurement pref should not be reset when restricted
+    // notice feature is enabled.
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1TopicsEnabled, false);
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1FledgeEnabled, false);
-    pref_service_->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled,
-                              false);
+    if (!privacy_sandbox::kPrivacySandboxSettings4RestrictedNotice.Get()) {
+      pref_service_->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled,
+                                false);
+    }
 
     // Clear any recorded consent information.
     pref_service_->ClearPref(prefs::kPrivacySandboxTopicsConsentGiven);
@@ -258,6 +262,15 @@ PrivacySandboxService::PrivacySandboxService(
         prefs::kPrivacySandboxTopicsConsentLastUpdateReason);
     pref_service_->ClearPref(
         prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate);
+  }
+
+  // kRestricted prompt suppression reason must be cleared at startup when
+  // restricted notice feature is enabled.
+  if (privacy_sandbox::kPrivacySandboxSettings4RestrictedNotice.Get() &&
+      static_cast<PromptSuppressedReason>(
+          pref_service->GetInteger(prefs::kPrivacySandboxM1PromptSuppressed)) ==
+          PromptSuppressedReason::kRestricted) {
+    pref_service_->ClearPref(prefs::kPrivacySandboxM1PromptSuppressed);
   }
 
   // Check for FPS pref init at each startup.
@@ -359,6 +372,8 @@ void PrivacySandboxService::PromptActionOccurredM1(
     RecordUpdatedTopicsConsent(
         privacy_sandbox::TopicsConsentUpdateSource::kConfirmation, false);
   }
+  // TODO(crbug.com/1428506): Handle PromptAction::kRestrictedNoticeAcknowledge
+  // and PromptAction::kRestrictedNoticeOpenSettings.
 }
 
 // static
@@ -421,6 +436,10 @@ bool PrivacySandboxService::IsPrivacySandboxManaged() {
 
 bool PrivacySandboxService::IsPrivacySandboxRestricted() {
   return privacy_sandbox_settings_->IsPrivacySandboxRestricted();
+}
+
+bool PrivacySandboxService::IsRestrictedNoticeEnabled() {
+  return privacy_sandbox_settings_->IsRestrictedNoticeEnabled();
 }
 
 void PrivacySandboxService::SetPrivacySandboxEnabled(bool enabled) {
@@ -940,7 +959,9 @@ PrivacySandboxService::GetSampleFirstPartySets() const {
             {net::SchemefulSite(GURL("https://chromium.org")),
              net::SchemefulSite(GURL("https://chromium.org"))},
             {net::SchemefulSite(GURL("https://googlesource.com")),
-             net::SchemefulSite(GURL("https://chromium.org"))}};
+             net::SchemefulSite(GURL("https://chromium.org"))},
+            {net::SchemefulSite(GURL("https://muenchen.de")),
+             net::SchemefulSite(GURL("https://xn--mnchen-3ya.de"))}};
   }
 
   return {};
@@ -991,9 +1012,7 @@ PrivacySandboxService::GetFirstPartySetOwnerForDisplay(
     return absl::nullopt;
   }
 
-  // TODO(crbug.com/1332513): Apply formatting that correctly displays unicode
-  // domains.
-  return base::UTF8ToUTF16(site_owner->GetURL().host());
+  return url_formatter::IDNToUnicode(site_owner->GetURL().host());
 }
 
 bool PrivacySandboxService::IsPartOfManagedFirstPartySet(
@@ -1265,6 +1284,11 @@ PrivacySandboxService::GetRequiredPromptTypeInternalM1(
   if (privacy_sandbox::kPrivacySandboxSettings4ForceShowNoticeEeaForTesting
           .Get()) {
     return PromptType::kM1NoticeEEA;
+  }
+
+  if (privacy_sandbox::
+          kPrivacySandboxSettings4ForceShowNoticeRestrictedForTesting.Get()) {
+    return PromptType::kM1NoticeRestricted;
   }
 
   // If this a non-Chrome build, do not show a prompt.
@@ -1620,6 +1644,16 @@ void PrivacySandboxService::RecordPromptActionMetrics(
     case (PromptAction::kNoticeMoreButtonClicked): {
       base::RecordAction(base::UserMetricsAction(
           "Settings.PrivacySandbox.Notice.MoreButtonClicked"));
+      break;
+    }
+    case (PromptAction::kRestrictedNoticeAcknowledge): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.RestrictedNotice.Acknowledged"));
+      break;
+    }
+    case (PromptAction::kRestrictedNoticeOpenSettings): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.RestrictedNotice.OpenedSettings"));
       break;
     }
   }

@@ -15,22 +15,23 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_histogram_enums.h"
 #include "ash/wm/desks/desks_restore_util.h"
+#include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/scoped_observation.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/timer/timer.h"
 #include "base/types/expected.h"
+#include "base/uuid.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -157,7 +158,7 @@ class DesksClient::LaunchPerformanceTracker
     : public app_restore::AppRestoreInfo::Observer {
  public:
   LaunchPerformanceTracker(const std::set<int>& window_ids,
-                           base::GUID template_id,
+                           base::Uuid template_id,
                            DesksClient* templates_client)
       : tracked_window_ids_(window_ids),
         time_launch_started_(base::Time::Now()),
@@ -195,7 +196,14 @@ class DesksClient::LaunchPerformanceTracker
   void MaybeRecordMetric() {
     if (tracked_window_ids_.empty()) {
       RecordTimeToLoadTemplateHistogram(time_launch_started_);
-      templates_client_->RemoveLaunchPerformanceTracker(template_id_);
+
+      // Remove this tracker. We do this async since this function may be called
+      // from DesksClient code that iterates over the map of trackers. See
+      // http://b/271156600 for more info.
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&DesksClient::RemoveLaunchPerformanceTracker,
+                         base::Unretained(templates_client_), template_id_));
     }
   }
 
@@ -207,13 +215,13 @@ class DesksClient::LaunchPerformanceTracker
 
   std::set<int> tracked_window_ids_;
   base::Time time_launch_started_;
-  base::GUID template_id_;
+  base::Uuid template_id_;
   std::unique_ptr<base::OneShotTimer> timeout_timer_;
 
   // Pointer back to the owning templates client. This is done to facilitate
   // this object's removal from the mapping of template id's to trackers after
   // this object has recorded its metric.
-  DesksClient* templates_client_;
+  raw_ptr<DesksClient, ExperimentalAsh> templates_client_;
 
   base::ScopedObservation<app_restore::AppRestoreInfo,
                           app_restore::AppRestoreInfo::Observer>
@@ -259,24 +267,15 @@ void DesksClient::OnActiveUserSessionChanged(const AccountId& account_id) {
   active_profile_ = profile;
   DCHECK(active_profile_);
 
-  if (ash::features::IsSavedDesksEnabled()) {
-    save_and_recall_desks_storage_manager_ =
-        std::make_unique<desks_storage::LocalDeskDataManager>(
-            active_profile_->GetPath(), account_id);
+  save_and_recall_desks_storage_manager_ =
+      std::make_unique<desks_storage::LocalDeskDataManager>(
+          active_profile_->GetPath(), account_id);
 
-    if (ash::saved_desk_util::AreDesksTemplatesEnabled() &&
-        ash::features::IsDeskTemplateSyncEnabled()) {
-      saved_desk_storage_manager_ =
-          std::make_unique<desks_storage::DeskModelWrapper>(
-              save_and_recall_desks_storage_manager_.get());
-    }
-
-  } else {
-    if (!ash::features::IsDeskTemplateSyncEnabled()) {
-      desk_templates_storage_manager_ =
-          std::make_unique<desks_storage::LocalDeskDataManager>(
-              active_profile_->GetPath(), account_id);
-    }
+  if (ash::saved_desk_util::AreDesksTemplatesEnabled() &&
+      ash::features::IsDeskTemplateSyncEnabled()) {
+    saved_desk_storage_manager_ =
+        std::make_unique<desks_storage::DeskModelWrapper>(
+            save_and_recall_desks_storage_manager_.get());
   }
 
   auto policy_desk_templates_it =
@@ -321,7 +320,7 @@ void DesksClient::CaptureActiveDesk(
       /*root_window_to_show=*/nullptr);
 }
 
-void DesksClient::DeleteDeskTemplate(const base::GUID& template_uuid,
+void DesksClient::DeleteDeskTemplate(const base::Uuid& template_uuid,
                                      DeleteDeskTemplateCallback callback) {
   if (!active_profile_) {
     std::move(callback).Run(DeskActionError::kNoCurrentUserError);
@@ -351,7 +350,7 @@ void DesksClient::GetDeskTemplates(GetDeskTemplatesCallback callback) {
       result.entries);
 }
 
-void DesksClient::GetTemplateJson(const base::GUID& uuid,
+void DesksClient::GetTemplateJson(const base::Uuid& uuid,
                                   Profile* profile,
                                   GetTemplateJsonCallback callback) {
   if (!active_profile_ || active_profile_ != profile) {
@@ -370,7 +369,7 @@ void DesksClient::GetTemplateJson(const base::GUID& uuid,
 }
 
 void DesksClient::LaunchDeskTemplate(
-    const base::GUID& template_uuid,
+    const base::Uuid& template_uuid,
     LaunchDeskCallback callback,
     const std::u16string& customized_desk_name) {
   if (!active_profile_) {
@@ -393,7 +392,7 @@ void DesksClient::LaunchDeskTemplate(
                              result.status, std::move(result.entry));
 }
 
-base::expected<const base::GUID, DesksClient::DeskActionError>
+base::expected<const base::Uuid, DesksClient::DeskActionError>
 DesksClient::LaunchEmptyDesk(const std::u16string& customized_desk_name) {
   if (!desks_controller_->CanCreateDesks()) {
     return base::unexpected(DeskActionError::kDesksCountCheckFailedError);
@@ -410,7 +409,7 @@ DesksClient::LaunchEmptyDesk(const std::u16string& customized_desk_name) {
 }
 
 absl::optional<DesksClient::DeskActionError> DesksClient::RemoveDesk(
-    const base::GUID& desk_uuid,
+    const base::Uuid& desk_uuid,
     bool combine_desk) {
   // Return error if `desk_uuid` is invalid.
   if (!desk_uuid.is_valid()) {
@@ -508,27 +507,17 @@ void DesksClient::LaunchAppsFromTemplate(
 }
 
 desks_storage::DeskModel* DesksClient::GetDeskModel() {
-  if (ash::features::IsSavedDesksEnabled()) {
-    if (!ash::saved_desk_util::AreDesksTemplatesEnabled() ||
-        !ash::features::IsDeskTemplateSyncEnabled()) {
-      DCHECK(save_and_recall_desks_storage_manager_.get());
-      return save_and_recall_desks_storage_manager_.get();
-    }
+  if (!ash::saved_desk_util::AreDesksTemplatesEnabled() ||
+      !ash::features::IsDeskTemplateSyncEnabled()) {
+    DCHECK(save_and_recall_desks_storage_manager_.get());
+    return save_and_recall_desks_storage_manager_.get();
+  }
     DCHECK(saved_desk_storage_manager_);
     saved_desk_storage_manager_->SetDeskSyncBridge(
         static_cast<desks_storage::DeskSyncBridge*>(
             DeskSyncServiceFactory::GetForProfile(active_profile_)
                 ->GetDeskModel()));
     return saved_desk_storage_manager_.get();
-  } else {
-    if (ash::features::IsDeskTemplateSyncEnabled()) {
-      return DeskSyncServiceFactory::GetForProfile(active_profile_)
-          ->GetDeskModel();
-    }
-
-    DCHECK(desk_templates_storage_manager_.get());
-    return desk_templates_storage_manager_.get();
-  }
 }
 
 // Sets the preconfigured desk template. Data contains the contents of the JSON
@@ -589,12 +578,12 @@ DesksClient::SetAllDeskPropertyByBrowserSessionId(SessionID browser_session_id,
   return absl::nullopt;
 }
 
-base::GUID DesksClient::GetActiveDesk() {
+base::Uuid DesksClient::GetActiveDesk() {
   return desks_controller_->GetTargetActiveDesk()->uuid();
 }
 
 base::expected<const ash::Desk*, DesksClient::DeskActionError>
-DesksClient::GetDeskByID(const base::GUID& desk_uuid) const {
+DesksClient::GetDeskByID(const base::Uuid& desk_uuid) const {
   ash::Desk* desk = desks_controller_->GetDeskByUuid(desk_uuid);
   if (!desk) {
     return base::unexpected(DeskActionError::kResourceNotFoundError);
@@ -603,7 +592,7 @@ DesksClient::GetDeskByID(const base::GUID& desk_uuid) const {
 }
 
 absl::optional<DesksClient::DeskActionError> DesksClient::SwitchDesk(
-    const base::GUID& desk_uuid) {
+    const base::Uuid& desk_uuid) {
   ash::Desk* desk = desks_controller_->GetDeskByUuid(desk_uuid);
   if (!desk) {
     return DeskActionError::kResourceNotFoundError;
@@ -738,7 +727,7 @@ void DesksClient::OnDeleteDeskTemplate(
 
 void DesksClient::OnRecallSavedDesk(
     DesksClient::LaunchDeskCallback callback,
-    const base::GUID& desk_id,
+    const base::Uuid& desk_id,
     desks_storage::DeskModel::DeleteEntryStatus status) {
   std::move(callback).Run(
       status != desks_storage::DeskModel::DeleteEntryStatus::kOk
@@ -782,7 +771,8 @@ void DesksClient::OnLaunchComplete(int32_t launch_id) {
   app_launch_handlers_.erase(launch_id);
 }
 
-void DesksClient::RemoveLaunchPerformanceTracker(base::GUID tracker_uuid) {
+void DesksClient::RemoveLaunchPerformanceTracker(
+    const base::Uuid& tracker_uuid) {
   template_ids_to_launch_performance_trackers_.erase(tracker_uuid);
 }
 

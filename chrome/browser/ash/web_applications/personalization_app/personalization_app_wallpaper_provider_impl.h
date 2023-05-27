@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_PERSONALIZATION_APP_WALLPAPER_PROVIDER_IMPL_H_
 
 #include "ash/webui/personalization_app/personalization_app_wallpaper_provider.h"
+#include "base/memory/raw_ptr.h"
 
 #include <stdint.h>
 
@@ -22,7 +23,7 @@
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "chrome/browser/ash/wallpaper_handlers/backdrop_fetcher_delegate.h"
+#include "chrome/browser/ash/wallpaper_handlers/wallpaper_fetcher_delegate.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -46,7 +47,7 @@ class WebUI;
 
 namespace wallpaper_handlers {
 class BackdropCollectionInfoFetcher;
-class BackdropFetcherDelegate;
+class WallpaperFetcherDelegate;
 class BackdropImageInfoFetcher;
 class GooglePhotosAlbumsFetcher;
 class GooglePhotosSharedAlbumsFetcher;
@@ -58,9 +59,6 @@ class Profile;
 
 namespace ash::personalization_app {
 
-using SetDailyRefreshCallback =
-    base::OnceCallback<void(mojom::SetDailyRefreshResponsePtr)>;
-
 // Implemented in //chrome because this relies on chrome |wallpaper_handlers|
 // code.
 class PersonalizationAppWallpaperProviderImpl
@@ -69,8 +67,8 @@ class PersonalizationAppWallpaperProviderImpl
  public:
   PersonalizationAppWallpaperProviderImpl(
       content::WebUI* web_ui,
-      std::unique_ptr<wallpaper_handlers::BackdropFetcherDelegate>
-          backdrop_fetcher_delegate);
+      std::unique_ptr<wallpaper_handlers::WallpaperFetcherDelegate>
+          wallpaper_fetcher_delegate);
 
   PersonalizationAppWallpaperProviderImpl(
       const PersonalizationAppWallpaperProviderImpl&) = delete;
@@ -164,16 +162,18 @@ class PersonalizationAppWallpaperProviderImpl
       bool preview_mode,
       SelectGooglePhotosPhotoCallback callback) override;
 
-  void SelectGooglePhotosAlbum(const std::string& album_id,
-                               SetDailyRefreshCallback callback) override;
+  void SelectGooglePhotosAlbum(
+      const std::string& album_id,
+      SelectGooglePhotosAlbumCallback callback) override;
 
   void GetGooglePhotosDailyRefreshAlbumId(
       GetGooglePhotosDailyRefreshAlbumIdCallback callback) override;
 
   void SetCurrentWallpaperLayout(ash::WallpaperLayout layout) override;
 
-  void SetDailyRefreshCollectionId(const std::string& collection_id,
-                                   SetDailyRefreshCallback callback) override;
+  void SetDailyRefreshCollectionId(
+      const std::string& collection_id,
+      SetDailyRefreshCollectionIdCallback callback) override;
 
   void GetDailyRefreshCollectionId(
       GetDailyRefreshCollectionIdCallback callback) override;
@@ -188,21 +188,16 @@ class PersonalizationAppWallpaperProviderImpl
   void CancelPreviewWallpaper() override;
 
   wallpaper_handlers::GooglePhotosAlbumsFetcher*
-  SetGooglePhotosAlbumsFetcherForTest(
-      std::unique_ptr<wallpaper_handlers::GooglePhotosAlbumsFetcher> fetcher);
+  GetOrCreateGooglePhotosAlbumsFetcher();
 
   wallpaper_handlers::GooglePhotosSharedAlbumsFetcher*
-  SetGooglePhotosSharedAlbumsFetcherForTest(
-      std::unique_ptr<wallpaper_handlers::GooglePhotosSharedAlbumsFetcher>
-          fetcher);
+  GetOrCreateGooglePhotosSharedAlbumsFetcher();
 
   wallpaper_handlers::GooglePhotosEnabledFetcher*
-  SetGooglePhotosEnabledFetcherForTest(
-      std::unique_ptr<wallpaper_handlers::GooglePhotosEnabledFetcher> fetcher);
+  GetOrCreateGooglePhotosEnabledFetcher();
 
   wallpaper_handlers::GooglePhotosPhotosFetcher*
-  SetGooglePhotosPhotosFetcherForTest(
-      std::unique_ptr<wallpaper_handlers::GooglePhotosPhotosFetcher> fetcher);
+  GetOrCreateGooglePhotosPhotosFetcher();
 
  private:
   friend class PersonalizationAppWallpaperProviderImplTest;
@@ -330,7 +325,7 @@ class PersonalizationAppWallpaperProviderImpl
 
   SelectGooglePhotosPhotoCallback pending_select_google_photos_photo_callback_;
 
-  SetDailyRefreshCallback pending_set_daily_refresh_callback_;
+  base::OnceCallback<void(bool success)> pending_set_daily_refresh_callback_;
 
   UpdateDailyRefreshWallpaperCallback
       pending_update_daily_refresh_wallpaper_callback_;
@@ -371,17 +366,17 @@ class PersonalizationAppWallpaperProviderImpl
   // user's background.
   std::set<base::FilePath> local_images_;
 
-  content::WebUI* const web_ui_ = nullptr;
+  const raw_ptr<content::WebUI, ExperimentalAsh> web_ui_ = nullptr;
 
   // Pointer to profile of user that opened personalization SWA. Not owned.
-  Profile* const profile_ = nullptr;
+  const raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
 
   base::ScopedObservation<ash::WallpaperController,
                           ash::WallpaperControllerObserver>
       wallpaper_controller_observer_{this};
 
-  const std::unique_ptr<wallpaper_handlers::BackdropFetcherDelegate>
-      backdrop_fetcher_delegate_;
+  const std::unique_ptr<wallpaper_handlers::WallpaperFetcherDelegate>
+      wallpaper_fetcher_delegate_;
 
   // Place near bottom of class so this is cleaned up before any pending
   // callbacks are dropped.

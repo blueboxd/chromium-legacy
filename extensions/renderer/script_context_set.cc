@@ -4,18 +4,18 @@
 
 #include "extensions/renderer/script_context_set.h"
 
-#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/task/single_thread_task_runner.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/worker_thread.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/extensions_renderer_client.h"
+#include "extensions/renderer/isolated_world_manager.h"
 #include "extensions/renderer/script_context.h"
-#include "extensions/renderer/script_injection.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -42,7 +42,8 @@ ScriptContextSet::~ScriptContextSet() {
 ScriptContext* ScriptContextSet::Register(
     blink::WebLocalFrame* frame,
     const v8::Local<v8::Context>& v8_context,
-    int32_t world_id) {
+    int32_t world_id,
+    bool is_webview) {
   const Extension* extension =
       GetExtensionFromFrameAndWorld(frame, world_id, false);
   const Extension* effective_extension =
@@ -58,20 +59,15 @@ ScriptContext* ScriptContextSet::Register(
         ExtensionFrameHelper::Get(render_frame);
     DCHECK(frame_helper);
     view_type = frame_helper->view_type();
-    // We should only find an offscreen document if the corresponding feature
-    // is enabled.
-    DCHECK(base::FeatureList::IsEnabled(
-               extensions_features::kExtensionsOffscreenDocuments) ||
-           view_type != mojom::ViewType::kOffscreenDocument);
   }
   GURL frame_url = ScriptContext::GetDocumentLoaderURLForFrame(frame);
   Feature::Context context_type = ClassifyJavaScriptContext(
       extension, world_id, frame_url, frame->GetDocument().GetSecurityOrigin(),
-      view_type);
+      view_type, is_webview);
   Feature::Context effective_context_type = ClassifyJavaScriptContext(
       effective_extension, world_id,
       ScriptContext::GetEffectiveDocumentURLForContext(frame, frame_url, true),
-      frame->GetDocument().GetSecurityOrigin(), view_type);
+      frame->GetDocument().GetSecurityOrigin(), view_type, is_webview);
 
   ScriptContext* context =
       new ScriptContext(v8_context, frame, extension, context_type,
@@ -168,7 +164,8 @@ const Extension* ScriptContextSet::GetExtensionFromFrameAndWorld(
   std::string extension_id;
   if (world_id != 0) {
     // Isolated worlds (content script).
-    extension_id = ScriptInjection::GetHostIdForIsolatedWorld(world_id);
+    extension_id =
+        IsolatedWorldManager::GetInstance().GetHostIdForIsolatedWorld(world_id);
   } else {
     // For looking up the extension associated with this frame, we either want
     // to use the current url or possibly the data source url (which this frame
@@ -200,15 +197,28 @@ Feature::Context ScriptContextSet::ClassifyJavaScriptContext(
     int32_t world_id,
     const GURL& url,
     const blink::WebSecurityOrigin& origin,
-    mojom::ViewType view_type) {
-  // WARNING: This logic must match ProcessMap::GetContextType, as much as
-  // possible.
+    mojom::ViewType view_type,
+    bool is_webview) {
+  // WARNING: This logic must match `ProcessMap::GetMostLikelyContextType()`
+  // as much as possible.
 
   // Worlds not within this range are not for content scripts, so ignore them.
   // TODO(devlin): Isolated worlds with a non-zero id could belong to
   // chrome-internal pieces, like dom distiller and translate. Do we need any
   // bindings (even those for basic web pages) for those?
   if (world_id >= ExtensionsRendererClient::Get()->GetLowestIsolatedWorldId()) {
+    // A non-main-world should (currently) only ever happen on the main thread.
+    // We don't support injection of content scripts or user scripts into worker
+    // contexts.
+    CHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
+    absl::optional<mojom::ExecutionWorld> execution_world =
+        IsolatedWorldManager::GetInstance().GetExecutionWorldForIsolatedWorld(
+            world_id);
+    if (execution_world == mojom::ExecutionWorld::kUserScript) {
+      CHECK(extension);
+      return Feature::USER_SCRIPT_CONTEXT;
+    }
+
     return extension ?  // TODO(kalman): when does this happen?
                Feature::CONTENT_SCRIPT_CONTEXT
                      : Feature::UNSPECIFIED_CONTEXT;
@@ -238,8 +248,14 @@ Feature::Context ScriptContextSet::ClassifyJavaScriptContext(
 
     if (is_lock_screen_context_)
       return Feature::LOCK_SCREEN_EXTENSION_CONTEXT;
+
+    if (is_webview) {
+      return Feature::UNBLESSED_EXTENSION_CONTEXT;
+    }
+
     if (view_type == mojom::ViewType::kOffscreenDocument)
       return Feature::OFFSCREEN_EXTENSION_CONTEXT;
+
     return Feature::BLESSED_EXTENSION_CONTEXT;
   }
 

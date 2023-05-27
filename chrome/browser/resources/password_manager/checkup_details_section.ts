@@ -8,6 +8,7 @@ import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import './shared_style.css.js';
 import './checkup_list_item.js';
 
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -17,7 +18,6 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {getTemplate} from './checkup_details_section.html.js';
 import {CheckupListItemElement} from './checkup_list_item.js';
 import {CredentialsChangedListener, PasswordCheckInteraction, PasswordManagerImpl} from './password_manager_proxy.js';
-import {PrefMixin} from './prefs/pref_mixin.js';
 import {CheckupSubpage, Page, Route, RouteObserverMixin, Router} from './router.js';
 
 export class ReusedPasswordInfo {
@@ -36,6 +36,7 @@ export class ReusedPasswordInfo {
 
 export interface CheckupDetailsSectionElement {
   $: {
+    backButton: HTMLElement,
     description: HTMLElement,
     moreActionsMenu: CrActionMenuElement,
     menuShowPassword: HTMLButtonElement,
@@ -46,7 +47,7 @@ export interface CheckupDetailsSectionElement {
 }
 
 const CheckupDetailsSectionElementBase =
-    PrefMixin(I18nMixin(RouteObserverMixin(PolymerElement)));
+    PrefsMixin(I18nMixin(RouteObserverMixin(PolymerElement)));
 
 export class CheckupDetailsSectionElement extends
     CheckupDetailsSectionElementBase {
@@ -89,6 +90,12 @@ export class CheckupDetailsSectionElement extends
         type: Object,
         value: new Set(),
       },
+
+      isMutingDisabled_: {
+        type: Boolean,
+        computed: 'computeIsMutingDisabled_(' +
+            'prefs.profile.password_dismiss_compromised_alert.value)',
+      },
     };
   }
 
@@ -102,14 +109,10 @@ export class CheckupDetailsSectionElement extends
       chrome.passwordsPrivate.PasswordUiEntry[];
   private activeListItem_: CheckupListItemElement|null;
   private clickedChangePasswordIds_: Set<number>;
+  private isMutingDisabled_: boolean;
   private activeCredential_: chrome.passwordsPrivate.PasswordUiEntry|undefined;
   private insecureCredentialsChangedListener_: CredentialsChangedListener|null =
       null;
-
-  constructor() {
-    super();
-    this.prefKey = 'profile.password_dismiss_compromised_alert';
-  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -131,11 +134,15 @@ export class CheckupDetailsSectionElement extends
         this.insecureCredentialsChangedListener_);
   }
 
-  override currentRouteChanged(route: Route, _: Route): void {
+  override currentRouteChanged(route: Route, oldRoute: Route): void {
     if (route.page !== Page.CHECKUP_DETAILS) {
       return;
     }
     this.insecurityType_ = route.details as unknown as CheckupSubpage;
+    // Focus back button when it's not direct navigation.
+    if (oldRoute !== undefined) {
+      this.$.backButton.focus();
+    }
   }
 
   private navigateBack_() {
@@ -250,8 +257,8 @@ export class CheckupDetailsSectionElement extends
     return this.activeListItem_?.getShowHideButtonLabel() || '';
   }
 
-  private isMutingDisabledByPrefs_(): boolean {
-    return !!this.pref && this.pref.value === false;
+  private computeIsMutingDisabled_(): boolean {
+    return !this.getPref('profile.password_dismiss_compromised_alert').value;
   }
 
   private getMuteUnmuteLabel_(): string {
@@ -285,6 +292,8 @@ export class CheckupDetailsSectionElement extends
   private onChangePasswordClick_(event: CustomEvent<number>) {
     this.clickedChangePasswordIds_.add(event.detail);
     this.notifyPath('clickedChangePasswordIds_.size');
+    PasswordManagerImpl.getInstance().recordPasswordCheckInteraction(
+        PasswordCheckInteraction.CHANGE_PASSWORD);
   }
 
   private clickedChangePassword_(item: chrome.passwordsPrivate.PasswordUiEntry):

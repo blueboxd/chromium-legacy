@@ -23,7 +23,10 @@ import '//resources/cr_elements/cr_button/cr_button.js';
 import '//resources/cr_elements/cr_dialog/cr_dialog.js';
 import '//resources/cr_elements/cr_input/cr_input.js';
 import '//resources/cr_elements/cr_shared_style.css.js';
-import '../settings_shared.css.js';
+// <if expr='chromeos_ash'>
+import '//resources/cr_elements/chromeos/cros_color_overrides.css.js';
+
+// </if>
 
 import {CrDialogElement} from '//resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrInputElement} from '//resources/cr_elements/cr_input/cr_input.js';
@@ -108,7 +111,7 @@ class SettingsPasswordPromptDialogElement extends PolymerElement {
     }, 1);
   }
 
-  private onCancelTap_() {
+  private onCancelClick_() {
     if (this.$.dialog.open) {
       this.$.dialog.close();
     }

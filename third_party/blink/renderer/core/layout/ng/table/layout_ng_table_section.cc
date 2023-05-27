@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
 
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
 #include "third_party/blink/renderer/core/layout/ng/table/ng_table_borders.h"
@@ -14,9 +14,30 @@ namespace blink {
 LayoutNGTableSection::LayoutNGTableSection(Element* element)
     : LayoutNGMixin<LayoutBlock>(element) {}
 
+LayoutNGTableSection* LayoutNGTableSection::CreateAnonymousWithParent(
+    const LayoutObject& parent) {
+  scoped_refptr<const ComputedStyle> new_style =
+      parent.GetDocument().GetStyleResolver().CreateAnonymousStyleWithDisplay(
+          parent.StyleRef(), EDisplay::kTableRowGroup);
+  auto* new_section = MakeGarbageCollected<LayoutNGTableSection>(nullptr);
+  new_section->SetDocumentForAnonymous(&parent.GetDocument());
+  new_section->SetStyle(std::move(new_style));
+  return new_section;
+}
+
 bool LayoutNGTableSection::IsEmpty() const {
   NOT_DESTROYED();
   return !FirstChild();
+}
+
+LayoutNGTableRow* LayoutNGTableSection::FirstRow() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableRow>(FirstChild());
+}
+
+LayoutNGTableRow* LayoutNGTableSection::LastRow() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableRow>(LastChild());
 }
 
 LayoutNGTable* LayoutNGTableSection::Table() const {
@@ -63,8 +84,7 @@ void LayoutNGTableSection::AddChild(LayoutObject* child,
       return;
     }
 
-    LayoutObject* row =
-        LayoutObjectFactory::CreateAnonymousTableRowWithParent(*this);
+    auto* row = LayoutNGTableRow::CreateAnonymousWithParent(*this);
     AddChild(row, before_child);
     row->AddChild(child);
     return;
@@ -105,27 +125,13 @@ void LayoutNGTableSection::StyleDidChange(StyleDifference diff,
 LayoutBox* LayoutNGTableSection::CreateAnonymousBoxWithSameTypeAs(
     const LayoutObject* parent) const {
   NOT_DESTROYED();
-  return LayoutObjectFactory::CreateAnonymousTableSectionWithParent(*parent);
-}
-
-LayoutNGTableInterface* LayoutNGTableSection::TableInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableInterface>(Parent());
+  return CreateAnonymousWithParent(*parent);
 }
 
 void LayoutNGTableSection::SetNeedsCellRecalc() {
+  // TODO(1229581): See if we can get rid of this.
   NOT_DESTROYED();
   SetNeedsLayout(layout_invalidation_reason::kDomChanged);
-}
-
-LayoutNGTableRowInterface* LayoutNGTableSection::FirstRowInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableRowInterface>(FirstChild());
-}
-
-LayoutNGTableRowInterface* LayoutNGTableSection::LastRowInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableRowInterface>(LastChild());
 }
 
 // TODO(crbug.com/1079133): Used by AXLayoutObject::IsDataTable, verify

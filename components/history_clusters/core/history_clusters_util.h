@@ -23,15 +23,6 @@ enum class ClusteringRequestSource;
 // should be separately canonicalized by TemplateURLService and not sent here.
 GURL ComputeURLForDeduping(const GURL& url);
 
-// Generates a keyword from the URL used for looking up relevant clusters to a
-// given URL. Does everything that ComputeURLForDeduping() does and additionally
-// applies history::VisitSegmentDatabase::ComputeSegmentName() to the resulting
-// URL to maximize coverage.
-//
-// Note, this is NOT meant to be applied to Search Result Page URLs. Those
-// should be separately canonicalized by TemplateURLService and not sent here.
-std::string ComputeURLKeywordForLookup(const GURL& url);
-
 // Returns a string suitable for display in the Journeys UI from the normalized
 // visit URL. Displays the host and the path. Set `trim_after_host` to true to
 // also remove the path, query, and ref.
@@ -84,6 +75,19 @@ std::string GetHistogramNameSliceForRequestSource(
 
 // Returns whether `source` is a UI source.
 bool IsUIRequestSource(ClusteringRequestSource source);
+
+// Returns whether |visit| should be shown in the UI.
+bool IsShownVisitCandidate(const history::ClusterVisit& visit);
+
+// Returns whether `visit` could possibly be classified as one of the categories
+// in `categories`.
+bool IsVisitInCategories(const history::ClusterVisit& visit,
+                         const base::flat_set<std::string>& categories);
+
+// Returns whether `cluster` could possibly be classified as one of the
+// categories in `categories`.
+bool IsClusterInCategories(const history::Cluster& cluster,
+                           const base::flat_set<std::string>& categories);
 
 }  // namespace history_clusters
 

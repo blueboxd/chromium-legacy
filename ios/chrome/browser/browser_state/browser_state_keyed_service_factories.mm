@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/managed_bookmark_service_factory.h"
+#import "ios/chrome/browser/bring_android_tabs/bring_android_tabs_to_ios_service_factory.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #import "ios/chrome/browser/commerce/shopping_service_factory.h"
 #import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -47,6 +48,8 @@
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #import "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
+#import "ios/chrome/browser/promos_manager/promos_manager_event_exporter_factory.h"
+#import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
 #import "ios/chrome/browser/push_notification/push_notification_browser_state_service_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #import "ios/chrome/browser/safe_browsing/chrome_password_protection_service_factory.h"
@@ -177,6 +180,9 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   PolicyBlocklistServiceFactory::GetInstance();
   TrustedVaultClientBackendFactory::GetInstance();
   TextClassifierModelServiceFactory::GetInstance();
+  PromosManagerFactory::GetInstance();
+  BringAndroidTabsToIOSServiceFactory::GetInstance();
+  PromosManagerEventExporterFactory::GetInstance();
 
 #if BUILDFLAG(IOS_CREDENTIAL_PROVIDER_ENABLED)
   CredentialProviderServiceFactory::GetInstance();

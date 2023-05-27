@@ -81,7 +81,6 @@
 <translation id="2928420929544864228">ጭነት ተጠናቅቋል።</translation>
 <translation id="2977470724722393594">Chromium የተዘመነ ነው</translation>
 <translation id="2977506796191543575">አንድ ጣቢያ የእርስዎን የይለፍ ቃል ለመስረቅ ከሞከረ ወይም ጎጂ ፋይል ሲያወርዱ Chromium እንዲሁም የገጽ ይዘት ቢትስንም ጨምሮ ዩአርኤሎችን ወደ የጥንቃቄ አሰሳ ሊልክ ይችላል</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium ከኤችአይዲ መሣሪያ ጋር ተገናኝቷል}one{Chromium ከኤችአይዲ መሣሪያ ጋር ተገናኝቷል}other{Chromium ከኤችአይዲ መሣሪያዎች ጋር ተገናኝቷል}}</translation>
 <translation id="3032706164202344641">Chromium የእርስዎን የይለፍ ቃላት መፈተሽ አይችልም። ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="3032787606318309379">ወደ Chromium በማከል ላይ...</translation>
 <translation id="3038232873781883849">ለመጫን በመጠበቅ ላይ...</translation>
@@ -96,7 +95,6 @@
 <translation id="3258596308407688501">Chromium የውሂብ አቃፊው ላይ ማንበብ እና መጻፍ አይችልም፦
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Chromium እርስዎ በሚፈልጉት መንገድ እንዲሠራ ይህ መመሪያ ምርጫዎችዎን እንዲረዱ ያግዝዎታል</translation>
 <translation id="3283186697780795848">Chromium ስሪት <ph name="PRODUCT_VERSION" /> ተጭኗል</translation>
 <translation id="3286538390144397061">አሁን ዳግም አስጀምር</translation>
 <translation id="328888136576916638">የGoogle ኤ ፒ አይ ቁልፎች ይጎድላሉ። አንዳንድ የChromium ተግባራት ይሰናከላሉ።</translation>
@@ -248,8 +246,10 @@
 <translation id="6442900851116057561">ChromiumOSን ዳግም አስጀምር</translation>
 <translation id="6455857529632101747">ወደ Chromium መገለጫዎች እንኳን በደህና መጡ</translation>
 <translation id="6475912303565314141">እንዲሁም Chromiumን ሲጀምሩት የሚታየውን ገፅ ይቆጣጠራል።</translation>
+<translation id="648319183876919572">የተሻሻለ የደህንነት አሰሳ እርስዎን ከአደገኛ ድር ጣቢያዎች እና ውርዶች ለመጠበቅ ይበልጥ ያደርጋል</translation>
 <translation id="6510925080656968729">Chromiumን ያራግፉ</translation>
 <translation id="6542839706527980775">እያንዳንዱ መገለጫ እንደ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎችም ያሉ የራሱ የChromium መረጃዎችን ይይዛል</translation>
+<translation id="656935081669708576">ከሌላ የChromium መገለጫ የይለፍ ቃላትን ለማየት መቀየር ይችላሉ</translation>
 <translation id="6570579332384693436">የሥርዓተ ፊደል አጻጻፍ ስህተቶችን ለማስተካከል፣ Chromium እርስዎ በጽሁፍ መስኮች ውስጥ የሚተይቡትን ጽሁፍ ወደ Google ይልካል</translation>
 <translation id="6598877126913850652">ወደ የChromium ማሳወቂያ ቅንብሮች ይሂዱ</translation>
 <translation id="6613594504749178791">ለውጦችዎ Chromium በሚያስጀምሩበት ቀጣዩ ጊዜ ላይ ይተገበራሉ።</translation>
@@ -384,7 +384,6 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="924957577793602335">Chromiumን የራስዎ ያድርጉት</translation>
 <translation id="93478295209880648">Chromium በWindows XP ወይም Windows Vista ላይ ከእንግዲህ ስለማይደገፍ በአግባቡ ላይሰራ ይችላል</translation>
 <translation id="942598560705308788">በChromium የሚተዳደሩ የእውቅና ማረጋገጫዎች</translation>
-<translation id="959579472876010517">የChromium ምርጡን ያግኙ</translation>
 <translation id="965162752251293939">ማነው Chromiumን የሚጠቀመው?</translation>
 <translation id="967427899662692980">የChromiumን ጠንካራ ደህንነት ያግኙ</translation>
 <translation id="9792300276217204">Chromiumን በሚዘጉበት ጊዜ የጣቢያ ውሂብን ሁልጊዜ ከመሣሪያዎ ላይ ያጽዱ</translation>

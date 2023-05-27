@@ -41,6 +41,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -127,11 +128,15 @@ const std::string kFileName2 = GetDummyFileName(kAccountId2);
 
 constexpr char kChildEmail[] = "child@test.com";
 
-const std::string kDummyUrl = "https://best_wallpaper/1";
-const std::string kDummyUrl2 = "https://best_wallpaper/2";
+constexpr char kDummyUrl[] = "https://best_wallpaper/1";
+constexpr char kDummyUrl2[] = "https://best_wallpaper/2";
+constexpr char kDummyUrl3[] = "https://best_wallpaper/3";
+constexpr char kDummyUrl4[] = "https://best_wallpaper/4";
 
 const uint64_t kAssetId = 1;
 const uint64_t kAssetId2 = 2;
+const uint64_t kAssetId3 = 3;
+const uint64_t kAssetId4 = 4;
 const uint64_t kUnitId = 1;
 const uint64_t kUnitId2 = 2;
 
@@ -352,7 +357,7 @@ class TestWallpaperControllerObserver : public WallpaperControllerObserver {
   bool is_in_wallpaper_preview() const { return is_in_wallpaper_preview_; }
 
  private:
-  WallpaperController* controller_;
+  raw_ptr<WallpaperController, ExperimentalAsh> controller_;
 
   base::RepeatingClosure resize_callback_;
   base::RepeatingClosure colors_calculated_callback_;
@@ -490,7 +495,7 @@ class WallpaperControllerTest : public AshTestBase {
     const gfx::ImageSkia kImage = CreateImage(10, 10, kWallpaperColor);
     controller_->ShowWallpaperImage(
         kImage, CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
-        /*preview_mode=*/false, /*always_on_top=*/false);
+        /*preview_mode=*/false, /*is_override=*/false);
     SetSessionState(SessionState::ACTIVE);
 
     EXPECT_TRUE(ShouldCalculateColors());
@@ -729,8 +734,9 @@ class WallpaperControllerTest : public AshTestBase {
     RunAllTasksUntilIdle();
   }
 
-  WallpaperControllerImpl* controller_;
-  WallpaperPrefManager* pref_manager_ = nullptr;  // owned by controller
+  raw_ptr<WallpaperControllerImpl, ExperimentalAsh> controller_;
+  raw_ptr<WallpaperPrefManager, ExperimentalAsh> pref_manager_ =
+      nullptr;  // owned by controller
 
   base::ScopedTempDir user_data_dir_;
   base::ScopedTempDir online_wallpaper_dir_;
@@ -898,7 +904,7 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   // that the resized image is the expected size.
   controller_->ShowWallpaperImage(
       image, CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
-      /*preview_mode=*/false, /*always_on_top=*/false);
+      /*preview_mode=*/false, /*is_override=*/false);
   EXPECT_TRUE(image.BackedBySameObjectAs(controller_->GetWallpaper()));
   RunAllTasksUntilIdle();
   gfx::ImageSkia resized_image = controller_->GetWallpaper();
@@ -910,41 +916,9 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   // (http://crbug.com/321402).
   controller_->ShowWallpaperImage(
       image, CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
-      /*preview_mode=*/false, /*always_on_top=*/false);
+      /*preview_mode=*/false, /*is_override=*/false);
   RunAllTasksUntilIdle();
   EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
-}
-
-TEST_F(WallpaperControllerTest, GetMaxDisplaySize) {
-  // Device scale factor shouldn't affect the native size.
-  UpdateDisplay("1000x300*2");
-  EXPECT_EQ("1000x300",
-            WallpaperControllerImpl::GetMaxDisplaySizeInNative().ToString());
-
-  // Rotated display should return the rotated size.
-  UpdateDisplay("1000x300*2/r");
-  EXPECT_EQ("300x1000",
-            WallpaperControllerImpl::GetMaxDisplaySizeInNative().ToString());
-
-  // UI Scaling shouldn't affect the native size.
-  UpdateDisplay("1000x300*2@1.5");
-  EXPECT_EQ("1000x300",
-            WallpaperControllerImpl::GetMaxDisplaySizeInNative().ToString());
-
-  // First display has maximum size.
-  UpdateDisplay("400x300,200x100");
-  EXPECT_EQ("400x300",
-            WallpaperControllerImpl::GetMaxDisplaySizeInNative().ToString());
-
-  // Second display has maximum size.
-  UpdateDisplay("400x300,500x600");
-  EXPECT_EQ("500x600",
-            WallpaperControllerImpl::GetMaxDisplaySizeInNative().ToString());
-
-  // Maximum width and height belongs to different displays.
-  UpdateDisplay("400x300,100x500");
-  EXPECT_EQ("400x500",
-            WallpaperControllerImpl::GetMaxDisplaySizeInNative().ToString());
 }
 
 // Test that the wallpaper is always fitted to the native display resolution
@@ -969,7 +943,7 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
     SCOPED_TRACE(base::StringPrintf("1200x600*2 high resolution"));
     controller_->ShowWallpaperImage(
         image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
-        /*preview_mode=*/false, /*always_on_top=*/false);
+        /*preview_mode=*/false, /*is_override=*/false);
     WallpaperFitToNativeResolution(wallpaper_view(), high_dsf,
                                    high_resolution.width(),
                                    high_resolution.height(), kWallpaperColor);
@@ -978,7 +952,7 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
     SCOPED_TRACE(base::StringPrintf("1200x600*2 low resolution"));
     controller_->ShowWallpaperImage(
         image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
-        /*preview_mode=*/false, /*always_on_top=*/false);
+        /*preview_mode=*/false, /*is_override=*/false);
     WallpaperFitToNativeResolution(wallpaper_view(), high_dsf,
                                    low_resolution.width(),
                                    low_resolution.height(), kWallpaperColor);
@@ -989,7 +963,7 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
     SCOPED_TRACE(base::StringPrintf("1200x600 high resolution"));
     controller_->ShowWallpaperImage(
         image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
-        /*preview_mode=*/false, /*always_on_top=*/false);
+        /*preview_mode=*/false, /*is_override=*/false);
     WallpaperFitToNativeResolution(wallpaper_view(), low_dsf,
                                    high_resolution.width(),
                                    high_resolution.height(), kWallpaperColor);
@@ -998,7 +972,7 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
     SCOPED_TRACE(base::StringPrintf("1200x600 low resolution"));
     controller_->ShowWallpaperImage(
         image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
-        /*preview_mode=*/false, /*always_on_top=*/false);
+        /*preview_mode=*/false, /*is_override=*/false);
     WallpaperFitToNativeResolution(wallpaper_view(), low_dsf,
                                    low_resolution.width(),
                                    low_resolution.height(), kWallpaperColor);
@@ -1009,7 +983,7 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
     SCOPED_TRACE(base::StringPrintf("1200x600/u@1.5 high resolution"));
     controller_->ShowWallpaperImage(
         image_high_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
-        /*preview_mode=*/false, /*always_on_top=*/false);
+        /*preview_mode=*/false, /*is_override=*/false);
     WallpaperFitToNativeResolution(wallpaper_view(), low_dsf,
                                    high_resolution.width(),
                                    high_resolution.height(), kWallpaperColor);
@@ -1018,7 +992,7 @@ TEST_F(WallpaperControllerTest, DontScaleWallpaperWithCenterLayout) {
     SCOPED_TRACE(base::StringPrintf("1200x600/u@1.5 low resolution"));
     controller_->ShowWallpaperImage(
         image_low_res, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
-        /*preview_mode=*/false, /*always_on_top=*/false);
+        /*preview_mode=*/false, /*is_override=*/false);
     WallpaperFitToNativeResolution(wallpaper_view(), low_dsf,
                                    low_resolution.width(),
                                    low_resolution.height(), kWallpaperColor);
@@ -1076,7 +1050,7 @@ TEST_F(WallpaperControllerTest, ColorsCalculatedForMostRecentWallpaper) {
   old_info.location = "old";
   controller_->ShowWallpaperImage(old_image, old_info,
                                   /*preview_mode=*/false,
-                                  /*always_on_top=*/false);
+                                  /*is_override=*/false);
   // Run the controller until resize completes for the first wallpaper and
   // color calculation starts.
   run_loop.Run();
@@ -1093,7 +1067,7 @@ TEST_F(WallpaperControllerTest, ColorsCalculatedForMostRecentWallpaper) {
 
   controller_->ShowWallpaperImage(image, info,
                                   /*preview_mode=*/false,
-                                  /*always_on_top=*/false);
+                                  /*is_override=*/false);
 
   // Run until we get a notification of colors changed.
   colors_loop.Run();
@@ -1104,6 +1078,7 @@ TEST_F(WallpaperControllerTest, ColorsCalculatedForMostRecentWallpaper) {
   EXPECT_EQ(controller_->calculated_colors()->k_mean_color, SK_ColorBLUE);
   EXPECT_FALSE(pref_manager_->GetCachedKMeanColor("old"));
   EXPECT_TRUE(pref_manager_->GetCachedKMeanColor("new"));
+  EXPECT_TRUE(controller_->GetPreviewImage());
 }
 
 TEST_F(WallpaperControllerTest, CelebiNotSavedWhenJellyIsDisabled) {
@@ -1119,7 +1094,7 @@ TEST_F(WallpaperControllerTest, CelebiNotSavedWhenJellyIsDisabled) {
   const gfx::ImageSkia kImage = CreateImage(10, 10, kWallpaperColor);
   controller_->ShowWallpaperImage(kImage, wallpaper_info,
                                   /*preview_mode=*/false,
-                                  /*always_on_top=*/false);
+                                  /*is_override=*/false);
   SetSessionState(SessionState::ACTIVE);
 
   // Wait for color computation to complete.
@@ -1142,7 +1117,7 @@ TEST_F(WallpaperControllerTest, SaveCelebiColorWhenJellyActive) {
   const gfx::ImageSkia kImage = CreateImage(10, 10, kWallpaperColor);
   controller_->ShowWallpaperImage(kImage, wallpaper_info,
                                   /*preview_mode=*/false,
-                                  /*always_on_top=*/false);
+                                  /*is_override=*/false);
   SetSessionState(SessionState::ACTIVE);
 
   // Wait for color computation to complete.
@@ -1227,10 +1202,16 @@ TEST_F(WallpaperControllerTest, ProminentColor_ClearedBetweenUsers) {
 
   TestWallpaperControllerObserver observer(controller_);
 
+  // No notifications should have occurred yet.
+  EXPECT_EQ(0, observer.colors_changed_count());
+
   // Show wallpaper for account 1.
   controller_->ShowUserWallpaper(kAccountId1,
                                  user_manager::UserType::USER_TYPE_REGULAR);
   task_environment()->RunUntilIdle();
+
+  // Should have received a notification for the cached colors.
+  EXPECT_EQ(1, observer.colors_changed_count());
 
   // Verify that we can retrieve the prominent color.
   EXPECT_EQ(SK_ColorGREEN, controller_->GetProminentColor(
@@ -1241,13 +1222,15 @@ TEST_F(WallpaperControllerTest, ProminentColor_ClearedBetweenUsers) {
   controller_->ShowUserWallpaper(kAccountId2,
                                  user_manager::UserType::USER_TYPE_REGULAR);
   task_environment()->RunUntilIdle();
-  // Since account 2 has not cached colors, the prominent color should be
-  // invalid.
+  // Since account 2 has not cached colors and wallpaper decoding is disabled,
+  // the prominent color should be invalid.
   EXPECT_EQ(
       kInvalidWallpaperColor,
       controller_->GetProminentColor({color_utils::LumaRange::DARK,
                                       color_utils::SaturationRange::VIBRANT}));
-  EXPECT_EQ(2, observer.colors_changed_count());
+  // We got one notification for the first user but nothing after because the
+  // wallpaper color hasn't been computed yet.
+  EXPECT_EQ(1, observer.colors_changed_count());
 }
 
 TEST_F(WallpaperControllerTest,
@@ -2282,14 +2265,14 @@ TEST_F(WallpaperControllerTest, ReloadWallpaper) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
 
-  // Show an always-on-top wallpaper.
+  // Show an override wallpaper.
   const base::FilePath image_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kGuestWallpaperLarge);
   CreateDefaultWallpapers();
   SetBypassDecode();
   ClearWallpaperCount();
-  controller_->ShowAlwaysOnTopWallpaper(image_path);
+  controller_->ShowOverrideWallpaper(image_path, /*always_on_top=*/true);
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
   // Rotating the display should trigger a wallpaper reload.
@@ -2578,7 +2561,7 @@ TEST_F(WallpaperControllerTest, WallpaperBlurDuringLockScreenTransition) {
   gfx::ImageSkia image = CreateImage(600, 400, kWallpaperColor);
   controller_->ShowWallpaperImage(
       image, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
-      /*preview_mode=*/false, /*always_on_top=*/false);
+      /*preview_mode=*/false, /*is_override=*/false);
 
   TestWallpaperControllerObserver observer(controller_);
 
@@ -2622,7 +2605,7 @@ TEST_F(WallpaperControllerTest, LockDuringOverview) {
   gfx::ImageSkia image = CreateImage(600, 400, kWallpaperColor);
   controller_->ShowWallpaperImage(
       image, CreateWallpaperInfo(WALLPAPER_LAYOUT_CENTER),
-      /*preview_mode=*/false, /*always_on_top=*/false);
+      /*preview_mode=*/false, /*is_override=*/false);
   TestWallpaperControllerObserver observer(controller_);
 
   EnterOverview();
@@ -3378,7 +3361,7 @@ TEST_F(WallpaperControllerTest, OnFirstWallpaperShown) {
   controller_->ShowWallpaperImage(CreateImage(640, 480, SK_ColorBLUE),
                                   CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
                                   /*preview_mode=*/false,
-                                  /*always_on_top=*/false);
+                                  /*is_override=*/false);
   RunAllTasksUntilIdle();
   EXPECT_EQ(SK_ColorBLUE, GetWallpaperColor());
   EXPECT_EQ(1, GetWallpaperCount());
@@ -3387,7 +3370,7 @@ TEST_F(WallpaperControllerTest, OnFirstWallpaperShown) {
   controller_->ShowWallpaperImage(CreateImage(640, 480, SK_ColorCYAN),
                                   CreateWallpaperInfo(WALLPAPER_LAYOUT_STRETCH),
                                   /*preview_mode=*/false,
-                                  /*always_on_top=*/false);
+                                  /*is_override=*/false);
   RunAllTasksUntilIdle();
   EXPECT_EQ(SK_ColorCYAN, GetWallpaperColor());
   EXPECT_EQ(2, GetWallpaperCount());
@@ -3448,7 +3431,23 @@ TEST_F(WallpaperControllerTest, ShowWallpaperForEphemeralUser) {
   EXPECT_EQ(kWallpaperColor, GetWallpaperColor());
 }
 
-TEST_F(WallpaperControllerTest, AlwaysOnTopWallpaper) {
+// Base class for `WallpaperControllerTest` parameterized by whether override
+// wallpapers should be shown on top of everything except for the power off
+// animation.
+class WallpaperControllerOverrideWallpaperTest
+    : public WallpaperControllerTest,
+      public testing::WithParamInterface</*always_on_top=*/bool> {
+ public:
+  // Returns whether override wallpapers should be shown on top of everything
+  // except for the power off animation given test parameterization.
+  bool always_on_top() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         WallpaperControllerOverrideWallpaperTest,
+                         /*always_on_top=*/testing::Bool());
+
+TEST_P(WallpaperControllerOverrideWallpaperTest, OverrideWallpaper) {
   CreateDefaultWallpapers();
   SetBypassDecode();
 
@@ -3461,38 +3460,40 @@ TEST_F(WallpaperControllerTest, AlwaysOnTopWallpaper) {
   EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
   EXPECT_EQ(0, ChildCountForContainer(kAlwaysOnTopWallpaperId));
 
-  // Show an always-on-top wallpaper.
+  // Show an override wallpaper.
   const base::FilePath image_path =
       base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
           switches::kGuestWallpaperLarge);
-  controller_->ShowAlwaysOnTopWallpaper(image_path);
+  controller_->ShowOverrideWallpaper(image_path, always_on_top());
   RunAllTasksUntilIdle();
   EXPECT_EQ(2, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kOneShot);
-  EXPECT_EQ(0, ChildCountForContainer(kWallpaperId));
-  EXPECT_EQ(1, ChildCountForContainer(kAlwaysOnTopWallpaperId));
+  EXPECT_EQ(always_on_top() ? 0 : 1, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(always_on_top() ? 1 : 0,
+            ChildCountForContainer(kAlwaysOnTopWallpaperId));
 
   // Subsequent wallpaper requests are ignored when the current wallpaper is
-  // always-on-top.
+  // overridden.
   controller_->ShowSigninWallpaper();
   RunAllTasksUntilIdle();
   EXPECT_EQ(2, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kOneShot);
-  EXPECT_EQ(0, ChildCountForContainer(kWallpaperId));
-  EXPECT_EQ(1, ChildCountForContainer(kAlwaysOnTopWallpaperId));
+  EXPECT_EQ(always_on_top() ? 0 : 1, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(always_on_top() ? 1 : 0,
+            ChildCountForContainer(kAlwaysOnTopWallpaperId));
 
-  // The wallpaper reverts to the default after the always-on-top wallpaper is
+  // The wallpaper reverts to the default after the override wallpaper is
   // removed.
-  controller_->RemoveAlwaysOnTopWallpaper();
+  controller_->RemoveOverrideWallpaper();
   RunAllTasksUntilIdle();
   EXPECT_EQ(3, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kDefault);
   EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
   EXPECT_EQ(0, ChildCountForContainer(kAlwaysOnTopWallpaperId));
 
-  // Calling |RemoveAlwaysOnTopWallpaper| is a no-op when the current wallpaper
-  // is not always-on-top.
-  controller_->RemoveAlwaysOnTopWallpaper();
+  // Calling |RemoveOverrideWallpaper()| is a no-op when the current wallpaper
+  // is not overridden.
+  controller_->RemoveOverrideWallpaper();
   RunAllTasksUntilIdle();
   EXPECT_EQ(3, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kDefault);
@@ -4473,6 +4474,78 @@ TEST_F(WallpaperControllerTest, WallpaperCustomization_UnusedForNonDefault) {
   // Verify that we still use the online wallpaper. i.e. did not switch to
   // default.
   EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kOnline);
+}
+
+TEST_F(WallpaperControllerTest, TimeOfDayWallpapers_NotSyncedIn) {
+  SimulateUserLogin(kAccountId1);
+  ClearWallpaperCount();
+
+  std::vector<OnlineWallpaperVariant> variants;
+  variants.emplace_back(kAssetId, GURL(kDummyUrl),
+                        backdrop::Image::IMAGE_TYPE_LIGHT_MODE);
+  variants.emplace_back(kAssetId2, GURL(kDummyUrl2),
+                        backdrop::Image::IMAGE_TYPE_DARK_MODE);
+  variants.emplace_back(kAssetId3, GURL(kDummyUrl3),
+                        backdrop::Image::IMAGE_TYPE_MORNING_MODE);
+  variants.emplace_back(kAssetId4, GURL(kDummyUrl4),
+                        backdrop::Image::IMAGE_TYPE_LATE_AFTERNOON_MODE);
+  const OnlineWallpaperParams& params =
+      OnlineWallpaperParams(kAccountId1, kAssetId, GURL(kDummyUrl),
+                            TestWallpaperControllerClient::kDummyCollectionId,
+                            WALLPAPER_LAYOUT_CENTER_CROPPED,
+                            /*preview_mode=*/false, /*from_user=*/true,
+                            /*daily_refresh_enabled=*/false, kUnitId, variants);
+  WallpaperInfo local_info = WallpaperInfo(params);
+  local_info.unit_id = kUnitId;
+  local_info.date = DayBeforeYesterdayish();
+  pref_manager_->SetLocalWallpaperInfo(kAccountId1, local_info);
+
+  // synced info tracks a different wallpaper.
+  WallpaperInfo synced_info = {kDummyUrl, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                               WallpaperType::kOnline, base::Time::Now()};
+  pref_manager_->SetSyncedWallpaperInfo(kAccountId1, synced_info);
+  RunAllTasksUntilIdle();
+
+  WallpaperInfo actual_info;
+  EXPECT_TRUE(pref_manager_->GetUserWallpaperInfo(kAccountId1, &actual_info));
+  EXPECT_TRUE(actual_info.MatchesSelection(local_info));
+  // Verify that no new wallpaper is set.
+  EXPECT_EQ(0, GetWallpaperCount());
+}
+
+TEST_F(WallpaperControllerTest, TimeOfDayWallpapers_NotSyncedOut) {
+  SimulateUserLogin(kAccountId1);
+  ClearWallpaperCount();
+
+  // synced info tracks a different wallpaper.
+  WallpaperInfo synced_info = {kDummyUrl, WALLPAPER_LAYOUT_CENTER_CROPPED,
+                               WallpaperType::kOnline, base::Time::Now()};
+  synced_info.date = DayBeforeYesterdayish();
+  pref_manager_->SetSyncedWallpaperInfo(kAccountId1, synced_info);
+
+  std::vector<OnlineWallpaperVariant> variants;
+  variants.emplace_back(kAssetId, GURL(kDummyUrl),
+                        backdrop::Image::IMAGE_TYPE_LIGHT_MODE);
+  variants.emplace_back(kAssetId2, GURL(kDummyUrl2),
+                        backdrop::Image::IMAGE_TYPE_DARK_MODE);
+  variants.emplace_back(kAssetId3, GURL(kDummyUrl3),
+                        backdrop::Image::IMAGE_TYPE_MORNING_MODE);
+  variants.emplace_back(kAssetId4, GURL(kDummyUrl4),
+                        backdrop::Image::IMAGE_TYPE_LATE_AFTERNOON_MODE);
+  const OnlineWallpaperParams& params =
+      OnlineWallpaperParams(kAccountId1, kAssetId, GURL(kDummyUrl),
+                            TestWallpaperControllerClient::kDummyCollectionId,
+                            WALLPAPER_LAYOUT_CENTER_CROPPED,
+                            /*preview_mode=*/false, /*from_user=*/true,
+                            /*daily_refresh_enabled=*/false, kUnitId, variants);
+  WallpaperInfo local_info = WallpaperInfo(params);
+  local_info.unit_id = kUnitId;
+  pref_manager_->SetUserWallpaperInfo(kAccountId1, local_info);
+  RunAllTasksUntilIdle();
+
+  WallpaperInfo actual_info;
+  EXPECT_TRUE(pref_manager_->GetSyncedWallpaperInfo(kAccountId1, &actual_info));
+  EXPECT_TRUE(actual_info.MatchesSelection(synced_info));
 }
 
 class WallpaperControllerGooglePhotosWallpaperTest

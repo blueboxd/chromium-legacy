@@ -37,10 +37,9 @@ struct BLINK_COMMON_EXPORT InterestGroup {
   // https://github.com/WICG/turtledove/blob/main/FLEDGE.md#12-interest-group-attributes
   struct BLINK_COMMON_EXPORT Ad {
     Ad();
-    Ad(GURL render_url, absl::optional<std::string> metadata);
     Ad(GURL render_url,
-       absl::optional<std::string> size_group,
-       absl::optional<std::string> metadata);
+       absl::optional<std::string> metadata,
+       absl::optional<std::string> size_group = absl::nullopt);
     ~Ad();
 
     // Returns the approximate size of the contents of this InterestGroup::Ad,
@@ -127,7 +126,7 @@ struct BLINK_COMMON_EXPORT InterestGroup {
   absl::optional<base::flat_map<std::string, std::vector<std::string>>>
       size_groups;
 
-  static_assert(__LINE__ == 130, R"(
+  static_assert(__LINE__ == 129, R"(
 If modifying InterestGroup fields, make sure to also modify:
 
 * IsValid(), EstimateSize(), and IsEqualForTesting() in this class
@@ -141,7 +140,8 @@ If modifying InterestGroup fields, make sure to also modify:
 * bidder_worklet.cc (to pass the InterestGroup to generateBid()).
 
 In interest_group_storage.cc, add the new field and any respective indices,
-and also add a new database version and migration, and migration test.
+update `ClearExcessiveStorage()`, add a new database version and migration, and
+migration test.
 
 If the new field is to be updatable via dailyUpdateUrl, also update *all* of
 these:

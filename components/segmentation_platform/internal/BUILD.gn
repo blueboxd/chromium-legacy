@@ -83,6 +83,8 @@ static_library("internal") {
     "execution/processing/feature_list_query_processor.h",
     "execution/processing/feature_processor_state.cc",
     "execution/processing/feature_processor_state.h",
+    "execution/processing/processing_utils.cc",
+    "execution/processing/processing_utils.h",
     "execution/processing/query_processor.h",
     "execution/processing/sql_feature_processor.cc",
     "execution/processing/sql_feature_processor.h",
@@ -196,6 +198,8 @@ static_library("internal") {
 
   if (is_android) {
     sources += [
+      "android/execution/processing/custom_device_utils.cc",
+      "android/execution/processing/custom_device_utils.h",
       "android/segmentation_platform_service_android.cc",
       "android/segmentation_platform_service_android.h",
     ]
@@ -298,6 +302,8 @@ source_set("unit_tests") {
     "signals/history_delegate_impl_unittest.cc",
     "signals/mock_histogram_signal_handler.cc",
     "signals/mock_histogram_signal_handler.h",
+    "signals/mock_user_action_signal_handler.cc",
+    "signals/mock_user_action_signal_handler.h",
     "signals/signal_filter_processor_unittest.cc",
     "signals/ukm_config_unittest.cc",
     "signals/ukm_observer_unittest.cc",
@@ -372,7 +378,10 @@ bundle_data("unit_tests_bundle_data") {
 if (is_android) {
   android_library("internal_java") {
     visibility = [ "//chrome/android:chrome_all_java" ]
-    sources = [ "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java" ]
+    sources = [
+      "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java",
+      "android/java/src/org/chromium/components/segmentation_platform/execution/processing/CustomDeviceUtils.java",
+    ]
 
     deps = [
       "//base:base_java",
@@ -390,6 +399,9 @@ if (is_android) {
       "//chrome/browser",
     ]
 
-    sources = [ "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java" ]
+    sources = [
+      "android/java/src/org/chromium/components/segmentation_platform/SegmentationPlatformServiceImpl.java",
+      "android/java/src/org/chromium/components/segmentation_platform/execution/processing/CustomDeviceUtils.java",
+    ]
   }
 }

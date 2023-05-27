@@ -61,6 +61,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -297,7 +298,8 @@ public class KeyboardAccessoryModernViewTest {
             mModel.get(BAR_ITEMS).set(createAutofillChipAndTab("John", null));
         });
         KeyboardAccessoryModernView view = mKeyboardAccessoryView.take();
-        CriteriaHelper.pollUiThread(view.mBarItemsView::isShown);
+        CriteriaHelper.pollUiThread(
+                () -> view.mBarItemsView.isShown() && view.mBarItemsView.getChildAt(1) != null);
         CriteriaHelper.pollUiThread(viewsAreRightAligned(view, view.mBarItemsView.getChildAt(1)));
 
         rotateActivityToLandscape();
@@ -392,6 +394,7 @@ public class KeyboardAccessoryModernViewTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1432551")
     public void testDismissesSwipingEducationBubbleOnTap() {
         TestTracker tracker = new TestTracker() {
             @Override

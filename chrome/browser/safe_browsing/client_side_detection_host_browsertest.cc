@@ -22,7 +22,7 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/proto/client_model.pb.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/prerender_test_util.h"
@@ -71,6 +71,18 @@ class FakeClientSideDetectionService : public ClientSideDetectionService {
     return client_side_model_;
   }
 
+  // This is a fake CSD service which will have no TfLite models.
+  const base::File& GetVisualTfLiteModel() override {
+    return visual_tflite_model_;
+  }
+
+  // This is a fake CSD service which will have no thresholds due to no TfLite
+  // models.
+  const base::flat_map<std::string, TfLiteModelMetadata::Threshold>&
+  GetVisualTfLiteModelThresholds() override {
+    return thresholds_;
+  }
+
   void SetRequestCallback(const base::RepeatingClosure& closure) {
     request_callback_ = closure;
   }
@@ -95,6 +107,8 @@ class FakeClientSideDetectionService : public ClientSideDetectionService {
   ClientSideModel model_;
   std::string access_token_;
   std::string client_side_model_;
+  base::File visual_tflite_model_;
+  base::flat_map<std::string, TfLiteModelMetadata::Threshold> thresholds_;
   base::RepeatingClosure request_callback_;
   base::WeakPtrFactory<ClientSideDetectionService> weak_factory_{this};
 };

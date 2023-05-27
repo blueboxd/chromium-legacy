@@ -27,27 +27,34 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import collections
+import enum
 import functools
 import logging
 import optparse
 import re
+from dataclasses import dataclass
 from typing import (
     ClassVar,
     Collection,
     Dict,
     List,
+    NamedTuple,
     Set,
+    Tuple,
 )
+from urllib.parse import urlparse
 
 from blinkpy.common import message_pool
 from blinkpy.common.checkout.baseline_copier import BaselineCopier
+from blinkpy.common.host import Host
 from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.memoized import memoized
 from blinkpy.common.net.results_fetcher import Build
-from blinkpy.common.system.user import User
+from blinkpy.common.net.web_test_results import Artifact, WebTestResult
 from blinkpy.tool.commands.command import Command, check_dir_option
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.test_expectations import SystemConfigurationRemover, TestExpectations
+from blinkpy.web_tests.models.typ_types import RESULT_TAGS, ResultType
 from blinkpy.web_tests.port import base, factory
 
 _log = logging.getLogger(__name__)
@@ -101,60 +108,20 @@ class AbstractRebaseliningCommand(Command):
         help=('Fully-qualified name of the port that new baselines belong to, '
               'e.g. "mac-mac11". If not given, this is determined based on '
               '--builder.'))
-    test_option = optparse.make_option('--test', help='Test to rebaseline.')
-    build_number_option = optparse.make_option(
-        '--build-number',
-        default=None,
-        type='int',
-        help='Optional build number; if not given, the latest build is used.')
-    step_name_option = optparse.make_option(
-        '--step-name',
-        help=('Name of the step which ran the actual tests, and which '
-              'should be used to retrieve results from.'))
-    flag_specific_option = optparse.make_option(
-        '--flag-specific',
-        # TODO(crbug/1291020): build the list from builders.json
-        choices=[
-            "disable-site-isolation-trials", "highdpi",
-            "skia-vulkan-swiftshader"
-        ],
-        default=None,
-        action='store',
-        help=(
-            'Name of a flag-specific configuration defined in '
-            'FlagSpecificConfig. This option will rebaseline '
-            'results for the given FlagSpecificConfig while ignoring results '
-            'from other builders.'))
-    resultDB_option = optparse.make_option(
-        '--resultDB',
-        default=False,
-        action='store_true',
-        help=('Fetch results from resultDB(WIP). '
-              'Works with --test-name-file '
-              'and positional parameters'))
-
-    fetch_url_option = optparse.make_option(
-        '--fetch-url',
-        default=None,
-        action='store',
-        help=('Comma separated list of complete urls to fetch the baseline '
-              'artifact from. Developers do not need this option while '
-              'using rebaseline-cl. Default is empty. '
-              'When this is empty baselines will not be downloaded'))
 
     def __init__(self, options=None):
         super(AbstractRebaseliningCommand, self).__init__(options=options)
         self._baseline_suffix_list = BASELINE_SUFFIX_LIST
         self.expectation_line_changes = ChangeSet()
         self._tool = None
+        self._results_dir = None
         self._dry_run = False
-        self._resultdb_fetcher = False
 
     def baseline_directory(self, builder_name):
         port = self._tool.port_factory.get_from_builder_name(builder_name)
         return port.baseline_version_dir()
 
-    @property
+    @functools.cached_property
     def _host_port(self):
         return self._tool.port_factory.get()
 
@@ -212,6 +179,13 @@ class ChangeSet(object):
             self.lines_to_remove[test].extend(other.lines_to_remove[test])
 
 
+class RebaselineTask(NamedTuple):
+    test: str
+    build: Build
+    step_name: str
+    port_name: str
+
+
 class TestBaselineSet(collections.abc.Set):
     """Represents a collection of tests and platforms that can be rebaselined.
 
@@ -241,7 +215,7 @@ class TestBaselineSet(collections.abc.Set):
         """Iterates through (test, build, step, port) combinations."""
         for test, build_steps in self._test_map.items():
             for build_step in build_steps:
-                yield (test, ) + build_step
+                yield RebaselineTask(test, *build_step)
 
     def __str__(self):
         if not self._test_map:
@@ -281,6 +255,17 @@ class TestBaselineSet(collections.abc.Set):
         return self._build_steps
 
 
+class RebaselineFailureReason(enum.Enum):
+    TIMEOUT_OR_CRASH = 'May not run to completion'
+    REFTEST_FAILURE = 'Reftest failure'
+    FLAKY_OUTPUT = 'Flaky output'
+    LOCAL_BASELINE_NOT_FOUND = 'Missing from local results directory'
+
+
+RebaselineGroup = Dict[RebaselineTask, WebTestResult]
+RebaselineFailures = Dict[RebaselineTask, RebaselineFailureReason]
+
+
 class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     """Base class for rebaseline commands that do some tasks in parallel."""
     # pylint: disable=abstract-method; not overriding `execute()`
@@ -290,7 +275,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     def __init__(self, options=None):
         super(AbstractParallelRebaselineCommand,
               self).__init__(options=options)
-        self._baselines_to_copy = []
+        self.baseline_cache_stats = BaselineCacheStatistics()
+        self._rebaseline_failures = {}
 
     def _release_builders(self):
         """Returns a list of builder names for continuous release builders.
@@ -311,14 +297,14 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         build_steps_to_fetch_from = self.build_steps_to_fetch_from(
             test_baseline_set.all_build_steps())
         rebaselinable_set = TestBaselineSet(self._tool.builders)
-        port = self._tool.port_factory.get()
-        for test, build, step_name, port_name in test_baseline_set:
+        for task in test_baseline_set:
+            test, build, step_name, port_name = task
             if (build.builder_name,
                     step_name) not in build_steps_to_fetch_from:
                 continue
-            if port.reference_files(test):
-                # TODO(crbug.com/1149035): Add a `[ Failure ]` line here
-                # instead.
+            if self._host_port.reference_files(test):
+                self._rebaseline_failures[task] = (
+                    RebaselineFailureReason.REFTEST_FAILURE)
                 continue
             suffixes = list(
                 self._suffixes_for_actual_failures(test, build, step_name))
@@ -370,32 +356,10 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 | set(build_steps_to_fallback_paths[False]))
 
     def _copy_baselines(self, groups: Dict[str, TestBaselineSet]) -> None:
-        self._baselines_to_copy.clear()
         with self._message_pool(self._worker_factory) as pool:
-            pool.run([('find_baselines_to_copy', test, suffix, group)
+            pool.run([('copy_baselines', test, suffix, group)
                       for test, group in groups.items()
                       for suffix in self._suffixes_for_group(group)])
-        implicit_all_pass = [
-            dest for source, dest in self._baselines_to_copy if not source
-        ]
-        if implicit_all_pass:
-            _log.warning(
-                'The following nonexistent paths will not be rebaselined '
-                'because of explicitly provided tests or builders:')
-            for baseline in sorted(implicit_all_pass):
-                _log.warning('  %s', baseline)
-            _log.warning('These baselines risk being clobbered because they '
-                         'fall back to others that will be replaced.')
-            _log.warning(
-                'If results are expected to vary by platform or virtual suite, '
-                'consider rerunning `rebaseline-cl` without any arguments to '
-                'rebaseline the paths listed above too.')
-            _log.warning('See crbug.com/1324638 for details.')
-            if not self._tool.user.confirm(default=User.DEFAULT_NO):
-                raise RebaselineCancellation
-        with self._message_pool(self._worker_factory) as pool:
-            pool.run([('write_copy', source, dest)
-                      for source, dest in self._baselines_to_copy if source])
 
     def _group_tests_by_base(
         self,
@@ -411,10 +375,10 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         """
         groups = collections.defaultdict(
             functools.partial(TestBaselineSet, self._tool.builders))
-        port = self._tool.port_factory.get()
         tests = set(test_baseline_set.all_tests())
         for test, build, step_name, port_name in test_baseline_set:
-            nonvirtual_test = port.lookup_virtual_test_base(test) or test
+            nonvirtual_test = self._host_port.lookup_virtual_test_base(
+                test) or test
             test_for_group = (nonvirtual_test
                               if nonvirtual_test in tests else test)
             groups[test_for_group].add(test, build, step_name, port_name)
@@ -426,69 +390,24 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             *(self._suffixes_for_actual_failures(test, build, step_name)
               for test, build, step_name, _ in test_baseline_set))
 
-    def _rebaseline_args(self,
-                         test,
-                         suffixes,
-                         port_name=None,
-                         flag_specific=None,
-                         verbose=False):
-        args = []
-        if verbose:
-            args.append('--verbose')
-        args.extend([
-            '--test',
-            test,
-            # Sort suffixes so we can have a deterministic order for comparing
-            # commands in unit tests.
-            '--suffixes',
-            ','.join(sorted(suffixes)),
-        ])
-        if port_name:
-            args.extend(['--port-name', port_name])
-        if flag_specific:
-            args.extend(['--flag-specific', flag_specific])
-        return args
+    def _download_baselines(self, groups: Dict[str, TestBaselineSet]):
+        with self._message_pool(self._worker_factory) as pool:
+            # The same worker should download all the baselines in a group so
+            # that its baseline cache is effective.
+            pool.run([('download_baselines', self._group_with_results(group))
+                      for group in groups.values()])
 
-    def _rebaseline_commands(self, test_baseline_set, options):
-        path_to_blink_tool = self._tool.path()
-        rebaseline_commands = []
-        for test, build, step_name, port_name in test_baseline_set:
-            suffixes = list(
-                self._suffixes_for_actual_failures(test, build, step_name))
-            assert suffixes, '(%s, %s, %s) should not be rebaselined' % (
-                test, build, step_name)
-            flag_spec_option = self._tool.builders.flag_specific_option(
-                build.builder_name, step_name)
-
-            args = self._rebaseline_args(test, suffixes, port_name,
-                                         flag_spec_option, options.verbose)
-            args.extend(['--builder', build.builder_name])
-            if build.build_number:
-                args.extend(['--build-number', str(build.build_number)])
-            if options.results_directory:
-                args.extend(['--results-directory', options.results_directory])
-            if step_name:
-                args.extend(['--step-name', step_name])
-
-            if self._resultdb_fetcher:
-                args.append('--resultDB')
-                raw_result = self._result_for_test(test, build,
-                                                   step_name).result_dict()
-                # TODO(crbug.com/1282507): Instead of grabbing the first
-                # artifact of each type, we should download artifacts across
-                # all retries and and check if they're all exactly the same.
-                fetch_urls = [
-                    artifacts[0]
-                    for artifacts in raw_result['artifacts'].values()
-                ]
-                args.extend(['--fetch-url', ','.join(fetch_urls)])
-
-            rebaseline_command = [
-                path_to_blink_tool, 'rebaseline-test-internal'
-            ] + args
-            rebaseline_commands.append(rebaseline_command)
-
-        return rebaseline_commands
+    def _group_with_results(
+        self,
+        test_baseline_set: TestBaselineSet,
+    ) -> RebaselineGroup:
+        tasks_to_results = {}
+        for task in test_baseline_set:
+            maybe_result = self._result_for_test(task.test, task.build,
+                                                 task.step_name)
+            if maybe_result:
+                tasks_to_results[task] = maybe_result
+        return tasks_to_results
 
     def _optimize_command(self,
                           tests: Collection[str],
@@ -510,8 +429,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         tests = list(lines_to_remove.keys())
         to_remove = collections.defaultdict(set)
         all_versions = frozenset([
-            config.version.lower() for config in self._tool.port_factory.get().
-            all_test_configurations()
+            config.version.lower()
+            for config in self._host_port.all_test_configurations()
         ])
         # This is so we remove lines for builders that skip this test.
         # For example, Android skips most tests and we don't want to leave
@@ -539,10 +458,9 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                            ', '.join(sorted(versions)))
             return
 
-        port = self._tool.port_factory.get()
         path = port.path_to_generic_test_expectations_file()
         test_expectations = TestExpectations(
-            port,
+            self._host_port,
             expectations_dict={
                 path: self._tool.filesystem.read_text_file(path)
             })
@@ -557,7 +475,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
     def _worker_factory(self, worker_connection):
         return Worker(worker_connection,
-                      self._tool.git().checkout_root,
                       dry_run=self._dry_run)
 
     def handle(self, name: str, source: str, *args):
@@ -566,9 +483,12 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         This allows this class to conform to the `message_pool.MessageHandler`
         interface.
         """
-        if name == 'find_baselines_to_copy':
-            (baselines_to_copy, ) = args
-            self._baselines_to_copy.extend(baselines_to_copy)
+        if name == 'report_baseline_cache_stats':
+            (stats, ) = args
+            self.baseline_cache_stats += stats
+        elif name == 'download_baselines':
+            (rebaseline_failures, ) = args
+            self._rebaseline_failures.update(rebaseline_failures)
 
     def rebaseline(self, options, test_baseline_set):
         """Fetches new baselines and removes related test expectation lines.
@@ -578,6 +498,8 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             test_baseline_set: A TestBaselineSet instance, which represents
                 a set of tests/platform combinations to rebaseline.
         """
+        self._rebaseline_failures.clear()
+        self._results_dir = options.results_directory
         if not self._dry_run and self._tool.git(
         ).has_working_directory_changes(pathspec=self._web_tests_dir()):
             _log.error(
@@ -590,17 +512,10 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         rebaselinable_set = self._filter_baseline_set(test_baseline_set)
         groups = self._group_tests_by_base(rebaselinable_set)
-        try:
-            self._copy_baselines(groups)
-        except RebaselineCancellation:
-            _log.warning('Cancelling rebaseline attempt.')
-            return 1
-
-        rebaseline_commands = self._rebaseline_commands(
-            rebaselinable_set, options)
-        with self._message_pool(self._worker_factory) as pool:
-            pool.run([('download_baseline', command)
-                      for command in rebaseline_commands])
+        self._copy_baselines(groups)
+        self._download_baselines(groups)
+        _log.debug('Baseline cache statistics: %s', self.baseline_cache_stats)
+        self._warn_about_rebaseline_failures()
 
         exit_code = 0
         if options.optimize and groups:
@@ -617,6 +532,57 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             self._tool.git().add_list(self.unstaged_baselines())
         return exit_code
 
+    def _warn_about_rebaseline_failures(self):
+        if not self._rebaseline_failures:
+            return
+        tasks_by_exp_file = self._group_tasks_by_exp_file(
+            self._rebaseline_failures)
+        _log.warning('Some test failures should be suppressed in '
+                     'TestExpectations instead of being rebaselined.')
+        # TODO(crbug.com/1149035): Fully automate writing to TestExpectations
+        # files. This should be done by integrating with the existing
+        # TestExpectations updater, which has better handling for:
+        #   * Conflicting tag removal
+        #   * Specifier merge/split
+        for exp_file in sorted(tasks_by_exp_file):
+            lines = '\n'.join(
+                map(self._format_line, tasks_by_exp_file[exp_file]))
+            # Make the TestExpectation lines copy-pastable by logging them
+            # in a single statement (i.e., not prefixed by the log's
+            # formatting).
+            _log.warning('Consider adding the following lines to %s:\n%s',
+                         exp_file, lines)
+
+    def _group_tasks_by_exp_file(
+        self,
+        tasks: Collection[RebaselineTask],
+    ) -> Dict[str, Set[RebaselineTask]]:
+        tasks_by_exp_file = collections.defaultdict(set)
+        for task in tasks:
+            flag_spec_option = self._tool.builders.flag_specific_option(
+                task.build.builder_name, task.step_name)
+            if flag_spec_option:
+                exp_file = self._host_port.path_to_flag_specific_expectations_file(
+                    flag_spec_option)
+            else:
+                exp_file = (
+                    self._host_port.path_to_generic_test_expectations_file())
+            tasks_by_exp_file[exp_file].add(task)
+        return tasks_by_exp_file
+
+    def _format_line(self, task: RebaselineTask) -> str:
+        result = self._result_for_test(task.test, task.build, task.step_name)
+        # This assertion holds because we only request unexpected non-PASS
+        # results from ResultDB. This precondition ensures `result_tags` is not
+        # `[ Pass ]` or empty.
+        assert set(result.actual_results()) - {ResultType.Pass}
+        specifier = self._tool.builders.version_specifier_for_port_name(
+            task.port_name)
+        results = sorted(set(result.actual_results()))
+        result_tags = ' '.join(RESULT_TAGS[result] for result in results)
+        reason = self._rebaseline_failures[task].value
+        return f'[ {specifier} ] {task.test} [ {result_tags} ]  # {reason}'
+
     def unstaged_baselines(self):
         """Returns absolute paths for unstaged (including untracked) baselines."""
         baseline_re = re.compile(r'.*[\\/]' + WEB_TESTS_LAST_COMPONENT +
@@ -627,7 +593,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                       if re.match(baseline_re, path))
 
     def _web_tests_dir(self):
-        return self._tool.port_factory.get().web_tests_dir()
+        return self._host_port.web_tests_dir()
 
     def _suffixes_for_actual_failures(self, test, build, step_name=None):
         """Gets the baseline suffixes for actual mismatch failures in some results.
@@ -643,19 +609,11 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         test_result = self._result_for_test(test, build, step_name)
         if not test_result:
             return set()
-        return test_result.suffixes_for_test_result()
+        return set(test_result.baselines_by_suffix())
 
     @memoized
     def _result_for_test(self, test, build, step_name):
-        if self._resultdb_fetcher:
-            results = self._tool.results_fetcher.gather_results(
-                build, step_name)
-        else:
-            # We need full results to know if a test passed or was skipped.
-            # TODO(robertma): Make memoized support kwargs, and use full=True
-            # here.
-            results = self._tool.results_fetcher.fetch_results(
-                build, True, step_name)
+        results = self._tool.results_fetcher.gather_results(build, step_name)
         if not results:
             _log.debug('No results found for build %s', build)
             return None
@@ -663,6 +621,15 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         if not test_result:
             _log.info('No test result for test %s in build %s', test, build)
             return None
+        if self._results_dir:
+            for artifact_name, suffix in [
+                ('actual_text', 'txt'),
+                ('actual_image', 'png'),
+                ('actual_audio', 'wav'),
+            ]:
+                filename = self._file_name_for_actual_result(test, suffix)
+                path = self._tool.filesystem.join(self._results_dir, filename)
+                test_result.artifacts[artifact_name] = [Artifact(path)]
         return test_result
 
 
@@ -708,7 +675,7 @@ class Rebaseline(AbstractParallelRebaselineCommand):
             builders_to_check = self._builders_to_pull_from()
 
         test_baseline_set = TestBaselineSet(tool.builders)
-        tests = self._tool.port_factory.get().tests(args)
+        tests = self._host_port.tests(args)
         for builder in builders_to_check:
             build = Build(builder)
             step_names = self._tool.results_fetcher.get_layout_test_step_names(
@@ -718,11 +685,196 @@ class Rebaseline(AbstractParallelRebaselineCommand):
                     test_baseline_set.add(test, build, step_name)
 
         _log.debug('Rebaselining: %s', test_baseline_set)
-        self.rebaseline(options, test_baseline_set)
+        return self.rebaseline(options, test_baseline_set)
 
 
-class RebaselineCancellation(Exception):
-    """Represents a cancelled rebaseline attempt."""
+@dataclass
+class BaselineCacheStatistics:
+    hit_count: int = 0
+    hit_bytes: int = 0
+    total_count: int = 0
+    total_bytes: int = 0
+
+    def __add__(self,
+                other: 'BaselineCacheStatistics') -> 'BaselineCacheStatistics':
+        return BaselineCacheStatistics(self.hit_count + other.hit_count,
+                                       self.hit_bytes + other.hit_bytes,
+                                       self.total_count + other.total_count,
+                                       self.total_bytes + other.total_bytes)
+
+    def __str__(self) -> str:
+        return (
+            f'hit rate: {self.hit_count}/{self.total_count} '
+            f'({_percentage(self.hit_count, self.total_count):.1f}%), '
+            f'bytes served via cache: {self.hit_bytes}/{self.total_bytes}B '
+            f'({_percentage(self.hit_bytes, self.total_bytes):.1f}%)')
+
+    def record(self, num_bytes: int, hit: bool = False):
+        self.total_bytes += num_bytes
+        self.total_count += 1
+        if hit:
+            self.hit_bytes += num_bytes
+            self.hit_count += 1
+
+
+class RebaselineFailure(Exception):
+    """Represents a rebaseline task that could not be executed."""
+    def __init__(self, reason: RebaselineFailureReason, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reason = reason
+
+
+class BaselineLoader:
+    """Selects a usable baseline from a list of artifacts.
+
+    This class encompasses:
+     1. In-memory baseline caching, keyed on the content's hash digest.
+        Baselines likely to be identical (e.g., for a virtual and its base
+        test) are downloaded together. The cache takes advantage of this
+        temporal locality. For simplicity, the cache is not bounded. It's the
+        caller's responsibility to `clear()` the cache as needed.
+     2. Finding a "good" baseline for fuzzy-matched pixel tests according to
+        some heuristics. See `choose_valid_baseline(...)` for details.
+    """
+    def __init__(self, host: Host):
+        self._host = host
+        self._default_port = host.port_factory.get()
+        self._digests_to_contents = {}
+        # Image diff statistics are commutative. By canonicalizing the
+        # (expected, actual) argument order and caching the result, we can
+        # avoid invoking `image_diff` a second time unnecessarily when the
+        # arguments are swapped.
+        make_cached = functools.lru_cache(maxsize=128)
+        self._diff_image = make_cached(self._default_port.diff_image)
+        self.stats = BaselineCacheStatistics()
+
+    def _image_diff_stats(self, actual: bytes, expected: bytes):
+        # By definition, an image has zero diff with itself.
+        if actual == expected:
+            return {'maxDifference': 0, 'totalPixels': 0}
+        _, stats, _ = self._diff_image(*sorted([actual, expected]))
+        return stats
+
+    def _fetch_contents(self, url: str) -> bytes:
+        # Assume this is a local file.
+        if not urlparse(url).scheme:
+            try:
+                return bytes(self._host.filesystem.read_binary_file(url))
+            except FileNotFoundError:
+                raise RebaselineFailure(
+                    RebaselineFailureReason.LOCAL_BASELINE_NOT_FOUND)
+        # Ensure that this is an immutable bytestring (i.e., not `bytearray`).
+        return bytes(self._host.web.get_binary(url))
+
+    def load(self, artifact: Artifact) -> bytes:
+        hit = False
+        if artifact.digest:
+            contents = self._digests_to_contents.get(artifact.digest)
+            if contents is None:
+                contents = self._fetch_contents(artifact.url)
+                self._digests_to_contents[artifact.digest] = contents
+            else:
+                hit = True
+        else:
+            contents = self._fetch_contents(artifact.url)
+        self.stats.record(len(contents), hit)
+        return contents
+
+    def choose_valid_baseline(self, artifacts: List[Artifact], test_name: str,
+                              suffix: str) -> bytes:
+        """Choose a baseline that would have allowed the observed runs to pass.
+
+        Usually, this means returning the contents of a non-flaky artifact
+        (i.e., has identical contents across all retries). However, for flaky
+        fuzzy-matched pixel tests, we can return an image that would have
+        matched all observed retries under existing fuzzy parameters.
+
+        Raises:
+            RebaselineFailure: If a test cannot be rebaselined (e.g., flakiness
+                outside fuzzy parameters).
+        """
+        assert artifacts
+        contents_by_run = {
+            artifact: self.load(artifact)
+            for artifact in artifacts
+        }
+        contents = set(contents_by_run.values())
+        if len(contents) > 1:
+            if suffix == 'png':
+                # Because we only rebaseline tests that only had unexpected
+                # failures, a test using fuzzy matching can only reach this
+                # point if every retry's image fell outside the acceptable
+                # range with the current baseline.
+                return self._find_fuzzy_matching_baseline(
+                    test_name, contents_by_run)
+            raise RebaselineFailure(RebaselineFailureReason.FLAKY_OUTPUT)
+        return contents.pop()
+
+    def _find_fuzzy_matching_baseline(
+        self,
+        test_name: str,
+        contents_by_run: Dict[Artifact, bytes],
+    ) -> bytes:
+        max_diff_range, total_pixels_range = (
+            self._default_port.get_wpt_fuzzy_metadata(test_name))
+        # No fuzzy parameters present.
+        if not max_diff_range or not total_pixels_range:
+            raise RebaselineFailure(RebaselineFailureReason.FLAKY_OUTPUT)
+
+        max_diff_min, max_diff_max = max_diff_range
+        total_pixels_min, total_pixels_max = total_pixels_range
+        # The fuzzy parameters must allow the chosen baseline to match itself.
+        # Rebaselining a pixel test with nonzero parameter minimums doesn't make
+        # sense because any `actual_image` you select as the new baseline will
+        # not match if that actual output is seen again.
+        if max_diff_min > 0 or total_pixels_min > 0:
+            raise RebaselineFailure(RebaselineFailureReason.FLAKY_OUTPUT)
+
+        match_criteria = {}
+        for artifact, contents in contents_by_run.items():
+            max_diff_needed, total_pixels_needed = (
+                self._find_needed_fuzzy_params(contents, contents_by_run))
+            fuzzy_mismatch = (max_diff_needed > max_diff_max
+                              or total_pixels_needed > total_pixels_max)
+            match_criteria[artifact] = (fuzzy_mismatch, total_pixels_needed,
+                                        max_diff_needed)
+
+        chosen_artifact = min(match_criteria, key=match_criteria.get)
+        fuzzy_mismatch, _, _ = match_criteria[chosen_artifact]
+        if fuzzy_mismatch:
+            # TODO(crbug.com/1426622): Here, the existing parameters are
+            # insufficient for ensuring the test would have passed consistently.
+            # Consider suggesting new fuzzy parameters before suggesting
+            # TestExpectations, using the tight bounds in
+            # `match_criteria[chosen_artifact]`.
+            raise RebaselineFailure(RebaselineFailureReason.FLAKY_OUTPUT)
+        return contents_by_run[chosen_artifact]
+
+    def _find_needed_fuzzy_params(
+        self,
+        candidate: bytes,
+        contents_by_run: Dict[Artifact, bytes],
+    ) -> Tuple[int, int]:
+        """Find parameters needed to fuzzily match every observed image.
+
+        Arguments:
+            candidate: A candidate baseline that every other run's image will
+                be diffed against.
+
+        Returns:
+            The minimum (maxDifference, totalPixels) parameters needed.
+        """
+        max_diff_max = total_pixels_max = 0
+        for artifact, run_contents in contents_by_run.items():
+            stats = self._image_diff_stats(candidate, run_contents)
+            if not stats:
+                continue
+            max_diff_max = max(max_diff_max, stats['maxDifference'])
+            total_pixels_max = max(total_pixels_max, stats['totalPixels'])
+        return max_diff_max, total_pixels_max
+
+    def clear(self):
+        self._digests_to_contents.clear()
 
 
 class Worker:
@@ -730,30 +882,33 @@ class Worker:
 
     The purpose of this worker is to persist resources across tasks:
       * HTTP(S) connections to ResultDB
-      * TestExpectations caches
+      * TestExpectations cache
+      * Baseline cache
 
     See Also:
         crbug.com/1213998#c50
     """
 
-    def __init__(self, connection, cwd: str, dry_run: bool = False):
+    def __init__(self,
+                 connection,
+                 dry_run: bool = False):
         self._connection = connection
-        self._cwd = cwd
         self._dry_run = dry_run
         self._commands = {
-            'find_baselines_to_copy': self._find_baselines_to_copy,
-            'write_copy': self._write_copy,
-            'download_baseline': self._download_baseline,
+            'copy_baselines': self._copy_baselines,
+            'download_baselines': self._download_baselines,
         }
 
     def start(self):
-        # Dynamically import `BlinkTool` to avoid a circular import.
-        from blinkpy.tool.blink_tool import BlinkTool
-        # `BlinkTool` cannot be serialized, so construct one here in the worker
-        # process instead of in the constructor, which runs in the managing
-        # process. See crbug.com/1386267.
-        self._tool = BlinkTool(self._cwd)
         self._copier = BaselineCopier(self._connection.host)
+        self._host = self._connection.host
+        self._fs = self._connection.host.filesystem
+        self._baseline_loader = BaselineLoader(self._host)
+
+    def stop(self):
+        if hasattr(self, '_baseline_loader'):
+            self._connection.post('report_baseline_cache_stats',
+                                  self._baseline_loader.stats)
 
     def handle(self, name: str, source: str, *args):
         response = self._commands[name](*args)
@@ -763,20 +918,48 @@ class Worker:
         else:
             self._connection.post(name)
 
-    def _find_baselines_to_copy(self, test_name: str, suffix: str,
-                                group: TestBaselineSet):
-        return list(
+    def _copy_baselines(self, test_name: str, suffix: str,
+                        group: TestBaselineSet):
+        copies = list(
             self._copier.find_baselines_to_copy(test_name, suffix, group))
-
-    def _write_copy(self, source: str, dest: str):
         if self._dry_run:
-            _log.info('Would have copied %s -> %s', source, dest)
+            for source, dest in sorted(copies, key=lambda copy: copy[1]):
+                _log.debug('Would have copied %s -> %s', source
+                           or '<all-pass>', dest)
         else:
-            self._copier.write_copies([(source, dest)])
+            self._copier.write_copies(copies)
 
-    def _download_baseline(self, command: List[str]):
-        if self._dry_run:
-            _log.debug('Would have run: %s',
-                       self._tool.executive.command_for_printing(command))
-        else:
-            self._tool.main(command)
+    def _download_baselines(self,
+                            group: RebaselineGroup) -> RebaselineFailures:
+        self._baseline_loader.clear()
+        rebaseline_failures = {}
+        for task, result in group.items():
+            for suffix, artifacts in result.baselines_by_suffix().items():
+                try:
+                    contents = self._baseline_loader.choose_valid_baseline(
+                        artifacts, task.test, suffix)
+                    self._write_baseline(task, suffix, artifacts[0].url,
+                                         contents)
+                except RebaselineFailure as error:
+                    rebaseline_failures[task] = error.reason
+        return rebaseline_failures
+
+    def _write_baseline(self, task: RebaselineTask, suffix: str, source: str,
+                        contents: bytes):
+        port = self._host.port_factory.get(task.port_name)
+        flag_spec_option = self._host.builders.flag_specific_option(
+            task.build.builder_name, task.step_name)
+        port.set_option_default('flag_specific', flag_spec_option)
+        dest = self._fs.join(
+            port.baseline_version_dir(),
+            port.output_filename(task.test,
+                                 test_failures.FILENAME_SUFFIX_EXPECTED,
+                                 '.' + suffix))
+        _log.debug('Retrieving source %s for target %s.', source, dest)
+        if not self._dry_run:
+            self._fs.maybe_make_directory(self._fs.dirname(dest))
+            self._fs.write_binary_file(dest, contents)
+
+
+def _percentage(a: float, b: float) -> float:
+    return 100 * (a / b) if b > 0 else float('nan')

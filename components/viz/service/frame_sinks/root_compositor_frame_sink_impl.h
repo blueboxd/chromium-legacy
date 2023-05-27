@@ -98,10 +98,13 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
       override;
   void SetStandaloneBeginFrameObserver(
       mojo::PendingRemote<mojom::BeginFrameObserver> observer) override;
+  void SetMaxVrrInterval(
+      absl::optional<base::TimeDelta> max_vrr_interval) override;
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SetWantsAnimateOnlyBeginFrames() override;
+  void SetWantsBeginFrameAcks() override;
   void SubmitCompositorFrame(
       const LocalSurfaceId& local_surface_id,
       CompositorFrame frame,
@@ -119,6 +122,7 @@ class VIZ_SERVICE_EXPORT RootCompositorFrameSinkImpl
       SubmitCompositorFrameSyncCallback callback) override;
   void InitializeCompositorFrameSinkType(
       mojom::CompositorFrameSinkType type) override;
+  void BindLayerContext(mojom::PendingLayerContextPtr context) override;
 #if BUILDFLAG(IS_ANDROID)
   void SetThreadIds(const std::vector<int32_t>& thread_ids) override;
 #endif

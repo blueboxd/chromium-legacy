@@ -4,9 +4,9 @@
 
 #include "components/autofill/core/browser/autofill_address_util.h"
 
-#include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/uuid.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -120,7 +120,8 @@ TEST_F(AddressFormattingTest, GetEnvelopeStyleAddressSanity) {
 }
 
 TEST_F(AddressFormattingTest, GetEnvelopeStyleAddressWhenEmptyFullname) {
-  AutofillProfile profile(base::GenerateGUID(), /*origin=*/"");
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          /*origin=*/"");
   test::SetProfileInfo(&profile, /*first_name=*/"", /*middle_name=*/"",
                        /*last_name=*/"", "johndoe@hades.com", "Underworld",
                        "666 Erebus St.", "Apt 8", "Elysium", "CA", "91111",
@@ -137,7 +138,8 @@ TEST_F(AddressFormattingTest, GetEnvelopeStyleAddressWhenEmptyFullname) {
 // contain empty lines.
 TEST_F(AddressFormattingTest,
        GetEnvelopeStyleAddressWhenEmptyCompanyShouldHaveNoEmptyLines) {
-  AutofillProfile profile(base::GenerateGUID(), /*origin=*/"");
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          /*origin=*/"");
   test::SetProfileInfo(&profile, "FirstName", "MiddleName", "LastName",
                        "johndoe@hades.com", /*company=*/"", "666 Erebus St.",
                        "Apt 8", "Elysium", "CA", "91111", "US", "16502111111");
@@ -154,7 +156,8 @@ TEST_F(AddressFormattingTest,
 TEST_F(
     AddressFormattingTest,
     GetEnvelopeStyleAddressWhenEmptyStateShouldHaveNoConsecutiveWhitespaces) {
-  AutofillProfile profile(base::GenerateGUID(), /*origin=*/"");
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          /*origin=*/"");
   test::SetProfileInfo(&profile, "FirstName", "MiddleName", "LastName",
                        "johndoe@hades.com", "Underworld", "666 Erebus St.",
                        "Apt 8", "Elysium", /*state=*/"", "91111", "US",
@@ -171,7 +174,8 @@ TEST_F(
 // `GetEnvelopeStyleAddress()`, by checking that Great Britain's address format
 // is extended by a state field.
 TEST_F(AddressFormattingTest, GetEnvelopeStyleAddressWithExtensions) {
-  AutofillProfile profile(base::GenerateGUID(), /*origin=*/"");
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          /*origin=*/"");
   test::SetProfileInfo(&profile, "FirstName", "MiddleName", "LastName",
                        "johndoe@hades.com", /*company=*/"", "666 Erebus St.",
                        "Apt 8", "Elysium", /*state=*/"Greater London",
@@ -249,6 +253,13 @@ TEST(GetProfileDescription, NotIncludeAddressAndContacts) {
       profile, "en-US", /*include_address_and_contacts=*/false);
   // Should contain full name only.
   EXPECT_EQ(description, u"John H. Doe");
+}
+
+TEST(GetProfileDescription, ProfileDescriptionForMigration) {
+  AutofillProfile profile = test::GetFullProfile();
+  // Should contain full name only.
+  EXPECT_EQ(GetProfileSummaryForMigrationPrompt(profile, "en-US"),
+            u"John H. Doe\n666 Erebus St.\njohndoe@hades.com\n16502111111");
 }
 
 }  // namespace autofill

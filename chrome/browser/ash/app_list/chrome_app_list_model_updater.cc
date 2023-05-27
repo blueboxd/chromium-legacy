@@ -14,7 +14,9 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/app_list/app_list_controller_delegate.h"
@@ -24,6 +26,11 @@
 #include "chrome/browser/ash/app_list/reorder/app_list_reorder_core.h"
 #include "chrome/browser/ash/app_list/reorder/app_list_reorder_delegate.h"
 #include "chrome/browser/ash/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ash/app_list/search/search_features.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
 
@@ -147,8 +154,8 @@ void ChromeAppListModelUpdater::SetActive(bool active) {
   is_active_ = active;
 
   if (active) {
-    ash::AppListController::Get()->SetActiveModel(model_id(), &model_,
-                                                  &search_model_);
+    ash::AppListController::Get()->SetActiveModel(
+        model_id(), &model_, &search_model_, &quick_app_access_model_);
   } else if (is_under_temporary_sort()) {
     // Commit the temporary order when the model updater is deactivated.
     EndTemporarySortAndTakeAction(EndAction::kCommit);
@@ -283,6 +290,44 @@ void ChromeAppListModelUpdater::SetSearchEngineIsGoogle(bool is_google) {
   search_model_.SetSearchEngineIsGoogle(is_google);
 }
 
+void ChromeAppListModelUpdater::RecalculateWouldTriggerLauncherSearchIph() {
+  raw_ptr<feature_engagement::Tracker> tracker =
+      feature_engagement::TrackerFactory::GetForBrowserContext(profile_);
+  if (!tracker) {
+    // Set false as a fail-safe behavior.
+    search_model_.SetWouldTriggerLauncherSearchIph(false);
+    return;
+  }
+
+  // `AddOnInitializedCallback` will call the callback immediately if it's
+  // already initialized.
+  tracker->AddOnInitializedCallback(base::BindOnce(
+      &ChromeAppListModelUpdater::OnFeatureEngagementTrackerInitialized,
+      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ChromeAppListModelUpdater::OnFeatureEngagementTrackerInitialized(
+    bool success) {
+  if (!success) {
+    // Set false as a fail-safe behavior.
+    search_model_.SetWouldTriggerLauncherSearchIph(false);
+    return;
+  }
+
+  // To be on a safer side, query tracker instance again to minimize the
+  // duration of holding a tracker object.
+  raw_ptr<feature_engagement::Tracker> tracker =
+      feature_engagement::TrackerFactory::GetForBrowserContext(profile_);
+  if (!tracker) {
+    // Set false as a fail-safe behavior.
+    search_model_.SetWouldTriggerLauncherSearchIph(false);
+    return;
+  }
+
+  search_model_.SetWouldTriggerLauncherSearchIph(tracker->WouldTriggerHelpUI(
+      feature_engagement::kIPHLauncherSearchHelpUiFeature));
+}
+
 void ChromeAppListModelUpdater::PublishSearchResults(
     const std::vector<ChromeSearchResult*>& results,
     const std::vector<ash::AppListSearchResultCategory>& categories) {
@@ -294,9 +339,18 @@ void ChromeAppListModelUpdater::PublishSearchResults(
   std::vector<std::unique_ptr<ash::SearchResult>> ash_results;
   std::vector<std::unique_ptr<ash::SearchResultMetadata>> result_data;
   for (auto* result : results) {
+    if (search_features::isLauncherOmniboxPublishLogicLogEnabled() &&
+        result->result_type() == ash::AppListSearchResultType::kOmnibox) {
+      LOG(ERROR) << "Launcher search publish omnibox result " << result->title()
+                 << " with score " << result->display_score();
+    }
     auto ash_result = std::make_unique<ash::SearchResult>();
     ash_result->SetMetadata(result->CloneMetadata());
     ash_results.push_back(std::move(ash_result));
+  }
+  if (search_features::isLauncherOmniboxPublishLogicLogEnabled()) {
+    LOG(ERROR) << "Launcher search model updater publish " << ash_results.size()
+               << " results";
   }
   search_model_.PublishResults(std::move(ash_results), categories);
 }

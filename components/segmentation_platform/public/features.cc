@@ -72,11 +72,15 @@ BASE_FEATURE(kContextualPageActionShareModel,
              "ContextualPageActionShareModel",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSegmentationPlatformSegmentInfoCache,
-             "SegmentationPlatformSegmentInfoCache",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSegmentationDefaultReportingSegments,
              "SegmentationDefaultReportingSegments",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationPlatformDeviceTier,
+             "SegmentationPlatformDeviceTier",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationPlatformTabletProductivityUser,
+             "SegmentationPlatformTabletProductivityUser",
              base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace segmentation_platform::features

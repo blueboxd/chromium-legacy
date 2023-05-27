@@ -33,6 +33,7 @@
 #include "base/linux_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -89,6 +90,7 @@
 #include "chrome/browser/ash/dbus/vm/vm_launch_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_permission_service_provider.h"
 #include "chrome/browser/ash/dbus/vm/vm_sk_forwarding_service_provider.h"
+#include "chrome/browser/ash/dbus/vm/vm_wl_service_provider.h"
 #include "chrome/browser/ash/device_name/device_name_store.h"
 #include "chrome/browser/ash/diagnostics/diagnostics_browser_delegate_impl.h"
 #include "chrome/browser/ash/display/quirks_manager_delegate_impl.h"
@@ -126,6 +128,7 @@
 #include "chrome/browser/ash/notifications/debugd_notification_handler.h"
 #include "chrome/browser/ash/notifications/gnubby_notification.h"
 #include "chrome/browser/ash/notifications/low_disk_notification.h"
+#include "chrome/browser/ash/notifications/multi_capture_login_notification.h"
 #include "chrome/browser/ash/notifications/multi_capture_notification.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/pcie_peripheral/ash_usb_detector.h"
@@ -172,7 +175,6 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
 #include "chrome/browser/ui/ash/assistant/assistant_browser_delegate_impl.h"
@@ -202,6 +204,7 @@
 #include "chromeos/ash/components/dbus/services/cros_dbus_service.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
+#include "chromeos/ash/components/dbus/shill/shill_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/ash/components/device_activity/device_active_use_case.h"
 #include "chromeos/ash/components/device_activity/device_activity_controller.h"
@@ -260,19 +263,20 @@
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_change_notifier_posix.h"
+#include "net/base/network_change_notifier_passive.h"
 #include "printing/backend/print_backend.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/vm_launch/dbus-constants.h"
+#include "third_party/cros_system_api/dbus/vm_wl/dbus-constants.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/input_method_util.h"
 #include "ui/base/pointer/pointer_device.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/chromeos/events/pref_names.h"
+#include "ui/events/ash/pref_names.h"
 #include "ui/events/event_utils.h"
 
 #if BUILDFLAG(PLATFORM_CFM)
@@ -455,6 +459,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<VmPermissionServiceProvider>()));
 
+    vm_wl_service_ = CrosDBusService::Create(
+        system_bus, vm_tools::wl::kVmWlServiceName,
+        dbus::ObjectPath(vm_tools::wl::kVmWlServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<VmWlServiceProvider>()));
+
     drive_file_stream_service_ = CrosDBusService::Create(
         system_bus, drivefs::kDriveFileStreamServiceName,
         dbus::ObjectPath(drivefs::kDriveFileStreamServicePath),
@@ -572,6 +582,7 @@ class DBusServices {
     vm_launch_service_.reset();
     vm_sk_forwarding_service_.reset();
     vm_permission_service_.reset();
+    vm_wl_service_.reset();
     drive_file_stream_service_.reset();
     cryptohome_key_delegate_service_.reset();
     encrypted_reporting_service_.reset();
@@ -605,6 +616,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> vm_launch_service_;
   std::unique_ptr<CrosDBusService> vm_sk_forwarding_service_;
   std::unique_ptr<CrosDBusService> vm_permission_service_;
+  std::unique_ptr<CrosDBusService> vm_wl_service_;
   std::unique_ptr<CrosDBusService> drive_file_stream_service_;
   std::unique_ptr<CrosDBusService> cryptohome_key_delegate_service_;
   std::unique_ptr<CrosDBusService> encrypted_reporting_service_;
@@ -741,7 +753,7 @@ void ChromeBrowserMainPartsAsh::PostCreateMainMessageLoop() {
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 int ChromeBrowserMainPartsAsh::PreMainMessageLoopRun() {
   network_change_manager_client_ = std::make_unique<NetworkChangeManagerClient>(
-      static_cast<net::NetworkChangeNotifierPosix*>(
+      static_cast<net::NetworkChangeNotifierPassive*>(
           content::GetNetworkChangeNotifier()));
 
   // Set the crypto thread after the IO thread has been created/started.
@@ -1010,6 +1022,9 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
   // Needs to be initialized after crosapi_manager_.
   metrics::structured::ChromeStructuredMetricsRecorder::Get()->Initialize();
 
+  multi_capture_login_notification_ =
+      std::make_unique<MultiCaptureLoginNotification>();
+
   if (immediate_login) {
     const user_manager::CryptohomeId cryptohome_id(
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -1081,7 +1096,7 @@ class GuestLanguageSetCallbackData {
       const std::unique_ptr<GuestLanguageSetCallbackData>& self,
       const locale_util::LanguageSwitchResult& result);
 
-  Profile* profile;
+  raw_ptr<Profile, ExperimentalAsh> profile;
 };
 
 // static
@@ -1254,6 +1269,16 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
 
     screen_ai::chrome_os_installer::ManageInstallation(
         g_browser_process->local_state());
+
+    ash::ShillManagerClient::Get()->SetProperty(
+        shill::kEnableRFC8925Property,
+        base::Value(base::FeatureList::IsEnabled(features::kEnableRFC8925)),
+        base::DoNothing(),
+        base::BindOnce([](const std::string& error_name,
+                          const std::string& error_message) {
+          NET_LOG(ERROR) << "Fail to set EnableRFC8925 shill property, error:"
+                         << error_name << ", message: " << error_message;
+        }));
   }
 
   ChromeBrowserMainPartsLinux::PostProfileInit(profile, is_initial_profile);
@@ -1549,12 +1574,18 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   // Must occur before BrowserProcessImpl::StartTearDown() destroys the
   // ProfileManager.
   if (pre_profile_init_called_) {
-    Profile* primary_user = ProfileManager::GetPrimaryUserProfile();
+    auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
     if (primary_user) {
-      // See startup_settings_cache::ReadAppLocale() comment for why we do this.
-      startup_settings_cache::WriteAppLocale(
-          primary_user->GetPrefs()->GetString(
-              language::prefs::kApplicationLocale));
+      // During a login restart-to-apply-flags the primary profile may not be
+      // loaded yet. See http://crbug.com/1432237
+      auto* primary_profile = Profile::FromBrowserContext(
+          BrowserContextHelper::Get()->GetBrowserContextByUser(primary_user));
+      if (primary_profile) {
+        // See startup_settings_cache::ReadAppLocale() comment.
+        startup_settings_cache::WriteAppLocale(
+            primary_profile->GetPrefs()->GetString(
+                language::prefs::kApplicationLocale));
+      }
     }
   }
 
@@ -1575,6 +1606,7 @@ void ChromeBrowserMainPartsAsh::PostMainMessageLoopRun() {
   lacros_data_backward_migration_mode_policy_observer_.reset();
 
   multi_capture_notification_.reset();
+  multi_capture_login_notification_.reset();
 
   // vc_app_service_client_ has to be destructed before PostMainMessageLoopRun.
   vc_app_service_client_.reset();

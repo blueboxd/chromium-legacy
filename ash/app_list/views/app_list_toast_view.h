@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/style/pill_button.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
@@ -67,21 +68,21 @@ class ASH_EXPORT AppListToastView : public views::View {
     std::u16string title_;
     absl::optional<std::u16string> subtitle_;
     absl::optional<std::u16string> button_text_;
-    const gfx::VectorIcon* icon_ = nullptr;
-    const gfx::VectorIcon* dark_icon_ = nullptr;
-    const gfx::VectorIcon* light_icon_ = nullptr;
+    raw_ptr<const gfx::VectorIcon, ExperimentalAsh> icon_ = nullptr;
+    raw_ptr<const gfx::VectorIcon, ExperimentalAsh> dark_icon_ = nullptr;
+    raw_ptr<const gfx::VectorIcon, ExperimentalAsh> light_icon_ = nullptr;
     absl::optional<int> icon_size_;
     views::Button::PressedCallback button_callback_;
     views::Button::PressedCallback close_button_callback_;
     bool style_for_tablet_mode_ = false;
     bool has_icon_background_ = false;
-    AppListViewDelegate* view_delegate_ = nullptr;
+    raw_ptr<AppListViewDelegate, ExperimentalAsh> view_delegate_ = nullptr;
   };
 
   // Whether `view` is a ToastPillButton.
   static bool IsToastButton(views::View* view);
 
-  explicit AppListToastView(const std::u16string title);
+  AppListToastView(const std::u16string title, bool style_for_tablet_mode);
   AppListToastView(const AppListToastView&) = delete;
   AppListToastView& operator=(const AppListToastView&) = delete;
   ~AppListToastView() override;
@@ -106,10 +107,6 @@ class ASH_EXPORT AppListToastView : public views::View {
   void UpdateInteriorMargins(const gfx::Insets& margins);
 
   void SetViewDelegate(AppListViewDelegate* delegate);
-
-  // Styles the toast for display in tablet mode launcher UI - for example, adds
-  // background blur, and sets rounded corners on the toast layer.
-  void StyleForTabletMode();
 
   // Sets whether the icon for the toast should have a background.
   void AddIconBackground();
@@ -140,7 +137,7 @@ class ASH_EXPORT AppListToastView : public views::View {
     void OnFocus() override;
     void OnBlur() override;
 
-    AppListViewDelegate* view_delegate_ = nullptr;
+    raw_ptr<AppListViewDelegate, ExperimentalAsh> view_delegate_ = nullptr;
   };
 
   // Attach the icon to the toast based on theming and available icons.
@@ -152,36 +149,34 @@ class ASH_EXPORT AppListToastView : public views::View {
   int GetExpandedTitleLabelWidth();
 
   // Vector icons to use with dark/light mode.
-  const gfx::VectorIcon* dark_icon_ = nullptr;
-  const gfx::VectorIcon* light_icon_ = nullptr;
+  raw_ptr<const gfx::VectorIcon, ExperimentalAsh> dark_icon_ = nullptr;
+  raw_ptr<const gfx::VectorIcon, ExperimentalAsh> light_icon_ = nullptr;
 
   // Vector icon to use if there are not dark or light mode specific icons.
-  const gfx::VectorIcon* default_icon_ = nullptr;
+  raw_ptr<const gfx::VectorIcon, ExperimentalAsh> default_icon_ = nullptr;
 
   absl::optional<int> icon_size_;
-
-  // Whether the toast UI should be style for tablet mode app list UI.
-  bool style_for_tablet_mode_ = false;
 
   // Whether the toast icon should be styled with a background.
   bool has_icon_background_ = false;
 
-  AppListViewDelegate* view_delegate_ = nullptr;
+  raw_ptr<AppListViewDelegate, ExperimentalAsh> view_delegate_ = nullptr;
 
   // Toast icon view.
-  views::ImageView* icon_ = nullptr;
+  raw_ptr<views::ImageView, DanglingUntriaged | ExperimentalAsh> icon_ =
+      nullptr;
   // Label with the main text for the toast.
-  views::Label* title_label_ = nullptr;
+  raw_ptr<views::Label, ExperimentalAsh> title_label_ = nullptr;
   // Label with the subtext for the toast.
-  views::Label* subtitle_label_ = nullptr;
+  raw_ptr<views::Label, ExperimentalAsh> subtitle_label_ = nullptr;
   // The button for the toast.
-  ToastPillButton* toast_button_ = nullptr;
+  raw_ptr<ToastPillButton, ExperimentalAsh> toast_button_ = nullptr;
   // The close button for the toast.
-  views::Button* close_button_ = nullptr;
+  raw_ptr<views::Button, ExperimentalAsh> close_button_ = nullptr;
   // Helper view to layout labels.
-  views::View* label_container_ = nullptr;
+  raw_ptr<views::View, ExperimentalAsh> label_container_ = nullptr;
   // Layout manager for the view.
-  views::BoxLayout* layout_manager_ = nullptr;
+  raw_ptr<views::BoxLayout, ExperimentalAsh> layout_manager_ = nullptr;
 };
 
 }  // namespace ash

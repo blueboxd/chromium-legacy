@@ -118,6 +118,9 @@
 // Returns matcher for `text` being a substring of the text in the omnibox.
 + (id<GREYMatcher>)omniboxContainingText:(NSString*)text;
 
+// Returns matcher for omniboxAutocomplete label in the omnibox.
++ (id<GREYMatcher>)omniboxAutocompleteLabel;
+
 // Returns matcher for `text` being a substring of the text in the location
 // view.
 + (id<GREYMatcher>)locationViewContainingText:(NSString*)text;
@@ -275,8 +278,8 @@
 // Returns matcher for the privacy safe browsing table view.
 + (id<GREYMatcher>)settingsPrivacySafeBrowsingTableView;
 
-// Returns matcher for the price notifications table view.
-+ (id<GREYMatcher>)settingsPriceNotificationsTableView;
+// Returns matcher for the notifications table view.
++ (id<GREYMatcher>)settingsNotificationsTableView;
 
 // Returns matcher for the tracking price table view.
 + (id<GREYMatcher>)settingsTrackingPriceTableView;
@@ -305,8 +308,8 @@
 // Returns matcher for the Privacy cell on the main Settings screen.
 + (id<GREYMatcher>)settingsMenuPrivacyButton;
 
-// Returns matcher for the Price Notifications cell on the main Settings screen.
-+ (id<GREYMatcher>)settingsMenuPriceNotificationsButton;
+// Returns matcher for the Notifications cell on the main Settings screen.
++ (id<GREYMatcher>)settingsMenuNotificationsButton;
 
 // Returns matcher for the Save passwords cell on the main Settings screen.
 + (id<GREYMatcher>)settingsMenuPasswordsButton;
@@ -536,6 +539,10 @@
 // carousel.
 + (id<GREYMatcher>)passwordsDestinationButton;
 
+// Returns matcher for the price notifications destination button in the
+// overflow menu carousel.
++ (id<GREYMatcher>)priceNotificationsDestinationButton;
+
 // Returns matcher for the reading list destination button in the overflow menu
 // carousel.
 + (id<GREYMatcher>)readingListDestinationButton;
@@ -555,6 +562,10 @@
 // Returns matcher for the downloads destination button in the overflow menu
 // carousel.
 + (id<GREYMatcher>)downloadsDestinationButton;
+
+// Returns matcher for the What's New destination button in the overflow menu
+// carousel.
++ (id<GREYMatcher>)whatsNewDestinationButton;
 
 #pragma mark - Overflow Menu Actions
 

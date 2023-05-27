@@ -12,6 +12,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/services/printing/print_backend_service_impl.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -89,14 +90,17 @@ class PrintBackendServiceTestImpl : public PrintBackendServiceImpl {
   void GetDefaultPrinterName(
       mojom::PrintBackendService::GetDefaultPrinterNameCallback callback)
       override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       mojom::PrintBackendService::GetPrinterSemanticCapsAndDefaultsCallback
           callback) override;
+#endif
   void FetchCapabilities(
       const std::string& printer_name,
       mojom::PrintBackendService::FetchCapabilitiesCallback callback) override;
   void UpdatePrintSettings(
+      uint32_t context_id,
       base::Value::Dict job_settings,
       mojom::PrintBackendService::UpdatePrintSettingsCallback callback)
       override;
@@ -111,6 +115,13 @@ class PrintBackendServiceTestImpl : public PrintBackendServiceImpl {
       float shrink_factor,
       mojom::PrintBackendService::RenderPrintedPageCallback callback) override;
 #endif  // BUILDFLAG(IS_WIN)
+
+  // Tests which will have a leftover printing context established in the
+  // service can use this to skip the destructor check that all contexts were
+  // cleaned up.
+  void SkipPersistentContextsCheckOnShutdown() {
+    skip_dtor_persistent_contexts_check_ = true;
+  }
 
   // Cause the service to terminate on the next interaction it receives.  Once
   // terminated no further Mojo calls will be possible since there will not be
@@ -151,6 +162,9 @@ class PrintBackendServiceTestImpl : public PrintBackendServiceImpl {
   // When pretending to be sandboxed, have the possibility of getting access
   // denied errors.
   bool is_sandboxed_ = false;
+
+  // Marker for skipping check for empty persistent contexts at destruction.
+  bool skip_dtor_persistent_contexts_check_ = false;
 
   // Marker to signal service should terminate on next interaction.
   bool terminate_receiver_ = false;

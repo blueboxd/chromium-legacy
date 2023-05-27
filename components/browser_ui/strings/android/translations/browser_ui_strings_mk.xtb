@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Декодер на слики</translation>
 <translation id="1785415724048343560">Препорачано за најдобро доживување</translation>
 <translation id="1818308510395330587">За да овозможите <ph name="APP_NAME" /> да користи AR, вклучете ја дозволата за камерата и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Од <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Слични сајтов може да ја гледаат вашата активност во групата</translation>
 <translation id="1887786770086287077">Пристапот до локацијата е исклучен за уредов. Вклучете го во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Спушти</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Преземањето е завршено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Функциите на некои сајтови можеби нема да работат во режимот „Инкогнито“</translation>
 <translation id="2442870161001914531">Секогаш барај сајт за компјутер</translation>
+<translation id="2479148705183875116">Одете во „Поставки“</translation>
 <translation id="2482878487686419369">Известувања</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2490684707762498678">Управувани од <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Адреси за е-пошта</translation>
 <translation id="2750481671343847896">Сајтовите може да прикажуваат prompt за најавување од услуги за идентификација.</translation>
 <translation id="2822354292072154809">Сигурно ли сакате да ги ресетирате сите дозволи на сајтот за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Барање приказ на мобилен</translation>
 <translation id="2870560284913253234">Локација</translation>
 <translation id="2874939134665556319">Претходна песна</translation>
 <translation id="2891975107962658722">Блокирајте сајт за да не може да зачувува податоци на вашиот уред</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Сајтовите може да користат колачиња за да го подобрат вашето доживување со прелистувањето, на пример, да ве одржат најавени или да запомнат ставки во кошничката за купување</translation>
 <translation id="3165022941318558018">Дозволете му на сајт да користи колачиња од трети страни</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> складирани податоци</translation>
-<translation id="3203366800380907218">Од интернет</translation>
 <translation id="321187648315454507">За да овозможите <ph name="APP_NAME" /> да ви испраќа известувања, вклучете ја дозволата за известувања и во <ph name="BEGIN_LINK" />Поставки за Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3248611290851046188">Сајтов ги дефинира интересите што другите сајтови може да ги користат за да ви прикажуваат реклами. Сајтов ги добива вашите интереси и од Chrome за да ви прикажува порелевантни реклами.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Побарајте приказ на компјутер</translation>
 <translation id="5100237604440890931">Проширено - кликни да се прошири.</translation>
 <translation id="5123685120097942451">Картичка инкогнито</translation>
-<translation id="5134599672855298214">Побарајте приказ на мобилен (препорачано)</translation>
 <translation id="5186036860380548585">Опцијата е достапна речиси најгоре на екранот</translation>
 <translation id="5197729504361054390">Контактите што ќе ги изберете ќе се споделат со <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Последно посетено денес</translation>

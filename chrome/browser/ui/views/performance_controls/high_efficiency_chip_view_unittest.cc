@@ -5,19 +5,21 @@
 #include "chrome/browser/ui/views/performance_controls/high_efficiency_chip_view.h"
 
 #include "base/test/metrics/histogram_tester.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/performance_manager/test_support/test_user_performance_tuning_manager_environment.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom-shared.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/performance_controls/high_efficiency_chip_tab_helper.h"
 #include "chrome/browser/ui/performance_controls/performance_controls_metrics.h"
-#include "chrome/browser/ui/performance_controls/tab_discard_tab_helper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/performance_controls/high_efficiency_bubble_view.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/user_tuning/prefs.h"
@@ -29,14 +31,13 @@
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/types/event_type.h"
-#include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/test/button_test_api.h"
 
-constexpr int kMemorySavingsKilobytes = 100000;
+constexpr int kMemorySavingsKilobytes = 100 * 1024;
+constexpr int kHighMemorySavingsKilobytes = 300 * 1024;
 constexpr int kSmallMemorySavingsKilobytes = 10;
 
 class DiscardMockNavigationHandle : public content::MockNavigationHandle {
@@ -60,7 +61,7 @@ class HighEfficiencyChipViewTest : public TestWithBrowserView {
 
   void SetUp() override {
     feature_list_.InitAndEnableFeature(
-        performance_manager::features::kHighEfficiencyModeAvailable);
+        performance_manager::features::kMemorySavingsReportingImprovements);
     TestWithBrowserView::SetUp();
 
     AddNewTab(kMemorySavingsKilobytes,
@@ -72,23 +73,23 @@ class HighEfficiencyChipViewTest : public TestWithBrowserView {
   void AddNewTab(int memory_savings,
                  mojom::LifecycleUnitDiscardReason discard_reason) {
     AddTab(browser(), GURL("http://foo"));
-    content::WebContents* contents =
+    content::WebContents* const contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    TabDiscardTabHelper::CreateForWebContents(contents);
+    HighEfficiencyChipTabHelper::CreateForWebContents(contents);
     performance_manager::user_tuning::UserPerformanceTuningManager::
         PreDiscardResourceUsage::CreateForWebContents(contents, memory_savings,
                                                       discard_reason);
   }
 
   void SetTabDiscardState(int tab_index, bool is_discarded) {
-    TabDiscardTabHelper* tab_helper = TabDiscardTabHelper::FromWebContents(
-        browser()->tab_strip_model()->GetWebContentsAt(tab_index));
+    content::WebContents* const web_contents =
+        browser()->tab_strip_model()->GetWebContentsAt(tab_index);
     std::unique_ptr<DiscardMockNavigationHandle> navigation_handle =
         std::make_unique<DiscardMockNavigationHandle>();
     navigation_handle.get()->SetWasDiscarded(is_discarded);
-    navigation_handle.get()->SetWebContents(
-        browser()->tab_strip_model()->GetWebContentsAt(tab_index));
-    tab_helper->DidStartNavigation(navigation_handle.get());
+    navigation_handle.get()->SetWebContents(web_contents);
+    HighEfficiencyChipTabHelper::FromWebContents(web_contents)
+        ->DidStartNavigation(navigation_handle.get());
 
     browser_view()
         ->GetLocationBarView()
@@ -102,17 +103,21 @@ class HighEfficiencyChipViewTest : public TestWithBrowserView {
             ->SetHighEfficiencyModeEnabled(enabled);
   }
 
+  void SetChipExpandedCount(int count) {
+    browser_view()->browser()->profile()->GetPrefs()->SetInteger(
+        prefs::kHighEfficiencyChipExpandedCount, count);
+  }
+
+  void SetChipExpandedTimeToNow() {
+    browser_view()->browser()->profile()->GetPrefs()->SetTime(
+        prefs::kLastHighEfficiencyChipExpandedTimestamp, base::Time::Now());
+  }
+
   PageActionIconView* GetPageActionIconView() {
     return browser_view()
         ->GetLocationBarView()
         ->page_action_icon_controller()
         ->GetIconView(PageActionIconType::kHighEfficiency);
-  }
-
-  views::InkDropState GetInkDropState() {
-    return views::InkDrop::Get(GetPageActionIconView())
-        ->GetInkDrop()
-        ->GetTargetInkDropState();
   }
 
   template <class T>
@@ -185,6 +190,61 @@ TEST_F(HighEfficiencyChipViewTest, ShouldNotShowForRegularPage) {
   EXPECT_FALSE(view->GetVisible());
 }
 
+// When the savings are above the FeatureParam threshold then the chip is
+// eligible to expand.
+TEST_F(HighEfficiencyChipViewTest, ShouldExpandForSavingsAboveThreshold) {
+  SetChipExpandedCount(HighEfficiencyChipView::kChipAnimationCount);
+  SetHighEfficiencyModeEnabled(true);
+  AddNewTab(kHighMemorySavingsKilobytes,
+            ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
+  SetTabDiscardState(0, true);
+
+  PageActionIconView* view = GetPageActionIconView();
+  EXPECT_TRUE(view->GetVisible());
+  EXPECT_TRUE(view->ShouldShowLabel());
+}
+
+// When the savings are below the FeatureParam threshold then the chip won't
+// expand.
+TEST_F(HighEfficiencyChipViewTest, ShouldNotExpandForSavingsBelowThreshold) {
+  SetChipExpandedCount(HighEfficiencyChipView::kChipAnimationCount);
+  SetHighEfficiencyModeEnabled(true);
+  SetTabDiscardState(0, true);
+
+  PageActionIconView* view = GetPageActionIconView();
+  EXPECT_TRUE(view->GetVisible());
+  EXPECT_FALSE(view->ShouldShowLabel());
+}
+
+// When the savings chip hasn't been expanded recently (based on a pref) then it
+// expands to highlight savings.
+TEST_F(HighEfficiencyChipViewTest, ShouldExpandWhenChipHasntExpandedRecently) {
+  SetChipExpandedCount(HighEfficiencyChipView::kChipAnimationCount);
+  SetHighEfficiencyModeEnabled(true);
+  AddNewTab(kHighMemorySavingsKilobytes,
+            ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
+  SetTabDiscardState(0, true);
+
+  PageActionIconView* view = GetPageActionIconView();
+  EXPECT_TRUE(view->GetVisible());
+  EXPECT_TRUE(view->ShouldShowLabel());
+}
+
+// When the savings chip has been expanded recently then it does not show in
+// the expanded mode.
+TEST_F(HighEfficiencyChipViewTest, ShouldNotExpandWhenChipHasExpandedRecently) {
+  SetChipExpandedCount(HighEfficiencyChipView::kChipAnimationCount);
+  SetHighEfficiencyModeEnabled(true);
+  SetChipExpandedTimeToNow();
+  AddNewTab(kHighMemorySavingsKilobytes,
+            ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
+  SetTabDiscardState(0, true);
+
+  PageActionIconView* view = GetPageActionIconView();
+  EXPECT_TRUE(view->GetVisible());
+  EXPECT_FALSE(view->ShouldShowLabel());
+}
+
 // When the page action chip is clicked, the dialog should open.
 TEST_F(HighEfficiencyChipViewTest, ShouldOpenDialogOnClick) {
   SetHighEfficiencyModeEnabled(true);
@@ -210,35 +270,6 @@ TEST_F(HighEfficiencyChipViewTest, ShouldLogMetricsOnDialogDismiss) {
   histogram_tester_.ExpectUniqueSample(
       "PerformanceControls.HighEfficiency.BubbleAction",
       HighEfficiencyBubbleActionType::kDismiss, 1);
-}
-
-// When the dialog is closed, the ink drop should hide.
-TEST_F(HighEfficiencyChipViewTest, ShouldShowAndHideInkDrop) {
-  SetTabDiscardState(0, true);
-
-  PageActionIconView* view = GetPageActionIconView();
-  EXPECT_EQ(GetInkDropState(), views::InkDropState::HIDDEN);
-
-  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                       ui::EventTimeForNow(), 0, 0);
-  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), 0, 0);
-  views::test::ButtonTestApi test_api(view);
-  // Open bubble
-  test_api.NotifyClick(press);
-  test_api.NotifyClick(release);
-  EXPECT_EQ(GetInkDropState(), views::InkDropState::ACTIVATED);
-
-  // Close bubble
-  test_api.NotifyClick(press);
-
-  // TODO(drubery): This assertion fails on Mac after
-  // https://crrev.com/c/4348483 since the bubble no longer takes out an
-  // ScopedAnchorHighlight because it is never made visible. The test setup
-  // needs to be updated so that the bubble is visible.
-#if !BUILDFLAG(IS_MAC)
-  EXPECT_EQ(GetInkDropState(), views::InkDropState::HIDDEN);
-#endif
 }
 
 // A link should be rendered within the dialog.
@@ -390,4 +421,36 @@ TEST_F(HighEfficiencyChipViewTest, ShowChipWithoutSavingsInGuestMode) {
   EXPECT_NE(
       label->GetText().find(u"Memory Saver freed up memory for other tasks"),
       std::string::npos);
+}
+
+class HighEfficiencyChipViewDiscardedTabTreatmentDisabledTest
+    : public HighEfficiencyChipViewTest {
+ public:
+  HighEfficiencyChipViewDiscardedTabTreatmentDisabledTest() = default;
+
+  void SetUp() override {
+    feature_list_.InitAndDisableFeature(
+        performance_manager::features::kMemorySavingsReportingImprovements);
+    TestWithBrowserView::SetUp();
+
+    AddNewTab(kMemorySavingsKilobytes,
+              ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// When kDiscardedTabTreatment is disabled, the chip should not expand.
+TEST_F(HighEfficiencyChipViewDiscardedTabTreatmentDisabledTest,
+       ShouldNotExpandWhenFeatureIsDisabled) {
+  SetChipExpandedCount(HighEfficiencyChipView::kChipAnimationCount);
+  SetHighEfficiencyModeEnabled(true);
+  AddNewTab(kHighMemorySavingsKilobytes,
+            ::mojom::LifecycleUnitDiscardReason::PROACTIVE);
+  SetTabDiscardState(0, true);
+
+  PageActionIconView* view = GetPageActionIconView();
+  EXPECT_TRUE(view->GetVisible());
+  EXPECT_FALSE(view->ShouldShowLabel());
 }

@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">Ідзе здымка відэа</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Наяўнасць DNS-рэзолвера</translation>
+<translation id="1708602061922134366">Сіні (Google)</translation>
 <translation id="1710499924611012470">Навігацыя са спецыяльнымі магчымасцямі</translation>
 <translation id="1715359911173058521">Узнікла праблема пры абмене даных са сканерам. Праверце падключэнне да сеткі або USB-падключэнне і паўтарыце спробу.</translation>
 <translation id="1717874160321062422">Прыладай кіруюць <ph name="FIRST_MANAGER" /> і <ph name="SECOND_MANAGER" /></translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">Тып аўтэнтыфікацыі</translation>
+<translation id="1776228893584526149">Колер шпалер</translation>
 <translation id="1782199038061388045">пераклад</translation>
 <translation id="1790209694022261219">Вокны і працоўныя сталы</translation>
 <translation id="1792647875738159689">Сканіраванне скасоўваецца</translation>
@@ -123,6 +125,7 @@
 <translation id="1904932688895783618">Вось яшчэ некалькі карысных рэсурсаў:</translation>
 <translation id="1905710495812624430">Перавышана максімальная колькасць спроб.</translation>
 <translation id="1908234395526491708">Збоі запытаў UDP</translation>
+<translation id="1923388006036088459">Колеравыя акцэнты</translation>
 <translation id="1947737735496445907">Надрукавана</translation>
 <translation id="1951012854035635156">Памочнік</translation>
 <translation id="1962550982027027473">Тып APN павінен быць стандартным</translation>
@@ -140,6 +143,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Іншыя налады</translation>
 <translation id="2085089206770112532">Паменшыць яркасць дысплэя</translation>
+<translation id="209751264101900360">Ад зары да цемры. Цячэнне аблокаў</translation>
 <translation id="2102231663024125441">Рэдагаванне тэксту</translation>
 <translation id="2105810540595158374">Гэта гульнявы кантролер.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, версія <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +335,7 @@
 <translation id="3967822245660637423">Спампоўка завершана</translation>
 <translation id="3969602104473960991">Пароль Chrome OS зменены</translation>
 <translation id="397105322502079400">Ідзе разлік...</translation>
+<translation id="3974175076798940554">Даступныя эксклюзіўныя функцыі Chromebook плюс</translation>
 <translation id="39823212440917567">Заданні друку, старэйшыя за <ph name="NUMBER_OF_DAYS" /> сут, будуць выдалены</translation>
 <translation id="3993704782688964914">Прылада "<ph name="DEVICE_NAME" />" абноўлена</translation>
 <translation id="4003384961948020559">Збой: выхадны латок запоўнены</translation>
@@ -370,6 +375,7 @@
 <translation id="4275663329226226506">Мультымедыя</translation>
 <translation id="4289540628985791613">Агляд</translation>
 <translation id="4289849978083912975">Слайд-шоу</translation>
+<translation id="4293621540182258188">Ад зары да цемры. Цячэнне Зямлі</translation>
 <translation id="4297501883039923494">Спынена: невядомая памылка</translation>
 <translation id="4300073214558989">Відарысаў: <ph name="IMAGE_COUNT" /></translation>
 <translation id="4311195029067684288">Поўнасцю</translation>
@@ -479,6 +485,7 @@
 <translation id="5166918508782100047">Налады Хуткіх адказаў</translation>
 <translation id="5168185087976003268">Стан акумулятара</translation>
 <translation id="5170568018924773124">Паказаць у папцы</translation>
+<translation id="5180712487038406644">Выразныя колеры</translation>
 <translation id="5190187232518914472">Ажывіце прыемныя ўспаміны. Каб дадаць або змяніць альбомы, перайдзіце ў <ph name="LINK_BEGIN" />Google Фота<ph name="LINK_END" />.</translation>
 <translation id="5212593641110061691">Таблоід</translation>
 <translation id="5222676887888702881">Выйсці</translation>
@@ -513,6 +520,7 @@
 <translation id="5423849171846380976">Уключана</translation>
 <translation id="5430931332414098647">Імгненны рэжым мадэма</translation>
 <translation id="5431318178759467895">Колер</translation>
+<translation id="5456936324019847994">Не ўдаецца ўстанавіць падключэнне ні з адным з уключаных уласных пунктаў APN. Па дадатковую інфармацыю звяртайцеся да аператара мабільнай сувязі.</translation>
 <translation id="5457599981699367932">Праглядаць як госць</translation>
 <translation id="54609108002486618">Пад кіраваннем</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Засталася {0} спроба}one{Засталася {0} спроба}few{Засталося {0} спробы}many{Засталося {0} спроб}other{Засталося {0} спробы}}</translation>
@@ -544,6 +552,7 @@
 <translation id="576835345334454681">Павялічыць яркасць дысплэя</translation>
 <translation id="57838592816432529">Выключыць</translation>
 <translation id="5784136236926853061">Вялікая затрымка HTTP-запытаў</translation>
+<translation id="5809090008577139505">Палярнае ззянне</translation>
 <translation id="5826644637650799838">Інфармацыя аб ілюстрацыі</translation>
 <translation id="5832805196449965646">Дадаць карыстальніка</translation>
 <translation id="583281660410589416">Невядома</translation>
@@ -562,10 +571,12 @@
 <translation id="5907649332524363701">колер клавіш</translation>
 <translation id="5916084858004523819">Забароненая</translation>
 <translation id="5916664084637901428">Уключана</translation>
+<translation id="5918201491776799918">Выбраныя эксклюзіўныя творы Chromebook Plus</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Сканіраванне завершана. Файл захаваны ў папку <ph name="LINK_BEGIN" />"<ph name="FOLDER_NAME" />"<ph name="LINK_END" />.}one{Сканіраванне завершана. Файлы захаваны ў папку <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}few{Сканіраванне завершана. Файлы захаваны ў папку <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}many{Сканіраванне завершана. Файлы захаваны ў папку <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Сканіраванне завершана. Файлы захаваны ў папку <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Файл не знойдзены</translation>
 <translation id="5939518447894949180">Скінуць</translation>
 <translation id="594552776027197022">Стварэнне выпадковай пары ключоў</translation>
+<translation id="5946538341867151940">Падключэнне не ўстаноўлена. Калі ваш аператар мабільнай сувязі рэкамендуе выкарыстоўваць карыстальніцкую назву пункта доступу, увядзіце неабходную інфармацыю, націснуўшы "+ Новая APN".</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Стандартныя шпалеры</translation>
 <translation id="6017514345406065928">Зялёны</translation>
@@ -640,6 +651,7 @@
 <translation id="6527081081771465939">Невядомы пратакол сістэмы бяспекі Wi-Fi</translation>
 <translation id="6535178685492749208">Вы па-за сеткай. Водгук будзе адпраўлены пазней.</translation>
 <translation id="65587193855025101">Планшэтны сканер</translation>
+<translation id="6560196641871357166">Яскравыя колеры</translation>
 <translation id="6564646048574748301">Збой: прынтар недаступны</translation>
 <translation id="6566314079205407217">Шматстаронкавае сканіраванне</translation>
 <translation id="6574762126505704998">Запоўніць</translation>
@@ -721,6 +733,7 @@
 <translation id="7281657306185710294">Адчуванне брызу</translation>
 <translation id="7287310195820267359">Калекцыі шпалер</translation>
 <translation id="7297226631177386107">Не ўдалося падключыцца праз брандмаўар да вэб-сайтаў HTTPS</translation>
+<translation id="7297726121602187087">Цёмна-зялёны</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Пытанні экспертам і адказы на іх на даведачным форуме Chromebook</translation>
@@ -755,12 +768,14 @@
 <translation id="7570674786725311828">Сэнсарны экран з USB</translation>
 <translation id="7595982850646262331">Застаецца <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Для перамяшчэння выкарыстоўвайце мыш або клавішы са стрэлкамі.</translation>
+<translation id="7618774594543487847">Нейтральны</translation>
 <translation id="7620771111601174153">Атрымаць больш інфармацыі ў Даведачным цэнтры</translation>
 <translation id="763165478673169849">Час апошняга скіду</translation>
 <translation id="7648838807254605802">Вялікая затрымка HTTPS</translation>
 <translation id="7656388927906093505">Гэта мыш.</translation>
 <translation id="7658239707568436148">Скасаваць</translation>
 <translation id="7665800271478495366">Змяніць аватар</translation>
+<translation id="7675241868020048622">Aurora (толькі на прыладах Plus)</translation>
 <translation id="7690294790491645610">Пацвердзіце новы пароль</translation>
 <translation id="7701040980221191251">Няма</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +832,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Выбраць <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Інструменты распрацоўшчыкаў</translation>
+<translation id="8153923300383192510">Эксклюзіўна для Chromebook Plus</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Далучыць</translation>
 <translation id="8206859287963243715">Мабільная сетка</translation>
@@ -839,6 +855,7 @@
 <translation id="8352772353338965963">Дадайце ўліковы запіс для функцыі ўваходу ў некалькі ўліковых запісаў. Гэта функцыя дае магчымасць пераключацца паміж уліковымі запісамі, у якія выкананы ўваход, без уводу пароля. Таму выкарыстоўвайце яе толькі для ўліковых запісаў, якім давяраеце.</translation>
 <translation id="8364946094152050673">Поле сервераў даменных імён пустое</translation>
 <translation id="8372477600026034341">Дадатковыя хосты</translation>
+<translation id="8373046809163484087">Выкарыстоўвайце колеравыя схемы, якія адпавядаюць вашым шпалерам</translation>
 <translation id="8380114448424469341">Замацаваць акно <ph name="DIRECTION" /> на палову экрана</translation>
 <translation id="8395584934117017006">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе арганізацыя</translation>
 <translation id="8398927464629426868">Цяперашняя хуткасць зарадкі або разрадкі прылады</translation>
@@ -858,11 +875,13 @@
 <translation id="8503813439785031346">Імя карыстальніка</translation>
 <translation id="8503836310948963452">Яшчэ пару хвілін…</translation>
 <translation id="8508640263392900755">Падрабязныя звесткі пра APN</translation>
+<translation id="8522687886059337719">Цяпер вам даступныя новыя <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />шпалеры<ph name="END_LINK_WALLPAPER_SUBPAGE" /> і <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />застаўка<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Магчыма, вам спатрэбіцца ўключыць гэту наладу, каб падключыцца да сеткі вашага аператара. Звяжыцеся з аператарам, каб даведацца больш.</translation>
 <translation id="8576249514688522074">Неініцыялізаваная</translation>
 <translation id="8620617069779373398">Стан роўмінгу</translation>
+<translation id="86356131183441916">Светла-фіялетавы</translation>
 <translation id="8655295600908251630">Версія</translation>
 <translation id="8655828773034788261">Абагуліць URL-адрас:</translation>
 <translation id="8660881923941176839">фунт.</translation>
@@ -947,6 +966,7 @@
 <translation id="945522503751344254">Адправіць водгук</translation>
 <translation id="952992212772159698">Неактыўнае</translation>
 <translation id="960719561871045870">Код аператара</translation>
+<translation id="979450713603643090">Светла-ружовы</translation>
 <translation id="982713511914535780">Выканаць праверку разрадкі</translation>
 <translation id="987264212798334818">Агульныя</translation>
 </translationbundle>

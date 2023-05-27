@@ -143,7 +143,8 @@ chromium-metrics-reviews@google.com.
     Other is for all other users that do not fall into any of the below
     categories. Users under the age of consent automatically have supervision
     applied to their accounts. Users over the age of consent can opt into
-    supervision.
+    supervision. WebApprovals metrics are included from M110 onwards.
+    ExtensionApprovals metrics are included from M115 onwards.
   </summary>
 </histogram>
 
@@ -154,10 +155,13 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the state at which the Parent Access dialog is closed for all parent
     access flows. Allows to track the drop rate by important states during the
-    parent access flow. This metric is recorded for ChromeOS only.
+    parent access flow. This metric is recorded for ChromeOS only. WebApprovals
+    metrics are available from M110 onwards. ExtensionApprovals metrics are
+    available from M115 onwards.
   </summary>
   <token key="FlowType">
     <variant name="All"/>
+    <variant name="ExtensionApprovals"/>
     <variant name="WebApprovals"/>
   </token>
 </histogram>
@@ -168,9 +172,12 @@ chromium-metrics-reviews@google.com.
   <owner>cros-families-eng@google.com</owner>
   <summary>
     Records an error that occurs in the parent access widget. ChromeOS Only.
+    WebApprovals metrics are available from M110 onwards. ExtensionApprovals
+    metrics are available from M115 onwards.
   </summary>
   <token key="FlowType">
     <variant name="All"/>
+    <variant name="ExtensionApprovals"/>
     <variant name="WebApprovals"/>
   </token>
 </histogram>
@@ -184,9 +191,12 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records an error where the parent access widget dialog cannot be shown.
     Reported by the browser when the dialog fails to show. ChromeOS only.
+    WebApprovals metrics are available from M110 onwards. ExtensionApprovals
+    metrics are available from M115 onwards.
   </summary>
   <token key="FlowType">
     <variant name="All"/>
+    <variant name="ExtensionApprovals"/>
     <variant name="WebApprovals"/>
   </token>
 </histogram>
@@ -248,6 +258,37 @@ chromium-metrics-reviews@google.com.
     user (LSU). Reports &quot;displayed&quot; when the login screen displays a
     non-LSU Gaia user. Reports &quot;deleted&quot; when the login screen
     attempts to delete a LSU. Recorded whenever the user sees the login screen.
+  </summary>
+</histogram>
+
+<histogram name="FamilyLinkUser.ClassifyUrlRequest.AuthError"
+    enum="GoogleServiceAuthError" expires_after="2023-11-01">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    The detailed reason of GoogleServiceAuthError in calls to Kids Management
+    API::ClassifyURL.
+  </summary>
+</histogram>
+
+<histogram name="FamilyLinkUser.ClassifyUrlRequest.NetOrHttpStatus"
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-11-01">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    The status of the net or http communication to the Kids Management
+    API::ClassifyURL with JSON message format in expected response. This is
+    recorded for each request to the Kids Management API.
+  </summary>
+</histogram>
+
+<histogram name="FamilyLinkUser.ClassifyUrlRequest.ParsingResult"
+    enum="KidsChromeManagementClientParsingError" expires_after="2023-11-01">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Indicates success of a JSON response parsing from Kids Management
+    API::ClassifyURL, or a stage at which it failed.
   </summary>
 </histogram>
 
@@ -319,19 +360,6 @@ chromium-metrics-reviews@google.com.
     foreground time of Chrome browser. Ignores the time when video or audio is
     playing in the background, or Chrome browser is invisible. Also ignores the
     time when UsageTimeStateNotifier::UsageTimeState is inactive.
-  </summary>
-</histogram>
-
-<histogram name="FamilyUser.DenylistSource" enum="FamilyUserDenylistSource"
-    expires_after="2023-12-12">
-  <owner>courtneywong@chromium.org</owner>
-  <owner>cros-families-eng@google.com</owner>
-  <summary>
-    Records the source from which the website filter denylist was loaded either
-    at login or when web content filter settings change. The default behavior is
-    to load the current denylist. If that fails, then loading the old denylist
-    will be attempted. If that also fails, then it is logged that there is no
-    denylist source.
   </summary>
 </histogram>
 
@@ -634,19 +662,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The extra page load delays introduced by network requests due to the
     supervised user SafeSites feature, measured once per page load.
-  </summary>
-</histogram>
-
-<histogram name="ManagedUsers.SafetyFilter"
-    enum="SupervisedUserSafetyFilterResult" expires_after="2023-12-12">
-  <owner>agawronska@chromium.org</owner>
-  <owner>cros-families-eng@google.com</owner>
-  <summary>
-    The counts of results from the supervised user safety filter. Each entry
-    includes the outcome of the filter (i.e. allowed, blocked, or unknown) and
-    the page transition type (how the user got there, e.g. typed URL, clicked
-    link). This only includes URL requests that were handled by the SafeSites
-    filter (both online and the static blocklist).
   </summary>
 </histogram>
 

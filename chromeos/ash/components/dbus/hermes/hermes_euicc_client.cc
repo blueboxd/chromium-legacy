@@ -5,6 +5,7 @@
 #include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
 
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/ash/components/dbus/hermes/constants.h"
@@ -35,6 +36,7 @@ HermesEuiccClient::Properties::Properties(
                    &installed_carrier_profiles_);
   RegisterProperty(hermes::euicc::kPendingProfilesProperty,
                    &pending_carrier_profiles_);
+  RegisterProperty(hermes::euicc::kProfilesProperty, &profiles_);
   RegisterProperty(hermes::euicc::kPhysicalSlotProperty, &physical_slot_);
 }
 
@@ -110,6 +112,22 @@ class HermesEuiccClientImpl : public HermesEuiccClient {
     object_proxy->CallMethodWithErrorResponse(
         &method_call, hermes_constants::kHermesNetworkOperationTimeoutMs,
         base::BindOnce(&HermesEuiccClientImpl::OnHermesStatusResponse,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void RefreshSmdxProfiles(const dbus::ObjectPath& euicc_path,
+                           const std::string& activation_code,
+                           bool restore_slot,
+                           RefreshSmdxProfilesCallback callback) override {
+    dbus::MethodCall method_call(hermes::kHermesEuiccInterface,
+                                 hermes::euicc::kRefreshSmdxProfiles);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(activation_code);
+    writer.AppendBool(restore_slot);
+    dbus::ObjectProxy* object_proxy = GetOrCreateProperties(euicc_path).first;
+    object_proxy->CallMethodWithErrorResponse(
+        &method_call, hermes_constants::kHermesNetworkOperationTimeoutMs,
+        base::BindOnce(&HermesEuiccClientImpl::OnRefreshSmdxProfilesResponse,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
@@ -205,6 +223,34 @@ class HermesEuiccClientImpl : public HermesEuiccClient {
     std::move(callback).Run(HermesResponseStatus::kSuccess, &profile_path);
   }
 
+  void OnRefreshSmdxProfilesResponse(RefreshSmdxProfilesCallback callback,
+                                     dbus::Response* response,
+                                     dbus::ErrorResponse* error_response) {
+    std::vector<dbus::ObjectPath> profile_paths;
+
+    if (error_response) {
+      NET_LOG(ERROR) << "Refresh SM-DX profiles failed with error: "
+                     << error_response->GetErrorName();
+      std::move(callback).Run(
+          HermesResponseStatusFromErrorName(error_response->GetErrorName()),
+          profile_paths);
+      return;
+    }
+
+    if (!response) {
+      // No Error or Response received.
+      NET_LOG(ERROR) << "Refresh SM-DX profiles Error: No error or "
+                        "response received.";
+      std::move(callback).Run(HermesResponseStatus::kErrorNoResponse,
+                              profile_paths);
+      return;
+    }
+
+    dbus::MessageReader reader(response);
+    reader.PopArrayOfObjectPaths(&profile_paths);
+    std::move(callback).Run(HermesResponseStatus::kSuccess, profile_paths);
+  }
+
   void OnHermesStatusResponse(HermesResponseCallback callback,
                               dbus::Response* response,
                               dbus::ErrorResponse* error_response) {
@@ -233,7 +279,7 @@ class HermesEuiccClientImpl : public HermesEuiccClient {
     }
   }
 
-  dbus::Bus* bus_;
+  raw_ptr<dbus::Bus, ExperimentalAsh> bus_;
   ObjectMap object_map_;
   base::WeakPtrFactory<HermesEuiccClientImpl> weak_ptr_factory_{this};
 };

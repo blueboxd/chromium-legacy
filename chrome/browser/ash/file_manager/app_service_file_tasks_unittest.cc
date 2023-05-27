@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/escape.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -356,31 +357,28 @@ class AppServiceFileTasksTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
-  apps::AppServiceProxy* app_service_proxy_ = nullptr;
+  raw_ptr<apps::AppServiceProxy, ExperimentalAsh> app_service_proxy_ = nullptr;
   apps::AppServiceTest app_service_test_;
 };
 
 class AppServiceFileTasksTestEnabled : public AppServiceFileTasksTest {
  public:
   AppServiceFileTasksTestEnabled() {
-    feature_list_.InitWithFeatures(
-        {blink::features::kFileHandlingAPI,
-         ash::features::kArcFileTasksUseAppService,
-         ash::features::kGuestOsFileTasksUseAppService},
-        {});
+    feature_list_.InitWithFeatures({blink::features::kFileHandlingAPI,
+                                    ash::features::kArcFileTasksUseAppService},
+                                   {});
   }
 };
 
 class AppServiceFileTasksTestDisabled : public AppServiceFileTasksTest {
  public:
   AppServiceFileTasksTestDisabled() {
-    feature_list_.InitWithFeatures(
-        {}, {ash::features::kArcFileTasksUseAppService,
-             ash::features::kGuestOsFileTasksUseAppService});
+    feature_list_.InitWithFeatures({},
+                                   {ash::features::kArcFileTasksUseAppService});
   }
 };
 
-// ARC apps should not be found when kArcAndGuestOsFileTasksUseAppService is
+// ARC apps should not be found when kArcFileTasksUseAppService is
 // disabled.
 TEST_F(AppServiceFileTasksTestDisabled, FindAppServiceArcApp) {
   std::string text_mime_type = "text/plain";
@@ -395,36 +393,6 @@ TEST_F(AppServiceFileTasksTestDisabled, FindAppServiceArcApp) {
 
   std::vector<FullTaskDescriptor> tasks =
       FindAppServiceTasks({{"foo.txt", text_mime_type}});
-  ASSERT_EQ(0U, tasks.size());
-}
-
-// Crostini apps should not be found when kGuestOsFileTasksUseAppService
-// is disabled.
-TEST_F(AppServiceFileTasksTestDisabled, FindAppServiceCrostiniApp) {
-  std::string text_mime_type = "text/plain";
-  std::string file_name = "foo.txt";
-  std::string text_app_id = "Text app";
-  AddGuestOsAppWithIntentFilter(
-      text_app_id, apps::AppType::kCrostini,
-      CreateMimeTypeFileIntentFilter(apps_util::kIntentActionView,
-                                     text_mime_type));
-
-  std::vector<FullTaskDescriptor> tasks =
-      FindAppServiceTasks({{file_name, text_mime_type}});
-  ASSERT_EQ(0U, tasks.size());
-}
-
-// PluginVm apps should not be found when kGuestOsFileTasksUseAppService
-// is disabled.
-TEST_F(AppServiceFileTasksTestDisabled, FindAppServicePluginVmApp) {
-  std::string file_name = "foo.txt";
-  std::string app_id = "Text app";
-  AddGuestOsAppWithIntentFilter(
-      app_id, apps::AppType::kCrostini,
-      CreateExtensionTypeFileIntentFilter(apps_util::kIntentActionView, "txt"));
-
-  std::vector<FullTaskDescriptor> tasks =
-      FindAppServiceTasks({{file_name, kMimeTypeText}});
   ASSERT_EQ(0U, tasks.size());
 }
 
@@ -988,7 +956,7 @@ class AppServiceFileTasksPolicyTest : public AppServiceFileTasksTestEnabled {
   AppServiceFileTasksPolicyTest()
       : user_manager_(new ash::FakeChromeUserManager()),
         scoped_user_manager_(std::make_unique<user_manager::ScopedUserManager>(
-            base::WrapUnique(user_manager_))) {}
+            base::WrapUnique(user_manager_.get()))) {}
 
   std::unique_ptr<KeyedService> SetDlpRulesManager(
       content::BrowserContext* context) {
@@ -1029,9 +997,10 @@ class AppServiceFileTasksPolicyTest : public AppServiceFileTasksTestEnabled {
 
   void TearDown() override { scoped_user_manager_.reset(); }
 
-  policy::MockDlpRulesManager* rules_manager_ = nullptr;
+  raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> rules_manager_ =
+      nullptr;
   std::unique_ptr<MockFilesController> mock_files_controller_ = nullptr;
-  ash::FakeChromeUserManager* user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 };
 

@@ -16,6 +16,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_ephemeral_user.h"
+#include "ash/wallpaper/wallpaper_utils/wallpaper_online_variant_utils.h"
 #include "base/check.h"
 #include "base/containers/adapters.h"
 #include "base/containers/flat_map.h"
@@ -337,8 +338,7 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
     // Although `WallpaperType::kCustomized` typed wallpapers are syncable, we
     // don't set synced info until the image is stored in drivefs, so we know
     // when to retry saving it on failure.
-    if (IsWallpaperTypeSyncable(info.type) &&
-        info.type != WallpaperType::kCustomized) {
+    if (ShouldSyncOut(info) && info.type != WallpaperType::kCustomized) {
       SetSyncedWallpaperInfo(account_id, info);
     }
 
@@ -586,7 +586,7 @@ class WallpaperPrefManagerImpl : public WallpaperPrefManager {
     color_dict->Remove(old_info.location);
   }
 
-  PrefService* local_state_ = nullptr;
+  raw_ptr<PrefService, ExperimentalAsh> local_state_ = nullptr;
   std::unique_ptr<WallpaperProfileHelper> profile_helper_;
 
   // Cache of wallpapers for ephemeral users.
@@ -611,6 +611,37 @@ const char WallpaperPrefManager::kNewWallpaperVariantListNodeName[] =
 const char WallpaperPrefManager::kOnlineWallpaperTypeNodeName[] =
     "online_image_type";
 const char WallpaperPrefManager::kOnlineWallpaperUrlNodeName[] = "url";
+
+// static
+bool WallpaperPrefManager::ShouldSyncOut(const WallpaperInfo& local_info) {
+  if (IsTimeOfDayWallpaper(local_info)) {
+    // Time Of Day wallpapers are not syncable.
+    // TODO(b/277804153): Confirm the sync rules for time of day wallpapers.
+    return false;
+  }
+  return IsWallpaperTypeSyncable(local_info.type);
+}
+
+// static
+bool WallpaperPrefManager::ShouldSyncIn(const WallpaperInfo& synced_info,
+                                        const WallpaperInfo& local_info) {
+  if (!IsWallpaperTypeSyncable(synced_info.type)) {
+    LOG(ERROR) << " wallpaper type " << static_cast<int>(synced_info.type)
+               << " from remote prefs is not syncable.";
+    return false;
+  }
+  if (synced_info.MatchesSelection(local_info)) {
+    return false;
+  }
+  if (synced_info.date < local_info.date) {
+    return false;
+  }
+  // TODO(b/277804153): Confirm the sync rules for time of day wallpapers.
+  if (IsTimeOfDayWallpaper(local_info)) {
+    return false;
+  }
+  return true;
+}
 
 // static
 std::unique_ptr<WallpaperPrefManager> WallpaperPrefManager::Create(

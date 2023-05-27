@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static org.chromium.chrome.browser.device.DeviceClassManager.GTS_ACCESSIBILITY_SUPPORT;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -21,8 +23,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.jank_tracker.JankScenario;
-import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
@@ -59,9 +59,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -90,7 +89,6 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
 
     private TabListSceneLayer mSceneLayer;
     private final StartSurface mStartSurface;
-    private final JankTracker mJankTracker;
     private final TabSwitcherViewObserver mTabSwitcherObserver;
     @Nullable
     private final ViewGroup mScrimAnchor;
@@ -127,14 +125,13 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     private PerfListener mPerfListenerForTesting;
 
     public TabSwitcherAndStartSurfaceLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, StartSurface startSurface, JankTracker jankTracker,
+            LayoutRenderHost renderHost, StartSurface startSurface,
             ViewGroup tabSwitcherScrimAnchor, ScrimCoordinator scrimCoordinator) {
         super(context, updateHost, renderHost);
         mDummyLayoutTab = createLayoutTab(Tab.INVALID_TAB_ID, false);
         mDummyLayoutTab.setShowToolbar(true);
         mStartSurface = startSurface;
         mStartSurface.setOnTabSelectingListener(this::onTabSelecting);
-        mJankTracker = jankTracker;
         mScrimAnchor = tabSwitcherScrimAnchor;
         mScrimCoordinator = scrimCoordinator;
 
@@ -249,13 +246,6 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
     private void show(long time, boolean animate, boolean isShowingStartSurfaceHomepage) {
         super.show(time, animate);
 
-        // When shown on StartSurface jank is tracked under
-        // JankScenario.START_SURFACE_TAB_SWITCHER and it's started/stopped on
-        // StartSurfaceMediator.
-        if (!StartSurfaceConfiguration.isStartSurfaceFlagEnabled()) {
-            mJankTracker.startTrackingScenario(JankScenario.TAB_SWITCHER);
-        }
-
         // Lazy initialization if needed.
         mStartSurface.initialize();
 
@@ -264,7 +254,7 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         LayoutTab sourceLayoutTab = createLayoutTab(
                 mTabModelSelector.getCurrentTabId(), mTabModelSelector.isIncognitoSelected());
         sourceLayoutTab.setDecorationAlpha(0);
-
+        updateCacheVisibleIds(Collections.singletonList(mTabModelSelector.getCurrentTabId()));
         mLayoutTabs = new LayoutTab[] {sourceLayoutTab};
 
         boolean quick;
@@ -301,20 +291,32 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
             if (mStartSurface.getStartSurfaceState() != StartSurfaceState.SHOWING_TABSWITCHER) {
                 mStartSurface.setStartSurfaceState(StartSurfaceState.SHOWING_TABSWITCHER);
             }
-            // Ensure the SceneLayer image for the GTS is in the correct position by deferring until
-            // the next layout pass.
-            mDeferredAnimationRunnable = () -> {
-                showOverviewWithTabShrink(shouldAnimate, () -> {
-                    return getGridTabListDelegate().getThumbnailLocationOfCurrentTab(false);
-                }, isShowingStartSurfaceHomepage, quick);
-            };
-            getGridTabListDelegate().runAnimationOnNextLayout(() -> {
-                if (mDeferredAnimationRunnable != null) {
-                    Runnable deferred = mDeferredAnimationRunnable;
-                    mDeferredAnimationRunnable = null;
-                    deferred.run();
-                }
-            });
+
+            if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(getContext())
+                    && GTS_ACCESSIBILITY_SUPPORT.getValue()
+                    && ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
+                // Intentionally disable the shrinking animation when accessibility is enabled.
+                // During the shrinking animation, since the ComponsitorViewHolder is not focusable.
+                // Chrome is in a temporary no "valid" focus target state, so the focus shifts
+                // to the omnibox and triggers visual jank and accessibility announcement of the
+                // URL. Disable the animation and run immediately to avoid this temporary state.
+                showOverviewWithTabShrink(false, () -> null, isShowingStartSurfaceHomepage, true);
+            } else {
+                // Ensure the SceneLayer image for the GTS is in the correct position by deferring
+                // until the next layout pass.
+                mDeferredAnimationRunnable = () -> {
+                    showOverviewWithTabShrink(shouldAnimate, () -> {
+                        return getGridTabListDelegate().getThumbnailLocationOfCurrentTab(false);
+                    }, isShowingStartSurfaceHomepage, quick);
+                };
+                getGridTabListDelegate().runAnimationOnNextLayout(() -> {
+                    if (mDeferredAnimationRunnable != null) {
+                        Runnable deferred = mDeferredAnimationRunnable;
+                        mDeferredAnimationRunnable = null;
+                        deferred.run();
+                    }
+                });
+            }
         }
     }
 
@@ -386,7 +388,9 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         sourceLayoutTab.setDecorationAlpha(0);
 
         List<LayoutTab> layoutTabs = new ArrayList<>();
+        List<Integer> tabIds = new ArrayList<>();
         layoutTabs.add(sourceLayoutTab);
+        tabIds.add(sourceLayoutTab.getId());
 
         if (sourceTabId != mTabModelSelector.getCurrentTabId()) {
             // Keep the original tab in mLayoutTabs to unblock thumbnail taking at the end of
@@ -396,10 +400,10 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
             originalTab.setScale(0);
             originalTab.setDecorationAlpha(0);
             layoutTabs.add(originalTab);
+            tabIds.add(originalTab.getId());
         }
         mLayoutTabs = layoutTabs.toArray(new LayoutTab[0]);
-
-        updateCacheVisibleIds(new LinkedList<>(Arrays.asList(sourceTabId)));
+        updateCacheVisibleIds(tabIds);
 
         mIsAnimatingHide = true;
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) {
@@ -414,12 +418,6 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         try (TraceEvent e = TraceEvent.scoped("StartSurfaceLayout.DoneHiding")) {
             super.doneHiding();
             RecordUserAction.record("MobileExitStackView");
-            // When shown on StartSurface jank is tracked under
-            // JankScenario.START_SURFACE_TAB_SWITCHER and it's started/stopped on
-            // StartSurfaceMediator.
-            if (!StartSurfaceConfiguration.isStartSurfaceFlagEnabled()) {
-                mJankTracker.finishTrackingScenario(JankScenario.TAB_SWITCHER);
-            }
         }
     }
 
@@ -513,14 +511,6 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         Log.d(TAG, "SkipSlowZooming = " + skipSlowZooming);
         if (skipSlowZooming) {
             showShrinkingAnimation &= quick;
-        }
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(getContext())) {
-            // Intentionally disable the shrinking animation when accessibility is enabled.
-            // During the shrinking animation, since the ComponsitorViewHolder is not focusable,
-            // I think we are in a temporary no "valid" focus target state, so the focus shifts
-            // to the omnibox and triggers an accessibility announcement of the URL and a
-            // keyboard hiding event. Disable the animation to avoid this temporary state.
-            showShrinkingAnimation &= !ChromeAccessibilityUtil.get().isAccessibilityEnabled();
         }
 
         if (!showShrinkingAnimation || target.get() == null) {

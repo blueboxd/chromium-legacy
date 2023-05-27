@@ -168,6 +168,11 @@ bool TurnSyncOnHelper::Delegate::
 void TurnSyncOnHelper::Delegate::ShowLoginErrorForBrowser(
     const SigninUIError& error,
     Browser* browser) {
+  if (!browser) {
+    // TODO(crbug.com/1374315): Make sure we do something or log an error if
+    // opening a browser window was not possible.
+    return;
+  }
   LoginUIServiceFactory::GetForProfile(browser->profile())
       ->DisplayLoginResult(browser, error, /*from_profile_picker=*/false);
 }
@@ -502,7 +507,7 @@ void TurnSyncOnHelper::SigninAndShowSyncConfirmationUI() {
     // progress.
     // TODO(https://crbug.com/811211): Remove this handle.
     sync_blocker_ = sync_service->GetSetupInProgressHandle();
-    sync_service->GetUserSettings()->SetSyncRequested(true);
+    sync_service->SetSyncFeatureRequested();
 
     // For managed users and users on enterprise machines that might have cloud
     // policies, it is important to wait until sync is initialized so that the
@@ -661,7 +666,7 @@ void TurnSyncOnHelper::SwitchToProfile(Profile* new_profile) {
   DCHECK(!sync_startup_tracker_);
 
   policy::UserPolicySigninServiceFactory::GetForProfile(profile_)
-      ->ShutdownUserCloudPolicyManager();
+      ->ShutdownCloudPolicyManager();
   SetCurrentTurnSyncOnHelper(profile_, nullptr);  // Detach from old profile
   profile_ = new_profile;
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -690,7 +695,7 @@ void TurnSyncOnHelper::AttachToProfile() {
       current_helper->signin_aborted_mode_ = SigninAbortedMode::KEEP_ACCOUNT;
     }
     policy::UserPolicySigninServiceFactory::GetForProfile(profile_)
-        ->ShutdownUserCloudPolicyManager();
+        ->ShutdownCloudPolicyManager();
     current_helper->AbortAndDelete();
   }
   DCHECK(!GetCurrentTurnSyncOnHelper(profile_));
@@ -712,7 +717,7 @@ void TurnSyncOnHelper::AbortAndDelete() {
 
   if (signin_aborted_mode_ == SigninAbortedMode::REMOVE_ACCOUNT) {
     policy::UserPolicySigninServiceFactory::GetForProfile(profile_)
-        ->ShutdownUserCloudPolicyManager();
+        ->ShutdownCloudPolicyManager();
 
     // The account being removed may be the current primary account. Unblock the
     // `SigninManager` so that it can handle the state where there is a primary

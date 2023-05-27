@@ -253,7 +253,6 @@ TEST(ValuesTest, HardenTests) {
   EXPECT_DEATH_IF_SUPPORTED(value.GetDouble(), "");
   EXPECT_DEATH_IF_SUPPORTED(value.GetString(), "");
   EXPECT_DEATH_IF_SUPPORTED(value.GetBlob(), "");
-  EXPECT_DEATH_IF_SUPPORTED(value.DictItems(), "");
 }
 
 // Group of tests for the copy constructors and copy-assigmnent. For equality
@@ -1028,8 +1027,6 @@ TEST(ValuesTest, SetDoubleKey) {
   dict.Set("minus_one_key", -1.0);
   dict.Set("pi_key", 3.1415);
 
-  // NOTE: Use Find() instead of FindDoubleKey() because the latter will
-  // auto-convert integers to doubles as well.
   const Value* value;
 
   value = dict.Find("one_key");
@@ -1126,7 +1123,7 @@ TEST(ValuesTest, FindPath) {
   EXPECT_EQ(123, found->GetInt());
 }
 
-TEST(ValuesTest, SetPath) {
+TEST(ValuesTest, SetByDottedPath) {
   Value::Dict root;
 
   Value* inserted = root.SetByDottedPath("one.two", Value(123));
@@ -1153,6 +1150,26 @@ TEST(ValuesTest, SetPath) {
   // Can't change existing non-dictionary keys to dictionaries.
   found = root.SetByDottedPath("foo.bar.baz", Value(123));
   EXPECT_FALSE(found);
+}
+
+TEST(ValuesTest, SetBoolPath) {
+  Value::Dict root;
+  Value* inserted = root.SetByDottedPath("foo.bar", true);
+  Value* found = root.FindByDottedPath("foo.bar");
+  ASSERT_TRUE(found);
+  EXPECT_EQ(inserted, found);
+  ASSERT_TRUE(found->is_bool());
+  EXPECT_TRUE(found->GetBool());
+
+  // Overwrite with a different value.
+  root.SetByDottedPath("foo.bar", false);
+  found = root.FindByDottedPath("foo.bar");
+  ASSERT_TRUE(found);
+  ASSERT_TRUE(found->is_bool());
+  EXPECT_FALSE(found->GetBool());
+
+  // Can't change existing non-dictionary keys.
+  ASSERT_FALSE(root.SetByDottedPath("foo.bar.zoo", true));
 }
 
 TEST(ValuesTest, SetIntPath) {
@@ -2010,7 +2027,7 @@ TEST(ValuesTest, DictionaryIterator) {
   EXPECT_TRUE(seen2);
 }
 
-TEST(ValuesTest, MutatingCopiedPairsInDictItemsMutatesUnderlyingValues) {
+TEST(ValuesTest, MutatingCopiedPairsInDictMutatesUnderlyingValues) {
   Value::Dict dict;
   dict.Set("key", Value("initial value"));
 

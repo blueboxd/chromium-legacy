@@ -8,13 +8,14 @@ import ios_chrome_common_ui_colors_swift
 /// The button displaying info about the current inactive tabs.
 struct InactiveTabsButton: View {
   private enum Dimensions {
-    static let verticalPadding: CGFloat = 8
+    static let verticalPadding: CGFloat = 10
     static let horizontalPadding: CGFloat = 16
+    static let spacing: CGFloat = 3
     static let cornerRadius: CGFloat = 10
   }
   class State: ObservableObject {
     @Published var action: (() -> Void)?
-    @Published var inactivityThresholdDisplayString: String?
+    @Published var daysThreshold: Int?
     @Published var count: Int?
   }
   @ObservedObject var state: State
@@ -24,19 +25,13 @@ struct InactiveTabsButton: View {
     Button {
       state.action?()
     } label: {
-      Group {
-        if sizeCategory < .accessibilityMedium {
-          regularLayout()
-        } else {
-          xxlLayout()
-        }
+      if sizeCategory < .accessibilityMedium {
+        regularLayout()
+      } else {
+        xxlLayout()
       }
-      .padding([.top, .bottom], Dimensions.verticalPadding)
-      .padding([.leading, .trailing], Dimensions.horizontalPadding)
-      .background(Color.secondaryBackground)
-      .cornerRadius(Dimensions.cornerRadius)
-      .environment(\.colorScheme, .dark)
     }
+    .buttonStyle(InactiveTabsButtonStyle())
   }
 
   /// MARK - Layouts
@@ -74,20 +69,20 @@ struct InactiveTabsButton: View {
   /// Displays the button title.
   @ViewBuilder
   private func title() -> some View {
-    Text(L10NUtils.string(forMessageId: IDS_IOS_INACTIVE_TABS_BUTTON_TITLE))
+    Text(L10nUtils.string(messageId: IDS_IOS_INACTIVE_TABS_BUTTON_TITLE))
       .foregroundColor(.white)
   }
 
   /// Displays the button subtitle.
   @ViewBuilder
   private func subtitle() -> some View {
-    if let inactivityThresholdDisplayString = state.inactivityThresholdDisplayString {
+    if let daysThreshold = state.daysThreshold {
       Text(
-        L10NUtils.formatString(
-          forMessageId: IDS_IOS_INACTIVE_TABS_BUTTON_SUBTITLE,
-          argument: inactivityThresholdDisplayString)
+        L10nUtils.formatString(
+          messageId: IDS_IOS_INACTIVE_TABS_BUTTON_SUBTITLE,
+          argument: String(daysThreshold))
       )
-      .font(.caption2)
+      .font(.footnote)
       .foregroundColor(.textSecondary)
     }
   }
@@ -108,16 +103,14 @@ struct InactiveTabsButton: View {
   @ViewBuilder
   private func disclosure() -> some View {
     if #available(iOS 16.0, *) {
-      Image(systemName: "chevron.right")
+      Image(systemName: kChevronForwardSymbol)
         .foregroundColor(.textTertiary)
         .fontWeight(.semibold)
-        .flipsForRightToLeftLayoutDirection(true)
     } else {
       // fontWeight is not available on Image. Wrap it in a Text.
-      Text(Image(systemName: "chevron.right"))
+      Text(Image(systemName: kChevronForwardSymbol))
         .foregroundColor(.textTertiary)
         .fontWeight(.semibold)
-        .flipsForRightToLeftLayoutDirection(true)
     }
   }
 
@@ -125,9 +118,25 @@ struct InactiveTabsButton: View {
   /// when displayed on multiple lines.
   @ViewBuilder
   private func leadingTextVStack(@ViewBuilder content: () -> some View) -> some View {
-    VStack(alignment: .leading) {
+    VStack(alignment: .leading, spacing: Dimensions.spacing) {
       content()
     }
     .multilineTextAlignment(.leading)
+  }
+
+  /// MARK - Styles
+
+  /// Style for the main button, i.e. the top-level view.
+  private struct InactiveTabsButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+      configuration.label
+        .padding([.top, .bottom], Dimensions.verticalPadding)
+        .padding([.leading, .trailing], Dimensions.horizontalPadding)
+        .background(
+          configuration.isPressed ? Color(.systemGray4) : Color.groupedSecondaryBackground
+        )
+        .cornerRadius(Dimensions.cornerRadius)
+        .environment(\.colorScheme, .dark)
+    }
   }
 }

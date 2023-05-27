@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/compiler_specific.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 
@@ -32,7 +31,7 @@ class ChromeOmniboxClientIOS : public OmniboxClient {
   bool IsLoading() const override;
   bool IsPasteAndGoEnabled() const override;
   bool IsDefaultSearchProviderEnabled() const override;
-  const SessionID& GetSessionID() const override;
+  SessionID GetSessionID() const override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   TemplateURLService* GetTemplateURLService() override;
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;

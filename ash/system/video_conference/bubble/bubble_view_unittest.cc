@@ -44,16 +44,19 @@ class SquareCinnamonCereal : public VcEffectsDelegate {
                             base::Unretained(this),
                             /*effect_id=*/VcEffectId::kTestEffect),
         VcEffectId::kTestEffect);
+    effect->set_container_id(kSquareCinnamonCerealViewId);
+    effect->set_dependency_flags(dependency_flags);
+
     auto state = std::make_unique<VcEffectState>(
-        &ash::kPrivacyIndicatorsCameraIcon, u"Square Cinnamon Cereal",
+        &kVideoConferenceBackgroundBlurMaximumIcon, u"Square Cinnamon Cereal",
         IDS_PRIVACY_NOTIFICATION_TITLE_CAMERA,
         base::BindRepeating(&SquareCinnamonCereal::OnEffectControlActivated,
                             base::Unretained(this),
                             /*effect_id=*/VcEffectId::kTestEffect,
                             /*value=*/absl::nullopt));
+    state->set_disabled_icon(&kVideoConferenceBackgroundBlurOffIcon);
     effect->AddState(std::move(state));
-    effect->set_container_id(kSquareCinnamonCerealViewId);
-    effect->set_dependency_flags(dependency_flags);
+
     AddEffect(std::move(effect));
   }
   SquareCinnamonCereal(const SquareCinnamonCereal&) = delete;
@@ -341,7 +344,8 @@ TEST_F(BubbleViewTest, SetValueButtonClicked) {
   // Verify that the delegate hosts a single effect which has at least two
   // values.
   EXPECT_EQ(shaggy_fur()->GetNumEffects(), 1);
-  EXPECT_GE(shaggy_fur()->GetEffect(0)->GetNumStates(), 2);
+  EXPECT_GE(
+      shaggy_fur()->GetEffectById(VcEffectId::kTestEffect)->GetNumStates(), 2);
 
   // Add one set-value effect.
   controller()->effects_manager().RegisterDelegate(shaggy_fur());
@@ -381,7 +385,9 @@ TEST_F(BubbleViewTest, ValidEffectState) {
   // Verify that the delegate hosts a single effect which has at least two
   // values.
   EXPECT_EQ(super_cuteness()->GetNumEffects(), 1);
-  EXPECT_GE(super_cuteness()->GetEffect(0)->GetNumStates(), 2);
+  EXPECT_GE(
+      super_cuteness()->GetEffectById(VcEffectId::kTestEffect)->GetNumStates(),
+      2);
 
   // Add one set-value effect.
   controller()->effects_manager().RegisterDelegate(super_cuteness());
@@ -401,7 +407,9 @@ TEST_F(BubbleViewTest, InvalidEffectState) {
   // Verify that the delegate hosts a single effect which has at least two
   // values.
   EXPECT_EQ(super_cuteness()->GetNumEffects(), 1);
-  EXPECT_GE(super_cuteness()->GetEffect(0)->GetNumStates(), 2);
+  EXPECT_GE(
+      super_cuteness()->GetEffectById(VcEffectId::kTestEffect)->GetNumStates(),
+      2);
 
   // Add one set-value effect.
   controller()->effects_manager().RegisterDelegate(super_cuteness());

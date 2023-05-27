@@ -26,6 +26,10 @@ public class PrivacySandboxBridge {
         return PrivacySandboxBridgeJni.get().isPrivacySandboxRestricted();
     }
 
+    public static boolean isRestrictedNoticeEnabled() {
+        return PrivacySandboxBridgeJni.get().isRestrictedNoticeEnabled();
+    }
+
     public static void setPrivacySandboxEnabled(boolean enabled) {
         PrivacySandboxBridgeJni.get().setPrivacySandboxEnabled(enabled);
     }
@@ -110,6 +114,7 @@ public class PrivacySandboxBridge {
         boolean isPrivacySandboxEnabled();
         boolean isPrivacySandboxManaged();
         boolean isPrivacySandboxRestricted();
+        boolean isRestrictedNoticeEnabled();
         boolean isFirstPartySetsDataAccessEnabled();
         boolean isFirstPartySetsDataAccessManaged();
         boolean isPartOfManagedFirstPartySet(String origin);

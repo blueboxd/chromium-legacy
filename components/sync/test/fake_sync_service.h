@@ -25,6 +25,7 @@ class FakeSyncService : public SyncService {
 
   // Dummy methods.
   // SyncService implementation.
+  void SetSyncFeatureRequested() override;
   syncer::SyncUserSettings* GetUserSettings() override;
   const syncer::SyncUserSettings* GetUserSettings() const override;
   DisableReasonSet GetDisableReasons() const override;
@@ -35,6 +36,7 @@ class FakeSyncService : public SyncService {
   bool IsLocalSyncEnabled() const override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   ModelTypeSet GetActiveDataTypes() const override;
+  ModelTypeSet GetTypesWithPendingDownloadForInitialSync() const override;
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;

@@ -55,9 +55,6 @@ LinuxUiAndTheme* GetGtkUi() {
 }
 
 std::unique_ptr<LinuxUiAndTheme> CreateQtUi() {
-  if (!base::FeatureList::IsEnabled(kAllowQt)) {
-    return nullptr;
-  }
 #if BUILDFLAG(USE_QT)
   auto qt_ui = qt::CreateQtUi(GetGtkUi());
   if (qt_ui->Initialize()) {
@@ -127,8 +124,6 @@ LinuxUiAndTheme* GetDefaultLinuxUiAndTheme() {
 
 }  // namespace
 
-BASE_FEATURE(kAllowQt, "AllowQt", base::FEATURE_DISABLED_BY_DEFAULT);
-
 LinuxUi* GetDefaultLinuxUi() {
   auto* linux_ui = GetDefaultLinuxUiAndTheme();
 #if !BUILDFLAG(IS_CASTOS)
@@ -169,6 +164,7 @@ SystemTheme GetDefaultSystemTheme() {
     case base::nix::DESKTOP_ENVIRONMENT_KDE3:
     case base::nix::DESKTOP_ENVIRONMENT_KDE4:
     case base::nix::DESKTOP_ENVIRONMENT_KDE5:
+    case base::nix::DESKTOP_ENVIRONMENT_KDE6:
     case base::nix::DESKTOP_ENVIRONMENT_UKUI:
     case base::nix::DESKTOP_ENVIRONMENT_DEEPIN:
     case base::nix::DESKTOP_ENVIRONMENT_LXQT:

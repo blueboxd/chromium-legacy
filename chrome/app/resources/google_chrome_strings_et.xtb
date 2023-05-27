@@ -17,14 +17,16 @@
 <translation id="1278833599417554002">Taaskäivitage &amp;Chrome'i värskendamiseks</translation>
 <translation id="1302523850133262269">Oodake, kuni Chrome installib uusimad süsteemivärskendused.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> nõuab, et loete enne selle seadme kasutamist läbi järgmised teenusetingimused ja nõustute nendega. Need tingimused ei laienda, muuda ega piira Google Chrome OS Flexi tingimusi.</translation>
+<translation id="1341711321000856656">Saate lülituda, et näha paroole teiselt Chrome'i profiililt</translation>
 <translation id="1363996462118479832">Chrome OS ei saanud teie andmeid sünkroonida sisselogimisvea tõttu.</translation>
 <translation id="137466361146087520">Google Chrome'i beetaversioon</translation>
 <translation id="1399397803214730675">Selles arvutis on juba Google Chrome'i uuem versioon. Kui tarkvara ei tööta, desinstallige Google Chrome ja proovige uuesti.</translation>
 <translation id="139993653570221430">Chrome'i seadetes saate oma valikuid alati muuta. Prooviversioone käitatakse kõrvuti praeguse reklaamide esitamise viisiga, seega ei näe te kohe muutusi.</translation>
+<translation id="1425903838053942728">{COUNT,plural, =0{Chrome'i värskendamine jõudis lõpule. Uusima versiooni kasutamiseks käivitage uuesti. Pärast seda avanevad teie vahelehed uuesti.}=1{Chrome'i värskendamine jõudis lõpule. Uusima versiooni kasutamiseks käivitage uuesti. Pärast seda avanevad teie vahelehed uuesti. Teie inkognito akent ei avata uuesti.}other{Chrome'i värskendamine jõudis lõpule. Uusima versiooni kasutamiseks käivitage uuesti. Pärast seda avanevad teie vahelehed uuesti. Teie # inkognito akent ei avata uuesti.}}</translation>
 <translation id="1434626383986940139">Chrome Canary rakendused</translation>
+<translation id="1492280395845991349">Chrome'i värskendamise lõpuleviimiseks käivitage uuesti</translation>
 <translation id="1507198376417198979">Kohandage oma uut Chrome'i profiili</translation>
 <translation id="1516530951338665275">Google Chrome vajab sidumise jätkamiseks juurdepääsu Bluetoothile. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
-<translation id="1535597783576881392">See juhend aitab teil oma valikuid mõista, et Chrome töötaks teie soovitud moel</translation>
 <translation id="1547295885616600893">Chrome OS on võimalik tänu <ph name="BEGIN_LINK_CROS_OSS" />avatud lähtekoodiga lisatarkvarale<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="1553358976309200471">Värskenda Chrome'i</translation>
 <translation id="1583073672411044740"><ph name="EXISTING_USER" /> on juba sellele Chrome'i profiilile sisse logitud. See loob konto <ph name="USER_EMAIL_ADDRESS" /> jaoks uue Chrome'i profiili.</translation>
@@ -67,7 +69,6 @@
 <translation id="2131230230468101642">Teie privaatsuse kaitsmiseks kustutame automaatselt teie huvid, mis on vanemad kui 4 nädalat. Kui jätkate sirvimist, võib huvi uuesti loendis ilmuda. Võite ka eemaldada huvid, mida te ei soovi lasta Chrome'il arvesse võtta.</translation>
 <translation id="2139300032719313227">Taaskäivitage Chrome OS</translation>
 <translation id="2151406531797534936">Käivitage Chrome kohe uuesti</translation>
-<translation id="2163996651553460171">Chrome'i kasutamine parimal moel</translation>
 <translation id="2174917724755363426">Installimine ei ole lõpetatud. Kas soovite kindlasti tühistada?</translation>
 <translation id="223889379102603431">Teave selle kohta, kuidas Chrome oma juursertifikaate haldab</translation>
 <translation id="2258103955319320201">Selleks et oma Chrome'i brauseri sisule kõigis oma seadmetes juurde pääseda, logige sisse ja lülitage siis sisse sünkroonimine</translation>
@@ -94,6 +95,7 @@
 <translation id="2652691236519827073">Ava link Chrome'i uuel &amp;vahelehel</translation>
 <translation id="2665296953892887393">Aidake Google Chrome'i täiustada, saates Google'ile krahhiaruandeid ja lingi <ph name="UMA_LINK" /></translation>
 <translation id="2689103672227170538">See laiendus muutis seda, milline leht kuvatakse Chrome'i käivitamisel.</translation>
+<translation id="2712234843277364121">Värskendamiseks käivitage uuesti – teie vahelehed avanevad uuesti</translation>
 <translation id="2742320827292110288">Hoiatus: Google Chrome ei saa laiendustel teie sirvimisajaloo salvestamist takistada. Selle laienduse keelamiseks inkognito režiimis tühistage see valik.</translation>
 <translation id="2765403129283291972">Chrome vajab selle saidi puhul luba, et teie mikrofonile juurde pääseda</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
@@ -125,7 +127,6 @@
 <translation id="3140883423282498090">Teie muudatused jõustuvad järgmine kord, kui avate Google Chrome'i.</translation>
 <translation id="3149510190863420837">Chrome'i rakendused</translation>
 <translation id="3169523567916669830">Prooviperioodidel saate vaadata ja eemaldada huvipakkuvaid teemasid, mida saidid teile reklaamide näitamiseks kasutavad. Chrome prognoosib teie huvisid teie hiljutise sirvimisajaloo põhjal.</translation>
-<translation id="3211604354460514046">{NUM_DEVICES,plural, =1{Google Chrome on ühendatud HID-seadmega}other{Google Chrome on ühendatud HID-seadmetega}}</translation>
 <translation id="3245429137663807393">Kui jagate ka Chrome'i kasutusaruandeid, hõlmavad need teie külastatavaid URL-e</translation>
 <translation id="3282568296779691940">Chrome'i sisselogimine</translation>
 <translation id="3286538390144397061">Taaskäivitada kohe</translation>
@@ -279,6 +280,7 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6365489425007284765">{COUNT,plural, =1{Teie administraator kustutab sirvimisandmed automaatselt, kui neid ei kasutata 1 minuti jooksul. Need võivad hõlmata ajalugu, automaattäidet ja allalaadimisi. Olemasolevaid vahelehti ei suleta.}other{Teie administraator kustutab sirvimisandmed automaatselt, kui neid ei kasutata # minuti jooksul. Need võivad hõlmata ajalugu, automaattäidet ja allalaadimisi. Olemasolevaid vahelehti ei suleta.}}</translation>
 <translation id="6412673304250309937">Kontrollib URL-e Chrome'i talletatud ohtlike saitide loendi alusel. Kui sait üritab teie parooli varastada või laadite alla kahjuliku faili, võib Chrome saata URL-id ja lehe sisu osad teenusesse Google'i ohutu sirvimine.</translation>
 <translation id="6418662306461808273">Kas lülituda olemasolevale Chrome'i profiilile?</translation>
+<translation id="648319183876919572">Täiustatud ohutu sirvimine kaitseb teid paremini ohtlike veebisaitide ja allalaadimiste eest</translation>
 <translation id="6493527311031785448">Google Chrome proovib teha järgmist: <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">Chrome vajab kaamera kasutamise luba, et luua teie ümbruskonnast 3D-kaart</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
@@ -409,6 +411,7 @@ Load, mille olete juba veebisaitidele ja rakendustele andnud, võivad selle kont
 <translation id="8989968390305463310">Teie sirvimisajalugu mõjutab kuvatavaid reklaame ja huvisid vastavalt allolevatele prognoosidele. Teie privaatsuse kaitsmiseks kustutab Chrome automaatselt teie huvisid jooksvalt iga kuu. Huvisid võidakse värskendada, kui te neid ei eemalda.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome'i värskendus on saadaval}=1{Chrome'i värskendus on saadaval}other{Chrome'i värskendus on # päeva saadaval olnud}}</translation>
 <translation id="9053892488859122171">Chrome OS Flexi süsteem</translation>
+<translation id="9054037008353851982">Värskendamiseks käivitage uuesti – teie vahelehed avanevad uuesti</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="9138603949443464873">Muudatuste rakendamiseks käivitage Chrome uuesti</translation>
 <translation id="9195993889682885387">Chrome suudab prognoosida teie huvisid, võttes aluseks teie viimase mõne nädala sirvimisajaloo. See teave jääb teie seadmesse.</translation>

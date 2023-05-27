@@ -52,7 +52,7 @@
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_text_control_multi_line.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -187,13 +187,29 @@ void HTMLTextAreaElement::CollectStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kWrapAttr) {
     if (ShouldWrapText()) {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
-                                              CSSValueID::kPreWrap);
+      if (!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()) {
+        AddPropertyToPresentationAttributeStyle(
+            style, CSSPropertyID::kWhiteSpace, CSSValueID::kPreWrap);
+      } else {
+        // Longhands of `white-space: pre-wrap`.
+        AddPropertyToPresentationAttributeStyle(
+            style, CSSPropertyID::kWhiteSpaceCollapse, CSSValueID::kPreserve);
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextWrap,
+                                                CSSValueID::kWrap);
+      }
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kOverflowWrap, CSSValueID::kBreakWord);
     } else {
-      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
-                                              CSSValueID::kPre);
+      if (!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()) {
+        AddPropertyToPresentationAttributeStyle(
+            style, CSSPropertyID::kWhiteSpace, CSSValueID::kPre);
+      } else {
+        // Longhands of `white-space: pre`.
+        AddPropertyToPresentationAttributeStyle(
+            style, CSSPropertyID::kWhiteSpaceCollapse, CSSValueID::kPreserve);
+        AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextWrap,
+                                                CSSValueID::kNowrap);
+      }
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kOverflowWrap, CSSValueID::kNormal);
     }
@@ -267,10 +283,8 @@ void HTMLTextAreaElement::ParseAttribute(
   }
 }
 
-LayoutObject* HTMLTextAreaElement::CreateLayoutObject(
-    const ComputedStyle& style,
-    LegacyLayout legacy) {
-  return LayoutObjectFactory::CreateTextControlMultiLine(*this, style, legacy);
+LayoutObject* HTMLTextAreaElement::CreateLayoutObject(const ComputedStyle&) {
+  return MakeGarbageCollected<LayoutNGTextControlMultiLine>(this);
 }
 
 void HTMLTextAreaElement::AppendToFormData(FormData& form_data) {

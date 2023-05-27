@@ -12,11 +12,11 @@
 #import "base/time/time.h"
 #import "ios/chrome/browser/discover_feed/discover_feed_refresher.h"
 #import "ios/chrome/browser/ntp/features.h"
-#import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/ntp/feed_control_delegate.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_constants.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_session_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_follow_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -639,13 +639,6 @@ using feed::FeedUserActionType;
   }
 }
 
-#pragma mark - FeedRefreshStateTracker
-
-- (BOOL)isNTPAndFeedVisible {
-  // This method is deprecated and usage is replaced with `isNTPVisible`.
-  return self.isNTPVisible;
-}
-
 #pragma mark - Follow
 
 - (void)recordFollowRequestedWithType:(FollowRequestType)followRequestType {
@@ -806,15 +799,25 @@ using feed::FeedUserActionType;
   base::UmaHistogramEnumeration(kFeedSignInUI, type);
   switch (type) {
     case feed::FeedSignInUI::kShowSyncHalfSheet:
-      base::RecordAction(base::UserMetricsAction(kShowSyncHalfSheetFromFeed));
-      break;
+      return base::RecordAction(
+          base::UserMetricsAction(kShowSyncHalfSheetFromFeed));
     case feed::FeedSignInUI::kShowSignInOnlyFlow:
-      base::RecordAction(base::UserMetricsAction(kShowSignInOnlyFlowFromFeed));
-      break;
+      return base::RecordAction(
+          base::UserMetricsAction(kShowSignInOnlyFlowFromFeed));
     case feed::FeedSignInUI::kShowSignInDisableToast:
-      base::RecordAction(
+      return base::RecordAction(
           base::UserMetricsAction(kShowSignInDisableToastFromFeed));
-      break;
+  }
+}
+
+- (void)recordShowSyncnRelatedUIWithType:(feed::FeedSyncPromo)type {
+  base::UmaHistogramEnumeration(kFeedSyncPromo, type);
+  switch (type) {
+    case feed::FeedSyncPromo::kShowSyncFlow:
+      return base::RecordAction(base::UserMetricsAction(kShowSyncFlowFromFeed));
+    case feed::FeedSyncPromo::kShowDisableToast:
+      return base::RecordAction(
+          base::UserMetricsAction(kShowDisableToastFromFeed));
   }
 }
 
@@ -1280,13 +1283,7 @@ using feed::FeedUserActionType;
   [defaults setInteger:[self.feedControlDelegate selectedFeed]
                 forKey:kLastUsedFeedForGoodVisitsKey];
 
-  if (self.isShownOnStartSurface) {
-    UMA_HISTOGRAM_ENUMERATION(kActionOnStartSurface,
-                              IOSContentSuggestionsActionType::kFeedCard);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION(kActionOnNTP,
-                              IOSContentSuggestionsActionType::kFeedCard);
-  }
+  [self.NTPMetricsDelegate feedArticleOpened];
 
   switch ([self.feedControlDelegate selectedFeed]) {
     case FeedTypeDiscover:
@@ -1313,7 +1310,7 @@ using feed::FeedUserActionType;
 - (void)refreshTimerEnded {
   [self.refreshTimer invalidate];
   self.refreshTimer = nil;
-  if (![self isNTPAndFeedVisible]) {
+  if (!self.isNTPVisible) {
     // The feed refresher checks feed engagement criteria.
     self.feedRefresher->RefreshFeed(
         FeedRefreshTrigger::kForegroundFeedNotVisible);

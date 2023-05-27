@@ -103,14 +103,6 @@ bool HasMultipleWords(const std::u16string& text) {
   return false;
 }
 
-bool IsSearchEngineGoogle(const TemplateURL* template_url,
-                          const AutocompleteProviderClient* client) {
-  return template_url && client &&
-         template_url->GetEngineType(
-             client->GetTemplateURLService()->search_terms_data()) ==
-             SEARCH_ENGINE_GOOGLE;
-}
-
 }  // namespace
 
 // SearchProvider::Providers --------------------------------------------------
@@ -444,7 +436,7 @@ void SearchProvider::OnURLLoadComplete(
   // request we're constructing here for on-focus inputs.
   if (input_.focus_type() == metrics::OmniboxFocusType::INTERACTION_DEFAULT &&
       request_succeeded) {
-    absl::optional<base::Value> data =
+    absl::optional<base::Value::List> data =
         SearchSuggestionParser::DeserializeJsonData(
             SearchSuggestionParser::ExtractJsonData(source,
                                                     std::move(response_body)));
@@ -457,7 +449,7 @@ void SearchProvider::OnURLLoadComplete(
       if (results_updated) {
         if (results->field_trial_triggered) {
           client()->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
-              OmniboxTriggeredFeatureService::Feature::kRemoteSearchFeature);
+              metrics::OmniboxEventProto_Feature_REMOTE_SEARCH_FEATURE);
         }
         SortResults(is_keyword, results);
         PrefetchImages(results);
@@ -532,7 +524,9 @@ void SearchProvider::LogLoadComplete(bool success, bool is_keyword) {
   // only about the common case: the Google default provider used in
   // non-keyword mode.
   if (!is_keyword &&
-      IsSearchEngineGoogle(providers_.GetDefaultProviderURL(), client())) {
+      search::TemplateURLIsGoogle(
+          providers_.GetDefaultProviderURL(),
+          client()->GetTemplateURLService()->search_terms_data())) {
     const base::TimeDelta elapsed_time =
         base::TimeTicks::Now() - time_suggest_request_sent_;
     if (success) {
@@ -684,8 +678,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
         default_url->id(), input_.text());
     if (enumerator) {
       history::GetAutocompleteSearchTermsFromEnumerator(
-          *enumerator, num_matches, /*ignore_duplicate_visits=*/true,
-          history::SearchTermRankingPolicy::kRecency,
+          *enumerator, num_matches, history::SearchTermRankingPolicy::kRecency,
           &raw_default_history_results_);
     }
     DCHECK_LE(raw_default_history_results_.size(), num_matches);
@@ -696,8 +689,7 @@ void SearchProvider::DoHistoryQuery(bool minimal_changes) {
         keyword_url->id(), keyword_input_.text());
     if (enumerator) {
       history::GetAutocompleteSearchTermsFromEnumerator(
-          *enumerator, num_matches, /*ignore_duplicate_visits=*/true,
-          history::SearchTermRankingPolicy::kRecency,
+          *enumerator, num_matches, history::SearchTermRankingPolicy::kRecency,
           &raw_keyword_history_results_);
     }
     DCHECK_LE(raw_keyword_history_results_.size(), num_matches);

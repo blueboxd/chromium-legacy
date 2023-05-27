@@ -16,16 +16,17 @@
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser_provider_interface.h"
 #import "ios/chrome/browser/main/test_browser.h"
-#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
-#import "ios/chrome/browser/ui/main/connection_information.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/test/fake_scene_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/connection_information.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/test/fake_scene_state.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/common/app_group/app_group_metrics.h"
+#import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/testing/scoped_block_swizzler.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "net/base/network_change_notifier.h"
@@ -156,6 +157,7 @@ class MetricsMediatorLogLaunchTest : public PlatformTest {
   }
 
   web::WebTaskEnvironment task_environment_;
+  IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   NSArray<FakeSceneState*>* connected_scenes_;
   __block BOOL num_tabs_has_been_called_;

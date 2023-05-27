@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/event_utils.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -35,6 +36,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/window_open_disposition.h"
@@ -60,6 +62,13 @@ namespace {
 // Max width of a menu. There does not appear to be an OS value for this, yet
 // both IE and FF restrict the max width of a menu.
 const int kMaxMenuWidth = 400;
+
+ui::ImageModel GetFaviconForNode(BookmarkModel* model,
+                                 const BookmarkNode* node) {
+  const gfx::Image& image = model->GetFavicon(node);
+  return image.IsEmpty() ? favicon::GetDefaultFaviconModel()
+                         : ui::ImageModel::FromImage(image);
+}
 
 // The current behavior is that the menu gets closed (see MenuController) after
 // a drop is initiated, which deletes BookmarkMenuDelegate before the drop
@@ -162,8 +171,15 @@ void BookmarkMenuDelegate::Init(views::MenuDelegate* real_delegate,
     bool has_children =
         (start_child_index < node->children().size()) || show_managed;
     if (has_children && parent->GetSubmenu() &&
-        !parent->GetSubmenu()->GetMenuItems().empty())
+        !parent->GetSubmenu()->GetMenuItems().empty()) {
       parent->AppendSeparator();
+      // Add a "Bookmarks" title.
+      if (features::IsChromeRefresh2023()) {
+        parent->AppendMenuItem(
+            IDC_BOOKMARKS_LIST_TITLE,
+            l10n_util::GetStringUTF16(IDS_BOOKMARKS_LIST_TITLE));
+      }
+    }
 
     if (show_managed)
       BuildMenuForManagedNode(parent);
@@ -438,11 +454,7 @@ void BookmarkMenuDelegate::BookmarkNodeFaviconChanged(
   if (menu_pair == node_to_menu_map_.end())
     return;  // We're not showing a menu item for the node.
 
-  const gfx::Image& image = model->GetFavicon(node);
-  const gfx::ImageSkia* icon = image.IsEmpty()
-                                   ? favicon::GetDefaultFavicon().ToImageSkia()
-                                   : image.ToImageSkia();
-  menu_pair->second->SetIcon(ui::ImageModel::FromImageSkia(*icon));
+  menu_pair->second->SetIcon(GetFaviconForNode(model, node));
 }
 
 void BookmarkMenuDelegate::WillRemoveBookmarks(
@@ -601,13 +613,9 @@ void BookmarkMenuDelegate::BuildMenu(const BookmarkNode* parent,
     const int id = GetAndIncrementNextMenuID();
     MenuItemView* child_menu_item;
     if (node->is_url()) {
-      const gfx::Image& image = GetBookmarkModel()->GetFavicon(node);
-      const gfx::ImageSkia* icon =
-          (image.IsEmpty() ? favicon::GetDefaultFavicon() : image)
-              .ToImageSkia();
       child_menu_item =
           menu->AppendMenuItem(id, MaybeEscapeLabel(node->GetTitle()),
-                               ui::ImageModel::FromImageSkia(*icon));
+                               GetFaviconForNode(GetBookmarkModel(), node));
       child_menu_item->GetViewAccessibility().OverrideDescription(
           url_formatter::FormatUrl(
               node->url(), url_formatter::kFormatUrlOmitDefaults,

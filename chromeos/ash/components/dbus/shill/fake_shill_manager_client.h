@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 
 #include "base/component_export.h"
 #include "base/functional/callback.h"
@@ -130,11 +131,16 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   base::Value::List GetEnabledServiceList() const override;
   void ClearProfiles() override;
   void SetShouldReturnNullProperties(bool value) override;
+  void SetWifiServicesVisibleByDefault(
+      bool wifi_services_visible_by_default) override;
 
   // Constants used for testing.
   static const char kFakeEthernetNetworkGuid[];
 
  private:
+  using ConnectToBestServicesCallbacks =
+      std::tuple<base::OnceClosure, ErrorCallback>;
+
   void SetDefaultProperties();
   void PassNullopt(
       chromeos::DBusMethodCallback<base::Value::Dict> callback) const;
@@ -157,6 +163,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   bool SetInitialNetworkState(std::string type_arg,
                               const std::string& state_arg);
   std::string GetInitialStateForType(const std::string& type, bool* enabled);
+
+  void ContinueConnectToBestServices(
+      ConnectToBestServicesCallbacks connect_to_best_services_callbacks);
 
   // Dictionary of property name -> property value
   base::Value::Dict stub_properties_;
@@ -203,7 +212,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
       FakeShillSimulatedResult::kSuccess;
   std::string simulate_tethering_readiness_status_;
 
-  bool return_null_properties_;
+  bool return_null_properties_ = false;
+  bool wifi_services_visible_by_default_ = true;
 
   // For testing multiple wifi networks.
   int extra_wifi_networks_ = 0;
@@ -213,6 +223,10 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
 
   // For testing proxy-auth case for shill service state.
   bool proxy_auth_ = false;
+
+  // Caches the last-passed callbacks for ScanAndConnectToBestServices.
+  absl::optional<ConnectToBestServicesCallbacks>
+      connect_to_best_services_callbacks_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

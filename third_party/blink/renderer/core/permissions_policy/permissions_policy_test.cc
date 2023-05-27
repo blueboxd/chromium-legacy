@@ -66,11 +66,11 @@ const char* const kInvalidHeaderPolicies[] = {
     "badfeaturename 'self'",
     "1.0",
     "geolocation 'src'",  // Only valid for iframe allow attribute.
-    "geolocation data://badorigin",
+    "geolocation data:///badorigin",
     "geolocation https://bad;origin",
     "geolocation https:/bad,origin",
     "geolocation https://example.com, https://a.com",
-    "geolocation *, payment data://badorigin",
+    "geolocation *, payment data:///badorigin",
     "geolocation ws://xn--fd\xbcwsw3taaaaaBaa333aBBBBBBJBBJBBBt",
 };
 }  // namespace
@@ -199,12 +199,19 @@ class PermissionsPolicyParserParsingTest
       ASSERT_EQ(actual_declaration.allowed_origins.size(),
                 expected_declaration.allowed_origins.size());
       for (size_t j = 0; j < actual_declaration.allowed_origins.size(); ++j) {
-        EXPECT_TRUE(
-            actual_declaration.allowed_origins[j].origin.IsSameOriginWith(
-                url::Origin::Create(
-                    GURL(expected_declaration.allowed_origins[j].origin))));
+        const url::Origin origin = url::Origin::Create(
+            GURL(expected_declaration.allowed_origins[j].origin));
+        EXPECT_EQ(actual_declaration.allowed_origins[j].csp_source.scheme,
+                  origin.scheme());
+        EXPECT_EQ(actual_declaration.allowed_origins[j].csp_source.host,
+                  origin.host());
+        if (actual_declaration.allowed_origins[j].csp_source.port !=
+            url::PORT_UNSPECIFIED) {
+          EXPECT_EQ(actual_declaration.allowed_origins[j].csp_source.port,
+                    origin.port());
+        }
         EXPECT_EQ(
-            actual_declaration.allowed_origins[j].has_subdomain_wildcard,
+            actual_declaration.allowed_origins[j].csp_source.is_host_wildcard,
             expected_declaration.allowed_origins[j].has_subdomain_wildcard);
       }
     }
@@ -576,8 +583,7 @@ const PermissionsPolicyParserTestCase
                     /* self_if_matches */ absl::nullopt,
                     /* matches_all_origins */ false,
                     /* matches_opaque_src */ false,
-                    {{ORIGIN_A_SUBDOMAIN_ESCAPED,
-                      /*has_subdomain_wildcard=*/false}},
+                    {},
                 },
             },
         },
@@ -617,10 +623,7 @@ const PermissionsPolicyParserTestCase
                     /* self_if_matches */ absl::nullopt,
                     /* matches_all_origins */ false,
                     /* matches_opaque_src */ false,
-                    {{"https://%2A.%2A.example.com",
-                      /*has_subdomain_wildcard=*/false},
-                     {"https://foo.%2A.example.com",
-                      /*has_subdomain_wildcard=*/false}},
+                    {},
                 },
             },
         },
@@ -800,8 +803,8 @@ TEST_F(PermissionsPolicyParserParsingTest,
       PermissionsPolicyParser::ParseHeader(
           "worse-feature 'none', geolocation 'self'" /* feature_policy_header */
           ,
-          "bad-feature=*, geolocation=\"data://bad-origin\"" /* permissions_policy_header
-                                                              */
+          "bad-feature=*, geolocation=\"data:///bad-origin\"" /* permissions_policy_header
+                                                               */
           ,
           origin_a_.get(), feature_policy_logger, permissions_policy_logger,
           nullptr /* context */
@@ -828,7 +831,7 @@ TEST_F(PermissionsPolicyParserParsingTest,
       permissions_policy_logger.GetMessages(),
       {
           "Permissions Policy: Unrecognized feature: 'bad-feature'.",
-          "Permissions Policy: Unrecognized origin: 'data://bad-origin'.",
+          "Permissions Policy: Unrecognized origin: 'data:///bad-origin'.",
       });
 }
 

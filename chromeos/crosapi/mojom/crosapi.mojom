@@ -321,10 +321,9 @@ interface Crosapi {
   [MinVersion=72] BindExtensionInfoPrivate@75(
       pending_receiver<ExtensionInfoPrivate> receiver);
 
-  // FirewallHoleService is a service that allows users to open ports in the
-  // ChromeOS system firewall from Lacros. Implemented in Ash.
-  [MinVersion=101] BindFirewallHoleService@105(
-      pending_receiver<FirewallHoleService> receiver);
+  // Deprecated in M114; use chromeos::FirewallHole directly.
+  [MinVersion=101] REMOVED_105@105(
+      pending_receiver<FirewallHoleServiceDeprecated> receiver);
 
   // NetworkingPrivate is a service that allows users to modify
   // network settings in Lacros. Implemented in Ash.
@@ -952,8 +951,8 @@ enum OpenUrlFrom {
 // parameters here. If a new parameter is added and its value is only known
 // after the user has logged in, please update BrowserPostLoginParams as well.
 //
-// Next version: 57
-// Next id: 57
+// Next version: 61
+// Next id: 61
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -995,14 +994,8 @@ struct BrowserInitParams {
   [MinVersion=6]
   DefaultPaths? default_paths@6;
 
-  // Device Account's obfuscated Gaia id, if present.
-  // This is null for older versions of ash, for Active Directory sessions,
-  // Guest sessions, Managed Guest sessions, Demo mode, and Kiosks.
-  // Added in M89.
-  // Deprecated in M91. Use `device_account` (field id 16)  instead.
-  // TODO(crbug.com/1195865): Remove this in M93.
   [MinVersion=7]
-  string? device_account_gaia_id@7;
+  string? REMOVED_7@7;
 
   // Whether or not metrics reporting in ash is managed by policy. This is
   // passed independently because the metrics reporting state is controlled by
@@ -1321,6 +1314,25 @@ struct BrowserInitParams {
   [MinVersion=57]
   StandaloneBrowserAppServiceBlockList?
       standalone_browser_app_service_blocklist@57;
+
+  // When this flag is set to true, CPU-mappable native GpuMemoryBuffers are
+  // enabled.
+  //
+  // TODO(b/278097642): improve this documentation. I think this only refers to
+  // the ability of renderer processes to obtain such buffers because as far as
+  // I know, the GPU process can allocate CPU-mappable native GpuMemoryBuffers
+  // regardless of this flag.
+  [MinVersion=58]
+  bool enable_cpu_mappable_native_gpu_memory_buffers@58;
+
+  // When this flag is set to true, OOP video decoding is available.
+  [MinVersion=59]
+  bool oop_video_decoding_enabled@59;
+
+  // Set to true when the `chromeos::features::kUploadOfficeToCloud` flag is
+  // enabled in Ash.
+  [MinVersion=60]
+  bool is_upload_office_to_cloud_enabled@60;
 };
 
 // BrowserPostLoginParams is the subset of parameters in BrowserInitParams
@@ -1341,13 +1353,7 @@ struct BrowserPostLoginParams {
   // Added in M89.
   DefaultPaths? default_paths@1;
 
-  // Device Account's obfuscated Gaia id, if present.
-  // This is null for older versions of ash, for Active Directory sessions,
-  // Guest sessions, Managed Guest sessions, Demo mode, and Kiosks.
-  // Added in M89.
-  // Deprecated in M91. Use `device_account` (field id 16)  instead.
-  // TODO(crbug.com/1195865): Remove this in M93.
-  string? device_account_gaia_id@2;
+  string? REMOVED_2@2;
 
   // Primary user ID hash. Used to set CROS_USER_ID_HASH env var in crosh.
   // Do not use this to construct paths, use DefaultPaths for that purpose.

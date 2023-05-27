@@ -1339,6 +1339,7 @@ crbug.com/1046784 [ Mac10.15 Release ] http/tests/devtools/a11y-axe-core/sources
 crbug.com/1046784 [ Mac11 Release ] http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Slow ]
 crbug.com/1046784 [ Mac12 ] http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Slow ]
 crbug.com/1046784 [ Release Win ] http/tests/devtools/a11y-axe-core/sources/scope-pane-a11y-test.js [ Slow ]
+crbug.com/1401050 http/tests/devtools/a11y-axe-core/application-panel/service-worker-view-a11y-test.js [ Slow ]
 crbug.com/1046784 http/tests/inspector-protocol/network/navigate-iframe-out2in.js [ Slow ]
 crbug.com/1048597 [ Linux ] virtual/android/fullscreen/video-scrolled-iframe.html [ Slow ]
 crbug.com/1057807 http/tests/misc/destroy-middle-click-locked-target-crash.html [ Slow ]
@@ -1410,6 +1411,7 @@ crbug.com/1228246 http/tests/inspector-protocol/fetch/fetch-cors-preflight-sw.js
 crbug.com/1228246 http/tests/inspector-protocol/network/request-interception-patterns.js [ Slow ]
 crbug.com/1228246 http/tests/inspector-protocol/fetch/disable-with-response-in-flight.js [ Slow ]
 crbug.com/1306770 http/tests/inspector-protocol/network/interception-download.js [ Slow ]
+crbug.com/1423781 http/tests/inspector-protocol/page/frame-navigated-secure-origin.js [ Slow ]
 crbug.com/1344358 inspector-protocol/page/frameNavigatedContext.js [ Slow ]
 
 crbug.com/1353929 editing/spelling/cold_mode_spellcheck_reenable.html [ Slow ]

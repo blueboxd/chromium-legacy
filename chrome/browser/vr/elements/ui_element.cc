@@ -4,11 +4,11 @@
 
 #include "chrome/browser/vr/elements/ui_element.h"
 
+#include <algorithm>
 #include <limits>
 
 #include "base/check_op.h"
 #include "base/containers/adapters.h"
-#include "base/cxx17_backports.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
@@ -762,7 +762,7 @@ bool UiElement::GetRayDistance(const gfx::Point3F& ray_origin,
 void UiElement::OnFloatAnimated(const float& value,
                                 int target_property_id,
                                 gfx::KeyframeModel* keyframe_model) {
-  opacity_ = base::clamp(value, 0.0f, 1.0f);
+  opacity_ = std::clamp(value, 0.0f, 1.0f);
 }
 
 void UiElement::OnTransformAnimated(const gfx::TransformOperations& operations,
@@ -869,11 +869,9 @@ gfx::RectF UiElement::ComputeContributingChildrenBounds() {
     gfx::RectF outer_bounds(child->size());
     gfx::RectF inner_bounds(child->size());
     if (!child->bounds_contain_padding_) {
-      // TODO(crbug.com/1312352): The order of bottom_padding_ and top_padding_
-      // seems incorrect.
       inner_bounds.Inset(
-          gfx::InsetsF::TLBR(child->bottom_padding_, child->left_padding_,
-                             child->top_padding_, child->right_padding_));
+          gfx::InsetsF::TLBR(child->top_padding_, child->left_padding_,
+                             child->bottom_padding_, child->right_padding_));
     }
     gfx::SizeF size = inner_bounds.size();
     if (size.IsEmpty())
@@ -896,10 +894,8 @@ gfx::RectF UiElement::ComputeContributingChildrenBounds() {
     bounds.Union(local_rect);
   }
 
-  // TODO(crbug.com/1312352): The order of bottom_padding_ and top_padding_
-  // seems incorrect.
-  bounds.Inset(gfx::InsetsF::TLBR(-bottom_padding_, -left_padding_,
-                                  -top_padding_, -right_padding_));
+  bounds.Inset(gfx::InsetsF::TLBR(-top_padding_, -left_padding_,
+                                  -bottom_padding_, -right_padding_));
   bounds.set_origin(bounds.CenterPoint());
   if (local_origin_ != bounds.origin()) {
     world_space_transform_dirty_ = true;

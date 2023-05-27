@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 
+#include "base/auto_reset.h"
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/observer_list.h"
 #include "base/task/single_thread_task_runner.h"
@@ -107,13 +109,26 @@ void RenderFrameMetadataProviderImpl::SetLastRenderFrameMetadataForTest(
 void RenderFrameMetadataProviderImpl::OnRenderFrameMetadataChanged(
     uint32_t frame_token,
     const cc::RenderFrameMetadata& metadata) {
-  for (Observer& observer : observers_)
+  // Guard for this being recursively deleted from one of the observer
+  // callbacks.
+  base::WeakPtr<RenderFrameMetadataProviderImpl> self =
+      weak_factory_.GetWeakPtr();
+
+  for (Observer& observer : observers_) {
     observer.OnRenderFrameMetadataChangedBeforeActivation(metadata);
+    if (!self) {
+      return;
+    }
+  }
 
   if (metadata.local_surface_id != last_local_surface_id_) {
     last_local_surface_id_ = metadata.local_surface_id;
-    for (Observer& observer : observers_)
+    for (Observer& observer : observers_) {
       observer.OnLocalSurfaceIdChanged(metadata);
+      if (!self) {
+        return;
+      }
+    }
   }
 
   if (!frame_token)

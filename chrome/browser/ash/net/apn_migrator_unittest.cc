@@ -37,6 +37,7 @@ namespace {
 using ::chromeos::network_config::FakeCrosNetworkConfig;
 using ::chromeos::network_config::mojom::ApnPropertiesPtr;
 using ::chromeos::network_config::mojom::ApnState;
+using ::chromeos::network_config::mojom::ApnType;
 using network_config::OverrideInProcessInstanceForTesting;
 using ::testing::_;
 using ::testing::Eq;
@@ -198,11 +199,12 @@ TEST_F(ApnMigratorTest, ApnRevampFlagDisabled) {
       .WillOnce(Return(false));
 
   // For the migrated network, the routine should not check for the current
-  // custom APN list, but rather just resets the UserApnList.
+  // custom APN list, but rather just resets the CustomApnList.
   EXPECT_CALL(*network_metadata_store(), GetCustomApnList(kTestCellularGuid1))
       .Times(0);
-  base::Value::Dict expected_onc1 = chromeos::network_config::UserApnListToOnc(
-      kTestCellularGuid1, /*user_apn_list=*/nullptr);
+  base::Value::Dict expected_onc1 =
+      chromeos::network_config::CustomApnListToOnc(kTestCellularGuid1,
+                                                   /*custom_apn_list=*/nullptr);
   EXPECT_CALL(
       *managed_network_configuration_handler(),
       SetProperties(cellular_service_path_1,
@@ -281,9 +283,10 @@ TEST_F(ApnMigratorTest, AlreadyMigratedNetworks) {
       .WillOnce(Return(&populated_apn_list));
 
   // For the first and second networks, the function should update Shill with
-  // empty user APN lists.
-  base::Value::Dict expected_onc_1 = chromeos::network_config::UserApnListToOnc(
-      kTestCellularGuid1, &empty_apn_list);
+  // empty custom APN lists.
+  base::Value::Dict expected_onc_1 =
+      chromeos::network_config::CustomApnListToOnc(kTestCellularGuid1,
+                                                   &empty_apn_list);
   EXPECT_CALL(
       *managed_network_configuration_handler(),
       SetProperties(cellular_service_path_1,
@@ -292,8 +295,9 @@ TEST_F(ApnMigratorTest, AlreadyMigratedNetworks) {
                     }),
                     _, _))
       .Times(1);
-  base::Value::Dict expected_onc_2 = chromeos::network_config::UserApnListToOnc(
-      kTestCellularGuid2, &empty_apn_list);
+  base::Value::Dict expected_onc_2 =
+      chromeos::network_config::CustomApnListToOnc(kTestCellularGuid2,
+                                                   &empty_apn_list);
   EXPECT_CALL(
       *managed_network_configuration_handler(),
       SetProperties(cellular_service_path_2,
@@ -303,9 +307,10 @@ TEST_F(ApnMigratorTest, AlreadyMigratedNetworks) {
                     _, _))
       .Times(1);
 
-  // Verify that Shill receives the user APNs for the third list.
-  base::Value::Dict expected_onc_3 = chromeos::network_config::UserApnListToOnc(
-      kTestCellularGuid3, &populated_apn_list);
+  // Verify that Shill receives the custom APNs for the third list.
+  base::Value::Dict expected_onc_3 =
+      chromeos::network_config::CustomApnListToOnc(kTestCellularGuid3,
+                                                   &populated_apn_list);
   EXPECT_CALL(
       *managed_network_configuration_handler(),
       SetProperties(cellular_service_path_3,
@@ -349,9 +354,10 @@ TEST_F(ApnMigratorTest, MigrateNetworksWithoutCustomApns) {
       .Times(1)
       .WillOnce(Return(&empty_apn_list));
 
-  // The function should only update Shill with empty user APN lists.
-  base::Value::Dict expected_onc_1 = chromeos::network_config::UserApnListToOnc(
-      kTestCellularGuid1, &empty_apn_list);
+  // The function should only update Shill with empty custom APN lists.
+  base::Value::Dict expected_onc_1 =
+      chromeos::network_config::CustomApnListToOnc(kTestCellularGuid1,
+                                                   &empty_apn_list);
   EXPECT_CALL(
       *managed_network_configuration_handler(),
       SetProperties(cellular_service_path_1,
@@ -360,8 +366,9 @@ TEST_F(ApnMigratorTest, MigrateNetworksWithoutCustomApns) {
                     }),
                     _, _))
       .Times(1);
-  base::Value::Dict expected_onc_2 = chromeos::network_config::UserApnListToOnc(
-      kTestCellularGuid2, &empty_apn_list);
+  base::Value::Dict expected_onc_2 =
+      chromeos::network_config::CustomApnListToOnc(kTestCellularGuid2,
+                                                   &empty_apn_list);
   EXPECT_CALL(
       *managed_network_configuration_handler(),
       SetProperties(cellular_service_path_2,
@@ -603,8 +610,9 @@ TEST_F(ApnMigratorTest, MigrateNetworkCustomApnRemovedDuringMigration) {
 
   // Execute the GetManagedProperties callback, Shill should be updated with an
   // empty APN list. The network should be marked as migrated.
-  base::Value::Dict expected_onc_1 = chromeos::network_config::UserApnListToOnc(
-      kTestCellularGuid1, &empty_apn_list);
+  base::Value::Dict expected_onc_1 =
+      chromeos::network_config::CustomApnListToOnc(kTestCellularGuid1,
+                                                   &empty_apn_list);
   EXPECT_CALL(
       *managed_network_configuration_handler(),
       SetProperties(cellular_service_path_1,
@@ -664,7 +672,7 @@ TEST_F(ApnMigratorTest, MigrateManagedNetwork_NonMatchingSelectedApn) {
   // should be updated with an empty APN list. The network should be marked as
   // migrated.
   base::Value::List empty_apn_list;
-  base::Value::Dict expected_onc = chromeos::network_config::UserApnListToOnc(
+  base::Value::Dict expected_onc = chromeos::network_config::CustomApnListToOnc(
       kTestCellularGuid1, &empty_apn_list);
   EXPECT_CALL(
       *managed_network_configuration_handler(),
@@ -795,4 +803,296 @@ TEST_F(ApnMigratorTest, MigrateManagedNetwork_MatchingSelectedApn) {
   EXPECT_EQ(ApnState::kEnabled, custom_apns[0]->state);
 }
 
+TEST_F(
+    ApnMigratorTest,
+    MigrateNonManagedNetwork_NoLastConnectedAttachApnAndDefaultApn_MatchingLastGoodApn) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kApnRevamp);
+
+  const std::string cellular_service_path_1 = AddTestCellularDeviceAndService(
+      kCellularName1, kTestCellularPath1, kTestCellularIccid1,
+      kTestCellularGuid1, /*is_managed=*/false);
+
+  // We will use this delegate to simulate a late async reply
+  network_handler::PropertiesCallback get_managed_properties_callback;
+
+  // Start the migration process for |cellular_service_path_1|. This will
+  // trigger a GetManagedProperties call.
+  EXPECT_CALL(*managed_cellular_pref_handler(),
+              ContainsApnMigratedIccid(Eq(kTestCellularIccid1)))
+      .WillRepeatedly(Return(false));
+  const std::string access_point_name = "apn_1";
+  base::Value::Dict custom_apn;
+  custom_apn.Set(::onc::cellular_apn::kAccessPointName, access_point_name);
+  base::Value::List populated_apn_list;
+  populated_apn_list.Append(std::move(custom_apn));
+  EXPECT_CALL(*network_metadata_store(),
+              GetPreRevampCustomApnList(kTestCellularGuid1))
+      .Times(2)
+      .WillRepeatedly(Return(&populated_apn_list));
+  EXPECT_CALL(*managed_network_configuration_handler(),
+              GetManagedProperties(LoginState::Get()->primary_user_hash(),
+                                   cellular_service_path_1, _))
+      .Times(1)
+      .WillOnce(
+          WithArg<2>(Invoke([&](network_handler::PropertiesCallback callback) {
+            ASSERT_TRUE(get_managed_properties_callback.is_null());
+            get_managed_properties_callback = std::move(callback);
+            ASSERT_FALSE(get_managed_properties_callback.is_null());
+          })));
+  // Function under test.
+  TriggerNetworkListChanged();
+
+  // Execute the GetManagedProperties callback with no last connected attach
+  // APN, no last connected default APN, and a last good APN that matches the
+  // persisted APN. This should trigger a call to CreateCustomApns() with the
+  // APN in the enabled state.
+  EXPECT_CALL(*managed_network_configuration_handler(),
+              SetProperties(cellular_service_path_1, _, _, _))
+      .Times(0);
+  EXPECT_CALL(*managed_cellular_pref_handler(),
+              AddApnMigratedIccid(Eq(kTestCellularIccid1)))
+      .Times(1);
+  EXPECT_TRUE(GetCustomApns().empty());
+
+  absl::optional<base::Value::Dict> properties = base::Value::Dict();
+  base::Value::Dict last_good_apn_dict;
+  last_good_apn_dict.Set(::onc::cellular_apn::kAccessPointName,
+                         access_point_name);
+  base::Value::Dict cellular;
+  cellular.Set(::onc::cellular::kLastGoodAPN, std::move(last_good_apn_dict));
+
+  properties->Set(::onc::network_config::kCellular, std::move(cellular));
+  std::move(get_managed_properties_callback)
+      .Run(cellular_service_path_1, std::move(properties),
+           /*error=*/absl::nullopt);
+  base::RunLoop().RunUntilIdle();
+  const std::vector<ApnPropertiesPtr>& custom_apns = GetCustomApns();
+  ASSERT_EQ(1u, custom_apns.size());
+  EXPECT_EQ(access_point_name, custom_apns[0]->access_point_name);
+  EXPECT_EQ(ApnState::kEnabled, custom_apns[0]->state);
+}
+
+TEST_F(
+    ApnMigratorTest,
+    MigrateNonManagedNetwork_NoLastConnectedAttachApnAndDefaultApn_NonMatchingLastGoodApn) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kApnRevamp);
+
+  const std::string cellular_service_path_1 = AddTestCellularDeviceAndService(
+      kCellularName1, kTestCellularPath1, kTestCellularIccid1,
+      kTestCellularGuid1, /*is_managed=*/false);
+
+  // We will use this delegate to simulate a late async reply
+  network_handler::PropertiesCallback get_managed_properties_callback;
+
+  // Start the migration process for |cellular_service_path_1|. This will
+  // trigger a GetManagedProperties call.
+  EXPECT_CALL(*managed_cellular_pref_handler(),
+              ContainsApnMigratedIccid(Eq(kTestCellularIccid1)))
+      .WillRepeatedly(Return(false));
+  const std::string access_point_name = "apn_1";
+  base::Value::Dict custom_apn;
+  custom_apn.Set(::onc::cellular_apn::kAccessPointName, access_point_name);
+  base::Value::List populated_apn_list;
+  populated_apn_list.Append(std::move(custom_apn));
+  EXPECT_CALL(*network_metadata_store(),
+              GetPreRevampCustomApnList(kTestCellularGuid1))
+      .Times(2)
+      .WillRepeatedly(Return(&populated_apn_list));
+  EXPECT_CALL(*managed_network_configuration_handler(),
+              GetManagedProperties(LoginState::Get()->primary_user_hash(),
+                                   cellular_service_path_1, _))
+      .Times(1)
+      .WillOnce(
+          WithArg<2>(Invoke([&](network_handler::PropertiesCallback callback) {
+            ASSERT_TRUE(get_managed_properties_callback.is_null());
+            get_managed_properties_callback = std::move(callback);
+            ASSERT_FALSE(get_managed_properties_callback.is_null());
+          })));
+  // Function under test.
+  TriggerNetworkListChanged();
+
+  // Execute the GetManagedProperties callback with no last connected attach
+  // APN, no last connected default APN, and a last good APN that does NOT match
+  // the persisted APN. This should trigger a call to CreateCustomApns() with
+  // the APN in the disabled state.
+  EXPECT_CALL(*managed_network_configuration_handler(),
+              SetProperties(cellular_service_path_1, _, _, _))
+      .Times(0);
+  EXPECT_CALL(*managed_cellular_pref_handler(),
+              AddApnMigratedIccid(Eq(kTestCellularIccid1)))
+      .Times(1);
+  EXPECT_TRUE(GetCustomApns().empty());
+
+  absl::optional<base::Value::Dict> properties = base::Value::Dict();
+  base::Value::Dict last_good_apn_dict;
+  last_good_apn_dict.Set(::onc::cellular_apn::kAccessPointName, "apn_2");
+  base::Value::Dict cellular;
+  cellular.Set(::onc::cellular::kLastGoodAPN, std::move(last_good_apn_dict));
+
+  properties->Set(::onc::network_config::kCellular, std::move(cellular));
+  std::move(get_managed_properties_callback)
+      .Run(cellular_service_path_1, std::move(properties),
+           /*error=*/absl::nullopt);
+  base::RunLoop().RunUntilIdle();
+  const std::vector<ApnPropertiesPtr>& custom_apns = GetCustomApns();
+  ASSERT_EQ(1u, custom_apns.size());
+  EXPECT_EQ(access_point_name, custom_apns[0]->access_point_name);
+  EXPECT_EQ(ApnState::kDisabled, custom_apns[0]->state);
+}
+
+TEST_F(ApnMigratorTest,
+       MigrateNonManagedNetwork_MatchingLastConnectedAttachApnAndDefaultApn) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kApnRevamp);
+
+  const std::string cellular_service_path_1 = AddTestCellularDeviceAndService(
+      kCellularName1, kTestCellularPath1, kTestCellularIccid1,
+      kTestCellularGuid1, /*is_managed=*/false);
+
+  // We will use this delegate to simulate a late async reply
+  network_handler::PropertiesCallback get_managed_properties_callback;
+
+  // Start the migration process for |cellular_service_path_1|. This will
+  // trigger a GetManagedProperties call.
+  EXPECT_CALL(*managed_cellular_pref_handler(),
+              ContainsApnMigratedIccid(Eq(kTestCellularIccid1)))
+      .WillRepeatedly(Return(false));
+  const std::string access_point_name = "apn_1";
+  base::Value::Dict custom_apn;
+  custom_apn.Set(::onc::cellular_apn::kAccessPointName, access_point_name);
+  base::Value::List populated_apn_list;
+  populated_apn_list.Append(std::move(custom_apn));
+  EXPECT_CALL(*network_metadata_store(),
+              GetPreRevampCustomApnList(kTestCellularGuid1))
+      .Times(2)
+      .WillRepeatedly(Return(&populated_apn_list));
+  EXPECT_CALL(*managed_network_configuration_handler(),
+              GetManagedProperties(LoginState::Get()->primary_user_hash(),
+                                   cellular_service_path_1, _))
+      .Times(1)
+      .WillOnce(
+          WithArg<2>(Invoke([&](network_handler::PropertiesCallback callback) {
+            ASSERT_TRUE(get_managed_properties_callback.is_null());
+            get_managed_properties_callback = std::move(callback);
+            ASSERT_FALSE(get_managed_properties_callback.is_null());
+          })));
+  // Function under test.
+  TriggerNetworkListChanged();
+
+  // Execute the GetManagedProperties callback with a last connected attach
+  // APN and a last connected default APN that match the persisted APN.
+  // This should trigger a call to CreateCustomApns() with the APN in the
+  // enabled state with APN types of kAttach and kDefault.
+  EXPECT_CALL(*managed_network_configuration_handler(),
+              SetProperties(cellular_service_path_1, _, _, _))
+      .Times(0);
+  EXPECT_CALL(*managed_cellular_pref_handler(),
+              AddApnMigratedIccid(Eq(kTestCellularIccid1)))
+      .Times(1);
+  EXPECT_TRUE(GetCustomApns().empty());
+
+  absl::optional<base::Value::Dict> properties = base::Value::Dict();
+
+  base::Value::Dict last_connected_attach_apn_dict;
+  last_connected_attach_apn_dict.Set(::onc::cellular_apn::kAccessPointName,
+                                     access_point_name);
+  base::Value::Dict last_connected_default_apn_dict;
+  last_connected_default_apn_dict.Set(::onc::cellular_apn::kAccessPointName,
+                                      access_point_name);
+
+  base::Value::Dict cellular;
+  cellular.Set(::onc::cellular::kLastConnectedAttachApnProperty,
+               std::move(last_connected_attach_apn_dict));
+  cellular.Set(::onc::cellular::kLastConnectedDefaultApnProperty,
+               std::move(last_connected_default_apn_dict));
+
+  properties->Set(::onc::network_config::kCellular, std::move(cellular));
+  std::move(get_managed_properties_callback)
+      .Run(cellular_service_path_1, std::move(properties),
+           /*error=*/absl::nullopt);
+  base::RunLoop().RunUntilIdle();
+  const std::vector<ApnPropertiesPtr>& custom_apns = GetCustomApns();
+  ASSERT_EQ(1u, custom_apns.size());
+  EXPECT_EQ(access_point_name, custom_apns[0]->access_point_name);
+  EXPECT_EQ(ApnState::kEnabled, custom_apns[0]->state);
+  EXPECT_TRUE(base::Contains(custom_apns[0]->apn_types, ApnType::kAttach));
+  EXPECT_TRUE(base::Contains(custom_apns[0]->apn_types, ApnType::kDefault));
+}
+
+TEST_F(
+    ApnMigratorTest,
+    MigrateNonManagedNetwork_NoLastConnectedAttachApn_MatchingLastConnectedDefaultApn) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kApnRevamp);
+
+  const std::string cellular_service_path_1 = AddTestCellularDeviceAndService(
+      kCellularName1, kTestCellularPath1, kTestCellularIccid1,
+      kTestCellularGuid1, /*is_managed=*/false);
+
+  // We will use this delegate to simulate a late async reply
+  network_handler::PropertiesCallback get_managed_properties_callback;
+
+  // Start the migration process for |cellular_service_path_1|. This will
+  // trigger a GetManagedProperties call.
+  EXPECT_CALL(*managed_cellular_pref_handler(),
+              ContainsApnMigratedIccid(Eq(kTestCellularIccid1)))
+      .WillRepeatedly(Return(false));
+  const std::string access_point_name = "apn_1";
+  base::Value::Dict custom_apn;
+  custom_apn.Set(::onc::cellular_apn::kAccessPointName, access_point_name);
+  base::Value::List populated_apn_list;
+  populated_apn_list.Append(std::move(custom_apn));
+  EXPECT_CALL(*network_metadata_store(),
+              GetPreRevampCustomApnList(kTestCellularGuid1))
+      .Times(2)
+      .WillRepeatedly(Return(&populated_apn_list));
+  EXPECT_CALL(*managed_network_configuration_handler(),
+              GetManagedProperties(LoginState::Get()->primary_user_hash(),
+                                   cellular_service_path_1, _))
+      .Times(1)
+      .WillOnce(
+          WithArg<2>(Invoke([&](network_handler::PropertiesCallback callback) {
+            ASSERT_TRUE(get_managed_properties_callback.is_null());
+            get_managed_properties_callback = std::move(callback);
+            ASSERT_FALSE(get_managed_properties_callback.is_null());
+          })));
+  // Function under test.
+  TriggerNetworkListChanged();
+
+  // Execute the GetManagedProperties callback with no last connected attach
+  // APN, and a last connected default APN that matches the persisted APN.
+  // This should trigger a call to CreateCustomApns() with the APN in the
+  // enabled state with APN types of kDefault.
+  EXPECT_CALL(*managed_network_configuration_handler(),
+              SetProperties(cellular_service_path_1, _, _, _))
+      .Times(0);
+  EXPECT_CALL(*managed_cellular_pref_handler(),
+              AddApnMigratedIccid(Eq(kTestCellularIccid1)))
+      .Times(1);
+  EXPECT_TRUE(GetCustomApns().empty());
+
+  absl::optional<base::Value::Dict> properties = base::Value::Dict();
+
+  base::Value::Dict last_connected_default_apn_dict;
+  last_connected_default_apn_dict.Set(::onc::cellular_apn::kAccessPointName,
+                                      access_point_name);
+
+  base::Value::Dict cellular;
+  cellular.Set(::onc::cellular::kLastConnectedDefaultApnProperty,
+               std::move(last_connected_default_apn_dict));
+
+  properties->Set(::onc::network_config::kCellular, std::move(cellular));
+  std::move(get_managed_properties_callback)
+      .Run(cellular_service_path_1, std::move(properties),
+           /*error=*/absl::nullopt);
+  base::RunLoop().RunUntilIdle();
+  const std::vector<ApnPropertiesPtr>& custom_apns = GetCustomApns();
+  ASSERT_EQ(1u, custom_apns.size());
+  EXPECT_EQ(access_point_name, custom_apns[0]->access_point_name);
+  EXPECT_EQ(ApnState::kEnabled, custom_apns[0]->state);
+  EXPECT_FALSE(base::Contains(custom_apns[0]->apn_types, ApnType::kAttach));
+  EXPECT_TRUE(base::Contains(custom_apns[0]->apn_types, ApnType::kDefault));
+}
 }  // namespace ash

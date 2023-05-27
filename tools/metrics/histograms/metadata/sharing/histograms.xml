@@ -118,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.DefaultSharesheetAndroid.Opened" enum="ShareOrigin"
-    expires_after="2023-07-26">
+    expires_after="2023-09-24">
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -172,7 +172,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.MessageReceivedType" enum="SharingMessageType"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -328,7 +328,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Sharing.ScrollCapture.BitmapGeneratorStatus"
     enum="SharingScrollCaptureBitmapGenerationStatus"
-    expires_after="2023-07-16">
+    expires_after="2023-10-01">
   <owner>ckitagawa@chromium.org</owner>
   <owner>src/components/paint_preview/OWNERS</owner>
   <summary>
@@ -340,7 +340,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.ScrollCapture.SuccessfulCaptureDuration" units="ms"
-    expires_after="2023-07-16">
+    expires_after="2023-10-01">
   <owner>ckitagawa@chromium.org</owner>
   <owner>src/components/paint_preview/OWNERS</owner>
   <summary>
@@ -364,7 +364,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SendMessageResult" enum="SharingSendMessageResult"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
 <!-- Name completed by histogram_suffixes SharingChannelType,
     SharingDevicePlatform, SharingMessage, and SharingPulseInterval. -->
 
@@ -581,7 +581,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubDesktop.TimeToShow" units="ms"
-    expires_after="2023-07-26">
+    expires_after="2023-09-24">
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -592,7 +592,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherAvailableDeviceCount" units="devices"
-    expires_after="2023-07-02">
+    expires_after="2023-11-01">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
@@ -603,7 +603,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherClientNameIsEmpty" enum="BooleanEmpty"
-    expires_after="2023-04-30">
+    expires_after="2023-11-01">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
@@ -614,7 +614,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherScreenOnAndUnlocked" enum="Boolean"
-    expires_after="2023-06-11">
+    expires_after="2023-11-01">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
@@ -625,7 +625,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SmsFetcherTapWithChromeDestroyed" enum="Boolean"
-    expires_after="2023-05-07">
+    expires_after="2023-11-01">
   <owner>yigu@chromium.org</owner>
   <owner>src/content/browser/sms/OWNERS</owner>
   <summary>
@@ -644,6 +644,20 @@ chromium-metrics-reviews@google.com.
     Number of ice servers fetched by network traversal API call. Logged after
     receiving response of API call.
   </summary>
+</histogram>
+
+<histogram name="Sharing.{ShareSurface}.ShareContentType"
+    enum="SharingContentTypeAndroid" expires_after="2023-10-13">
+  <owner>wenyufu@chromium.org</owner>
+  <owner>src/chrome/browser/share/OWNERS</owner>
+  <summary>
+    The content type being shared when using a share sheet. Recorded when share
+    is sent to share sheet for {ShareSurface}. Android only.
+  </summary>
+  <token key="ShareSurface">
+    <variant name="DefaultSharesheetAndroid" summary="System share sheet"/>
+    <variant name="SharingHubAndroid" summary="Chrome's sharing hub"/>
+  </token>
 </histogram>
 
 </histograms>

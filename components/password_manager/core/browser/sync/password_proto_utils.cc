@@ -68,16 +68,21 @@ void TrimPasswordSpecificsDataNotesForCaching(
 
 }  // namespace
 
-sync_pb::PasswordSpecificsData_PasswordIssues PasswordIssuesMapToProto(
+sync_pb::PasswordIssues PasswordIssuesMapToProto(
     const base::flat_map<InsecureType, InsecurityMetadata>&
         form_password_issues) {
-  sync_pb::PasswordSpecificsData::PasswordIssues password_issues;
+  sync_pb::PasswordIssues password_issues;
   for (const auto& [insecure_type, insecure_metadata] : form_password_issues) {
-    sync_pb::PasswordSpecificsData::PasswordIssues::PasswordIssue issue;
+    sync_pb::PasswordIssues::PasswordIssue issue;
     issue.set_date_first_detection_windows_epoch_micros(
         insecure_metadata.create_time.ToDeltaSinceWindowsEpoch()
             .InMicroseconds());
     issue.set_is_muted(insecure_metadata.is_muted.value());
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kPasswordIssuesInSpecificsMetadata)) {
+      issue.set_trigger_notification_from_backend_on_detection(
+          insecure_metadata.trigger_notification_from_backend.value());
+    }
     switch (insecure_type) {
       case InsecureType::kLeaked:
         DCHECK(!password_issues.has_leaked_password_issue());
@@ -100,33 +105,40 @@ sync_pb::PasswordSpecificsData_PasswordIssues PasswordIssuesMapToProto(
   return password_issues;
 }
 
+InsecurityMetadata InsecurityMetadataFromProto(
+    const sync_pb::PasswordIssues::PasswordIssue& issue) {
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordIssuesInSpecificsMetadata)) {
+    return InsecurityMetadata(
+        ConvertToBaseTime(issue.date_first_detection_windows_epoch_micros()),
+        IsMuted(issue.is_muted()),
+        TriggerBackendNotification(
+            issue.trigger_notification_from_backend_on_detection()));
+  }
+  return InsecurityMetadata(
+      ConvertToBaseTime(issue.date_first_detection_windows_epoch_micros()),
+      IsMuted(issue.is_muted()), TriggerBackendNotification(false));
+}
+
 base::flat_map<InsecureType, InsecurityMetadata> PasswordIssuesMapFromProto(
     const sync_pb::PasswordSpecificsData& password_data) {
   base::flat_map<InsecureType, InsecurityMetadata> form_issues;
   const auto& specifics_issues = password_data.password_issues();
   if (specifics_issues.has_leaked_password_issue()) {
     const auto& issue = specifics_issues.leaked_password_issue();
-    form_issues[InsecureType::kLeaked] = InsecurityMetadata(
-        ConvertToBaseTime(issue.date_first_detection_windows_epoch_micros()),
-        IsMuted(issue.is_muted()));
+    form_issues[InsecureType::kLeaked] = InsecurityMetadataFromProto(issue);
   }
   if (specifics_issues.has_reused_password_issue()) {
     const auto& issue = specifics_issues.reused_password_issue();
-    form_issues[InsecureType::kReused] = InsecurityMetadata(
-        ConvertToBaseTime(issue.date_first_detection_windows_epoch_micros()),
-        IsMuted(issue.is_muted()));
+    form_issues[InsecureType::kReused] = InsecurityMetadataFromProto(issue);
   }
   if (specifics_issues.has_weak_password_issue()) {
     const auto& issue = specifics_issues.weak_password_issue();
-    form_issues[InsecureType::kWeak] = InsecurityMetadata(
-        ConvertToBaseTime(issue.date_first_detection_windows_epoch_micros()),
-        IsMuted(issue.is_muted()));
+    form_issues[InsecureType::kWeak] = InsecurityMetadataFromProto(issue);
   }
   if (specifics_issues.has_phished_password_issue()) {
     const auto& issue = specifics_issues.phished_password_issue();
-    form_issues[InsecureType::kPhished] = InsecurityMetadata(
-        ConvertToBaseTime(issue.date_first_detection_windows_epoch_micros()),
-        IsMuted(issue.is_muted()));
+    form_issues[InsecureType::kPhished] = InsecurityMetadataFromProto(issue);
   }
   return form_issues;
 }
@@ -275,6 +287,11 @@ sync_pb::PasswordSpecificsMetadata SpecificsMetadataFromPassword(
   password_metadata.set_blacklisted(password_form.blocked_by_user);
   password_metadata.set_date_last_used_windows_epoch_micros(
       password_form.date_last_used.ToDeltaSinceWindowsEpoch().InMicroseconds());
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordIssuesInSpecificsMetadata)) {
+    *password_metadata.mutable_password_issues() =
+        PasswordIssuesMapToProto(password_form.password_issues);
+  }
   return password_metadata;
 }
 

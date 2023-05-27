@@ -5,11 +5,14 @@
 #include "services/cert_verifier/trial_comparison_cert_verifier_mojo.h"
 
 #include "base/containers/span.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_proc_builtin.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/crl_set.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/der/encode_values.h"
 #include "net/der/parse_values.h"
 #include "net/net_buildflags.h"
@@ -20,13 +23,12 @@
 #if BUILDFLAG(IS_MAC)
 #include "net/cert/internal/trust_store_mac.h"
 #endif
-#if BUILDFLAG(IS_WIN)
-#include "net/cert/cert_verify_proc_win.h"
-#endif
 #if BUILDFLAG(USE_NSS_CERTS)
 #include <nss.h>
 #include "net/cert/internal/trust_store_nss.h"
 #endif
+
+namespace {
 
 struct ReceivedReport {
   std::string hostname;
@@ -94,6 +96,44 @@ class FakeReportClient
   base::RunLoop run_loop_;
 };
 
+class NotCalledCertVerifyProc : public net::CertVerifyProc {
+ public:
+  NotCalledCertVerifyProc()
+      : net::CertVerifyProc(net::CRLSet::BuiltinCRLSet()) {}
+
+  bool SupportsAdditionalTrustAnchors() const override { return false; }
+
+ protected:
+  ~NotCalledCertVerifyProc() override = default;
+
+ private:
+  int VerifyInternal(net::X509Certificate* cert,
+                     const std::string& hostname,
+                     const std::string& ocsp_response,
+                     const std::string& sct_list,
+                     int flags,
+                     const net::CertificateList& additional_trust_anchors,
+                     net::CertVerifyResult* verify_result,
+                     const net::NetLogWithSource& net_log) override {
+    ADD_FAILURE() << "NotCalledCertVerifyProc was called!";
+    return net::ERR_UNEXPECTED;
+  }
+};
+
+class NotCalledProcFactory : public net::CertVerifyProcFactory {
+ public:
+  scoped_refptr<net::CertVerifyProc> CreateCertVerifyProc(
+      scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
+      const ImplParams& impl_params) override {
+    return base::MakeRefCounted<NotCalledCertVerifyProc>();
+  }
+
+ protected:
+  ~NotCalledProcFactory() override = default;
+};
+
+}  // namespace
+
 TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
   base::test::TaskEnvironment scoped_task_environment;
 
@@ -121,11 +161,6 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
   ASSERT_TRUE(mac_trust_debug_info);
   mac_trust_debug_info->UpdateTrustDebugInfo(
       kExpectedTrustDebugInfo, net::TrustStoreMac::TrustImplType::kSimple);
-#endif
-#if BUILDFLAG(IS_WIN)
-  std::vector<uint8_t> authroot_sequence{'T', 'E', 'S', 'T'};
-  net::CertVerifyProcWin::ResultDebugData::Create(time, authroot_sequence,
-                                                  &primary_result);
 #endif
 #if BUILDFLAG(USE_NSS_CERTS)
   net::TrustStoreNSS::ResultDebugData::Create(
@@ -158,8 +193,8 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
   FakeReportClient report_client(
       report_client_remote.InitWithNewPipeAndPassReceiver());
   cert_verifier::TrialComparisonCertVerifierMojo tccvm(
-      true, {}, std::move(report_client_remote), nullptr, nullptr, nullptr,
-      nullptr);
+      true, {}, std::move(report_client_remote),
+      base::MakeRefCounted<NotCalledProcFactory>(), nullptr, {});
 
   tccvm.OnSendTrialReport("example.com", unverified_cert, false, false, false,
                           false, "stapled ocsp", "sct list", primary_result,
@@ -187,14 +222,6 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
   EXPECT_EQ(
       cert_verifier::mojom::CertVerifierDebugInfo::MacTrustImplType::kSimple,
       report.debug_info->mac_trust_impl);
-#endif
-#if BUILDFLAG(IS_WIN)
-  ASSERT_TRUE(report.debug_info->win_platform_debug_info);
-  EXPECT_EQ(time,
-            report.debug_info->win_platform_debug_info->authroot_this_update);
-  EXPECT_EQ(
-      authroot_sequence,
-      report.debug_info->win_platform_debug_info->authroot_sequence_number);
 #endif
 #if BUILDFLAG(USE_NSS_CERTS)
   EXPECT_EQ(NSS_GetVersion(), report.debug_info->nss_version);
@@ -224,4 +251,24 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
 
   EXPECT_EQ(time, report.debug_info->trial_verification_time);
   EXPECT_EQ("20190927221108Z", report.debug_info->trial_der_verification_time);
+}
+
+TEST(TrialComparisonCertVerifierMojoTest, ObserverIsCalledOnCRSUpdate) {
+  base::test::TaskEnvironment scoped_task_environment;
+
+  mojo::PendingRemote<
+      cert_verifier::mojom::TrialComparisonCertVerifierReportClient>
+      report_client_remote;
+  FakeReportClient report_client(
+      report_client_remote.InitWithNewPipeAndPassReceiver());
+  cert_verifier::TrialComparisonCertVerifierMojo tccvm(
+      true, {}, std::move(report_client_remote),
+      base::MakeRefCounted<NotCalledProcFactory>(), nullptr, {});
+
+  net::CertVerifierObserverCounter observer_(&tccvm);
+  EXPECT_EQ(observer_.change_count(), 0u);
+  tccvm.UpdateVerifyProcData(nullptr, {});
+  // Observer is called twice since the TrialComparisonCertVerifier currently
+  // forwards notifications from both the primary and secondary verifiers.
+  EXPECT_EQ(observer_.change_count(), 2u);
 }

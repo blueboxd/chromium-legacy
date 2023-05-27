@@ -5,36 +5,36 @@
 #include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/sensor_disabled_notification_delegate.h"
 #include "ash/public/cpp/system_tray_client.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/privacy_hub/camera_privacy_switch_controller.h"
+#include "ash/system/privacy_hub/geolocation_privacy_switch_controller.h"
 #include "ash/system/privacy_hub/microphone_privacy_switch_controller.h"
 #include "ash/system/privacy_hub/privacy_hub_metrics.h"
 #include "ash/system/privacy_hub/privacy_hub_notification.h"
+#include "ash/system/system_notification_controller.h"
 #include "base/notreached.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
+#include "components/prefs/pref_service.h"
 #include "ui/message_center/message_center.h"
 
 namespace ash {
-namespace {
+using Sensor = SensorDisabledNotificationDelegate::Sensor;
 
-void SetAndLogMicrophoneMute(const bool muted) {
-  CrasAudioHandler::Get()->SetInputMute(
-      muted, CrasAudioHandler::InputMuteChangeMethod::kOther);
-  privacy_hub_metrics::LogMicrophoneEnabledFromNotification(!muted);
-}
+namespace {
 
 constexpr char kLearnMoreUrl[] =
     "https://support.google.com/chromebook/?p=privacy_hub";
 
-void LogInvalidSensor(const SensorDisabledNotificationDelegate::Sensor sensor) {
+void LogInvalidSensor(const Sensor sensor) {
   NOTREACHED() << "Invalid sensor: "
-               << static_cast<std::underlying_type_t<
-                      SensorDisabledNotificationDelegate::Sensor>>(sensor);
+               << static_cast<std::underlying_type_t<Sensor>>(sensor);
 }
 
 }  // namespace
@@ -46,12 +46,7 @@ PrivacyHubNotificationController::PrivacyHubNotificationController() {
       std::vector<int>{
           IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE,
           IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
-          IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES},
-      base::MakeRefCounted<PrivacyHubNotificationClickDelegate>(
-          base::BindRepeating([]() {
-            CameraPrivacySwitchController::
-                SetAndLogCameraPreferenceFromNotification(true);
-          })));
+          IDS_PRIVACY_HUB_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES});
 
   auto microphone_notification_descriptor = PrivacyHubNotificationDescriptor(
       SensorSet{Sensor::kMicrophone},
@@ -60,19 +55,7 @@ PrivacyHubNotificationController::PrivacyHubNotificationController() {
       std::vector<int>{
           IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE,
           IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
-          IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES},
-      base::MakeRefCounted<PrivacyHubNotificationClickDelegate>(
-          base::BindRepeating([]() { SetAndLogMicrophoneMute(false); })));
-
-  auto combined_delegate = base::MakeRefCounted<
-      PrivacyHubNotificationClickDelegate>(base::BindRepeating([]() {
-    SetAndLogMicrophoneMute(false);
-    CameraPrivacySwitchController::SetAndLogCameraPreferenceFromNotification(
-        true);
-  }));
-
-  combined_delegate->SetSecondButtonCallback(base::BindRepeating(
-      &PrivacyHubNotificationController::OpenPrivacyHubSettingsPage));
+          IDS_MICROPHONE_MUTED_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES});
 
   auto combined_notification_descriptor = PrivacyHubNotificationDescriptor(
       SensorSet{Sensor::kCamera, Sensor::kMicrophone},
@@ -82,8 +65,11 @@ PrivacyHubNotificationController::PrivacyHubNotificationController() {
       std::vector<int>{
           IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE,
           IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
-          IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES},
-      combined_delegate);
+          IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES});
+
+  combined_notification_descriptor.delegate()->SetSecondButtonCallback(
+      base::BindRepeating(
+          &PrivacyHubNotificationController::OpenPrivacyHubSettingsPage));
 
   combined_notification_ = std::make_unique<PrivacyHubNotification>(
       kCombinedNotificationId, NotificationCatalogName::kPrivacyHubMicAndCamera,
@@ -95,7 +81,7 @@ PrivacyHubNotificationController::PrivacyHubNotificationController() {
       kMicrophoneHardwareSwitchNotificationId,
       NotificationCatalogName::kMicrophoneMute,
       PrivacyHubNotificationDescriptor{
-          SensorDisabledNotificationDelegate::SensorSet{Sensor::kMicrophone},
+          SensorSet{Sensor::kMicrophone},
           IDS_MICROPHONE_MUTED_BY_HW_SWITCH_NOTIFICATION_TITLE,
           std::vector<int>{IDS_ASH_LEARN_MORE},
           std::vector<int>{
@@ -105,10 +91,36 @@ PrivacyHubNotificationController::PrivacyHubNotificationController() {
           base::MakeRefCounted<PrivacyHubNotificationClickDelegate>(
               base::BindRepeating(
                   PrivacyHubNotificationController::OpenSupportUrl,
-                  SensorDisabledNotificationDelegate::Sensor::kMicrophone))});
+                  Sensor::kMicrophone))});
+
+  PrivacyHubNotificationDescriptor geolocation_notification_descriptor(
+      SensorSet{Sensor::kLocation},
+      IDS_PRIVACY_HUB_GEOLOCATION_OFF_NOTIFICATION_TITLE,
+      std::vector<int>{IDS_PRIVACY_HUB_TURN_ON_GEOLOCATION_ACTION_BUTTON,
+                       IDS_PRIVACY_HUB_TURN_ON_GEOLOCATION_LEARN_MORE_BUTTON},
+      std::vector<int>{
+          IDS_PRIVACY_HUB_GEOLOCATION_OFF_NOTIFICATION_MESSAGE,
+          IDS_PRIVACY_HUB_GEOLOCATION_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
+          IDS_PRIVACY_HUB_GEOLOCATION_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES});
+  geolocation_notification_descriptor.delegate()->SetSecondButtonCallback(
+      base::BindRepeating(PrivacyHubNotificationController::OpenSupportUrl,
+                          Sensor::kLocation));
+  geolocation_notification_ = std::make_unique<PrivacyHubNotification>(
+      kGeolocationSwitchNotificationId,
+      NotificationCatalogName::kGeolocationSwitch,
+      std::move(geolocation_notification_descriptor));
 }
 
 PrivacyHubNotificationController::~PrivacyHubNotificationController() = default;
+
+// static
+PrivacyHubNotificationController* PrivacyHubNotificationController::Get() {
+  SystemNotificationController* system_notification_controller =
+      Shell::Get()->system_notification_controller();
+  return system_notification_controller
+             ? system_notification_controller->privacy_hub()
+             : nullptr;
+}
 
 void PrivacyHubNotificationController::ShowSoftwareSwitchNotification(
     const Sensor sensor) {
@@ -122,6 +134,10 @@ void PrivacyHubNotificationController::ShowSoftwareSwitchNotification(
     case Sensor::kCamera: {
       AddSensor(sensor);
       combined_notification_->Show();
+      break;
+    }
+    case Sensor::kLocation: {
+      geolocation_notification_->Show();
       break;
     }
     default: {
@@ -146,6 +162,10 @@ void PrivacyHubNotificationController::RemoveSoftwareSwitchNotification(
       }
       break;
     }
+    case Sensor::kLocation: {
+      geolocation_notification_->Hide();
+      break;
+    }
     default: {
       LogInvalidSensor(sensor);
       break;
@@ -163,11 +183,26 @@ void PrivacyHubNotificationController::UpdateSoftwareSwitchNotification(
       combined_notification_->Update();
       break;
     }
+    case Sensor::kLocation: {
+      geolocation_notification_->Update();
+      break;
+    }
     default: {
       LogInvalidSensor(sensor);
       break;
     }
   }
+}
+
+bool PrivacyHubNotificationController::
+    IsSoftwareSwitchNotificationDisplayedForSensor(Sensor sensor) {
+  return combined_notification_->IsShown() && sensors_.Has(sensor);
+}
+
+void PrivacyHubNotificationController::
+    SetPriorityForMicrophoneHardwareNotification(
+        message_center::NotificationPriority priority) {
+  microphone_hw_switch_notification_->SetPriority(priority);
 }
 
 void PrivacyHubNotificationController::ShowHardwareSwitchNotification(
@@ -236,12 +271,44 @@ void PrivacyHubNotificationController::OpenSupportUrl(Sensor sensor) {
           privacy_hub_metrics::PrivacyHubLearnMoreSensor::kCamera);
       break;
     case Sensor::kLocation:
-      LOG(DFATAL) << "Location doesn't have a learn more button";
+      privacy_hub_metrics::LogPrivacyHubLearnMorePageOpened(
+          privacy_hub_metrics::PrivacyHubLearnMoreSensor::kGeolocation);
       return;
   }
   NewWindowDelegate::GetPrimary()->OpenUrl(
       GURL(kLearnMoreUrl), NewWindowDelegate::OpenUrlFrom::kUserInteraction,
       NewWindowDelegate::Disposition::kNewForegroundTab);
+}
+
+// static
+void PrivacyHubNotificationController::
+    SetAndLogSensorPreferenceFromNotification(Sensor sensor,
+                                              const bool enabled) {
+  PrefService* pref_service =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  if (!pref_service) {
+    return;
+  }
+
+  const char* pref_name = nullptr;
+  switch (sensor) {
+    case Sensor::kCamera: {
+      pref_name = prefs::kUserCameraAllowed;
+      break;
+    }
+    case Sensor::kMicrophone: {
+      pref_name = prefs::kUserMicrophoneAllowed;
+      break;
+    }
+    case Sensor::kLocation: {
+      pref_name = prefs::kUserGeolocationAllowed;
+      break;
+    }
+  }
+  CHECK(pref_name);
+
+  pref_service->SetBoolean(pref_name, enabled);
+  privacy_hub_metrics::LogSensorEnabledFromNotification(sensor, enabled);
 }
 
 void PrivacyHubNotificationController::AddSensor(Sensor sensor) {

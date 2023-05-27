@@ -28,10 +28,14 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/typography.h"
 #include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -113,7 +117,8 @@ bool IsTitleLabel(SearchResultView::LabelType label_type) {
   }
 }
 
-ui::ColorId GetLabelColorId(bool is_title, const SearchResult::Tags& tags) {
+ui::ColorId GetLabelColorId(SearchResultView::LabelType label_type,
+                            const SearchResult::Tags& tags) {
   auto color_tag = SearchResult::Tag::NONE;
   for (const auto& tag : tags) {
     // Each label only supports one type of color tag. `color_tag` should only
@@ -135,20 +140,75 @@ ui::ColorId GetLabelColorId(bool is_title, const SearchResult::Tags& tags) {
     }
   }
 
+  const bool is_jelly_enabled = chromeos::features::IsJellyEnabled();
   switch (color_tag) {
     case SearchResult::Tag::NONE:
       ABSL_FALLTHROUGH_INTENDED;
     case SearchResult::Tag::DIM:
       ABSL_FALLTHROUGH_INTENDED;
     case SearchResult::Tag::MATCH:
-      return is_title ? kColorAshTextColorPrimary : kColorAshTextColorSecondary;
+      if (is_jelly_enabled) {
+        switch (label_type) {
+          case SearchResultView::LabelType::kBigTitle:
+          case SearchResultView::LabelType::kBigTitleSuperscript:
+          case SearchResultView::LabelType::kTitle:
+            return cros_tokens::kCrosSysOnSurface;
+          case SearchResultView::LabelType::kDetails:
+            return cros_tokens::kCrosSysOnSurfaceVariant;
+          case SearchResultView::LabelType::kKeyboardShortcut:
+            return cros_tokens::kCrosSysPrimary;
+        }
+      }
+      return IsTitleLabel(label_type) ? kColorAshTextColorPrimary
+                                      : kColorAshTextColorSecondary;
     case SearchResult::Tag::URL:
-      return kColorAshTextColorURL;
+      return is_jelly_enabled
+                 ? static_cast<ui::ColorId>(cros_tokens::kCrosSysPrimary)
+                 : kColorAshTextColorURL;
     case SearchResult::Tag::GREEN:
-      return kColorAshTextColorPositive;
+      return is_jelly_enabled
+                 ? static_cast<ui::ColorId>(cros_tokens::kCrosSysPositive)
+                 : kColorAshTextColorPositive;
     case SearchResult::Tag::RED:
-      return kColorAshTextColorAlert;
+      return is_jelly_enabled
+                 ? static_cast<ui::ColorId>(cros_tokens::kCrosSysError)
+                 : kColorAshTextColorAlert;
   }
+}
+
+absl::optional<TypographyToken> GetTypographyToken(
+    SearchResultView::LabelType label_type,
+    bool is_match,
+    bool is_inline_detail) {
+  if (!chromeos::features::IsJellyEnabled()) {
+    return absl::nullopt;
+  }
+
+  if (is_match) {
+    return IsTitleLabel(label_type) ? TypographyToken::kCrosButton1
+                                    : TypographyToken::kCrosBody1;
+  }
+
+  switch (label_type) {
+    case SearchResultView::LabelType::kBigTitle:
+      return TypographyToken::kCrosDisplay2;
+    case SearchResultView::LabelType::kBigTitleSuperscript:
+      return TypographyToken::kCrosDisplay7;
+    case SearchResultView::LabelType::kTitle:
+      return TypographyToken::kCrosBody1;
+    case SearchResultView::LabelType::kDetails:
+      // has_keyboard_shortcut_contents forces inline title and details text
+      // for answer cards so title and details text should use the same
+      // context.
+      if (is_inline_detail) {
+        return TypographyToken::kCrosBody1;
+      }
+      ABSL_FALLTHROUGH_INTENDED;
+    case SearchResultView::LabelType::kKeyboardShortcut:
+      return TypographyToken::kCrosAnnotation1;
+  }
+
+  return absl::nullopt;
 }
 
 views::ImageView* SetupChildImageView(views::FlexLayoutView* parent) {
@@ -166,6 +226,7 @@ views::Label* SetupChildLabelView(
     SearchResultView::SearchResultViewType view_type,
     SearchResultView::LabelType label_type,
     ui::ColorId color_id,
+    absl::optional<TypographyToken> typography_token,
     int flex_order,
     bool has_keyboard_shortcut_contents,
     bool is_multi_line,
@@ -197,36 +258,45 @@ views::Label* SetupChildLabelView(
           views::MaximumFlexSizeRule::kPreferred)
           .WithOrder(flex_order));
 
-  // Apply label text styling.
-  ash::AshTextContext text_context;
-  switch (label_type) {
-    case SearchResultView::LabelType::kBigTitle:
-      text_context = CONTEXT_SEARCH_RESULT_BIG_TITLE;
-      break;
-    case SearchResultView::LabelType::kBigTitleSuperscript:
-      // kBigTitleSuperscript labels are top-aligned to support superscripting.
-      label->SetVerticalAlignment(gfx::ALIGN_TOP);
-      text_context = CONTEXT_SEARCH_RESULT_BIG_TITLE_SUPERSCRIPT;
-      break;
-    case SearchResultView::LabelType::kTitle:
-      text_context = CONTEXT_SEARCH_RESULT_VIEW;
-      break;
-    case SearchResultView::LabelType::kDetails:
-      // has_keyboard_shortcut_contents forces inline title and details text for
-      // answer cards so title and details text should use the same context.
-      if (view_type == SearchResultView::SearchResultViewType::kAnswerCard &&
-          !has_keyboard_shortcut_contents) {
-        text_context = CONTEXT_SEARCH_RESULT_VIEW_INLINE_ANSWER_DETAILS;
-      } else {
-        text_context = CONTEXT_SEARCH_RESULT_VIEW;
-      }
-      break;
-    case SearchResultView::LabelType::kKeyboardShortcut:
-      text_context = CONTEXT_SEARCH_RESULT_VIEW;
-      break;
+  if (label_type == SearchResultView::LabelType::kBigTitleSuperscript) {
+    // kBigTitleSuperscript labels are top-aligned to support superscripting.
+    label->SetVerticalAlignment(gfx::ALIGN_TOP);
   }
-  label->SetTextContext(text_context);
-  label->SetTextStyle(STYLE_LAUNCHER);
+
+  // Apply label text styling.
+  if (typography_token.has_value()) {
+    TypographyProvider::Get()->StyleLabel(typography_token.value(), *label);
+  } else {
+    ash::AshTextContext text_context;
+    switch (label_type) {
+      case SearchResultView::LabelType::kBigTitle:
+        text_context = CONTEXT_SEARCH_RESULT_BIG_TITLE;
+        break;
+      case SearchResultView::LabelType::kBigTitleSuperscript:
+        text_context = CONTEXT_SEARCH_RESULT_BIG_TITLE_SUPERSCRIPT;
+        break;
+      case SearchResultView::LabelType::kTitle:
+        text_context = CONTEXT_SEARCH_RESULT_VIEW;
+        break;
+      case SearchResultView::LabelType::kDetails:
+        // has_keyboard_shortcut_contents forces inline title and details text
+        // for answer cards so title and details text should use the same
+        // context.
+        if (view_type == SearchResultView::SearchResultViewType::kAnswerCard &&
+            !has_keyboard_shortcut_contents) {
+          text_context = CONTEXT_SEARCH_RESULT_VIEW_INLINE_ANSWER_DETAILS;
+        } else {
+          text_context = CONTEXT_SEARCH_RESULT_VIEW;
+        }
+        break;
+      case SearchResultView::LabelType::kKeyboardShortcut:
+        text_context = CONTEXT_SEARCH_RESULT_VIEW;
+        break;
+    }
+    label->SetTextContext(text_context);
+    label->SetTextStyle(STYLE_LAUNCHER);
+  }
+
   return label;
 }
 
@@ -402,12 +472,14 @@ SearchResultView::SearchResultView(
   title_container_->SetFlexAllocationOrder(
       views::FlexAllocationOrder::kReverse);
 
-  result_text_separator_label_ =
-      SetupChildLabelView(title_and_details_container_, view_type_,
-                          LabelType::kDetails, kColorAshTextColorSecondary,
-                          kSeparatorOrder, has_keyboard_shortcut_contents_,
-                          /*is_multi_line=*/false,
-                          SearchResultTextItem::OverflowBehavior::kNoElide);
+  result_text_separator_label_ = SetupChildLabelView(
+      title_and_details_container_, view_type_, LabelType::kDetails,
+      kColorAshTextColorSecondary,
+      GetTypographyToken(LabelType::kDetails, /*is_match=*/false,
+                         IsInlineSearchResult()),
+      kSeparatorOrder, has_keyboard_shortcut_contents_,
+      /*is_multi_line=*/false,
+      SearchResultTextItem::OverflowBehavior::kNoElide);
   result_text_separator_label_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_SEARCH_RESULT_SEPARATOR));
   result_text_separator_label_->GetViewAccessibility().OverrideIsIgnored(true);
@@ -424,22 +496,26 @@ SearchResultView::SearchResultView(
           .WithOrder(TitleDetailContainerOrder)
           .WithWeight(1));
 
-  rating_separator_label_ =
-      SetupChildLabelView(title_and_details_container_, view_type_,
-                          LabelType::kDetails, kColorAshTextColorSecondary,
-                          kSeparatorOrder, has_keyboard_shortcut_contents_,
-                          /*is_multi_line=*/false,
-                          SearchResultTextItem::OverflowBehavior::kNoElide);
+  rating_separator_label_ = SetupChildLabelView(
+      title_and_details_container_, view_type_, LabelType::kDetails,
+      kColorAshTextColorSecondary,
+      GetTypographyToken(LabelType::kDetails, /*is_match=*/false,
+                         IsInlineSearchResult()),
+      kSeparatorOrder, has_keyboard_shortcut_contents_,
+      /*is_multi_line=*/false,
+      SearchResultTextItem::OverflowBehavior::kNoElide);
   rating_separator_label_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_SEARCH_RESULT_SEPARATOR));
   rating_separator_label_->GetViewAccessibility().OverrideIsIgnored(true);
 
-  rating_ =
-      SetupChildLabelView(title_and_details_container_, view_type_,
-                          LabelType::kDetails, kColorAshTextColorSecondary,
-                          kRatingOrder, has_keyboard_shortcut_contents_,
-                          /*is_multi_line=*/false,
-                          SearchResultTextItem::OverflowBehavior::kNoElide);
+  rating_ = SetupChildLabelView(
+      title_and_details_container_, view_type_, LabelType::kDetails,
+      kColorAshTextColorSecondary,
+      GetTypographyToken(LabelType::kDetails, /*is_match=*/false,
+                         IsInlineSearchResult()),
+      kRatingOrder, has_keyboard_shortcut_contents_,
+      /*is_multi_line=*/false,
+      SearchResultTextItem::OverflowBehavior::kNoElide);
 
   rating_star_ = SetupChildImageView(title_and_details_container_);
   rating_star_->SetBorder(views::CreateEmptyBorder(
@@ -454,6 +530,13 @@ SearchResultView::SearchResultView(
 }
 
 SearchResultView::~SearchResultView() = default;
+
+bool SearchResultView::IsInlineSearchResult() {
+  // has_keyboard_shortcut_contents_ forces inline title and details text for
+  // answer cards.
+  return view_type_ != SearchResultView::SearchResultViewType::kAnswerCard ||
+         has_keyboard_shortcut_contents_;
+}
 
 void SearchResultView::OnResultChanged() {
   OnMetadataChanged();
@@ -665,7 +748,9 @@ SearchResultView::SetupContainerViewForTextVector(
                         SearchResultTextItem::OverflowBehavior::kNoElide;
         views::Label* label = SetupChildLabelView(
             parent, view_type_, label_type,
-            GetLabelColorId(IsTitleLabel(label_type), span.GetTextTags()),
+            GetLabelColorId(label_type, span.GetTextTags()),
+            GetTypographyToken(label_type, /*is_match=*/false,
+                               IsInlineSearchResult()),
             !elidable ? kNonElideLabelOrder
                       : kElidableLabelOrderStart + label_count,
             has_keyboard_shortcut_contents,
@@ -916,8 +1001,10 @@ void SearchResultView::UpdateRating() {
 
 void SearchResultView::StyleLabel(views::Label* label,
                                   const SearchResult::Tags& tags) {
-  // Reset font weight styling for label.
-  label->ApplyBaselineTextStyle();
+  if (!chromeos::features::IsJellyEnabled()) {
+    // Reset font weight styling for label.
+    label->ApplyBaselineTextStyle();
+  }
 
   for (const auto& tag : tags) {
     bool has_match_tag = (tag.styles & SearchResult::Tag::MATCH);
@@ -1122,10 +1209,16 @@ void SearchResultView::PaintButtonContents(gfx::Canvas* canvas) {
 
   gfx::Rect content_rect(rect);
 
-  const SkColor focus_bar_color =
-      GetColorProvider()->GetColor(ui::kColorAshFocusRing);
-  const SkColor highlight_color =
-      GetColorProvider()->GetColor(kColorAshHighlightColorHover);
+  bool is_jelly_enabled = chromeos::features::IsJellyEnabled();
+
+  const SkColor focus_bar_color = GetColorProvider()->GetColor(
+      is_jelly_enabled
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysFocusRing)
+          : ui::kColorAshFocusRing);
+  const SkColor highlight_color = GetColorProvider()->GetColor(
+      is_jelly_enabled
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysHoverOnSubtle)
+          : kColorAshHighlightColorHover);
   switch (view_type_) {
     case SearchResultViewType::kDefault:
       if (selected() && !actions_view()->HasSelectedAction()) {

@@ -138,49 +138,6 @@ void AdjustStyleForSvgElement(const SVGElement& element,
   builder.SetTextUnderlinePosition(TextUnderlinePosition::kAuto);
 }
 
-// Adjust style for anchor() and anchor-size() queries.
-void AdjustAnchorQueryStyles(ComputedStyleBuilder& builder) {
-  if (!RuntimeEnabledFeatures::CSSAnchorPositioningEnabled()) {
-    return;
-  }
-
-  // anchor() and anchor-size() can only be used on absolutely positioned
-  // elements.
-  EPosition position = builder.GetPosition();
-  if (position != EPosition::kAbsolute && position != EPosition::kFixed) {
-    if (builder.Left().HasAnchorQueries()) {
-      builder.SetLeft(Length::Auto());
-    }
-    if (builder.Right().HasAnchorQueries()) {
-      builder.SetRight(Length::Auto());
-    }
-    if (builder.Top().HasAnchorQueries()) {
-      builder.SetTop(Length::Auto());
-    }
-    if (builder.Bottom().HasAnchorQueries()) {
-      builder.SetBottom(Length::Auto());
-    }
-    if (builder.Width().HasAnchorQueries()) {
-      builder.SetWidth(Length::Auto());
-    }
-    if (builder.MinWidth().HasAnchorQueries()) {
-      builder.SetMinWidth(Length::Auto());
-    }
-    if (builder.MaxWidth().HasAnchorQueries()) {
-      builder.SetMaxWidth(Length::Auto());
-    }
-    if (builder.Height().HasAnchorQueries()) {
-      builder.SetHeight(Length::Auto());
-    }
-    if (builder.MinHeight().HasAnchorQueries()) {
-      builder.SetMinHeight(Length::Auto());
-    }
-    if (builder.MaxHeight().HasAnchorQueries()) {
-      builder.SetMaxHeight(Length::Auto());
-    }
-  }
-}
-
 bool ElementForcesStackingContext(Element* element) {
   if (!element) {
     return false;
@@ -196,8 +153,12 @@ bool ElementForcesStackingContext(Element* element) {
 
 }  // namespace
 
+// https://drafts.csswg.org/css-display/#transformations
 static EDisplay EquivalentBlockDisplay(EDisplay display) {
   switch (display) {
+    case EDisplay::kFlowRootListItem:
+      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
+      [[fallthrough]];
     case EDisplay::kBlock:
     case EDisplay::kTable:
     case EDisplay::kWebkitBox:
@@ -220,6 +181,12 @@ static EDisplay EquivalentBlockDisplay(EDisplay display) {
       return EDisplay::kBlockMath;
     case EDisplay::kInlineLayoutCustom:
       return EDisplay::kLayoutCustom;
+    case EDisplay::kInlineListItem:
+      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
+      return EDisplay::kListItem;
+    case EDisplay::kInlineFlowRootListItem:
+      DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
+      return EDisplay::kFlowRootListItem;
 
     case EDisplay::kContents:
     case EDisplay::kInline:
@@ -352,12 +319,7 @@ static void AdjustStyleForMarker(ComputedStyleBuilder& builder,
     return;
   }
 
-  bool is_inside =
-      parent_style.ListStylePosition() == EListStylePosition::kInside ||
-      (IsA<HTMLLIElement>(parent_element) &&
-       !parent_style.IsInsideListElement());
-
-  if (is_inside) {
+  if (parent_style.MarkerShouldBeInside(parent_element)) {
     Document& document = parent_element.GetDocument();
     auto margins =
         ListMarker::InlineMarginsForInside(document, builder, parent_style);
@@ -561,6 +523,17 @@ void StyleAdjuster::AdjustOverflow(ComputedStyleBuilder& builder,
        builder.OverflowY() == EOverflow::kClip)) {
     UseCounter::Count(element->GetDocument(),
                       WebFeature::kOverflowClipAlongEitherAxis);
+  }
+
+  if (RuntimeEnabledFeatures::OverflowOverlayAliasesAutoEnabled()) {
+    // overlay is a legacy alias of auto.
+    // https://drafts.csswg.org/css-overflow-3/#valdef-overflow-auto
+    if (builder.OverflowY() == EOverflow::kOverlay) {
+      builder.SetOverflowY(EOverflow::kAuto);
+    }
+    if (builder.OverflowX() == EOverflow::kOverlay) {
+      builder.SetOverflowX(EOverflow::kAuto);
+    }
   }
 }
 
@@ -855,7 +828,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
       if ((element && element->IsInTopLayer()) ||
           builder.StyleType() == kPseudoIdBackdrop) {
-        builder.SetTopLayer(ETopLayer::kBrowser);
+        builder.SetOverlay(EOverlay::kAuto);
       }
     }
 
@@ -865,7 +838,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     // to 'absolute'. Root elements that are in the top layer should just
     // be left alone because the fullscreen.css doesn't apply any style to
     // them.
-    if ((builder.TopLayer() == ETopLayer::kBrowser && !is_document_element) ||
+    if ((builder.Overlay() == EOverlay::kAuto && !is_document_element) ||
         builder.StyleType() == kPseudoIdViewTransition) {
       if (builder.GetPosition() == EPosition::kStatic ||
           builder.GetPosition() == EPosition::kRelative) {
@@ -942,7 +915,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     builder.SetForcesStackingContext(true);
   }
 
-  if (builder.TopLayer() == ETopLayer::kBrowser ||
+  if (builder.Overlay() == EOverlay::kAuto ||
       builder.StyleType() == kPseudoIdViewTransition) {
     builder.SetForcesStackingContext(true);
   }
@@ -1093,24 +1066,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
   }
 
-  AdjustAnchorQueryStyles(builder);
-
-  if (!HasFullNGFragmentationSupport()) {
-    // When establishing a block fragmentation context for LayoutNG, we require
-    // that everything fragmentable inside can be laid out by NG natively, since
-    // NG and legacy layout cannot cooperate within the same fragmentation
-    // context. And vice versa (everything inside a legacy fragmentation context
-    // needs to be legacy objects, in order to be fragmentable). Set a flag, so
-    // that we can quickly determine whether we need to check that an element is
-    // compatible with the block fragmentation implementation being used.
-    if (builder.SpecifiesColumns() ||
-        (element && element->GetDocument().Printing())) {
-      builder.SetInsideFragmentationContextWithNondeterministicEngine(true);
-    }
-  }
-
   if (element && element->HasCustomStyleCallbacks()) {
     element->AdjustStyle(base::PassKey<StyleAdjuster>(), builder);
+  }
+
+  if (element && ViewTransitionUtils::IsViewTransitionParticipantFromSupplement(
+                     *element)) {
+    builder.SetElementIsViewTransitionParticipant();
   }
 }
 

@@ -158,8 +158,11 @@ void ShellSurface::AcknowledgeConfigure(uint32_t serial) {
     // Set the resize direction that will be applied when Commit() is called.
     pending_resize_component_ = config->resize_component;
 
-    if (config->serial == serial)
+    if (config->serial == serial) {
+      // `config` needs to stay alive until the next Commit() call.
+      config_waiting_for_commit_ = std::move(config);
       break;
+    }
   }
 
   for (auto& observer : observers_)
@@ -419,10 +422,10 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
                                          const gfx::Rect& old_bounds,
                                          const gfx::Rect& new_bounds,
                                          ui::PropertyChangeReason reason) {
-  if (!widget_ || !root_surface() || !notify_bounds_changes_)
+  if (!root_surface() || !notify_bounds_changes_) {
     return;
-
-  if (window == widget_->GetNativeWindow()) {
+  }
+  if (IsShellSurfaceWindow(window)) {
     auto* window_state = ash::WindowState::Get(window);
     if (window_state && window_state->is_moving_to_another_display()) {
       old_screen_bounds_for_pending_move_ = old_bounds;
@@ -460,8 +463,9 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
 
 void ShellSurface::OnWindowAddedToRootWindow(aura::Window* window) {
   ShellSurfaceBase::OnWindowAddedToRootWindow(window);
-  if (window != widget_->GetNativeWindow())
+  if (!IsShellSurfaceWindow(window)) {
     return;
+  }
   auto* window_state = ash::WindowState::Get(window);
   if (window_state && window_state->is_moving_to_another_display() &&
       !old_screen_bounds_for_pending_move_.IsEmpty()) {
@@ -489,8 +493,7 @@ void ShellSurface::OnWindowPropertyChanged(aura::Window* window,
                                            const void* key,
                                            intptr_t old_value) {
   ShellSurfaceBase::OnWindowPropertyChanged(window, key, old_value);
-
-  if (widget_ && window == widget_->GetNativeWindow()) {
+  if (IsShellSurfaceWindow(window)) {
     if (key == aura::client::kRasterScale) {
       float raster_scale = window->GetProperty(aura::client::kRasterScale);
 
@@ -671,6 +674,8 @@ bool ShellSurface::OnPreWidgetCommit() {
   // Update resize direction to reflect acknowledged configure requests.
   resize_component_ = pending_resize_component_;
 
+  config_waiting_for_commit_.reset();
+
   return true;
 }
 
@@ -686,6 +691,16 @@ ShellSurface::CreateNonClientFrameView(views::Widget* widget) {
 // ShellSurface, private:
 
 void ShellSurface::SetParentWindow(aura::Window* new_parent) {
+  if (new_parent && GetWidget() &&
+      new_parent == GetWidget()->GetNativeWindow()) {
+    // Some apps e.g. crbug/1210235 try to be their own parent. Ignore them to
+    // prevent chrome from locking up/crashing.
+    auto* app_id = GetShellApplicationId(host_window());
+    LOG(WARNING)
+        << "Client attempts to add itself as a transient parent: app_id="
+        << app_id;
+    return;
+  }
   if (parent()) {
     parent()->RemoveObserver(this);
     if (widget_) {

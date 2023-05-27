@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">ตัวถอดรหัสรูปภาพ</translation>
 <translation id="1785415724048343560">แนะนำเพื่อประสบการณ์การใช้งานที่ดีที่สุด</translation>
 <translation id="1818308510395330587">หากต้องการอนุญาตให้ <ph name="APP_NAME" /> ใช้ AR ให้เปิดใช้กล้องใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
-<translation id="1864927262126810325">จาก <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">เว็บไซต์ที่เกี่ยวข้องสามารถดูกิจกรรมของคุณในกลุ่มได้</translation>
 <translation id="1887786770086287077">ตอนนี้ตำแหน่งสำหรับอุปกรณ์เครื่องนี้ปิดอยู่ เปิดตำแหน่งได้ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="1915307458270490472">วางซ้อนไว้ด้านบน</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">ดาวน์โหลดเสร็จสมบูรณ์ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">ฟีเจอร์บนเว็บไซต์บางแห่งอาจใช้งานในโหมดไม่ระบุตัวตนไม่ได้</translation>
 <translation id="2442870161001914531">ขอเว็บไซต์เวอร์ชันเดสก์ท็อปเสมอ</translation>
+<translation id="2479148705183875116">ไปที่การตั้งค่า</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
 <translation id="2490684707762498678">จัดการโดย <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">อีเมล</translation>
 <translation id="2750481671343847896">เว็บไซต์สามารถแสดงข้อความแจ้งให้ลงชื่อเข้าใช้จากบริการระบุตัวตนได้</translation>
 <translation id="2822354292072154809">แน่ใจไหมว่าต้องการรีเซ็ตสิทธิ์ทั้งหมดของเว็บไซต์สำหรับ <ph name="CHOSEN_OBJECT_NAME" /></translation>
+<translation id="2850913818900871965">ขอมุมมองบนอุปกรณ์เคลื่อนที่</translation>
 <translation id="2870560284913253234">เว็บไซต์</translation>
 <translation id="2874939134665556319">แทร็กก่อนหน้า</translation>
 <translation id="2891975107962658722">บล็อกไม่ให้เว็บไซต์บันทึกข้อมูลในอุปกรณ์</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">เว็บไซต์สามารถใช้คุกกี้เพื่อปรับปรุงประสบการณ์การท่องเว็บ เช่น คงสถานะลงชื่อเข้าใช้ไว้ให้คุณ หรือจดจำสินค้าที่คุณใส่ไว้ในรถเข็นช็อปปิ้ง</translation>
 <translation id="3165022941318558018">อนุญาตให้เว็บไซต์ใช้คุกกี้ของบุคคลที่สาม</translation>
 <translation id="3198916472715691905">ข้อมูลที่จัดเก็บมี <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3203366800380907218">จากเว็บ</translation>
 <translation id="321187648315454507">หากต้องการอนุญาตให้ <ph name="APP_NAME" /> ส่งการแจ้งเตือนให้คุณ ให้เปิดใช้การแจ้งเตือนใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /> ด้วย</translation>
 <translation id="3227137524299004712">ไมโครโฟน</translation>
 <translation id="3248611290851046188">เว็บไซต์นี้ระบุข้อมูลความสนใจที่เว็บไซต์อื่นสามารถใช้เพื่อแสดงโฆษณาแก่คุณ เว็บไซต์นี้ยังรับข้อมูลความสนใจของคุณจาก Chrome เพื่อแสดงโฆษณาที่เกี่ยวข้องมากขึ้นด้วย</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">ขอมุมมองบนเดสก์ท็อป</translation>
 <translation id="5100237604440890931">ยุบ - คลิกเพื่อขยาย</translation>
 <translation id="5123685120097942451">แท็บที่ไม่ระบุตัวตน</translation>
-<translation id="5134599672855298214">ขอมุมมองบนอุปกรณ์เคลื่อนที่ (แนะนำ)</translation>
 <translation id="5186036860380548585">ตัวเลือกอยู่ตรงบริเวณด้านบนของหน้าจอ</translation>
 <translation id="5197729504361054390">ระบบจะแชร์รายชื่อติดต่อที่คุณเลือกกับ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /></translation>
 <translation id="5216942107514965959">เข้าชมล่าสุดวันนี้</translation>

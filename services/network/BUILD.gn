@@ -37,8 +37,6 @@ component("network_service") {
     "cors/preflight_controller.h",
     "cors/preflight_result.cc",
     "cors/preflight_result.h",
-    "crl_set_distributor.cc",
-    "crl_set_distributor.h",
     "data_pipe_element_reader.cc",
     "data_pipe_element_reader.h",
     "disk_cache/mojo_backend_file_operations.cc",
@@ -130,6 +128,30 @@ component("network_service") {
     "sec_header_helpers.h",
     "session_cleanup_cookie_store.cc",
     "session_cleanup_cookie_store.h",
+    "shared_dictionary/shared_dictionary.h",
+    "shared_dictionary/shared_dictionary_constants.cc",
+    "shared_dictionary/shared_dictionary_constants.h",
+    "shared_dictionary/shared_dictionary_data_pipe_writer.cc",
+    "shared_dictionary/shared_dictionary_data_pipe_writer.h",
+    "shared_dictionary/shared_dictionary_disk_cache.cc",
+    "shared_dictionary/shared_dictionary_disk_cache.h",
+    "shared_dictionary/shared_dictionary_in_memory.cc",
+    "shared_dictionary/shared_dictionary_in_memory.h",
+    "shared_dictionary/shared_dictionary_manager.cc",
+    "shared_dictionary/shared_dictionary_manager.h",
+    "shared_dictionary/shared_dictionary_manager_in_memory.cc",
+    "shared_dictionary/shared_dictionary_manager_in_memory.h",
+    "shared_dictionary/shared_dictionary_storage.cc",
+    "shared_dictionary/shared_dictionary_storage.h",
+    "shared_dictionary/shared_dictionary_storage_in_memory.cc",
+    "shared_dictionary/shared_dictionary_storage_in_memory.h",
+    "shared_dictionary/shared_dictionary_storage_isolation_key.cc",
+    "shared_dictionary/shared_dictionary_storage_isolation_key.h",
+    "shared_dictionary/shared_dictionary_writer.h",
+    "shared_dictionary/shared_dictionary_writer_in_memory.cc",
+    "shared_dictionary/shared_dictionary_writer_in_memory.h",
+    "shared_dictionary/shared_dictionary_writer_on_disk.cc",
+    "shared_dictionary/shared_dictionary_writer_on_disk.h",
     "socket_data_pump.cc",
     "socket_data_pump.h",
     "socket_factory.cc",
@@ -248,6 +270,13 @@ component("network_service") {
     ]
   }
 
+  if (is_linux) {
+    sources += [
+      "network_change_notifier_passive_factory.cc",
+      "network_change_notifier_passive_factory.h",
+    ]
+  }
+
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
@@ -349,6 +378,7 @@ source_set("tests") {
     "cookie_settings_unittest.cc",
     "cors/cors_url_loader_factory_unittest.cc",
     "cors/cors_url_loader_private_network_access_unittest.cc",
+    "cors/cors_url_loader_shared_dictionary_unittest.cc",
     "cors/cors_url_loader_tao_unittest.cc",
     "cors/cors_url_loader_test_util.cc",
     "cors/cors_url_loader_test_util.h",
@@ -385,6 +415,12 @@ source_set("tests") {
     "restricted_cookie_manager_unittest.cc",
     "sec_header_helpers_unittest.cc",
     "session_cleanup_cookie_store_unittest.cc",
+    "shared_dictionary/shared_dictionary_data_pipe_writer_unittest.cc",
+    "shared_dictionary/shared_dictionary_disk_cache_unittest.cc",
+    "shared_dictionary/shared_dictionary_manager_unittest.cc",
+    "shared_dictionary/shared_dictionary_storage_isolation_key_unittest.cc",
+    "shared_dictionary/shared_dictionary_writer_in_memory_unittest.cc",
+    "shared_dictionary/shared_dictionary_writer_on_disk_unittest.cc",
     "socket_data_pump_unittest.cc",
     "ssl_config_service_mojo_unittest.cc",
     "tcp_bound_socket_unittest.cc",

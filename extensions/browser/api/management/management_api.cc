@@ -88,12 +88,12 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
     const ManagementAPIDelegate* delegate) {
   std::vector<management::LaunchType> launch_type_list;
   if (extension.is_platform_app()) {
-    launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
+    launch_type_list.push_back(management::LaunchType::kOpenAsWindow);
     return launch_type_list;
   }
 
-  launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB);
-  launch_type_list.push_back(management::LAUNCH_TYPE_OPEN_AS_WINDOW);
+  launch_type_list.push_back(management::LaunchType::kOpenAsRegularTab);
+  launch_type_list.push_back(management::LaunchType::kOpenAsWindow);
   return launch_type_list;
 }
 
@@ -123,28 +123,28 @@ management::ExtensionInfo CreateExtensionInfo(
   info.is_app = extension.is_app();
   if (info.is_app) {
     if (extension.is_legacy_packaged_app())
-      info.type = management::EXTENSION_TYPE_LEGACY_PACKAGED_APP;
+      info.type = management::ExtensionType::kLegacyPackagedApp;
     else if (extension.is_hosted_app())
-      info.type = management::EXTENSION_TYPE_HOSTED_APP;
+      info.type = management::ExtensionType::kHostedApp;
     else
-      info.type = management::EXTENSION_TYPE_PACKAGED_APP;
+      info.type = management::ExtensionType::kPackagedApp;
   } else if (extension.is_theme()) {
-    info.type = management::EXTENSION_TYPE_THEME;
+    info.type = management::ExtensionType::kTheme;
   } else if (extension.is_login_screen_extension()) {
-    info.type = management::EXTENSION_TYPE_LOGIN_SCREEN_EXTENSION;
+    info.type = management::ExtensionType::kLoginScreenExtension;
   } else {
-    info.type = management::EXTENSION_TYPE_EXTENSION;
+    info.type = management::ExtensionType::kExtension;
   }
 
   if (info.enabled) {
-    info.disabled_reason = management::EXTENSION_DISABLED_REASON_NONE;
+    info.disabled_reason = management::ExtensionDisabledReason::kNone;
   } else {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
     if (prefs->DidExtensionEscalatePermissions(extension.id())) {
       info.disabled_reason =
-          management::EXTENSION_DISABLED_REASON_PERMISSIONS_INCREASE;
+          management::ExtensionDisabledReason::kPermissionsIncrease;
     } else {
-      info.disabled_reason = management::EXTENSION_DISABLED_REASON_UNKNOWN;
+      info.disabled_reason = management::ExtensionDisabledReason::kUnknown;
     }
 
     info.may_enable = system->management_policy()->ExtensionMayModifySettings(
@@ -196,29 +196,29 @@ management::ExtensionInfo CreateExtensionInfo(
 
   switch (extension.location()) {
     case ManifestLocation::kInternal:
-      info.install_type = management::EXTENSION_INSTALL_TYPE_NORMAL;
+      info.install_type = management::ExtensionInstallType::kNormal;
       break;
     case ManifestLocation::kUnpacked:
     case ManifestLocation::kCommandLine:
-      info.install_type = management::EXTENSION_INSTALL_TYPE_DEVELOPMENT;
+      info.install_type = management::ExtensionInstallType::kDevelopment;
       break;
     case ManifestLocation::kExternalPref:
     case ManifestLocation::kExternalRegistry:
     case ManifestLocation::kExternalPrefDownload:
-      info.install_type = management::EXTENSION_INSTALL_TYPE_SIDELOAD;
+      info.install_type = management::ExtensionInstallType::kSideload;
       break;
     case ManifestLocation::kExternalPolicy:
     case ManifestLocation::kExternalPolicyDownload:
-      info.install_type = management::EXTENSION_INSTALL_TYPE_ADMIN;
+      info.install_type = management::ExtensionInstallType::kAdmin;
       break;
     case ManifestLocation::kInvalidLocation:
     case ManifestLocation::kComponent:
     case ManifestLocation::kExternalComponent:
-      info.install_type = management::EXTENSION_INSTALL_TYPE_OTHER;
+      info.install_type = management::ExtensionInstallType::kOther;
       break;
   }
 
-  info.launch_type = management::LAUNCH_TYPE_NONE;
+  info.launch_type = management::LaunchType::kNone;
   if (extension.is_app()) {
     LaunchType launch_type;
     if (extension.is_platform_app()) {
@@ -230,16 +230,16 @@ management::ExtensionInfo CreateExtensionInfo(
 
     switch (launch_type) {
       case LAUNCH_TYPE_PINNED:
-        info.launch_type = management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB;
+        info.launch_type = management::LaunchType::kOpenAsPinnedTab;
         break;
       case LAUNCH_TYPE_REGULAR:
-        info.launch_type = management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB;
+        info.launch_type = management::LaunchType::kOpenAsRegularTab;
         break;
       case LAUNCH_TYPE_FULLSCREEN:
-        info.launch_type = management::LAUNCH_TYPE_OPEN_FULL_SCREEN;
+        info.launch_type = management::LaunchType::kOpenFullScreen;
         break;
       case LAUNCH_TYPE_WINDOW:
-        info.launch_type = management::LAUNCH_TYPE_OPEN_AS_WINDOW;
+        info.launch_type = management::LaunchType::kOpenAsWindow;
         break;
       case LAUNCH_TYPE_INVALID:
       case NUM_LAUNCH_TYPES:
@@ -332,52 +332,46 @@ ManagementGetPermissionWarningsByManifestFunction::Run() {
   const ManagementAPIDelegate* delegate = ManagementAPI::GetFactoryInstance()
                                               ->Get(browser_context())
                                               ->GetDelegate();
-
-  if (delegate) {
-    delegate->GetPermissionWarningsByManifestFunctionDelegate(
-        this, params->manifest_str);
-
-    // Matched with a Release() in OnParse().
-    AddRef();
-
-    // Response is sent async in OnParse().
-    return RespondLater();
-  } else {
+  if (!delegate) {
     // TODO(lfg) add error string
     return RespondNow(Error(kUnknownErrorDoNotUse));
   }
+
+  delegate->GetPermissionWarningsByManifestFunctionDelegate(
+      this, params->manifest_str);
+
+  // Matched with a Release() in OnParse().
+  AddRef();
+
+  // Response is sent async in OnParse().
+  return RespondLater();
 }
+
 void ManagementGetPermissionWarningsByManifestFunction::OnParse(
     data_decoder::DataDecoder::ValueOrError result) {
-  if (!result.has_value()) {
-    Respond(Error(result.error()));
+  Respond([&]() -> ResponseValue {
+    if (!result.has_value()) {
+      return Error(result.error());
+    }
 
-    // Matched with AddRef() in Run().
-    Release();
-    return;
-  }
+    const base::Value::Dict* parsed_manifest = result->GetIfDict();
+    if (!parsed_manifest) {
+      return Error(keys::kManifestParseError);
+    }
 
-  const base::Value::Dict* parsed_manifest = result->GetIfDict();
-  if (!parsed_manifest) {
-    Respond(Error(keys::kManifestParseError));
-    Release();
-    return;
-  }
+    std::string error;
+    scoped_refptr<Extension> extension =
+        Extension::Create(base::FilePath(), ManifestLocation::kInvalidLocation,
+                          *parsed_manifest, Extension::NO_FLAGS, &error);
+    // TODO(lazyboy): Do we need to use |error|?
+    if (!extension) {
+      return Error(keys::kExtensionCreateError);
+    }
 
-  std::string error;
-  scoped_refptr<Extension> extension =
-      Extension::Create(base::FilePath(), ManifestLocation::kInvalidLocation,
-                        *parsed_manifest, Extension::NO_FLAGS, &error);
-  // TODO(lazyboy): Do we need to use |error|?
-  if (!extension) {
-    Respond(Error(keys::kExtensionCreateError));
-    Release();
-    return;
-  }
-
-  std::vector<std::string> warnings = CreateWarningsList(extension.get());
-  Respond(ArgumentList(
-      management::GetPermissionWarningsByManifest::Results::Create(warnings)));
+    return ArgumentList(
+        management::GetPermissionWarningsByManifest::Results::Create(
+            CreateWarningsList(extension.get())));
+  }());
 
   // Matched with AddRef() in Run().
   Release();
@@ -402,7 +396,9 @@ ExtensionFunction::ResponseAction ManagementLaunchAppFunction::Run() {
   const ManagementAPIDelegate* delegate = ManagementAPI::GetFactoryInstance()
                                               ->Get(browser_context())
                                               ->GetDelegate();
-  delegate->LaunchAppFunctionDelegate(extension, browser_context());
+  if (!delegate->LaunchAppFunctionDelegate(extension, browser_context())) {
+    return RespondNow(Error(keys::kChromeAppsDeprecated, params->id));
+  }
   return RespondNow(NoArguments());
 }
 
@@ -445,21 +441,21 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
           ->Get(browser_context())
           ->GetSupervisedUserExtensionsDelegate();
   if (supervised_user_extensions_delegate &&
-      supervised_user_extensions_delegate->IsChild(browser_context()) &&
+      supervised_user_extensions_delegate->IsChild() &&
       // Don't prompt the user if the extension has unsupported requirements.
       // TODO(crbug/1071978): If OnRequirementsChecked() passes, the extension
       // will enable, bypassing parent approval.
       !HasUnsupportedRequirements(extension_id_) &&
       // Only ask for parent approval if the extension still requires approval.
       !supervised_user_extensions_delegate->IsExtensionAllowedByParent(
-          *target_extension, browser_context())) {
+          *target_extension)) {
     // Either ask for parent permission or notify the child that their parent
     // has disabled this action.
     auto extension_approval_callback = base::BindOnce(
         &ManagementSetEnabledFunction::OnExtensionApprovalDone, this);
     AddRef();  // Matched in OnExtensionApprovalDone().
     supervised_user_extensions_delegate->RequestToEnableExtensionOrShowError(
-        *target_extension, browser_context(), GetSenderWebContents(),
+        *target_extension, GetSenderWebContents(),
         std::move(extension_approval_callback));
     return RespondLater();
   }
@@ -812,19 +808,19 @@ ExtensionFunction::ResponseAction ManagementSetLaunchTypeFunction::Run() {
 
   LaunchType launch_type = LAUNCH_TYPE_DEFAULT;
   switch (app_launch_type) {
-    case management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB:
+    case management::LaunchType::kOpenAsPinnedTab:
       launch_type = LAUNCH_TYPE_PINNED;
       break;
-    case management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB:
+    case management::LaunchType::kOpenAsRegularTab:
       launch_type = LAUNCH_TYPE_REGULAR;
       break;
-    case management::LAUNCH_TYPE_OPEN_FULL_SCREEN:
+    case management::LaunchType::kOpenFullScreen:
       launch_type = LAUNCH_TYPE_FULLSCREEN;
       break;
-    case management::LAUNCH_TYPE_OPEN_AS_WINDOW:
+    case management::LaunchType::kOpenAsWindow:
       launch_type = LAUNCH_TYPE_WINDOW;
       break;
-    case management::LAUNCH_TYPE_NONE:
+    case management::LaunchType::kNone:
       NOTREACHED();
   }
 
@@ -1110,8 +1106,8 @@ ManagementAPI::ManagementAPI(content::BrowserContext* context)
     : browser_context_(context),
       delegate_(ExtensionsAPIClient::Get()->CreateManagementAPIDelegate()),
       supervised_user_extensions_delegate_(
-          ExtensionsAPIClient::Get()
-              ->CreateSupervisedUserExtensionsDelegate()) {
+          ExtensionsAPIClient::Get()->CreateSupervisedUserExtensionsDelegate(
+              browser_context_)) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, management::OnInstalled::kEventName);
   event_router->RegisterObserver(this, management::OnUninstalled::kEventName);

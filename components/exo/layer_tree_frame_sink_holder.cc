@@ -16,7 +16,7 @@ namespace exo {
 
 BASE_FEATURE(kExoReactiveFrameSubmission,
              "ExoReactiveFrameSubmission",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 ////////////////////////////////////////////////////////////////////////////////
 // LayerTreeFrameSinkHolder, public:
@@ -101,7 +101,6 @@ void LayerTreeFrameSinkHolder::SubmitCompositorFrame(
     return;
   }
 
-  frame_timing_history_->FrameArrived(base::TimeTicks::Now());
   frame_timing_history_->MayRecordDidNotProduceToFrameArrvial(/*valid=*/true);
 
   DiscardCachedFrame();
@@ -198,6 +197,10 @@ void LayerTreeFrameSinkHolder::DidPresentCompositorFrame(
 }
 
 void LayerTreeFrameSinkHolder::DidLoseLayerTreeFrameSink() {
+  DCHECK(frame_sink_);
+  frame_sink_->DetachFromClient();
+  frame_sink_.reset();
+
   StopProcessingPendingFrames();
 
   last_frame_resources_.clear();
@@ -223,9 +226,11 @@ void LayerTreeFrameSinkHolder::OnDestroyed() {
   lifetime_manager_->RemoveObserver(this);
   lifetime_manager_ = nullptr;
 
-  // Make sure frame sink never outlives the shell.
-  frame_sink_->DetachFromClient();
-  frame_sink_.reset();
+  if (frame_sink_) {
+    // Make sure frame sink never outlives the shell.
+    frame_sink_->DetachFromClient();
+    frame_sink_.reset();
+  }
   ScheduleDelete();
 }
 
@@ -388,18 +393,7 @@ void LayerTreeFrameSinkHolder::ProcessFirstPendingBeginFrame(
 bool LayerTreeFrameSinkHolder::ShouldSubmitFrameNow() const {
   DCHECK(reactive_frame_submission_);
 
-  if (pending_begin_frames_.empty() || pending_submit_frames_ >= 1) {
-    return false;
-  }
-
-  // Two cases when we don't want to wait any longer:
-  //   - if `last_frame_did_notproduce_` is true (i.e., the previous response to
-  //     BeginFrame is DidNotProduceFrame); or
-  //   - if we expect there won't be more frames arriving before reaching the
-  //     deadline.
-  return frame_timing_history_->last_frame_did_not_produce() ||
-         frame_timing_history_->GetNextFrameArrivalTimeEstimate() >=
-             pending_begin_frames_.front().send_deadline_estimate;
+  return !pending_begin_frames_.empty() && pending_submit_frames_ == 0;
 }
 
 }  // namespace exo

@@ -154,7 +154,6 @@ class ActionTap::ActionTapView : public ActionView {
 
   void ChildPreferredSizeChanged(View* child) override {
     DCHECK_EQ(1u, labels_.size());
-    UpdateTrashButtonPosition();
     if (allow_reposition_) {
       MayUpdateLabelPosition(false);
     } else {
@@ -337,7 +336,7 @@ bool ActionTap::RewriteKeyEvent(const ui::KeyEvent* key_event,
     if (!current_input_->is_modifier_key()) {
       keys_pressed_.emplace(key_event->code());
     } else {
-      // For modifier keys, EventRewriterChromeOS skips release event for other
+      // For modifier keys, EventRewriterAsh skips release event for other
       // event rewriters but still keeps the press event, so AcceleratorHistory
       // can still receive the release event. To avoid error in
       // AcceleratorHistory, original press event is still sent.

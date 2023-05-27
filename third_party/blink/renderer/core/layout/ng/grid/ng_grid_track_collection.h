@@ -148,7 +148,7 @@ class CORE_EXPORT NGGridLayoutTrackCollection
 
  public:
   struct SetGeometry {
-    SetGeometry(LayoutUnit offset, wtf_size_t track_count)
+    explicit SetGeometry(LayoutUnit offset, wtf_size_t track_count = 0)
         : offset(offset), track_count(track_count) {}
 
     LayoutUnit offset;
@@ -157,10 +157,8 @@ class CORE_EXPORT NGGridLayoutTrackCollection
 
   NGGridLayoutTrackCollection() = delete;
 
-  NGGridLayoutTrackCollection(
-      const NGGridLayoutTrackCollection& other,
-      const NGBoxStrut& subgrid_border_scrollbar_padding,
-      const NGBoxStrut& subgrid_margins);
+  // Don't allow this class to be used for grid sizing.
+  virtual bool IsForSizing() const { return false; }
 
   bool operator==(const NGGridLayoutTrackCollection& other) const;
 
@@ -184,6 +182,10 @@ class CORE_EXPORT NGGridLayoutTrackCollection
   LayoutUnit GetSetOffset(wtf_size_t set_index) const;
   wtf_size_t GetSetTrackCount(wtf_size_t set_index) const;
 
+  // Returns the accumulated extra margin at the start/end of the specified set.
+  LayoutUnit StartExtraMargin(wtf_size_t set_index) const;
+  LayoutUnit EndExtraMargin(wtf_size_t set_index) const;
+
   bool HasBaselines() const { return baselines_.has_value(); }
   LayoutUnit MajorBaseline(wtf_size_t set_index) const;
   LayoutUnit MinorBaseline(wtf_size_t set_index) const;
@@ -198,12 +200,18 @@ class CORE_EXPORT NGGridLayoutTrackCollection
   // Returns the total size of all sets with index in the range [begin, end).
   LayoutUnit ComputeSetSpanSize(wtf_size_t begin_set_index,
                                 wtf_size_t end_set_index) const;
+  // Checks whether any set in the range [begin, end) is indefinite.
+  bool IsSpanningIndefiniteSet(wtf_size_t begin_set_index,
+                               wtf_size_t end_set_index) const;
 
   // Creates a track collection containing every |Range| with index in the range
   // [begin, end], including their respective |SetGeometry| and baselines.
-  NGGridLayoutTrackCollection CreateSubgridCollection(
+  NGGridLayoutTrackCollection CreateSubgridTrackCollection(
       wtf_size_t begin_range_index,
       wtf_size_t end_range_index,
+      LayoutUnit subgrid_gutter_size,
+      const NGBoxStrut& subgrid_margin,
+      const NGBoxStrut& subgrid_border_scrollbar_padding,
       GridTrackSizingDirection subgrid_track_direction) const;
 
   GridTrackSizingDirection Direction() const { return track_direction_; }
@@ -213,14 +221,6 @@ class CORE_EXPORT NGGridLayoutTrackCollection
   bool HasIntrinsicTrack() const;
   bool IsDependentOnAvailableSize() const;
   bool IsSpanningOnlyDefiniteTracks() const;
-
-  // Don't allow this class to be used for grid sizing.
-  virtual bool IsForSizing() const { return false; }
-  // Indefinite indices are only used while measuring grid item contributions.
-  virtual bool IsSpanningIndefiniteSet(wtf_size_t begin_set_index,
-                                       wtf_size_t end_set_index) const {
-    return false;
-  }
 
  protected:
   struct Baselines {
@@ -240,11 +240,33 @@ class CORE_EXPORT NGGridLayoutTrackCollection
   // Baselines are only created when there are items with baseline alignment.
   absl::optional<Baselines> baselines_;
 
-  // These values are used to adjust the sets geometry to the relative border
-  // box of a subgrid and account for its gutter size difference.
-  LayoutUnit sets_geometry_start_offset_;
-  LayoutUnit start_extra_margin_;
-  LayoutUnit end_extra_margin_;
+  // Initially we only know some of the set sizes - others will be indefinite.
+  // To represent this we store a vector of the last indefinite indices for each
+  // set (or `kNotFound` if every set has been definite so far). This allow us
+  // to get the appropriate size if a grid item spans only fixed tracks or
+  // `kIndefiniteSize` if it spans an indefinite set. E.g.:
+  //
+  //   grid-template-rows: auto auto 100px 100px auto 100px;
+  //
+  // Results in the `last_indefinite_index` vector being:
+  //
+  //                  | auto | auto | 100px | 100px | auto | 100px |
+  //      [ kNotFound ,    0 ,    1 ,     1 ,     1 ,    4 ,     4 ]
+  //
+  // Various queries (start/end refer to the grid lines):
+  //  (start: 0, end: 1) -> indefinite as:
+  //      start <= last_indefinite_index[end]
+  //  (start: 1, end: 3) -> indefinite as:
+  //      start <= last_indefinite_index[end]
+  //  (start: 2, end: 4) -> 200px
+  //  (start: 5, end: 6) -> 100px
+  //  (start: 3, end: 5) -> indefinite as:
+  //      start <= last_indefinite_index[end]
+  Vector<wtf_size_t, 16> last_indefinite_index_;
+
+  LayoutUnit accumulated_gutter_size_delta_;
+  LayoutUnit accumulated_start_extra_margin_;
+  LayoutUnit accumulated_end_extra_margin_;
 };
 
 // |NGGridRangeBuilder::EnsureTrackCoverage| may introduce a range start and/or
@@ -379,6 +401,9 @@ class CORE_EXPORT NGGridSizingTrackCollection final
       bool must_create_baselines = false,
       GridTrackSizingDirection track_direction = kForColumns);
 
+  // This class should be specifically used for grid sizing.
+  bool IsForSizing() const override { return true; }
+
   // Returns a reference to the set located at position |set_index|.
   NGGridSet& GetSetAt(wtf_size_t set_index);
   const NGGridSet& GetSetAt(wtf_size_t set_index) const;
@@ -389,11 +414,6 @@ class CORE_EXPORT NGGridSizingTrackCollection final
   // an index in the interval [begin_set_index, end_set_index).
   SetIterator GetSetIterator(wtf_size_t begin_set_index,
                              wtf_size_t end_set_index);
-
-  // This class should be specifically used for grid sizing.
-  bool IsForSizing() const override { return true; }
-  bool IsSpanningIndefiniteSet(wtf_size_t begin_set_index,
-                               wtf_size_t end_set_index) const override;
 
   wtf_size_t NonCollapsedTrackCount() const {
     return non_collapsed_track_count_;
@@ -431,31 +451,6 @@ class CORE_EXPORT NGGridSizingTrackCollection final
                  bool is_available_size_indefinite = true);
 
   wtf_size_t non_collapsed_track_count_{0};
-
-  // Initially we only know some of the set sizes - others will be indefinite.
-  // To represent this we store both the offset for the set, and a vector of all
-  // last indefinite indices (or kNotFound if everything so far has been
-  // definite). This allows us to get the appropriate size if a grid item spans
-  // only fixed tracks, but will allow us to return an indefinite size if it
-  // spans any indefinite set.
-  //
-  // As an example:
-  //   grid-template-rows: auto auto 100px 100px auto 100px;
-  //
-  // Results in:
-  //                  |  auto |  auto |   100   |   100   |   auto  |   100 |
-  //   [{0, kNotFound}, {0, 0}, {0, 1}, {100, 1}, {200, 1}, {200, 4}, {300, 4}]
-  //
-  // Various queries (start/end refer to the grid lines):
-  //  start: 0, end: 1 -> indefinite as:
-  //    "start <= sets[end].last_indefinite_index"
-  //  start: 1, end: 3 -> indefinite as:
-  //    "start <= sets[end].last_indefinite_index"
-  //  start: 2, end: 4 -> 200px
-  //  start: 5, end: 6 -> 100px
-  //  start: 3, end: 5 -> indefinite as:
-  //    "start <= sets[end].last_indefinite_index"
-  Vector<wtf_size_t, 16> last_indefinite_indices_;
 
   // A vector of every set element that compose the entire collection's ranges;
   // track definitions from the same set are stored in consecutive positions,

@@ -63,7 +63,7 @@ enum OsSettingSearchBoxUserAction {
   CLICKED_OUT_OF_SEARCH_BOX = 1,
 }
 
-interface OsSettingsSearchBoxElement {
+export interface OsSettingsSearchBoxElement {
   $: {
     search: CrToolbarSearchFieldElement,
     searchResultList: IronListElement,
@@ -72,7 +72,7 @@ interface OsSettingsSearchBoxElement {
 
 const OsSettingsSearchBoxElementBase = I18nMixin(PolymerElement);
 
-class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
+export class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
     implements SearchResultsObserverInterface,
                PersonalizationSearchResultsObserverInterface {
   static get is() {
@@ -152,6 +152,12 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
         computed: 'computeSearchResultsExist_(searchResults_)',
       },
 
+      shouldHideFeedbackButton_: {
+        type: Boolean,
+        computed: 'computeShouldHideFeedbackButton_(' +
+            'hasSearchQuery, searchResultsExist_)',
+      },
+
       /**
        * Used by FocusRowMixin to track the last focused element inside a
        * <os-search-result-row> with the attribute 'focus-row-control'.
@@ -187,6 +193,7 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
   private selectedItem_: SearchResult;
   private lastSelectedItem_: SearchResult|null;
   private searchResults_: SearchResult[];
+  private shouldHideFeedbackButton_: boolean;
   private shouldShowDropdown_: boolean;
   private searchResultsExist_: boolean;
   private lastFocused_: HTMLElement|null;
@@ -302,12 +309,16 @@ class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
     return this.$.search.getSearchInput().value;
   }
 
+  private computeShouldHideFeedbackButton_(): boolean {
+    return this.searchResultsExist_ || !this.hasSearchQuery;
+  }
+
   private computeSearchResultsExist_(): boolean {
     return this.searchResults_.length !== 0;
   }
 
   private onSearchChanged_() {
-    this.hasSearchQuery = !!this.getCurrentQuery_();
+    this.hasSearchQuery = this.getCurrentQuery_().trim().length !== 0;
     this.fetchSearchResults_();
   }
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_OS_INTEGRATION_UNINSTALLATION_VIA_OS_SETTINGS_SUB_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_OS_INTEGRATION_UNINSTALLATION_VIA_OS_SETTINGS_SUB_MANAGER_H_
 
+#include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
@@ -17,15 +18,17 @@ namespace web_app {
 
 class WebAppRegistrar;
 
+// Allows skipping the entire Execute() step for the sub manager.
+// Useful for testing crbug.com/1434577.
+extern bool g_skip_execute_os_settings_sub_manager_for_testing;
+
 // Used to perform registration/unregistration of uninstalling through OS
 // settings. Currently this is only used on Windows OS.
 class UninstallationViaOsSettingsSubManager : public OsIntegrationSubManager {
  public:
-  explicit UninstallationViaOsSettingsSubManager(Profile& profile,
-                                                 WebAppRegistrar& registrar);
+  UninstallationViaOsSettingsSubManager(const base::FilePath& profile_path,
+                                        WebAppRegistrar& registrar);
   ~UninstallationViaOsSettingsSubManager() override;
-  void Start() override;
-  void Shutdown() override;
 
   void Configure(const AppId& app_id,
                  proto::WebAppOsIntegrationState& desired_state,
@@ -35,9 +38,12 @@ class UninstallationViaOsSettingsSubManager : public OsIntegrationSubManager {
                const proto::WebAppOsIntegrationState& desired_state,
                const proto::WebAppOsIntegrationState& current_state,
                base::OnceClosure callback) override;
+  void ForceUnregister(const AppId& app_id,
+                       base::OnceClosure callback) override;
 
  private:
-  const raw_ref<Profile> profile_;
+  void CompleteUnregistration(const AppId& app_id);
+  const base::FilePath profile_path_;
   const raw_ref<WebAppRegistrar> registrar_;
   base::WeakPtrFactory<UninstallationViaOsSettingsSubManager> weak_factory_{
       this};

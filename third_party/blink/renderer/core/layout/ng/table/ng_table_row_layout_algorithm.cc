@@ -40,13 +40,24 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
 
   auto CreateCellConstraintSpace =
       [this, &table_data](
-          NGBlockNode cell, const NGTableConstraintSpaceData::Cell& cell_data,
+          NGBlockNode cell, const NGBlockBreakToken* cell_break_token,
+          const NGTableConstraintSpaceData::Cell& cell_data,
           LayoutUnit row_block_size, absl::optional<LayoutUnit> row_baseline,
           bool min_block_size_should_encompass_intrinsic_size) {
-        const LayoutUnit cell_block_size =
-            cell_data.rowspan_block_size != kIndefiniteSize
-                ? cell_data.rowspan_block_size
-                : row_block_size;
+        bool has_rowspan = cell_data.rowspan_block_size != kIndefiniteSize;
+        LayoutUnit cell_block_size =
+            has_rowspan ? cell_data.rowspan_block_size : row_block_size;
+
+        if (IsBreakInside(cell_break_token) && IsBreakInside(BreakToken()) &&
+            !has_rowspan) {
+          // The table row may have consumed more space than the cell, if some
+          // sibling cell has overflowed the fragmentainer. Subtract this
+          // difference, so that this cell won't overflow the row - unless the
+          // cell is rowspanned. In that case it doesn't make sense to
+          // compensate against just the current row.
+          cell_block_size -= BreakToken()->ConsumedBlockSize() -
+                             cell_break_token->ConsumedBlockSize();
+        }
 
         DCHECK_EQ(table_data.table_writing_direction.GetWritingMode(),
                   ConstraintSpace().GetWritingMode());
@@ -114,6 +125,7 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
   EBreakBetween row_break_after;
   NGRowBaselineTabulator row_baseline_tabulator;
   HeapVector<ResultWithOffset> results;
+  bool has_inflow_break_inside = false;
   auto PlaceCells =
       [&](LayoutUnit row_block_size,
           absl::optional<LayoutUnit> row_baseline) -> NGLayoutResult::EStatus {
@@ -123,6 +135,7 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
     row_break_after = EBreakBetween::kAuto;
     row_baseline_tabulator = NGRowBaselineTabulator();
     results.clear();
+    has_inflow_break_inside = false;
 
     NGBlockChildIterator child_iterator(Node().FirstChild(), BreakToken(),
                                         /* calculate_child_idx */ true);
@@ -139,7 +152,7 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
           MinBlockSizeShouldEncompassIntrinsicSize(cell, cell_data);
 
       const auto cell_space = CreateCellConstraintSpace(
-          cell, cell_data, row_block_size, row_baseline,
+          cell, cell_break_token, cell_data, row_block_size, row_baseline,
           min_block_size_should_encompass_intrinsic_size);
       const NGLayoutResult* cell_result =
           cell.Layout(cell_space, cell_break_token);
@@ -176,9 +189,10 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
       }
 
       bool has_rowspan = cell_data.rowspan_block_size != kIndefiniteSize;
-      const NGBoxFragment fragment(
-          table_data.table_writing_direction,
-          To<NGPhysicalBoxFragment>(cell_result->PhysicalFragment()));
+      const auto& physical_fragment =
+          To<NGPhysicalBoxFragment>(cell_result->PhysicalFragment());
+      const NGBoxFragment fragment(table_data.table_writing_direction,
+                                   physical_fragment);
       row_baseline_tabulator.ProcessCell(
           fragment,
           NGTableAlgorithmUtils::IsBaseline(cell_style.VerticalAlign()),
@@ -187,6 +201,11 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
       if (min_block_size_should_encompass_intrinsic_size) {
         max_cell_block_size =
             std::max(max_cell_block_size, fragment.BlockSize());
+      }
+
+      if (const auto* outgoing_break_token = physical_fragment.BreakToken();
+          outgoing_break_token && !has_inflow_break_inside && !has_rowspan) {
+        has_inflow_break_inside = !outgoing_break_token->IsAtBlockEnd();
       }
     }
 
@@ -249,6 +268,8 @@ const NGLayoutResult* NGTableRowLayoutAlgorithm::Layout() {
   // separately), we have seen all children by now.
   container_builder_.SetHasSeenAllChildren();
 
+  container_builder_.SetIsKnownToFitInFragmentainer(!has_inflow_break_inside);
+  container_builder_.SetIntrinsicBlockSize(max_cell_block_size);
   container_builder_.SetFragmentsTotalBlockSize(row_block_size);
   if (row.is_collapsed)
     container_builder_.SetIsHiddenForPaint(true);

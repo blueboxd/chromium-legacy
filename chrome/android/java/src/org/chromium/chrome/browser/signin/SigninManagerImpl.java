@@ -168,7 +168,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
     public boolean isSigninAllowed() {
         return mSignInState == null && mSigninAllowedByPolicy
                 && mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN) == null
-                && isSigninSupported();
+                && isSigninSupported(/*requireUpdatedPlayServices=*/false);
     }
 
     /**
@@ -178,7 +178,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
     public boolean isSyncOptInAllowed() {
         return mSignInState == null && mSigninAllowedByPolicy
                 && mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SYNC) == null
-                && isSigninSupported();
+                && isSigninSupported(/*requireUpdatedPlayServices=*/false);
     }
 
     /** Returns true if sign out can be started now. */
@@ -198,12 +198,20 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
     }
 
     /**
-     * @return Whether true if the current user is not demo user and the user has a reasonable
-     *         Google Play Services installed.
+     * Returns whether the user can sign-in (maybe after an update to Google Play services).
+     * @param requireUpdatedPlayServices Indicates whether an updated version of play services is
+     *         required or not.
      */
     @Override
-    public boolean isSigninSupported() {
-        return !ApiCompatibilityUtils.isDemoUser() && isGooglePlayServicesPresent();
+    public boolean isSigninSupported(boolean requireUpdatedPlayServices) {
+        if (ApiCompatibilityUtils.isDemoUser()) {
+            return false;
+        }
+        if (requireUpdatedPlayServices) {
+            return ExternalAuthUtils.getInstance().canUseGooglePlayServices();
+        }
+        return !ExternalAuthUtils.getInstance().isGooglePlayServicesMissing(
+                ContextUtils.getApplicationContext());
     }
 
     /**
@@ -246,40 +254,14 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
         });
     }
 
-    /**
-     * Starts the sign-in flow, and executes the callback when finished.
-     *
-     * The sign-in flow goes through the following steps:
-     *
-     *   - Wait for AccountTrackerService to be seeded.
-     *   - Complete sign-in with the native IdentityManager.
-     *   - Call the callback if provided.
-     *
-     * @param account The account to sign in to.
-     * @param callback Optional callback for when the sign-in process is finished.
-     */
     @Override
-    public void signin(Account account, @Nullable SignInCallback callback) {
-        signinInternal(SignInState.createForSignin(account, callback));
+    public void signin(Account account, @SigninAccessPoint int accessPoint,
+            @Nullable SignInCallback callback) {
+        signinInternal(SignInState.createForSignin(accessPoint, account, callback));
     }
 
-    /**
-     * Starts the sign-in flow, and executes the callback when finished.
-     *
-     * The sign-in flow goes through the following steps:
-     *
-     *   - Wait for AccountTrackerService to be seeded.
-     *   - Wait for policy to be checked for the account.
-     *   - If managed, wait for the policy to be fetched.
-     *   - Complete sign-in with the native IdentityManager.
-     *   - Call the callback if provided.
-     *
-     * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
-     * @param account The account to sign in to.
-     * @param callback Optional callback for when the sign-in process is finished.
-     */
     @Override
-    public void signinAndEnableSync(@SigninAccessPoint int accessPoint, Account account,
+    public void signinAndEnableSync(Account account, @SigninAccessPoint int accessPoint,
             @Nullable SignInCallback callback) {
         signinInternal(SignInState.createForSigninAndEnableSync(accessPoint, account, callback));
     }
@@ -339,7 +321,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
                 mSignInState.shouldTurnSyncOn() ? ConsentLevel.SYNC : ConsentLevel.SIGNIN;
         @PrimaryAccountError
         int primaryAccountError = mIdentityMutator.setPrimaryAccount(
-                mSignInState.mCoreAccountInfo.getId(), consentLevel);
+                mSignInState.mCoreAccountInfo.getId(), consentLevel, mSignInState.getAccessPoint());
         if (primaryAccountError != PrimaryAccountError.NO_ERROR) {
             Log.w(TAG, "SetPrimaryAccountError in IdentityManager: %d, aborting signin",
                     primaryAccountError);
@@ -353,7 +335,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
             SigninPreferencesManager.getInstance().setLegacySyncAccountEmail(
                     mSignInState.mCoreAccountInfo.getEmail());
 
-            SyncService.get().setSyncRequested(true);
+            SyncService.get().setSyncRequested();
 
             RecordUserAction.record("Signin_Signin_Succeed");
             RecordHistogram.recordEnumeratedHistogram("Signin.SigninCompletedAccessPoint",
@@ -650,17 +632,13 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
         ThreadUtils.postOnUiThread(mAccountTrackerService::onAccountsChanged);
     }
 
-    @VisibleForTesting
-    IdentityMutator getIdentityMutatorForTesting() {
-        return mIdentityMutator;
-    }
-
     /**
      * Contains all the state needed for signin. This forces signin flow state to be
      * cleared atomically, and all final fields to be set upon initialization.
      */
     private static class SignInState {
         private final @SigninAccessPoint Integer mAccessPoint;
+        private final boolean mShouldTurnSyncOn;
         final SignInCallback mCallback;
 
         /**
@@ -680,11 +658,13 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
         /**
          * State for the sign-in flow that doesn't enable sync.
          *
+         * @param accessPoint {@link SigninAccessPoint} that has initiated the sign-in.
          * @param account The account to sign in to.
          * @param callback Called when the sign-in process finishes or is cancelled. Can be null.
          */
-        static SignInState createForSignin(Account account, @Nullable SignInCallback callback) {
-            return new SignInState(null, account, callback);
+        static SignInState createForSignin(@SigninAccessPoint int accessPoint, Account account,
+                @Nullable SignInCallback callback) {
+            return new SignInState(accessPoint, account, callback, false);
         }
 
         /**
@@ -696,15 +676,16 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
          */
         static SignInState createForSigninAndEnableSync(@SigninAccessPoint int accessPoint,
                 Account account, @Nullable SignInCallback callback) {
-            return new SignInState(accessPoint, account, callback);
+            return new SignInState(accessPoint, account, callback, true);
         }
 
         private SignInState(@SigninAccessPoint Integer accessPoint, Account account,
-                @Nullable SignInCallback callback) {
+                @Nullable SignInCallback callback, boolean shouldTurnSyncOn) {
             assert account != null : "Account must be set and valid to progress.";
             mAccessPoint = accessPoint;
             mAccount = account;
             mCallback = callback;
+            mShouldTurnSyncOn = shouldTurnSyncOn;
         }
 
         /**
@@ -721,7 +702,7 @@ class SigninManagerImpl implements IdentityManager.Observer, SigninManager {
          * Whether this sign-in flow should also turn on sync.
          */
         boolean shouldTurnSyncOn() {
-            return mAccessPoint != null;
+            return mShouldTurnSyncOn;
         }
     }
 

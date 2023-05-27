@@ -9,6 +9,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
@@ -83,32 +84,63 @@ class ManifestUpdateManager::PreUpdateWebContentsObserver
         hang_task_callback_for_testing_(hang_task_callback_for_testing) {}
 
  private:
+  bool IsInvalidRenderFrameHost(content::RenderFrameHost* render_frame_host) {
+    return (!render_frame_host ||
+            render_frame_host->GetParentOrOuterDocument() ||
+            !render_frame_host->IsInPrimaryMainFrame());
+  }
+
   // content::WebContentsObserver:
   // TODO(crbug.com/1376155): Investigate what other functions can be observed
   //  so that for WebAppIntegrationTestDriver::CloseCustomToolbar(), the same
   //  observer can be used.
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override {
-    if (!render_frame_host || hang_task_callback_for_testing_)
+    if (IsInvalidRenderFrameHost(render_frame_host)) {
       return;
+    }
 
-    if (render_frame_host->GetParentOrOuterDocument() ||
-        !render_frame_host->IsInPrimaryMainFrame())
+    page_load_complete_ = true;
+    MaybeRunLoadCompleteCallback();
+  }
+
+  // This is triggered when the manifest URL gets updated for a page,
+  // see WebContentsImpl::OnManifestUrlChanged() for more information.
+  void DidUpdateWebManifestURL(content::RenderFrameHost* target_frame,
+                               const GURL& manifest_url) override {
+    if (IsInvalidRenderFrameHost(target_frame) || !manifest_url.is_valid()) {
       return;
+    }
 
-    Observe(nullptr);
-    if (load_complete_callback_)
-      std::move(load_complete_callback_).Run();
+    current_manifest_url_valid_ = true;
+    MaybeRunLoadCompleteCallback();
   }
 
   void WebContentsDestroyed() override {
     Observe(nullptr);
-    if (load_complete_callback_)
+    if (load_complete_callback_) {
       std::move(load_complete_callback_).Run();
+    }
+  }
+
+  // The final load complete callback is only run once the page has finished
+  // loading and the manifest url for the page is valid.
+  void MaybeRunLoadCompleteCallback() {
+    if (!page_load_complete_ || !current_manifest_url_valid_ ||
+        hang_task_callback_for_testing_) {
+      return;
+    }
+
+    Observe(nullptr);
+    if (load_complete_callback_) {
+      std::move(load_complete_callback_).Run();
+    }
   }
 
   base::OnceClosure load_complete_callback_;
   bool hang_task_callback_for_testing_;
+  bool current_manifest_url_valid_ = false;
+  bool page_load_complete_ = false;
 };
 
 constexpr base::TimeDelta kDelayBetweenChecks = base::Days(1);
@@ -160,7 +192,7 @@ void ManifestUpdateManager::SetSystemWebAppDelegateMap(
 void ManifestUpdateManager::Start() {
   install_manager_observation_.Observe(install_manager_.get());
 
-  DCHECK(!started_);
+  CHECK(!started_);
   started_ = true;
 }
 
@@ -201,15 +233,20 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
     return;
   }
 
-  if (!MaybeConsumeUpdateCheck(url.DeprecatedGetOriginAsURL(), *app_id)) {
+  base::Time check_time =
+      time_override_for_testing_.value_or(base::Time::Now());
+
+  if (!MaybeConsumeUpdateCheck(url.DeprecatedGetOriginAsURL(), *app_id,
+                               check_time)) {
     NotifyResult(url, *app_id, ManifestUpdateResult::kThrottled);
     return;
   }
 
   auto load_observer = std::make_unique<PreUpdateWebContentsObserver>(
-      base::BindOnce(&ManifestUpdateManager::StartManifestCheckAfterPageLoad,
-                     weak_factory_.GetWeakPtr(), *app_id,
-                     web_contents->GetWeakPtr()),
+      base::BindOnce(
+          &ManifestUpdateManager::StartCheckAfterPageAndManifestUrlLoad,
+          weak_factory_.GetWeakPtr(), *app_id, check_time,
+          web_contents->GetWeakPtr()),
       web_contents, hang_update_checks_for_testing_);
 
   update_stages_.emplace(std::piecewise_construct,
@@ -224,15 +261,17 @@ ManifestUpdateManager::UpdateStage::UpdateStage(
 
 ManifestUpdateManager::UpdateStage::~UpdateStage() = default;
 
-void ManifestUpdateManager::StartManifestCheckAfterPageLoad(
+void ManifestUpdateManager::StartCheckAfterPageAndManifestUrlLoad(
     const AppId& app_id,
+    base::Time check_time,
     base::WeakPtr<content::WebContents> web_contents) {
   auto update_stage_it = update_stages_.find(app_id);
-  DCHECK(update_stage_it != update_stages_.end());
+  CHECK(update_stage_it != update_stages_.end());
   UpdateStage& update_stage = update_stage_it->second;
   GURL url(update_stage.url);
-  DCHECK(update_stage.observer);
-  DCHECK_EQ(update_stage.stage, UpdateStage::Stage::kWaitingForPageLoad);
+  CHECK(update_stage.observer);
+  CHECK_EQ(update_stage.stage,
+           UpdateStage::Stage::kWaitingForPageLoadAndManifestUrl);
 
   // If web_contents have been destroyed before page load,
   // then no need of running the command.
@@ -251,7 +290,7 @@ void ManifestUpdateManager::StartManifestCheckAfterPageLoad(
     std::move(load_finished_callback_).Run();
 
   command_scheduler_->ScheduleManifestUpdateCheck(
-      url, app_id, web_contents,
+      url, app_id, check_time, web_contents,
       base::BindOnce(&ManifestUpdateManager::OnManifestCheckAwaitAppWindowClose,
                      weak_factory_.GetWeakPtr(), web_contents, url, app_id));
 }
@@ -277,7 +316,7 @@ void ManifestUpdateManager::OnManifestCheckAwaitAppWindowClose(
   }
 
   UpdateStage& update_stage = update_stage_it->second;
-  DCHECK_EQ(update_stage.stage, UpdateStage::Stage::kCheckingManifestDiff);
+  CHECK_EQ(update_stage.stage, UpdateStage::Stage::kCheckingManifestDiff);
   update_stage.stage = UpdateStage::Stage::kPendingAppWindowClose;
 
   if (check_result != ManifestUpdateCheckResult::kAppUpdateNeeded) {
@@ -286,7 +325,7 @@ void ManifestUpdateManager::OnManifestCheckAwaitAppWindowClose(
     return;
   }
 
-  DCHECK(install_info.has_value());
+  CHECK(install_info.has_value());
 
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   auto keep_alive = std::make_unique<ScopedKeepAlive>(
@@ -331,7 +370,7 @@ void ManifestUpdateManager::StartManifestWriteAfterWindowsClosed(
   }
 
   UpdateStage& update_stage = update_stage_it->second;
-  DCHECK_EQ(update_stage.stage, UpdateStage::Stage::kPendingAppWindowClose);
+  CHECK_EQ(update_stage.stage, UpdateStage::Stage::kPendingAppWindowClose);
 
   command_scheduler_->ScheduleManifestUpdateFinalize(
       url, app_id, std::move(install_info), std::move(keep_alive),
@@ -340,11 +379,11 @@ void ManifestUpdateManager::StartManifestWriteAfterWindowsClosed(
                      weak_factory_.GetWeakPtr()));
 }
 
-bool ManifestUpdateManager::IsUpdateConsumed(const AppId& app_id) {
+bool ManifestUpdateManager::IsUpdateConsumed(const AppId& app_id,
+                                             base::Time check_time) {
   absl::optional<base::Time> last_check_time = GetLastUpdateCheckTime(app_id);
-  base::Time now = time_override_for_testing_.value_or(base::Time::Now());
   if (last_check_time.has_value() &&
-      now < *last_check_time + kDelayBetweenChecks &&
+      check_time < *last_check_time + kDelayBetweenChecks &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           kDisableManifestUpdateThrottle)) {
     return true;
@@ -358,14 +397,14 @@ bool ManifestUpdateManager::IsUpdateCommandPending(const AppId& app_id) {
 
 // WebAppInstallManager:
 void ManifestUpdateManager::OnWebAppWillBeUninstalled(const AppId& app_id) {
-  DCHECK(started_);
+  CHECK(started_);
   auto it = update_stages_.find(app_id);
   if (it != update_stages_.end()) {
     NotifyResult(it->second.url, app_id,
                  ManifestUpdateResult::kAppUninstalling);
     update_stages_.erase(it);
   }
-  DCHECK(!base::Contains(update_stages_, app_id));
+  CHECK(!base::Contains(update_stages_, app_id));
   last_update_check_.erase(app_id);
 }
 
@@ -376,12 +415,13 @@ void ManifestUpdateManager::OnWebAppInstallManagerDestroyed() {
 // Throttling updates to at most once per day is consistent with Android.
 // See |UPDATE_INTERVAL| in WebappDataStorage.java.
 bool ManifestUpdateManager::MaybeConsumeUpdateCheck(const GURL& origin,
-                                                    const AppId& app_id) {
-  if (IsUpdateConsumed(app_id))
+                                                    const AppId& app_id,
+                                                    base::Time check_time) {
+  if (IsUpdateConsumed(app_id, check_time)) {
     return false;
+  }
 
-  base::Time now = time_override_for_testing_.value_or(base::Time::Now());
-  SetLastUpdateCheckTime(origin, app_id, now);
+  SetLastUpdateCheckTime(origin, app_id, check_time);
   return true;
 }
 
@@ -435,8 +475,10 @@ void ManifestUpdateManager::ResetManifestThrottleForTesting(
 
 bool ManifestUpdateManager::HasUpdatesPendingLoadFinishForTesting() {
   for (const auto& update_data : update_stages_) {
-    if (update_data.second.stage == UpdateStage::Stage::kWaitingForPageLoad)
+    if (update_data.second.stage ==
+        UpdateStage::Stage::kWaitingForPageLoadAndManifestUrl) {
       return true;
+    }
   }
   return false;
 }
@@ -455,6 +497,18 @@ ManifestUpdateManager::GetAppsPendingWindowsClosingForTesting() {
     }
   }
   return apps_pending_window_closed;
+}
+
+bool ManifestUpdateManager::IsAppPendingPageAndManifestUrlLoadForTesting(
+    const AppId& app_id) {
+  CHECK_IS_TEST();
+  auto update_stage_it = update_stages_.find(app_id);
+  if (update_stage_it == update_stages_.end()) {
+    return false;
+  }
+
+  return (update_stage_it->second.stage ==
+          UpdateStage::Stage::kWaitingForPageLoadAndManifestUrl);
 }
 
 }  // namespace web_app

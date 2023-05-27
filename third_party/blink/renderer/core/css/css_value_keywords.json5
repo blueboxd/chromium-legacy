@@ -476,6 +476,7 @@
     "block",
     // The order must match the order found in IsDisplayInside().
     "flow-root",
+    "flow",
     "table",
     "flex",
     "grid",
@@ -567,6 +568,12 @@
     "visible",
     //hidden
     "collapse",
+    //
+    // white-space and its longhands (white-space-collapse and text-wrap)
+    // https://w3c.github.io/csswg-drafts/css-text-4/#white-space-property
+    //
+    "preserve",
+    "preserve-breaks",
     //
     // Unordered rest
     //
@@ -1385,9 +1392,23 @@
     "atan2",
     "acos",
 
+    // Stepped value functions
+    "mod",
+    "rem",
+    "up",
+    "down",
+    "to-zero",
+
     // Sign related functions
     "sign",
     "abs",
+
+    // Exponential functions
+    "pow",
+    "sqrt",
+    "hypot",
+    "log",
+    "exp",
 
     //<calc-constant>
     //https://drafts.csswg.org/css-values/#calc-syntax
@@ -1417,6 +1438,10 @@
     // normal
     // always
 
+    // scroll-timeline-attachment
+    // view-timeline-attachment
+    "defer",
+    "ancestor",
 
     // containment
     // paint

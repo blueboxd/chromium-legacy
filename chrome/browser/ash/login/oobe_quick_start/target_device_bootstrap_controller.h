@@ -18,9 +18,6 @@ class NearbyConnectionsManager;
 
 namespace ash::quick_start {
 
-class AuthenticatedConnection;
-class IncomingConnection;
-
 class TargetDeviceBootstrapController
     : public TargetDeviceConnectionBroker::ConnectionLifecycleListener {
  public:
@@ -36,6 +33,7 @@ class TargetDeviceBootstrapController
     ERROR,
     ADVERTISING,
     QR_CODE_VERIFICATION,
+    PIN_VERIFICATION,
     CONNECTED,
     GAIA_CREDENTIALS,
   };
@@ -83,15 +81,21 @@ class TargetDeviceBootstrapController
   void StartAdvertising();
   void StopAdvertising();
 
+  // A user may initiate Quick Start then have to download an update and reboot.
+  // This function persists necessary data and notifies the source device so
+  // Quick Start can resume where it left off after the reboot.
+  void PrepareForUpdate();
+
   // TargetDeviceConnectionBroker::ConnectionLifecycleListener:
-  void OnIncomingConnectionInitiated(
-      const std::string& source_device_id,
-      base::WeakPtr<IncomingConnection> connection) override;
+  void OnPinVerificationRequested(const std::string& pin) override;
+  void OnQRCodeVerificationRequested(
+      const std::vector<uint8_t>& qr_code_data) override;
   void OnConnectionAuthenticated(
-      const std::string& source_device_id,
-      base::WeakPtr<AuthenticatedConnection> connection) override;
-  void OnConnectionRejected(const std::string& source_device_id) override;
-  void OnConnectionClosed(const std::string& source_device_id) override;
+      base::WeakPtr<TargetDeviceConnectionBroker::AuthenticatedConnection>
+          authenticated_connection) override;
+  void OnConnectionRejected() override;
+  void OnConnectionClosed(
+      TargetDeviceConnectionBroker::ConnectionClosedReason reason) override;
 
  private:
   void NotifyObservers();
@@ -99,10 +103,10 @@ class TargetDeviceBootstrapController
   void OnStopAdvertising();
   std::unique_ptr<TargetDeviceConnectionBroker> connection_broker_;
 
-  std::string source_device_id_;
-  base::WeakPtr<IncomingConnection> incoming_connection_;
+  std::string pin_;
   // TODO: Should we enforce one observer at a time here too?
   base::ObserverList<Observer> observers_;
+  bool prepare_for_update_on_connection_closed_ = false;
 
   Status status_;
 

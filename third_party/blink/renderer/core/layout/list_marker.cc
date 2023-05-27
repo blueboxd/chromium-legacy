@@ -7,12 +7,10 @@
 #include "third_party/blink/renderer/core/css/counter_style.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
-#include "third_party/blink/renderer/core/layout/layout_inside_list_marker.h"
-#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker_image.h"
-#include "third_party/blink/renderer/core/layout/layout_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
@@ -42,10 +40,6 @@ LayoutUnit DisclosureSymbolSize(const ComputedStyle& style) {
 ListMarker::ListMarker() : marker_text_type_(kNotText) {}
 
 const ListMarker* ListMarker::Get(const LayoutObject* marker) {
-  if (auto* outside_marker = DynamicTo<LayoutOutsideListMarker>(marker))
-    return &outside_marker->Marker();
-  if (auto* inside_marker = DynamicTo<LayoutInsideListMarker>(marker))
-    return &inside_marker->Marker();
   if (auto* ng_outside_marker = DynamicTo<LayoutNGOutsideListMarker>(marker))
     return &ng_outside_marker->Marker();
   if (auto* ng_inside_marker = DynamicTo<LayoutNGInsideListMarker>(marker))
@@ -59,10 +53,11 @@ ListMarker* ListMarker::Get(LayoutObject* marker) {
 }
 
 LayoutObject* ListMarker::MarkerFromListItem(const LayoutObject* list_item) {
-  if (auto* legacy_list_item = DynamicTo<LayoutListItem>(list_item))
-    return legacy_list_item->Marker();
   if (auto* ng_list_item = DynamicTo<LayoutNGListItem>(list_item))
     return ng_list_item->Marker();
+  if (auto* inline_list_item = DynamicTo<LayoutNGInlineListItem>(list_item)) {
+    return inline_list_item->Marker();
+  }
   return nullptr;
 }
 
@@ -74,23 +69,12 @@ LayoutObject* ListMarker::ListItem(const LayoutObject& marker) const {
   return list_item;
 }
 
-LayoutBlockFlow* ListMarker::ListItemBlockFlow(
-    const LayoutObject& marker) const {
-  DCHECK_EQ(Get(&marker), this);
-  LayoutObject* list_item = ListItem(marker);
-  if (auto* legacy_list_item = DynamicTo<LayoutListItem>(list_item))
-    return legacy_list_item;
-  if (auto* ng_list_item = DynamicTo<LayoutNGListItem>(list_item))
-    return ng_list_item;
-  NOTREACHED();
-  return nullptr;
-}
-
 int ListMarker::ListItemValue(const LayoutObject& list_item) const {
-  if (auto* legacy_list_item = DynamicTo<LayoutListItem>(list_item))
-    return legacy_list_item->Value();
   if (auto* ng_list_item = DynamicTo<LayoutNGListItem>(list_item))
     return ng_list_item->Value();
+  if (auto* inline_list_item = DynamicTo<LayoutNGInlineListItem>(list_item)) {
+    return inline_list_item->Value();
+  }
   NOTREACHED();
   return 0;
 }
@@ -148,7 +132,7 @@ void ListMarker::UpdateMarkerText(LayoutObject& marker) {
   StringBuilder marker_text_builder;
   marker_text_type_ =
       MarkerText(marker, &marker_text_builder, kWithPrefixSuffix);
-  text.SetContentString(marker_text_builder.ToString().ReleaseImpl().get());
+  text.SetContentString(marker_text_builder.ToString());
   DCHECK_NE(marker_text_type_, kNotText);
   DCHECK_NE(marker_text_type_, kUnresolved);
 }
@@ -273,8 +257,6 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
     if (!child) {
       LayoutListMarkerImage* image =
           LayoutListMarkerImage::CreateAnonymous(&marker.GetDocument());
-      if (marker.IsLayoutNGListMarker())
-        image->SetIsLayoutNGObjectForListMarkerImage(true);
       scoped_refptr<const ComputedStyle> image_style =
           marker.GetDocument()
               .GetStyleResolver()
@@ -309,7 +291,7 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
     child->Destroy();
 
   auto* const new_text = LayoutTextFragment::CreateAnonymous(
-      marker.GetDocument(), StringImpl::empty_, 0, 0, LegacyLayout::kAuto);
+      marker.GetDocument(), StringImpl::empty_, 0, 0);
   new_text->SetStyle(std::move(text_style));
   marker.AddChild(new_text);
   marker_text_type_ = kUnresolved;

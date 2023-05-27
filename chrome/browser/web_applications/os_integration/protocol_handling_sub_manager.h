@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_OS_INTEGRATION_PROTOCOL_HANDLING_SUB_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_OS_INTEGRATION_PROTOCOL_HANDLING_SUB_MANAGER_H_
 
+#include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
@@ -12,18 +13,15 @@
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 
-class Profile;
-
 namespace web_app {
 
 class WebAppRegistrar;
 
 class ProtocolHandlingSubManager : public OsIntegrationSubManager {
  public:
-  ProtocolHandlingSubManager(Profile* profile, WebAppRegistrar& registrar);
+  ProtocolHandlingSubManager(const base::FilePath& profile_path,
+                             WebAppRegistrar& registrar);
   ~ProtocolHandlingSubManager() override;
-  void Start() override;
-  void Shutdown() override;
   void Configure(const AppId& app_id,
                  proto::WebAppOsIntegrationState& desired_state,
                  base::OnceClosure configure_done) override;
@@ -32,9 +30,11 @@ class ProtocolHandlingSubManager : public OsIntegrationSubManager {
                const proto::WebAppOsIntegrationState& desired_state,
                const proto::WebAppOsIntegrationState& current_state,
                base::OnceClosure callback) override;
+  void ForceUnregister(const AppId& app_id,
+                       base::OnceClosure callback) override;
 
  private:
-  const raw_ptr<Profile> profile_;
+  const base::FilePath profile_path_;
   const raw_ref<WebAppRegistrar> registrar_;
 
   base::WeakPtrFactory<ProtocolHandlingSubManager> weak_ptr_factory_{this};

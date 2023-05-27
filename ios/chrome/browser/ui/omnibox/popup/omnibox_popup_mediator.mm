@@ -19,21 +19,22 @@
 #import "components/omnibox/browser/autocomplete_input.h"
 #import "components/omnibox/browser/autocomplete_match.h"
 #import "components/omnibox/browser/autocomplete_result.h"
+#import "components/omnibox/browser/remote_suggestions_service.h"
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/variations/variations_associated_data.h"
 #import "components/variations/variations_ids_provider.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
-#import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_controller_observer_bridge.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_match_formatter.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion_group_impl.h"
 #import "ios/chrome/browser/ui/omnibox/popup/carousel_item.h"
@@ -45,6 +46,7 @@
 #import "ios/chrome/browser/ui/omnibox/popup/pedal_suggestion_wrapper.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_debug_info_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
+#import "ios/chrome/browser/ui/omnibox/popup/remote_suggestions_service_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -79,11 +81,20 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 // It is observed through OmniboxPopupViewIOS.
 @property(nonatomic, assign) AutocompleteController* autocompleteController;
 
+// Remote suggestions service backing `autocompleteController`. Observed in
+// debug mode.
+@property(nonatomic, assign) RemoteSuggestionsService* remoteSuggestionsService;
+
 @end
 
 @implementation OmniboxPopupMediator {
   // Fetcher for Answers in Suggest images.
   std::unique_ptr<image_fetcher::ImageDataFetcher> _imageFetcher;
+
+  std::unique_ptr<AutocompleteControllerObserverBridge>
+      _autocompleteObserverBridge;
+  std::unique_ptr<RemoteSuggestionsServiceObserverBridge>
+      _remoteSuggestionsServiceObserverBridge;
 
   OmniboxPopupMediatorDelegate* _delegate;  // weak
 }
@@ -93,13 +104,14 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 @synthesize open = _open;
 @synthesize presenter = _presenter;
 
-- (instancetype)initWithFetcher:
-                    (std::unique_ptr<image_fetcher::ImageDataFetcher>)
-                        imageFetcher
-                  faviconLoader:(FaviconLoader*)faviconLoader
-         autocompleteController:(AutocompleteController*)autocompleteController
-                       delegate:(OmniboxPopupMediatorDelegate*)delegate
-                        tracker:(feature_engagement::Tracker*)tracker {
+- (instancetype)
+             initWithFetcher:
+                 (std::unique_ptr<image_fetcher::ImageDataFetcher>)imageFetcher
+               faviconLoader:(FaviconLoader*)faviconLoader
+      autocompleteController:(AutocompleteController*)autocompleteController
+    remoteSuggestionsService:(RemoteSuggestionsService*)remoteSuggestionsService
+                    delegate:(OmniboxPopupMediatorDelegate*)delegate
+                     tracker:(feature_engagement::Tracker*)tracker {
   self = [super init];
   if (self) {
     DCHECK(delegate);
@@ -112,6 +124,7 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
     _pedalSectionExtractor.delegate = self;
     _preselectedGroupIndex = 0;
     _autocompleteController = autocompleteController;
+    _remoteSuggestionsService = remoteSuggestionsService;
     _tracker = tracker;
   }
   return self;
@@ -155,6 +168,29 @@ const NSUInteger kMaxSuggestTileTypePosition = 15;
 - (void)setSemanticContentAttribute:
     (UISemanticContentAttribute)semanticContentAttribute {
   [self.consumer setSemanticContentAttribute:semanticContentAttribute];
+}
+
+- (void)setDebugInfoConsumer:
+    (id<PopupDebugInfoConsumer,
+        RemoteSuggestionsServiceObserver,
+        AutocompleteControllerObserver>)debugInfoConsumer {
+  DCHECK(experimental_flags::IsOmniboxDebuggingEnabled());
+
+  _autocompleteObserverBridge =
+      std::make_unique<AutocompleteControllerObserverBridge>(debugInfoConsumer);
+  self.autocompleteController->AddObserver(_autocompleteObserverBridge.get());
+
+  // Observe the remote suggestions service if it's available. It might not
+  // be available e.g. in incognito.
+  if (self.remoteSuggestionsService) {
+    _remoteSuggestionsServiceObserverBridge =
+        std::make_unique<RemoteSuggestionsServiceObserverBridge>(
+            debugInfoConsumer);
+    self.remoteSuggestionsService->AddObserver(
+        _remoteSuggestionsServiceObserverBridge.get());
+  }
+
+  _debugInfoConsumer = debugInfoConsumer;
 }
 
 #pragma mark - AutocompleteResultDataSource

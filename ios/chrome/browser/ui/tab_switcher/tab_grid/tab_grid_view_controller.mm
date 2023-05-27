@@ -15,9 +15,11 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
@@ -25,10 +27,8 @@
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/gestures/view_controller_trait_collection_observer.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
@@ -173,6 +173,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Constraints for the pinned tabs view.
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* pinnedTabsConstraints;
+// Bottom constraint for the regular tabs bottom message view.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* regularTabsBottomMessageConstraints;
 
 // The current state of the tab grid when using the thumb strip.
 @property(nonatomic, assign) ViewRevealState currentState;
@@ -309,6 +312,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [super viewDidLayoutSubviews];
   // Modify Incognito and Regular Tabs Insets
   [self setInsetForGridViews];
+  // Reset bottom message width after bottom toolbar is updated after an
+  // orientation change. As this depends on
+  // `regularTabsViewController.gridView.contentOffset.x`, this should not be
+  // done in `-traitCollectionDidChange` when the updated layout has not been
+  // finalized.
+  [self updateRegularTabsBottomMessageConstraintsIfExists];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -339,7 +348,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)didReceiveMemoryWarning {
   [self.regularTabsImageDataSource clearPreloadedSnapshots];
-  [self.pinnedTabsImageDataSource clearPreloadedSnapshots];
   [self.incognitoTabsImageDataSource clearPreloadedSnapshots];
 }
 
@@ -539,7 +547,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   // Let image sources know the initial appearance is done.
   [self.regularTabsImageDataSource clearPreloadedSnapshots];
-  [self.pinnedTabsImageDataSource clearPreloadedSnapshots];
   [self.incognitoTabsImageDataSource clearPreloadedSnapshots];
 }
 
@@ -554,6 +561,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     self.tabGridMode = TabGridModeNormal;
   }
   [self.regularTabsDelegate discardSavedClosedItems];
+  [self.inactiveTabsDelegate discardSavedClosedItems];
   // When the view disappears, the toolbar alpha should be set to 0; either as
   // part of the animation, or directly with -hideToolbars.
   if (animated && self.transitionCoordinator) {
@@ -572,6 +580,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)dismissModals {
   [self.regularTabsConsumer dismissModals];
+  [self.pinnedTabsConsumer dismissModals];
   [self.incognitoTabsConsumer dismissModals];
   [self.remoteTabsViewController dismissModals];
 }
@@ -619,14 +628,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (id<TabCollectionConsumer>)regularTabsConsumer {
   return self.regularTabsViewController;
-}
-
-- (void)setPinnedTabsImageDataSource:
-    (id<GridImageDataSource>)pinnedTabsImageDataSource {
-  if (IsPinnedTabsEnabled()) {
-    self.pinnedTabsViewController.imageDataSource = pinnedTabsImageDataSource;
-    _pinnedTabsImageDataSource = pinnedTabsImageDataSource;
-  }
 }
 
 - (void)setRegularTabsImageDataSource:
@@ -724,6 +725,27 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [_reauthAgent addObserver:self];
 }
 
+- (void)setRegularTabsBottomMessage:(UIViewController*)bottomMessage {
+  if (_regularTabsBottomMessage == bottomMessage) {
+    return;
+  }
+  [_regularTabsBottomMessage willMoveToParentViewController:nil];
+  [_regularTabsBottomMessage.view removeFromSuperview];
+  [_regularTabsBottomMessage removeFromParentViewController];
+  _regularTabsBottomMessage = bottomMessage;
+  if (!_regularTabsBottomMessage) {
+    [self slideOutRegularTabsBottomMessage];
+    return;
+  }
+  [self.regularTabsViewController
+      addChildViewController:self.regularTabsBottomMessage];
+  [self.regularTabsViewController.view
+      addSubview:self.regularTabsBottomMessage.view];
+  [self.regularTabsBottomMessage
+      didMoveToParentViewController:self.regularTabsViewController];
+  [self initializeRegularTabsBottomMessageView];
+}
+
 #pragma mark - TabGridPaging
 
 - (void)setActivePage:(TabGridPage)activePage {
@@ -756,6 +778,13 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [self.incognitoTabsDelegate resetToAllItems];
     [self hideScrim];
   }
+
+  // Reset the visibility of bottom message, if exists.
+  if (self.regularTabsBottomMessage) {
+    self.regularTabsBottomMessage.view.hidden =
+        self.tabGridMode != TabGridModeNormal;
+  }
+
   [self setInsetForGridViews];
   self.regularTabsViewController.mode = self.tabGridMode;
   self.incognitoTabsViewController.mode = self.tabGridMode;
@@ -801,7 +830,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     completion(completeds[0], finisheds[0]);
   };
 
-  // Each LayoutSwitcher method calls regular and icognito grid controller's
+  // Each LayoutSwitcher method calls regular and incognito grid controller's
   // corresponding method. Thus, attaching the completion to only one of the
   // grid view controllers should suffice.
   [regularViewController willTransitionToLayout:nextState
@@ -1103,8 +1132,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     GridTransitionLayout* pinnedTabsTransitionLayout =
         [self.pinnedTabsViewController transitionLayout];
 
-    return [self combineTransitionLayout:pinnedTabsTransitionLayout
-                    withTransitionLayout:regularTabsTransitionLayout];
+    return [self combineTransitionLayout:regularTabsTransitionLayout
+                    withTransitionLayout:pinnedTabsTransitionLayout];
   }
 
   return regularTabsTransitionLayout;
@@ -1861,9 +1890,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   GridViewController* gridViewController =
       [self gridViewControllerForPage:self.currentPage];
 
-  BOOL enabled = (gridViewController == nil)
-                     ? NO
-                     : [self tabsPresentForPage:self.currentPage];
+  BOOL enabled = gridViewController && ![gridViewController isGridEmpty];
   BOOL incognitoTabsNeedsAuth =
       (self.currentPage == TabGridPageIncognitoTabs &&
        self.incognitoTabsViewController.contentNeedsAuthentication);
@@ -2091,6 +2118,27 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+// Updates the views, buttons, toolbars as well as broadcasts incognito tabs
+// visibility after the tab count has changed.
+- (void)handleTabCountChangeWithTabCount:(NSUInteger)tabCount {
+  if (self.tabGridMode == TabGridModeSelection) {
+    // Exit selection mode if there are no more tabs.
+    if (tabCount == 0) {
+      self.tabGridMode = TabGridModeNormal;
+    }
+
+    [self updateSelectionModeToolbars];
+  }
+
+  if (tabCount > 0) {
+    // Undo is only available when the tab grid is empty.
+    self.undoCloseAllAvailable = NO;
+  }
+
+  [self configureButtonsForActiveAndCurrentPage];
+  [self broadcastIncognitoContentVisibility];
+}
+
 // Broadcasts whether incognito tabs are showing.
 - (void)broadcastIncognitoContentVisibility {
   // It is programmer error to broadcast incognito content visibility when the
@@ -2131,7 +2179,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   self.currentPageViewController.accessibilityElementsHidden = YES;
   __weak __typeof(self) weakSelf = self;
-  [UIView animateWithDuration:0.2
+  [UIView animateWithDuration:kAnimationDuration.InSecondsF()
       animations:^{
         TabGridViewController* strongSelf = weakSelf;
         if (!strongSelf)
@@ -2151,7 +2199,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Hides scrim overlay.
 - (void)hideScrim {
   __weak TabGridViewController* weakSelf = self;
-  [UIView animateWithDuration:0.2
+  [UIView animateWithDuration:kAnimationDuration.InSecondsF()
       animations:^{
         TabGridViewController* strongSelf = weakSelf;
         if (!strongSelf)
@@ -2302,7 +2350,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 - (UIEdgeInsets)calculateInsetForRegularGridView {
   UIEdgeInsets inset = [self calculateInsetForIncognitoGridView];
 
-  if (IsPinnedTabsEnabled() && !self.pinnedTabsViewController.view.isHidden) {
+  if (self.regularTabsBottomMessage &&
+      !self.regularTabsBottomMessage.view.hidden) {
+    inset.bottom += self.regularTabsBottomMessage.view.bounds.size.height;
+  }
+  if (IsPinnedTabsEnabled() && !self.pinnedTabsViewController.view.hidden) {
     CGFloat pinnedViewHeight =
         self.pinnedTabsViewController.view.bounds.size.height;
     inset.bottom += pinnedViewHeight + kPinnedViewBottomPadding;
@@ -2402,6 +2454,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
             (PinnedTabsViewController*)pinnedTabsViewController
               didChangeItemCount:(NSUInteger)count {
   self.topToolbar.pageControl.pinnedTabCount = count;
+  const NSUInteger totalTabCount =
+      count + self.topToolbar.pageControl.regularTabCount;
+
+  crash_keys::SetRegularTabCount(totalTabCount);
+  [self handleTabCountChangeWithTabCount:totalTabCount];
 }
 
 - (void)pinnedTabsViewControllerVisibilityDidChange:
@@ -2411,8 +2468,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                    animations:^{
                      self.regularTabsViewController.gridView.contentInset =
                          inset;
-                   }
-                   completion:nil];
+                     [self updateRegularTabsBottomMessageConstraintsIfExists];
+                   }];
 }
 
 - (void)pinnedTabsViewController:
@@ -2450,10 +2507,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     return;
   }
 
-  // Update the model with the tab selection, but don't have the grid view
-  // controller display the new selection, since there will be a transition
-  // away from it immediately afterwards.
-  gridViewController.showsSelectionUpdates = NO;
   // Check if the tab being selected is already selected.
   BOOL alreadySelected = NO;
   id<GridCommands> tabsDelegate;
@@ -2503,7 +2556,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage
                                        focusOmnibox:NO
                                        closeTabGrid:closeTabGrid];
-  gridViewController.showsSelectionUpdates = YES;
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -2546,26 +2598,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewController:(GridViewController*)gridViewController
         didChangeItemCount:(NSUInteger)count {
-  if (self.tabGridMode == TabGridModeSelection) {
-    // Exit selection mode if there are no more tabs.
-    if (count == 0) {
-      self.tabGridMode = TabGridModeNormal;
-    }
-    [self updateSelectionModeToolbars];
-  }
-
-  if (count > 0) {
-    // Undo is only available when the tab grid is empty.
-    self.undoCloseAllAvailable = NO;
-  }
-  [self configureButtonsForActiveAndCurrentPage];
   if (gridViewController == self.regularTabsViewController) {
     self.topToolbar.pageControl.regularTabCount = count;
-    crash_keys::SetRegularTabCount(count);
+    const NSUInteger totalTabCount =
+        count + self.topToolbar.pageControl.pinnedTabCount;
+
+    crash_keys::SetRegularTabCount(totalTabCount);
+    [self handleTabCountChangeWithTabCount:totalTabCount];
+
   } else if (gridViewController == self.incognitoTabsViewController) {
     crash_keys::SetIncognitoTabCount(count);
+    [self handleTabCountChangeWithTabCount:count];
   }
-  [self broadcastIncognitoContentVisibility];
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -2669,6 +2713,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.delegate showInactiveTabs];
 }
 
+- (void)didTapInactiveTabsSettingsLinkInGridViewController:
+    (GridViewController*)gridViewController {
+  NOTREACHED();
+}
+
 #pragma mark - Control actions
 
 - (void)doneButtonTapped:(id)sender {
@@ -2739,34 +2788,34 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)handleCloseAllButtonForRegularTabsWithAnchor:(UIBarButtonItem*)anchor {
-  const BOOL hasPinnedTabs =
-      (IsPinnedTabsEnabled() && !self.pinnedTabsViewController.collectionEmpty);
-  const BOOL hasOpenTabs =
-      !self.regularTabsViewController.gridEmpty || hasPinnedTabs;
-  DCHECK_EQ(self.undoCloseAllAvailable, !hasOpenTabs);
+  DCHECK_EQ(self.undoCloseAllAvailable,
+            self.regularTabsViewController.gridEmpty);
 
   if (self.undoCloseAllAvailable) {
     [self undoCloseAllItemsForRegularTabs];
-  } else if (hasPinnedTabs) {
-    [self confirmCloseAllItemsForRegularTabs:anchor];
   } else {
     [self saveAndCloseAllItemsForRegularTabs];
   }
 }
 
-- (void)confirmCloseAllItemsForRegularTabs:(UIBarButtonItem*)anchor {
-  [self.regularTabsDelegate
-      showCloseAllItemsConfirmationActionSheetWithAnchor:anchor];
-}
-
 - (void)undoCloseAllItemsForRegularTabs {
+  // This was saved as a stack: first save the inactive tabs, then the active
+  // tabs. So undo in the reverse order: first undo the active tabs, then the
+  // inactive tabs.
   [self.regularTabsDelegate undoCloseAllItems];
+  [self.inactiveTabsDelegate undoCloseAllItems];
+
   self.undoCloseAllAvailable = NO;
   [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
 }
 
 - (void)saveAndCloseAllItemsForRegularTabs {
+  // This was saved as a stack: first save the inactive tabs, then the active
+  // tabs. So undo in the reverse order: first undo the active tabs, then the
+  // inactive tabs.
+  [self.inactiveTabsDelegate saveAndCloseAllItems];
   [self.regularTabsDelegate saveAndCloseAllItems];
+
   self.undoCloseAllAvailable = YES;
   [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
 }
@@ -3121,6 +3170,114 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
   self.pinnedTabsConstraints = pinnedTabsConstraints;
   [NSLayoutConstraint activateConstraints:self.pinnedTabsConstraints];
+}
+
+// Updates the bottom constraint for the bottom message on the regular tabs.
+- (void)updateRegularTabsBottomMessageConstraintsIfExists {
+  if (!self.regularTabsBottomMessage) {
+    return;
+  }
+  [NSLayoutConstraint
+      deactivateConstraints:self.regularTabsBottomMessageConstraints];
+  self.regularTabsBottomMessageConstraints = nil;
+
+  UIView* bottomMessageView = self.regularTabsBottomMessage.view;
+  NSMutableArray<NSLayoutConstraint*>* constraints =
+      [[NSMutableArray alloc] init];
+  // left and right anchors.
+  if ([self shouldUseCompactLayout]) {
+    [constraints addObjectsFromArray:@[
+      [bottomMessageView.widthAnchor
+          constraintEqualToAnchor:self.view.widthAnchor],
+      [bottomMessageView.centerXAnchor
+          constraintEqualToAnchor:self.regularTabsViewController.view
+                                      .centerXAnchor]
+    ]];
+  } else {
+    // Make space on the right so that the message would NOT cover the new tab
+    // button.
+    CGFloat trailingMarginToShowNewTabButton =
+        kTabGridFloatingButtonHorizontalInset +
+        self.bottomToolbar.largeNewTabButton.intrinsicContentSize.width;
+    [constraints addObjectsFromArray:@[
+      [bottomMessageView.widthAnchor
+          constraintEqualToAnchor:self.view.widthAnchor
+                         constant:self.regularTabsViewController.gridView
+                                      .contentOffset.x -
+                                  trailingMarginToShowNewTabButton],
+      [bottomMessageView.leadingAnchor
+          constraintEqualToAnchor:self.regularTabsViewController.view
+                                      .leadingAnchor]
+    ]];
+  }
+  // Bottom and top anchors.
+  CGFloat topLayoutAnchorConstant =
+      [self shouldUseCompactLayout]
+          ? self.topToolbar.intrinsicContentSize.height +
+                self.bottomToolbar.intrinsicContentSize.height
+          : self.topToolbar.intrinsicContentSize.height;
+  NSLayoutYAxisAnchor* bottomAnchor = [self shouldUseCompactLayout]
+                                          ? self.bottomToolbar.topAnchor
+                                          : self.view.bottomAnchor;
+  if (IsPinnedTabsEnabled() && !self.pinnedTabsViewController.view.hidden) {
+    bottomAnchor = self.pinnedTabsViewController.view.topAnchor;
+  }
+  [constraints addObjectsFromArray:@[
+    [bottomMessageView.bottomAnchor constraintEqualToAnchor:bottomAnchor],
+    [bottomMessageView.topAnchor
+        constraintGreaterThanOrEqualToAnchor:self.view.topAnchor
+                                    constant:topLayoutAnchorConstant]
+  ]];
+  self.regularTabsBottomMessageConstraints = constraints;
+  [NSLayoutConstraint
+      activateConstraints:self.regularTabsBottomMessageConstraints];
+}
+
+// Sets up the view for `self.regularTabsBottomMessage`. This should be called
+// when the bottom message is just set.
+- (void)initializeRegularTabsBottomMessageView {
+  UIView* bottomMessageView = self.regularTabsBottomMessage.view;
+  bottomMessageView.translatesAutoresizingMaskIntoConstraints = NO;
+  // The bottom message should cover all grid cells but not cover the blocking
+  // view.
+  bottomMessageView.layer.zPosition = FLT_MAX - 1;
+  bottomMessageView.hidden = self.tabGridMode != TabGridModeNormal;
+  [self slideInRegularTabsBottomMessage];
+}
+
+// Slides `self.regularTabsBottomMessage` from the bottom edge into place. This
+// should be called only when the bottom message is just set.
+- (void)slideInRegularTabsBottomMessage {
+  UIView* bottomMessageView = self.regularTabsBottomMessage.view;
+  self.regularTabsViewController.gridView.contentInset =
+      [self calculateInsetForRegularGridView];
+  // Initial position of `bottomMessageView should be below the view, so that
+  // the animation slides it up from the bottom, instead of sliding it down from
+  // the top.
+  NSLayoutConstraint* initialConstraint = [bottomMessageView.topAnchor
+      constraintEqualToAnchor:self.view.bottomAnchor];
+  initialConstraint.active = YES;
+  [self.regularTabsViewController.view layoutIfNeeded];
+  // Perform initial animation.
+  __weak TabGridViewController* weakSelf = self;
+  [UIView
+      animateWithDuration:kAnimationDuration.InSecondsF()
+               animations:^{
+                 initialConstraint.active = NO;
+                 [weakSelf updateRegularTabsBottomMessageConstraintsIfExists];
+                 [weakSelf.regularTabsViewController.view layoutIfNeeded];
+               }];
+}
+
+// Slides an existing `self.regularTabsBottomMessage` out of the view. This
+// should be called when the bottom message is just unset.
+- (void)slideOutRegularTabsBottomMessage {
+  UIEdgeInsets inset = [self calculateInsetForRegularGridView];
+  [UIView animateWithDuration:kAnimationDuration.InSecondsF()
+                   animations:^{
+                     self.regularTabsViewController.gridView.contentInset =
+                         inset;
+                   }];
 }
 
 @end

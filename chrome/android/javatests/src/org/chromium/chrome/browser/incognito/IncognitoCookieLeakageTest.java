@@ -7,8 +7,7 @@ package org.chromium.chrome.browser.incognito;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import android.support.test.InstrumentationRegistry;
-
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 
 import org.hamcrest.Matchers;
@@ -98,6 +97,10 @@ public class IncognitoCookieLeakageTest {
         assertEquals(expected, actual);
     }
 
+    /**
+     * A class to provide the list of test parameters encapsulating Activity pairs, spliced on
+     * regular and Incognito mode, where cookie shouldn't leak.
+     */
     public static class IsolatedFlowsParams implements ParameterProvider {
         @Override
         public List<ParameterSet> getParameters() {

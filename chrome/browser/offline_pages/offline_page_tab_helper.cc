@@ -9,9 +9,9 @@
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_request_handler.h"
@@ -29,8 +29,6 @@
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_store_utils.h"
 #include "components/offline_pages/core/page_criteria.h"
-#include "components/offline_pages/core/prefetch/offline_metrics_collector.h"
-#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
@@ -52,16 +50,6 @@ bool SchemeIsForUntrustedOfflinePages(const GURL& url) {
     return true;
 #endif
   return url.SchemeIsFile();
-}
-
-void ReportMhtmlLoadResult(const std::string& name_space,
-                           MHTMLLoadResult load_result) {
-  if (name_space.empty())
-    return;
-
-  base::UmaHistogramEnumeration(model_utils::AddHistogramSuffix(
-                                    name_space, "OfflinePages.MhtmlLoadResult"),
-                                load_result);
 }
 }  // namespace
 
@@ -120,8 +108,11 @@ OfflinePageTabHelper::OfflinePageTabHelper(content::WebContents* web_contents)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  prefetch_service_ =
-      PrefetchServiceFactory::GetForKey(profile->GetProfileKey());
+
+  // TODO(crbug.com/1424920): PrefetchServiceFactory is being removed, but
+  // temporarily we need to keep creating the service. See the bug for more
+  // info.
+  PrefetchServiceFactory::GetForKey(profile->GetProfileKey());
 }
 
 OfflinePageTabHelper::~OfflinePageTabHelper() {}
@@ -149,17 +140,10 @@ void OfflinePageTabHelper::NotifyMhtmlPageLoadAttempted(
         provisional_offline_info_.offline_page &&
         !provisional_offline_info_.offline_page->client_id.name_space.empty());
 
-    ReportMhtmlLoadResult(
-        provisional_offline_info_.offline_page->client_id.name_space,
-        load_result);
-
     // If we're here, we have valid offline info, so since the page is trusted,
     // we should not use the renderer's information.
     return;
   }
-
-  UMA_HISTOGRAM_ENUMERATION("OfflinePages.MhtmlLoadResultUntrusted",
-                            load_result);
 
   // Sanity checking the input URL.
   if (!main_frame_url.is_valid() || !main_frame_url.SchemeIsHTTPOrHTTPS())
@@ -181,12 +165,6 @@ void OfflinePageTabHelper::DidStartNavigation(
 
   // The provisional offline info can be cleared no matter how.
   provisional_offline_info_.Clear();
-
-  // Report any attempted navigation as indication that browser is in use.
-  // This doesn't have to be a successful navigation.
-  if (prefetch_service_) {
-    prefetch_service_->GetOfflineMetricsCollector()->OnAppStartupOrResume();
-  }
 }
 
 void OfflinePageTabHelper::DidFinishNavigation(
@@ -221,7 +199,6 @@ void OfflinePageTabHelper::DidFinishNavigation(
   provisional_offline_info_.Clear();
 
   ReportOfflinePageMetrics();
-  ReportPrefetchMetrics(navigation_handle);
 
   TryLoadingOfflinePageOnNetError(navigation_handle);
 }
@@ -270,35 +247,6 @@ void OfflinePageTabHelper::ReportOfflinePageMetrics() {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.TrustStateOnOpen",
                             offline_info_.trusted_state,
                             OfflinePageTrustedState::TRUSTED_STATE_MAX);
-}
-
-void OfflinePageTabHelper::ReportPrefetchMetrics(
-    content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsErrorPage())
-    return;
-
-  if (!prefetch_service_)
-    return;
-
-  // Report the kind of navigation (online/offline) to metrics collector.
-  // It accumulates this info to mark a day as 'offline' or 'online'.
-  OfflineMetricsCollector* metrics_collector =
-      prefetch_service_->GetOfflineMetricsCollector();
-  DCHECK(metrics_collector);
-
-  if (offline_page()) {
-    // Report prefetch usage.
-    if (GetPolicy(offline_page()->client_id.name_space).is_suggested)
-      metrics_collector->OnPrefetchedPageOpened();
-    // Note that navigation to offline page may happen even if network is
-    // connected. For the purposes of collecting offline usage statistics,
-    // we still count this as offline navigation.
-    metrics_collector->OnSuccessfulNavigationOffline();
-  } else {
-    metrics_collector->OnSuccessfulNavigationOnline();
-    // The device is apparently online, attempt to report stats to UMA.
-    metrics_collector->ReportAccumulatedStats();
-  }
 }
 
 void OfflinePageTabHelper::TryLoadingOfflinePageOnNetError(
@@ -472,7 +420,8 @@ void OfflinePageTabHelper::DoDownloadPageLater(
 
   offline_pages::RequestCoordinator::SavePageLaterParams params;
   params.url = url;
-  params.client_id = offline_pages::ClientId(name_space, base::GenerateGUID());
+  params.client_id = offline_pages::ClientId(
+      name_space, base::Uuid::GenerateRandomV4().AsLowercaseString());
   params.request_origin = request_origin;
   request_coordinator->SavePageLater(params, base::DoNothing());
 

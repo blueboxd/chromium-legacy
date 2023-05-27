@@ -39,6 +39,7 @@ by a child template that "extends" this file.
         <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     {% endif %}
 
+    <uses-permission-sdk-23 android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION" />
     <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
     <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_CONNECT"/>
     <!--
@@ -92,6 +93,12 @@ by a child template that "extends" this file.
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <!-- Permission for using Android 14's credential management framework. -->
+    <uses-permission android:name="android.permission.CREDENTIAL_MANAGER_QUERY_CANDIDATE_CREDENTIALS"/>
+    <uses-permission android:name="android.permission.CREDENTIAL_MANAGER_SET_ALLOWED_PROVIDERS"/>
+    <uses-permission android:name="android.permission.CREDENTIAL_MANAGER_SET_ORIGIN"/>
+
     {% set enable_vr = enable_vr|default(0) %}
     {% if enable_vr == "true" %}
     <!-- Indicates use of Android's VR-mode, available only on Android N+. -->
@@ -165,9 +172,6 @@ by a child template that "extends" this file.
         alternate mechanism.
       -->
       <queries>
-        {% if include_arcore_manifest_flag == 'true' %}
-          <package android:name="com.google.ar.core" />
-        {% endif %}
         {% if enable_vr == "true" %}
           <package android:name="com.google.vr.vrcore" />
         {% endif %}
@@ -451,6 +455,15 @@ by a child template that "extends" this file.
                 <action android:name="android.intent.action.USER_PRESENT" />
             </intent-filter>
         </receiver>
+
+        <!-- Phishing Protection related -->
+        <receiver android:name="org.chromium.chrome.browser.safe_browsing.PasswordProtectionBroadcastReceiver" 
+        android:exported="true"
+        android:permission="com.google.android.gms.permission.INTERNAL_BROADCAST">
+            <intent-filter>
+                <action android:name="com.android.chrome.safe_browsing.LOGIN" />
+            </intent-filter>
+        </receiver> 
 
         <!-- Upgrade related -->
         <receiver android:name="org.chromium.chrome.browser.upgrade.PackageReplacedBroadcastReceiver"
@@ -1283,11 +1296,11 @@ by a child template that "extends" this file.
       <meta-data android:name="android.content.APP_RESTRICTIONS"
           android:resource="@xml/app_restrictions"/>
 
-      {% if include_arcore_manifest_flag == 'true' %}
-      <!-- ARCore APK integration -->
+      {% if enable_arcore == 'true' %}
       <!-- This tag indicates that this application optionally uses ARCore. -->
       <meta-data android:name="com.google.ar.core" android:value="optional" />
 
+      <!-- ARCore APK integration -->
       {% block base_application_extra_arcore_definitions %}
       <meta-data android:name="com.google.ar.core.session_settings"
           android:value="allow_front_facing_motion_tracking_6dof," />

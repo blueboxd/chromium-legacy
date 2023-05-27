@@ -13,6 +13,7 @@
 #include "ash/public/cpp/external_arc/message_center/arc_notification_manager.h"
 #include "ash/public/cpp/message_center/arc_notification_manager_delegate.h"
 #include "ash/public/cpp/message_center/arc_notifications_host_initializer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -34,7 +35,6 @@
 #include "chrome/browser/extensions/api/notifications/extension_notification_handler.h"
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/profiles/profile.h"
@@ -128,8 +128,8 @@ class ScopedBadgingClockOverride {
   }
 
  private:
-  badging::BadgeManager* const badge_manager_;
-  const base::Clock* previous_clock_;
+  const raw_ptr<badging::BadgeManager, ExperimentalAsh> badge_manager_;
+  raw_ptr<const base::Clock, ExperimentalAsh> previous_clock_;
 };
 
 }  // namespace

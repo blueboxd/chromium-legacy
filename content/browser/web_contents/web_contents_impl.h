@@ -22,6 +22,7 @@
 #include "base/functional/function_ref.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/safe_ref.h"
 #include "base/observer_list.h"
 #include "base/process/kill.h"
@@ -381,7 +382,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   const std::u16string& GetLoadStateHost() override;
   void RequestAXTreeSnapshot(AXTreeSnapshotCallback callback,
                              ui::AXMode ax_mode,
-                             bool exclude_offscreen,
                              size_t max_nodes,
                              base::TimeDelta timeout) override;
   uint64_t GetUploadSize() override;
@@ -672,9 +672,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 #endif
   bool ShouldRouteMessageEvent(RenderFrameHostImpl* target_rfh) const override;
   void EnsureOpenerProxiesExist(RenderFrameHostImpl* source_rfh) override;
-  std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(
-      RenderFrameHostImpl* frame_host,
-      const GURL& url) override;
   void DidCallFocus() override;
   void OnFocusedElementChangedInFrame(
       RenderFrameHostImpl* frame,
@@ -863,6 +860,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       PreloadingAttempt* preloading_attempt,
       absl::optional<base::RepeatingCallback<bool(const GURL&)>>
           url_match_predicate = absl::nullopt) override;
+  void BackNavigationLikely(PreloadingPredictor predictor,
+                            WindowOpenDisposition disposition) override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -1756,11 +1755,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |delegate_|.
   void OnPreferredSizeChanged(const gfx::Size& old_size);
 
-  // Internal helper to create WebUI objects associated with |this|. |url| is
-  // used to determine which WebUI should be created (if any).
-  std::unique_ptr<WebUIImpl> CreateWebUI(RenderFrameHostImpl* frame_host,
-                                         const GURL& url);
-
   void SetJavaScriptDialogManagerForTesting(
       JavaScriptDialogManager* dialog_manager);
 
@@ -1915,7 +1909,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // The view of the RVHD. Usually this is our WebContentsView implementation,
   // but if an embedder uses a different WebContentsView, they'll need to
   // provide this.
-  RenderViewHostDelegateView* render_view_host_delegate_view_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION RenderViewHostDelegateView* render_view_host_delegate_view_;
 
   // Tracks CreatedWindow objects that have not been shown yet. They are
   // identified by the process ID and routing ID passed to CreateNewWindow.
@@ -2328,6 +2324,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   int suppress_unresponsive_renderer_count_ = 0;
 
   std::unique_ptr<PrerenderHostRegistry> prerender_host_registry_;
+
+  // Used to ignore multiple back navigation hints in rapid succession. For
+  // example, we may get multiple hints due to imprecise mouse movement while
+  // the user is trying to move the mouse to the back button.
+  base::TimeTicks last_back_navigation_hint_time_ = base::TimeTicks::Min();
 
   std::unique_ptr<power_scheduler::PowerModeVoter> audible_power_mode_voter_;
 

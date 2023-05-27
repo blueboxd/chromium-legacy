@@ -5,10 +5,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/login_screen_test_api.h"
+#include "chrome/browser/ash/login/app_mode/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/embedded_test_server_setup_mixin.h"
-#include "chrome/browser/ash/login/test/kiosk_apps_mixin.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/test/oobe_auth_page_waiter.h"
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
@@ -64,12 +64,9 @@ class LoginUIShelfVisibilityTest : public MixinBasedInProcessBrowserTest {
         ->ShowSigninScreenForTest(kNewUserEmail, kNewUserGaiaId,
                                   FakeGaiaMixin::kEmptyUserServices);
 
-    // Sync consent is the first post-login screen shown when a new user signs
-    // in.
-    if (features::IsOobeConsolidatedConsentEnabled())
-      OobeScreenWaiter(ConsolidatedConsentScreenView::kScreenId).Wait();
-    else
-      OobeScreenWaiter(SyncConsentScreenView::kScreenId).Wait();
+    // Consolidated consent is the first post-login screen shown when a new user
+    // signs in.
+    OobeScreenWaiter(ConsolidatedConsentScreenView::kScreenId).Wait();
   }
 
  private:

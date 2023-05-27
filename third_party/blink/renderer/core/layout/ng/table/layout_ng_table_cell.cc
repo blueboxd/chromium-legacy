@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/table_constants.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -14,13 +14,25 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_table_cell_paint_invalidator.h"
 
 namespace blink {
 
 LayoutNGTableCell::LayoutNGTableCell(Element* element)
-    : LayoutNGBlockFlowMixin<LayoutBlockFlow>(element) {
+    : LayoutNGBlockFlow(element) {
   UpdateColAndRowSpanFlags();
+}
+
+LayoutNGTableCell* LayoutNGTableCell::CreateAnonymousWithParent(
+    const LayoutObject& parent) {
+  scoped_refptr<const ComputedStyle> new_style =
+      parent.GetDocument().GetStyleResolver().CreateAnonymousStyleWithDisplay(
+          parent.StyleRef(), EDisplay::kTableCell);
+  auto* new_cell = MakeGarbageCollected<LayoutNGTableCell>(nullptr);
+  new_cell->SetDocumentForAnonymous(&parent.GetDocument());
+  new_cell->SetStyle(std::move(new_style));
+  return new_cell;
 }
 
 void LayoutNGTableCell::InvalidateLayoutResultCacheAfterMeasure() const {
@@ -35,15 +47,15 @@ void LayoutNGTableCell::InvalidateLayoutResultCacheAfterMeasure() const {
   }
 }
 
-LayoutRectOutsets LayoutNGTableCell::BorderBoxOutsets() const {
+NGPhysicalBoxStrut LayoutNGTableCell::BorderBoxOutsets() const {
   NOT_DESTROYED();
   // TODO(1061423) This function should not be called before layout.
   // ScrollAnchor::Examine does. Example trigger:
   // ScrollTimelineTest.TimelineInvalidationWhenScrollerDisplayPropertyChanges
   // DCHECK_GE(PhysicalFragmentCount(), 0u);
   if (PhysicalFragmentCount() > 0)
-    return GetPhysicalFragment(0)->Borders().ToLayoutRectOutsets();
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderBoxOutsets();
+    return GetPhysicalFragment(0)->Borders();
+  return LayoutNGBlockFlow::BorderBoxOutsets();
 }
 
 LayoutUnit LayoutNGTableCell::BorderTop() const {
@@ -56,7 +68,7 @@ LayoutUnit LayoutNGTableCell::BorderTop() const {
   if (Table()->ShouldCollapseBorders() && PhysicalFragmentCount() > 0) {
     return GetPhysicalFragment(0)->Borders().top;
   }
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderTop();
+  return LayoutNGBlockFlow::BorderTop();
 }
 
 LayoutUnit LayoutNGTableCell::BorderBottom() const {
@@ -65,7 +77,7 @@ LayoutUnit LayoutNGTableCell::BorderBottom() const {
   if (Table()->ShouldCollapseBorders() && PhysicalFragmentCount() > 0) {
     return GetPhysicalFragment(0)->Borders().bottom;
   }
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderBottom();
+  return LayoutNGBlockFlow::BorderBottom();
 }
 
 LayoutUnit LayoutNGTableCell::BorderLeft() const {
@@ -74,7 +86,7 @@ LayoutUnit LayoutNGTableCell::BorderLeft() const {
   if (Table()->ShouldCollapseBorders() && PhysicalFragmentCount() > 0) {
     return GetPhysicalFragment(0)->Borders().left;
   }
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderLeft();
+  return LayoutNGBlockFlow::BorderLeft();
 }
 
 LayoutUnit LayoutNGTableCell::BorderRight() const {
@@ -83,7 +95,27 @@ LayoutUnit LayoutNGTableCell::BorderRight() const {
   if (Table()->ShouldCollapseBorders() && PhysicalFragmentCount() > 0) {
     return GetPhysicalFragment(0)->Borders().right;
   }
-  return LayoutNGBlockFlowMixin<LayoutBlockFlow>::BorderRight();
+  return LayoutNGBlockFlow::BorderRight();
+}
+
+LayoutNGTableCell* LayoutNGTableCell::NextCell() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableCell>(NextSibling());
+}
+
+LayoutNGTableCell* LayoutNGTableCell::PreviousCell() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableCell>(PreviousSibling());
+}
+
+LayoutNGTableRow* LayoutNGTableCell::Row() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableRow>(Parent());
+}
+
+LayoutNGTableSection* LayoutNGTableCell::Section() const {
+  NOT_DESTROYED();
+  return To<LayoutNGTableSection>(Parent()->Parent());
 }
 
 LayoutNGTable* LayoutNGTableCell::Table() const {
@@ -116,14 +148,14 @@ void LayoutNGTableCell::StyleDidChange(StyleDifference diff,
       table->GridBordersChanged();
     }
   }
-  LayoutNGBlockFlowMixin<LayoutBlockFlow>::StyleDidChange(diff, old_style);
+  LayoutNGBlockFlow::StyleDidChange(diff, old_style);
 }
 
 void LayoutNGTableCell::WillBeRemovedFromTree() {
   NOT_DESTROYED();
   if (LayoutNGTable* table = Table())
     table->TableGridStructureChanged();
-  LayoutNGMixin<LayoutBlockFlow>::WillBeRemovedFromTree();
+  LayoutNGBlockFlow::WillBeRemovedFromTree();
 }
 
 void LayoutNGTableCell::ColSpanOrRowSpanChanged() {
@@ -139,7 +171,7 @@ void LayoutNGTableCell::ColSpanOrRowSpanChanged() {
 LayoutBox* LayoutNGTableCell::CreateAnonymousBoxWithSameTypeAs(
     const LayoutObject* parent) const {
   NOT_DESTROYED();
-  return LayoutObjectFactory::CreateAnonymousTableCellWithParent(*parent);
+  return CreateAnonymousWithParent(*parent);
 }
 
 LayoutBlock* LayoutNGTableCell::StickyContainer() const {
@@ -161,8 +193,7 @@ bool LayoutNGTableCell::BackgroundIsKnownToBeOpaqueInRect(
   // layer.
   if (HasLayer() && Table()->ShouldCollapseBorders())
     return false;
-  return LayoutNGBlockFlowMixin<
-      LayoutBlockFlow>::BackgroundIsKnownToBeOpaqueInRect(local_rect);
+  return LayoutNGBlockFlow::BackgroundIsKnownToBeOpaqueInRect(local_rect);
 }
 
 // TODO(crbug.com/1079133): Used by AXLayoutObject::RowIndex,
@@ -222,32 +253,6 @@ void LayoutNGTableCell::UpdateColAndRowSpanFlags() {
   // Colspan or rowspan are rare, so we keep the values in DOM.
   has_col_span_ = ParseColSpanFromDOM() != kDefaultColSpan;
   has_rowspan_ = ParseRowSpanFromDOM() != kDefaultRowSpan;
-}
-
-LayoutNGTableInterface* LayoutNGTableCell::TableInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableInterface>(Parent()->Parent()->Parent());
-}
-
-LayoutNGTableCellInterface* LayoutNGTableCell::NextCellInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableCellInterface>(LayoutObject::NextSibling());
-}
-
-LayoutNGTableCellInterface* LayoutNGTableCell::PreviousCellInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableCellInterface>(
-      LayoutObject::PreviousSibling());
-}
-
-LayoutNGTableRowInterface* LayoutNGTableCell::RowInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableRowInterface>(Parent());
-}
-
-LayoutNGTableSectionInterface* LayoutNGTableCell::SectionInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableSectionInterface>(Parent()->Parent());
 }
 
 }  // namespace blink

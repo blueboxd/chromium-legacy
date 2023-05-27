@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">የማረጋገጫ ምስክር ወረቀት በአካባቢው ተቀባይነት አላገኘም</translation>
 <translation id="1775381402323441512">የቪዲዮ መረጃ</translation>
 <translation id="180035236176489073">እነዚህን ፋይሎች ለመድረስ መስመር ላይ መሆን አለብዎት።</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{መታወቂያ ያለው ቅጥያ}one{መታወቂያ ያለው ቅጥያ}other{መታወቂያዎች ያላቸው ቅጥያዎች}}</translation>
 <translation id="1807938677607439181">ሁሉም ፋይሎች</translation>
 <translation id="1810764548349082891">ምንም ቅድመ-እይታ አይገኝም</translation>
 <translation id="1812302367230252929">በአማርኛ ቋንቋ ፊደል መጻፍ</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">ልክ ያልሆነ የርዕስ አማራጭ ስም ዝምድና ግቤት</translation>
 <translation id="1838709767668011582">የGoogle ጣቢያ</translation>
 <translation id="1853795129690976061">ይህ አቃፊ ለLinux ተጋርቷል</translation>
-<translation id="1859422890169495746">ይህ Chromebook</translation>
 <translation id="1864756863218646478">ፋይሉ ሊገኝ አልቻለም።</translation>
 <translation id="1884013283844450420">አውታረ መረብ <ph name="NETWORK_INDEX" /> ከ<ph name="NETWORK_COUNT" />፣ <ph name="NETWORK_NAME" />፣ አገናኝ</translation>
 <translation id="1920670151694390848">በማላያላምኛ ቋንቋ ፊደል መጻፍ</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">ፕላኔት</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> ወጥቷል።</translation>
 <translation id="2307462900900812319">አውታረ መረብ አዋቅር</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{መታወቂያ <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ያለው ቅጥያ ሊገኝ አይችልም። የእርስዎን አስተዳዳሪ ያነጋግሩ።}one{መታወቂያ <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ያለው ቅጥያ ሊገኝ አይችልም። የእርስዎን አስተዳዳሪ ያነጋግሩ።}other{መታወቂያዎች <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ያላቸው ቅጥያዎች ሊገኙ አይችሉም። የእርስዎን አስተዳዳሪ ያነጋግሩ።}}</translation>
 <translation id="2325650632570794183">ይህ ፋይል ዓይነት አይደገፍም። የዚህ ዓይነት ፋይል መክፈት የሚችል መተግበሪያን ለማግኘት እባክዎ Chrome የድር ሱቁን ይጎብኙ።</translation>
 <translation id="2326539130272988168">ቡልጋሪያኛ</translation>
 <translation id="2337715497728194187">ለBruschetta ያጋሩ</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">ደህንነቱ ያልተጠበቀ</translation>
 <translation id="3291218047831493686">የሲም መቆለፊያ ቅንብርን ለመለወጥ ወደዚህ አውታረ መረብ ያገናኙ</translation>
 <translation id="3293023191599135697">የደብሊውኢፒ አውታረመረቦች አይደገፉም</translation>
+<translation id="3295006446256079333">ይህ መጠን</translation>
 <translation id="3295357220137379386">መሣሪያው ስራ ላይ ነው</translation>
 <translation id="3296763833017966289">ጆርጂያኛ</translation>
 <translation id="3307875152560779385">ዩክሬንኛ</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">አሳይ</translation>
 <translation id="485316830061041779">ጀርመን</translation>
+<translation id="4862885579661885411">የፋይሎች ቅንብሮች</translation>
 <translation id="4867079195717347957">በወራጅ ቅደም ተከተል ዓምዱን ለመደርደር ጠቅ ያድርጉ።</translation>
 <translation id="4867297348137739678">በአለፈው ሳምንት</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> ባይት</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> ንጥሎችን በመቅዳት ላይ...</translation>
 <translation id="7375951387215729722">የፋይል ዝርዝር በ<ph name="COLUMN_NAME" /> በቁልቁለት ተደርድሯል።</translation>
 <translation id="7377161162143020057">ይህን ፋይል ማባዛት በአስተዳዳሪ መመሪያ ታግዷል</translation>
-<translation id="7392500733467492920">ሊገኝ አልቻለም። የእርስዎን አስተዳዳሪ ያነጋግሩ።</translation>
 <translation id="7402503521691663770">የChromeOS Flex መሣሪያዎች</translation>
 <translation id="7408870451288633753">ቼክ</translation>
 <translation id="7417453074306512035">የግዕዝ ቁልፍ ሰሌዳ</translation>

@@ -2030,7 +2030,8 @@ Polymer({
       return false;
     }
     // endpoint should be the form of IP:port or hostname:port
-    if (!peer.endpoint || !peer.endpoint.match(/^[a-zA-Z0-9\-\.]+:[0-9]+$/i)) {
+    if (!peer.endpoint ||
+        !peer.endpoint.match(/^\[?[a-zA-Z0-9\-\.:]+\]?:[0-9]+$/i)) {
       return false;
     }
     // allowedIps should be comma-separated list of IP/cidr.
@@ -2517,6 +2518,16 @@ Polymer({
 
     if (this.selectedServerCaHash_ !== DEFAULT_HASH) {
       // Does not use default CA server certs.
+      return true;
+    }
+
+    const isPropertyManaged = !!this.managedEapProperties_ &&
+        !!this.managedEapProperties_.useSystemCas &&
+        (this.managedEapProperties_.useSystemCas.policySource !==
+         PolicySource.kNone);
+    // Bypass `domainSuffixMatch` and `subjectAltNameMatch` checks for managed
+    // networks if the user doesn't control the CA setting.
+    if (isPropertyManaged) {
       return true;
     }
 

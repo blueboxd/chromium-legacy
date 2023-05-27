@@ -28,12 +28,12 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.ViewInteraction;
 import androidx.test.espresso.matcher.RootMatchers;
 import androidx.test.filters.MediumTest;
@@ -67,10 +67,9 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.PackageManagerWrapper;
-import org.chromium.chrome.R;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.app.ChromeActivity;
-import org.chromium.chrome.browser.browserservices.intents.BitmapHelper;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsIntentTestUtils;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -82,7 +81,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
-import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -121,6 +119,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.test.util.DeviceRestriction;
 import org.chromium.ui.widget.ButtonCompat;
 
 import java.util.ArrayList;
@@ -131,6 +130,7 @@ import java.util.List;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Features.DisableFeatures({ChromeFeatureList.WEB_APP_AMBIENT_BADGE_SUPRESS_FIRST_VISIT})
 public class AppBannerManagerTest {
     @Rule
     public ChromeTabbedActivityTestRule mTabbedActivityTestRule =
@@ -206,27 +206,6 @@ public class AppBannerManagerTest {
 
         @Override
         public void destroy() {}
-    }
-
-    private static class TestDataStorageFactory extends WebappDataStorage.Factory {
-        public String mSplashImage;
-
-        @Override
-        public WebappDataStorage create(final String webappId) {
-            return new WebappDataStorageWrapper(webappId);
-        }
-
-        private class WebappDataStorageWrapper extends WebappDataStorage {
-            public WebappDataStorageWrapper(String webappId) {
-                super(webappId);
-            }
-
-            @Override
-            public void updateSplashScreenImage(String splashScreenImage) {
-                Assert.assertNull(mSplashImage);
-                mSplashImage = splashScreenImage;
-            }
-        }
     }
 
     private static class InfobarListener implements InfoBarAnimationListener {
@@ -545,10 +524,6 @@ public class AppBannerManagerTest {
     @Feature({"AppBanners"})
     @CommandLineFlags.Add({"disable-features=" + FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE})
     public void testAppInstalledEventModalWebAppBannerBrowserTab() throws Exception {
-        // Sets the overridden factory to observer splash screen update.
-        final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
-        WebappDataStorage.setFactoryForTests(dataStorageFactory);
-
         triggerModalWebAppBanner(mTabbedActivityTestRule,
                 WebappTestPage.getServiceWorkerUrlWithAction(
                         mTestServer, "call_stashed_prompt_on_click_verify_appinstalled"),
@@ -568,28 +543,12 @@ public class AppBannerManagerTest {
                     RecordHistogram.getHistogramValueCountForTesting(
                             INSTALL_PATH_HISTOGRAM_NAME, /* kApiInitiateInfobar= */ 3));
         });
-
-        // Make sure that the splash screen icon was downloaded.
-        CriteriaHelper.pollUiThread(() -> {
-            Criteria.checkThat(dataStorageFactory.mSplashImage, Matchers.notNullValue());
-        });
-
-        // Test that bitmap sizes match expectations.
-        int idealSize = mTabbedActivityTestRule.getActivity().getResources().getDimensionPixelSize(
-                R.dimen.webapp_splash_image_size_ideal);
-        Bitmap splashImage = BitmapHelper.decodeBitmapFromString(dataStorageFactory.mSplashImage);
-        Assert.assertEquals(idealSize, splashImage.getWidth());
-        Assert.assertEquals(idealSize, splashImage.getHeight());
     }
 
     @Test
     @SmallTest
     @Feature({"AppBanners"})
     public void testAppInstalledEventModalWebAppBannerCustomTab() throws Exception {
-        // Sets the overridden factory to observer splash screen update.
-        final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
-        WebappDataStorage.setFactoryForTests(dataStorageFactory);
-
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsIntentTestUtils.createMinimalCustomTabIntent(
                         InstrumentationRegistry.getTargetContext(),
@@ -613,18 +572,6 @@ public class AppBannerManagerTest {
                     RecordHistogram.getHistogramValueCountForTesting(
                             INSTALL_PATH_HISTOGRAM_NAME, /* kApiInitiatedInfobar= */ 3));
         });
-
-        // Make sure that the splash screen icon was downloaded.
-        CriteriaHelper.pollUiThread(() -> {
-            Criteria.checkThat(dataStorageFactory.mSplashImage, Matchers.notNullValue());
-        });
-
-        // Test that bitmap sizes match expectations.
-        int idealSize = mTabbedActivityTestRule.getActivity().getResources().getDimensionPixelSize(
-                R.dimen.webapp_splash_image_size_ideal);
-        Bitmap splashImage = BitmapHelper.decodeBitmapFromString(dataStorageFactory.mSplashImage);
-        Assert.assertEquals(idealSize, splashImage.getWidth());
-        Assert.assertEquals(idealSize, splashImage.getHeight());
     }
 
     @Test
@@ -1142,6 +1089,7 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
+    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO}) // add to home screen not supported.
     @CommandLineFlags.Add({"enable-features=" + FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE + ","
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR,
             "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH + ","
@@ -1181,6 +1129,7 @@ public class AppBannerManagerTest {
     @Test
     @MediumTest
     @Feature({"AppBanners"})
+    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO}) // add to home screen not supported.
     @CommandLineFlags.Add({"enable-features=" + FeatureConstants.PWA_INSTALL_AVAILABLE_FEATURE + ","
                     + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_MESSAGE,
             "disable-features=" + ChromeFeatureList.ADD_TO_HOMESCREEN_IPH + ","
@@ -1381,51 +1330,7 @@ public class AppBannerManagerTest {
     @Test
     @SmallTest
     @Feature({"AppBanners"})
-    @CommandLineFlags.Add({"enable-features=AmbientBadgeSiteEngagement:minimal_engagement/100"})
-    public void testAmbientBadgeInsufficientEngagement() throws Exception {
-        String url = WebappTestPage.getServiceWorkerUrlWithAction(
-                mTestServer, "call_stashed_prompt_on_click");
-        // Set the engagement to trigger beforeinstall event but not ambient badge.
-        resetEngagementForUrl(url, 10);
-
-        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
-
-        assertAppBannerPipelineStatus(AppBannerManagerState.PENDING_PROMPT_NOT_CANCELED);
-
-        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        waitForBadgeStatus(tab, AmbientBadgeState.PENDING_ENGAGEMENT);
-        checkAmbientBadgePromptNotExist(mTabbedActivityTestRule);
-
-        // Calls prompt() on the beforeinstallprompt event, we expect to see the modal banner.
-        tapAndWaitForModalBanner(tab);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AppBanners"})
-    @CommandLineFlags.Add({"enable-features=AmbientBadgeSiteEngagement:minimal_engagement/100"})
-    public void testAmbientBadgeSufficientEngagement() throws Exception {
-        String url = WebappTestPage.getServiceWorkerUrlWithAction(
-                mTestServer, "call_stashed_prompt_on_click");
-        // Set the engagement big enough for ambient badge.
-        resetEngagementForUrl(url, 100);
-
-        navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
-
-        assertAppBannerPipelineStatus(AppBannerManagerState.PENDING_PROMPT_NOT_CANCELED);
-
-        Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
-        waitForBadgeStatus(tab, AmbientBadgeState.SHOWING);
-        waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
-
-        // Calls prompt() on the beforeinstallprompt event, we expect to see the modal banner.
-        tapAndWaitForModalBanner(tab);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AppBanners"})
-    @CommandLineFlags.Add({"enable-features=AmbientBadgeSuppressFirstVisit:period/7d"})
+    @Features.EnableFeatures({ChromeFeatureList.WEB_APP_AMBIENT_BADGE_SUPRESS_FIRST_VISIT})
     public void testAmbientBadgeSuppressedOnFirstVisit() throws Exception {
         String url = WebappTestPage.getServiceWorkerUrlWithAction(
                 mTestServer, "call_stashed_prompt_on_click");
@@ -1438,15 +1343,15 @@ public class AppBannerManagerTest {
         Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
         waitForBadgeStatus(tab, AmbientBadgeState.PENDING_ENGAGEMENT);
 
-        // Advance 3days and navigate to |url| again, ambient badge should show.
+        // Advance 3 days and navigate to |url| again, ambient badge should show.
         AppBannerManager.setTimeDeltaForTesting(3);
         mTabbedActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
         waitForBadgeStatus(tab, AmbientBadgeState.SHOWING);
         waitUntilAmbientBadgePromptAppears(mTabbedActivityTestRule);
 
-        // Advance 8 more days and navigate to |url| again, no ambient badge.
-        AppBannerManager.setTimeDeltaForTesting(11);
+        // Advance 31 more days and navigate to |url| again, no ambient badge.
+        AppBannerManager.setTimeDeltaForTesting(35);
         mTabbedActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
         navigateToUrlAndWaitForBannerManager(mTabbedActivityTestRule, url);
         waitForBadgeStatus(tab, AmbientBadgeState.PENDING_ENGAGEMENT);

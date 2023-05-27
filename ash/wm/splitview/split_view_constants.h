@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "base/time/time.h"
 #include "chromeos/ui/wm/constants.h"
+#include "ui/gfx/geometry/insets.h"
 
 namespace ash {
 
@@ -16,7 +17,7 @@ namespace ash {
 ASH_EXPORT constexpr float kHighlightScreenPrimaryAxisRatio = 0.10;
 
 // The padding between a highlight view and the edge of the screen.
-ASH_EXPORT constexpr float kHighlightScreenEdgePaddingDp = 8;
+ASH_EXPORT constexpr float kHighlightScreenEdgePaddingDp = 12;
 
 // The amount of inset to be applied on a split view label. Here horizontal and
 // vertical apply to the orientation before rotation (if there is rotation).
@@ -69,14 +70,8 @@ constexpr int kSplitviewWhiteBarSpawnLongSideLength = 2;
 // The distance from the `split_view_divider_` to where its handler spawns.
 constexpr int kSplitviewWhiteBarSpawnUnsignedOffset = 2;
 
-// The opacity of the drag-to-snap or cannot-snap drag indicator.
-constexpr float kHighlightOpacity = 0.3f;
-constexpr float kDarkLightHighlightOpacity = 0.4f;
-constexpr float kDarkLightHighlightCannotSnapOpacity = 0.2f;
-
-// The opacity of the split view snap preview area.
-constexpr float kPreviewAreaHighlightOpacity = 0.18f;
-constexpr float kDarkLightPreviewAreaHighlightOpacity = 0.2f;
+// The opacity of the highlight area.
+constexpr float kHighlightOpacity = 0.25f;
 
 // In portrait mode split view, if the caret in the bottom window is less than
 // `kMinCaretKeyboardDist` dip above the upper bounds of the virtual keyboard,
@@ -86,6 +81,13 @@ constexpr float kDarkLightPreviewAreaHighlightOpacity = 0.2f;
 // `kMinDividerPositionRatio` of screen height.
 constexpr int kMinCaretKeyboardDist = 16;
 constexpr float kMinDividerPositionRatio = 0.15f;
+
+// Extra insets used to increase the hit bounds of the split view divider to
+// make it easier to handle located event.
+constexpr int kSplitViewDividerExtraInset = 8;
+
+// Corner radius for the expanded menu that shows on toggling the kebab button.
+constexpr int kExpandedMenuRoundedCornerRadius = 20;
 
 }  // namespace ash
 

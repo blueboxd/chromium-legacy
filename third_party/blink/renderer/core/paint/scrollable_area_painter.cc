@@ -77,7 +77,7 @@ void ScrollableAreaPainter::RecordResizerScrollHitTestData(
     GraphicsContext& context,
     const PhysicalOffset& paint_offset) {
   const auto* box = GetScrollableArea().GetLayoutBox();
-  DCHECK_EQ(box->StyleRef().Visibility(), EVisibility::kVisible);
+  DCHECK(box->StyleRef().VisibleToHitTesting());
   if (!box->CanResize())
     return;
 
@@ -256,7 +256,7 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
 
   const auto* properties =
       GetScrollableArea().GetLayoutBox()->FirstFragment().PaintProperties();
-  DCHECK(properties);
+  CHECK(properties);
   auto type = scrollbar.Orientation() == kHorizontalScrollbar
                   ? DisplayItem::kScrollbarHorizontal
                   : DisplayItem::kScrollbarVertical;
@@ -268,17 +268,19 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
                              type);
   }
 
-  if (scrollbar.IsCustomScrollbar())
+  if (scrollbar.IsCustomScrollbar()) {
     scrollbar.Paint(context, paint_offset);
-  else
+    // Custom scrollbars need main thread hit testing. The hit test rect will
+    // contribute to the non-fast scrollable region of the containing layer.
+    if (GetScrollableArea().GetLayoutBox()->StyleRef().VisibleToHitTesting()) {
+      context.GetPaintController().RecordScrollHitTestData(
+          scrollbar, DisplayItem::kScrollbarHitTest, nullptr, visual_rect);
+    }
+  } else {
+    // If the scrollbar turns out to be not composited, PaintChunksToCcLayer
+    // will add its visual rect into the containing layer's non-fast scrollable
+    // region.
     PaintNativeScrollbar(context, scrollbar, visual_rect);
-
-  // cc::ScrollbarController can only handle interactions with composited native
-  // scrollbars. For any other scrollbar, prevent the composited-scroll hit test
-  // from succeeding, and send touch events to the main thread for thumb drags.
-  if (!GetScrollableArea().ShouldDirectlyCompositeScrollbar(scrollbar)) {
-    context.GetPaintController().RecordScrollHitTestData(
-        scrollbar, DisplayItem::kScrollbarHitTest, nullptr, visual_rect);
   }
 }
 
@@ -294,11 +296,14 @@ void ScrollableAreaPainter::PaintNativeScrollbar(GraphicsContext& context,
 
   const auto* properties =
       GetScrollableArea().GetLayoutBox()->FirstFragment().PaintProperties();
-  DCHECK(properties);
+  CHECK(properties);
 
   const TransformPaintPropertyNode* scroll_translation = nullptr;
-  if (scrollable_area_->ShouldDirectlyCompositeScrollbar(scrollbar))
+  if (scrollable_area_->ShouldDirectlyCompositeScrollbar(scrollbar)) {
     scroll_translation = properties->ScrollTranslation();
+    CHECK(scroll_translation);
+    CHECK(scroll_translation->ScrollNode());
+  }
 
   auto delegate = base::MakeRefCounted<ScrollbarLayerDelegate>(scrollbar);
   ScrollbarDisplayItem::Record(context, scrollbar, type, delegate, visual_rect,
@@ -346,7 +351,7 @@ void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
 
   theme->PaintScrollCorner(context, GetScrollableArea().VerticalScrollbar(),
                            client, visual_rect,
-                           GetScrollableArea().UsedColorScheme());
+                           GetScrollableArea().UsedColorSchemeScrollbars());
 }
 
 PaintLayerScrollableArea& ScrollableAreaPainter::GetScrollableArea() const {

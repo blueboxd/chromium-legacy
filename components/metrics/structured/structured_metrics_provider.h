@@ -8,6 +8,7 @@
 #include <deque>
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -58,7 +59,7 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
                                   public Recorder::RecorderImpl {
  public:
   explicit StructuredMetricsProvider(
-      base::raw_ptr<metrics::MetricsProvider> system_profile_provider);
+      metrics::MetricsProvider* system_profile_provider);
   ~StructuredMetricsProvider() override;
   StructuredMetricsProvider(const StructuredMetricsProvider&) = delete;
   StructuredMetricsProvider& operator=(const StructuredMetricsProvider&) =
@@ -84,11 +85,10 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   // Should only be used for tests.
   //
   // TODO(crbug/1350322): Use this ctor to replace existing ctor.
-  StructuredMetricsProvider(
-      const base::FilePath& device_key_path,
-      base::TimeDelta write_delay,
-      base::TimeDelta min_independent_metrics_interval,
-      base::raw_ptr<metrics::MetricsProvider> system_profile_provider);
+  StructuredMetricsProvider(const base::FilePath& device_key_path,
+                            base::TimeDelta write_delay,
+                            base::TimeDelta min_independent_metrics_interval,
+                            metrics::MetricsProvider* system_profile_provider);
 
   void OnKeyDataInitialized();
   void OnRead(ReadStatus status);
@@ -131,6 +131,15 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   // to supply the system profile since ChromeOSMetricsProvider will
   // not be called to populate the SystemProfile.
   void ProvideSystemProfile(SystemProfileProto* system_profile);
+
+  // Checks if |project_name_hash| can be uploaded.
+  bool CanUploadProject(uint64_t project_name_hash) const;
+
+  // Builds a cache of disallow projects from the Finch controlled variable.
+  void CacheDisallowedProjectsSet();
+
+  // Adds a project to the diallowed list for testing.
+  void AddDisallowedProjectForTest(uint64_t project_name_hash);
 
   // Beyond this number of logging events between successive calls to
   // ProvideCurrentSessionData, we stop recording events.
@@ -200,9 +209,7 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   std::unique_ptr<KeyData> profile_key_data_;
   std::unique_ptr<KeyData> device_key_data_;
 
-  // todo(andrewbreggr): investigate removing this field, it is used
-  //                     when feature kDelayUploadUntilHwid is enabled
-  // SystemProfile is loaded to populate independent metric uploads.
+  // Whether the system profile has been initialized.
   bool system_profile_initialized_ = false;
 
   // File path where device keys will be persisted.
@@ -224,6 +231,14 @@ class StructuredMetricsProvider : public metrics::MetricsProvider,
   // Interface for providing the SystemProfile to metrics.
   // See chrome/browser/metrics/chrome_metrics_service_client.h
   base::raw_ptr<metrics::MetricsProvider> system_profile_provider_;
+
+  // A set of projects that are not allowed to be recorded. This is a cache of
+  // GetDisabledProjects().
+  base::flat_set<uint64_t> disallowed_projects_;
+
+  // The number of scans of external metrics that occurred since the last
+  // upload. This is only incremented if events were added by the scan.
+  int external_metrics_scans_ = 0;
 
   base::WeakPtrFactory<StructuredMetricsProvider> weak_factory_{this};
 };

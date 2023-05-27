@@ -126,6 +126,14 @@ class DCLayerTree {
     return video_swap_chains_.size();
   }
 
+  size_t GetDcompLayerCountForTesting() const {
+    return visual_tree_ ? visual_tree_->GetDcompLayerCountForTesting() : 0;
+  }
+  IDCompositionVisual2* GetContentVisualForTesting(size_t index) const {
+    return visual_tree_ ? visual_tree_->GetContentVisualForTesting(index)
+                        : nullptr;
+  }
+
   void SetFrameRate(float frame_rate);
 
   const std::unique_ptr<HDRMetadataHelperWin>& GetHDRMetadataHelper() {
@@ -167,6 +175,12 @@ class DCLayerTree {
                                           gfx::Transform* transform,
                                           gfx::Point* offset,
                                           gfx::Rect* clip_rect) const;
+    size_t GetDcompLayerCountForTesting() const {
+      return visual_subtrees_.size();
+    }
+    IDCompositionVisual2* GetContentVisualForTesting(size_t index) const {
+      return visual_subtrees_[index]->content_visual();
+    }
     // Returns true if the tree is optimized.
     // TODO(http://crbug.com/1380822): Implement tree optimization where the
     // tree is built incrementally and does not require full rebuild.
@@ -189,7 +203,9 @@ class DCLayerTree {
       bool Update(IDCompositionDevice2* dcomp_device,
                   Microsoft::WRL::ComPtr<IUnknown> dcomp_visual_content,
                   uint64_t dcomp_surface_serial,
-                  const gfx::Vector2d& quad_rect_offset,
+                  const gfx::Rect& content_rect,
+                  const gfx::Rect& quad_rect,
+                  bool nearest_neighbor_filter,
                   const gfx::Transform& quad_to_root_transform,
                   const absl::optional<gfx::Rect>& clip_rect_in_root);
 
@@ -199,7 +215,9 @@ class DCLayerTree {
       IDCompositionVisual2* content_visual() const {
         return content_visual_.Get();
       }
-
+      IUnknown* dcomp_visual_content() const {
+        return dcomp_visual_content_.Get();
+      }
       void GetSwapChainVisualInfoForTesting(gfx::Transform* transform,
                                             gfx::Point* offset,
                                             gfx::Rect* clip_rect) const;
@@ -208,7 +226,17 @@ class DCLayerTree {
       void set_z_order(int z_order) { z_order_ = z_order; }
 
      private:
+      // The root of this subtree. In root space and contains the clip rect.
       Microsoft::WRL::ComPtr<IDCompositionVisual2> clip_visual_;
+      // The child of |clip_visual_|, transforms its children from quad to root
+      // space. This visual exists because |offset_| is in quad space, so it
+      // must be affected by |transform_|. They cannot be on the same visual
+      // since |IDCompositionVisual::SetTransform| and
+      // |IDCompositionVisual::SetOffset[XY]| are applied in the opposite order
+      // than we want.
+      Microsoft::WRL::ComPtr<IDCompositionVisual2> transform_visual_;
+      // The child of |transform_visual_|. In quad space, holds
+      // |dcomp_visual_content_|.
       Microsoft::WRL::ComPtr<IDCompositionVisual2> content_visual_;
 
       // The content to be placed at the leaf of the visual subtree. Either an
@@ -219,8 +247,18 @@ class DCLayerTree {
       // is updated.
       uint64_t dcomp_surface_serial_ = 0;
 
-      // Offset of the top left of the visual in quad space
-      gfx::Vector2d offset_;
+      // The portion of |dcomp_visual_content_| to display. This area will be
+      // mapped to |quad_rect_|'s bounds.
+      gfx::Rect content_rect_;
+
+      // The bounds which contain this overlay. When mapped by |transform_|,
+      // this is the bounds of the overlay in root space.
+      gfx::Rect quad_rect_;
+
+      // Whether or not to use nearest-neighbor filtering to scale
+      // |dcomp_visual_content_|. This is applied to |transform_visual_| since
+      // both it and |content_visual_| can scale the content.
+      bool nearest_neighbor_filter_ = false;
 
       // Transform from quad space to root space
       gfx::Transform transform_;

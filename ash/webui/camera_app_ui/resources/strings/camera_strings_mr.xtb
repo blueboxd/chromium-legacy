@@ -27,9 +27,7 @@
 <translation id="199526504800285197">रेकॉर्डिंग थांबवले आहे</translation>
 <translation id="1995951722691075581">डिव्हाइसवरील कमी स्टोरेज जागेमुळे तुमचे रेकॉर्डिंग थांबले आहे. आणखी व्हिडिओ रेकॉर्ड करण्यासाठी, तुम्हाला तुमच्या डिव्हाइसवरील जागा मोकळी करावी लागेल.</translation>
 <translation id="2036868001356139588">टायमरचा कालावधी</translation>
-<translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> अ‍ॅक्टिव्ह</translation>
-<translation id="2128052519899549250">टाइम-लॅप्स व्हिडिओ रेकॉर्ड करा</translation>
 <translation id="2134029355740465625">व्हिडिओ सेटिंग्ज</translation>
 <translation id="2144806332417375165">कस्टम व्हिडिओ पॅरामीटर</translation>
 <translation id="2175927920773552910">QR कोड</translation>
@@ -82,6 +80,7 @@
 <translation id="4864143361253542638">स्कॅन केलेली पेज सूची</translation>
 <translation id="4890010094662541459">३ x ३</translation>
 <translation id="491895758387112773">मल्टिस्ट्रीम व्हिडिओ रेकॉर्डिंग</translation>
+<translation id="495170559598752135">क्रिया</translation>
 <translation id="4984613436295737187">Quad HD (1440p)</translation>
 <translation id="5034763830503483128">फोटोचा आस्पेक्ट रेशो</translation>
 <translation id="5057360777601936059">तुमचा कॅमेरा सध्या उपलब्ध नाही.
@@ -92,7 +91,6 @@
 <translation id="5317780077021120954">सेव्ह करा</translation>
 <translation id="5320594929574852403">डाव्या दिशेने हलत आहे</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
-<translation id="5577251651370645658">टाइम-लॅप्स</translation>
 <translation id="5662366948659129155">पेज <ph name="COUNT" /> स्कॅन करत आहे</translation>
 <translation id="5671277269877808209">चौरस</translation>
 <translation id="5746169159649715125">पीडीएफ म्हणून सेव्ह करा</translation>
@@ -122,6 +120,7 @@
 <translation id="6888362557094394345">तळाच्या दिशेने हलत आहे</translation>
 <translation id="695140971690006676">सर्व रीसेट करा</translation>
 <translation id="6965382102122355670">ठीक आहे</translation>
+<translation id="6965830616442491568">पोर्ट्रेट</translation>
 <translation id="698156982839284926">तीन सेकंद</translation>
 <translation id="7134221860976209830">१० सेकंदांचा टायमर</translation>
 <translation id="7191890674911603392">रेकॉर्डचा प्रकार</translation>
@@ -137,6 +136,7 @@
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7670511624014457267">६० FPS</translation>
 <translation id="7671804233658741790">दस्तऐवजाच्या तळाशी असलेला उजवीकडील कोपरा</translation>
+<translation id="7684446460490665873">टाइम लॅप्स व्हिडिओ रेकॉर्ड करा</translation>
 <translation id="7692090236657809299">पॅन टिल्ट झूम सुरू करा</translation>
 <translation id="7726641833034062494">साधारण व्हिडिओ रेकॉर्ड करा</translation>
 <translation id="7748344063862150053">दस्तऐवजाचा सर्वात वरील उजवीकडील कोपरा</translation>
@@ -162,6 +162,7 @@
 <translation id="9045010116236796332">दस्तऐवजाच्या सर्व कडा फ्रेमच्या आत ठेवा</translation>
 <translation id="9045155556724273246">१० सेकंद</translation>
 <translation id="906331135292332864">इमेजवर प्रक्रिया करत आहे...</translation>
+<translation id="9161584225258678723">टाइम लॅप्स</translation>
 <translation id="922762992951083513">मिरर करणे सुरू करा</translation>
 <translation id="945522503751344254">अभिप्राय पाठवा</translation>
 </translationbundle>

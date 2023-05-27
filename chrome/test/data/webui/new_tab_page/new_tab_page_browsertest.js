@@ -409,17 +409,13 @@ var NewTabPageModulesHistoryClustersModuleTest =
   }
 };
 
-// https://crbug.com/1428590: Flaky on LaCrOS.
-GEN('#if BUILDFLAG(IS_CHROMEOS_LACROS)');
-GEN('#define MAYBE_Core DISABLED_Core');
-GEN('#else');
-GEN('#define MAYBE_Core Core');
-GEN('#endif');
-
-TEST_F('NewTabPageModulesHistoryClustersModuleTest', 'MAYBE_Core', function() {
+TEST_F('NewTabPageModulesHistoryClustersModuleTest', 'Core', function() {
   runMochaSuite('NewTabPageModulesHistoryClustersModuleTest core');
 });
-GEN('#undef MAYBE_Core');
+
+TEST_F('NewTabPageModulesHistoryClustersModuleTest', 'Layouts', function() {
+  runMochaSuite('NewTabPageModulesHistoryClustersModuleTest layouts');
+});
 
 TEST_F(
     'NewTabPageModulesHistoryClustersModuleTest',
@@ -433,6 +429,13 @@ TEST_F(
     'UnloadMetricImageDisplayStateAll', function() {
       runMochaSuite(
           'NewTabPageModulesHistoryClustersModuleTest unload metric all images');
+    });
+
+TEST_F(
+    'NewTabPageModulesHistoryClustersModuleTest', 'CartTileRendering',
+    function() {
+      runMochaSuite(
+          'NewTabPageModulesHistoryClustersModuleTest cart tile rendering');
     });
 
 var NewTabPageModulesHistoryClustersModuleTileTest =
@@ -477,6 +480,18 @@ TEST_F(
     'NewTabPageModulesHistoryClustersModuleSuggestTileTest', 'All', function() {
       mocha.run();
     });
+
+var NewTabPageModulesHistoryClustersModuleCartTileTest =
+    class extends NewTabPageBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://new-tab-page/test_loader.html?module=new_tab_page/modules/history_clusters/cart/cart_tile_test.js';
+  }
+};
+
+TEST_F('NewTabPageModulesHistoryClustersModuleCartTileTest', 'All', function() {
+  mocha.run();
+});
 
 // https://crbug.com/1227564: Flaky on Chrome OS.
 GEN('#if BUILDFLAG(IS_CHROMEOS)');

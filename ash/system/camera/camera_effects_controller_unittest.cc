@@ -13,6 +13,7 @@
 #include "ash/system/video_conference/fake_video_conference_tray_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "media/capture/video/chromeos/mojom/effects_pipeline.mojom.h"
 
@@ -23,8 +24,7 @@ class CameraEffectsControllerTest : public NoSessionAshTestBase {
  public:
   // NoSessionAshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kVideoConference, features::kVcBackgroundReplace}, {});
+    scoped_feature_list_.InitWithFeatures({features::kVideoConference}, {});
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kCameraEffectsSupportedByHardware);
 
@@ -99,7 +99,8 @@ class CameraEffectsControllerTest : public NoSessionAshTestBase {
   }
 
  protected:
-  CameraEffectsController* camera_effects_controller_ = nullptr;
+  raw_ptr<CameraEffectsController, ExperimentalAsh> camera_effects_controller_ =
+      nullptr;
   std::unique_ptr<FakeVideoConferenceTrayController> controller_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -122,6 +123,18 @@ TEST_F(CameraEffectsControllerTest, IsEffectControlAvailable) {
     EXPECT_TRUE(camera_effects_controller()->IsEffectControlAvailable(
         cros::mojom::CameraEffect::kBackgroundBlur));
     EXPECT_TRUE(camera_effects_controller()->IsEffectControlAvailable(
+        cros::mojom::CameraEffect::kPortraitRelight));
+    EXPECT_FALSE(camera_effects_controller()->IsEffectControlAvailable(
+        cros::mojom::CameraEffect::kBackgroundReplace));
+  }
+
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures({features::kVideoConference},
+                                         {features::kVcPortraitRelight});
+    EXPECT_TRUE(camera_effects_controller()->IsEffectControlAvailable(
+        cros::mojom::CameraEffect::kBackgroundBlur));
+    EXPECT_FALSE(camera_effects_controller()->IsEffectControlAvailable(
         cros::mojom::CameraEffect::kPortraitRelight));
     EXPECT_FALSE(camera_effects_controller()->IsEffectControlAvailable(
         cros::mojom::CameraEffect::kBackgroundReplace));
@@ -249,13 +262,13 @@ TEST_F(CameraEffectsControllerTest, ResourceDependencyFlags) {
   SimulateUserLogin("testuser@gmail.com");
 
   // Makes sure that all registered effects have the correct dependency flag.
-  auto* background_blur = camera_effects_controller()->GetEffect(0);
-  ASSERT_EQ(VcEffectId::kBackgroundBlur, background_blur->id());
+  auto* background_blur =
+      camera_effects_controller()->GetEffectById(VcEffectId::kBackgroundBlur);
   EXPECT_EQ(VcHostedEffect::ResourceDependency::kCamera,
             background_blur->dependency_flags());
 
-  auto* portrait_relight = camera_effects_controller()->GetEffect(1);
-  ASSERT_EQ(VcEffectId::kPortraitRelighting, portrait_relight->id());
+  auto* portrait_relight = camera_effects_controller()->GetEffectById(
+      VcEffectId::kPortraitRelighting);
   EXPECT_EQ(VcHostedEffect::ResourceDependency::kCamera,
             portrait_relight->dependency_flags());
 }

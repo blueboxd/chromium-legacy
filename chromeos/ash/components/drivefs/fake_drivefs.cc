@@ -650,4 +650,15 @@ void FakeDriveFs::PollHostedFilePinStates() {}
 
 void FakeDriveFs::CancelUploadByPath(const base::FilePath& path) {}
 
+void FakeDriveFs::SetDocsOfflineEnabled(
+    bool enabled,
+    drivefs::mojom::DriveFs::SetDocsOfflineEnabledCallback callback) {
+  std::move(callback).Run(drive::FILE_ERROR_OK);
+}
+
+void FakeDriveFs::ClearOfflineFiles(
+    drivefs::mojom::DriveFs::ClearOfflineFilesCallback callback) {
+  std::move(callback).Run(drive::FILE_ERROR_OK);
+}
+
 }  // namespace drivefs

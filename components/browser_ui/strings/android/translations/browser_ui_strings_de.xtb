@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Bild-Decodierer</translation>
 <translation id="1785415724048343560">Für eine optimale Nutzung empfohlen</translation>
 <translation id="1818308510395330587">Damit <ph name="APP_NAME" /> AR verwenden kann, muss die Kameraberechtigung auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktiviert sein.</translation>
-<translation id="1864927262126810325">Quelle: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Ähnliche Websites können deine Aktivitäten in der Gruppe sehen</translation>
 <translation id="1887786770086287077">Der Standortzugriff ist für dieses Gerät deaktiviert. Du kannst ihn in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="1915307458270490472">Auflegen</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Download abgeschlossen <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Einige Websites funktionieren im Inkognitomodus möglicherweise nicht richtig</translation>
 <translation id="2442870161001914531">Desktopwebsite immer anfordern</translation>
+<translation id="2479148705183875116">Zu den Einstellungen</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
 <translation id="2490684707762498678">Über <ph name="APP_NAME" /> verwaltet</translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">E-Mail-Adressen</translation>
 <translation id="2750481671343847896">Websites dürfen Anmeldungsaufforderungen von Identitätsdiensten anzeigen.</translation>
 <translation id="2822354292072154809">Möchtest du wirklich alle Websiteberechtigungen für <ph name="CHOSEN_OBJECT_NAME" /> zurücksetzen?</translation>
+<translation id="2850913818900871965">Mobile Ansicht anfordern</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2874939134665556319">Vorheriger Titel</translation>
 <translation id="2891975107962658722">Eine Website daran hindern, Daten auf deinem Gerät zu speichern</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Websites können Cookies verwenden, um dir das Surfen zu erleichtern; zum Beispiel, damit du angemeldet bleibst oder Artikel in deinem Einkaufswagen gespeichert bleiben</translation>
 <translation id="3165022941318558018">Einer Website erlauben, Drittanbieter-Cookies zu verwenden</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gespeicherte Daten</translation>
-<translation id="3203366800380907218">Aus dem Web</translation>
 <translation id="321187648315454507">Damit <ph name="APP_NAME" /> dir Benachrichtigungen senden kann, musst du die Berechtigung für Benachrichtigungen auch in den <ph name="BEGIN_LINK" />Android-Einstellungen<ph name="END_LINK" /> aktivieren.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3248611290851046188">Diese Website definiert Interessen, die von anderen Websites dazu verwendet werden können, dir Werbung zu zeigen. Außerdem ruft diese Website deine Interessen von Chrome ab, damit sie dir relevantere Werbung anzeigen kann.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Desktop-Ansicht anzeigen</translation>
 <translation id="5100237604440890931">Minimiert – zum Maximieren klicken</translation>
 <translation id="5123685120097942451">Inkognitotab</translation>
-<translation id="5134599672855298214">Mobile Ansicht anzeigen (empfohlen)</translation>
 <translation id="5186036860380548585">Option ist oben auf dem Bildschirm verfügbar</translation>
 <translation id="5197729504361054390">Die von dir ausgewählten Kontakte werden mit <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> geteilt.</translation>
 <translation id="5216942107514965959">Heute zuletzt besucht</translation>

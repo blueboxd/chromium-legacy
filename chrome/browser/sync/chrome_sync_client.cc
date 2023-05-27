@@ -133,6 +133,11 @@
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_WIN)
 
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/webauthn/passkey_model_factory.h"
+#include "components/webauthn/core/browser/passkey_model.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
@@ -241,11 +246,8 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
       WebDataServiceFactory::GetAutofillWebDataForProfile(
           profile_, ServiceAccessType::IMPLICIT_ACCESS);
   account_web_data_service_ =
-      base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableAccountWalletStorage)
-          ? WebDataServiceFactory::GetAutofillWebDataForAccount(
-                profile_, ServiceAccessType::IMPLICIT_ACCESS)
-          : nullptr;
+      WebDataServiceFactory::GetAutofillWebDataForAccount(
+          profile_, ServiceAccessType::IMPLICIT_ACCESS);
   web_data_service_thread_ = profile_web_data_service_
                                  ? profile_web_data_service_->GetDBTaskRunner()
                                  : nullptr;
@@ -283,7 +285,7 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
           identity_manager));
 #else
   trusted_vault_client_ =
-      std::make_unique<syncer::StandaloneTrustedVaultClient>(
+      std::make_unique<trusted_vault::StandaloneTrustedVaultClient>(
           profile_->GetPath().Append(kTrustedVaultFilename),
           profile_->GetPath().Append(kDeprecatedTrustedVaultFilename),
           identity_manager,
@@ -707,6 +709,13 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
           ->GetControllerDelegate();
     }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+#if !BUILDFLAG(IS_ANDROID)
+    case syncer::WEBAUTHN_CREDENTIAL: {
+      DCHECK(base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials));
+      return PasskeyModelFactory::GetForProfile(profile_)
+          ->GetModelTypeControllerDelegate();
+    }
+#endif  //  !BUILDFLAG(IS_ANDROID)
     // We don't exercise this function for certain datatypes, because their
     // controllers get the delegate elsewhere.
     case syncer::AUTOFILL:

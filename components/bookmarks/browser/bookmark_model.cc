@@ -13,12 +13,12 @@
 #include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/i18n/string_compare.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
+#include "base/uuid.h"
 #include "components/bookmarks/browser/bookmark_load_details.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_node_data.h"
@@ -120,8 +120,6 @@ base::FilePath GetStorageFilePath(const base::FilePath& profile_path,
     case StorageType::kLocalOrSyncable:
       return profile_path.Append(kLocalOrSyncableBookmarksFileName);
     case StorageType::kAccount:
-      // TODO(1404250): Remove NOTREACHED when account bookmarks are supported.
-      NOTREACHED();
       return profile_path.Append(kAccountBookmarksFileName);
   }
 }
@@ -134,7 +132,7 @@ BookmarkModel::BookmarkModel(std::unique_ptr<BookmarkClient> client)
     : client_(std::move(client)),
       owned_root_(std::make_unique<BookmarkNode>(
           /*id=*/0,
-          base::GUID::ParseLowercase(BookmarkNode::kRootNodeGuid),
+          base::Uuid::ParseLowercase(BookmarkNode::kRootNodeUuid),
           GURL())),
       root_(owned_root_.get()),
       observers_(base::ObserverListPolicy::EXISTING_ONLY),
@@ -352,6 +350,10 @@ void BookmarkModel::Move(const BookmarkNode* node,
 
   for (BookmarkModelObserver& observer : observers_) {
     observer.BookmarkNodeMoved(this, old_parent, old_index, new_parent, index);
+  }
+
+  if (old_parent != new_parent) {
+    metrics::RecordBookmarkMovedTo(GetFolderType(new_parent));
   }
 }
 
@@ -746,26 +748,39 @@ void BookmarkModel::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
   }
 }
 
+metrics::BookmarkFolderTypeForUMA BookmarkModel::GetFolderType(
+    const BookmarkNode* folder) const {
+  CHECK(folder->is_folder());
+  if (folder == bookmark_bar_node()) {
+    return metrics::BookmarkFolderTypeForUMA::kBookmarksBar;
+  } else if (folder == other_node()) {
+    return metrics::BookmarkFolderTypeForUMA::kOtherBookmarks;
+  } else if (folder == mobile_node()) {
+    return metrics::BookmarkFolderTypeForUMA::kMobileBookmarks;
+  }
+  return metrics::BookmarkFolderTypeForUMA::kUserGeneratedFolder;
+}
+
 const BookmarkNode* BookmarkModel::AddFolder(
     const BookmarkNode* parent,
     size_t index,
     const std::u16string& title,
     const BookmarkNode::MetaInfoMap* meta_info,
     absl::optional<base::Time> creation_time,
-    absl::optional<base::GUID> guid) {
+    absl::optional<base::Uuid> uuid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(parent);
   DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
-  DCHECK(!guid || guid->is_valid());
+  DCHECK(!uuid || uuid->is_valid());
 
   const base::Time provided_creation_time_or_now =
       creation_time.value_or(Time::Now());
 
   auto new_node = std::make_unique<BookmarkNode>(
-      generate_next_node_id(), guid.value_or(base::GUID::GenerateRandomV4()),
+      generate_next_node_id(), uuid.value_or(base::Uuid::GenerateRandomV4()),
       GURL());
   new_node->set_date_added(provided_creation_time_or_now);
   new_node->set_date_folder_modified(provided_creation_time_or_now);
@@ -774,7 +789,7 @@ const BookmarkNode* BookmarkModel::AddFolder(
   if (meta_info) {
     new_node->SetMetaInfoMap(*meta_info);
   }
-
+  metrics::RecordBookmarkFolderAdded(GetFolderType(parent));
   return AddNode(AsMutable(parent), index, std::move(new_node));
 }
 
@@ -784,7 +799,7 @@ const BookmarkNode* BookmarkModel::AddNewURL(
     const std::u16string& title,
     const GURL& url,
     const BookmarkNode::MetaInfoMap* meta_info) {
-  metrics::RecordBookmarkAdded();
+  metrics::RecordUrlBookmarkAdded(GetFolderType(parent));
   return AddURL(parent, index, title, url, meta_info, absl::nullopt,
                 absl::nullopt, true);
 }
@@ -796,7 +811,7 @@ const BookmarkNode* BookmarkModel::AddURL(
     const GURL& url,
     const BookmarkNode::MetaInfoMap* meta_info,
     absl::optional<base::Time> creation_time,
-    absl::optional<base::GUID> guid,
+    absl::optional<base::Uuid> uuid,
     bool added_by_user) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
@@ -805,7 +820,7 @@ const BookmarkNode* BookmarkModel::AddURL(
   DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
-  DCHECK(!guid || guid->is_valid());
+  DCHECK(!uuid || uuid->is_valid());
 
   const base::Time provided_creation_time_or_now =
       creation_time.value_or(Time::Now());
@@ -816,7 +831,7 @@ const BookmarkNode* BookmarkModel::AddURL(
   }
 
   auto new_node = std::make_unique<BookmarkNode>(
-      generate_next_node_id(), guid.value_or(base::GUID::GenerateRandomV4()),
+      generate_next_node_id(), uuid.value_or(base::Uuid::GenerateRandomV4()),
       url);
   new_node->SetTitle(title);
   new_node->set_date_added(provided_creation_time_or_now);
@@ -918,16 +933,15 @@ void BookmarkModel::ResetDateFolderModified(const BookmarkNode* node) {
 std::vector<TitledUrlMatch> BookmarkModel::GetBookmarksMatching(
     const std::u16string& query,
     size_t max_count,
-    query_parser::MatchingAlgorithm matching_algorithm,
-    bool match_ancestor_titles) {
+    query_parser::MatchingAlgorithm matching_algorithm) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!loaded_) {
     return {};
   }
 
-  return titled_url_index_->GetResultsMatching(
-      query, max_count, matching_algorithm, match_ancestor_titles);
+  return titled_url_index_->GetResultsMatching(query, max_count,
+                                               matching_algorithm);
 }
 
 void BookmarkModel::ClearStore() {
@@ -987,11 +1001,11 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
 
   next_node_id_ = details->max_id();
   if (details->computed_checksum() != details->stored_checksum() ||
-      details->ids_reassigned() || details->guids_reassigned()) {
+      details->ids_reassigned() || details->uuids_reassigned()) {
     // If bookmarks file changed externally, the IDs may have changed
     // externally. In that case, the decoder may have reassigned IDs to make
     // them unique. So when the file has changed externally, we should save the
-    // bookmarks file to persist such changes. The same applies if new GUIDs
+    // bookmarks file to persist such changes. The same applies if new UUIDs
     // have been assigned to bookmarks.
     if (store_) {
       store_->ScheduleSave();
@@ -1025,7 +1039,6 @@ void BookmarkModel::DoneLoading(std::unique_ptr<BookmarkLoadDetails> details) {
   const base::TimeDelta load_duration =
       base::TimeTicks::Now() - details->load_start();
   metrics::RecordTimeToLoadAtStartup(load_duration);
-  titled_url_index_->RecordMemoryUsage();
 
   // Notify our direct observers.
   for (BookmarkModelObserver& observer : observers_) {
@@ -1059,7 +1072,7 @@ void BookmarkModel::AddNodeToIndexRecursive(const BookmarkNode* node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // TODO(crbug.com/1143246): add a DCHECK to validate that all nodes have
-  // unique GUID when it is guaranteed.
+  // unique UUID when it is guaranteed.
 
   if (node->is_url()) {
     titled_url_index_->Add(node);

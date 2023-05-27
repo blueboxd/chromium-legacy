@@ -23,6 +23,7 @@
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager_utilities.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/display/util/display_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/display_color_spaces.h"
@@ -363,7 +364,9 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       native_(false),
       is_aspect_preserving_scaling_(false),
       clear_overscan_insets_(false),
-      bits_per_channel_(0) {}
+      bits_per_channel_(0),
+      variable_refresh_rate_state_(kVrrNotCapable),
+      vsync_rate_min_(absl::nullopt) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
                                        const std::string& name,
@@ -384,7 +387,9 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       native_(false),
       is_aspect_preserving_scaling_(false),
       clear_overscan_insets_(false),
-      bits_per_channel_(0) {}
+      bits_per_channel_(0),
+      variable_refresh_rate_state_(kVrrNotCapable),
+      vsync_rate_min_(absl::nullopt) {}
 
 ManagedDisplayInfo::ManagedDisplayInfo(const ManagedDisplayInfo& other) =
     default;
@@ -449,6 +454,8 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   rounded_corners_radii_ = native_info.rounded_corners_radii_;
 
   drm_formats_and_modifiers_ = native_info.drm_formats_and_modifiers_;
+  variable_refresh_rate_state_ = native_info.variable_refresh_rate_state_;
+  vsync_rate_min_ = native_info.vsync_rate_min_;
 
   // Rotation, color_profile and overscan are given by preference,
   // or unit tests. Don't copy if this native_info came from
@@ -604,6 +611,16 @@ Display::Rotation ManagedDisplayInfo::GetRotationWithPanelOrientation(
   }
   return static_cast<Display::Rotation>((static_cast<int>(rotation) + offset) %
                                         4);
+}
+
+ManagedDisplayInfo CreateDisplayInfo(int64_t id, const gfx::Rect& bounds) {
+  // Output index is stored in the first 8 bits.
+  const uint8_t connector_index = id & 0xFF;
+
+  display::ManagedDisplayInfo info(id, "x-" + base::NumberToString(id), false);
+  info.SetBounds(bounds);
+  info.set_connector_index(connector_index);
+  return info;
 }
 
 void ResetDisplayIdForTest() {

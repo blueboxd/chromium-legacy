@@ -5,9 +5,9 @@
 package org.chromium.components.browser_ui.widget.listmenu;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.view.View;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
-import org.chromium.components.browser_ui.widget.R;
+import org.chromium.components.browser_ui.widget.test.R;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 

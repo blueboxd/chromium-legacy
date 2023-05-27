@@ -3330,9 +3330,9 @@ TEST_F(NetworkContextTest, CreateRestrictedUDPSocket) {
         CreateTestMessage(static_cast<uint8_t>(j), kDatagramSize));
     {
       base::test::TestFuture<int32_t> send_future;
-      server_socket->SendTo(test_msg,
-                            net::HostPortPair::FromIPEndPoint(client_addr),
-                            send_future.GetCallback());
+      server_socket->SendTo(
+          test_msg, net::HostPortPair::FromIPEndPoint(client_addr),
+          net::DnsQueryType::UNSPECIFIED, send_future.GetCallback());
       ASSERT_EQ(send_future.Get(), net::OK);
     }
   }
@@ -7126,6 +7126,27 @@ TEST_F(NetworkContextSplitCacheTest, AutomaticallyAssignIsolationInfo) {
 TEST_F(NetworkContextTest, EnableTrustTokens) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPrivateStateTokens);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(CreateNetworkContextParamsForTesting());
+
+  EXPECT_TRUE(network_context->trust_token_store());
+
+  base::RunLoop run_loop;
+  bool success = false;
+  network_context->trust_token_store()->ExecuteOrEnqueue(
+      base::BindLambdaForTesting([&](TrustTokenStore* store) {
+        success = !!store;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  EXPECT_TRUE(success);
+}
+
+TEST_F(NetworkContextTest, EnableTrustTokensForFledge) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures({features::kFledgePst},
+                                       {features::kPrivateStateTokens});
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateNetworkContextParamsForTesting());

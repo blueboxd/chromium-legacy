@@ -351,7 +351,7 @@ _PB_IMAGE_PATHS = {
 }
 
 _FUCHSIA_IMAGE_DIR = '../../third_party/fuchsia-sdk/images-internal/%s/%s'
-_COMMON_FUCHSIA_ARGS = ['-d', '--os-check=update']
+_COMMON_FUCHSIA_ARGS = ['-d', '--os-check=check']
 for board, path_parts in _IMAGE_PATHS.items():
   image_dir = _FUCHSIA_IMAGE_DIR % path_parts
   FUCHSIA_EXEC_ARGS[board] = _COMMON_FUCHSIA_ARGS + [
@@ -425,6 +425,11 @@ _MAC_M1_MINI_2020_PGO_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer2'),
     _GetBenchmarkConfig('rendering.desktop'),
 ])
+_MAC_M1_PRO_BENCHMARK_CONFIGS = PerfSuite([
+    _GetBenchmarkConfig('jetstream2'),
+    _GetBenchmarkConfig('speedometer2'),
+    _GetBenchmarkConfig('rendering.desktop'),
+])
 _MAC_M1_MINI_2020_EXECUTABLE_CONFIGS = frozenset([
     _base_perftests(300),
     _dawn_perf_tests(330),
@@ -451,9 +456,7 @@ _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('rendering.desktop', abridged=True),
 ])
 _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS = PerfSuite([
-    _GetBenchmarkConfig('jetstream'),
     _GetBenchmarkConfig('jetstream2'),
-    _GetBenchmarkConfig('kraken'),
     _GetBenchmarkConfig('octane'),
     _GetBenchmarkConfig('speedometer2'),
 ])
@@ -521,7 +524,6 @@ _ANDROID_PIXEL2_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer2'),
     _GetBenchmarkConfig('rendering.mobile'),
     _GetBenchmarkConfig('octane'),
-    _GetBenchmarkConfig('jetstream'),
     _GetBenchmarkConfig('system_health.scroll_jank_mobile')
 ])
 _CHROMEOS_KEVIN_FYI_BENCHMARK_CONFIGS = PerfSuite([
@@ -558,14 +560,12 @@ _FUCHSIA_ATLAS_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.common_desktop'),
     _GetBenchmarkConfig('speedometer'),
     _GetBenchmarkConfig('speedometer2'),
-    _GetBenchmarkConfig('jetstream'),
     _GetBenchmarkConfig('jetstream2'),
 ])
 _FUCHSIA_NUC_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.common_desktop'),
     _GetBenchmarkConfig('speedometer'),
     _GetBenchmarkConfig('speedometer2'),
-    _GetBenchmarkConfig('jetstream'),
     _GetBenchmarkConfig('jetstream2'),
 ])
 _LINUX_PERF_CALIBRATION_BENCHMARK_CONFIGS = PerfSuite([
@@ -645,6 +645,12 @@ MAC_M1_MINI_2020_PGO = PerfPlatform(
     _MAC_M1_MINI_2020_PGO_BENCHMARK_CONFIGS,
     4,
     'mac')
+MAC_M1_PRO = PerfPlatform(
+    'mac-m1-pro-perf',
+    'Mac M1 PRO 2020',
+    _MAC_M1_PRO_BENCHMARK_CONFIGS,
+    5,
+    'mac')
 
 # Win
 WIN_10_LOW_END = PerfPlatform(
@@ -652,8 +658,8 @@ WIN_10_LOW_END = PerfPlatform(
     'Low end windows 10 HP laptops. HD Graphics 5500, x86-64-i3-5005U, '
     'SSD, 4GB RAM.',
     _WIN_10_LOW_END_BENCHMARK_CONFIGS,
-    # TODO(crbug.com/1305291): Increase the count back to 46 when issue fixed.
-    40,
+    # TODO(b/278947510): Increase the count when m.2 disks stop failing.
+    20,
     'win')
 WIN_10_LOW_END_PGO = PerfPlatform(
     'win-10_laptop_low_end-perf-pgo',

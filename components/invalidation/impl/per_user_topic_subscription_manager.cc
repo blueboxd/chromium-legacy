@@ -33,14 +33,8 @@ namespace invalidation {
 
 namespace {
 
-const char kTypeSubscribedForInvalidationsDeprecated[] =
-    "invalidation.registered_for_invalidation";
-
 const char kTypeSubscribedForInvalidations[] =
     "invalidation.per_sender_registered_for_invalidation";
-
-const char kActiveRegistrationTokenDeprecated[] =
-    "invalidation.active_registration_token";
 
 const char kActiveRegistrationTokens[] =
     "invalidation.per_sender_active_registration_tokens";
@@ -103,33 +97,11 @@ class PerProjectDictionaryPrefUpdate {
   raw_ptr<base::Value::Dict> per_sender_pref_;
 };
 
-// Added in M76.
-void MigratePrefs(PrefService* prefs, const std::string& project_id) {
-  if (!prefs->HasPrefPath(kActiveRegistrationTokenDeprecated)) {
-    return;
-  }
-  {
-    ScopedDictPrefUpdate token_update(prefs, kActiveRegistrationTokens);
-    token_update->Set(project_id,
-                      prefs->GetString(kActiveRegistrationTokenDeprecated));
-  }
-
-  const auto& old_subscriptions =
-      prefs->GetDict(kTypeSubscribedForInvalidationsDeprecated);
-  prefs->SetDict(project_id, old_subscriptions.Clone());
-  prefs->ClearPref(kActiveRegistrationTokenDeprecated);
-  prefs->ClearPref(kTypeSubscribedForInvalidationsDeprecated);
-}
-
 }  // namespace
 
 // static
 void PerUserTopicSubscriptionManager::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kTypeSubscribedForInvalidationsDeprecated);
-  registry->RegisterStringPref(kActiveRegistrationTokenDeprecated,
-                               std::string());
-
   registry->RegisterDictionaryPref(kTypeSubscribedForInvalidations);
   registry->RegisterDictionaryPref(kActiveRegistrationTokens);
 }
@@ -205,13 +177,11 @@ PerUserTopicSubscriptionManager::PerUserTopicSubscriptionManager(
     IdentityProvider* identity_provider,
     PrefService* pref_service,
     network::mojom::URLLoaderFactory* url_loader_factory,
-    const std::string& project_id,
-    bool migrate_prefs)
+    const std::string& project_id)
     : pref_service_(pref_service),
       identity_provider_(identity_provider),
       url_loader_factory_(url_loader_factory),
       project_id_(project_id),
-      migrate_prefs_(migrate_prefs),
       request_access_token_backoff_(&kBackoffPolicy) {}
 
 PerUserTopicSubscriptionManager::~PerUserTopicSubscriptionManager() = default;
@@ -222,18 +192,13 @@ PerUserTopicSubscriptionManager::Create(
     IdentityProvider* identity_provider,
     PrefService* pref_service,
     network::mojom::URLLoaderFactory* url_loader_factory,
-    const std::string& project_id,
-    bool migrate_prefs) {
+    const std::string& project_id) {
   return std::make_unique<PerUserTopicSubscriptionManager>(
-      identity_provider, pref_service, url_loader_factory, project_id,
-      migrate_prefs);
+      identity_provider, pref_service, url_loader_factory, project_id);
 }
 
 void PerUserTopicSubscriptionManager::Init() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (migrate_prefs_) {
-    MigratePrefs(pref_service_, project_id_);
-  }
   PerProjectDictionaryPrefUpdate update(pref_service_, project_id_);
   if (update->empty()) {
     return;
@@ -298,7 +263,7 @@ void PerUserTopicSubscriptionManager::UpdateSubscribedTopics(
     if (topics.find(topic) == topics.end()) {
       // Unsubscription request may only replace pending subscription request,
       // because topic immediately deleted from |topic_to_private_topic_| when
-      // unsubsciption request scheduled.
+      // unsubscription request scheduled.
       DCHECK(pending_subscriptions_.count(topic) == 0 ||
              pending_subscriptions_[topic]->type ==
                  PerUserTopicSubscriptionRequest::SUBSCRIBE);

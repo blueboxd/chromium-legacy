@@ -347,6 +347,9 @@ class TabStripModel : public TabGroupController {
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
+  // Returns true if the tab at |index| is allowed to be closed.
+  bool IsTabClosable(int index) const;
+
   // Returns the group that contains the tab at |index|, or nullopt if the tab
   // index is invalid or not grouped.
   absl::optional<tab_groups::TabGroupId> GetTabGroupForTab(
@@ -765,6 +768,9 @@ class TabStripModel : public TabGroupController {
   // updates the group model, and notifies the observers if the group at that
   // index would change.
   void GroupTab(int index, const tab_groups::TabGroupId& group);
+
+  // Disconnects any saved tab groups whose tabs are a subset of `indices`.
+  void DisconnectSavedTabGroups(const std::vector<int>& indices) const;
 
   // Changes the pinned state of the tab at `index`, moving it in the process if
   // necessary. Returns the new index of the tab.

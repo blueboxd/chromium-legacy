@@ -16,7 +16,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
@@ -28,6 +27,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "components/services/storage/public/cpp/buckets/bucket_info.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
@@ -626,7 +626,7 @@ class CacheStorageManagerTest : public testing::Test {
       int status_code,
       FetchResponseType response_type = FetchResponseType::kDefault,
       ResponseHeaderMap response_headers = ResponseHeaderMap()) {
-    std::string blob_uuid = base::GenerateGUID();
+    std::string blob_uuid = base::Uuid::GenerateRandomV4().AsLowercaseString();
 
     auto blob = blink::mojom::SerializedBlob::New();
     blob->uuid = blob_uuid;
@@ -782,13 +782,12 @@ class CacheStorageManagerTest : public testing::Test {
     return future.Get();
   }
 
-  blink::mojom::QuotaStatusCode DeleteStorageKeyData(
-      const std::set<blink::StorageKey>& storage_keys,
+  blink::mojom::QuotaStatusCode DeleteOriginData(
+      const std::set<url::Origin>& origins,
       storage::mojom::CacheStorageOwner owner =
           storage::mojom::CacheStorageOwner::kCacheAPI) {
     base::test::TestFuture<::blink::mojom::QuotaStatusCode> future;
-    cache_manager_->DeleteStorageKeyData(storage_keys, owner,
-                                         future.GetCallback());
+    cache_manager_->DeleteOriginData(origins, owner, future.GetCallback());
     return future.Get();
   }
 
@@ -2835,17 +2834,17 @@ TEST_P(CacheStorageManagerTestP, StoragePutPartialContentForBackgroundFetch) {
   EXPECT_EQ(206, callback_cache_handle_response_->status_code);
 }
 
-TEST_P(CacheStorageManagerTestP, DeleteStorageKeyDataEmptyList) {
-  std::set<blink::StorageKey> empty_list;
+TEST_P(CacheStorageManagerTestP, DeleteOriginDataEmptyList) {
+  std::set<url::Origin> empty_list;
   for (const storage::mojom::CacheStorageOwner owner :
        {storage::mojom::CacheStorageOwner::kCacheAPI,
         storage::mojom::CacheStorageOwner::kBackgroundFetch}) {
-    EXPECT_EQ(DeleteStorageKeyData(empty_list, owner),
+    EXPECT_EQ(DeleteOriginData(empty_list, owner),
               blink::mojom::QuotaStatusCode::kOk);
   }
 }
 
-TEST_P(CacheStorageManagerTestP, BatchDeleteStorageKeyData) {
+TEST_P(CacheStorageManagerTestP, BatchDeleteOriginData) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       net::features::kThirdPartyStoragePartitioning);
@@ -2874,10 +2873,10 @@ TEST_P(CacheStorageManagerTestP, BatchDeleteStorageKeyData) {
 
     EXPECT_EQ(3ULL, GetStorageKeys(owner).size());
 
-    std::set<blink::StorageKey> to_delete = {storage_key1_, storage_key2_,
-                                             partitioned_storage_key1};
+    std::set<url::Origin> to_delete = {storage_key1_.origin(),
+                                       storage_key2_.origin()};
 
-    EXPECT_EQ(DeleteStorageKeyData(to_delete, owner),
+    EXPECT_EQ(DeleteOriginData(to_delete, owner),
               blink::mojom::QuotaStatusCode::kOk);
 
     auto storage_keys = GetStorageKeys(owner);

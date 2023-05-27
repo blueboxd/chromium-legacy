@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_locking_manager.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 
 namespace aura {
@@ -91,13 +92,47 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
     explicit ScopedAutoHideLock(Shelf* shelf) : shelf_(shelf) {
       ++shelf_->auto_hide_lock_;
     }
+
+    ScopedAutoHideLock(const ScopedAutoHideLock&) = delete;
+    ScopedAutoHideLock& operator=(const ScopedAutoHideLock&) = delete;
+
     ~ScopedAutoHideLock() {
       --shelf_->auto_hide_lock_;
       DCHECK_GE(shelf_->auto_hide_lock_, 0);
     }
 
    private:
-    Shelf* shelf_;
+    raw_ptr<Shelf, ExperimentalAsh> shelf_;
+  };
+
+  // Used to disable auto-hide shelf behavior while in scope. Note that
+  // disabling auto-hide behavior is of lower precedence than auto-hide behavior
+  // based on locks and session state, so it is not guaranteed to show the shelf
+  // in all cases.
+  class ScopedDisableAutoHide {
+   public:
+    explicit ScopedDisableAutoHide(Shelf* shelf) : shelf_(shelf) {
+      ++shelf_->disable_auto_hide_;
+      if (shelf_->disable_auto_hide_ == 1) {
+        shelf_->UpdateVisibilityState();
+      }
+    }
+
+    ScopedDisableAutoHide(const ScopedDisableAutoHide&) = delete;
+    ScopedDisableAutoHide& operator=(const ScopedDisableAutoHide&) = delete;
+
+    ~ScopedDisableAutoHide() {
+      --shelf_->disable_auto_hide_;
+      CHECK_GE(shelf_->disable_auto_hide_, 0);
+      if (shelf_->disable_auto_hide_ == 0) {
+        shelf_->UpdateVisibilityState();
+      }
+    }
+
+    Shelf* shelf() { return shelf_; }
+
+   private:
+    const raw_ptr<Shelf, ExperimentalAsh> shelf_;
   };
 
   Shelf();
@@ -266,6 +301,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
     return is_tablet_mode_animation_running_;
   }
   int auto_hide_lock() const { return auto_hide_lock_; }
+  int disable_auto_hide() const { return disable_auto_hide_; }
 
   ShelfTooltipManager* tooltip() { return tooltip_.get(); }
 
@@ -281,7 +317,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
  protected:
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
-  void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
+  void OnShelfVisibilityStateChanged(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
   void OnBackgroundUpdated(ShelfBackgroundType background_type,
                            AnimationChangeType change_type) override;
@@ -305,7 +341,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   // Layout manager for the shelf container window. Instances are constructed by
   // ShelfWidget and lifetimes are managed by the container windows themselves.
-  ShelfLayoutManager* shelf_layout_manager_ = nullptr;
+  raw_ptr<ShelfLayoutManager, ExperimentalAsh> shelf_layout_manager_ = nullptr;
 
   // Pointers to shelf components.
   std::unique_ptr<ShelfNavigationWidget> navigation_widget_;
@@ -361,6 +397,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Used by ScopedAutoHideLock to maintain the state of the lock for auto-hide
   // shelf.
   int auto_hide_lock_ = 0;
+
+  // Used by `ScopedDisableAutoHide` to disable auto-hide shelf behavior.
+  int disable_auto_hide_ = 0;
 
   std::unique_ptr<ShelfTooltipManager> tooltip_;
 };

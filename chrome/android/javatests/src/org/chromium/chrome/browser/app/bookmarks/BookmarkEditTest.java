@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.app.bookmarks;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 import android.view.MenuItem;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
@@ -122,7 +122,6 @@ public class BookmarkEditTest {
         Assert.assertEquals("Incorrect url.", URL_A,
                 mBookmarkEditActivity.getUrlEditText().getEditText().getText().toString());
 
-        int currentModelChangedCount = mModelChangedCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mBookmarkEditActivity.getTitleEditText().getEditText().setText(TITLE_B);
             mBookmarkEditActivity.getUrlEditText().getEditText().setText(URL_B);

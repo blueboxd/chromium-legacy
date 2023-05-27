@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <sstream>
+#include <string>
 #include <utility>
 
 #include "ash/components/arc/arc_prefs.h"
@@ -19,9 +20,11 @@
 #include "ash/components/arc/test/fake_file_system_instance.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/note_taking_client.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -44,6 +47,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -53,6 +57,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ash/components/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/ash/components/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
@@ -76,6 +81,7 @@
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkTypes.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -327,6 +333,10 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   }
 
   void InitWebAppProvider(Profile* profile) {
+    web_app::FakeWebAppProvider* fake_provider =
+        web_app::FakeWebAppProvider::Get(profile);
+    fake_provider->SetWebAppUiManager(
+        std::make_unique<web_app::WebAppUiManagerImpl>(profile));
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile);
   }
 
@@ -378,7 +388,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
         extensions::ListBuilder()
             .Append(extensions::DictionaryBuilder()
                         .Set("action", app_runtime::ToString(
-                                           app_runtime::ACTION_TYPE_NEW_NOTE))
+                                           app_runtime::ActionType::kNewNote))
                         .Set("enabled_on_lock_screen", true)
                         .Build())
             .Build();
@@ -473,7 +483,8 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
 
   // Pointer to the primary profile (returned by |profile()|) prefs - owned by
   // the profile.
-  sync_preferences::TestingPrefServiceSyncable* profile_prefs_ = nullptr;
+  raw_ptr<sync_preferences::TestingPrefServiceSyncable, ExperimentalAsh>
+      profile_prefs_ = nullptr;
 
  private:
   // Callback registered with the helper to record Chrome app launch requests.
@@ -481,8 +492,7 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
                        const extensions::Extension* extension,
                        app_runtime::ActionData action_data) {
     EXPECT_EQ(profile(), passed_context);
-    EXPECT_EQ(app_runtime::ActionType::ACTION_TYPE_NEW_NOTE,
-              action_data.action_type);
+    EXPECT_EQ(app_runtime::ActionType::kNewNote, action_data.action_type);
     launched_chrome_apps_.push_back(ChromeAppLaunchInfo{extension->id()});
   }
 
@@ -568,7 +578,7 @@ TEST_F(NoteTakingHelperTest, ListChromeAppsWithLockScreenNotesSupported) {
 
   base::Value::List lock_disabled_action_handler =
       extensions::ListBuilder()
-          .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
+          .Append(app_runtime::ToString(app_runtime::ActionType::kNewNote))
           .Build();
 
   // Install Keep app that does not support lock screen note taking - it should
@@ -718,7 +728,7 @@ TEST_F(NoteTakingHelperTest, CustomChromeApps) {
   scoped_refptr<const extensions::Extension> has_new_note = CreateExtension(
       kNewNoteId, kName, /*permissions=*/absl::nullopt,
       extensions::ListBuilder()
-          .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
+          .Append(app_runtime::ToString(app_runtime::ActionType::kNewNote))
           .Build());
   InstallExtension(has_new_note.get(), profile());
   // "action_handlers": []
@@ -771,7 +781,7 @@ TEST_F(NoteTakingHelperTest, NoteTakingWebAppsListed) {
 // TODO(crbug.com/1332379): Move this to a lock screen apps unittest file.
 TEST_F(NoteTakingHelperTest, LockScreenWebAppsListed) {
   Init(ENABLE_PALETTE);
-  DCHECK(!base::FeatureList::IsEnabled(features::kWebLockScreenApi));
+  DCHECK(!base::FeatureList::IsEnabled(::features::kWebLockScreenApi));
 
   std::string app1_id;
   {
@@ -807,7 +817,7 @@ TEST_F(NoteTakingHelperTest, LockScreenWebAppsListed) {
 
 class NoteTakingHelperTest_WebLockScreenApiEnabled
     : public NoteTakingHelperTest {
-  base::test::ScopedFeatureList features_{features::kWebLockScreenApi};
+  base::test::ScopedFeatureList features_{::features::kWebLockScreenApi};
 };
 
 // Web apps with a lock_screen_start_url should show as supported on the lock
@@ -815,7 +825,7 @@ class NoteTakingHelperTest_WebLockScreenApiEnabled
 // TODO(crbug.com/1332379): Move this to a lock screen apps unittest file.
 TEST_F(NoteTakingHelperTest_WebLockScreenApiEnabled, LockScreenWebAppsListed) {
   Init(ENABLE_PALETTE);
-  DCHECK(base::FeatureList::IsEnabled(features::kWebLockScreenApi));
+  DCHECK(base::FeatureList::IsEnabled(::features::kWebLockScreenApi));
 
   std::string app1_id;
   {
@@ -869,7 +879,7 @@ TEST_F(NoteTakingHelperTest, AllowlistedAndCustomAppsShowOnlyOnce) {
   scoped_refptr<const extensions::Extension> extension = CreateExtension(
       kProdKeepExtensionId, "Keep", /*permissions=*/absl::nullopt,
       extensions::ListBuilder()
-          .Append(app_runtime::ToString(app_runtime::ACTION_TYPE_NEW_NOTE))
+          .Append(app_runtime::ToString(app_runtime::ActionType::kNewNote))
           .Build());
   InstallExtension(extension.get(), profile());
 
@@ -913,8 +923,11 @@ TEST_F(NoteTakingHelperTest, LaunchHardcodedWebApp) {
   // Fire a "Create Note" action and check the app is launched.
   HistogramTester histogram_tester;
   SetNoteTakingClientProfile(profile());
+
+  ui_test_utils::AllBrowserTabAddedWaiter tab_waiter;
   NoteTakingClient::GetInstance()->CreateNote();
   base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(tab_waiter.Wait());
 
   // Web app, so no launched_chrome_apps.
   EXPECT_EQ(0u, launched_chrome_apps_.size());
@@ -948,8 +961,10 @@ TEST_F(NoteTakingHelperTest, LaunchWebApp) {
   // Fire a "Create Note" action and check the app is launched.
   HistogramTester histogram_tester;
   SetNoteTakingClientProfile(profile());
+  ui_test_utils::AllBrowserTabAddedWaiter tab_added_observer;
   NoteTakingClient::GetInstance()->CreateNote();
   base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(tab_added_observer.Wait());
 
   histogram_tester.ExpectUniqueSample(
       NoteTakingHelper::kPreferredLaunchResultHistogramName,
@@ -1126,7 +1141,39 @@ TEST_F(NoteTakingHelperTest, ListAndroidApps) {
   EXPECT_TRUE(helper()->GetAvailableApps(profile()).empty());
 }
 
+TEST_F(NoteTakingHelperTest, LaunchAndroidAppNoDisplay) {
+  // Opening Android apps via OpenUrlsWithPermissionAndWindowInfo requires a
+  // valid internal display, not being able to find one will halt launch.
+  const std::string kPackage1 = "org.chromium.package1";
+  std::vector<IntentHandlerInfoPtr> handlers;
+  handlers.emplace_back(CreateIntentHandlerInfo("App 1", kPackage1));
+  intent_helper_.SetIntentHandlers(NoteTakingHelper::kIntentAction,
+                                   std::move(handlers));
+
+  Init(ENABLE_PALETTE | ENABLE_PLAY_STORE);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(helper()->IsAppAvailable(profile()));
+
+  // The installed app fails to launch, registering on histogram.
+  std::unique_ptr<HistogramTester> histogram_tester(new HistogramTester());
+  helper()->LaunchAppForNewNote(profile());
+  ASSERT_EQ(0u, file_system_->handledUrlRequests().size());
+
+  histogram_tester->ExpectUniqueSample(
+      NoteTakingHelper::kPreferredLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::NO_APP_SPECIFIED), 1);
+  histogram_tester->ExpectUniqueSample(
+      NoteTakingHelper::kDefaultLaunchResultHistogramName,
+      static_cast<int>(LaunchResult::NO_INTERNAL_DISPLAY_FOUND), 1);
+}
+
 TEST_F(NoteTakingHelperTest, LaunchAndroidApp) {
+  // Since now launching Android apps require window info, this step is needed
+  // to make display info available.
+  ASSERT_TRUE(Shell::Get());
+  display::test::DisplayManagerTestApi(Shell::Get()->display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
   const std::string kPackage1 = "org.chromium.package1";
   std::vector<IntentHandlerInfoPtr> handlers;
   handlers.emplace_back(CreateIntentHandlerInfo("App 1", kPackage1));

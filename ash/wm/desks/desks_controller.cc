@@ -4,6 +4,7 @@
 
 #include "ash/wm/desks/desks_controller.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -11,7 +12,6 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
-#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -54,12 +54,11 @@
 #include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/i18n/number_formatting.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -69,6 +68,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "base/uuid.h"
 #include "chromeos/ui/wm/features.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_utils.h"
@@ -299,6 +299,7 @@ class DesksController::RemovedDeskData {
                                  .enabled()),
         source_(source),
         desk_close_type_(type) {
+    full_restore::SaveRemovingDeskGuid(desk_->uuid());
     desk_->set_is_desk_being_removed(true);
   }
 
@@ -313,6 +314,7 @@ class DesksController::RemovedDeskData {
       toast_manager->Cancel(toast_id_);
       DesksController::Get()->FinalizeDeskRemoval(this);
     }
+    full_restore::ResetRemovingDeskGuid();
   }
 
   const std::string& toast_id() const { return toast_id_; }
@@ -398,7 +400,7 @@ class DesksController::DeskTraversalsMetricsHelper {
 
   // Pointer to the DesksController that owns this. Guaranteed to be not
   // nullptr for the lifetime of |this|.
-  DesksController* const controller_;
+  const raw_ptr<DesksController, ExperimentalAsh> controller_;
 
   base::OneShotTimer timer_;
 
@@ -550,7 +552,7 @@ Desk* DesksController::GetPreviousDesk(bool use_target_active_desk) const {
   return desks_[previous_index].get();
 }
 
-Desk* DesksController::GetDeskByUuid(const base::GUID& desk_uuid) const {
+Desk* DesksController::GetDeskByUuid(const base::Uuid& desk_uuid) const {
   auto it = base::ranges::find(desks_, desk_uuid, &Desk::uuid);
   return it != desks_.end() ? it->get() : nullptr;
 }
@@ -1007,7 +1009,7 @@ void DesksController::RestoreNameOfDeskAtIndex(std::u16string name,
   desks_[index]->SetName(std::move(name), /*set_by_user=*/true);
 }
 
-void DesksController::RestoreGuidOfDeskAtIndex(base::GUID guid, size_t index) {
+void DesksController::RestoreGuidOfDeskAtIndex(base::Uuid guid, size_t index) {
   DCHECK(guid.is_valid());
   DCHECK_LT(index, desks_.size());
   desks_[index]->SetGuid(std::move(guid));
@@ -1540,8 +1542,8 @@ void DesksController::OnActiveUserSessionChanged(const AccountId& account_id) {
   int new_user_active_desk_index =
       /* This is a default initialized index to 0 if the id doesn't exist. */
       user_to_active_desk_index_[current_account_id_];
-  new_user_active_desk_index = base::clamp(new_user_active_desk_index, 0,
-                                           static_cast<int>(desks_.size()) - 1);
+  new_user_active_desk_index = std::clamp(new_user_active_desk_index, 0,
+                                          static_cast<int>(desks_.size()) - 1);
 
   ActivateDesk(desks_[new_user_active_desk_index].get(),
                DesksSwitchSource::kUserSwitch);
@@ -1699,6 +1701,10 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   }
 
   // Keep the removed desk's data alive until at least the end of this function.
+  // `MaybeCommitPendingDeskRemoval` at this point should have cleared
+  // `temporary_removed_desk_`. Otherwise, we may be resetting the wrong
+  // removing desk GUID in restore data.
+  CHECK(!temporary_removed_desk_);
   auto temporary_removed_desk = std::make_unique<RemovedDeskData>(
       std::move(*iter), removed_desk_index, source, close_type);
   auto* temporary_removed_desk_ptr = temporary_removed_desk.get();
@@ -2049,11 +2055,7 @@ void DesksController::CleanUpClosedAppWindowsTask(
     // logic. However, the desk controller has waited for the app window to
     // close cleanly before this.
     if (widget) {
-      // TODO(b/276351837): Remove this ARC check once we have a better way of
-      // closing ARC++ windows.
-      if (!IsArcWindow(window)) {
-        widget->CloseNow();
-      }
+      widget->CloseNow();
     } else {
       // If the window does not have a widget, we add it to the
       // `widgetless_windows` tracker to check back on later.

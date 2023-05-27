@@ -8,7 +8,6 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "base/functional/callback.h"
@@ -47,34 +46,10 @@ class ClusteringBackend;
 class HistoryClustersService;
 class HistoryClustersServiceTask;
 
-// Clears `HistoryClustersService`'s keyword cache when 1 or more history
-// entries are deleted.
-class VisitDeletionObserver : public history::HistoryServiceObserver {
- public:
-  explicit VisitDeletionObserver(
-      HistoryClustersService* history_clusters_service);
-
-  ~VisitDeletionObserver() override;
-
-  // Starts observing a service for history deletions.
-  void AttachToHistoryService(history::HistoryService* history_service);
-
-  // history::HistoryServiceObserver
-  void OnURLsDeleted(history::HistoryService* history_service,
-                     const history::DeletionInfo& deletion_info) override;
-
- private:
-  HistoryClustersService* history_clusters_service_;
-
-  // Tracks the observed history service, for cleanup.
-  base::ScopedObservation<history::HistoryService,
-                          history::HistoryServiceObserver>
-      history_service_observation_{this};
-};
-
 // This Service provides an API to the History Clusters for UI entry points.
 class HistoryClustersService : public base::SupportsUserData,
-                               public KeyedService {
+                               public KeyedService,
+                               public history::HistoryServiceObserver {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -85,7 +60,6 @@ class HistoryClustersService : public base::SupportsUserData,
   // percentile, and we do synchronous lookups as the user types in the omnibox.
   using KeywordMap =
       std::unordered_map<std::u16string, history::ClusterKeywordData>;
-  using URLKeywordSet = std::unordered_set<std::string>;
 
   // `url_loader_factory` is allowed to be nullptr, like in unit tests.
   HistoryClustersService(
@@ -186,18 +160,16 @@ class HistoryClustersService : public base::SupportsUserData,
   absl::optional<history::ClusterKeywordData> DoesQueryMatchAnyCluster(
       const std::string& query);
 
-  // Returns true if `url_keyword` matches a URL in a significant cluster. This
-  // may kick off a cache refresh while still immediately returning false.
-  // `url_keyword` is derived from a given URL by ComputeURLKeywordForLookup().
-  // SRP URLs canonicalized by TemplateURLService should be passed in directly.
-  bool DoesURLMatchAnyCluster(const std::string& url_keyword);
-
-  // Clears `all_keywords_cache_` and cancels any pending tasks to populate it.
-  void ClearKeywordCache();
-
   // Prints the keyword bag state to the log messages. For example, a button on
   // chrome://history-clusters-internals triggers this.
   void PrintKeywordBagStateToLogMessage() const;
+
+  // history::HistoryServiceObserver:
+  void OnURLVisited(history::HistoryService* history_service,
+                    const history::URLRow& url_row,
+                    const history::VisitRow& visit_row) override;
+  void OnURLsDeleted(history::HistoryService* history_service,
+                     const history::DeletionInfo& deletion_info) override;
 
  private:
   friend class HistoryClustersServiceTestApi;
@@ -219,11 +191,12 @@ class HistoryClustersService : public base::SupportsUserData,
       base::ElapsedTimer total_latency_timer,
       base::Time begin_time,
       std::unique_ptr<KeywordMap> keyword_accumulator,
-      std::unique_ptr<URLKeywordSet> url_keyword_accumulator,
       KeywordMap* cache,
-      URLKeywordSet* url_cache,
       std::vector<history::Cluster> clusters,
       QueryClustersContinuationParams continuation_params);
+
+  // Clears `all_keywords_cache_` and cancels any pending tasks to populate it.
+  void ClearKeywordCache();
 
   // Reads the "all keywords" and short keyword caches from prefs and
   // deserializes them.
@@ -255,7 +228,6 @@ class HistoryClustersService : public base::SupportsUserData,
   // the cache was generated so we can periodically re-generate.
   // TODO(tommycli): Make a smarter mechanism for regenerating the cache.
   KeywordMap all_keywords_cache_;
-  URLKeywordSet all_url_keywords_cache_;
   base::Time all_keywords_cache_timestamp_;
 
   // Like above, but will represent the clusters newer than
@@ -269,7 +241,6 @@ class HistoryClustersService : public base::SupportsUserData,
   // TODO(manukh) This is a "band aid" fix to missing keywords for recent
   //  visits.
   KeywordMap short_keyword_cache_;
-  URLKeywordSet short_url_keywords_cache_;
   base::Time short_keyword_cache_timestamp_;
 
   // Tracks the current keyword task. Will be `nullptr` or
@@ -293,10 +264,20 @@ class HistoryClustersService : public base::SupportsUserData,
   // requests when `persist_on_query` is enabled.
   base::ElapsedTimer update_clusters_timer_;
 
+  // Whether a synced visit was received since the last `UpdateClusters()` call.
+  // Used to determine whether the full set of persisted clusters needs to be
+  // iterated through when updating cluster triggerability. Always set this to
+  // true at the beginning of the session, so anything that happened at browser
+  // close gets picked up.
+  bool received_synced_visit_since_last_update_ = true;
+
   // A list of observers for this service.
   base::ObserverList<Observer> observers_;
 
-  VisitDeletionObserver visit_deletion_observer_;
+  // Tracks the observed history service, for cleanup.
+  base::ScopedObservation<history::HistoryService,
+                          history::HistoryServiceObserver>
+      history_service_observation_{this};
 
   ContextClustererHistoryServiceObserver context_clusterer_observer_;
 

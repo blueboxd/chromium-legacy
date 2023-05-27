@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_id_helper.h"
 #include "cc/metrics/compositor_frame_reporter.h"
@@ -38,6 +39,7 @@ CompositorFrameReportingController::CompositorFrameReportingController(
     : should_report_histograms_(should_report_histograms),
       layer_tree_host_id_(layer_tree_host_id),
       latency_ukm_reporter_(std::make_unique<LatencyUkmReporter>()),
+      predictor_jank_tracker_(std::make_unique<PredictorJankTracker>()),
       previous_latency_predictions_main_(base::Microseconds(-1)),
       previous_latency_predictions_impl_(base::Microseconds(-1)),
       event_latency_predictions_(
@@ -48,6 +50,7 @@ CompositorFrameReportingController::CompositorFrameReportingController(
     // set on `global_trackers_`.
     global_trackers_.latency_ukm_reporter = latency_ukm_reporter_.get();
   }
+  global_trackers_.predictor_jank_tracker = predictor_jank_tracker_.get();
 }
 
 CompositorFrameReportingController::~CompositorFrameReportingController() {
@@ -422,7 +425,9 @@ void CompositorFrameReportingController::TrackSwapTiming(
   }
 
   // Making sure the queue would not keep growing in size.
-  DCHECK_LE(latest_swap_times_.size(), 10u);
+  if (latest_swap_times_.size() > 10) {
+    base::debug::DumpWithoutCrashing();
+  }
 }
 
 void CompositorFrameReportingController::ReportMultipleSwaps(

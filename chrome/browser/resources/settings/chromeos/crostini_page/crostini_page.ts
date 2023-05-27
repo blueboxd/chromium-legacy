@@ -26,12 +26,12 @@ import './crostini_shared_usb_devices.js';
 import './crostini_subpage.js';
 import './bruschetta_subpage.js';
 
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
@@ -160,12 +160,12 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
     this.attemptDeepLink();
   }
 
-  private onEnableTap_(event: Event) {
+  private onEnableClick_(event: Event) {
     this.browserProxy_.requestCrostiniInstallerView();
     event.stopPropagation();
   }
 
-  private onSubpageTap_(event: Event) {
+  private onSubpageClick_(event: Event) {
     // We do not open the subpage if the click was on a link.
     if (event.target && (event.target as HTMLElement).tagName === 'A') {
       event.stopPropagation();
@@ -177,13 +177,13 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
     }
   }
 
-  private onBruschettaEnableTap_(event: Event) {
+  private onBruschettaEnableClick_(event: Event) {
     this.browserProxy_.requestBruschettaInstallerView();
-    // Stop propagation so that onBruschettaSubpageTap_ isn't called.
+    // Stop propagation so that onBruschettaSubpageClick_ isn't called.
     event.stopPropagation();
   }
 
-  private onBruschettaSubpageTap_() {
+  private onBruschettaSubpageClick_() {
     // This function is called on-click even if actionable=false.
     if (this.getPref('bruschetta.installed.value')) {
       Router.getInstance().navigateTo(routes.BRUSCHETTA_DETAILS);

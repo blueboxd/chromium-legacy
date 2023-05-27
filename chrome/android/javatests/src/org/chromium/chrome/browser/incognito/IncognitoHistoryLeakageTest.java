@@ -8,8 +8,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 
 import org.hamcrest.Matchers;
@@ -110,6 +110,10 @@ public class IncognitoHistoryLeakageTest {
         return historyObserver.getHistoryQueryResults();
     }
 
+    /**
+     * A general class providing test parameters encapsulating different Activity type pairs
+     * spliced on Regular and Incognito mode between whom we want to test leakage.
+     */
     public static class AllTypesToAllTypes implements ParameterProvider {
         @Override
         public List<ParameterSet> getParameters() {

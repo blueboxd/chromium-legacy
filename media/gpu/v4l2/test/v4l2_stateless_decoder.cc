@@ -184,8 +184,6 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
 
-  dec->Initialize();
-
   for (int i = 0; i < n_frames || n_frames == 0; i++) {
     LOG(INFO) << "Frame " << i << "...";
 

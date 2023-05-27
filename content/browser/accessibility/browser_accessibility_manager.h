@@ -215,6 +215,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager
   void DoDefaultAction(const BrowserAccessibility& node);
   void GetImageData(const BrowserAccessibility& node,
                     const gfx::Size& max_size);
+  void Expand(const BrowserAccessibility& node);
+  void Collapse(const BrowserAccessibility& node);
   // Per third_party/blink/renderer/core/layout/hit_test_location.h, Blink
   // expects hit test points in page coordinates. However, WebAXObject::HitTest
   // applies the visual viewport offset, so we want to pass that function a
@@ -235,6 +237,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager
           ax::mojom::ScrollBehavior::kDoNotScrollIfVisible);
   void ScrollToPoint(const BrowserAccessibility& node, gfx::Point point);
   void SetAccessibilityFocus(const BrowserAccessibility& node);
+  void Blur(const BrowserAccessibility& node);
   void SetFocus(const BrowserAccessibility& node);
   void SetSequentialFocusNavigationStartingPoint(
       const BrowserAccessibility& node);

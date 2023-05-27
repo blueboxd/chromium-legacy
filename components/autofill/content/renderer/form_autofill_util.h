@@ -183,7 +183,7 @@ bool IsTextAreaElement(const blink::WebFormControlElement& element);
 bool IsTextAreaElementOrTextInput(const blink::WebFormControlElement& element);
 
 // Returns true if |element| is a checkbox or a radio button element.
-bool IsCheckableElement(const blink::WebInputElement& element);
+bool IsCheckableElement(const blink::WebFormControlElement& element);
 
 // Returns true if |element| is one of the input element types that can be
 // autofilled. {Text, Radiobutton, Checkbox}.
@@ -192,6 +192,9 @@ bool IsAutofillableInputElement(const blink::WebInputElement& element);
 // Returns true if |element| is one of the element types that can be autofilled.
 // {Text, Radiobutton, Checkbox, Select, TextArea}.
 bool IsAutofillableElement(const blink::WebFormControlElement& element);
+
+// Returns true if |element| can be edited (enabled and not read only).
+bool IsElementEditable(const blink::WebInputElement& element);
 
 // True if this node can take focus. If the layout is blocked, then the function
 // checks if the element takes up space in the layout, i.e., this element or a
@@ -275,18 +278,13 @@ bool WebFormElementToFormData(
     FormFieldData* field);
 
 // Get all form control elements from |elements| that are not part of a form.
-// If |fieldsets| is not NULL, also append the fieldsets encountered that are
-// not part of a form.
 std::vector<blink::WebFormControlElement> GetUnownedFormFieldElements(
-    const blink::WebDocument& document,
-    std::vector<blink::WebElement>* fieldsets);
+    const blink::WebDocument& document);
 
 // A shorthand for filtering the results of GetUnownedFormFieldElements with
 // ExtractAutofillableElementsFromSet.
 std::vector<blink::WebFormControlElement>
-GetUnownedAutofillableFormFieldElements(
-    const blink::WebDocument& document,
-    std::vector<blink::WebElement>* fieldsets);
+GetUnownedAutofillableFormFieldElements(const blink::WebDocument& document);
 
 // Returns the <iframe> elements that are not in the scope of any <form>.
 std::vector<blink::WebElement> GetUnownedIframeElements(
@@ -295,8 +293,7 @@ std::vector<blink::WebElement> GetUnownedIframeElements(
 // Returns false iff the extraction fails because the number of fields exceeds
 // |kMaxParseableFields|, or |field| and |element| are not nullptr but
 // |element| is not among |control_elements|.
-bool UnownedFormElementsAndFieldSetsToFormData(
-    const std::vector<blink::WebElement>& fieldsets,
+bool UnownedFormElementsToFormData(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const std::vector<blink::WebElement>& iframe_elements,
     const blink::WebFormControlElement* element,

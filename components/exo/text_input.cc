@@ -37,10 +37,37 @@ ui::InputMethod* GetInputMethod(aura::Window* window) {
   return window->GetHost()->GetInputMethod();
 }
 
+bool ShouldUseNullInputType(bool surrounding_text_supported) {
+  // TODO(b/273674108): We should be able to tell the IME that the client does
+  // not support surrounding text. Instead, we currently disable all IME
+  // features by setting input type to null in cases where the IME will not
+  // function correctly without surrounding text.
+  // Some basic IMEs (incl. EN, DE, FR) are known to be buggy when auto-correct
+  // is on and surrounding text is not provided.
+  // Complex IMEs (e.g. JA, KO) are not known to be buggy when surrounding text
+  // is not provided.
+
+  if (surrounding_text_supported) {
+    return false;
+  }
+
+  auto* manager = ash::input_method::InputMethodManager::Get();
+  scoped_refptr<ash::input_method::InputMethodManager::State> state =
+      manager->GetActiveIMEState();
+  if (!state) {
+    return false;
+  }
+
+  return state->GetCurrentInputMethod().id().find("xkb:") != std::string::npos;
+}
+
 }  // namespace
 
 TextInput::TextInput(std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)) {}
+    : delegate_(std::move(delegate)) {
+  input_method_manager_observation_.Observe(
+      ash::input_method::InputMethodManager::Get());
+}
 
 TextInput::~TextInput() {
   Deactivate();
@@ -103,26 +130,17 @@ void TextInput::Reset() {
     input_method_->CancelComposition(this);
 }
 
-void TextInput::SetSurroundingText(const std::u16string& text,
-                                   const gfx::Range& cursor_pos) {
-  surrounding_text_tracker_.Update(text, cursor_pos);
+void TextInput::SetSurroundingText(
+    base::StringPiece16 text,
+    const gfx::Range& cursor_pos,
+    const absl::optional<ui::GrammarFragment>& grammar_fragment,
+    const absl::optional<ui::AutocorrectInfo>& autocorrect_info) {
+  // TODO(crbug.com/1402906): Text range is not currently handled correctly.
+  surrounding_text_tracker_.Update(text, 0u, cursor_pos);
 
-  // Convert utf8 grammar fragment to utf16.
-  if (grammar_fragment_at_cursor_utf8_) {
-    std::string utf8_text = base::UTF16ToUTF8(text);
-    ui::GrammarFragment fragment = *grammar_fragment_at_cursor_utf8_;
-    std::vector<size_t> offsets = {fragment.range.start(),
-                                   fragment.range.end()};
-    base::UTF8ToUTF16AndAdjustOffsets(utf8_text, &offsets);
-    grammar_fragment_at_cursor_utf16_ = ui::GrammarFragment(
-        gfx::Range(offsets[0], offsets[1]), fragment.suggestion);
-  } else {
-    grammar_fragment_at_cursor_utf16_ = absl::nullopt;
-  }
-
-  if (pending_autocorrect_info_) {
-    autocorrect_info_ = *pending_autocorrect_info_;
-    pending_autocorrect_info_ = absl::nullopt;
+  grammar_fragment_at_cursor_ = grammar_fragment;
+  if (autocorrect_info.has_value()) {
+    autocorrect_info_ = autocorrect_info.value();
   }
 
   // TODO(b/206068262): Consider introducing an API to notify surrounding text
@@ -135,18 +153,22 @@ void TextInput::SetTypeModeFlags(ui::TextInputType type,
                                  ui::TextInputMode mode,
                                  int flags,
                                  bool should_do_learning,
-                                 bool can_compose_inline) {
+                                 bool can_compose_inline,
+                                 bool surrounding_text_supported) {
   if (!input_method_)
     return;
   bool changed = (input_type_ != type) || (input_mode_ != mode) ||
                  (flags_ != flags) ||
                  (should_do_learning_ != should_do_learning) ||
-                 (can_compose_inline_ != can_compose_inline);
+                 (can_compose_inline_ != can_compose_inline) ||
+                 (surrounding_text_supported_ != surrounding_text_supported);
   input_type_ = type;
   input_mode_ = mode;
   flags_ = flags;
   should_do_learning_ = should_do_learning;
   can_compose_inline_ = can_compose_inline;
+  surrounding_text_supported_ = surrounding_text_supported;
+  use_null_input_type_ = ShouldUseNullInputType(surrounding_text_supported_);
   if (changed)
     input_method_->OnTextInputTypeChanged(this);
 }
@@ -158,21 +180,6 @@ void TextInput::SetCaretBounds(const gfx::Rect& bounds) {
   if (!input_method_)
     return;
   input_method_->OnCaretBoundsChanged(this);
-}
-
-void TextInput::SetGrammarFragmentAtCursor(
-    const absl::optional<ui::GrammarFragment>& fragment) {
-  grammar_fragment_at_cursor_utf16_ = absl::nullopt;
-  grammar_fragment_at_cursor_utf8_ = fragment;
-}
-
-void TextInput::SetAutocorrectInfo(const gfx::Range& autocorrect_range,
-                                   const gfx::Rect& autocorrect_bounds) {
-  // Since we receive the autocorrect information separately from the
-  // surrounding text information, the range and bounds may be invalid at this
-  // point, because the surrounding text this class holds is stale.
-  // Save it as the "pending" information a surrounding text update is received.
-  pending_autocorrect_info_ = {autocorrect_range, autocorrect_bounds};
 }
 
 void TextInput::FinalizeVirtualKeyboardChanges() {
@@ -200,7 +207,7 @@ void TextInput::SetCompositionText(const ui::CompositionText& composition) {
 }
 
 size_t TextInput::ConfirmCompositionText(bool keep_selection) {
-  const auto& [surrounding_text, cursor_pos, composition] =
+  const auto& [surrounding_text, utf16_offset, cursor_pos, composition] =
       surrounding_text_tracker_.predicted_state();
 
   const size_t composition_text_length = composition.length();
@@ -258,7 +265,7 @@ void TextInput::InsertChar(const ui::KeyEvent& event) {
 }
 
 ui::TextInputType TextInput::GetTextInputType() const {
-  return input_type_;
+  return use_null_input_type_ ? ui::TEXT_INPUT_TYPE_NULL : input_type_;
 }
 
 ui::TextInputMode TextInput::GetTextInputMode() const {
@@ -302,7 +309,7 @@ ui::TextInputClient::FocusReason TextInput::GetFocusReason() const {
 
 bool TextInput::GetTextRange(gfx::Range* range) const {
   DCHECK(range);
-  const auto& [surrounding_text, selection, unused_composition] =
+  const auto& [surrounding_text, utf16_offset, selection, unused_composition] =
       surrounding_text_tracker_.predicted_state();
   DCHECK(selection.IsValid());
 
@@ -331,7 +338,7 @@ bool TextInput::GetEditableSelectionRange(gfx::Range* range) const {
 }
 
 bool TextInput::SetEditableSelectionRange(const gfx::Range& range) {
-  const auto& [surrounding_text, unused_selection, composition] =
+  const auto& [surrounding_text, utf16_offset, unused_selection, composition] =
       surrounding_text_tracker_.predicted_state();
   if (surrounding_text.length() < range.GetMax())
     return false;
@@ -358,16 +365,10 @@ bool TextInput::GetTextFromRange(const gfx::Range& range,
 }
 
 void TextInput::OnInputMethodChanged() {
-  DCHECK_EQ(surface_, seat_->GetFocusedSurface());
-  ui::InputMethod* input_method = GetInputMethod(surface_->window());
-  if (input_method == input_method_)
-    return;
-  input_method_->DetachTextInputClient(this);
-  virtual_keyboard_observation_.Reset();
-  input_method_ = input_method;
-  if (auto* controller = input_method_->GetVirtualKeyboardController())
-    virtual_keyboard_observation_.Observe(controller);
-  input_method_->SetFocusedTextInputClient(this);
+  // This observer method does not signify anything meaningful. When the user
+  // switches input method, |InputMethodChanged()| is triggered instead of
+  // this, and the ui::InputMethod we are attached to is a singleton which does
+  // not change.
 }
 
 bool TextInput::ChangeTextDirectionAndLayoutAlignment(
@@ -380,7 +381,7 @@ bool TextInput::ChangeTextDirectionAndLayoutAlignment(
 }
 
 void TextInput::ExtendSelectionAndDelete(size_t before, size_t after) {
-  const auto& [surrounding_text, selection, unused_composition] =
+  const auto& [surrounding_text, utf16_offset, selection, unused_composition] =
       surrounding_text_tracker_.predicted_state();
 
   DCHECK(selection.IsValid());
@@ -421,7 +422,7 @@ bool TextInput::ShouldDoLearning() {
 bool TextInput::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  const auto& [surrounding_text, selection, unused_composition] =
+  const auto& [surrounding_text, utf16_offset, selection, unused_composition] =
       surrounding_text_tracker_.predicted_state();
   DCHECK(selection.IsValid());
   if (surrounding_text.length() < range.GetMax())
@@ -456,7 +457,7 @@ bool TextInput::SetAutocorrectRange(const gfx::Range& range) {
 
 absl::optional<ui::GrammarFragment> TextInput::GetGrammarFragmentAtCursor()
     const {
-  return grammar_fragment_at_cursor_utf16_;
+  return grammar_fragment_at_cursor_;
 }
 
 bool TextInput::ClearGrammarFragments(const gfx::Range& range) {
@@ -505,6 +506,18 @@ void TextInput::OnKeyboardHidden() {
   }
   delegate_->OnVirtualKeyboardOccludedBoundsChanged({});
   delegate_->OnVirtualKeyboardVisibilityChanged(false);
+}
+
+// This is called when the user switches input method.
+void TextInput::InputMethodChanged(
+    ash::input_method::InputMethodManager* manager,
+    Profile* profile,
+    bool show_message) {
+  ui::TextInputType old_input_type = GetTextInputType();
+  use_null_input_type_ = ShouldUseNullInputType(surrounding_text_supported_);
+  if (input_method_ && GetTextInputType() != old_input_type) {
+    input_method_->OnTextInputTypeChanged(this);
+  }
 }
 
 void TextInput::OnSurfaceFocused(Surface* gained_focus,

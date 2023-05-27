@@ -4,9 +4,16 @@
 
 package org.chromium.chrome.browser.tasks;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.features.start_surface.StartSurfaceConfiguration.START_SURFACE_OPEN_START_AS_HOMEPAGE;
+import static org.chromium.chrome.features.start_surface.StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS;
 import static org.chromium.chrome.features.start_surface.StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS;
 import static org.chromium.chrome.features.start_surface.StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL;
 
@@ -39,14 +46,22 @@ import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtilUnitTest.ShadowHomepageManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtilUnitTest.ShadowHomepagePolicyManager;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtilUnitTest.ShadowSysUtils;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.segmentation_platform.SegmentSelectionResult;
 import org.chromium.components.segmentation_platform.proto.SegmentationProto.SegmentId;
@@ -54,7 +69,6 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.base.test.util.DisabledTest;
 
 /** Unit tests for {@link ReturnToChromeUtil} class. */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -98,6 +112,7 @@ public class ReturnToChromeUtilUnitTest {
     }
 
     private static final int ON_RETURN_THRESHOLD_SECOND = 1000;
+    private static final int DELTA_MS = 100;
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -113,6 +128,16 @@ public class ReturnToChromeUtilUnitTest {
     private ChromeInactivityTracker mInactivityTracker;
     @Mock
     private Resources mResources;
+    @Mock
+    private TabModel mCurrentTabModel;
+    @Mock
+    private TabCreator mTabCreater;
+    @Mock
+    private Tab mTab1;
+    @Mock
+    private Tab mNtpTab;
+    @Mock
+    private NewTabPage mNewTabPage;
 
     @Before
     public void setUp() {
@@ -154,7 +179,6 @@ public class ReturnToChromeUtilUnitTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "Flaky, see crbug.com/1425954")
     public void testShouldShowTabSwitcher() {
         Assert.assertEquals(START_SURFACE_RETURN_TIME_SECONDS.getDefaultValue(),
                 START_SURFACE_RETURN_TIME_SECONDS.getValue());
@@ -164,11 +188,46 @@ public class ReturnToChromeUtilUnitTest {
                 START_SURFACE_RETURN_TIME_SECONDS.getValue() * DateUtils.SECOND_IN_MILLIS;
         // When return time doesn't arrive, return false:
         Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(
-                System.currentTimeMillis() - returnTimeMs + 1));
+                System.currentTimeMillis() - returnTimeMs + DELTA_MS, false));
 
         // When return time arrives, return true:
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(
-                System.currentTimeMillis() - returnTimeMs - 1));
+                System.currentTimeMillis() - returnTimeMs - 1, false));
+    }
+
+    @Test
+    @SmallTest
+    public void testShouldShowTabSwitcherOnMixPhoneAndTabletMode() {
+        Assert.assertEquals(START_SURFACE_RETURN_TIME_SECONDS.getDefaultValue(),
+                START_SURFACE_RETURN_TIME_SECONDS.getValue());
+        Assert.assertEquals(START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS.getDefaultValue(),
+                START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS.getValue());
+        Assert.assertFalse(ChromeFeatureList.sStartSurfaceReturnTime.isEnabled());
+
+        int updatedReturnTimeMs = 1;
+        // Sets the return time on phones arrived.
+        START_SURFACE_RETURN_TIME_SECONDS.setForTesting(updatedReturnTimeMs);
+        Assert.assertEquals(updatedReturnTimeMs, START_SURFACE_RETURN_TIME_SECONDS.getValue());
+        long returnTimeMs = updatedReturnTimeMs * DateUtils.SECOND_IN_MILLIS;
+        // When return time on phones arrives, return true on phones:
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(
+                System.currentTimeMillis() - returnTimeMs - 1, false));
+        // Verifies that return time on phones doesn't impact the return time on tablets.
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(
+                System.currentTimeMillis() - returnTimeMs - 1, true));
+
+        // Sets the return time on tablets arrived, while resets the one of phones.
+        START_SURFACE_RETURN_TIME_SECONDS.setForTesting(
+                START_SURFACE_RETURN_TIME_SECONDS.getDefaultValue());
+        START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS.setForTesting(updatedReturnTimeMs);
+        Assert.assertEquals(
+                updatedReturnTimeMs, START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS.getValue());
+        // When return time on tablets arrives, return true on tablets:
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(
+                System.currentTimeMillis() - returnTimeMs - 1, true));
+        // Verifies that return time on tablets doesn't impact the return time on phones.
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(
+                System.currentTimeMillis() - returnTimeMs - 1, false));
     }
 
     @Test
@@ -183,15 +242,16 @@ public class ReturnToChromeUtilUnitTest {
         // Set to not shown.
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(-1);
         Assert.assertEquals(-1, START_SURFACE_RETURN_TIME_SECONDS.getValue());
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
-        Assert.assertFalse(
-                ReturnToChromeUtil.shouldShowTabSwitcher(System.currentTimeMillis() - 10));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(
+                System.currentTimeMillis() - DELTA_MS, false));
 
         // Sets to immediate return.
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
         Assert.assertEquals(0, START_SURFACE_RETURN_TIME_SECONDS.getValue());
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(System.currentTimeMillis()));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
+        Assert.assertTrue(
+                ReturnToChromeUtil.shouldShowTabSwitcher(System.currentTimeMillis(), false));
 
         // Sets to an random time.
         int expectedReturnTimeSeconds = 60; // one minute
@@ -199,11 +259,11 @@ public class ReturnToChromeUtilUnitTest {
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(expectedReturnTimeSeconds);
         Assert.assertEquals(
                 expectedReturnTimeSeconds, START_SURFACE_RETURN_TIME_SECONDS.getValue());
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(
-                System.currentTimeMillis() - expectedReturnTimeMs));
+                System.currentTimeMillis() - expectedReturnTimeMs, false));
         Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(
-                System.currentTimeMillis() - expectedReturnTimeSeconds));
+                System.currentTimeMillis() - expectedReturnTimeSeconds, false));
     }
 
     @Test
@@ -218,11 +278,12 @@ public class ReturnToChromeUtilUnitTest {
         // START_SURFACE_RETURN_TIME_SECONDS.getDefaultValue() as default value, i.e., 8 hours.
         SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
         Assert.assertEquals(START_SURFACE_RETURN_TIME_SECONDS.getDefaultValue(),
-                ReturnToChromeUtil.getReturnTimeFromSegmentation());
+                ReturnToChromeUtil.getReturnTimeFromSegmentation(
+                        START_SURFACE_RETURN_TIME_SECONDS));
 
         // Verifies returning false if both flags haven't been set any value or any meaningful yet.
         START_SURFACE_RETURN_TIME_USE_MODEL.setForTesting(true);
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
 
         // Return time from segmentation model is enabled for 1 min:
         long returnTimeSeconds = 60; // One minute
@@ -231,25 +292,32 @@ public class ReturnToChromeUtilUnitTest {
         SegmentSelectionResult result =
                 new SegmentSelectionResult(true, showStartId, (float) returnTimeSeconds);
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
-        Assert.assertEquals(returnTimeMs, ReturnToChromeUtil.getReturnTimeFromSegmentation());
+        Assert.assertEquals(returnTimeMs,
+                ReturnToChromeUtil.getReturnTimeFromSegmentation(
+                        START_SURFACE_RETURN_TIME_SECONDS));
 
         // Returns false if it isn't immediate return but without last backgrounded time available:
         result = new SegmentSelectionResult(true, showStartId, (float) 1);
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
-        Assert.assertEquals(
-                1 * DateUtils.SECOND_IN_MILLIS, ReturnToChromeUtil.getReturnTimeFromSegmentation());
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+        Assert.assertEquals(1 * DateUtils.SECOND_IN_MILLIS,
+                ReturnToChromeUtil.getReturnTimeFromSegmentation(
+                        START_SURFACE_RETURN_TIME_SECONDS));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
 
         // Verifies returning false if segmentation result is negative (not show).
         result = new SegmentSelectionResult(true, SegmentId.OPTIMIZATION_TARGET_UNKNOWN, null);
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
-        Assert.assertEquals(-1, ReturnToChromeUtil.getReturnTimeFromSegmentation());
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(1));
+        Assert.assertEquals(-1,
+                ReturnToChromeUtil.getReturnTimeFromSegmentation(
+                        START_SURFACE_RETURN_TIME_SECONDS));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(1, false));
 
         // Tests regular cases with last backgrounded time set:
         result = new SegmentSelectionResult(true, showStartId, (float) returnTimeSeconds);
         ReturnToChromeUtil.cacheReturnTimeFromSegmentationImpl(result);
-        Assert.assertEquals(returnTimeMs, ReturnToChromeUtil.getReturnTimeFromSegmentation());
+        Assert.assertEquals(returnTimeMs,
+                ReturnToChromeUtil.getReturnTimeFromSegmentation(
+                        START_SURFACE_RETURN_TIME_SECONDS));
 
         int doubleReturnTimeMs = (int) (2 * returnTimeMs); // Two minutes
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(doubleReturnTimeMs);
@@ -257,10 +325,11 @@ public class ReturnToChromeUtilUnitTest {
 
         // When segmentation platform's return time arrives, return true:
         Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(
-                System.currentTimeMillis() - returnTimeMs - 1));
+                System.currentTimeMillis() - returnTimeMs - 1, false));
 
         // When segmentation platform's return times hasn't arrived, return false:
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(System.currentTimeMillis()));
+        Assert.assertFalse(
+                ReturnToChromeUtil.shouldShowTabSwitcher(System.currentTimeMillis(), false));
 
         // Clean up.
         sharedPreferencesManager.removeKey(
@@ -290,19 +359,21 @@ public class ReturnToChromeUtilUnitTest {
 
         // Verifies that Start will show if the threshold of return time has reached using last
         // visible time, while last background time is lost or not set.
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(expectedVisibleTime));
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(expectedLastBackgroundTime));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(expectedVisibleTime, false));
+        Assert.assertFalse(
+                ReturnToChromeUtil.shouldShowTabSwitcher(expectedLastBackgroundTime, false));
         Assert.assertTrue(ReturnToChromeUtil.shouldShowOverviewPageOnStart(
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
 
         // Verifies that Start will NOT show if the threshold of return time hasn't reached using
         // last visible time, while last background time is lost or not set.
         currentTime = System.currentTimeMillis();
-        expectedVisibleTime = currentTime - returnTimeMS + 100; // doesn't reach
+        expectedVisibleTime = currentTime - returnTimeMS + DELTA_MS; // doesn't reach
         doReturn(expectedVisibleTime).when(mInactivityTracker).getLastVisibleTimeMs();
         doReturn(expectedLastBackgroundTime).when(mInactivityTracker).getLastBackgroundedTimeMs();
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(expectedVisibleTime));
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(expectedLastBackgroundTime));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(expectedVisibleTime, false));
+        Assert.assertFalse(
+                ReturnToChromeUtil.shouldShowTabSwitcher(expectedLastBackgroundTime, false));
         Assert.assertFalse(ReturnToChromeUtil.shouldShowOverviewPageOnStart(
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
 
@@ -310,11 +381,12 @@ public class ReturnToChromeUtilUnitTest {
         // last visible time, while hasn't using the last background time which is the max time.
         currentTime = System.currentTimeMillis();
         expectedVisibleTime = currentTime - returnTimeMS - 1; // has reached
-        expectedLastBackgroundTime = currentTime - returnTimeMS + 100; // doesn't reach
+        expectedLastBackgroundTime = currentTime - returnTimeMS + DELTA_MS; // doesn't reach
         doReturn(expectedVisibleTime).when(mInactivityTracker).getLastVisibleTimeMs();
         doReturn(expectedLastBackgroundTime).when(mInactivityTracker).getLastBackgroundedTimeMs();
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(expectedVisibleTime));
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(expectedLastBackgroundTime));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(expectedVisibleTime, false));
+        Assert.assertFalse(
+                ReturnToChromeUtil.shouldShowTabSwitcher(expectedLastBackgroundTime, false));
         Assert.assertFalse(ReturnToChromeUtil.shouldShowOverviewPageOnStart(
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
 
@@ -325,8 +397,9 @@ public class ReturnToChromeUtilUnitTest {
         expectedLastBackgroundTime = currentTime - returnTimeMS - 1; // has reached
         doReturn(expectedVisibleTime).when(mInactivityTracker).getLastVisibleTimeMs();
         doReturn(expectedLastBackgroundTime).when(mInactivityTracker).getLastBackgroundedTimeMs();
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(expectedVisibleTime));
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(expectedLastBackgroundTime));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(expectedVisibleTime, false));
+        Assert.assertTrue(
+                ReturnToChromeUtil.shouldShowTabSwitcher(expectedLastBackgroundTime, false));
         Assert.assertTrue(ReturnToChromeUtil.shouldShowOverviewPageOnStart(
                 mContext, intent, mTabModelSelector, mInactivityTracker, false /* isTablet */));
     }
@@ -342,7 +415,7 @@ public class ReturnToChromeUtilUnitTest {
 
         // Sets background time to not show Start:
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(-1);
-        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(0));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
 
         // Tests the case when there isn't any Tab:
         doReturn(true).when(mTabModelSelector).isTabStateInitialized();
@@ -360,7 +433,7 @@ public class ReturnToChromeUtilUnitTest {
         SharedPreferencesManager.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
 
         // Verifies that Start will show since the return time has arrived.
         Assert.assertTrue(ReturnToChromeUtil.shouldShowOverviewPageOnStart(
@@ -387,7 +460,7 @@ public class ReturnToChromeUtilUnitTest {
         SharedPreferencesManager.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
 
         // Tests the case when there isn't any Tab but with customized homepage:
         doReturn(true).when(mTabModelSelector).isTabStateInitialized();
@@ -418,7 +491,7 @@ public class ReturnToChromeUtilUnitTest {
         SharedPreferencesManager.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
 
         // When homepage is disabled, verifies that Start isn't shown when there isn't any Tab, even
         // if the return time has arrived.
@@ -458,7 +531,7 @@ public class ReturnToChromeUtilUnitTest {
         SharedPreferencesManager.getInstance().addToStringSet(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
         START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
 
         // Tests the case when there isn't any Tab. Verifies that Start isn't shown if
         // HomepagePolicyManager isn't initialized.
@@ -481,6 +554,119 @@ public class ReturnToChromeUtilUnitTest {
         Assert.assertEquals(1,
                 RecordHistogram.getHistogramTotalCountForTesting(
                         "Startup.Android.IsHomepagePolicyManagerInitialized"));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
+    public void testShouldShowNtpAsHomeSurfaceAtStartupOnTablet() {
+        Assert.assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
+
+        // Sets main intent from launcher:
+        Intent intent = createMainIntentFromLauncher();
+
+        // Sets background time to make the return time arrive:
+        SharedPreferencesManager.getInstance().addToStringSet(
+                ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF, "0");
+        START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(0, false));
+
+        // Tests the case when there isn't any Tab. Verifies that Start is only shown on tablets.
+        doReturn(true).when(mTabModelSelector).isTabStateInitialized();
+        doReturn(0).when(mTabModelSelector).getTotalTabCount();
+        Assert.assertTrue(HomepagePolicyManager.isInitializedWithNative());
+        Assert.assertTrue(HomepageManager.isHomepageEnabled());
+        Assert.assertTrue(IntentUtils.isMainIntentFromLauncher(intent));
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
+                false, intent, mTabModelSelector, mInactivityTracker));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
+                true, intent, mTabModelSelector, mInactivityTracker));
+
+        // Tests the case when the total tab count > 0. Verifies that Start is only shown on
+        // tablets.
+        doReturn(1).when(mTabModelSelector).getTotalTabCount();
+        Assert.assertFalse(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
+                false, intent, mTabModelSelector, mInactivityTracker));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowNtpAsHomeSurfaceAtStartup(
+                true, intent, mTabModelSelector, mInactivityTracker));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
+    public void testShowNtpAsHomeSurfaceAtResumeOnTabletWithExistingNtp() {
+        Assert.assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
+
+        // Verifies that the existing NTP is reused, and no new NTP is created.
+        doReturn(2).when(mCurrentTabModel).getCount();
+        doReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1)).when(mTab1).getUrl();
+        doReturn(mTab1).when(mCurrentTabModel).getTabAt(0);
+
+        doReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.NTP_NATIVE_URL)).when(mNtpTab).getUrl();
+        doReturn(true).when(mNtpTab).isNativePage();
+        doReturn(mNewTabPage).when(mNtpTab).getNativePage();
+        doReturn(mNtpTab).when(mCurrentTabModel).getTabAt(1);
+
+        // Verifies that if the NTP is the last active Tab, we don't call showHomeSurfaceUi().
+        doReturn(1).when(mCurrentTabModel).index();
+        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(
+                false, true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+        verify(mTabCreater, never()).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
+        verify(mCurrentTabModel, never())
+                .setIndex(anyInt(), eq(TabSelectionType.FROM_USER), eq(false));
+        verify(mNewTabPage, never()).showHomeSurfaceUi(any());
+
+        // Verifies that if the NTP isn't the last active Tab, we reuse it, set index and call
+        // showHomeSurfaceUi() to show the single tab card module.
+        doReturn(0).when(mCurrentTabModel).index();
+        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(
+                false, true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+        verify(mTabCreater, never()).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
+        verify(mCurrentTabModel).setIndex(eq(1), eq(TabSelectionType.FROM_USER), eq(false));
+        verify(mNewTabPage).showHomeSurfaceUi(eq(mTab1));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
+    public void testShowNtpAsHomeSurfaceAtResumeOnTabletWithoutAnyExistingNtp() {
+        Assert.assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
+
+        doReturn(1).when(mCurrentTabModel).getCount();
+        doReturn(JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_1)).when(mTab1).getUrl();
+        doReturn(mTab1).when(mCurrentTabModel).getTabAt(0);
+
+        // Verifies that if the return time doesn't arrive, there isn't a new NTP is created.
+        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(false,
+                false /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+        verify(mTabCreater, never()).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
+
+        // Verifies that a new NTP is created when there isn't any existing one to reuse.
+        doReturn(2).when(mNtpTab).getId();
+        doReturn(true).when(mNtpTab).isNativePage();
+        doReturn(mNewTabPage).when(mNtpTab).getNativePage();
+        doReturn(mNtpTab)
+                .when(mTabCreater)
+                .createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
+        doReturn(0).when(mCurrentTabModel).index();
+        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(
+                false, true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+        verify(mTabCreater, times(1)).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
+        verify(mNewTabPage).showHomeSurfaceUi(eq(mTab1));
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
+    public void testNoAnyTabCase() {
+        Assert.assertTrue(StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(true));
+
+        doReturn(0).when(mCurrentTabModel).getCount();
+
+        // Verifies that if there isn't any existing Tab, we don't create a home surface NTP.
+        ReturnToChromeUtil.setInitialOverviewStateOnResumeOnTablet(
+                false, true /* shouldShowNtpHomeSurfaceOnStartup */, mCurrentTabModel, mTabCreater);
+        verify(mTabCreater, never()).createNewTab(any(), eq(TabLaunchType.FROM_STARTUP), eq(null));
     }
 
     private Intent createMainIntentFromLauncher() {

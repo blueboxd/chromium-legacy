@@ -12,23 +12,27 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/scoped_animation_disabler.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/float/scoped_window_tucker.h"
+#include "ash/wm/float/tablet_mode_tuck_education.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_default_layout_manager.h"
 #include "ash/wm/wm_event.h"
-#include "ash/wm/work_area_insets.h"
 #include "ash/wm/workspace/workspace_event_handler.h"
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/ui/base/window_properties.h"
@@ -45,6 +49,11 @@
 namespace ash {
 
 namespace {
+
+// The ideal dimensions of a clamshell floated window before factoring in its
+// minimum size (if any) is the available work area multiplied by these ratios.
+constexpr float kFloatedWindowClamshellWidthRatio = 1.f / 3.f;
+constexpr float kFloatedWindowClamshellHeightRatio = 0.7f;
 
 constexpr char kFloatWindowCountsPerSessionHistogramName[] =
     "Ash.Float.FloatWindowCountsPerSession";
@@ -114,6 +123,40 @@ void ShowFloatedWindow(aura::Window* floated_window) {
   floated_window->Show();
 }
 
+FloatController::MagnetismCorner GetMagnetismCornerForBounds(
+    const gfx::Rect& bounds_in_screen) {
+  const gfx::Point display_bounds_center =
+      display::Screen::GetScreen()
+          ->GetDisplayMatching(bounds_in_screen)
+          .bounds()
+          .CenterPoint();
+  const int display_bounds_center_x = display_bounds_center.x();
+  const int display_bounds_center_y = display_bounds_center.y();
+
+  // Check which corner to magnetize to based on which quadrant of the display
+  // the centerpoint of the window was on touch released. Not that the
+  // centerpoint may be offscreen.
+  const gfx::Point center_point = bounds_in_screen.CenterPoint();
+  const int center_point_x = center_point.x();
+  const int center_point_y = center_point.y();
+  FloatController::MagnetismCorner magnetism_corner;
+  if (center_point_x < display_bounds_center_x &&
+      center_point_y < display_bounds_center_y) {
+    magnetism_corner = FloatController::MagnetismCorner::kTopLeft;
+  } else if (center_point_x >= display_bounds_center_x &&
+             center_point_y < display_bounds_center_y) {
+    magnetism_corner = FloatController::MagnetismCorner::kTopRight;
+  } else if (center_point_x < display_bounds_center_x &&
+             center_point_y >= display_bounds_center_y) {
+    magnetism_corner = FloatController::MagnetismCorner::kBottomLeft;
+  } else {
+    CHECK_GE(center_point_x, display_bounds_center_x);
+    CHECK_GE(center_point_y, display_bounds_center_y);
+    magnetism_corner = FloatController::MagnetismCorner::kBottomRight;
+  }
+  return magnetism_corner;
+}
+
 class FloatLayoutManager : public WmDefaultLayoutManager {
  public:
   FloatLayoutManager() = default;
@@ -150,6 +193,12 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
 
     if (desk->is_active())
       float_start_time_ = base::TimeTicks::Now();
+
+    if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
+        TabletModeTuckEducation::CanActivateTuckEducation()) {
+      tuck_education_ =
+          std::make_unique<TabletModeTuckEducation>(floated_window);
+    }
   }
 
   FloatedWindowInfo(const FloatedWindowInfo&) = delete;
@@ -189,9 +238,22 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
     scoped_window_tucker_ =
         std::make_unique<ScopedWindowTucker>(floated_window_, left);
     scoped_window_tucker_->AnimateTuck();
+
+    // Education doesn't need to happen after the user has successfully tucked
+    // once.
+    TabletModeTuckEducation::OnWindowTucked();
   }
 
-  void OnUntuckAnimationEnded() { scoped_window_tucker_.reset(); }
+  void OnUntuckAnimationEnded() {
+    scoped_window_tucker_.reset();
+
+    // No-op for non-client-controlled windows. For the client-controlled
+    // windows, this ensures the bounds is sync between Chrome and the client.
+    // We don't send the offscreen bounds to the client when tucked, so we need
+    // to send the proper floated bounds when untucked.
+    UpdateWindowBoundsForTablet(floated_window_,
+                                WindowState::BoundsChangeAnimationType::kNone);
+  }
 
   void MaybeUntuckWindow(bool animate) {
     // The order here matters: `is_tucked_for_tablet_` must be set to false
@@ -222,7 +284,8 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override {
     DCHECK_EQ(floated_window_, window);
-    DCHECK(floated_window_observation_.IsObservingSource(floated_window_));
+    DCHECK(
+        floated_window_observation_.IsObservingSource(floated_window_.get()));
     // Note that `this` is deleted below in `OnFloatedWindowDestroying()` and
     // should not be accessed after this.
     Shell::Get()->float_controller()->OnFloatedWindowDestroying(window);
@@ -248,9 +311,30 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
       MaybeRecordFloatWindowDuration();
   }
 
+  void OnWindowPropertyChanged(aura::Window* window,
+                               const void* key,
+                               intptr_t old) override {
+    CHECK_EQ(floated_window_, window);
+    if (key != aura::client::kResizeBehaviorKey) {
+      return;
+    }
+
+    // The minimum size could change and as a result, the floated window might
+    // not be floatable anymore. In this case, unfloat it.
+    if (!chromeos::wm::CanFloatWindow(floated_window_)) {
+      Shell::Get()->float_controller()->ResetFloatedWindow(floated_window_);
+      return;
+    }
+
+    if (Shell::Get()->IsInTabletMode()) {
+      UpdateWindowBoundsForTablet(
+          floated_window_, WindowState::BoundsChangeAnimationType::kNone);
+    }
+  }
+
  private:
   // The `floated_window` this object is hosting information for.
-  aura::Window* floated_window_;
+  raw_ptr<aura::Window, ExperimentalAsh> floated_window_;
 
   // When a window is floated, the window position should not be auto-managed.
   // Use this value to reset the auto-managed state when unfloating a window.
@@ -259,6 +343,9 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
   // Scoped object that handles the special tucked window state, which is not
   // a normal window state. Null when `floated_window_` is currently not tucked.
   std::unique_ptr<ScopedWindowTucker> scoped_window_tucker_;
+
+  // An object responsible for managing the tuck education nudge and animations.
+  std::unique_ptr<TabletModeTuckEducation> tuck_education_;
 
   // Used to get the tucked window bounds (as opposed to normal floated). False
   // during `scoped_window_tucker_` construction.
@@ -269,7 +356,7 @@ class FloatController::FloatedWindowInfo : public aura::WindowObserver {
   // container, this Desk pointer is used to determine floating window's desk
   // ownership, since floated window should only be shown on the desk it belongs
   // to.
-  const Desk* desk_;
+  raw_ptr<const Desk, ExperimentalAsh> desk_;
 
   // The start time when the floated window is on the active desk. Used for
   // logging the amount of time a window is floated. Logged when the desk
@@ -313,21 +400,34 @@ gfx::Rect FloatController::GetPreferredFloatWindowClamshellBounds(
   // In the case of window restore, as we re-float previously floated window, we
   // will use `window->bounds()`to restore floated window's previous
   // location.
-  if (window->GetProperty(app_restore::kLaunchedFromAppRestoreKey))
+  if (window->GetProperty(app_restore::kLaunchedFromAppRestoreKey)) {
     return window->bounds();
+  }
 
-  gfx::Rect work_area = WorkAreaInsets::ForWindow(window->GetRootWindow())
-                            ->user_work_area_bounds();
-  wm::ConvertRectFromScreen(window->GetRootWindow(), &work_area);
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window);
+
+  const int padding_dp = chromeos::wm::kFloatedWindowPaddingDp;
+
+  if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
+       aura::client::kResizeBehaviorCanResize) == 0) {
+    // Unresizable windows must not be resized for any reason.
+    const gfx::Size size = window->bounds().size();
+    return gfx::Rect(work_area.right() - size.width() - padding_dp,
+                     work_area.bottom() - size.height() - padding_dp,
+                     size.width(), size.height());
+  }
 
   // Default float size is 1/3 width and 70% height of `work_area`.
   // Float bounds also should not be smaller than min bounds, use min
   // width/height if it exceeds the limit.
   const gfx::Size minimum_size = window->delegate()->GetMinimumSize();
   gfx::Rect preferred_bounds =
-      gfx::Rect(std::max(static_cast<int>(work_area.width() * 0.33),
+      gfx::Rect(std::max(static_cast<int>(work_area.width() *
+                                          kFloatedWindowClamshellWidthRatio),
                          minimum_size.width()),
-                std::max(static_cast<int>(work_area.height() * 0.7),
+                std::max(static_cast<int>(work_area.height() *
+                                          kFloatedWindowClamshellHeightRatio),
                          minimum_size.height()));
 
   // If user has already adjusted the window to be a size smaller than the
@@ -337,7 +437,6 @@ gfx::Rect FloatController::GetPreferredFloatWindowClamshellBounds(
     preferred_bounds = window->bounds();
   }
 
-  const int padding_dp = chromeos::wm::kFloatedWindowPaddingDp;
   const int preferred_width =
       std::min(preferred_bounds.width(), work_area.width() - 2 * padding_dp);
   const int preferred_height =
@@ -351,20 +450,10 @@ gfx::Rect FloatController::GetPreferredFloatWindowClamshellBounds(
 // static
 gfx::Rect FloatController::GetPreferredFloatWindowTabletBounds(
     aura::Window* window) {
-  gfx::Rect work_area = WorkAreaInsets::ForWindow(window->GetRootWindow())
-                            ->user_work_area_bounds();
-  wm::ConvertRectFromScreen(window->GetRootWindow(), &work_area);
-
-  const bool landscape = chromeos::wm::IsLandscapeOrientationForWindow(window);
   const gfx::Size preferred_size =
-      chromeos::wm::GetPreferredFloatedWindowTabletSize(work_area, landscape);
-  const gfx::Size minimum_size = window->delegate()->GetMinimumSize();
+      chromeos::wm::GetFloatedWindowTabletSize(window);
 
-  const int width = std::max(preferred_size.width(), minimum_size.width());
-
-  // Preferred height is always greater than minimum height since this function
-  // won't be called otherwise.
-  DCHECK_GT(preferred_size.height(), minimum_size.height());
+  const int width = preferred_size.width();
   const int height = preferred_size.height();
 
   // Get `floated_window_info` from the float controller. For non ARC apps, it
@@ -377,6 +466,9 @@ gfx::Rect FloatController::GetPreferredFloatWindowTabletBounds(
     DCHECK(floated_window_info);
   }
 #endif
+
+  const gfx::Rect work_area =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window);
 
   // Update the origin of the floated window based on whichever corner it is
   // magnetized to.
@@ -466,41 +558,8 @@ views::Widget* FloatController::GetTuckHandleWidget(
 void FloatController::OnDragCompletedForTablet(aura::Window* floated_window) {
   auto* floated_window_info = MaybeGetFloatedWindowInfo(floated_window);
   DCHECK(floated_window_info);
-
-  // Use the display bounds since the user may drag on to the shelf or spoken
-  // feedback bar.
-  const gfx::Point display_bounds_center =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(floated_window->GetRootWindow())
-          .bounds()
-          .CenterPoint();
-  const int display_bounds_center_x = display_bounds_center.x();
-  const int display_bounds_center_y = display_bounds_center.y();
-
-  // Check which corner to magnetize to based on which quadrant of the display
-  // the centerpoint of the window was on touch released. Not that the
-  // centerpoint may be offscreen.
-  const gfx::Point float_window_center =
-      floated_window->GetBoundsInScreen().CenterPoint();
-  const int float_window_center_x = float_window_center.x();
-  const int float_window_center_y = float_window_center.y();
-  MagnetismCorner magnetism_corner;
-  if (float_window_center_x < display_bounds_center_x &&
-      float_window_center_y < display_bounds_center_y) {
-    magnetism_corner = MagnetismCorner::kTopLeft;
-  } else if (float_window_center_x >= display_bounds_center_x &&
-             float_window_center_y < display_bounds_center_y) {
-    magnetism_corner = MagnetismCorner::kTopRight;
-  } else if (float_window_center_x < display_bounds_center_x &&
-             float_window_center_y >= display_bounds_center_y) {
-    magnetism_corner = MagnetismCorner::kBottomLeft;
-  } else {
-    DCHECK_GE(float_window_center_x, display_bounds_center_x);
-    DCHECK_GE(float_window_center_y, display_bounds_center_y);
-    magnetism_corner = MagnetismCorner::kBottomRight;
-  }
-
-  floated_window_info->set_magnetism_corner(magnetism_corner);
+  floated_window_info->set_magnetism_corner(
+      GetMagnetismCornerForBounds(floated_window->GetBoundsInScreen()));
   UpdateWindowBoundsForTablet(floated_window,
                               WindowState::BoundsChangeAnimationType::kAnimate);
 }
@@ -632,23 +691,26 @@ void FloatController::OnMovingFloatedWindowToDesk(aura::Window* floated_window,
   target_desk->NotifyContentChanged();
 }
 
+void FloatController::ClearWorkspaceEventHandler(aura::Window* root) {
+  workspace_event_handlers_.erase(root);
+}
+
 void FloatController::OnTabletModeStarted() {
   DCHECK(!floated_window_info_map_.empty());
   // If a window can still remain floated, update its bounds, otherwise unfloat
   // it. Note that the bounds update has to happen after tablet mode has started
   // as opposed to while it is still starting, since some windows change their
   // minimum size, which tablet float bounds depend on.
-  std::vector<aura::Window*> windows_need_reset;
   for (auto& [window, info] : floated_window_info_map_) {
     if (chromeos::wm::CanFloatWindow(window)) {
+      info->set_magnetism_corner(
+          GetMagnetismCornerForBounds(window->GetBoundsInScreen()));
       UpdateWindowBoundsForTablet(
           window, WindowState::BoundsChangeAnimationType::kCrossFade);
     } else {
-      windows_need_reset.push_back(window);
+      ResetFloatedWindow(window);
     }
   }
-  for (auto* window : windows_need_reset)
-    ResetFloatedWindow(window);
 }
 
 void FloatController::OnTabletModeEnding() {
@@ -681,6 +743,15 @@ void FloatController::OnDeskActivationChanged(const Desk* activated,
   if (auto* activated_desk_floated_window =
           FindFloatedWindowOfDesk(activated)) {
     ShowFloatedWindow(activated_desk_floated_window);
+
+    // Activate the floated window if it is the top window. This is normally
+    // done in `Desk::Activate`, but floated windows are technically not owned
+    // by the desk, and the window is still hidden at that point so it isn't in
+    // the MRU list.
+    if (auto* top_window = window_util::GetTopWindow();
+        top_window == activated_desk_floated_window) {
+      wm::ActivateWindow(top_window);
+    }
   }
 }
 
@@ -714,6 +785,19 @@ void FloatController::OnDisplayMetricsChanged(const display::Display& display,
   }
   for (auto* window : windows_need_reset)
     ResetFloatedWindow(window);
+
+  // Do not observe the animator in `OnRootWindowAdded` because there is an
+  // unittest that overwrites the animator for the root window just before
+  // running the animation.
+  if (display::DisplayObserver::DISPLAY_METRIC_ROTATION & metrics) {
+    if (auto* const root_window = Shell::GetRootWindowForDisplayId(display.id())) {
+      auto* const animator =
+          ScreenRotationAnimator::GetForRootWindow(root_window);
+      if (!screen_rotation_observations_.IsObservingSource(animator)) {
+        screen_rotation_observations_.AddObservation(animator);
+      }
+    }
+  }
 }
 
 void FloatController::OnRootWindowAdded(aura::Window* root_window) {
@@ -725,11 +809,48 @@ void FloatController::OnRootWindowAdded(aura::Window* root_window) {
 }
 
 void FloatController::OnRootWindowWillShutdown(aura::Window* root_window) {
-  workspace_event_handlers_.erase(root_window);
+  auto* const animator = ScreenRotationAnimator::GetForRootWindow(root_window);
+  if (screen_rotation_observations_.IsObservingSource(animator)) {
+    screen_rotation_observations_.RemoveObservation(animator);
+  }
 }
 
-void FloatController::OnShellDestroying() {
-  workspace_event_handlers_.clear();
+void FloatController::OnScreenCopiedBeforeRotation() {}
+
+void FloatController::OnScreenRotationAnimationFinished(
+    ScreenRotationAnimator* animator,
+    bool canceled) {
+  // Re-send the correct floated bounds here. ARC sometimes overwrites the
+  // floated bounds against the new bounds during the rotation animation.
+  // TODO(b/278519956): Remove this workaround once ARC/Exo handle rotation
+  // bounds better.
+  for (auto& [window, info] : floated_window_info_map_) {
+    if (window->GetProperty(aura::client::kAppType) ==
+        static_cast<int>(AppType::ARC_APP)) {
+      const gfx::Rect bounds =
+          Shell::Get()->tablet_mode_controller()->InTabletMode()
+              ? GetPreferredFloatWindowTabletBounds(window)
+              : GetPreferredFloatWindowClamshellBounds(window);
+      const SetBoundsWMEvent event(bounds);
+      WindowState::Get(window)->OnWMEvent(&event);
+    }
+  }
+}
+
+void FloatController::OnPinnedStateChanged(aura::Window* pinned_window) {
+  if (aura::Window* floated_window =
+          window_util::GetFloatedWindowForActiveDesk()) {
+    // Note that the `pinned_window` will still not be null when unpinning.
+    // Check the screen pinning controller for the to be pinned window.
+    if (aura::Window* to_be_pinned_window =
+            Shell::Get()->screen_pinning_controller()->pinned_window()) {
+      if (to_be_pinned_window != floated_window) {
+        HideFloatedWindow(floated_window);
+      }
+    } else {
+      ShowFloatedWindow(floated_window);
+    }
+  }
 }
 
 void FloatController::ToggleFloat(aura::Window* window) {
@@ -741,34 +862,42 @@ void FloatController::ToggleFloat(aura::Window* window) {
 
 void FloatController::FloatForTablet(aura::Window* window,
                                      chromeos::WindowStateType old_state_type) {
-  DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  CHECK(Shell::Get()->IsInTabletMode());
 
   FloatImpl(window);
 
-  if (!chromeos::IsSnappedWindowStateType(old_state_type))
-    return;
+  // Update the magnetism if we are coming from a state that can restore to
+  // float state, or from snap state. The bounds will be updated later based on
+  // the magnetism and account for work area.
+  absl::optional<MagnetismCorner> magnetism_corner;
+  if (chromeos::IsMinimizedWindowStateType(old_state_type)) {
+    magnetism_corner = GetMagnetismCornerForBounds(window->GetBoundsInScreen());
+  } else if (chromeos::IsSnappedWindowStateType(old_state_type)) {
+    // Update magnetism so that the float window is roughly in the same
+    // location as it was when it was snapped.
+    const bool left_or_top =
+        old_state_type == chromeos::WindowStateType::kPrimarySnapped;
+    const bool landscape = IsCurrentScreenOrientationLandscape();
+    if (!left_or_top) {
+      // Bottom or right snapped.
+      magnetism_corner = MagnetismCorner::kBottomRight;
+    } else if (landscape) {
+      // Left snapped.
+      magnetism_corner = MagnetismCorner::kBottomLeft;
+    } else {
+      CHECK(left_or_top && !landscape);
+      // Top snapped.
+      magnetism_corner = MagnetismCorner::kTopRight;
+    }
+  }
 
-  // Update magnetism so that the float window is roughly in the same location
-  // as it was when it was snapped.
-  const bool left_or_top =
-      old_state_type == chromeos::WindowStateType::kPrimarySnapped;
-  const bool landscape = IsCurrentScreenOrientationLandscape();
-  MagnetismCorner magnetism_corner;
-  if (!left_or_top) {
-    // Bottom or right snapped.
-    magnetism_corner = MagnetismCorner::kBottomRight;
-  } else if (landscape) {
-    // Left snapped.
-    magnetism_corner = MagnetismCorner::kBottomLeft;
-  } else {
-    DCHECK(left_or_top && !landscape);
-    // Top snapped.
-    magnetism_corner = MagnetismCorner::kTopRight;
+  if (!magnetism_corner) {
+    return;
   }
 
   auto* floated_window_info = MaybeGetFloatedWindowInfo(window);
-  DCHECK(floated_window_info);
-  floated_window_info->set_magnetism_corner(magnetism_corner);
+  CHECK(floated_window_info);
+  floated_window_info->set_magnetism_corner(*magnetism_corner);
 }
 
 void FloatController::FloatImpl(aura::Window* window) {

@@ -17,24 +17,31 @@ use clap::arg;
 
 fn main() -> ExitCode {
     let args = clap::Command::new("gnrt")
-        .subcommand(clap::Command::new("gen")
-            .about("Generate GN build rules from third_party/rust crates")
-            .arg(arg!(--"output-cargo-toml" "Output third_party/rust/Cargo.toml then exit \
+        .subcommand(
+            clap::Command::new("gen")
+                .about("Generate GN build rules from third_party/rust crates")
+                .arg(arg!(--"output-cargo-toml" "Output third_party/rust/Cargo.toml then exit \
                 immediately"))
-            .arg(arg!(--"skip-patch" "Don't apply gnrt_build_patch after generating build files. \
-                Useful when updating the patch."))
-            .arg(arg!(--"for-std" "(WIP) Generate build files for Rust std library instead of \
-                third_party/rust"))
+                .arg(
+                    arg!(--"for-std" "(WIP) Generate build files for Rust std library instead of \
+                third_party/rust"),
+                ),
         )
-        .subcommand(clap::Command::new("download")
-            .about("Download the crate with the given name and version to third_party/rust.")
-            .arg(arg!([NAME] "Name of the crate to download").required(true))
-            .arg(arg!([VERSION] "Version of the crate to download").required(true))
-            .arg(
-                arg!(--"security-critical" <YESNO> "Whether the crate is considered to be \
-                    security critical."
-                ).possible_values(["yes", "no"]).required(true)
-            )
+        .subcommand(
+            clap::Command::new("download")
+                .about("Download the crate with the given name and version to third_party/rust.")
+                .arg(arg!(<name> "Name of the crate to download"))
+                .arg(
+                    arg!(<version> "Version of the crate to download")
+                        .value_parser(clap::value_parser!(semver::Version)),
+                )
+                .arg(
+                    arg!(--"security-critical" <YESNO> "Whether the crate is considered to be \
+                        security critical."
+                    )
+                    .value_parser(["yes", "no"])
+                    .required(true),
+                ),
         )
         .get_matches();
 
@@ -42,7 +49,7 @@ fn main() -> ExitCode {
 
     match args.subcommand() {
         Some(("gen", args)) => {
-            if args.is_present("for-std") {
+            if args.get_flag("for-std") {
                 // This is not fully implemented. Currently, it will print data helpful
                 // for development then quit.
                 generate_for_std(&args, &paths)
@@ -51,11 +58,9 @@ fn main() -> ExitCode {
             }
         }
         Some(("download", args)) => {
-            let security = args.value_of("security-critical").unwrap() == "yes";
-            let name = args.value_of("NAME").unwrap();
-            use std::str::FromStr;
-            let version = semver::Version::from_str(args.value_of("VERSION").unwrap())
-                .expect("Invalid version specified");
+            let security = args.get_one::<String>("security-critical").unwrap() == "yes";
+            let name = args.get_one::<String>("NAME").unwrap();
+            let version = args.get_one::<semver::Version>("VERSION").unwrap().clone();
             download::download(name, version, security, &paths)
         }
         _ => unreachable!("Invalid subcommand"),
@@ -148,7 +153,7 @@ fn generate_for_third_party(args: &clap::ArgMatches, paths: &paths::ChromiumPath
         }),
     );
 
-    if args.is_present("output-cargo-toml") {
+    if args.get_flag("output-cargo-toml") {
         println!("{}", toml::ser::to_string(&cargo_manifest).unwrap());
         return ExitCode::SUCCESS;
     }
@@ -281,18 +286,6 @@ fn generate_for_third_party(args: &clap::ArgMatches, paths: &paths::ChromiumPath
         write_build_file(&build_file_path, build_file_data).unwrap();
     }
 
-    // Apply patch for BUILD.gn files.
-    let build_patch = paths.root.join(paths.third_party.join("gnrt_build_patch"));
-    if !args.is_present("skip-patch") && build_patch.exists() {
-        let status = process::Command::new("git")
-            .arg("apply")
-            .arg(build_patch)
-            .current_dir(&paths.root)
-            .status()
-            .unwrap();
-        check_exit_status(status, "applying build patch").unwrap();
-    }
-
     ExitCode::SUCCESS
 }
 
@@ -337,6 +330,15 @@ fn generate_for_std(_args: &clap::ArgMatches, paths: &paths::ChromiumPaths) -> E
     // libtest is the root of the std crate dependency tree, so start there.
     let mut dependencies =
         deps::collect_dependencies(&command.exec().unwrap(), Some(vec!["test".to_string()]), None);
+
+    // Remove dev dependencies since tests aren't run. Also remove build deps
+    // since we configure flags and env vars manually. Include libtest
+    // explicitly since, as the root of collect_dependencies(), it doesn't get a
+    // dependency_kinds entry.
+    dependencies.retain(|dep| {
+        dep.package_name == "test"
+            || dep.dependency_kinds.contains_key(&deps::DependencyKind::Normal)
+    });
 
     dependencies.sort_unstable_by(|a, b| {
         a.package_name.cmp(&b.package_name).then(a.version.cmp(&b.version))

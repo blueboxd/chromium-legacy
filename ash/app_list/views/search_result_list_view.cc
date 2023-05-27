@@ -23,10 +23,13 @@
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
+#include "ash/style/typography.h"
 #include "base/dcheck_is_on.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/gfx/geometry/insets.h"
@@ -105,7 +108,14 @@ SearchResultListView::SearchResultListView(
       u"", CONTEXT_SEARCH_RESULT_CATEGORY_LABEL, STYLE_LAUNCHER));
   title_label_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_label_->SetAutoColorReadabilityEnabled(false);
-  title_label_->SetEnabledColorId(kColorAshTextColorSecondary);
+  if (chromeos::features::IsJellyEnabled()) {
+    TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosBody2,
+                                          *title_label_);
+    title_label_->SetEnabledColorId(
+        static_cast<ui::ColorId>(cros_tokens::kCrosSysOnSurfaceVariant));
+  } else {
+    title_label_->SetEnabledColorId(kColorAshTextColorSecondary);
+  }
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
       kPreferredTitleTopMargins, kPreferredTitleHorizontalMargins,
@@ -114,7 +124,7 @@ SearchResultListView::SearchResultListView(
   title_label_->SetPaintToLayer();
   title_label_->layer()->SetFillsBoundsOpaquely(false);
 
-  results_container_->AddChildView(title_label_);
+  results_container_->AddChildView(title_label_.get());
 
   size_t result_count =
       ash::SharedAppListConfig::instance()
@@ -130,7 +140,7 @@ SearchResultListView::SearchResultListView(
     results_container_->AddChildView(search_result_views_.back());
     AddObservedResultView(search_result_views_.back());
   }
-  AddChildView(results_container_);
+  AddChildView(results_container_.get());
 }
 
 SearchResultListView::~SearchResultListView() = default;
@@ -264,7 +274,7 @@ SearchResultListView::ScheduleResultAnimations(
   // Collect current container animation info.
   ResultsAnimationInfo current_animation_info;
 
-  if (num_results_ < 1 || !enabled_) {
+  if (num_results() < 1 || !enabled_) {
     SetVisible(false);
     for (auto* result_view : search_result_views_)
       result_view->SetVisible(false);
@@ -302,9 +312,9 @@ SearchResultListView::ScheduleResultAnimations(
 
   for (size_t i = 0; i < search_result_views_.size(); ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
-    result_view->SetVisible(i < num_results_);
+    result_view->SetVisible(i < num_results());
 
-    if (i < num_results_) {
+    if (i < num_results()) {
       // Checks whether the index of the current result view is greater than
       // or equal to the index of the first result view that should be animated.
       // Force animations if true.
@@ -328,8 +338,9 @@ void SearchResultListView::AppendShownResultMetadata(
     std::vector<SearchResultAimationMetadata>* result_metadata_) {
   for (size_t i = 0; i < search_result_views_.size(); ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
-    if (i >= num_results_ || !result_view->result())
+    if (i >= num_results() || !result_view->result()) {
       return;
+    }
     SearchResultAimationMetadata metadata;
     metadata.result_id = result_view->result()->id();
     metadata.skip_animations = result_view->result()->skip_update_animation();
@@ -560,8 +571,7 @@ std::vector<SearchResult*> SearchResultListView::GetCategorizedSearchResults() {
 
 std::vector<SearchResult*> SearchResultListView::UpdateResultViews() {
   std::vector<SearchResult*> display_results = GetCategorizedSearchResults();
-  size_t num_results = display_results.size();
-  num_results_ = num_results;
+  const size_t num_results = display_results.size();
   for (size_t i = 0; i < search_result_views_.size(); ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
     if (i < num_results) {

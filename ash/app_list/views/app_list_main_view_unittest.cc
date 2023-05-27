@@ -9,6 +9,7 @@
 
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_test_model.h"
+#include "ash/app_list/quick_app_access_model.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_item_view.h"
@@ -22,6 +23,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/base_event_utils.h"
@@ -192,7 +194,8 @@ class AppListMainViewTest : public AshTestBase {
   }
 
  protected:
-  AppListView* app_list_view_ = nullptr;  // Owned by native widget.
+  raw_ptr<AppListView, ExperimentalAsh> app_list_view_ =
+      nullptr;  // Owned by native widget.
 };
 
 // Tests that the close button becomes invisible after close button is clicked.
@@ -224,18 +227,23 @@ TEST_F(AppListMainViewTest, ModelChanged) {
 
   AppListModel* old_model = GetAppListTestHelper()->model();
   SearchModel* old_search_model = GetAppListTestHelper()->search_model();
+  QuickAppAccessModel* old_quick_app_access_model =
+      GetAppListTestHelper()->quick_app_access_model();
 
   // Simulate a profile switch (which switches the app list models).
   auto search_model = std::make_unique<SearchModel>();
   auto model = std::make_unique<test::AppListTestModel>();
+  auto quick_app_access_model = std::make_unique<QuickAppAccessModel>();
   const size_t kReplacementItems = 5;
   model->PopulateApps(kReplacementItems);
-  AppListModelProvider::Get()->SetActiveModel(model.get(), search_model.get());
+  AppListModelProvider::Get()->SetActiveModel(model.get(), search_model.get(),
+                                              quick_app_access_model.get());
   EXPECT_EQ(kReplacementItems, GetRootViewModel()->view_size());
 
   // Replace the old model so observers on `model` are removed before test
   // shutdown.
-  AppListModelProvider::Get()->SetActiveModel(old_model, old_search_model);
+  AppListModelProvider::Get()->SetActiveModel(old_model, old_search_model,
+                                              old_quick_app_access_model);
 }
 
 // Tests dragging an item out of a single item folder and dropping it onto the

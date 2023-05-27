@@ -8,10 +8,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/fast_checkout/fast_checkout_client.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -90,13 +90,14 @@ class FormStructure;
 // interact with it and its |AutofillClient| and |AutofillDriver|.
 //
 // TODO(crbug.com/1324900): Consider using more descriptive name.
-class TouchToFillDelegateImpl : public TouchToFillDelegate {
+class TouchToFillDelegateAndroidImpl : public TouchToFillDelegate {
  public:
-  TouchToFillDelegateImpl(BrowserAutofillManager* manager,
-                          FastCheckoutClient* fast_checkout_client);
-  TouchToFillDelegateImpl(const TouchToFillDelegateImpl&) = delete;
-  TouchToFillDelegateImpl& operator=(const TouchToFillDelegateImpl&) = delete;
-  ~TouchToFillDelegateImpl() override;
+  explicit TouchToFillDelegateAndroidImpl(BrowserAutofillManager* manager);
+  TouchToFillDelegateAndroidImpl(const TouchToFillDelegateAndroidImpl&) =
+      delete;
+  TouchToFillDelegateAndroidImpl& operator=(
+      const TouchToFillDelegateAndroidImpl&) = delete;
+  ~TouchToFillDelegateAndroidImpl() override;
 
   // Checks whether TTF is eligible for the given web form data.
   // Only if this is true, the controller will show the view.
@@ -128,7 +129,7 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
 
   void LogMetricsAfterSubmission(const FormStructure& submitted_form) override;
 
-  base::WeakPtr<TouchToFillDelegateImpl> GetWeakPtr();
+  base::WeakPtr<TouchToFillDelegateAndroidImpl> GetWeakPtr();
 
  private:
   enum class TouchToFillState {
@@ -176,8 +177,9 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
   bool IsFillingCorrect(const FormStructure& submitted_form) const;
 
   // Checks if the credit card form is already filled with values. The form is
-  // considered to be filled if the credit card number and the expiry date
-  // fields are non-empty.
+  // considered to be filled if the credit card number field is non-empty. The
+  // expiration date fields are not checked because they might have arbitrary
+  // placeholders.
   // TODO(crbug.com/1331312): FormData is used here to ensure that we check the
   // most recent form values. FormStructure knows only about the initial values.
   bool IsFormPrefilled(const FormData& form);
@@ -185,12 +187,11 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
   TouchToFillState ttf_credit_card_state_ = TouchToFillState::kShouldShow;
 
   const raw_ptr<BrowserAutofillManager> manager_;
-  const raw_ptr<FastCheckoutClient> fast_checkout_client_;
   FormData query_form_;
   FormFieldData query_field_;
   bool dismissed_by_user_;
 
-  base::WeakPtrFactory<TouchToFillDelegateImpl> weak_ptr_factory_{this};
+  base::WeakPtrFactory<TouchToFillDelegateAndroidImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace autofill

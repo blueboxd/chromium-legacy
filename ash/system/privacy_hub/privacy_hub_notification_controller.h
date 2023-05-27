@@ -27,6 +27,9 @@ class ASH_EXPORT PrivacyHubNotificationController {
       const PrivacyHubNotificationController&) = delete;
   ~PrivacyHubNotificationController();
 
+  // Gets the singleton instance that lives within `Shell` if available.
+  static PrivacyHubNotificationController* Get();
+
   // Called by any sensor system when a software switch notification for
   // `sensor` should be shown to the user.
   void ShowSoftwareSwitchNotification(Sensor sensor);
@@ -39,6 +42,13 @@ class ASH_EXPORT PrivacyHubNotificationController {
   // `sensor` should be updated, for example, when an application stops
   // accessing `sensor`.
   void UpdateSoftwareSwitchNotification(Sensor sensor);
+
+  // Checks if a sensor-related notification is shown.
+  bool IsSoftwareSwitchNotificationDisplayedForSensor(Sensor sensor);
+
+  // Allows to alter priority for the upcoming microphone hw notifications.
+  void SetPriorityForMicrophoneHardwareNotification(
+      message_center::NotificationPriority priority);
 
   // Called by any sensor system when a hardware switch notification for
   // `sensor` should be shown to the user.
@@ -63,6 +73,9 @@ class ASH_EXPORT PrivacyHubNotificationController {
   static constexpr const char kMicrophoneHardwareSwitchNotificationId[] =
       "ash://microphone_hardware_mute";
 
+  static constexpr const char kGeolocationSwitchNotificationId[] =
+      "ash://geolocation_switch";
+
   // Open the Privacy Hub settings page and log that this interaction came from
   // a notification.
   static void OpenPrivacyHubSettingsPage();
@@ -70,6 +83,12 @@ class ASH_EXPORT PrivacyHubNotificationController {
   // Open the support page for Privacy Hub and logs the interaction together
   // with what `sensor` was in use by the user.
   static void OpenSupportUrl(Sensor sensor);
+
+  // Set the appropriate pref to the value of `enabled` and log the
+  // interaction from a notification.
+  static void SetAndLogSensorPreferenceFromNotification(
+      SensorDisabledNotificationDelegate::Sensor sensor,
+      const bool enabled);
 
  private:
   void AddSensor(SensorDisabledNotificationDelegate::Sensor sensor);
@@ -85,9 +104,10 @@ class ASH_EXPORT PrivacyHubNotificationController {
   // - microphone software switch notification
   // - camera software switch notification
   // - microphone and camera combined notification
+  // - geolocation software switch notification
   std::unique_ptr<PrivacyHubNotification> combined_notification_;
-
   std::unique_ptr<PrivacyHubNotification> microphone_hw_switch_notification_;
+  std::unique_ptr<PrivacyHubNotification> geolocation_notification_;
 };
 
 }  // namespace ash

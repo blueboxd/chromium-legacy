@@ -7,11 +7,13 @@
 #include "ash/components/arc/arc_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_restore/arc_ghost_window_handler.h"
 #include "chrome/browser/ash/app_restore/arc_ghost_window_shell_surface.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/window_predictor/window_predictor_utils.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -24,7 +26,6 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_throbber.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -72,6 +73,16 @@ bool IsGhostWindowNewStyleEnabled() {
   return base::FeatureList::IsEnabled(arc::kGhostWindowNewStyle);
 }
 
+std::u16string GetGhostWindowAppLaunchString(const std::string& app_name) {
+  return l10n_util::GetStringFUTF16(IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_MESSAGE,
+                                    base::UTF8ToUTF16(app_name));
+}
+
+std::u16string GetGhostWindowAppLaunchAodString() {
+  return l10n_util::GetStringUTF16(
+      IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_AOD_MESSAGE);
+}
+
 class Throbber : public views::View {
  public:
   explicit Throbber(uint32_t color) : color_(color) {
@@ -80,6 +91,9 @@ class Throbber : public views::View {
         FROM_HERE, base::Milliseconds(30),
         base::BindRepeating(&Throbber::SchedulePaint, base::Unretained(this)));
     SchedulePaint();  // paint right away
+    SetAccessibilityProperties(
+        ax::mojom::Role::kProgressIndicator,
+        l10n_util::GetStringUTF16(IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_THROBBER));
   }
   Throbber(const Throbber&) = delete;
   Throbber operator=(const Throbber&) = delete;
@@ -89,13 +103,6 @@ class Throbber : public views::View {
     base::TimeDelta elapsed_time = base::TimeTicks::Now() - start_time_;
     gfx::PaintThrobberSpinning(canvas, GetContentsBounds(), color_,
                                elapsed_time);
-  }
-
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    // A valid role must be set prior to setting the name.
-    node_data->role = ax::mojom::Role::kProgressIndicator;
-    node_data->SetName(
-        l10n_util::GetStringUTF16(IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_THROBBER));
   }
 
  private:
@@ -162,7 +169,7 @@ void ArcGhostWindowView::SetGhostWindowViewType(arc::GhostWindowType type) {
         color_utils::GetColorWithMaxContrast(theme_color_)));
     throbber->SetPreferredSize(gfx::Size(kThrobberDiameterOriginalStyle,
                                          kThrobberDiameterOriginalStyle));
-    throbber->GetViewAccessibility().OverrideRole(ax::mojom::Role::kImage);
+    throbber->SetAccessibleRole(ax::mojom::Role::kImage);
     throbber->SetID(ContentID::ID_THROBBER);
     // TODO(sstan): Set window title and accessible name from saved data.
   } else {
@@ -260,6 +267,9 @@ void ArcGhostWindowView::AddChildrenViewsForFixupType() {
 }
 
 void ArcGhostWindowView::AddChildrenViewsForAppLaunchType() {
+  auto app_launch_message = arc::ArcSessionManager::Get()->IsActivationDelayed()
+                                ? GetGhostWindowAppLaunchAodString()
+                                : GetGhostWindowAppLaunchString(app_name_);
   AddChildView(
       views::Builder<views::BoxLayoutView>()
           .SetOrientation(views::BoxLayout::Orientation::kHorizontal)
@@ -271,9 +281,7 @@ void ArcGhostWindowView::AddChildrenViewsForAppLaunchType() {
                   .SetPreferredSize(gfx::Size(kThrobberDiameterNewStyle,
                                               kThrobberDiameterNewStyle)),
               views::Builder<views::Label>()
-                  .SetText(l10n_util::GetStringFUTF16(
-                      IDS_ARC_GHOST_WINDOW_APP_LAUNCHING_MESSAGE,
-                      base::UTF8ToUTF16(app_name_)))
+                  .SetText(app_launch_message)
                   .SetTextContext(views::style::CONTEXT_LABEL)
                   .SetTextStyle(views::style::STYLE_SECONDARY)
                   .SetMultiLine(true)

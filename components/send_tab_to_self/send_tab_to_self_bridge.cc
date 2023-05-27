@@ -10,13 +10,13 @@
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/metrics_util.h"
@@ -123,15 +123,16 @@ SendTabToSelfBridge::CreateMetadataChangeList() {
   return ModelTypeStore::WriteBatch::CreateMetadataChangeList();
 }
 
-absl::optional<syncer::ModelError> SendTabToSelfBridge::MergeSyncData(
+absl::optional<syncer::ModelError> SendTabToSelfBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   DCHECK(entries_.empty());
-  return ApplySyncChanges(std::move(metadata_change_list),
-                          std::move(entity_data));
+  return ApplyIncrementalSyncChanges(std::move(metadata_change_list),
+                                     std::move(entity_data));
 }
 
-absl::optional<syncer::ModelError> SendTabToSelfBridge::ApplySyncChanges(
+absl::optional<syncer::ModelError>
+SendTabToSelfBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   std::vector<const SendTabToSelfEntry*> added;
@@ -236,14 +237,8 @@ std::string SendTabToSelfBridge::GetStorageKey(
   return entity_data.specifics.send_tab_to_self().guid();
 }
 
-void SendTabToSelfBridge::ApplyStopSyncChanges(
+void SendTabToSelfBridge::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  // If |delete_metadata_change_list| is null, it indicates that sync metadata
-  // shouldn't be deleted, for example chrome is shutting down.
-  if (!delete_metadata_change_list) {
-    return;
-  }
-
   DCHECK(store_);
 
   store_->DeleteAllDataAndMetadata(base::DoNothing());
@@ -298,7 +293,7 @@ const SendTabToSelfEntry* SendTabToSelfBridge::AddEntry(
     return mru_entry_;
   }
 
-  std::string guid = base::GenerateGUID();
+  std::string guid = base::Uuid::GenerateRandomV4().AsLowercaseString();
 
   // Assure that we don't have a guid collision.
   DCHECK_EQ(GetEntryByGUID(guid), nullptr);

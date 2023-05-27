@@ -64,13 +64,21 @@ void BubbleView::AddedToWidget() {
   // they scroll (if more effects are present than can fit in the available
   // height).
   if (controller_->effects_manager().HasToggleEffects()) {
-    layout_view->AddChildView(std::make_unique<ToggleEffectsView>(
-        controller_, GetPreferredSize().width()));
+    layout_view->AddChildView(std::make_unique<ToggleEffectsView>(controller_));
   }
   if (controller_->effects_manager().HasSetValueEffects()) {
     layout_view->AddChildView(
         std::make_unique<SetValueEffectsView>(controller_));
   }
+}
+
+void BubbleView::ChildPreferredSizeChanged(View* child) {
+  PreferredSizeChanged();
+  SizeToContents();
+}
+
+bool BubbleView::CanActivate() const {
+  return true;
 }
 
 }  // namespace ash::video_conference

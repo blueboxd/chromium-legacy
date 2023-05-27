@@ -44,7 +44,9 @@ absl_cc_library(
   COPTS
     ${ABSL_DEFAULT_COPTS}
   DEPS
+    absl::base
     absl::config
+    absl::core_headers
     absl::raw_logging_internal
     absl::time
 )
@@ -59,6 +61,7 @@ absl_cc_test(
   DEPS
     absl::kernel_timeout_internal
     absl::config
+    absl::random_random
     absl::time
     GTest::gmock_main
 )
@@ -75,6 +78,7 @@ absl_cc_library(
     "internal/per_thread_sem.h"
     "internal/pthread_waiter.h"
     "internal/sem_waiter.h"
+    "internal/stdcpp_waiter.h"
     "internal/waiter.h"
     "internal/waiter_base.h"
     "internal/win32_waiter.h"
@@ -88,6 +92,7 @@ absl_cc_library(
     "internal/per_thread_sem.cc"
     "internal/pthread_waiter.cc"
     "internal/sem_waiter.cc"
+    "internal/stdcpp_waiter.cc"
     "internal/waiter_base.cc"
     "internal/win32_waiter.cc"
     "notification.cc"
@@ -254,7 +259,9 @@ absl_cc_test(
   COPTS
     ${ABSL_TEST_COPTS}
   DEPS
+    absl::config
     absl::kernel_timeout_internal
+    absl::random_random
     absl::synchronization
     absl::thread_pool
     absl::time

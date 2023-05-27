@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-forward.h"
 
 namespace content {
 struct InstallabilityError;
@@ -66,8 +66,8 @@ enum InstallableStatusCode {
   PIPELINE_RESTARTED = 41,
   DATA_TIMED_OUT = 42,
   WEBAPK_INSTALL_FAILED = 43,
-  MANIFEST_URL_SCHEME_NOT_SUPPORTED_FOR_WEBAPK = 44,
-  SERVICE_WORKER_NOT_REQUIRED = 45,
+  // MANIFEST_URL_SCHEME_NOT_SUPPORTED_FOR_WEBAPK = 44 (DEPRECATED),
+  // SERVICE_WORKER_NOT_REQUIRED = 45 (DEPRECATED),
   MAX_ERROR_CODE,
 };
 

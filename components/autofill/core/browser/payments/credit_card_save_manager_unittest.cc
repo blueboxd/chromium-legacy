@@ -14,7 +14,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
@@ -159,7 +158,7 @@ class MockVirtualCardEnrollmentManager
        absl::optional<
            payments::PaymentsClient::GetDetailsForEnrollmentResponseDetails>
            get_details_for_enrollment_response_details,
-       const raw_ptr<PrefService> user_prefs,
+       PrefService* user_prefs,
        VirtualCardEnrollmentManager::RiskAssessmentFunction
            risk_assessment_function,
        VirtualCardEnrollmentManager::VirtualCardEnrollmentFieldsLoadedCallback
@@ -186,11 +185,10 @@ class CreditCardSaveManagerTest : public testing::Test {
                          /*pref_service=*/autofill_client_.GetPrefs(),
                          /*local_state=*/autofill_client_.GetPrefs(),
                          /*identity_manager=*/nullptr,
-                         /*history_service=*/nullptr,
+                         /*history_service=*/nullptr, &sync_service_,
                          /*strike_database=*/nullptr,
                          /*image_fetcher=*/nullptr,
                          /*is_off_the_record=*/false);
-    personal_data().OnSyncServiceInitialized(&sync_service_);
     autofill_driver_ = std::make_unique<TestAutofillDriver>();
     payments_client_ = new payments::TestPaymentsClient(
         autofill_client_.GetURLLoaderFactory(),
@@ -399,14 +397,14 @@ class CreditCardSaveManagerTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   test::AutofillUnitTestEnvironment autofill_test_environment_;
-  MockAutofillClient autofill_client_{
-      std::make_unique<MockPersonalDataManager>()};
   std::unique_ptr<MockVirtualCardEnrollmentManager>
       virtual_card_enrollment_manager_;
   std::unique_ptr<TestAutofillDriver> autofill_driver_;
   std::unique_ptr<TestBrowserAutofillManager> browser_autofill_manager_;
   scoped_refptr<AutofillWebDataService> database_;
   syncer::TestSyncService sync_service_;
+  MockAutofillClient autofill_client_{
+      std::make_unique<MockPersonalDataManager>()};
   // TODO(crbug.com/1291003): Refactor to use the real CreditCardSaveManager.
   // Ends up getting owned (and destroyed) by TestFormDataImporter:
   raw_ptr<TestCreditCardSaveManager> credit_card_save_manager_;

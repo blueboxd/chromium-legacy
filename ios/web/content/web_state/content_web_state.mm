@@ -7,12 +7,16 @@
 #import "base/strings/utf_string_conversions.h"
 #import "content/public/browser/navigation_entry.h"
 #import "content/public/browser/web_contents.h"
+#import "ios/web/content/content_browser_context.h"
 #import "ios/web/content/navigation/content_navigation_context.h"
+#import "ios/web/content/web_state/content_web_state_builder.h"
 #import "ios/web/content/web_state/crc_web_view_proxy_impl.h"
 #import "ios/web/find_in_page/java_script_find_in_page_manager_impl.h"
 #import "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
+#import "ios/web/public/session/crw_navigation_item_storage.h"
+#import "ios/web/public/session/crw_session_storage.h"
 #import "ios/web/public/web_state_observer.h"
 #import "ios/web/text_fragments/text_fragments_manager_impl.h"
 #import "net/cert/x509_util.h"
@@ -63,20 +67,31 @@ FaviconURL::IconType IconTypeFromContentIconType(
 
 }  // namespace
 
-ContentWebState::ContentWebState(const CreateParams& params) {
-  // TODO(crbug.com/1419001): initialize web_contents_ with
-  // WebContents::Create(...) when a BrowserContext is available.
+ContentWebState::ContentWebState(const CreateParams& params)
+    : ContentWebState(params, nil) {}
+
+ContentWebState::ContentWebState(const CreateParams& params,
+                                 CRWSessionStorage* session_storage)
+    : unique_identifier_(session_storage ? session_storage.uniqueIdentifier
+                                         : SessionID::NewUnique()) {
+  content::BrowserContext* browser_context =
+      ContentBrowserContext::FromBrowserState(params.browser_state);
+  scoped_refptr<content::SiteInstance> site_instance;
+  content::WebContents::CreateParams createParams(browser_context,
+                                                  site_instance);
+  web_contents_ = content::WebContents::Create(createParams);
   WebContentsObserver::Observe(web_contents_.get());
-  content::NavigationController* controller = nullptr;
-  if (web_contents_) {
-    controller = &web_contents_->GetController();
-  }
+  content::NavigationController& controller = web_contents_->GetController();
   certificate_policy_cache_ =
       std::make_unique<DummySessionCertificatePolicyCache>(
           params.browser_state);
   navigation_manager_ = std::make_unique<ContentNavigationManager>(
       this, params.browser_state, controller);
   web_frames_manager_ = std::make_unique<ContentWebFramesManager>(this);
+
+  UIView* web_contents_view = web_contents_->GetNativeView();
+  web_contents_view.translatesAutoresizingMaskIntoConstraints = NO;
+  web_contents_view.layer.backgroundColor = UIColor.grayColor.CGColor;
 
   web_view_ = [[UIScrollView alloc] init];
   web_view_.translatesAutoresizingMaskIntoConstraints = NO;
@@ -90,7 +105,12 @@ ContentWebState::ContentWebState(const CreateParams& params) {
   web::JavaScriptFindInPageManagerImpl::CreateForWebState(this);
   web::TextFragmentsManagerImpl::CreateForWebState(this);
 
-  UUID_ = [[NSUUID UUID] UUIDString];
+  session_storage_ = session_storage;
+  if (session_storage) {
+    UUID_ = [session_storage.stableIdentifier copy];
+  } else {
+    UUID_ = [[[NSUUID UUID] UUIDString] copy];
+  }
 }
 
 ContentWebState::~ContentWebState() {
@@ -106,6 +126,10 @@ ContentWebState::~ContentWebState() {
   }
 }
 
+content::WebContents* ContentWebState::GetWebContents() {
+  return web_contents_.get();
+}
+
 WebStateDelegate* ContentWebState::GetDelegate() {
   return nullptr;
 }
@@ -113,10 +137,18 @@ WebStateDelegate* ContentWebState::GetDelegate() {
 void ContentWebState::SetDelegate(WebStateDelegate* delegate) {}
 
 bool ContentWebState::IsRealized() const {
-  return true;
+  return session_storage_ == nil;
 }
 
 WebState* ContentWebState::ForceRealized() {
+  if (session_storage_) {
+    ExtractContentSessionStorage(this, web_contents_->GetController(),
+                                 GetBrowserState(), session_storage_);
+    session_storage_ = nil;
+    for (auto& observer : observers_) {
+      observer.WebStateRealized(this);
+    }
+  }
   return this;
 }
 
@@ -127,7 +159,7 @@ bool ContentWebState::IsWebUsageEnabled() const {
 void ContentWebState::SetWebUsageEnabled(bool enabled) {}
 
 UIView* ContentWebState::GetView() {
-  return web_view_;
+  return session_storage_ ? nil : web_contents_->GetNativeView();
 }
 
 void ContentWebState::DidCoverWebContent() {}
@@ -142,9 +174,19 @@ base::Time ContentWebState::GetCreationTime() const {
   return base::Time::Now();
 }
 
-void ContentWebState::WasShown() {}
+void ContentWebState::WasShown() {
+  ForceRealized();
+  for (auto& observer : observers_) {
+    observer.WasShown(this);
+  }
+}
 
-void ContentWebState::WasHidden() {}
+void ContentWebState::WasHidden() {
+  ForceRealized();
+  for (auto& observer : observers_) {
+    observer.WasHidden(this);
+  }
+}
 
 void ContentWebState::SetKeepRenderProcessAlive(bool keep_alive) {}
 
@@ -153,7 +195,7 @@ BrowserState* ContentWebState::GetBrowserState() const {
 }
 
 base::WeakPtr<WebState> ContentWebState::GetWeakPtr() {
-  return nullptr;
+  return weak_factory_.GetWeakPtr();
 }
 
 void ContentWebState::OpenURL(const OpenURLParams& params) {}
@@ -190,7 +232,10 @@ ContentWebState::GetSessionCertificatePolicyCache() {
 }
 
 CRWSessionStorage* ContentWebState::BuildSessionStorage() {
-  return nil;
+  if (session_storage_) {
+    return session_storage_;
+  }
+  return BuildContentSessionStorage(this, navigation_manager_.get());
 }
 
 void ContentWebState::LoadData(NSData* data,
@@ -203,6 +248,10 @@ NSString* ContentWebState::GetStableIdentifier() const {
   return UUID_;
 }
 
+SessionID ContentWebState::GetUniqueIdentifier() const {
+  return unique_identifier_;
+}
+
 const std::string& ContentWebState::GetContentsMimeType() const {
   static std::string type = "text/html";
   return type;
@@ -213,16 +262,21 @@ bool ContentWebState::ContentIsHTML() const {
 }
 
 const std::u16string& ContentWebState::GetTitle() const {
-  static std::u16string title = u"";
-  return web_contents_ ? web_contents_->GetTitle() : title;
+  if (session_storage_) {
+    const NSUInteger index = session_storage_.lastCommittedItemIndex;
+    if (index > 0u && index <= session_storage_.itemStorages.count) {
+      return session_storage_.itemStorages[index].title;
+    }
+  }
+  return web_contents_->GetTitle();
 }
 
 bool ContentWebState::IsLoading() const {
-  return web_contents_ ? web_contents_->IsLoading() : false;
+  return session_storage_ ? false : web_contents_->IsLoading();
 }
 
 double ContentWebState::GetLoadingProgress() const {
-  return web_contents_ ? web_contents_->GetLoadProgress() : 0.0;
+  return session_storage_ ? 0.0 : web_contents_->GetLoadProgress();
 }
 
 bool ContentWebState::IsVisible() const {
@@ -258,6 +312,10 @@ void ContentWebState::SetFaviconStatus(const FaviconStatus& favicon_status) {
 }
 
 int ContentWebState::GetNavigationItemCount() const {
+  if (session_storage_) {
+    return session_storage_.itemStorages.count;
+  }
+
   return navigation_manager_->GetItemCount();
 }
 
@@ -304,9 +362,6 @@ bool ContentWebState::SetSessionStateData(NSData* data) {
 NSData* ContentWebState::SessionStateData() {
   return nil;
 }
-
-void ContentWebState::SetSwipeRecognizerProvider(
-    id<CRWSwipeRecognizerProvider> delegate) {}
 
 PermissionState ContentWebState::GetStateForPermission(
     Permission permission) const {

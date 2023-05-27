@@ -135,6 +135,10 @@ struct CertVerifierServiceRemoteParams {
   // A pipe to the CertVerifierService.
   pending_remote<cert_verifier.mojom.CertVerifierService>?
       cert_verifier_service;
+
+  // Receives notifications of changes to the CertVerifier.
+  pending_receiver<cert_verifier.mojom.CertVerifierServiceClient>?
+    cert_verifier_service_client_receiver;
 };
 
 // Client to update the custom proxy config.
@@ -338,6 +342,13 @@ struct NetworkContextParams {
   // If true, cookies will be stored encrypted.
   bool enable_encrypted_cookies = true;
 
+  // On Windows, whether or not the cookie database should be opened with
+  // the sqlite3 flag `exclusive=true` which asks the sqlite VFS to open them
+  // without file sharing enabled. This has the consequence that other processes
+  // should not be able to open the cookie database file.
+  [EnableIf=is_win]
+  bool enable_locking_cookie_database = false;
+
   // If the cookie file is given, this controls whether previously written
   // session cookies are restored. Otherwise it should be false.
   bool restore_old_session_cookies = false;
@@ -534,6 +545,11 @@ struct NetworkContextParams {
 
   // Is true, Trust Token operations should be blocked.
   bool block_trust_tokens;
+
+  // Whether "Compression dictionary transport" feature should be enabled.
+  // This feature is under construction. TODO(crbug.com/1413922): Update this
+  // comment when we finish the implementation.
+  bool shared_dictionary_enabled = false;
 
   // Parameters for constructing the FirstPartySetsAccessDelegate.
   // |first_party_sets_access_delegate_params| is the initial configuration to

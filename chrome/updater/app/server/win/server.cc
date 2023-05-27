@@ -28,6 +28,8 @@
 #include "base/win/registry.h"
 #include "base/win/windows_types.h"
 #include "chrome/installer/util/work_item_list.h"
+#include "chrome/updater/app/server/win/update_service_internal_stub_win.h"
+#include "chrome/updater/app/server/win/update_service_stub_win.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/update_service.h"
@@ -55,31 +57,6 @@ std::wstring COMGroup(UpdaterScope scope) {
 
 std::wstring COMGroupInternal(UpdaterScope scope) {
   return GetCOMGroup(L"Internal", scope);
-}
-
-// Update the registry value for the "UninstallCmdLine" under the UPDATER_KEY.
-bool SwapUninstallCmdLine(UpdaterScope scope,
-                          const base::FilePath& updater_path,
-                          HKEY root,
-                          WorkItemList* list) {
-  CHECK(list);
-
-  base::CommandLine uninstall_if_unused_command(updater_path);
-
-  // TODO(crbug.com/1270520) - use a switch that can uninstall immediately if
-  // unused, instead of requiring server starts.
-  uninstall_if_unused_command.AppendSwitch(kWakeSwitch);
-  if (IsSystemInstall(scope)) {
-    uninstall_if_unused_command.AppendSwitch(kSystemSwitch);
-  }
-  uninstall_if_unused_command.AppendSwitch(kEnableLoggingSwitch);
-  uninstall_if_unused_command.AppendSwitchASCII(kLoggingModuleSwitch,
-                                                kLoggingModuleSwitchValue);
-  list->AddSetRegValueWorkItem(
-      root, UPDATER_KEY, KEY_WOW64_32KEY, kRegValueUninstallCmdLine,
-      uninstall_if_unused_command.GetCommandLineString(), true);
-
-  return true;
 }
 
 HRESULT AddAllowedAce(HANDLE object,
@@ -166,8 +143,23 @@ bool SwapGoogleUpdate(UpdaterScope scope,
   list->AddSetRegValueWorkItem(
       root, google_update_appid_key, KEY_WOW64_32KEY, kRegValueName,
       base::ASCIIToWide(PRODUCT_FULLNAME_STRING), true);
-
-  return SwapUninstallCmdLine(scope, updater_path, root, list);
+  list->AddSetRegValueWorkItem(
+      root, UPDATER_KEY, KEY_WOW64_32KEY, kRegValueUninstallCmdLine,
+      [scope, &updater_path]() {
+        base::CommandLine uninstall_if_unused_command(updater_path);
+        uninstall_if_unused_command.AppendSwitch(kWakeSwitch);
+        if (IsSystemInstall(scope)) {
+          uninstall_if_unused_command.AppendSwitch(kSystemSwitch);
+        }
+        uninstall_if_unused_command.AppendSwitch(kEnableLoggingSwitch);
+        uninstall_if_unused_command.AppendSwitchASCII(
+            kLoggingModuleSwitch, kLoggingModuleSwitchValue);
+        return uninstall_if_unused_command.GetCommandLineString();
+      }(),
+      true);
+  list->AddSetRegValueWorkItem(root, UPDATER_KEY, KEY_WOW64_32KEY,
+                               kRegValueVersion, kUpdaterVersionUtf16, true);
+  return true;
 }
 
 // Uninstall the GoogleUpdate services, run values, scheduled tasks, and files.
@@ -235,6 +227,18 @@ bool UninstallGoogleUpdate(UpdaterScope scope,
   return list->Do();
 }
 
+absl::optional<int> DaynumFromDWORD(DWORD value) {
+  const int daynum = static_cast<int>(value);
+
+  // When daynum is positive, it is the number of days since January 1, 2007.
+  // It's reasonable to only accept value between 3000 (maps to Mar 20, 2015)
+  // and 50000 (maps to Nov 24, 2143).
+  // -1 is special value for first install.
+  return daynum == -1 || (daynum >= 3000 && daynum <= 50000)
+             ? absl::make_optional(daynum)
+             : absl::nullopt;
+}
+
 }  // namespace
 
 HRESULT IsCOMCallerAllowed() {
@@ -300,15 +304,43 @@ void ComServerApp::CreateWRLModule() {
       this, &ComServerApp::Stop);
 }
 
+void ComServerApp::TaskStarted() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const auto count =
+      Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule()
+          .IncrementObjectCount();
+  VLOG(2) << "Starting task, Microsoft::WRL::Module count: " << count;
+}
+
+void ComServerApp::TaskCompleted() {
+  main_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&ComServerApp::AcknowledgeTaskCompletion, this),
+      external_constants()->ServerKeepAliveTime());
+}
+
+void ComServerApp::AcknowledgeTaskCompletion() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const auto count =
+      Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule()
+          .DecrementObjectCount();
+  VLOG(2) << "Completed task, Microsoft::WRL::Module count: " << count;
+}
+
 void ComServerApp::ActiveDuty(scoped_refptr<UpdateService> update_service) {
-  update_service_ = update_service;
+  update_service_ = base::MakeRefCounted<UpdateServiceStubWin>(
+      std::move(update_service),
+      base::BindRepeating(&ComServerApp::TaskStarted, this),
+      base::BindRepeating(&ComServerApp::TaskCompleted, this));
   Start(base::BindOnce(&ComServerApp::RegisterClassObjects,
                        base::Unretained(this)));
 }
 
 void ComServerApp::ActiveDutyInternal(
     scoped_refptr<UpdateServiceInternal> update_service_internal) {
-  update_service_internal_ = update_service_internal;
+  update_service_internal_ = base::MakeRefCounted<UpdateServiceInternalStubWin>(
+      std::move(update_service_internal),
+      base::BindRepeating(&ComServerApp::TaskStarted, this),
+      base::BindRepeating(&ComServerApp::TaskCompleted, this));
   Start(base::BindOnce(&ComServerApp::RegisterInternalClassObjects,
                        base::Unretained(this)));
 }
@@ -360,7 +392,12 @@ bool ComServerApp::SwapInNewVersion() {
 
   const base::ScopedClosureRunner reset_shutdown_event(
       SignalShutdownEvent(updater_scope()));
-  StopGoogleUpdateProcesses(updater_scope());
+
+  absl::optional<base::FilePath> target =
+      GetGoogleUpdateExePath(updater_scope());
+  if (target) {
+    StopProcessesUnderPath(target->DirName(), base::Seconds(45));
+  }
 
   const bool succeeded = list->Do();
   if (succeeded) {
@@ -421,6 +458,18 @@ bool ComServerApp::MigrateLegacyUpdaters(
       std::wstring ap;
       if (client_state_key.ReadValue(kRegValueAP, &ap) == ERROR_SUCCESS) {
         registration.ap = base::SysWideToUTF8(ap);
+      }
+
+      DWORD date_last_activity = 0;
+      if (client_state_key.ReadValueDW(kRegValueDateOfLastActivity,
+                                       &date_last_activity) == ERROR_SUCCESS) {
+        registration.dla = DaynumFromDWORD(date_last_activity);
+      }
+
+      DWORD date_last_rollcall = 0;
+      if (client_state_key.ReadValueDW(kRegValueDateOfLastRollcall,
+                                       &date_last_rollcall) == ERROR_SUCCESS) {
+        registration.dlrc = DaynumFromDWORD(date_last_rollcall);
       }
     }
 

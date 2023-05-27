@@ -9,14 +9,16 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/fast_checkout/fast_checkout_accessibility_service.h"
 #include "chrome/browser/fast_checkout/fast_checkout_capabilities_fetcher.h"
-#include "chrome/browser/fast_checkout/fast_checkout_client.h"
 #include "chrome/browser/fast_checkout/fast_checkout_enums.h"
 #include "chrome/browser/fast_checkout/fast_checkout_personal_data_helper.h"
 #include "chrome/browser/fast_checkout/fast_checkout_trigger_validator.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_keyboard_suppressor.h"
 #include "chrome/browser/ui/fast_checkout/fast_checkout_controller_impl.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
@@ -26,13 +28,14 @@ class LogManager;
 }
 
 class FastCheckoutClientImpl
-    : public content::WebContentsUserData<FastCheckoutClientImpl>,
-      public FastCheckoutClient,
+    : public FastCheckoutClient,
       public FastCheckoutControllerImpl::Delegate,
       public autofill::PersonalDataManagerObserver,
       public autofill::AutofillManager::Observer,
+      public autofill::ContentAutofillDriverFactory::Observer,
       public autofill::payments::FullCardRequest::ResultDelegate {
  public:
+  explicit FastCheckoutClientImpl(autofill::ContentAutofillClient* client);
   ~FastCheckoutClientImpl() override;
 
   FastCheckoutClientImpl(const FastCheckoutClientImpl&) = delete;
@@ -50,9 +53,10 @@ class FastCheckoutClientImpl
   bool IsRunning() const override;
   bool IsShowing() const override;
   void OnNavigation(const GURL& url, bool is_cart_or_checkout_url) override;
-  bool IsSupported(const autofill::FormData& form,
-                   const autofill::FormFieldData& field,
-                   const autofill::AutofillManager& autofill_manager) override;
+  bool IsSupported(
+      const autofill::FormData& form,
+      const autofill::FormFieldData& field,
+      const autofill::AutofillManager& autofill_manager) const override;
   bool IsNotShownYet() const override;
 
   // FastCheckoutControllerImpl::Delegate:
@@ -72,6 +76,13 @@ class FastCheckoutClientImpl
   // Is called on navigation and resets its internal state.
   void OnAutofillManagerReset(autofill::AutofillManager& manager) override;
 
+  // ContentAutofillDriverFactory::Observer:
+  void OnContentAutofillDriverFactoryDestroyed(
+      autofill::ContentAutofillDriverFactory& factory) override;
+  void OnContentAutofillDriverCreated(
+      autofill::ContentAutofillDriverFactory& factory,
+      autofill::ContentAutofillDriver& driver) override;
+
   // autofill::payments::FullCardRequest::ResultDelegate:
   void OnFullCardRequestSucceeded(
       const autofill::payments::FullCardRequest& full_card_request,
@@ -80,6 +91,10 @@ class FastCheckoutClientImpl
   void OnFullCardRequestFailed(
       autofill::CreditCard::RecordType card_type,
       autofill::payments::FullCardRequest::FailureType failure_type) override;
+
+  autofill::TouchToFillKeyboardSuppressor& keyboard_suppressor_for_test() {
+    return keyboard_suppressor_;
+  }
 
   // Filling state of a form during a run.
   enum class FillingState {
@@ -95,14 +110,11 @@ class FastCheckoutClientImpl
   };
 
  protected:
-  explicit FastCheckoutClientImpl(content::WebContents* web_contents);
-
   // Creates the UI controller.
   virtual std::unique_ptr<FastCheckoutController>
   CreateFastCheckoutController();
 
  private:
-  friend class content::WebContentsUserData<FastCheckoutClientImpl>;
   friend class FastCheckoutClientImplTest;
   FRIEND_TEST_ALL_PREFIXES(
       FastCheckoutClientImplTest,
@@ -139,9 +151,6 @@ class FastCheckoutClientImpl
   // Displays the bottom sheet UI. If the underlying autofill data is updated,
   // the method is called again to refresh the information displayed in the UI.
   void ShowFastCheckoutUI();
-
-  // Turns keyboard suppression on and off.
-  void SetShouldSuppressKeyboard(bool suppress);
 
   // Returns the Autofill log manager if available.
   autofill::LogManager* GetAutofillLogManager() const;
@@ -220,7 +229,7 @@ class FastCheckoutClientImpl
   base::OneShotTimer timeout_timer_;
 
   // The `ChromeAutofillClient` instance attached to the same `WebContents`.
-  raw_ptr<autofill::AutofillClient> autofill_client_ = nullptr;
+  raw_ptr<autofill::ContentAutofillClient> autofill_client_ = nullptr;
 
   // The `AutofillManager` instance invoking the fast checkout run. Note that
   // `this` class generally outlives `AutofillManager`.
@@ -278,6 +287,11 @@ class FastCheckoutClientImpl
   // Hash of the unique run ID used for metrics.
   int64_t run_id_ = 0;
 
+  // Suppresses the keyboard between
+  // AutofillManager::Observer::On{Before,After}AskForValuesToFill() events if
+  // FC may be shown.
+  autofill::TouchToFillKeyboardSuppressor keyboard_suppressor_;
+
   base::ScopedObservation<autofill::PersonalDataManager,
                           autofill::PersonalDataManagerObserver>
       personal_data_manager_observation_{this};
@@ -285,6 +299,12 @@ class FastCheckoutClientImpl
   base::ScopedObservation<autofill::AutofillManager,
                           autofill::AutofillManager::Observer>
       autofill_manager_observation_{this};
+
+  // Observes creation of ContentAutofillDrivers to inject a
+  // FastCheckoutDelegateImpl into the BrowserAutofillManager.
+  base::ScopedObservation<autofill::ContentAutofillDriverFactory,
+                          autofill::ContentAutofillDriverFactory::Observer>
+      driver_factory_observation_{this};
 
   // content::WebContentsUserData:
   WEB_CONTENTS_USER_DATA_KEY_DECL();

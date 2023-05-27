@@ -8,9 +8,9 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/color_util.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -58,15 +58,14 @@ int GetFocusRingRadiusForState(CrOSNextDeskIconButton::State state) {
 }  // namespace
 
 CrOSNextDeskIconButton::CrOSNextDeskIconButton(
-    DesksBarView* bar_view,
+    DeskBarViewBase* bar_view,
     const gfx::VectorIcon* button_icon,
     const std::u16string& text,
     ui::ColorId icon_color_id,
     ui::ColorId background_color_id,
     bool initially_enabled,
     base::RepeatingClosure callback)
-    : CrOSNextDeskButtonBase(text, /*set_text=*/false, callback),
-      bar_view_(bar_view),
+    : CrOSNextDeskButtonBase(text, /*set_text=*/false, bar_view, callback),
       state_(bar_view_->IsZeroState() ? State::kZero : State::kExpanded),
       button_icon_(button_icon),
       icon_color_id_(icon_color_id),

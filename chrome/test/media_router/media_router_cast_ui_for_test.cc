@@ -31,13 +31,9 @@ ui::MouseEvent CreateMousePressedEvent() {
 
 }  // namespace
 
-// static
-MediaRouterCastUiForTest* MediaRouterCastUiForTest::GetOrCreateForWebContents(
-    content::WebContents* web_contents) {
-  // No-op if an instance already exists for the WebContents.
-  MediaRouterCastUiForTest::CreateForWebContents(web_contents);
-  return MediaRouterCastUiForTest::FromWebContents(web_contents);
-}
+MediaRouterCastUiForTest::MediaRouterCastUiForTest(
+    content::WebContents* web_contents)
+    : MediaRouterUiForTestBase(web_contents) {}
 
 MediaRouterCastUiForTest::~MediaRouterCastUiForTest() {
   CHECK(!watch_callback_);
@@ -154,11 +150,6 @@ void MediaRouterCastUiForTest::OnDialogCreated() {
   GetDialogView()->KeepShownForTesting();
 }
 
-MediaRouterCastUiForTest::MediaRouterCastUiForTest(
-    content::WebContents* web_contents)
-    : MediaRouterUiForTestBase(web_contents),
-      content::WebContentsUserData<MediaRouterCastUiForTest>(*web_contents) {}
-
 void MediaRouterCastUiForTest::OnDialogModelUpdated(
     CastDialogView* dialog_view) {
   if (!watch_callback_ || watch_type_ == WatchType::kDialogShown ||
@@ -166,24 +157,23 @@ void MediaRouterCastUiForTest::OnDialogModelUpdated(
     return;
   }
 
-  const std::vector<CastDialogSinkButton*>& sink_buttons =
-      dialog_view->sink_buttons_for_test();
+  const std::vector<raw_ptr<CastDialogSinkView>>& sink_views =
+      dialog_view->sink_views_for_test();
   if (base::ranges::any_of(
-          sink_buttons, [&, this](CastDialogSinkButton* sink_button) {
+          sink_views, [&, this](CastDialogSinkView* sink_view) {
             switch (watch_type_) {
               case WatchType::kSink:
-                return sink_button->sink().friendly_name ==
+                return sink_view->sink().friendly_name ==
                        base::UTF8ToUTF16(*watch_sink_name_);
               case WatchType::kSinkAvailable:
-                return sink_button->sink().friendly_name ==
+                return sink_view->sink().friendly_name ==
                            base::UTF8ToUTF16(*watch_sink_name_) &&
-                       sink_button->sink().state ==
-                           UIMediaSinkState::AVAILABLE &&
-                       sink_button->GetEnabled();
+                       sink_view->sink().state == UIMediaSinkState::AVAILABLE &&
+                       sink_view->GetEnabled();
               case WatchType::kAnyIssue:
-                return sink_button->sink().issue.has_value();
+                return sink_view->sink().issue.has_value();
               case WatchType::kAnyRoute:
-                return sink_button->sink().route.has_value();
+                return sink_view->sink().route.has_value();
               case WatchType::kNone:
               case WatchType::kDialogShown:
               case WatchType::kDialogHidden:
@@ -214,9 +204,9 @@ CastDialogSinkButton* MediaRouterCastUiForTest::GetSinkButton(
     const std::string& sink_name) const {
   const CastDialogView* dialog_view = GetDialogView();
   CHECK(dialog_view);
-  const std::vector<CastDialogSinkButton*>& sink_buttons =
-      dialog_view->sink_buttons_for_test();
-  return GetSinkButtonWithName(sink_buttons, sink_name);
+  const std::vector<raw_ptr<CastDialogSinkView>>& sink_views =
+      dialog_view->sink_views_for_test();
+  return GetSinkButtonWithName(sink_views, sink_name);
 }
 
 void MediaRouterCastUiForTest::ObserveDialog(
@@ -249,7 +239,5 @@ CastDialogView* MediaRouterCastUiForTest::GetDialogView() {
   return dialog_controller_->GetCastDialogCoordinatorForTesting()
       .GetCastDialogView();
 }
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaRouterCastUiForTest);
 
 }  // namespace media_router

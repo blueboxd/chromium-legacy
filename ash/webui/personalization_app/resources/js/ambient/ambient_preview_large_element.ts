@@ -20,7 +20,7 @@ import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
 import {TopicSource} from '../../personalization_app.mojom-webui.js';
 import {logAmbientModeOptInUMA} from '../personalization_metrics_logger.js';
-import {Paths, PersonalizationRouter} from '../personalization_router_element.js';
+import {Paths, PersonalizationRouter, ScrollableTarget} from '../personalization_router_element.js';
 import {isNonEmptyArray} from '../utils.js';
 
 import {setAmbientModeEnabled} from './ambient_controller.js';
@@ -61,6 +61,8 @@ export class AmbientPreviewLarge extends AmbientPreviewBase {
   /** Returns the array of images that form the collage when Jelly is off. */
   private computeCollageImages_(): Url[] {
     switch (this.topicSource_) {
+      case TopicSource.kVideo:
+        return this.previewImages_ || [];
       case TopicSource.kArtGallery:
         return (this.previewAlbums_ || []).map(album => album.url).slice(0, 2);
       case TopicSource.kGooglePhotos:
@@ -108,6 +110,15 @@ export class AmbientPreviewLarge extends AmbientPreviewBase {
   private onClickPreviewImage_(event: Event) {
     event.stopPropagation();
     PersonalizationRouter.instance().goToRoute(Paths.AMBIENT);
+  }
+
+  /**
+   * Navigate to ambient subpage and scroll down to image source section.
+   */
+  private onClickThumbnails_(event: Event) {
+    event.stopPropagation();
+    PersonalizationRouter.instance().goToRoute(
+        Paths.AMBIENT, {scrollTo: ScrollableTarget.TOPIC_SOURCE_LIST});
   }
 
   /**

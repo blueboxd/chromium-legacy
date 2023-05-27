@@ -107,7 +107,7 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
       configs_, cached_result_provider_.get());
 
   for (const auto& config : configs_) {
-    if (metadata_utils::HasMigratedToMultiOutput(config.get())) {
+    if (!metadata_utils::ConfigUsesLegacyOutput(config.get())) {
       continue;
     }
     segment_selectors_[config->segmentation_key] =
@@ -258,7 +258,8 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
     selector.second->OnPlatformInitialized(&execution_service_);
   }
 
-  result_refresh_manager_->RefreshModelResults(CreateSegmentResultProviders());
+  result_refresh_manager_->RefreshModelResults(CreateSegmentResultProviders(),
+                                               &execution_service_);
 
   request_dispatcher_->OnPlatformInitialized(success, &execution_service_,
                                              CreateSegmentResultProviders());

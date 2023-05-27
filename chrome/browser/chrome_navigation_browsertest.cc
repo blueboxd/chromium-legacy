@@ -218,11 +218,7 @@ class CtrlClickProcessTest : public ChromeNavigationBrowserTest {
     {
       // Double-check that main_contents has expected window.name set.
       // This is a sanity check of test setup; this is not a product test.
-      std::string name_of_main_contents_window;
-      EXPECT_TRUE(ExecuteScriptAndExtractString(
-          main_contents, "window.domAutomationController.send(window.name)",
-          &name_of_main_contents_window));
-      EXPECT_EQ("main_contents", name_of_main_contents_window);
+      EXPECT_EQ("main_contents", EvalJs(main_contents, "window.name"));
 
       // Verify that the new contents doesn't have a window.opener set.
       bool window_opener_cast_to_bool = true;
@@ -270,13 +266,10 @@ class CtrlClickProcessTest : public ChromeNavigationBrowserTest {
     // Verify that the new contents cannot find the old contents via
     // window.open. (i.e. window.open should open a new window, rather than
     // returning a reference to main_contents / old window).
-    std::string location_of_opened_window;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        new_contents,
-        "w = window.open('', 'main_contents');"
-        "window.domAutomationController.send(w.location.href);",
-        &location_of_opened_window));
-    EXPECT_EQ(url::kAboutBlankURL, location_of_opened_window);
+    EXPECT_EQ(url::kAboutBlankURL,
+              EvalJs(new_contents,
+                     "w = window.open('', 'main_contents');"
+                     "w.location.href;"));
   }
 };
 
@@ -545,17 +538,15 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   content::RenderFrameHost* error_host =
       ChildFrameAt(web_contents->GetPrimaryMainFrame(), 0);
   std::string location;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      error_host,
-      "location='javascript:domAutomationController.send(location.href)';",
-      &location));
-  EXPECT_EQ(location, content::kUnreachableWebDataURL);
+  EXPECT_EQ(
+      EvalJs(
+          error_host,
+          "location='javascript:domAutomationController.send(location.href)';",
+          content::EXECUTE_SCRIPT_USE_MANUAL_REPLY),
+      content::kUnreachableWebDataURL);
 
   // The error page should have a unique origin.
-  std::string origin;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      error_host, "domAutomationController.send(self.origin);", &origin));
-  EXPECT_EQ("null", origin);
+  EXPECT_EQ("null", EvalJs(error_host, "self.origin;"));
 }
 
 // Test that web pages can't navigate to an error page URL, either directly or
@@ -629,12 +620,9 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   // the error page content to be populated asynchronously by scripts after
   // DidFinishLoad.
   while (true) {
-    std::string content;
-    EXPECT_TRUE(ExecuteScriptAndExtractString(
-        web_contents,
-        "domAutomationController.send("
-        "    document.body ? document.body.innerText : '');",
-        &content));
+    std::string content =
+        EvalJs(web_contents, "document.body ? document.body.innerText : '';")
+            .ExtractString();
     if (content.find("HTTP ERROR 404") != std::string::npos)
       break;
     base::RunLoop run_loop;
@@ -708,6 +696,27 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
         GURL(content::kUnreachableWebDataURL),
         web_contents->GetPrimaryMainFrame()->GetSiteInstance()->GetSiteURL());
   }
+
+  // In the above setup, the reload was carried out with the error page being
+  // the initiator of the navigation.  The error page's origin is opaque with
+  // a.com as the precursor, so this becomes the initiator origin for the
+  // reload to about:blank.  This means that about:blank ought to load in a
+  // SiteInstance and process corresponding to a.com.
+  //
+  // This covers an interesting and rare corner case, where an about:blank
+  // navigation can't use the source SiteInstance, which would normally keep
+  // it in the initiator's process and SiteInstance.  This is because the
+  // reload originates from an error page process, which is incompatible with a
+  // non-error navigation to about:blank.  In this case, the final SiteInstance
+  // and process selection should still honor the initiator, rather than end up
+  // in an unlocked process and an unassigned SiteInstance.  See
+  // https://crbug.com/1426928.
+  EXPECT_EQ(
+      "http://a.com/",
+      web_contents->GetPrimaryMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_TRUE(web_contents->GetPrimaryMainFrame()
+                  ->GetProcess()
+                  ->IsProcessLockedToSiteForTesting());
 }
 
 // This test covers a navigation that:
@@ -1475,11 +1484,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
   observer.Wait();
 
   // Make sure popup attempt fails due to lack of transient user activation.
-  bool opened = false;
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractBool(
-      main_contents, "window.domAutomationController.send(!!window.open());",
-      &opened));
-  EXPECT_FALSE(opened);
+  EXPECT_EQ(false, content::EvalJs(main_contents, "!!window.open();",
+                                   content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
   EXPECT_EQ(embedded_test_server()->GetURL("/title1.html"),
             main_contents->GetLastCommittedURL());

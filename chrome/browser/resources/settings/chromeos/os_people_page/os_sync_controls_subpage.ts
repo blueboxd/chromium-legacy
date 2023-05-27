@@ -86,12 +86,14 @@ class OsSyncControlsSubpageElement extends OsSyncControlsSubpageElementBase {
       },
 
       /**
-       * Whether to show apps checkbox sublabel, which contains disclaimer about
-       * Web apps and relevant if checkbox value is shared with Lacros.
+       * Whether to show the new UI for OS Sync Settings and
+       * Browser Sync Settings  which include sublabel and
+       * Apps toggle shared between Ash and Lacros.
        */
-      showAppsCheckboxSublabel_: {
+      showSyncSettingsRevamp_: {
         type: Boolean,
         value: loadTimeData.getBoolean('appsToggleSharingEnabled'),
+        readOnly: true,
       },
 
       /**
@@ -105,7 +107,7 @@ class OsSyncControlsSubpageElement extends OsSyncControlsSubpageElementBase {
   }
 
   private areDataTypeTogglesDisabled_: boolean;
-  private showAppsCheckboxSublabel_: boolean;
+  private showSyncSettingsRevamp_: boolean;
   private supportedSettingsIds: Set<Setting>;
   private browserProxy_: OsSyncBrowserProxy;
   private osSyncPrefs: OsSyncPrefs|undefined;
@@ -188,6 +190,17 @@ class OsSyncControlsSubpageElement extends OsSyncControlsSubpageElementBase {
     }
 
     this.sendOsSyncDatatypes_();
+  }
+
+  /**
+   * Called when the link to the browser's sync settings is clicked.
+   */
+  private onBrowserSyncSettingsClicked_(event: CustomEvent<{event: Event}>) {
+    // Prevent the default link click behavior.
+    event.detail.event.preventDefault();
+
+    // Programmatically open browser's sync settings.
+    chrome.send('OpenBrowserSyncSettings');
   }
 
   /**

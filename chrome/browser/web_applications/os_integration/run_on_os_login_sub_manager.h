@@ -25,13 +25,11 @@ class WebAppIconManager;
 
 class RunOnOsLoginSubManager : public OsIntegrationSubManager {
  public:
-  explicit RunOnOsLoginSubManager(Profile& profile,
-                                  WebAppRegistrar& registrar,
-                                  WebAppSyncBridge& sync_bridge,
-                                  WebAppIconManager& icon_manager);
+  RunOnOsLoginSubManager(Profile& profile,
+                         WebAppRegistrar& registrar,
+                         WebAppSyncBridge& sync_bridge,
+                         WebAppIconManager& icon_manager);
   ~RunOnOsLoginSubManager() override;
-  void Start() override;
-  void Shutdown() override;
 
   void Configure(const AppId& app_id,
                  proto::WebAppOsIntegrationState& desired_state,
@@ -42,6 +40,9 @@ class RunOnOsLoginSubManager : public OsIntegrationSubManager {
                const proto::WebAppOsIntegrationState& desired_state,
                const proto::WebAppOsIntegrationState& current_state,
                base::OnceClosure execute_done) override;
+
+  void ForceUnregister(const AppId& app_id,
+                       base::OnceClosure callback) override;
 
  private:
   // Unregistration logic.

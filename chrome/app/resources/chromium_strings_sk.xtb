@@ -81,7 +81,6 @@ Povolenia, ktoré ste už udelili webom a aplikáciám, sa môžu vzťahovať n
 <translation id="2928420929544864228">Inštalácia bola dokončená.</translation>
 <translation id="2977470724722393594">Prehliadač Chromium bol aktualizovaný</translation>
 <translation id="2977506796191543575">Ak sa vám určitý web pokúsi ukradnúť heslo alebo stiahnete škodlivý súbor, Chromium môže odoslať Bezpečnému prehliadaniu aj webové adresy vrátane častí obsahu stránok</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Prehliadač Chromium je pripojený k zariadeniu HID}few{Prehliadač Chromium je pripojený k zariadeniam HID}many{Prehliadač Chromium je pripojený k zariadeniam HID}other{Prehliadač Chromium je pripojený k zariadeniam HID}}</translation>
 <translation id="3032706164202344641">Chromium nemôže skontrolovať heslá. Skúste to neskôr.</translation>
 <translation id="3032787606318309379">Pridáva sa do prehliadača Chromium...</translation>
 <translation id="3038232873781883849">Čaká sa na inštaláciu…</translation>
@@ -96,7 +95,6 @@ Povolenia, ktoré ste už udelili webom a aplikáciám, sa môžu vzťahovať n
 <translation id="3258596308407688501">Prehliadač Chromium nemôže čítať ani zapisovať do adresára s údajmi:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Tento sprievodca vám pomôže porozumieť, ako si môžete prispôsobiť Chromium tak, aby fungoval podľa vašich predstáv</translation>
 <translation id="3283186697780795848">Máte nainštalovaný Chromium verzie <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3286538390144397061">Reštartovať</translation>
 <translation id="328888136576916638">Chýbajú kľúče rozhrania Google API. Niektoré funkcie prehliadača Google Chromium budú zakázané.</translation>
@@ -248,8 +246,10 @@ Povolenia, ktoré ste už udelili webom a aplikáciám, sa môžu vzťahovať n
 <translation id="6442900851116057561">Reštartovanie systému Chromium OS</translation>
 <translation id="6455857529632101747">Vitajte v profiloch prehliadača Chromium</translation>
 <translation id="6475912303565314141">Tiež určuje, ktorá stránka sa zobrazí pri spustení prehliadača Chromium.</translation>
+<translation id="648319183876919572">Zlepšené bezpečné prehliadanie vás chráni viac pred nebezpečnými webmi a stiahnutými súbormi</translation>
 <translation id="6510925080656968729">Odinštalovať Chromium</translation>
 <translation id="6542839706527980775">V každom profile sú uchované vlastné údaje prehliadača Chromium, ako sú záložky, história, heslá a ďalšie položky</translation>
+<translation id="656935081669708576">Môžete si zobraziť heslá z iného profilu prehliadača Chromium</translation>
 <translation id="6570579332384693436">Chromium odošle text zadaný v textových poliach Googlu s cieľom opraviť pravopisné chyby</translation>
 <translation id="6598877126913850652">Prejsť do nastavení upozornení prehliadača Chromium</translation>
 <translation id="6613594504749178791">Zmeny sa prejavia pri nasledujúcom reštartovaní prehliadača Chromium.</translation>
@@ -385,7 +385,6 @@ Prehliadač Chromium nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="924957577793602335">Upravte Chromium podľa seba</translation>
 <translation id="93478295209880648">Chromium nemusí fungovať správne, pretože v systémoch Windows XP a Windows Vista už nie je podporovaný</translation>
 <translation id="942598560705308788">Certifikáty, ktoré spravuje Chromium</translation>
-<translation id="959579472876010517">Využívajte Chromium naplno</translation>
 <translation id="965162752251293939">Kto používa Chromium?</translation>
 <translation id="967427899662692980">Získajte najsilnejšie zabezpečenie prehliadača Chromium</translation>
 <translation id="9792300276217204">Vždy vymazať dáta webov zo zariadenia po zavretí prehliadača Chromium</translation>

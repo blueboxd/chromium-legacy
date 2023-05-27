@@ -71,7 +71,7 @@ using HandleMDMNotificationCallback =
 namespace {
 
 CoreAccountId GetAccountId(id<SystemIdentity> identity) {
-  return CoreAccountId(base::SysNSStringToUTF8([identity gaiaID]));
+  return CoreAccountId::FromGaiaId(base::SysNSStringToUTF8([identity gaiaID]));
 }
 
 }  // namespace
@@ -375,8 +375,8 @@ TEST_F(AuthenticationServiceTest,
       identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(2u, accounts.size());
-  EXPECT_EQ(CoreAccountId("foo2ID"), accounts[0].account_id);
-  EXPECT_EQ(CoreAccountId("fooID"), accounts[1].account_id);
+  EXPECT_EQ(CoreAccountId::FromGaiaId("foo2ID"), accounts[0].account_id);
+  EXPECT_EQ(CoreAccountId::FromGaiaId("fooID"), accounts[1].account_id);
 
   // Simulate a switching to background and back to foreground, triggering a
   // credentials reload.
@@ -388,9 +388,9 @@ TEST_F(AuthenticationServiceTest,
   accounts = identity_manager()->GetAccountsWithRefreshTokens();
   std::sort(accounts.begin(), accounts.end(), account_compare_func);
   ASSERT_EQ(3u, accounts.size());
-  EXPECT_EQ(CoreAccountId("foo2ID"), accounts[0].account_id);
-  EXPECT_EQ(CoreAccountId("foo3ID"), accounts[1].account_id);
-  EXPECT_EQ(CoreAccountId("fooID"), accounts[2].account_id);
+  EXPECT_EQ(CoreAccountId::FromGaiaId("foo2ID"), accounts[0].account_id);
+  EXPECT_EQ(CoreAccountId::FromGaiaId("foo3ID"), accounts[1].account_id);
+  EXPECT_EQ(CoreAccountId::FromGaiaId("fooID"), accounts[2].account_id);
 }
 
 // Tests the account list is approved after adding an account with in Chrome.
@@ -583,7 +583,7 @@ TEST_F(AuthenticationServiceTest, ManagedAccountSignOut) {
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 3UL);
   EXPECT_TRUE(authentication_service()->HasPrimaryIdentityManaged(
       signin::ConsentLevel::kSignin));
-  ON_CALL(*mock_sync_service()->GetMockUserSettings(), IsFirstSetupComplete())
+  ON_CALL(*sync_setup_service_mock(), IsFirstSetupComplete())
       .WillByDefault(Return(true));
 
   SetCachedMDMInfo(identity(2), CreateRefreshAccessTokenError(identity(0)));
@@ -735,8 +735,7 @@ TEST_F(AuthenticationServiceTest, SigninAndSyncDecoupled) {
 
   // Grant Sync consent.
   EXPECT_CALL(*sync_setup_service_mock(), PrepareForFirstSyncSetup).Times(1);
-  EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(),
-              SetSyncRequested(true));
+  EXPECT_CALL(*mock_sync_service(), SetSyncFeatureRequested());
   authentication_service()->GrantSyncConsent(identity(0));
 
   EXPECT_NSEQ(identity(0), authentication_service()->GetPrimaryIdentity(

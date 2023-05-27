@@ -73,16 +73,16 @@ AutofillWalletUsageDataSyncBridge::CreateMetadataChangeList() {
 }
 
 absl::optional<syncer::ModelError>
-AutofillWalletUsageDataSyncBridge::MergeSyncData(
+AutofillWalletUsageDataSyncBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  // There is no local data to write, so use ApplySyncChanges.
-  return ApplySyncChanges(std::move(metadata_change_list),
-                          std::move(entity_data));
+  // There is no local data to write, so use ApplyIncrementalSyncChanges.
+  return ApplyIncrementalSyncChanges(std::move(metadata_change_list),
+                                     std::move(entity_data));
 }
 
 absl::optional<syncer::ModelError>
-AutofillWalletUsageDataSyncBridge::ApplySyncChanges(
+AutofillWalletUsageDataSyncBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -183,15 +183,9 @@ std::string AutofillWalletUsageDataSyncBridge::GetStorageKey(
   return GetClientTag(entity_data);
 }
 
-void AutofillWalletUsageDataSyncBridge::ApplyStopSyncChanges(
+void AutofillWalletUsageDataSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  if (!delete_metadata_change_list) {
-    // A null `delete_metadata_change_list` indicates that Sync is stopping.
-    return;
-  }
   AutofillTable* table = GetAutofillTable();
-  // A non-null `delete_metadata_change_list` indicates that the data type was
-  // disabled.
   if (table && !table->RemoveAllVirtualCardUsageData()) {
     change_processor()->ReportError(
         {FROM_HERE, "Failed to delete usage data from table."});

@@ -105,10 +105,11 @@ public interface SigninManager {
     boolean isSigninDisabledByPolicy();
 
     /**
-     * @return Whether true if the current user is not demo user and the user has a reasonable
-     *         Google Play Services installed.
+     * Returns whether the user can sign-in (maybe after an update to Google Play services).
+     * @param requireUpdatedPlayServices Indicates whether an updated version of play services is
+     *         required or not.
      */
-    boolean isSigninSupported();
+    boolean isSigninSupported(boolean requireUpdatedPlayServices);
 
     /**
      * @return Whether force sign-in is enabled by policy.
@@ -133,11 +134,12 @@ public interface SigninManager {
      *   - Wait for AccountTrackerService to be seeded.
      *   - Complete sign-in with the native IdentityManager.
      *   - Call the callback if provided.
-     *
-     * @param account The account to sign in to.
+     *  @param account The account to sign in to.
+     * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
      * @param callback Optional callback for when the sign-in process is finished.
      */
-    void signin(Account account, @Nullable SignInCallback callback);
+    void signin(
+            Account account, @SigninAccessPoint int accessPoint, @Nullable SignInCallback callback);
 
     /**
      * Starts the sign-in flow, and executes the callback when finished.
@@ -149,13 +151,12 @@ public interface SigninManager {
      *   - If managed, wait for the policy to be fetched.
      *   - Complete sign-in with the native IdentityManager.
      *   - Call the callback if provided.
-     *
+     *  @param account The account to sign in to.
      * @param accessPoint {@link SigninAccessPoint} that initiated the sign-in flow.
-     * @param account The account to sign in to.
      * @param callback Optional callback for when the sign-in process is finished.
      */
     void signinAndEnableSync(
-            @SigninAccessPoint int accessPoint, Account account, @Nullable SignInCallback callback);
+            Account account, @SigninAccessPoint int accessPoint, @Nullable SignInCallback callback);
 
     /**
      * Schedules the runnable to be invoked after all sign-in, sign-out, or sync data wipe operation

@@ -14,8 +14,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
@@ -31,6 +33,7 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build.VERSION_CODES;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatDelegate;
@@ -40,7 +43,6 @@ import androidx.test.filters.MediumTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -55,14 +57,16 @@ import org.chromium.base.Callback;
 import org.chromium.base.Promise;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseActivityTestRule;
-import org.chromium.base.test.metrics.HistogramTestRule;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
-import org.chromium.chrome.R;
+import org.chromium.base.test.util.HistogramWatcher;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo;
 import org.chromium.chrome.browser.enterprise.util.EnterpriseInfo.OwnedState;
 import org.chromium.chrome.browser.enterprise.util.FakeEnterpriseInfo;
@@ -82,7 +86,9 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninChecker;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.ui.signin.fre.SigninFirstRunMediator.LoadPoint;
+import org.chromium.chrome.test.AutomotiveContextWrapperTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
@@ -96,6 +102,7 @@ import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.BlankUiTestActivity;
+import org.chromium.ui.test.util.DeviceRestriction;
 import org.chromium.ui.test.util.NightModeTestUtils;
 import org.chromium.ui.test.util.ViewUtils;
 
@@ -133,10 +140,10 @@ public class SigninFirstRunFragmentTest {
     public final MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     @Rule
-    public HistogramTestRule mHistogramTestRule = new HistogramTestRule();
+    public final SigninTestRule mSigninTestRule = new SigninTestRule();
 
     @Rule
-    public final SigninTestRule mSigninTestRule = new SigninTestRule();
+    public AutomotiveContextWrapperTestRule mAutoTestRule = new AutomotiveContextWrapperTestRule();
 
     @Rule
     public final BaseActivityTestRule<BlankUiTestActivity> mActivityTestRule =
@@ -168,7 +175,7 @@ public class SigninFirstRunFragmentTest {
     private PrivacyPreferencesManagerImpl mPrivacyPreferencesManagerMock;
 
     private Promise<Void> mNativeInitializationPromise;
-    private FakeEnterpriseInfo mFakeEnterpriseInfo = new FakeEnterpriseInfo();
+    private final FakeEnterpriseInfo mFakeEnterpriseInfo = new FakeEnterpriseInfo();
     private CustomSigninFirstRunFragment mFragment;
 
     @ParameterAnnotations.UseMethodParameterBefore(NightModeTestUtils.NightModeParams.class)
@@ -178,14 +185,6 @@ public class SigninFirstRunFragmentTest {
                             ? AppCompatDelegate.MODE_NIGHT_YES
                             : AppCompatDelegate.MODE_NIGHT_NO);
         });
-    }
-
-    @BeforeClass
-    public static void setUpBeforeActivityLaunched() {
-        // Only needs to be loaded once and needs to be loaded before HistogramTestRule.
-        // TODO(https://crbug.com/1211884): Revise after HistogramTestRule is revised to not require
-        // native loading.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
     }
 
     @Before
@@ -263,6 +262,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1429072")
     public void testFragmentWhenRemovingChildAccountDynamically() {
         mSigninTestRule.addAccount(
                 CHILD_ACCOUNT_EMAIL, CHILD_FULL_NAME, /* givenName= */ null, /* avatar= */ null);
@@ -293,6 +293,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1434098")
     public void testRemovingAllAccountsDismissesAccountPickerDialog() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, /*avatar=*/null);
         launchActivityWithFragment();
@@ -336,6 +337,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.Q, message = "https://crbug.com/1434098")
     public void testFragmentWhenSigninIsDisabledByPolicy() {
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -368,12 +370,12 @@ public class SigninFirstRunFragmentTest {
                     .thenReturn(mIdentityManagerMock);
         });
         doAnswer(invocation -> {
-            SigninManager.SignInCallback callback = invocation.getArgument(1);
+            SigninManager.SignInCallback callback = invocation.getArgument(2);
             callback.onSignInAborted();
             return null;
         })
                 .when(mSigninManagerMock)
-                .signin(eq(AccountUtils.createAccountFromName(TEST_EMAIL1)), any());
+                .signin(eq(AccountUtils.createAccountFromName(TEST_EMAIL1)), anyInt(), any());
         launchActivityWithFragment();
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
 
@@ -390,6 +392,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.Q, message = "https://crbug.com/1434098")
     public void testFragmentWhenAddingAccountDynamicallyAndSigninIsDisabledByPolicy() {
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProviderMock);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -425,6 +428,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.Q, message = "https://crbug.com/1434098")
     public void testFragmentWhenChoosingAnotherAccount() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
         mSigninTestRule.addAccount(
@@ -492,6 +496,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO})
     public void testSigninWithDefaultAccount() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
         launchActivityWithFragment();
@@ -518,6 +523,81 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    public void testContinueButton_automotiveDevice_signInWithDefaultAccount() {
+        mAutoTestRule.setIsAutomotive(true);
+
+        mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
+        launchActivityWithFragment();
+        final String continueAsText = mActivityTestRule.getActivity().getString(
+                R.string.sync_promo_continue_as, GIVEN_NAME1);
+
+        // Click and continue to the device lock page
+        onView(withText(continueAsText)).perform(click());
+        CriteriaHelper.pollUiThread(() -> {
+            return mFragment.getView().findViewById(R.id.device_lock_title).isShown();
+        });
+
+        // Verify that sign-in has not proceeded
+        verify(mFirstRunPageDelegateMock, never()).acceptTermsOfService(anyBoolean());
+        Assert.assertNull(mSigninTestRule.getPrimaryAccount(ConsentLevel.SIGNIN));
+
+        // Continue past the device lock page
+        TestThreadUtils.runOnUiThreadBlocking(() -> mFragment.onDeviceLockReady());
+
+        // ToS should be accepted right away, without waiting for the sign-in to complete.
+        verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
+
+        CriteriaHelper.pollUiThread(() -> {
+            return IdentityServicesProvider.get()
+                    .getIdentityManager(Profile.getLastUsedRegularProfile())
+                    .hasPrimaryAccount(ConsentLevel.SIGNIN);
+        });
+        final CoreAccountInfo primaryAccount =
+                mSigninTestRule.getPrimaryAccount(ConsentLevel.SIGNIN);
+        Assert.assertEquals(TEST_EMAIL1, primaryAccount.getEmail());
+        // Sign-in has completed, so the FRE should advance to the next page.
+        verify(mFirstRunPageDelegateMock).advanceToNextPage();
+        verify(mFirstRunPageDelegateMock)
+                .recordFreProgressHistogram(MobileFreProgress.WELCOME_SIGNIN_WITH_DEFAULT_ACCOUNT);
+    }
+
+    @Test
+    @MediumTest
+    public void testContinueButton_automotiveDevice_dismissSignInFromDeviceLockPage() {
+        mAutoTestRule.setIsAutomotive(true);
+
+        mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
+        launchActivityWithFragment();
+        final String continueAsText = mActivityTestRule.getActivity().getString(
+                R.string.sync_promo_continue_as, GIVEN_NAME1);
+
+        // Click and continue to the device lock page
+        onView(withText(continueAsText)).perform(click());
+        CriteriaHelper.pollUiThread(() -> {
+            return mFragment.getView().findViewById(R.id.device_lock_title).isShown();
+        });
+
+        // Verify that sign-in has not proceeded
+        verify(mFirstRunPageDelegateMock, never()).acceptTermsOfService(anyBoolean());
+        Assert.assertNull(mSigninTestRule.getPrimaryAccount(ConsentLevel.SIGNIN));
+
+        // Continue past the device lock page
+        TestThreadUtils.runOnUiThreadBlocking(() -> mFragment.onDeviceLockRefused());
+
+        CriteriaHelper.pollUiThread(() -> {
+            return !IdentityServicesProvider.get()
+                            .getIdentityManager(Profile.getLastUsedRegularProfile())
+                            .hasPrimaryAccount(ConsentLevel.SIGNIN);
+        });
+        verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
+        verify(mFirstRunPageDelegateMock).advanceToNextPage();
+        verify(mFirstRunPageDelegateMock)
+                .recordFreProgressHistogram(MobileFreProgress.WELCOME_DISMISS);
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = VERSION_CODES.Q, message = "https://crbug.com/1434098")
     public void testSigninWithNonDefaultAccount() {
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, /*avatar=*/null);
         mSigninTestRule.addAccount(
@@ -591,7 +671,7 @@ public class SigninFirstRunFragmentTest {
                 R.string.sync_promo_continue_as, GIVEN_NAME1);
         onView(withText(continueAsText)).perform(click());
 
-        verify(mSigninManagerMock, never()).signin(any(), any());
+        verify(mSigninManagerMock, never()).signin(any(), anyInt(), any());
         verify(mFirstRunPageDelegateMock).acceptTermsOfService(true);
         verify(mFirstRunPageDelegateMock).advanceToNextPage();
     }
@@ -833,6 +913,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1429072")
     public void testFragmentWhenAddingAnotherAccount() {
         mSigninTestRule.setResultForNextAddAccountFlow(Activity.RESULT_OK, TEST_EMAIL2);
         mSigninTestRule.addAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1, null);
@@ -866,6 +947,8 @@ public class SigninFirstRunFragmentTest {
         when(mPolicyLoadListenerMock.get()).thenReturn(null);
         launchActivityWithFragment();
         checkFragmentWhenLoadingNativeAndPolicy();
+        var slowestPointHistogram = HistogramWatcher.newSingleRecordWatcher(
+                "MobileFre.SlowestLoadPoint", LoadPoint.POLICY_LOAD);
 
         // TODO(https://crbug.com/1346258): Use OneshotSupplierImpl instead.
         when(mPolicyLoadListenerMock.get()).thenReturn(false);
@@ -877,11 +960,9 @@ public class SigninFirstRunFragmentTest {
         });
 
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
-        Assert.assertEquals("Policy loading should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.POLICY_LOAD));
-        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
-                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
+        slowestPointHistogram.assertExpected(
+                "Policy loading should be the slowest and SlowestLoadpoint "
+                + "histogram should be counted only once");
     }
 
     @Test
@@ -892,15 +973,14 @@ public class SigninFirstRunFragmentTest {
                 () -> { mNativeInitializationPromise = new Promise<>(); });
         launchActivityWithFragment();
         checkFragmentWhenLoadingNativeAndPolicy();
+        var slowestPointHistogram = HistogramWatcher.newSingleRecordWatcher(
+                "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mNativeInitializationPromise.fulfill(null));
 
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
-        Assert.assertEquals("Native initialization should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION));
-        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
-                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
+        slowestPointHistogram.assertExpected("Native initialization should be the slowest and "
+                + "SlowestLoadpoint histogram should be counted only once");
         verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
     }
 
@@ -911,6 +991,8 @@ public class SigninFirstRunFragmentTest {
         when(mChildAccountStatusListenerMock.get()).thenReturn(null);
         launchActivityWithFragment();
         checkFragmentWhenLoadingNativeAndPolicy();
+        var slowestPointHistogram = HistogramWatcher.newSingleRecordWatcher(
+                "MobileFre.SlowestLoadPoint", LoadPoint.CHILD_STATUS_LOAD);
 
         // TODO(https://crbug.com/1346258): Use OneshotSupplierImpl instead.
         when(mChildAccountStatusListenerMock.get()).thenReturn(false);
@@ -923,23 +1005,23 @@ public class SigninFirstRunFragmentTest {
         });
 
         checkFragmentWithSelectedAccount(TEST_EMAIL1, FULL_NAME1, GIVEN_NAME1);
-        Assert.assertEquals("Child status loading should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.CHILD_STATUS_LOAD));
-        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
-                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
+        slowestPointHistogram.assertExpected("Child status loading should be the slowest and "
+                + "SlowestLoadpoint histogram should be counted only once");
     }
 
     @Test
     @MediumTest
     public void testNativePolicyAndChildStatusLoadMetricRecordedOnlyOnce() {
+        var slowestPointHistogram = HistogramWatcher.newSingleRecordWatcher(
+                "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION);
         launchActivityWithFragment();
         verify(mFirstRunPageDelegateMock, timeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL))
                 .recordNativePolicyAndChildStatusLoadedHistogram();
         verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
-        Assert.assertEquals("Native initialization should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION));
+        slowestPointHistogram.assertExpected("Native initialization should be the slowest");
+
+        slowestPointHistogram =
+                HistogramWatcher.newBuilder().expectNoRecords("MobileFre.SlowestLoadPoint").build();
 
         // Changing the activity orientation will create SigninFirstRunCoordinator again and call
         // SigninFirstRunFragment.notifyCoordinatorWhenNativePolicyAndChildStatusAreLoaded()
@@ -950,11 +1032,8 @@ public class SigninFirstRunFragmentTest {
         // before as mockito does not reset invocation counts between consecutive verify calls.
         verify(mFirstRunPageDelegateMock).recordNativePolicyAndChildStatusLoadedHistogram();
         verify(mFirstRunPageDelegateMock).recordNativeInitializedHistogram();
-        Assert.assertEquals("Native initialization should be the slowest", 1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "MobileFre.SlowestLoadPoint", LoadPoint.NATIVE_INITIALIZATION));
-        Assert.assertEquals("SlowestLoadpoint histogram should be counted only once", 1,
-                mHistogramTestRule.getHistogramTotalCount("MobileFre.SlowestLoadPoint"));
+        slowestPointHistogram.assertExpected(
+                "SlowestLoadPoint histogram should not be recorded again");
     }
 
     @Test
@@ -1191,7 +1270,7 @@ public class SigninFirstRunFragmentTest {
         onView(withText(R.string.signin_fre_dismiss_button)).check(matches(not(isDisplayed())));
         onView(withId(R.id.fre_browser_managed_by)).check(matches(isDisplayed()));
         onView(withId(R.id.privacy_disclaimer)).check(matches(isDisplayed()));
-        onView(withText(R.string.fre_browser_managed_by_parents)).check(matches(isDisplayed()));
+        onView(withText(R.string.fre_browser_managed_by_parent)).check(matches(isDisplayed()));
     }
 
     private void checkContinueButtonWithChildAccount(boolean hasFullNameInButtonText) {
@@ -1207,8 +1286,8 @@ public class SigninFirstRunFragmentTest {
         verify(mFirstRunPageDelegateMock).advanceToNextPage();
 
         // Sign-in isn't processed by SigninFirstRunFragment for child accounts.
-        verify(mSigninManagerMock, never()).signin(any(), any());
-        verify(mSigninManagerMock, never()).signinAndEnableSync(anyInt(), any(), any());
+        verify(mSigninManagerMock, never()).signin(any(), anyInt(), any());
+        verify(mSigninManagerMock, never()).signinAndEnableSync(any(), anyInt(), any());
     }
 
     private void checkFragmentWhenSigninIsDisabledByPolicy() {
@@ -1245,6 +1324,8 @@ public class SigninFirstRunFragmentTest {
             signinProgressSpinner.setIndeterminateDrawable(new ColorDrawable(
                     SemanticColorUtils.getDefaultBgColor(mFragment.getContext())));
         });
+
+        ViewUtils.waitForView(allOf(withId(R.id.signin_fre_continue_button), isDisplayed()));
     }
 
     /**

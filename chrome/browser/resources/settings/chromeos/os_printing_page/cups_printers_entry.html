@@ -1,4 +1,8 @@
 <style include="settings-shared">
+  :host-context(body.jelly-enabled) .list-item:focus-within {
+    background-color: var(--cros-sys-hover_on_subtle);
+  }
+
   .icon-more-vert {
     background-color: none;
   }
@@ -20,6 +24,11 @@
             hidden="[[!printerEntry.printerInfo.isManaged]]"
             icon="cr20:domain">
           </iron-icon>
+          <iron-icon id="printerStatusIcon"
+            hidden="[[!showPrinterStatusIcon_(printerEntry.printerType)]]"
+            icon="[[getPrinterStatusIcon_(
+                printerEntry.printerInfo.printerOnlineState)]]">
+          </iron-icon>
           [[printerEntry.printerInfo.printerName]]
       </span>
       <div id="printerSubtext" hidden="[[!subtext]]" class="secondary"
@@ -30,7 +39,7 @@
     <template is="dom-if"
         if="[[showActionsMenu_(printerEntry.printerType)]]">
       <cr-icon-button id="moreActions" class="icon-more-vert"
-          on-click="onOpenActionMenuTap_" title="$i18n{moreActions}"
+          on-click="onOpenActionMenuClick_" title="$i18n{moreActions}"
           aria-labelledby="printerName" focus-row-control
           focus-type="moreActions" tabindex$="[[tabindex]]">
       </cr-icon-button>
@@ -38,7 +47,7 @@
     <template is="dom-if"
         if="[[isDiscoveredPrinter_(printerEntry.printerType)]]">
       <cr-button id="setupPrinterButton"
-          on-click="onAddDiscoveredPrinterTap_"
+          on-click="onAddDiscoveredPrinterClick_"
           aria-label$="[[getSetupButtonAria_()]]"
           focus-row-control
           focus-type="setupPrinterButton"
@@ -50,7 +59,7 @@
     <template is="dom-if"
         if="[[isAutomaticPrinter_(printerEntry.printerType)]]">
       <cr-button id="automaticPrinterButton" class="save-printer-button"
-          on-click="onAddAutomaticPrinterTap_"
+          on-click="onAddAutomaticPrinterClick_"
           aria-label$="[[getSaveButtonAria_()]]"
           focus-row-control
           focus-type="automaticPrinterButton"
@@ -62,7 +71,7 @@
     <template is="dom-if"
         if="[[isPrintServerPrinter_(printerEntry.printerType)]]">
       <cr-button id="savePrinterButton"
-      class="save-printer-button" on-click="onAddServerPrinterTap_"
+      class="save-printer-button" on-click="onAddServerPrinterClick_"
           aria-label$="[[getSaveButtonAria_()]]"
           focus-row-control
           focus-type="savePrinterButton"

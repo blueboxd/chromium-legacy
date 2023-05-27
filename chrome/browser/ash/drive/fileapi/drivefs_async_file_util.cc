@@ -10,6 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
@@ -129,7 +130,7 @@ class CopyOperation : public base::RefCountedThreadSafe<CopyOperation> {
         std::move(progress_callback_), std::move(callback_));
   }
 
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
   std::unique_ptr<storage::FileSystemOperationContext> context_;
   const storage::FileSystemURL src_url_;
   const storage::FileSystemURL dest_url_;
@@ -198,28 +199,9 @@ class DeleteOperation : public base::RefCountedThreadSafe<DeleteOperation> {
 
     if (error != drive::FILE_ERROR_OK) {
       LOG(ERROR) << "Cannot get metadata of '" << drive_path_ << "': " << error;
-      blocking_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&DeleteOperation::Delete, this));
-      return;
-    }
-
-    DCHECK(metadata);
-    id_ = Id(metadata->stable_id);
-    // TODO(b/271203956) Remove this code once DriveFS automatically unpins
-    // deleted files and folders.
-    VLOG(1) << "Unpinning " << id_ << " '" << drive_path_ << "'...";
-    DCHECK(drive_);
-    drive_->GetDriveFsInterface()->SetPinnedByStableId(
-        metadata->stable_id, false,
-        base::BindOnce(&DeleteOperation::OnUnpinFile, this));
-  }
-
-  void OnUnpinFile(const drive::FileError error) {
-    if (error == drive::FILE_ERROR_OK) {
-      VLOG(1) << "Unpinned " << id_ << " '" << drive_path_ << "'";
     } else {
-      LOG(ERROR) << "Cannot unpin " << id_ << " '" << drive_path_
-                 << "': " << error;
+      DCHECK(metadata);
+      id_ = Id(metadata->stable_id);
     }
 
     blocking_task_runner_->PostTask(
@@ -247,13 +229,13 @@ class DeleteOperation : public base::RefCountedThreadSafe<DeleteOperation> {
   void OnDeleted() {
     DCHECK(drive_);
     if (PinManager* const pin_manager = drive_->GetPinManager()) {
-      // Local delete events are currently not sent via DriveFS, so for now
-      // we notify the `PinManager` for local deletes.
+      // TODO(b/267225898) Local delete events are currently not sent via
+      // DriveFS, so for now we notify the `PinManager` for local deletes.
       pin_manager->NotifyDelete(id_, drive_path_);
     }
   }
 
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
   const base::FilePath path_;
   base::FilePath drive_path_;
   Id id_ = Id::kNone;

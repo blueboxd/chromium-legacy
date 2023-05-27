@@ -160,6 +160,7 @@
 #include "third_party/blink/renderer/core/testing/hit_test_layer_rect_list.h"
 #include "third_party/blink/renderer/core/testing/internal_runtime_flags.h"
 #include "third_party/blink/renderer/core/testing/internal_settings.h"
+#include "third_party/blink/renderer/core/testing/internals_ukm_recorder.h"
 #include "third_party/blink/renderer/core/testing/mock_hyphenation.h"
 #include "third_party/blink/renderer/core/testing/origin_trials_test.h"
 #include "third_party/blink/renderer/core/testing/record_test.h"
@@ -345,7 +346,7 @@ class TestReadableStreamSource : public UnderlyingSourceBase {
         return std::make_unique<Optimizer>(
             context->GetTaskRunner(TaskType::kInternalDefault),
             CrossThreadBindOnce(&TestReadableStreamSource::Detach,
-                                WrapCrossThreadWeakPersistent(this)),
+                                MakeUnwrappingCrossThreadWeakHandle(this)),
             type_);
     }
   }
@@ -559,7 +560,7 @@ class TestWritableStreamSink final : public UnderlyingSinkBase {
     return std::make_unique<Optimizer>(
         context->GetTaskRunner(TaskType::kInternalDefault),
         CrossThreadBindOnce(&TestWritableStreamSink::Detach,
-                            WrapCrossThreadWeakPersistent(this)),
+                            MakeUnwrappingCrossThreadWeakHandle(this)),
         optimizer_flag_, type_);
   }
 
@@ -1328,6 +1329,43 @@ void Internals::setMarker(Document* document,
     document->Markers().AddSpellingMarker(EphemeralRange(range));
   else
     document->Markers().AddGrammarMarker(EphemeralRange(range));
+}
+
+void Internals::removeMarker(Document* document,
+                             const Range* range,
+                             const String& marker_type,
+                             ExceptionState& exception_state) {
+  if (!document) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "No context document is available.");
+    return;
+  }
+
+  absl::optional<DocumentMarker::MarkerType> type = MarkerTypeFrom(marker_type);
+  if (!type) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kSyntaxError,
+        "The marker type provided ('" + marker_type + "') is invalid.");
+    return;
+  }
+
+  if (type != DocumentMarker::kSpelling && type != DocumentMarker::kGrammar) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
+                                      "internals.setMarker() currently only "
+                                      "supports spelling and grammar markers; "
+                                      "attempted to add marker of type '" +
+                                          marker_type + "'.");
+    return;
+  }
+
+  document->UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+  if (type == DocumentMarker::kSpelling) {
+    document->Markers().RemoveMarkersInRange(
+        EphemeralRange(range), DocumentMarker::MarkerTypes::Spelling());
+  } else {
+    document->Markers().RemoveMarkersInRange(
+        EphemeralRange(range), DocumentMarker::MarkerTypes::Grammar());
+  }
 }
 
 unsigned Internals::markerCountForNode(Text* text,
@@ -2355,6 +2393,7 @@ Vector<AtomicString> Internals::svgTags() {
 }
 
 StaticNodeList* Internals::nodesFromRect(
+    ScriptState* script_state,
     Document* document,
     int x,
     int y,
@@ -2391,6 +2430,13 @@ StaticNodeList* Internals::nodesFromRect(
   HitTestResult result(request, location);
   frame->ContentLayoutObject()->HitTest(location, result);
   HeapVector<Member<Node>> matches(result.ListBasedTestResult());
+
+  // Ensure WindowProxy instances for child frames. crbug.com/1407555.
+  for (auto& node : matches) {
+    if (node->IsDocumentNode() && node.Get() != document) {
+      node->GetDocument().GetFrame()->GetWindowProxy(script_state->World());
+    }
+  }
 
   return StaticNodeList::Adopt(matches);
 }
@@ -2858,6 +2904,10 @@ UnionTypesTest* Internals::unionTypesTest() const {
   return MakeGarbageCollected<UnionTypesTest>();
 }
 
+InternalsUkmRecorder* Internals::initializeUKMRecorder() {
+  return MakeGarbageCollected<InternalsUkmRecorder>(document_);
+}
+
 OriginTrialsTest* Internals::originTrialsTest() const {
   return MakeGarbageCollected<OriginTrialsTest>();
 }
@@ -3122,10 +3172,11 @@ String Internals::getCurrentCursorInfo() {
     result.AppendNumber(bitmap.width());
     result.Append('x');
     result.AppendNumber(bitmap.height());
-  }
-  if (cursor.image_scale_factor() != 1) {
-    result.Append(" scale=");
-    result.AppendNumber(cursor.image_scale_factor(), 8);
+
+    if (cursor.image_scale_factor() != 1.0f) {
+      result.Append(" scale=");
+      result.AppendNumber(cursor.image_scale_factor(), 8);
+    }
   }
 
   return result.ToString();

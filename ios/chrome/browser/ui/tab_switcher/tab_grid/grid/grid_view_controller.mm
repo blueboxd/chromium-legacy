@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
 
+#import <algorithm>
+
 #import "base/check_op.h"
-#import "base/cxx17_backports.h"
 #import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
@@ -40,6 +41,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/horizontal_layout.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/plus_sign_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_button_ui_swift.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_preamble_header.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_grid_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions/suggested_actions_view_controller.h"
@@ -70,7 +72,10 @@ NSString* const kPlusSignCellIdentifier = @"PlusSignCellIdentifier";
 NSString* const kSuggestedActionsCellIdentifier =
     @"SuggestedActionsCellIdentifier";
 NSString* const kGridHeaderIdentifier = @"GridHeaderIdentifier";
-NSString* const kInactiveTabsHeaderIdentifier = @"InactiveTabsHeaderIdentifier";
+NSString* const kInactiveTabsButtonHeaderIdentifier =
+    @"InactiveTabsButtonHeaderIdentifier";
+NSString* const kInactiveTabsPreambleHeaderIdentifier =
+    @"InactiveTabsPreambleHeaderIdentifier";
 
 // Creates an NSIndexPath with `index` in section 0.
 NSIndexPath* CreateIndexPath(NSInteger index) {
@@ -158,9 +163,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @property(nonatomic) BOOL showingSuggestedActions;
 // YES if the dragged tab moved to a new index.
 @property(nonatomic, assign) BOOL dragEndAtNewIndex;
-// Whether there are inactive tabs to consider. If there are and the grid is in
-// TabGridModeNormal, a button is displayed at the top, advertizing them.
-@property(nonatomic, assign) NSUInteger inactiveTabsCount;
+// The number of currently inactive tabs. If there are (inactiveTabsCount > 0)
+// and the grid is in TabGridModeNormal, a button is displayed at the top,
+// advertizing them.
+@property(nonatomic, assign) NSInteger inactiveTabsCount;
+// The number of days after which tabs are considered inactive. This is
+// displayed to the user in the Inactive Tabs button when inactiveTabsCount > 0.
+@property(nonatomic, assign) NSInteger inactiveTabsDaysThreshold;
 // Tracks if a drop action initiated in this grid is in progress.
 @property(nonatomic) BOOL localDragActionInProgress;
 
@@ -175,7 +184,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     _items = [[NSMutableArray<TabSwitcherItem*> alloc] init];
     _selectedEditingItemIDs = [[NSMutableSet<NSString*> alloc] init];
     _selectedSharableEditingItemIDs = [[NSMutableSet<NSString*> alloc] init];
-    _showsSelectionUpdates = YES;
     _dropAnimationInProgress = NO;
     _localDragActionInProgress = NO;
     _notSelectedTabCellOpacity = 1.0;
@@ -220,7 +228,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
              withReuseIdentifier:kGridHeaderIdentifier];
   [collectionView registerClass:[InactiveTabsButtonHeader class]
       forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
-             withReuseIdentifier:kInactiveTabsHeaderIdentifier];
+             withReuseIdentifier:kInactiveTabsButtonHeaderIdentifier];
+  [collectionView registerClass:[InactiveTabsPreambleHeader class]
+      forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+             withReuseIdentifier:kInactiveTabsPreambleHeaderIdentifier];
 
   // During deletion (in horizontal layout) the backgroundView can resize,
   // revealing temporarily the collectionView background. This makes sure
@@ -398,17 +409,19 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self.selectedEditingItemIDs removeAllObjects];
     [self.selectedSharableEditingItemIDs removeAllObjects];
 
-    // After transition from other modes to the normal mode, the
-    // selection border doesn't show around the selection item. The
-    // collection view needs to be updated with the selected item again
-    // for it to appear correctly.
+    // After transition from other modes to the normal mode, the selection
+    // border doesn't show around the selected item, because reloading
+    // operations like `reloadSections` loose the selected items. The
+    // collection view needs to be updated with the selected item again for it
+    // to appear correctly.
     [self deselectAllCollectionViewItemsAnimated:NO];
     [self selectCollectionViewItemWithID:self.selectedItemID
                                 animated:NO
                           scrollPosition:UICollectionViewScrollPositionNone];
     [self updateFractionVisibleOfLastItem];
-    }
+
     self.searchText = nil;
+  }
 }
 
 - (void)setSearchText:(NSString*)searchText {
@@ -534,15 +547,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       DCHECK(IsInactiveTabsEnabled());
       InactiveTabsButtonHeader* header = [collectionView
           dequeueReusableSupplementaryViewOfKind:kind
-                             withReuseIdentifier:kInactiveTabsHeaderIdentifier
+                             withReuseIdentifier:
+                                 kInactiveTabsButtonHeaderIdentifier
                                     forIndexPath:indexPath];
       header.parent = self;
       __weak __typeof(self) weakSelf = self;
       header.buttonAction = ^{
         [weakSelf didTapInactiveTabsButton];
       };
-      header.inactivityThresholdDisplayString =
-          InactiveTabsTimeThresholdDisplayString();
+      [header configureWithDaysThreshold:self.inactiveTabsDaysThreshold];
       if (IsShowInactiveTabsCountEnabled()) {
         [header configureWithCount:self.inactiveTabsCount];
       }
@@ -577,9 +590,20 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       return headerView;
     }
     case TabGridModeInactive:
-      // The Inactive Tabs grid doesn’t have a header.
-      NOTREACHED();
-      return nil;
+      // The Inactive Tabs grid has a header to inform about the feature and a
+      // link to its settings.
+      DCHECK(IsInactiveTabsEnabled());
+      InactiveTabsPreambleHeader* header = [collectionView
+          dequeueReusableSupplementaryViewOfKind:kind
+                             withReuseIdentifier:
+                                 kInactiveTabsPreambleHeaderIdentifier
+                                    forIndexPath:indexPath];
+      __weak __typeof(self) weakSelf = self;
+      header.settingsLinkAction = ^{
+        [weakSelf didTapInactiveTabsSettingsLink];
+      };
+      header.daysThreshold = self.inactiveTabsDaysThreshold;
+      return header;
   }
 }
 
@@ -693,8 +717,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       return CGSizeMake(collectionView.bounds.size.width, height);
     }
     case TabGridModeInactive:
-      // The Inactive Tabs grid doesn’t have a header.
-      return CGSizeZero;
+      if (!IsInactiveTabsEnabled() || IsInactiveTabsExplictlyDisabledByUser()) {
+        return CGSizeZero;
+      }
+      // The Inactive Tabs grid has a header to inform about the feature and a
+      // link to its settings.
+      return [self inactiveTabsPreambleHeaderSize];
   }
 }
 
@@ -1049,19 +1077,20 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 #pragma mark - UIScrollViewDelegate
 
-- (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView*)scrollView {
-  self.emptyStateView.scrollViewContentInsets = scrollView.contentInset;
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  [self.delegate gridViewControllerScrollViewDidScroll:self];
+  if (!self.thumbStripEnabled) {
+    return;
+  }
+  [self updateFractionVisibleOfLastItem];
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
   [self.delegate gridViewControllerWillBeginDragging:self];
 }
 
-- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  [self.delegate gridViewControllerScrollViewDidScroll:self];
-  if (!self.thumbStripEnabled)
-    return;
-  [self updateFractionVisibleOfLastItem];
+- (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView*)scrollView {
+  self.emptyStateView.scrollViewContentInsets = scrollView.contentInset;
 }
 
 #pragma mark - GridCellDelegate
@@ -1078,7 +1107,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
 }
 
-#pragma mark-- SuggestedActionsViewControllerDelegate
+#pragma mark - SuggestedActionsViewControllerDelegate
 
 - (void)suggestedActionsViewController:
             (SuggestedActionsViewController*)viewController
@@ -1246,10 +1275,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)removeItemWithID:(NSString*)removedItemID
           selectedItemID:(NSString*)selectedItemID {
   NSUInteger index = [self indexOfItemWithID:removedItemID];
+
+  // Do not remove if not showing the item (i.e. showing search results).
   if (index == NSNotFound) {
-    // Do not remove if not showing the item (i.e. showing search results).
+    [self selectItemWithID:selectedItemID];
     return;
   }
+
   auto modelUpdates = ^{
     [self.items removeObjectAtIndex:index];
     self.selectedItemID = selectedItemID;
@@ -1386,40 +1418,44 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   ios::provider::DismissModalsForCollectionView(self.collectionView);
 }
 
-#pragma mark - InactiveTabsCountConsumer
+#pragma mark - InactiveTabsInfoConsumer
 
-- (void)advertizeInactiveTabsWithCount:(NSUInteger)count {
-  DCHECK(IsInactiveTabsEnabled());
-
-  // Update `inactiveTabsCount`.
-  NSUInteger oldCount = self.inactiveTabsCount;
+- (void)updateInactiveTabsCount:(NSInteger)count {
   if (self.inactiveTabsCount == count) {
     return;
   }
+  NSInteger oldCount = self.inactiveTabsCount;
   self.inactiveTabsCount = count;
-
-  if (!IsShowInactiveTabsCountEnabled()) {
-    return;
-  }
 
   // Update the header.
   if (oldCount == 0 || count == 0) {
     // The header should appear or disappear. Reload the section.
-    NSIndexSet* openTabsSection =
-        [NSIndexSet indexSetWithIndex:kOpenTabsSectionIndex];
-    [self.collectionView reloadSections:openTabsSection];
+    [self reloadInactiveTabsButtonHeader];
   } else {
     // The header just needs to be updated with the new count.
-    NSIndexPath* indexPath =
-        [NSIndexPath indexPathForItem:0 inSection:kOpenTabsSectionIndex];
-    InactiveTabsButtonHeader* header =
-        base::mac::ObjCCast<InactiveTabsButtonHeader>([self.collectionView
-            supplementaryViewForElementKind:UICollectionElementKindSectionHeader
-                                atIndexPath:indexPath]);
-    // Note: At this point, `header` could be nil if not visible, or if the
-    // supplementary view is not an InactiveTabsButtonHeader.
-    [header configureWithCount:count];
+    [self updateInactiveTabsButtonHeaderIfNeeded];
   }
+}
+
+- (void)updateInactiveTabsDaysThreshold:(NSInteger)daysThreshold {
+  if (self.inactiveTabsDaysThreshold == daysThreshold) {
+    return;
+  }
+  NSInteger oldDaysThreshold = self.inactiveTabsDaysThreshold;
+  self.inactiveTabsDaysThreshold = daysThreshold;
+
+  // Update the header.
+  if (oldDaysThreshold == kInactiveTabsDisabledByUser ||
+      daysThreshold == kInactiveTabsDisabledByUser) {
+    // The header should appear or disappear. Reload the section.
+    [self reloadInactiveTabsButtonHeader];
+  } else {
+    // The header just needs to be updated with the new days threshold.
+    [self updateInactiveTabsButtonHeaderIfNeeded];
+  }
+
+  // Update the preamble.
+  [self updateInactiveTabsPreambleHeaderIfNeeded];
 }
 
 #pragma mark - LayoutSwitcher
@@ -1501,6 +1537,11 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Called when the Inactive Tabs button is tapped.
 - (void)didTapInactiveTabsButton {
   [self.delegate didTapInactiveTabsButtonInGridViewController:self];
+}
+
+// Called when the Inactive Tabs settings link is tapped.
+- (void)didTapInactiveTabsSettingsLink {
+  [self.delegate didTapInactiveTabsSettingsLinkInGridViewController:self];
 }
 
 #pragma mark - Private properties
@@ -1654,10 +1695,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return [self.items indexOfObjectPassingTest:selectedTest];
 }
 
-// Configures `cell`'s title synchronously, and favicon and snapshot
-// asynchronously with information from `item`. Updates the `cell`'s theme to
-// this view controller's theme. This view controller becomes the delegate for
-// the cell.
+// Configures `cell`'s identifier and title synchronously, and favicon and
+// snapshot asynchronously with information from `item`. Updates the `cell`'s
+// theme to this view controller's theme. This view controller becomes the
+// delegate for the cell.
 - (void)configureCell:(GridCell*)cell withItem:(TabSwitcherItem*)item {
   DCHECK(cell);
   DCHECK(item);
@@ -1675,28 +1716,38 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   } else {
     cell.state = GridCellStateNotEditing;
   }
-  NSString* itemIdentifier = item.identifier;
-  [self.imageDataSource faviconForIdentifier:itemIdentifier
-                                  completion:^(UIImage* icon) {
-                                    // Only update the icon if the cell is not
-                                    // already reused for another item.
-                                    if ([cell hasIdentifier:itemIdentifier])
-                                      cell.icon = icon;
-                                  }];
+  [item fetchFavicon:^(TabSwitcherItem* innerItem, UIImage* icon) {
+    // Only update the icon if the cell is not already reused for another item.
+    if ([cell hasIdentifier:innerItem.identifier]) {
+      cell.icon = icon;
+    }
+  }];
 
   __weak __typeof(self) weakSelf = self;
-  [self.imageDataSource snapshotForIdentifier:itemIdentifier
-                                   completion:^(UIImage* snapshot) {
-                                     // Only update the icon if the cell is not
-                                     // already reused for another item.
-                                     if ([cell hasIdentifier:itemIdentifier]) {
-                                       if (weakSelf.thumbStripEnabled) {
-                                         [cell fadeInSnapshot:snapshot];
-                                       } else {
-                                         cell.snapshot = snapshot;
-                                       }
-                                     }
-                                   }];
+  TabSwitcherImageFetchingCompletionBlock completion =
+      ^(TabSwitcherItem* innerItem, UIImage* snapshot) {
+        // Only update the icon if the cell is not already reused for another
+        // item.
+        if ([cell hasIdentifier:innerItem.identifier]) {
+          if (weakSelf.thumbStripEnabled) {
+            [cell fadeInSnapshot:snapshot];
+          } else {
+            cell.snapshot = snapshot;
+          }
+        }
+      };
+  if (_mode == TabGridModeInactive) {
+    [item fetchSnapshot:completion];
+  } else {
+    // TODO(crbug.com/1421321): Migrate to using
+    // `-[TabSwitcherItem fetchSnapshot:]`.
+    [self.imageDataSource snapshotForIdentifier:item.identifier
+                                     completion:^(UIImage* snapshot) {
+                                       completion(item, snapshot);
+                                     }];
+  }
+
+  NSString* itemIdentifier = item.identifier;
   [self.priceCardDataSource
       priceCardForIdentifier:itemIdentifier
                   completion:^(PriceCardItem* priceCardItem) {
@@ -1807,7 +1858,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Updates the value stored in `fractionVisibleOfLastItem`.
 - (void)updateFractionVisibleOfLastItem {
   CGFloat offset = self.offsetPastEndOfScrollView;
-  self.fractionVisibleOfLastItem = base::clamp<CGFloat>(
+  self.fractionVisibleOfLastItem = std::clamp<CGFloat>(
       1 - offset / kScrollThresholdForPlusSignButtonHide, 0, 1);
 }
 
@@ -1920,22 +1971,106 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return [itemIdentifiers copy];
 }
 
+// Returns the size that should be dedicated the the Inactive Tabs button
+// header.
 - (CGSize)inactiveTabsButtonHeaderSize {
-  NSString* kind = UICollectionElementKindSectionHeader;
-  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
-                                               inSection:kOpenTabsSectionIndex];
-  InactiveTabsButtonHeader* header =
-      base::mac::ObjCCastStrict<InactiveTabsButtonHeader>([self
-                             collectionView:self.collectionView
-          viewForSupplementaryElementOfKind:kind
-                                atIndexPath:indexPath]);
+  // Keep a sizing header.
+  static InactiveTabsButtonHeader* gHeader =
+      [[InactiveTabsButtonHeader alloc] init];
+
+  // Configure it.
+  [gHeader configureWithDaysThreshold:self.inactiveTabsDaysThreshold];
+  if (IsShowInactiveTabsCountEnabled()) {
+    [gHeader configureWithCount:self.inactiveTabsCount];
+  }
+
+  // Get its fitting size.
+  CGFloat width = CGRectGetWidth(self.collectionView.bounds);
+  CGSize targetSize = CGSize(width, UILayoutFittingExpandedSize.height);
+  // Host the view in the hierarchy for it to get the appropriate trait
+  // collection. This might be due a UIKit/SwiftUI interaction bug, as this is
+  // not necessary for `InactiveTabsPreambleHeader` below for example.
+  gHeader.parent = self;
+
+  CGSize size =
+      [gHeader systemLayoutSizeFittingSize:targetSize
+             withHorizontalFittingPriority:UILayoutPriorityRequired
+                   verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+
+  // De-parent the header.
+  [gHeader removeFromSuperview];
+  gHeader.parent = nil;
+
+  return CGSizeMake(width, size.height);
+}
+
+// Returns the size that should be dedicated the the Inactive Tabs preamble
+// header.
+- (CGSize)inactiveTabsPreambleHeaderSize {
+  // Keep a sizing header.
+  static InactiveTabsPreambleHeader* gHeader =
+      [[InactiveTabsPreambleHeader alloc] init];
+
+  // Configure it.
+  gHeader.daysThreshold = self.inactiveTabsDaysThreshold;
+
+  // Get its fitting size.
   CGFloat width = CGRectGetWidth(self.collectionView.bounds);
   CGSize targetSize = CGSize(width, UILayoutFittingExpandedSize.height);
   CGSize size =
-      [header systemLayoutSizeFittingSize:targetSize
-            withHorizontalFittingPriority:UILayoutPriorityRequired
-                  verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+      [gHeader systemLayoutSizeFittingSize:targetSize
+             withHorizontalFittingPriority:UILayoutPriorityRequired
+                   verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+
   return CGSizeMake(width, size.height);
+}
+
+// Reloads the section containing the Inactive Tabs button header.
+- (void)reloadInactiveTabsButtonHeader {
+  NSIndexSet* openTabsSection =
+      [NSIndexSet indexSetWithIndex:kOpenTabsSectionIndex];
+  // Prevent the animation, as it leads to a jarrying effect when closing all
+  // inactive tabs: the inactive tabs view controller gets popped, and the
+  // underlying regular Tab Grid moves tabs up.
+  // Note: this could be revisited when supporting iPad, as the user could
+  // have closed all inactive tabs in a different window.
+  [UIView performWithoutAnimation:^{
+    [self.collectionView reloadSections:openTabsSection];
+  }];
+  // Make sure to restore the selection. `reloadSections` cleared it.
+  // https://developer.apple.com/forums/thread/656529
+  [self selectCollectionViewItemWithID:self.selectedItemID
+                              animated:NO
+                        scrollPosition:UICollectionViewScrollPositionNone];
+}
+
+// Reconfigures the Inactive Tabs button header.
+- (void)updateInactiveTabsButtonHeaderIfNeeded {
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
+                                               inSection:kOpenTabsSectionIndex];
+  InactiveTabsButtonHeader* header =
+      base::mac::ObjCCast<InactiveTabsButtonHeader>([self.collectionView
+          supplementaryViewForElementKind:UICollectionElementKindSectionHeader
+                              atIndexPath:indexPath]);
+  // Note: At this point, `header` could be nil if not visible, or if the
+  // supplementary view is not an InactiveTabsButtonHeader.
+  [header configureWithDaysThreshold:self.inactiveTabsDaysThreshold];
+  if (IsShowInactiveTabsCountEnabled()) {
+    [header configureWithCount:self.inactiveTabsCount];
+  }
+}
+
+// Reconfigures the Inactive Tabs preamble header.
+- (void)updateInactiveTabsPreambleHeaderIfNeeded {
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
+                                               inSection:kOpenTabsSectionIndex];
+  InactiveTabsPreambleHeader* header =
+      base::mac::ObjCCast<InactiveTabsPreambleHeader>([self.collectionView
+          supplementaryViewForElementKind:UICollectionElementKindSectionHeader
+                              atIndexPath:indexPath]);
+  // Note: At this point, `header` could be nil if not visible, or if the
+  // supplementary view is not an InactiveTabsPreambleHeader.
+  header.daysThreshold = self.inactiveTabsDaysThreshold;
 }
 
 #pragma mark Suggested Actions Section

@@ -19,6 +19,7 @@
 #include "components/no_state_prefetch/renderer/no_state_prefetch_helper.h"
 #include "components/safe_browsing/content/renderer/renderer_url_loader_throttle.h"
 #include "components/safe_browsing/core/common/features.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/web_identity.h"
 #include "content/public/renderer/render_frame.h"
@@ -190,7 +191,11 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
 #if BUILDFLAG(IS_ANDROID)
       client_data_header,
 #endif
-      ChromeRenderThreadObserver::GetDynamicParams()));
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+      /*bound_session_request_throttled_listener=*/nullptr,
+#endif
+      chrome_content_renderer_client_->GetChromeObserver()
+          ->GetDynamicParams()));
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   throttles.emplace_back(std::make_unique<AshMergeSessionLoaderThrottle>(

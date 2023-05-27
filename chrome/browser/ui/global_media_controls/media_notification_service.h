@@ -22,6 +22,7 @@
 #include "content/public/browser/presentation_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -102,6 +103,12 @@ class MediaNotificationService
       mojo::PendingRemote<global_media_controls::mojom::DeviceListClient>
           client_remote) override;
 
+#if BUILDFLAG(IS_CHROMEOS)
+  // Show the Global Media Controls dialog in Ash.
+  void ShowDialogAsh(
+      std::unique_ptr<media_router::StartPresentationContext> context);
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
   void set_device_provider_for_testing(
       std::unique_ptr<MediaNotificationDeviceProvider> device_provider);
 
@@ -164,6 +171,8 @@ class MediaNotificationService
   // Tracks the number of times we have recorded an action for a specific
   // source. We use this to cap the number of UKM recordings per site.
   std::map<ukm::SourceId, int> actions_recorded_to_ukm_;
+
+  mojo::Receiver<global_media_controls::mojom::DeviceService> receiver_;
 
   base::WeakPtrFactory<MediaNotificationService> weak_ptr_factory_{this};
 };

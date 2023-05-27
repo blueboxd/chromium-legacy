@@ -6,6 +6,7 @@
 #define ASH_FAST_INK_CURSOR_CURSOR_VIEW_H_
 
 #include "ash/fast_ink/fast_ink_view.h"
+#include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -21,11 +22,11 @@ namespace gfx {
 struct PresentationFeedback;
 }
 
-namespace cursor {
+namespace ash {
 
 // CursorView class can be used to display a cursor image with minimal
 // latency/jank and optional motion blur.
-class CursorView : public fast_ink::FastInkView,
+class CursorView : public FastInkView,
                    public viz::DelayBasedTimeSourceClient,
                    public ui::CursorController::CursorObserver {
  public:
@@ -49,9 +50,9 @@ class CursorView : public fast_ink::FastInkView,
   // viz::DelayBasedTimeSourceClient overrides:
   void OnTimerTick() override;
 
-  // fast_ink::FastInkView override.
-  fast_ink::FastInkHost::PresentationCallback GetPresentationCallback()
-      override;
+ protected:
+  // FastInkView override.
+  FastInkHost::PresentationCallback GetPresentationCallback() override;
 
  private:
   CursorView(const gfx::Point& initial_location, bool is_motion_blur_enabled);
@@ -97,11 +98,11 @@ class CursorView : public fast_ink::FastInkView,
   SEQUENCE_CHECKER(paint_sequence_checker_);
 
   // UI thread state.
-  ui::Compositor* compositor_ = nullptr;
+  raw_ptr<ui::Compositor, ExperimentalAsh> compositor_ = nullptr;
   SEQUENCE_CHECKER(ui_sequence_checker_);
   base::WeakPtrFactory<CursorView> weak_ptr_factory_{this};
 };
 
-}  // namespace cursor
+}  // namespace ash
 
 #endif  // ASH_FAST_INK_CURSOR_CURSOR_VIEW_H_

@@ -32,12 +32,16 @@ namespace password_manager {
 
 namespace {
 
-ValueElementPair PasswordToSave(const PasswordForm& form) {
+AlternativeElement PasswordToSave(const PasswordForm& form) {
   if (form.new_password_value.empty()) {
     DCHECK(!form.password_value.empty() || form.IsFederatedCredential());
-    return {form.password_value, form.password_element};
+    return {AlternativeElement::Value(form.password_value),
+            form.password_element_renderer_id,
+            AlternativeElement::Name(form.password_element)};
   }
-  return {form.new_password_value, form.new_password_element};
+  return {AlternativeElement::Value(form.new_password_value),
+          form.new_password_element_renderer_id,
+          AlternativeElement::Name(form.new_password_element)};
 }
 
 PasswordForm PendingCredentialsForNewCredentials(
@@ -78,9 +82,9 @@ void CopyFieldPropertiesMasks(const FormData& from, FormData* to) {
 }
 
 // Filter sensitive information, duplicates and |username_value| out from
-// |form->all_possible_usernames|.
-void SanitizePossibleUsernames(PasswordForm* form) {
-  auto& usernames = form->all_possible_usernames;
+// |form->all_alternative_usernames|.
+void SanitizeAlternativeUsernames(PasswordForm* form) {
+  auto& usernames = form->all_alternative_usernames;
 
   // Deduplicate.
   std::sort(usernames.begin(), usernames.end());
@@ -89,11 +93,12 @@ void SanitizePossibleUsernames(PasswordForm* form) {
 
   // Filter out |form->username_value| and sensitive information.
   const std::u16string& username_value = form->username_value;
-  base::EraseIf(usernames, [&username_value](const ValueElementPair& pair) {
-    return pair.first == username_value ||
-           autofill::IsValidCreditCardNumber(pair.first) ||
-           autofill::IsSSN(pair.first);
-  });
+  base::EraseIf(usernames,
+                [&username_value](const AlternativeElement& element) {
+                  return element.value == username_value ||
+                         autofill::IsValidCreditCardNumber(element.value) ||
+                         autofill::IsSSN(element.value);
+                });
 }
 
 std::vector<const PasswordForm*> MatchesInStore(
@@ -294,7 +299,7 @@ void PasswordSaveManagerImpl::Save(const FormData* observed_form,
   }
 
   if (IsNewLogin()) {
-    SanitizePossibleUsernames(&pending_credentials_);
+    SanitizeAlternativeUsernames(&pending_credentials_);
     pending_credentials_.date_created = base::Time::Now();
   }
 
@@ -401,7 +406,8 @@ void PasswordSaveManagerImpl::MoveCredentialsToAccountStore(
   DCHECK(account_store_form_saver_);
 
   base::UmaHistogramEnumeration(
-      "PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted", trigger);
+      "PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted2",
+      trigger);
 
   // TODO(crbug.com/1032992): Moving credentials upon an update. FormFetch will
   // have an outdated credentials. Fix it if this turns out to be a product
@@ -503,14 +509,14 @@ std::unique_ptr<PasswordSaveManager> PasswordSaveManagerImpl::Clone() {
 PendingCredentialsState PasswordSaveManagerImpl::ComputePendingCredentialsState(
     const PasswordForm& parsed_submitted_form,
     const PasswordForm* similar_saved_form) {
-  ValueElementPair password_to_save(PasswordToSave(parsed_submitted_form));
+  AlternativeElement password_to_save(PasswordToSave(parsed_submitted_form));
   // Check if there are previously saved credentials (that were available to
   // autofilling) matching the actually submitted credentials.
   if (!similar_saved_form)
     return PendingCredentialsState::NEW_LOGIN;
 
   // A similar credential exists in the store already.
-  if (similar_saved_form->password_value != password_to_save.first)
+  if (similar_saved_form->password_value != password_to_save.value)
     return PendingCredentialsState::UPDATE;
 
   // If the autofilled credentials were a PSL match, store a copy with the
@@ -535,14 +541,14 @@ PasswordForm PasswordSaveManagerImpl::BuildPendingCredentials(
     const PasswordForm* similar_saved_form) {
   PasswordForm pending_credentials;
 
-  ValueElementPair password_to_save(PasswordToSave(parsed_submitted_form));
+  AlternativeElement password_to_save(PasswordToSave(parsed_submitted_form));
 
   switch (pending_credentials_state) {
     case PendingCredentialsState::NEW_LOGIN:
       // No stored credentials can be matched to the submitted form. Offer to
       // save new credentials.
       pending_credentials = PendingCredentialsForNewCredentials(
-          parsed_submitted_form, observed_form, password_to_save.second,
+          parsed_submitted_form, observed_form, password_to_save.name,
           is_http_auth, is_credential_api_save);
       break;
     case PendingCredentialsState::UPDATE:
@@ -574,12 +580,12 @@ PasswordForm PasswordSaveManagerImpl::BuildPendingCredentials(
   }
 
   pending_credentials.password_value =
-      generated_password.value_or(password_to_save.first);
+      generated_password.value_or(password_to_save.value);
   pending_credentials.date_last_used = base::Time::Now();
   pending_credentials.form_has_autofilled_value =
       parsed_submitted_form.form_has_autofilled_value;
-  pending_credentials.all_possible_passwords =
-      parsed_submitted_form.all_possible_passwords;
+  pending_credentials.all_alternative_passwords =
+      parsed_submitted_form.all_alternative_passwords;
   CopyFieldPropertiesMasks(submitted_form, &pending_credentials.form_data);
 
   // If we're dealing with an API-driven provisionally saved form, then take

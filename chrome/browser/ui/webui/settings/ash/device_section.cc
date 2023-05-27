@@ -10,6 +10,7 @@
 #include "ash/public/cpp/night_light_controller.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/shell.h"
+#include "ash/system/power/adaptive_charging_controller.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
@@ -34,11 +35,11 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/events/keyboard_capability.h"
-#include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/touch_device_manager.h"
+#include "ui/events/ash/keyboard_capability.h"
+#include "ui/events/ash/keyboard_layout_util.h"
 #include "ui/events/devices/device_data_manager.h"
 
 namespace ash::settings {
@@ -165,6 +166,15 @@ const std::vector<SearchConcept>& GetKeyboardSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kKeyboardFunctionKeys}},
+      {IDS_OS_SETTINGS_TAG_KEYBOARD_DIACRITIC,
+       mojom::kKeyboardSubpagePath,
+       mojom::SearchResultIcon::kKeyboard,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kShowDiacritic},
+       {IDS_OS_SETTINGS_TAG_KEYBOARD_DIACRITIC1,
+        IDS_OS_SETTINGS_TAG_KEYBOARD_DIACRITIC2,
+        IDS_OS_SETTINGS_TAG_KEYBOARD_DIACRITIC3, SearchConcept::kAltTagEnd}}
   });
   return *tags;
 }
@@ -197,6 +207,18 @@ const std::vector<SearchConcept>& GetPerDeviceKeyboardSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kKeyboardFunctionKeys}},
+      {IDS_OS_SETTINGS_TAG_KEYBOARD_BLOCK_META_FKEY_COMBO_REWRITES,
+       mojom::kPerDeviceKeyboardSubpagePath,
+       mojom::SearchResultIcon::kKeyboard,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kKeyboardBlockMetaFkeyRewrites}},
+      {IDS_OS_SETTINGS_TAG_KEYBOARD_REMAP_KEYS,
+       mojom::kPerDeviceKeyboardSubpagePath,
+       mojom::SearchResultIcon::kKeyboard,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kKeyboardRemapKeys}},
   });
   return *tags;
 }
@@ -766,6 +788,8 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"keyboardBlockMetaFunctionKeyRewritesDescription",
        IDS_SETTINGS_KEYBOARD_BLOCK_META_FUNCTION_KEY_REWRITES_DESCRIPTION},
       {"keyboardEnableAutoRepeat", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_ENABLE},
+      {"keyboardEnableAutoRepeatSubLabel",
+       IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_ENABLE_SUB_LABEL},
       {"keyboardKeyAlt", IDS_SETTINGS_KEYBOARD_KEY_LEFT_ALT},
       {"keyboardKeyAssistant", IDS_SETTINGS_KEYBOARD_KEY_ASSISTANT},
       {"keyboardKeyBackspace", IDS_SETTINGS_KEYBOARD_KEY_BACKSPACE},
@@ -804,7 +828,32 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"keyboardKeySearch", IDS_SETTINGS_KEYBOARD_KEY_SEARCH},
       {"keyboardRemapRestoreDefaultsLabel",
        IDS_SETTINGS_KEYBOARD_REMAP_RESTORE_BUTTON_LABEL},
+      {"keyboardHoldingKeys", IDS_SETTINGS_KEYBOARD_HOLDING_KEYS},
+      {"keyboardAccentMarks", IDS_SETTINGS_KEYBOARD_ACCENT_MARKS},
+      {"keyboardAccentMarksSubLabel",
+       IDS_SETTINGS_KEYBOARD_ACCENT_MARKS_SUB_LABEL},
       {"noKeyboardsConnected", IDS_SETTINGS_KEYBOARD_NO_KEYBOARDS_HELP_MESSAGE},
+      {"perDeviceKeyboardKeyAlt",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_LEFT_ALT},
+      {"perDeviceKeyboardKeyAssistant",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_ASSISTANT},
+      {"perDeviceKeyboardKeyBackspace",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_BACKSPACE},
+      {"perDeviceKeyboardKeyCapsLock",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_CAPS_LOCK},
+      {"perDeviceKeyboardKeyCommand",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_COMMAND},
+      {"perDeviceKeyboardKeyCtrl",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_LEFT_CTRL},
+      {"perDeviceKeyboardKeyDisabled",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_DISABLED},
+      {"perDeviceKeyboardKeyEscape",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_ESCAPE},
+      {"perDeviceKeyboardKeyExternalMeta",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_EXTERNAL_META},
+      {"perDeviceKeyboardKeySearch",
+       IDS_SETTINGS_PER_DEVICE_KEYBOARD_KEY_SEARCH},
+
   };
   html_source->AddLocalizedStrings(keyboard_strings);
 
@@ -815,7 +864,7 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
           : IDS_SETTINGS_KEYBOARD_KEY_SEARCH);
   html_source->AddLocalizedString(
       "keyboardSendFunctionKeysDescription",
-      ui::DeviceUsesKeyboardLayout2()
+      Shell::Get()->keyboard_capability()->HasLauncherButton()
           ? IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_LAYOUT2_DESCRIPTION
           : IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION);
 }
@@ -1132,8 +1181,12 @@ DeviceSection::DeviceSection(Profile* profile,
         &DeviceSection::OnGotSwitchStates, weak_ptr_factory_.GetWeakPtr()));
 
     // Surface adaptive charging setting in search if the feature is enabled.
-    if (ash::features::IsAdaptiveChargingEnabled())
+    if (ash::features::IsAdaptiveChargingEnabled() &&
+        Shell::Get()
+            ->adaptive_charging_controller()
+            ->IsAdaptiveChargingSupported()) {
       updater.AddSearchTags(GetPowerWithAdaptiveChargingSearchConcepts());
+    }
   }
 
   // Keyboard/mouse search tags are added/removed dynamically.
@@ -1199,7 +1252,10 @@ void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   AddDevicePowerStrings(html_source);
 
   html_source->AddBoolean("isAdaptiveChargingEnabled",
-                          ash::features::IsAdaptiveChargingEnabled());
+                          ash::features::IsAdaptiveChargingEnabled() &&
+                              Shell::Get()
+                                  ->adaptive_charging_controller()
+                                  ->IsAdaptiveChargingSupported());
 }
 
 void DeviceSection::AddHandlers(content::WebUI* web_ui) {
@@ -1287,6 +1343,13 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
         mojom::SearchResultDefaultRank::kMedium,
         mojom::kPerDeviceKeyboardRemapKeysSubpagePath);
 
+    static constexpr mojom::Setting kPerDeviceKeyboardSettings[] = {
+        mojom::Setting::kKeyboardBlockMetaFkeyRewrites,
+        mojom::Setting::kKeyboardRemapKeys,
+    };
+    RegisterNestedSettingBulk(mojom::Subpage::kPerDeviceKeyboard,
+                              kPerDeviceKeyboardSettings, generator);
+
     // Per-device Mouse.
     generator->RegisterTopLevelSubpage(IDS_SETTINGS_MOUSE_TITLE,
                                        mojom::Subpage::kPerDeviceMouse,
@@ -1316,6 +1379,7 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::SearchResultIcon::kKeyboard,
       mojom::SearchResultDefaultRank::kMedium, mojom::kKeyboardSubpagePath);
   static constexpr mojom::Setting kKeyboardSettings[] = {
+      mojom::Setting::kShowDiacritic,
       mojom::Setting::kKeyboardFunctionKeys,
       mojom::Setting::kKeyboardAutoRepeat,
       mojom::Setting::kKeyboardShortcuts,
@@ -1667,6 +1731,7 @@ void DeviceSection::AddDevicePointersStrings(
       {"touchpadScrollAccelerationLabel",
        IDS_SETTINGS_TOUCHPAD_SCROLL_ACCELERATION_LABEL},
       {"touchpadScrollSpeed", IDS_SETTINGS_TOUCHPAD_SCROLL_SPEED_LABEL},
+      {"learnMoreLabel", IDS_SETTINGS_LEARN_MORE_LABEL},
   };
   html_source->AddLocalizedStrings(kPointersStrings);
 

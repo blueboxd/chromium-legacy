@@ -130,7 +130,7 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
   InitTranslateEvent(page_language_code, target_lang, *translate_prefs);
 
   // Logs the initial source and target languages, as well as whether the
-  // initial source language is in the user's content language.
+  // initial source language is blocked (i.e. on the never translate list).
   GetActiveTranslateMetricsLogger()->LogInitialSourceLanguage(
       page_language_code,
       translate_prefs->IsBlockedLanguage(page_language_code));
@@ -319,9 +319,11 @@ void TranslateManager::TranslatePage(const std::string& original_source_lang,
                                      bool triggered_from_menu,
                                      TranslationType translation_type) {
   const GURL& page_url = translate_driver_->GetVisibleURL();
-  // TODO(crbug.com/1407479): This call should be changed to
-  // CHECK(translate_client_->IsTranslatableURL(page_url)) once it is verified
-  // that it is not reachable.
+  // TODO(crbug.com/1424183): Very rarely, users can reach a state where this
+  // Translate code is called on a page ineligible for translation. It is
+  // unclear how this state is reached, but the crash rate is very low
+  // (<0.1CPM) and this state is not breaking for the user. This crash rate
+  // should be monitored and investigated if it increases.
   if (!translate_client_->IsTranslatableURL(page_url)) {
     base::debug::DumpWithoutCrashing();
     return;
@@ -556,8 +558,6 @@ std::string TranslateManager::GetTargetLanguage(
     if (!auto_translate_language.empty()) {
       target_language_origin =
           TranslateBrowserMetrics::TargetLanguageOrigin::kAutoTranslate;
-      TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
-          target_language_origin);
       return auto_translate_language;
     }
   }
@@ -569,8 +569,6 @@ std::string TranslateManager::GetTargetLanguage(
       !recent_target.empty()) {
     target_language_origin =
         TranslateBrowserMetrics::TargetLanguageOrigin::kRecentTarget;
-    TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
-        target_language_origin);
     return recent_target;
   }
 
@@ -597,27 +595,22 @@ std::string TranslateManager::GetTargetLanguage(
     if (!language_codes.empty()) {
       target_language_origin =
           TranslateBrowserMetrics::TargetLanguageOrigin::kLanguageModel;
-      TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
-          target_language_origin);
       return language_codes[0];
     }
   }
 
   // Get the browser's user interface language.
-  std::string language = TranslateDownloadManager::GetLanguageCode(
+  std::string ui_language = TranslateDownloadManager::GetLanguageCode(
       TranslateDownloadManager::GetInstance()->application_locale());
   // Map 'he', 'nb', 'fil' back to 'iw', 'no', 'tl'
-  language::ToTranslateLanguageSynonym(&language);
-  if (TranslateDownloadManager::IsSupportedLanguage(language)) {
+  language::ToTranslateLanguageSynonym(&ui_language);
+  if (TranslateDownloadManager::IsSupportedLanguage(ui_language)) {
     target_language_origin =
         TranslateBrowserMetrics::TargetLanguageOrigin::kApplicationUI;
-    TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
-        target_language_origin);
-    return language;
+    return ui_language;
   }
 
-  // Will translate to the first supported language on the Accepted Language
-  // list or not at all if no such candidate exists.
+  // Get the first supported language on the Accept Languages list.
   std::vector<std::string> accept_languages_list;
   prefs->GetLanguageList(&accept_languages_list);
   for (const auto& lang : accept_languages_list) {
@@ -625,8 +618,6 @@ std::string TranslateManager::GetTargetLanguage(
     if (TranslateDownloadManager::IsSupportedLanguage(lang_code)) {
       target_language_origin =
           TranslateBrowserMetrics::TargetLanguageOrigin::kAcceptLanguages;
-      TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
-          target_language_origin);
       return lang_code;
     }
   }
@@ -636,8 +627,6 @@ std::string TranslateManager::GetTargetLanguage(
   // https://crbug.com/1041387.
   target_language_origin =
       TranslateBrowserMetrics::TargetLanguageOrigin::kDefaultEnglish;
-  TranslateBrowserMetrics::ReportTranslateTargetLanguageOrigin(
-      target_language_origin);
   return std::string("en");
 }
 

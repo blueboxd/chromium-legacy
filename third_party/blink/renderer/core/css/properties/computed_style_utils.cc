@@ -51,8 +51,8 @@
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/layout_grid.h"
-#include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid_interface.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_anchor_query.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_intrinsic_length.h"
@@ -75,10 +75,7 @@ static Length Negate(const Length& length) {
     return length;
   }
 
-  Length ret =
-      length.GetRoundToInt()
-          ? Length(-static_cast<int>(length.GetFloatValue()), length.GetType())
-          : Length(-length.GetFloatValue(), length.GetType());
+  Length ret = Length(-length.GetFloatValue(), length.GetType());
   ret.SetQuirk(length.Quirk());
   return ret;
 }
@@ -577,22 +574,27 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
     const LayoutObject* layout_object) {
   std::pair<const Length*, const Length*> positions;
   bool is_horizontal_property;
+  bool is_right_or_bottom;
   switch (property.PropertyID()) {
     case CSSPropertyID::kLeft:
-      positions = std::make_pair(&style.Left(), &style.Right());
+      positions = std::make_pair(&style.UsedLeft(), &style.UsedRight());
       is_horizontal_property = true;
+      is_right_or_bottom = false;
       break;
     case CSSPropertyID::kRight:
-      positions = std::make_pair(&style.Right(), &style.Left());
+      positions = std::make_pair(&style.UsedRight(), &style.UsedLeft());
       is_horizontal_property = true;
+      is_right_or_bottom = true;
       break;
     case CSSPropertyID::kTop:
-      positions = std::make_pair(&style.Top(), &style.Bottom());
+      positions = std::make_pair(&style.UsedTop(), &style.UsedBottom());
       is_horizontal_property = false;
+      is_right_or_bottom = false;
       break;
     case CSSPropertyID::kBottom:
-      positions = std::make_pair(&style.Bottom(), &style.Top());
+      positions = std::make_pair(&style.UsedBottom(), &style.UsedTop());
       is_horizontal_property = false;
+      is_right_or_bottom = true;
       break;
     default:
       NOTREACHED();
@@ -622,8 +624,18 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
               : box->ContainingBlockLogicalHeightForGetComputedStyle();
     }
 
-    return ZoomAdjustedPixelValue(ValueForLength(offset, containing_block_size),
-                                  style);
+    absl::optional<NGAnchorEvaluatorImpl> anchor_evaluator_storage;
+    NGAnchorEvaluatorImpl* anchor_evaluator = nullptr;
+    if (offset.HasAnchorQueries() && layout_object->IsOutOfFlowPositioned()) {
+      anchor_evaluator_storage.emplace(
+          NGAnchorEvaluatorImpl::BuildFromLayoutResult(*layout_object));
+      anchor_evaluator = &anchor_evaluator_storage.value();
+      anchor_evaluator->SetAxis(!is_horizontal_property, is_right_or_bottom,
+                                containing_block_size);
+    }
+
+    return ZoomAdjustedPixelValue(
+        ValueForLength(offset, containing_block_size, anchor_evaluator), style);
   }
 
   if (offset.IsAuto() && layout_object) {
@@ -1307,7 +1319,6 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   }
 
   FontDescription::Kerning kerning = style.GetFontDescription().GetKerning();
-  float size_adjust = style.GetFontDescription().SizeAdjust();
   FontDescription::FontVariantPosition variant_position =
       style.GetFontDescription().VariantPosition();
   OpticalSizing optical_sizing = style.GetFontDescription().FontOpticalSizing();
@@ -1315,7 +1326,7 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   if (kerning != FontDescription::kAutoKerning ||
       optical_sizing != kAutoOpticalSizing ||
       (RuntimeEnabledFeatures::CSSFontSizeAdjustEnabled() &&
-       size_adjust != -1) ||
+       style.GetFontDescription().HasSizeAdjust()) ||
       (RuntimeEnabledFeatures::FontVariantPositionEnabled() &&
        variant_position != FontDescription::kNormalVariantPosition)) {
     return nullptr;
@@ -1412,22 +1423,21 @@ CSSValue* ComputedStyleUtils::SpecifiedValueForGridTrackSize(
   return nullptr;
 }
 
-enum GridTrackListSerializationType {
-  kForGridElements,
-  kForNonGridElements,
-  kForRepeatNonGridElements,
-};
-
+enum class NamedLinesType { kNamedLines, kAutoRepeatNamedLines };
 class OrderedNamedLinesCollector {
   STACK_ALLOCATED();
 
  public:
   OrderedNamedLinesCollector(
       const OrderedNamedGridLines& ordered_named_grid_lines,
-      const OrderedNamedGridLines& ordered_named_auto_repeat_grid_lines)
+      const OrderedNamedGridLines& ordered_named_auto_repeat_grid_lines,
+      bool is_subgridded_track,
+      bool is_layout_grid)
       : ordered_named_grid_lines_(ordered_named_grid_lines),
         ordered_named_auto_repeat_grid_lines_(
-            ordered_named_auto_repeat_grid_lines) {}
+            ordered_named_auto_repeat_grid_lines),
+        is_subgridded_axis_(is_subgridded_track),
+        is_layout_grid_(is_layout_grid) {}
   OrderedNamedLinesCollector(const OrderedNamedLinesCollector&) = delete;
   OrderedNamedLinesCollector& operator=(const OrderedNamedLinesCollector&) =
       delete;
@@ -1440,55 +1450,52 @@ class OrderedNamedLinesCollector {
   bool IsSubgriddedAxis() const { return is_subgridded_axis_; }
   wtf_size_t InsertionPoint() const { return insertion_point_; }
   bool HasAutoRepeatNamedLinesSpecified() const {
-    return ordered_named_auto_repeat_grid_lines_.size() > 0;
+    return AutoRepeatNamedLinesCount() > 0;
+  }
+  wtf_size_t AutoRepeatNamedLinesCount() const {
+    return ordered_named_auto_repeat_grid_lines_.size();
   }
   // A collapsed auto repeat track is a specified auto-repeat track that was
   // clamped to zero repeats. This can only happen for subgrids, as
-  // standalone grids guarantee a minimum of 1 repeat.
+  // standalone grids guarantee a minimum of 1 repeat. This also requires that
+  // auto repetitions were computed, which only happens for layout grids.
   bool HasCollapsedAutoRepeatNamedLines() const {
-    return IsSubgriddedAxis() && HasAutoRepeatNamedLinesSpecified() &&
-           auto_repeat_total_tracks_ == 0;
+    return is_layout_grid_ && IsSubgriddedAxis() &&
+           HasAutoRepeatNamedLinesSpecified() && auto_repeat_total_tracks_ == 0;
   }
-  virtual void CollectLineNamesForIndex(
-      cssvalue::CSSBracketedValueList&,
-      wtf_size_t index,
-      GridTrackListSerializationType named_line_type = kForGridElements) const;
+  virtual void CollectLineNamesForIndex(cssvalue::CSSBracketedValueList&,
+                                        wtf_size_t index,
+                                        NamedLinesType type,
+                                        bool is_in_repeat) const;
 
  protected:
-  enum NamedLinesType { kNamedLines, kAutoRepeatNamedLines };
-  void AppendLines(
-      cssvalue::CSSBracketedValueList&,
-      wtf_size_t index,
-      NamedLinesType,
-      GridTrackListSerializationType named_line_type = kForGridElements) const;
+  void AppendLines(cssvalue::CSSBracketedValueList&,
+                   wtf_size_t index,
+                   NamedLinesType,
+                   bool is_in_repeat = false) const;
 
   const OrderedNamedGridLines& ordered_named_grid_lines_;
   const OrderedNamedGridLines& ordered_named_auto_repeat_grid_lines_;
+
   // The auto-repeat index.
   wtf_size_t insertion_point_{0};
+
   // The total number of auto-repeat tracks, factoring in the number of
   // repetitions (e.g. `repeat(auto-fit, [a][b])` with `auto-fit` calculated at
   // 3 repetitions would be 6).
   wtf_size_t auto_repeat_total_tracks_{0};
+
   // The size of one auto repeat track (e.g. `repeat(auto-fit, [a][b])` has an
   // auto repeat track list length of 2, regardless of the number of repetitions
   // computed for `auto-fit`).
   wtf_size_t auto_repeat_track_list_length_{0};
-  bool is_subgridded_axis_{false};
-};
 
-class OrderedNamedLinesCollectorInsideAutoRepeat
-    : public OrderedNamedLinesCollector {
- public:
-  OrderedNamedLinesCollectorInsideAutoRepeat(
-      const OrderedNamedGridLines& ordered_named_grid_lines,
-      const OrderedNamedGridLines& ordered_named_auto_repeat_grid_lines)
-      : OrderedNamedLinesCollector(ordered_named_grid_lines,
-                                   ordered_named_auto_repeat_grid_lines) {}
-  void CollectLineNamesForIndex(cssvalue::CSSBracketedValueList&,
-                                wtf_size_t index,
-                                GridTrackListSerializationType named_line_type =
-                                    kForGridElements) const override;
+  // Whether the track definition has `subgrid` specified.
+  bool is_subgridded_axis_{false};
+
+  // Whether the element associated with the track collection performs grid
+  // layout.
+  bool is_layout_grid_{false};
 };
 
 class OrderedNamedLinesCollectorInGridLayout
@@ -1500,48 +1507,45 @@ class OrderedNamedLinesCollectorInGridLayout
       wtf_size_t insertion_point,
       wtf_size_t auto_repeat_total_tracks,
       wtf_size_t auto_repeat_track_list_length,
-      bool is_subgridded_axis = false)
+      bool is_subgridded_track)
       : OrderedNamedLinesCollector(ordered_named_grid_lines,
-                                   ordered_named_auto_repeat_grid_lines) {
+                                   ordered_named_auto_repeat_grid_lines,
+                                   is_subgridded_track,
+                                   /* is_layout_grid */ true) {
     insertion_point_ = insertion_point;
-    is_subgridded_axis_ = is_subgridded_axis;
     auto_repeat_total_tracks_ = auto_repeat_total_tracks;
     auto_repeat_track_list_length_ = auto_repeat_track_list_length;
   }
   void CollectLineNamesForIndex(cssvalue::CSSBracketedValueList&,
                                 wtf_size_t index,
-                                GridTrackListSerializationType named_line_type =
-                                    kForGridElements) const override;
+                                NamedLinesType type,
+                                bool is_in_repeat) const override;
 };
 
 void OrderedNamedLinesCollector::AppendLines(
     cssvalue::CSSBracketedValueList& line_names_value,
     wtf_size_t index,
     NamedLinesType type,
-    GridTrackListSerializationType named_line_type) const {
-  auto iter = type == kNamedLines
-                  ? ordered_named_grid_lines_.find(index)
-                  : ordered_named_auto_repeat_grid_lines_.find(index);
-  auto end_iter = type == kNamedLines
-                      ? ordered_named_grid_lines_.end()
-                      : ordered_named_auto_repeat_grid_lines_.end();
+    bool is_in_repeat) const {
+  const bool is_auto = type == NamedLinesType::kAutoRepeatNamedLines;
+  auto iter = is_auto ? ordered_named_auto_repeat_grid_lines_.find(index)
+                      : ordered_named_grid_lines_.find(index);
+  auto end_iter = is_auto ? ordered_named_auto_repeat_grid_lines_.end()
+                          : ordered_named_grid_lines_.end();
   if (iter == end_iter) {
     return;
   }
 
   for (auto named_grid_line : iter->value) {
-    // A line name is appended when:
-    // 1. The layout object is the grid.
-    // 2. The layout object is not the grid and the named line isn't part of an
-    // integer repeat.
-    // 3. The layout object is not the grid, the named line is part of the
-    // repeat and is the first time it appears in |ordered_named_grid_lines_|.
-    const bool is_first_repeat =
-        named_grid_line.is_in_repeat && named_grid_line.is_first_repeat;
-    if (named_line_type == kForGridElements ||
-        (named_line_type == kForNonGridElements &&
-         !named_grid_line.is_in_repeat) ||
-        (named_line_type == kForRepeatNonGridElements && is_first_repeat)) {
+    // For layout grids, insert all values. For non-layout grids, in order to
+    // round-trip repeaters, we need to prevent inserting certain line names.
+    // In particular, don't insert lines from repeaters if we're not in a
+    // repeater, and only add the first repeat.
+    const bool is_not_in_repeat =
+        !is_in_repeat && !named_grid_line.is_in_repeat;
+    const bool is_valid_repeat_line =
+        is_in_repeat && named_grid_line.is_first_repeat;
+    if (is_layout_grid_ || is_not_in_repeat || is_valid_repeat_line) {
       line_names_value.Append(*MakeGarbageCollected<CSSCustomIdentValue>(
           AtomicString(named_grid_line.line_name)));
     }
@@ -1551,29 +1555,23 @@ void OrderedNamedLinesCollector::AppendLines(
 void OrderedNamedLinesCollector::CollectLineNamesForIndex(
     cssvalue::CSSBracketedValueList& line_names_value,
     wtf_size_t i,
-    GridTrackListSerializationType named_line_type) const {
+    NamedLinesType type,
+    bool is_in_repeat) const {
   DCHECK(IsSubgriddedAxis() || !IsEmpty());
-  AppendLines(line_names_value, i, kNamedLines, named_line_type);
-}
-
-void OrderedNamedLinesCollectorInsideAutoRepeat::CollectLineNamesForIndex(
-    cssvalue::CSSBracketedValueList& line_names_value,
-    wtf_size_t i,
-    GridTrackListSerializationType named_line_type) const {
-  DCHECK(IsSubgriddedAxis() || !IsEmpty());
-  AppendLines(line_names_value, i, kAutoRepeatNamedLines);
+  AppendLines(line_names_value, i, type, is_in_repeat);
 }
 
 void OrderedNamedLinesCollectorInGridLayout::CollectLineNamesForIndex(
     cssvalue::CSSBracketedValueList& line_names_value,
     wtf_size_t i,
-    GridTrackListSerializationType named_line_type) const {
+    NamedLinesType type,
+    bool is_in_repeat) const {
   DCHECK(IsSubgriddedAxis() || !IsEmpty());
 
   // Handle lines before the auto repeat insertion point. If we don't have any
   // auto repeat tracks, we can skip all of the auto repeat logic below.
   if (auto_repeat_total_tracks_ == 0LU || i < insertion_point_) {
-    AppendLines(line_names_value, i, kNamedLines);
+    AppendLines(line_names_value, i, NamedLinesType::kNamedLines);
     return;
   }
 
@@ -1582,22 +1580,23 @@ void OrderedNamedLinesCollectorInGridLayout::CollectLineNamesForIndex(
   // Handle tracks after the auto repeaters.
   if (i > insertion_point_ + auto_repeat_total_tracks_) {
     AppendLines(line_names_value, i - (auto_repeat_total_tracks_ - 1),
-                kNamedLines);
+                NamedLinesType::kNamedLines);
     return;
   }
 
   // Handle the auto repeat track at the insertion point.
   if (i == insertion_point_) {
-    AppendLines(line_names_value, i, kNamedLines);
-    AppendLines(line_names_value, 0, kAutoRepeatNamedLines);
+    AppendLines(line_names_value, i, NamedLinesType::kNamedLines);
+    AppendLines(line_names_value, 0, NamedLinesType::kAutoRepeatNamedLines);
     return;
   }
 
   // Handle the final auto repeat track.
   if (i == insertion_point_ + auto_repeat_total_tracks_) {
     AppendLines(line_names_value, auto_repeat_track_list_length_,
-                kAutoRepeatNamedLines);
-    AppendLines(line_names_value, insertion_point_ + 1, kNamedLines);
+                NamedLinesType::kAutoRepeatNamedLines);
+    AppendLines(line_names_value, insertion_point_ + 1,
+                NamedLinesType::kNamedLines);
     return;
   }
 
@@ -1606,17 +1605,17 @@ void OrderedNamedLinesCollectorInGridLayout::CollectLineNamesForIndex(
       (i - insertion_point_) % auto_repeat_track_list_length_;
   if (!auto_repeat_index_in_first_repetition && i > insertion_point_) {
     AppendLines(line_names_value, auto_repeat_track_list_length_,
-                kAutoRepeatNamedLines);
+                NamedLinesType::kAutoRepeatNamedLines);
   }
   AppendLines(line_names_value, auto_repeat_index_in_first_repetition,
-              kAutoRepeatNamedLines);
+              NamedLinesType::kAutoRepeatNamedLines);
 }
 
-void AddValuesForNamedGridLinesAtIndex(
-    OrderedNamedLinesCollector& collector,
-    wtf_size_t i,
-    CSSValueList& list,
-    GridTrackListSerializationType named_line_type = kForGridElements) {
+void AddValuesForNamedGridLinesAtIndex(OrderedNamedLinesCollector& collector,
+                                       wtf_size_t i,
+                                       CSSValueList& list,
+                                       NamedLinesType type,
+                                       bool is_in_repeat = false) {
   if (collector.IsSubgriddedAxis()) {
     // Skip collapsed lines at the auto repeat insertion point.
     if (i == collector.InsertionPoint() &&
@@ -1628,7 +1627,7 @@ void AddValuesForNamedGridLinesAtIndex(
   }
 
   auto* line_names = MakeGarbageCollected<cssvalue::CSSBracketedValueList>();
-  collector.CollectLineNamesForIndex(*line_names, i, named_line_type);
+  collector.CollectLineNamesForIndex(*line_names, i, type, is_in_repeat);
 
   // Subgridded track listings include empty lines per
   // https://www.w3.org/TR/css-grid-2/#resolved-track-list-subgrid.
@@ -1664,11 +1663,10 @@ CSSValue* ComputedStyleUtils::ValueForGridAutoTrackList(
   return list;
 }
 
-template <typename T, typename F>
 void PopulateGridTrackList(CSSValueList* list,
                            OrderedNamedLinesCollector& collector,
-                           const Vector<T, 1>& tracks,
-                           F GetTrackSize,
+                           const Vector<LayoutUnit, 1>& tracks,
+                           const ComputedStyle& style,
                            wtf_size_t start,
                            wtf_size_t end,
                            int offset) {
@@ -1684,19 +1682,198 @@ void PopulateGridTrackList(CSSValueList* list,
   }
   for (wtf_size_t i = start; i < end; ++i) {
     if (offset >= 0 || i >= static_cast<wtf_size_t>(-offset)) {
-      AddValuesForNamedGridLinesAtIndex(collector, i + offset, *list);
+      AddValuesForNamedGridLinesAtIndex(collector, i + offset, *list,
+                                        NamedLinesType::kNamedLines);
     }
     // Subgrids do not include sizes in the track listing.
     if (!collector.IsSubgriddedAxis()) {
       DCHECK_LE(i, tracks.size());
-      list->Append(*GetTrackSize(tracks[i]));
+      list->Append(*ZoomAdjustedPixelValue(tracks[i], style));
     }
   }
   // Subgrid track names are always relative to offset 0, so they can ignore the
   // tracks after the offset.
   if (!collector.IsSubgriddedAxis() &&
       (offset >= 0 || end >= static_cast<wtf_size_t>(-offset))) {
-    AddValuesForNamedGridLinesAtIndex(collector, end + offset, *list);
+    AddValuesForNamedGridLinesAtIndex(collector, end + offset, *list,
+                                      NamedLinesType::kNamedLines);
+  }
+}
+
+void PopulateNonRepeater(CSSValueList* list,
+                         OrderedNamedLinesCollector& collector,
+                         const blink::NGGridTrackList& track_list,
+                         wtf_size_t repeater_index,
+                         wtf_size_t track_index,
+                         const ComputedStyle& style) {
+  DCHECK_EQ(track_list.RepeatType(repeater_index),
+            NGGridTrackRepeater::RepeatType::kNoRepeat);
+
+  AddValuesForNamedGridLinesAtIndex(collector, track_index, *list,
+                                    NamedLinesType::kNamedLines);
+  // Subgrid definitions do not include track sizes.
+  if (!track_list.IsSubgriddedAxis()) {
+    list->Append(*ComputedStyleUtils::SpecifiedValueForGridTrackSize(
+        track_list.RepeatTrackSize(repeater_index, 0), style));
+  }
+}
+
+void PopulateAutoRepeater(CSSValueList* list,
+                          OrderedNamedLinesCollector& collector,
+                          const blink::NGGridTrackList& track_list,
+                          wtf_size_t repeater_index,
+                          const ComputedStyle& style) {
+  blink::NGGridTrackRepeater::RepeatType repeat_type =
+      track_list.RepeatType(repeater_index);
+  DCHECK(repeat_type == NGGridTrackRepeater::RepeatType::kAutoFill ||
+         repeat_type == NGGridTrackRepeater::RepeatType::kAutoFit);
+
+  const bool is_subgrid = track_list.IsSubgriddedAxis();
+  CSSValueList* repeated_values;
+  wtf_size_t repeat_size = is_subgrid
+                               ? track_list.LineNameIndicesCount(repeater_index)
+                               : track_list.RepeatSize(repeater_index);
+
+  repeated_values = MakeGarbageCollected<cssvalue::CSSGridAutoRepeatValue>(
+      repeat_type == NGGridTrackRepeater::RepeatType::kAutoFill
+          ? CSSValueID::kAutoFill
+          : CSSValueID::kAutoFit);
+
+  // Unlike integer repeats, line names for auto repeats start at index 0 and go
+  // to `repeat_size`. This is because auto repeat named lines are in their own
+  // line name collection, while line names for integer repeats are expanded and
+  // interspersed with non-repeaters in the track list.
+  for (wtf_size_t i = 0; i < repeat_size; ++i) {
+    AddValuesForNamedGridLinesAtIndex(collector, i, *repeated_values,
+                                      NamedLinesType::kAutoRepeatNamedLines);
+
+    // Subgrids do not support track sizes.
+    if (!is_subgrid) {
+      const GridTrackSize& track_size =
+          track_list.RepeatTrackSize(repeater_index, i);
+      repeated_values->Append(
+          *ComputedStyleUtils::SpecifiedValueForGridTrackSize(track_size,
+                                                              style));
+    }
+  }
+
+  // Add any additional auto repeat line names after size definitions.
+  for (wtf_size_t i = repeat_size; i < collector.AutoRepeatNamedLinesCount();
+       ++i) {
+    AddValuesForNamedGridLinesAtIndex(collector, i, *repeated_values,
+                                      NamedLinesType::kAutoRepeatNamedLines);
+  }
+  // Subgrids allow for empty line definitions.
+  if (is_subgrid && repeat_size == 0) {
+    repeated_values->Append(
+        *MakeGarbageCollected<cssvalue::CSSBracketedValueList>());
+  }
+
+  list->Append(*repeated_values);
+}
+
+// Returns the number of tracks populated after expanding repetitions.
+wtf_size_t PopulateIntegerRepeater(CSSValueList* list,
+                                   OrderedNamedLinesCollector& collector,
+                                   const blink::NGGridTrackList& track_list,
+                                   wtf_size_t repeater_index,
+                                   wtf_size_t track_index,
+                                   const ComputedStyle& style) {
+  const bool is_subgrid = track_list.IsSubgriddedAxis();
+  CSSValueList* repeated_values;
+  wtf_size_t number_of_repetitions = track_list.RepeatCount(repeater_index, 0);
+  wtf_size_t repeat_size = is_subgrid
+                               ? track_list.LineNameIndicesCount(repeater_index)
+                               : track_list.RepeatSize(repeater_index);
+
+  repeated_values = MakeGarbageCollected<cssvalue::CSSGridIntegerRepeatValue>(
+      number_of_repetitions);
+
+  // Line names for integer repeats get expanded and interspersed with
+  // non-repeaters in the track list.
+  for (wtf_size_t i = 0; i < repeat_size; ++i) {
+    AddValuesForNamedGridLinesAtIndex(
+        collector, track_index + i, *repeated_values,
+        NamedLinesType::kNamedLines, /* is_in_repeat */ true);
+
+    // Subgrids do not support track sizes.
+    if (!is_subgrid) {
+      const GridTrackSize& track_size =
+          track_list.RepeatTrackSize(repeater_index, i);
+      repeated_values->Append(
+          *ComputedStyleUtils::SpecifiedValueForGridTrackSize(track_size,
+                                                              style));
+    }
+  }
+
+  // Standalone grids may have line names after track sizes.
+  if (!is_subgrid) {
+    AddValuesForNamedGridLinesAtIndex(
+        collector, track_index + repeat_size, *repeated_values,
+        NamedLinesType::kNamedLines, /* is_in_repeat */ true);
+  } else if (repeat_size == 0) {
+    // Subgrids allow for empty line definitions.
+    repeated_values->Append(
+        *MakeGarbageCollected<cssvalue::CSSBracketedValueList>());
+  }
+
+  list->Append(*repeated_values);
+
+  return repeat_size * number_of_repetitions;
+}
+
+void PopulateGridTrackListForNonGrid(CSSValueList* list,
+                                     OrderedNamedLinesCollector& collector,
+                                     const blink::NGGridTrackList& track_list,
+                                     const ComputedStyle& style) {
+  const bool is_subgrid = collector.IsSubgriddedAxis();
+  wtf_size_t track_index = 0;
+
+  // Iterate over each repeater. This will cover all tracks because even non
+  // repeats will add repeaters of type `kNoRepeat` to their track list.
+  for (wtf_size_t i = 0; i < track_list.RepeaterCount(); ++i) {
+    switch (track_list.RepeatType(i)) {
+      case NGGridTrackRepeater::RepeatType::kNoRepeat:
+        PopulateNonRepeater(list, collector, track_list, i, track_index, style);
+
+        // Non repeaters always consume one track index.
+        ++track_index;
+        break;
+
+      case NGGridTrackRepeater::RepeatType::kInteger:
+        // Standalone grids can have line names between sizes and repeaters.
+        if (!is_subgrid) {
+          AddValuesForNamedGridLinesAtIndex(collector, track_index, *list,
+                                            NamedLinesType::kNamedLines);
+        }
+        // `PopulateIntegerRepeater` will return the number of tracks populated.
+        // We need to update `track_index` by this value, as the track list
+        // has expanded integer repeaters and interspersed them with
+        // non-repeaters.
+        track_index += PopulateIntegerRepeater(list, collector, track_list, i,
+                                               track_index, style);
+        break;
+
+      case NGGridTrackRepeater::RepeatType::kAutoFill:
+      case NGGridTrackRepeater::RepeatType::kAutoFit:
+        // Standalone grids can have line names between sizes and repeaters.
+        if (!is_subgrid) {
+          AddValuesForNamedGridLinesAtIndex(collector, track_index, *list,
+                                            NamedLinesType::kNamedLines);
+        }
+        PopulateAutoRepeater(list, collector, track_list, i, style);
+
+        // Auto repeaters always consume one track index.
+        ++track_index;
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+  // Standalone grids can have line names after sizes and repeaters.
+  if (!is_subgrid) {
+    AddValuesForNamedGridLinesAtIndex(collector, track_index, *list,
+                                      NamedLinesType::kNamedLines);
   }
 }
 
@@ -1707,40 +1884,37 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   const bool is_for_columns = direction == kForColumns;
   const ComputedGridTrackList& computed_grid_track_list =
       is_for_columns ? style.GridTemplateColumns() : style.GridTemplateRows();
-  const Vector<GridTrackSize, 1>& legacy_track_sizes =
-      computed_grid_track_list.track_sizes.LegacyTrackList();
-  const Vector<GridTrackSize, 1>& auto_repeat_track_sizes =
-      computed_grid_track_list.auto_repeat_track_sizes;
-
-  const bool is_layout_grid =
-      layout_object && layout_object->IsLayoutGridIncludingNG();
+  const auto* grid = DynamicTo<LayoutNGGrid>(layout_object);
 
   // Handle the 'none' case.
   bool is_track_list_empty =
       !computed_grid_track_list.TrackList().RepeaterCount();
-  if (is_layout_grid && is_track_list_empty) {
+  if (grid && is_track_list_empty) {
     // For grids we should consider every listed track, whether implicitly or
     // explicitly created. Empty grids have a sole grid line per axis.
     const Vector<LayoutUnit>& positions =
-        is_for_columns
-            ? ToInterface<LayoutNGGridInterface>(layout_object)
-                  ->ColumnPositions()
-            : ToInterface<LayoutNGGridInterface>(layout_object)->RowPositions();
+        is_for_columns ? grid->ColumnPositions() : grid->RowPositions();
     is_track_list_empty = positions.size() == 1;
   }
 
-  if (is_track_list_empty) {
+  const bool is_subgrid = computed_grid_track_list.IsSubgriddedAxis();
+
+  // Even if the track list is empty or it's not actually a grid/subgrid in
+  // layout, if the author specified `subgrid`, the computed value should always
+  // begin with `subgrid` and cannot be `none`.
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (is_subgrid) {
+    list->Append(
+        *MakeGarbageCollected<CSSIdentifierValue>(CSSValueID::kSubgrid));
+  } else if (is_track_list_empty) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
 
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   wtf_size_t auto_repeat_insertion_point =
       computed_grid_track_list.auto_repeat_insertion_point;
-  const bool is_subgrid = computed_grid_track_list.IsSubgriddedAxis();
+  const NGGridTrackList& ng_track_list = computed_grid_track_list.TrackList();
 
-  if (is_layout_grid) {
-    const auto* grid = ToInterface<LayoutNGGridInterface>(layout_object);
-
+  if (grid) {
     // The number of auto repeat tracks. For 'repeat(auto-fill, [x][y])' this
     // will be 2, regardless of what auto-fill computes to. For subgrids, use
     // the number of grid line names specified on the track definition. For
@@ -1755,9 +1929,6 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     wtf_size_t start_index = 0;
     wtf_size_t end_index = track_sizes.size();
     if (is_subgrid) {
-      list->Append(
-          *MakeGarbageCollected<CSSIdentifierValue>(CSSValueID::kSubgrid));
-
       // For subgrids, track sizes are not supported. Instead, calculate the end
       // index by subtracting the grid end from its start.
       start_index = grid->ExplicitGridStartForDirection(direction);
@@ -1773,9 +1944,6 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
         auto_repeat_insertion_point,
         grid->AutoRepeatCountForDirection(direction),
         auto_repeat_track_list_length, is_subgrid);
-    auto GetTrackSize = [&](const LayoutUnit& v) {
-      return ZoomAdjustedPixelValue(v, style);
-    };
     // Named grid line indices are relative to the explicit grid, but we are
     // including all tracks. So we need to subtract the number of leading
     // implicit tracks in order to get the proper line index. This is ignored
@@ -1783,97 +1951,17 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     int offset = -base::checked_cast<int>(
         grid->ExplicitGridStartForDirection(direction));
 
-    PopulateGridTrackList(list, collector, track_sizes, GetTrackSize,
-                          start_index, end_index, offset);
+    PopulateGridTrackList(list, collector, track_sizes, style, start_index,
+                          end_index, offset);
     return list;
   }
 
   // Otherwise, the resolved value is the computed value, preserving repeat().
   OrderedNamedLinesCollector collector(
       computed_grid_track_list.ordered_named_grid_lines,
-      computed_grid_track_list.auto_repeat_ordered_named_grid_lines);
-  auto GetTrackSize = [&](const GridTrackSize& v) {
-    return SpecifiedValueForGridTrackSize(v, style);
-  };
-
-  if (auto_repeat_track_sizes.empty()) {
-    // TODO(ansollan): Add support for track lists with auto and integer
-    // repeaters.
-    wtf_size_t track_index = 0;
-    auto AppendValues = [&](CSSValueList* list, const GridTrackSize& track_size,
-                            GridTrackListSerializationType named_line_type) {
-      AddValuesForNamedGridLinesAtIndex(collector, track_index, *list,
-                                        named_line_type);
-      list->Append(*GetTrackSize(track_size));
-      ++track_index;
-    };
-
-    const NGGridTrackList& ng_track_list = computed_grid_track_list.TrackList();
-    for (wtf_size_t i = 0; i < ng_track_list.RepeaterCount(); ++i) {
-      const auto repeat_type = ng_track_list.RepeatType(i);
-
-      // Add the line names and track sizes that aren't part of the repeat.
-      if (repeat_type == NGGridTrackRepeater::RepeatType::kNoRepeat) {
-        AppendValues(list, ng_track_list.RepeatTrackSize(i, 0),
-                     kForNonGridElements);
-        continue;
-      }
-
-      // If a subgridded axis was specified, but the element is not part of a
-      // parent grid, only integer repeats are supported.
-      if (computed_grid_track_list.IsSubgriddedAxis() &&
-          repeat_type != NGGridTrackRepeater::RepeatType::kInteger) {
-        continue;
-      }
-      DCHECK_EQ(repeat_type, NGGridTrackRepeater::RepeatType::kInteger);
-
-      // Add a CSSGridIntegerRepeatValue with the contents of the repeat().
-      const wtf_size_t number_of_repetitions = ng_track_list.RepeatCount(i, 0);
-      const wtf_size_t repeat_size = ng_track_list.RepeatSize(i);
-      CSSValueList* repeated_values =
-          MakeGarbageCollected<cssvalue::CSSGridIntegerRepeatValue>(
-              number_of_repetitions);
-      AddValuesForNamedGridLinesAtIndex(collector, track_index, *list,
-                                        kForNonGridElements);
-      for (wtf_size_t j = 0; j < repeat_size; ++j) {
-        AppendValues(repeated_values, ng_track_list.RepeatTrackSize(i, j),
-                     kForRepeatNonGridElements);
-      }
-      AddValuesForNamedGridLinesAtIndex(
-          collector, track_index, *repeated_values, kForRepeatNonGridElements);
-      list->Append(*repeated_values);
-      // We need to update |track_index| to skip over added grid named lines
-      // that belong to the repeat we just found.
-      track_index += repeat_size * (number_of_repetitions - 1);
-    }
-    AddValuesForNamedGridLinesAtIndex(collector, track_index, *list,
-                                      kForNonGridElements);
-    return list;
-  }
-  // Add the line names and track sizes that precede the auto repeat().
-  PopulateGridTrackList(list, collector, legacy_track_sizes, GetTrackSize,
-                        /* start */ 0,
-                        /* end */ auto_repeat_insertion_point, /* offset */ 0);
-
-  // Add a CSSGridAutoRepeatValue with the contents of the auto repeat().
-  CSSValueList* repeated_values =
-      MakeGarbageCollected<cssvalue::CSSGridAutoRepeatValue>(
-          computed_grid_track_list.auto_repeat_type == AutoRepeatType::kAutoFill
-              ? CSSValueID::kAutoFill
-              : CSSValueID::kAutoFit);
-  OrderedNamedLinesCollectorInsideAutoRepeat repeat_collector(
-      computed_grid_track_list.ordered_named_grid_lines,
-      computed_grid_track_list.auto_repeat_ordered_named_grid_lines);
-  PopulateGridTrackList(repeated_values, repeat_collector,
-                        auto_repeat_track_sizes, GetTrackSize, /* start */ 0,
-                        /* end */ auto_repeat_track_sizes.size(),
-                        /* offset */ 0);
-  list->Append(*repeated_values);
-
-  // Add the line names and track sizes that follow the auto repeat().
-  PopulateGridTrackList(list, collector, legacy_track_sizes, GetTrackSize,
-                        /* start */ auto_repeat_insertion_point,
-                        /* end */ legacy_track_sizes.size(), /* offset */ 1);
+      computed_grid_track_list.auto_repeat_ordered_named_grid_lines, is_subgrid,
+      !!grid);
+  PopulateGridTrackListForNonGrid(list, collector, ng_track_list, style);
   return list;
 }
 
@@ -1906,8 +1994,7 @@ CSSValue* ComputedStyleUtils::ValueForGridPosition(
 
 static bool IsSVGObjectWithWidthAndHeight(const LayoutObject& layout_object) {
   DCHECK(layout_object.IsSVGChild());
-  return layout_object.IsSVGImage() ||
-         layout_object.IsSVGForeignObjectIncludingNG() ||
+  return layout_object.IsSVGImage() || layout_object.IsSVGForeignObject() ||
          (layout_object.IsSVGShape() &&
           IsA<SVGRectElement>(layout_object.GetNode()));
 }
@@ -2192,16 +2279,31 @@ CSSValue* ComputedStyleUtils::ValueForAnimationPlayStateList(
       &ValueForAnimationPlayState);
 }
 
+namespace {
+
+CSSValue* ValueForAnimationRange(const absl::optional<TimelineOffset>& offset,
+                                 const ComputedStyle& style,
+                                 const Length& default_offset) {
+  if (!offset.has_value()) {
+    return MakeGarbageCollected<CSSIdentifierValue>(CSSValueID::kNormal);
+  }
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (offset->name != TimelineOffset::NamedRange::kNone) {
+    list->Append(*MakeGarbageCollected<CSSIdentifierValue>(offset->name));
+  }
+  if (offset->offset != default_offset) {
+    list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+        offset->offset, style));
+  }
+  return list;
+}
+
+}  // namespace
+
 CSSValue* ComputedStyleUtils::ValueForAnimationRangeStart(
     const absl::optional<TimelineOffset>& offset,
     const ComputedStyle& style) {
-  if (!offset.has_value()) {
-    return MakeGarbageCollected<CSSIdentifierValue>(CSSValueID::kAuto);
-  }
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*MakeGarbageCollected<CSSIdentifierValue>(offset->name));
-  list->Append(*ZoomAdjustedPixelValueForLength(offset->offset, style));
-  return list;
+  return ValueForAnimationRange(offset, style, Length::Percent(0.0));
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationRangeStartList(
@@ -2218,7 +2320,7 @@ CSSValue* ComputedStyleUtils::ValueForAnimationRangeStartList(
 CSSValue* ComputedStyleUtils::ValueForAnimationRangeEnd(
     const absl::optional<TimelineOffset>& offset,
     const ComputedStyle& style) {
-  return ValueForAnimationRangeStart(offset, style);
+  return ValueForAnimationRange(offset, style, Length::Percent(100.0));
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationRangeEndList(
@@ -2333,15 +2435,15 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimeline(
   }
   DCHECK(timeline.IsScroll());
   const StyleTimeline::ScrollData& scroll_data = timeline.GetScroll();
-  CSSValue* axis = scroll_data.HasDefaultAxis()
-                       ? nullptr
-                       : CSSIdentifierValue::Create(scroll_data.GetAxis());
   CSSValue* scroller =
       scroll_data.HasDefaultScroller()
           ? nullptr
           : CSSIdentifierValue::Create(scroll_data.GetScroller());
+  CSSValue* axis = scroll_data.HasDefaultAxis()
+                       ? nullptr
+                       : CSSIdentifierValue::Create(scroll_data.GetAxis());
 
-  return MakeGarbageCollected<cssvalue::CSSScrollValue>(axis, scroller);
+  return MakeGarbageCollected<cssvalue::CSSScrollValue>(scroller, axis);
 }
 
 CSSValue* ComputedStyleUtils::ValueForAnimationTimelineList(
@@ -2355,11 +2457,15 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimelineList(
 
 CSSValue* ComputedStyleUtils::SingleValueForTimelineShorthand(
     const ScopedCSSName* name,
-    TimelineAxis axis) {
+    TimelineAxis axis,
+    TimelineAttachment attachment) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*ValueForCustomIdentOrNone(name));
   if (axis != TimelineAxis::kBlock) {
     list->Append(*CSSIdentifierValue::Create(axis));
+  }
+  if (attachment != TimelineAttachment::kLocal) {
+    list->Append(*CSSIdentifierValue::Create(attachment));
   }
   return list;
 }

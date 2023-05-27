@@ -113,7 +113,7 @@ TEST_F(SandboxedSevenZipAnalyzerTest, OneBinary) {
   EXPECT_EQ(0, results.directory_count);
   ASSERT_EQ(1, results.archived_binary.size());
 
-  EXPECT_EQ("file.exe", results.archived_binary[0].file_basename());
+  EXPECT_EQ("file.exe", results.archived_binary[0].file_path());
   EXPECT_EQ(ClientDownloadRequest::WIN_EXECUTABLE,
             results.archived_binary[0].download_type());
   EXPECT_EQ("B32E028F9B83C5FFB806CA7DFE7A3ECE5F1AED5A0368B0A140B35A67F5B000B3",
@@ -135,17 +135,17 @@ TEST_F(SandboxedSevenZipAnalyzerTest, TwoBinariesAndFolder) {
   EXPECT_EQ(1, results.directory_count);
   ASSERT_EQ(3, results.archived_binary.size());
 
-  EXPECT_EQ("folder", results.archived_binary[0].file_basename());
+  EXPECT_EQ("folder", results.archived_binary[0].file_path());
   EXPECT_EQ(ClientDownloadRequest::WIN_EXECUTABLE,
             results.archived_binary[0].download_type());
   EXPECT_EQ("E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
             ToHex(results.archived_binary[0].digests().sha256()));
   EXPECT_EQ(0, results.archived_binary[0].length());
   EXPECT_FALSE(results.archived_binary[0].is_encrypted());
-  EXPECT_TRUE(results.archived_binary[0].is_executable());
+  EXPECT_FALSE(results.archived_binary[0].is_executable());
   EXPECT_FALSE(results.archived_binary[0].is_archive());
 
-  EXPECT_EQ("file.exe", results.archived_binary[1].file_basename());
+  EXPECT_EQ("file.exe", results.archived_binary[1].file_path());
   EXPECT_EQ(ClientDownloadRequest::WIN_EXECUTABLE,
             results.archived_binary[1].download_type());
   EXPECT_EQ("B32E028F9B83C5FFB806CA7DFE7A3ECE5F1AED5A0368B0A140B35A67F5B000B3",
@@ -155,7 +155,7 @@ TEST_F(SandboxedSevenZipAnalyzerTest, TwoBinariesAndFolder) {
   EXPECT_TRUE(results.archived_binary[1].is_executable());
   EXPECT_FALSE(results.archived_binary[1].is_archive());
 
-  EXPECT_EQ("file2.exe", results.archived_binary[2].file_basename());
+  EXPECT_EQ("file2.exe", results.archived_binary[2].file_path());
   EXPECT_EQ(ClientDownloadRequest::WIN_EXECUTABLE,
             results.archived_binary[2].download_type());
   EXPECT_EQ("B32E028F9B83C5FFB806CA7DFE7A3ECE5F1AED5A0368B0A140B35A67F5B000B3",
@@ -177,7 +177,7 @@ TEST_F(SandboxedSevenZipAnalyzerTest, NestedArchive) {
   EXPECT_EQ(0, results.directory_count);
   ASSERT_EQ(1, results.archived_binary.size());
 
-  EXPECT_EQ("fake.zip", results.archived_binary[0].file_basename());
+  EXPECT_EQ("fake.zip", results.archived_binary[0].file_path());
   EXPECT_EQ(ClientDownloadRequest::ARCHIVE,
             results.archived_binary[0].download_type());
   EXPECT_EQ("DFD138681A2BE04D4E97A4CF839C08042A1A9F7541B4DE0EDEC4422A4D881045",
@@ -199,7 +199,7 @@ TEST_F(SandboxedSevenZipAnalyzerTest, Encrypted) {
   EXPECT_EQ(0, results.directory_count);
   ASSERT_EQ(1, results.archived_binary.size());
 
-  EXPECT_EQ("file.exe", results.archived_binary[0].file_basename());
+  EXPECT_EQ("file.exe", results.archived_binary[0].file_path());
   EXPECT_EQ(ClientDownloadRequest::WIN_EXECUTABLE,
             results.archived_binary[0].download_type());
   EXPECT_TRUE(results.archived_binary[0].digests().sha256().empty());
@@ -227,10 +227,11 @@ TEST_F(SandboxedSevenZipAnalyzerTest, CanDeleteDuringExecution) {
   base::RunLoop run_loop;
 
   FakeFileUtilService service(remote.InitWithNewPipeAndPassReceiver());
-  EXPECT_CALL(service.GetSafeArchiveAnalyzer(), AnalyzeSevenZipFile(_, _, _, _))
+  EXPECT_CALL(service.GetSafeArchiveAnalyzer(), AnalyzeSevenZipFile(_, _, _))
       .WillOnce(
-          [&](base::File zip_file, base::File temporary_file,
-              base::File temporary_file2,
+          [&](base::File zip_file,
+              mojo::PendingRemote<chrome::mojom::TemporaryFileGetter>
+                  temp_file_getter,
               chrome::mojom::SafeArchiveAnalyzer::AnalyzeSevenZipFileCallback
                   callback) {
             EXPECT_TRUE(base::DeleteFile(temp_path));

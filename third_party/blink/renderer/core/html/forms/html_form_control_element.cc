@@ -118,8 +118,6 @@ void HTMLFormControlElement::AttributeChanged(
     if (params.reason == AttributeModificationReason::kDirectly &&
         IsDisabledFormControl() && AdjustedFocusedElementInTreeScope() == this)
       blur();
-  } else if (params.name == html_names::kPopovertargetAttr) {
-    CheckAndPossiblyClosePopoverStack();
   }
 }
 
@@ -160,8 +158,6 @@ void HTMLFormControlElement::DisabledAttributeChanged() {
   // Replace |CheckedStateChanged| with a generic tree changed event.
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->CheckedStateChanged(this);
-
-  CheckAndPossiblyClosePopoverStack();
 }
 
 void HTMLFormControlElement::RequiredAttributeChanged() {
@@ -248,7 +244,6 @@ Node::InsertionNotificationRequest HTMLFormControlElement::InsertedInto(
 void HTMLFormControlElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
   ListedElement::RemovedFrom(insertion_point);
-  CheckAndPossiblyClosePopoverStack();
 }
 
 void HTMLFormControlElement::WillChangeForm() {
@@ -261,7 +256,6 @@ void HTMLFormControlElement::DidChangeForm() {
   ListedElement::DidChangeForm();
   if (formOwner() && isConnected() && CanBeSuccessfulSubmitButton())
     formOwner()->InvalidateDefaultButtonStyle();
-  CheckAndPossiblyClosePopoverStack();
 }
 
 HTMLFormElement* HTMLFormControlElement::formOwner() const {
@@ -368,8 +362,9 @@ void HTMLFormControlElement::DefaultEventHandler(Event& event) {
   if (!IsDisabledFormControl()) {
     auto popover = popoverTargetElement();
     if (popover.popover) {
+      auto& document = GetDocument();
       DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-          GetDocument().GetExecutionContext()));
+          document.GetExecutionContext()));
       auto trigger_support = SupportsPopoverTriggering();
       DCHECK_NE(popover.action, PopoverTriggerAction::kNone);
       DCHECK_NE(trigger_support, PopoverTriggerSupport::kNone);
@@ -384,16 +379,18 @@ void HTMLFormControlElement::DefaultEventHandler(Event& event) {
       // not a triggering element, then the light dismiss code will hide the
       // popover and set focus to the previously focused element, then the
       // normal focus management code will reset focus to the clicked control.
-      bool can_show =
-          popover.popover->IsPopoverReady(PopoverTriggerAction::kShow,
-                                          /*exception_state=*/nullptr) &&
-          (popover.action == PopoverTriggerAction::kToggle ||
-           popover.action == PopoverTriggerAction::kShow);
-      bool can_hide =
-          popover.popover->IsPopoverReady(PopoverTriggerAction::kHide,
-                                          /*exception_state=*/nullptr) &&
-          (popover.action == PopoverTriggerAction::kToggle ||
-           popover.action == PopoverTriggerAction::kHide);
+      bool can_show = popover.popover->IsPopoverReady(
+                          PopoverTriggerAction::kShow,
+                          /*exception_state=*/nullptr,
+                          /*include_event_handler_text=*/true, &document) &&
+                      (popover.action == PopoverTriggerAction::kToggle ||
+                       popover.action == PopoverTriggerAction::kShow);
+      bool can_hide = popover.popover->IsPopoverReady(
+                          PopoverTriggerAction::kHide,
+                          /*exception_state=*/nullptr,
+                          /*include_event_handler_text=*/true, &document) &&
+                      (popover.action == PopoverTriggerAction::kToggle ||
+                       popover.action == PopoverTriggerAction::kHide);
       if (event.type() == event_type_names::kDOMActivate &&
           (!Form() || !IsSuccessfulSubmitButton())) {
         if (can_hide) {

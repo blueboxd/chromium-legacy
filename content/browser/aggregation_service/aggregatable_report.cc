@@ -17,16 +17,19 @@
 #include "base/base64.h"
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/span.h"
-#include "base/guid.h"
 #include "base/json/json_writer.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "base/values.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
+#include "components/aggregation_service/parsing_utils.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "content/browser/aggregation_service/aggregation_service_features.h"
@@ -313,7 +316,7 @@ absl::optional<AggregatableReportSharedInfo> ConvertSharedInfoFromProto(
     const proto::AggregatableReportSharedInfo& proto) {
   base::Time scheduled_report_time = base::Time::FromDeltaSinceWindowsEpoch(
       base::Microseconds(proto.scheduled_report_time()));
-  base::GUID report_id = base::GUID::ParseLowercase(proto.report_id());
+  base::Uuid report_id = base::Uuid::ParseLowercase(proto.report_id());
   url::Origin reporting_origin =
       url::Origin::Create(GURL(proto.reporting_origin()));
 
@@ -361,10 +364,15 @@ absl::optional<AggregatableReportRequest> ConvertReportRequestFromProto(
     debug_key = request_proto.debug_key();
   }
 
+  base::flat_map<std::string, std::string> additional_fields;
+  for (auto& elem : request_proto.additional_fields()) {
+    additional_fields.emplace(std::move(elem));
+  }
+
   return AggregatableReportRequest::Create(
       std::move(payload_contents.value()), std::move(shared_info.value()),
       std::move(*request_proto.mutable_reporting_path()), debug_key,
-      request_proto.failed_send_attempts());
+      std::move(additional_fields), request_proto.failed_send_attempts());
 }
 
 void ConvertPayloadContentsToProto(
@@ -443,6 +451,10 @@ proto::AggregatableReportRequest ConvertReportRequestToProto(
   }
   request_proto.set_failed_send_attempts(request.failed_send_attempts());
 
+  for (auto& elem : request.additional_fields()) {
+    (*request_proto.mutable_additional_fields())[elem.first] = elem.second;
+  }
+
   return request_proto;
 }
 
@@ -474,7 +486,7 @@ AggregationServicePayloadContents::~AggregationServicePayloadContents() =
 
 AggregatableReportSharedInfo::AggregatableReportSharedInfo(
     base::Time scheduled_report_time,
-    base::GUID report_id,
+    base::Uuid report_id,
     url::Origin reporting_origin,
     DebugMode debug_mode,
     base::Value::Dict additional_fields,
@@ -544,13 +556,15 @@ absl::optional<AggregatableReportRequest> AggregatableReportRequest::Create(
     AggregatableReportSharedInfo shared_info,
     std::string reporting_path,
     absl::optional<uint64_t> debug_key,
+    base::flat_map<std::string, std::string> additional_fields,
     int failed_send_attempts) {
   std::vector<GURL> processing_urls =
       GetDefaultProcessingUrls(payload_contents.aggregation_mode,
                                payload_contents.aggregation_coordinator);
   return CreateInternal(std::move(processing_urls), std::move(payload_contents),
                         std::move(shared_info), std::move(reporting_path),
-                        debug_key, failed_send_attempts);
+                        debug_key, std::move(additional_fields),
+                        failed_send_attempts);
 }
 
 // static
@@ -561,10 +575,12 @@ AggregatableReportRequest::CreateForTesting(
     AggregatableReportSharedInfo shared_info,
     std::string reporting_path,
     absl::optional<uint64_t> debug_key,
+    base::flat_map<std::string, std::string> additional_fields,
     int failed_send_attempts) {
   return CreateInternal(std::move(processing_urls), std::move(payload_contents),
                         std::move(shared_info), std::move(reporting_path),
-                        debug_key, failed_send_attempts);
+                        debug_key, std::move(additional_fields),
+                        failed_send_attempts);
 }
 
 // static
@@ -575,6 +591,7 @@ AggregatableReportRequest::CreateInternal(
     AggregatableReportSharedInfo shared_info,
     std::string reporting_path,
     absl::optional<uint64_t> debug_key,
+    base::flat_map<std::string, std::string> additional_fields,
     int failed_send_attempts) {
   if (!AggregatableReport::IsNumberOfProcessingUrlsValid(
           processing_urls.size(), payload_contents.aggregation_mode)) {
@@ -620,7 +637,7 @@ AggregatableReportRequest::CreateInternal(
   return AggregatableReportRequest(
       std::move(processing_urls), std::move(payload_contents),
       std::move(shared_info), std::move(reporting_path), debug_key,
-      failed_send_attempts);
+      std::move(additional_fields), failed_send_attempts);
 }
 
 AggregatableReportRequest::AggregatableReportRequest(
@@ -629,12 +646,14 @@ AggregatableReportRequest::AggregatableReportRequest(
     AggregatableReportSharedInfo shared_info,
     std::string reporting_path,
     absl::optional<uint64_t> debug_key,
+    base::flat_map<std::string, std::string> additional_fields,
     int failed_send_attempts)
     : processing_urls_(std::move(processing_urls)),
       payload_contents_(std::move(payload_contents)),
       shared_info_(std::move(shared_info)),
       reporting_path_(std::move(reporting_path)),
       debug_key_(debug_key),
+      additional_fields_(std::move(additional_fields)),
       failed_send_attempts_(failed_send_attempts) {}
 
 AggregatableReportRequest::AggregatableReportRequest(
@@ -701,10 +720,15 @@ AggregatableReport::AggregationServicePayload::~AggregationServicePayload() =
 AggregatableReport::AggregatableReport(
     std::vector<AggregationServicePayload> payloads,
     std::string shared_info,
-    absl::optional<uint64_t> debug_key)
+    absl::optional<uint64_t> debug_key,
+    base::flat_map<std::string, std::string> additional_fields,
+    ::aggregation_service::mojom::AggregationCoordinator
+        aggregation_coordinator)
     : payloads_(std::move(payloads)),
       shared_info_(std::move(shared_info)),
-      debug_key_(debug_key) {}
+      debug_key_(debug_key),
+      additional_fields_(std::move(additional_fields)),
+      aggregation_coordinator_(aggregation_coordinator) {}
 
 AggregatableReport::AggregatableReport(const AggregatableReport& other) =
     default;
@@ -796,9 +820,10 @@ AggregatableReport::Provider::CreateFromRequestAndPublicKeys(
                                     std::move(debug_cleartext_payload));
   }
 
-  return AggregatableReport(std::move(encrypted_payloads),
-                            std::move(encoded_shared_info),
-                            report_request.debug_key());
+  return AggregatableReport(
+      std::move(encrypted_payloads), std::move(encoded_shared_info),
+      report_request.debug_key(), report_request.additional_fields(),
+      report_request.payload_contents().aggregation_coordinator);
 }
 
 base::Value::Dict AggregatableReport::GetAsJson() const {
@@ -828,6 +853,16 @@ base::Value::Dict AggregatableReport::GetAsJson() const {
 
   if (debug_key_.has_value()) {
     value.Set("debug_key", base::NumberToString(debug_key_.value()));
+  }
+
+  value.Set("aggregation_coordinator_identifier",
+            ::aggregation_service::SerializeAggregationCoordinator(
+                aggregation_coordinator_));
+
+  for (const auto& item : additional_fields_) {
+    CHECK(!value.contains(item.first))
+        << "Additional field duplicates existing field: " << item.first;
+    value.Set(item.first, item.second);
   }
 
   return value;

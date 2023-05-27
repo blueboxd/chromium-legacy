@@ -36,11 +36,6 @@ class ScriptTimingInfo : public GarbageCollected<ScriptTimingInfo> {
     WTF::String function_name;
     unsigned int line_number = 0;
     unsigned int column_number = 0;
-    static ScriptSourceLocation FromSourceLocation(SourceLocation& location) {
-      return ScriptSourceLocation{location.Url(), location.Function(),
-                                  location.LineNumber(),
-                                  location.ColumnNumber()};
-    }
   };
 
   ScriptTimingInfo(ExecutionContext* context,
@@ -61,6 +56,10 @@ class ScriptTimingInfo : public GarbageCollected<ScriptTimingInfo> {
   }
   void SetDesiredExecutionStartTime(base::TimeTicks queue_time) {
     desired_execution_start_time_ = queue_time;
+  }
+  base::TimeDelta PauseDuration() const { return pause_duration_; }
+  void SetPauseDuration(base::TimeDelta duration) {
+    pause_duration_ = duration;
   }
   base::TimeDelta StyleDuration() const { return style_duration_; }
   base::TimeDelta LayoutDuration() const { return layout_duration_; }
@@ -88,6 +87,7 @@ class ScriptTimingInfo : public GarbageCollected<ScriptTimingInfo> {
   base::TimeTicks desired_execution_start_time_;
   base::TimeDelta style_duration_;
   base::TimeDelta layout_duration_;
+  base::TimeDelta pause_duration_;
   ScriptSourceLocation source_location_;
   WeakMember<LocalDOMWindow> window_;
 };
@@ -131,6 +131,14 @@ class AnimationFrameTimingInfo
     scripts_ = scripts;
   }
 
+  const base::TimeDelta& TotalBlockingDuration() const {
+    return total_blocking_duration_;
+  }
+
+  void SetTotalBlockingDuration(base::TimeDelta duration) {
+    total_blocking_duration_ = duration;
+  }
+
   void SetDidPause() { did_pause_ = true; }
   bool DidPause() const { return did_pause_; }
 
@@ -159,10 +167,12 @@ class AnimationFrameTimingInfo
   // The event timestamp of the first UI event that coincided with the frame.
   base::TimeTicks first_ui_event_time;
 
+  // Collecting durations of all tasks in the LoAF, not including rendering.
+  base::TimeDelta total_blocking_duration_;
+
   HeapVector<Member<ScriptTimingInfo>> scripts_;
 
   // Whether the LoAF included sync XHR or alerts (pause).
-  // TODO: check if we need to be more granular about this.
   bool did_pause_ = false;
 };
 

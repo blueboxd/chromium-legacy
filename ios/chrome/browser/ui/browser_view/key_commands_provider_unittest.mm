@@ -19,14 +19,14 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #import "ios/chrome/browser/sessions/fake_tab_restore_service.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/shared/ui/util/url_with_title.h"
 #import "ios/chrome/browser/tabs/closing_web_state_observer_browser_agent.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_util.h"
@@ -38,6 +38,7 @@
 #import "ios/web/find_in_page/java_script_find_in_page_manager_impl.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -284,6 +285,8 @@ TEST_F(KeyCommandsProviderTest, CanPerform_FindInPageActions) {
 
   // Open a tab.
   web::FakeWebState* web_state = InsertNewWebState(0);
+  web_state->SetWebFramesManager(web::ContentWorld::kIsolatedWorld,
+                                 std::make_unique<web::FakeWebFramesManager>());
   web::JavaScriptFindInPageManagerImpl::CreateForWebState(web_state);
   JavaScriptFindTabHelper::CreateForWebState(web_state);
 
@@ -721,23 +724,6 @@ TEST_F(KeyCommandsProviderTest, AddToReadingList_DoesntAddWhenNTP) {
   [provider_ keyCommand_addToReadingList];
 }
 
-// Verifies that the correct URL is added to Reading List.
-TEST_F(KeyCommandsProviderTest, AddToReadingList_AddURL) {
-  id handler = OCMStrictProtocolMock(@protocol(BrowserCommands));
-  provider_.dispatcher = handler;
-  GURL url = GURL("https://e.test");
-  id addCommand = [OCMArg checkWithBlock:^BOOL(ReadingListAddCommand* command) {
-    return command.URLs.count == 1 && command.URLs.firstObject.URL == url;
-  }];
-  OCMExpect([provider_.dispatcher addToReadingList:addCommand]);
-  web::FakeWebState* web_state = InsertNewWebState(0);
-  web_state->SetCurrentURL(url);
-
-  [provider_ keyCommand_addToReadingList];
-
-  [handler verify];
-}
-
 // Verifies that showing the tab at a given index is a no-op when there are no
 // tabs.
 TEST_F(KeyCommandsProviderTest, ShowTabAtIndex_NoTab) {
@@ -850,6 +836,8 @@ TEST_F(KeyCommandsProviderTest, BackForward) {
 TEST_F(KeyCommandsProviderTest, ValidateCommands) {
   // Open a tab.
   web::FakeWebState* web_state = InsertNewWebState(0);
+  web_state->SetWebFramesManager(web::ContentWorld::kIsolatedWorld,
+                                 std::make_unique<web::FakeWebFramesManager>());
   web::JavaScriptFindInPageManagerImpl::CreateForWebState(web_state);
   JavaScriptFindTabHelper::CreateForWebState(web_state);
 
@@ -916,6 +904,16 @@ TEST_F(KeyCommandsProviderTest, ValidateBookmarkCommand) {
           l10n_util::GetNSStringWithFixup(IDS_IOS_KEYBOARD_ADD_TO_BOOKMARKS));
     }
   }
+}
+
+// Checks that clearing the Browser doesn't lead to a crash.
+TEST_F(KeyCommandsProviderTest, ClearingBrowserDoesntCrash) {
+  InsertNewWebState(0);
+  EXPECT_TRUE(CanPerform(@"keyCommand_showNextTab"));
+
+  browser_.reset();
+
+  EXPECT_FALSE(CanPerform(@"keyCommand_showNextTab"));
 }
 
 }  // namespace

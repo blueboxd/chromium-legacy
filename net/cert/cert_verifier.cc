@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/string_util.h"
+#include "base/types/optional_util.h"
 #include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/cert/caching_cert_verifier.h"
@@ -20,6 +21,39 @@
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 namespace net {
+
+namespace {
+
+class DefaultCertVerifyProcFactory : public net::CertVerifyProcFactory {
+ public:
+  scoped_refptr<net::CertVerifyProc> CreateCertVerifyProc(
+      scoped_refptr<net::CertNetFetcher> cert_net_fetcher,
+      const CertVerifyProcFactory::ImplParams& impl_params) override {
+#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
+    if (impl_params.use_chrome_root_store) {
+      return CertVerifyProc::CreateBuiltinWithChromeRootStore(
+          std::move(cert_net_fetcher), impl_params.crl_set,
+          base::OptionalToPtr(impl_params.root_store_data));
+    }
+#endif
+#if BUILDFLAG(CHROME_ROOT_STORE_ONLY)
+    return CertVerifyProc::CreateBuiltinWithChromeRootStore(
+        std::move(cert_net_fetcher), impl_params.crl_set,
+        base::OptionalToPtr(impl_params.root_store_data));
+#elif BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+    return CertVerifyProc::CreateBuiltinVerifyProc(std::move(cert_net_fetcher),
+                                                   impl_params.crl_set);
+#else
+    return CertVerifyProc::CreateSystemVerifyProc(std::move(cert_net_fetcher),
+                                                  impl_params.crl_set);
+#endif
+  }
+
+ private:
+  ~DefaultCertVerifyProcFactory() override = default;
+};
+
+}  // namespace
 
 CertVerifier::Config::Config() = default;
 CertVerifier::Config::Config(const Config&) = default;
@@ -77,30 +111,13 @@ bool CertVerifier::RequestParams::operator<(
 }
 
 // static
-std::unique_ptr<CertVerifier> CertVerifier::CreateDefaultWithoutCaching(
+std::unique_ptr<CertVerifierWithUpdatableProc>
+CertVerifier::CreateDefaultWithoutCaching(
     scoped_refptr<CertNetFetcher> cert_net_fetcher) {
-  scoped_refptr<CertVerifyProc> verify_proc;
-#if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-  if (!verify_proc &&
-      base::FeatureList::IsEnabled(features::kChromeRootStoreUsed)) {
-    verify_proc = CertVerifyProc::CreateBuiltinWithChromeRootStore(
-        std::move(cert_net_fetcher));
-  }
-#endif
-  if (!verify_proc) {
-#if BUILDFLAG(CHROME_ROOT_STORE_ONLY)
-    verify_proc = CertVerifyProc::CreateBuiltinWithChromeRootStore(
-        std::move(cert_net_fetcher));
-#elif BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-    verify_proc =
-        CertVerifyProc::CreateBuiltinVerifyProc(std::move(cert_net_fetcher));
-#else
-    verify_proc =
-        CertVerifyProc::CreateSystemVerifyProc(std::move(cert_net_fetcher));
-#endif
-  }
-
-  return std::make_unique<MultiThreadedCertVerifier>(std::move(verify_proc));
+  auto proc_factory = base::MakeRefCounted<DefaultCertVerifyProcFactory>();
+  return std::make_unique<MultiThreadedCertVerifier>(
+      proc_factory->CreateCertVerifyProc(std::move(cert_net_fetcher), {}),
+      proc_factory);
 }
 
 // static
@@ -116,12 +133,12 @@ bool operator==(const CertVerifier::Config& lhs,
   return std::tie(
              lhs.enable_rev_checking, lhs.require_rev_checking_local_anchors,
              lhs.enable_sha1_local_anchors, lhs.disable_symantec_enforcement,
-             lhs.crl_set, lhs.additional_trust_anchors,
+             lhs.additional_trust_anchors,
              lhs.additional_untrusted_authorities) ==
          std::tie(
              rhs.enable_rev_checking, rhs.require_rev_checking_local_anchors,
              rhs.enable_sha1_local_anchors, rhs.disable_symantec_enforcement,
-             rhs.crl_set, rhs.additional_trust_anchors,
+             rhs.additional_trust_anchors,
              rhs.additional_untrusted_authorities);
 }
 

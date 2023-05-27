@@ -17,7 +17,6 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/ranges/algorithm.h"
@@ -26,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
+#include "base/uuid.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_mangle.h"
@@ -61,6 +61,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
@@ -97,6 +98,7 @@
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_service_factory.h"
 #include "extensions/browser/zipfile_installer.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/features/feature_developer_mode_only.h"
@@ -517,7 +519,7 @@ std::unique_ptr<developer::ProfileInfo> DeveloperPrivateAPI::CreateProfileInfo(
   const PrefService::Preference* pref =
       prefs->FindPreference(prefs::kExtensionsUIDeveloperMode);
   info->is_incognito_available = IncognitoModePrefs::GetAvailability(prefs) !=
-                                 IncognitoModePrefs::Availability::kDisabled;
+                                 policy::IncognitoModeAvailability::kDisabled;
   info->is_developer_mode_controlled_by_policy = pref->IsManaged();
   info->in_developer_mode =
       !info->is_child_account &&
@@ -822,7 +824,7 @@ DeveloperPrivateAPI::UnpackedRetryId DeveloperPrivateAPI::AddUnpackedPath(
   if (existing != paths.end())
     return existing->first;
 
-  UnpackedRetryId id = base::GenerateGUID();
+  UnpackedRetryId id = base::Uuid::GenerateRandomV4().AsLowercaseString();
   paths[id] = path;
   return id;
 }
@@ -1454,9 +1456,18 @@ DeveloperPrivateInstallDroppedFileFunction::Run() {
 
   ExtensionService* service = GetExtensionService(browser_context());
   if (path.MatchesExtension(FILE_PATH_LITERAL(".zip"))) {
-    ZipFileInstaller::Create(GetExtensionFileTaskRunner(),
-                             MakeRegisterInExtensionServiceCallback(service))
-        ->LoadFromZipFile(path);
+    if (base::FeatureList::IsEnabled(
+            extensions_features::kExtensionsZipFileInstalledInProfileDir)) {
+      ZipFileInstaller::Create(GetExtensionFileTaskRunner(),
+                               MakeRegisterInExtensionServiceCallback(service))
+          ->InstallZipFileToUnpackedExtensionsDir(
+              path, service->unpacked_install_directory());
+    } else {
+      ZipFileInstaller::Create(GetExtensionFileTaskRunner(),
+                               MakeRegisterInExtensionServiceCallback(service))
+          ->InstallZipFileToTempDir(path);
+    }
+
   } else {
     auto prompt = std::make_unique<ExtensionInstallPrompt>(web_contents);
     scoped_refptr<CrxInstaller> crx_installer =

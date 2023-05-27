@@ -8,6 +8,7 @@
 #include <string>
 
 class GURL;
+class PrefService;
 
 namespace supervised_user {
 
@@ -15,7 +16,7 @@ namespace supervised_user {
 enum class FilteringBehaviorReason {
   DEFAULT = 0,
   ASYNC_CHECKER = 1,
-  DENYLIST = 2,
+  // Deprecated, DENYLIST = 2,
   MANUAL = 3,
   ALLOWLIST = 4,
   NOT_SIGNED_IN = 5,
@@ -26,6 +27,9 @@ std::string FilteringBehaviorReasonToString(FilteringBehaviorReason reason);
 
 // Strips user-specific tokens in a URL to generalize it.
 GURL NormalizeUrl(const GURL& url);
+
+// Check if web filtering prefs are set to default values.
+bool AreWebFilterPrefsDefault(const PrefService& pref_service);
 
 }  // namespace supervised_user
 

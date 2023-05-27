@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {FilesAppEntry} from '../externs/files_app_entry_interfaces.js';
-import {FileData, FileKey, SearchFileType, SearchLocation, SearchOptions, SearchRecency, State} from '../externs/ts/state.js';
+import {FileData, FileKey, SearchLocation, SearchOptions, SearchRecency, State} from '../externs/ts/state.js';
 import {BaseStore} from '../lib/base_store.js';
 
 import {Action} from './actions.js';
@@ -58,6 +58,8 @@ export function getEmptyState(): State {
     uiEntries: [],
     folderShortcuts: [],
     androidApps: [],
+    bulkPinning: undefined,
+    preferences: undefined,
   };
 }
 
@@ -68,7 +70,7 @@ export function getDefaultSearchOptions(): SearchOptions {
   return {
     location: SearchLocation.THIS_FOLDER,
     recency: SearchRecency.ANYTIME,
-    type: SearchFileType.ALL_TYPES,
+    fileCategory: chrome.fileManagerPrivate.FileCategory.ALL,
   } as SearchOptions;
 }
 

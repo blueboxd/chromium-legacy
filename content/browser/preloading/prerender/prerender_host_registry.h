@@ -12,6 +12,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -21,6 +22,7 @@
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom-forward.h"
+#include "content/public/browser/preloading.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -34,6 +36,10 @@ class SingleThreadTaskRunner;
 namespace memory_instrumentation {
 class GlobalMemoryDump;
 }
+
+namespace network {
+class SimpleURLLoader;
+}  // namespace network
 
 namespace content {
 
@@ -134,10 +140,6 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   std::set<int> CancelHosts(const std::vector<int>& frame_tree_node_ids,
                             const PrerenderCancellationReason& reason);
 
-  // Cancels the existing hosts that were triggered by `trigger_type`.
-  void CancelHostsForTrigger(PrerenderTriggerType trigger_type,
-                             const PrerenderCancellationReason& reason);
-
   // Applies CancelHost for all existing PrerenderHost.
   void CancelAllHosts(PrerenderFinalStatus final_status);
 
@@ -211,6 +213,11 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   const std::string& GetPrerenderEmbedderHistogramSuffix(
       int frame_tree_node_id);
 
+  // May be called when it is believed to be likely that the user will perform a
+  // back navigation due to the trigger indicated by `predictor` (e.g. they're
+  // hovering over a back button).
+  void BackNavigationLikely(PreloadingPredictor predictor);
+
   base::WeakPtr<PrerenderHostRegistry> GetWeakPtr();
 
   // Only used for tests.
@@ -222,6 +229,9 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   }
   void SetTaskRunnerForTesting(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  bool HasOngoingHttpCacheQueryForTesting() const {
+    return !!http_cache_query_loader_;
+  }
 
  private:
   // WebContentsObserver implementation:
@@ -252,6 +262,10 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // cancelled.
   int StartPrerendering(int frame_tree_node_id);
 
+  // Cancels the existing hosts that were triggered by `trigger_types`.
+  void CancelHostsForTriggers(std::vector<PrerenderTriggerType> trigger_types,
+                              const PrerenderCancellationReason& reason);
+
   // Returns whether a certain type of PrerenderTriggerType is allowed to be
   // added to PrerenderHostRegistry according to the limit of the given
   // PrerenderTriggerType.
@@ -265,6 +279,17 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
       int frame_tree_node_id,
       bool success,
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
+
+  // Called when we have the HTTP cache result of the main resource of the back
+  // navigation queried by `BackNavigationLikely`.
+  void OnBackResourceCacheResult(
+      PreloadingPredictor predictor,
+      base::WeakPtr<PreloadingAttempt> attempt,
+      GURL back_url,
+      scoped_refptr<net::HttpResponseHeaders> headers);
+
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner();
 
@@ -312,6 +337,12 @@ class CONTENT_EXPORT PrerenderHostRegistry : public WebContentsObserver {
   // Only used for tests. This task runner is used for precise injection in
   // tests and for timing control.
   scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_for_testing_;
+
+  // A pending cache-only load of a URL, used to identify whether there is an
+  // entry for it in the HTTP cache.
+  std::unique_ptr<network::SimpleURLLoader> http_cache_query_loader_;
+
+  base::MemoryPressureListener memory_pressure_listener_;
 
   base::ObserverList<Observer> observers_;
 

@@ -10,7 +10,6 @@
 
 #include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
-#include "third_party/dawn/include/dawn/dawn_wsi.h"
 #include "third_party/dawn/include/dawn/native/DawnNative.h"
 #include "third_party/dawn/include/dawn/webgpu.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -39,8 +38,9 @@ class SkiaOutputDeviceDawn : public SkiaOutputDevice {
   gpu::SurfaceHandle GetChildSurfaceHandle() const;
 
   // SkiaOutputDevice implementation:
-  bool Reshape(const SkSurfaceCharacterization& characterization,
+  bool Reshape(const SkImageInfo& image_info,
                const gfx::ColorSpace& color_space,
+               int sample_count,
                float device_scale_factor,
                gfx::OverlayTransform transform) override;
   void Present(const absl::optional<gfx::Rect>& update_rect,
@@ -51,11 +51,8 @@ class SkiaOutputDeviceDawn : public SkiaOutputDevice {
   void EndPaint() override;
 
  private:
-  // Create a platform-specific swapchain implementation.
-  void CreateSwapChainImplementation();
-
   DawnContextProvider* const context_provider_;
-  DawnSwapChainImplementation swap_chain_implementation_;
+  wgpu::Surface surface_;
   wgpu::SwapChain swap_chain_;
   wgpu::Texture texture_;
   sk_sp<SkSurface> sk_surface_;

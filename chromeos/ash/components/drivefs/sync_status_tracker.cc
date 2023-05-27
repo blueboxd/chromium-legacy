@@ -13,6 +13,7 @@
 
 #include <base/logging.h>
 #include "base/containers/span.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -69,7 +70,7 @@ std::vector<SyncState> SyncStatusTracker::GetChangesAndClean() {
 
   int64_t total_mem_usage_in_bytes = 0;
 
-  for (const auto &[id, node] : id_to_leaf_) {
+  for (const auto& [id, node] : id_to_leaf_) {
     // If the node is stale, set it as "completed" so that it's later removed.
     if (base::Time::Now() - node->last_update > kMaxStaleTime) {
       SetNodeState(node, kNotFound, 0, 0);
@@ -201,9 +202,16 @@ void SyncStatusTracker::RemoveNode(const Node* node) {
   if (node->id) {
     id_to_leaf_.erase(node->id);
   }
+  DCHECK(node->children.size() == 0);
   parent->children.erase(node->path_part);
   Node* grandparent = parent->parent;
   while (grandparent && parent->IsLeaf()) {
+    if (parent->id) {
+      LOG(ERROR)
+          << "Ancestor nodes should not have ids or be tracked in id_to_leaf_";
+      base::debug::DumpWithoutCrashing();
+      id_to_leaf_.erase(parent->id);
+    }
     grandparent->children.erase(parent->path_part);
     parent = grandparent;
     grandparent = grandparent->parent;
@@ -223,7 +231,13 @@ void SyncStatusTracker::SetNodeState(Node* const node,
                                      const SyncStatus status,
                                      const int64_t transferred = 0,
                                      const int64_t total = 0) {
-  const NodeState& delta = node->state.Set(status, transferred, total);
+  if (!node) {
+    LOG(ERROR) << "Node is a null pointer.";
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
+
+  const NodeState delta = node->state.Set(status, transferred, total);
   node->last_update = base::Time::Now();
 
   // Nothing to do if there were no changes.

@@ -32,12 +32,12 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
     const SkImageInfo& info,
     ImageOrientation orientation) {
   return UnacceleratedStaticBitmapImage::Create(
-      SkImage::MakeRasterData(info, std::move(data), info.minRowBytes()),
+      SkImages::RasterFromData(info, std::move(data), info.minRowBytes()),
       orientation);
 }
 
 gfx::Size StaticBitmapImage::SizeWithConfig(SizeConfig config) const {
-  auto info = GetSkImageInfoInternal();
+  auto info = GetSkImageInfo();
   gfx::Size size(info.width(), info.height());
   if (config.apply_orientation && orientation_.UsesWidthAsHeight())
     size.Transpose();

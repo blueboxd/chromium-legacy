@@ -66,6 +66,10 @@ constexpr int32_t kDeskId2 = 2;
 constexpr int32_t kDeskId3 =
     aura::client::kWindowWorkspaceVisibleOnAllWorkspaces;
 
+const base::Uuid kDeskGuid1 = base::Uuid::GenerateRandomV4();
+const base::Uuid kDeskGuid2 = base::Uuid::GenerateRandomV4();
+const base::Uuid kDeskGuid3 = base::Uuid();
+
 constexpr gfx::Rect kCurrentBounds1(11, 21, 111, 121);
 constexpr gfx::Rect kCurrentBounds2(31, 41, 131, 141);
 constexpr gfx::Rect kCurrentBounds3(51, 61, 151, 161);
@@ -164,9 +168,8 @@ class RestoreDataTest : public testing::Test {
             std::vector<base::FilePath>{base::FilePath(kFilePath2)},
             MakeIntent(kIntentActionView, kMimeType, kShareText2));
     app_launch_info2->app_type_browser = kAppTypeBrower2;
-    app_launch_info2->tab_group_infos.emplace();
     app_launch_info2->first_non_pinned_tab_index = kFirstNonPinnedTabIndex;
-    PopulateTestTabgroups(app_launch_info2->tab_group_infos.value());
+    PopulateTestTabgroups(app_launch_info2->tab_group_infos);
 
     std::unique_ptr<AppLaunchInfo> app_launch_info3 =
         std::make_unique<AppLaunchInfo>(
@@ -184,6 +187,7 @@ class RestoreDataTest : public testing::Test {
     WindowInfo window_info1;
     window_info1.activation_index = kActivationIndex1;
     window_info1.desk_id = kDeskId1;
+    window_info1.desk_guid = kDeskGuid1;
     window_info1.current_bounds = kCurrentBounds1;
     window_info1.window_state_type = kWindowStateType1;
     window_info1.display_id = kDisplayId2;
@@ -196,6 +200,7 @@ class RestoreDataTest : public testing::Test {
     WindowInfo window_info2;
     window_info2.activation_index = kActivationIndex2;
     window_info2.desk_id = kDeskId2;
+    window_info2.desk_guid = kDeskGuid2;
     window_info2.current_bounds = kCurrentBounds2;
     window_info2.window_state_type = kWindowStateType2;
     window_info2.pre_minimized_show_state_type = kPreMinimizedWindowStateType2;
@@ -208,6 +213,7 @@ class RestoreDataTest : public testing::Test {
     WindowInfo window_info3;
     window_info3.activation_index = kActivationIndex3;
     window_info3.desk_id = kDeskId3;
+    window_info3.desk_guid = kDeskGuid3;
     window_info3.current_bounds = kCurrentBounds3;
     window_info3.window_state_type = kWindowStateType3;
     window_info3.snap_percentage = kSnapPercentage;
@@ -236,6 +242,7 @@ class RestoreDataTest : public testing::Test {
       int32_t activation_index,
       int32_t first_non_pinned_tab_index,
       int32_t desk_id,
+      const base::Uuid& desk_guid,
       const gfx::Rect& current_bounds,
       chromeos::WindowStateType window_state_type,
       ui::WindowShowState pre_minimized_show_state_type,
@@ -257,10 +264,10 @@ class RestoreDataTest : public testing::Test {
     EXPECT_TRUE(data->display_id.has_value());
     EXPECT_EQ(display_id, data->display_id.value());
 
-    EXPECT_TRUE(data->file_paths.has_value());
-    EXPECT_EQ(file_paths.size(), data->file_paths.value().size());
+    EXPECT_FALSE(data->file_paths.empty());
+    EXPECT_EQ(file_paths.size(), data->file_paths.size());
     for (size_t i = 0; i < file_paths.size(); i++)
-      EXPECT_EQ(file_paths[i], data->file_paths.value()[i]);
+      EXPECT_EQ(file_paths[i], data->file_paths[i]);
 
     EXPECT_TRUE(data->intent);
     EXPECT_EQ(intent->action, data->intent->action);
@@ -282,6 +289,8 @@ class RestoreDataTest : public testing::Test {
 
     EXPECT_TRUE(data->desk_id.has_value());
     EXPECT_EQ(desk_id, data->desk_id.value());
+
+    EXPECT_EQ(desk_guid, data->desk_guid);
 
     EXPECT_TRUE(data->current_bounds.has_value());
     EXPECT_EQ(current_bounds, data->current_bounds.value());
@@ -355,15 +364,14 @@ class RestoreDataTest : public testing::Test {
     if (expected_tab_group_infos.size() > 0 && test_tab_group_infos) {
       // If we're passing a non-empty expceted vector then we expect the
       // object under test to have tab group infos.
-      EXPECT_TRUE(data->tab_group_infos.has_value());
+      EXPECT_FALSE(data->tab_group_infos.empty());
 
       // Parameter vector and data vector should always have the same size
       // as they should be instantiated from the same function.
-      EXPECT_EQ(expected_tab_group_infos.size(),
-                data->tab_group_infos.value().size());
+      EXPECT_EQ(expected_tab_group_infos.size(), data->tab_group_infos.size());
 
-      EXPECT_THAT(expected_tab_group_infos, testing::UnorderedElementsAreArray(
-                                                data->tab_group_infos.value()));
+      EXPECT_THAT(expected_tab_group_infos,
+                  testing::UnorderedElementsAreArray(data->tab_group_infos));
     }
   }
 
@@ -387,8 +395,8 @@ class RestoreDataTest : public testing::Test {
         std::vector<base::FilePath>{base::FilePath(kFilePath1),
                                     base::FilePath(kFilePath2)},
         MakeIntent(kIntentActionSend, kMimeType, kShareText1), kAppTypeBrower1,
-        kActivationIndex1, kFirstNonPinnedTabIndex, kDeskId1, kCurrentBounds1,
-        kWindowStateType1, kPreMinimizedWindowStateType1,
+        kActivationIndex1, kFirstNonPinnedTabIndex, kDeskId1, kDeskGuid1,
+        kCurrentBounds1, kWindowStateType1, kPreMinimizedWindowStateType1,
         /*snap_percentage=*/0, kMaxSize1, kMinSize1, std::u16string(kTitle1),
         kBoundsInRoot1, kPrimaryColor1, kStatusBarColor1,
         /*tab_group_infos=*/{});
@@ -403,8 +411,8 @@ class RestoreDataTest : public testing::Test {
         WindowOpenDisposition::NEW_FOREGROUND_TAB, kDisplayId1,
         std::vector<base::FilePath>{base::FilePath(kFilePath2)},
         MakeIntent(kIntentActionView, kMimeType, kShareText2), kAppTypeBrower2,
-        kActivationIndex2, kFirstNonPinnedTabIndex, kDeskId2, kCurrentBounds2,
-        kWindowStateType2, kPreMinimizedWindowStateType2,
+        kActivationIndex2, kFirstNonPinnedTabIndex, kDeskId2, kDeskGuid2,
+        kCurrentBounds2, kWindowStateType2, kPreMinimizedWindowStateType2,
         /*snap_percentage=*/0, absl::nullopt, kMinSize2,
         std::u16string(kTitle2), kBoundsInRoot2, kPrimaryColor2,
         kStatusBarColor2, std::move(expected_tab_group_infos),
@@ -423,9 +431,10 @@ class RestoreDataTest : public testing::Test {
         WindowOpenDisposition::NEW_POPUP, kDisplayId1,
         std::vector<base::FilePath>{base::FilePath(kFilePath1)},
         MakeIntent(kIntentActionView, kMimeType, kShareText1), kAppTypeBrower3,
-        kActivationIndex3, kFirstNonPinnedTabIndex, kDeskId3, kCurrentBounds3,
-        kWindowStateType3, kPreMinimizedWindowStateType3, kSnapPercentage,
-        absl::nullopt, absl::nullopt, absl::nullopt, absl::nullopt, 0, 0,
+        kActivationIndex3, kFirstNonPinnedTabIndex, kDeskId3, kDeskGuid3,
+        kCurrentBounds3, kWindowStateType3, kPreMinimizedWindowStateType3,
+        kSnapPercentage, absl::nullopt, absl::nullopt, absl::nullopt,
+        absl::nullopt, 0, 0,
         /*expected_tab_group_infos=*/{});
   }
 
@@ -486,10 +495,10 @@ TEST_F(RestoreDataTest, ModifyWindowId) {
       WindowOpenDisposition::NEW_FOREGROUND_TAB, kDisplayId1,
       std::vector<base::FilePath>{base::FilePath(kFilePath2)},
       MakeIntent(kIntentActionView, kMimeType, kShareText2), kAppTypeBrower2,
-      kActivationIndex2, kFirstNonPinnedTabIndex, kDeskId2, kCurrentBounds2,
-      kWindowStateType2, kPreMinimizedWindowStateType2, /*snap_percentage=*/0,
-      absl::nullopt, kMinSize2, std::u16string(kTitle2), kBoundsInRoot2,
-      kPrimaryColor2, kStatusBarColor2, /*tab_group_infos=*/{});
+      kActivationIndex2, kFirstNonPinnedTabIndex, kDeskId2, kDeskGuid2,
+      kCurrentBounds2, kWindowStateType2, kPreMinimizedWindowStateType2,
+      /*snap_percentage=*/0, absl::nullopt, kMinSize2, std::u16string(kTitle2),
+      kBoundsInRoot2, kPrimaryColor2, kStatusBarColor2, /*tab_group_infos=*/{});
 
   // Verify the restore data for |kAppId2| still exists.
   const auto launch_list_it2 =
@@ -570,6 +579,7 @@ TEST_F(RestoreDataTest, SendWindowToBackground) {
   EXPECT_TRUE(window_info->activation_index.has_value());
   EXPECT_EQ(INT32_MAX, window_info->activation_index.value());
   EXPECT_TRUE(window_info->desk_id.has_value());
+  EXPECT_TRUE(window_info->desk_guid.is_valid());
   EXPECT_TRUE(window_info->current_bounds.has_value());
   EXPECT_TRUE(window_info->window_state_type.has_value());
   EXPECT_TRUE(window_info->arc_extra_info.has_value());
@@ -651,10 +661,10 @@ TEST_F(RestoreDataTest, GetAppLaunchInfo) {
   EXPECT_TRUE(app_launch_info->display_id.has_value());
   EXPECT_EQ(kDisplayId1, app_launch_info->display_id.value());
 
-  EXPECT_TRUE(app_launch_info->file_paths.has_value());
-  ASSERT_EQ(2u, app_launch_info->file_paths.value().size());
-  EXPECT_EQ(base::FilePath(kFilePath1), app_launch_info->file_paths.value()[0]);
-  EXPECT_EQ(base::FilePath(kFilePath2), app_launch_info->file_paths.value()[1]);
+  EXPECT_FALSE(app_launch_info->file_paths.empty());
+  ASSERT_EQ(2u, app_launch_info->file_paths.size());
+  EXPECT_EQ(base::FilePath(kFilePath1), app_launch_info->file_paths[0]);
+  EXPECT_EQ(base::FilePath(kFilePath2), app_launch_info->file_paths[1]);
 
   EXPECT_TRUE(app_launch_info->intent);
   EXPECT_EQ(kIntentActionSend, app_launch_info->intent->action);
@@ -675,6 +685,7 @@ TEST_F(RestoreDataTest, GetWindowInfo) {
   EXPECT_TRUE(window_info);
   EXPECT_FALSE(window_info->activation_index.has_value());
   EXPECT_FALSE(window_info->desk_id.has_value());
+  EXPECT_FALSE(window_info->desk_guid.is_valid());
   EXPECT_FALSE(window_info->current_bounds.has_value());
   EXPECT_FALSE(window_info->window_state_type.has_value());
 
@@ -688,6 +699,9 @@ TEST_F(RestoreDataTest, GetWindowInfo) {
 
   EXPECT_TRUE(window_info->desk_id.has_value());
   EXPECT_EQ(kDeskId1, window_info->desk_id.value());
+
+  EXPECT_TRUE(window_info->desk_guid.is_valid());
+  EXPECT_EQ(kDeskGuid1, window_info->desk_guid);
 
   EXPECT_TRUE(window_info->current_bounds.has_value());
   EXPECT_EQ(kCurrentBounds1, window_info->current_bounds.value());
@@ -824,9 +838,8 @@ TEST_F(RestoreDataTest, CompareAppRestoreData) {
           MakeIntent(kIntentActionSend, kMimeType, kShareText1));
 
   app_launch_info_1->app_type_browser = kAppTypeBrower2;
-  app_launch_info_1->tab_group_infos.emplace();
   app_launch_info_1->first_non_pinned_tab_index = kFirstNonPinnedTabIndex;
-  PopulateTestTabgroups(app_launch_info_1->tab_group_infos.value());
+  PopulateTestTabgroups(app_launch_info_1->tab_group_infos);
 
   // Same as app_launch_info_1.
   std::unique_ptr<AppLaunchInfo> app_launch_info_2 =
@@ -838,9 +851,8 @@ TEST_F(RestoreDataTest, CompareAppRestoreData) {
           MakeIntent(kIntentActionSend, kMimeType, kShareText1));
 
   app_launch_info_2->app_type_browser = kAppTypeBrower2;
-  app_launch_info_2->tab_group_infos.emplace();
   app_launch_info_2->first_non_pinned_tab_index = kFirstNonPinnedTabIndex;
-  PopulateTestTabgroups(app_launch_info_2->tab_group_infos.value());
+  PopulateTestTabgroups(app_launch_info_2->tab_group_infos);
 
   std::unique_ptr<AppLaunchInfo> app_launch_info_3 =
       std::make_unique<AppLaunchInfo>(
@@ -862,7 +874,7 @@ TEST_F(RestoreDataTest, CompareAppRestoreData) {
   EXPECT_TRUE(*app_restore_data_1 != *app_restore_data_3);
 
   // Modify tab groups of app_restore_data_2.
-  app_restore_data_2->tab_group_infos->push_back(
+  app_restore_data_2->tab_group_infos.push_back(
       MakeTestTabGroup(kTestTabGroupTitleThree, kTestTabGroupColorThree));
   EXPECT_TRUE(*app_restore_data_1 != *app_restore_data_2);
 }

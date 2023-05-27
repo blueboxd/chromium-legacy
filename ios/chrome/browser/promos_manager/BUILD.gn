@@ -6,6 +6,8 @@ source_set("promos_manager") {
   sources = [
     "promos_manager.h",
     "promos_manager.mm",
+    "promos_manager_event_exporter.h",
+    "promos_manager_event_exporter.mm",
   ]
   frameworks = [ "Foundation.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -17,8 +19,47 @@ source_set("promos_manager") {
     ":constants",
     ":features",
     ":types",
+    "//components/feature_engagement/public",
+    "//components/keyed_service/core",
     "//components/prefs",
     "//ios/chrome/browser/prefs:pref_names",
+  ]
+}
+
+source_set("factory") {
+  sources = [
+    "promos_manager_factory.h",
+    "promos_manager_factory.mm",
+  ]
+  frameworks = [ "Foundation.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    ":event_exporter_factory",
+    ":features",
+    ":internal",
+    ":promos_manager",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//ios/chrome/browser/application_context",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/feature_engagement",
+  ]
+}
+
+source_set("event_exporter_factory") {
+  sources = [
+    "promos_manager_event_exporter_factory.h",
+    "promos_manager_event_exporter_factory.mm",
+  ]
+  frameworks = [ "Foundation.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    ":features",
+    ":promos_manager",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//ios/chrome/browser/application_context",
+    "//ios/chrome/browser/browser_state",
   ]
 }
 
@@ -39,6 +80,7 @@ source_set("internal") {
   ]
   deps = [
     ":features",
+    "//components/feature_engagement/public",
     "//ios/chrome/browser/prefs:pref_names",
   ]
 }
@@ -112,6 +154,8 @@ source_set("unit_tests") {
     ":types",
     "//base",
     "//base/test:test_support",
+    "//components/feature_engagement/public",
+    "//components/feature_engagement/test:test_support",
     "//components/prefs",
     "//components/prefs:test_support",
     "//ios/chrome/browser/prefs:pref_names",

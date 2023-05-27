@@ -254,8 +254,9 @@ void SyncServiceImplHarness::SignOutPrimaryAccount() {
   DCHECK(!username_.empty());
   signin::ClearPrimaryAccount(IdentityManagerFactory::GetForProfile(profile_));
 }
-#endif
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if !BUILDFLAG(IS_ANDROID)
 void SyncServiceImplHarness::EnterSyncPausedStateForPrimaryAccount() {
   DCHECK(service_->IsSyncFeatureActive());
   signin::SetInvalidRefreshTokenForPrimaryAccount(
@@ -268,6 +269,7 @@ void SyncServiceImplHarness::ExitSyncPausedStateForPrimaryAccount() {
   // The engine was off in the sync-paused state, so wait for it to start.
   AwaitSyncSetupCompletion();
 }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 bool SyncServiceImplHarness::SetupSync(
     SetUserSettingsCallback user_settings_callback) {
@@ -299,7 +301,7 @@ bool SyncServiceImplHarness::SetupSyncNoWaitForCompletion(
   }
 
   // Now that auth is completed, request that sync actually start.
-  service()->GetUserSettings()->SetSyncRequested(true);
+  service()->SetSyncFeatureRequested();
 
   if (!AwaitEngineInitialization()) {
     return false;
@@ -331,16 +333,11 @@ void SyncServiceImplHarness::StopSyncServiceAndClearData() {
   service()->StopAndClear();
 }
 
-void SyncServiceImplHarness::StopSyncServiceWithoutClearingData() {
-  DVLOG(1) << "Requesting stop for service without clearing data.";
-  service()->GetUserSettings()->SetSyncRequested(false);
-}
-
-bool SyncServiceImplHarness::StartSyncService() {
+bool SyncServiceImplHarness::EnableSyncFeature() {
   std::unique_ptr<syncer::SyncSetupInProgressHandle> blocker =
       service()->GetSetupInProgressHandle();
   DVLOG(1) << "Requesting start for service";
-  service()->GetUserSettings()->SetSyncRequested(true);
+  service()->SetSyncFeatureRequested();
 
   if (!AwaitEngineInitialization()) {
     LOG(ERROR) << "AwaitEngineInitialization failed.";

@@ -399,6 +399,22 @@ chromeos::FrameSizeButton* GetFrameSizeButton(aura::Window* window) {
       frame_view->GetHeaderView()->caption_button_container()->size_button());
 }
 
+// Gets the target window for accelerator action. This can be the top visible
+// window not in overview, or active window if the accelerator is pressed during
+// a window drag. Returns nullptr if neither exist.
+aura::Window* GetTargetWindow() {
+  aura::Window* window = window_util::GetTopWindow();
+  if (!window) {
+    return window_util::GetActiveWindow();
+  }
+  if (auto* overview_controller = Shell::Get()->overview_controller();
+      overview_controller->InOverviewSession() &&
+      overview_controller->overview_session()->IsWindowInOverview(window)) {
+    return nullptr;
+  }
+  return window->IsVisible() ? window : nullptr;
+}
+
 }  // namespace
 
 bool CanActivateTouchHud() {
@@ -497,22 +513,22 @@ bool CanToggleFloatingWindow() {
   if (!chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
     return false;
   }
-  return window_util::GetActiveWindow() != nullptr;
+  return GetTargetWindow() != nullptr;
 }
 
 bool CanToggleGameDashboard() {
   if (!features::IsGameDashboardEnabled()) {
     return false;
   }
-  aura::Window* window = window_util::GetActiveWindow();
-  return window && GameDashboardController::CanStart(window);
+  aura::Window* window = GetTargetWindow();
+  return window && GameDashboardController::Get()->IsSupported(window);
 }
 
 bool CanToggleMultitaskMenu() {
   if (!chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
     return false;
   }
-  aura::Window* window = window_util::GetActiveWindow();
+  aura::Window* window = GetTargetWindow();
   if (!window) {
     return false;
   }
@@ -556,10 +572,11 @@ bool CanToggleProjectorMarker() {
 }
 
 bool CanToggleResizeLockMenu() {
-  aura::Window* active_window = window_util::GetActiveWindow();
-  if (!active_window)
+  aura::Window* window = GetTargetWindow();
+  if (!window) {
     return false;
-  auto* frame_view = NonClientFrameViewAsh::Get(active_window);
+  }
+  auto* frame_view = NonClientFrameViewAsh::Get(window);
   return frame_view && frame_view->GetToggleResizeLockMenuCallback();
 }
 
@@ -572,10 +589,11 @@ bool CanUnpinWindow() {
 }
 
 bool CanWindowSnap() {
-  aura::Window* active_window = window_util::GetActiveWindow();
-  if (!active_window)
+  aura::Window* window = GetTargetWindow();
+  if (!window) {
     return false;
-  WindowState* window_state = WindowState::Get(active_window);
+  }
+  WindowState* window_state = WindowState::Get(window);
   return window_state && window_state->IsUserPositionable();
 }
 
@@ -799,7 +817,7 @@ void MoveActiveItem(bool going_left) {
     window_to_move =
         overview_controller->overview_session()->GetHighlightedWindow();
   } else {
-    window_to_move = window_util::GetActiveWindow();
+    window_to_move = GetTargetWindow();
   }
 
   if (!window_to_move || !desks_util::BelongsToActiveDesk(window_to_move))
@@ -945,18 +963,18 @@ void RestoreTab() {
 }
 
 void RotateActiveWindow() {
-  aura::Window* active_window = window_util::GetActiveWindow();
-  if (!active_window)
+  aura::Window* window = GetTargetWindow();
+  if (!window) {
     return;
+  }
   // The rotation animation bases its target transform on the current
   // rotation and position. Since there could be an animation in progress
   // right now, queue this animation so when it starts it picks up a neutral
   // rotation and position. Use replace so we only enqueue one at a time.
-  active_window->layer()->GetAnimator()->set_preemption_strategy(
+  window->layer()->GetAnimator()->set_preemption_strategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-  active_window->layer()->GetAnimator()->StartAnimation(
-      new ui::LayerAnimationSequence(
-          std::make_unique<WindowRotation>(360, active_window->layer())));
+  window->layer()->GetAnimator()->StartAnimation(new ui::LayerAnimationSequence(
+      std::make_unique<WindowRotation>(360, window->layer())));
 }
 
 void RotatePaneFocus(FocusCycler::Direction direction) {
@@ -1074,24 +1092,25 @@ void ToggleAmbientMode() {
 }
 
 void ToggleAssignToAllDesk() {
-  auto* active_window = window_util::GetActiveWindow();
-  if (!active_window)
+  auto* window = GetTargetWindow();
+  if (!window) {
     return;
+  }
 
   // TODO(b/267363112): Allow a floated window to be assigned to all desks.
   // Only children of the desk container should have their assigned to all
   // desks state toggled to avoid interfering with special windows like
   // always-on-top windows, floated windows, etc.
-  if (desks_util::IsActiveDeskContainer(active_window->parent())) {
+  if (desks_util::IsActiveDeskContainer(window->parent())) {
     const bool is_already_visible_on_all_desks =
-        desks_util::IsWindowVisibleOnAllWorkspaces(active_window);
+        desks_util::IsWindowVisibleOnAllWorkspaces(window);
     if (!is_already_visible_on_all_desks) {
       UMA_HISTOGRAM_ENUMERATION(
           chromeos::kDesksAssignToAllDesksSourceHistogramName,
           chromeos::DesksAssignToAllDesksSource::kKeyboardShortcut);
     }
 
-    active_window->SetProperty(
+    window->SetProperty(
         aura::client::kWindowWorkspaceKey,
         is_already_visible_on_all_desks
             ? aura::client::kWindowWorkspaceUnassignedWorkspace
@@ -1248,7 +1267,7 @@ void ToggleDockedMagnifier() {
 
 void ToggleFloating() {
   DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
-  aura::Window* window = window_util::GetActiveWindow();
+  aura::Window* window = GetTargetWindow();
   DCHECK(window);
   // `CanFloatWindow` check is placed here rather than
   // `CanToggleFloatingWindow` as otherwise the bounce would not behave
@@ -1267,11 +1286,12 @@ void ToggleFullscreen() {
   // http://crbug.com/1094739
   if (overview_controller->IsInStartAnimation())
     return;
-  aura::Window* active_window = window_util::GetActiveWindow();
-  if (!active_window)
+  aura::Window* window = GetTargetWindow();
+  if (!window) {
     return;
+  }
   const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
-  WindowState::Get(active_window)->OnWMEvent(&event);
+  WindowState::Get(window)->OnWMEvent(&event);
 }
 
 void ToggleFullscreenMagnifier() {
@@ -1316,14 +1336,9 @@ void ToggleFullscreenMagnifier() {
 
 void ToggleGameDashboard() {
   DCHECK(features::IsGameDashboardEnabled());
-  aura::Window* window = window_util::GetActiveWindow();
+  aura::Window* window = GetTargetWindow();
   DCHECK(window);
-  auto* controller = Shell::Get()->game_dashboard_controller();
-  if (!controller->IsActive(window)) {
-    controller->Start(window);
-  } else {
-    controller->ToggleMenu(window);
-  }
+  // TODO(phshah): Connect to Game Dashboard.
 }
 
 void ToggleHighContrast() {
@@ -1404,37 +1419,42 @@ void ToggleKeyboardBacklight() {
 }
 
 void ToggleMaximized() {
-  aura::Window* active_window = window_util::GetActiveWindow();
-  if (!active_window)
+  aura::Window* window = GetTargetWindow();
+  if (!window) {
     return;
+  }
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Maximized"));
   WMEvent event(WM_EVENT_TOGGLE_MAXIMIZE);
-  WindowState::Get(active_window)->OnWMEvent(&event);
+  WindowState::Get(window)->OnWMEvent(&event);
 }
 
 bool ToggleMinimized() {
-  aura::Window* window = window_util::GetActiveWindow();
-  // Attempt to restore the window that would be cycled through next from
-  // the launcher when there is no active window.
+  aura::Window* window = window_util::GetTopWindow();
   if (!window) {
-    // Do not unminimize a window on an inactive desk, since this will cause
-    // desks to switch and that will be unintentional for the user.
-    MruWindowTracker::WindowList mru_windows(
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk));
-    if (!mru_windows.empty())
-      WindowState::Get(mru_windows.front())->Activate();
-    return true;
+    return false;
+  }
+  if (auto* overview_controller = Shell::Get()->overview_controller();
+      overview_controller->InOverviewSession() &&
+      overview_controller->overview_session()->IsWindowInOverview(window)) {
+    return false;
   }
   WindowState* window_state = WindowState::Get(window);
-  if (!window_state->CanMinimize())
+  if (window_state->IsMinimized()) {
+    // Attempt to restore the top window, i.e. the window that would be cycled
+    // through next from the launcher.
+    window_state->Activate();
+    return true;
+  }
+  if (!window_state->CanMinimize()) {
     return false;
+  }
   window_state->Minimize();
   return true;
 }
 
 void ToggleResizeLockMenu() {
-  aura::Window* active_window = window_util::GetActiveWindow();
-  auto* frame_view = NonClientFrameViewAsh::Get(active_window);
+  aura::Window* window = GetTargetWindow();
+  auto* frame_view = NonClientFrameViewAsh::Get(window);
   frame_view->GetToggleResizeLockMenuCallback().Run();
 }
 
@@ -1472,7 +1492,7 @@ void ToggleMirrorMode() {
 
 void ToggleMultitaskMenu() {
   DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
-  aura::Window* window = window_util::GetActiveWindow();
+  aura::Window* window = GetTargetWindow();
   DCHECK(window);
   if (auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
       tablet_mode_controller->InTabletMode()) {
@@ -1534,7 +1554,7 @@ void ToggleWifi() {
 }
 
 void TopWindowMinimizeOnBack() {
-  WindowState::Get(window_util::GetTopWindow())->Minimize();
+  WindowState::Get(GetTargetWindow())->Minimize();
 }
 
 void TouchHudClear() {
@@ -1571,7 +1591,8 @@ void VolumeDown() {
 }
 
 void VolumeMute() {
-  CrasAudioHandler::Get()->SetOutputMute(true);
+  CrasAudioHandler::Get()->SetOutputMute(
+      true, CrasAudioHandler::AudioSettingsChangeSource::kAccelerator);
 }
 
 void VolumeUp() {
@@ -1628,10 +1649,10 @@ void WindowSnap(AcceleratorAction action) {
   const WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
                           ? WM_EVENT_CYCLE_SNAP_PRIMARY
                           : WM_EVENT_CYCLE_SNAP_SECONDARY);
-  aura::Window* active_window = window_util::GetActiveWindow();
-  DCHECK(active_window);
+  aura::Window* window = GetTargetWindow();
+  DCHECK(window);
 
-  auto* window_state = WindowState::Get(active_window);
+  auto* window_state = WindowState::Get(window);
   window_state->set_snap_action_source(
       WindowSnapActionSource::kKeyboardShortcutToSnap);
   window_state->OnWMEvent(&event);

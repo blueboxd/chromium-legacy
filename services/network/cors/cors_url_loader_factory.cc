@@ -28,6 +28,9 @@
 #include "services/network/public/cpp/trust_token_operation_authorization.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
+#include "services/network/shared_dictionary/shared_dictionary_manager.h"
+#include "services/network/shared_dictionary/shared_dictionary_storage.h"
+#include "services/network/shared_dictionary/shared_dictionary_storage_isolation_key.h"
 #include "services/network/url_loader.h"
 #include "services/network/url_loader_factory.h"
 #include "services/network/web_bundle/web_bundle_url_loader_factory.h"
@@ -198,6 +201,18 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     DCHECK_EQ(mojom::kBrowserProcessId, process_id_);
   }
 
+  if (context_->GetSharedDictionaryManager() &&
+      params->isolation_info.frame_origin()) {
+    absl::optional<SharedDictionaryStorageIsolationKey> isolation_key =
+        SharedDictionaryStorageIsolationKey::MaybeCreate(
+            *params->isolation_info.frame_origin(),
+            params->isolation_info.network_isolation_key());
+    if (isolation_key) {
+      shared_dictionary_storage_ =
+          context_->GetSharedDictionaryManager()->GetStorage(*isolation_key);
+    }
+  }
+
   auto factory_override = std::move(params->factory_override);
   auto network_loader_factory = std::make_unique<network::URLLoaderFactory>(
       context, std::move(params), std::move(resource_scheduler_client), this);
@@ -316,7 +331,7 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         origin_access_list_, GetAllowAnyCorsExemptHeaderForBrowser(),
         HasFactoryOverride(!!factory_override_), *isolation_info_ptr,
         std::move(devtools_observer), client_security_state_.get(),
-        cross_origin_embedder_policy_, context_);
+        cross_origin_embedder_policy_, shared_dictionary_storage_, context_);
     auto* raw_loader = loader.get();
     OnCorsURLLoaderCreated(std::move(loader));
     raw_loader->Start();

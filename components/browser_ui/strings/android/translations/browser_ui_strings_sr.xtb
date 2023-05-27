@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Декодер слика</translation>
 <translation id="1785415724048343560">Препоручује се за најбољи доживљај</translation>
 <translation id="1818308510395330587">Да бисте дозволили да <ph name="APP_NAME" /> користи ПР, укључите и камеру у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Извор: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Сродни сајтови могу да виде ваше активности у групи</translation>
 <translation id="1887786770086287077">Приступ локацији је искључен за овај уређај. Укључите га у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Прекини везу</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Преузимање је завршено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Функције на неким сајтовима можда неће радити у режиму без архивирања</translation>
 <translation id="2442870161001914531">Увек се захтева сајт за рачунар</translation>
+<translation id="2479148705183875116">Иди у Подешавања</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
 <translation id="2490684707762498678">Управља <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Имејл адресе</translation>
 <translation id="2750481671343847896">Сајтови могу да приказују упите за пријављивање из услуга за идентитет.</translation>
 <translation id="2822354292072154809">Желите ли стварно да ресетујете све дозволе за сајт за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Захтевај приказ за мобилне уређаје</translation>
 <translation id="2870560284913253234">Сајт</translation>
 <translation id="2874939134665556319">Претходна песма</translation>
 <translation id="2891975107962658722">Онемогућите да сајт чува податке на уређају</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Сајтови могу да користе колачиће за побољшање доживљаја прегледања, на пример, да бисте остали пријављени или да би ставке у вашој корпи за куповину остале сачуване</translation>
 <translation id="3165022941318558018">Дозволите сајту да користи колачиће треће стране</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сачуваних података</translation>
-<translation id="3203366800380907218">Са веба</translation>
 <translation id="321187648315454507">Да бисте дозволили да вам <ph name="APP_NAME" /> шаље обавештења, укључите обавештења и у <ph name="BEGIN_LINK" />Android подешавањима<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3248611290851046188">Овај сајт дефинише интересовања која други сајтови могу да користе да би вам приказивали огласе. Овај сајт такође прима податке о вашим интересовањима из Chrome-а да би вам приказивао релевантније огласе.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Тражи приказ за рачунаре</translation>
 <translation id="5100237604440890931">Скупљено је – Кликните да бисте проширили.</translation>
 <translation id="5123685120097942451">Картица без архивирања</translation>
-<translation id="5134599672855298214">Тражи приказ за мобилне уређаје (препоручено)</translation>
 <translation id="5186036860380548585">Опција је доступна у врху екрана</translation>
 <translation id="5197729504361054390">Контакти које изаберете ће се делити са <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Последњи посећен данас</translation>

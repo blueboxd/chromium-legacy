@@ -34,7 +34,7 @@ COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kNotificationInteractionHistory);
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
-BASE_DECLARE_FEATURE(kOneTimeGeolocationPermission);
+BASE_DECLARE_FEATURE(kOneTimePermission);
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON) BASE_DECLARE_FEATURE(kPermissionChip);
 
@@ -70,6 +70,9 @@ BASE_DECLARE_FEATURE(kPermissionsPromptSurvey);
 
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 BASE_DECLARE_FEATURE(kRecordPermissionExpirationTimestamps);
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+BASE_DECLARE_FEATURE(kPermissionStorageAccessAPI);
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -129,6 +132,10 @@ extern const base::FeatureParam<std::string>
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const base::FeatureParam<base::TimeDelta>
     kPermissionPromptSurveyIgnoredPromptsMaximumAge;
+
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const base::FeatureParam<std::string>
+    kPermissionPromptSurveyOneTimePromptsDecidedBucket;
 #endif
 
 }  // namespace feature_params

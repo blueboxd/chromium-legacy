@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/viz/service/frame_sinks/frame_sink_bundle_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
+#include "services/viz/public/mojom/compositing/layer_context.mojom.h"
 #include "ui/gfx/overlay_transform.h"
 
 namespace viz {
@@ -130,6 +131,10 @@ void CompositorFrameSinkImpl::SetWantsAnimateOnlyBeginFrames() {
   support_->SetWantsAnimateOnlyBeginFrames();
 }
 
+void CompositorFrameSinkImpl::SetWantsBeginFrameAcks() {
+  support_->SetWantsBeginFrameAcks();
+}
+
 void CompositorFrameSinkImpl::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
@@ -197,6 +202,11 @@ void CompositorFrameSinkImpl::DidDeleteSharedBitmap(const SharedBitmapId& id) {
 void CompositorFrameSinkImpl::InitializeCompositorFrameSinkType(
     mojom::CompositorFrameSinkType type) {
   support_->InitializeCompositorFrameSinkType(type);
+}
+
+void CompositorFrameSinkImpl::BindLayerContext(
+    mojom::PendingLayerContextPtr context) {
+  support_->BindLayerContext(*context);
 }
 
 #if BUILDFLAG(IS_ANDROID)

@@ -7,6 +7,7 @@
 
 #include "ash/public/cpp/child_accounts/parent_access_controller.h"
 #include "ash/public/cpp/login_screen_client.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -75,7 +76,6 @@ class MockLoginScreenClient : public LoginScreenClient {
               AuthenticateUserWithEasyUnlock,
               (const AccountId& account_id),
               (override));
-  MOCK_METHOD(void, HardlockPod, (const AccountId& account_id), (override));
   MOCK_METHOD(void, OnFocusPod, (const AccountId& account_id), (override));
   MOCK_METHOD(void, OnNoPodFocused, (), (override));
   MOCK_METHOD(void, LoadWallpaper, (const AccountId& account_id), (override));
@@ -114,7 +114,6 @@ class MockLoginScreenClient : public LoginScreenClient {
   MOCK_METHOD(void, ShowLockScreenNotificationSettings, (), (override));
   MOCK_METHOD(void, FocusOobeDialog, (), (override));
   MOCK_METHOD(void, OnFocusLeavingSystemTray, (bool reverse), (override));
-  MOCK_METHOD(void, OnUserActivity, (), (override));
   MOCK_METHOD(void, OnLoginScreenShown, (), (override));
   MOCK_METHOD(void, OnSystemTrayBubbleShown, (), (override));
   MOCK_METHOD(views::Widget*, GetLoginWindowWidget, (), (override));
@@ -123,7 +122,7 @@ class MockLoginScreenClient : public LoginScreenClient {
   bool authenticate_user_callback_result_ = true;
   ParentCodeValidationResult validate_parent_access_code_result_ =
       ParentCodeValidationResult::kValid;
-  base::OnceCallback<void(bool)>*
+  raw_ptr<base::OnceCallback<void(bool)>, ExperimentalAsh>
       authenticate_user_with_password_or_pin_callback_storage_ = nullptr;
 };
 

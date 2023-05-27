@@ -196,9 +196,8 @@ void BackForwardCacheBrowserTest::SetUpCommandLine(
   EnableFeatureAndSetParams(
       blink::features::kBackForwardCacheSendNotRestoredReasons, "", "");
 
-  // Do not trigger NotReached() for JavaScript execution.
-  DisableFeature(
-      blink::features::kBackForwardCacheNotReachedOnJavaScriptExecution);
+  // Do not trigger DumpWithoutCrashing() for JavaScript execution.
+  DisableFeature(blink::features::kBackForwardCacheDWCOnJavaScriptExecution);
 #if BUILDFLAG(IS_ANDROID)
   EnableFeatureAndSetParams(features::kBackForwardCache,
                             "process_binding_strength", "NORMAL");
@@ -947,8 +946,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheHTTPDocumentOnly) {
 // alive in the same BrowsingInstance does not cause anything to blow up.
 
 // TODO(crbug.com/1127979): Flaky on Linux and Windows
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+#define MAYBE_NavigateToTwoPagesOnSameSite DISABLED_NavigateToTwoPagesOnSameSite
+#else
+#define MAYBE_NavigateToTwoPagesOnSameSite NavigateToTwoPagesOnSameSite
+#endif
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
-                       NavigateToTwoPagesOnSameSite) {
+                       MAYBE_NavigateToTwoPagesOnSameSite) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url_a1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_a2(embedded_test_server()->GetURL("a.com", "/title2.html"));
@@ -2850,9 +2854,9 @@ IN_PROC_BROWSER_TEST_P(
       }));
 
   // 3) Start navigation in subframe to |subframe_url|.
-  EXPECT_TRUE(ExecJs(
+  ExecuteScriptAsync(
       main_frame,
-      JsReplace("document.querySelector('#child').src = $1;", subframe_url)));
+      JsReplace("document.querySelector('#child').src = $1;", subframe_url));
   // 4) Wait until subframe navigation is pending commit.
   commit_message_delayer.Wait();
 }

@@ -136,13 +136,27 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Waits for the matcher to return an element that is sufficiently visible.
 - (void)waitForSufficientlyVisibleElementWithMatcher:(id<GREYMatcher>)matcher;
 
+// Waits for the matcher to return an element that is not sufficiently visible
+// (or nil).
+- (void)waitForNotSufficientlyVisibleElementWithMatcher:
+    (id<GREYMatcher>)matcher;
+
 // Waits for the matcher to return an element.
 - (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher;
+
+// Waits for the matcher to return an element. Returns whether the element did
+// appear in the delay.
+- (BOOL)testUIElementAppearanceWithMatcher:(id<GREYMatcher>)matcher;
 
 // Waits for the matcher to return an element. If the condition is not met
 // within the given `timeout` a GREYAssert is induced.
 - (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher
                                     timeout:(base::TimeDelta)timeout;
+
+// Waits for the matcher to return an element. Returns wheher the condition is
+// met within the given `timeout`.
+- (BOOL)testUIElementAppearanceWithMatcher:(id<GREYMatcher>)matcher
+                                   timeout:(base::TimeDelta)timeout;
 
 // Waits for the matcher to not return any elements.
 - (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher;
@@ -173,12 +187,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Signs in with `identity` without sync consent.
 - (void)signInWithoutSyncWithIdentity:(FakeSystemIdentity*)identity;
-
-// Starts the sync server. The server should not be running when calling this.
-- (void)startSync;
-
-// Stops the sync server. The server should be running when calling this.
-- (void)stopSync;
 
 // Injects user demographics into the fake sync server. `rawBirthYear` is the
 // true birth year, pre-noise, and the gender corresponds to the proto enum
@@ -723,6 +731,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Stores a value for the provided key in NSUserDefaults.
 - (void)setUserDefaultObject:(id)value forKey:(NSString*)defaultName;
+
+// Removes the object for `key` in NSUserDefault.
+- (void)removeUserDefaultObjectForKey:(NSString*)key;
 
 #pragma mark - Pref Utilities (EG2)
 

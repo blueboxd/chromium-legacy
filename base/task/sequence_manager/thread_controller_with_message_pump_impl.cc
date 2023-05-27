@@ -58,6 +58,12 @@ BASE_FEATURE(kUseLessHighResTimers,
              "UseLessHighResTimers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 std::atomic_bool g_use_less_high_res_timers = false;
+
+// If enabled, high resolution timer will be used all the time on Windows. This
+// is for test only.
+BASE_FEATURE(kAlwaysUseHighResTimers,
+             "AlwaysUseHighResTimers",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 std::atomic_bool g_align_wake_ups = false;
@@ -94,6 +100,9 @@ void ThreadControllerWithMessagePumpImpl::InitializeFeatures() {
       FeatureList::IsEnabled(kExplicitHighResolutionTimerWin);
   g_use_less_high_res_timers.store(
       FeatureList::IsEnabled(kUseLessHighResTimers), std::memory_order_relaxed);
+  if (FeatureList::IsEnabled(kAlwaysUseHighResTimers)) {
+    Time::ActivateHighResolutionTimer(true);
+  }
 #endif
 }
 
@@ -176,6 +185,7 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
 void ThreadControllerWithMessagePumpImpl::SetWorkBatchSize(
     int work_batch_size) {
   DCHECK_GE(work_batch_size, 1);
+  CHECK(main_thread_only().can_change_batch_size);
   main_thread_only().work_batch_size = work_batch_size;
 }
 
@@ -479,12 +489,17 @@ absl::optional<WakeUp> ThreadControllerWithMessagePumpImpl::DoWorkImpl(
       task_annotator_.RunTask(
           "ThreadControllerImpl::RunTask", selected_task->task,
           [&selected_task, &source](perfetto::EventContext& ctx) {
-            if (selected_task->task_execution_trace_logger)
+            if (selected_task->task_execution_trace_logger) {
               selected_task->task_execution_trace_logger.Run(
                   ctx, selected_task->task);
+            }
             source->MaybeEmitTaskDetails(ctx, selected_task.value());
           });
     }
+
+    // Reset `selected_task` before the call to `DidRunTask()` below makes its
+    // `PendingTask` reference dangling.
+    selected_task.reset();
 
     LazyNow lazy_now_after_run_task(time_source_);
     main_thread_only().task_source->DidRunTask(lazy_now_after_run_task);
@@ -721,6 +736,9 @@ void ThreadControllerWithMessagePumpImpl::DetachFromMessagePump() {
 }
 #elif BUILDFLAG(IS_ANDROID)
 void ThreadControllerWithMessagePumpImpl::AttachToMessagePump() {
+  CHECK(main_thread_only().work_batch_size == 1);
+  // Aborting the message pump currently relies on the batch size being 1.
+  main_thread_only().can_change_batch_size = false;
   static_cast<MessagePumpForUI*>(pump_.get())->Attach(this);
 }
 #endif

@@ -52,7 +52,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/base/ime/ash/mock_input_method_manager.h"
+#include "ui/base/ime/ash/mock_input_method_manager_impl.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
@@ -273,7 +273,7 @@ void AshTestHelper::SetUp(InitParams init_params) {
   if (!input_method::InputMethodManager::Get()) {
     // |input_method_manager_| is not owned and is cleaned up in TearDown()
     // by calling InputMethodManager::Shutdown().
-    input_method_manager_ = new input_method::MockInputMethodManager();
+    input_method_manager_ = new input_method::MockInputMethodManagerImpl();
     input_method::InputMethodManager::Initialize(input_method_manager_);
   }
   if (floss::features::IsFlossEnabled()) {
@@ -318,15 +318,6 @@ void AshTestHelper::SetUp(InitParams init_params) {
       std::make_unique<TestKeyboardUIFactory>();
   Shell::CreateInstance(std::move(shell_init_params));
   Shell* shell = Shell::Get();
-
-  // The dark/light mode educational nudge is expected to be shown when session
-  // state changed to ACTIVE. This means it might be shown above the shelf in
-  // all the tests with an active user session. This setting here make it will
-  // not be shown by default in tests. As keep it shown will change the
-  // operations needed in many of the tests, e.g, when productive launcher is
-  // shown as well, we need one more click outside of the launcher to dismiss
-  // the nudge first before dismissing the launcher.
-  shell->dark_light_mode_controller()->SetShowNudgeForTesting(false);
 
   chromeos::MultitaskMenuNudgeController::SetSuppressNudgeForTesting(true);
 

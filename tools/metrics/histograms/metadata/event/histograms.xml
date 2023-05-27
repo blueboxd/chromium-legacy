@@ -70,16 +70,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Event.AsyncTargeting.ResponseTime" units="ms"
-    expires_after="2023-02-12">
-  <owner>jonross@chromium.org</owner>
-  <owner>event-targeting@chromium.org</owner>
-  <summary>
-    Tracks how long it takes for a client to respond to an asynchronous request
-    to find a target for an input event.
-  </summary>
-</histogram>
-
 <histogram name="Event.BrowserVerifiedUserActivation" enum="BooleanSuccess"
     expires_after="2021-10-17">
   <owner>liviutinta@chromium.org</owner>
@@ -95,7 +85,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="Event.DownEventCount.PerInputFormFactorDestinationCombination2"
     enum="DownEventInputFormFactorDestinationCombination2"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>tbuckley@chromium.org</owner>
   <summary>
     The number of down events received per destination, input and form factor
@@ -111,14 +101,15 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.GestureCreated" enum="UIEventType"
-    expires_after="2020-03-01">
+    expires_after="2024-04-01">
   <owner>kuscher@google.com</owner>
+  <owner>input-dev@chromium.org</owner>
   <summary>
     The gesture-events recognized and dispatched by the browser gesture
     recognizer. This replaces Ash.GestureCreated, which did not record events on
     Android and Windows.
 
-    Team: input-dev@chromium.org.
+    Note: this metric was expired from 2020-03-01 to 2023-04-04.
   </summary>
 </histogram>
 
@@ -142,25 +133,6 @@ chromium-metrics-reviews@google.com.
 
     Team: input-dev@chromium.org.
   </summary>
-</histogram>
-
-<histogram
-    name="Event.InputEventCoalescing.ScrollUpdate.{InputType}UpdatesPerFrame"
-    units="counts" expires_after="2023-12-18">
-  <owner>nuskos@google.com</owner>
-  <owner>mekk@google.com</owner>
-  <owner>woa-performance@google.com</owner>
-  <summary>
-    Each time a user scrolls the screen, GestureScrollUpdates are handled
-    serially by chrome to generate frames corresponding to user input, this
-    metric counts the number of gestures observed in a frame.
-
-    We expect {InputType} per frame on Android, other platforms may vary.
-  </summary>
-  <token key="InputType">
-    <variant name="Fling" summary="1 fling input"/>
-    <variant name="Gesture" summary="2 inputs"/>
-  </token>
 </histogram>
 
 <histogram name="Event.InputEventPrediction.Scroll.Frame{ScoreType}"
@@ -230,6 +202,22 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Event.Jank.PredictorJankyFramePercentage" units="%"
+    expires_after="2024-03-20">
+  <owner>mekk@google.com</owner>
+  <owner>woa-performance@google.com</owner>
+  <summary>
+    A frame is deemed janky if an irregular jump in screen displacement occured
+    in consecutive frames, this metric is the percentage of those janky frames
+    per 50 produced frames and is only emitted if a scroll has more than 50
+    frames in sa sequence. This metric is used to asses the scrolling prediction
+    performance as the scroll predictor should smooth out those irregular jumps.
+
+    For more details about this metric, please check
+    http://doc/1Y0u0Tq5eUZff75nYUzQVw6JxmbZAW9m64pJidmnGWsY.
+  </summary>
+</histogram>
+
 <histogram name="Event.Jank.ScrollUpdate.TotalJankyAndNonJankyDuration"
     enum="JankyBoolean" expires_after="2022-11-24">
   <owner>nuskos@google.com</owner>
@@ -250,7 +238,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Jank.ScrollUpdate.TotalJankyAndNonJankyDuration2"
-    enum="JankyBoolean" expires_after="2023-08-20">
+    enum="JankyBoolean" expires_after="2023-10-22">
   <owner>nuskos@google.com</owner>
   <owner>woa-performance@google.com</owner>
   <summary>
@@ -263,8 +251,38 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Event.Jank.ScrollUpdate.{ScrollSpeed}.{VsyncStatus}.FrameAboveJankyThreshold2"
+    units="ratio * 100" expires_after="2024-03-20">
+  <owner>mekk@google.com</owner>
+  <owner>woa-performance@google.com</owner>
+  <summary>
+    This metric is the ratio between a larger screen displacement divided by a
+    following small screen displacement {ScrollSpeed}. If the larger screen
+    displacement was deemed janky given the predictor performance, and is only
+    emitted if there is {VsyncStatus}. This metric is used to asses the
+    scrolling prediction performance as the scroll predictor should smooth out
+    those irregular jumps.
+
+    For more details about this metric, please check
+    http://doc/1Y0u0Tq5eUZff75nYUzQVw6JxmbZAW9m64pJidmnGWsY.
+  </summary>
+  <token key="VsyncStatus">
+    <variant name="MissedVsync" summary="a missed vsync"/>
+    <variant name="NoMissedVsync" summary="no missed vsync"/>
+  </token>
+  <token key="ScrollSpeed">
+    <variant name="FastScroll"
+        summary="offset by 1.2, the jank threshold for fast scrolls.
+                 |d_large/d_small - 1.2|"/>
+    <variant name="SlowScroll"
+        summary="offset by 1.4, the jank threshold for slow scrolls.
+                 |d_large/d_small - 1.4|"/>
+  </token>
+</histogram>
+
 <histogram name="Event.Latency.EndToEnd.KeyPress" units="microseconds"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -303,7 +321,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.EndToEnd.TouchpadPinch2" units="microseconds"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>nzolghadr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -316,7 +334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.HitTest" units="microseconds"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -335,7 +353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.HitTestRecursive" units="microseconds"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -408,7 +426,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.TimeToScrollUpdateSwapBegin2"
-    units="microseconds" expires_after="2023-08-20">
+    units="microseconds" expires_after="2023-10-22">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -496,7 +514,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-07-30">
+    units="microseconds" expires_after="2023-10-01">
   <owner>flackr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -544,7 +562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollJank" enum="Boolean"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -555,7 +573,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyDuration" units="ms"
-    expires_after="2023-08-06">
+    expires_after="2023-10-08">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -566,7 +584,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyDurationPercentage" units="%"
-    expires_after="2023-07-30">
+    expires_after="2023-10-01">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -576,7 +594,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyEvents" units="counts"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -631,7 +649,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TotalDuration" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -784,7 +802,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-07-30">
+    units="microseconds" expires_after="2023-10-01">
   <owner>flackr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -982,59 +1000,6 @@ chromium-metrics-reviews@google.com.
     Duration of touch selection sequence which involved dragging a text
     selection handle. The duration is measured from the moment the text
     selection handles are shown, and until they are dismissed.
-  </summary>
-</histogram>
-
-<histogram name="Event.TouchSelectionHandle.BestVerticalClippingPercentage"
-    units="%" expires_after="M77">
-  <owner>amaralp@chromium.org</owner>
-  <summary>
-    Percentage of touch handle height that would be clipped by the viewport in
-    the best case of flipping or not flipping.
-  </summary>
-</histogram>
-
-<histogram name="Event.TouchSelectionHandle.BottomHandleClippingPercentage"
-    units="%" expires_after="M77">
-  <owner>amaralp@chromium.org</owner>
-  <summary>
-    Percentage of touch handle height that would be clipped by the viewport if
-    the handle was not vertically flipped.
-  </summary>
-</histogram>
-
-<histogram name="Event.TouchSelectionHandle.FlippingImprovementPercentage"
-    units="%" expires_after="M77">
-  <owner>amaralp@chromium.org</owner>
-  <summary>
-    The difference between the metrics |BottomHandleClippingPercentage| and
-    |BestVerticalClippingPercentage|. Measures how useful vertical flipping is.
-  </summary>
-</histogram>
-
-<histogram name="Event.TouchSelectionHandle.LeftHandleClippingPercentage"
-    units="%" expires_after="M77">
-  <owner>amaralp@chromium.org</owner>
-  <summary>
-    Percentage of left touch handle width that would be clipped by the viewport
-    without flipping.
-  </summary>
-</histogram>
-
-<histogram name="Event.TouchSelectionHandle.RightHandleClippingPercentage"
-    units="%" expires_after="M77">
-  <owner>amaralp@chromium.org</owner>
-  <summary>
-    Percentage of right touch handle width that would be clipped by the viewport
-    without flipping.
-  </summary>
-</histogram>
-
-<histogram name="Event.TouchSelectionHandle.ShouldFlipHandleVertically"
-    enum="TouchHandleVerticallyFlipped" expires_after="M77">
-  <owner>amaralp@chromium.org</owner>
-  <summary>
-    Whether flipping the handle vertically would result in less clipping.
   </summary>
 </histogram>
 

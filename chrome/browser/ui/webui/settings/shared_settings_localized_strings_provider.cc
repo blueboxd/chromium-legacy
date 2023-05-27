@@ -11,6 +11,7 @@
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -114,6 +115,13 @@ void AddCaptionSubpageStrings(content::WebUIDataSource* html_source) {
       {"captionsColorCyan", IDS_SETTINGS_CAPTIONS_COLOR_CYAN},
       {"captionsColorMagenta", IDS_SETTINGS_CAPTIONS_COLOR_MAGENTA},
       {"captionsDefaultSetting", IDS_SETTINGS_CAPTIONS_DEFAULT_SETTING},
+      {"captionsLanguage", IDS_SETTINGS_CAPTIONS_LANGUAGE},
+      {"captionsManageLanguagesTitle",
+       IDS_SETTINGS_CAPTIONS_MANAGE_LANGUAGES_TITLE},
+      {"captionsLiveTranslateTargetLanguage",
+       IDS_SETTINGS_CAPTIONS_LIVE_TRANSLATE_TARGET_LANGUAGE},
+      {"removeLanguageAriaLabel",
+       IDS_SETTINGS_CAPTIONS_REMOVE_LANGUAGE_ARIA_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -124,55 +132,31 @@ void AddLiveCaptionSectionStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "captionsEnableLiveCaptionTitle",
       IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_TITLE);
+  html_source->AddLocalizedString(
+      "captionsEnableLiveTranslateTitle",
+      IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_TRANSLATE_TITLE);
+  html_source->AddLocalizedString(
+      "captionsEnableLiveTranslateSubtitle",
+      IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_TRANSLATE_SUBTITLE);
 
   const bool liveCaptionMultiLanguageEnabled =
       base::FeatureList::IsEnabled(media::kLiveCaptionMultiLanguage);
+
+  const bool liveTranslateEnabled =
+      base::FeatureList::IsEnabled(media::kLiveTranslate);
+
   const int live_caption_subtitle_message =
       liveCaptionMultiLanguageEnabled
           ? IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE
           : IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION_SUBTITLE_ENGLISH_ONLY;
   html_source->AddLocalizedString("captionsEnableLiveCaptionSubtitle",
                                   live_caption_subtitle_message);
-
-  absl::optional<speech::SodaLanguagePackComponentConfig> englishConfig =
-      speech::GetLanguageComponentConfig(speech::LanguageCode::kEnUs);
-  html_source->AddString("sodaLanguageCodeEnglish",
-                         englishConfig->language_name);
-  html_source->AddLocalizedString("sodaLanguageDisplayNameEnglish",
-                                  englishConfig->display_name);
-  absl::optional<speech::SodaLanguagePackComponentConfig> frenchConfig =
-      speech::GetLanguageComponentConfig(speech::LanguageCode::kFrFr);
-  html_source->AddString("sodaLanguageCodeFrench", frenchConfig->language_name);
-  html_source->AddLocalizedString("sodaLanguageDisplayNameFrench",
-                                  frenchConfig->display_name);
-  absl::optional<speech::SodaLanguagePackComponentConfig> germanConfig =
-      speech::GetLanguageComponentConfig(speech::LanguageCode::kDeDe);
-  html_source->AddString("sodaLanguageCodeGerman", germanConfig->language_name);
-  html_source->AddLocalizedString("sodaLanguageDisplayNameGerman",
-                                  germanConfig->display_name);
-  absl::optional<speech::SodaLanguagePackComponentConfig> italianConfig =
-      speech::GetLanguageComponentConfig(speech::LanguageCode::kItIt);
-  html_source->AddString("sodaLanguageCodeItalian",
-                         italianConfig->language_name);
-  html_source->AddLocalizedString("sodaLanguageDisplayNameItalian",
-                                  italianConfig->display_name);
-  absl::optional<speech::SodaLanguagePackComponentConfig> japaneseConfig =
-      speech::GetLanguageComponentConfig(speech::LanguageCode::kJaJp);
-  html_source->AddString("sodaLanguageCodeJapanese",
-                         japaneseConfig->language_name);
-  html_source->AddLocalizedString("sodaLanguageDisplayNameJapanese",
-                                  japaneseConfig->display_name);
-  absl::optional<speech::SodaLanguagePackComponentConfig> spanishConfig =
-      speech::GetLanguageComponentConfig(speech::LanguageCode::kEsEs);
-  html_source->AddString("sodaLanguageCodeSpanish",
-                         spanishConfig->language_name);
-  html_source->AddLocalizedString("sodaLanguageDisplayNameSpanish",
-                                  spanishConfig->display_name);
-
   html_source->AddBoolean("enableLiveCaption",
                           captions::IsLiveCaptionFeatureSupported());
   html_source->AddBoolean("enableLiveCaptionMultiLanguage",
                           liveCaptionMultiLanguageEnabled);
+
+  html_source->AddBoolean("enableLiveTranslate", liveTranslateEnabled);
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -208,6 +192,14 @@ void AddSharedSyncPageStrings(content::WebUIDataSource* html_source) {
     {"sync", IDS_SETTINGS_SYNC},
     {"manageSyncedDataTitle",
      IDS_SETTINGS_NEW_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT},
+    {"manageSyncedDataSubtitle",
+     IDS_SETTINGS_NEW_MANAGE_SYNCED_DATA_SUBTITLE_UNIFIED_CONSENT},
+    {"manageBrowserSyncedDataTitle",
+     IDS_SETTINGS_NEW_MANAGE_BROWSER_SYNCED_DATA_TITLE},
+    {"syncAdvancedDevicePageTitle",
+     IDS_SETTINGS_NEW_SYNC_ADVANCED_DEVICE_PAGE_TITLE},
+    {"syncAdvancedBrowserPageTitle",
+     IDS_SETTINGS_NEW_SYNC_ADVANCED_BROWSER_PAGE_TITLE},
     {"enterPassphraseLabel", IDS_SYNC_ENTER_PASSPHRASE_BODY},
     {"enterPassphraseLabelWithDate", IDS_SYNC_ENTER_PASSPHRASE_BODY_WITH_DATE},
     {"existingPassphraseLabelWithDate",
@@ -257,6 +249,10 @@ void AddSharedSyncPageStrings(content::WebUIDataSource* html_source) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   html_source->AddBoolean("shouldShowLacrosSideBySideWarning",
                           ShouldShowLacrosSideBySideWarningInAsh());
+  html_source->AddBoolean(
+      "showSyncSettingsRevamp",
+      base::FeatureList::IsEnabled(syncer::kSyncChromeOSAppsToggleSharing) &&
+          crosapi::browser_util::IsLacrosEnabled());
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   html_source->AddBoolean("shouldShowLacrosSideBySideWarning",
                           ShouldShowLacrosSideBySideWarningInLacros());

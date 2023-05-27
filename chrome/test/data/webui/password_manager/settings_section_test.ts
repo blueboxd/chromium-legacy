@@ -4,7 +4,7 @@
 
 import 'chrome://password-manager/password_manager.js';
 
-import {OpenWindowProxyImpl, PasswordManagerImpl, PrefsBrowserProxyImpl, TrustedVaultBannerState} from 'chrome://password-manager/password_manager.js';
+import {OpenWindowProxyImpl, PasswordManagerImpl, PrefToggleButtonElement, SyncBrowserProxyImpl, TrustedVaultBannerState} from 'chrome://password-manager/password_manager.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -14,14 +14,15 @@ import {TestOpenWindowProxy} from 'chrome://webui-test/test_open_window_proxy.js
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
-import {TestPrefsBrowserProxy} from './test_prefs_browser_proxy.js';
+import {TestSyncBrowserProxy} from './test_sync_browser_proxy.js';
 import {createBlockedSiteEntry, createPasswordEntry, makePasswordManagerPrefs} from './test_util.js';
 
-// Disable clang format to keep OS-specific includes.
 // clang-format off
 // <if expr="is_win or is_macosx">
-import {PrefToggleButtonElement} from 'chrome://password-manager/password_manager.js';
- // </if>
+import {PasskeysBrowserProxyImpl} from 'chrome://password-manager/password_manager.js';
+
+import {TestPasskeysBrowserProxy} from './test_passkeys_browser_proxy.js';
+// </if>
 // clang-format on
 
 /**
@@ -42,54 +43,100 @@ function assertBlockedSiteList(
 }
 
 suite('SettingsSectionTest', function() {
-  let prefsProxy: TestPrefsBrowserProxy;
   let passwordManager: TestPasswordManagerProxy;
   let openWindowProxy: TestOpenWindowProxy;
+  let syncProxy: TestSyncBrowserProxy;
+  // <if expr="is_win or is_macosx">
+  let passkeysProxy: TestPasskeysBrowserProxy;
+  // </if>
 
   setup(function() {
     document.body.innerHTML = window.trustedTypes!.emptyHTML;
-    prefsProxy = new TestPrefsBrowserProxy();
-    PrefsBrowserProxyImpl.setInstance(prefsProxy);
-    prefsProxy.prefs = makePasswordManagerPrefs();
     passwordManager = new TestPasswordManagerProxy();
     PasswordManagerImpl.setInstance(passwordManager);
     openWindowProxy = new TestOpenWindowProxy();
     OpenWindowProxyImpl.setInstance(openWindowProxy);
+    syncProxy = new TestSyncBrowserProxy();
+    SyncBrowserProxyImpl.setInstance(syncProxy);
+    // <if expr="is_win or is_macosx">
+    passkeysProxy = new TestPasskeysBrowserProxy();
+    PasskeysBrowserProxyImpl.setInstance(passkeysProxy);
+    // </if>
   });
 
   test('pref value displayed in the UI', async function() {
-    await prefsProxy.setPref('credentials_enable_service', false);
-
     const settings = document.createElement('settings-section');
+    settings.prefs = makePasswordManagerPrefs();
+    settings.prefs.credentials_enable_service.value = false;
     document.body.appendChild(settings);
-    await prefsProxy.whenCalled('getPref');
+    await flushTasks();
 
     assertFalse(settings.$.passwordToggle.checked);
     assertTrue(settings.$.autosigninToggle.checked);
   });
 
-  test('clicking the toggle updates corresponding', async function() {
+  test('clicking the toggle updates corresponding pref', async function() {
     const settings = document.createElement('settings-section');
+    settings.prefs = makePasswordManagerPrefs();
     document.body.appendChild(settings);
-    await prefsProxy.whenCalled('getPref');
+    await flushTasks();
+
+    assertTrue(settings.getPref('credentials_enable_service').value);
+    assertTrue(settings.$.passwordToggle.checked);
+
+    settings.$.passwordToggle.click();
+    assertFalse(settings.getPref('credentials_enable_service').value);
+    assertFalse(settings.$.passwordToggle.checked);
+  });
+
+  test('enforcement disables toggle', async function() {
+    const settings = document.createElement('settings-section');
+    settings.prefs = makePasswordManagerPrefs();
+    settings.prefs.credentials_enable_service.enforcement =
+        chrome.settingsPrivate.Enforcement.ENFORCED;
+    document.body.appendChild(settings);
+    await flushTasks();
+
+    assertTrue(settings.getPref('credentials_enable_service').value);
+    assertTrue(settings.$.passwordToggle.checked);
+    settings.$.passwordToggle.click();
+    assertTrue(settings.getPref('credentials_enable_service').value);
+  });
+
+  test('extension control includes icon', async function() {
+    const settings = document.createElement('settings-section');
+    settings.prefs = makePasswordManagerPrefs();
+    settings.prefs.credentials_enable_service.extensionId = 'test';
+    settings.prefs.credentials_enable_service.controlledByName =
+        'test extension';
+    document.body.appendChild(settings);
+    await flushTasks();
+
+    assertTrue(settings.$.passwordToggle.checked);
+    assertTrue(
+        !!settings.shadowRoot!.querySelector('extension-controlled-indicator'));
+  });
+
+  test('no extension control icon by default', async function() {
+    const settings = document.createElement('settings-section');
+    settings.prefs = makePasswordManagerPrefs();
+    document.body.appendChild(settings);
+    await flushTasks();
 
     assertTrue(settings.$.passwordToggle.checked);
     settings.$.passwordToggle.click();
-    assertFalse(settings.$.passwordToggle.checked);
-
-    const {key, value} = await prefsProxy.whenCalled('setPref');
-    assertEquals('credentials_enable_service', key);
-    assertFalse(value);
+    assertFalse(!!settings.$.passwordToggle.shadowRoot!.querySelector(
+        'extension-controlled-indicator'));
   });
 
   test('pref updated externally', async function() {
     const settings = document.createElement('settings-section');
+    settings.prefs = makePasswordManagerPrefs();
     document.body.appendChild(settings);
-    await prefsProxy.whenCalled('getPref');
+    await flushTasks();
 
     assertTrue(settings.$.autosigninToggle.checked);
-    prefsProxy.prefs = makePasswordManagerPrefs();
-    await prefsProxy.setPref('credentials_enable_autosignin', false);
+    settings.set('prefs.credentials_enable_autosignin.value', false);
 
     assertFalse(settings.$.autosigninToggle.checked);
   });
@@ -98,14 +145,14 @@ suite('SettingsSectionTest', function() {
   // Tests that biometric auth pref is visible, and clicking on it triggers
   // biometric auth validation instead of directly updating the pref value.
   test('biometric auth prefs when feature is available', async function() {
-    await prefsProxy.setPref(
-        'password_manager.biometric_authentication_filling', false);
     loadTimeData.overrideValues(
         {biometricAuthenticationForFillingToggleVisible: true});
 
     const settings = document.createElement('settings-section');
+    settings.prefs = makePasswordManagerPrefs();
+    settings.prefs.password_manager.biometric_authentication_filling.value =
+        false;
     document.body.appendChild(settings);
-    await prefsProxy.whenCalled('getPref');
     await flushTasks();
 
     const biometricAuthenticationToggle =
@@ -113,17 +160,18 @@ suite('SettingsSectionTest', function() {
             '#biometricAuthenticationToggle') as PrefToggleButtonElement;
     assertTrue(!!biometricAuthenticationToggle);
     assertFalse(biometricAuthenticationToggle.checked);
+    assertFalse(
+        settings.getPref('password_manager.biometric_authentication_filling')
+            .value);
+
     biometricAuthenticationToggle.click();
 
     // Pref settings should not change until authentication succeeds.
     await passwordManager.whenCalled('switchBiometricAuthBeforeFillingState');
     assertFalse(biometricAuthenticationToggle.checked);
-
-    // Imitate prefs changing after successful identification.
-    prefsProxy.prefs = makePasswordManagerPrefs();
-    await prefsProxy.setPref(
-        'password_manager.biometric_authentication_filling', true);
-    assertTrue(biometricAuthenticationToggle.checked);
+    assertFalse(
+        settings.getPref('password_manager.biometric_authentication_filling')
+            .value);
   });
 
   // Tests that biometric auth pref is not shown, if biometric auth is
@@ -132,8 +180,8 @@ suite('SettingsSectionTest', function() {
     loadTimeData.overrideValues(
         {biometricAuthenticationForFillingToggleVisible: false});
     const settings = document.createElement('settings-section');
+    settings.prefs = makePasswordManagerPrefs();
     document.body.appendChild(settings);
-    await prefsProxy.whenCalled('getPref');
     await flushTasks();
     assertFalse(!!settings.shadowRoot!.querySelector<PrefToggleButtonElement>(
         '#biometricAuthenticationToggle'));
@@ -201,10 +249,10 @@ suite('SettingsSectionTest', function() {
         2);
   });
 
-  // Add Shortcut banner is shown and clickable if the shortcut is not yet
-  // installed.
+  // Add Shortcut banner is shown and clickable.
   test('showAddShortcutBanner', async function() {
-    loadTimeData.overrideValues({isPasswordManagerShortcutInstalled: false});
+    loadTimeData.overrideValues({canAddShortcut: true});
+
     const settings = document.createElement('settings-section');
     document.body.appendChild(settings);
     await flushTasks();
@@ -212,19 +260,32 @@ suite('SettingsSectionTest', function() {
     const addShortcutBanner =
         settings.shadowRoot!.querySelector<HTMLElement>('#addShortcutBanner');
     assertTrue(!!addShortcutBanner);
-
+    assertTrue(isVisible(addShortcutBanner));
     addShortcutBanner.click();
     await passwordManager.whenCalled('showAddShortcutDialog');
   });
 
-  // Add Shortcut banner is not shown if the shortcut is already installed.
-  test('hideAddShortcutBanner', async function() {
-    loadTimeData.overrideValues({isPasswordManagerShortcutInstalled: true});
+  // Add Shortcut banner is shown and clickable.
+  test('addShortcutBanner hidden', async function() {
+    loadTimeData.overrideValues({canAddShortcut: false});
+
     const settings = document.createElement('settings-section');
     document.body.appendChild(settings);
     await flushTasks();
 
     assertFalse(!!settings.shadowRoot!.querySelector('#addShortcutBanner'));
+  });
+
+  test('import hidden when policy disabled', async function() {
+    const settings = document.createElement('settings-section');
+    settings.prefs = makePasswordManagerPrefs();
+    settings.prefs.credentials_enable_service.value = false;
+    settings.prefs.credentials_enable_service.enforcement =
+        chrome.settingsPrivate.Enforcement.ENFORCED;
+    document.body.appendChild(settings);
+    await flushTasks();
+
+    assertFalse(!!settings.shadowRoot!.querySelector('passwords-importer'));
   });
 
   test('Password exporter element', async function() {
@@ -233,7 +294,7 @@ suite('SettingsSectionTest', function() {
     const settings = document.createElement('settings-section');
     document.body.appendChild(settings);
     await passwordManager.whenCalled('getSavedPasswordList');
-    assertFalse(!!settings!.shadowRoot!.querySelector('passwords-exporter'));
+    assertFalse(!!settings.shadowRoot!.querySelector('passwords-exporter'));
 
     // Exporter should appear when saved passwords are observed.
     passwordManager.data.passwords.push(
@@ -297,4 +358,87 @@ suite('SettingsSectionTest', function() {
     const url = await openWindowProxy.whenCalled('openUrl');
     assertEquals(url, loadTimeData.getString('trustedVaultLearnMoreUrl'));
   });
+
+  test('account storage toggle when feature is available', async function() {
+    passwordManager.data.isOptedInAccountStorage = false;
+    syncProxy.accountInfo = {
+      email: 'testemail@gmail.com',
+    };
+    syncProxy.syncInfo = {
+      isEligibleForAccountStorage: true,
+      isSyncingPasswords: false,
+    };
+
+    const settings = document.createElement('settings-section');
+    document.body.appendChild(settings);
+    await syncProxy.whenCalled('getSyncInfo');
+    await syncProxy.whenCalled('getAccountInfo');
+    await flushTasks();
+    await flushTasks();
+
+    const accountStorageToggle =
+        settings.shadowRoot!.querySelector<PrefToggleButtonElement>(
+            '#accountStorageToggle');
+    assertTrue(!!accountStorageToggle);
+    assertFalse(accountStorageToggle.hasAttribute('checked'));
+    accountStorageToggle.click();
+
+    // Toggle should not change until authentication succeeds.
+    await passwordManager.whenCalled('optInForAccountStorage');
+    assertFalse(accountStorageToggle.hasAttribute('checked'));
+
+    // Assert that password section subscribed as a listener to opt in state and
+    // opt out from account storage.
+    assertTrue(!!passwordManager.listeners.accountStorageOptInStateListener);
+    passwordManager.data.isOptedInAccountStorage = true;
+    // Imitate listener notification after successful identification.
+    passwordManager.listeners.accountStorageOptInStateListener(true);
+    await flushTasks();
+
+    assertTrue(accountStorageToggle.checked);
+  });
+
+  // Tests that account storage toggle is not shown, if it should not be shown.
+  test(
+      'account storage pref toggle when feature is unavailable',
+      async function() {
+        syncProxy.syncInfo = {
+          isEligibleForAccountStorage: false,
+          isSyncingPasswords: false,
+        };
+        const settings = document.createElement('settings-section');
+        document.body.appendChild(settings);
+        await syncProxy.whenCalled('getSyncInfo');
+        await flushTasks();
+
+        assertFalse(
+            !!settings.shadowRoot!.querySelector<PrefToggleButtonElement>(
+                '#accountStorageToggle'));
+      });
+
+  // <if expr="is_win or is_macosx">
+  test('managePasskeysNotShownWithoutPasskeys', async function() {
+    passkeysProxy.passkeysPresent = false;
+    const settings = document.createElement('settings-section');
+    document.body.appendChild(settings);
+    await passkeysProxy.whenCalled('passkeysHasPasskeys');
+    flush();
+    assertFalse(!!settings.shadowRoot!.querySelector('#managePasskeysRow'));
+  });
+
+  test('managePasskeysShownWhenNeeded', async function() {
+    passkeysProxy.passkeysPresent = true;
+    const settings = document.createElement('settings-section');
+    document.body.appendChild(settings);
+    await passkeysProxy.whenCalled('passkeysHasPasskeys');
+    flush();
+    const managePasskeysRow = settings.shadowRoot!.querySelector<HTMLElement>(
+                                  '#managePasskeysRow') as HTMLElement;
+    assertTrue(!!managePasskeysRow);
+
+    managePasskeysRow.click();
+    const url = await openWindowProxy.whenCalled('openUrl');
+    assertEquals('chrome://settings/passkeys', url);
+  });
+  // </if>
 });

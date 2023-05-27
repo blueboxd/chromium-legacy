@@ -13,8 +13,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertTrue;
 
-import android.support.test.InstrumentationRegistry;
-
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.filters.LargeTest;
@@ -35,7 +34,6 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.IncognitoCustomTabActivityTestRule;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -45,6 +43,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils.LoadIfNeededCaller;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.browser_ui.modaldialog.ModalDialogTestUtils;
@@ -131,6 +130,10 @@ public class IncognitoPermissionLeakageTest {
         Espresso.onView(withText(containsString("Block"))).perform(click());
     }
 
+    /**
+     * A class providing test parameters encapsulating different Activity type pairs spliced on
+     * Regular and Incognito mode.
+     */
     public static class RegularAndIncognito implements ParameterProvider {
         @Override
         public List<ParameterSet> getParameters() {

@@ -81,7 +81,6 @@
 <translation id="2928420929544864228">Усталяванне завершана.</translation>
 <translation id="2977470724722393594">Chromium абноўлены</translation>
 <translation id="2977506796191543575">Пры спробе сайта выкрасці пароль або пры спампоўванні шкоднага файла браўзер Chromium можа таксама адпраўляць у Бяспечны прагляд URL-адрасы, уключаючы фрагменты змесціва старонкі</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Браўзер Chromium падключаны да прылады HID}one{Браўзер Chromium падключаны да прылад HID}few{Браўзер Chromium падключаны да прылад HID}many{Браўзер Chromium падключаны да прылад HID}other{Браўзер Chromium падключаны да прылад HID}}</translation>
 <translation id="3032706164202344641">Браўзеру Chromium не ўдаецца праверыць паролі. Паўтарыце спробу пазней.</translation>
 <translation id="3032787606318309379">Дадаецца ў Chromium...</translation>
 <translation id="3038232873781883849">Чаканне ўсталявання...</translation>
@@ -96,7 +95,6 @@
 <translation id="3258596308407688501">Chromium не можа чытаць з каталога даных і запісваць у яго:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">У гэтым дапаможніку вы знойдзеце інфармацыю па эфектыўным выкарыстанні Chromium у адпаведнасці са сваімі наладамі</translation>
 <translation id="3283186697780795848">Усталявана версія Chromium <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3286538390144397061">Перазапусціць</translation>
 <translation id="328888136576916638">Адсутнічаюць ключы Google API. Некаторыя функцыі Chromium будуць выключаны.</translation>
@@ -248,8 +246,10 @@
 <translation id="6442900851116057561">Перазапусціце Chromium OS</translation>
 <translation id="6455857529632101747">Вітаем у профілях Chromium</translation>
 <translation id="6475912303565314141">Таксама вызначае, якая старонка паказваецца пра запуску Chromium.</translation>
+<translation id="648319183876919572">Палепшаны Бяспечны прагляд забяспечвае дадатковую абарону ад небяспечных вэб-сайтаў і спамповак</translation>
 <translation id="6510925080656968729">Выдаліць Chromium</translation>
 <translation id="6542839706527980775">У кожным профілі захоўваюцца свае даныя Chromium, напрыклад закладкі, гісторыя, паролі і не толькі</translation>
+<translation id="656935081669708576">Вы можаце пераключыцца на прагляд пароляў з іншага профілю Chromium</translation>
 <translation id="6570579332384693436">Для выпраўлення арфаграфічных памылак Chromium адпраўляе ў Google тэкст, які вы набіраеце ў тэкставых палях</translation>
 <translation id="6598877126913850652">Перайсці ў налады апавяшчэнняў Chromium</translation>
 <translation id="6613594504749178791">Змены ўступяць у сілу пасля перазапуску Chromium.</translation>
@@ -384,7 +384,6 @@
 <translation id="924957577793602335">Дастасуйце Chromium да сваіх мэт</translation>
 <translation id="93478295209880648">Браўзер Chromium больш не падтрымліваецца на Windows XP і Windows Vista, таму можа працаваць няправільна</translation>
 <translation id="942598560705308788">Сертыфікаты, якімі кіруе Chromium</translation>
-<translation id="959579472876010517">Выкарыстоўвайце ўсе магчымасці Chromium</translation>
 <translation id="965162752251293939">Хто выкарыстоўвае Chromium?</translation>
 <translation id="967427899662692980">Засцеражыце браўзер Chromium ад небяспек</translation>
 <translation id="9792300276217204">Заўсёды выдаляць даныя сайтаў з прылады пры закрыцці Chromium</translation>

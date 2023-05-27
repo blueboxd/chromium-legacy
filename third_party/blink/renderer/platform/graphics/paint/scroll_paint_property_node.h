@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_property_node.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -25,6 +26,13 @@ namespace blink {
 class ClipPaintPropertyNode;
 
 using MainThreadScrollingReasons = uint32_t;
+
+// For CompositeScrollAfterPaint.
+enum class CompositedScrollingPreference : uint8_t {
+  kDefault,
+  kPreferred,
+  kNotPreferred,
+};
 
 // A scroll node contains auxiliary scrolling information which includes how far
 // an area can be scrolled, main thread scrolling reasons, etc. Scroll nodes
@@ -63,6 +71,9 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     bool prevent_viewport_scrolling_from_inner = false;
 
     bool max_scroll_offset_affected_by_page_scale = false;
+    // Used in CompositeScrollAfterPaint.
+    CompositedScrollingPreference composited_scrolling_preference =
+        CompositedScrollingPreference::kDefault;
     MainThreadScrollingReasons main_thread_scrolling_reasons =
         cc::MainThreadScrollingReason::kNotScrollingOnMain;
     // The scrolling element id is stored directly on the scroll node and not
@@ -152,8 +163,13 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   bool MaxScrollOffsetAffectedByPageScale() const {
     return state_.max_scroll_offset_affected_by_page_scale;
   }
+  CompositedScrollingPreference GetCompositedScrollingPreference() const {
+    DCHECK(RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled());
+    return state_.composited_scrolling_preference;
+  }
 
-  // Return reason bitfield with values from cc::MainThreadScrollingReason.
+  // Note that this doesn't include non-composited main-thread scrolling
+  // reasons in CompositeScrollAfterPaint.
   MainThreadScrollingReasons GetMainThreadScrollingReasons() const {
     return state_.main_thread_scrolling_reasons;
   }

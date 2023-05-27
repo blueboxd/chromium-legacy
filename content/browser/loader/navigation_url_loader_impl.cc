@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "components/download/public/common/download_stats.h"
 #include "content/browser/about_url_loader_factory.h"
+#include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/client_hints/client_hints.h"
 #include "content/browser/data_url_loader_factory.h"
@@ -322,19 +323,10 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
         *request_info.begin_params->trust_token_params;
   }
 
-  // TODO(https://crbug.com/1423092): This is more restrictive than necessary,
-  // since `request_info.common_params->has_storage_access` really represents
-  // "does this navigation have an initiator, and if so, did the initiator
-  // obtain storage access, and if so, is the initiator the same as the frame
-  // being navigated, and is the navigation same-origin?". While here, we only
-  // really need "does this navigation have an initiator, and if so, did it
-  // obtain storage access?". So in particular, cross-origin same-site
-  // navigations and non-self-initiated navigations won't include cookies from
-  // Storage Access API, but they should. This is ok for now, since the most
-  // common case for this is expected to be a refresh, which does fit the
-  // stricter criteria.
   new_request->has_storage_access =
-      request_info.common_params->has_storage_access;
+      request_info.begin_params->has_storage_access;
+
+  new_request->attribution_reporting_support = AttributionManager::GetSupport();
 
   return new_request;
 }
@@ -536,7 +528,7 @@ void NavigationURLLoaderImpl::CreateInterceptors(
   // Set up an interceptor for prefetch.
   std::unique_ptr<PrefetchURLLoaderInterceptor> prefetch_interceptor =
       content::PrefetchURLLoaderInterceptor::MaybeCreateInterceptor(
-          frame_tree_node_id_);
+          frame_tree_node_id_, request_info_->previous_render_frame_host_id);
   if (prefetch_interceptor) {
     interceptors_.push_back(std::move(prefetch_interceptor));
   }

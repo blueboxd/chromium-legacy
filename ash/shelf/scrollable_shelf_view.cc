@@ -19,9 +19,9 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/animation_throughput_reporter.h"
@@ -146,7 +146,7 @@ class ScrollableShelfView::ScrollableShelfArrowView
   }
 
  private:
-  Shelf* const shelf_;
+  const raw_ptr<Shelf, ExperimentalAsh> shelf_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +170,7 @@ class ScrollableShelfView::ScopedActiveInkDropCountImpl
       const ScopedActiveInkDropCountImpl& rhs) = delete;
 
  private:
-  ScrollableShelfView* owner_ = nullptr;
+  raw_ptr<ScrollableShelfView, ExperimentalAsh> owner_ = nullptr;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,7 +203,8 @@ class ScrollableShelfContainerView : public ShelfContainerView,
   bool DoesIntersectRect(const views::View* target,
                          const gfx::Rect& rect) const override;
 
-  ScrollableShelfView* scrollable_shelf_view_ = nullptr;
+  raw_ptr<ScrollableShelfView, ExperimentalAsh> scrollable_shelf_view_ =
+      nullptr;
 };
 
 void ScrollableShelfContainerView::TranslateShelfView(
@@ -304,7 +305,8 @@ class ScrollableShelfFocusSearch : public views::FocusSearch {
   }
 
  private:
-  ScrollableShelfView* scrollable_shelf_view_ = nullptr;
+  raw_ptr<ScrollableShelfView, ExperimentalAsh> scrollable_shelf_view_ =
+      nullptr;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -621,7 +623,7 @@ float ScrollableShelfView::CalculateClampedScrollOffset(
     int available_space_for_icons) const {
   const float scroll_upper_bound =
       CalculateScrollUpperBound(available_space_for_icons);
-  scroll = base::clamp(scroll, 0.0f, scroll_upper_bound);
+  scroll = std::clamp(scroll, 0.0f, scroll_upper_bound);
   return scroll;
 }
 
@@ -864,8 +866,9 @@ void ScrollableShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 void ScrollableShelfView::ViewHierarchyChanged(
     const views::ViewHierarchyChangedDetails& details) {
-  if (details.parent != shelf_view_)
+  if (details.parent != shelf_view_.get()) {
     return;
+  }
 
   shelf_view_->UpdateShelfItemViewsVisibility();
 
@@ -981,7 +984,8 @@ void ScrollableShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
   // gets focused, it should update the visibility of the hotseat.
   if (Shell::Get()->IsInTabletMode() &&
       !shelf_widget->hotseat_widget()->IsExtended()) {
-    shelf_widget->shelf_layout_manager()->UpdateVisibilityState();
+    shelf_widget->shelf_layout_manager()->UpdateVisibilityState(
+        /*force_layout=*/false);
   }
 }
 
@@ -1000,7 +1004,8 @@ void ScrollableShelfView::HandleAccessibleActionScrollToMakeVisible(
     ShelfButton* button) {
   // Scrollable shelf can only be hidden in tablet mode.
   GetShelf()->hotseat_widget()->set_manually_extended(true);
-  GetShelf()->shelf_widget()->shelf_layout_manager()->UpdateVisibilityState();
+  GetShelf()->shelf_widget()->shelf_layout_manager()->UpdateVisibilityState(
+      /*force_layout=*/false);
 }
 
 void ScrollableShelfView::OnButtonWillBeRemoved() {
@@ -1829,11 +1834,11 @@ ScrollableShelfView::CalculateTappableIconIndices(
   // TODO(b/268401797): Rewrite CalculateTappableIconIndices() as a more
   // thorough fix for out of bound indices.
   first_visible_view_index =
-      base::clamp(first_visible_view_index, static_cast<size_t>(0),
-                  visible_views_indices.size() - 1);
+      std::clamp(first_visible_view_index, static_cast<size_t>(0),
+                 visible_views_indices.size() - 1);
   last_visible_view_index =
-      base::clamp(last_visible_view_index, first_visible_view_index,
-                  visible_views_indices.size() - 1);
+      std::clamp(last_visible_view_index, first_visible_view_index,
+                 visible_views_indices.size() - 1);
 
   return {visible_views_indices[first_visible_view_index],
           visible_views_indices[last_visible_view_index]};

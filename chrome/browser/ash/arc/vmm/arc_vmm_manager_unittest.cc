@@ -4,11 +4,16 @@
 
 #include "chrome/browser/ash/arc/vmm/arc_vmm_manager.h"
 
+#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/session/arc_service_manager.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
+#include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -76,13 +81,18 @@ class ArcVmmManagerTest : public testing::Test {
     // This is needed for setting up ArcBridge.
     arc_service_manager_ = std::make_unique<ArcServiceManager>();
 
-    testing_profile_ = std::make_unique<TestingProfile>();
-    manager_ =
-        ArcVmmManager::GetForBrowserContextForTesting(testing_profile_.get());
-    manager_->set_user_id_hash("test_user_hash_id");
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    ASSERT_TRUE(profile_manager_->SetUp());
+    testing_profile_ = profile_manager_->CreateTestingProfile("test_name");
 
     concierge_client_ =
         std::make_unique<TestConciergeClient>(ash::FakeCiceroneClient::Get());
+  }
+
+  void InitVmmManager() {
+    manager_ = ArcVmmManager::GetForBrowserContextForTesting(testing_profile_);
+    manager_->set_user_id_hash("test_user_hash_id");
   }
 
   ArcVmmManager* manager() { return manager_; }
@@ -93,15 +103,20 @@ class ArcVmmManagerTest : public testing::Test {
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
  private:
-  std::unique_ptr<TestingProfile> testing_profile_;
+  base::test::ScopedFeatureList scoped_features_;
+  TestingPrefServiceSimple local_state_;
+
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  raw_ptr<TestingProfile, ExperimentalAsh> testing_profile_ = nullptr;
   std::unique_ptr<TestConciergeClient> concierge_client_;
-  ArcVmmManager* manager_ = nullptr;
+  raw_ptr<ArcVmmManager, ExperimentalAsh> manager_ = nullptr;
 
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
 };
 
 TEST_F(ArcVmmManagerTest, SwapSuccess) {
-  manager()->SetSwapState(true);
+  InitVmmManager();
+  manager()->SetSwapState(SwapState::ENABLE_WITH_SWAPOUT);
   base::RunLoop().RunUntilIdle();
   // Send "ENABLE" first.
   EXPECT_EQ(1, client()->enable_count());
@@ -114,4 +129,34 @@ TEST_F(ArcVmmManagerTest, SwapSuccess) {
   EXPECT_EQ(1, client()->swap_out_count());
   EXPECT_EQ(0, client()->disable_count());
 }
+
+// This test verify the weak ptr safety in scheduler.
+TEST_F(ArcVmmManagerTest, WeakPtrRef) {
+  class TestClass {
+   public:
+    void add(int x) { value += x; }
+
+    int value = 0;
+
+    base::WeakPtrFactory<TestClass> weak_ptr_factory_{this};
+  };
+
+  TestClass* test_class = new TestClass;
+  auto cb = base::BindRepeating(
+      [](base::WeakPtr<TestClass> c, int v) {
+        if (c) {
+          c->add(v);
+        }
+      },
+      test_class->weak_ptr_factory_.GetWeakPtr());
+
+  EXPECT_EQ(test_class->value, 0);
+  cb.Run(1);
+  EXPECT_EQ(test_class->value, 1);
+
+  delete test_class;
+  cb.Run(2);
+  // Expect no crash here.
+}
+
 }  // namespace arc

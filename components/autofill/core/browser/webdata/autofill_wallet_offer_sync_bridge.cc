@@ -85,7 +85,8 @@ AutofillWalletOfferSyncBridge::CreateMetadataChangeList() {
                           change_processor()->GetWeakPtr()));
 }
 
-absl::optional<syncer::ModelError> AutofillWalletOfferSyncBridge::MergeSyncData(
+absl::optional<syncer::ModelError>
+AutofillWalletOfferSyncBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -94,7 +95,7 @@ absl::optional<syncer::ModelError> AutofillWalletOfferSyncBridge::MergeSyncData(
 }
 
 absl::optional<syncer::ModelError>
-AutofillWalletOfferSyncBridge::ApplySyncChanges(
+AutofillWalletOfferSyncBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   // This bridge does not support incremental updates, so whenever this is
@@ -129,13 +130,10 @@ bool AutofillWalletOfferSyncBridge::SupportsIncrementalUpdates() const {
   return false;
 }
 
-void AutofillWalletOfferSyncBridge::ApplyStopSyncChanges(
+void AutofillWalletOfferSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  // If a metadata change list gets passed in, that means sync is actually
-  // disabled, so we want to delete the payments data.
-  if (delete_metadata_change_list) {
-    MergeRemoteData(syncer::EntityChangeList());
-  }
+  // Sync for this datatype is disabled so we want to delete the payments data.
+  MergeRemoteData(syncer::EntityChangeList());
 }
 
 void AutofillWalletOfferSyncBridge::GetAllDataImpl(DataCallback callback) {

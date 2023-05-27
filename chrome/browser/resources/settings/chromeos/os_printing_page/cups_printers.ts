@@ -179,6 +179,17 @@ class SettingsCupsPrintersElement extends SettingsCupsPrintersElementBase {
           Setting.kSavedPrinters,
         ]),
       },
+
+      /**
+       * True when the "printer-settings-revamp" feature flag is enabled.
+       */
+      isPrinterSettingsRevampEnabled_: {
+        type: Boolean,
+        value: () => {
+          return loadTimeData.getBoolean('isPrinterSettingsRevampEnabled');
+        },
+        readOnly: true,
+      },
     };
   }
 
@@ -391,7 +402,7 @@ class SettingsCupsPrintersElement extends SettingsCupsPrintersElementBase {
     this.entryManager_.setEnterprisePrintersList(this.enterprisePrinters_);
   }
 
-  private onAddPrinterTap_(): void {
+  private onAddPrinterClick_(): void {
     this.$.addPrinterDialog.open();
   }
 

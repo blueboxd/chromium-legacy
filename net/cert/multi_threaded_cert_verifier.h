@@ -13,6 +13,7 @@
 
 #include "base/containers/linked_list.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "crypto/crypto_buildflags.h"
 #include "net/base/net_export.h"
@@ -27,14 +28,12 @@ namespace net {
 class CertVerifyProc;
 class CertNetFetcher;
 class CertVerifyProcFactory;
-class ChromeRootStoreData;
 
 // MultiThreadedCertVerifier is a CertVerifier implementation that runs
 // synchronous CertVerifier implementations on worker threads.
 class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
     : public CertVerifierWithUpdatableProc {
  public:
-  explicit MultiThreadedCertVerifier(scoped_refptr<CertVerifyProc> verify_proc);
   explicit MultiThreadedCertVerifier(
       scoped_refptr<CertVerifyProc> verify_proc,
       scoped_refptr<CertVerifyProcFactory> verify_proc_factory);
@@ -54,13 +53,19 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier
              std::unique_ptr<Request>* out_req,
              const NetLogWithSource& net_log) override;
   void SetConfig(const CertVerifier::Config& config) override;
-  void UpdateChromeRootStoreData(
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  void UpdateVerifyProcData(
       scoped_refptr<CertNetFetcher> cert_net_fetcher,
-      const ChromeRootStoreData* root_store_data) override;
+      const net::CertVerifyProcFactory::ImplParams& impl_params) override;
 
  private:
   class InternalRequest;
 
+  // Notify the |observers_| of an OnCertVerifierChanged event.
+  void NotifyCertVerifierChanged();
+
+  base::ObserverList<Observer> observers_;
   Config config_;
   scoped_refptr<CertVerifyProc> verify_proc_;
   scoped_refptr<CertVerifyProcFactory> verify_proc_factory_;

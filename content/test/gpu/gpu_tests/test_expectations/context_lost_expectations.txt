@@ -12,6 +12,7 @@
 #             android-pixel-6 android-shield-android-tv android-sm-a135m
 #             android-sm-a235m
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
+#             chromeos-board-jacuzzi chromeos-board-octopus
 #         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
 # tags: [ desktop
@@ -20,7 +21,8 @@
 # tags: [ android-chromium android-webview-instrumentation
 #         debug debug-x64
 #         release release-x64
-#         fuchsia-chrome web-engine-shell ]
+#         fuchsia-chrome web-engine-shell
+#         lacros-chrome cros-chrome ]
 # GPU
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x67ef amd-0x6821 amd-0x7340
 #         apple apple-apple-m1 apple-angle-metal-renderer:-apple-m1
@@ -172,6 +174,8 @@ crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] GpuNormalTermination_NewWebG
 crbug.com/1418987 [ linux amd-0x7340 angle-vulkan ] GpuNormalTermination_OriginalWebGLNotBlocked [ Failure ]
 
 crbug.com/1419583 [ linux amd-0x7340 angle-vulkan ] ContextLost_WebGLContextRestoredInHiddenTab [ Failure ]
+
+crbug.com/1429731 [ chromeos chromeos-board-kevin ] ContextLost_WebGPUStressRequestDeviceAndRemoveLoop [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

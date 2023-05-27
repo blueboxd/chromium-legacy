@@ -29,7 +29,6 @@ const char kLockedToBeActivatedUserPodCustomIconId[] = "locked-to-be-activated";
 const char kLockedWithProximityHintUserPodCustomIconId[] =
     "locked-with-proximity-hint";
 const char kUnlockedUserPodCustomIconId[] = "unlocked";
-const char kHardlockedUserPodCustomIconId[] = "hardlocked";
 const char kSpinnerUserPodCustomIconId[] = "spinner";
 
 // Given the user pod icon, returns its id as used by the user pod UI code.
@@ -43,8 +42,6 @@ std::string GetIdForIcon(ScreenlockBridge::UserPodCustomIcon icon) {
       return kLockedWithProximityHintUserPodCustomIconId;
     case ScreenlockBridge::USER_POD_CUSTOM_ICON_UNLOCKED:
       return kUnlockedUserPodCustomIconId;
-    case ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED:
-      return kHardlockedUserPodCustomIconId;
     case ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER:
       return kSpinnerUserPodCustomIconId;
     default:
@@ -74,9 +71,6 @@ base::Value::Dict ScreenlockBridge::UserPodCustomIconInfo::ToDictForTesting()
   if (!aria_label_.empty())
     result.Set("ariaLabel", aria_label_);
 
-  if (hardlock_on_click_)
-    result.Set("hardlockOnClick", true);
-
   return result;
 }
 
@@ -95,10 +89,6 @@ void ScreenlockBridge::UserPodCustomIconInfo::SetTooltip(
 void ScreenlockBridge::UserPodCustomIconInfo::SetAriaLabel(
     const std::u16string& aria_label) {
   aria_label_ = aria_label;
-}
-
-void ScreenlockBridge::UserPodCustomIconInfo::SetHardlockOnClick() {
-  hardlock_on_click_ = true;
 }
 
 std::string ScreenlockBridge::UserPodCustomIconInfo::GetIDString() const {

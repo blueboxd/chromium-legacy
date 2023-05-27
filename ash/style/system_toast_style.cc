@@ -18,6 +18,7 @@
 #include "ash/system/toast/toast_overlay.h"
 #include "ash/wm/work_area_insets.h"
 #include "base/strings/strcat.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -134,10 +135,11 @@ SystemToastStyle::SystemToastStyle(base::RepeatingClosure dismiss_callback,
 
   if (!leading_icon_->is_empty()) {
     leading_icon_view_ = AddChildView(std::make_unique<views::ImageView>());
-    leading_icon_view_->SetPreferredSize(gfx::Size(
-        kLeadingIconSize + kLeadingIconRightPadding, kLeadingIconSize));
-    leading_icon_view_->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets::TLBR(0, 0, 0, kLeadingIconRightPadding)));
+    leading_icon_view_->SetPreferredSize(
+        gfx::Size(kLeadingIconSize, kLeadingIconSize));
+    auto* icon_padding = AddChildView(std::make_unique<views::View>());
+    icon_padding->SetPreferredSize(
+        gfx::Size(kLeadingIconRightPadding, kLeadingIconSize));
   }
 
   label_ = AddChildView(std::make_unique<SystemToastInnerLabel>(text));
@@ -166,8 +168,10 @@ SystemToastStyle::SystemToastStyle(base::RepeatingClosure dismiss_callback,
   const float toast_corner_radius = toast_height / 2.0f;
   layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(toast_corner_radius));
   SetBorder(std::make_unique<views::HighlightBorder>(
-      toast_corner_radius, views::HighlightBorder::Type::kHighlightBorder1,
-      /*use_light_colors=*/false));
+      toast_corner_radius,
+      chromeos::features::IsJellyrollEnabled()
+          ? views::HighlightBorder::Type::kHighlightBorderOnShadow
+          : views::HighlightBorder::Type::kHighlightBorder1));
 
   // Since system toast has a very large corner radius, we should use the shadow
   // on texture layer. Refer to `ash::SystemShadowOnTextureLayer` for more

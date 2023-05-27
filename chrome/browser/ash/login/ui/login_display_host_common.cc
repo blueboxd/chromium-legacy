@@ -57,7 +57,9 @@
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
+#include "chromeos/ash/components/login/auth/auth_performer.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/common/features/feature_session_type.h"
@@ -377,12 +379,6 @@ void LoginDisplayHostCommon::SetDisplayAndGivenName(
                                                         given_name);
 }
 
-bool LoginDisplayHostCommon::IsGaiaDialogVisibleForTesting() {
-  return IsOobeUIDialogVisible() &&
-         GetWizardController()->current_screen()->screen_id() ==
-             GaiaView::kScreenId;
-}
-
 void LoginDisplayHostCommon::ShowAllowlistCheckFailedError() {
   StartWizard(GaiaView::kScreenId);
 
@@ -533,7 +529,10 @@ void LoginDisplayHostCommon::ShowNewTermsForFlexUsers() {
 
 void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
     const UserContext& user_context) {
-  if (PinSetupScreen::ShouldSkipBecauseOfPolicy() &&
+  AuthPerformer auth_performer(UserDataAuthClient::Get());
+  CryptohomePinEngine cryptohome_pin_engine(&auth_performer);
+  if (cryptohome_pin_engine.ShouldSkipSetupBecauseOfPolicy(
+          user_context.GetAccountId()) &&
       !features::IsCryptohomeRecoveryEnabled() &&
       RecoveryEligibilityScreen::ShouldSkipRecoverySetupBecauseOfPolicy()) {
     return;

@@ -11,12 +11,12 @@
 #include "base/check.h"
 #include "base/containers/span.h"
 #include "base/files/file_path.h"
-#include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/uuid.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/mime_util.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
@@ -99,7 +99,7 @@ FileSystemFileInfosToDragItemFileSystemFilePtr(
     DCHECK(file_system_url.type() != storage::kFileSystemTypePersistent);
     DCHECK(file_system_url.type() != storage::kFileSystemTypeTemporary);
 
-    std::string uuid = base::GenerateGUID();
+    std::string uuid = base::Uuid::GenerateRandomV4().AsLowercaseString();
 
     std::string content_type;
 

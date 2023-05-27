@@ -18,14 +18,14 @@ import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
 import '../parental_controls_page/parental_controls_page.js';
 
+import {ProfileInfo, ProfileInfoBrowserProxyImpl} from '/shared/settings/people_page/profile_info_browser_proxy.js';
+import {SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '/shared/settings/people_page/sync_browser_proxy.js';
 import {convertImageSequenceToPng} from 'chrome://resources/ash/common/cr_picture/png.js';
 import {sendWithPromise} from 'chrome://resources/js/cr.js';
 import {getImage} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {afterNextRender, flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {ProfileInfo, ProfileInfoBrowserProxyImpl} from '../../people_page/profile_info_browser_proxy.js';
-import {SyncBrowserProxy, SyncBrowserProxyImpl, SyncStatus} from '../../people_page/sync_browser_proxy.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {LockStateMixin} from '../lock_state_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
@@ -157,6 +157,17 @@ class OsSettingsPeoplePageElement extends OsSettingsPeoplePageElementBase {
         ]),
       },
 
+      /**
+       * Whether to show the new UI for OS Sync Settings
+       * which include sublabel and Apps toggle
+       * shared between Ash and Lacros.
+       */
+      showSyncSettingsRevamp_: {
+        type: Boolean,
+        value: loadTimeData.getBoolean('showSyncSettingsRevamp'),
+        readOnly: true,
+      },
+
     };
   }
 
@@ -172,6 +183,7 @@ class OsSettingsPeoplePageElement extends OsSettingsPeoplePageElementBase {
   private showParentalControls_: boolean;
   private focusConfig_: Map<string, string>;
   private showPasswordPromptDialog_: boolean;
+  private showSyncSettingsRevamp_: boolean;
   private setModes_: Object|undefined;
   private syncBrowserProxy_: SyncBrowserProxy;
   private clearAccountPasswordTimeoutId_: number|undefined;
@@ -226,6 +238,13 @@ class OsSettingsPeoplePageElement extends OsSettingsPeoplePageElementBase {
     if (!this.setModes_) {
       Router.getInstance().navigateToPreviousRoute();
     }
+  }
+
+  private getSyncAdvancedTitle_(): string {
+    if (this.showSyncSettingsRevamp_) {
+      return this.i18n('syncAdvancedDevicePageTitle');
+    }
+    return this.i18n('syncAdvancedPageTitle');
   }
 
   private afterRenderShowDeepLink_(
@@ -376,12 +395,12 @@ class OsSettingsPeoplePageElement extends OsSettingsPeoplePageElementBase {
     }
   }
 
-  private onSyncTap_(): void {
+  private onSyncClick_(): void {
     // Users can go to sync subpage regardless of sync status.
     Router.getInstance().navigateTo(routes.SYNC);
   }
 
-  private onAccountManagerTap_(): void {
+  private onAccountManagerClick_(): void {
     if (this.isAccountManagerEnabled_) {
       Router.getInstance().navigateTo(routes.ACCOUNT_MANAGER);
     }

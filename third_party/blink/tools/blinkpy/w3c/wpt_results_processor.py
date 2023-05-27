@@ -25,7 +25,7 @@ from urllib.parse import urlsplit
 import mozinfo
 
 from blinkpy.common import path_finder
-from blinkpy.common.html_diff import html_diff
+from blinkpy.common.wpt_results_diff import wpt_results_diff
 from blinkpy.common.memoized import memoized
 from blinkpy.common.system.filesystem import FileSystem
 from blinkpy.common.unified_diff import unified_diff
@@ -68,7 +68,7 @@ class WPTResult(Result):
         'CRASH': ResultType.Crash,
         'INTERNAL-ERROR': ResultType.Crash,
         'SKIP': ResultType.Skip,
-        'NOTRUN': ResultType.Skip,
+        'NOTRUN': ResultType.Failure,
     }
 
     _status_priority = [
@@ -85,13 +85,14 @@ class WPTResult(Result):
         super().__init__(*args, **kwargs)
         self.messages = []
         self._test_section = wptnode.DataNode(_test_basename(self.name))
+        self.has_expected_fail = False
 
     def _add_expected_status(self, section: wptnode.DataNode, status: str):
         expectation = wptnode.KeyValueNode('expected')
         expectation.append(wptnode.ValueNode(status))
         section.append(expectation)
 
-    def _maybe_set_statuses(self, status: str, expected: Set[str]):
+    def _maybe_set_statuses(self, actual: str, unexpected: bool):
         """Set this result's actual/expected statuses.
 
         A `testharness.js` test may have subtests with their own statuses and
@@ -104,19 +105,12 @@ class WPTResult(Result):
         latest status. The order tiebreaker ensures a test-level status
         overrides a subtest-level status when they have the same priority.
         """
-        actual = self._wptrunner_to_chromium_statuses[status]
-        expected = {
-            self._wptrunner_to_chromium_statuses[status]
-            for status in expected
-        }
-        unexpected = actual not in expected
         priority = (self._status_priority.index(actual), unexpected)
         # pylint: disable=access-member-before-definition
         # `actual` and `unexpected` are set in `Result`'s constructor.
-        if priority >= (self._status_priority.index(
+        if priority > (self._status_priority.index(
                 self.actual), self.unexpected):
-            self.actual, self.expected = actual, expected
-            self.unexpected = unexpected
+            self.actual, self.unexpected = actual, unexpected
 
     def update_from_subtest(self,
                             subtest: str,
@@ -128,8 +122,22 @@ class WPTResult(Result):
         subtest_section = wptnode.DataNode(subtest)
         self._add_expected_status(subtest_section, status)
         self._test_section.append(subtest_section)
+
         # Tentatively promote "interesting" statuses to the test level.
-        self._maybe_set_statuses(status, expected)
+        # Rules for promoting subtest status to test level:
+        #     Any result against 'NOTRUN' is an unexpected pass.
+        #     'NOTRUN' against other expected results is an unexpected failure.
+        #     Expected results only come from test level expectations
+        #     Only promote subtest status when run unexpected.
+        #     Exception: report expected failure if all subtest failures are expected.
+        unexpected = status not in expected
+        actual = (ResultType.Pass if 'NOTRUN' in expected else
+                  self._wptrunner_to_chromium_statuses[status])
+        self.has_expected_fail = (self.has_expected_fail
+                                  or actual == ResultType.Failure
+                                  and not unexpected)
+        if unexpected:
+            self._maybe_set_statuses(actual, unexpected)
 
     def update_from_test(self,
                          status: str,
@@ -138,11 +146,28 @@ class WPTResult(Result):
         if message:
             self.messages.insert(0, 'Harness: %s\n' % message)
         self._add_expected_status(self._test_section, status)
-        self._maybe_set_statuses(status, expected)
+
+        unexpected = status not in expected
+        actual = self._wptrunner_to_chromium_statuses[status]
+        self.expected = {
+            self._wptrunner_to_chromium_statuses[status]
+            for status in expected
+        }
+        self._maybe_set_statuses(actual, unexpected)
+
+        # Report expected failure instead of expected pass when there are
+        # expected subtest failures.
+        if (self.actual == ResultType.Pass and not self.unexpected
+                and self.has_expected_fail):
+            self.actual = ResultType.Failure
+            self.expected = {ResultType.Failure}
 
     @property
     def actual_metadata(self):
         return wptmanifest.serialize(self._test_section)
+
+    def test_section(self):
+        return self._test_section
 
 
 def _test_basename(test_id: str) -> str:
@@ -244,8 +269,10 @@ class WPTResultsProcessor:
         if test_name_prefix and not test_name_prefix.endswith('/'):
             test_name_prefix += '/'
         self.test_name_prefix = test_name_prefix
-        self.wpt_manifest = self.port.wpt_manifest('external/wpt')
-        self.internal_manifest = self.port.wpt_manifest('wpt_internal')
+        # Manifests should include `jsshell` tests, which wptrunner will report
+        # as skipped. See crbug.com/1431514#c3.
+        self.wpt_manifest = self.port.wpt_manifest('external/wpt', False)
+        self.internal_manifest = self.port.wpt_manifest('wpt_internal', False)
         self.path_finder = path_finder.PathFinder(self.fs)
         # Provide placeholder properties until the `suite_start` events are
         # processed.
@@ -487,12 +514,14 @@ class WPTResultsProcessor:
                 result.unexpected = False
             if result.actual not in {ResultType.Pass, ResultType.Skip}:
                 self.has_regressions = True
-        self.sink.report_individual_test_result(
-            test_name_prefix=self.test_name_prefix,
-            result=result,
-            artifact_output_dir=self.fs.dirname(self.artifacts_dir),
-            expectations=None,
-            test_file_location=result.file_path)
+        if not self.run_info.get('used_upstream'):
+            # We only need Wpt report when run with upstream
+            self.sink.report_individual_test_result(
+                test_name_prefix=self.test_name_prefix,
+                result=result,
+                artifact_output_dir=self.fs.dirname(self.artifacts_dir),
+                expectations=None,
+                test_file_location=result.file_path)
         _log.debug(
             'Reported result for %s, iteration %d (actual: %s, '
             'expected: %s, artifacts: %s)', result.name, self._iteration,
@@ -571,14 +600,15 @@ class WPTResultsProcessor:
         if not test_manifest:
             raise ValueError('test ID does not exist')
         update_with_static_expectations(test_manifest)
-        return wptmanifest.serialize(test_manifest.node)
+        return test_manifest
 
     def _write_text_results(self, test_name: str, artifacts: Artifacts,
-                            actual_text: str, file_path: str):
+                            actual_text: str, file_path: str,
+                            actual_node: Any):
         """Write actual, expected, and diff text outputs to disk, if possible.
 
         If the expected output (WPT metadata) is missing, this method will not
-        produce diffs.
+        produce diff, but will still produce pretty diff.
 
         Arguments:
             test_name: Web test name (a path).
@@ -591,33 +621,42 @@ class WPTResultsProcessor:
             test_name, test_failures.FILENAME_SUFFIX_ACTUAL, '.txt')
         artifacts.CreateArtifact('actual_text', actual_subpath,
                                  actual_text.encode())
+        expected_file_exists = True
 
         try:
-            expected_text = self._read_expected_metadata(test_name, file_path)
+            expected_manifest = self._read_expected_metadata(
+                test_name, file_path)
         except FileNotFoundError:
             _log.debug('".ini" file for "%s" does not exist.', file_path)
-            return
+            expected_file_exists = False
         except (ValueError, KeyError, wptmanifest.parser.ParseError) as error:
             _log.warning('Unable to parse metadata for %s: %s', test_name,
                          error)
-            return
-        expected_subpath = self.port.output_filename(
-            test_name, test_failures.FILENAME_SUFFIX_EXPECTED, '.txt')
-        artifacts.CreateArtifact('expected_text', expected_subpath,
-                                 expected_text.encode())
+            expected_file_exists = False
 
-        diff_content = unified_diff(
-            expected_text,
-            actual_text,
-            expected_subpath,
-            actual_subpath,
-        )
-        diff_subpath = self.port.output_filename(
-            test_name, test_failures.FILENAME_SUFFIX_DIFF, '.txt')
-        artifacts.CreateArtifact('text_diff', diff_subpath,
-                                 diff_content.encode())
+        if expected_file_exists:
+            expected_text = wptmanifest.serialize(expected_manifest.node)
+            expected_subpath = self.port.output_filename(
+                test_name, test_failures.FILENAME_SUFFIX_EXPECTED, '.txt')
+            artifacts.CreateArtifact('expected_text', expected_subpath,
+                                     expected_text.encode())
 
-        html_diff_content = html_diff(expected_text, actual_text)
+            diff_content = unified_diff(
+                expected_text,
+                actual_text,
+                expected_subpath,
+                actual_subpath,
+            )
+            diff_subpath = self.port.output_filename(
+                test_name, test_failures.FILENAME_SUFFIX_DIFF, '.txt')
+            artifacts.CreateArtifact('text_diff', diff_subpath,
+                                     diff_content.encode())
+
+        expected_node = None
+        if expected_file_exists:
+            expected_node = expected_manifest.node
+        html_diff_content = wpt_results_diff(expected_node, actual_node,
+                                             file_path)
         html_diff_subpath = self.port.output_filename(
             test_name, test_failures.FILENAME_SUFFIX_HTML_DIFF, '.html')
         artifacts.CreateArtifact('pretty_text_diff', html_diff_subpath,
@@ -697,9 +736,10 @@ class WPTResultsProcessor:
                               artifacts_base_dir=self.fs.basename(
                                   self.artifacts_dir))
         leaf = self._leaves[result.name]
-        if result.actual != ResultType.Pass:
+        if result.actual not in [ResultType.Pass, ResultType.Skip]:
             self._write_text_results(result.name, artifacts,
-                                     result.actual_metadata, result.file_path)
+                                     result.actual_metadata, result.file_path,
+                                     result.test_section())
             screenshots = (extra or {}).get('reftest_screenshots') or []
             if screenshots:
                 diff_stats = self._write_screenshots(result.name, artifacts,

@@ -13,7 +13,6 @@
 #include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_controller.h"
 #include "ash/ambient/ambient_photo_cache.h"
-#include "ash/ambient/ambient_weather_controller.h"
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
@@ -26,7 +25,6 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/guid.h"
 #include "base/hash/sha1.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -115,11 +113,6 @@ void AmbientPhotoController::StartScreenUpdate(
   }
 
   Init(std::move(topic_queue_delegate));
-  FetchWeather();
-  weather_refresh_timer_.Start(
-      FROM_HERE, kWeatherRefreshInterval,
-      base::BindRepeating(&AmbientPhotoController::FetchWeather,
-                          weak_factory_.GetWeakPtr()));
   if (backup_photo_refresh_timer_.IsRunning()) {
     // Would use |timer_.FireNow()| but this does not execute if screen is
     // locked. Manually call the expected callback instead.
@@ -131,7 +124,6 @@ void AmbientPhotoController::StartScreenUpdate(
 
 void AmbientPhotoController::StopScreenUpdate() {
   state_ = State::kInactive;
-  weather_refresh_timer_.Stop();
   resume_fetch_image_backoff_.Reset();
   ambient_backend_model_.Clear();
   ambient_topic_queue_.reset();
@@ -171,13 +163,6 @@ void AmbientPhotoController::OnMarkerHit(AmbientPhotoConfig::Marker marker) {
       StartPreparingNextTopic();
       break;
   }
-}
-
-void AmbientPhotoController::FetchWeather() {
-  Shell::Get()
-      ->ambient_controller()
-      ->ambient_weather_controller()
-      ->FetchWeather();
 }
 
 void AmbientPhotoController::ScheduleFetchBackupImages() {

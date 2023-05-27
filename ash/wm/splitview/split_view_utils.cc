@@ -7,7 +7,9 @@
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/system/toast_data.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -199,21 +201,11 @@ void DoSplitviewOpacityAnimation(ui::Layer* layer,
       target_opacity = 0.f;
       break;
     case SPLITVIEW_ANIMATION_PREVIEW_AREA_FADE_IN:
-      target_opacity = features::IsDarkLightModeEnabled()
-                           ? kDarkLightPreviewAreaHighlightOpacity
-                           : kPreviewAreaHighlightOpacity;
-      break;
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN:
-      target_opacity = features::IsDarkLightModeEnabled()
-                           ? kDarkLightHighlightOpacity
-                           : kHighlightOpacity;
-      break;
     case SPLITVIEW_ANIMATION_HIGHLIGHT_FADE_IN_CANNOT_SNAP:
     case SPLITVIEW_ANIMATION_OTHER_HIGHLIGHT_FADE_IN_CANNOT_SNAP:
-      target_opacity = features::IsDarkLightModeEnabled()
-                           ? kDarkLightHighlightCannotSnapOpacity
-                           : kHighlightOpacity;
+      target_opacity = kHighlightOpacity;
       break;
     case SPLITVIEW_ANIMATION_OVERVIEW_ITEM_FADE_IN:
     case SPLITVIEW_ANIMATION_TEXT_FADE_IN:
@@ -515,15 +507,25 @@ SplitViewController::SnapPosition GetSnapPosition(
       vertical_edge_inset);
 }
 
-bool ShouldAutomaticallyGroupOnWindowsSnappedInClamshell() {
+bool IsSnapGroupEnabledInClamshellMode() {
   auto* snap_group_controller = Shell::Get()->snap_group_controller();
   TabletModeController* tablet_mode_controller =
       Shell::Get()->tablet_mode_controller();
   const bool in_tablet_mode =
       tablet_mode_controller && tablet_mode_controller->InTabletMode();
-  return snap_group_controller &&
-         snap_group_controller->IsArm1AutomaticallyLockEnabled() &&
-         !in_tablet_mode;
+  return snap_group_controller && !in_tablet_mode;
+}
+
+views::Widget::InitParams CreateWidgetInitParams(
+    aura::Window* parent_window,
+    const std::string& widget_name) {
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
+  params.parent = parent_window;
+  params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
+  params.name = widget_name;
+  return params;
 }
 
 }  // namespace ash

@@ -27,26 +27,23 @@
 #include "base/trace_event/trace_event.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/bad_message.h"
 #include "extensions/browser/browser_frame_context_data.h"
+#include "extensions/browser/browser_process_context_data.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/kiosk/kiosk_delegate.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_api.h"
-#include "extensions/common/extension_messages.h"
-#include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "extensions/common/mojom/renderer.mojom.h"
+#include "ipc/ipc_message.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
 
@@ -89,10 +86,11 @@ class ExtensionFunctionMemoryDumpProvider
     auto it = function_map_.find(function_name);
     DCHECK(it != function_map_.end());
     DCHECK_GE(it->second, static_cast<uint64_t>(1));
-    if (it->second == 1)
+    if (it->second == 1) {
       function_map_.erase(it);
-    else
+    } else {
       it->second--;
+    }
   }
 
   static ExtensionFunctionMemoryDumpProvider& GetInstance() {
@@ -148,7 +146,6 @@ void EnsureMemoryDumpProviderExists() {
 // Logs UMA about the performance for a given extension function run.
 void LogUma(bool success,
             base::TimeDelta elapsed_time,
-            bool is_kiosk_enabled,
             extensions::functions::HistogramValue histogram_value) {
   // Note: Certain functions perform actions that are inherently slow - such as
   // anything waiting on user action. As such, we can't always assume that a
@@ -194,34 +191,19 @@ void LogUma(bool success,
   }
 }
 
-void LogBadMessage(bool is_kiosk_enabled,
-                   extensions::functions::HistogramValue histogram_value) {
+void LogBadMessage(extensions::functions::HistogramValue histogram_value) {
   base::RecordAction(base::UserMetricsAction("BadMessageTerminate_EFD"));
   // Track the specific function's |histogram_value|, as this may indicate a
   // bug in that API's implementation.
-  const char* histogram_name = is_kiosk_enabled
-                                   ? "Extensions.BadMessageFunctionName.Kiosk"
-                                   : "Extensions.BadMessageFunctionName";
+  const char* histogram_name = "Extensions.BadMessageFunctionName";
   base::UmaHistogramSparse(histogram_name, histogram_value);
-}
-
-bool IsKiosk(const extensions::Extension* extension) {
-  extensions::ExtensionsBrowserClient* const browser_client =
-      extensions::ExtensionsBrowserClient::Get();
-  if (!extension || !browser_client)
-    return false;
-  extensions::KioskDelegate* const kiosk_delegate =
-      browser_client->GetKioskDelegate();
-  return kiosk_delegate &&
-         kiosk_delegate->IsAutoLaunchedKioskApp(extension->id());
 }
 
 template <class T>
 void ReceivedBadMessage(T* bad_message_sender,
                         extensions::bad_message::BadMessageReason reason,
-                        bool is_kiosk_enabled,
                         extensions::functions::HistogramValue histogram_value) {
-  LogBadMessage(is_kiosk_enabled, histogram_value);
+  LogBadMessage(histogram_value);
   // The renderer has done validation before sending extension api requests.
   // Therefore, we should never receive a request that is invalid in a way
   // that JSON validation in the renderer should have caught. It could be an
@@ -325,14 +307,15 @@ class ExtensionFunction::RenderFrameHostTracker
   // content::WebContentsObserver:
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
-    if (render_frame_host == function_->render_frame_host())
+    if (render_frame_host == function_->render_frame_host()) {
       function_->SetRenderFrameHost(nullptr);
+    }
   }
 
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override {
     return render_frame_host == function_->render_frame_host() &&
-        function_->OnMessageReceived(message);
+           function_->OnMessageReceived(message);
   }
 
   raw_ptr<ExtensionFunction> function_;  // Owns us.
@@ -375,9 +358,10 @@ void ExtensionFunction::ResponseAction::Execute() {
 }
 
 ExtensionFunction::~ExtensionFunction() {
-  if (name())  // name_ may not be set in unit tests.
+  if (name()) {  // name_ may not be set in unit tests.
     ExtensionFunctionMemoryDumpProvider::GetInstance().RemoveFunctionName(
         name());
+  }
   if (dispatcher() && (render_frame_host() || is_from_service_worker())) {
     dispatcher()->OnExtensionFunctionCompleted(
         extension(), is_from_service_worker(), name());
@@ -390,14 +374,17 @@ ExtensionFunction::~ExtensionFunction() {
   auto can_be_destroyed_before_responding = [this]() {
     extensions::ExtensionsBrowserClient* browser_client =
         extensions::ExtensionsBrowserClient::Get();
-    if (!browser_client || browser_client->IsShuttingDown())
+    if (!browser_client || browser_client->IsShuttingDown()) {
       return true;
+    }
 
-    if (ignore_all_did_respond_for_testing_do_not_use)
+    if (ignore_all_did_respond_for_testing_do_not_use) {
       return true;
+    }
 
-    if (!browser_context())
+    if (!browser_context()) {
       return true;
+    }
 
     auto* registry = extensions::ExtensionRegistry::Get(browser_context());
     if (registry && extension() &&
@@ -426,15 +413,29 @@ ExtensionFunction::~ExtensionFunction() {
 void ExtensionFunction::AddWorkerResponseTarget() {
   DCHECK(is_from_service_worker());
 
-  if (dispatcher())
+  if (dispatcher()) {
     dispatcher()->AddWorkerResponseTarget(this);
+  }
+}
+
+std::unique_ptr<extensions::ContextData> ExtensionFunction::GetContextData()
+    const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (is_from_service_worker()) {
+    return std::make_unique<extensions::BrowserProcessContextData>(
+        content::RenderProcessHost::FromID(source_process_id_));
+  } else {
+    return std::make_unique<extensions::BrowserFrameContextData>(
+        render_frame_host());
+  }
 }
 
 bool ExtensionFunction::HasPermission() const {
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
           name_, extension_.get(), source_context_type_, source_url(),
-          extensions::CheckAliasStatus::ALLOWED, context_id_, GetContextData());
+          extensions::CheckAliasStatus::ALLOWED, context_id_,
+          *GetContextData());
   return availability.is_available();
 }
 
@@ -509,7 +510,7 @@ void ExtensionFunction::SetBadMessage() {
                        is_from_service_worker()
                            ? extensions::bad_message::EFD_BAD_MESSAGE_WORKER
                            : extensions::bad_message::EFD_BAD_MESSAGE,
-                       IsKiosk(extension_.get()), histogram_value());
+                       histogram_value());
   }
 }
 
@@ -527,8 +528,9 @@ void ExtensionFunction::SetBrowserContextForTesting(
 }
 
 content::BrowserContext* ExtensionFunction::browser_context() const {
-  if (browser_context_for_testing_)
+  if (browser_context_for_testing_) {
     return browser_context_for_testing_;
+  }
   return browser_context_;
 }
 
@@ -593,22 +595,6 @@ ExtensionFunction::ResponseValue ExtensionFunction::NoArguments() {
   return CreateArgumentListResponse(base::Value::List());
 }
 
-ExtensionFunction::ResponseValue ExtensionFunction::OneArgument(
-    base::Value arg) {
-  base::Value::List args;
-  args.Append(std::move(arg));
-  return CreateArgumentListResponse(std::move(args));
-}
-
-ExtensionFunction::ResponseValue ExtensionFunction::TwoArguments(
-    base::Value arg1,
-    base::Value arg2) {
-  base::Value::List args;
-  args.Append(std::move(arg1));
-  args.Append(std::move(arg2));
-  return CreateArgumentListResponse(std::move(args));
-}
-
 ExtensionFunction::ResponseValue ExtensionFunction::ArgumentList(
     base::Value::List results) {
   return CreateArgumentListResponse(std::move(results));
@@ -668,8 +654,9 @@ void ExtensionFunction::WriteToConsole(blink::mojom::ConsoleMessageLevel level,
                                        const std::string& message) {
   // TODO(crbug.com/1096166): Service Worker-based extensions don't have a
   // RenderFrameHost.
-  if (!render_frame_host_)
+  if (!render_frame_host_) {
     return;
+  }
   render_frame_host_->AddMessageToConsole(level, message);
 }
 
@@ -702,8 +689,9 @@ void ExtensionFunction::SendResponseImpl(bool success) {
   response_type_ = std::make_unique<ResponseType>(response);
 
   // If results were never set, we send an empty argument list.
-  if (!results_)
+  if (!results_) {
     results_.emplace();
+  }
 
   base::Value::List results;
   if (preserve_results_for_testing_) {
@@ -720,8 +708,7 @@ void ExtensionFunction::SendResponseImpl(bool success) {
   }
   std::move(response_callback_)
       .Run(response, std::move(results), GetError(), std::move(extra_data));
-  LogUma(success, timer_.Elapsed(), IsKiosk(extension_.get()),
-         histogram_value_);
+  LogUma(success, timer_.Elapsed(), histogram_value_);
 
   OnResponded();
 }
@@ -734,7 +721,6 @@ ExtensionFunction::ScopedUserGestureForTests::~ScopedUserGestureForTests() {
   UserGestureForTests::GetInstance()->DecrementCount();
 }
 
-// static
 ExtensionFunction::ResponseValue ExtensionFunction::CreateArgumentListResponse(
     base::Value::List result) {
   SetFunctionResults(std::move(result));
@@ -744,7 +730,6 @@ ExtensionFunction::ResponseValue ExtensionFunction::CreateArgumentListResponse(
   return ResponseValue(true, PassKey());
 }
 
-// static
 ExtensionFunction::ResponseValue
 ExtensionFunction::CreateErrorWithArgumentsResponse(base::Value::List result,
                                                     const std::string& error) {
@@ -763,7 +748,6 @@ ExtensionFunction::ResponseValue ExtensionFunction::CreateErrorResponseValue(
 
 ExtensionFunction::ResponseValue ExtensionFunction::CreateBadMessageResponse() {
   SetBadMessage();
-  NOTREACHED() << name() << ": bad message";
   return ResponseValue(false, PassKey());
 }
 

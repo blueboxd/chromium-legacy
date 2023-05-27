@@ -104,10 +104,6 @@ void RunOnOsLoginSubManager::Configure(
   std::move(configure_done).Run();
 }
 
-void RunOnOsLoginSubManager::Start() {}
-
-void RunOnOsLoginSubManager::Shutdown() {}
-
 void RunOnOsLoginSubManager::Execute(
     const AppId& app_id,
     const absl::optional<SynchronizeOsOptions>& synchronize_options,
@@ -139,6 +135,12 @@ void RunOnOsLoginSubManager::Execute(
       base::BindOnce(&RunOnOsLoginSubManager::CreateShortcutInfoWithFavicons,
                      weak_ptr_factory_.GetWeakPtr(), app_id, desired_state,
                      std::move(execute_done)));
+}
+
+// TODO(b/279068663): Implement if needed.
+void RunOnOsLoginSubManager::ForceUnregister(const AppId& app_id,
+                                             base::OnceClosure callback) {
+  std::move(callback).Run();
 }
 
 void RunOnOsLoginSubManager::StartUnregistration(

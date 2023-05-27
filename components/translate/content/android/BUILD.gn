@@ -96,20 +96,20 @@ android_library("translate_android_enums_java") {
 }
 
 robolectric_library("junit") {
+  resources_package = "org.chromium.components.translate"
   sources = [
     "java/src/org/chromium/components/translate/TranslateMessageTest.java",
     "java/src/org/chromium/components/translate/TranslateOptionsTest.java",
   ]
   deps = [
     ":java",
+    ":java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//components/browser_ui/widget/android:java",
     "//components/messages/android:java",
     "//content/public/android:content_java",
-    "//third_party/android_support_test_runner:rules_java",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit:junit",
@@ -120,6 +120,7 @@ robolectric_library("junit") {
 
 android_library("unit_device_javatests") {
   testonly = true
+  resources_package = "org.chromium.components.translate"
   sources = [ "java/src/org/chromium/components/translate/TranslateMessageSecondaryMenuTest.java" ]
   deps = [
     ":java",

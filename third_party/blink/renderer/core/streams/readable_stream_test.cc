@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_readable_stream_get_reader_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_readablestreambyobreader_readablestreamdefaultreader.h"
 #include "third_party/blink/renderer/core/messaging/message_channel.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_byob_reader.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_default_reader.h"
 #include "third_party/blink/renderer/core/streams/readable_stream_transferring_optimizer.h"
@@ -356,7 +357,7 @@ TEST_F(ReadableStreamTest, Tee) {
 
   ReadableStream* branch1 = nullptr;
   ReadableStream* branch2 = nullptr;
-  stream->Tee(script_state, &branch1, &branch2, ASSERT_NO_EXCEPTION);
+  stream->Tee(script_state, &branch1, &branch2, false, ASSERT_NO_EXCEPTION);
 
   EXPECT_TRUE(stream->IsLocked());
   EXPECT_FALSE(stream->IsDisturbed());

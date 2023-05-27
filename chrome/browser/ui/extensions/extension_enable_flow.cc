@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "build/chromeos_buildflags.h"
@@ -107,15 +108,14 @@ void ExtensionEnableFlow::CheckPermissionAndMaybePromptUser() {
 
       // Only ask for parent approval if the extension still requires approval.
       !supervised_user_extensions_delegate->IsExtensionAllowedByParent(
-          *extension, profile_)) {
+          *extension)) {
     // Either ask for parent permission or notify the child that their parent
     // has disabled this action.
     auto extension_approval_callback =
         base::BindOnce(&ExtensionEnableFlow::OnExtensionApprovalDone,
                        weak_ptr_factory_.GetWeakPtr());
     supervised_user_extensions_delegate->RequestToEnableExtensionOrShowError(
-        *extension, profile_, parent_contents_,
-        std::move(extension_approval_callback));
+        *extension, parent_contents_, std::move(extension_approval_callback));
     return;
   }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -251,8 +251,14 @@ void ExtensionEnableFlow::EnableExtension() {
       SupervisedUserServiceFactory::GetForProfile(profile_);
   if (supervised_user_service->AreExtensionsPermissionsEnabled()) {
     // We need to add parent approval first.
-    supervised_user_service->AddExtensionApproval(*extension);
-    supervised_user_service->RecordExtensionEnablementUmaMetrics(
+    extensions::SupervisedUserExtensionsDelegate*
+        supervised_user_extensions_delegate =
+            extensions::ManagementAPI::GetFactoryInstance()
+                ->Get(profile_)
+                ->GetSupervisedUserExtensionsDelegate();
+    CHECK(supervised_user_extensions_delegate);
+    supervised_user_extensions_delegate->AddExtensionApproval(*extension);
+    supervised_user_extensions_delegate->RecordExtensionEnablementUmaMetrics(
         /*enabled=*/true);
   }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)

@@ -44,6 +44,7 @@ group("resources") {
       "privacy_sandbox:resources",
       "profile_internals:resources",
       "settings:resources",
+      "settings_shared:resources",
       "side_panel/bookmarks:resources",
       "side_panel/companion:resources",
       "side_panel/customize_chrome:resources",
@@ -140,7 +141,6 @@ if (is_chromeos_ash && enable_js_type_check) {
       "chromeos/contact_center_insights:closure_compile",
       "gaia_auth_host:closure_compile",
       "nearby_internals:closure_compile",
-      "nearby_share:closure_compile",
     ]
   }
 }
@@ -277,6 +277,7 @@ repack("dev_ui_paks") {
     "$root_gen_dir/chrome/net_internals_resources.pak",
     "$root_gen_dir/chrome/omnibox_resources.pak",
     "$root_gen_dir/chrome/usb_internals_resources.pak",
+    "$root_gen_dir/components/commerce_internals_resources.pak",
     "$root_gen_dir/components/dev_ui_components_resources.pak",
     "$root_gen_dir/components/download_internals_resources.pak",
     "$root_gen_dir/components/history_clusters_internals_resources.pak",
@@ -287,6 +288,7 @@ repack("dev_ui_paks") {
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
     "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
+    "$root_gen_dir/content/gpu_resources.pak",
   ]
   deps = [
     "//chrome/browser:dev_ui_browser_resources",
@@ -298,6 +300,7 @@ repack("dev_ui_paks") {
     "//chrome/browser/resources/net_internals:resources",
     "//chrome/browser/resources/omnibox:resources",
     "//chrome/browser/resources/usb_internals:resources",
+    "//components/commerce/core/internals/resources",
     "//components/download/resources/download_internals:resources",
     "//components/history_clusters/history_clusters_internals/resources",
     "//components/metrics/debug:resources",
@@ -306,6 +309,7 @@ repack("dev_ui_paks") {
     "//components/resources:dev_ui_components_resources",
     "//components/sync/driver/resources",
     "//content:dev_ui_content_resources",
+    "//content/browser/resources/gpu:resources",
     "//content/browser/resources/media:resources",
     "//content/browser/webrtc/resources",
   ]

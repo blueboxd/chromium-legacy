@@ -17,15 +17,17 @@
 <translation id="1278833599417554002">Reinicializar para atualizar o &amp;Chrome</translation>
 <translation id="1302523850133262269">Aguarde enquanto o Chrome instala as últimas atualizações do sistema.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> requer que você leia e aceite os Termos de Serviço a seguir antes de usar o dispositivo. Esses termos não ampliam, modificam nem limitam os Termos do Google ChromeOS Flex.</translation>
+<translation id="1341711321000856656">Mude para outro perfil do Chrome para conferir as senhas dele</translation>
 <translation id="1363996462118479832">O ChromeOS não pôde sincronizar seus dados devido a um erro durante o login.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Este computador já tem uma versão mais recente do Google Chrome. Caso o software não esteja funcionando, desinstale-o e tente novamente.</translation>
 <translation id="139993653570221430">É possível mudar isso a qualquer momento nas configurações do Chrome. Os testes são realizados junto à veiculação dos anúncios atuais, então você não verá mudanças imediatamente.</translation>
+<translation id="1425903838053942728">{COUNT,plural, =0{O Chrome foi atualizado. Reinicialize para usar a versão mais recente. Depois disso, as guias atuais serão reabertas.}=1{O Chrome foi atualizado. Reinicialize para usar a versão mais recente. Depois disso, as guias atuais serão reabertas. Sua janela anônima não será aberta novamente.}one{O Chrome foi atualizado. Reinicialize para usar a versão mais recente. Depois disso, as guias atuais serão reabertas. Sua # janela anônima não será aberta novamente.}other{O Chrome foi atualizado. Reinicialize para usar a versão mais recente. Depois disso, as guias atuais serão reabertas. Suas # janelas anônimas não serão abertas novamente.}}</translation>
 <translation id="1434626383986940139">Aplicativos Canary do Google Chrome</translation>
+<translation id="1492280395845991349">Reinicialize para concluir a atualização do Chrome</translation>
 <translation id="1507198376417198979">Personalize seu novo perfil do Chrome</translation>
 <translation id="1516530951338665275">O Google Chrome precisa acessar o Bluetooth para continuar o 
  pareamento. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
-<translation id="1535597783576881392">Este guia ajuda você a entender suas escolhas para que o Chrome funcione da forma desejada</translation>
 <translation id="1547295885616600893">A criação do ChromeOS só foi possível graças a um outro <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="1553358976309200471">Atualizar o Google Chrome</translation>
 <translation id="1583073672411044740">A conta de <ph name="EXISTING_USER" /> já está conectada a este perfil do Chrome. Isso criará um novo perfil do Chrome para <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -66,7 +68,6 @@
 <translation id="2131230230468101642">Para proteger sua privacidade, excluímos automaticamente seus interesses que têm mais de quatro semanas. Enquanto você navega, um interesse pode aparecer na lista novamente. Você também pode remover interesses que não quer que o Chrome considere.</translation>
 <translation id="2139300032719313227">Reiniciar o ChromeOS</translation>
 <translation id="2151406531797534936">Reinicie o Chrome agora</translation>
-<translation id="2163996651553460171">Aproveite o Chrome ao máximo</translation>
 <translation id="2174917724755363426">A instalação não foi concluída. Tem certeza de que quer cancelar?</translation>
 <translation id="223889379102603431">Informações sobre como o Chrome gerencia os certificados raiz dele</translation>
 <translation id="2258103955319320201">Para ter acesso aos recursos do navegador Chrome em todos os seus dispositivos, faça login e ative a sincronização</translation>
@@ -93,6 +94,7 @@
 <translation id="2652691236519827073">Abrir link em nova &amp;guia do Chrome</translation>
 <translation id="2665296953892887393">Ajude a melhorar o Google Chrome. Envie relatórios de erros e  <ph name="UMA_LINK" /> para o Google</translation>
 <translation id="2689103672227170538">Esta extensão alterou a página que é exibida quando você inicia o Chrome.</translation>
+<translation id="2712234843277364121">Reinicializar para atualizar (as guias serão reabertas)</translation>
 <translation id="2742320827292110288">Aviso: o Google Chrome não impede que as extensões registrem seu histórico de navegação. Para desativar a extensão no modo de navegação anônima, desmarque esta opção.</translation>
 <translation id="2765403129283291972">O Chrome precisa de permissão para este site acessar seu microfone</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
@@ -124,7 +126,6 @@
 <translation id="3140883423282498090">Suas alterações terão efeito na próxima vez que você reiniciar o Google Chrome.</translation>
 <translation id="3149510190863420837">apps do Chrome</translation>
 <translation id="3169523567916669830">Durante os testes, é possível ver e remover os assuntos de interesse que os sites usam para mostrar anúncios a você. O Chrome faz uma estimativa dos seus interesses com base no seu histórico de navegação recente.</translation>
-<translation id="3211604354460514046">{NUM_DEVICES,plural, =1{O Google Chrome está conectado a um dispositivo HID}one{O Google Chrome está conectado a um dispositivo HID}other{O Google Chrome está conectado a dispositivos HID}}</translation>
 <translation id="3245429137663807393">Se você também compartilhar os relatórios de uso do Chrome, eles vão incluir os URLs acessados</translation>
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3286538390144397061">Reiniciar agora</translation>
@@ -276,6 +277,7 @@
 <translation id="6365489425007284765">{COUNT,plural, =1{O administrador vai excluir os dados de navegação automaticamente quando o Chromium não for usado por 1 minuto. Isso pode incluir o histórico, o preenchimento automático e os downloads. As guias vão continuar abertas.}one{O administrador vai excluir os dados de navegação automaticamente quando Chromium não for usado por # minuto. Isso pode incluir o histórico, o preenchimento automático e os downloads. As guias vão continuar abertas.}other{O administrador vai excluir os dados de navegação automaticamente quando Chromium não for usado por # minutos. Isso pode incluir o histórico, o preenchimento automático e os downloads. As guias vão continuar abertas.}}</translation>
 <translation id="6412673304250309937">Verifica se os URLs estão em uma lista de sites não seguros armazenada no Chrome. Se um site tentar roubar sua senha ou se você fizer o download de um arquivo nocivo, o Chrome também poderá enviar URLs, incluindo partes do conteúdo da página, para o "Navegação segura".</translation>
 <translation id="6418662306461808273">Alternar para um perfil do Chrome existente?</translation>
+<translation id="648319183876919572">O recurso "Navegação segura com maior proteção" protege você ainda mais contra sites e downloads perigosos</translation>
 <translation id="6493527311031785448">O Google Chrome está tentando <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">O Chrome precisa da permissão de acesso à câmera para criar um mapa 3D do ambiente</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" />: Google Chrome Dev</translation>
@@ -406,6 +408,7 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="8989968390305463310">Seu histórico de navegação afeta os anúncios que você vê e os interesses estimados abaixo. Para proteger sua privacidade, o Chrome exclui automaticamente seus interesses mais antigos do que um mês. Os interesses podem ser atualizados, a menos que você os remova.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Uma atualização do Chrome está disponível}=1{Uma atualização do Chrome está disponível}one{Uma atualização do Chrome está disponível há # dia}other{Uma atualização do Chrome está disponível há # dias}}</translation>
 <translation id="9053892488859122171">Sistema ChromeOS Flex</translation>
+<translation id="9054037008353851982">Reinicializar para atualizar (as guias serão reabertas)</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="9138603949443464873">Para que as alterações sejam aplicadas, reinicie o Chrome</translation>
 <translation id="9195993889682885387">O Chrome pode fazer uma estimativa dos seus interesses com base no seu histórico de navegação das últimas semanas. Essas informações ficam no dispositivo.</translation>

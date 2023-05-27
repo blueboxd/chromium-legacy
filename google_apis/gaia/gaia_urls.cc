@@ -31,9 +31,12 @@ const char kDefaultOAuthAccountManagerBaseUrl[] =
     "https://oauthaccountmanager.googleapis.com";
 const char kDefaultAccountCapabilitiesBaseUrl[] =
     "https://accountcapabilities-pa.googleapis.com";
+constexpr char kDefaultClassroomApiBaseUrl[] =
+    "https://classroom.googleapis.com";
+constexpr char kDefaultTasksApiBaseUrl[] = "https://tasks.googleapis.com";
 
 // API calls from accounts.google.com
-const char kEmbeddedSetupChromeOsUrlSuffixV2[] = "embedded/setup/v2/chromeos";
+const char kEmbeddedSetupChromeOsUrlSuffix[] = "embedded/setup/v2/chromeos";
 const char kEmbeddedReauthChromeOsUrlSuffix[] = "embedded/reauth/chromeos";
 const char kEmbeddedSetupChromeOsKidSignupUrlSuffix[] =
     "embedded/setup/kidsignup/chromeos";
@@ -193,9 +196,8 @@ GURL GaiaUrls::gaia_url() const {
   return gaia_origin_.GetURL();
 }
 
-const GURL& GaiaUrls::embedded_setup_chromeos_url(unsigned version) const {
-  DCHECK_EQ(version, 2U);
-  return embedded_setup_chromeos_url_v2_;
+const GURL& GaiaUrls::embedded_setup_chromeos_url() const {
+  return embedded_setup_chromeos_url_;
 }
 
 const GURL& GaiaUrls::embedded_setup_chromeos_kid_signup_url() const {
@@ -291,6 +293,14 @@ const GURL& GaiaUrls::reauth_api_url() const {
   return reauth_api_url_;
 }
 
+const GURL& GaiaUrls::classroom_api_origin_url() const {
+  return classroom_api_origin_url_;
+}
+
+const GURL& GaiaUrls::tasks_api_origin_url() const {
+  return tasks_api_origin_url_;
+}
+
 const GURL& GaiaUrls::google_apis_origin_url() const {
   return google_apis_origin_url_;
 }
@@ -339,6 +349,12 @@ void GaiaUrls::InitializeDefault() {
     scheme_replacement.SetSchemeStr(url::kHttpsScheme);
     secure_google_url_ = google_url_.ReplaceComponents(scheme_replacement);
   }
+  if (!classroom_api_origin_url_.is_valid()) {
+    classroom_api_origin_url_ = GURL(kDefaultClassroomApiBaseUrl);
+  }
+  if (!tasks_api_origin_url_.is_valid()) {
+    tasks_api_origin_url_ = GURL(kDefaultTasksApiBaseUrl);
+  }
 
   oauth2_chrome_client_id_ =
       google_apis::GetOAuth2ClientID(google_apis::CLIENT_MAIN);
@@ -350,8 +366,8 @@ void GaiaUrls::InitializeDefault() {
   CHECK(gaia_url.SchemeIsHTTPOrHTTPS());
 
   // URLs from |gaia_origin_|.
-  ResolveURLIfInvalid(&embedded_setup_chromeos_url_v2_, gaia_url,
-                      kEmbeddedSetupChromeOsUrlSuffixV2);
+  ResolveURLIfInvalid(&embedded_setup_chromeos_url_, gaia_url,
+                      kEmbeddedSetupChromeOsUrlSuffix);
   ResolveURLIfInvalid(&embedded_setup_chromeos_kid_signup_url_, gaia_url,
                       kEmbeddedSetupChromeOsKidSignupUrlSuffix);
   ResolveURLIfInvalid(&embedded_setup_chromeos_kid_signin_url_, gaia_url,
@@ -422,7 +438,9 @@ void GaiaUrls::InitializeFromConfig() {
   config->GetURLIfExists(URL_KEY_AND_PTR(google_apis_origin_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(oauth_account_manager_origin_url));
   config->GetURLIfExists(URL_KEY_AND_PTR(account_capabilities_origin_url));
-  config->GetURLIfExists(URL_KEY_AND_PTR(embedded_setup_chromeos_url_v2));
+  config->GetURLIfExists(URL_KEY_AND_PTR(classroom_api_origin_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(tasks_api_origin_url));
+  config->GetURLIfExists(URL_KEY_AND_PTR(embedded_setup_chromeos_url));
   config->GetURLIfExists(
       URL_KEY_AND_PTR(embedded_setup_chromeos_kid_signup_url));
   config->GetURLIfExists(

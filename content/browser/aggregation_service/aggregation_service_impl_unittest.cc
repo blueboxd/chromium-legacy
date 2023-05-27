@@ -61,8 +61,11 @@ AggregatableReport CreateExampleAggregatableReport() {
   payloads.emplace_back(/*payload=*/kABCD1234AsBytes,
                         /*key_id=*/"key_1",
                         /*debug_cleartext_payload=*/absl::nullopt);
-  return AggregatableReport(std::move(payloads), "example_shared_info",
-                            /*debug_key=*/absl::nullopt);
+  return AggregatableReport(
+      std::move(payloads), "example_shared_info",
+      /*debug_key=*/absl::nullopt,
+      /*additional_fields=*/{},
+      ::aggregation_service::mojom::AggregationCoordinator::kDefault);
 }
 
 }  // namespace

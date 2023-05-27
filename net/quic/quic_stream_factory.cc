@@ -15,6 +15,7 @@
 #include "base/location.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -28,7 +29,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
-#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/openssl_util.h"
 #include "net/base/address_list.h"
@@ -36,6 +36,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/trace_constants.h"
+#include "net/base/tracing.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/public/secure_dns_policy.h"
@@ -577,7 +578,9 @@ class QuicStreamFactory::Job {
   bool host_resolution_finished_ = false;
   bool quic_session_created_ = false;
   bool connection_retried_ = false;
-  QuicChromiumClientSession* session_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION QuicChromiumClientSession* session_ = nullptr;
   HostResolverEndpointResult endpoint_result_;
   // If connection migraiton is supported, |network_| denotes the network on
   // which |session_| is created.
@@ -1386,13 +1389,14 @@ QuicStreamFactory::QuicStreamFactory(
       connectivity_monitor_(default_network_),
       ssl_config_service_(ssl_config_service),
       use_network_anonymization_key_for_crypto_configs_(
-          base::FeatureList::IsEnabled(
-              features::kPartitionHttpServerPropertiesByNetworkIsolationKey)) {
+          NetworkAnonymizationKey::IsPartitioningEnabled()) {
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
   if (params_.disable_tls_zero_rtt)
     SetQuicFlag(quic_disable_client_tls_zero_rtt, true);
   InitializeMigrationOptions();
+  cert_verifier_->AddObserver(this);
+  CertDatabase::GetInstance()->AddObserver(this);
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
@@ -1411,6 +1415,8 @@ QuicStreamFactory::~QuicStreamFactory() {
   // QuicCryptoClientConfigs were deleted, in the above lines.
   DCHECK(active_crypto_config_map_.empty());
 
+  CertDatabase::GetInstance()->RemoveObserver(this);
+  cert_verifier_->RemoveObserver(this);
   if (params_.close_sessions_on_ip_change ||
       params_.goaway_sessions_on_ip_change) {
     NetworkChangeNotifier::RemoveIPAddressObserver(this);
@@ -1954,6 +1960,11 @@ void QuicStreamFactory::OnCertDBChanged() {
   // kind of change it is, we have to flush the socket
   // pools to be safe.
   MarkAllActiveSessionsGoingAway(kCertDBChanged);
+}
+
+void QuicStreamFactory::OnCertVerifierChanged() {
+  // Flush sessions if the CertCerifier configuration has changed.
+  MarkAllActiveSessionsGoingAway(kCertVerifierChanged);
 }
 
 void QuicStreamFactory::set_is_quic_known_to_work_on_current_network(

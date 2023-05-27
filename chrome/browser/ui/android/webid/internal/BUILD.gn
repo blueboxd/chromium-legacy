@@ -65,6 +65,7 @@ android_resources("java_resources") {
 }
 
 robolectric_library("junit") {
+  resources_package = "org.chromium.chrome.browser.ui.android.webid"
   sources = [
     "java/src/org/chromium/chrome/browser/ui/android/webid/AccountSelectionControllerTest.java",
     "java/src/org/chromium/chrome/browser/ui/android/webid/AccountSelectionViewTest.java",
@@ -72,6 +73,7 @@ robolectric_library("junit") {
 
   deps = [
     ":java",
+    ":java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
@@ -98,11 +100,13 @@ robolectric_library("junit") {
 
 android_library("javatests") {
   testonly = true
+  resources_package = "org.chromium.chrome.browser.ui.android.webid"
 
   sources = [ "java/src/org/chromium/chrome/browser/ui/android/webid/AccountSelectionIntegrationTest.java" ]
 
   deps = [
     ":java",
+    ":java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
 
@@ -118,8 +122,8 @@ android_library("javatests") {
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_deps:espresso_java",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
+    "//third_party/androidx:androidx_test_monitor_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",

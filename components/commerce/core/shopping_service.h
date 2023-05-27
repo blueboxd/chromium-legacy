@@ -168,6 +168,7 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
       optimization_guide::NewOptimizationGuideDecider* opt_guide,
       PrefService* pref_service,
       signin::IdentityManager* identity_manager,
+      syncer::SyncService* sync_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       SessionProtoStorage<
           commerce_subscription_db::CommerceSubscriptionContentProto>*
@@ -199,6 +200,11 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   virtual void GetUpdatedProductInfoForBookmarks(
       const std::vector<int64_t>& bookmark_ids,
       BookmarkProductInfoUpdatedCallback info_updated_callback);
+
+  // Gets the maximum number of bookmarks that the backend will retrieve per
+  // call to |GetUpdatedProductInfoForBookmarks|. This limit is imposed by our
+  // backend rather than the shopping service itself.
+  virtual size_t GetMaxProductBookmarkUpdatesPerBatch();
 
   // This API fetches information about a merchant for the provided |url| and
   // passes the payload back to the caller via |callback|. Call will run after
@@ -264,6 +270,11 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // if the user has the feature flag enabled or (if applicable) is in an
   // enabled country and locale.
   virtual bool IsMerchantViewerEnabled();
+
+  // This is a feature check for the "price tracking", which will return true
+  // if the user has the feature flag enabled or (if applicable) is in an
+  // enabled country and locale.
+  virtual bool IsCommercePriceTrackingEnabled();
 
   // Get a weak pointer for this service instance.
   base::WeakPtr<ShoppingService> AsWeakPtr();

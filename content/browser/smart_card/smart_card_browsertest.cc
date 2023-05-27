@@ -8,6 +8,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "content/browser/smart_card/mock_smart_card_context_factory.h"
+#include "content/browser/smart_card/smart_card_reader_tracker.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/smart_card_delegate.h"
 #include "content/public/common/content_switches.h"
@@ -18,6 +20,7 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -29,15 +32,27 @@
 
 using device::mojom::SmartCardContext;
 using device::mojom::SmartCardError;
+using device::mojom::SmartCardProtocol;
 using device::mojom::SmartCardReaderStateFlags;
 using device::mojom::SmartCardReaderStateOut;
 using device::mojom::SmartCardReaderStateOutPtr;
+using device::mojom::SmartCardShareMode;
 using ::testing::_;
+using testing::Exactly;
 using testing::InSequence;
 
 namespace content {
 
 namespace {
+
+class MockSmartCardConnection : public device::mojom::SmartCardConnection {
+ public:
+  MOCK_METHOD(void,
+              Disconnect,
+              (device::mojom::SmartCardDisposition disposition,
+               DisconnectCallback callback),
+              (override));
+};
 
 class FakeSmartCardDelegate : public SmartCardDelegate {
  public:
@@ -48,6 +63,14 @@ class FakeSmartCardDelegate : public SmartCardDelegate {
   bool SupportsReaderAddedRemovedNotifications() const override { return true; }
 
   MockSmartCardContextFactory mock_context_factory;
+};
+
+class MockSmartCardReaderTracker : public SmartCardReaderTracker {
+ public:
+  MOCK_METHOD(void, Start, (Observer * observer, StartCallback), (override));
+  MOCK_METHOD(void, Stop, (Observer * observer), (override));
+
+  ObserverList observer_list;
 };
 
 class SmartCardTestContentBrowserClient
@@ -86,11 +109,22 @@ class SmartCardTest : public ContentBrowserTest {
         "Permissions-Policy: smart-card%3D(self)");
   }
 
-  FakeSmartCardDelegate* CreateFakeSmartCardDelegate() {
-    auto unique_delegate = std::make_unique<FakeSmartCardDelegate>();
-    FakeSmartCardDelegate* delegate = unique_delegate.get();
-    test_client_->SetSmartCardDelegate(std::move(unique_delegate));
-    return delegate;
+  FakeSmartCardDelegate& GetFakeSmartCardDelegate() {
+    return *static_cast<FakeSmartCardDelegate*>(
+        test_client_->GetSmartCardDelegate(nullptr));
+  }
+
+  MockSmartCardReaderTracker& CreateMockSmartCardReaderTracker() {
+    BrowserContext* browser_context =
+        shell()->web_contents()->GetBrowserContext();
+
+    auto unique_tracker = std::make_unique<MockSmartCardReaderTracker>();
+    MockSmartCardReaderTracker& mock_tracker = *unique_tracker.get();
+    browser_context->SetUserData(
+        SmartCardReaderTracker::user_data_key_for_testing(),
+        std::move(unique_tracker));
+
+    return mock_tracker;
   }
 
  private:
@@ -103,6 +137,8 @@ class SmartCardTest : public ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
 
     test_client_ = std::make_unique<SmartCardTestContentBrowserClient>();
+    test_client_->SetSmartCardDelegate(
+        std::make_unique<FakeSmartCardDelegate>());
 
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 
@@ -186,9 +222,8 @@ FakeSmartCardDelegate::GetSmartCardContextFactory(
 }
 
 IN_PROC_BROWSER_TEST_F(SmartCardTest, GetReaders) {
-  FakeSmartCardDelegate* delegate = CreateFakeSmartCardDelegate();
   MockSmartCardContextFactory& mock_context_factory =
-      delegate->mock_context_factory;
+      GetFakeSmartCardDelegate().mock_context_factory;
 
   {
     InSequence s;
@@ -298,9 +333,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetReaders) {
 }
 
 IN_PROC_BROWSER_TEST_F(SmartCardTest, ReaderAdd) {
-  FakeSmartCardDelegate* delegate = CreateFakeSmartCardDelegate();
   MockSmartCardContextFactory& mock_context_factory =
-      delegate->mock_context_factory;
+      GetFakeSmartCardDelegate().mock_context_factory;
 
   base::test::TestFuture<SmartCardContext::GetStatusChangeCallback>
       first_get_status_callback;
@@ -383,9 +417,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, ReaderAdd) {
 }
 
 IN_PROC_BROWSER_TEST_F(SmartCardTest, ReaderRemove) {
-  FakeSmartCardDelegate* delegate = CreateFakeSmartCardDelegate();
   MockSmartCardContextFactory& mock_context_factory =
-      delegate->mock_context_factory;
+      GetFakeSmartCardDelegate().mock_context_factory;
 
   base::test::TestFuture<SmartCardContext::GetStatusChangeCallback>
       first_get_status_callback;
@@ -539,9 +572,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, ReaderRemove) {
 }
 
 IN_PROC_BROWSER_TEST_F(SmartCardTest, GetReadersFails) {
-  FakeSmartCardDelegate* delegate = CreateFakeSmartCardDelegate();
   MockSmartCardContextFactory& mock_context_factory =
-      delegate->mock_context_factory;
+      GetFakeSmartCardDelegate().mock_context_factory;
 
   EXPECT_CALL(mock_context_factory, ListReaders(_))
       .WillOnce([](SmartCardContext::ListReadersCallback callback) {
@@ -561,6 +593,253 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetReadersFails) {
       }
     })()
   )"));
+}
+
+// Tests that the SmartCardReader.state attribute can be read and that
+// "onstatechange" is emitted when its value changes.
+IN_PROC_BROWSER_TEST_F(SmartCardTest, ReaderState) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardReaderTracker& mock_tracker = CreateMockSmartCardReaderTracker();
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(mock_tracker, Start(_, _))
+        .WillOnce(
+            [&mock_tracker](SmartCardReaderTracker::Observer* observer,
+                            SmartCardReaderTracker::StartCallback callback) {
+              mock_tracker.observer_list.AddObserverIfMissing(observer);
+
+              std::vector<blink::mojom::SmartCardReaderInfoPtr> readers;
+              readers.push_back(blink::mojom::SmartCardReaderInfo::New(
+                  "Fake reader", blink::mojom::SmartCardReaderState::kEmpty,
+                  std::vector<uint8_t>()));
+              std::move(callback).Run(
+                  blink::mojom::SmartCardGetReadersResult::NewReaders(
+                      std::move(readers)));
+            });
+
+    // When the document is destroyed
+    EXPECT_CALL(mock_tracker, Stop(_));
+  }
+
+  EXPECT_EQ("state: empty", EvalJs(shell(), R"(
+    (async () => {
+      let readers = await navigator.smartCard.getReaders();
+
+      if (readers.length !== 1) {
+        return "reader not found";
+      }
+
+      let reader = readers[0];
+
+      window.promise = new Promise((resolve) => {
+        reader.addEventListener('statechange', (e) => {
+          resolve(`state changed: ${e.target.state}`);
+        }, { once: true });
+      });
+
+      return `state: ${reader.state}`;
+    })())"));
+
+  blink::mojom::SmartCardReaderInfo reader_info(
+      "Fake reader", blink::mojom::SmartCardReaderState::kPresent,
+      std::vector<uint8_t>({1u, 2u, 3u}));
+  mock_tracker.observer_list.NotifyReaderChanged(reader_info);
+
+  EXPECT_EQ("state changed: present", EvalJs(shell(), "window.promise"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, Connect) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardReaderTracker& mock_tracker = CreateMockSmartCardReaderTracker();
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(mock_tracker, Start(_, _))
+        .WillOnce(
+            [&mock_tracker](SmartCardReaderTracker::Observer* observer,
+                            SmartCardReaderTracker::StartCallback callback) {
+              mock_tracker.observer_list.AddObserverIfMissing(observer);
+
+              std::vector<blink::mojom::SmartCardReaderInfoPtr> readers;
+              readers.push_back(blink::mojom::SmartCardReaderInfo::New(
+                  "Fake reader", blink::mojom::SmartCardReaderState::kEmpty,
+                  std::vector<uint8_t>()));
+              std::move(callback).Run(
+                  blink::mojom::SmartCardGetReadersResult::NewReaders(
+                      std::move(readers)));
+            });
+
+    // When the document is destroyed
+    EXPECT_CALL(mock_tracker, Stop(_));
+  }
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+
+  EXPECT_CALL(mock_context_factory,
+              Connect("Fake reader", SmartCardShareMode::kShared, _, _))
+      .WillOnce([](const std::string& reader,
+                   device::mojom::SmartCardShareMode share_mode,
+                   device::mojom::SmartCardProtocolsPtr preferred_protocols,
+                   SmartCardContext::ConnectCallback callback) {
+        mojo::PendingRemote<device::mojom::SmartCardConnection> pending_remote;
+
+        EXPECT_TRUE(preferred_protocols->t0);
+        EXPECT_TRUE(preferred_protocols->t1);
+        EXPECT_FALSE(preferred_protocols->raw);
+
+        mojo::MakeSelfOwnedReceiver(
+            std::make_unique<MockSmartCardConnection>(),
+            pending_remote.InitWithNewPipeAndPassReceiver());
+
+        auto success = device::mojom::SmartCardConnectSuccess::New(
+            std::move(pending_remote), SmartCardProtocol::kT1);
+
+        std::move(callback).Run(
+            device::mojom::SmartCardConnectResult::NewSuccess(
+                std::move(success)));
+      });
+
+  EXPECT_EQ("[object SmartCardConnection]", EvalJs(shell(), R"(
+    (async () => {
+      let readers = await navigator.smartCard.getReaders();
+
+      if (readers.length !== 1) {
+        return "reader not found";
+      }
+
+      let reader = readers[0];
+      let connection = await reader.connect("shared", ["t0", "t1"]);
+
+      return `${connection}`;
+    })())"));
+}
+
+// Tests that multiple, parallel, SmartCardReader.connect calls on the same
+// reader are supported.
+//
+// It's up to the SmartCardContext implementation to put those requests in a
+// FIFO queue when sending them down to the platform's PC/SC stack.
+IN_PROC_BROWSER_TEST_F(SmartCardTest, MultipleConnect) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardReaderTracker& mock_tracker = CreateMockSmartCardReaderTracker();
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(mock_tracker, Start(_, _))
+        .WillOnce(
+            [&mock_tracker](SmartCardReaderTracker::Observer* observer,
+                            SmartCardReaderTracker::StartCallback callback) {
+              mock_tracker.observer_list.AddObserverIfMissing(observer);
+
+              std::vector<blink::mojom::SmartCardReaderInfoPtr> readers;
+              readers.push_back(blink::mojom::SmartCardReaderInfo::New(
+                  "Fake reader", blink::mojom::SmartCardReaderState::kEmpty,
+                  std::vector<uint8_t>()));
+              std::move(callback).Run(
+                  blink::mojom::SmartCardGetReadersResult::NewReaders(
+                      std::move(readers)));
+            });
+
+    // When the document is destroyed
+    EXPECT_CALL(mock_tracker, Stop(_));
+  }
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  std::queue<SmartCardContext::ConnectCallback> connect_callbacks;
+
+  // The first two Connect calls are queued. Only from the third call onwards
+  // are all requests answered and the qeue emptied.
+  {
+    InSequence s;
+
+    EXPECT_CALL(mock_context_factory,
+                Connect("Fake reader", SmartCardShareMode::kShared, _, _))
+        .Times(Exactly(2))
+        .WillRepeatedly(
+            [&connect_callbacks](
+                const std::string& reader,
+                device::mojom::SmartCardShareMode share_mode,
+                device::mojom::SmartCardProtocolsPtr preferred_protocols,
+                SmartCardContext::ConnectCallback callback) {
+              mojo::PendingRemote<device::mojom::SmartCardConnection>
+                  pending_remote;
+
+              mojo::MakeSelfOwnedReceiver(
+                  std::make_unique<MockSmartCardConnection>(),
+                  pending_remote.InitWithNewPipeAndPassReceiver());
+
+              auto success = device::mojom::SmartCardConnectSuccess::New(
+                  std::move(pending_remote), SmartCardProtocol::kT1);
+
+              connect_callbacks.push(std::move(callback));
+            });
+
+    EXPECT_CALL(mock_context_factory,
+                Connect("Fake reader", SmartCardShareMode::kShared, _, _))
+        .Times(Exactly(2))
+        .WillRepeatedly(
+            [&connect_callbacks](
+                const std::string& reader,
+                device::mojom::SmartCardShareMode share_mode,
+                device::mojom::SmartCardProtocolsPtr preferred_protocols,
+                SmartCardContext::ConnectCallback callback) {
+              connect_callbacks.push(std::move(callback));
+
+              // Now finally solve all Connect() calls in the oder they arrived:
+              while (!connect_callbacks.empty()) {
+                mojo::PendingRemote<device::mojom::SmartCardConnection>
+                    pending_remote;
+
+                mojo::MakeSelfOwnedReceiver(
+                    std::make_unique<MockSmartCardConnection>(),
+                    pending_remote.InitWithNewPipeAndPassReceiver());
+
+                auto success = device::mojom::SmartCardConnectSuccess::New(
+                    std::move(pending_remote), SmartCardProtocol::kT1);
+                std::move(connect_callbacks.front())
+                    .Run(device::mojom::SmartCardConnectResult::NewSuccess(
+                        std::move(success)));
+                connect_callbacks.pop();
+              }
+            });
+  }
+
+  EXPECT_EQ(
+      "[object SmartCardConnection],[object SmartCardConnection],[object "
+      "SmartCardConnection]",
+      EvalJs(shell(), R"(
+    (async () => {
+      let readers = await navigator.smartCard.getReaders();
+
+      if (readers.length !== 1) {
+        return "reader not found";
+      }
+
+      let reader = readers[0];
+
+      // These first calls will get queued also in SmartCardService
+      // since it doesn't initially have a SmartCardContext remote.
+      let promise1 = reader.connect("shared");
+      let promise2 = reader.connect("shared");
+      let promise3 = reader.connect("shared");
+
+      let connections = await Promise.all([promise1, promise2, promise3]);
+
+      // This will go straight to SmartCardContext since SmartCardService
+      // already has a remote by now.
+      await reader.connect("shared");
+
+      return `${connections}`;
+    })())"));
 }
 
 }  // namespace content

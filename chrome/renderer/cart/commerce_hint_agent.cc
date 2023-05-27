@@ -384,7 +384,7 @@ const std::map<std::string, std::string>& GetPurchaseURLPatternMapping() {
             .value());
     DCHECK(json.is_dict());
     std::map<std::string, std::string> map;
-    for (auto&& item : json.DictItems()) {
+    for (auto&& item : json.GetDict()) {
       map.insert({std::move(item.first), std::move(item.second).TakeString()});
     }
     return map;
@@ -398,7 +398,7 @@ const std::map<std::string, std::string>& GetPurchaseButtonPatternMapping() {
         base::JSONReader::Read(kPurchaseButtonPatternMapping.Get()).value());
     DCHECK(json.is_dict());
     std::map<std::string, std::string> map;
-    for (auto&& item : json.DictItems()) {
+    for (auto&& item : json.GetDict()) {
       map.insert({std::move(item.first), std::move(item.second).TakeString()});
     }
     return map;
@@ -502,7 +502,7 @@ const std::map<std::string, std::string>& GetSkipAddToCartMapping() {
             .value());
     DCHECK(json.is_dict());
     std::map<std::string, std::string> map;
-    for (auto&& item : json.DictItems()) {
+    for (auto&& item : json.GetDict()) {
       map.insert({std::move(item.first), std::move(item.second).TakeString()});
     }
     return map;
@@ -694,10 +694,11 @@ CommerceHintAgent::CommerceHintAgent(content::RenderFrame* render_frame)
   // Subframes including fenced frames shouldn't be reached here.
   DCHECK(render_frame->IsMainFrame() && !render_frame->IsInFencedFrameTree());
 
-  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+  mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;
+
   content::RenderThread::Get()->BindHostReceiver(
-      recorder.InitWithNewPipeAndPassReceiver());
-  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+      factory.BindNewPipeAndPassReceiver());
+  ukm_recorder_ = ukm::MojoUkmRecorder::Create(*factory);
 }
 
 CommerceHintAgent::~CommerceHintAgent() = default;
@@ -827,6 +828,9 @@ void CommerceHintAgent::MaybeExtractProducts() {
 }
 
 void CommerceHintAgent::ExtractProducts() {
+  if (!IsVisitCart(GURL(render_frame()->GetWebFrame()->GetDocument().Url()))) {
+    return;
+  }
   is_extraction_pending_ = false;
   if (is_extraction_running_) {
     DVLOG(1) << "Extraction is running. Try again later.";

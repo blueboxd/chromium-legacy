@@ -8,6 +8,7 @@
 
 #include "base/containers/span.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/ash/platform_keys/key_permissions/mock_key_permissions_manager.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/user_private_token_kpm_service_factory.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys.h"
 #include "chrome/common/pref_names.h"
@@ -29,6 +29,8 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/user_manager/scoped_user_manager.h"
+#include "extensions/browser/api_test_utils.h"
+#include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +39,6 @@
 using testing::_;
 using testing::Invoke;
 using testing::NiceMock;
-
-namespace utils = extension_function_test_utils;
 
 namespace extensions {
 namespace {
@@ -64,7 +64,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   EPKChallengeKeyTestBase()
       : extension_(ExtensionBuilder("Test").Build()),
         fake_user_manager_(new ash::FakeChromeUserManager()),
-        user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_.get())) {
     stub_install_attributes_.SetCloudManaged("google.com", "device_id");
   }
 
@@ -131,27 +131,35 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
         signin::ConsentLevel::kSync);
   }
 
-  // Like extension_function_test_utils::RunFunctionAndReturnError but with an
+  // Like api_test_utils::RunFunctionAndReturnError but with an
   // explicit list of args.
-  std::string RunFunctionAndReturnError(ExtensionFunction* function,
-                                        base::Value::List args,
-                                        Browser* browser) {
-    utils::RunFunction(function, std::move(args), browser,
-                       extensions::api_test_utils::NONE);
+  std::string RunFunctionAndReturnError(
+      ExtensionFunction* function,
+      base::Value::List args,
+      content::BrowserContext* browser_context) {
+    auto dispatcher =
+        std::make_unique<ExtensionFunctionDispatcher>(browser_context);
+    api_test_utils::RunFunction(
+        function, std::move(args), std::move(dispatcher),
+        extensions::api_test_utils::FunctionMode::kNone);
     EXPECT_EQ(ExtensionFunction::FAILED, *function->response_type());
     return function->GetError();
   }
 
-  // Like extension_function_test_utils::RunFunctionAndReturnSingleResult but
+  // Like api_test_utils::RunFunctionAndReturnSingleResult but
   // with an explicit list of args.
-  base::Value RunFunctionAndReturnSingleResult(ExtensionFunction* function,
-                                               base::Value::List args,
-                                               Browser* browser) {
+  base::Value RunFunctionAndReturnSingleResult(
+      ExtensionFunction* function,
+      base::Value::List args,
+      content::BrowserContext* browser_context) {
     scoped_refptr<ExtensionFunction> function_owner(function);
     // Without a callback the function will not generate a result.
     function->set_has_callback(true);
-    utils::RunFunction(function, std::move(args), browser,
-                       extensions::api_test_utils::NONE);
+    auto dispatcher =
+        std::make_unique<ExtensionFunctionDispatcher>(browser_context);
+    api_test_utils::RunFunction(
+        function, std::move(args), std::move(dispatcher),
+        extensions::api_test_utils::FunctionMode::kNone);
     EXPECT_TRUE(function->GetError().empty())
         << "Unexpected error: " << function->GetError();
     if (function->GetResultListForTest() &&
@@ -164,11 +172,13 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
   scoped_refptr<const extensions::Extension> extension_;
   ash::StubInstallAttributes stub_install_attributes_;
   // fake_user_manager_ is owned by user_manager_enabler_.
-  ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
+  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> fake_user_manager_ =
+      nullptr;
   user_manager::ScopedUserManager user_manager_enabler_;
   ash::platform_keys::MockKeyPermissionsManager key_permissions_manager_;
-  PrefService* prefs_ = nullptr;
-  ash::attestation::MockTpmChallengeKey* mock_tpm_challenge_key_ = nullptr;
+  raw_ptr<PrefService, ExperimentalAsh> prefs_ = nullptr;
+  raw_ptr<ash::attestation::MockTpmChallengeKey, ExperimentalAsh>
+      mock_tpm_challenge_key_ = nullptr;
 };
 
 class EPKChallengeMachineKeyTest : public EPKChallengeKeyTestBase {
@@ -210,7 +220,7 @@ TEST_F(EPKChallengeMachineKeyTest, ExtensionNotAllowed) {
 
   EXPECT_EQ(
       ash::attestation::TpmChallengeKeyResult::kExtensionNotAllowedErrorMsg,
-      RunFunctionAndReturnError(func_.get(), CreateArgs(), browser()));
+      RunFunctionAndReturnError(func_.get(), CreateArgs(), profile()));
 }
 
 TEST_F(EPKChallengeMachineKeyTest, Success) {
@@ -221,7 +231,7 @@ TEST_F(EPKChallengeMachineKeyTest, Success) {
   prefs_->SetList(prefs::kAttestationExtensionAllowlist, std::move(allowlist));
 
   base::Value value(
-      RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), browser()));
+      RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), profile()));
 
   ASSERT_TRUE(value.is_blob());
   std::string response(value.GetBlob().begin(), value.GetBlob().end());
@@ -236,7 +246,7 @@ TEST_F(EPKChallengeMachineKeyTest, BadChallengeThenErrorMessageReturned) {
   prefs_->SetList(prefs::kAttestationExtensionAllowlist, std::move(allowlist));
 
   base::Value value(
-      RunFunctionAndReturnError(func_.get(), CreateArgs(), browser()));
+      RunFunctionAndReturnError(func_.get(), CreateArgs(), profile()));
 
   EXPECT_EQ(
       ash::attestation::TpmChallengeKeyResult::kChallengeBadBase64ErrorMsg,
@@ -253,8 +263,10 @@ TEST_F(EPKChallengeMachineKeyTest, KeyNotRegisteredByDefault) {
   EXPECT_CALL(*mock_tpm_challenge_key_, BuildResponse)
       .WillOnce(Invoke(FakeRunCheckNotRegister));
 
-  EXPECT_TRUE(utils::RunFunction(func_.get(), CreateArgs(), browser(),
-                                 extensions::api_test_utils::NONE));
+  auto dispatcher = std::make_unique<ExtensionFunctionDispatcher>(profile());
+  EXPECT_TRUE(api_test_utils::RunFunction(
+      func_.get(), CreateArgs(), std::move(dispatcher),
+      extensions::api_test_utils::FunctionMode::kNone));
 }
 
 class EPKChallengeUserKeyTest : public EPKChallengeKeyTestBase {
@@ -296,7 +308,7 @@ TEST_F(EPKChallengeUserKeyTest, Success) {
   prefs_->SetList(prefs::kAttestationExtensionAllowlist, std::move(allowlist));
 
   base::Value value(
-      RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), browser()));
+      RunFunctionAndReturnSingleResult(func_.get(), CreateArgs(), profile()));
 
   ASSERT_TRUE(value.is_blob());
   std::string response(value.GetBlob().begin(), value.GetBlob().end());
@@ -311,7 +323,7 @@ TEST_F(EPKChallengeUserKeyTest, BadChallengeThenErrorMessageReturned) {
   prefs_->SetList(prefs::kAttestationExtensionAllowlist, std::move(allowlist));
 
   base::Value value(
-      RunFunctionAndReturnError(func_.get(), CreateArgs(), browser()));
+      RunFunctionAndReturnError(func_.get(), CreateArgs(), profile()));
 
   EXPECT_EQ(
       ash::attestation::TpmChallengeKeyResult::kChallengeBadBase64ErrorMsg,
@@ -325,7 +337,7 @@ TEST_F(EPKChallengeUserKeyTest, ExtensionNotAllowedThenErrorMessageReturned) {
 
   EXPECT_EQ(
       ash::attestation::TpmChallengeKeyResult::kExtensionNotAllowedErrorMsg,
-      RunFunctionAndReturnError(func_.get(), CreateArgs(), browser()));
+      RunFunctionAndReturnError(func_.get(), CreateArgs(), profile()));
 }
 
 using EPKChallengeKeyParams =
@@ -411,7 +423,7 @@ TEST_P(EPKChallengeKeyTest, Success) {
                             expect_crypto_key_type, _, _));
 
   base::Value value(RunFunctionAndReturnSingleResult(
-      func_.get(), CreateArgs(std::move(register_key), scope), browser()));
+      func_.get(), CreateArgs(std::move(register_key), scope), profile()));
 
   ASSERT_TRUE(value.is_blob());
   std::string response(value.GetBlob().begin(), value.GetBlob().end());
@@ -438,7 +450,7 @@ TEST_P(EPKChallengeKeyTest, ExtensionNotAllowed) {
 
   EXPECT_EQ(
       ash::attestation::TpmChallengeKeyResult::kExtensionNotAllowedErrorMsg,
-      RunFunctionAndReturnError(func_.get(), std::move(args), browser()));
+      RunFunctionAndReturnError(func_.get(), std::move(args), profile()));
 }
 
 INSTANTIATE_TEST_SUITE_P(

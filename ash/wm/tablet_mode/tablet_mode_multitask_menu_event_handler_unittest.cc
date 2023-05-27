@@ -6,15 +6,18 @@
 
 #include <memory>
 
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_cue.h"
 #include "ash/wm/tablet_mode/tablet_mode_multitask_menu.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -24,7 +27,10 @@
 #include "chromeos/ui/frame/multitask_menu/split_button_view.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/test/test_window_delegate.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/layer_animation_stopped_waiter.h"
+#include "ui/compositor/test/test_utils.h"
 #include "ui/display/display_switches.h"
 #include "ui/wm/core/window_util.h"
 
@@ -33,9 +39,7 @@ namespace ash {
 namespace {
 
 // The vertical distance used to end drag to show and start drag to hide.
-// TODO(b/267184500): Revert this value back to 100 when the feedback button is
-// removed.
-constexpr int kMenuDragPoint = 110;
+constexpr int kMenuDragPoint = 100;
 
 }  // namespace
 
@@ -79,6 +83,19 @@ class TabletModeMultitaskMenuEventHandlerTest : public AshTestBase {
     DCHECK(!GetMultitaskMenu());
   }
 
+  void PressHalfButton(const aura::Window* window, bool left) {
+    ShowMultitaskMenu(*window);
+    auto* multitask_menu_view = GetMultitaskMenuView(GetMultitaskMenu());
+    const gfx::Rect half_bounds =
+        multitask_menu_view->half_button_for_testing()->GetBoundsInScreen();
+    GetEventGenerator()->GestureTapAt(left ? half_bounds.left_center()
+                                           : half_bounds.right_center());
+    auto* split_view_controller = SplitViewController::Get(window);
+    DCHECK_EQ(split_view_controller->GetPositionOfSnappedWindow(window),
+              left ? SplitViewController::SnapPosition::kPrimary
+                   : SplitViewController::SnapPosition::kSecondary);
+  }
+
   void PressPartialPrimary(const aura::Window& window) {
     ShowMultitaskMenu(window);
     DCHECK(GetMultitaskMenu());
@@ -113,11 +130,7 @@ class TabletModeMultitaskMenuEventHandlerTest : public AshTestBase {
 
   chromeos::MultitaskMenuView* GetMultitaskMenuView(
       TabletModeMultitaskMenu* multitask_menu) const {
-    chromeos::MultitaskMenuView* multitask_menu_view =
-        multitask_menu->GetMultitaskMenuViewForTesting();
-    EXPECT_EQ(chromeos::MultitaskMenuView::kViewClassName,
-              multitask_menu_view->GetClassName());
-    return multitask_menu_view;
+    return multitask_menu->GetMultitaskMenuViewForTesting();
   }
 
  protected:
@@ -178,6 +191,7 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, SwipeDownTargetArea) {
   DismissMenu(GetMultitaskMenu());
 
   // Start swipe down from the bottom of the target area.
+  // TODO(sophiewen): Replace this with `kHitRegionSize.height()`.
   GenerateScroll(window->bounds().CenterPoint().x(), 15, kMenuDragPoint);
   ASSERT_TRUE(GetMultitaskMenu());
   DismissMenu(GetMultitaskMenu());
@@ -208,36 +222,70 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, PressMoveAndReleaseTouch) {
 }
 
 TEST_F(TabletModeMultitaskMenuEventHandlerTest, SwipeDownInSplitView) {
-  // Create two windows snapped in split view.
   auto window1 = CreateTestWindow(gfx::Rect(800, 600));
+  PressHalfButton(window1.get(), /*left=*/true);
   auto window2 = CreateTestWindow(gfx::Rect(800, 600));
-
-  auto* split_view_controller =
-      SplitViewController::Get(Shell::GetPrimaryRootWindow());
-  split_view_controller->SnapWindow(
-      window1.get(), SplitViewController::SnapPosition::kPrimary);
-  split_view_controller->SnapWindow(
-      window2.get(), SplitViewController::SnapPosition::kSecondary);
+  PressHalfButton(window2.get(), /*left=*/false);
 
   // Swipe down on the left window. Test that the menu is shown.
   wm::ActivateWindow(window1.get());
   gfx::Rect left_bounds(window1->bounds());
-  GenerateScroll(left_bounds.CenterPoint().x(), 0, 150);
+  GenerateScroll(left_bounds.CenterPoint().x(), 0, 160);
   auto* multitask_menu_view = GetMultitaskMenuView(GetMultitaskMenu());
   ASSERT_TRUE(multitask_menu_view);
   ASSERT_TRUE(left_bounds.Contains(multitask_menu_view->GetBoundsInScreen()));
 
-  // Swipe down on the right window. Since it isn't active, no menu is shown.
+  // Swipe down on the right window. Test that it shows the menu.
   gfx::Rect right_bounds(window2->bounds());
-  GenerateScroll(right_bounds.CenterPoint().x(), 0, 150);
-  ASSERT_FALSE(GetMultitaskMenu());
-
-  // Activate the right window. Now swipe down will show the menu.
-  wm::ActivateWindow(window2.get());
   GenerateScroll(right_bounds.CenterPoint().x(), 0, 150);
   multitask_menu_view = GetMultitaskMenuView(GetMultitaskMenu());
   ASSERT_TRUE(multitask_menu_view);
   ASSERT_TRUE(right_bounds.Contains(multitask_menu_view->GetBoundsInScreen()));
+}
+
+// Tests no crash when swiping down another window during menu animation.
+// http://b/276792842.
+TEST_F(TabletModeMultitaskMenuEventHandlerTest,
+       SwipeDownInSplitViewWhileAnimating) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Create a larger display so the menu is within the window bounds when split.
+  UpdateDisplay("1600x1000");
+
+  auto window1 = CreateTestWindow(gfx::Rect(800, 600));
+  PressHalfButton(window1.get(), /*left=*/true);
+  auto window2 = CreateTestWindow(gfx::Rect(800, 600));
+  PressHalfButton(window2.get(), /*left=*/false);
+
+  // Start swipe down on the left window, then swap to the right window. Swipe
+  // distance must be less than the menu height to start an animation.
+  gfx::Rect left_bounds(window1->bounds());
+  GenerateScroll(left_bounds.CenterPoint().x(), 0,
+                 /*end_y=*/kMenuDragPoint);
+  gfx::Rect right_bounds(window2->bounds());
+  GenerateScroll(right_bounds.CenterPoint().x(), 0,
+                 /*end_y=*/kMenuDragPoint);
+  EXPECT_TRUE(window2->GetBoundsInScreen().Contains(
+      GetMultitaskMenu()->widget()->GetWindowBoundsInScreen()));
+
+  // Test that swipe down both windows at the same time doesn't crash.
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressTouchId(0, gfx::Point(left_bounds.CenterPoint().x(), 0));
+  generator->PressTouchId(1, gfx::Point(right_bounds.CenterPoint().x(), 0));
+  generator->MoveTouchId(gfx::Point(0, kMenuDragPoint), 0);
+  generator->MoveTouchId(gfx::Point(0, kMenuDragPoint), 1);
+}
+
+// Tests that the multitask menu cannot be shown while in pinned state.
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, SwipeDownInPinnedWindow) {
+  // Create and pin a window.
+  std::unique_ptr<aura::Window> pinned_window = CreateAppWindow();
+  wm::ActivateWindow(pinned_window.get());
+  window_util::PinWindow(pinned_window.get(), /*trusted=*/true);
+
+  GenerateScroll(pinned_window->bounds().CenterPoint().x(), 0, 150);
+  EXPECT_FALSE(GetMultitaskMenu());
 }
 
 // Tests that swipe down outside the menu doesn't crash. Test for b/266742428.
@@ -263,6 +311,23 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, SwipeDownMenuTwice) {
   histogram_tester_.ExpectBucketCount(
       chromeos::GetEntryTypeHistogramName(),
       chromeos::MultitaskMenuEntryType::kGestureScroll, 2);
+}
+
+// Tests no crash on multiple finger scrolls.
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, MultiFingerSroll) {
+  auto window = CreateTestWindow();
+  const int center_x = window->bounds().CenterPoint().x();
+
+  // Scroll down with 2 fingers.
+  const int kTouchPoints = 2;
+  gfx::Point points[kTouchPoints] = {
+      gfx::Point(center_x, 0),
+      gfx::Point(center_x + 10, 0),
+  };
+  const int kSteps = 15;
+  GetEventGenerator()->GestureMultiFingerScroll(kTouchPoints, points, 15,
+                                                kSteps, 0, 150);
+  EXPECT_TRUE(GetMultitaskMenu());
 }
 
 // Tests that a partial drag will show or hide the menu as expected.
@@ -442,7 +507,8 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, AdjustedMenuBounds) {
             GetMultitaskMenu()->widget()->GetWindowBoundsInScreen().right());
 
   // Swap windows so the 1/3 window is on the left. Test that the menu fits.
-  split_view_controller->SwapWindows();
+  split_view_controller->SwapWindows(
+      SplitViewController::SwapWindowsSource::kDoubleTap);
   ShowMultitaskMenu(*window2);
   EXPECT_EQ(work_area.x(),
             GetMultitaskMenu()->widget()->GetWindowBoundsInScreen().x());
@@ -526,17 +592,29 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, HiddenButtons) {
 }
 
 // Tests that showing the menu will dismiss the visual cue (drag bar).
-TEST_F(TabletModeMultitaskMenuEventHandlerTest, DismissCueOnShowMenu) {
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, CueVisibleOnShowMenu) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   auto window = CreateAppWindow();
 
-  auto* multitask_cue =
-      GetMultitaskMenuEventHandler()->multitask_cue_for_testing();
+  auto* multitask_cue = GetMultitaskMenuEventHandler()->multitask_cue();
   ASSERT_TRUE(multitask_cue);
   EXPECT_TRUE(multitask_cue->cue_layer());
 
-  ShowMultitaskMenu(*window);
+  // Wait for fade in to finish.
+  ui::LayerAnimationStoppedWaiter animation_waiter;
+  animation_waiter.Wait(multitask_cue->cue_layer());
 
-  multitask_cue = GetMultitaskMenuEventHandler()->multitask_cue_for_testing();
+  // Cue should still be showing when the menu is activated.
+  ShowMultitaskMenu(*window);
+  ASSERT_TRUE(multitask_cue);
+  EXPECT_TRUE(multitask_cue->cue_layer());
+
+  multitask_cue->FireCueDismissTimerForTesting();
+
+  // Wait for fade out to finish.
+  animation_waiter.Wait(multitask_cue->cue_layer());
   ASSERT_TRUE(multitask_cue);
   EXPECT_FALSE(multitask_cue->cue_layer());
 }
@@ -633,6 +711,16 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, NoCrashWhenExitingTabletMode) {
   auto window = CreateAppWindow();
   ShowMultitaskMenu(*window);
   TabletModeControllerTestApi().LeaveTabletMode();
+}
+
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, HidesWhenMinimized) {
+  auto window = CreateAppWindow();
+  ShowMultitaskMenu(*window);
+
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      WINDOW_MINIMIZE, {});
+  ASSERT_TRUE(WindowState::Get(window.get())->IsMinimized());
+  EXPECT_FALSE(GetMultitaskMenu());
 }
 
 }  // namespace ash

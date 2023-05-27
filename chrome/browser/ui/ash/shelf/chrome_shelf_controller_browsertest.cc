@@ -35,6 +35,7 @@
 #include "base/auto_reset.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
@@ -60,7 +61,6 @@
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
@@ -202,7 +202,7 @@ void ExecuteScriptInChromeVox(Browser* browser, const std::string& script) {
       window.domAutomationController.send('done');
   })())JS";
 
-  extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+  extensions::browsertest_util::ExecuteScriptInBackgroundPageDeprecated(
       browser->profile(), extension_misc::kChromeVoxExtensionId,
       execute_script);
 }
@@ -274,7 +274,7 @@ class ChildRemovalWaiter : public views::ViewObserver {
   }
 
  private:
-  views::View* const parent_view_;
+  const raw_ptr<views::View, ExperimentalAsh> parent_view_;
   base::RunLoop run_loop_;
 };
 
@@ -308,7 +308,7 @@ class ShelfPlatformAppBrowserTest : public extensions::PlatformAppBrowserTest {
 
   apps::AppServiceTest& app_service_test() { return app_service_test_; }
 
-  ChromeShelfController* controller_ = nullptr;
+  raw_ptr<ChromeShelfController, ExperimentalAsh> controller_ = nullptr;
 
  private:
   apps::AppServiceTest app_service_test_;
@@ -426,7 +426,7 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
                            /*filter_predicate=*/base::NullCallback());
   }
 
-  ChromeShelfController* controller_ = nullptr;
+  raw_ptr<ChromeShelfController, ExperimentalAsh> controller_ = nullptr;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -657,7 +657,7 @@ class UnpinnedBrowserShortcutTest : public extensions::ExtensionBrowserTest {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
   }
 
-  ChromeShelfController* controller_ = nullptr;
+  raw_ptr<ChromeShelfController, ExperimentalAsh> controller_ = nullptr;
 
  private:
   const base::AutoReset<absl::optional<bool>> set_lacros_primary_ =
@@ -2994,7 +2994,7 @@ class PerDeskShelfAppBrowserTest : public ShelfAppBrowserTest,
       std::move(run_loop_)->Quit();
   }
 
-  ash::ShelfView* shelf_view_ = nullptr;
+  raw_ptr<ash::ShelfView, ExperimentalAsh> shelf_view_ = nullptr;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };

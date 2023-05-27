@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
 #import "ios/chrome/browser/autofill/manual_fill/passwords_fetcher.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/security_alert_commands.h"
@@ -31,7 +32,6 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_chromium_text_data.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_consumer.h"
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_suggestion_view.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/elements/form_input_accessory_view.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_event.h"
@@ -536,6 +536,10 @@ using base::UmaHistogramEnumeration;
     if (provider.type == SuggestionProviderTypeAutofill) {
       LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeMadeForIOS);
     }
+
+    if (suggestions.firstObject.featureForIPH.length > 0) {
+      [self.handler showAutofillSuggestionIPHIfNeeded];
+    }
   }
 }
 
@@ -557,6 +561,12 @@ using base::UmaHistogramEnumeration;
     }
     if (strongSelf.currentProvider.type == SuggestionProviderTypePassword) {
       LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
+    }
+    if (formSuggestion.featureForIPH.length) {
+      // The IPH is only shown if the suggestion was the first one. It doesn't
+      // matter if the IPH was shown for this suggestion as we don't want to
+      // show more IPH's to the user.
+      [self.handler notifyAutofillSuggestionWithIPHSelected];
     }
     [strongSelf.currentProvider didSelectSuggestion:formSuggestion];
   };

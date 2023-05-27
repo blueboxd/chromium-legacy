@@ -50,7 +50,7 @@ var CrSettingsBrowserTest = class extends PolymerTest {
 var CrSettingsAboutPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/about_page_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/about_page_test.js';
   }
 };
 
@@ -104,7 +104,7 @@ GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 var CrSettingsSpellCheckPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/spell_check_page_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/spell_check_page_test.js';
   }
 };
 
@@ -121,7 +121,7 @@ GEN('#endif');
 var CrSettingsLanguagesPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/languages_page_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/languages_page_test.js';
   }
 };
 
@@ -136,7 +136,7 @@ TEST_F('CrSettingsLanguagesPageTest', 'LanguageMenu', function() {
 var CrSettingsTranslatePageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/translate_page_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/translate_page_test.js';
   }
 };
 
@@ -151,6 +151,30 @@ TEST_F('CrSettingsTranslatePageTest', 'AlwaysTranslateDialog', function() {
 TEST_F('CrSettingsTranslatePageTest', 'NeverTranslateDialog', function() {
   mocha.grep(translate_page_tests.TestNames.NeverTranslateDialog).run();
 });
+
+GEN('#if !BUILDFLAG(IS_CHROMEOS)');
+var CrSettingsLiveCaptionSection = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/live_caption_section_test.js';
+  }
+};
+
+TEST_F('CrSettingsLiveCaptionSection', 'LiveCaptionSection', function() {
+  runMochaSuite('LiveCaptionSection');
+});
+
+var CrSettingsLiveTranslateSection = class extends CrSettingsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/live_translate_section_test.js';
+  }
+};
+
+TEST_F('CrSettingsLiveTranslateSection', 'LiveTranslateSection', function() {
+  runMochaSuite('LiveTranslateSection');
+});
+GEN('#endif');
 
 var CrSettingsLanguagesPageMetricsTest = class extends CrSettingsBrowserTest {
   /** @override */
@@ -354,7 +378,7 @@ TEST_F('CrSettingsSafetyCheckPermissionsTest', 'All', function() {
 var CrSettingsSiteListTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_list_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/site_list_test.js';
   }
 
   /** @override */
@@ -411,7 +435,7 @@ TEST_F(
 var CrSettingsSiteDetailsTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/site_details_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/site_details_test.js';
   }
 
   /** @override */
@@ -442,16 +466,6 @@ var CrSettingsPerformanceMenuTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/settings_performance_menu_test.js';
   }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: [
-        'performance_manager::features::kHighEfficiencyModeAvailable',
-        'performance_manager::features::kBatterySaverModeAvailable',
-      ],
-    };
-  }
 };
 
 TEST_F('CrSettingsPerformanceMenuTest', 'All', function() {
@@ -463,15 +477,6 @@ var CrSettingsPerformancePageTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/performance_page_test.js';
   }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: [
-        'performance_manager::features::kHighEfficiencyModeAvailable',
-      ],
-    };
-  }
 };
 
 TEST_F('CrSettingsPerformancePageTest', 'All', function() {
@@ -482,15 +487,6 @@ var CrSettingsBatteryPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/battery_page_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: [
-        'performance_manager::features::kBatterySaverModeAvailable',
-      ],
-    };
   }
 };
 
@@ -600,6 +596,12 @@ TEST_F(
     });
 GEN('#endif');
 
+TEST_F(
+    'CrSettingsPrivacyPageTest', 'enableWebBluetoothNewPermissionsBackendTests',
+    function() {
+      runMochaSuite('enableWebBluetoothNewPermissionsBackend');
+    });
+
 var CrSettingsPrivacySandboxPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -619,6 +621,12 @@ var CrSettingsPrivacySandboxPageTest = class extends CrSettingsBrowserTest {
 TEST_F(
     'CrSettingsPrivacySandboxPageTest', 'PrivacySandboxPageTests', function() {
       runMochaSuite('PrivacySandboxPageTests');
+    });
+
+TEST_F(
+    'CrSettingsPrivacySandboxPageTest',
+    'PrivacySandboxNoticeRestrictedEnabledTests', function() {
+      runMochaSuite('PrivacySandboxNoticeRestrictedEnabledTests');
     });
 
 TEST_F('CrSettingsPrivacySandboxPageTest', 'TopicsSubpageTests', function() {
@@ -713,7 +721,7 @@ TEST_F(
 var CrSettingsRouteTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=settings/route_tests.js';
+    return 'chrome://settings/test_loader.html?module=settings/route_test.js';
   }
 };
 
@@ -866,16 +874,6 @@ var CrSettingsMenuTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/settings_menu_test.js';
   }
-
-  /** @override */
-  get featureList() {
-    return {
-      disabled: [
-        'performance_manager::features::kHighEfficiencyModeAvailable',
-        'performance_manager::features::kBatterySaverModeAvailable',
-      ],
-    };
-  }
 };
 
 TEST_F('CrSettingsMenuTest', 'All', function() {
@@ -885,23 +883,25 @@ TEST_F('CrSettingsMenuTest', 'All', function() {
 [['AppearanceFontsPage', 'appearance_fonts_page_test.js'],
  [
    'SettingsCategoryDefaultRadioGroup',
-   'settings_category_default_radio_group_tests.js',
+   'settings_category_default_radio_group_test.js',
  ],
  ['AntiAbusePage', 'anti_abuse_page_test.js'],
- ['CategoryDefaultSetting', 'category_default_setting_tests.js'],
- ['CategorySettingExceptions', 'category_setting_exceptions_tests.js'],
- ['Checkbox', 'checkbox_tests.js'],
- ['ChooserExceptionList', 'chooser_exception_list_tests.js'],
- ['ChooserExceptionListEntry', 'chooser_exception_list_entry_tests.js'],
- ['CollapseRadioButton', 'collapse_radio_button_tests.js'],
- ['ControlledButton', 'controlled_button_tests.js'],
- ['ControlledRadioButton', 'controlled_radio_button_tests.js'],
+ ['CategoryDefaultSetting', 'category_default_setting_test.js'],
+ ['CategorySettingExceptions', 'category_setting_exceptions_test.js'],
+ ['Checkbox', 'checkbox_test.js'],
+ ['ChooserExceptionList', 'chooser_exception_list_test.js'],
+ ['ChooserExceptionListEntry', 'chooser_exception_list_entry_test.js'],
+ ['CollapseRadioButton', 'collapse_radio_button_test.js'],
+ ['ControlledButton', 'controlled_button_test.js'],
+ ['ControlledRadioButton', 'controlled_radio_button_test.js'],
  ['AutofillAddressValidation', 'autofill_section_address_validation_test.js'],
  ['DoNotTrackToggle', 'do_not_track_toggle_test.js'],
  ['DownloadsPage', 'downloads_page_test.js'],
- ['DropdownMenu', 'dropdown_menu_tests.js'],
- ['ExtensionControlledIndicator', 'extension_controlled_indicator_tests.js'],
- ['FileSystemSettings', 'file_system_site_list_tests.js'],
+ ['DropdownMenu', 'dropdown_menu_test.js'],
+ ['ExtensionControlledIndicator', 'extension_controlled_indicator_test.js'],
+ ['FileSystemSettingsList', 'file_system_site_list_test.js'],
+ ['FileSystemSettingsListEntries', 'file_system_site_entry_test.js'],
+ ['FileSystemSettingsListEntryItems', 'file_system_site_entry_item_test.js'],
  ['HelpPage', 'help_page_test.js'],
  ['PasswordView', 'password_view_test.js'],
  ['PasswordsExportDialog', 'passwords_export_dialog_test.js'],
@@ -913,10 +913,8 @@ TEST_F('CrSettingsMenuTest', 'All', function() {
  ['PaymentsSectionUpi', 'payments_section_upi_test.js'],
  ['PeoplePage', 'people_page_test.js'],
  ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],
- ['Prefs', 'prefs_tests.js'],
- ['PrefUtil', 'pref_util_tests.js'],
  ['PreloadingPage', 'preloading_page_test.js'],
- ['ProtocolHandlers', 'protocol_handlers_tests.js'],
+ ['ProtocolHandlers', 'protocol_handlers_test.js'],
  ['RecentSitePermissions', 'recent_site_permissions_test.js'],
  // Flaky on all OSes. TODO(crbug.com/1127733): Enable the test.
  ['ResetPage', 'reset_page_test.js', 'DISABLED_All'],
@@ -936,21 +934,21 @@ TEST_F('CrSettingsMenuTest', 'All', function() {
  ['SecureDns', 'secure_dns_test.js'],
  ['SimpleConfirmationDialog', 'simple_confirmation_dialog_test.js'],
  ['SiteDataTest', 'site_data_test.js'],
- ['SiteDetailsPermission', 'site_details_permission_tests.js'],
+ ['SiteDetailsPermission', 'site_details_permission_test.js'],
  [
    'SiteDetailsPermissionDeviceEntry',
-   'site_details_permission_device_entry_tests.js'
+   'site_details_permission_device_entry_test.js'
  ],
- ['SiteEntry', 'site_entry_tests.js'],
+ ['SiteEntry', 'site_entry_test.js'],
  ['SiteFavicon', 'site_favicon_test.js'],
- ['SiteListEntry', 'site_list_entry_tests.js'],
- ['Slider', 'settings_slider_tests.js'],
+ ['SiteListEntry', 'site_list_entry_test.js'],
+ ['Slider', 'settings_slider_test.js'],
  ['StartupUrlsPage', 'startup_urls_page_test.js'],
  // Flaky on all OSes. TODO(crbug.com/1302405): Enable the test.
  ['Subpage', 'settings_subpage_test.js', 'DISABLED_All'],
  ['SyncAccountControl', 'sync_account_control_test.js'],
- ['ToggleButton', 'settings_toggle_button_tests.js'],
- ['ZoomLevels', 'zoom_levels_tests.js'],
+ ['ToggleButton', 'settings_toggle_button_test.js'],
+ ['ZoomLevels', 'zoom_levels_test.js'],
 ].forEach(test => registerTest(...test));
 
 // Timeout on Linux dbg bots: https://crbug.com/1394737
@@ -979,7 +977,7 @@ GEN('#endif');
 GEN('#if !BUILDFLAG(IS_CHROMEOS)');
 [['DefaultBrowser', 'default_browser_test.js'],
  ['ImportDataDialog', 'import_data_dialog_test.js'],
- ['SystemPage', 'system_page_tests.js'],
+ ['SystemPage', 'system_page_test.js'],
  // TODO(crbug.com/1350019) Test is flaky on ChromeOS
  ['AppearancePage', 'appearance_page_test.js'],
 ].forEach(test => registerTest(...test));
@@ -987,7 +985,7 @@ GEN('#endif');
 
 GEN('#if !BUILDFLAG(IS_CHROMEOS_ASH)');
 [['PeoplePageManageProfile', 'people_page_manage_profile_test.js'],
- ['Languages', 'languages_tests.js'],
+ ['Languages', 'languages_test.js'],
  ['RelaunchConfirmationDialog', 'relaunch_confirmation_dialog_test.js'],
 ].forEach(test => registerTest(...test));
 GEN('#endif');
@@ -998,7 +996,11 @@ GEN('#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)');
 GEN('#endif');
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !BUILDFLAG(IS_CHROMEOS_ASH)');
-registerTest('MetricsReporting', 'metrics_reporting_tests.js');
+registerTest('MetricsReporting', 'metrics_reporting_test.js');
+GEN('#endif');
+
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+registerTest('GetMostChromePage', 'get_most_chrome_page_test.js');
 GEN('#endif');
 
 function registerTest(testName, module, caseName) {
@@ -1025,7 +1027,7 @@ function registerTest(testName, module, caseName) {
 ],
  [
    'AllSites',
-   'all_sites_tests.js',
+   'all_sites_test.js',
    [
      'AllSites_EnableFirstPartySets',
      'AllSites_DisableFirstPartySets',

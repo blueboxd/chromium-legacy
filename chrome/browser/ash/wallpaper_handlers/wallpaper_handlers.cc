@@ -76,6 +76,9 @@ constexpr char kFilteringLabel[] = "chromebook";
 // The label used to return exclusive content for Google branded chromebooks.
 constexpr char kGoogleDeviceFilteringLabel[] = "google_branded_chromebook";
 
+// The label used to return exclusive Time of Day wallpapers.
+constexpr char kTimeOfDayFilteringLabel[] = "chromebook_time_of_day";
+
 // The URL to download an album's photos from a user's Google Photos library.
 constexpr char kGooglePhotosAlbumUrl[] =
     "https://photosfirstparty-pa.googleapis.com/v1/chromeos/"
@@ -360,6 +363,9 @@ void BackdropCollectionInfoFetcher::Start(OnCollectionsInfoFetched callback) {
   if (ash::IsGoogleBrandedDevice()) {
     request.add_filtering_label(kGoogleDeviceFilteringLabel);
   }
+  if (ash::features::IsTimeOfDayWallpaperEnabled()) {
+    request.add_filtering_label(kTimeOfDayFilteringLabel);
+  }
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
 
@@ -432,6 +438,9 @@ void BackdropImageInfoFetcher::Start(OnImagesInfoFetched callback) {
   request.add_filtering_label(kFilteringLabel);
   if (ash::IsGoogleBrandedDevice()) {
     request.add_filtering_label(kGoogleDeviceFilteringLabel);
+  }
+  if (ash::features::IsTimeOfDayWallpaperEnabled()) {
+    request.add_filtering_label(kTimeOfDayFilteringLabel);
   }
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
@@ -507,6 +516,9 @@ void BackdropSurpriseMeImageFetcher::Start(OnSurpriseMeImageFetched callback) {
   if (ash::IsGoogleBrandedDevice()) {
     request.add_filtering_label(kGoogleDeviceFilteringLabel);
   }
+  if (ash::features::IsTimeOfDayWallpaperEnabled()) {
+    request.add_filtering_label(kTimeOfDayFilteringLabel);
+  }
   if (!resume_token_.empty()) {
     request.set_resume_token(resume_token_);
   }
@@ -576,7 +588,7 @@ GooglePhotosFetcher<T>::GooglePhotosFetcher(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile_);
   DCHECK(identity_manager_);
-  identity_manager_observation_.Observe(identity_manager_);
+  identity_manager_observation_.Observe(identity_manager_.get());
 }
 
 template <typename T>

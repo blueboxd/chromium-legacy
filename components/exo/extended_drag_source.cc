@@ -13,6 +13,7 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "components/exo/data_source.h"
 #include "components/exo/surface.h"
@@ -137,10 +138,10 @@ class ExtendedDragSource::DraggedWindowHolder : public aura::WindowObserver,
     return true;
   }
 
-  Surface* surface_;
+  raw_ptr<Surface, ExperimentalAsh> surface_;
   gfx::Vector2d drag_offset_;
-  ExtendedDragSource* const source_;
-  aura::Window* toplevel_window_ = nullptr;
+  const raw_ptr<ExtendedDragSource, ExperimentalAsh> source_;
+  raw_ptr<aura::Window, ExperimentalAsh> toplevel_window_ = nullptr;
 };
 
 // static
@@ -323,7 +324,6 @@ void ExtendedDragSource::StartDrag(aura::Window* toplevel) {
         if (auto* window_holder = self->dragged_window_holder_.get()) {
           if (auto* toplevel = window_holder->toplevel_window()) {
             toplevel->ClearProperty(ash::kIsDraggingTabsKey);
-            toplevel->ClearProperty(ash::kTabDraggingSourceWindowKey);
           }
         }
         self->dragged_window_holder_.reset();
@@ -357,10 +357,6 @@ void ExtendedDragSource::OnDraggedWindowVisibilityChanging(bool visible) {
   aura::Window* toplevel = dragged_window_holder_->toplevel_window();
   DCHECK(toplevel);
   toplevel->SetProperty(ash::kIsDraggingTabsKey, true);
-  if (drag_source_window_ && drag_source_window_ != toplevel) {
-    toplevel->SetProperty(ash::kTabDraggingSourceWindowKey,
-                          drag_source_window_);
-  }
 }
 
 void ExtendedDragSource::OnDraggedWindowVisibilityChanged(bool visible) {
@@ -384,7 +380,7 @@ void ExtendedDragSource::OnDraggedWindowVisibilityChanged(bool visible) {
   auto toplevel_bounds =
       gfx::Rect({screen_location, toplevel->bounds().size()});
   auto display = display::Screen::GetScreen()->GetDisplayNearestWindow(
-      drag_source_window_ ? drag_source_window_ : toplevel);
+      drag_source_window_ ? drag_source_window_.get() : toplevel);
   toplevel->SetBoundsInScreen(toplevel_bounds, display);
 
   if (WMHelper::GetInstance()->InTabletMode()) {

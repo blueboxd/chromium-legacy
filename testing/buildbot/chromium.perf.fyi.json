@@ -4,7 +4,6 @@
   "android-cfi-builder-perf-fyi": {
     "additional_compile_targets": [
       "android_tools",
-      "cc_perftests",
       "chrome_public_apk",
       "chromium_builder_perf",
       "push_apps_to_background_apk",
@@ -118,7 +117,6 @@
   "android_arm64-cfi-builder-perf-fyi": {
     "additional_compile_targets": [
       "android_tools",
-      "cc_perftests",
       "chrome_public_apk",
       "chromium_builder_perf",
       "push_apps_to_background_apk",
@@ -207,7 +205,7 @@
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=update",
+          "--os-check=check",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/astro-release/smart_display_eng_arrested"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -260,7 +258,7 @@
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=update",
+          "--os-check=check",
           "--system-image-dir=workstation_eng.chromebook-x64"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -313,7 +311,7 @@
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=update",
+          "--os-check=check",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/astro-release/smart_display_eng_arrested"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -366,7 +364,7 @@
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=update",
+          "--os-check=check",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/nelson-release/smart_display_m3_eng_paused"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -419,7 +417,7 @@
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=update",
+          "--os-check=check",
           "--system-image-dir=workstation_eng.x64"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -472,7 +470,7 @@
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=update",
+          "--os-check=check",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/sherlock-release/smart_display_max_eng_arrested"
         ],
         "isolate_name": "performance_web_engine_test_suite",
@@ -525,7 +523,7 @@
           "--output-format=histograms",
           "--experimental-tbmv3-metrics",
           "-d",
-          "--os-check=update",
+          "--os-check=check",
           "--system-image-dir=../../third_party/fuchsia-sdk/images-internal/sherlock-release/smart_display_max_eng_arrested"
         ],
         "isolate_name": "performance_web_engine_test_suite",

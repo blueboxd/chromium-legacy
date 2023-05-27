@@ -23,6 +23,7 @@
 #include "ash/public/cpp/holding_space/mock_holding_space_client.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -43,6 +44,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "ash/wm/window_preview_view.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -412,8 +414,8 @@ class ScopedTransformRecordingLayerDelegate : public ui::LayerDelegate {
     max_translation_.SetToMax(end_translation_);
   }
 
-  ui::Layer* const layer_;
-  ui::LayerDelegate* const layer_delegate_;
+  const raw_ptr<ui::Layer, ExperimentalAsh> layer_;
+  const raw_ptr<ui::LayerDelegate, ExperimentalAsh> layer_delegate_;
 
   bool did_animate_ = false;
   gfx::Vector2dF start_scale_;
@@ -642,6 +644,40 @@ class HoldingSpaceTrayTest : public HoldingSpaceTrayTestBase {
 };
 
 // Tests -----------------------------------------------------------------------
+
+TEST_F(HoldingSpaceTrayTest, ShowTrayButtonWhenForced) {
+  // Case: Force show in shelf prior to session start.
+  auto force_show_in_shelf =
+      std::make_unique<HoldingSpaceController::ScopedForceShowInShelf>();
+  EXPECT_FALSE(test_api()->IsShowingInShelf());
+
+  // Case: Force show in shelf after session start with empty model.
+  StartSession(/*pre_mark_time_of_first_add=*/false);
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // Case: Force show in shelf with blocked user session.
+  auto* session_ctrlr = ash_test_helper()->test_session_controller_client();
+  session_ctrlr->SetSessionState(session_manager::SessionState::LOCKED);
+  EXPECT_FALSE(test_api()->IsShowingInShelf());
+
+  // Case: Force show in shelf with unblocked user session.
+  session_ctrlr->UnlockScreen();
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // Case: Force show in shelf with detached model.
+  auto account_id = Shell::Get()->session_controller()->GetActiveAccountId();
+  auto* controller = HoldingSpaceController::Get();
+  controller->RegisterClientAndModelForUser(account_id, client(), nullptr);
+  EXPECT_FALSE(test_api()->IsShowingInShelf());
+
+  // Case: Force show in shelf with attached model.
+  controller->RegisterClientAndModelForUser(account_id, client(), model());
+  EXPECT_TRUE(test_api()->IsShowingInShelf());
+
+  // Case: Stop forcing show in shelf with empty model.
+  force_show_in_shelf.reset();
+  EXPECT_FALSE(test_api()->IsShowingInShelf());
+}
 
 TEST_F(HoldingSpaceTrayTest, ShowTrayButtonOnFirstUse) {
   StartSession(/*pre_mark_time_of_first_add=*/false);
@@ -1672,7 +1708,7 @@ TEST_F(HoldingSpaceTrayTest, SelectionUi) {
   for (HoldingSpaceItemView* item_view : item_views) {
     EXPECT_TRUE(item_view->selected());
     expect_checkmark_visible(item_view, true);
-    expect_image_visible(item_view, HoldingSpaceItem::IsScreenCapture(
+    expect_image_visible(item_view, HoldingSpaceItem::IsScreenCaptureType(
                                         item_view->item()->type()));
   }
 
@@ -3926,7 +3962,7 @@ TEST_P(HoldingSpaceTrayPrimaryAndSecondaryActionsTest, HasExpectedActions) {
                                    HoldingSpaceProgress(0, 100));
 
   // In-progress download items typically support in-progress commands.
-  if (HoldingSpaceItem::IsDownload(item->type())) {
+  if (HoldingSpaceItem::IsDownloadType(item->type())) {
     EXPECT_TRUE(item->SetInProgressCommands(
         {CreateInProgressCommand(HoldingSpaceCommandId::kCancelItem,
                                  IDS_ASH_HOLDING_SPACE_CONTEXT_MENU_CANCEL),
@@ -3940,23 +3976,14 @@ TEST_P(HoldingSpaceTrayPrimaryAndSecondaryActionsTest, HasExpectedActions) {
 
   // Expect and cache a single holding space item view.
   std::vector<views::View*> item_views = test_api()->GetHoldingSpaceItemViews();
-  if (item_views.size() != 1u) {
-    // TODO(http://b/274484210): Update views for camera app types.
-    EXPECT_EQ(item_views.size(), 0u);
-    EXPECT_TRUE(item->type() == HoldingSpaceItem::Type::kCameraAppPhoto ||
-                item->type() == HoldingSpaceItem::Type::kCameraAppScanJpg ||
-                item->type() == HoldingSpaceItem::Type::kCameraAppScanPdf ||
-                item->type() == HoldingSpaceItem::Type::kCameraAppVideoGif ||
-                item->type() == HoldingSpaceItem::Type::kCameraAppVideoMp4);
-    return;
-  }
+  ASSERT_EQ(item_views.size(), 1u);
 
   // Initially a primary and secondary action should not be shown as the holding
   // space item is not being hovered over.
   EXPECT_FALSE(IsShowingPrimaryAction(item_views.front()));
   EXPECT_FALSE(IsShowingSecondaryAction(item_views.front()));
 
-  if (!HoldingSpaceItem::IsScreenCapture(item->type())) {
+  if (!HoldingSpaceItem::IsScreenCaptureType(item->type())) {
     // For non-screen capture items, the inner icon of the progress indicator
     // should be shown when the secondary action container is hidden.
     EXPECT_TRUE(IsProgressIndicatorInnerIconVisible(item_views.front()));
@@ -3975,11 +4002,11 @@ TEST_P(HoldingSpaceTrayPrimaryAndSecondaryActionsTest, HasExpectedActions) {
   // holding space items. In-progress items of other types do not currently
   // support primary and secondary actions.
   EXPECT_EQ(IsShowingPrimaryAction(item_views.front()),
-            HoldingSpaceItem::IsDownload(item->type()));
+            HoldingSpaceItem::IsDownloadType(item->type()));
   EXPECT_EQ(IsShowingSecondaryAction(item_views.front()),
-            HoldingSpaceItem::IsDownload(item->type()));
+            HoldingSpaceItem::IsDownloadType(item->type()));
 
-  if (!HoldingSpaceItem::IsScreenCapture(item->type())) {
+  if (!HoldingSpaceItem::IsScreenCaptureType(item->type())) {
     // For non-screen capture items, the inner icon of the progress indicator
     // should only be shown if the secondary action container is hidden.
     EXPECT_NE(IsProgressIndicatorInnerIconVisible(item_views.front()),
@@ -4006,7 +4033,7 @@ TEST_P(HoldingSpaceTrayPrimaryAndSecondaryActionsTest, HasExpectedActions) {
       case HoldingSpaceCommandId::kCancelItem:
       case HoldingSpaceCommandId::kPauseItem:
         expect_context_menu_command =
-            HoldingSpaceItem::IsDownload(item->type());
+            HoldingSpaceItem::IsDownloadType(item->type());
         break;
       default:
         // No action necessary.
@@ -4154,7 +4181,7 @@ TEST_P(HoldingSpaceTrayVisibilityTest, TrayShowsForCorrectItemTypes) {
   } else {
     // A suggestion alone should not show the tray.
     EXPECT_NE(test_api()->IsShowingInShelf(),
-              HoldingSpaceItem::IsSuggestion(GetType()));
+              HoldingSpaceItem::IsSuggestionType(GetType()));
   }
 }
 

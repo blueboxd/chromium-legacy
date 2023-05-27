@@ -206,11 +206,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // Check that JS storage APIs can be accessed successfully.
   EXPECT_TRUE(
       content::ExecuteScript(frame_host, "localStorage['foo'] = 'bar'"));
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      frame_host, "window.domAutomationController.send(localStorage['foo']);",
-      &result));
-  EXPECT_EQ(result, "bar");
+  EXPECT_EQ(content::EvalJs(frame_host, "localStorage['foo'];"), "bar");
   bool is_object_created = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       frame_host,
@@ -734,11 +730,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_NE(popup, web_contents);
 
   // Check that the window handle returned from window.open() was valid.
-  bool popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      web_contents, "window.domAutomationController.send(!!window.w)",
-      &popup_handle_is_valid));
-  EXPECT_TRUE(popup_handle_is_valid);
+  EXPECT_EQ(true, content::EvalJs(web_contents, "!!window.w",
+                                  content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 // Check that when a frame sends two cross-process postMessages while having a
@@ -786,11 +779,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Ensure that only one popup can be opened.  The second window.open() call
   // should've failed and stored null into window.w.
-  bool popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      child, "window.domAutomationController.send(!!window.w)",
-      &popup_handle_is_valid));
-  EXPECT_FALSE(popup_handle_is_valid);
+  EXPECT_EQ(false, content::EvalJs(child, "!!window.w",
+                                   content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 // Check that when a frame sends two postMessages to iframes on different sites
@@ -843,14 +833,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_NE(popup, web_contents);
 
   // Ensure that only one renderer process has a valid popup handle.
-  bool root_frame_handle_is_valid = false;
-  bool frame_b_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      web_contents, "window.domAutomationController.send(!!window.w)",
-      &root_frame_handle_is_valid));
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      frame_b, "window.domAutomationController.send(!!window.w)",
-      &frame_b_handle_is_valid));
+  bool root_frame_handle_is_valid =
+      content::EvalJs(web_contents, "!!window.w",
+                      content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+          .ExtractBool();
+  bool frame_b_handle_is_valid =
+      content::EvalJs(frame_b, "!!window.w",
+                      content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+          .ExtractBool();
   EXPECT_TRUE(root_frame_handle_is_valid != frame_b_handle_is_valid)
       << "root_frame_handle_is_valid = " << root_frame_handle_is_valid
       << ", frame_b_handle_is_valid = " << frame_b_handle_is_valid;
@@ -914,11 +904,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Ensure that only one popup can be opened.  The second window.open() call at
   // top frame should fail, storing null into window.w.
-  bool popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      web_contents, "window.domAutomationController.send(!!window.w)",
-      &popup_handle_is_valid));
-  EXPECT_FALSE(popup_handle_is_valid);
+  EXPECT_EQ(false, content::EvalJs(web_contents, "!!window.w",
+                                   content::EXECUTE_SCRIPT_NO_USER_GESTURE));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
@@ -967,14 +954,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Ensure that only one popup was opened, from either the parent or the child
   // frame, but not both.
-  bool parent_popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      web_contents, "window.domAutomationController.send(!!window.w)",
-      &parent_popup_handle_is_valid));
-  bool child_popup_handle_is_valid = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      child, "window.domAutomationController.send(!!window.w)",
-      &child_popup_handle_is_valid));
+  bool parent_popup_handle_is_valid =
+      content::EvalJs(web_contents, "!!window.w",
+                      content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+          .ExtractBool();
+  bool child_popup_handle_is_valid =
+      content::EvalJs(child, "!!window.w",
+                      content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+          .ExtractBool();
   EXPECT_NE(parent_popup_handle_is_valid, child_popup_handle_is_valid)
       << " parent_popup_handle_is_valid=" << parent_popup_handle_is_valid
       << " child_popup_handle_is_valid=" << child_popup_handle_is_valid;
@@ -1026,18 +1013,11 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_NE(popup, web_contents);
 
   // Confirm that only the root_frame opened the popup.
-  bool root_frame_popup_opened = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      web_contents, "window.domAutomationController.send(!!window.w);",
-      &root_frame_popup_opened));
-  EXPECT_TRUE(root_frame_popup_opened);
+  EXPECT_EQ(true, content::EvalJs(web_contents, "!!window.w;",
+                                  content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
-  bool frame_c_popup_opened = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      frame_c, "window.domAutomationController.send(!!window.w);",
-      &frame_c_popup_opened));
-
-  EXPECT_FALSE(frame_c_popup_opened);
+  EXPECT_EQ(false, content::EvalJs(frame_c, "!!window.w",
+                                   content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 // Test that when an activation is consumed, no frames in the frame tree can
@@ -1090,23 +1070,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_NE(popup, web_contents);
 
   // Confirm that only frame_b opened the popup.
-  bool root_frame_popup_opened = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      web_contents, "window.domAutomationController.send(!!window.w);",
-      &root_frame_popup_opened));
-  EXPECT_FALSE(root_frame_popup_opened);
+  EXPECT_EQ(false, content::EvalJs(web_contents, "!!window.w;",
+                                   content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
-  bool frame_b_popup_opened = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      frame_b, "window.domAutomationController.send(!!window.w);",
-      &frame_b_popup_opened));
-  EXPECT_TRUE(frame_b_popup_opened);
+  EXPECT_EQ(true, content::EvalJs(frame_b, "!!window.w;",
+                                  content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 
-  bool frame_c_popup_opened = false;
-  EXPECT_TRUE(ExecuteScriptWithoutUserGestureAndExtractBool(
-      frame_c, "window.domAutomationController.send(!!window.w);",
-      &frame_c_popup_opened));
-  EXPECT_FALSE(frame_c_popup_opened);
+  EXPECT_EQ(false, content::EvalJs(frame_c, "!!window.w;",
+                                   content::EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
 // Test that opening a window with `noopener` consumes user activation.

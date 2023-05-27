@@ -1715,6 +1715,24 @@ GLES2ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
       dst_height, dst_color_type, dst_alpha_type, dst_row_bytes, src_x, src_y,
       plane_index, pixels);
 }
+void GL_APIENTRY GLES2WritePixelsINTERNAL(const GLbyte* mailbox,
+                                          const void* src_color_space,
+                                          GLuint src_color_space_size,
+                                          GLuint src_size,
+                                          GLuint src_width,
+                                          GLuint src_height,
+                                          GLuint src_sk_color_type,
+                                          GLuint src_sk_alpha_type,
+                                          GLuint src_row_bytes,
+                                          GLint x_offset,
+                                          GLint y_offset,
+                                          GLint plane_index,
+                                          const void* src_pixels) {
+  gles2::GetGLContext()->WritePixelsINTERNAL(
+      mailbox, src_color_space, src_color_space_size, src_size, src_width,
+      src_height, src_sk_color_type, src_sk_alpha_type, src_row_bytes, x_offset,
+      y_offset, plane_index, src_pixels);
+}
 void GL_APIENTRY GLES2EnableiOES(GLenum target, GLuint index) {
   gles2::GetGLContext()->EnableiOES(target, index);
 }
@@ -1789,6 +1807,12 @@ void GL_APIENTRY GLES2EndPixelLocalStorageANGLE(GLsizei count,
 }
 void GL_APIENTRY GLES2PixelLocalStorageBarrierANGLE() {
   gles2::GetGLContext()->PixelLocalStorageBarrierANGLE();
+}
+void GL_APIENTRY GLES2FramebufferPixelLocalStorageInterruptANGLE() {
+  gles2::GetGLContext()->FramebufferPixelLocalStorageInterruptANGLE();
+}
+void GL_APIENTRY GLES2FramebufferPixelLocalStorageRestoreANGLE() {
+  gles2::GetGLContext()->FramebufferPixelLocalStorageRestoreANGLE();
 }
 void GL_APIENTRY
 GLES2GetFramebufferPixelLocalStorageParameterfvANGLE(GLint plane,
@@ -3169,6 +3193,10 @@ extern const NameToFunc g_gles2_function_table[] = {
             glReadbackARGBImagePixelsINTERNAL),
     },
     {
+        "glWritePixelsINTERNAL",
+        reinterpret_cast<GLES2FunctionPointer>(glWritePixelsINTERNAL),
+    },
+    {
         "glEnableiOES",
         reinterpret_cast<GLES2FunctionPointer>(glEnableiOES),
     },
@@ -3240,6 +3268,16 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glPixelLocalStorageBarrierANGLE",
         reinterpret_cast<GLES2FunctionPointer>(glPixelLocalStorageBarrierANGLE),
+    },
+    {
+        "glFramebufferPixelLocalStorageInterruptANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glFramebufferPixelLocalStorageInterruptANGLE),
+    },
+    {
+        "glFramebufferPixelLocalStorageRestoreANGLE",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glFramebufferPixelLocalStorageRestoreANGLE),
     },
     {
         "glGetFramebufferPixelLocalStorageParameterfvANGLE",

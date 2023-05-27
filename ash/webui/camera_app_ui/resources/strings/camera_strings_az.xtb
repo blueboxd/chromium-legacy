@@ -27,9 +27,7 @@
 <translation id="199526504800285197">Qeydə alma dayandırıldı</translation>
 <translation id="1995951722691075581">Cihaz yaddaşında yer az olduğuna görə qeydə alma dayandırıldı. Daha çox video qeydə almaq üçün cihazınızda yer boşaltmalısınız.</translation>
 <translation id="2036868001356139588">Taymer müddəti</translation>
-<translation id="2050339315714019657">Portret</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> aktivdir</translation>
-<translation id="2128052519899549250">Zaman axını videosu çəkin</translation>
 <translation id="2134029355740465625">Video ayarları</translation>
 <translation id="2144806332417375165">Fərdi video parametrləri</translation>
 <translation id="2175927920773552910">QR Kod</translation>
@@ -82,6 +80,7 @@
 <translation id="4864143361253542638">Skan edilmiş səhifə siyahısı</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="491895758387112773">Çox-yayımlı video çəkilişi</translation>
+<translation id="495170559598752135">Fəaliyyətlər</translation>
 <translation id="4984613436295737187">Quad HD (1440p)</translation>
 <translation id="5034763830503483128">Fotonun tərəflər nisbəti</translation>
 <translation id="5057360777601936059">Kamera hazırda əlçatan deyil.
@@ -92,7 +91,6 @@
 <translation id="5317780077021120954">Yadda saxlayın</translation>
 <translation id="5320594929574852403">Sol tərəfə daşınır</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
-<translation id="5577251651370645658">Zaman axını</translation>
 <translation id="5662366948659129155">Səhifə <ph name="COUNT" /> skanlanır</translation>
 <translation id="5671277269877808209">Kvadrat</translation>
 <translation id="5746169159649715125">PDF olaraq saxlayın</translation>
@@ -122,6 +120,7 @@ Rəyiniz şəkil və ya video keyfiyyəti ilə bağlıdırsa, nümunə foto və 
 <translation id="6888362557094394345">Aşağı tərəfə daşınır</translation>
 <translation id="695140971690006676">Hamısını sıfırlayın</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965830616442491568">Portret</translation>
 <translation id="698156982839284926">3 saniyə</translation>
 <translation id="7134221860976209830">10 saniyəlik taymer</translation>
 <translation id="7191890674911603392">Qeydəalma növü</translation>
@@ -137,6 +136,7 @@ Rəyiniz şəkil və ya video keyfiyyəti ilə bağlıdırsa, nümunə foto və 
 <translation id="7658239707568436148">Ləğv edin</translation>
 <translation id="7670511624014457267">60 FPS</translation>
 <translation id="7671804233658741790">Sənədin aşağı sağ küncü</translation>
+<translation id="7684446460490665873">Zaman axını videosu çəkin</translation>
 <translation id="7692090236657809299">Kənarları yığma/əymə/miqyası dəyişmə seçimlərini aktiv edin</translation>
 <translation id="7726641833034062494">Normal video çəkin</translation>
 <translation id="7748344063862150053">Sənədin yuxarı sağ küncü</translation>
@@ -162,6 +162,7 @@ Rəyiniz şəkil və ya video keyfiyyəti ilə bağlıdırsa, nümunə foto və 
 <translation id="9045010116236796332">Sənədin bütün kənarlarını çərçivənin daxilinə yerləşdirin</translation>
 <translation id="9045155556724273246">10 saniyə</translation>
 <translation id="906331135292332864">Şəkil emal edilir...</translation>
+<translation id="9161584225258678723">Zaman Axını</translation>
 <translation id="922762992951083513">Əksetmə aktivdir</translation>
 <translation id="945522503751344254">Geri əlaqə göndərin</translation>
 </translationbundle>

@@ -11,20 +11,22 @@
 
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "base/uuid.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/features.h"
@@ -109,6 +111,24 @@ void AdaptClientTagForFullUpdateData(ModelType model_type,
                                    data->specifics.autofill_offer()));
   } else {
     NOTREACHED();
+  }
+}
+
+void AdaptWebAuthnClientTagHash(syncer::EntityData* data) {
+  // Google Play Services may create entities where the client_tag_hash doesn't
+  // conform to the form expected by Chromium. These values are the hex-encoded,
+  // 16-byte random `sync_id` value, and will therefore always be 32 bytes long.
+  // Valid ClientTagHash values are Base64(SHA1(protobuf_prefix + client_tag))
+  // and therefore always 28 bytes.
+  const std::string& client_tag_hash = data->client_tag_hash.value();
+  if (client_tag_hash.size() == 32 &&
+      // base::HexEncode() returns upper case, `client_tag_hash` is lower case.
+      base::ToUpperASCII(client_tag_hash) ==
+          base::HexEncode(base::as_bytes(base::make_span(
+              data->specifics.webauthn_credential().sync_id())))) {
+    data->client_tag_hash = ClientTagHash::FromUnhashed(
+        ModelType::WEBAUTHN_CREDENTIAL,
+        data->specifics.webauthn_credential().sync_id());
   }
 }
 
@@ -583,6 +603,8 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   } else if (model_type == AUTOFILL_WALLET_DATA ||
              model_type == AUTOFILL_WALLET_OFFER) {
     AdaptClientTagForFullUpdateData(model_type, &data);
+  } else if (model_type == WEBAUTHN_CREDENTIAL) {
+    AdaptWebAuthnClientTagHash(&data);
   }
 
   response_data->entity = std::move(data);
@@ -970,7 +992,9 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
     // without deduplication, which is the case for all datatypes except
     // bookmarks, as well as bookmarks created before 2015, when the item ID was
     // not globally unique across clients.
-    if (!base::IsValidGUID(candidate.entity.originator_client_item_id)) {
+    if (!base::Uuid::ParseCaseInsensitive(
+             candidate.entity.originator_client_item_id)
+             .is_valid()) {
       pending_updates_.push_back(std::move(candidate));
       continue;
     }

@@ -29,7 +29,6 @@ import static org.chromium.components.browser_ui.widget.RecyclerViewTestUtils.wa
 import android.app.Activity;
 import android.content.Context;
 import android.provider.Settings;
-import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -38,6 +37,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.NoMatchingRootException;
 import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.UiController;
@@ -385,15 +385,15 @@ public class TabUiTestHelper {
      */
     public static int getTabSwitcherParentId(Context context) {
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)) {
-            return R.id.grid_tab_switcher_view_holder;
+            return R.id.tab_switcher_view_holder;
         }
 
         if (getIsStartSurfaceEnabledFromUIThread(context)
                 && !getIsStartSurfaceRefactorEnabledFromUIThread(context)) {
-            return org.chromium.chrome.R.id.tasks_surface_body;
+            return R.id.tasks_surface_body;
         }
 
-        return org.chromium.chrome.R.id.compositor_view_holder;
+        return R.id.compositor_view_holder;
     }
 
     private static boolean getIsStartSurfaceEnabledFromUIThread(Context context) {

@@ -24,7 +24,6 @@ import jni_generator
 import jni_registration_generator
 import zipfile
 from jni_generator import CalledByNative
-from jni_generator import IsMainDexJavaClass
 from jni_generator import NativeMethod
 from jni_generator import Param
 from jni_generator import ProxyHelpers
@@ -64,6 +63,7 @@ class JniGeneratorOptions(object):
     self.unchecked_exceptions = False
     self.split_name = None
     self.include_test_only = True
+    self.package_prefix = None
 
 
 class JniRegistrationGeneratorOptions(object):
@@ -80,6 +80,7 @@ class JniRegistrationGeneratorOptions(object):
     self.include_test_only = False
     self.header_path = None
     self.module_name = ''
+    self.package_prefix = None
 
 
 class BaseTest(unittest.TestCase):
@@ -106,9 +107,8 @@ class BaseTest(unittest.TestCase):
           signature for signature in proxy_signatures_list)
 
       proxy_native_array_list = sorted(
-          set(combined_dict['PROXY_NATIVE_METHOD_ARRAY_MAIN_DEX'].split(
-              '},\n')))
-      combined_dict['PROXY_NATIVE_METHOD_ARRAY_MAIN_DEX'] = '},\n'.join(
+          set(combined_dict['PROXY_NATIVE_METHOD_ARRAY'].split('},\n')))
+      combined_dict['PROXY_NATIVE_METHOD_ARRAY'] = '},\n'.join(
           p for p in proxy_native_array_list if p != '') + '}'
 
       signature_to_cases = collections.defaultdict(list)
@@ -117,7 +117,7 @@ class BaseTest(unittest.TestCase):
           signature_to_cases[signature].extend(cases)
       combined_dict[
           'FORWARDING_CALLS'] = jni_registration_generator._AddForwardingCalls(
-              signature_to_cases, '')
+              signature_to_cases, '', '')
 
     return combined_dict
 
@@ -432,8 +432,7 @@ class TestGenerator(BaseTest):
     h2 = jni_registration_generator.DictionaryGenerator(JniGeneratorOptions(),
                                                         '', '',
                                                         'org/chromium/TestJni',
-                                                        natives, jni_params,
-                                                        True)
+                                                        natives, jni_params)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
     reg_options = JniRegistrationGeneratorOptions()
@@ -533,8 +532,7 @@ class TestGenerator(BaseTest):
     h2 = jni_registration_generator.DictionaryGenerator(JniGeneratorOptions(),
                                                         '', '',
                                                         'org/chromium/TestJni',
-                                                        natives, jni_params,
-                                                        True)
+                                                        natives, jni_params)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
     reg_options = JniRegistrationGeneratorOptions()
@@ -1186,50 +1184,6 @@ class Foo {
                                              test_options)
     self.AssertGoldenTextEquals(h.GetContent())
 
-  def testMainDexAnnotation(self):
-    mainDexEntries = [
-        '@MainDex public class Test {',
-        '@MainDex public class Test{',
-        """@MainDex
-         public class Test {
-      """,
-        """@MainDex public class Test
-         {
-      """,
-        '@MainDex /* This class is a test */ public class Test {',
-        '@MainDex public class Test implements java.io.Serializable {',
-        '@MainDex public class Test implements java.io.Serializable, Bidule {',
-        '@MainDex public class Test extends BaseTest {',
-        """@MainDex
-         public class Test extends BaseTest implements Bidule {
-      """,
-        """@MainDex
-         public class Test extends BaseTest implements Bidule, Machin, Chose {
-      """,
-        """@MainDex
-         public class Test implements Testable<java.io.Serializable> {
-      """,
-        '@MainDex public class Test implements Testable<java.io.Serializable> '
-        ' {',
-        '@a.B @MainDex @C public class Test extends Testable<Serializable> {',
-        """public class Test extends Testable<java.io.Serializable> {
-         @MainDex void func() {}
-      """,
-    ]
-    for entry in mainDexEntries:
-      self.assertEqual(True, IsMainDexJavaClass(entry), entry)
-
-  def testNoMainDexAnnotation(self):
-    noMainDexEntries = [
-        'public class Test {', '@NotMainDex public class Test {',
-        '// @MainDex public class Test {', '/* @MainDex */ public class Test {',
-        'public class Test implements java.io.Serializable {',
-        '@MainDexNot public class Test {',
-        'public class Test extends BaseTest {'
-    ]
-    for entry in noMainDexEntries:
-      self.assertEqual(False, IsMainDexJavaClass(entry))
-
   def testNativeExportsOnlyOption(self):
     test_data = """
     package org.chromium.example.jni_generator;
@@ -1522,79 +1476,6 @@ class ProxyTestGenerator(BaseTest):
 
     self.AssertListEquals(_RemoveHashedNames(natives), [])
 
-  def testProxyNativesMainDex(self):
-    test_data = """
-    @MainDex
-    class Foo() {
-      @NativeMethods
-      interface Natives {
-        void thisismaindex();
-      }
-      void dontmatchme();
-      public static void metoo();
-      public static native void this_is_a_non_proxy_native();
-    }
-    """
-
-    non_main_dex_test_data = """
-    class Bar() {
-      @NativeMethods
-      interface Natives {
-        void foo();
-        void bar();
-      }
-    }
-    """
-    qualified_clazz = 'test/foo/Foo'
-    options = JniRegistrationGeneratorOptions()
-    options.manual_jni_registration = True
-
-    natives, _ = jni_generator.ProxyHelpers.ExtractStaticProxyNatives(
-        qualified_clazz, test_data, 'long')
-
-    golden_natives = [
-        NativeMethod(
-            return_type='void',
-            static=True,
-            name='thisismaindex',
-            params=[],
-            java_class_name=None,
-            is_proxy=True,
-            proxy_name='test_foo_Foo_thisismaindex'),
-    ]
-
-    self.AssertListEquals(_RemoveHashedNames(natives), golden_natives)
-
-    jni_params = jni_generator.JniParams(qualified_clazz)
-    main_dex_header = jni_registration_generator.DictionaryGenerator(
-        options, '', '', qualified_clazz, natives, jni_params,
-        main_dex=True).Generate()
-    content = TestGenerator._MergeRegistrationForTests([main_dex_header])
-
-    self.AssertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(options, '', content))
-
-    other_qualified_clazz = 'test/foo/Bar'
-    other_natives, _ = jni_generator.ProxyHelpers.ExtractStaticProxyNatives(
-        other_qualified_clazz, non_main_dex_test_data, 'long')
-
-    jni_params = jni_generator.JniParams(other_qualified_clazz)
-    non_main_dex_header = jni_registration_generator.DictionaryGenerator(
-        options,
-        '',
-        '',
-        other_qualified_clazz,
-        other_natives,
-        jni_params,
-        main_dex=False).Generate()
-
-    content = TestGenerator._MergeRegistrationForTests([main_dex_header] +
-                                                       [non_main_dex_header])
-
-    self.AssertGoldenTextEquals(
-        jni_registration_generator.CreateFromDict(options, '', content),
-        'AndNonMainDex')
-
   def testProxyNatives(self):
     test_data = """
     class SampleProxyJni {
@@ -1683,8 +1564,7 @@ class ProxyTestGenerator(BaseTest):
     self.AssertGoldenTextEquals(h1.GetContent())
     h2 = jni_registration_generator.DictionaryGenerator(reg_options, '', '',
                                                         qualified_clazz,
-                                                        natives, jni_params,
-                                                        False)
+                                                        natives, jni_params)
     content = TestGenerator._MergeRegistrationForTests([h2.Generate()])
 
 
@@ -1796,6 +1676,63 @@ class ProxyTestGenerator(BaseTest):
             ptr_type='long')
     ]
     self.AssertListEquals(golden_natives, _RemoveHashedNames(natives))
+
+
+@unittest.skipIf(os.name == 'nt', 'Not intended to work on Windows')
+class PackagePrefixTestGenerator(BaseTest):
+  def testJniSelfDocumentingExampleWithPackagePrefix(self):
+    options = JniGeneratorOptions()
+    options.package_prefix = 'this.is.a.package.prefix'
+    generated_text = self._CreateJniHeaderFromFile(
+        os.path.join(_JAVA_SRC_DIR, 'SampleForTests.java'),
+        'org/chromium/example/jni_generator/SampleForTests', options)
+    self.AssertGoldenTextEquals(
+        generated_text,
+        golden_file='SampleForTestsWithPackagePrefix_jni.golden')
+
+  def testProxyPackagePrefixWithManualRegistration(self):
+    input_java_files = ['SampleForAnnotationProcessor.java']
+    options = JniRegistrationGeneratorOptions()
+    options.package_prefix = 'this.is.a.package.prefix'
+    options.manual_jni_registration = True
+    name_to_goldens = {
+        'this/is/a/package/prefix/org/chromium/base/natives/GEN_JNI.java':
+        'testProxyPackagePrefixWithManualRegistration.2.golden',
+    }
+    self._TestEndToEndRegistration(
+        input_java_files, options, name_to_goldens,
+        'testProxyPackagePrefixWithManualRegistrationHeader.golden')
+
+  def testProxyPackagePrefixWithProxyHash(self):
+    input_java_files = ['SampleForAnnotationProcessor.java']
+    options = JniRegistrationGeneratorOptions()
+    options.package_prefix = 'this.is.a.package.prefix'
+    options.use_proxy_hash = True
+    name_to_goldens = {
+        'this/is/a/package/prefix/org/chromium/base/natives/GEN_JNI.java':
+        'testProxyPackagePrefixWithProxyHash.2.golden',
+        'this/is/a/package/prefix/J/N.java':
+        'testProxyPackagePrefixWithProxyHash.golden',
+    }
+    self._TestEndToEndRegistration(
+        input_java_files, options, name_to_goldens,
+        'testProxyPackagePrefixWithProxyHashHeader.golden')
+
+  def testProxyPackagePrefixWithManualRegistrationWithProxyHash(self):
+    input_java_files = ['SampleForAnnotationProcessor.java']
+    options = JniRegistrationGeneratorOptions()
+    options.package_prefix = 'this.is.a.package.prefix'
+    options.manual_jni_registration = True
+    options.use_proxy_hash = True
+    name_to_goldens = {
+        'this/is/a/package/prefix/org/chromium/base/natives/GEN_JNI.java':
+        'testProxyPackagePrefixWithManualRegistrationProxyHash.2.golden',
+        'this/is/a/package/prefix/J/N.java':
+        'testProxyPackagePrefixWithManualRegistrationProxyHash.golden',
+    }
+    self._TestEndToEndRegistration(
+        input_java_files, options, name_to_goldens,
+        'testProxyPackagePrefixWithManualRegistrationProxyHashHeader.golden')
 
 
 @unittest.skipIf(os.name == 'nt', 'Not intended to work on Windows')

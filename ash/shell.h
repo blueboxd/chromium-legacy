@@ -20,6 +20,7 @@
 #include "ash/public/cpp/system_sounds_delegate.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation_traits.h"
@@ -112,10 +113,12 @@ class BackGestureEventHandler;
 class BacklightsForcedOffSetter;
 class BluetoothDeviceStatusUiHandler;
 class BluetoothNotificationController;
+class BluetoothStateCache;
 class BrightnessControlDelegate;
 class CalendarController;
 class CameraEffectsController;
 class CaptureModeController;
+class ColorPaletteController;
 class ControlVHistogramRecorder;
 class CrosDisplayConfig;
 class DarkLightModeControllerImpl;
@@ -151,6 +154,7 @@ class ColorEnhancementController;
 class HoldingSpaceController;
 class HumanPresenceOrientationController;
 class ImeControllerImpl;
+class InputDeviceKeyAliasManager;
 class InputDeviceSettingsControllerImpl;
 class InputDeviceSettingsDispatcher;
 class InputDeviceTracker;
@@ -188,7 +192,6 @@ class PciePeripheralNotificationController;
 class UsbPeripheralNotificationController;
 class PeripheralBatteryListener;
 class PeripheralBatteryNotifier;
-class PersistentDesksBarController;
 class PersistentWindowController;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
@@ -421,6 +424,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   BacklightsForcedOffSetter* backlights_forced_off_setter() {
     return backlights_forced_off_setter_.get();
   }
+  BluetoothStateCache* bluetooth_state_cache() {
+    return bluetooth_state_cache_.get();
+  }
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
   }
@@ -429,6 +435,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   CameraEffectsController* camera_effects_controller() {
     return camera_effects_controller_.get();
+  }
+  ColorPaletteController* color_palette_controller() {
+    return color_palette_controller_.get();
   }
   CrosDisplayConfig* cros_display_config() {
     return cros_display_config_.get();
@@ -441,9 +450,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return dark_light_mode_controller_.get();
   }
   DesksController* desks_controller() { return desks_controller_.get(); }
-  PersistentDesksBarController* persistent_desks_bar_controller() {
-    return persistent_desks_bar_controller_.get();
-  }
   SavedDeskController* saved_desk_controller() {
     return saved_desk_controller_.get();
   }
@@ -492,6 +498,11 @@ class ASH_EXPORT Shell : public SessionObserver,
   EventRewriterControllerImpl* event_rewriter_controller() {
     return event_rewriter_controller_.get();
   }
+
+  InputDeviceKeyAliasManager* input_device_key_alias_manager() {
+    return input_device_key_alias_manager_.get();
+  }
+
   InputDeviceSettingsControllerImpl* input_device_settings_controller() {
     return input_device_settings_controller_.get();
   }
@@ -888,6 +899,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<InputDeviceTracker> input_device_tracker_;
   std::unique_ptr<KeyboardModifierMetricsRecorder>
       keyboard_modifier_metrics_recorder_;
+  std::unique_ptr<InputDeviceKeyAliasManager> input_device_key_alias_manager_;
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
 
   std::unique_ptr<AshAcceleratorConfiguration> ash_accelerator_configuration_;
@@ -912,6 +924,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CalendarController> calendar_controller_;
   std::unique_ptr<CameraEffectsController> camera_effects_controller_;
+  std::unique_ptr<ColorPaletteController> color_palette_controller_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   std::unique_ptr<curtain::SecurityCurtainController>
       security_curtain_controller_;
@@ -976,8 +989,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<PrivacyHubController> privacy_hub_controller_;
   std::unique_ptr<UsbPeripheralNotificationController>
       usb_peripheral_notification_controller_;
-  std::unique_ptr<PersistentDesksBarController>
-      persistent_desks_bar_controller_;
   std::unique_ptr<RgbKeyboardManager> rgb_keyboard_manager_;
   std::unique_ptr<RasterScaleController> raster_scale_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
@@ -1011,11 +1022,11 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<WindowRestoreController> window_restore_controller_;
   std::unique_ptr<OverviewController> overview_controller_;
   // Owned by |focus_controller_|.
-  AshFocusRules* focus_rules_ = nullptr;
+  raw_ptr<AshFocusRules, ExperimentalAsh> focus_rules_ = nullptr;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
-  PrefService* local_state_ = nullptr;
+  raw_ptr<PrefService, ExperimentalAsh> local_state_ = nullptr;
   std::unique_ptr<views::corewm::TooltipController> tooltip_controller_;
   std::unique_ptr<PowerButtonController> power_button_controller_;
   std::unique_ptr<LockStateController> lock_state_controller_;
@@ -1071,6 +1082,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       resolution_notification_controller_;
   std::unique_ptr<BluetoothNotificationController>
       bluetooth_notification_controller_;
+  std::unique_ptr<BluetoothStateCache> bluetooth_state_cache_;
   std::unique_ptr<BluetoothDeviceStatusUiHandler>
       bluetooth_device_status_ui_handler_;
   std::unique_ptr<KeyboardControllerImpl> keyboard_controller_;
@@ -1111,7 +1123,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.
-  NativeCursorManagerAsh* native_cursor_manager_;
+  raw_ptr<NativeCursorManagerAsh, DanglingUntriaged | ExperimentalAsh>
+      native_cursor_manager_;
 
   // Cursor may be hidden on certain key events in Chrome OS, whereas we never
   // hide the cursor on Windows.

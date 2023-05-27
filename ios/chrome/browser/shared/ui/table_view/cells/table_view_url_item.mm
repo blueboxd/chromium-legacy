@@ -179,6 +179,8 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
     _thirdRowLabel.adjustsFontForContentSizeCategory = YES;
     _thirdRowLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+    _thirdRowLabel.numberOfLines = 0;
+    _thirdRowLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _thirdRowLabel.hidden = YES;
     _metadataLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
@@ -293,6 +295,10 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
   return self.faviconContainerView.faviconView;
 }
 
+- (void)setFaviconContainerBackgroundColor:(UIColor*)backgroundColor {
+  [self.faviconContainerView setFaviconBackgroundColor:backgroundColor];
+}
+
 // Hide or show the metadata and URL labels depending on the presence of text.
 // Align the horizontal stack properly depending on if the metadata label will
 // be present or not.
@@ -329,6 +335,7 @@ const char kDefaultSupplementalURLTextDelimiter[] = "•";
 - (void)prepareForReuse {
   [super prepareForReuse];
   [self.faviconView configureWithAttributes:nil];
+  [self setFaviconContainerBackgroundColor:nil];
   self.faviconBadgeView.image = nil;
   self.metadataLabel.hidden = YES;
   self.metadataImage.image = nil;

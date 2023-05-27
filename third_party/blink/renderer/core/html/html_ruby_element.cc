@@ -6,23 +6,22 @@
 
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_ruby.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_ruby_as_block.h"
 
 namespace blink {
 
 HTMLRubyElement::HTMLRubyElement(Document& document)
     : HTMLElement(html_names::kRubyTag, document) {}
 
-LayoutObject* HTMLRubyElement::CreateLayoutObject(const ComputedStyle& style,
-                                                  LegacyLayout legacy) {
+LayoutObject* HTMLRubyElement::CreateLayoutObject(const ComputedStyle& style) {
   if (style.Display() == EDisplay::kInline)
     return MakeGarbageCollected<LayoutRubyAsInline>(this);
   if (style.Display() == EDisplay::kBlock) {
     UseCounter::Count(GetDocument(), WebFeature::kRubyElementWithDisplayBlock);
-    return LayoutObjectFactory::CreateRubyAsBlock(this, style, legacy);
+    return MakeGarbageCollected<LayoutNGRubyAsBlock>(this);
   }
-  return LayoutObject::CreateObject(this, style, legacy);
+  return LayoutObject::CreateObject(this, style);
 }
 
 }  // namespace blink

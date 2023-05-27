@@ -7,26 +7,28 @@
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/helpers.js"></script>
 <script>
-
 const aggregatable_dedup_promise_test = (testCase) => {
   attribution_reporting_promise_test(async t => {
-    const host = `https://{{host}}`;
+    const host = 'https://{{host}}';
 
-    await registerAttributionSrc(t, {
-      source: {
-        destination: host,
-        source_event_id: '123',
-        aggregation_keys: {
-          campaignCounts: '0x159',
-        },
-        debug_key: '456',
-        filter_data: {
-          'x': ['y', 'z'],
-        }
+    const source = {
+      source_event_id: generateSourceEventId(),
+      destination: host,
+      aggregation_keys: {
+        campaignCounts: '0x159',
       },
+      debug_key: '456',
+      debug_reporting: true,
+      filter_data: {
+        'x': ['y', 'z'],
+      }
+    };
+    await registerAttributionSrc({
+      source,
       method: 'open',
       cookie: attributionDebugCookie,
     });
+    await waitForSourceToBeRegistered(source.source_event_id);
 
     const trigger = {
       aggregatable_trigger_data: [{
@@ -42,7 +44,7 @@ const aggregatable_dedup_promise_test = (testCase) => {
       debug_reporting: true,
     };
 
-    await registerAttributionSrc(t, {
+    await registerAttributionSrc({
       trigger,
     });
 
@@ -56,7 +58,7 @@ const aggregatable_dedup_promise_test = (testCase) => {
     trigger.aggregatable_deduplication_keys =
         testCase.aggregatable_deduplication_keys;
 
-    await registerAttributionSrc(t, {
+    await registerAttributionSrc({
       trigger,
       cookie: attributionDebugCookie,
     });
@@ -70,7 +72,7 @@ const aggregatable_dedup_promise_test = (testCase) => {
       assert_own_property(debugReport[0], 'body');
       const debugReportBody = debugReport[0].body;
       assert_equals(debugReportBody.attribution_destination, host);
-      assert_equals(debugReportBody.source_event_id, '123');
+      assert_equals(debugReportBody.source_event_id, source.source_event_id);
       assert_equals(debugReportBody.source_site, host);
       assert_equals(debugReportBody.source_debug_key, '456');
       assert_not_own_property(debugReportBody, 'trigger_debug_key');

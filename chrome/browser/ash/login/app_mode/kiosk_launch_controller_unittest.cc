@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_switches.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -18,7 +19,7 @@
 #include "chrome/browser/ash/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_types.h"
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
-#include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
+#include "chrome/browser/ash/login/app_mode/test/kiosk_test_helpers.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -87,7 +88,7 @@ class MockKioskProfileLoadFailedObserver
 class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
  public:
   using AppState = KioskLaunchController::AppState;
-  using NetworkUIState = KioskLaunchController::NetworkUIState;
+  using NetworkUIState = NetworkUiController::NetworkUIState;
 
   KioskLaunchControllerTest()
       : extensions::ExtensionServiceTestBase(
@@ -136,11 +137,11 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
 
   KioskLaunchController& controller() { return *controller_; }
 
-  KioskAppLauncher::NetworkDelegate& network_delegate() { return *controller_; }
+  KioskAppLauncher::NetworkDelegate& network_delegate() {
+    return *controller_->GetNetworkUiControllerForTesting();
+  }
 
   KioskProfileLoader::Delegate& profile_controls() { return *controller_; }
-
-  AppLaunchSplashScreenView::Delegate& view_controls() { return *controller_; }
 
   FakeKioskAppLauncher& launcher() { return *app_launcher_; }
 
@@ -150,9 +151,9 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
     return testing::AllOf(
         testing::Field("app_state", &KioskLaunchController::app_state_,
                        Eq(app_state)),
-        testing::Field("network_ui_state",
-                       &KioskLaunchController::network_ui_state_,
-                       Eq(network_state)));
+        testing::Property("network_ui_state",
+                          &KioskLaunchController::GetNetworkUiStateForTesting,
+                          Eq(network_state)));
   }
 
   auto HasViewState(AppLaunchSplashScreenView::AppLaunchState launch_state) {
@@ -223,7 +224,8 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
   std::unique_ptr<base::AutoReset<bool>>
       disable_wait_timer_and_login_operations_for_testing_;
   std::unique_ptr<FakeAppLaunchSplashScreenHandler> view_;
-  FakeKioskAppLauncher* app_launcher_ = nullptr;  // owned by `controller_`.
+  raw_ptr<FakeKioskAppLauncher, ExperimentalAsh> app_launcher_ =
+      nullptr;  // owned by `controller_`.
   int app_launchers_created_ = 0;
   std::unique_ptr<KioskLaunchController> controller_;
   KioskAppId kiosk_app_id_;

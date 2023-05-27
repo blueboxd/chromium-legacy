@@ -73,7 +73,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.CanonicalURLResult" enum="CanonicalURLResult"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>pkl@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
@@ -93,7 +93,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.EntryPoints" enum="IOSMenuScenario"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@chromium.org</owner>
   <summary>
@@ -291,7 +291,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Mobile.Messages.Confirm.Accept.Time" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2024-04-06">
 <!-- Name completed by histogram_suffixes name="Mobile.Messages.Confirm.Type" -->
 
   <owner>sczs@chromium.org</owner>
@@ -644,16 +644,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="MobileDownload.Background.TargetDeterminationResult"
-    enum="MobileDownloadBackgroundTargetDeterminationResult"
-    expires_after="2020-12-13">
-  <owner>qinmin@chromium.org</owner>
-  <summary>
-    Android: Records the target determination result for downloads started in
-    the background, that is, while the browser process is not running.
-  </summary>
-</histogram>
-
 <histogram name="MobileDownload.DownloadLaterPromptStatus"
     enum="DownloadLaterPromptStatus" expires_after="2023-02-06">
   <owner>shaktisahu@chromium.org</owner>
@@ -931,7 +921,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileFre.Progress" enum="MobileFreProgress"
-    expires_after="2023-07-30">
+    expires_after="2023-10-01">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -1086,7 +1076,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileOmnibox.PressedClipboardSuggestionAge" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <summary>
@@ -1102,7 +1092,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.BookmarkManager.ImpressionsTilDismiss"
-    units="impressions" expires_after="2023-08-13">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1112,7 +1102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.BookmarkManager.ImpressionsTilSigninButtons"
-    units="impressions" expires_after="2023-08-13">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1124,7 +1114,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.BookmarkManager.ImpressionsTilXButton"
-    units="impressions" expires_after="2023-04-01">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1148,7 +1138,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.NTPFeedTop.ImpressionsTilDismiss"
-    units="impressions" expires_after="2023-08-13">
+    units="impressions" expires_after="2023-10-15">
   <owner>mrefaat@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1172,7 +1162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.NTPFeedTop.ImpressionsTilXButton"
-    units="impressions" expires_after="2023-06-01">
+    units="impressions" expires_after="2023-09-24">
   <owner>mrefaat@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1220,7 +1210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilDismiss"
-    units="impressions" expires_after="2023-04-01">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1230,7 +1220,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilSigninButtons"
-    units="impressions" expires_after="2023-04-01">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1242,7 +1232,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.SettingsManager.ImpressionsTilXButton"
-    units="impressions" expires_after="2023-04-01">
+    units="impressions" expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1285,7 +1275,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
@@ -1310,7 +1300,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.LaunchType" enum="LaunchType"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>

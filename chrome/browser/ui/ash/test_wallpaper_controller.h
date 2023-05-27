@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_UI_ASH_TEST_WALLPAPER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_TEST_WALLPAPER_CONTROLLER_H_
 
+#include <map>
+
 #include "ash/public/cpp/wallpaper/google_photos_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/online_wallpaper_params.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/public/cpp/wallpaper/wallpaper_drivefs_delegate.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "components/account_id/account_id.h"
@@ -52,11 +56,18 @@ class TestWallpaperController : public ash::WallpaperController {
   int get_third_party_wallpaper_count() const {
     return third_party_wallpaper_count_;
   }
-  int show_always_on_top_wallpaper_count() const {
-    return show_always_on_top_wallpaper_count_;
+  int get_update_daily_refresh_wallpaper_count() const {
+    return update_daily_refresh_wallpaper_count_;
   }
-  int remove_always_on_top_wallpaper_count() const {
-    return remove_always_on_top_wallpaper_count_;
+  int show_override_wallpaper_count() const {
+    return show_override_wallpaper_count(/*always_on_top=*/false) +
+           show_override_wallpaper_count(/*always_on_top=*/true);
+  }
+  int show_override_wallpaper_count(bool always_on_top) const {
+    return show_override_wallpaper_count_.at(always_on_top);
+  }
+  int remove_override_wallpaper_count() const {
+    return remove_override_wallpaper_count_;
   }
   const std::string& collection_id() const {
     return wallpaper_info_.has_value() ? wallpaper_info_->collection_id
@@ -79,6 +90,9 @@ class TestWallpaperController : public ash::WallpaperController {
 
   // ash::WallpaperController:
   void SetClient(ash::WallpaperControllerClient* client) override;
+  ash::WallpaperDragDropDelegate* GetDragDropDelegate() override;
+  void SetDragDropDelegate(
+      std::unique_ptr<ash::WallpaperDragDropDelegate> delegate) override;
   void SetDriveFsDelegate(
       std::unique_ptr<ash::WallpaperDriveFsDelegate> drivefs_delegate) override;
   void Init(const base::FilePath& user_data,
@@ -141,8 +155,9 @@ class TestWallpaperController : public ash::WallpaperController {
                          user_manager::UserType user_type) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
-  void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
-  void RemoveAlwaysOnTopWallpaper() override;
+  void ShowOverrideWallpaper(const base::FilePath& image_path,
+                             bool always_on_top) override;
+  void RemoveOverrideWallpaper() override;
   void RemoveUserWallpaper(const AccountId& account_id,
                            base::OnceClosure on_removed) override;
   void RemovePolicyWallpaper(const AccountId& account_id) override;
@@ -153,6 +168,7 @@ class TestWallpaperController : public ash::WallpaperController {
   void AddObserver(ash::WallpaperControllerObserver* observer) override;
   void RemoveObserver(ash::WallpaperControllerObserver* observer) override;
   gfx::ImageSkia GetWallpaperImage() override;
+  scoped_refptr<base::RefCountedMemory> GetPreviewImage() override;
   bool IsWallpaperBlurredForLockState() const override;
   bool IsActiveUserWallpaperControlledByPolicy() override;
   bool IsWallpaperControlledByPolicy(
@@ -175,9 +191,10 @@ class TestWallpaperController : public ash::WallpaperController {
   int set_custom_wallpaper_count_ = 0;
   int set_online_wallpaper_count_ = 0;
   int set_google_photos_wallpaper_count_ = 0;
-  int show_always_on_top_wallpaper_count_ = 0;
-  int remove_always_on_top_wallpaper_count_ = 0;
+  std::map</*always_on_top=*/bool, int> show_override_wallpaper_count_;
+  int remove_override_wallpaper_count_ = 0;
   int third_party_wallpaper_count_ = 0;
+  int update_daily_refresh_wallpaper_count_ = 0;
   absl::optional<ash::WallpaperInfo> wallpaper_info_;
   int update_current_wallpaper_layout_count_ = 0;
   absl::optional<ash::WallpaperLayout> update_current_wallpaper_layout_layout_;

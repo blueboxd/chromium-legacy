@@ -45,17 +45,19 @@ std::unique_ptr<message_center::Notification> CreateNotification(
   return ash::CreateSystemNotificationPtr(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       base::StrCat({kMultiCaptureId, ":", host}),
-      /*title=*/u"",
+      /*title=*/
+      l10n_util::GetStringFUTF16(IDS_MULTI_CAPTURE_NOTIFICATION_TITLE,
+                                 converted_host),
       /*message=*/
       l10n_util::GetStringFUTF16(IDS_MULTI_CAPTURE_NOTIFICATION_MESSAGE,
                                  converted_host),
       /*display_source=*/std::u16string(), /*origin_url=*/GURL(), notifier_id,
       /*optional_fields=*/message_center::RichNotificationData(),
       /*delegate=*/
-      new message_center::HandleNotificationClickDelegate(
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           message_center::HandleNotificationClickDelegate::ButtonClickCallback(
               base::DoNothing())),
-      ash::kSystemTrayRecordingIcon,
+      ash::kPrivacyIndicatorsScreenShareIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
 }
 

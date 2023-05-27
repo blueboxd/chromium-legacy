@@ -15,10 +15,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
 
 import androidx.annotation.Nullable;
 import androidx.preference.TwoStatePreference;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 
 import org.junit.Assert;
@@ -28,28 +28,25 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.Promise;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
-import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.sync.protocol.AutofillWalletSpecifics;
 import org.chromium.components.sync.protocol.EntitySpecifics;
 import org.chromium.components.sync.protocol.SyncEntity;
 import org.chromium.components.sync.protocol.WalletMaskedCreditCard;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -59,13 +56,6 @@ import java.util.concurrent.Callable;
  * TODO(crbug.com/1168590): Support batching tests with SyncTestRule.
  */
 public class SyncTestRule extends ChromeTabbedActivityTestRule {
-    private static final String TAG = "SyncTestBase";
-
-    private static final Set<Integer> USER_SELECTABLE_TYPES = new HashSet<Integer>(
-            Arrays.asList(new Integer[] {UserSelectableType.AUTOFILL, UserSelectableType.BOOKMARKS,
-                    UserSelectableType.PASSWORDS, UserSelectableType.PREFERENCES,
-                    UserSelectableType.TABS, UserSelectableType.HISTORY}));
-
     /**
      * Simple activity that mimics a trusted vault key retrieval flow that succeeds immediately.
      */
@@ -191,7 +181,6 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
 
     private void ruleTearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mSyncService.setSyncRequested(false);
             mFakeServerHelper = null;
             FakeServerHelper.destroyInstance();
             SyncService.resetForTests();
@@ -277,24 +266,8 @@ public class SyncTestRule extends ChromeTabbedActivityTestRule {
     public CoreAccountInfo setUpTestAccountAndSignInWithSyncSetupAsIncomplete() {
         CoreAccountInfo accountInfo = mSigninTestRule.addTestAccountThenSigninAndEnableSync(
                 /* syncService= */ null);
-        // Enable UKM when enabling sync as it is done by the sync confirmation UI.
-        enableUKM();
         SyncTestUtil.waitForSyncTransportActive();
         return accountInfo;
-    }
-
-    public void startSync() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mSyncService.setSyncRequested(true); });
-    }
-
-    public void startSyncAndWait() {
-        startSync();
-        SyncTestUtil.waitForSyncFeatureActive();
-    }
-
-    public void stopSync() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> { mSyncService.setSyncRequested(false); });
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     public void signinAndEnableSync(final CoreAccountInfo accountInfo) {

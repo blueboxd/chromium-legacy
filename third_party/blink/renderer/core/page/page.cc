@@ -218,7 +218,8 @@ Page::Page(base::PassKey<Page>,
       prev_related_page_(this),
       autoplay_flags_(0),
       web_text_autosizer_page_info_({0, 0, 1.f}),
-      v8_compile_hints_(MakeGarbageCollected<V8CompileHints>(this)) {
+      v8_compile_hints_(
+          MakeGarbageCollected<V8CrowdsourcedCompileHintsProducer>(this)) {
   DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
 
@@ -540,10 +541,9 @@ void Page::SetVisibilityState(
   if (is_initial_state)
     return;
 
-  page_visibility_observer_set_.ForEachObserver(
-      [](PageVisibilityObserver* observer) {
-        observer->PageVisibilityChanged();
-      });
+  for (auto observer : page_visibility_observer_set_) {
+    observer->PageVisibilityChanged();
+  }
 
   if (main_frame_) {
     if (lifecycle_state_->visibility ==
@@ -885,7 +885,6 @@ void Page::DidCommitLoad(LocalFrame* frame) {
     // TODO(loonybear): Most of this doesn't appear to take into account that
     // each SVGImage gets it's own Page instance.
     GetDeprecation().ClearSuppression();
-    GetVisualViewport().SendUMAMetrics();
     // Need to reset visual viewport position here since before commit load we
     // would update the previous history item, Page::didCommitLoad is called
     // after a new history item is created in FrameLoader.
@@ -1009,11 +1008,10 @@ void Page::WillBeDestroyed() {
     validation_message_client_->WillBeDestroyed();
   main_frame_ = nullptr;
 
-  page_visibility_observer_set_.ForEachObserver(
-      [](PageVisibilityObserver* observer) {
-        observer->ObserverSetWillBeCleared();
-      });
-  page_visibility_observer_set_.Clear();
+  for (auto observer : page_visibility_observer_set_) {
+    observer->ObserverSetWillBeCleared();
+  }
+  page_visibility_observer_set_.clear();
 
   page_scheduler_ = nullptr;
 }
@@ -1061,13 +1059,6 @@ bool Page::RequestBeginMainFrameNotExpected(bool new_state) {
   chrome_client_->RequestBeginMainFrameNotExpected(*DeprecatedLocalMainFrame(),
                                                    new_state);
   return true;
-}
-
-bool Page::LocalMainFrameNetworkIsAlmostIdle() const {
-  LocalFrame* frame = DynamicTo<LocalFrame>(MainFrame());
-  if (!frame)
-    return true;
-  return frame->GetIdlenessDetector()->NetworkIsAlmostIdle();
 }
 
 void Page::AddAutoplayFlags(int32_t value) {

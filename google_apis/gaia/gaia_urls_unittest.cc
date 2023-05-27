@@ -65,7 +65,13 @@ TEST_F(GaiaUrlsTest, InitializeDefault_AllUrls) {
   EXPECT_EQ(gaia_urls()->google_url().spec(), "http://google.com/");
   EXPECT_EQ(gaia_urls()->secure_google_url().spec(), "https://google.com/");
   EXPECT_EQ(gaia_urls()->gaia_url().spec(), "https://accounts.google.com/");
-  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url(2U).spec(),
+  EXPECT_EQ(gaia_urls()->google_apis_origin_url(),
+            "https://www.googleapis.com/");
+  EXPECT_EQ(gaia_urls()->classroom_api_origin_url(),
+            "https://classroom.googleapis.com/");
+  EXPECT_EQ(gaia_urls()->tasks_api_origin_url(),
+            "https://tasks.googleapis.com/");
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url().spec(),
             "https://accounts.google.com/embedded/setup/v2/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_kid_signup_url().spec(),
             "https://accounts.google.com/embedded/setup/kidsignup/chromeos");
@@ -138,7 +144,7 @@ TEST_F(GaiaUrlsTest, InitializeDefault_URLSwitches) {
   EXPECT_EQ(gaia_urls()->secure_google_url().spec(),
             "https://test-google.com/");
   EXPECT_EQ(gaia_urls()->gaia_url().spec(), "https://test-gaia.com/");
-  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url(2U).spec(),
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url().spec(),
             "https://test-gaia.com/embedded/setup/v2/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_kid_signup_url().spec(),
             "https://test-gaia.com/embedded/setup/kidsignup/chromeos");
@@ -245,7 +251,13 @@ TEST_F(GaiaUrlsTest, InitializeFromConfig_AllUrls) {
   EXPECT_EQ(gaia_urls()->google_url().spec(), "http://example.com/");
   EXPECT_EQ(gaia_urls()->secure_google_url().spec(), "https://example.com/");
   EXPECT_EQ(gaia_urls()->gaia_url().spec(), "https://accounts.example.com/");
-  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url(2U).spec(),
+  EXPECT_EQ(gaia_urls()->google_apis_origin_url(),
+            "https://googleapis.will-be-overridden.com/");
+  EXPECT_EQ(gaia_urls()->classroom_api_origin_url(),
+            "https://classroom.will-be-overridden.com/");
+  EXPECT_EQ(gaia_urls()->tasks_api_origin_url(),
+            "https://tasks.will-be-overridden.com/");
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url().spec(),
             "https://accounts.example.com/embedded/setup/v2/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_kid_signup_url().spec(),
             "https://accounts.example.com/embedded/setup/kidsignup/chromeos");
@@ -306,7 +318,13 @@ TEST_F(GaiaUrlsTest, InitializeFromConfig_AllBaseUrls) {
   EXPECT_EQ(gaia_urls()->google_url().spec(), "http://example.com/");
   EXPECT_EQ(gaia_urls()->secure_google_url().spec(), "https://example.com/");
   EXPECT_EQ(gaia_urls()->gaia_url().spec(), "https://accounts.example.com/");
-  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url(2U).spec(),
+  EXPECT_EQ(gaia_urls()->google_apis_origin_url(),
+            "https://www.exampleapis.com/");
+  EXPECT_EQ(gaia_urls()->classroom_api_origin_url(),
+            "https://classroom.exampleapis.com/");
+  EXPECT_EQ(gaia_urls()->tasks_api_origin_url(),
+            "https://tasks.exampleapis.com/");
+  EXPECT_EQ(gaia_urls()->embedded_setup_chromeos_url().spec(),
             "https://accounts.example.com/embedded/setup/v2/chromeos");
   EXPECT_EQ(gaia_urls()->embedded_setup_windows_url().spec(),
             "https://accounts.example.com/embedded/setup/windows");

@@ -24,7 +24,6 @@
 #include "base/posix/eintr_wrapper.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
-#include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/ahardwarebuffer_utils.h"
@@ -135,6 +134,45 @@ GLuint CreateAndBindTexture(EGLImage image, GLenum target) {
   return service_id;
 }
 
+constexpr viz::SharedImageFormat kSupportedFormats[6]{
+    viz::SinglePlaneFormat::kRGBA_8888, viz::SinglePlaneFormat::kRGB_565,
+    viz::SinglePlaneFormat::kBGR_565,   viz::SinglePlaneFormat::kRGBA_F16,
+    viz::SinglePlaneFormat::kRGBX_8888, viz::SinglePlaneFormat::kRGBA_1010102};
+
+// Returns whether the format is supported by AHardwareBuffer.
+// TODO(vikassoni): In future we will need to expose the set of formats and
+// constraints (e.g. max size) to the clients somehow that are available for
+// certain combinations of SharedImageUsage flags (e.g. when Vulkan is on,
+// SHARED_IMAGE_USAGE_GLES2 + SHARED_IMAGE_USAGE_DISPLAY_READ implies AHB, so
+// those restrictions apply, but that's decided on the service side). For now
+// getting supported format is a static mechanism like this. We probably need
+// something like gpu::Capabilities.texture_target_exception_list.
+bool AHardwareBufferSupportedFormat(viz::SharedImageFormat format) {
+  return base::Contains(kSupportedFormats, format);
+}
+
+// Returns the corresponding AHardwareBuffer format.
+unsigned int AHardwareBufferFormat(viz::SharedImageFormat format) {
+  DCHECK(AHardwareBufferSupportedFormat(format));
+
+  if (format == viz::SinglePlaneFormat::kRGBA_8888) {
+    return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRGB_565) {
+    return AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kBGR_565) {
+    return AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRGBA_F16) {
+    return AHARDWAREBUFFER_FORMAT_R16G16B16A16_FLOAT;
+  } else if (format == viz::SinglePlaneFormat::kRGBX_8888) {
+    return AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRGBA_1010102) {
+    return AHARDWAREBUFFER_FORMAT_R10G10B10A2_UNORM;
+  }
+
+  NOTREACHED();
+  return AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
+}
+
 constexpr uint32_t kSupportedUsage =
     SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
     SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
@@ -191,7 +229,7 @@ class AHardwareBufferImageBacking : public AndroidImageBacking {
   ProduceGLTexturePassthrough(SharedImageManager* manager,
                               MemoryTypeTracker* tracker) override;
 
-  std::unique_ptr<SkiaImageRepresentation> ProduceSkia(
+  std::unique_ptr<SkiaGaneshImageRepresentation> ProduceSkiaGanesh(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
@@ -403,8 +441,8 @@ AHardwareBufferImageBacking::ProduceGLTexturePassthrough(
       manager, this, tracker, std::move(egl_image), std::move(texture));
 }
 
-std::unique_ptr<SkiaImageRepresentation>
-AHardwareBufferImageBacking::ProduceSkia(
+std::unique_ptr<SkiaGaneshImageRepresentation>
+AHardwareBufferImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
@@ -522,6 +560,49 @@ void AHardwareBufferImageBacking::EndOverlayAccess() {
   read_sync_fd_ = gl::MergeFDs(std::move(read_sync_fd_), std::move(fence_fd));
 }
 
+// static
+AHardwareBufferImageBackingFactory::FormatInfo
+AHardwareBufferImageBackingFactory::FormatInfoForSupportedFormat(
+    viz::SharedImageFormat format,
+    const gles2::Validators* validators) {
+  CHECK(AHardwareBufferSupportedFormat(format));
+
+  FormatInfo info;
+  info.ahb_format = AHardwareBufferFormat(format);
+
+  // TODO(vikassoni): In future when we use GL_TEXTURE_EXTERNAL_OES target
+  // with AHB, we need to check if oes_egl_image_external is supported or
+  // not.
+  const bool is_egl_image_supported =
+      gl::g_current_gl_driver->ext.b_GL_OES_EGL_image;
+  if (!is_egl_image_supported) {
+    return info;
+  }
+
+  // Check if AHB backed GL texture can be created using this format and
+  // gather GL related format info.
+  // TODO(vikassoni): Add vulkan related information in future.
+  GLuint internal_format = GLInternalFormat(format);
+  GLenum gl_format = GLDataFormat(format);
+  GLenum gl_type = GLDataType(format);
+
+  //  GLImageAHardwareBuffer supports internal format GL_RGBA and GL_RGB.
+  if (internal_format != GL_RGBA && internal_format != GL_RGB) {
+    return info;
+  }
+
+  // Validate if GL format, type and internal format is supported.
+  if (validators->texture_internal_format.IsValid(internal_format) &&
+      validators->texture_format.IsValid(gl_format) &&
+      validators->pixel_type.IsValid(gl_type)) {
+    info.gl_supported = true;
+    info.gl_format = gl_format;
+    info.gl_type = gl_type;
+    info.internal_format = internal_format;
+  }
+  return info;
+}
+
 AHardwareBufferImageBackingFactory::AHardwareBufferImageBackingFactory(
     const gles2::FeatureInfo* feature_info,
     const GpuPreferences& gpu_preferences)
@@ -529,50 +610,13 @@ AHardwareBufferImageBackingFactory::AHardwareBufferImageBackingFactory(
       use_passthrough_(gpu_preferences.use_passthrough_cmd_decoder &&
                        gl::PassthroughCommandDecoderSupported()) {
   DCHECK(base::AndroidHardwareBufferCompat::IsSupportAvailable());
-  const gles2::Validators* validators = feature_info->validators();
-  const bool is_egl_image_supported =
-      gl::g_current_gl_driver->ext.b_GL_OES_EGL_image;
 
-  // Build the feature info for all the resource formats.
-  for (int i = 0; i <= viz::RESOURCE_FORMAT_MAX; ++i) {
-    auto format = static_cast<viz::ResourceFormat>(i);
-    FormatInfo& info = format_info_[i];
-
-    // If AHB does not support this format, we will not be able to create this
-    // backing.
-    if (!AHardwareBufferSupportedFormat(format))
-      continue;
-
-    info.ahb_supported = true;
-    info.ahb_format = AHardwareBufferFormat(format);
-
-    // TODO(vikassoni): In future when we use GL_TEXTURE_EXTERNAL_OES target
-    // with AHB, we need to check if oes_egl_image_external is supported or
-    // not.
-    if (!is_egl_image_supported)
-      continue;
-
-    // Check if AHB backed GL texture can be created using this format and
-    // gather GL related format info.
-    // TODO(vikassoni): Add vulkan related information in future.
-    GLuint internal_format = viz::GLInternalFormat(format);
-    GLenum gl_format = viz::GLDataFormat(format);
-    GLenum gl_type = viz::GLDataType(format);
-
-    //  GLImageAHardwareBuffer supports internal format GL_RGBA and GL_RGB.
-    if (internal_format != GL_RGBA && internal_format != GL_RGB)
-      continue;
-
-    // Validate if GL format, type and internal format is supported.
-    if (validators->texture_internal_format.IsValid(internal_format) &&
-        validators->texture_format.IsValid(gl_format) &&
-        validators->pixel_type.IsValid(gl_type)) {
-      info.gl_supported = true;
-      info.gl_format = gl_format;
-      info.gl_type = gl_type;
-      info.internal_format = internal_format;
-    }
+  // Build the feature info for all the supported formats.
+  for (auto format : kSupportedFormats) {
+    format_infos_[format] =
+        FormatInfoForSupportedFormat(format, feature_info->validators());
   }
+
   // TODO(vikassoni): We are using below GL api calls for now as Vulkan mode
   // doesn't exist. Once we have vulkan support, we shouldn't query GL in this
   // code until we are asked to make a GL representation (or allocate a
@@ -605,14 +649,13 @@ bool AHardwareBufferImageBackingFactory::ValidateUsage(
     uint32_t usage,
     const gfx::Size& size,
     viz::SharedImageFormat format) const {
-  const FormatInfo& format_info = GetFormatInfo(format);
-
-  // Check if the format is supported by AHardwareBuffer.
-  if (!format_info.ahb_supported) {
-    LOG(ERROR) << "viz::ResourceFormat " << format.ToString()
+  if (!AHardwareBufferSupportedFormat(format)) {
+    LOG(ERROR) << "viz::SharedImageFormat " << format.ToString()
                << " not supported by AHardwareBuffer";
     return false;
   }
+
+  const FormatInfo& format_info = GetFormatInfo(format);
 
   // SHARED_IMAGE_USAGE_RASTER is set when we want to write on Skia
   // representation and SHARED_IMAGE_USAGE_DISPLAY_READ is used for cases we
@@ -630,7 +673,7 @@ bool AHardwareBufferImageBackingFactory::ValidateUsage(
     // Check if the GL texture can be created from AHB with this format.
     if (!format_info.gl_supported) {
       LOG(ERROR)
-          << "viz::ResourceFormat " << format.ToString()
+          << "viz::SharedImageFormat " << format.ToString()
           << " can not be used to create a GL texture from AHardwareBuffer.";
       return false;
     }
@@ -768,6 +811,7 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
+    std::string debug_label,
     bool is_thread_safe) {
   return MakeBacking(mailbox, format, size, color_space, surface_origin,
                      alpha_type, usage, is_thread_safe, base::span<uint8_t>());
@@ -782,6 +826,7 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
+    std::string debug_label,
     base::span<const uint8_t> pixel_data) {
   return MakeBacking(mailbox, format, size, color_space, surface_origin,
                      alpha_type, usage, false, pixel_data);
@@ -808,20 +853,15 @@ bool AHardwareBufferImageBackingFactory::IsSupported(
     return false;
   }
 
-  if (!IsFormatSupported(format)) {
+  if (!AHardwareBufferSupportedFormat(format)) {
     return false;
   }
 
   return true;
 }
 
-bool AHardwareBufferImageBackingFactory::IsFormatSupported(
-    viz::SharedImageFormat format) {
-  const FormatInfo& format_info = GetFormatInfo(format);
-  return format_info.ahb_supported;
-}
-
 AHardwareBufferImageBackingFactory::FormatInfo::FormatInfo() = default;
+
 AHardwareBufferImageBackingFactory::FormatInfo::~FormatInfo() = default;
 
 std::unique_ptr<SharedImageBacking>
@@ -834,7 +874,8 @@ AHardwareBufferImageBackingFactory::CreateSharedImage(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage) {
+    uint32_t usage,
+    std::string debug_label) {
   // TODO(vasilyt): support SHARED_MEMORY_BUFFER?
   if (handle.type != gfx::ANDROID_HARDWARE_BUFFER) {
     NOTIMPLEMENTED();

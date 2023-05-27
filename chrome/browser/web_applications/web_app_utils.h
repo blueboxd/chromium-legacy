@@ -147,6 +147,10 @@ bool IsWebAppsCrosapiEnabled();
 void SetSkipMainProfileCheckForTesting(bool skip_check);
 
 bool IsMainProfileCheckSkippedForTesting();
+
+// Generates an appropriate path for a new web app profile. This does not create
+// the profile.
+base::FilePath GenerateWebAppProfilePath(const AppId& app_id);
 #endif
 
 constexpr char kAppSettingsPageEntryPointsHistogramName[] =
@@ -159,7 +163,8 @@ constexpr char kAppSettingsPageEntryPointsHistogramName[] =
 enum class AppSettingsPageEntryPoint {
   kPageInfoView = 0,
   kChromeAppsPage = 1,
-  kMaxValue = kChromeAppsPage,
+  kBrowserCommand = 2,
+  kMaxValue = kBrowserCommand,
 };
 
 // When user_display_mode indicates a user preference for opening in

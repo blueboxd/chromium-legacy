@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">Video opnemen</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">DNS-resolver aanwezig</translation>
+<translation id="1708602061922134366">Google-blauw</translation>
 <translation id="1710499924611012470">Toegankelijkheidsnavigatie</translation>
 <translation id="1715359911173058521">Er is een communicatieprobleem met de scanner. Check het netwerk of de USB-aansluiting en probeer het opnieuw.</translation>
 <translation id="1717874160321062422">Beheerd door <ph name="FIRST_MANAGER" /> en <ph name="SECOND_MANAGER" /></translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">Verificatietype</translation>
+<translation id="1776228893584526149">Achtergrondtint</translation>
 <translation id="1782199038061388045">vertaling</translation>
 <translation id="1790209694022261219">Vensters en bureaus</translation>
 <translation id="1792647875738159689">Scannen annuleren</translation>
@@ -123,6 +125,7 @@
 <translation id="1904932688895783618">Een paar andere nuttige bronnen:</translation>
 <translation id="1905710495812624430">Maximumaantal toegestane pogingen overschreden.</translation>
 <translation id="1908234395526491708">Mislukte UDP-verzoeken</translation>
+<translation id="1923388006036088459">Accentkleuren</translation>
 <translation id="1947737735496445907">Afgedrukt</translation>
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1962550982027027473">Een standaard APN is vereist</translation>
@@ -140,6 +143,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Meer instellingen</translation>
 <translation id="2085089206770112532">Helderheid van scherm verlagen</translation>
+<translation id="209751264101900360">Dageraad naar donker - Cloud Flow</translation>
 <translation id="2102231663024125441">Tekstbewerking</translation>
 <translation id="2105810540595158374">Apparaat is een gamecontroller.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versie <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +335,7 @@
 <translation id="3967822245660637423">Downloaden voltooid</translation>
 <translation id="3969602104473960991">Wachtwoord voor Chrome OS geüpdatet</translation>
 <translation id="397105322502079400">Berekenen...</translation>
+<translation id="3974175076798940554">Exclusieve items voor Chromebook Plus nu beschikbaar</translation>
 <translation id="39823212440917567">Afdruktaken ouder dan <ph name="NUMBER_OF_DAYS" /> dagen worden verwijderd</translation>
 <translation id="3993704782688964914">Je <ph name="DEVICE_NAME" /> is nu up-to-date</translation>
 <translation id="4003384961948020559">Mislukt - Uitvoer is vol</translation>
@@ -370,6 +375,7 @@
 <translation id="4275663329226226506">Media</translation>
 <translation id="4289540628985791613">Overzicht</translation>
 <translation id="4289849978083912975">Diavoorstelling</translation>
+<translation id="4293621540182258188">Dageraad naar donker - Earth Flow</translation>
 <translation id="4297501883039923494">Gestopt: onbekende fout</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> afbeeldingen</translation>
 <translation id="4311195029067684288">Volledig</translation>
@@ -479,6 +485,7 @@
 <translation id="5166918508782100047">Instellingen voor Snelle antwoorden</translation>
 <translation id="5168185087976003268">Batterijconditie</translation>
 <translation id="5170568018924773124">Tonen in map</translation>
+<translation id="5180712487038406644">Expressief</translation>
 <translation id="5190187232518914472">Beleef je favoriete herinneringen opnieuw. Ga naar <ph name="LINK_BEGIN" />Google Foto's<ph name="LINK_END" /> om albums toe te voegen of te bewerken.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Uitloggen</translation>
@@ -513,6 +520,7 @@
 <translation id="5423849171846380976">Geactiveerd</translation>
 <translation id="5430931332414098647">Instant-tethering</translation>
 <translation id="5431318178759467895">Kleur</translation>
+<translation id="5456936324019847994">Kan geen verbinding maken met aangezette aangepaste APN's. Neem contact op met je mobiele provider voor meer informatie.</translation>
 <translation id="5457599981699367932">Gebruiken als gast</translation>
 <translation id="54609108002486618">Beheerd</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Nog {0} poging}other{Nog {0} pogingen}}</translation>
@@ -544,6 +552,7 @@
 <translation id="576835345334454681">Helderheid van scherm verhogen</translation>
 <translation id="57838592816432529">Geluid uitzetten</translation>
 <translation id="5784136236926853061">Hoge HTTP-vertraging</translation>
+<translation id="5809090008577139505">Aurora</translation>
 <translation id="5826644637650799838">Over de achtergrond</translation>
 <translation id="5832805196449965646">Persoon toevoegen</translation>
 <translation id="583281660410589416">Onbekend</translation>
@@ -562,10 +571,12 @@
 <translation id="5907649332524363701">toetskleur</translation>
 <translation id="5916084858004523819">Verboden</translation>
 <translation id="5916664084637901428">Aan</translation>
+<translation id="5918201491776799918">Selecteer kunstwerken exclusief voor de Chromebook Plus</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Je bestand is gescand en opgeslagen in <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Je bestanden zijn gescand en opgeslagen in <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Bestand niet gevonden</translation>
 <translation id="5939518447894949180">Resetten</translation>
 <translation id="594552776027197022">Willekeurig sleutelpaar genereren</translation>
+<translation id="5946538341867151940">Je hebt nog geen verbinding. Als je mobiele provider een aangepaste APN aanbeveelt, geef je de APN-gegevens op door '+ Nieuwe APN' te selecteren</translation>
 <translation id="5972388717451707488">Engine updaten</translation>
 <translation id="5984145644188835034">Standaardachtergrond</translation>
 <translation id="6017514345406065928">Groen</translation>
@@ -640,6 +651,7 @@
 <translation id="6527081081771465939">Onbekend wifi-beveiligingsprotocol</translation>
 <translation id="6535178685492749208">Je bent offline. Feedback wordt later verstuurd.</translation>
 <translation id="65587193855025101">Flatbed</translation>
+<translation id="6560196641871357166">Levendig</translation>
 <translation id="6564646048574748301">Mislukt - Printer is niet bereikbaar</translation>
 <translation id="6566314079205407217">Meerdere pagina's scannen</translation>
 <translation id="6574762126505704998">Uitvullen</translation>
@@ -721,6 +733,7 @@
 <translation id="7281657306185710294">Een koel briesje</translation>
 <translation id="7287310195820267359">Achtergrondcollecties</translation>
 <translation id="7297226631177386107">Kan geen verbinding maken met HTTPS-websites via een firewall</translation>
+<translation id="7297726121602187087">Donkergroen</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Vraag het aan de experts op het Helpforum van Chromebook</translation>
@@ -755,12 +768,14 @@
 <translation id="7570674786725311828">USB-touchscreen</translation>
 <translation id="7595982850646262331">Nog <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Verplaats met de muis of pijltoetsen.</translation>
+<translation id="7618774594543487847">Neutraal</translation>
 <translation id="7620771111601174153">Meer informatie in het Helpcentrum</translation>
 <translation id="763165478673169849">Laatste resettijd</translation>
 <translation id="7648838807254605802">Lage HTTPS-latentie</translation>
 <translation id="7656388927906093505">Apparaat is een muis.</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7665800271478495366">Avatar wijzigen</translation>
+<translation id="7675241868020048622">Aurora (exclusief voor Plus)</translation>
 <translation id="7690294790491645610">Nieuw wachtwoord bevestigen</translation>
 <translation id="7701040980221191251">Geen</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +832,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> selecteren</translation>
 <translation id="8151185429379586178">Ontwikkelaarstools</translation>
+<translation id="8153923300383192510">Exclusief voor de Chromebook Plus</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Bijvoegen</translation>
 <translation id="8206859287963243715">Mobiel</translation>
@@ -839,6 +855,7 @@
 <translation id="8352772353338965963">Een account toevoegen aan Toegang tot meerdere accounts. Alle ingelogde accounts zijn toegankelijk zonder wachtwoord, dus deze functie moet alleen worden gebruikt voor vertrouwde accounts.</translation>
 <translation id="8364946094152050673">Lege naamservers</translation>
 <translation id="8372477600026034341">Extra hosts</translation>
+<translation id="8373046809163484087">Gebruik kleurensets die passen bij je achtergrond</translation>
 <translation id="8380114448424469341">Venster vastzetten op de <ph name="DIRECTION" />helft van het scherm</translation>
 <translation id="8395584934117017006">Deze <ph name="DEVICE_TYPE" /> wordt zakelijk beheerd</translation>
 <translation id="8398927464629426868">De snelheid waarmee het apparaat op dit moment wordt opgeladen of ontladen</translation>
@@ -858,11 +875,13 @@
 <translation id="8503813439785031346">Gebruikersnaam</translation>
 <translation id="8503836310948963452">Nog een paar minuten...</translation>
 <translation id="8508640263392900755">APN-gegevens</translation>
+<translation id="8522687886059337719">Je hebt nu toegang tot nieuwe <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />achtergronden<ph name="END_LINK_WALLPAPER_SUBPAGE" /> en <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />screensavers<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Je provider kan deze optie vereisen om verbinding te maken met hun netwerk. Neem contact op met je provider voor meer informatie.</translation>
 <translation id="8576249514688522074">Niet geïnitialiseerd</translation>
 <translation id="8620617069779373398">Roamingstatus</translation>
+<translation id="86356131183441916">Lichtpaars</translation>
 <translation id="8655295600908251630">Kanaal</translation>
 <translation id="8655828773034788261">URL delen:</translation>
 <translation id="8660881923941176839">pound</translation>
@@ -947,6 +966,7 @@
 <translation id="945522503751344254">Feedback sturen</translation>
 <translation id="952992212772159698">Niet geactiveerd</translation>
 <translation id="960719561871045870">Operatorcode</translation>
+<translation id="979450713603643090">Lichtroze</translation>
 <translation id="982713511914535780">Ontlaadtest uitvoeren</translation>
 <translation id="987264212798334818">Algemeen</translation>
 </translationbundle>

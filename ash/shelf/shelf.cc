@@ -8,6 +8,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/metrics/login_unlock_throughput_recorder.h"
@@ -35,6 +36,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -247,7 +249,7 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
   }
 
  private:
-  Shelf* shelf_;
+  raw_ptr<Shelf, ExperimentalAsh> shelf_;
 };
 
 // Shelf::AutoDimEventHandler -----------------------------------------------
@@ -259,7 +261,7 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler,
  public:
   explicit AutoDimEventHandler(Shelf* shelf) : shelf_(shelf) {
     Shell::Get()->AddPreTargetHandler(this);
-    shelf_observation_.Observe(shelf_);
+    shelf_observation_.Observe(shelf_.get());
     UndimShelf();
   }
 
@@ -313,7 +315,7 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler,
   }
 
   // ShelfObserver:
-  void WillChangeVisibilityState(ShelfVisibilityState new_state) override {
+  void OnShelfVisibilityStateChanged(ShelfVisibilityState new_state) override {
     // Shelf should be undimmed when it is shown.
     if (new_state != ShelfVisibilityState::SHELF_HIDDEN)
       UndimShelf();
@@ -321,7 +323,7 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler,
 
  private:
   // Unowned pointer to the shelf that owns this event handler.
-  Shelf* shelf_;
+  raw_ptr<Shelf, ExperimentalAsh> shelf_;
   // OneShotTimer that dims shelf due to inactivity.
   base::OneShotTimer dim_shelf_timer_;
   // An observer that notifies the AutoDimHandler that shelf visibility has
@@ -501,7 +503,7 @@ void Shelf::SetAlignment(ShelfAlignment alignment) {
   alignment_ = alignment;
   tooltip_->Close();
   if (needs_relayout) {
-    shelf_layout_manager_->LayoutShelf();
+    shelf_layout_manager_->HandleShelfAlignmentChange();
     Shell::Get()->NotifyShelfAlignmentChanged(GetWindow()->GetRootWindow(),
                                               old_alignment);
   }
@@ -551,7 +553,7 @@ ShelfBackgroundType Shelf::GetBackgroundType() const {
 
 void Shelf::UpdateVisibilityState() {
   if (shelf_layout_manager_)
-    shelf_layout_manager_->UpdateVisibilityState();
+    shelf_layout_manager_->UpdateVisibilityState(/*force_layout=*/false);
 }
 
 void Shelf::MaybeUpdateShelfBackground() {
@@ -653,13 +655,16 @@ gfx::Rect Shelf::GetSystemTrayAnchorRect() const {
   switch (alignment_) {
     case ShelfAlignment::kBottom:
     case ShelfAlignment::kBottomLocked:
-      return gfx::Rect(
-          base::i18n::IsRTL() ? work_area.x() : work_area.right() - 1,
-          work_area.bottom() - 1, 0, 0);
+      return gfx::Rect(base::i18n::IsRTL()
+                           ? work_area.x()
+                           : work_area.right() - kShelfDisplayOffset,
+                       work_area.bottom() - kShelfDisplayOffset, 0, 0);
     case ShelfAlignment::kLeft:
-      return gfx::Rect(work_area.x(), work_area.bottom() - 1, 0, 0);
+      return gfx::Rect(work_area.x(), work_area.bottom() - kShelfDisplayOffset,
+                       0, 0);
     case ShelfAlignment::kRight:
-      return gfx::Rect(work_area.right() - 1, work_area.bottom() - 1, 0, 0);
+      return gfx::Rect(work_area.right() - kShelfDisplayOffset,
+                       work_area.bottom() - kShelfDisplayOffset, 0, 0);
   }
   NOTREACHED();
   return gfx::Rect();
@@ -724,17 +729,19 @@ void Shelf::WillDeleteShelfLayoutManager() {
   shelf_layout_manager_ = nullptr;
 }
 
-void Shelf::WillChangeVisibilityState(ShelfVisibilityState new_state) {
-  for (auto& observer : observers_)
-    observer.WillChangeVisibilityState(new_state);
+void Shelf::OnShelfVisibilityStateChanged(ShelfVisibilityState new_state) {
+  if (!auto_dim_event_handler_ && switches::IsUsingShelfAutoDim()) {
+    auto_dim_event_handler_ = std::make_unique<AutoDimEventHandler>(this);
+  }
+
   if (new_state != SHELF_AUTO_HIDE) {
     auto_hide_event_handler_.reset();
   } else if (!auto_hide_event_handler_) {
     auto_hide_event_handler_ = std::make_unique<AutoHideEventHandler>(this);
   }
 
-  if (!auto_dim_event_handler_ && switches::IsUsingShelfAutoDim()) {
-    auto_dim_event_handler_ = std::make_unique<AutoDimEventHandler>(this);
+  for (auto& observer : observers_) {
+    observer.OnShelfVisibilityStateChanged(new_state);
   }
 }
 

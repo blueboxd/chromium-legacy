@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Pildi dekooder</translation>
 <translation id="1785415724048343560">Soovitatav parima kasutuskogemuse saamiseks</translation>
 <translation id="1818308510395330587">Selleks et rakendus <ph name="APP_NAME" /> saaks AR-i kasutada, lülitage sisse kaamera ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Allikast <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Seotud saidid näevad teie tegevusi grupis</translation>
 <translation id="1887786770086287077">Juurdepääs asukohale on selle seadme puhul välja lülitatud. Lülitage see sisse <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Lõpeta kõne</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Allalaadimine jõudis lõpule: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Mõne saidi funktsioonid ei pruugi inkognito režiimis toimida</translation>
 <translation id="2442870161001914531">Alati taotletakse arvutisaiti</translation>
+<translation id="2479148705183875116">Ava seaded</translation>
 <translation id="2482878487686419369">Märguanded</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
 <translation id="2490684707762498678">Haldab <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">E-posti aadressid</translation>
 <translation id="2750481671343847896">Saidid saavad teile kuvada sisselogimisviipasid isikut tuvastavatest teenusest.</translation>
 <translation id="2822354292072154809">Kas soovite objekti <ph name="CHOSEN_OBJECT_NAME" /> jaoks kindlasti lähtestada kõik saidi load?</translation>
+<translation id="2850913818900871965">Mobiilivaate taotlemine</translation>
 <translation id="2870560284913253234">Sait</translation>
 <translation id="2874939134665556319">Eelmine lugu</translation>
 <translation id="2891975107962658722">Teatud saidi puhul teie seadmesse andmete salvestamise blokeerimine</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Saidid võivad kasutada küpsisefaile teie sirvimiskogemuse täiustamiseks, näiteks selleks, et hoida teid sisselogituna või jätta meelde teie ostukorvis olevad esemed</translation>
 <translation id="3165022941318558018">Saidil lubatakse kasutada kolmanda osapoole küpsisefaile</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> salvestatud andmeid</translation>
-<translation id="3203366800380907218">Veebist</translation>
 <translation id="321187648315454507">Selleks et lubada rakendusel <ph name="APP_NAME" /> teile märguandeid saata, lülitage märguanded sisse ka <ph name="BEGIN_LINK" />Androidi seadetes<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3248611290851046188">See sait defineerib huvid, mida muud saidid saavad teile reklaamide kuvamiseks kasutada. Samuti hangib see sait Chrome'ist teie huvid, et näidata teile asjakohasemaid reklaame.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Taotle arvutivaadet</translation>
 <translation id="5100237604440890931">Ahendatud – laiendamiseks klõpsake.</translation>
 <translation id="5123685120097942451">Inkognito vaheleht</translation>
-<translation id="5134599672855298214">Taotle mobiilivaadet (soovitatav)</translation>
 <translation id="5186036860380548585">Valik on saadaval ekraanikuva ülaosas</translation>
 <translation id="5197729504361054390">Teie valitud kontakte jagatakse saidiga <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Viimati külastati täna</translation>

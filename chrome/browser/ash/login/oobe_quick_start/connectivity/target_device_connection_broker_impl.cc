@@ -10,15 +10,15 @@
 #include "base/base64.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fast_pair_advertiser.h"
-#include "chrome/browser/ash/login/oobe_quick_start/connectivity/incoming_connection.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
 #include "chrome/browser/ash/login/oobe_quick_start/logging/logging.h"
+#include "crypto/random.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -31,10 +31,12 @@ namespace {
 constexpr uint8_t kEndpointInfoVersion = 1;
 
 // Smart Setup verification style, e.g. QR code, pin, etc.
-// 6 = "DIGITS", which tells the phone to display a code for the user to match.
+// 5 = "OUT_OF_BAND", which tells the phone to scan for the QR code.
+// 6 = "DIGITS", which tells the phone to display a PIN for the user to match.//
 // Values come from the TargetConnectionInfo VerificationStyle enum:
-constexpr uint8_t kEndpointInfoVerificationStyle = 6;
-
+// http://google3/logs/proto/wireless/android/smartsetup/smart_setup_extension.proto;l=894;rcl=489739066
+constexpr uint8_t kEndpointInfoVerificationStyleOutOfBand = 5;
+constexpr uint8_t kEndpointInfoVerificationStyleDigits = 6;
 // Device Type for Smart Setup, e.g. phone, tablet.  8 = "Chrome"
 // Values come from the DiscoveryEvent DeviceType enum:
 // http://google3/logs/proto/wireless/android/smartsetup/smart_setup_extension.proto;l=985;rcl=507029311
@@ -42,6 +44,10 @@ constexpr uint8_t kEndpointInfoDeviceType = 8;
 
 // Boolean field indicating to Smart Setup whether the client is Quick Start.
 constexpr uint8_t kEndpointInfoIsQuickStart = 1;
+
+// Boolean field indicating whether the target device supports LSKF
+// verification.
+constexpr uint8_t kEndpointInfoPreferTargetUserVerification = 0;
 
 constexpr size_t kMaxEndpointInfoDisplayNameLength = 18;
 
@@ -52,6 +58,11 @@ constexpr size_t kEndpointInfoAdvertisingIdLength = 10;
 
 // Base64 padding character
 constexpr char kBase64PaddingChar = '=';
+
+// The keys used for the dict returned in PrepareForUpdate().
+constexpr char kPrepareForUpdateRandomSessionIdKey[] = "random_session_id";
+constexpr char kPrepareForUpdateSecondarySharedSecretKey[] =
+    "secondary_shared_secret";
 
 // The display name must:
 // - Be a variable-length string of utf-8 bytes
@@ -117,9 +128,13 @@ TargetDeviceConnectionBrokerImpl::BluetoothAdapterFactoryWrapper*
 
 TargetDeviceConnectionBrokerImpl::TargetDeviceConnectionBrokerImpl(
     RandomSessionId session_id,
-    base::WeakPtr<NearbyConnectionsManager> nearby_connections_manager)
+    base::WeakPtr<NearbyConnectionsManager> nearby_connections_manager,
+    std::unique_ptr<Connection::Factory> connection_factory)
     : random_session_id_(session_id),
-      nearby_connections_manager_(nearby_connections_manager) {
+      nearby_connections_manager_(nearby_connections_manager),
+      connection_factory_(std::move(connection_factory)) {
+  crypto::RandBytes(shared_secret_);
+  crypto::RandBytes(secondary_shared_secret_);
   GetBluetoothAdapter();
 }
 
@@ -163,14 +178,13 @@ void TargetDeviceConnectionBrokerImpl::OnGetBluetoothAdapter(
 
 void TargetDeviceConnectionBrokerImpl::StartAdvertising(
     ConnectionLifecycleListener* listener,
+    bool use_pin_authentication,
     ResultCallback on_start_advertising_callback) {
-  // TODO(b/234655072): Notify client about incoming connections on the started
-  // advertisement via ConnectionLifecycleListener.
   if (GetFeatureSupportStatus() == FeatureSupportStatus::kUndetermined) {
-    deferred_start_advertising_callback_ =
-        base::BindOnce(&TargetDeviceConnectionBroker::StartAdvertising,
-                       weak_ptr_factory_.GetWeakPtr(), listener,
-                       std::move(on_start_advertising_callback));
+    deferred_start_advertising_callback_ = base::BindOnce(
+        &TargetDeviceConnectionBroker::StartAdvertising,
+        weak_ptr_factory_.GetWeakPtr(), listener, use_pin_authentication,
+        std::move(on_start_advertising_callback));
     return;
   }
 
@@ -191,6 +205,9 @@ void TargetDeviceConnectionBrokerImpl::StartAdvertising(
     std::move(on_start_advertising_callback).Run(/*success=*/false);
     return;
   }
+
+  use_pin_authentication_ = use_pin_authentication;
+  connection_lifecycle_listener_ = listener;
 
   // This will start Nearby Connections advertising if Fast Pair advertising
   // succeeds.
@@ -248,6 +265,24 @@ void TargetDeviceConnectionBrokerImpl::StopAdvertising(
       weak_ptr_factory_.GetWeakPtr(), std::move(on_stop_advertising_callback)));
 }
 
+base::Value::Dict TargetDeviceConnectionBrokerImpl::GetPrepareForUpdateInfo() {
+  base::Value::Dict prepare_for_update_info;
+  prepare_for_update_info.Set(kPrepareForUpdateRandomSessionIdKey,
+                              random_session_id_.ToString());
+  std::string secondary_shared_secret_bytes(secondary_shared_secret_.begin(),
+                                            secondary_shared_secret_.end());
+  std::string secondary_shared_secret_base64;
+  // The secondary_shared_secret_bytes string likely contains non-UTF-8
+  // characters, which are disallowed in pref values. Base64Encode the string
+  // for compatibility with prefs.
+  base::Base64Encode(secondary_shared_secret_bytes,
+                     &secondary_shared_secret_base64);
+  prepare_for_update_info.Set(kPrepareForUpdateSecondarySharedSecretKey,
+                              secondary_shared_secret_base64);
+
+  return prepare_for_update_info;
+}
+
 void TargetDeviceConnectionBrokerImpl::OnStopFastPairAdvertising(
     base::OnceClosure callback) {
   fast_pair_advertiser_.reset();
@@ -258,19 +293,25 @@ void TargetDeviceConnectionBrokerImpl::OnStopFastPairAdvertising(
 // The EndpointInfo consists of the following fields:
 // - EndpointInfo version number, 1 byte
 // - Display name, max 18 bytes (see GetEndpointInfoDisplayNameBytes())
-// - Advertisement data, 13 bytes, base64 encoded:
+// - Advertisement data, 60 bytes, base64 encoded:
 //   - Verification Style, byte[0]
 //   - Device Type, byte[1]
 //   - Advertising Id, byte[2-11], 10 UTF-8 bytes. (See RandomSessionId)
 //   - isQuickStart, byte[12], =1 for Quick Start.
-std::vector<uint8_t> TargetDeviceConnectionBrokerImpl::GenerateEndpointInfo() {
+//   - preferTargetUserVerification, byte[13], =0 for ChromeOS.
+//   - Pad with zeros to 60 bytes. Extra space reserved for futureproofing.
+std::vector<uint8_t> TargetDeviceConnectionBrokerImpl::GenerateEndpointInfo()
+    const {
   std::string session_id = random_session_id_.ToString();
   std::vector<uint8_t> display_name_bytes =
       GetEndpointInfoDisplayNameBytes(random_session_id_);
+  uint8_t verification_style = use_pin_authentication_
+                                   ? kEndpointInfoVerificationStyleDigits
+                                   : kEndpointInfoVerificationStyleOutOfBand;
 
   std::vector<uint8_t> advertisement_data;
-  advertisement_data.reserve(13);
-  advertisement_data.push_back(kEndpointInfoVerificationStyle);
+  advertisement_data.reserve(60);
+  advertisement_data.push_back(verification_style);
   advertisement_data.push_back(kEndpointInfoDeviceType);
   advertisement_data.insert(advertisement_data.end(), session_id.begin(),
                             session_id.end());
@@ -281,6 +322,11 @@ std::vector<uint8_t> TargetDeviceConnectionBrokerImpl::GenerateEndpointInfo() {
     advertisement_data.push_back(0);
   }
   advertisement_data.push_back(kEndpointInfoIsQuickStart);
+  advertisement_data.push_back(kEndpointInfoPreferTargetUserVerification);
+  while (advertisement_data.size() < 60) {
+    // Reserve 60 bytes for the advertisement data for futureproofing.
+    advertisement_data.push_back(0);
+  }
   std::vector<uint8_t> advertisement_data_b64 =
       Base64EncodeOmitPadding(advertisement_data);
 
@@ -357,33 +403,51 @@ void TargetDeviceConnectionBrokerImpl::OnStopNearbyConnectionsAdvertising(
 void TargetDeviceConnectionBrokerImpl::OnIncomingConnectionInitiated(
     const std::string& endpoint_id,
     const std::vector<uint8_t>& endpoint_info) {
-  absl::optional<std::string> auth_token =
-      nearby_connections_manager_->GetAuthenticationToken(endpoint_id);
-  DCHECK(auth_token);
-  std::string pin = IncomingConnection::DerivePin(*auth_token);
   QS_LOG(INFO) << "Incoming Nearby Connection Initiated: endpoint_id="
-               << endpoint_id << " pin=" << pin;
+               << endpoint_id
+               << " use_pin_authentication=" << use_pin_authentication_;
 
-  // TODO(b/234655072): Notify ConnectionLifecycleListener about the incoming
-  // connection if pin authentication is expected.
+  CHECK(connection_lifecycle_listener_);
+  if (use_pin_authentication_) {
+    absl::optional<std::string> auth_token =
+        nearby_connections_manager_->GetAuthenticationToken(endpoint_id);
+    CHECK(auth_token);
+    std::string pin = DerivePin(*auth_token);
+    QS_LOG(INFO) << "Incoming Nearby Connection Initiated: pin=" << pin;
+    connection_lifecycle_listener_->OnPinVerificationRequested(pin);
+  } else {
+    connection_lifecycle_listener_->OnQRCodeVerificationRequested(
+        GetQrCodeData(random_session_id_, shared_secret_));
+  }
 }
 
 void TargetDeviceConnectionBrokerImpl::OnIncomingConnectionAccepted(
     const std::string& endpoint_id,
     const std::vector<uint8_t>& endpoint_info,
-    NearbyConnection* connection) {
-  absl::optional<std::string> auth_token =
-      nearby_connections_manager_->GetAuthenticationToken(endpoint_id);
-  DCHECK(auth_token);
-  std::unique_ptr<IncomingConnection> incoming_connection =
-      std::make_unique<IncomingConnection>(connection, random_session_id_,
-                                           *auth_token);
+    NearbyConnection* nearby_connection) {
   QS_LOG(INFO) << "Incoming Nearby Connection Accepted: endpoint_id="
-               << endpoint_id << " pin="
-               << incoming_connection->GetConnectionVerificationPin();
+               << endpoint_id;
 
-  // TODO(b/234655072): Notify ConnectionLifecycleListener about the incoming
-  // connection so that the Quick Start flow can proceed.
+  // TODO(b/234655072): Handle Connection Closed in the Connection Broker
+  connection_ = connection_factory_->Create(
+      nearby_connection, random_session_id_, shared_secret_,
+      secondary_shared_secret_, base::DoNothing(),
+      base::BindOnce(
+          &TargetDeviceConnectionBrokerImpl::OnConnectionAuthenticated,
+          weak_ptr_factory_.GetWeakPtr()));
+
+  if (use_pin_authentication_) {
+    QS_LOG(INFO) << "Pin authentication completed!";
+    connection_->MarkConnectionAuthenticated();
+  } else {
+    QS_LOG(INFO) << "Initiating cryptographic handshake.";
+    absl::optional<std::string> auth_token =
+        nearby_connections_manager_->GetAuthenticationToken(endpoint_id);
+    CHECK(auth_token);
+    // TODO(b/234655072): Handle the handshake callback once the handshake is
+    // fully implemented.
+    connection_->InitiateHandshake(*auth_token, base::DoNothing());
+  }
 }
 
 }  // namespace ash::quick_start

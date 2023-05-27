@@ -9,13 +9,17 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
+#include "ash/style/typography.h"
 #include "ash/system/message_center/message_center_constants.h"
 #include "ash/system/message_center/message_center_style.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
@@ -23,7 +27,6 @@
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -44,23 +47,17 @@ class StackingBarLabelButton : public PillButton {
   StackingBarLabelButton(PressedCallback callback,
                          const std::u16string& text,
                          NotificationCenterView* notification_center_view)
-      : PillButton(
-            std::move(callback),
-            text,
-            PillButton::Type::kAccentFloatingWithoutIcon,
-            /*icon=*/nullptr,
-            kNotificationPillButtonHorizontalSpacing,
-            /*use_light_colors=*/!features::IsNotificationsRefreshEnabled(),
-            /*rounded_highlight_path=*/
-            features::IsNotificationsRefreshEnabled()),
+      : PillButton(std::move(callback),
+                   text,
+                   chromeos::features::IsJellyEnabled()
+                       ? PillButton::Type::kFloatingWithoutIcon
+                       : PillButton::Type::kAccentFloatingWithoutIcon,
+                   /*icon=*/nullptr,
+                   kNotificationPillButtonHorizontalSpacing),
         notification_center_view_(notification_center_view) {
-    const SkColor bg_color =
-        features::IsNotificationsRefreshEnabled()
-            ? gfx::kPlaceholderColor
-            : message_center_style::kUnifiedMenuButtonColorActive;
     StyleUtil::SetUpInkDropForButton(this, gfx::Insets(),
                                      /*highlight_on_hover=*/true,
-                                     /*highlight_on_focus=*/true, bg_color);
+                                     /*highlight_on_focus=*/true);
   }
 
   StackingBarLabelButton(const StackingBarLabelButton&) = delete;
@@ -75,7 +72,7 @@ class StackingBarLabelButton : public PillButton {
   }
 
  private:
-  NotificationCenterView* notification_center_view_;
+  raw_ptr<NotificationCenterView, ExperimentalAsh> notification_center_view_;
 };
 
 BEGIN_METADATA(StackingBarLabelButton, PillButton)
@@ -102,8 +99,6 @@ class StackedNotificationBar::StackedNotificationBarIcon
   void OnThemeChanged() override {
     views::ImageView::OnThemeChanged();
 
-    const auto* color_provider = GetColorProvider();
-
     auto* notification =
         message_center::MessageCenter::Get()->FindVisibleNotificationById(id_);
     // The notification icon could be waiting to be cleaned up after the
@@ -111,22 +106,14 @@ class StackedNotificationBar::StackedNotificationBarIcon
     if (!notification)
       return;
 
-    SkColor accent_color;
-    gfx::Image masked_small_icon;
-    if (features::IsNotificationsRefreshEnabled()) {
-      accent_color = AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconColorPrimary);
-      masked_small_icon = notification->GenerateMaskedSmallIcon(
-          kStackedNotificationIconSize, accent_color, SK_ColorTRANSPARENT,
-          accent_color);
-    } else {
-      accent_color =
-          color_provider->GetColor(ui::kColorNotificationHeaderForeground);
-      masked_small_icon = notification->GenerateMaskedSmallIcon(
-          kStackedNotificationIconSize, accent_color,
-          color_provider->GetColor(ui::kColorNotificationIconBackground),
-          color_provider->GetColor(ui::kColorNotificationIconForeground));
-    }
+    SkColor accent_color =
+        chromeos::features::IsJellyEnabled()
+            ? GetColorProvider()->GetColor(cros_tokens::kCrosSysOnSurface)
+            : AshColorProvider::Get()->GetContentLayerColor(
+                  AshColorProvider::ContentLayerType::kIconColorPrimary);
+    gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
+        kStackedNotificationIconSize, accent_color, SK_ColorTRANSPARENT,
+        accent_color);
 
     if (masked_small_icon.IsEmpty()) {
       SetImage(gfx::CreateVectorIcon(message_center::kProductIcon,
@@ -261,10 +248,7 @@ StackedNotificationBar::StackedNotificationBar(
           notification_center_view))),
       layout_manager_(SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal,
-          features::IsNotificationsRefreshEnabled() ? kNotificationBarPadding
-                                                    : gfx::Insets()))) {
-  UpdateVisibility();
-
+          kNotificationBarPadding))) {
   layout_manager_->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
@@ -276,14 +260,16 @@ StackedNotificationBar::StackedNotificationBar(
 
   message_center::MessageCenter::Get()->AddObserver(this);
 
-  SkColor label_color =
-      features::IsNotificationsRefreshEnabled()
-          ? AshColorProvider::Get()->GetContentLayerColor(
-                AshColorProvider::ContentLayerType::kIconColorPrimary)
-          : message_center_style::kCountLabelColor;
-  count_label_->SetEnabledColor(label_color);
-  count_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
-      1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
+  if (chromeos::features::IsJellyEnabled()) {
+    count_label_->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
+    TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosAnnotation1,
+                                          *count_label_);
+  } else {
+    count_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+        AshColorProvider::ContentLayerType::kIconColorPrimary));
+    count_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
+        1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
+  }
 
   layout_manager_->SetFlexForView(spacer_, 1);
 
@@ -291,9 +277,6 @@ StackedNotificationBar::StackedNotificationBar(
       IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
 
   expand_all_button_->SetVisible(false);
-
-  if (!features::IsNotificationsRefreshEnabled())
-    SetPaintToLayer();
 }
 
 StackedNotificationBar::~StackedNotificationBar() {
@@ -318,7 +301,6 @@ bool StackedNotificationBar::Update(
   pinned_notification_count_ = pinned_notification_count;
 
   UpdateStackedNotifications(stacked_notifications);
-  UpdateVisibility();
 
   const int unpinned_count =
       total_notification_count_ - pinned_notification_count_;
@@ -336,21 +318,17 @@ bool StackedNotificationBar::Update(
 void StackedNotificationBar::SetAnimationState(
     NotificationCenterAnimationState animation_state) {
   animation_state_ = animation_state;
-  UpdateVisibility();
 }
 
 void StackedNotificationBar::SetCollapsed() {
-  if (features::IsNotificationsRefreshEnabled())
-    layout_manager_->set_inside_border_insets(gfx::Insets());
+  layout_manager_->set_inside_border_insets(gfx::Insets());
 
   clear_all_button_->SetVisible(false);
   expand_all_button_->SetVisible(true);
-  UpdateVisibility();
 }
 
 void StackedNotificationBar::SetExpanded() {
-  if (features::IsNotificationsRefreshEnabled())
-    layout_manager_->set_inside_border_insets(kNotificationBarPadding);
+  layout_manager_->set_inside_border_insets(kNotificationBarPadding);
 
   clear_all_button_->SetVisible(true);
   expand_all_button_->SetVisible(false);
@@ -507,70 +485,8 @@ void StackedNotificationBar::UpdateStackedNotifications(
   }
 }
 
-void StackedNotificationBar::OnPaint(gfx::Canvas* canvas) {
-  // We don't need the custom border below in the new message center UI, since
-  // the clear all button does not interfere with the border anymore. Also, the
-  // message center bubble will have a highlight border that covers this view.
-  if (features::IsNotificationsRefreshEnabled())
-    return;
-
-  cc::PaintFlags flags;
-  flags.setColor(message_center_style::kNotificationBackgroundColor);
-  flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setAntiAlias(true);
-
-  gfx::Rect bounds = GetLocalBounds();
-  canvas->DrawRect(bounds, flags);
-
-  // We draw a border here than use a views::Border so the ink drop highlight
-  // of the clear all button overlays the border.
-  if (clear_all_button_->GetVisible()) {
-    canvas->DrawSharpLine(
-        gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
-        gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
-        message_center_style::kSeparatorColor);
-  }
-}
-
 const char* StackedNotificationBar::GetClassName() const {
   return "StackedNotificationBar";
-}
-
-void StackedNotificationBar::UpdateVisibility() {
-  // In the refreshed message center view the notification bar is always
-  // visible.
-  if (features::IsNotificationsRefreshEnabled()) {
-    if (!GetVisible())
-      SetVisible(true);
-    return;
-  }
-
-  int unpinned_count = total_notification_count_ - pinned_notification_count_;
-
-  // In expanded state, clear all button should be visible when (rule is subject
-  // to change):
-  //     1. There are more than one notification.
-  //     2. There is at least one unpinned notification
-  const bool show_clear_all =
-      total_notification_count_ > 1 && unpinned_count >= 1;
-  if (!expand_all_button_->GetVisible())
-    clear_all_button_->SetVisible(show_clear_all);
-
-  switch (animation_state_) {
-    case NotificationCenterAnimationState::IDLE:
-      SetVisible(
-          (stacked_notification_count_ && total_notification_count_ > 1) ||
-          show_clear_all || expand_all_button_->GetVisible());
-      break;
-    case NotificationCenterAnimationState::HIDE_STACKING_BAR:
-      SetVisible(true);
-      break;
-    case NotificationCenterAnimationState::COLLAPSE:
-      SetVisible(
-          (stacked_notification_count_ && total_notification_count_ > 1) ||
-          show_clear_all || expand_all_button_->GetVisible());
-      break;
-  }
 }
 
 void StackedNotificationBar::OnNotificationAdded(const std::string& id) {

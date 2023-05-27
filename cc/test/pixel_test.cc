@@ -66,8 +66,8 @@ PixelTest::PixelTest(GraphicsBackend backend)
   if (backend == kSkiaVulkan) {
     scoped_feature_list_.InitAndEnableFeature(features::kVulkan);
     init_vulkan = true;
-  } else if (backend == kSkiaDawn) {
-    scoped_feature_list_.InitAndEnableFeature(features::kSkiaDawn);
+  } else if (backend == kSkiaGraphite) {
+    scoped_feature_list_.InitAndEnableFeature(features::kSkiaGraphite);
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     init_vulkan = true;
 #elif BUILDFLAG(IS_WIN)
@@ -227,8 +227,8 @@ bool PixelTest::PixelsMatchReference(const base::FilePath& ref_file,
 base::WritableSharedMemoryMapping PixelTest::AllocateSharedBitmapMemory(
     const viz::SharedBitmapId& id,
     const gfx::Size& size) {
-  base::MappedReadOnlyRegion shm =
-      viz::bitmap_allocation::AllocateSharedBitmap(size, viz::RGBA_8888);
+  base::MappedReadOnlyRegion shm = viz::bitmap_allocation::AllocateSharedBitmap(
+      size, viz::SinglePlaneFormat::kRGBA_8888);
   this->shared_bitmap_manager_->ChildAllocatedSharedBitmap(shm.region.Map(),
                                                            id);
   return std::move(shm.mapping);
@@ -245,8 +245,8 @@ viz::ResourceId PixelTest::AllocateAndFillSoftwareResource(
   source.readPixels(info, mapping.memory(), info.minRowBytes(), 0, 0);
 
   return child_resource_provider_->ImportResource(
-      viz::TransferableResource::MakeSoftware(shared_bitmap_id, size,
-                                              viz::RGBA_8888),
+      viz::TransferableResource::MakeSoftware(
+          shared_bitmap_id, size, viz::SinglePlaneFormat::kRGBA_8888),
       base::DoNothing());
 }
 
@@ -290,6 +290,7 @@ void PixelTest::TearDown() {
   child_context_provider_.reset();
 
   // Tear down the skia renderer.
+  software_renderer_ = nullptr;
   renderer_.reset();
   resource_provider_.reset();
   output_surface_.reset();

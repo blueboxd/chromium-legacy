@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Auðkenningarvottorði var hafnað staðbundið</translation>
 <translation id="1775381402323441512">Upplýsingar um myndskeið</translation>
 <translation id="180035236176489073">Þú verður að vera á netinu til að geta opnað þessar skrár.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Viðbót með auðkennið}one{Viðbætur með auðkennin}other{Viðbætur með auðkennin}}</translation>
 <translation id="1807938677607439181">Allar skrár</translation>
 <translation id="1810764548349082891">Forskoðun ekki tiltæk</translation>
 <translation id="1812302367230252929">Amharíska umritun</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Ógild samsvörunarfærsla fyrir auknefni viðfangs</translation>
 <translation id="1838709767668011582">Google vefsvæði</translation>
 <translation id="1853795129690976061">Þessari möppu er deilt með Linux</translation>
-<translation id="1859422890169495746">Þessi Chromebook</translation>
 <translation id="1864756863218646478">Skráin fannst ekki.</translation>
 <translation id="1884013283844450420">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, tengjast</translation>
 <translation id="1920670151694390848">Malayalam umritun</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Pláneta</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> hefur verið aftengt.</translation>
 <translation id="2307462900900812319">Stilla net</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Viðbót með auðkennið <ph name="BEGIN_LIST" /><ph name="END_LIST" /> finnst ekki. Hafðu samband við stjórnandann þinn.}one{Viðbætur með auðkennin <ph name="BEGIN_LIST" /><ph name="END_LIST" /> finnast ekki. Hafðu samband við stjórnandann þinn.}other{Viðbætur með auðkennin <ph name="BEGIN_LIST" /><ph name="END_LIST" /> finnast ekki. Hafðu samband við stjórnandann þinn.}}</translation>
 <translation id="2325650632570794183">Þessi skráargerð er ekki studd. Farðu í vefverslun Chrome til að finna forrit sem getur opnað þessa skráargerð.</translation>
 <translation id="2326539130272988168">Búlgarska</translation>
 <translation id="2337715497728194187">Deila með Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Ótryggt</translation>
 <translation id="3291218047831493686">Tengstu þessu neti til að breyta stillingum SIM-láss</translation>
 <translation id="3293023191599135697">WEP-netkerfi eru ekki studd</translation>
+<translation id="3295006446256079333">Þessi hljóðstyrkur</translation>
 <translation id="3295357220137379386">Tækið er í notkun</translation>
 <translation id="3296763833017966289">Georgískt</translation>
 <translation id="3307875152560779385">Úkraínska</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase tæki</translation>
 <translation id="4850886885716139402">Yfirlit</translation>
 <translation id="485316830061041779">Þýskt</translation>
+<translation id="4862885579661885411">Stillingar Skráa</translation>
 <translation id="4867079195717347957">Smelltu til að raða dálkinum í lækkandi röð.</translation>
 <translation id="4867297348137739678">Síðastliðin vika</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bæti</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> atriði afrituð...</translation>
 <translation id="7375951387215729722">Skráalista raðað eftir <ph name="COLUMN_NAME" /> í lækkandi röð.</translation>
 <translation id="7377161162143020057">Regla stjórnanda kemur í veg fyrir að hægt sé að afrita þessa skrá</translation>
-<translation id="7392500733467492920">fannst ekki. Hafðu samband við stjórnandann þinn.</translation>
 <translation id="7402503521691663770">ChromeOS Flex tæki</translation>
 <translation id="7408870451288633753">Tékkneska</translation>
 <translation id="7417453074306512035">Eþíópískt lyklaborð</translation>

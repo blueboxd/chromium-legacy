@@ -45,7 +45,7 @@
 #include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_text_control_single_line.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -299,10 +299,8 @@ void TextFieldInputType::AdjustStyle(ComputedStyleBuilder& builder) {
 }
 
 LayoutObject* TextFieldInputType::CreateLayoutObject(
-    const ComputedStyle& style,
-    LegacyLayout legacy) const {
-  return LayoutObjectFactory::CreateTextControlSingleLine(GetElement(), style,
-                                                          legacy);
+    const ComputedStyle&) const {
+  return MakeGarbageCollected<LayoutNGTextControlSingleLine>(&GetElement());
 }
 
 ControlPart TextFieldInputType::AutoAppearance() const {

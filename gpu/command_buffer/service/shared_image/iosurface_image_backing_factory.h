@@ -55,6 +55,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -64,6 +65,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -73,6 +75,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       gfx::GpuMemoryBufferHandle handle) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -83,7 +86,8 @@ class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage) override;
+      uint32_t usage,
+      std::string debug_label) override;
   bool IsSupported(uint32_t usage,
                    viz::SharedImageFormat format,
                    const gfx::Size& size,
@@ -121,7 +125,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBackingFactory
   const raw_ptr<gl::ProgressReporter> progress_reporter_ = nullptr;
 
   GpuMemoryBufferFormatSet gpu_memory_buffer_formats_;
-  base::flat_set<viz::ResourceFormat> supported_formats_;
+  base::flat_set<viz::SharedImageFormat> supported_formats_;
 
   int32_t max_texture_size_ = 0;
   bool angle_texture_usage_ = false;

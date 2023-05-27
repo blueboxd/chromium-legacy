@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Chứng chỉ xác thực bị từ chối cục bộ</translation>
 <translation id="1775381402323441512">Thông tin về tệp video</translation>
 <translation id="180035236176489073">Bạn phải trực tuyến để truy cập các tệp này.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Không tìm thấy tiện ích có mã nhận dạng}other{Không tìm thấy các tiện ích có mã nhận dạng}}</translation>
 <translation id="1807938677607439181">Tất cả các tệp</translation>
 <translation id="1810764548349082891">Không có bản xem trước</translation>
 <translation id="1812302367230252929">Tiếng Amhara (chuyển tự)</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Mục nhập so khớp tên thay thế của tiêu đề không hợp lệ</translation>
 <translation id="1838709767668011582">Trang web Google</translation>
 <translation id="1853795129690976061">Thư mục này được chia sẻ với Linux</translation>
-<translation id="1859422890169495746">Chromebook này</translation>
 <translation id="1864756863218646478">Không thể tìm thấy tệp.</translation>
 <translation id="1884013283844450420">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Kết nối</translation>
 <translation id="1920670151694390848">Tiếng Malayalam (chuyển tự)</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Hành tinh</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> đã được đẩy ra.</translation>
 <translation id="2307462900900812319">Định cấu hình mạng</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Không tìm thấy tiện ích có mã nhận dạng <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Hãy liên hệ với quản trị viên của bạn.}other{Không tìm thấy các tiện ích có mã nhận dạng <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Hãy liên hệ với quản trị viên của bạn.}}</translation>
 <translation id="2325650632570794183">Loại tệp này không được hỗ trợ. Vui lòng truy cập Cửa hàng Chrome trực tuyến để tìm ứng dụng có thể mở loại tệp này.</translation>
 <translation id="2326539130272988168">Tiếng Bungary</translation>
 <translation id="2337715497728194187">Chia sẻ với Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Không bảo mật</translation>
 <translation id="3291218047831493686">Kết nối với mạng này để thay đổi chế độ cài đặt khóa SIM</translation>
 <translation id="3293023191599135697">Không hỗ trợ mạng WEP</translation>
+<translation id="3295006446256079333">Phương tiện này</translation>
 <translation id="3295357220137379386">Thiết bị đang bận</translation>
 <translation id="3296763833017966289">Tiếng Georgia</translation>
 <translation id="3307875152560779385">Tiếng Ukraina</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="485316830061041779">Tiếng Đức</translation>
+<translation id="4862885579661885411">Cài đặt Files</translation>
 <translation id="4867079195717347957">Nhấp để sắp xếp cột theo thứ tự giảm dần.</translation>
 <translation id="4867297348137739678">Tuần trước</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byte</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">Đang sao chép <ph name="NUMBER_OF_ITEMS" /> mục...</translation>
 <translation id="7375951387215729722">Danh sách tệp được sắp xếp giảm dần theo <ph name="COLUMN_NAME" />.</translation>
 <translation id="7377161162143020057">Chính sách của quản trị viên không cho phép sao chép tệp này</translation>
-<translation id="7392500733467492920">Hãy liên hệ với quản trị viên của bạn.</translation>
 <translation id="7402503521691663770">Thiết bị ChromeOS Flex</translation>
 <translation id="7408870451288633753">Tiếng Séc</translation>
 <translation id="7417453074306512035">Bàn phím tiếng Ethiopic</translation>

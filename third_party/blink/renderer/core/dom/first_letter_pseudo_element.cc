@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/generated_children.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
@@ -150,24 +149,25 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
         return nullptr;
       // FIXME: If there is leading punctuation in a different LayoutText than
       // the first letter, we'll not apply the correct style to it.
-      scoped_refptr<StringImpl> str =
-          layout_text->IsTextFragment()
-              ? To<LayoutTextFragment>(first_letter_text_layout_object)
-                    ->CompleteText()
-              : layout_text->OriginalText();
-      if (FirstLetterLength(str.get()) ||
-          IsInvalidFirstLetterLayoutObject(first_letter_text_layout_object))
+      String str = layout_text->IsTextFragment()
+                       ? To<LayoutTextFragment>(first_letter_text_layout_object)
+                             ->CompleteText()
+                       : layout_text->OriginalText();
+      if (FirstLetterLength(str.Impl()) ||
+          IsInvalidFirstLetterLayoutObject(first_letter_text_layout_object)) {
         break;
+      }
 
       // In case of inline level content made of punctuation and there is no
       // sibling, we'll apply style to it.
       if (IsParentInlineLayoutObject(first_letter_text_layout_object) &&
-          str->length() && !first_letter_text_layout_object->NextSibling())
+          str.length() && !first_letter_text_layout_object->NextSibling()) {
         break;
+      }
 
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();
-    } else if (first_letter_text_layout_object->IsListMarkerIncludingAll()) {
+    } else if (first_letter_text_layout_object->IsListMarker()) {
       // The list item marker may have out-of-flow siblings inside an anonymous
       // block. Skip them to make sure we leave the anonymous block before
       // continuing looking for the first letter text.
@@ -189,12 +189,11 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();
     } else if (first_letter_text_layout_object->IsAtomicInlineLevel() ||
-               first_letter_text_layout_object->IsButtonIncludingNG() ||
+               first_letter_text_layout_object->IsButton() ||
                IsMenuList(first_letter_text_layout_object)) {
       return nullptr;
-    } else if (first_letter_text_layout_object
-                   ->IsFlexibleBoxIncludingDeprecatedAndNG() ||
-               first_letter_text_layout_object->IsLayoutGridIncludingNG()) {
+    } else if (first_letter_text_layout_object->IsFlexibleBoxIncludingNG() ||
+               first_letter_text_layout_object->IsLayoutNGGrid()) {
       first_letter_text_layout_object =
           first_letter_text_layout_object->NextSibling();
     } else if (!first_letter_text_layout_object->IsInline() &&
@@ -313,8 +312,6 @@ void FirstLetterPseudoElement::AttachLayoutTree(AttachContext& context) {
   first_letter_context.next_sibling_valid = true;
   if (first_letter_text) {
     first_letter_context.parent = first_letter_text->Parent();
-    if (first_letter_context.parent->ForceLegacyLayout())
-      first_letter_context.force_legacy_layout = true;
   }
   PseudoElement::AttachLayoutTree(first_letter_context);
   if (first_letter_text)
@@ -326,7 +323,7 @@ void FirstLetterPseudoElement::DetachLayoutTree(bool performing_reattach) {
     if (remaining_text_layout_object_->GetNode() && GetDocument().IsActive()) {
       auto* text_node = To<Text>(remaining_text_layout_object_->GetNode());
       remaining_text_layout_object_->SetTextFragment(
-          text_node->DataImpl(), 0, text_node->DataImpl()->length());
+          text_node->data(), 0, text_node->data().length());
     }
     remaining_text_layout_object_->SetFirstLetterPseudoElement(nullptr);
     remaining_text_layout_object_->SetIsRemainingTextLayoutObject(false);
@@ -337,13 +334,12 @@ void FirstLetterPseudoElement::DetachLayoutTree(bool performing_reattach) {
 }
 
 LayoutObject* FirstLetterPseudoElement::CreateLayoutObject(
-    const ComputedStyle& style,
-    LegacyLayout legacy) {
-  if (UNLIKELY(legacy == LegacyLayout::kAuto &&
-               !style.InitialLetter().IsNormal()))
-    return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
+    const ComputedStyle& style) {
+  if (UNLIKELY(!style.InitialLetter().IsNormal())) {
+    return LayoutObject::CreateBlockFlowOrListItem(this, style);
+  }
 
-  return PseudoElement::CreateLayoutObject(style, legacy);
+  return PseudoElement::CreateLayoutObject(style);
 }
 
 scoped_refptr<const ComputedStyle>
@@ -360,7 +356,8 @@ FirstLetterPseudoElement::CustomStyleForLayoutObject(
                    first_letter_text->Parent()->FirstLineStyle()));
 }
 
-void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* first_letter_text) {
+void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(
+    LayoutText* first_letter_text) {
   DCHECK(first_letter_text);
 
   // The original string is going to be either a generated content string or a
@@ -389,17 +386,13 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
   // This text fragment might be empty.
   LayoutTextFragment* remaining_text;
 
-  LegacyLayout legacy_layout = first_letter_text->ForceLegacyLayout()
-                                   ? LegacyLayout::kForce
-                                   : LegacyLayout::kAuto;
-
   if (first_letter_text->GetNode()) {
-    remaining_text = LayoutTextFragment::Create(
-        first_letter_text->GetNode(), old_text.Impl(), length, remaining_length,
-        legacy_layout);
+    remaining_text =
+        LayoutTextFragment::Create(first_letter_text->GetNode(),
+                                   old_text.Impl(), length, remaining_length);
   } else {
     remaining_text = LayoutTextFragment::CreateAnonymous(
-        *this, old_text.Impl(), length, remaining_length, legacy_layout);
+        *this, old_text.Impl(), length, remaining_length);
   }
 
   remaining_text->SetFirstLetterPseudoElement(this);
@@ -416,8 +409,8 @@ void FirstLetterPseudoElement::AttachFirstLetterTextLayoutObjects(LayoutText* fi
 
   // Construct text fragment for the first letter.
   const ComputedStyle* const letter_style = GetComputedStyle();
-  LayoutTextFragment* letter = LayoutTextFragment::CreateAnonymous(
-      *this, old_text.Impl(), 0, length, legacy_layout);
+  LayoutTextFragment* letter =
+      LayoutTextFragment::CreateAnonymous(*this, old_text.Impl(), 0, length);
   letter->SetFirstLetterPseudoElement(this);
   if (UNLIKELY(GetLayoutObject()->IsInitialLetterBox())) {
     const LayoutBlock& paragraph = *GetLayoutObject()->ContainingBlock();

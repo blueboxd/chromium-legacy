@@ -208,8 +208,9 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
     // Scoring signals are not logged for search suggestions or in incognito
     // mode.
     if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled() &&
-        !AutocompleteMatch::IsSearchType(i->type) && !log.is_incognito) {
-      suggestion->mutable_scoring_signals()->CopyFrom(i->scoring_signals);
+        !AutocompleteMatch::IsSearchType(i->type) && !log.is_incognito &&
+        i->scoring_signals) {
+      suggestion->mutable_scoring_signals()->CopyFrom(*i->scoring_signals);
     }
   }
   for (const auto& info : log.providers_info) {
@@ -223,10 +224,9 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   if (log.is_query_started_from_tile)
     omnibox_event->set_is_query_started_from_tile(true);
   for (auto feature : log.features_triggered)
-    omnibox_event->add_feature_triggered(static_cast<size_t>(feature));
+    omnibox_event->add_feature_triggered(feature);
   for (auto feature : log.features_triggered_in_session) {
-    omnibox_event->add_feature_triggered_in_session(
-        static_cast<size_t>(feature));
+    omnibox_event->add_feature_triggered_in_session(feature);
   }
 }
 

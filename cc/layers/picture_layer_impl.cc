@@ -15,7 +15,6 @@
 #include <utility>
 
 #include "base/containers/contains.h"
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/system/sys_info.h"
@@ -336,7 +335,7 @@ void PictureLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
     auto* quad = render_pass->CreateAndAppendDrawQuad<viz::PictureDrawQuad>();
     quad->SetNew(shared_quad_state, geometry_rect, visible_geometry_rect,
                  needs_blending, texture_rect, texture_size, nearest_neighbor_,
-                 viz::RGBA_8888, quad_content_rect, max_contents_scale,
+                 quad_content_rect, max_contents_scale,
                  std::move(image_animation_map),
                  raster_source_->GetDisplayItemList());
     ValidateQuadResources(quad);
@@ -1189,7 +1188,7 @@ float PictureLayerImpl::CalculateDirectlyCompositedImageRasterScale() const {
   float min_scale = MinimumContentsScale();
 
   float clamped_ideal_source_scale =
-      base::clamp(ideal_source_scale_key(), min_scale, max_scale);
+      std::clamp(ideal_source_scale_key(), min_scale, max_scale);
   // Use clamped_ideal_source_scale if adjusted_raster_scale is too far away.
   constexpr float kFarAwayFactor = 32.f;
   if (adjusted_raster_scale < clamped_ideal_source_scale / kFarAwayFactor) {
@@ -1211,7 +1210,7 @@ float PictureLayerImpl::CalculateDirectlyCompositedImageRasterScale() const {
   }
 
   adjusted_raster_scale =
-      base::clamp(adjusted_raster_scale, min_scale, max_scale);
+      std::clamp(adjusted_raster_scale, min_scale, max_scale);
   return adjusted_raster_scale;
 }
 

@@ -184,9 +184,7 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsAnonymousBlock() const {
     return IsCSSBox() && layout_object_->IsAnonymousBlock();
   }
-  bool IsFrameSet() const {
-    return IsCSSBox() && layout_object_->IsLayoutNGFrameSet();
-  }
+  bool IsFrameSet() const { return IsCSSBox() && layout_object_->IsFrameSet(); }
   bool IsListMarker() const {
     return IsCSSBox() && layout_object_->IsLayoutNGOutsideListMarker();
   }
@@ -218,8 +216,7 @@ class CORE_EXPORT NGPhysicalFragment
   }
 
   bool IsTableNGCell() const {
-    return IsTableNGPart() && layout_object_->IsTableCell() &&
-           !layout_object_->IsTableCellLegacy();
+    return IsTableNGPart() && layout_object_->IsTableCell();
   }
 
   bool IsGridNG() const { return layout_object_->IsLayoutNGGrid(); }
@@ -702,18 +699,18 @@ class CORE_EXPORT NGPhysicalFragment
       PhysicalRect* overflow);
 
   void AddOutlineRectsForNormalChildren(
-      Vector<PhysicalRect>* outline_rects,
+      OutlineRectCollector& collector,
       const PhysicalOffset& additional_offset,
       NGOutlineType outline_type,
       const LayoutBoxModelObject* containing_block) const;
-  void AddOutlineRectsForCursor(Vector<PhysicalRect>* outline_rects,
+  void AddOutlineRectsForCursor(OutlineRectCollector& collector,
                                 const PhysicalOffset& additional_offset,
                                 NGOutlineType outline_type,
                                 const LayoutBoxModelObject* containing_block,
                                 NGInlineCursor* cursor) const;
   void AddOutlineRectsForDescendant(
       const NGLink& descendant,
-      Vector<PhysicalRect>* rects,
+      OutlineRectCollector& collector,
       const PhysicalOffset& additional_offset,
       NGOutlineType outline_type,
       const LayoutBoxModelObject* containing_block) const;

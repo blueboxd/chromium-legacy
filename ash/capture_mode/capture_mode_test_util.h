@@ -10,6 +10,7 @@
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/user_nudge_controller.h"
 #include "ash/public/cpp/test/mock_projector_client.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/events/event_constants.h"
@@ -22,6 +23,7 @@ class FilePath;
 }  // namespace base
 
 namespace gfx {
+class Image;
 class Point;
 }  // namespace gfx
 
@@ -128,6 +130,10 @@ void PressAndReleaseKeyOnVK(ui::test::EventGenerator* event_generator,
                             int flags = ui::EF_NONE,
                             int source_device_id = ui::ED_UNKNOWN_DEVICE);
 
+// Reads a PNG image from disk and decodes it. Returns the bitmap image, if the
+// bitmap was successfully read from disk or an empty gfx::Image otherwise.
+gfx::Image ReadAndDecodeImageFile(const base::FilePath& image_path);
+
 // Defines a helper class to allow setting up and testing the Projector feature
 // in multiple test fixtures. Note that this helper initializes the Projector-
 // related features in its constructor, so test fixtures that use this should
@@ -175,7 +181,7 @@ class ViewVisibilityChangeWaiter : public views::ViewObserver {
                                views::View* starting_view) override;
 
  private:
-  views::View* const view_;
+  const raw_ptr<views::View, ExperimentalAsh> view_;
   base::RunLoop wait_loop_;
 };
 

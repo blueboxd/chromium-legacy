@@ -333,6 +333,10 @@ void ManagePasswordsUIController::OnShowMoveToAccountBubble(
 
 void ManagePasswordsUIController::OnBiometricAuthenticationForFilling(
     PrefService* prefs) {
+  // Existing dialog shouldn't be closed.
+  if (dialog_controller_) {
+    return;
+  }
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   const std::string promo_shown_counter =
       password_manager::prefs::kBiometricAuthBeforeFillingPromoShownCounter;
@@ -750,6 +754,10 @@ bool ManagePasswordsUIController::IsSavingPromptBlockedExplicitlyOrImplicitly()
 void ManagePasswordsUIController::AuthenticateUserWithMessage(
     const std::u16string& message,
     AvailabilityCallback callback) {
+  if (bypass_user_auth_for_testing_) {
+    std::move(callback).Run(true);
+    return;
+  }
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_WIN)
   std::move(callback).Run(true);
   return;
@@ -803,6 +811,12 @@ void ManagePasswordsUIController::
                          FinishMovingPasswordAfterAccountStoreOptInAuth,
                      weak_ptr_factory_.GetWeakPtr(),
                      passwords_data_.form_manager()));
+}
+
+[[nodiscard]] std::unique_ptr<base::AutoReset<bool>>
+ManagePasswordsUIController::BypassUserAuthtForTesting() {
+  return std::make_unique<base::AutoReset<bool>>(&bypass_user_auth_for_testing_,
+                                                 true);
 }
 
 void ManagePasswordsUIController::HidePasswordBubble() {

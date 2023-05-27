@@ -408,11 +408,6 @@ targets.windowed_test_launcher(
     label = "//media/cast:cast_unittests",
 )
 
-targets.compile_target(
-    name = "cc_perftests",
-    label = "//cc:cc_perftests",
-)
-
 targets.windowed_test_launcher(
     name = "cc_unittests",
     label = "//cc:cc_unittests",
@@ -484,6 +479,11 @@ targets.compile_target(
 targets.compile_target(
     name = "chrome_pkg",
     label = "//chrome/app:chrome_pkg",
+)
+
+targets.generated_script(
+    name = "chrome_private_code_test",
+    label = "//chrome:chrome_private_code_test",
 )
 
 targets.compile_target(
@@ -936,6 +936,11 @@ targets.compile_target(
     label = "//testing:empty_main",
 )
 
+targets.console_test_launcher(
+    name = "env_chromium_unittests",
+    label = "//third_party/leveldatabase:env_chromium_unittests",
+)
+
 targets.windowed_test_launcher(
     name = "events_unittests",
     label = "//ui/events:events_unittests",
@@ -1315,6 +1320,11 @@ targets.console_test_launcher(
 )
 
 targets.console_test_launcher(
+    name = "leveldb_unittests",
+    label = "//third_party/leveldatabase:leveldb_unittests",
+)
+
+targets.console_test_launcher(
     name = "libcups_unittests",
     label = "//chrome/services/cups_proxy:libcups_unittests",
 )
@@ -1446,9 +1456,14 @@ targets.compile_target(
     label = "//mojo/public/rust:mojo_rust",
 )
 
-targets.generated_script(
-    name = "mojo_rust_tests",
-    label = "//mojo/public/rust:mojo_rust_tests",
+targets.console_test_launcher(
+    name = "mojo_rust_integration_unittests",
+    label = "//mojo/public/rust:mojo_rust_integration_unittests",
+)
+
+targets.console_test_launcher(
+    name = "mojo_rust_unittests",
+    label = "//mojo/public/rust:mojo_rust_unittests",
 )
 
 targets.console_test_launcher(
@@ -1764,21 +1779,6 @@ targets.generated_script(
 targets.generated_script(
     name = "resource_sizes_lacros_chrome",
     label = "//chromeos/lacros:resource_sizes_lacros_chrome",
-)
-
-targets.generated_script(
-    name = "resource_sizes_monochrome_public_minimal_apks",
-    label = "//chrome/android:resource_sizes_monochrome_public_minimal_apks",
-)
-
-targets.generated_script(
-    name = "resource_sizes_trichrome",
-    label = "//chrome/android:resource_sizes_trichrome",
-)
-
-targets.generated_script(
-    name = "resource_sizes_system_webview_bundle",
-    label = "//android_webview:resource_sizes_system_webview_bundle",
 )
 
 targets.compile_target(
@@ -2313,6 +2313,11 @@ targets.generated_script(
         "--results-directory",
         "${ISOLATED_OUTDIR}",
     ],
+)
+
+targets.windowed_test_launcher(
+    name = "weblayer_browsertests",
+    label = "//weblayer/test:weblayer_browsertests",
 )
 
 targets.script(

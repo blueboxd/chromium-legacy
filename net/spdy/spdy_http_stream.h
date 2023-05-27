@@ -11,6 +11,7 @@
 #include <set>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
@@ -167,7 +168,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
   // After InitializeStream() is called but before OnClose() is called,
   //   |*stream_| is guaranteed to be valid.
   // After OnClose() is called, stream_ == nullptr.
-  SpdyStream* stream_ = nullptr;
+  raw_ptr<SpdyStream> stream_ = nullptr;
 
   // False before OnClose() is called, true after.
   bool stream_closed_ = false;

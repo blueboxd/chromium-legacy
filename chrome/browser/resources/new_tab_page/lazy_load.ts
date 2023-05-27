@@ -16,7 +16,7 @@ import './voice_search_overlay.js';
 import './modules/module_descriptors.js';
 import 'chrome://resources/cr_components/most_visited/most_visited.js';
 
-export {ImageServiceBrowserProxy} from 'chrome://resources/cr_components/image_service/browser_proxy.js';
+export {PageImageServiceBrowserProxy} from 'chrome://resources/cr_components/page_image_service/browser_proxy.js';
 export {CustomizeBackgroundsElement} from './customize_backgrounds.js';
 export {CustomizeDialogElement} from './customize_dialog.js';
 export {CustomizeModulesElement} from './customize_modules.js';
@@ -38,8 +38,9 @@ export {DummyModuleElement, dummyV2Descriptor} from './modules/dummy_v2/module.j
 // </if>
 export {FeedProxy} from './modules/feed/feed_module_proxy.js';
 export {feedDescriptor, FeedModuleElement, feedV2Descriptor} from './modules/feed/module.js';
+export {CartTileModuleElement} from './modules/history_clusters/cart/cart_tile.js';
 export {HistoryClustersProxy, HistoryClustersProxyImpl} from './modules/history_clusters/history_clusters_proxy.js';
-export {HistoryClusterElementType, HistoryClusterImageDisplayState, HistoryClusterLayoutType, historyClustersDescriptor, HistoryClustersModuleElement, LAYOUT_1_MIN_IMAGE_VISITS, LAYOUT_1_MIN_VISITS, LAYOUT_2_MIN_IMAGE_VISITS, LAYOUT_2_MIN_VISITS, LAYOUT_3_MIN_IMAGE_VISITS, LAYOUT_3_MIN_VISITS, MIN_RELATED_SEARCHES} from './modules/history_clusters/module.js';
+export {HistoryClusterElementType, HistoryClusterImageDisplayState, HistoryClusterLayoutType, historyClustersDescriptor, HistoryClustersModuleElement, LAYOUT_1_MIN_IMAGE_VISITS, LAYOUT_1_MIN_VISITS, LAYOUT_2_MIN_IMAGE_VISITS, LAYOUT_2_MIN_VISITS, LAYOUT_3_MIN_IMAGE_VISITS, LAYOUT_3_MIN_VISITS} from './modules/history_clusters/module.js';
 export {SuggestTileModuleElement} from './modules/history_clusters/suggest_tile.js';
 export {TileModuleElement} from './modules/history_clusters/tile.js';
 export {InfoDialogElement} from './modules/info_dialog.js';

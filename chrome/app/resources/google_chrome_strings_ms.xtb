@@ -17,15 +17,17 @@
 <translation id="1278833599417554002">Lancarkan semula untuk mengemas kini &amp;Chrome</translation>
 <translation id="1302523850133262269">Sila tunggu sementara Chrome memasang kemas kini sistem terkini.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> menghendaki anda membaca dan menerima Syarat Perkhidmatan berikut sebelum menggunakan peranti ini. Syarat ini tidak memperluas, mengubah suai atau mengehadkan Syarat Chrome OS Flex.</translation>
+<translation id="1341711321000856656">Anda boleh menukar profil untuk melihat kata laluan daripada profil Chrome yang lain</translation>
 <translation id="1363996462118479832">Chrome OS tidak dapat menyegerakkan data anda disebabkan oleh ralat melog masuk.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Komputer ini mempunyai versi Google Chrome paling terkini. Jika perisian tidak berfungsi, sila nyahpasang Google Chrome dan cuba semula.</translation>
 <translation id="139993653570221430">Anda boleh mengubah fikiran anda pada bila-bila masa dalam tetapan Chrome. Percubaan ini dijalankan di samping cara semasa iklan disiarkan, oleh itu anda tidak akan melihat perubahan dengan serta-merta.</translation>
+<translation id="1425903838053942728">{COUNT,plural, =0{Chrome sudah selesai membuat pengemaskinian. Anda boleh menggunakan versi terkini setelah anda membuat pelancaran semula. Selepas itu, tab semasa anda akan dibuka semula.}=1{Chrome sudah selesai membuat pengemaskinian. Anda boleh menggunakan versi terkini setelah anda membuat pelancaran semula. Selepas itu, tab semasa anda akan dibuka semula. Tetingkap Inkognito anda tidak akan dibuka semula.}other{Chrome sudah selesai membuat pengemaskinian. Anda boleh menggunakan versi terkini setelah anda membuat pelancaran semula. Selepas itu, tab semasa anda akan dibuka semula. # tetingkap Inkognito anda tidak akan dibuka semula.}}</translation>
 <translation id="1434626383986940139">Apl Chrome Canary</translation>
+<translation id="1492280395845991349">Lancarkan semula untuk menyelesaikan pengemaskinian Chrome</translation>
 <translation id="1507198376417198979">Sesuaikan profil Chrome baharu anda</translation>
 <translation id="1516530951338665275">Google Chrome memerlukan akses Bluetooth untuk meneruskan 
  penggandingan. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
-<translation id="1535597783576881392">Panduan ini membantu anda memahami pilihan anda supaya Chrome berfungsi dengan cara yang anda mahukan</translation>
 <translation id="1547295885616600893">Chrome OS menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS" />perisian sumber terbuka<ph name="END_LINK_CROS_OSS" /> tambahan.</translation>
 <translation id="1553358976309200471">Kemas Kini Chrome</translation>
 <translation id="1583073672411044740"><ph name="EXISTING_USER" /> telah pun dilog masuk ke profil Chrome ini. Tindakan ini akan membuat profil Chrome baharu untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -66,7 +68,6 @@
 <translation id="2131230230468101642">Untuk melindungi privasi anda, kami memadamkan minat anda yang disimpan melebihi 4 minggu secara automatik. Semasa anda terus menyemak imbas, minat itu mungkin muncul semula dalam senarai. Anda juga boleh mengalih keluar minat yang anda tidak mahu dipertimbangkan oleh Chrome.</translation>
 <translation id="2139300032719313227">Mulakan semula Chrome OS</translation>
 <translation id="2151406531797534936">Sila mulakan semula Chrome sekarang</translation>
-<translation id="2163996651553460171">Manfaatkan sepenuhnya Chrome</translation>
 <translation id="2174917724755363426">Pemasangan belum selesai. Anda pasti ingin membatalkan?</translation>
 <translation id="223889379102603431">Maklumat tentang cara Chrome mengurus sijil akarnya</translation>
 <translation id="2258103955319320201">Untuk mengakses bahan penyemak imbas Chrome anda pada semua peranti anda, log masuk, kemudian hidupkan penyegerakan</translation>
@@ -93,6 +94,7 @@
 <translation id="2652691236519827073">Buka Pautan dalam &amp;tab Chrome Baharu</translation>
 <translation id="2665296953892887393">Bantu jadikan Google Chrome lebih baik dengan menghantar laporan ranap dan <ph name="UMA_LINK" /> kepada Google.</translation>
 <translation id="2689103672227170538">Sambungan ini telah menukar halaman yang ditunjukkan apabila anda memulakan Chrome.</translation>
+<translation id="2712234843277364121">Lancarkan semula untuk pengemaskinian - tab anda akan dibuka semula</translation>
 <translation id="2742320827292110288">Amaran: Google Chrome tidak dapat menghalang sambungan daripada merakam sejarah penyemakan imbas anda. Untuk melumpuhkan sambungan ini dalam mod Inkognito, nyahpilih pilihan ini.</translation>
 <translation id="2765403129283291972">Chrome memerlukan kebenaran untuk mengakses mikrofon anda bagi tapak ini</translation>
 <translation id="2770231113462710648">Tukar penyemak imbas lalai kepada:</translation>
@@ -124,7 +126,6 @@
 <translation id="3140883423282498090">Perubahan anda akan berkuat kuasa apabila anda melancarkan semula Google Chrome pada masa hadapan.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3169523567916669830">Semasa percubaan, anda boleh melihat dan mengalih keluar topik minat yang digunakan oleh laman untuk memaparkan iklan kepada anda. Chrome menganggarkan minat anda berdasarkan sejarah penyemakan imbas anda baru-baru ini.</translation>
-<translation id="3211604354460514046">{NUM_DEVICES,plural, =1{Google Chrome disambungkan kepada peranti HID}other{Google Chrome disambungkan kepada peranti HID}}</translation>
 <translation id="3245429137663807393">Jika anda turut berkongsi laporan penggunaan Chrome, laporan tersebut menyertakan URL yang anda lawati</translation>
 <translation id="3282568296779691940">Log masuk ke Chrome</translation>
 <translation id="3286538390144397061">Mulakan Semula Sekarang</translation>
@@ -276,6 +277,7 @@
 <translation id="6365489425007284765">{COUNT,plural, =1{Pentadbir anda akan memadamkan data semakan imbas secara automatik apabila ciri ini tidak digunakan selama 1 minit. Pemadaman ini termasuk sejarah, autolengkap dan muat turun. Tab anda yang sedia ada akan kekal terbuka.}other{Pentadbir anda akan memadamkan data semakan imbas secara automatik apabila ciri ini tidak digunakan selama # minit. Pemadaman ini termasuk sejarah, autolengkap dan muat turun. Tab anda yang sedia ada akan kekal terbuka.}}</translation>
 <translation id="6412673304250309937">Semak URL melalui perbandingan dengan senarai tapak tidak selamat yang disimpan dalam Chrome. Jika tapak cuba mencuri kata laluan anda atau apabila anda memuat turun fail yang berbahaya, Chrome juga mungkin menghantar URL, termasuk sedikit kandungan halaman, kepada Penyemakan Imbas Selamat.</translation>
 <translation id="6418662306461808273">Tukar kepada profil Chrome yang sedia ada?</translation>
+<translation id="648319183876919572">Penyemakan Imbas Selamat Dipertingkatkan melakukan lebih banyak lagi untuk melindungi anda daripada laman web dan muat turun berbahaya</translation>
 <translation id="6493527311031785448">Google Chrome cuba <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">Chrome memerlukan kebenaran kamera untuk membuat peta 3D bagi persekitaran anda</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> - Google Chrome Dev</translation>
@@ -406,8 +408,10 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="8989968390305463310">Sejarah penyemakan imbas anda mempengaruhi iklan yang anda lihat dan minat seperti yang dianggarkan di bawah. Untuk melindungi privasi anda, Chrome memadamkan minat anda secara automatik secara bergilir setiap bulan. Minat akan dimuat semula melainkan anda mengalih keluar minat anda.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Kemas kini Chrome tersedia}=1{Kemas kini Chrome tersedia}other{Kemas kini Chrome telah tersedia selama # hari}}</translation>
 <translation id="9053892488859122171">Sistem Chrome OS Flex</translation>
+<translation id="9054037008353851982">Lancarkan semula untuk Pengemaskinian - Tab anda akan dibuka semula</translation>
 <translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
 <translation id="9138603949443464873">Untuk menggunakan perubahan anda, mulakan semula Chrome</translation>
+<translation id="9190003950176692491">{NUM_DEVICES,plural, =0{Google Chrome telah mengakses peranti HID}=1{Google Chrome mengakses peranti HID}other{Google Chrome mengakses peranti HID}}</translation>
 <translation id="9195993889682885387">Chrome dapat menganggarkan minat anda berdasarkan sejarah penyemakan imbas anda dari beberapa minggu yang lalu. Maklumat ini kekal pada peranti anda.</translation>
 <translation id="919706545465235479">Kemas kini Chrome untuk memulakan penyegerakan</translation>
 <translation id="922152298093051471">Sesuaikan Chrome</translation>

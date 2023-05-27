@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/guid.h"
+#include "base/uuid.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -80,18 +80,18 @@ TEST(ParentGuidPreprocessingTest, ShouldReturnGuidForPermanentFolders) {
   updates.back().entity.server_defined_unique_tag = "other_bookmarks";
 
   EXPECT_THAT(GetGuidForSyncIdInUpdatesForTesting(updates, kBookmarkBarId),
-              Eq(bookmarks::BookmarkNode::kBookmarkBarNodeGuid));
+              Eq(bookmarks::BookmarkNode::kBookmarkBarNodeUuid));
   EXPECT_THAT(GetGuidForSyncIdInUpdatesForTesting(updates, kMobileBookmarksId),
-              Eq(bookmarks::BookmarkNode::kMobileBookmarksNodeGuid));
+              Eq(bookmarks::BookmarkNode::kMobileBookmarksNodeUuid));
   EXPECT_THAT(GetGuidForSyncIdInUpdatesForTesting(updates, kOtherBookmarksId),
-              Eq(bookmarks::BookmarkNode::kOtherBookmarksNodeGuid));
+              Eq(bookmarks::BookmarkNode::kOtherBookmarksNodeUuid));
 }
 
 TEST(ParentGuidPreprocessingTest, ShouldPopulateParentGuidInInitialUpdates) {
   const std::string kBookmarkBarId = "bookmark_bar_id";
   const std::string kParentFolderId = "parent_folder_id";
-  const std::string kParentFolderGuid =
-      base::GUID::GenerateRandomV4().AsLowercaseString();
+  const std::string kParentFolderUuid =
+      base::Uuid::GenerateRandomV4().AsLowercaseString();
 
   // Populate updates representing:
   // bookmark_bar
@@ -105,7 +105,7 @@ TEST(ParentGuidPreprocessingTest, ShouldPopulateParentGuidInInitialUpdates) {
   updates.back().entity.id = kParentFolderId;
   updates.back().entity.legacy_parent_id = kBookmarkBarId;
   updates.back().entity.specifics.mutable_bookmark()->set_guid(
-      kParentFolderGuid);
+      kParentFolderUuid);
   updates.emplace_back();
   updates.back().entity.legacy_parent_id = kParentFolderId;
   updates.back().entity.specifics.mutable_bookmark()->set_guid("child_guid");
@@ -114,9 +114,9 @@ TEST(ParentGuidPreprocessingTest, ShouldPopulateParentGuidInInitialUpdates) {
 
   EXPECT_THAT(updates[0].entity.specifics.bookmark().parent_guid(), Eq(""));
   EXPECT_THAT(updates[1].entity.specifics.bookmark().parent_guid(),
-              Eq(bookmarks::BookmarkNode::kBookmarkBarNodeGuid));
+              Eq(bookmarks::BookmarkNode::kBookmarkBarNodeUuid));
   EXPECT_THAT(updates[2].entity.specifics.bookmark().parent_guid(),
-              Eq(kParentFolderGuid));
+              Eq(kParentFolderUuid));
 }
 
 TEST(ParentGuidPreprocessingTest,
@@ -124,10 +124,10 @@ TEST(ParentGuidPreprocessingTest,
   const std::string kBookmarkBarId = "bookmark_bar_id";
   const std::string kFolderId = "folder_id";
 
-  const std::string kFolderGuid =
-      base::GUID::GenerateRandomV4().AsLowercaseString();
-  const std::string kParentGuidInSpecifics =
-      base::GUID::GenerateRandomV4().AsLowercaseString();
+  const std::string kFolderUuid =
+      base::Uuid::GenerateRandomV4().AsLowercaseString();
+  const std::string kParentUuidInSpecifics =
+      base::Uuid::GenerateRandomV4().AsLowercaseString();
 
   // Populate updates representing:
   // bookmark_bar
@@ -140,19 +140,19 @@ TEST(ParentGuidPreprocessingTest,
   updates.emplace_back();
   updates.back().entity.id = kFolderId;
   updates.back().entity.legacy_parent_id = kBookmarkBarId;
-  updates.back().entity.specifics.mutable_bookmark()->set_guid(kFolderGuid);
+  updates.back().entity.specifics.mutable_bookmark()->set_guid(kFolderUuid);
   updates.back().entity.specifics.mutable_bookmark()->set_parent_guid(
-      kParentGuidInSpecifics);
+      kParentUuidInSpecifics);
 
   // Although |parent_id| points to bookmarks bar, the |parent_guid| field
   // should prevail.
   ASSERT_THAT(GetGuidForSyncIdInUpdatesForTesting(updates, kBookmarkBarId),
-              Eq(bookmarks::BookmarkNode::kBookmarkBarNodeGuid));
+              Eq(bookmarks::BookmarkNode::kBookmarkBarNodeUuid));
 
   PopulateParentGuidInSpecifics(/*tracker=*/nullptr, &updates);
 
   EXPECT_THAT(updates[1].entity.specifics.bookmark().parent_guid(),
-              Eq(kParentGuidInSpecifics));
+              Eq(kParentUuidInSpecifics));
 }
 
 TEST(ParentGuidPreprocessingTest,
@@ -183,7 +183,7 @@ TEST(ParentGuidPreprocessingTest,
                /*specifics=*/dummy_specifics);
 
   // Add one regular (non-permanent) node.
-  bookmarks::BookmarkNode tracked_node(/*id=*/1, base::GUID::GenerateRandomV4(),
+  bookmarks::BookmarkNode tracked_node(/*id=*/1, base::Uuid::GenerateRandomV4(),
                                        GURL());
   tracker->Add(&tracked_node, kSyncId,
                /*server_version=*/0, /*creation_time=*/base::Time::Now(),
@@ -199,19 +199,19 @@ TEST(ParentGuidPreprocessingTest,
   PopulateParentGuidInSpecifics(tracker.get(), &updates);
 
   EXPECT_THAT(updates[0].entity.specifics.bookmark().parent_guid(),
-              Eq(tracked_node.guid().AsLowercaseString()));
+              Eq(tracked_node.uuid().AsLowercaseString()));
   EXPECT_THAT(updates[1].entity.specifics.bookmark().parent_guid(),
-              Eq(bookmarks::BookmarkNode::kBookmarkBarNodeGuid));
+              Eq(bookmarks::BookmarkNode::kBookmarkBarNodeUuid));
 }
 
 TEST(ParentGuidPreprocessingTest,
      ShouldPopulateWithFakeGuidIfParentSetButUnknown) {
   // Fork of the private constant in the .cc file.
-  const std::string kInvalidParentGuid = "220a410e-37b9-5bbc-8674-ea982459f940";
+  const std::string kInvalidParentUuid = "220a410e-37b9-5bbc-8674-ea982459f940";
 
   const std::string kParentFolderId = "parent_folder_id";
-  const std::string kParentFolderGuid =
-      base::GUID::GenerateRandomV4().AsLowercaseString();
+  const std::string kParentFolderUuid =
+      base::Uuid::GenerateRandomV4().AsLowercaseString();
 
   // Populate updates representing:
   //  |- folder with unknown parent
@@ -220,12 +220,12 @@ TEST(ParentGuidPreprocessingTest,
   updates.back().entity.id = kParentFolderId;
   updates.back().entity.legacy_parent_id = "some_unknown_parent";
   updates.back().entity.specifics.mutable_bookmark()->set_guid(
-      kParentFolderGuid);
+      kParentFolderUuid);
 
   PopulateParentGuidInSpecifics(/*tracker=*/nullptr, &updates);
 
   EXPECT_THAT(updates[0].entity.specifics.bookmark().parent_guid(),
-              Eq(kInvalidParentGuid));
+              Eq(kInvalidParentUuid));
 }
 
 }  // namespace

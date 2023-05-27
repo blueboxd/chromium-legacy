@@ -42,11 +42,11 @@
 #include "chrome/browser/ash/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
-#include "chrome/browser/ash/file_manager/guest_os_file_tasks.h"
 #include "chrome/browser/ash/file_manager/open_util.h"
 #include "chrome/browser/ash/file_manager/open_with_browser.h"
 #include "chrome/browser/ash/file_manager/url_util.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ash/fileapi/file_system_backend.h"
@@ -110,7 +110,35 @@ const char kActionIdWebDriveOfficePowerPoint[] =
 const char kActionIdOpenInOffice[] = "open-in-office";
 const char kActionIdOpenWeb[] = "OPEN_WEB";
 
-const char kODFSExtensionId[] = "ajdgmkbkgifbokednjgbmieaemeighkg";
+// Searches for the installed extension in order of preference.
+std::string GetODFSExtensionId(Profile* profile) {
+  const ash::file_system_provider::Service* const service =
+      ash::file_system_provider::Service::Get(profile);
+
+  for (const auto& [provider_id, provider] : service->GetProviders()) {
+    if (provider_id.GetType() !=
+        ash::file_system_provider::ProviderId::EXTENSION) {
+      continue;
+    }
+    const auto& extension_id = provider_id.GetExtensionId();
+
+    // App from official internal build.
+    if (extension_id == extension_misc::kODFSExtensionId) {
+      return extension_misc::kODFSExtensionId;
+    }
+
+    // App built manually from internal repo.
+    if (extension_id == "gcpjnalmmghdoadafjgomdlghfnllceo") {
+      return "gcpjnalmmghdoadafjgomdlghfnllceo";
+    }
+
+    // App built manually from internal git, used for the early dogfood.
+    if (extension_id == "ajdgmkbkgifbokednjgbmieaemeighkg") {
+      return "ajdgmkbkgifbokednjgbmieaemeighkg";
+    }
+  }
+  return {};
+}
 
 namespace {
 
@@ -167,8 +195,9 @@ std::string ParseFilesAppActionId(const std::string& action_id) {
 // Returns true if path_mime_set contains a Google document.
 bool ContainsGoogleDocument(const std::vector<extensions::EntryInfo>& entries) {
   for (const auto& it : entries) {
-    if (drive::util::HasHostedDocumentExtension(it.path))
+    if (drive::util::HasHostedDocumentExtension(it.path)) {
       return true;
+    }
   }
   return false;
 }
@@ -177,8 +206,9 @@ bool ContainsGoogleDocument(const std::vector<extensions::EntryInfo>& entries) {
 void KeepOnlyFileManagerInternalTasks(std::vector<FullTaskDescriptor>* tasks) {
   std::vector<FullTaskDescriptor> filtered;
   for (FullTaskDescriptor& task : *tasks) {
-    if (IsFilesAppId(task.task_descriptor.app_id))
+    if (IsFilesAppId(task.task_descriptor.app_id)) {
       filtered.push_back(std::move(task));
+    }
   }
   tasks->swap(filtered);
 }
@@ -225,8 +255,9 @@ void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
   };
 
   const auto media_app_task = task_for_app(web_app::kMediaAppId);
-  if (media_app_task == tasks->end())
+  if (media_app_task == tasks->end()) {
     return;
+  }
 
   // TOOD(crbug/1071289): For a while is_file_extension_match would always be
   // false for System Web App manifests, even when specifying extension matches.
@@ -240,14 +271,16 @@ void AdjustTasksForMediaApp(const std::vector<extensions::EntryInfo>& entries,
   DCHECK(!media_app_task->is_generic_file_handler);
 
   // Otherwise, build a new list with Media App at the front.
-  if (media_app_task == tasks->begin())
+  if (media_app_task == tasks->begin()) {
     return;
+  }
 
   std::vector<FullTaskDescriptor> new_tasks;
   new_tasks.push_back(*media_app_task);
   for (auto it = tasks->begin(); it != tasks->end(); ++it) {
-    if (it != media_app_task)
+    if (it != media_app_task) {
       new_tasks.push_back(std::move(*it));
+    }
   }
   std::swap(*tasks, new_tasks);
 }
@@ -292,8 +325,9 @@ Profile* GetProfileForExtensionTask(Profile* profile,
 
   // Outside guest sessions, if the task is handled by a platform app, launch
   // the handler in the original profile.
-  if (extension.is_platform_app())
+  if (extension.is_platform_app()) {
     return profile->GetOriginalProfile();
+  }
   return profile;
 }
 
@@ -323,8 +357,9 @@ void PostProcessFoundTasks(Profile* profile,
   AdjustTasksForMediaApp(entries, &resulting_tasks->tasks);
 
   // Google documents can only be handled by internal handlers.
-  if (ContainsGoogleDocument(entries))
+  if (ContainsGoogleDocument(entries)) {
     KeepOnlyFileManagerInternalTasks(&resulting_tasks->tasks);
+  }
 
   std::set<std::string> disabled_actions;
 
@@ -363,8 +398,9 @@ void PostProcessFoundTasks(Profile* profile,
     }
   }
 
-  if (!disabled_actions.empty())
+  if (!disabled_actions.empty()) {
     RemoveFileManagerInternalActions(disabled_actions, &resulting_tasks->tasks);
+  }
 
   ChooseAndSetDefaultTask(profile, entries, resulting_tasks.get());
   std::move(callback).Run(std::move(resulting_tasks));
@@ -460,8 +496,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kOfficeSetupComplete, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-  registry->RegisterBooleanPref(prefs::kOfficeFilesAlwaysMove, false);
-  registry->RegisterBooleanPref(prefs::kOfficeMoveConfirmationShown, false);
+  registry->RegisterBooleanPref(prefs::kOfficeFilesAlwaysMoveToDrive, false);
+  registry->RegisterBooleanPref(prefs::kOfficeFilesAlwaysMoveToOneDrive, false);
+  registry->RegisterBooleanPref(prefs::kOfficeMoveConfirmationShownForDrive,
+                                false);
+  registry->RegisterBooleanPref(prefs::kOfficeMoveConfirmationShownForOneDrive,
+                                false);
   registry->RegisterTimePref(prefs::kOfficeFileMovedToOneDrive, base::Time());
   registry->RegisterTimePref(prefs::kOfficeFileMovedToGoogleDrive,
                              base::Time());
@@ -469,20 +509,27 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 // Converts a string to a TaskType. Returns TASK_TYPE_UNKNOWN on error.
 TaskType StringToTaskType(const std::string& str) {
-  if (str == kFileBrowserHandlerTaskType)
+  if (str == kFileBrowserHandlerTaskType) {
     return TASK_TYPE_FILE_BROWSER_HANDLER;
-  if (str == kFileHandlerTaskType)
+  }
+  if (str == kFileHandlerTaskType) {
     return TASK_TYPE_FILE_HANDLER;
-  if (str == kArcAppTaskType)
+  }
+  if (str == kArcAppTaskType) {
     return TASK_TYPE_ARC_APP;
-  if (str == kBruschettaAppTaskType)
+  }
+  if (str == kBruschettaAppTaskType) {
     return TASK_TYPE_BRUSCHETTA_APP;
-  if (str == kCrostiniAppTaskType)
+  }
+  if (str == kCrostiniAppTaskType) {
     return TASK_TYPE_CROSTINI_APP;
-  if (str == kWebAppTaskType)
+  }
+  if (str == kWebAppTaskType) {
     return TASK_TYPE_WEB_APP;
-  if (str == kPluginVmAppTaskType)
+  }
+  if (str == kPluginVmAppTaskType) {
     return TASK_TYPE_PLUGIN_VM_APP;
+  }
   return TASK_TYPE_UNKNOWN;
 }
 
@@ -573,8 +620,9 @@ void UpdateDefaultTask(Profile* profile,
                        const std::set<std::string>& suffixes,
                        const std::set<std::string>& mime_types) {
   PrefService* pref_service = profile->GetPrefs();
-  if (!pref_service)
+  if (!pref_service) {
     return;
+  }
 
   std::string task_id = TaskDescriptorToId(task_descriptor);
   if (ash::features::ShouldArcFileTasksUseAppService() &&
@@ -646,8 +694,9 @@ bool GetDefaultTaskFromPrefs(const PrefService& pref_service,
 
   const std::string* task_id = suffix_task_prefs.FindString(lower_suffix);
 
-  if (!task_id || task_id->empty())
+  if (!task_id || task_id->empty()) {
     return false;
+  }
 
   VLOG(1) << "Found suffix default handler: " << *task_id;
   return ParseTaskID(*task_id, task_out);
@@ -682,12 +731,14 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
     return true;
   }
 
-  if (result.size() != 3)
+  if (result.size() != 3) {
     return false;
+  }
 
   TaskType task_type = StringToTaskType(result[1]);
-  if (task_type == TASK_TYPE_UNKNOWN)
+  if (task_type == TASK_TYPE_UNKNOWN) {
     return false;
+  }
 
   task->app_id = result[0];
   task->task_type = task_type;
@@ -810,10 +861,9 @@ bool ExecuteFileTask(Profile* profile,
   if (task.task_type == TASK_TYPE_ARC_APP ||
       task.task_type == TASK_TYPE_WEB_APP ||
       task.task_type == TASK_TYPE_FILE_HANDLER ||
-      (ash::features::ShouldGuestOsFileTasksUseAppService() &&
-       (task.task_type == TASK_TYPE_BRUSCHETTA_APP ||
-        task.task_type == TASK_TYPE_CROSTINI_APP ||
-        task.task_type == TASK_TYPE_PLUGIN_VM_APP))) {
+      task.task_type == TASK_TYPE_BRUSCHETTA_APP ||
+      task.task_type == TASK_TYPE_CROSTINI_APP ||
+      task.task_type == TASK_TYPE_PLUGIN_VM_APP) {
     // TODO(petermarshall): Implement GetProfileForExtensionTask in Lacros if
     // necessary, for Chrome Apps.
     extensions::app_file_handler_util::MimeTypeCollector* mime_collector =
@@ -825,23 +875,15 @@ bool ExecuteFileTask(Profile* profile,
     return true;
   }
 
-  if (!ash::features::ShouldGuestOsFileTasksUseAppService() &&
-      (task.task_type == TASK_TYPE_BRUSCHETTA_APP ||
-       task.task_type == TASK_TYPE_CROSTINI_APP ||
-       task.task_type == TASK_TYPE_PLUGIN_VM_APP)) {
-    DCHECK_EQ(kGuestOsAppActionID, task.action_id);
-    ExecuteGuestOsTask(profile, task, file_urls, std::move(done));
-    return true;
-  }
-
   // Execute a file_browser_handler task in an Extension.
   if (task.task_type == TASK_TYPE_FILE_BROWSER_HANDLER) {
     // Get the extension.
     const Extension* extension = extensions::ExtensionRegistry::Get(profile)
                                      ->enabled_extensions()
                                      .GetByID(task.app_id);
-    if (!extension)
+    if (!extension) {
       return false;
+    }
 
     Profile* extension_task_profile =
         GetProfileForExtensionTask(profile, *extension);
@@ -927,22 +969,13 @@ void FindExtensionAndAppTasks(Profile* profile,
                               std::unique_ptr<ResultingTasks> resulting_tasks) {
   auto* tasks = &resulting_tasks->tasks;
 
-  // 2. Web tasks file_handlers (View/Open With), Chrome app file_handlers, and
+  // Web tasks file_handlers (View/Open With), Chrome app file_handlers, and
   // extension file_browser_handlers.
   FindAppServiceTasks(profile, entries, file_urls, dlp_source_urls, tasks);
 
-  // 3. Find and append Guest OS tasks directly if Guest OS file tasks aren't
-  // provided by App Service.
-  if (!ash::features::ShouldGuestOsFileTasksUseAppService()) {
-    FindGuestOsTasks(
-        profile, entries, file_urls, tasks,
-        // Done. Apply post-filtering and callback.
-        base::BindOnce(PostProcessFoundTasks, profile, entries,
-                       std::move(callback), std::move(resulting_tasks)));
-  } else {
-    PostProcessFoundTasks(profile, entries, std::move(callback),
-                          std::move(resulting_tasks));
-  }
+  // Done. Apply post-filtering and callback.
+  PostProcessFoundTasks(profile, entries, std::move(callback),
+                        std::move(resulting_tasks));
 }
 
 void FindAllTypesOfTasks(Profile* profile,
@@ -1109,8 +1142,9 @@ bool IsHtmlFile(const base::FilePath& path) {
   constexpr const char* kHtmlExtensions[] = {".htm", ".html", ".mhtml",
                                              ".xht", ".xhtm", ".xhtml"};
   for (const char* extension : kHtmlExtensions) {
-    if (path.MatchesExtension(extension))
+    if (path.MatchesExtension(extension)) {
       return true;
+    }
   }
   return false;
 }
@@ -1119,8 +1153,9 @@ bool IsOfficeFile(const base::FilePath& path) {
   constexpr const char* kOfficeExtensions[] = {".doc",  ".docx", ".xls",
                                                ".xlsx", ".ppt",  ".pptx"};
   for (const char* extension : kOfficeExtensions) {
-    if (path.MatchesExtension(extension))
+    if (path.MatchesExtension(extension)) {
       return true;
+    }
   }
   return false;
 }
@@ -1185,21 +1220,44 @@ bool OfficeSetupComplete(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kOfficeSetupComplete);
 }
 
-void SetAlwaysMoveOfficeFiles(Profile* profile, bool always_move) {
-  profile->GetPrefs()->SetBoolean(prefs::kOfficeFilesAlwaysMove, always_move);
+void SetAlwaysMoveOfficeFilesToDrive(Profile* profile, bool always_move) {
+  profile->GetPrefs()->SetBoolean(prefs::kOfficeFilesAlwaysMoveToDrive,
+                                  always_move);
 }
 
-bool AlwaysMoveOfficeFiles(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kOfficeFilesAlwaysMove);
+bool AlwaysMoveOfficeFilesToDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(prefs::kOfficeFilesAlwaysMoveToDrive);
 }
 
-void SetOfficeMoveConfirmationShown(Profile* profile, bool complete) {
-  profile->GetPrefs()->SetBoolean(prefs::kOfficeMoveConfirmationShown,
+void SetAlwaysMoveOfficeFilesToOneDrive(Profile* profile, bool always_move) {
+  profile->GetPrefs()->SetBoolean(prefs::kOfficeFilesAlwaysMoveToOneDrive,
+                                  always_move);
+}
+
+bool AlwaysMoveOfficeFilesToOneDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeFilesAlwaysMoveToOneDrive);
+}
+
+void SetOfficeMoveConfirmationShownForDrive(Profile* profile, bool complete) {
+  profile->GetPrefs()->SetBoolean(prefs::kOfficeMoveConfirmationShownForDrive,
                                   complete);
 }
 
-bool OfficeMoveConfirmationShown(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kOfficeMoveConfirmationShown);
+bool GetOfficeMoveConfirmationShownForDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeMoveConfirmationShownForDrive);
+}
+
+void SetOfficeMoveConfirmationShownForOneDrive(Profile* profile,
+                                               bool complete) {
+  profile->GetPrefs()->SetBoolean(
+      prefs::kOfficeMoveConfirmationShownForOneDrive, complete);
+}
+
+bool GetOfficeMoveConfirmationShownForOneDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeMoveConfirmationShownForOneDrive);
 }
 
 void SetOfficeFileMovedToOneDrive(Profile* profile, base::Time moved) {

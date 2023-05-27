@@ -264,6 +264,16 @@ AX_BASE_EXPORT bool SupportsRequired(const ax::mojom::Role role);
 // Returns true if the provided role supports toggle.
 AX_BASE_EXPORT bool SupportsToggle(const ax::mojom::Role role);
 
+// Returns true if the provided role is one of the roles considered plain
+// elements. Check AXObject::IsPlainContent()
+AX_BASE_EXPORT bool IsPlainContentElement(const ax::mojom::Role role);
+
+// Returns true if the provided role allows for arrow keys expanding or
+// collapsing the element.
+// https://www.w3.org/WAI/ARIA/apg/patterns/treeview/examples/treeview-1b/
+AX_BASE_EXPORT bool SupportsArrowKeysForExpandCollapse(
+    const ax::mojom::Role role);
+
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_ROLE_PROPERTIES_H_

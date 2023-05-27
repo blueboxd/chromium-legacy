@@ -23,10 +23,12 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/aura/client/cursor_shape_client.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -210,7 +212,7 @@ class TestHelper {
   float GetStoredZoomScale(int64_t id);
 
  private:
-  AshTestBase* delegate_;  // Not owned
+  raw_ptr<AshTestBase, ExperimentalAsh> delegate_;  // Not owned
 };
 
 TestHelper::TestHelper(AshTestBase* delegate) : delegate_(delegate) {}
@@ -348,7 +350,7 @@ class TestEventHandler : public ui::EventHandler {
 
  private:
   gfx::Point mouse_location_;
-  aura::Window* target_root_;
+  raw_ptr<aura::Window, ExperimentalAsh> target_root_;
 
   float touch_radius_x_;
   float touch_radius_y_;
@@ -583,8 +585,8 @@ namespace {
 
 display::ManagedDisplayInfo
 CreateDisplayInfo(int64_t id, int y, display::Display::Rotation rotation) {
-  display::ManagedDisplayInfo info(id, "", false);
-  info.SetBounds(gfx::Rect(0, y, 600, 500));
+  display::ManagedDisplayInfo info =
+      display::CreateDisplayInfo(id, gfx::Rect(0, y, 600, 500));
   info.SetRotation(rotation, display::Display::RotationSource::ACTIVE);
   return info;
 }
@@ -1090,9 +1092,8 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
   // Deleting 2nd display and adding 2nd display with a different ID.  The 2nd
   // display shouldn't become primary.
   UpdateDisplay("300x200");
-  display::ManagedDisplayInfo third_display_info(secondary_display.id() + 1,
-                                                 std::string(), false);
-  third_display_info.SetBounds(secondary_display.bounds());
+  display::ManagedDisplayInfo third_display_info = display::CreateDisplayInfo(
+      secondary_display.id() + 1, secondary_display.bounds());
   ASSERT_NE(primary_display.id(), third_display_info.id());
 
   const display::ManagedDisplayInfo& primary_display_info =
@@ -1841,19 +1842,24 @@ TEST_F(WindowTreeHostManagerTest,
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
   auto* cursor_manager = shell->cursor_manager();
+  const auto& cursor_shape_client = aura::client::GetCursorShapeClient();
   CursorManagerTestApi test_api;
 
   window_tree_host_manager->GetPrimaryRootWindow()->MoveCursorTo(
       gfx::Point(20, 50));
 
   EXPECT_EQ(gfx::Point(20, 50), env->last_mouse_location());
-  EXPECT_EQ(1.0f, cursor_manager->GetCursor().image_scale_factor());
+  EXPECT_EQ(1.0f,
+            cursor_shape_client.GetCursorData(cursor_manager->GetCursor())
+                ->scale_factor);
   EXPECT_EQ(display::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
 
   SwapPrimaryDisplay();
 
   EXPECT_EQ(gfx::Point(20, 50), env->last_mouse_location());
-  EXPECT_EQ(2.0f, cursor_manager->GetCursor().image_scale_factor());
+  EXPECT_EQ(2.0f,
+            cursor_shape_client.GetCursorData(cursor_manager->GetCursor())
+                ->scale_factor);
   EXPECT_EQ(display::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
 }
 
@@ -1866,6 +1872,7 @@ TEST_F(WindowTreeHostManagerTest,
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
   auto* cursor_manager = shell->cursor_manager();
+  const auto& cursor_shape_client = aura::client::GetCursorShapeClient();
   CursorManagerTestApi test_api;
 
   UpdateDisplay("400x300*2/r,300x200");
@@ -1878,7 +1885,9 @@ TEST_F(WindowTreeHostManagerTest,
       gfx::Point(20, 50));
 
   EXPECT_EQ(gfx::Point(20, 50), env->last_mouse_location());
-  EXPECT_EQ(1.0f, cursor_manager->GetCursor().image_scale_factor());
+  EXPECT_EQ(1.0f,
+            cursor_shape_client.GetCursorData(cursor_manager->GetCursor())
+                ->scale_factor);
   EXPECT_EQ(display::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
 
   UpdateDisplay("400x300*2/r");
@@ -1888,7 +1897,9 @@ TEST_F(WindowTreeHostManagerTest,
   // Cursor should be centered on the remaining display.
   EXPECT_EQ(gfx::Point(75, 100), env->last_mouse_location());
 
-  EXPECT_EQ(2.0f, cursor_manager->GetCursor().image_scale_factor());
+  EXPECT_EQ(2.0f,
+            cursor_shape_client.GetCursorData(cursor_manager->GetCursor())
+                ->scale_factor);
   EXPECT_EQ(display::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
 }
 
@@ -1899,6 +1910,7 @@ TEST_F(WindowTreeHostManagerTest,
   WindowTreeHostManager* window_tree_host_manager =
       shell->window_tree_host_manager();
   auto* cursor_manager = shell->cursor_manager();
+  const auto& cursor_shape_client = aura::client::GetCursorShapeClient();
   CursorManagerTestApi test_api;
 
   UpdateDisplay("400x300*2/r,300x200");
@@ -1915,7 +1927,9 @@ TEST_F(WindowTreeHostManagerTest,
   cursor_manager->HideCursor();
 
   EXPECT_EQ(cursor_location, env->last_mouse_location());
-  EXPECT_EQ(1.0f, cursor_manager->GetCursor().image_scale_factor());
+  EXPECT_EQ(1.0f,
+            cursor_shape_client.GetCursorData(cursor_manager->GetCursor())
+                ->scale_factor);
   EXPECT_EQ(display::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
 
   UpdateDisplay("400x300*2/r");
@@ -1931,7 +1945,9 @@ TEST_F(WindowTreeHostManagerTest,
   EXPECT_EQ(gfx::Point(20, 50), env->last_mouse_location());
 
   // The cursor scale and rotation should be updated.
-  EXPECT_EQ(2.0f, cursor_manager->GetCursor().image_scale_factor());
+  EXPECT_EQ(2.0f,
+            cursor_shape_client.GetCursorData(cursor_manager->GetCursor())
+                ->scale_factor);
   EXPECT_EQ(display::Display::ROTATE_90, test_api.GetCurrentCursorRotation());
 }
 

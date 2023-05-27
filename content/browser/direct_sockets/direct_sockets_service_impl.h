@@ -60,7 +60,7 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
   static void SetNetworkContextForTesting(network::mojom::NetworkContext*);
 
 #if BUILDFLAG(IS_CHROMEOS)
-  static void SetAlwaysOpenFirewallHoleForTesting(bool value);
+  static void SetAlwaysOpenFirewallHoleForTesting();
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
  private:

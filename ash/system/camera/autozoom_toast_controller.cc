@@ -4,6 +4,8 @@
 
 #include "ash/system/camera/autozoom_toast_controller.h"
 
+#include <algorithm>
+
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -11,7 +13,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/unified/unified_system_tray.h"
-#include "base/cxx17_backports.h"
 
 namespace ash {
 
@@ -69,8 +70,6 @@ void AutozoomToastController::ShowToast() {
   init_params.anchor_view = nullptr;
   init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
   init_params.anchor_rect = tray_->shelf()->GetSystemTrayAnchorRect();
-  // Decrease bottom and right insets to compensate for the adjustment of
-  // the respective edges in Shelf::GetSystemTrayAnchorRect().
   init_params.insets = GetTrayBubbleInsets();
   init_params.translucent = true;
 
@@ -89,8 +88,7 @@ void AutozoomToastController::ShowToast() {
   StartAutoCloseTimer();
   UpdateToastView();
 
-  tray_->SetTrayBubbleHeight(
-      bubble_widget_->GetWindowBoundsInScreen().height());
+  tray_->NotifySecondaryBubbleHeight(toast_view_->height());
 }
 
 void AutozoomToastController::HideToast() {
@@ -98,7 +96,7 @@ void AutozoomToastController::HideToast() {
   if (!bubble_widget_ || bubble_widget_->IsClosed())
     return;
   bubble_widget_->Close();
-  tray_->SetTrayBubbleHeight(0);
+  tray_->NotifySecondaryBubbleHeight(0);
 }
 
 void AutozoomToastController::BubbleViewDestroyed() {
@@ -151,8 +149,8 @@ void AutozoomToastController::OnAutozoomStateChanged(
 void AutozoomToastController::UpdateToastView() {
   if (toast_view_) {
     toast_view_->SetAutozoomEnabled(/*enabled=*/delegate_->IsAutozoomEnabled());
-    int width = base::clamp(toast_view_->GetPreferredSize().width(),
-                            kAutozoomToastMinWidth, kAutozoomToastMaxWidth);
+    int width = std::clamp(toast_view_->GetPreferredSize().width(),
+                           kAutozoomToastMinWidth, kAutozoomToastMaxWidth);
     bubble_view_->SetPreferredWidth(width);
   }
 }

@@ -69,7 +69,6 @@
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
 #import "ios/chrome/browser/crash_report/crash_report_helper.h"
-#import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #import "ios/chrome/browser/credential_provider/credential_provider_buildflags.h"
 #import "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
@@ -83,6 +82,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
+#import "ios/chrome/browser/main/browser_provider.h"
 #import "ios/chrome/browser/memory/memory_debugger_manager.h"
 #import "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/metrics/incognito_usage_app_state_agent.h"
@@ -90,6 +90,7 @@
 #import "ios/chrome/browser/omaha/omaha_service.h"
 #import "ios/chrome/browser/passwords/password_manager_util_ios.h"
 #import "ios/chrome/browser/paths/paths.h"
+#import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
 #import "ios/chrome/browser/screenshot/screenshot_metrics_recorder.h"
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
@@ -98,7 +99,8 @@
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/share_extension/share_extension_service.h"
 #import "ios/chrome/browser/share_extension/share_extension_service_factory.h"
-#import "ios/chrome/browser/shared/public/commands/browser_commands.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_delegate.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
@@ -111,8 +113,6 @@
 #import "ios/chrome/browser/ui/appearance/appearance_customization.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
-#import "ios/chrome/browser/ui/main/scene_delegate.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web/certificate_policy_app_agent.h"
@@ -374,8 +374,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @end
 
 @implementation MainController
-// Defined by MainControllerGuts.
-@synthesize restoreHelper = _restoreHelper;
 
 // Defined by public protocols.
 // - BrowserLauncher
@@ -498,21 +496,20 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
 
+  ChromeBrowserState* browserState = self.appState.mainBrowserState;
+  DCHECK(browserState);
   [self.appState
-      addAgent:[[PostRestoreAppAgent alloc]
-                   initWithPromosManager:GetApplicationContext()
-                                             ->GetPromosManager()
-                   authenticationService:AuthenticationServiceFactory::
-                                             GetForBrowserState(
-                                                 self.appState.mainBrowserState)
-                              localState:GetApplicationContext()
-                                             ->GetLocalState()]];
+      addAgent:
+          [[PostRestoreAppAgent alloc]
+              initWithPromosManager:PromosManagerFactory::GetForBrowserState(
+                                        browserState)
+              authenticationService:AuthenticationServiceFactory::
+                                        GetForBrowserState(browserState)
+                         localState:GetApplicationContext()->GetLocalState()]];
 }
 
 // This initialization must happen before any windows are created.
-// Returns YES iff there's a session restore available.
-- (BOOL)startUpBeforeFirstWindowCreatedAndPrepareForRestorationPostCrash:
-    (BOOL)showPostCrashLaunchInfobar {
+- (void)startUpBeforeFirstWindowCreated {
   GetApplicationContext()->OnAppEnterForeground();
 
   // Although this duplicates some metrics_service startup logic also in
@@ -543,17 +540,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   DCHECK_EQ(chromeBrowserState, self.appState.mainBrowserState);
 #endif  // !defined(NDEBUG)
 
-  // The CrashRestoreHelper must clean up the old browser state information.
-  // `self.restoreHelper` must be kept alive until the BVC receives the
-  // browser state.
-  BOOL needRestoration = NO;
-  if (showPostCrashLaunchInfobar) {
-    NSSet<NSString*>* sessions =
-        [[PreviousSessionInfo sharedInstance] connectedSceneSessionsIDs];
-    needRestoration =
-        [CrashRestoreHelper moveAsideSessions:sessions
-                              forBrowserState:self.appState.mainBrowserState];
-  }
   if (!base::ios::IsMultipleScenesSupported()) {
     NSSet<NSString*>* previousSessions =
         [PreviousSessionInfo sharedInstance].connectedSceneSessionsIDs;
@@ -584,8 +570,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #endif
 
   _windowConfigurationRecorder = [[WindowConfigurationRecorder alloc] init];
-
-  return needRestoration;
 }
 
 // This initialization must only happen once there's at least one Chrome window
@@ -624,14 +608,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (GetApplicationContext()->WasLastShutdownClean())
     return PostCrashAction::kRestoreTabsCleanShutdown;
 
-  bool show_crash_infobar = !base::FeatureList::IsEnabled(kRemoveCrashInfobar);
-  // When `kRemoveCrashInfobar` launches, remove the isFirstLaunchAfterUpgrade
-  // check entirely.
-  if (show_crash_infobar && ![self isFirstLaunchAfterUpgrade]) {
-    return PostCrashAction::kStashTabsAndShowNTP;
-  }
-
-  if (!show_crash_infobar && crash_util::GetFailedStartupAttemptCount() >= 2) {
+  if (crash_util::GetFailedStartupAttemptCount() >= 2) {
     return PostCrashAction::kShowNTPWithReturnToTab;
   }
 
@@ -643,10 +620,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // crashes.
 
   self.appState.postCrashAction = [self postCrashAction];
-  self.appState.sessionRestorationRequired =
-      [self startUpBeforeFirstWindowCreatedAndPrepareForRestorationPostCrash:
-                self.appState.postCrashAction ==
-                PostCrashAction::kStashTabsAndShowNTP];
+  [self startUpBeforeFirstWindowCreated];
   base::UmaHistogramEnumeration("Stability.IOS.PostCrashAction",
                                 self.appState.postCrashAction);
 }
@@ -766,14 +740,15 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 }
 
-- (id<BrowserInterfaceProvider>)interfaceProvider {
+- (id<BrowserProviderInterface>)browserProviderInterface {
   if (self.appState.foregroundActiveScene) {
-    return self.appState.foregroundActiveScene.interfaceProvider;
+    return self.appState.foregroundActiveScene.browserProviderInterface;
   }
   NSArray<SceneState*>* connectedScenes = self.appState.connectedScenes;
 
-  return connectedScenes.count == 0 ? nil
-                                    : connectedScenes[0].interfaceProvider;
+  return connectedScenes.count == 0
+             ? nil
+             : connectedScenes[0].browserProviderInterface;
 }
 
 - (BOOL)isFirstLaunchAfterUpgrade {
@@ -1026,10 +1001,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // If the user chooses to restore their session, some cached snapshots and
   // session states may be needed. Otherwise, cleanup the snapshots and session
   // states
-  if (self.appState.postCrashAction != PostCrashAction::kStashTabsAndShowNTP) {
-    [self scheduleSnapshotsCleanup];
-    [self scheduleSessionStateCacheCleanup];
-  }
+  [self scheduleSnapshotsCleanup];
+  [self scheduleSessionStateCacheCleanup];
 }
 
 - (void)scheduleMemoryDebuggingTools {
@@ -1262,24 +1235,25 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #pragma mark - Helper methods backed by interfaces.
 
 - (Browser*)mainBrowser {
-  DCHECK(self.interfaceProvider);
-  return self.interfaceProvider.mainInterface.browser;
+  DCHECK(self.browserProviderInterface);
+  return self.browserProviderInterface.mainBrowserProvider.browser;
 }
 
 - (Browser*)otrBrowser {
-  DCHECK(self.interfaceProvider);
-  return self.interfaceProvider.incognitoInterface.browser;
+  DCHECK(self.browserProviderInterface);
+  return self.browserProviderInterface.incognitoBrowserProvider.browser;
 }
 
 - (Browser*)currentBrowser {
-  return self.interfaceProvider.currentInterface.browser;
+  return self.browserProviderInterface.currentBrowserProvider.browser;
 }
 
 - (ChromeBrowserState*)currentBrowserState {
-  if (!self.interfaceProvider.currentInterface.browser) {
+  if (!self.browserProviderInterface.currentBrowserProvider.browser) {
     return nullptr;
   }
-  return self.interfaceProvider.currentInterface.browser->GetBrowserState();
+  return self.browserProviderInterface.currentBrowserProvider.browser
+      ->GetBrowserState();
 }
 
 - (void)cleanupSnapshots {
@@ -1322,15 +1296,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   for (SceneState* sceneState in self.appState.connectedScenes) {
     // Assumes all scenes share `browserState`.
-    id<BrowserInterfaceProvider> sceneInterface = sceneState.interfaceProvider;
+    id<BrowserProviderInterface> browserProviderInterface =
+        sceneState.browserProviderInterface;
     if (willShowActivityIndicator) {
       // Show activity overlay so users know that clear browsing data is in
       // progress.
-      if (sceneInterface.mainInterface.browser) {
+      if (browserProviderInterface.mainBrowserProvider.browser) {
         didShowActivityIndicator = YES;
-        id<BrowserCoordinatorCommands> handler = HandlerForProtocol(
-            sceneInterface.mainInterface.browser->GetCommandDispatcher(),
-            BrowserCoordinatorCommands);
+        id<BrowserCoordinatorCommands> handler =
+            HandlerForProtocol(browserProviderInterface.mainBrowserProvider
+                                   .browser->GetCommandDispatcher(),
+                               BrowserCoordinatorCommands);
         [handler showActivityOverlay];
       }
     }
@@ -1342,25 +1318,30 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     DCHECK([NSThread isMainThread]);
     for (SceneState* sceneState in self.appState.connectedScenes) {
       // Assumes all scenes share `browserState`.
-      id<BrowserInterfaceProvider> sceneInterface =
-          sceneState.interfaceProvider;
+      id<BrowserProviderInterface> browserProviderInterface =
+          sceneState.browserProviderInterface;
 
       if (willShowActivityIndicator) {
         // User interaction still needs to be disabled as a way to
         // force reload all the web states and to reset NTPs.
-        sceneInterface.mainInterface.userInteractionEnabled = NO;
-        sceneInterface.incognitoInterface.userInteractionEnabled = NO;
+        browserProviderInterface.mainBrowserProvider.userInteractionEnabled =
+            NO;
+        browserProviderInterface.incognitoBrowserProvider
+            .userInteractionEnabled = NO;
 
-        if (didShowActivityIndicator && sceneInterface.mainInterface.browser) {
-          id<BrowserCoordinatorCommands> handler = HandlerForProtocol(
-              sceneInterface.mainInterface.browser->GetCommandDispatcher(),
-              BrowserCoordinatorCommands);
+        if (didShowActivityIndicator &&
+            browserProviderInterface.mainBrowserProvider.browser) {
+          id<BrowserCoordinatorCommands> handler =
+              HandlerForProtocol(browserProviderInterface.mainBrowserProvider
+                                     .browser->GetCommandDispatcher(),
+                                 BrowserCoordinatorCommands);
           [handler hideActivityOverlay];
         }
       }
-      sceneInterface.mainInterface.userInteractionEnabled = YES;
-      sceneInterface.incognitoInterface.userInteractionEnabled = YES;
-      [sceneInterface.currentInterface setPrimary:YES];
+      browserProviderInterface.mainBrowserProvider.userInteractionEnabled = YES;
+      browserProviderInterface.incognitoBrowserProvider.userInteractionEnabled =
+          YES;
+      [browserProviderInterface.currentBrowserProvider setPrimary:YES];
     }
     // `completionBlock` is run once, not once per scene.
     if (completionBlock)

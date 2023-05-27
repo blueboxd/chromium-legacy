@@ -17,8 +17,10 @@ import 'chrome://resources/ash/common/network/network_ip_config.js';
 import 'chrome://resources/ash/common/network/network_nameservers.js';
 import 'chrome://resources/ash/common/network/network_property_list_mojo.js';
 import 'chrome://resources/ash/common/network/network_siminfo.js';
+import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
@@ -28,7 +30,6 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import '../../controls/controlled_button.js';
 import '../../controls/settings_toggle_button.js';
-import '../../prefs/prefs.js';
 import './cellular_roaming_toggle_button.js';
 import './internet_shared.css.js';
 import './network_proxy_section.js';
@@ -40,6 +41,7 @@ import {CrPolicyNetworkBehaviorMojo, CrPolicyNetworkBehaviorMojoInterface} from 
 import {MojoInterfaceProviderImpl} from 'chrome://resources/ash/common/network/mojo_interface_provider.js';
 import {NetworkListenerBehavior, NetworkListenerBehaviorInterface} from 'chrome://resources/ash/common/network/network_listener_behavior.js';
 import {OncMojo} from 'chrome://resources/ash/common/network/onc_mojo.js';
+import {PrefsMixin, PrefsMixinInterface} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
@@ -48,7 +50,6 @@ import {ActivationStateType, ApnProperties, ConfigProperties, CrosNetworkConfigR
 import {ConnectionStateType, DeviceStateType, IPConfigType, NetworkType, OncSource, PolicySource, PortalState} from 'chrome://resources/mojo/chromeos/services/network_config/public/mojom/network_types.mojom-webui.js';
 import {afterNextRender, flush, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
 import {assertExists, castExists} from '../assert_extras.js';
 import {Constructor} from '../common/types.js';
 import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
@@ -1481,7 +1482,7 @@ class SettingsInternetDetailPageElement extends
         '#passpointRemovalDialog'));
   }
 
-  private handleConnectTap_(): void {
+  private handleConnectClick_(): void {
     assertExists(this.managedProperties_);
     if (this.managedProperties_.type === NetworkType.kTether &&
         (!this.managedProperties_.typeProperties.tether!.hasConnectedToHost)) {
@@ -1510,7 +1511,7 @@ class SettingsInternetDetailPageElement extends
     recordSettingChange();
   }
 
-  private async handleDisconnectTap_(): Promise<void> {
+  private async handleDisconnectClick_(): Promise<void> {
     recordSettingChange();
     const response = await this.networkConfig_.startDisconnect(this.guid);
     if (!response.success) {
@@ -1518,17 +1519,17 @@ class SettingsInternetDetailPageElement extends
     }
   }
 
-  private onConnectDisconnectTap_(): void {
+  private onConnectDisconnectClick_(): void {
     if (this.enableConnect_(
             this.managedProperties_, this.defaultNetwork,
             this.propertiesReceived_, this.outOfRange_, this.globalPolicy,
             this.managedNetworkAvailable, this.deviceState_)) {
-      this.handleConnectTap_();
+      this.handleConnectClick_();
       return;
     }
 
     if (this.showDisconnect_(this.managedProperties_)) {
-      this.handleDisconnectTap_();
+      this.handleDisconnectClick_();
       return;
     }
   }
@@ -1570,7 +1571,7 @@ class SettingsInternetDetailPageElement extends
     return '';
   }
 
-  private async onForgetTap_(): Promise<void> {
+  private async onForgetClick_(): Promise<void> {
     if (this.isPasspointWifi_(this.managedProperties_)) {
       // Ask user confirmation before removing a Passpoint Wi-Fi and the
       // associated subscription.
@@ -1595,15 +1596,15 @@ class SettingsInternetDetailPageElement extends
     this.close();
   }
 
-  private onSigninTap_(): void {
+  private onSigninClick_(): void {
     this.browserProxy_.showPortalSignin(this.guid);
   }
 
-  private onActivateTap_(): void {
+  private onActivateClick_(): void {
     this.browserProxy_.showCellularSetupUi(this.guid);
   }
 
-  private onConfigureTap_(): void {
+  private onConfigureClick_(): void {
     if (this.managedProperties_ &&
         (this.isThirdPartyVpn_(this.managedProperties_) ||
          this.isArcVpn_(this.managedProperties_))) {
@@ -1625,7 +1626,7 @@ class SettingsInternetDetailPageElement extends
     this.dispatchEvent(showConfigEvent);
   }
 
-  private onViewAccountTap_(): void {
+  private onViewAccountClick_(): void {
     this.browserProxy_.showCarrierAccountDetail(this.guid);
   }
 

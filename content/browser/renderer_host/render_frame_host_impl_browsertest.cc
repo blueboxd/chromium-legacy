@@ -34,6 +34,7 @@
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/viz/common/features.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/navigation_request.h"
@@ -115,8 +116,15 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
+#include "content/browser/renderer_host/render_widget_host_view_android.h"
 #include "third_party/blink/public/mojom/remote_objects/remote_objects.mojom.h"
+#include "ui/android/delegated_frame_host_android.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if defined(USE_AURA)
+#include "content/browser/renderer_host/delegated_frame_host.h"
+#include "content/browser/renderer_host/render_widget_host_view_aura.h"
+#endif  // defined(USE_AURA)
 
 namespace content {
 namespace {
@@ -1017,7 +1025,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
       RuntimeFeatureStateDocumentData::GetForCurrentDocument(
           web_contents()->GetPrimaryMainFrame());
   EXPECT_EQ(expected_overrides,
-            actual_document_data->runtime_feature_read_context()
+            actual_document_data->runtime_feature_state_read_context()
                 .GetFeatureOverrides());
 
   // Simulate receiving a feature diff from the renderer process.
@@ -1038,7 +1046,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
   // Verify that the document data was altered with the correct overrides.
   runtime_feature_state_controller_remote.FlushForTesting();
   EXPECT_EQ(expected_overrides,
-            actual_document_data->runtime_feature_read_context()
+            actual_document_data->runtime_feature_state_read_context()
                 .GetFeatureOverrides());
 }
 
@@ -1067,7 +1075,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
       RuntimeFeatureStateDocumentData::GetForCurrentDocument(
           web_contents()->GetPrimaryMainFrame());
   EXPECT_EQ(expected_overrides,
-            actual_document_data->runtime_feature_read_context()
+            actual_document_data->runtime_feature_state_read_context()
                 .GetFeatureOverrides());
 
   // Simulate receiving a feature diff from the renderer process.
@@ -1084,7 +1092,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplWithTokensBrowserTest,
   // Verify that no feature overrides were added.
   runtime_feature_state_controller_remote.FlushForTesting();
   EXPECT_EQ(expected_overrides,
-            actual_document_data->runtime_feature_read_context()
+            actual_document_data->runtime_feature_state_read_context()
                 .GetFeatureOverrides());
 }
 
@@ -3144,6 +3152,105 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE, navigation_observer.net_error_code());
 }
 
+// Tests that when a same-document commit is aborted in the renderer (in this
+// case, by the navigate event being cancelled), it does not leak its
+// NavigationHandle.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplBrowserTest,
+    AbortedSameDocumentNavigationsShouldNotLeakNavigationHandles) {
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Abort the next navigation via the navigate event.
+  EXPECT_TRUE(ExecJs(root_frame_host(),
+                     "navigation.onnavigate = e => e.preventDefault()"));
+  GURL blocked_url(
+      embedded_test_server()->GetURL("foo.com", "/title1.html#blocked"));
+  NavigationHandleObserver navigation_observer(web_contents(), blocked_url);
+  EXPECT_FALSE(NavigateToURL(shell(), blocked_url));
+  EXPECT_EQ(main_url,
+            web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL());
+  EXPECT_TRUE(navigation_observer.is_same_document());
+
+  // Verify that the NavigationHandle / NavigationRequest didn't leak.
+  EXPECT_FALSE(root_frame_host()->HasPendingCommitNavigation());
+}
+
+// TODO(japhet): Remove this helper class and use RenderFrameHostImplBrowserTest
+// when blink::features::kNavigateEventCommitBehavior is removed.
+class RenderFrameHostImplCommitBehaviorBrowserTest
+    : public RenderFrameHostImplBrowserTest {
+ public:
+  RenderFrameHostImplCommitBehaviorBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kNavigateEventCommitBehavior);
+  }
+
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that when the navigation API intercepts and defers a commit, then
+// a second navigation preempts the deferred commit, no NavigationHandles are
+// leaked.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplCommitBehaviorBrowserTest,
+    DeferredAndPreemptedSameDocumentNavigationsShouldNotLeakNavigationHandles) {
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Add a navigate event listener that will intercept the next navigation and
+  // defer it for 100ms, then start a new navigation to preempt it.
+  EXPECT_TRUE(ExecJs(root_frame_host(),
+                     "navigation.addEventListener('navigate',"
+                     "  e => { e.intercept({"
+                     "    commit: 'after-transition',"
+                     "    handler: () => new Promise(r => setTimeout(r, 100))"
+                     "  }); "
+                     "  setTimeout(() => navigation.navigate('#allowed'), 0);"
+                     "}, { once: true });"));
+  GURL blocked_url(
+      embedded_test_server()->GetURL("foo.com", "/title1.html#blocked"));
+  NavigationHandleObserver navigation_observer(web_contents(), blocked_url);
+  EXPECT_FALSE(NavigateToURL(shell(), blocked_url));
+  EXPECT_TRUE(navigation_observer.is_same_document());
+
+  GURL allowed_url(
+      embedded_test_server()->GetURL("foo.com", "/title1.html#allowed"));
+  EXPECT_EQ(allowed_url,
+            web_contents()->GetPrimaryMainFrame()->GetLastCommittedURL());
+
+  // Verify that the NavigationHandle / NavigationRequest didn't leak.
+  EXPECT_FALSE(root_frame_host()->HasPendingCommitNavigation());
+}
+
+// Tests that when the navigation API intercepts and defers a commit, then
+// the commit is aborted by script, no NavigationHandles are leaked.
+IN_PROC_BROWSER_TEST_F(
+    RenderFrameHostImplCommitBehaviorBrowserTest,
+    DeferredAndRejectedSameDocumentNavigationsShouldntLeakNavigationHandles) {
+  GURL main_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Add a navigate event listener that will intercept the next navigation and
+  // reject it without committing it, causing the navigation to abort.
+  EXPECT_TRUE(ExecJs(root_frame_host(),
+                     "navigation.addEventListener('navigate',"
+                     "  e => { e.intercept({"
+                     "    commit: 'after-transition',"
+                     "    handler: () => Promise.reject()"
+                     "  }); "
+                     "});"));
+  GURL blocked_url(
+      embedded_test_server()->GetURL("foo.com", "/title1.html#blocked"));
+  NavigationHandleObserver navigation_observer(web_contents(), blocked_url);
+  EXPECT_FALSE(NavigateToURL(shell(), blocked_url));
+  EXPECT_TRUE(navigation_observer.is_same_document());
+
+  // Verify that the NavigationHandle / NavigationRequest didn't leak.
+  EXPECT_FALSE(root_frame_host()->HasPendingCommitNavigation());
+}
+
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        BeforeUnloadDialogSuppressedForDiscard) {
   TestJavaScriptDialogManager dialog_manager;
@@ -3561,7 +3668,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   auto* rfh = web_contents()->GetPrimaryMainFrame();
   TestNavigationObserver observer(web_contents());
-  EXPECT_TRUE(ExecJs(rfh, JsReplace("setUrl($1, true);", object_url)));
+  EXPECT_TRUE(ExecJs(rfh, JsReplace("setUrl($1);", object_url),
+                     EXECUTE_SCRIPT_NO_RESOLVE_PROMISES));
   observer.Wait();
   EXPECT_EQ(rfh->GetLastCommittedOrigin().Serialize(),
             EvalJs(web_contents(), "window.origin"));
@@ -7541,15 +7649,54 @@ class RenderFrameHostImplBrowserTestWithBFCache
         GetDefaultEnabledBackForwardCacheFeaturesForTesting(
             /*ignore_outstanding_network_request=*/false);
     enabled_features.push_back({kNavigationUpdatesChildViewsVisibility, {{}}});
+    enabled_features.push_back({features::kEvictSubtree, {{}}});
     scoped_feature_list_.InitWithFeaturesAndParameters(
         enabled_features,
         GetDefaultDisabledBackForwardCacheFeaturesForTesting());
   }
   ~RenderFrameHostImplBrowserTestWithBFCache() override = default;
 
+  viz::SurfaceId GetSurfaceId(const FrameTreeNode* frame_tree_node) const;
+  bool ContainsSurfaceIdOrNewer(const std::vector<viz::SurfaceId>& ids,
+                                viz::SurfaceId expected_id) const;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+viz::SurfaceId RenderFrameHostImplBrowserTestWithBFCache::GetSurfaceId(
+    const FrameTreeNode* frame_tree_node) const {
+  viz::SurfaceId id;
+  auto* view = static_cast<RenderWidgetHostViewBase*>(
+      frame_tree_node->current_frame_host()->GetView());
+  if (view) {
+    id = view->GetCurrentSurfaceId();
+  }
+  return id;
+}
+
+bool RenderFrameHostImplBrowserTestWithBFCache::ContainsSurfaceIdOrNewer(
+    const std::vector<viz::SurfaceId>& ids,
+    viz::SurfaceId expected_id) const {
+  for (auto id : ids) {
+    if (id.IsSameOrNewerThan(expected_id)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+void RenderFrameHostImplBrowserTestWithBFCache::SetUpCommandLine(
+    base::CommandLine* command_line) {
+  // The full BackForwardCacheBrowserTest suite ads far more to the CommandLine.
+  // While we enable many features in the ctor, we need `--site-per-process` to
+  // ensure full testing of OOPIFs in BFCache.
+  IsolateAllSitesForTesting(command_line);
+  RenderFrameHostImplBrowserTest::SetUpCommandLine(command_line);
+}
 
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithBFCache,
                        ResetOwnerInBFCache) {
@@ -7586,6 +7733,56 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithBFCache,
   EXPECT_EQ(expected_parent_ftn, rfh_a->owner_);
   EXPECT_EQ(expected_child_ftn, rfh_b->owner_);
   EXPECT_EQ(nullptr, rfh_c->owner_);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithBFCache,
+                       NewContentTimeoutIsNotSetWhenLeavingBFCacheWithSurface) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetPrimaryMainFrame();
+
+  // Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  RenderWidgetHostViewBase* rwhvb_a =
+      static_cast<RenderWidgetHostViewBase*>(rfh_a->GetView());
+  bool timer_should_set =
+      !rwhvb_a->GetLocalSurfaceId().is_valid() || rwhvb_a->is_evicted();
+
+  // Navigate back to A.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  EXPECT_EQ(rfh_a, web_contents()->GetPrimaryMainFrame());
+  RenderWidgetHostImpl* rwhi_a =
+      RenderWidgetHostImpl::From(rfh_a->GetView()->GetRenderWidgetHost());
+  EXPECT_EQ(rwhi_a->IsContentRenderingTimeoutRunning(), timer_should_set);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithBFCache,
+                       NewContentTimeoutIsSetWhenLeavingBFCacheWithoutSurface) {
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = web_contents()->GetPrimaryMainFrame();
+
+  // Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  RenderViewHostImpl* rvh_a =
+      static_cast<RenderViewHostImpl*>(rfh_a->GetRenderViewHost());
+  std::vector<viz::SurfaceId> ids = rvh_a->CollectSurfaceIdsForEviction();
+
+  // Navigate back to A.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  EXPECT_EQ(rfh_a, web_contents()->GetPrimaryMainFrame());
+  RenderWidgetHostImpl* rwhi_a =
+      RenderWidgetHostImpl::From(rfh_a->GetView()->GetRenderWidgetHost());
+  EXPECT_TRUE(rwhi_a->IsContentRenderingTimeoutRunning());
 }
 
 // Tests that when a RenderFrameHost is stored in BFCache, that the visibility
@@ -7666,6 +7863,60 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithBFCache,
   rfso_d.WaitForAnyFrameSubmission();
 }
 
+// Tests that when a RenderFrameHost is stored in BFCache, that when it is
+// evicted, that both it and its child frames have their viz::SurfaceIds
+// collected for eviction.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTestWithBFCache,
+                       EvictionInBFCache) {
+  GURL url_a(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  GURL url_c(embedded_test_server()->GetURL("c.com", "/title2.html"));
+
+  // 1) Navigate to A(B).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  RenderFrameHostImpl* rfh_a = web_contents()->GetPrimaryMainFrame();
+  RenderFrameHostImpl* rfh_b = rfh_a->child_at(0)->current_frame_host();
+  FrameTreeNode* expected_parent_ftn = rfh_a->frame_tree_node();
+  FrameTreeNode* expected_child_ftn = rfh_b->frame_tree_node();
+
+  viz::SurfaceId id_a = GetSurfaceId(expected_parent_ftn);
+  // On slower machines the Main-thread for the child frame may not have
+  // completed blink::RemoteFrameView::UpdateViewportIntersectionsForSubtree
+  // which can advance the viz::SurfaceId. The final may be newer than this, but
+  // from the same viz::FrameSink and viz::LocalSurfaceId::embed_token, so we
+  // cache now anyways.
+  viz::SurfaceId id_b = GetSurfaceId(expected_child_ftn);
+  EXPECT_TRUE(id_a.is_valid());
+  EXPECT_TRUE(id_b.is_valid());
+  // Ensure that they are separate surfaces and that site-isolation of test
+  // setup has not regressed.
+  EXPECT_NE(id_a, id_b);
+
+  // 2) Navigate to C.
+  EXPECT_TRUE(NavigateToURL(shell(), url_c));
+  RenderFrameHostImpl* rfh_c = web_contents()->GetPrimaryMainFrame();
+
+  // 3) Ensure A(B) are cached.
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+  EXPECT_TRUE(rfh_b->IsInBackForwardCache());
+  EXPECT_FALSE(rfh_c->IsInBackForwardCache());
+  EXPECT_NE(rfh_a, rfh_c);
+  EXPECT_EQ(nullptr, rfh_a->owner_);
+  EXPECT_EQ(expected_child_ftn, rfh_b->owner_);
+  EXPECT_EQ(expected_parent_ftn, rfh_c->owner_);
+
+  // Collect the viz::SurfaceIds to evict. We should find both `id_a` and
+  // `id_b`.
+  RenderViewHostImpl* rvh_a =
+      static_cast<RenderViewHostImpl*>(rfh_a->GetRenderViewHost());
+  std::vector<viz::SurfaceId> ids = rvh_a->CollectSurfaceIdsForEviction();
+
+  EXPECT_EQ(ids.size(), 2u);
+  EXPECT_TRUE(ContainsSurfaceIdOrNewer(ids, id_a));
+  EXPECT_TRUE(ContainsSurfaceIdOrNewer(ids, id_b));
+}
+
 class RenderFrameHostImplPrerenderBrowserTest
     : public RenderFrameHostImplBrowserTest {
  public:
@@ -7704,6 +7955,80 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplPrerenderBrowserTest,
   RenderFrameHostImpl* activated_rfh = web_contents()->GetPrimaryMainFrame();
   EXPECT_EQ(prerender_frame_host, activated_rfh);
   EXPECT_EQ(expected_ftn, activated_rfh->owner_);
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplPrerenderBrowserTest,
+                       NewContentTimeoutIsNotSetInPrerender) {
+  GURL url_a = embedded_test_server()->GetURL("/title1.html");
+  GURL prerender_url = embedded_test_server()->GetURL("/title2.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  // Load a page in the prerender.
+  int host_id = prerender_helper().AddPrerender(prerender_url);
+  RenderFrameHostImpl* prerender_frame_host = static_cast<RenderFrameHostImpl*>(
+      prerender_helper().GetPrerenderedMainFrameHost(host_id));
+  EXPECT_TRUE(prerender_frame_host);
+  RenderWidgetHostImpl* prerender_rwhi = RenderWidgetHostImpl::From(
+      prerender_frame_host->GetView()->GetRenderWidgetHost());
+  EXPECT_FALSE(prerender_rwhi->IsContentRenderingTimeoutRunning());
+
+  // Activate the prerendered page.
+  prerender_helper().NavigatePrimaryPage(prerender_url);
+
+  RenderFrameHostImpl* activated_rfh = web_contents()->GetPrimaryMainFrame();
+  RenderWidgetHostImpl* activated_rwhi = RenderWidgetHostImpl::From(
+      activated_rfh->GetView()->GetRenderWidgetHost());
+  EXPECT_EQ(activated_rwhi, prerender_rwhi);
+  EXPECT_TRUE(activated_rwhi->IsContentRenderingTimeoutRunning());
+}
+
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplPrerenderBrowserTest,
+                       ActivationSurfaceRangeIncludesFallback) {
+  GURL url_a = embedded_test_server()->GetURL("/title1.html");
+  GURL prerender_url = embedded_test_server()->GetURL("/title2.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  // Load a page in the prerender.
+  prerender_helper().AddPrerender(prerender_url);
+
+  RenderWidgetHostViewBase* initial_view =
+      RenderWidgetHostImpl::From(web_contents()
+                                     ->GetPrimaryMainFrame()
+                                     ->GetView()
+                                     ->GetRenderWidgetHost())
+          ->GetView();
+
+  viz::SurfaceId initial_surface_id = initial_view->GetCurrentSurfaceId();
+  EXPECT_TRUE(initial_surface_id.is_valid());
+
+  // Activate the prerendered page.
+  prerender_helper().NavigatePrimaryPage(prerender_url);
+
+  RenderWidgetHostViewBase* activated_view =
+      RenderWidgetHostImpl::From(web_contents()
+                                     ->GetPrimaryMainFrame()
+                                     ->GetView()
+                                     ->GetRenderWidgetHost())
+          ->GetView();
+
+  EXPECT_NE(activated_view, initial_view);
+
+#if defined(USE_AURA)
+  DelegatedFrameHost* activated_dfh =
+      static_cast<RenderWidgetHostViewAura*>(activated_view)
+          ->GetDelegatedFrameHostForTesting();
+  viz::SurfaceId fallback_surface_id =
+      activated_dfh->GetFallbackSurfaceIdForTesting();
+  EXPECT_TRUE(initial_surface_id.IsSameOrNewerThan(fallback_surface_id));
+#elif BUILDFLAG(IS_ANDROID)
+  ui::DelegatedFrameHostAndroid* activated_dfh =
+      static_cast<RenderWidgetHostViewAndroid*>(activated_view)
+          ->delegated_frame_host_for_testing();
+  viz::SurfaceId fallback_surface_id =
+      activated_dfh->GetFallbackSurfaceIdForTesting();
+  EXPECT_TRUE(initial_surface_id.IsSameOrNewerThan(fallback_surface_id))
+      << initial_surface_id.ToString() << " " << fallback_surface_id.ToString();
+#endif
 }
 
 using RenderFrameHostImplDeathTest = RenderFrameHostImplBrowserTest;

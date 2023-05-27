@@ -101,7 +101,7 @@ class AppMenuIconControllerTest : public ::testing::TestWithParam<int> {
   void SetUp() override {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
-        std::make_unique<user_manager::FakeUserManager>());
+        std::make_unique<user_manager::FakeUserManager>(&local_state_));
     auto* user_manager = static_cast<user_manager::FakeUserManager*>(
         user_manager::UserManager::Get());
     const auto account_id = AccountId::FromUserEmail("test@test");
@@ -110,7 +110,6 @@ class AppMenuIconControllerTest : public ::testing::TestWithParam<int> {
                                /*browser_restart=*/false,
                                /*is_child=*/false);
     crosapi::browser_util::RegisterLocalStatePrefs(local_state_.registry());
-    user_manager->set_local_state(&local_state_);
 #endif
   }
 
@@ -160,6 +159,14 @@ class AppMenuIconControllerTest : public ::testing::TestWithParam<int> {
 // and severity when an upgrade is detected.
 TEST_P(AppMenuIconControllerTest, UpgradeNotification) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Forcibly enable Lacros Profile migration, so that IDC_LACROS_DATA_MIGRATION
+  // becomes visible. Note that profile migration is only enabled if Lacros is
+  // the only browser.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+       ash::features::kLacrosOnly},
+      {});
   auto set_lacros_enabled = BrowserSupport::SetLacrosEnabledForTest(true);
 #endif
 

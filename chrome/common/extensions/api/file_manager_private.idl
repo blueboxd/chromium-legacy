@@ -374,6 +374,30 @@ enum PolicyDefaultHandlerStatus {
   incorrect_assignment
 };
 
+// Describes the stage the bulk pinning manager is in. This enum should be kept
+// in sync with chromeos/ash/components/drivefs/drivefs_pin_manager.h
+enum BulkPinStage {
+  // Initial stage.
+  stopped,
+
+  // Paused because of unfavorable network conditions.
+  paused,
+
+  // In-progress stages.
+  getting_free_space,
+  listing_files,
+  syncing,
+
+  // Final success stage.
+  success,
+
+  // Final error stages.
+  cannot_get_free_space,
+  cannot_list_files,
+  not_enough_space,
+  cannot_enable_docs_offline
+};
+
 // These three fields together uniquely identify a task.
 dictionary FileTaskDescriptor {
   DOMString appId;
@@ -1098,6 +1122,10 @@ dictionary ProgressStatus {
 
   // The files affected by the IOTask. Currently only returned for TrashIOTask.
   [instanceOf=Entry] object[]? outputs;
+
+  // Volume id of the destination for operations that transfer files to a
+  // directory (e.g. copy or move).
+  DOMString destinationVolumeId;
 };
 
 dictionary DlpMetadata {
@@ -1155,6 +1183,30 @@ dictionary ParsedTrashInfoFile {
 
   // The date the file was originally deleted.
   double deletionDate;
+};
+
+// The current progress of the bulk pinning manager. This is a subset of the
+// Progress struct in chromeos/ash/components/drivefs/drivefs_pin_manager.h
+dictionary BulkPinProgress {
+  // The stage the bulk pin manager is in.
+  BulkPinStage stage;
+
+  // Estimated amount of free space on the stateful partition in bytes.
+  double freeSpaceBytes;
+
+  // Estimated amount of free space required in order to successfully complete
+  // pinning.
+  double requiredSpaceBytes;
+
+  // Estimated amount of bytes remaining to be downloaded in order to
+  // successfully complete pinning.
+  double bytesToPin;
+
+  // Bytes that have been downloaded so far.
+  double pinnedBytes;
+
+  // Total number of files to pin.
+  long filesToPin;
 };
 
 // Callback that does not take arguments.
@@ -1330,6 +1382,8 @@ callback HoldingSpaceStateCallback = void(HoldingSpaceState state);
 callback ListMountableGuestsCallback = void(MountableGuest[] guest);
 
 callback ParseTrashInfoFilesCallback = void(ParsedTrashInfoFile[] files);
+
+callback GetBulkPinProgressCallback = void(BulkPinProgress progress);
 
 interface Functions {
   // Cancels file selection.
@@ -1892,6 +1946,9 @@ interface Functions {
   [nocompile]
   static void parseTrashInfoFiles([instanceOf=Entry] object[] entries,
                                   ParseTrashInfoFilesCallback callback);
+
+  // Returns the current progress of the bulk pinning manager.
+  static void getBulkPinProgress(GetBulkPinProgressCallback callback);
 };
 
 // Events supported by fileManagerPrivate API. These events are broadcasted.
@@ -1929,5 +1986,7 @@ interface Events {
   // Event broadcast when the list of Guest OSs that support Guest->Host file
   // sharing changes.
   static void onMountableGuestsChanged(MountableGuest[] guests);
+
+  static void onBulkPinProgress(BulkPinProgress progress);
 };
 };

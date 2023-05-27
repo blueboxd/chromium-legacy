@@ -79,7 +79,6 @@
 <translation id="2928420929544864228">Η εγκατάσταση ολοκληρώθηκε.</translation>
 <translation id="2977470724722393594">Το Chromium έχει ενημερωθεί</translation>
 <translation id="2977506796191543575">Εάν ένας ιστότοπος προσπαθήσει να υποκλέψει τον κωδικό πρόσβασής σας ή όταν κατεβάζετε ένα επιβλαβές αρχείο, το Chromium μπορεί επίσης να στείλει URL, καθώς και τμήματα του περιεχομένου της σελίδας, στην Ασφαλή περιήγηση</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Το Chromium έχει συνδεθεί σε μία συσκευή HID}other{Το Chromium έχει συνδεθεί σε συσκευές HID}}</translation>
 <translation id="3032706164202344641">Το Chromium δεν μπορεί να ελέγξει τους κωδικούς πρόσβασής σας. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="3032787606318309379">Προσθήκη στο Chromium…</translation>
 <translation id="3038232873781883849">Αναμονή για εγκατάσταση…</translation>
@@ -94,7 +93,6 @@
 <translation id="3258596308407688501">Το Chromium δεν έχει δυνατότητα ανάγνωσης και εγγραφής στον κατάλογο δεδομένων του:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Αυτός ο οδηγός σάς βοηθά να κατανοήσετε τις επιλογές σας, έτσι ώστε το Chromium να λειτουργεί με τον τρόπο που θέλετε</translation>
 <translation id="3283186697780795848">Έχει εγκατασταθεί η έκδοση Chromium <ph name="PRODUCT_VERSION" />.</translation>
 <translation id="3286538390144397061">Άμεση επανεκκίνηση</translation>
 <translation id="328888136576916638">Λείπουν κλειδιά του Google API. Ορισμένες λειτουργίες του Google Chromium θα απενεργοποιηθούν.</translation>
@@ -246,8 +244,10 @@
 <translation id="6442900851116057561">Επανεκκίνηση Chromium OS</translation>
 <translation id="6455857529632101747">Καλώς ήρθατε στα προφίλ του Chromium</translation>
 <translation id="6475912303565314141">Επίσης, ελέγχει τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chromium.</translation>
+<translation id="648319183876919572">Η Βελτιωμένη Ασφαλής περιήγηση κάνει περισσότερα για την προστασία σας από επικίνδυνους ιστοτόπους και λήψεις</translation>
 <translation id="6510925080656968729">Απεγκατάσταση Chromium</translation>
 <translation id="6542839706527980775">Κάθε προφίλ διατηρεί τις δικές του πληροφορίες στο Chromium, όπως σελιδοδείκτες, ιστορικό, κωδικούς πρόσβασης και άλλα.</translation>
+<translation id="656935081669708576">Μπορείτε να κάνετε εναλλαγή για να δείτε τους κωδικούς πρόσβασης από ένα άλλο προφίλ Chromium</translation>
 <translation id="6570579332384693436">Για τη διόρθωση ορθογραφικών λαθών, το Chromium στέλνει το κείμενο που πληκτρολογείτε σε πεδία κειμένου στο Google</translation>
 <translation id="6598877126913850652">Μετάβαση στις ρυθμίσεις ειδοποιήσεων του Chromium</translation>
 <translation id="6613594504749178791">Οι αλλαγές που πραγματοποιήσατε θα ισχύσουν την επόμενη φορά που θα εκκινήσετε το Chromium.</translation>
@@ -383,7 +383,6 @@
 <translation id="924957577793602335">Εξατομίκευση του Chromium</translation>
 <translation id="93478295209880648">Το Chromium μπορεί να μην λειτουργεί σωστά, επειδή δεν υποστηρίζεται πια σε Windows XP και Windows Vista</translation>
 <translation id="942598560705308788">Πιστοποιητικά που διαχειρίζεται το Chromium</translation>
-<translation id="959579472876010517">Αξιοποιήστε στο έπακρο το Chromium</translation>
 <translation id="965162752251293939">Ποιος χρησιμοποιεί το Chromium;</translation>
 <translation id="967427899662692980">Λάβετε την ισχυρότερη προστασία του Chromium</translation>
 <translation id="9792300276217204">Να γίνεται πάντα διαγραφή των δεδομένων ιστοτόπων από τη συσκευή σας όταν κλείνετε το Chromium</translation>

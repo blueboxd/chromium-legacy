@@ -35,6 +35,7 @@ class AccessibilityDelegate;
 class BackGestureContextualNudgeController;
 class BackGestureContextualNudgeDelegate;
 class CaptureModeDelegate;
+class GameDashboardDelegate;
 class GlanceablesController;
 class GlanceablesDelegate;
 class MediaNotificationProvider;
@@ -48,7 +49,6 @@ class UserEducationDelegate;
 class ASH_EXPORT ShellDelegate {
  public:
   enum class FeedbackSource {
-    kBentoBar,
     kWindowLayoutMenu,
   };
 
@@ -61,6 +61,10 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates and returns the delegate of the Capture Mode feature.
   virtual std::unique_ptr<CaptureModeDelegate> CreateCaptureModeDelegate()
+      const = 0;
+
+  // Creates and returns the delegate of the Game Dashboard feature.
+  virtual std::unique_ptr<GameDashboardDelegate> CreateGameDashboardDelegate()
       const = 0;
 
   // Creates the delegate for the Glanceables feature.

@@ -72,10 +72,10 @@ class LocationIconView : public IconLabelBubbleView {
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   SkColor GetForegroundColor() const override;
   bool ShouldShowSeparator() const override;
+  bool ShouldShowLabelAfterAnimation() const override;
   bool ShowBubble(const ui::Event& event) override;
   bool IsBubbleShowing() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void AddedToWidget() override;
   void OnThemeChanged() override;
 
@@ -107,6 +107,8 @@ class LocationIconView : public IconLabelBubbleView {
  protected:
   // IconLabelBubbleView:
   bool IsTriggerableEvent(const ui::Event& event) override;
+  void UpdateBorder() override;
+  int GetInternalSpacing() const override;
 
  private:
   // Returns what the minimum size would be if the preferred size were |size|.
@@ -120,8 +122,14 @@ class LocationIconView : public IconLabelBubbleView {
   // If |suppress_animations| is true, the text change will not be animated.
   void UpdateTextVisibility(bool suppress_animations);
 
+  // Updates the accessible properties based on if we are editing or empty.
+  void SetAccessibleProperties(bool is_initialization);
+
   // Updates Icon based on the current state and theme.
   void UpdateIcon();
+
+  // Updates background based on the current state and theme.
+  void UpdateBackground() override;
 
   // Handles the arrival of an asynchronously fetched icon.
   void OnIconFetched(const gfx::Image& image);

@@ -7,6 +7,7 @@ import("//build/config/linux/pkg_config.gni")
 import("//build/util/process_version.gni")
 import("//remoting/build/config/remoting_build.gni")
 import("//remoting/build/config/remoting_logging.gni")
+import("//third_party/webrtc/webrtc.gni")
 
 assert(!remoting_use_x11 || is_linux, "X11 is only supported on Linux")
 
@@ -47,6 +48,12 @@ process_version("remoting_version") {
   template_file = "//remoting/host/version.h.in"
   sources = [ branding_path ]
   output = "$target_gen_dir/version.h"
+}
+
+# ChromeOS enterprise parameters used in common host classes.
+# Split out in its own target to prevent GN from pulling in chromeos deps.
+source_set("enterprise_params") {
+  sources = [ "//remoting/host/chromeos/chromeos_enterprise_params.h" ]
 }
 
 source_set("host") {
@@ -227,6 +234,10 @@ source_set("resources") {
 if (is_linux) {
   pkg_config("xkbcommon") {
     packages = [ "xkbcommon" ]
+  }
+
+  pkg_config("libevdev") {
+    packages = [ "libevdev" ]
   }
 }
 
@@ -427,6 +438,7 @@ static_library("common") {
     "//remoting/host/security_key",
     "//remoting/host/webauthn",
     "//remoting/proto/ftl/v1:ftl_messages",
+    "//remoting/proto/remoting/v1:chrome_os_enterprise_options",
     "//remoting/proto/remoting/v1:remote_support_host_messages",
     "//remoting/protocol",
     "//remoting/resources",
@@ -446,6 +458,7 @@ static_library("common") {
 
   public_deps = [
     ":common_headers",
+    ":enterprise_params",
     ":host_extension",
     "//ipc",
     "//remoting/host/base",
@@ -500,6 +513,7 @@ static_library("common") {
   }
 
   if (remoting_use_x11) {
+    assert(use_glib)
     defines += [ "REMOTING_USE_X11" ]
     sources += [
       "curtain_mode_linux.cc",
@@ -523,6 +537,8 @@ static_library("common") {
       "linux/desktop_display_info_loader_wayland.h",
       "linux/desktop_resizer_wayland.cc",
       "linux/desktop_resizer_wayland.h",
+      "linux/ei_event_watcher_glib.cc",
+      "linux/ei_event_watcher_glib.h",
       "linux/input_injector_wayland.cc",
       "linux/input_injector_wayland.h",
       "linux/remote_desktop_portal.cc",
@@ -548,6 +564,8 @@ static_library("common") {
       "x11_display_util.cc",
       "x11_display_util.h",
     ]
+    configs += [ ":libevdev" ]
+    libs += [ "//third_party/libei/lib64/libei.a" ]
     public_deps += [
       "//third_party/wayland:wayland_client",
       "//third_party/wayland-protocols:xdg_output_protocol",
@@ -581,6 +599,11 @@ static_library("common") {
         "linux/keyboard_layout_monitor_wayland.cc",
         "linux/keyboard_layout_monitor_wayland.h",
       ]
+    }
+
+    # webRTC only enables portal support if PipeWire support is enabled
+    if (rtc_use_pipewire) {
+      configs += [ "//third_party/webrtc/modules/portal:gio" ]
     }
   }
 
@@ -817,6 +840,7 @@ source_set("unit_tests") {
     "//remoting/host/setup:common",
     "//remoting/host/webauthn:unit_tests",
     "//remoting/proto",
+    "//remoting/proto/remoting/v1:chrome_os_enterprise_options",
     "//remoting/proto/remoting/v1:remote_support_host_messages",
     "//remoting/protocol:test_support",
     "//remoting/resources",
@@ -1123,11 +1147,13 @@ if (enable_me2me_host) {
         ":main",
         "//remoting/host/it2me:main",
         "//remoting/host/remote_open_url:main",
-        "//remoting/host/security_key:main",
         "//remoting/host/setup:native_messaging_host_main",
         "//remoting/host/setup:start_host_main",
         "//remoting/host/webauthn:main",
       ]
+      if (is_win) {
+        deps += [ "//remoting/host/security_key:main" ]
+      }
     }
     if (is_win) {
       group("remoting_core") {

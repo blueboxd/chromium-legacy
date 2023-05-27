@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/location_bar/cookie_controls_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/browser/ui/cookie_controls_controller.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,6 +31,9 @@ CookieControlsIconView::CookieControlsIconView(
                          page_action_icon_delegate,
                          "CookieControls") {
   SetVisible(false);
+  SetAccessibilityProperties(
+      /*role*/ absl::nullopt,
+      l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TOOLTIP));
 }
 
 CookieControlsIconView::~CookieControlsIconView() = default;
@@ -119,11 +123,6 @@ const gfx::VectorIcon& CookieControlsIconView::GetVectorIcon() const {
   return status_ == CookieControlsStatus::kDisabledForSite
              ? views::kEyeIcon
              : views::kEyeCrossedIcon;
-}
-
-std::u16string CookieControlsIconView::GetTextForTooltipAndAccessibleName()
-    const {
-  return l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TOOLTIP);
 }
 
 BEGIN_METADATA(CookieControlsIconView, PageActionIconView)

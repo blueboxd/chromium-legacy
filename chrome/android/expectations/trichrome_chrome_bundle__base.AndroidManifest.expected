@@ -35,6 +35,9 @@
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
   <uses-permission android:name="android.permission.CAMERA"/>
+  <uses-permission android:name="android.permission.CREDENTIAL_MANAGER_QUERY_CANDIDATE_CREDENTIALS"/>
+  <uses-permission android:name="android.permission.CREDENTIAL_MANAGER_SET_ALLOWED_PROVIDERS"/>
+  <uses-permission android:name="android.permission.CREDENTIAL_MANAGER_SET_ORIGIN"/>
   <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
@@ -57,6 +60,7 @@
   <uses-permission android:name="com.chrome.permission.DEVICE_EXTRAS"/>
   <uses-permission android:name="com.google.android.apps.now.CURRENT_ACCOUNT_ACCESS"/>
   <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE"/>
+  <uses-permission-sdk-23 android:name="android.permission.ACCESS_ADSERVICES_ATTRIBUTION"/>
   <uses-permission-sdk-23 android:name="android.permission.ACCESS_WIFI_STATE"/>
   <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH"/>
   <uses-permission-sdk-23 android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30"/>
@@ -87,7 +91,6 @@
       android:networkSecurityConfig="@xml/network_security_config"
       android:roundIcon="@drawable/ic_launcher_round"
       android:supportsRtl="true"
-      android:use32bitAbi="true"
       android:zygotePreloadName="org.chromium.chrome.app.TrichromeZygotePreload">
     <activity  # DIFF-ANCHOR: ea1a94af
         android:name="com.google.android.gms.common.api.GoogleApiActivity"
@@ -100,14 +103,6 @@
         android:stateNotNeeded="true"
         android:theme="@style/Theme.PlayCore.Transparent">
     </activity>  # DIFF-ANCHOR: a2bae37c
-    <activity  # DIFF-ANCHOR: 28dc9019
-        android:name="com.google.ar.core.InstallActivity"
-        android:configChanges="keyboardHidden|orientation|screenSize"
-        android:excludeFromRecents="true"
-        android:exported="false"
-        android:launchMode="singleTop"
-        android:theme="@android:style/Theme.Material.Light.Dialog.Alert">
-    </activity>  # DIFF-ANCHOR: 28dc9019
     <meta-data android:name="android.allow_multiple_resumed_activities" android:value="true"/>
     <meta-data android:name="android.content.APP_RESTRICTIONS" android:resource="@xml/app_restrictions"/>
     <meta-data android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME" android:value="org.chromium.components.media_router.caf.CastOptionsProvider"/>

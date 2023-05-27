@@ -11,11 +11,20 @@
 #include "chrome/common/extensions/api/side_panel.h"
 #include "chrome/common/extensions/api/side_panel/side_panel_info.h"
 #include "components/sessions/core/session_id.h"
+#include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/pref_types.h"
+#include "extensions/common/extension_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
 namespace {
+
+// Key corresponding to whether the extension's side panel entry (if one exists)
+// should be opened when its icon is clicked in the toolbar.
+constexpr PrefMap kOpenSidePanelOnIconClickPref = {
+    "open_side_panel_on_icon_click", PrefType::kBool,
+    PrefScope::kExtensionSpecific};
 
 api::side_panel::PanelOptions GetPanelOptionsFromManifest(
     const Extension& extension) {
@@ -45,6 +54,19 @@ SidePanelService::SidePanelService(content::BrowserContext* context)
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(context);
   extension_registry_observation_.Observe(extension_registry);
+}
+
+bool SidePanelService::HasSidePanelActionForTab(const Extension& extension,
+                                                TabId tab_id) {
+  if (!OpenSidePanelOnIconClick(extension.id()) ||
+      !base::FeatureList::IsEnabled(
+          extensions_features::kExtensionSidePanelIntegration)) {
+    return false;
+  }
+
+  api::side_panel::PanelOptions options = GetOptions(extension, tab_id);
+  return options.enabled.has_value() && *options.enabled &&
+         options.path.has_value();
 }
 
 api::side_panel::PanelOptions SidePanelService::GetOptions(
@@ -81,6 +103,21 @@ api::side_panel::PanelOptions SidePanelService::GetOptions(
   return GetPanelOptionsFromManifest(extension);
 }
 
+api::side_panel::PanelOptions SidePanelService::GetSpecificOptionsForTab(
+    const Extension& extension,
+    TabId tab_id) {
+  auto extension_panel_options = panels_.find(extension.id());
+  if (extension_panel_options == panels_.end()) {
+    return api::side_panel::PanelOptions();
+  }
+
+  TabPanelOptions& tab_panel_options = extension_panel_options->second;
+  auto specific_tab_options = tab_panel_options.find(tab_id);
+  return specific_tab_options == tab_panel_options.end()
+             ? api::side_panel::PanelOptions()
+             : CloneOptions(specific_tab_options->second);
+}
+
 // Upsert to merge `panels_[extension_id][tab_id]` with `set_options`.
 void SidePanelService::SetOptions(const Extension& extension,
                                   api::side_panel::PanelOptions options) {
@@ -99,17 +136,26 @@ void SidePanelService::SetOptions(const Extension& extension,
     tab_id = *options.tab_id;
   TabPanelOptions& extension_panel_options = panels_[extension.id()];
   auto it = extension_panel_options.find(tab_id);
-  if (it == extension_panel_options.end()) {
+
+  // Create the options if they don't exist, otherwise update them.
+  if (it != extension_panel_options.end()) {
+    update_existing_options(it->second);
+  } else {
+    // The default value for the optional enabled option is true. This default
+    // is applied when the supplied option is being inserted for the first time.
+    if (!options.enabled.has_value()) {
+      options.enabled = true;
+    }
+
     // If there is no entry for the default tab, merge `options` into the
     // manifest-specified options.
     if (tab_id == SessionID::InvalidValue().id()) {
       extension_panel_options[tab_id] = GetPanelOptionsFromManifest(extension);
       update_existing_options(extension_panel_options[tab_id]);
     } else {
+      // Update an existing option.
       extension_panel_options[tab_id] = std::move(options);
     }
-  } else {
-    update_existing_options(it->second);
   }
 
   for (auto& observer : observers_) {
@@ -137,6 +183,23 @@ SidePanelService* SidePanelService::Get(content::BrowserContext* context) {
 
 void SidePanelService::RemoveExtensionOptions(const ExtensionId& id) {
   panels_.erase(id);
+}
+
+bool SidePanelService::OpenSidePanelOnIconClick(
+    const ExtensionId& extension_id) {
+  bool open_side_panel_on_icon_click = false;
+  ExtensionPrefs::Get(browser_context_)
+      ->ReadPrefAsBoolean(extension_id, kOpenSidePanelOnIconClickPref,
+                          &open_side_panel_on_icon_click);
+  return open_side_panel_on_icon_click;
+}
+
+void SidePanelService::SetOpenSidePanelOnIconClick(
+    const ExtensionId& extension_id,
+    bool open_side_panel_on_icon_click) {
+  ExtensionPrefs::Get(browser_context_)
+      ->SetBooleanPref(extension_id, kOpenSidePanelOnIconClickPref,
+                       open_side_panel_on_icon_click);
 }
 
 void SidePanelService::AddObserver(Observer* observer) {

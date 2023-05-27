@@ -42,6 +42,11 @@ extern const char kPermissionsPromptSurveyRequestTypeKey[];
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const char kPermissionsPromptSurveyDisplayTimeKey[];
 
+// The key in `Product Specific String Data` under which the 'one time prompts
+// decided' count bucket of the user taking the prompt HaTS survey is recorded.
+COMPONENT_EXPORT(PERMISSIONS_COMMON)
+extern const char kPermissionPromptSurveyOneTimePromptsDecidedBucketKey[];
+
 // The key in `Product Specific Bits Data` under which whether the prompt was
 // triggered by a user gestured is recorded in the prompt HaTS survey.
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
@@ -65,11 +70,6 @@ extern const char kPermissionsPromptSurveyReleaseChannelKey[];
 // permissions module of Safety Check.
 COMPONENT_EXPORT(PERMISSIONS_COMMON)
 extern const char kRevokedKey[];
-
-// The duration for which a site's permissions are revoked and presented for
-// review to the user in the unused site permissions module of Safety Check.
-COMPONENT_EXPORT(PERMISSIONS_COMMON)
-extern const base::TimeDelta kRevocationCleanUpThreshold;
 
 }  // namespace permissions
 

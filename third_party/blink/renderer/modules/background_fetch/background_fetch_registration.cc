@@ -35,26 +35,32 @@ namespace blink {
 BackgroundFetchRegistration::BackgroundFetchRegistration(
     ServiceWorkerRegistration* service_worker_registration,
     mojom::blink::BackgroundFetchRegistrationPtr registration)
-    : developer_id_(registration->registration_data->developer_id),
+    : ActiveScriptWrappable<BackgroundFetchRegistration>({}),
+      developer_id_(registration->registration_data->developer_id),
       upload_total_(registration->registration_data->upload_total),
       uploaded_(registration->registration_data->uploaded),
       download_total_(registration->registration_data->download_total),
       downloaded_(registration->registration_data->downloaded),
       result_(registration->registration_data->result),
       failure_reason_(registration->registration_data->failure_reason),
+      registration_service_(service_worker_registration->GetExecutionContext()),
       observer_receiver_(this,
                          service_worker_registration->GetExecutionContext()) {
   DCHECK(service_worker_registration);
   registration_ = service_worker_registration;
-  registration_service_.Bind(std::move(registration->registration_interface));
 
   ExecutionContext* context = GetExecutionContext();
   if (!context || context->IsContextDestroyed())
     return;
 
-  auto task_runner = context->GetTaskRunner(TaskType::kBackgroundFetch);
+  auto service_task_runner = context->GetTaskRunner(TaskType::kBackgroundFetch);
+  registration_service_.Bind(std::move(registration->registration_interface),
+                             std::move(service_task_runner));
+
+  auto observer_task_runner =
+      context->GetTaskRunner(TaskType::kBackgroundFetch);
   registration_service_->AddRegistrationObserver(
-      observer_receiver_.BindNewPipeAndPassRemote(task_runner));
+      observer_receiver_.BindNewPipeAndPassRemote(observer_task_runner));
 }
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
@@ -388,6 +394,7 @@ void BackgroundFetchRegistration::UpdateUI(
 void BackgroundFetchRegistration::Trace(Visitor* visitor) const {
   visitor->Trace(registration_);
   visitor->Trace(observers_);
+  visitor->Trace(registration_service_);
   visitor->Trace(observer_receiver_);
   EventTargetWithInlineData::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);

@@ -22,6 +22,7 @@ absl_source_set("kernel_timeout_internal") {
   sources = [ "internal/kernel_timeout.cc" ]
   public = [ "internal/kernel_timeout.h" ]
   deps = [
+    "//third_party/abseil-cpp/absl/base",
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/base:raw_logging_internal",
@@ -35,6 +36,7 @@ absl_test("kernel_timeout_internal_test") {
   deps = [
     ":kernel_timeout_internal",
     "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/random",
     "//third_party/abseil-cpp/absl/time",
   ]
 }
@@ -48,6 +50,7 @@ absl_source_set("synchronization") {
     "internal/per_thread_sem.cc",
     "internal/pthread_waiter.cc",
     "internal/sem_waiter.cc",
+    "internal/stdcpp_waiter.cc",
     "internal/waiter_base.cc",
     "internal/win32_waiter.cc",
     "mutex.cc",
@@ -62,6 +65,7 @@ absl_source_set("synchronization") {
     "internal/per_thread_sem.h",
     "internal/pthread_waiter.h",
     "internal/sem_waiter.h",
+    "internal/stdcpp_waiter.h",
     "internal/waiter.h",
     "internal/waiter_base.h",
     "internal/win32_waiter.h",
@@ -91,6 +95,8 @@ absl_test("waiter_test") {
     ":kernel_timeout_internal",
     ":synchronization",
     ":thread_pool",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/random",
     "//third_party/abseil-cpp/absl/time",
   ]
 }

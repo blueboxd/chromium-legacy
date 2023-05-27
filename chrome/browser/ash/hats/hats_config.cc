@@ -178,6 +178,14 @@ const HatsConfig kHatsBluetoothRevampSurvey = {
     prefs::kHatsBluetoothRevampCycleEndTs,  // cycle_end_timestamp_pref_name
 };
 
+// Battery life experience survey -- shown after login.
+const HatsConfig kHatsBatteryLifeSurvey = {
+    ::features::kHappinessTrackingSystemBatteryLife,  // feature
+    base::Days(7),                                    // new_device_threshold
+    prefs::kHatsBatteryLifeIsSelected,                // is_selected_pref_name
+    prefs::kHatsBatteryLifeCycleEndTs,  // cycle_end_timestamp_pref_name
+};
+
 // Privacy Hub Baseline experience survey -- shown 40 seconds after the user
 // leaves the Security and Privacy page.
 const HatsConfig kPrivacyHubBaselineSurvey = {
@@ -185,6 +193,17 @@ const HatsConfig kPrivacyHubBaselineSurvey = {
     base::Days(1),                                     // new_device_threshold
     prefs::kHatsPrivacyHubBaselineIsSelected,          // is_selected_pref_name
     prefs::kHatsPrivacyHubBaselineCycleEndTs,  // cycle_end_timestamp_pref_name
+};
+
+// OS Settings Survey -- shown [5-30] seconds after a user removes focus from
+// Settings or closes the Settings app, if user has used Search, it will add it
+// as a Product Specific Data (PSD).
+const HatsConfig kHatsOsSettingsSearchSurvey = {
+    ::features::kHappinessTrackingOsSettingsSearch,  // feature
+    base::Days(1),                                   // new_device_threshold
+    prefs::kHatsOsSettingsSearchSurveyIsSelected,    // is_selected_pref_name
+    prefs::
+        kHatsOsSettingsSearchSurveyCycleEndTs,  // cycle_end_timestamp_pref_name
 };
 
 }  // namespace ash

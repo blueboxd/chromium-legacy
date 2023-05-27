@@ -32,9 +32,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkEncodedImageFormat.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/encode/SkPngEncoder.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/compositor/test/test_utils.h"
@@ -1097,14 +1097,14 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 // Verify that switching to clamshell mode when the fade in animation in tablet
 // mode is running, and gets aborted during tablet mode transition works as
 // expected.
-// TODO(crbug.com/1404129): flaky on linux-chromeos-dbg.
-#if (BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG))
+// TODO(crbug.com/1404129): flaky on linux-chromeos-dbg/rel.
+#if BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_TransitionToClamshellModeDuringAbortedFadeInAnimation \
   DISABLED_TransitionToClamshellModeDuringAbortedFadeInAnimation
 #else
 #define MAYBE_TransitionToClamshellModeDuringAbortedFadeInAnimation \
   TransitionToClamshellModeDuringAbortedFadeInAnimation
-#endif  // BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG))
+#endif  // BUILDFLAG(IS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(
     AppListSortBrowserTest,
     MAYBE_TransitionToClamshellModeDuringAbortedFadeInAnimation) {
@@ -1410,9 +1410,9 @@ class AppListSortColorOrderBrowserTest : public AppListSortBrowserTest {
     gfx::ImageSkia icon;
     icon = gfx::ImageSkiaOperations::CreateImageWithCircleBackground(
         icon_size / 2, icon_color, icon);
-    const sk_sp<SkImage> image = SkImage::MakeFromBitmap(*icon.bitmap());
-    const sk_sp<SkData> png_data(
-        image->encodeToData(SkEncodedImageFormat::kPNG, /*quality=*/100));
+    const sk_sp<SkImage> image = SkImages::RasterFromBitmap(*icon.bitmap());
+    const sk_sp<SkData> png_data =
+        SkPngEncoder::Encode(nullptr, image.get(), {});
     icon_file.Write(0, (const char*)png_data->data(), png_data->size());
     icon_file.Close();
 

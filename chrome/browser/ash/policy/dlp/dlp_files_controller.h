@@ -11,7 +11,9 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "components/file_access/scoped_file_access_copy.h"
@@ -124,34 +126,6 @@ class DlpFilesController {
     base::FilePath path;
     // Source URL from which the file was downloaded.
     GURL source_url;
-  };
-
-  // DlpFileDestination represents the destination for file transfer. It either
-  // has a url or a component.
-  struct DlpFileDestination {
-    DlpFileDestination();
-    explicit DlpFileDestination(const std::string& url);
-    explicit DlpFileDestination(const ::dlp::DlpComponent component);
-    explicit DlpFileDestination(const DlpRulesManager::Component component);
-
-    DlpFileDestination(const DlpFileDestination&);
-    DlpFileDestination& operator=(const DlpFileDestination&);
-    DlpFileDestination(DlpFileDestination&&);
-    DlpFileDestination& operator=(DlpFileDestination&&);
-
-    bool operator==(const DlpFileDestination&) const;
-    bool operator!=(const DlpFileDestination&) const;
-    bool operator<(const DlpFileDestination& other) const;
-    bool operator<=(const DlpFileDestination& other) const;
-    bool operator>(const DlpFileDestination& other) const;
-    bool operator>=(const DlpFileDestination& other) const;
-
-    ~DlpFileDestination();
-
-    // Destination url or destination path.
-    absl::optional<std::string> url_or_path;
-    // Destination component.
-    absl::optional<DlpRulesManager::Component> component;
   };
 
   using GetDisallowedTransfersCallback =
@@ -291,11 +265,11 @@ class DlpFilesController {
                          GetDlpMetadataCallback result_callback,
                          const ::dlp::GetFilesSourcesResponse response);
 
-  void LaunchIfAllowed(CheckIfDlpAllowedCallback result_callback,
-                       ::dlp::CheckFilesTransferResponse response);
-
-  void ReturnIfDropAllowed(CheckIfDlpAllowedCallback result_callback,
-                           ::dlp::CheckFilesTransferResponse response);
+  // Runs `result_callback` with true if `action` is allowed. It runs
+  // `result_callback` with false and shows the required UI otherwise.
+  void ReturnIfActionAllowed(FileAction action,
+                             CheckIfDlpAllowedCallback result_callback,
+                             ::dlp::CheckFilesTransferResponse response);
 
   // Reports an event if a `DlpReportingManager` instance exists. When
   // `dst_pattern` is missing, we report `dst.component.value()` instead. When
@@ -334,7 +308,7 @@ class DlpFilesController {
       CheckIfDlpAllowedCallback result_callback,
       std::vector<storage::FileSystemURL> dropped_files);
 
-  const DlpRulesManager& rules_manager_;
+  const raw_ref<const DlpRulesManager, ExperimentalAsh> rules_manager_;
 
   // Is used for creating and showing the warning dialog.
   std::unique_ptr<DlpWarnNotifier> warn_notifier_;

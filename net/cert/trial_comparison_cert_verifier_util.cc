@@ -70,21 +70,23 @@ bool CertHasMultipleEVPoliciesAndOneMatchesRoot(const X509Certificate* cert) {
   const EVRootCAMetadata* ev_metadata = EVRootCAMetadata::GetInstance();
   std::set<der::Input> candidate_oids;
   for (const der::Input& oid : leaf->policy_oids()) {
-    if (ev_metadata->IsEVPolicyOIDGivenBytes(oid))
+    if (ev_metadata->IsEVPolicyOID(oid)) {
       candidate_oids.insert(oid);
+    }
   }
 
   if (candidate_oids.size() <= 1)
     return false;
 
   SHA256HashValue root_fingerprint;
-  crypto::SHA256HashString(root->der_cert().AsStringPiece(),
+  crypto::SHA256HashString(root->der_cert().AsStringView(),
                            root_fingerprint.data,
                            sizeof(root_fingerprint.data));
 
   for (const der::Input& oid : candidate_oids) {
-    if (ev_metadata->HasEVPolicyOIDGivenBytes(root_fingerprint, oid))
+    if (ev_metadata->HasEVPolicyOID(root_fingerprint, oid)) {
       return true;
+    }
   }
 
   return false;
@@ -164,18 +166,6 @@ TrialComparisonResult IsSynchronouslyIgnorableDifference(
       primary_error != OK && trial_error != OK) {
     return TrialComparisonResult::kIgnoredSHA1SignaturePresent;
   }
-
-#if BUILDFLAG(IS_WIN)
-  // cert_verify_proc_win has some oddities around revocation checking
-  // and EV certs; if the only difference is the primary windows verifier
-  // had CERT_STATUS_REV_CHECKING_ENABLED in addition then we can ignore.
-  if (chains_equal &&
-      (primary_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED) &&
-      ((primary_result.cert_status ^ CERT_STATUS_REV_CHECKING_ENABLED) ==
-       trial_result.cert_status)) {
-    return TrialComparisonResult::kIgnoredWindowsRevCheckingEnabled;
-  }
-#endif
 
   // Differences in chain or errors don't matter much if both
   // return AUTHORITY_INVALID.

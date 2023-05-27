@@ -17,10 +17,9 @@
 
 #include <stdlib.h>
 
-#include <cstddef>
 #include <fstream>
+#include <iostream>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "gmock/gmock.h"
@@ -237,7 +236,9 @@ ABSL_RETIRED_FLAG(std::string, legacy_str, "l", "");
 namespace {
 
 namespace flags = absl::flags_internal;
+using testing::AllOf;
 using testing::ElementsAreArray;
+using testing::HasSubstr;
 
 class ParseTest : public testing::Test {
  public:
@@ -268,6 +269,15 @@ void InvokeParseAbslOnly(const char* (&in_argv)[N]) {
 
   absl::ParseAbseilFlagsOnly(2, const_cast<char**>(in_argv), positional_args,
                              unrecognized_flags);
+}
+
+// --------------------------------------------------------------------
+
+template <int N>
+std::vector<char*> InvokeParseCommandLineImpl(const char* (&in_argv)[N]) {
+  return flags::ParseCommandLineImpl(
+      N, const_cast<char**>(in_argv), flags::UsageFlagsAction::kHandleUsage,
+      flags::OnUndefinedFlag::kAbortIfUndefined, std::cerr);
 }
 
 // --------------------------------------------------------------------
@@ -1057,6 +1067,20 @@ TEST_F(ParseTest, AllUndefOkFlagsAreIgnored) {
                                 absl::string_view("value"),
                                 absl::string_view("--undef_flag4")}));
   EXPECT_THAT(unrecognized_flags, testing::IsEmpty());
+}
+
+// --------------------------------------------------------------------
+
+TEST_F(ParseDeathTest, ExitOnUnrecognizedFlagPrintsHelp) {
+  const char* in_args[] = {
+      "testbin",
+      "--undef_flag1",
+      "--help=int_flag",
+  };
+
+  EXPECT_EXIT(InvokeParseCommandLineImpl(in_args), testing::ExitedWithCode(1),
+              AllOf(HasSubstr("Unknown command line flag 'undef_flag1'"),
+                    HasSubstr("Try --helpfull to get a list of all flags")));
 }
 
 // --------------------------------------------------------------------

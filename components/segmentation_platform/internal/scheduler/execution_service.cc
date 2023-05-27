@@ -57,8 +57,9 @@ void ExecutionService::Initialize(
 
   training_data_collector_ = TrainingDataCollector::Create(
       feature_list_query_processor_.get(),
-      signal_handler->deprecated_histogram_signal_handler(), storage_service,
-      configs, profile_prefs, clock);
+      signal_handler->deprecated_histogram_signal_handler(),
+      signal_handler->user_action_signal_handler(), storage_service, configs,
+      profile_prefs, clock);
 
   model_executor_ = std::make_unique<ModelExecutorImpl>(
       clock, feature_list_query_processor_.get());
@@ -98,8 +99,10 @@ void ExecutionService::OverwriteModelExecutionResult(
   // TODO(ritikagup): Change the use of this according to MultiOutputModel.
   auto execution_result = std::make_unique<ModelExecutionResult>(
       ModelProvider::Request(), ModelProvider::Response(1, result.first));
+  proto::SegmentInfo segment_info;
+  segment_info.set_segment_id(segment_id);
   model_execution_scheduler_->OnModelExecutionCompleted(
-      segment_id, std::move(execution_result));
+      segment_info, std::move(execution_result));
 }
 
 void ExecutionService::RefreshModelResults() {

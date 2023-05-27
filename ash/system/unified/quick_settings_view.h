@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ash/system/brightness/unified_brightness_view.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
@@ -24,6 +25,7 @@ class FeatureTilesContainerView;
 class PageIndicatorView;
 class QuickSettingsFooter;
 class QuickSettingsHeader;
+class QuickSettingsMediaViewContainer;
 class UnifiedMediaControlsContainer;
 class UnifiedSystemTrayController;
 
@@ -49,10 +51,25 @@ class ASH_EXPORT QuickSettingsView : public views::View,
   void AddTiles(std::vector<std::unique_ptr<FeatureTile>> tiles);
 
   // Adds slider view.
-  void AddSliderView(views::View* slider_view);
+  views::View* AddSliderView(std::unique_ptr<views::View> slider_view);
 
-  // Adds media controls view to `media_controls_container_`;
+  // Adds media controls view to `media_controls_container_`. Only called if
+  // media::kGlobalMediaControlsForChromeOS is enabled and
+  // media::kGlobalMediaControlsCrOSUpdatedUI is disabled.
   void AddMediaControlsView(views::View* media_controls);
+
+  // Shows media controls view. Only called if
+  // media::kGlobalMediaControlsForChromeOS is enabled and
+  // media::kGlobalMediaControlsCrOSUpdatedUI is disabled.
+  void ShowMediaControls();
+
+  // Adds media view to `media_view_container_`. Only called if
+  // media::kGlobalMediaControlsCrOSUpdatedUI is enabled.
+  void AddMediaView(std::unique_ptr<views::View> media_view);
+
+  // Sets whether the quick settings view should show the media view. Only
+  // called if media::kGlobalMediaControlsCrOSUpdatedUI is enabled.
+  void SetShowMediaView(bool show_media_view);
 
   // Hides the main view and shows the given `detailed_view`.
   void SetDetailedView(std::unique_ptr<views::View> detailed_view);
@@ -81,9 +98,6 @@ class ASH_EXPORT QuickSettingsView : public views::View,
   // Settings).
   bool IsDetailedViewShown() const;
 
-  // Shows media controls view.
-  void ShowMediaControls();
-
   // PaginationModelObserver:
   void TotalPagesChanged(int previous_page_count, int new_page_count) override;
 
@@ -110,25 +124,32 @@ class ASH_EXPORT QuickSettingsView : public views::View,
   friend class UnifiedVolumeViewTest;
 
   // Owned by UnifiedSystemTrayBubble.
-  UnifiedSystemTrayController* const controller_;
+  const raw_ptr<UnifiedSystemTrayController, ExperimentalAsh> controller_;
 
   // Owned by views hierarchy.
-  views::FlexLayoutView* system_tray_container_ = nullptr;
-  QuickSettingsHeader* header_ = nullptr;
-  FeatureTilesContainerView* feature_tiles_container_ = nullptr;
-  PageIndicatorView* page_indicator_view_ = nullptr;
-  views::FlexLayoutView* sliders_container_ = nullptr;
-  QuickSettingsFooter* footer_ = nullptr;
-  views::View* detailed_view_container_ = nullptr;
+  raw_ptr<views::FlexLayoutView, ExperimentalAsh> system_tray_container_ =
+      nullptr;
+  raw_ptr<QuickSettingsHeader, ExperimentalAsh> header_ = nullptr;
+  raw_ptr<FeatureTilesContainerView, ExperimentalAsh> feature_tiles_container_ =
+      nullptr;
+  raw_ptr<PageIndicatorView, ExperimentalAsh> page_indicator_view_ = nullptr;
+  raw_ptr<views::FlexLayoutView, ExperimentalAsh> sliders_container_ = nullptr;
+  raw_ptr<QuickSettingsFooter, ExperimentalAsh> footer_ = nullptr;
+  raw_ptr<views::View, ExperimentalAsh> detailed_view_container_ = nullptr;
 
   // Null if media::kGlobalMediaControlsForChromeOS is disabled.
-  UnifiedMediaControlsContainer* media_controls_container_ = nullptr;
+  raw_ptr<UnifiedMediaControlsContainer, ExperimentalAsh>
+      media_controls_container_ = nullptr;
+
+  // Null if media::kGlobalMediaControlsCrOSUpdatedUI is disabled.
+  raw_ptr<QuickSettingsMediaViewContainer, ExperimentalAsh>
+      media_view_container_ = nullptr;
 
   // The maximum height available to the view.
   int max_height_ = 0;
 
   // The view that is saved by calling SaveFocus().
-  views::View* saved_focused_view_ = nullptr;
+  raw_ptr<views::View, ExperimentalAsh> saved_focused_view_ = nullptr;
 
   const std::unique_ptr<ui::EventHandler> interacted_by_tap_recorder_;
 };

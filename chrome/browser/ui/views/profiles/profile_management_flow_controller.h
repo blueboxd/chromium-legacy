@@ -9,7 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/ui/views/profiles/profile_management_utils.h"
+#include "chrome/browser/ui/views/profiles/profile_management_types.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "components/signin/public/base/signin_buildflags.h"
 
@@ -128,6 +128,11 @@ class ProfileManagementFlowController {
   ProfilePickerWebContentsHost* host() { return host_; }
 
  private:
+  // Called after a browser is open. Clears the host and then runs the callback.
+  void CloseHostAndRunCallback(
+      PostHostClearedCallback post_host_cleared_callback,
+      Browser* browser);
+
   Step current_step_ = Step::kUnknown;
 
   raw_ptr<ProfilePickerWebContentsHost> host_;
@@ -135,6 +140,8 @@ class ProfileManagementFlowController {
 
   base::flat_map<Step, std::unique_ptr<ProfileManagementStepController>>
       initialized_steps_;
+
+  base::WeakPtrFactory<ProfileManagementFlowController> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PROFILES_PROFILE_MANAGEMENT_FLOW_CONTROLLER_H_

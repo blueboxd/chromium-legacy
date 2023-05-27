@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -332,6 +333,9 @@ class Surface final : public ui::PropertyHandler {
 
   // Returns true if surface has been assigned a surface delegate.
   bool HasSurfaceDelegate() const;
+
+  // Returns a pointer to the SurfaceDelegate for this surface, used by tests.
+  SurfaceDelegate* GetDelegateForTesting();
 
   // Surface does not own observers. It is the responsibility of the observer
   // to remove itself when it is done observing.
@@ -665,7 +669,7 @@ class Surface final : public ui::PropertyHandler {
   // This can be set to have some functions delegated. E.g. ShellSurface class
   // can set this to handle Commit() and apply any double buffered state it
   // maintains.
-  SurfaceDelegate* delegate_ = nullptr;
+  raw_ptr<SurfaceDelegate, ExperimentalAsh> delegate_ = nullptr;
 
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true>::Unchecked observers_;
@@ -697,8 +701,8 @@ class ScopedSurface {
   Surface* get() { return surface_; }
 
  private:
-  Surface* const surface_;
-  SurfaceObserver* const observer_;
+  const raw_ptr<Surface, ExperimentalAsh> surface_;
+  const raw_ptr<SurfaceObserver, ExperimentalAsh> observer_;
 };
 
 }  // namespace exo

@@ -1454,6 +1454,7 @@ interface Document : Node
     getter onbeforeinput
     getter onbeforematch
     getter onbeforepaste
+    getter onbeforetoggle
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -1528,6 +1529,7 @@ interface Document : Node
     getter onresize
     getter onresume
     getter onscroll
+    getter onscrollend
     getter onsearch
     getter onsecuritypolicyviolation
     getter onseeked
@@ -1661,6 +1663,7 @@ interface Document : Node
     setter onbeforeinput
     setter onbeforematch
     setter onbeforepaste
+    setter onbeforetoggle
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -1735,6 +1738,7 @@ interface Document : Node
     setter onresize
     setter onresume
     setter onscroll
+    setter onscrollend
     setter onsearch
     setter onsecuritypolicyviolation
     setter onseeked
@@ -2963,6 +2967,8 @@ interface HTMLButtonElement : HTMLElement
     getter formTarget
     getter labels
     getter name
+    getter popoverTargetAction
+    getter popoverTargetElement
     getter type
     getter validationMessage
     getter validity
@@ -2979,6 +2985,8 @@ interface HTMLButtonElement : HTMLElement
     setter formNoValidate
     setter formTarget
     setter name
+    setter popoverTargetAction
+    setter popoverTargetElement
     setter type
     setter value
 interface HTMLCanvasElement : HTMLElement
@@ -3072,6 +3080,7 @@ interface HTMLElement : Element
     getter onauxclick
     getter onbeforeinput
     getter onbeforematch
+    getter onbeforetoggle
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -3138,6 +3147,7 @@ interface HTMLElement : Element
     getter onreset
     getter onresize
     getter onscroll
+    getter onscrollend
     getter onsecuritypolicyviolation
     getter onseeked
     getter onseeking
@@ -3166,6 +3176,7 @@ interface HTMLElement : Element
     getter onwebkittransitionend
     getter onwheel
     getter outerText
+    getter popover
     getter spellcheck
     getter style
     getter tabIndex
@@ -3177,6 +3188,9 @@ interface HTMLElement : Element
     method click
     method constructor
     method focus
+    method hidePopover
+    method showPopover
+    method togglePopover
     setter accessKey
     setter autocapitalize
     setter autofocus
@@ -3197,6 +3211,7 @@ interface HTMLElement : Element
     setter onauxclick
     setter onbeforeinput
     setter onbeforematch
+    setter onbeforetoggle
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -3263,6 +3278,7 @@ interface HTMLElement : Element
     setter onreset
     setter onresize
     setter onscroll
+    setter onscrollend
     setter onsecuritypolicyviolation
     setter onseeked
     setter onseeking
@@ -3291,6 +3307,7 @@ interface HTMLElement : Element
     setter onwebkittransitionend
     setter onwheel
     setter outerText
+    setter popover
     setter spellcheck
     setter style
     setter tabIndex
@@ -3600,6 +3617,8 @@ interface HTMLInputElement : HTMLElement
     getter name
     getter pattern
     getter placeholder
+    getter popoverTargetAction
+    getter popoverTargetElement
     getter readOnly
     getter required
     getter selectionDirection
@@ -3655,6 +3674,8 @@ interface HTMLInputElement : HTMLElement
     setter name
     setter pattern
     setter placeholder
+    setter popoverTargetAction
+    setter popoverTargetElement
     setter readOnly
     setter required
     setter selectionDirection
@@ -4923,6 +4944,7 @@ interface MathMLElement : Element
     getter onauxclick
     getter onbeforeinput
     getter onbeforematch
+    getter onbeforetoggle
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -4989,6 +5011,7 @@ interface MathMLElement : Element
     getter onreset
     getter onresize
     getter onscroll
+    getter onscrollend
     getter onsecuritypolicyviolation
     getter onseeked
     getter onseeking
@@ -5030,6 +5053,7 @@ interface MathMLElement : Element
     setter onauxclick
     setter onbeforeinput
     setter onbeforematch
+    setter onbeforetoggle
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -5096,6 +5120,7 @@ interface MathMLElement : Element
     setter onreset
     setter onresize
     setter onscroll
+    setter onscrollend
     setter onsecuritypolicyviolation
     setter onseeked
     setter onseeking
@@ -6977,6 +7002,7 @@ interface SVGElement : Element
     getter onauxclick
     getter onbeforeinput
     getter onbeforematch
+    getter onbeforetoggle
     getter onbeforexrselect
     getter onblur
     getter oncancel
@@ -7043,6 +7069,7 @@ interface SVGElement : Element
     getter onreset
     getter onresize
     getter onscroll
+    getter onscrollend
     getter onsecuritypolicyviolation
     getter onseeked
     getter onseeking
@@ -7086,6 +7113,7 @@ interface SVGElement : Element
     setter onauxclick
     setter onbeforeinput
     setter onbeforematch
+    setter onbeforetoggle
     setter onbeforexrselect
     setter onblur
     setter oncancel
@@ -7152,6 +7180,7 @@ interface SVGElement : Element
     setter onreset
     setter onresize
     setter onscroll
+    setter onscrollend
     setter onsecuritypolicyviolation
     setter onseeked
     setter onseeking
@@ -8480,6 +8509,11 @@ interface TimeRanges
     method constructor
     method end
     method start
+interface ToggleEvent : Event
+    attribute @@toStringTag
+    getter newState
+    getter oldState
+    method constructor
 interface Touch
     attribute @@toStringTag
     getter clientX
@@ -11072,6 +11106,7 @@ namespace console
     getter onbeforeinstallprompt
     getter onbeforematch
     getter onbeforeprint
+    getter onbeforetoggle
     getter onbeforeunload
     getter onbeforexrselect
     getter onblur
@@ -11149,6 +11184,7 @@ namespace console
     getter onreset
     getter onresize
     getter onscroll
+    getter onscrollend
     getter onsearch
     getter onsecuritypolicyviolation
     getter onseeked
@@ -11285,6 +11321,7 @@ namespace console
     setter onbeforeinstallprompt
     setter onbeforematch
     setter onbeforeprint
+    setter onbeforetoggle
     setter onbeforeunload
     setter onbeforexrselect
     setter onblur
@@ -11362,6 +11399,7 @@ namespace console
     setter onreset
     setter onresize
     setter onscroll
+    setter onscrollend
     setter onsearch
     setter onsecuritypolicyviolation
     setter onseeked

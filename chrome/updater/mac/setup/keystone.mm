@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/strings/string_split.h"
@@ -29,6 +30,81 @@
 #include "chrome/updater/util/posix_util.h"
 #include "chrome/updater/util/util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+
+// Class to read the Keystone apps' client-regulated-counting data.
+@interface CountingMetricsStore : NSObject {
+  base::scoped_nsobject<NSDictionary<NSString*, NSDictionary<NSString*, id>*>>
+      _metrics;
+}
+
++ (instancetype)storeAtPath:(const base::FilePath&)path;
+
+- (absl::optional<int>)dateLastActiveForApp:(NSString*)appid;
+- (absl::optional<int>)dateLastRollcallForApp:(NSString*)appid;
+
+@end
+
+@implementation CountingMetricsStore
+
++ (instancetype)storeAtPath:(const base::FilePath&)path {
+  return [[[CountingMetricsStore alloc]
+      initWithURL:[base::mac::FilePathToNSURL(path)
+                      URLByAppendingPathComponent:@"CountingMetrics.plist"]]
+      autorelease];
+}
+
+- (instancetype)initWithURL:(NSURL*)url {
+  if ((self = [super init])) {
+    NSError* error = nil;
+    _metrics.reset([[NSDictionary alloc] initWithContentsOfURL:url
+                                                         error:&error]);
+
+    if (error) {
+      LOG(WARNING) << "Failed to read client-regulated-counting data.";
+      [self release];
+      return nil;
+    }
+  }
+  return self;
+}
+
+- (absl::optional<int>)daynumValueOfKey:(NSString*)key forApp:(NSString*)appid {
+  id appObject = [_metrics objectForKey:appid.lowercaseString];
+  if (![appObject isKindOfClass:[NSDictionary class]]) {
+    LOG(WARNING) << "Malformed input client-regulated-counting data.";
+    return absl::nullopt;
+  }
+
+  id daynumObject = appObject[key];
+  if (!daynumObject) {
+    return absl::nullopt;
+  }
+
+  if (![daynumObject isKindOfClass:[NSNumber class]]) {
+    LOG(WARNING) << "daynum is not a number.";
+    return absl::nullopt;
+  }
+
+  // daynum the number of days since January 1, 2007. The accepted range is
+  // between 3000 (maps to Mar 20, 2015) and 50000 (maps to Nov 24, 2143).
+  int daynum = [daynumObject intValue];
+  if (daynum < 3000 || daynum > 50000) {
+    LOG(WARNING) << "Ignored out-of-range daynum: " << daynum;
+    return absl::nullopt;
+  }
+
+  return daynum;
+}
+
+- (absl::optional<int>)dateLastActiveForApp:(NSString*)appid {
+  return [self daynumValueOfKey:@"DayOfLastActive" forApp:appid];
+}
+
+- (absl::optional<int>)dateLastRollcallForApp:(NSString*)appid {
+  return [self daynumValueOfKey:@"DayOfLastRollcall" forApp:appid];
+}
+
+@end
 
 namespace updater {
 
@@ -204,26 +280,37 @@ void UninstallKeystone(UpdaterScope scope) {
   }
 }
 
-void MigrateKeystoneTickets(
-    UpdaterScope scope,
+bool MigrateKeystoneApps(
+    const base::FilePath& keystone_path,
     base::RepeatingCallback<void(const RegistrationRequest&)>
         register_callback) {
   @autoreleasepool {
     NSDictionary<NSString*, KSTicket*>* store = [KSTicketStore
         readStoreWithPath:base::SysUTF8ToNSString(
-                              GetKeystoneFolderPath(scope)
-                                  ->Append(FILE_PATH_LITERAL("TicketStore"))
+                              keystone_path
+                                  .Append(FILE_PATH_LITERAL("TicketStore"))
                                   .Append(
                                       FILE_PATH_LITERAL("Keystone.ticketstore"))
                                   .AsUTF8Unsafe())];
+    if (!store) {
+      return false;
+    }
+
+    CountingMetricsStore* metrics_store =
+        [CountingMetricsStore storeAtPath:keystone_path];
 
     for (NSString* key in store) {
       KSTicket* ticket = [store objectForKey:key];
 
       RegistrationRequest registration;
       registration.app_id = base::SysNSStringToUTF8(ticket.productID);
-      registration.version =
-          base::Version(base::SysNSStringToUTF8([ticket determineVersion]));
+      const base::Version version(
+          base::SysNSStringToUTF8([ticket determineVersion]));
+      if (version.IsValid()) {
+        registration.version = version;
+      } else {
+        registration.version = base::Version(kNullVersion);
+      }
       if (ticket.existenceChecker) {
         registration.existence_checker_path =
             base::mac::NSStringToFilePath(ticket.existenceChecker.path);
@@ -240,17 +327,19 @@ void MigrateKeystoneTickets(
 
       // Skip migration for incomplete ticket or Keystone itself.
       if (registration.app_id.empty() ||
-          registration.existence_checker_path.empty() ||
-          !base::PathExists(registration.existence_checker_path) ||
-          !registration.version.IsValid() ||
           base::EqualsCaseInsensitiveASCII(registration.app_id,
                                            "com.google.Keystone")) {
         continue;
       }
 
+      registration.dla = [metrics_store dateLastActiveForApp:ticket.productID];
+      registration.dlrc =
+          [metrics_store dateLastRollcallForApp:ticket.productID];
+
       register_callback.Run(registration);
     }
   }
+  return true;
 }
 
 }  // namespace updater

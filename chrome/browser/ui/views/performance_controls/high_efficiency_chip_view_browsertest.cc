@@ -12,7 +12,6 @@
 #include "chrome/browser/resource_coordinator/utils.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
-#include "chrome/browser/ui/performance_controls/tab_discard_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
@@ -35,11 +34,13 @@
 #include "content/public/test/mock_navigation_handle.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/page_transition_types.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/interaction/interaction_test_util_views.h"
+#include "ui/views/test/button_test_api.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/any_widget_observer.h"
 
@@ -60,10 +61,10 @@ class HighEfficiencyChipViewBrowserTest : public InProcessBrowserTest {
   ~HighEfficiencyChipViewBrowserTest() override = default;
 
   void SetUp() override {
-    iph_features_.InitForDemo(
-        feature_engagement::kIPHHighEfficiencyInfoModeFeature,
+    scoped_feature_list_.InitWithFeaturesAndParameters(
         {{performance_manager::features::kHighEfficiencyModeAvailable,
-          {{"default_state", "true"}, {"time_before_discard", "1h"}}}});
+          {{"default_state", "true"}, {"time_before_discard", "1h"}}}},
+        {});
 
     InProcessBrowserTest::SetUp();
   }
@@ -129,36 +130,6 @@ class HighEfficiencyChipViewBrowserTest : public InProcessBrowserTest {
     manager->DiscardPageForTesting(contents);
   }
 
-  void WaitForIPHToShow() {
-    views::NamedWidgetShownWaiter waiter(
-        views::test::AnyWidgetTestPasskey{},
-        user_education::HelpBubbleView::kViewClassName);
-    waiter.WaitIfNeededAndGet();
-  }
-
-  user_education::HelpBubbleView* GetHelpBubbleView() {
-    return GetFeaturePromoController()
-        ->promo_bubble_for_testing()
-        ->AsA<user_education::HelpBubbleViews>()
-        ->bubble_view();
-  }
-
-  void ClickIPHCancelButton() {
-    views::test::WidgetDestroyedWaiter waiter(GetHelpBubbleView()->GetWidget());
-    views::test::InteractionTestUtilSimulatorViews::PressButton(
-        GetHelpBubbleView()->GetDefaultButtonForTesting(),
-        ui::test::InteractionTestUtil::InputType::kMouse);
-    waiter.Wait();
-  }
-
-  void ClickIPHSettingsButton() {
-    views::test::WidgetDestroyedWaiter waiter(GetHelpBubbleView()->GetWidget());
-    views::test::InteractionTestUtilSimulatorViews::PressButton(
-        GetHelpBubbleView()->GetNonDefaultButtonForTesting(0),
-        ui::test::InteractionTestUtil::InputType::kMouse);
-    waiter.Wait();
-  }
-
   views::InkDropState GetInkDropState() {
     return views::InkDrop::Get(GetHighEfficiencyChipView())
         ->GetInkDrop()
@@ -166,70 +137,31 @@ class HighEfficiencyChipViewBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  feature_engagement::test::ScopedIphFeatureList iph_features_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::SimpleTestTickClock test_clock_;
   resource_coordinator::ScopedSetTickClockForTesting
       scoped_set_tick_clock_for_testing_;
 };
 
 IN_PROC_BROWSER_TEST_F(HighEfficiencyChipViewBrowserTest,
-                       NavigatesOnIPHSettingsLinkClicked) {
-  auto lock = BrowserFeaturePromoController::BlockActiveWindowCheckForTesting();
-  EXPECT_FALSE(GetFeaturePromoController()->IsPromoActive(
-      feature_engagement::kIPHHighEfficiencyInfoModeFeature));
+                       ShowAndHideInkDropOnDialog) {
+  PageActionIconView* chip = GetHighEfficiencyChipView();
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                       ui::EventTimeForNow(), 0, 0);
+  views::test::ButtonTestApi test_api(chip);
 
   DiscardTabAt(0);
   chrome::SelectNumberedTab(browser(), 0);
-  WaitForIPHToShow();
 
-  EXPECT_TRUE(GetFeaturePromoController()->IsPromoActive(
-      feature_engagement::kIPHHighEfficiencyInfoModeFeature));
+  EXPECT_EQ(GetInkDropState(), views::InkDropState::HIDDEN);
 
-  ClickIPHSettingsButton();
-  TabStripModel* tab_strip_model = browser()->tab_strip_model();
-  EXPECT_EQ(3, tab_strip_model->count());
-  content::WebContents* web_contents = tab_strip_model->GetWebContentsAt(2);
-  WaitForLoadStop(web_contents);
-  GURL expected(chrome::kChromeUIPerformanceSettingsURL);
-  EXPECT_EQ(expected.host(), web_contents->GetLastCommittedURL().host());
-}
+  // Open bubble
+  test_api.NotifyClick(press);
 
-IN_PROC_BROWSER_TEST_F(HighEfficiencyChipViewBrowserTest,
-                       PromoDismissesOnCancelClick) {
-  auto lock = BrowserFeaturePromoController::BlockActiveWindowCheckForTesting();
-  DiscardTabAt(0);
-  chrome::SelectNumberedTab(browser(), 0);
-  WaitForIPHToShow();
-
-  EXPECT_TRUE(GetFeaturePromoController()->IsPromoActive(
-      feature_engagement::kIPHHighEfficiencyInfoModeFeature));
-
-  ClickHighEfficiencyChip();
-
-  // Expect the bubble to be open and the promo to be closed.
-  EXPECT_FALSE(GetFeaturePromoController()->IsPromoActive(
-      feature_engagement::kIPHHighEfficiencyInfoModeFeature));
-  EXPECT_NE(GetHighEfficiencyChipView()->GetBubble(), nullptr);
-}
-
-IN_PROC_BROWSER_TEST_F(HighEfficiencyChipViewBrowserTest,
-                       ShowAndHideInkDropWithPromo) {
-  auto lock = BrowserFeaturePromoController::BlockActiveWindowCheckForTesting();
-  EXPECT_FALSE(GetFeaturePromoController()->IsPromoActive(
-      feature_engagement::kIPHHighEfficiencyInfoModeFeature));
-
-  DiscardTabAt(0);
-  chrome::SelectNumberedTab(browser(), 0);
-  WaitForIPHToShow();
-
-  EXPECT_TRUE(GetFeaturePromoController()->IsPromoActive(
-      feature_engagement::kIPHHighEfficiencyInfoModeFeature));
   EXPECT_EQ(GetInkDropState(), views::InkDropState::ACTIVATED);
 
-  ClickIPHCancelButton();
+  test_api.NotifyClick(press);
 
-  EXPECT_FALSE(GetFeaturePromoController()->IsPromoActive(
-      feature_engagement::kIPHHighEfficiencyInfoModeFeature));
   views::InkDropState current_state = GetInkDropState();
   // The deactivated state is HIDDEN on Mac but DEACTIVATED on Linux.
   EXPECT_TRUE(current_state == views::InkDropState::HIDDEN ||

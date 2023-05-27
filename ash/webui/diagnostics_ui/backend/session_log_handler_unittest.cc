@@ -22,6 +22,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
@@ -197,6 +198,11 @@ class SessionLogHandlerTest : public NoSessionAshTestBase {
     session_log_handler_->RegisterMessages();
     session_log_handler_->SetTaskRunnerForTesting(task_runner_);
 
+    // This test suite does not check `HoldingSpaceItem` ids, so there is no
+    // need to save the mock id.
+    ON_CALL(holding_space_client(), AddItemOfType)
+        .WillByDefault(testing::ReturnRef(base::EmptyString()));
+
     // Call handler to enable Javascript.
     base::Value::List args;
     web_ui_.HandleReceivedMessage("initialize", args);
@@ -226,9 +232,9 @@ class SessionLogHandlerTest : public NoSessionAshTestBase {
   content::TestWebUI web_ui_;
   std::unique_ptr<SessionLogHandler> session_log_handler_;
   base::ScopedTempDir temp_dir_;
-  TelemetryLog* telemetry_log_;
-  RoutineLog* routine_log_;
-  NetworkingLog* networking_log_;
+  raw_ptr<TelemetryLog, ExperimentalAsh> telemetry_log_;
+  raw_ptr<RoutineLog, ExperimentalAsh> routine_log_;
+  raw_ptr<NetworkingLog, ExperimentalAsh> networking_log_;
   testing::NiceMock<ash::MockHoldingSpaceClient> holding_space_client_;
 };
 
@@ -398,7 +404,10 @@ TEST_F(SessionLogHandlerTest, AddToHoldingSpace) {
   base::Value::List args;
   args.Append(kHandlerFunctionName);
 
-  EXPECT_CALL(holding_space_client(), AddDiagnosticsLog(testing::Eq(log_path)));
+  EXPECT_CALL(holding_space_client(),
+              AddItemOfType(HoldingSpaceItem::Type::kDiagnosticsLog,
+                            testing::Eq(log_path)));
+
   base::RunLoop run_loop;
   session_log_handler_->SetLogCreatedClosureForTest(run_loop.QuitClosure());
   web_ui_.HandleReceivedMessage("saveSessionLog", args);

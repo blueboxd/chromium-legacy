@@ -156,7 +156,7 @@ class CORE_EXPORT HTMLImageElement final
 
   void SetIsFallbackImage() { is_fallback_image_ = true; }
 
-  FetchParameters::ResourceWidth GetResourceWidth() const;
+  absl::optional<float> GetResourceWidth() const;
   float SourceSize(Element&);
 
   void ForceReload() const;
@@ -203,6 +203,8 @@ class CORE_EXPORT HTMLImageElement final
   static bool SupportedImageType(const String& type,
                                  const HashSet<String>* disabled_image_types);
 
+  bool is_lazy_loaded() const { return is_lazy_loaded_; }
+
  protected:
   // Controls how an image element appears in the layout. See:
   // https://html.spec.whatwg.org/C/#image-request
@@ -243,7 +245,7 @@ class CORE_EXPORT HTMLImageElement final
   void SetLayoutDisposition(LayoutDisposition, bool force_reattach = false);
 
   void AttachLayoutTree(AttachContext&) override;
-  LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
   bool CanStartSelection() const override { return false; }
 

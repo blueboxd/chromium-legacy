@@ -418,7 +418,9 @@
       <message desc="Label for spoken feedback to read out switch to take portrait (bokeh effect, background blur) photo mode button." name="IDS_SWITCH_TAKE_PORTRAIT_BOKEH_PHOTO_BUTTON">
         Switch to take portrait photo
       </message>
-      <message desc="Label for switch to take portrait (bokeh effect, background blur) photo mode button." name="IDS_LABEL_SWITCH_TAKE_PORTRAIT_BOKEH_PHOTO_BUTTON">
+      <message desc="Label for switch to take portrait (bokeh effect, background blur) photo mode button."
+               meaning="Short for Portrait mode: a camera mode that uses machine learning to synthetically blur our backgrounds in a photo and create a pleasing bokeh effect."
+               name="IDS_LABEL_SWITCH_TAKE_PORTRAIT_BOKEH_PHOTO_BUTTON">
         Portrait
       </message>
       <message desc="Label for spoken feedback to read out for switch to scan mode button." name="IDS_SWITCH_SCAN_MODE_BUTTON">
@@ -451,11 +453,11 @@
       <message desc="Label for spoken feedback to read out for recording GIF type video." name="IDS_RECORD_GIF_VIDEO_OPTION">
         Record GIF video
       </message>
-      <message desc="Label for recording time-lapse video option." name="IDS_LABEL_RECORD_TIME_LAPSE_VIDEO_OPTION">
-        Time-lapse
+      <message desc="Label for recording time lapse video option." name="IDS_LABEL_RECORD_TIME_LAPSE_VIDEO_OPTION">
+        Time Lapse
       </message>
-      <message desc="Label for spoken feedback to read out for recording time-lapse video." name="IDS_RECORD_TIME_LAPSE_VIDEO_OPTION">
-        Record time-lapse video
+      <message desc="Label for spoken feedback to read out for recording time lapse video." name="IDS_RECORD_TIME_LAPSE_VIDEO_OPTION">
+        Record time lapse video
       </message>
       <message desc="Label for the confirm button to confirm with the reviewed photo or video." name="IDS_CONFIRM_REVIEW_BUTTON">
         Confirm
@@ -668,6 +670,9 @@ If your feedback is about image or video quality, please attach a sample photo o
       </message>
       <message desc="Label for scanned document page tab list." name="IDS_SCANNED_PAGE_LIST">
         Scanned page list
+      </message>
+      <message desc="Label for the button that opens actions menu in the document scanning feature view." name="IDS_DOC_SCAN_MENU_BUTTON">
+        Actions
       </message>
     </messages>
   </release>

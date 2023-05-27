@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ATTRIBUTION_SRC_LOADER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_ATTRIBUTION_SRC_LOADER_H_
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include "components/attribution_reporting/registration_type.mojom-blink-forward.h"
+#include "services/network/public/mojom/attribution.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/mojom/conversions/attribution_reporting.mojom-blink-forward.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/forward.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -27,12 +27,17 @@ class SuitableOrigin;
 
 namespace blink {
 
+class HTMLAnchorElement;
 class HTMLElement;
 class KURL;
 class LocalFrame;
 class Resource;
 class ResourceRequest;
 class ResourceResponse;
+class WebString;
+
+template <typename T>
+class WebVector;
 
 struct Impression;
 
@@ -46,10 +51,11 @@ class CORE_EXPORT AttributionSrcLoader
   AttributionSrcLoader& operator=(AttributionSrcLoader&& other) = delete;
   ~AttributionSrcLoader();
 
-  // Registers an attributionsrc. This method handles fetching the attribution
-  // src and notifying the browser process to begin tracking it. It is a no-op
-  // if the frame is not attached.
-  void Register(const KURL& attribution_src, HTMLElement* element);
+  // Registers zero or more attribution srcs by splitting `attribution_src` on
+  // spaces and completing each token as a URL against the frame's document.
+  // This method handles fetching each URL and notifying the browser process to
+  // begin tracking it. It is a no-op if the frame is not attached.
+  void Register(const AtomicString& attribution_src, HTMLElement* element);
 
   // Registers an attribution resource client for the given resource if
   // the request is eligible for attribution registration. Safe to call multiple
@@ -59,14 +65,24 @@ class CORE_EXPORT AttributionSrcLoader
                                        const ResourceResponse& response,
                                        const Resource* resource);
 
-  // Registers an attributionsrc which is associated with a top-level
-  // navigation, for example a click on an anchor tag. Returns an Impression
-  // which identifies the attributionsrc request and notifies the browser to
-  // begin tracking it.
-  absl::optional<Impression> RegisterNavigation(
-      const KURL& attribution_src,
-      mojom::blink::AttributionNavigationType nav_type,
-      HTMLElement* element = nullptr);
+  // Splits `attribution_src` on spaces and completes each token as a URL
+  // against the frame's document.
+  //
+  // For each URL eligible for Attribution Reporting, initiates a fetch for it,
+  // and notifies the browser to begin tracking it.
+  //
+  // If at least one URL is eligible or `navigation_url` is, returns a
+  // non-`absl::nullopt` `Impression` to live alongside the navigation.
+  [[nodiscard]] absl::optional<Impression> RegisterNavigation(
+      const KURL& navigation_url,
+      const AtomicString& attribution_src,
+      HTMLAnchorElement* element);
+
+  // Same as the above, but uses an already-tokenized attribution src for use
+  // with `window.open`.
+  [[nodiscard]] absl::optional<Impression> RegisterNavigation(
+      const KURL& navigation_url,
+      const WebVector<WebString>& attribution_srcs);
 
   // Returns true if `url` can be used as an attributionsrc: its scheme is HTTP
   // or HTTPS, its origin is potentially trustworthy, the document's permission
@@ -82,20 +98,20 @@ class CORE_EXPORT AttributionSrcLoader
 
   void Trace(Visitor* visitor) const;
 
-  // Returns proper value to populate `Attribution-Reporting-Support` request
-  // header. If OS-level attribution is supported, returns "web, os", otherwise
-  // returns "web".
-  AtomicString GetSupportHeader() const;
-
-  static constexpr size_t kMaxConcurrentRequests = 30;
+  network::mojom::AttributionSupport GetSupport() const;
 
  private:
   class ResourceClient;
 
-  ResourceClient* DoRegistration(
-      const KURL& src_url,
-      attribution_reporting::mojom::blink::RegistrationType,
-      bool associated_with_navigation);
+  Vector<KURL> ParseAttributionSrc(const AtomicString& attribution_src,
+                                   HTMLElement*);
+
+  bool DoRegistration(const Vector<KURL>&, absl::optional<AttributionSrcToken>);
+
+  [[nodiscard]] absl::optional<Impression> RegisterNavigationInternal(
+      const KURL& navigation_url,
+      Vector<KURL> attribution_src_urls,
+      HTMLAnchorElement*);
 
   // Returns the reporting origin corresponding to `url` if its protocol is in
   // the HTTP family, its origin is potentially trustworthy, and attribution is
@@ -107,14 +123,9 @@ class CORE_EXPORT AttributionSrcLoader
                                absl::optional<uint64_t> request_id,
                                bool log_issues = true);
 
-  ResourceClient* CreateAndSendRequest(
-      const KURL& src_url,
-      HTMLElement* element,
-      attribution_reporting::mojom::blink::RegistrationType,
-      bool associated_with_navigation);
-
-  // Returns whether OS-level attribution is supported.
-  bool HasOsSupport() const;
+  bool CreateAndSendRequests(Vector<KURL>,
+                             HTMLElement*,
+                             absl::optional<AttributionSrcToken>);
 
   struct AttributionHeaders;
 
@@ -125,7 +136,6 @@ class CORE_EXPORT AttributionSrcLoader
       const absl::optional<network::TriggerAttestation>& trigger_attestation);
 
   const Member<LocalFrame> local_frame_;
-  size_t num_resource_clients_ = 0;
 };
 
 }  // namespace blink

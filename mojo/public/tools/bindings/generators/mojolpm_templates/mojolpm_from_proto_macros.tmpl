@@ -77,9 +77,9 @@ bool FromProto(
 
   output.reserve(input.values_size());
   for (const auto& entry : input.values()) {
-    {{mojom_type}} value;
+    {{mojom_type}} value{ {{- kind.kind|default_constructor_args -}} };
 {%-   if kind.kind|is_nullable_kind %}
-    {{mojom_maybe_type}} maybe_value;
+    {{mojom_maybe_type}} maybe_value{ {{- kind.kind|default_constructor_args -}} };
     if (FromProto(entry.value(), maybe_value)) {
       value = std::move(maybe_value);
     }
@@ -130,9 +130,9 @@ bool FromProto(
   bool result = true;
   for (const auto& entry : input.values()) {
 {%-   if kind.value_kind|is_nullable_kind %}
-    {{mojom_key_type}} key;
-    {{mojom_value_type}} value;
-    {{mojom_maybe_value_type}} maybe_value;
+    {{mojom_key_type}} key{ {{- kind.key_kind|default_constructor_args -}} };
+    {{mojom_value_type}} value{ {{- kind.value_kind|default_constructor_args -}} };
+    {{mojom_maybe_value_type}} maybe_value{ {{- kind.value_kind|default_constructor_args -}} };
 
     if (FromProto(entry.key(), key)) {
       if (FromProto(entry.value(), maybe_value)) {
@@ -144,8 +144,8 @@ bool FromProto(
       break;
     }
 {%-   else %}
-    {{mojom_key_type}} key;
-    {{mojom_value_type}} value;
+    {{mojom_key_type}} key{ {{- kind.key_kind|default_constructor_args -}} };
+    {{mojom_value_type}} value{ {{- kind.value_kind|default_constructor_args -}} };
 
     if (FromProto(entry.key(), key)
         && FromProto(entry.value(), value)) {
@@ -259,9 +259,9 @@ bool FromProto(
 {%-       set kind = field.kind %}
 {%-       set field_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true) %}
 {%-       set field_maybe_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true, ignore_nullable=true) %}
-  {{field_mojom_type}} local_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_mojom_type}}>();
+  {{field_mojom_type}} local_{{name}}{ {{- kind|default_constructor_args -}} };
 {%-       if kind|is_nullable_kind %}
-  {{field_maybe_mojom_type}} local_maybe_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_maybe_mojom_type}}>();
+  {{field_maybe_mojom_type}} local_maybe_{{name}}{ {{- kind|default_constructor_args -}} };
 {%-       endif %}
 {%-     endfor %}
 
@@ -335,21 +335,22 @@ bool FromProto(
     case {{union_type}}::k{{("m_" ~ name)|under_to_camel}}: {
 {%-       if kind|is_nullable_kind %}
 {%-         set field_maybe_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true, ignore_nullable=true) %}
-      {{field_mojom_type}} local_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_mojom_type}}>();
-      {{field_maybe_mojom_type}} maybe_local_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_maybe_mojom_type}}>();
+      {{field_mojom_type}} local_{{name}}{ {{- kind|default_constructor_args -}} };
+      {{field_maybe_mojom_type}} maybe_local_{{name}}{ {{- kind|default_constructor_args -}} };
       if (FromProto(input.m_{{name}}(), maybe_local_{{name}})) {
         local_{{name}} = std::move(maybe_local_{{name}});
       }
       output = {{union|get_qualified_name_for_kind(flatten_nested_kind=true)}}::New{{name|under_to_camel}}(std::move(local_{{name}}));
       return true;
 {%-       else %}
-      {{field_mojom_type}} local_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_mojom_type}}>();
+      {{field_mojom_type}} local_{{name}}{ {{- kind|default_constructor_args -}} };
       if (FromProto(input.m_{{name}}(), local_{{name}})) {
         output = {{union|get_qualified_name_for_kind(flatten_nested_kind=true)}}::New{{name|under_to_camel}}(std::move(local_{{name}}));
         return true;
       }
+      break;
 {%-       endif %}
-    } break;
+    }
 {%      endfor %}
     default: {
       return false;

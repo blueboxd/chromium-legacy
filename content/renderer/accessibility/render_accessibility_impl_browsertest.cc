@@ -31,6 +31,8 @@
 #include "services/image_annotation/public/cpp/image_processor.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
+#include "services/metrics/ukm_recorder_factory_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -718,6 +720,116 @@ TEST_F(RenderAccessibilityImplTest, TestFocusConsistency) {
   EXPECT_TRUE(found_button_update);
 }
 
+TEST_F(RenderAccessibilityImplTest, TestExpandCollapseTreeItem) {
+  constexpr char html[] = R"HTML(
+      <body>
+        <div>
+          <ol role="tree">
+            <li role="treeitem" aria-expanded="false" id="1">
+            </li>
+          </ol>
+        </div>
+      </body>
+    )HTML";
+  LoadHTMLAndRefreshAccessibilityTree(html);
+
+  WebDocument document = GetMainFrame()->GetDocument();
+  WebAXObject root_obj = WebAXObject::FromWebDocument(document);
+  WebAXObject html_elem = root_obj.ChildAt(0);
+  WebAXObject body = html_elem.ChildAt(0);
+  WebAXObject div = body.ChildAt(0);
+  WebAXObject ol = div.ChildAt(0);
+  WebAXObject tree_item = ol.ChildAt(0);
+
+  std::string js(
+      "document.getElementById('1').addEventListener('keydown', (event) => { "
+      "let item = "
+      "document.getElementById('1'); if (event.key === 'ArrowRight') { "
+      "item.setAttribute('aria-expanded','true');} else if (event.key === "
+      "'ArrowLeft') { item.setAttribute('aria-expanded','false'); }}, true);");
+  ExecuteJavaScriptForTests(js.c_str());
+
+  // Expanding.
+  ui::AXActionData action;
+  action.target_node_id = tree_item.AxID();
+  action.action = ax::mojom::Action::kExpand;
+  GetRenderAccessibilityImpl()->PerformAction(action);
+  SendPendingAccessibilityEvents();
+
+  const std::vector<ui::AXTreeUpdate>& updates = GetHandledAccUpdates();
+  bool found_expanded_update = false;
+  for (const auto& update : updates) {
+    for (const auto& node_data : update.nodes) {
+      if (node_data.id == tree_item.AxID() &&
+          node_data.HasState(ax::mojom::State::kExpanded)) {
+        found_expanded_update = true;
+      }
+    }
+  }
+
+  EXPECT_TRUE(found_expanded_update);
+
+  // Expanding when expanded
+  action.target_node_id = tree_item.AxID();
+  action.action = ax::mojom::Action::kExpand;
+  GetRenderAccessibilityImpl()->PerformAction(action);
+  SendPendingAccessibilityEvents();
+
+  const std::vector<ui::AXTreeUpdate>& updates_2 = GetHandledAccUpdates();
+  found_expanded_update = false;
+  for (const auto& update : updates_2) {
+    for (const auto& node_data : update.nodes) {
+      if (node_data.id == tree_item.AxID() &&
+          node_data.HasState(ax::mojom::State::kExpanded)) {
+        found_expanded_update = true;
+      }
+    }
+  }
+
+  // Since item was already expanded, it should remain as such.
+  EXPECT_TRUE(found_expanded_update);
+
+  // Collapse when expanded.
+  action.target_node_id = tree_item.AxID();
+  action.action = ax::mojom::Action::kCollapse;
+  GetRenderAccessibilityImpl()->PerformAction(action);
+  SendPendingAccessibilityEvents();
+
+  const std::vector<ui::AXTreeUpdate>& updates_3 = GetHandledAccUpdates();
+  bool found_collapsed_update = false;
+  for (const auto& update : updates_3) {
+    for (const auto& node_data : update.nodes) {
+      if (node_data.id == tree_item.AxID() &&
+          node_data.HasState(ax::mojom::State::kCollapsed)) {
+        found_collapsed_update = true;
+      }
+    }
+  }
+
+  // Element should have collapsed.
+  EXPECT_TRUE(found_collapsed_update);
+
+  // Collapse when collapsed.
+  action.target_node_id = tree_item.AxID();
+  action.action = ax::mojom::Action::kCollapse;
+  GetRenderAccessibilityImpl()->PerformAction(action);
+  SendPendingAccessibilityEvents();
+
+  const std::vector<ui::AXTreeUpdate>& updates_4 = GetHandledAccUpdates();
+  found_collapsed_update = false;
+  for (const auto& update : updates_4) {
+    for (const auto& node_data : update.nodes) {
+      if (node_data.id == tree_item.AxID() &&
+          node_data.HasState(ax::mojom::State::kCollapsed)) {
+        found_collapsed_update = true;
+      }
+    }
+  }
+
+  // Element should still be collapsed.
+  EXPECT_TRUE(found_collapsed_update);
+}
+
 class MockPluginAccessibilityTreeSource : public content::PluginAXTreeSource {
  public:
   MockPluginAccessibilityTreeSource(ui::AXNodeID root_node_id) {
@@ -752,7 +864,6 @@ class MockPluginAccessibilityTreeSource : public content::PluginAXTreeSource {
   ui::AXNode* GetParent(const ui::AXNode* node) const override {
     return nullptr;
   }
-  bool IsValid(const ui::AXNode* node) const override { return true; }
   bool IsEqual(const ui::AXNode* node1,
                const ui::AXNode* node2) const override {
     return (node1 == node2);
@@ -986,6 +1097,15 @@ TEST_F(BlinkAXActionTargetTest, TestMethods) {
   }
   EXPECT_TRUE(input_range.IsFocused());
 
+  {
+    // Blurring an element requires layout to be clean.
+    GetRenderAccessibilityImpl()->GetAXContext()->UpdateAXForAllDocuments();
+    ui::AXActionData action_data;
+    action_data.action = ax::mojom::Action::kBlur;
+    EXPECT_TRUE(input_range_action_target->PerformAction(action_data));
+  }
+  EXPECT_FALSE(input_range.IsFocused());
+
   // Increment/decrement actions produce synthesized keydown and keyup events,
   // and the keyup event is delayed 100ms to look more natural. We need to wait
   // for them to happen to finish the test cleanly in the TearDown phase.
@@ -1217,10 +1337,8 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
 // of times it's been called.
 class MockUkmRecorder : public ukm::MojoUkmRecorder {
  public:
-  MockUkmRecorder()
-      : ukm::MojoUkmRecorder(
-            mojo::PendingRemote<ukm::mojom::UkmRecorderInterface>()) {}
-
+  MockUkmRecorder(ukm::mojom::UkmRecorderFactory& factory)
+      : MojoUkmRecorder(factory) {}
   void AddEntry(ukm::mojom::UkmEntryPtr entry) override { calls_++; }
 
   int calls() const { return calls_; }
@@ -1234,8 +1352,10 @@ class RenderAccessibilityImplUKMTest : public RenderAccessibilityImplTest {
  public:
   void SetUp() override {
     RenderAccessibilityImplTest::SetUp();
+    mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;
+    std::ignore = factory.BindNewPipeAndPassReceiver();
     GetRenderAccessibilityImpl()->ukm_recorder_ =
-        std::make_unique<MockUkmRecorder>();
+        std::make_unique<MockUkmRecorder>(*factory);
   }
 
   void TearDown() override { RenderAccessibilityImplTest::TearDown(); }

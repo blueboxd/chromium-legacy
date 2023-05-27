@@ -14,6 +14,9 @@
 #include "ash/system/tray/fake_detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/test/ash_test_base.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/view.h"
@@ -45,15 +48,21 @@ class TestCastConfigController : public CastConfigController {
   }
   void CastToSink(const std::string& sink_id) override {
     ++cast_to_sink_count_;
+    if (cast_to_sink_closure_) {
+      std::move(cast_to_sink_closure_).Run();
+    }
   }
   void StopCasting(const std::string& route_id) override {
     ++stop_casting_count_;
     stop_casting_route_id_ = route_id;
   }
+  void FreezeRoute(const std::string& route_id) override {}
+  void UnfreezeRoute(const std::string& route_id) override {}
 
   bool access_code_casting_enabled_ = false;
   std::vector<SinkAndRoute> sinks_and_routes_;
   size_t cast_to_sink_count_ = 0;
+  base::OnceClosure cast_to_sink_closure_;
   size_t stop_casting_count_ = 0;
   std::string stop_casting_route_id_;
 };
@@ -126,7 +135,7 @@ class CastDetailedViewTest : public AshTestBase {
   std::unique_ptr<views::Widget> widget_;
   TestCastConfigController cast_config_;
   std::unique_ptr<FakeDetailedViewDelegate> delegate_;
-  CastDetailedView* detailed_view_ = nullptr;
+  raw_ptr<CastDetailedView, ExperimentalAsh> detailed_view_ = nullptr;
 };
 
 TEST_F(CastDetailedViewTest, ViewsCreatedForCastDevices) {
@@ -155,6 +164,23 @@ TEST_F(CastDetailedViewTest, ClickOnViewClosesBubble) {
   LeftClickOn(first_view);
   EXPECT_EQ(cast_config_.cast_to_sink_count_, 1u);
   EXPECT_EQ(delegate_->close_bubble_call_count(), 1u);
+}
+
+TEST_F(CastDetailedViewTest, CastToSinkClosingBubbleDoesNotCrash) {
+  AddCastDevices();
+  std::vector<views::View*> views = GetDeviceViews();
+  ASSERT_FALSE(views.empty());
+  views::View* first_view = views[0];
+
+  // In multi-monitor situations, casting will create a picker window to choose
+  // the desktop to cast. This causes a window activation that closes the
+  // system tray bubble and deletes the widget owning the CastDetailedView.
+  cast_config_.cast_to_sink_closure_ =
+      base::BindOnce([](CastDetailedViewTest* test) { test->widget_.reset(); },
+                     base::Unretained(this));
+  LeftClickOn(first_view);
+  EXPECT_EQ(cast_config_.cast_to_sink_count_, 1u);
+  // No crash.
 }
 
 TEST_F(CastDetailedViewTest, AccessCodeCasting) {

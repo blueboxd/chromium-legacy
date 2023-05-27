@@ -12,7 +12,7 @@
  *
  * For a typical web page, running `performance.now()` as the first script in
  * the page gives values that are close enough to zero (typically less than a
- * few dozen milliseconds) that `timeOrigin` is a reliable reference for timing
+ * few dozen miliseconds) that `timeOrigin` is a reliable reference for timing
  * the execution of scripts. In a WebUI like OOBE, this is not the case. That is
  * because `performance.timeOrigin` is set when the BrowserContext is created,
  * which happens much earlier than the first JavaScript instruction. For OOBE,

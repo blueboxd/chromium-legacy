@@ -241,6 +241,8 @@ DEFINE_VARIATION_PARAM(kIPHiOSPromoPostRestoreFeature,
                        "IPH_iOSPromoPostRestore");
 DEFINE_VARIATION_PARAM(kIPHiOSPromoCredentialProviderExtensionFeature,
                        "IPH_iOSPromoCredentialProviderExtension");
+DEFINE_VARIATION_PARAM(kIPHiOSPromoDefaultBrowserFeature,
+                       "IPH_iOSPromoDefaultBrowser");
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
@@ -256,8 +258,6 @@ DEFINE_VARIATION_PARAM(kIPHExtensionsMenuFeature, "IPH_ExtensionsMenu");
 DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
 DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
 DEFINE_VARIATION_PARAM(kIPHGMCCastStartStopFeature, "IPH_GMCCastStartStop");
-DEFINE_VARIATION_PARAM(kIPHHighEfficiencyInfoModeFeature,
-                       "IPH_HighEfficiencyInfoMode");
 DEFINE_VARIATION_PARAM(kIPHHighEfficiencyModeFeature, "IPH_HighEfficiencyMode");
 DEFINE_VARIATION_PARAM(kIPHLiveCaption, "IPH_LiveCaption");
 DEFINE_VARIATION_PARAM(kIPHPasswordsAccountStorageFeature,
@@ -293,7 +293,6 @@ DEFINE_VARIATION_PARAM(kIPHDesktopPwaInstallFeature, "IPH_DesktopPwaInstall");
 DEFINE_VARIATION_PARAM(kIPHProfileSwitchFeature, "IPH_ProfileSwitch");
 DEFINE_VARIATION_PARAM(kIPHDesktopSharedHighlightingFeature,
                        "IPH_DesktopSharedHighlighting");
-DEFINE_VARIATION_PARAM(kIPHIntentChipFeature, "IPH_IntentChip");
 DEFINE_VARIATION_PARAM(kIPHWebUiHelpBubbleTestFeature,
                        "IPH_WebUiHelpBubbleTest");
 DEFINE_VARIATION_PARAM(kIPHPriceTrackingInSidePanelFeature,
@@ -303,6 +302,8 @@ DEFINE_VARIATION_PARAM(kIPHPriceTrackingInSidePanelFeature,
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+DEFINE_VARIATION_PARAM(kIPHAutofillExternalAccountProfileSuggestionFeature,
+                       "IPH_AutofillExternalAccountProfileSuggestion");
 DEFINE_VARIATION_PARAM(kIPHAutofillVirtualCardSuggestionFeature,
                        "IPH_AutofillVirtualCardSuggestion");
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
@@ -312,6 +313,8 @@ DEFINE_VARIATION_PARAM(kIPHAutofillVirtualCardSuggestionFeature,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 DEFINE_VARIATION_PARAM(kIPHGoogleOneOfferNotificationFeature,
                        "IPH_GoogleOneOfferNotification");
+DEFINE_VARIATION_PARAM(kIPHLauncherSearchHelpUiFeature,
+                       "IPH_LauncherSearchHelpUi");
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
@@ -427,6 +430,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHiOSPromoWhatsNewFeature),
         VARIATION_ENTRY(kIPHiOSPromoPostRestoreFeature),
         VARIATION_ENTRY(kIPHiOSPromoCredentialProviderExtensionFeature),
+        VARIATION_ENTRY(kIPHiOSPromoDefaultBrowserFeature),
 #elif BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
         VARIATION_ENTRY(kIPHBatterySaverModeFeature),
@@ -437,7 +441,6 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHFocusModeFeature),
         VARIATION_ENTRY(kIPHGlobalMediaControls),
         VARIATION_ENTRY(kIPHGMCCastStartStopFeature),
-        VARIATION_ENTRY(kIPHHighEfficiencyInfoModeFeature),
         VARIATION_ENTRY(kIPHHighEfficiencyModeFeature),
         VARIATION_ENTRY(kIPHLiveCaption),
         VARIATION_ENTRY(kIPHPasswordsAccountStorageFeature),
@@ -460,7 +463,6 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHDesktopPwaInstallFeature),
         VARIATION_ENTRY(kIPHProfileSwitchFeature),
         VARIATION_ENTRY(kIPHDesktopSharedHighlightingFeature),
-        VARIATION_ENTRY(kIPHIntentChipFeature),
         VARIATION_ENTRY(kIPHWebUiHelpBubbleTestFeature),
         VARIATION_ENTRY(kIPHPriceTrackingInSidePanelFeature),
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
@@ -468,6 +470,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+        VARIATION_ENTRY(kIPHAutofillExternalAccountProfileSuggestionFeature),
         VARIATION_ENTRY(kIPHAutofillVirtualCardSuggestionFeature),
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
@@ -475,6 +478,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
         VARIATION_ENTRY(kIPHGoogleOneOfferNotificationFeature),
+        VARIATION_ENTRY(kIPHLauncherSearchHelpUiFeature),
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 

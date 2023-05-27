@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <numeric>
-
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_clamp_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_conv_2d_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_leaky_relu_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pad_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pool_2d_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_transpose_options.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_builder.h"
@@ -267,6 +267,61 @@ TEST_P(MLGraphTest, ReluTest) {
 }
 
 template <typename T>
+struct LeakyReluTester {
+  OperandInfo<T> input;
+  Vector<T> expected;
+
+  void Test(MLGraphTest& helper,
+            V8TestingScope& scope,
+            MLLeakyReluOptions* options = MLLeakyReluOptions::Create()) {
+    // Build the graph.
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
+    auto* output_operand =
+        BuildLeakyRelu(scope, builder, input_operand, options);
+    auto [graph, build_exception] =
+        helper.BuildGraph(scope, builder, {{"output", output_operand}});
+    EXPECT_NE(graph, nullptr);
+
+    // Compute the graph.
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper.ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_EQ(compute_exception, nullptr);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
+    EXPECT_EQ(results, expected);
+  }
+};
+
+TEST_P(MLGraphTest, LeakyReluTest) {
+  V8TestingScope scope;
+  {
+    // Test leakyRelu operator with default options.
+    auto* options = MLLeakyReluOptions::Create();
+    LeakyReluTester<float>{.input = {.type = V8MLOperandType::Enum::kFloat32,
+                                     .dimensions = {1, 2, 2, 1},
+                                     .values = {10, 5, -100, 0}},
+                           .expected = {10, 5, -1, 0}}
+        .Test(*this, scope, options);
+  }
+  {
+    // Test leakyRelu operator with alpha = 0.2.
+    auto* options = MLLeakyReluOptions::Create();
+    options->setAlpha(0.2);
+    LeakyReluTester<float>{.input = {.type = V8MLOperandType::Enum::kFloat32,
+                                     .dimensions = {1, 2, 2, 1},
+                                     .values = {10, 5, -100, 0}},
+                           .expected = {10, 5, -20, 0}}
+        .Test(*this, scope, options);
+  }
+}
+
+template <typename T>
 struct Resample2dTester {
   OperandInfo<T> input;
   Vector<T> expected;
@@ -404,20 +459,6 @@ TEST_P(MLGraphTest, ClampTest) {
                        .expected = {0.0, 0.0, 0.5, 6.0}}
         .Test(*this, scope, options);
   }
-}
-
-template <typename T>
-MLOperand* BuildConstant(MLGraphBuilder* builder,
-                         const Vector<uint32_t>& dimensions,
-                         V8MLOperandType::Enum type,
-                         const Vector<T>& values,
-                         ExceptionState& exception_state) {
-  size_t buffer_size = std::accumulate(dimensions.begin(), dimensions.end(),
-                                       size_t(1), std::multiplies<uint32_t>());
-  auto buffer = CreateDOMArrayBufferView(buffer_size, type);
-  DCHECK_EQ(buffer->byteLength(), values.size() * sizeof(T));
-  memcpy(buffer->BaseAddress(), values.data(), buffer->byteLength());
-  return BuildConstant(builder, dimensions, type, exception_state, buffer);
 }
 
 template <typename T>
@@ -1079,6 +1120,70 @@ TEST_P(MLGraphTest, ConcatTest) {
                                  2.0, 3.0, 4.0, 2.0, 3.0, 4.0, 4.0,
                                  5.0, 6.0, 5.0, 6.0, 7.0, 8.0}}
         .Test(*this, scope);
+  }
+}
+
+template <typename T>
+struct PadTester {
+  OperandInfo<T> input;
+  Vector<uint32_t> beginning_padding;
+  Vector<uint32_t> ending_padding;
+  Vector<T> expected;
+
+  void Test(MLGraphTest& helper,
+            V8TestingScope& scope,
+            MLGraphBuilder* builder,
+            MLPadOptions* options = MLPadOptions::Create()) {
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
+    auto* output_operand = BuildPad(scope, builder, input_operand,
+                                    beginning_padding, ending_padding, options);
+    auto [graph, build_exception] =
+        helper.BuildGraph(scope, builder, {{"output", output_operand}});
+    EXPECT_NE(graph, nullptr);
+
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper.ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_EQ(compute_exception, nullptr);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
+    EXPECT_EQ(results, expected);
+  }
+};
+
+TEST_P(MLGraphTest, PadTest) {
+  V8TestingScope scope;
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+  {
+    // Test pad operator with default options.
+    auto* options = MLPadOptions::Create();
+    PadTester<float>{
+        .input = {.type = V8MLOperandType::Enum::kFloat32,
+                  .dimensions = {2, 3},
+                  .values = {1, 2, 3, 4, 5, 6}},
+        .beginning_padding = {1, 2},
+        .ending_padding = {1, 2},
+        .expected = {0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 2., 3., 0., 0.,
+                     0., 0., 4., 5., 6., 0., 0., 0., 0., 0., 0., 0., 0., 0.}}
+        .Test(*this, scope, builder, options);
+  }
+  {
+    // Test pad operator with options->value = 8.
+    auto* options = MLPadOptions::Create();
+    options->setValue(8);
+    PadTester<float>{
+        .input = {.type = V8MLOperandType::Enum::kFloat32,
+                  .dimensions = {2, 3},
+                  .values = {1, 2, 3, 4, 5, 6}},
+        .beginning_padding = {1, 2},
+        .ending_padding = {1, 2},
+        .expected = {8., 8., 8., 8., 8., 8., 8., 8., 8., 1., 2., 3., 8., 8.,
+                     8., 8., 4., 5., 6., 8., 8., 8., 8., 8., 8., 8., 8., 8.}}
+        .Test(*this, scope, builder, options);
   }
 }
 

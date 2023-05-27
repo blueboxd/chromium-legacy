@@ -15,6 +15,7 @@ enum CSSSampleId {
 
     // These internal properties exist but are mapped to 0 to ensure they don't get
     // reported in use counter.
+    kInternalAlignContentBlock = 0,
     kInternalAlignSelfBlock = 0,
     kInternalEmptyLineHeight = 0,
     kInternalVisitedBackgroundColor = 0,
@@ -798,6 +799,10 @@ enum CSSSampleId {
     kAnchorDefault = 745,
     kTextWrap = 746,
     kTextBoxTrim = 747,
+    kOverlay = 748,
+    kWhiteSpaceCollapse = 749,
+    kScrollTimelineAttachment = 750,
+    kViewTimelineAttachment = 751,
     // 1. Add new features above this line (don't change the assigned numbers of
     //    the existing items).
     // 2. Run the src/tools/metrics/histograms/update_use_counter_css.py script

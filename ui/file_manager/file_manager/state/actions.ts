@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {SearchData} from '../externs/ts/state.js';
-import {BaseAction} from '../lib/base_store.js';
-
 import {AddChildEntriesAction, ClearStaleCachedEntriesAction, UpdateMetadataAction} from './actions/all_entries.js';
 import {AddAndroidAppsAction} from './actions/android_apps.js';
+import {UpdateBulkPinProgressAction} from './actions/bulk_pinning.js';
 import {ChangeDirectoryAction, ChangeFileTasksAction, ChangeSelectionAction, UpdateDirectoryContentAction} from './actions/current_directory.js';
 import {AddFolderShortcutAction, RefreshFolderShortcutAction, RemoveFolderShortcutAction} from './actions/folder_shortcuts.js';
 import {RefreshNavigationRootsAction, UpdateNavigationEntryAction} from './actions/navigation.js';
+import {UpdatePreferencesAction} from './actions/preferences.js';
+import {SearchAction} from './actions/search.js';
 import {AddUiEntryAction, RemoveUiEntryAction} from './actions/ui_entries.js';
 import {AddVolumeAction, RemoveVolumeAction} from './actions/volumes.js';
 
@@ -26,7 +26,8 @@ export type Action = AddVolumeAction|RemoveVolumeAction|
     AddUiEntryAction|RemoveUiEntryAction|UpdateDirectoryContentAction|
     UpdateMetadataAction|RefreshFolderShortcutAction|AddFolderShortcutAction|
     RemoveFolderShortcutAction|AddAndroidAppsAction|AddChildEntriesAction|
-    UpdateNavigationEntryAction;
+    UpdateNavigationEntryAction|UpdateBulkPinProgressAction|
+    UpdatePreferencesAction;
 
 
 /** Enum to identify every Action in Files app. */
@@ -49,40 +50,6 @@ export const enum ActionType {
   UPDATE_DIRECTORY_CONTENT = 'update-directory-content',
   UPDATE_METADATA = 'update-metadata',
   ADD_CHILD_ENTRIES = 'add-child-entries',
-}
-
-
-/** Action to update the search state. */
-export interface SearchAction extends BaseAction {
-  type: ActionType.SEARCH;
-  payload: SearchData;
-}
-
-/**
- * Generates a search action based on the supplied data.
- * Query, status and options can be adjusted independently of each other.
- */
-export function updateSearch(data: SearchData): SearchAction {
-  return {
-    type: ActionType.SEARCH,
-    payload: {
-      query: data.query,
-      status: data.status,
-      options: data.options,
-    },
-  };
-}
-
-/**
- * Clears all search settings.
- */
-export function clearSearch(): SearchAction {
-  return {
-    type: ActionType.SEARCH,
-    payload: {
-      query: undefined,
-      status: undefined,
-      options: undefined,
-    },
-  };
+  UPDATE_BULK_PIN_PROGRESS = 'update-bulk-pin-progress',
+  UPDATE_PREFERENCES = 'update-preferences',
 }

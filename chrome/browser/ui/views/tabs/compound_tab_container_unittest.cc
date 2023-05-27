@@ -127,9 +127,9 @@ class CompoundTabContainerTest : public ChromeViewsTestBase {
         std::make_unique<FakeTabDragContext>();
     std::unique_ptr<CompoundTabContainer> tab_container =
         std::make_unique<CompoundTabContainer>(
-            raw_ref<TabContainerController>(*(tab_container_controller_.get())),
-            nullptr /*hover_card_controller*/, drag_context.get(),
-            *(tab_slot_controller_.get()), nullptr /*scroll_contents_view*/);
+            *tab_container_controller_.get(), nullptr /*hover_card_controller*/,
+            drag_context.get(), *(tab_slot_controller_.get()),
+            nullptr /*scroll_contents_view*/);
     tab_container->SetAvailableWidthCallback(base::BindRepeating(
         [](CompoundTabContainerTest* test) {
           return test->tab_container_width_;
@@ -389,7 +389,7 @@ TEST_F(CompoundTabContainerTest, ExitsClosingModeAtStandardWidth) {
   AddTab(0, TabPinned::kUnpinned, absl::nullopt, TabActive::kActive);
 
   // Create just enough tabs so tabs are not full size.
-  const int standard_width = TabStyleViews::GetStandardWidth();
+  const int standard_width = TabStyle::Get()->GetStandardWidth();
   while (tab_container_->GetActiveTabWidth() == standard_width) {
     AddTab(0, TabPinned::kUnpinned);
     tab_container_->CompleteAnimationAndLayout();
@@ -425,7 +425,7 @@ TEST_F(CompoundTabContainerTest, ClosingPinnedTabsEngagesClosingMode) {
   AddTab(1, TabPinned::kUnpinned, absl::nullopt, TabActive::kInactive);
 
   // Create just enough (pinned) tabs so the active tab is not full size.
-  const int standard_width = TabStyleViews::GetStandardWidth();
+  const int standard_width = TabStyle::Get()->GetStandardWidth();
   while (tab_container_->GetActiveTabWidth() == standard_width) {
     AddTab(0, TabPinned::kPinned, absl::nullopt, TabActive::kInactive);
     tab_container_->CompleteAnimationAndLayout();
@@ -458,7 +458,7 @@ TEST_F(CompoundTabContainerTest, ExitsClosingModeWhenClosingLastUnpinnedTab) {
   AddTab(1, TabPinned::kUnpinned, absl::nullopt, TabActive::kActive);
 
   // Create just enough (pinned) tabs so the active tab is not full size.
-  const int standard_width = TabStyleViews::GetStandardWidth();
+  const int standard_width = TabStyle::Get()->GetStandardWidth();
   while (tab_container_->GetActiveTabWidth() == standard_width) {
     AddTab(0, TabPinned::kPinned);
     tab_container_->CompleteAnimationAndLayout();

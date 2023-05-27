@@ -111,7 +111,14 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
       BrowserContext* browser_context,
       const GURL& url);
 
-  static bool ShouldAssignSiteForURL(const GURL& url);
+  // Determine if a URL should "use up" a site.  URLs such as about:blank or
+  // chrome-native:// leave the site unassigned.
+  //
+  // This is similar to SiteInstance::ShouldAssignSiteForURL() in the public
+  // API, except that it takes a UrlInfo rather than a URL.  This allows this
+  // function to consider additional information, such as the overridden origin
+  // for a URL being navigated to.
+  static bool ShouldAssignSiteForUrlInfo(const UrlInfo& url_info);
 
   // Returns the SiteInstanceGroup |this| belongs to.
   // Currently, each SiteInstanceGroup has exactly one SiteInstance, but that
@@ -209,9 +216,9 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance {
   // process-per-site model should be used.
   bool ShouldUseProcessPerSite() const;
 
-  // Checks if |current_process| can be reused for this SiteInstance, and
-  // sets |process_| to |current_process| if so.
-  void ReuseCurrentProcessIfPossible(RenderProcessHost* current_process);
+  // Checks if |existing_process| can be reused for this SiteInstance, and
+  // sets |process_| to |existing_process| if so.
+  void ReuseExistingProcessIfPossible(RenderProcessHost* existing_process);
 
   // Whether the SiteInstance is created for a service worker. If this flag
   // is true, when a new process is created for this SiteInstance or a randomly

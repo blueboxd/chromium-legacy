@@ -8,20 +8,20 @@
  * linear UI range to a range of real values.  When |value| does not map exactly
  * to a tick mark, it interpolates to the nearest tick.
  */
-import '../settings_vars.css.js';
+import '../strings.m.js';
+import '//resources/cr_elements/cr_shared_vars.css.js';
 import '//resources/cr_elements/cr_slider/cr_slider.js';
 // <if expr='chromeos_ash'>
-import 'chrome://resources/cr_elements/chromeos/cros_color_overrides.css.js';
+import '//resources/cr_elements/chromeos/cros_color_overrides.css.js';
 
 // </if>
 
 import {CrSliderElement, SliderTick} from '//resources/cr_elements/cr_slider/cr_slider.js';
 import {assert} from '//resources/js/assert_ts.js';
+import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {CrPolicyPrefMixin} from '/shared/settings/controls/cr_policy_pref_mixin.js';
 
-import {loadTimeData} from '../i18n_setup.js';
-
-import {CrPolicyPrefMixin} from './cr_policy_pref_mixin.js';
 import {getTemplate} from './settings_slider.html.js';
 
 export interface SettingsSliderElement {

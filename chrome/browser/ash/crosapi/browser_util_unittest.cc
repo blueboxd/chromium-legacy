@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -108,7 +109,7 @@ class BrowserUtilTest : public testing::Test {
   void SetUp() override {
     fake_user_manager_ = new ash::FakeChromeUserManager;
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
-        base::WrapUnique(fake_user_manager_));
+        base::WrapUnique(fake_user_manager_.get()));
     browser_util::RegisterLocalStatePrefs(pref_service_.registry());
     ash::system::StatisticsProvider::SetTestProvider(&statistics_provider_);
   }
@@ -131,7 +132,8 @@ class BrowserUtilTest : public testing::Test {
   // destruction timing.
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile testing_profile_;
-  ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
+  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> fake_user_manager_ =
+      nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   TestingPrefServiceSimple pref_service_;
   ash::system::FakeStatisticsProvider statistics_provider_;
@@ -177,27 +179,59 @@ TEST_F(BrowserUtilTest, LacrosDisabledWithoutMigration) {
   // `IsProfileMigrationCompletedForUser()` inside `IsLacrosEnabled()`.
   ScopedLocalState scoped_local_state(&pref_service_);
 
-  // Note that disabling lacros is only enabled for Googlers at the moment.
-  // TODO(crbug.com/1266669): Once profile migration is enabled for
-  // non-googlers, add a @test.com account instead.
-  AddRegularUser("user@google.com");
+  AddRegularUser("user@test.com");
   const user_manager::User* const user =
       ash::ProfileHelper::Get()->GetUserByProfile(&testing_profile_);
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(ash::features::kLacrosSupport);
 
-  // Lacros is now enabled for profile migration to happen.
-  EXPECT_TRUE(browser_util::IsLacrosEnabledForMigration(
-      user, browser_util::PolicyInitState::kAfterInit));
-  // Since profile migration hasn't been marked as completed, this returns
-  // false.
-  EXPECT_FALSE(browser_util::IsLacrosEnabled());
+  // Lacros is enabled without profile migration for Lacros SxS mode.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures({ash::features::kLacrosSupport}, {});
 
-  browser_util::SetProfileMigrationCompletedForUser(
-      &pref_service_, user->username_hash(),
-      browser_util::MigrationMode::kCopy);
+    EXPECT_TRUE(browser_util::IsLacrosEnabledForMigration(
+        user, browser_util::PolicyInitState::kAfterInit));
+    // Profile migration is not enabled for Lacros SxS.
+    EXPECT_FALSE(browser_util::IsProfileMigrationEnabled());
+    // Thus without the completion of profile migration, Lacros should be
+    // enabled.
+    EXPECT_TRUE(browser_util::IsLacrosEnabled());
+  }
 
-  EXPECT_TRUE(browser_util::IsLacrosEnabled());
+  // Lacros is enabled without profile migration for LacrosPrimary mode.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {ash::features::kLacrosSupport, ash::features::kLacrosPrimary}, {});
+
+    EXPECT_TRUE(browser_util::IsLacrosEnabledForMigration(
+        user, browser_util::PolicyInitState::kAfterInit));
+    // Profile migration is not enabled for LacrosPrimary.
+    EXPECT_FALSE(browser_util::IsProfileMigrationEnabled());
+    // Thus without the completion of profile migration, Lacros should be
+    // enabled.
+    EXPECT_TRUE(browser_util::IsLacrosEnabled());
+  }
+
+  // Lacros is enabled only after profile migration for LacrosOnly mode.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitWithFeatures(
+        {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+         ash::features::kLacrosOnly},
+        {});
+
+    EXPECT_TRUE(browser_util::IsLacrosEnabledForMigration(
+        user, browser_util::PolicyInitState::kAfterInit));
+    // Since profile migration hasn't been marked as completed, this returns
+    // false.
+    EXPECT_FALSE(browser_util::IsLacrosEnabled());
+
+    browser_util::SetProfileMigrationCompletedForUser(
+        &pref_service_, user->username_hash(),
+        browser_util::MigrationMode::kCopy);
+
+    EXPECT_TRUE(browser_util::IsLacrosEnabled());
+  }
 }
 
 TEST_F(BrowserUtilTest, IsLacrosEnabledForMigrationBeforePolicyInit) {
@@ -660,8 +694,8 @@ TEST_F(BrowserUtilTest, RecordDataVer) {
   base::Version version{"1.1.1.1"};
   browser_util::RecordDataVer(&pref_service_, user_id_hash, version);
 
-  base::Value expected{base::Value::Type::DICT};
-  expected.SetStringKey(user_id_hash, version.GetString());
+  base::Value::Dict expected;
+  expected.Set(user_id_hash, version.GetString());
   const base::Value::Dict& dict =
       pref_service_.GetDict(browser_util::kDataVerPref);
   EXPECT_EQ(dict, expected);
@@ -675,8 +709,8 @@ TEST_F(BrowserUtilTest, RecordDataVerOverrides) {
   browser_util::RecordDataVer(&pref_service_, user_id_hash, version1);
   browser_util::RecordDataVer(&pref_service_, user_id_hash, version2);
 
-  base::Value expected{base::Value::Type::DICT};
-  expected.SetStringKey(user_id_hash, version2.GetString());
+  base::Value::Dict expected;
+  expected.Set(user_id_hash, version2.GetString());
 
   const base::Value::Dict& dict =
       pref_service_.GetDict(browser_util::kDataVerPref);
@@ -697,9 +731,9 @@ TEST_F(BrowserUtilTest, RecordDataVerWithMultipleUsers) {
   base::Version version3{"3.3.3.3"};
   browser_util::RecordDataVer(&pref_service_, user_id_hash_1, version3);
 
-  base::Value expected{base::Value::Type::DICT};
-  expected.SetStringKey(user_id_hash_1, version3.GetString());
-  expected.SetStringKey(user_id_hash_2, version2.GetString());
+  base::Value::Dict expected;
+  expected.Set(user_id_hash_1, version3.GetString());
+  expected.Set(user_id_hash_2, version2.GetString());
 
   const base::Value::Dict& dict =
       pref_service_.GetDict(browser_util::kDataVerPref);

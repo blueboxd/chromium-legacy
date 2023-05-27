@@ -21,6 +21,7 @@
 #include "content/browser/renderer_host/browsing_context_state.h"
 #include "content/browser/renderer_host/cross_origin_opener_policy_status.h"
 #include "content/browser/renderer_host/navigation_discard_reason.h"
+#include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
 #include "content/browser/renderer_host/stored_page.h"
@@ -187,17 +188,15 @@ class CONTENT_EXPORT RenderFrameHostManager {
     virtual ~Delegate() = default;
   };
 
-  // Calling IsNavigationSameSite() many times is expensive
-  // (https://crbug.com/1380942). If kCacheIsNavigationSameSite is enabled,
-  // this struct will lazily cache the output of IsNavigationSameSite(). If
-  // there is no cached value, Get() will cache the output of
-  // IsNavigationSameSite(), and will return the cached value in subsequent
-  // calls. If kCacheIsNavigationSameSite is not enabled, Get() will always call
-  // IsNavigationSameSite(), no caching is done.
+  // Calling `IsNavigationSameSite()` many times is expensive
+  // (https://crbug.com/1380942). This struct will lazily cache the output of
+  // `IsNavigationSameSite()`. If there is no cached value, Get() will cache
+  // the output of `IsNavigationSameSite()`, and will return the cached value in
+  // subsequent calls.
   //
   // This struct is used by passing it as a parameter throughout a callstack
-  // that contains IsNavigationSameSite(). It is only used for a given
-  // navigation event (for which IsNavigationSameSite() will not change), and
+  // that contains `IsNavigationSameSite()`. It is only used for a given
+  // navigation event (for which `IsNavigationSameSite()` will not change), and
   // should not be stored or used for other events in the same navigation
   // (e.g., after redirects) or for other navigations.
   struct IsSameSiteGetter {
@@ -216,7 +215,6 @@ class CONTENT_EXPORT RenderFrameHostManager {
 
    private:
     absl::optional<bool> is_same_site_;
-    bool should_use_cached_value_;
   };
 
   // The delegate pointer must be non-null and is not owned by this class. It
@@ -525,11 +523,11 @@ class CONTENT_EXPORT RenderFrameHostManager {
 
   // Executes a RemoteMainFrame Mojo method to every instance in |proxy_hosts|.
   // This should only be called in the top-level RenderFrameHostManager.
-  // The |callback| is called synchronously and the |instance_to_skip| won't
+  // The |callback| is called synchronously and the |group_to_skip| won't
   // be referenced after this method returns.
   void ExecuteRemoteFramesBroadcastMethod(
       RemoteFramesBroadcastMethodCallback callback,
-      SiteInstanceImpl* instance_to_skip = nullptr);
+      SiteInstanceGroup* group_to_skip = nullptr);
 
   // Returns a const reference to the map of proxy hosts. The keys are
   // SiteInstanceGroup IDs, the values are RenderFrameProxyHosts.
@@ -568,10 +566,8 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // GetProcess() is called on the SiteInstance. In particular, calling this
   // function will never lead to a process being created for the navigation.
   //
-  // |is_same_site| is a struct to cache the output of IsNavigationSameSite()
-  // if/when it gets called. The value is cached only when
-  // kCacheIsNavigationSameSite is enabled. See IsSameSiteGetter for more
-  // details.
+  // |is_same_site| is a struct to cache the output of `IsNavigationSameSite()`
+  // if/when it gets called. See `IsSameSiteGetter` for more details.
   //
   // |reason| is an optional out-parameter that will be populated with
   // engineer-readable information describing the reason for the method
@@ -718,7 +714,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       const UrlInfo& destination_url_info,
       bool destination_is_view_source_mode,
       ui::PageTransition transition,
-      bool is_failure,
+      NavigationRequest::ErrorPageProcess error_page_process,
       bool is_reload,
       bool is_same_document,
       IsSameSiteGetter& is_same_site,
@@ -741,7 +737,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       SiteInstanceImpl* dest_instance,
       SiteInstanceImpl* candidate_instance,
       ui::PageTransition transition,
-      bool is_failure,
+      NavigationRequest::ErrorPageProcess error_page_process,
       bool is_reload,
       bool is_same_document,
       IsSameSiteGetter& is_same_site,
@@ -774,7 +770,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       SiteInstanceImpl* current_instance,
       SiteInstanceImpl* dest_instance,
       ui::PageTransition transition,
-      bool is_failure,
+      NavigationRequest::ErrorPageProcess error_page_process,
       IsSameSiteGetter& is_same_site,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
@@ -790,7 +786,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       const UrlInfo& dest_url_info,
       SiteInstanceImpl* current_instance,
       SiteInstanceImpl* dest_instance,
-      bool is_failure,
+      NavigationRequest::ErrorPageProcess error_page_process,
       const BrowsingContextGroupSwap& browsing_context_group_swap);
 
   // Returns true if a navigation to |dest_url| that uses the specified
@@ -815,10 +811,11 @@ class CONTENT_EXPORT RenderFrameHostManager {
       const GURL& dest_url);
 
   // Returns true if we can use `source_instance` for `dest_url_info`.
-  bool CanUseSourceSiteInstance(const UrlInfo& dest_url_info,
-                                SiteInstanceImpl* source_instance,
-                                bool was_server_redirect,
-                                bool is_failure);
+  bool CanUseSourceSiteInstance(
+      const UrlInfo& dest_url_info,
+      SiteInstanceImpl* source_instance,
+      bool was_server_redirect,
+      NavigationRequest::ErrorPageProcess error_page_process);
 
   // Converts a SiteInstanceDescriptor to the actual SiteInstance it describes.
   // If a |candidate_instance| is provided (is not nullptr) and it matches the
@@ -833,6 +830,15 @@ class CONTENT_EXPORT RenderFrameHostManager {
   // method.
   bool IsCandidateSameSite(RenderFrameHostImpl* candidate,
                            const UrlInfo& dest_url_info);
+
+  // Creates a new WebUI object for `request`, which will commit in
+  // `dest_site_instance`. `use_current_rfh` will be true if the navigation will
+  // reuse the current RFH instead of using a new speculative RFH. If an
+  // existing RFH is reused, this function might notify its WebUI (if it exists)
+  // that it is being reused.
+  void CreateWebUIForNavigationIfNeeded(NavigationRequest* request,
+                                        SiteInstanceImpl* dest_site_instance,
+                                        bool use_current_rfh);
 
   // Ensure that we have created all needed proxies for a new RFH with
   // SiteInstance |new_instance|: (1) create swapped-out RVHs and proxies for

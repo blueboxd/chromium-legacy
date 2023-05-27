@@ -393,6 +393,12 @@ void UseCounterCallback(v8::Isolate* isolate,
       blink_feature =
           WebFeature::kV8RegExpUnicodeSetIncompatibilitiesWithUnicodeMode;
       break;
+    case v8::Isolate::kImportAssertionDeprecatedSyntax:
+      blink_feature = WebFeature::kV8ImportAssertionDeprecatedSyntax;
+      break;
+    case v8::Isolate::kCompileHintsMagicAll:
+      blink_feature = WebFeature::kV8CompileHintsMagicAll;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

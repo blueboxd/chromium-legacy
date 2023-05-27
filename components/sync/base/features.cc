@@ -22,7 +22,12 @@ BASE_FEATURE(kIgnoreSyncEncryptionKeysLongMissing,
 
 BASE_FEATURE(kPasswordNotesWithBackup,
              "PasswordNotesWithBackup",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kSyncAndroidLimitNTPPromoImpressions,
@@ -61,7 +66,7 @@ BASE_FEATURE(kSyncChromeOSAppsToggleSharing,
 
 BASE_FEATURE(kChromeOSSyncedSessionSharing,
              "ChromeOSSyncedSessionSharing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 BASE_FEATURE(kSyncTrustedVaultPeriodicDegradedRecoverabilityPolling,
@@ -76,7 +81,7 @@ BASE_FEATURE(kSyncTrustedVaultVerifyDeviceRegistration,
 
 BASE_FEATURE(kUseSyncInvalidations,
              "UseSyncInvalidations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncPersistInvalidations,
              "SyncPersistInvalidations",
@@ -84,7 +89,7 @@ BASE_FEATURE(kSyncPersistInvalidations,
 
 BASE_FEATURE(kUseSyncInvalidationsForWalletAndOffer,
              "UseSyncInvalidationsForWalletAndOffer",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSkipInvalidationOptimizationsWhenDeviceInfoUpdated,
              "SkipInvalidationOptimizationsWhenDeviceInfoUpdated",
@@ -143,5 +148,15 @@ BASE_FEATURE(kIndicateAccountStorageErrorInAccountCell,
              "IndicateAccountStorageErrorInAccountCell",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_IOS)
+
+#if !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
+BASE_FEATURE(kSyncWebauthnCredentials,
+             "SyncWebauthnCredentials",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
+
+BASE_FEATURE(kSyncIgnoreGetUpdatesRetryDelay,
+             "SyncIgnoreGetUpdatesRetryDelay",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace syncer

@@ -16,7 +16,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
+#include "base/strings/to_string.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
@@ -454,8 +454,13 @@ void WebApp::SetUrlHandlers(apps::UrlHandlers url_handlers) {
 }
 
 void WebApp::SetScopeExtensions(
-    std::vector<ScopeExtensionInfo> scope_extensions) {
+    base::flat_set<ScopeExtensionInfo> scope_extensions) {
   scope_extensions_ = std::move(scope_extensions);
+}
+
+void WebApp::SetValidatedScopeExtensions(
+    base::flat_set<ScopeExtensionInfo> validated_scope_extensions) {
+  validated_scope_extensions_ = std::move(validated_scope_extensions);
 }
 
 void WebApp::SetLockScreenStartUrl(const GURL& lock_screen_start_url) {
@@ -588,6 +593,15 @@ void WebApp::AddInstallURLToManagementExternalConfigMap(
   management_to_external_config_map_[type].install_urls.emplace(install_url);
 }
 
+void WebApp::AddPolicyIdToManagementExternalConfigMap(
+    WebAppManagement::Type type,
+    const std::string& policy_id) {
+  DCHECK_NE(type, WebAppManagement::Type::kSync);
+  DCHECK(!policy_id.empty());
+  management_to_external_config_map_[type].additional_policy_ids.emplace(
+      policy_id);
+}
+
 void WebApp::AddExternalSourceInformation(WebAppManagement::Type type,
                                           GURL install_url,
                                           bool is_placeholder) {
@@ -654,6 +668,13 @@ base::Value WebApp::SyncFallbackData::AsDebugValue() const {
 }
 
 WebApp::ExternalManagementConfig::ExternalManagementConfig() = default;
+WebApp::ExternalManagementConfig::ExternalManagementConfig(
+    bool is_placeholder,
+    const base::flat_set<GURL>& install_urls,
+    const base::flat_set<std::string>& additional_policy_ids)
+    : is_placeholder(is_placeholder),
+      install_urls(install_urls),
+      additional_policy_ids(additional_policy_ids) {}
 
 WebApp::ExternalManagementConfig::~ExternalManagementConfig() = default;
 
@@ -666,10 +687,15 @@ WebApp::ExternalManagementConfig& WebApp::ExternalManagementConfig::operator=(
 base::Value::Dict WebApp::ExternalManagementConfig::AsDebugValue() const {
   base::Value::Dict root;
   base::Value::List urls;
-  for (auto it : install_urls) {
-    urls.Append(it.spec());
+  for (const auto& install_url : install_urls) {
+    urls.Append(install_url.spec());
+  }
+  base::Value::List policy_ids;
+  for (const auto& policy_id : additional_policy_ids) {
+    policy_ids.Append(policy_id);
   }
   root.Set("install_urls", std::move(urls));
+  root.Set("additional_policy_ids", std::move(policy_ids));
   root.Set("is_placeholder", is_placeholder);
   return root;
 }
@@ -703,7 +729,7 @@ base::Value WebApp::IsolationData::AsDebugValue() const {
 bool WebApp::operator==(const WebApp& other) const {
   auto AsTuple = [](const WebApp& app) {
     // Keep in order declared in web_app.h.
-    return std::make_tuple(
+    return std::tie(
         // Disable clang-format so diffs are clearer when fields are added.
         // clang-format off
         app.app_id_,
@@ -741,6 +767,7 @@ bool WebApp::operator==(const WebApp& other) const {
         app.disallowed_launch_protocols_,
         app.url_handlers_,
         app.scope_extensions_,
+        app.validated_scope_extensions_,
         app.lock_screen_start_url_,
         app.note_taking_new_note_url_,
         app.last_badging_time_,
@@ -768,12 +795,12 @@ bool WebApp::operator==(const WebApp& other) const {
         app.management_to_external_config_map_,
         app.tab_strip_,
         app.always_show_toolbar_in_fullscreen_,
-        app.current_os_integration_states_.SerializeAsString(),
+        app.current_os_integration_states_,
         app.isolation_data_
         // clang-format on
     );
   };
-  return (AsTuple(*this) == AsTuple(other));
+  return AsTuple(*this) == AsTuple(other);
 }
 
 bool WebApp::operator!=(const WebApp& other) const {
@@ -952,12 +979,8 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
       }
       json_decl.Set("feature", feature_name->second);
       base::Value::List allowlist_json;
-      // TODO(crbug.com/1418009): Consolidate code and filter opaque origins.
-      if (decl.self_if_matches) {
-        allowlist_json.Append(decl.self_if_matches->Serialize());
-      }
-      for (const auto& origin_with_possible_wildcards : decl.allowed_origins) {
-        allowlist_json.Append(origin_with_possible_wildcards.Serialize());
+      for (const auto& allowlist_item : GetSerializedAllowedOrigins(decl)) {
+        allowlist_json.Append(allowlist_item);
       }
       json_decl.Set("allowed_origins", std::move(allowlist_json));
       json_decl.Set("matches_all_origins", decl.matches_all_origins);
@@ -1005,6 +1028,9 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
   root.Set("url_handlers", ConvertDebugValueList(url_handlers_));
 
   root.Set("scope_extensions", ConvertDebugValueList(scope_extensions_));
+
+  root.Set("scope_extensions_validated",
+           ConvertDebugValueList(validated_scope_extensions_));
 
   root.Set("user_display_mode",
            user_display_mode_.has_value()
@@ -1099,15 +1125,56 @@ bool operator!=(const WebApp::SyncFallbackData& sync_fallback_data1,
   return !(sync_fallback_data1 == sync_fallback_data2);
 }
 
+std::ostream& operator<<(
+    std::ostream& out,
+    const WebApp::ExternalManagementConfig& management_config) {
+  return out << management_config.AsDebugValue().DebugString();
+}
+
 bool operator==(const WebApp::ExternalManagementConfig& management_config1,
                 const WebApp::ExternalManagementConfig& management_config2) {
-  return management_config1.install_urls == management_config2.install_urls &&
-         management_config1.is_placeholder == management_config2.is_placeholder;
+  return std::tie(management_config1.install_urls,
+                  management_config1.is_placeholder,
+                  management_config1.additional_policy_ids) ==
+         std::tie(management_config2.install_urls,
+                  management_config2.is_placeholder,
+                  management_config2.additional_policy_ids);
 }
 
 bool operator!=(const WebApp::ExternalManagementConfig& management_config1,
                 const WebApp::ExternalManagementConfig& management_config2) {
   return !(management_config1 == management_config2);
+}
+
+namespace proto {
+
+bool operator==(const WebAppOsIntegrationState& os_integration_state1,
+                const WebAppOsIntegrationState& os_integration_state2) {
+  return os_integration_state1.SerializeAsString() ==
+         os_integration_state2.SerializeAsString();
+}
+
+bool operator!=(const WebAppOsIntegrationState& os_integration_state1,
+                const WebAppOsIntegrationState& os_integration_state2) {
+  return !(os_integration_state1 == os_integration_state2);
+}
+
+}  // namespace proto
+
+std::vector<std::string> GetSerializedAllowedOrigins(
+    const blink::ParsedPermissionsPolicyDeclaration
+        permissions_policy_declaration) {
+  std::vector<std::string> allowed_origins;
+  if (permissions_policy_declaration.self_if_matches) {
+    CHECK(!permissions_policy_declaration.self_if_matches->opaque());
+    allowed_origins.push_back(
+        permissions_policy_declaration.self_if_matches->Serialize());
+  }
+  for (const auto& origin_with_possible_wildcards :
+       permissions_policy_declaration.allowed_origins) {
+    allowed_origins.push_back(origin_with_possible_wildcards.Serialize());
+  }
+  return allowed_origins;
 }
 
 }  // namespace web_app

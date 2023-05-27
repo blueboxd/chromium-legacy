@@ -13,6 +13,7 @@
 #include "ash/capture_mode/capture_mode_session_focus_cycler.h"
 #include "ash/capture_mode/capture_mode_source_view.h"
 #include "ash/capture_mode/capture_mode_type_view.h"
+#include "ash/capture_mode/capture_mode_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -24,6 +25,7 @@
 #include "ash/style/icon_button.h"
 #include "ash/style/system_shadow.h"
 #include "base/functional/bind.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -59,9 +61,9 @@ constexpr int kDistanceFromShelfOrHotseatTopDp = 16;
 
 }  // namespace
 
-CaptureModeBarView::CaptureModeBarView(bool projector_mode)
+CaptureModeBarView::CaptureModeBarView(CaptureModeBehavior* active_behavior)
     : capture_type_view_(
-          AddChildView(std::make_unique<CaptureModeTypeView>(projector_mode))),
+          AddChildView(std::make_unique<CaptureModeTypeView>(active_behavior))),
       separator_1_(AddChildView(std::make_unique<views::Separator>())),
       capture_source_view_(
           AddChildView(std::make_unique<CaptureModeSourceView>())),
@@ -112,11 +114,12 @@ CaptureModeBarView::CaptureModeBarView(bool projector_mode)
   separator_2_->SetColorId(ui::kColorAshSystemUIMenuSeparator);
   separator_2_->SetPreferredLength(kSeparatorHeight);
 
-  if (features::IsDarkLightModeEnabled()) {
-    SetBorder(std::make_unique<views::HighlightBorder>(
-        kBorderRadius, views::HighlightBorder::Type::kHighlightBorder2,
-        /*use_light_colors=*/false));
-  }
+  capture_mode_util::SetHighlightBorder(
+      this, kBorderRadius,
+      chromeos::features::IsJellyrollEnabled()
+          ? views::HighlightBorder::Type::kHighlightBorderOnShadow
+          : views::HighlightBorder::Type::kHighlightBorder2);
+
   shadow_->SetRoundedCornerRadius(kBorderRadius);
 }
 
@@ -124,7 +127,7 @@ CaptureModeBarView::~CaptureModeBarView() = default;
 
 // static
 gfx::Rect CaptureModeBarView::GetBounds(aura::Window* root,
-                                        bool is_in_projector_mode) {
+                                        CaptureModeBehavior* active_behavior) {
   DCHECK(root);
 
   auto bounds = root->GetBoundsInScreen();
@@ -143,7 +146,8 @@ gfx::Rect CaptureModeBarView::GetBounds(aura::Window* root,
   }
 
   gfx::Size bar_size = kFullBarSize;
-  if (is_in_projector_mode) {
+  CHECK(active_behavior);
+  if (!active_behavior->ShouldImageCaptureTypeBeAllowed()) {
     bar_size.set_width(kFullBarSize.width() -
                        capture_mode::kButtonSize.width() -
                        capture_mode::kSpaceBetweenCaptureModeTypeButtons);

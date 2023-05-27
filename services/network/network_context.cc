@@ -120,6 +120,7 @@
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/restricted_cookie_manager.h"
 #include "services/network/session_cleanup_cookie_store.h"
+#include "services/network/shared_dictionary/shared_dictionary_manager.h"
 #include "services/network/ssl_config_service_mojo.h"
 #include "services/network/throttling/network_conditions.h"
 #include "services/network/throttling/throttling_controller.h"
@@ -209,6 +210,18 @@ class WrappedTestingCertVerifier : public net::CertVerifier {
     if (!g_cert_verifier_for_testing)
       return;
     g_cert_verifier_for_testing->SetConfig(config);
+  }
+  void AddObserver(Observer* observer) override {
+    if (!g_cert_verifier_for_testing) {
+      return;
+    }
+    g_cert_verifier_for_testing->AddObserver(observer);
+  }
+  void RemoveObserver(Observer* observer) override {
+    if (!g_cert_verifier_for_testing) {
+      return;
+    }
+    g_cert_verifier_for_testing->RemoveObserver(observer);
   }
 };
 
@@ -481,6 +494,12 @@ NetworkContext::NetworkContext(
     EnsureMounted(&*params_->http_cache_directory);
   }
 #endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
+
+  if (params_->shared_dictionary_enabled) {
+    // TODO(crbug.com/1413922): Implement a manager which supports persistence
+    // and use if for non-incognito mode.
+    shared_dictionary_manager_ = SharedDictionaryManager::CreateInMemory();
+  }
 
   mojo::PendingRemote<mojom::URLLoaderFactory>
       url_loader_factory_for_cert_net_fetcher;
@@ -2198,6 +2217,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     // process.
     cert_verifier = std::make_unique<cert_verifier::MojoCertVerifier>(
         std::move(params_->cert_verifier_params->cert_verifier_service),
+        std::move(params_->cert_verifier_params
+                      ->cert_verifier_service_client_receiver),
         std::move(url_loader_factory_for_cert_net_fetcher),
         base::BindRepeating(
             &NetworkContext::CreateURLLoaderFactoryForCertNetFetcher,
@@ -2386,8 +2407,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   std::unique_ptr<SSLConfigServiceMojo> ssl_config_service =
       std::make_unique<SSLConfigServiceMojo>(
           std::move(params_->initial_ssl_config),
-          std::move(params_->ssl_config_client_receiver),
-          network_service_->crl_set_distributor());
+          std::move(params_->ssl_config_client_receiver));
   SSLConfigServiceMojo* ssl_config_service_raw = ssl_config_service.get();
   builder.set_ssl_config_service(std::move(ssl_config_service));
 
@@ -2530,14 +2550,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   // corresponding value in the URLRequestContext to true at the URLRequest
   // layer if all those features are set to respect NIK.
   if (require_network_isolation_key_ &&
-      base::FeatureList::IsEnabled(
-          net::features::kPartitionConnectionsByNetworkIsolationKey) &&
-      base::FeatureList::IsEnabled(
-          net::features::kPartitionHttpServerPropertiesByNetworkIsolationKey) &&
-      base::FeatureList::IsEnabled(
-          net::features::kPartitionNelAndReportingByNetworkIsolationKey) &&
-      base::FeatureList::IsEnabled(
-          net::features::kPartitionSSLSessionsByNetworkIsolationKey) &&
+      net::NetworkAnonymizationKey::IsPartitioningEnabled() &&
       base::FeatureList::IsEnabled(
           domain_reliability::features::
               kPartitionDomainReliabilityByNetworkIsolationKey)) {
@@ -2659,10 +2672,16 @@ NetworkContext::MakeSessionCleanupCookieStore() const {
     crypto_delegate = cookie_config::GetCookieCryptoDelegate();
   }
 
+#if BUILDFLAG(IS_WIN)
+  const bool enable_exclusive_access = params_->enable_locking_cookie_database;
+#else
+  const bool enable_exclusive_access = false;
+#endif  // BUILDFLAG(IS_WIN)
   scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
       new net::SQLitePersistentCookieStore(
           cookie_path, client_task_runner, background_task_runner,
-          params_->restore_old_session_cookies, crypto_delegate));
+          params_->restore_old_session_cookies, crypto_delegate,
+          enable_exclusive_access));
 
   return base::MakeRefCounted<SessionCleanupCookieStore>(sqlite_store);
 }

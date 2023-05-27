@@ -70,7 +70,7 @@ class ReadingListSyncBridge : public syncer::ModelTypeSyncBridge {
   // atomically, should save the metadata after the data changes, so that this
   // merge will be re-driven by sync if is not completely saved during the
   // current run.
-  absl::optional<syncer::ModelError> MergeSyncData(
+  absl::optional<syncer::ModelError> MergeFullSyncData(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_changes) override;
 
@@ -79,7 +79,7 @@ class ReadingListSyncBridge : public syncer::ModelTypeSyncBridge {
   // |metadata_change_list| in case when some of the data changes are filtered
   // out, or even be empty in case when a commit confirmation is processed and
   // only the metadata needs to persisted.
-  absl::optional<syncer::ModelError> ApplySyncChanges(
+  absl::optional<syncer::ModelError> ApplyIncrementalSyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_changes) override;
 
@@ -139,9 +139,9 @@ class ReadingListSyncBridge : public syncer::ModelTypeSyncBridge {
   // should be.
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
 
-  // Invoked when sync is paused or permanently stopped.
-  void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
-                                delete_metadata_change_list) override;
+  // Invoked when sync is permanently stopped.
+  void ApplyDisableSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
+                                   delete_metadata_change_list) override;
 
   bool IsEntityDataValid(const syncer::EntityData& entity_data) const override;
 

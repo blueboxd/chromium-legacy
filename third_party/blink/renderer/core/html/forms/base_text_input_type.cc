@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -99,47 +100,33 @@ bool BaseTextInputType::PatternMismatch(const String& value) const {
 bool BaseTextInputType::PatternMismatchPerValue(const String& value) const {
   const AtomicString& raw_pattern =
       GetElement().FastGetAttribute(html_names::kPatternAttr);
+  UnicodeMode unicode_mode =
+      RuntimeEnabledFeatures::HTMLPatternRegExpUnicodeSetsEnabled()
+          ? UnicodeMode::kUnicodeSets
+          : UnicodeMode::kUnicode;
   // Empty values can't be mismatched.
   if (raw_pattern.IsNull() || value.empty())
     return false;
   if (!regexp_ || pattern_for_regexp_ != raw_pattern) {
-    ScriptRegexp* raw_regexp_u = MakeGarbageCollected<ScriptRegexp>(
+    ScriptRegexp* raw_regexp = MakeGarbageCollected<ScriptRegexp>(
         raw_pattern, kTextCaseSensitive, MultilineMode::kMultilineDisabled,
-        UnicodeMode::kUnicode);
-    ScriptRegexp* raw_regexp_v = MakeGarbageCollected<ScriptRegexp>(
-        raw_pattern, kTextCaseSensitive, MultilineMode::kMultilineDisabled,
-        UnicodeMode::kUnicodeSets);
-    if (raw_regexp_u->IsValid() && !raw_regexp_v->IsValid()) {
-      UseCounter::Count(
-          GetElement().GetDocument(),
-          WebFeature::
-              kHTMLPatternRegExpUnicodeSetIncompatibilitiesWithUnicodeMode);
-      GetElement().GetDocument().AddConsoleMessage(
-          MakeGarbageCollected<ConsoleMessage>(
-              mojom::blink::ConsoleMessageSource::kRendering,
-              mojom::blink::ConsoleMessageLevel::kWarning,
-              "Pattern attribute value " + raw_pattern +
-                  " is valid with the RegExp `u` flag, but not with the `v` "
-                  "flag: " +
-                  raw_regexp_v->ExceptionMessage() +
-                  ". See https://crbug.com/1412729"));
-    }
-    if (!raw_regexp_u->IsValid()) {
+        unicode_mode);
+    if (!raw_regexp->IsValid()) {
       GetElement().GetDocument().AddConsoleMessage(
           MakeGarbageCollected<ConsoleMessage>(
               mojom::blink::ConsoleMessageSource::kRendering,
               mojom::blink::ConsoleMessageLevel::kError,
               "Pattern attribute value " + raw_pattern +
                   " is not a valid regular expression: " +
-                  raw_regexp_u->ExceptionMessage()));
-      regexp_ = raw_regexp_u;
+                  raw_regexp->ExceptionMessage()));
+      regexp_ = raw_regexp;
       pattern_for_regexp_ = raw_pattern;
       return false;
     }
     String pattern = "^(?:" + raw_pattern + ")$";
     regexp_ = MakeGarbageCollected<ScriptRegexp>(
         pattern, kTextCaseSensitive, MultilineMode::kMultilineDisabled,
-        UnicodeMode::kUnicode);
+        unicode_mode);
     pattern_for_regexp_ = raw_pattern;
   } else if (!regexp_->IsValid()) {
     return false;

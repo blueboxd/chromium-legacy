@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -102,7 +101,6 @@ public class TabTest {
     @Test
     @SmallTest
     @Feature({"Tab"})
-    @DisabledTest(message = "https://crbug.com/1090378")
     public void testTabRestoredIfKilledWhileActivityStopped() throws Exception {
         // Ensure the tab is showing before stopping the activity.
         TestThreadUtils.runOnUiThreadBlocking(

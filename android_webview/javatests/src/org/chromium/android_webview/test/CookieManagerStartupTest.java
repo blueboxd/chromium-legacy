@@ -5,8 +5,8 @@
 package org.chromium.android_webview.test;
 
 import android.os.Looper;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -86,7 +86,7 @@ public class CookieManagerStartupTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testStartup() throws Throwable {
-        ThreadUtils.setWillOverrideUiThread(true);
+        ThreadUtils.setWillOverrideUiThread();
         TestWebServer webServer = TestWebServer.start();
         try {
             String path = "/cookie_test.html";
@@ -149,7 +149,7 @@ public class CookieManagerStartupTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testShouldInterceptRequestDeadlock() throws Throwable {
-        ThreadUtils.setWillOverrideUiThread(true);
+        ThreadUtils.setWillOverrideUiThread();
         ThreadUtils.setUiThread(Looper.getMainLooper());
         String url = "http://www.example.com";
         TestAwContentsClient contentsClient = new TestAwContentsClient() {

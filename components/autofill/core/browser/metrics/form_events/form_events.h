@@ -153,6 +153,28 @@ enum FormEvent {
   // The selected credit card suggestion did not have metadata.
   FORM_EVENT_CARD_SUGGESTION_WITHOUT_METADATA_SELECTED = 61,
 
+  // Reserved so that the serialized DenseSet<FormEvent> are representable as
+  // int64_t. Such conversions uint64_t -> int64_t happen when serializing a
+  // DenseSet<FormEvent> and passing it to a UKM builder.
+  FORM_EVENT_RESERVED_NOT_FOR_USE = 63,
+
+  // Credit card suggestions were shown, and they included at least one
+  // suggestion with metadata. Logged once per page load.
+  FORM_EVENT_CARD_SUGGESTION_WITH_METADATA_SHOWN_ONCE = 64,
+  // Credit card suggestions were shown, and none had metadata. Logged once per
+  // page load.
+  FORM_EVENT_CARD_SUGGESTION_WITHOUT_METADATA_SHOWN_ONCE = 65,
+  // The selected credit card suggestion had metadata. Logged once per page
+  // load.
+  FORM_EVENT_CARD_SUGGESTION_WITH_METADATA_SELECTED_ONCE = 66,
+  // The selected credit card suggestion did not have metadata. Logged once per
+  // page load.
+  FORM_EVENT_CARD_SUGGESTION_WITHOUT_METADATA_SELECTED_ONCE = 67,
+
+  // Next form event should use 62 if possible. One note is that if the newly
+  // added events are a group of related events, maybe it is easier to continue
+  // using 68 to make sure they are in the same UKM metric.
+
   NUM_FORM_EVENTS,
 };
 

@@ -7,10 +7,17 @@
 
 #include <stdint.h>
 
+#include "base/memory/raw_ptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/manager/managed_display_info.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/devices/input_device_event_observer.h"
+
+namespace gfx {
+class RoundedCornersF;
+}
 
 namespace display {
 
@@ -67,10 +74,11 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
       bool native,
       float device_scale_factor,
       float dpi,
-      const std::string& name);
+      const std::string& name,
+      const gfx::RoundedCornersF& panel_radii = gfx::RoundedCornersF());
 
  private:
-  friend class DisplayChangeObserverTest;
+  friend class DisplayChangeObserverTestBase;
 
   void UpdateInternalDisplay(
       const DisplayConfigurator::DisplayStateList& display_states);
@@ -79,8 +87,12 @@ class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
       const DisplaySnapshot* snapshot,
       const DisplayMode* mode_info);
 
+  // The panel radii of the internal display that is specified via command-line
+  // switch `display::switches::kDisplayProperties`.
+  absl::optional<gfx::RoundedCornersF> internal_panel_radii_;
+
   // |display_manager_| is not owned and must outlive DisplayChangeObserver.
-  DisplayManager* display_manager_;
+  raw_ptr<DisplayManager, ExperimentalAsh> display_manager_;
 };
 
 }  // namespace display

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/public/cpp/session/user_info.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -64,10 +65,7 @@ class UserSelectionScreen
   void HandleNoPodFocused();
   void OnBeforeShow();
 
-  // Methods for easy unlock support.
-  void HardLockPod(const AccountId& account_id);
   void AttemptEasyUnlock(const AccountId& account_id);
-
   void InitEasyUnlock();
 
   void SetTpmLockedState(bool is_locked, base::TimeDelta time_left);
@@ -114,7 +112,7 @@ class UserSelectionScreen
   void SetUsersLoaded(bool loaded);
 
  protected:
-  UserBoardView* view_ = nullptr;
+  raw_ptr<UserBoardView, ExperimentalAsh> view_ = nullptr;
 
   // Map from public session account IDs to recommended locales set by policy.
   std::map<AccountId, std::vector<std::string>>

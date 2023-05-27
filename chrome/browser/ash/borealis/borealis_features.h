@@ -9,11 +9,16 @@
 #include <string>
 
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 class Profile;
 
 namespace borealis {
+
+// Borealis hashes tokens it gets from insert_coin using this salt before
+// storing it in prefs.
+extern const char kSaltForPrefStorage[];
 
 class AsyncAllowChecker;
 
@@ -66,7 +71,7 @@ class BorealisFeatures {
   void OnVmTokenDetermined(base::OnceCallback<void(AllowStatus)> callback,
                            std::string hashed_token);
 
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
   std::unique_ptr<AsyncAllowChecker> async_checker_;
   // TODO(b/218403711): remove this.
   base::WeakPtrFactory<BorealisFeatures> weak_factory_{this};

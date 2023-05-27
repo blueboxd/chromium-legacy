@@ -68,10 +68,10 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
 
   void TearDown() override {
     apps_launch_info_provider_.reset();
-    connection_status_handler_.reset();
     launch_app_helper_.reset();
     handler_.reset();
     stream_status_change_handler_.reset();
+    connection_status_handler_.reset();
   }
 
   void FakeLaunchEcheAppFunction(
@@ -191,7 +191,8 @@ TEST_F(EcheRecentAppClickHandlerTest, LaunchEcheAppFunction) {
   const char package_name[] = "com.fakeapp";
   base::HistogramTester histogram_tester;
   auto fake_app_metadata = phonehub::Notification::AppMetadata(
-      app_visible_name, package_name, gfx::Image(),
+      app_visible_name, package_name, /*color_icon=*/gfx::Image(),
+      /*monochrome_icon_mask=*/gfx::Image(),
       /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
 
   std::vector<phonehub::Notification::AppMetadata> app_metadata =
@@ -239,7 +240,8 @@ TEST_F(EcheRecentAppClickHandlerTest, HandleNotificationClick) {
   const char16_t app_visible_name[] = u"Fake App";
   const char package_name[] = "com.fakeapp";
   auto fake_app_metadata = phonehub::Notification::AppMetadata(
-      app_visible_name, package_name, gfx::Image(),
+      app_visible_name, package_name, /*color_icon=*/gfx::Image(),
+      /*monochrome_icon_mask=*/gfx::Image(),
       /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
 
   // Keep notification's metadata in handler if the stream has not started yet.
@@ -266,7 +268,8 @@ TEST_F(EcheRecentAppClickHandlerTest,
   const char16_t app_visible_name[] = u"Fake App";
   const char package_name[] = "com.fakeapp";
   auto fake_app_metadata = phonehub::Notification::AppMetadata(
-      app_visible_name, package_name, gfx::Image(),
+      app_visible_name, package_name, /*color_icon=*/gfx::Image(),
+      /*monochrome_icon_mask=*/gfx::Image(),
       /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
 
   // Update notification's metadata to recents list directly when the stream is
@@ -289,7 +292,8 @@ TEST_F(EcheRecentAppClickHandlerTest,
   const char package_name[] = "com.fakeapp";
   base::HistogramTester histogram_tester;
   auto fake_app_metadata = phonehub::Notification::AppMetadata(
-      app_visible_name, package_name, gfx::Image(),
+      app_visible_name, package_name, /*color_icon=*/gfx::Image(),
+      /*monochrome_icon_mask=*/gfx::Image(),
       /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
 
   SetAppLaunchProhibitedReason(

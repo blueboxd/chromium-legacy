@@ -60,21 +60,28 @@ from update import (CHROMIUM_DIR, DownloadAndUnpack, EnsureDirExists,
 
 from update_rust import (RUST_REVISION, RUST_TOOLCHAIN_OUT_DIR,
                          STAGE0_JSON_SHA256, THIRD_PARTY_DIR, THIS_DIR,
-                         VERSION_STAMP_PATH, GetPackageVersionForBuild)
+                         VERSION_STAMP_PATH, GetLatestRevision)
 
 EXCLUDED_TESTS = [
-    # Temporarily disabled due to https://github.com/rust-lang/rust/issues/94322
-    os.path.join('tests', 'ui', 'numeric', 'numeric-cast.rs'),
-    # Temporarily disabled due to https://github.com/rust-lang/rust/issues/96497
+    # https://github.com/rust-lang/rust/issues/45222 which appears to have
+    # regressed as of a recent LLVM update. This test is purely performance
+    # related, not correctness.
+    os.path.join('tests', 'codegen', 'issue-45222.rs'),
+    # https://github.com/rust-lang/rust/issues/96497
     os.path.join('tests', 'codegen', 'issue-96497-slice-size-nowrap.rs'),
     # TODO(crbug.com/1347563): Re-enable when fixed.
     os.path.join('tests', 'codegen', 'sanitizer-cfi-emit-type-checks.rs'),
     os.path.join('tests', 'codegen',
                  'sanitizer-cfi-emit-type-metadata-itanium-cxx-abi.rs'),
-    # Temporarily disabled due to https://github.com/rust-lang/rust/issues/45222
-    # which appears to have regressed as of a recent LLVM update. This test is
-    # purely performance related, not correctness.
-    os.path.join('tests', 'codegen', 'issue-45222.rs')
+    # https://github.com/rust-lang/rust/issues/109671 the test is being
+    # optimized in newer LLVM which breaks its expectations.
+    os.path.join('tests', 'ui', 'abi', 'stack-protector.rs'),
+    # https://github.com/rust-lang/rust/issues/109672 the second panic in a
+    # double-panic is being optimized out (reasonably correctly) by newer LLVM.
+    os.path.join('tests', 'ui', 'backtrace.rs'),
+    # https://github.com/rust-lang/rust/issues/94322 large output from
+    # compiletests is breaking json parsing of the results.
+    os.path.join('tests', 'ui', 'numeric', 'numeric-cast.rs'),
 ]
 EXCLUDED_TESTS_WINDOWS = [
     # https://github.com/rust-lang/rust/issues/96464
@@ -105,13 +112,17 @@ RUST_CARGO_CONFIG_TEMPLATE_PATH = os.path.join(
 RUST_SRC_VENDOR_DIR = os.path.join(RUST_SRC_DIR, 'vendor')
 
 RUST_HOST_LLVM_BUILD_DIR = os.path.join(CHROMIUM_DIR, 'third_party',
-                                        'rust-llvm-host-build')
+                                        'rust-toolchain-intermediate',
+                                        'llvm-host-build')
 RUST_HOST_LLVM_INSTALL_DIR = os.path.join(CHROMIUM_DIR, 'third_party',
-                                          'rust-llvm-host-install')
+                                          'rust-toolchain-intermediate',
+                                          'llvm-host-install')
 RUST_CROSS_TARGET_LLVM_BUILD_DIR = os.path.join(CHROMIUM_DIR, 'third_party',
-                                                'rust-llvm-target-build')
-RUST_CROSS_TARGET_LLVM_INSTALL_DIR = os.path.join(CHROMIUM_DIR, 'third_party',
-                                                  'rust-llvm-target-install')
+                                                'rust-toolchain-intermediate',
+                                                'llvm-target-build')
+RUST_CROSS_TARGET_LLVM_INSTALL_DIR = os.path.join(
+    CHROMIUM_DIR, 'third_party', 'rust-toolchain-intermediate',
+    'llvm-target-install')
 
 # CIPD Versions from:
 # - List all platforms
@@ -163,7 +174,6 @@ TEST_SUITES = [
     'tests/ui',
 ]
 
-
 def AddOpenSSLToEnv(build_mac_arm):
     """Download OpenSSL, and add to OPENSSL_DIR."""
     ssl_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'openssl')
@@ -204,22 +214,18 @@ def VerifyStage0JsonHash():
     sys.exit(1)
 
 
-def FetchCargo(rust_git_hash):
-    '''Downloads the beta Cargo package specified for the compiler build
+def FetchBetaPackage(name, rust_git_hash, triple=None):
+    '''Downloads the beta package specified for the compiler build
 
-    Unpacks the package and returns the path to the binary itself.
+    If `triple` is not specified, it downloads a package for the current
+    machine's architecture.
+
+    Unpacks the package and returns the path to root of the package.
     '''
-    if sys.platform == 'win32':
-        target = 'cargo-beta-x86_64-pc-windows-msvc'
-    elif sys.platform == 'darwin':
-        if platform.machine() == 'arm64':
-            target = 'cargo-beta-aarch64-apple-darwin'
-        else:
-            target = 'cargo-beta-x86_64-apple-darwin'
-    else:
-        target = 'cargo-beta-x86_64-unknown-linux-gnu'
+    triple = triple if triple else RustTargetTriple(False)
+    filename = f'{name}-beta-{triple}'
 
-    # Pull the stage0 JSON to find the Cargo binary intended to be used to
+    # Pull the stage0 JSON to find the package intended to be used to
     # build this version of the Rust compiler.
     STAGE0_JSON_URL = (
         'https://chromium.googlesource.com/external/github.com/'
@@ -228,47 +234,64 @@ def FetchCargo(rust_git_hash):
         STAGE0_JSON_URL.format(GIT_HASH=rust_git_hash)).read().decode("utf-8")
     stage0 = json.loads(base64.b64decode(base64_text))
 
-    # The stage0 JSON contains the path to all tarballs it uses binaries from,
-    # including cargo.
+    # The stage0 JSON contains the path to all tarballs it uses binaries from.
     for k in stage0['checksums_sha256'].keys():
-        if k.endswith(target + '.tar.gz'):
-            cargo_tgz = k
+        if k.endswith(filename + '.tar.gz'):
+            package_tgz = k
 
     server = stage0['config']['dist_server']
-    DownloadAndUnpack(f'{server}/{cargo_tgz}', LLVM_BUILD_TOOLS_DIR)
+    DownloadAndUnpack(f'{server}/{package_tgz}', LLVM_BUILD_TOOLS_DIR)
+    return os.path.join(LLVM_BUILD_TOOLS_DIR, filename)
 
-    bin_path = os.path.join(LLVM_BUILD_TOOLS_DIR, target, 'cargo', 'bin')
-    if sys.platform == 'win32':
-        return os.path.join(bin_path, 'cargo.exe')
-    else:
-        return os.path.join(bin_path, 'cargo')
+
+def InstallBetaPackage(package_dir, install_dir):
+    RunCommand([
+        os.path.join(package_dir, 'install.sh'), f'--destdir={install_dir}',
+        f'--prefix='
+    ])
 
 
 def CargoVendor(cargo_bin):
     '''Runs `cargo vendor` to pull down dependencies.'''
     os.chdir(RUST_SRC_DIR)
 
-    # Some Submodules are part of the workspace and need to exist (so we can
-    # read their Cargo.toml files) before we can vendor their deps.
-    RunCommand([
-        'git', 'submodule', 'update', '--init', '--recursive', '--depth', '1'
-    ])
+    for i in range(0, 3):
+        # Some Submodules are part of the workspace and need to exist (so we can
+        # read their Cargo.toml files) before we can vendor their deps.
+        submod_cmd = [
+            'git', 'submodule', 'update', '--init', '--recursive', '--depth',
+            '1'
+        ]
+        if RunCommand(submod_cmd, fail_hard=False):
+            pass  # Move on to vendoring.
+        elif i < 2:
+            print('Failed git submodule, retrying...')
+            continue
+        else:
+            sys.exit(1)
 
-    # From https://github.com/rust-lang/rust/blob/master/src/bootstrap/dist.rs#L986-L995
-    # The additional `--sync` Cargo.toml files are not part of the top level
-    # workspace.
-    RunCommand([
-        cargo_bin,
-        'vendor',
-        '--locked',
-        '--versioned-dirs',
-        '--sync',
-        'src/tools/rust-analyzer/Cargo.toml',
-        '--sync',
-        'compiler/rustc_codegen_cranelift/Cargo.toml',
-        '--sync',
-        'src/bootstrap/Cargo.toml',
-    ])
+        # From https://github.com/rust-lang/rust/blob/master/src/bootstrap/dist.rs#L986-L995:
+        # The additional `--sync` Cargo.toml files are not part of the top level
+        # workspace.
+        vendor_cmd = [
+            cargo_bin,
+            'vendor',
+            '--locked',
+            '--versioned-dirs',
+            '--sync',
+            'src/tools/rust-analyzer/Cargo.toml',
+            '--sync',
+            'compiler/rustc_codegen_cranelift/Cargo.toml',
+            '--sync',
+            'src/bootstrap/Cargo.toml',
+        ]
+        if RunCommand(vendor_cmd, fail_hard=False):
+            break  # Success, break out of the retry loop.
+        elif i < 2:
+            print('Failed cargo vendor, retrying...')
+            continue
+        else:
+            sys.exit(1)
 
     # Make a `.cargo/config.toml` the points to the `vendor` directory for all
     # dependency crates.
@@ -419,7 +442,7 @@ class XPy:
         subs = {}
         subs['INSTALL_DIR'] = quote_string(str(RUST_TOOLCHAIN_OUT_DIR))
         subs['LLVM_BIN'] = quote_string(str(self._llvm_bins_path))
-        subs['PACKAGE_VERSION'] = GetPackageVersionForBuild()
+        subs['PACKAGE_VERSION'] = GetLatestRevision()
 
         subs["LLVM_CONFIG_WINDOWS_x86_64"] = quote_string(
             str(x86_64_llvm_config))
@@ -467,7 +490,7 @@ def MakeVersionStamp(git_hash):
     with open(RUST_SRC_VERSION_FILE_PATH) as version_file:
         rust_version = version_file.readline().rstrip()
     return (f'rustc {rust_version} {git_hash}'
-            f' ({GetPackageVersionForBuild()} chromium)\n')
+            f' ({GetLatestRevision()} chromium)\n')
 
 
 def GetLatestRustCommit():
@@ -478,6 +501,18 @@ def GetLatestRustCommit():
                                '+/refs/heads/main?format=JSON').read().decode(
                                    "utf-8").replace(")]}'", ""))
     return main['commit']
+
+
+def RustTargetTriple(build_mac_arm):
+    if sys.platform == 'darwin':
+        if platform.machine() == 'arm64' or build_mac_arm:
+            return 'aarch64-apple-darwin'
+        else:
+            return 'x86_64-apple-darwin'
+    elif sys.platform == 'win32':
+        return 'x86_64-pc-windows-msvc'
+    else:
+        return 'x86_64-unknown-linux-gnu'
 
 
 # Fetch or build the LLVM libraries, for the host machine and when
@@ -499,7 +534,6 @@ def BuildLLVMLibraries(skip_build, build_mac_arm, gcc_toolchain):
         sys.executable,
         os.path.join(CLANG_SCRIPTS_DIR, 'build.py'),
         '--disable-asserts',
-        # TODO(danakj): '--no-clang',
         '--no-tools',
         '--with-ml-inliner-model=',
     ]
@@ -613,15 +647,8 @@ def main():
     else:
         checkout_revision = RUST_REVISION
 
-    if sys.platform == 'darwin':
-        if platform.machine() == 'arm64' or args.build_mac_arm:
-            host_triple = 'aarch64-apple-darwin'
-        else:
-            host_triple = 'x86_64-apple-darwin'
-    elif sys.platform == 'win32':
-        host_triple = 'x86_64-pc-windows-msvc'
-    else:
-        host_triple = 'x86_64-unknown-linux-gnu'
+    building_on_host_triple = RustTargetTriple(False)
+    building_for_host_triple = RustTargetTriple(args.build_mac_arm)
 
     args.gcc_toolchain = None
     if sys.platform.startswith('linux'):
@@ -672,8 +699,12 @@ def main():
     # Set up config.toml in Rust source tree.
     xpy.configure(args.build_mac_arm, x86_64_llvm_config, aarch64_llvm_config)
 
-    if not args.skip_checkout:
-        cargo_bin = FetchCargo(checkout_revision)
+    if not args.skip_checkout or True:
+        path = FetchBetaPackage('cargo', checkout_revision)
+        if sys.platform == 'win32':
+            cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo.exe')
+        else:
+            cargo_bin = os.path.join(path, 'cargo', 'bin', 'cargo')
         CargoVendor(cargo_bin)
 
     if args.run_xpy:
@@ -684,9 +715,12 @@ def main():
     else:
         assert not rest
 
-    xpy_args = []
+    xpy_args = ['--build', building_on_host_triple]
     if args.build_mac_arm:
-        xpy_args.extend(['--host', host_triple, '--target', host_triple])
+        xpy_args.extend([
+            '--host', building_for_host_triple, '--target',
+            building_for_host_triple
+        ])
 
     if not args.skip_clean:
         print('Cleaning build artifacts...')
@@ -721,21 +755,9 @@ def main():
             artifacts.remove(a)
     xpy.run('install', xpy_args + artifacts)
 
-    # Copy additional sources required for building stdlib out of
-    # RUST_TOOLCHAIN_SRC_DIST_DIR.
+    # Copy additional vendored crates required for building stdlib.
     print(f'Copying vendored dependencies to {RUST_TOOLCHAIN_OUT_DIR} ...')
     shutil.copytree(RUST_SRC_VENDOR_DIR, RUST_TOOLCHAIN_SRC_DIST_VENDOR_DIR)
-
-    llvmlib_dir = os.path.join(RUST_TOOLCHAIN_OUT_DIR, 'lib', 'llvmlib')
-    print(f'Copying LLVM/Clang libs to {llvmlib_dir} ...')
-    if os.path.exists(llvmlib_dir):
-        RmTree(llvmlib_dir)
-    EnsureDirExists(os.path.join(llvmlib_dir, 'lib'))
-    LIB_SUFFIX = '.lib' if sys.platform == 'win32' else '.a'
-    for lib_path in os.listdir(os.path.join(target_llvm_dir, 'lib')):
-        if lib_path.endswith(LIB_SUFFIX):
-            shutil.copy(os.path.join(target_llvm_dir, 'lib', lib_path),
-                        os.path.join(llvmlib_dir, 'lib'))
 
     with open(VERSION_STAMP_PATH, 'w') as stamp:
         stamp.write(MakeVersionStamp(checkout_revision))

@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 
 class Profile;
@@ -25,11 +26,8 @@ class HoldingSpaceClientImpl : public HoldingSpaceClient {
   ~HoldingSpaceClientImpl() override;
 
   // HoldingSpaceClient:
-  void AddDiagnosticsLog(const base::FilePath& file_path) override;
   const std::string& AddItemOfType(HoldingSpaceItem::Type type,
                                    const base::FilePath& file_path) override;
-  void AddScreenCapture(HoldingSpaceItem::Type type,
-                        const base::FilePath& file_path) override;
   void CopyImageToClipboard(const HoldingSpaceItem&, SuccessCallback) override;
   base::FilePath CrackFileSystemUrl(const GURL& file_system_url) const override;
   bool IsDriveDisabled() const override;
@@ -45,7 +43,7 @@ class HoldingSpaceClientImpl : public HoldingSpaceClient {
   void UnpinItems(const std::vector<const HoldingSpaceItem*>& items) override;
 
  private:
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
 
   base::WeakPtrFactory<HoldingSpaceClientImpl> weak_factory_{this};
 };

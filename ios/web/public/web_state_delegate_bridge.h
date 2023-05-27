@@ -46,6 +46,14 @@
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState;
 
+// Called when the media permission is requested and to acquire the decision
+// handler needed to process the user's decision to grant, deny media
+// permissions or show the default prompt that asks for permissions.
+- (void)webState:(web::WebState*)webState
+    handlePermissions:(NSArray<NSNumber*>*)permissions
+      decisionHandler:(web::WebStatePermissionDecisionHandler)decisionHandler
+    API_AVAILABLE(ios(15.0));
+
 // Called when a request receives an authentication challenge specified by
 // `protectionSpace`, and is unable to respond using cached credentials.
 // Clients must call `handler` even if they want to cancel authentication
@@ -102,6 +110,11 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
       base::OnceCallback<void(bool)> callback) override;
   JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(
       WebState* source) override;
+  void HandlePermissionsDecisionRequest(
+      WebState* source,
+      NSArray<NSNumber*>* permissions,
+      WebStatePermissionDecisionHandler handler)
+      API_AVAILABLE(ios(15.0)) override;
   void OnAuthRequired(WebState* source,
                       NSURLProtectionSpace* protection_space,
                       NSURLCredential* proposed_credential,

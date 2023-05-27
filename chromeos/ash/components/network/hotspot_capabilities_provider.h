@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -88,6 +89,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotCapabilitiesProvider
 
  private:
   friend class HotspotMetricsHelperTest;
+  friend class HotspotFeatureUsageMetricsTest;
 
   // ShillPropertyChangedObserver overrides
   void OnPropertyChanged(const std::string& key,
@@ -128,7 +130,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotCapabilitiesProvider
       hotspot_config::mojom::HotspotAllowStatus::kDisallowedNoCellularUpstream};
 
   bool policy_allow_hotspot_ = true;
-  NetworkStateHandler* network_state_handler_ = nullptr;
+  raw_ptr<NetworkStateHandler, ExperimentalAsh> network_state_handler_ =
+      nullptr;
   base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
   base::ObserverList<Observer> observer_list_;

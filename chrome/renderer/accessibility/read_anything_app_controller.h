@@ -140,25 +140,13 @@ class ReadAnythingAppController
   void OnAXTreeDistilled(const ui::AXTreeID& tree_id,
                          const std::vector<ui::AXNodeID>& content_node_ids);
 
-  // Helper functions for the rendering algorithm. Post-process the AXTree and
-  // cache values before sending an `updateContent` notification to the Read
-  // Anything app.ts.
-  // ComputeDisplayNodeIdsForDistilledTree computes display nodes from the
-  // content nodes. These display nodes will be displayed in Read Anything
-  // app.ts by default.
-  // ComputeSelectionNodeIds computes selection nodes from
-  // the user's selection. The selection nodes list is only populated when the
-  // user's selection contains nodes outside of the display nodes list. By
-  // keeping two separate lists of nodes, we can switch back to displaying the
-  // default distilled content without recomputing the nodes when the user
-  // clears their selection or selects content inside the distilled content.
-  void ComputeDisplayNodeIdsForDistilledTree();
-  void ComputeSelectionNodeIds();
-
   void PostProcessSelection();
 
-  // The following methods are used for testing ReadAnythingAppTest.
-  // Snapshot_lite is a data structure which resembles an AXTreeUpdate. E.g.:
+  // SetContentForTesting and SetThemeForTesting are used by
+  // ReadAnythingAppTest and thus need to be kept in ReadAnythingAppController
+  // even though ReadAnythingAppControllerBrowserTest is friended.
+  // Snapshot_lite is a data structure which resembles an
+  // AXTreeUpdate. E.g.:
   //   const axTree = {
   //     root_id: 1,
   //     nodes: [
@@ -182,10 +170,6 @@ class ReadAnythingAppController
                           SkColor background_color,
                           int line_spacing,
                           int letter_spacing);
-  AXTreeDistiller* SetDistillerForTesting(
-      std::unique_ptr<AXTreeDistiller> distiller);
-  void SetPageHandlerForTesting(
-      mojo::PendingRemote<read_anything::mojom::PageHandler> page_handler);
 
   content::RenderFrame* render_frame_;
   std::unique_ptr<AXTreeDistiller> distiller_;

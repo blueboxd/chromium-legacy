@@ -1285,19 +1285,23 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeUkm) {
   sync_service()->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
 
+  // Fast forward by 2 hours and verify no usage data is reported to UKM.
   task_environment_.FastForwardBy(base::Hours(2));
-
   VerifyNoAppUsageTimeUkm();
 
   // Set sync is allowed by setting an empty disable reason set.
   sync_service()->SetDisableReasons(syncer::SyncService::DisableReasonSet());
 
-  task_environment_.FastForwardBy(base::Hours(1));
+  static constexpr base::TimeDelta kAppUsageDuration = base::Hours(1);
+  task_environment_.FastForwardBy(kAppUsageDuration);
   ModifyInstance(app_constants::kChromeAppId,
                  browser->window()->GetNativeWindow(), kInactiveInstanceState);
 
-  task_environment_.FastForwardBy(base::Hours(1));
-  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/10800000,
+  // Fast forward by 2 hours and verify usage data reported to UKM only includes
+  // usage data since sync was last enabled.
+  task_environment_.FastForwardBy(base::Hours(2));
+  VerifyAppUsageTimeUkm(app_constants::kChromeAppId,
+                        (int)kAppUsageDuration.InMilliseconds(),
                         AppTypeName::kChromeBrowser);
 }
 
@@ -2134,6 +2138,29 @@ TEST_P(AppPlatformMetricsServiceTest,
 }
 
 TEST_P(AppPlatformMetricsServiceTest,
+       ShouldClearUsageInfoFromPrefStoreWhenSyncDisabled) {
+  // Save usage entry with no usage data to the pref store.
+  {
+    const base::UnguessableToken& kInstanceId =
+        base::UnguessableToken::Create();
+    ScopedDictPrefUpdate usage_dict(GetPrefService(), kAppUsageTime);
+    AppPlatformMetrics::UsageTime usage_time;
+    usage_time.app_id = "TestApp";
+    usage_dict->SetByDottedPath(kInstanceId.ToString(),
+                                usage_time.ConvertToDict());
+  }
+
+  // Disable sync state.
+  sync_service()->SetDisableReasons(
+      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+
+  // Fast forward by two hours and verify usage info is cleared from the pref
+  // store.
+  task_environment_.FastForwardBy(base::Hours(2));
+  ASSERT_TRUE(GetPrefService()->GetDict(kAppUsageTime).empty());
+}
+
+TEST_P(AppPlatformMetricsServiceTest,
        ShouldNotClearUsageInfoFromPrefStoreIfReportingUsageSet) {
   // Create a new window for the app.
   auto window = std::make_unique<aura::Window>(nullptr);
@@ -2190,6 +2217,30 @@ TEST_P(AppPlatformMetricsServiceTest,
       base::ValueToTimeDelta(usage_dict_pref.FindDict(kInstanceId.ToString())
                                  ->Find(kReportingUsageTimeDurationKey)),
       Eq(kAppRunningDuration));
+}
+
+TEST_P(AppPlatformMetricsServiceTest, ShouldNotPersistUsageDataIfSyncDisabled) {
+  // Disable sync state.
+  sync_service()->SetDisableReasons(
+      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+
+  // Create a new window for the app.
+  auto window = std::make_unique<aura::Window>(nullptr);
+  window->Init(ui::LAYER_NOT_DRAWN);
+
+  // Set the window active state and simulate app usage.
+  static constexpr char kAppId[] = "a";
+  const base::UnguessableToken& kInstanceId = base::UnguessableToken::Create();
+  ModifyInstance(kInstanceId, kAppId, window.get(),
+                 ::apps::InstanceState::kActive);
+  static constexpr base::TimeDelta kAppRunningDuration = base::Minutes(5);
+  task_environment_.FastForwardBy(kAppRunningDuration);
+
+  // Close app window to stop tracking further usage and verify usage info is
+  // not persisted in the pref store.
+  ModifyInstance(kInstanceId, kAppId, window.get(),
+                 ::apps::InstanceState::kDestroyed);
+  ASSERT_TRUE(GetPrefService()->GetDict(kAppUsageTime).empty());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

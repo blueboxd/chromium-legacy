@@ -8,6 +8,7 @@
 #include <string>
 #include <tuple>
 
+#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_os_info_override_win.h"
 #include "base/test/test_reg_util_win.h"
@@ -27,6 +28,7 @@
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/helper.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/util_constants.h"
@@ -364,6 +366,7 @@ class AddUpdateBrandCodeWorkItemTest
   }
 
   void SetupExpectations(const std::wstring& brand,
+                         bool is_cbcm_enrolled,
                          StrictMock<MockWorkItemList>* work_item_list) {
     if (!brand.empty()) {
       base::win::RegKey key(installer_state_->root_key(),
@@ -374,7 +377,32 @@ class AddUpdateBrandCodeWorkItemTest
           0, key.WriteValue(google_update::kRegRLZBrandField, brand.c_str()));
     }
 
-    if (!installer::GetUpdatedBrandCode(brand).empty() &&
+    if (is_cbcm_enrolled) {
+      std::wstring enrollment_token(L"ENROLLMENT_TOKEN");
+      std::string dm_token = base::RandBytesAsString(1000);
+      for (const std::pair<std::wstring, std::wstring>& key_and_value :
+           InstallUtil::GetCloudManagementEnrollmentTokenRegistryPaths()) {
+        base::win::RegKey key(installer_state_->root_key(),
+                              key_and_value.first.c_str(), KEY_WRITE);
+        ASSERT_TRUE(key.Valid());
+        ASSERT_EQ(0, key.WriteValue(key_and_value.second.c_str(),
+                                    enrollment_token.c_str()));
+      }
+      base::win::RegKey key;
+      std::wstring value_name;
+      std::tie(key, value_name) =
+          InstallUtil::GetCloudManagementDmTokenLocation(
+              InstallUtil::ReadOnly(false),
+              InstallUtil::BrowserLocation(false));
+      ASSERT_TRUE(key.Valid());
+      ASSERT_EQ(0, key.WriteValue(value_name.c_str(), dm_token.data(),
+                                  base::saturated_cast<DWORD>(dm_token.size()),
+                                  REG_BINARY));
+    }
+
+    if ((!installer::GetUpdatedBrandCode(brand).empty() ||
+         !installer::TransformCloudManagementBrandCode(brand, is_cbcm_enrolled)
+              .empty()) &&
         (is_domain_joined_ || (is_registered_ && !is_home_edition_))) {
       EXPECT_CALL(*work_item_list,
                   AddSetRegStringValueWorkItem(_, _, _, _, _, _))
@@ -403,25 +431,91 @@ class AddUpdateBrandCodeWorkItemTest
 
 TEST_P(AddUpdateBrandCodeWorkItemTest, NoBrand) {
   StrictMock<MockWorkItemList> work_item_list;
-  SetupExpectations(L"", &work_item_list);
+  SetupExpectations(L"", false, &work_item_list);
   installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
 }
 
 TEST_P(AddUpdateBrandCodeWorkItemTest, GGRV) {
   StrictMock<MockWorkItemList> work_item_list;
-  SetupExpectations(L"GGRV", &work_item_list);
+  SetupExpectations(L"GGRV", false, &work_item_list);
   installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
 }
 
 TEST_P(AddUpdateBrandCodeWorkItemTest, GGLS) {
   StrictMock<MockWorkItemList> work_item_list;
-  SetupExpectations(L"GGLS", &work_item_list);
+  SetupExpectations(L"GGLS", false, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GGRV_CBCM) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GGRV", true, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GGLS_CBCM) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GGLS", true, &work_item_list);
   installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
 }
 
 TEST_P(AddUpdateBrandCodeWorkItemTest, TEST) {
   StrictMock<MockWorkItemList> work_item_list;
-  SetupExpectations(L"TEST", &work_item_list);
+  SetupExpectations(L"TEST", false, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GCEA) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GCEA", true, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GCEL) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GCEA", true, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GCFB) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GCFB", true, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GCGC) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GCGC", true, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GCHD) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GChD", true, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GCCJ) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GCCJ", false, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GCKK) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GCKK", false, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GCLL) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GCLL", false, &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GCMM) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GCMM", false, &work_item_list);
   installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
 }
 

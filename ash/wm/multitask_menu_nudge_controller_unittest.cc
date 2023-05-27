@@ -9,6 +9,8 @@
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/multitask_menu_nudge_delegate_ash.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
@@ -42,8 +44,8 @@ chromeos::MultitaskMenuNudgeController* GetNudgeControllerForWindow(
     return TabletModeControllerTestApi()
         .tablet_mode_window_manager()
         ->tablet_mode_multitask_menu_event_handler()
-        ->multitask_cue_for_testing()
-        ->nudge_controller_for_testing();
+        ->multitask_cue()
+        ->nudge_controller();
   }
 
   if (auto* frame = NonClientFrameViewAsh::Get(window)) {
@@ -163,11 +165,11 @@ TEST_F(MultitaskMenuNudgeControllerTest,
   views::NamedWidgetShownWaiter waiter(
       views::test::AnyWidgetTestPasskey{},
       std::string("MultitaskMenuBubbleWidget"));
-  chromeos::FrameSizeButton* size_button =
+  auto* size_button = static_cast<chromeos::FrameSizeButton*>(
       NonClientFrameViewAsh::Get(window.get())
           ->GetHeaderView()
           ->caption_button_container()
-          ->size_button();
+          ->size_button());
   size_button->ShowMultitaskMenu(
       chromeos::MultitaskMenuEntryType::kFrameSizeButtonHover);
   views::WidgetDelegate* delegate =
@@ -176,10 +178,11 @@ TEST_F(MultitaskMenuNudgeControllerTest,
       static_cast<chromeos::MultitaskMenu*>(delegate->AsDialogDelegate());
 
   // After floating the window from the multitask menu, there is no crash.
-  GetEventGenerator()->MoveMouseTo(multitask_menu->multitask_menu_view()
-                                       ->float_button_for_testing()
-                                       ->GetBoundsInScreen()
-                                       .CenterPoint());
+  GetEventGenerator()->MoveMouseTo(
+      multitask_menu->multitask_menu_view_for_testing()
+          ->float_button_for_testing()
+          ->GetBoundsInScreen()
+          .CenterPoint());
   GetEventGenerator()->ClickLeftButton();
   EXPECT_TRUE(WindowState::Get(window.get())->IsFloated());
 }
@@ -293,26 +296,42 @@ TEST_F(MultitaskMenuNudgeControllerTest, MenuShown) {
   auto window = CreateAppWindow(gfx::Rect(300, 300));
   ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
 
-  // Fake waiting for nudge to dismiss and open the multitask menu.
-  FireDismissNudgeTimer(window.get());
-  ASSERT_FALSE(GetNudgeWidgetForWindow(window.get()));
+  // When opening the multitask menu, the nudge should dismiss immediately.
   views::NamedWidgetShownWaiter waiter(
       views::test::AnyWidgetTestPasskey{},
       std::string("MultitaskMenuBubbleWidget"));
-  chromeos::FrameSizeButton* size_button =
+  auto* size_button = static_cast<chromeos::FrameSizeButton*>(
       NonClientFrameViewAsh::Get(window.get())
           ->GetHeaderView()
           ->caption_button_container()
-          ->size_button();
+          ->size_button());
   size_button->ShowMultitaskMenu(
       chromeos::MultitaskMenuEntryType::kFrameSizeButtonHover);
   waiter.WaitIfNeededAndGet();
+  EXPECT_FALSE(GetNudgeWidgetForWindow(window.get()));
 
   // Advance the clock and then destroy the window and create a new window.
   // Test that the nudge does not show up.
   test_clock_.Advance(base::Hours(25));
   window.reset();
   window = CreateAppWindow(gfx::Rect(300, 300));
+  EXPECT_FALSE(GetNudgeWidgetForWindow(window.get()));
+}
+
+// Tests that the nudge gets properly hidden after switching desks with a
+// floated window. Regression test for b/276786909.
+TEST_F(MultitaskMenuNudgeControllerTest, FloatedWindowNudge) {
+  // Create a new desk.
+  NewDesk();
+  ASSERT_TRUE(DesksController::Get()->desks()[0]->is_active());
+
+  // Create a floated window, the nudge is shown on new window activation.
+  auto window = CreateAppWindow(gfx::Rect(300, 300));
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(window.get())->IsFloated());
+  ASSERT_TRUE(GetNudgeWidgetForWindow(window.get()));
+
+  ActivateDesk(DesksController::Get()->desks()[1].get());
   EXPECT_FALSE(GetNudgeWidgetForWindow(window.get()));
 }
 

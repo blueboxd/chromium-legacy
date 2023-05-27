@@ -6,6 +6,7 @@
 
 #import <ApplicationServices/ApplicationServices.h>
 #include <dlfcn.h>
+#include <Foundation/Foundation.h>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -15,32 +16,36 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace quarantine {
 
-bool GetQuarantineProperties(
+NSDictionary* GetQuarantineProperties(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties) {
   static NSString * const*NSURLQuarantinePropertiesKeyStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSURLQuarantinePropertiesKey"));
   if(NSURLQuarantinePropertiesKeyStr) {
-    base::scoped_nsobject<NSURL> file_url([[NSURL alloc]
-        initFileURLWithPath:base::SysUTF8ToNSString(file.value())]);
-    if (!file_url)
-      return false;
+    NSURL* file_url = base::mac::FilePathToNSURL(file);
+    if (!file_url) {
+      return nil;
+    }
 
-    NSError* error = nil;
-    id quarantine_properties = nil;
+    NSError* __autoreleasing error = nil;
+    id __autoreleasing quarantine_properties = nil;
     BOOL success = [file_url getResourceValue:&quarantine_properties
-                                       forKey:*NSURLQuarantinePropertiesKeyStr
+                                       forKey:NSURLQuarantinePropertiesKeyStr
                                         error:&error];
     if (!success) {
       std::string error_message(error ? error.description.UTF8String : "");
       LOG(WARNING) << "Unable to get quarantine attributes for file "
                    << file.value() << ". Error: " << error_message;
-      return false;
+      return nil;
     }
 
     if (!quarantine_properties) {
-      return true;
+      return @{};
     }
 
     NSDictionary* quarantine_properties_dict =
@@ -49,13 +54,11 @@ bool GetQuarantineProperties(
       LOG(WARNING) << "Quarantine properties have wrong class: "
                    << base::SysNSStringToUTF8(
                           [[quarantine_properties class] description]);
-      return false;
+      return nil;
     }
-
-    properties->reset([quarantine_properties_dict mutableCopy]);
-    return true;
+    return quarantine_properties_dict;
   } else {
-    return false;
+    return nil;
   }
 }
 

@@ -8,27 +8,27 @@
  * Nearby Share feature.
  */
 
+import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../../controls/settings_toggle_button.js';
-import '../../prefs/prefs.js';
 import '../../settings_shared.css.js';
 import './nearby_share_contact_visibility_dialog.js';
 import './nearby_share_device_name_dialog.js';
 import './nearby_share_data_usage_dialog.js';
 import './nearby_share_receive_dialog.js';
 
-import {ReceiveObserverReceiver, ShareTarget, TransferMetadata} from '/shared/mojo/nearby_share.mojom-webui.js';
 import {getContactManager} from '/shared/nearby_contact_manager.js';
+import {ReceiveObserverReceiver, ShareTarget, TransferMetadata} from '/shared/nearby_share.mojom-webui.js';
 import {NearbySettings} from '/shared/nearby_share_settings_mixin.js';
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {FastInitiationNotificationState, Visibility} from 'chrome://resources/mojo/chromeos/ash/services/nearby/public/mojom/nearby_share_settings.mojom-webui.js';
 import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
@@ -189,18 +189,18 @@ class SettingsNearbyShareSubpageElement extends
     }
   }
 
-  private onDeviceNameTap_(): void {
+  private onDeviceNameClick_(): void {
     if (this.showDeviceNameDialog_) {
       return;
     }
     this.showDeviceNameDialog_ = true;
   }
 
-  private onVisibilityTap_(): void {
+  private onVisibilityClick_(): void {
     this.showVisibilityDialog_ = true;
   }
 
-  private onDataUsageTap_(): void {
+  private onDataUsageClick_(): void {
     this.showDataUsageDialog_ = true;
   }
 
@@ -221,7 +221,7 @@ class SettingsNearbyShareSubpageElement extends
     this.inHighVisibility_ = false;
   }
 
-  private onManageContactsTap_(): void {
+  private onManageContactsClick_(): void {
     window.open(this.manageContactsUrl_);
   }
 

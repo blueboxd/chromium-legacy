@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -21,7 +20,7 @@
 #include "content/browser/media/capture/web_contents_video_capture_device.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_media_capture_id.h"
@@ -324,8 +323,8 @@ float WebContentsFrameTracker::CalculatePreferredScaleFactor(
   // Finally, we return a value bounded by [kMinCaptureScaleOverride,
   // kMaxCaptureScaleOverride] rounded to the nearest quarter.
   const float preferred_factor =
-      base::clamp(std::round(largest_factor * 4) / 4, kMinCaptureScaleOverride,
-                  kMaxCaptureScaleOverride);
+      std::clamp(std::round(largest_factor * 4) / 4, kMinCaptureScaleOverride,
+                 kMaxCaptureScaleOverride);
 
   DVLOG(3) << __func__ << ":"
            << " capture_size_=" << capture_size_.ToString()

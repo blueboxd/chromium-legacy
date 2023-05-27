@@ -21,12 +21,15 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/ui/wm/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -34,6 +37,7 @@
 #include "ui/compositor/test/test_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/wm/core/window_util.h"
 
 using ::base::test::RunOnceCallback;
 using ::testing::_;
@@ -74,8 +78,10 @@ class MockNewWindowDelegate : public TestNewWindowDelegate {
 class TabDragDropDelegateTest : public AshTestBase {
  public:
   TabDragDropDelegateTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kWebUITabStripTabDragIntegration);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kWebUITabStripTabDragIntegration,
+         chromeos::wm::features::kWindowLayoutMenu},
+        /*disabled_features=*/{});
   }
 
   // AshTestBase:
@@ -117,11 +123,13 @@ class TabDragDropDelegateTest : public AshTestBase {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  NiceMock<MockShellDelegate>* mock_shell_delegate_ = nullptr;
+  raw_ptr<NiceMock<MockShellDelegate>, ExperimentalAsh> mock_shell_delegate_ =
+      nullptr;
 
   std::unique_ptr<TestNewWindowDelegateProvider>
       test_new_window_delegate_provider_;
-  NiceMock<MockNewWindowDelegate>* mock_new_window_delegate_ptr_ = nullptr;
+  raw_ptr<NiceMock<MockNewWindowDelegate>, ExperimentalAsh>
+      mock_new_window_delegate_ptr_ = nullptr;
 
   std::unique_ptr<aura::Window> dummy_window_;
 };
@@ -576,6 +584,26 @@ TEST_F(TabDragDropDelegateTest, DropWithoutNewWindow) {
   auto delegate = std::make_unique<TabDragDropDelegate>(
       Shell::GetPrimaryRootWindow(), source_window.get(), drag_location);
   delegate->OnNewBrowserWindowCreated(drag_location, /*new_window=*/nullptr);
+}
+
+// Tests that if tab dragging is started on a floated window and then canceled,
+// the float window returns to its original bounds.
+TEST_F(TabDragDropDelegateTest, CancelTabDragWithFloatedWindow) {
+  // Create a floated window.
+  std::unique_ptr<aura::Window> source_window = CreateToplevelTestWindow();
+  source_window->SetProperty(aura::client::kAppType,
+                             static_cast<int>(AppType::BROWSER));
+  wm::ActivateWindow(source_window.get());
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
+  ASSERT_TRUE(WindowState::Get(source_window.get())->IsFloated());
+  const gfx::Rect original_bounds = source_window->GetBoundsInScreen();
+
+  // Simulate tab dragging from the floated source window.
+  auto delegate = std::make_unique<TabDragDropDelegate>(
+      Shell::GetPrimaryRootWindow(), source_window.get(),
+      source_window->bounds().CenterPoint());
+  delegate.reset();
+  EXPECT_EQ(original_bounds, source_window->GetBoundsInScreen());
 }
 
 }  // namespace ash

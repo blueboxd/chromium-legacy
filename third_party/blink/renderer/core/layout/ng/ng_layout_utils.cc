@@ -287,6 +287,10 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     if (node.IsFieldsetContainer())
       return NGLayoutCacheStatus::kNeedsLayout;
 
+    if (node.IsBlockFlow() && style.AlignContentBlockCenter()) {
+      return NGLayoutCacheStatus::kNeedsLayout;
+    }
+
     if (layout_result.DisableSimplifiedLayout())
       return NGLayoutCacheStatus::kNeedsLayout;
 
@@ -458,8 +462,6 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatus(
   if (new_space.AreInlineSizeConstraintsEqual(old_space) &&
       new_space.AreBlockSizeConstraintsEqual(old_space)) {
     // It is possible that our intrinsic size has changed, check for that here.
-    // TODO(cbiesinger): Investigate why this check doesn't apply to
-    // |MaySkipLegacyLayout|.
     if (IntrinsicSizeWillChange(node, break_token, cached_layout_result,
                                 new_space, fragment_geometry))
       return NGLayoutCacheStatus::kNeedsLayout;
@@ -482,31 +484,6 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatus(
 
   return CalculateSizeBasedLayoutCacheStatusWithGeometry(
       node, **fragment_geometry, cached_layout_result, new_space, old_space);
-}
-
-bool MaySkipLegacyLayout(const NGBlockNode& node,
-                         const NGLayoutResult& cached_layout_result,
-                         const NGConstraintSpace& new_space) {
-  DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
-
-  const NGConstraintSpace& old_space =
-      cached_layout_result.GetConstraintSpaceForCaching();
-  if (!new_space.MaySkipLayout(old_space))
-    return false;
-
-  if (!new_space.AreInlineSizeConstraintsEqual(old_space))
-    return false;
-
-  if (!new_space.AreBlockSizeConstraintsEqual(old_space))
-    return false;
-
-  if (new_space.AreSizesEqual(old_space))
-    return true;
-
-  if (SizeMayChange(node, new_space, old_space, cached_layout_result))
-    return false;
-
-  return true;
 }
 
 bool MaySkipLayoutWithinBlockFormattingContext(

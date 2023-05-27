@@ -13,6 +13,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/messages/android/message_dispatcher_bridge.h"
 #include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_outcome.h"
+#include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_service_util.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,11 +22,14 @@
 namespace safe_browsing {
 
 namespace {
+
 void LogOutcome(TailoredSecurityOutcome outcome, bool enable) {
   std::string histogram =
       enable ? "SafeBrowsing.TailoredSecurityConsentedEnabledMessageOutcome"
              : "SafeBrowsing.TailoredSecurityConsentedDisabledMessageOutcome";
   base::UmaHistogramEnumeration(histogram, outcome);
+  base::RecordAction(
+      base::UserMetricsAction(GetUserActionString(outcome, enable)));
 }
 
 }  // namespace
@@ -51,15 +56,27 @@ TailoredSecurityConsentedModalAndroid::TailoredSecurityConsentedModalAndroid(
   if (is_enable_message_) {
     title = l10n_util::GetStringUTF16(
         IDS_TAILORED_SECURITY_CONSENTED_ENABLE_MESSAGE_TITLE);
-    description = l10n_util::GetStringUTF16(
-        IDS_TAILORED_SECURITY_CONSENTED_ENABLE_MESSAGE_DESCRIPTION);
+    if (base::FeatureList::IsEnabled(
+            safe_browsing::kTailoredSecurityUpdatedMessages)) {
+      description = l10n_util::GetStringUTF16(
+          IDS_TAILORED_SECURITY_CONSENTED_ENABLE_MESSAGE_DESCRIPTION_UPDATED);
+    } else {
+      description = l10n_util::GetStringUTF16(
+          IDS_TAILORED_SECURITY_CONSENTED_ENABLE_MESSAGE_DESCRIPTION);
+    }
     icon_resource_id =
         ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_MESSAGE_SAFETY_CHECK);
   } else {
     title = l10n_util::GetStringUTF16(
         IDS_TAILORED_SECURITY_CONSENTED_DISABLE_MESSAGE_TITLE);
-    description = l10n_util::GetStringUTF16(
-        IDS_TAILORED_SECURITY_CONSENTED_DISABLE_MESSAGE_DESCRIPTION);
+    if (base::FeatureList::IsEnabled(
+            safe_browsing::kTailoredSecurityUpdatedMessages)) {
+      description = l10n_util::GetStringUTF16(
+          IDS_TAILORED_SECURITY_CONSENTED_DISABLE_MESSAGE_DESCRIPTION_UPDATED);
+    } else {
+      description = l10n_util::GetStringUTF16(
+          IDS_TAILORED_SECURITY_CONSENTED_DISABLE_MESSAGE_DESCRIPTION_UPDATED);
+    }
     icon_resource_id =
         ResourceMapper::MapToJavaDrawableId(IDR_ANDROID_MESSAGE_SHIELD);
     message_->DisableIconTint();
@@ -75,13 +92,6 @@ TailoredSecurityConsentedModalAndroid::TailoredSecurityConsentedModalAndroid(
       &TailoredSecurityConsentedModalAndroid::HandleSettingsClicked,
       base::Unretained(this)));
 
-  if (is_enable_message_) {
-    base::RecordAction(base::UserMetricsAction(
-        "SafeBrowsing.AccountIntegration.EnabledDialog.Shown"));
-  } else {
-    base::RecordAction(base::UserMetricsAction(
-        "SafeBrowsing.AccountIntegration.DisabledDialog.Shown"));
-  }
   messages::MessageDispatcherBridge::Get()->EnqueueWindowScopedMessage(
       message_.get(), web_contents_->GetTopLevelNativeWindow(),
       messages::MessagePriority::kNormal);
@@ -104,27 +114,12 @@ void TailoredSecurityConsentedModalAndroid::DismissMessageInternal(
 void TailoredSecurityConsentedModalAndroid::HandleSettingsClicked() {
   ShowSafeBrowsingSettings(web_contents_,
                            SettingsAccessPoint::kTailoredSecurity);
-  if (is_enable_message_) {
-    base::RecordAction(base::UserMetricsAction(
-        "SafeBrowsing.AccountIntegration.EnabledDialog.SettingsButtonClicked"));
-  } else {
-    base::RecordAction(
-        base::UserMetricsAction("SafeBrowsing.AccountIntegration."
-                                "DisabledDialog.SettingsButtonClicked"));
-  }
   LogOutcome(TailoredSecurityOutcome::kSettings, is_enable_message_);
   DismissMessageInternal(messages::DismissReason::SECONDARY_ACTION);
 }
 
 void TailoredSecurityConsentedModalAndroid::HandleMessageDismissed(
     messages::DismissReason dismiss_reason) {
-  if (is_enable_message_) {
-    base::RecordAction(base::UserMetricsAction(
-        "SafeBrowsing.AccountIntegration.EnabledDialog.Dismissed"));
-  } else {
-    base::RecordAction(base::UserMetricsAction(
-        "SafeBrowsing.AccountIntegration.DisabledDialog.Dismissed"));
-  }
   LogOutcome(TailoredSecurityOutcome::kDismissed, is_enable_message_);
   message_.reset();
   if (dismiss_callback_)
@@ -132,13 +127,6 @@ void TailoredSecurityConsentedModalAndroid::HandleMessageDismissed(
 }
 
 void TailoredSecurityConsentedModalAndroid::HandleMessageAccepted() {
-  if (is_enable_message_) {
-    base::RecordAction(base::UserMetricsAction(
-        "SafeBrowsing.AccountIntegration.EnabledDialog.OkButtonClicked"));
-  } else {
-    base::RecordAction(base::UserMetricsAction(
-        "SafeBrowsing.AccountIntegration.DisabledDialog.OkButtonClicked"));
-  }
   LogOutcome(TailoredSecurityOutcome::kAccepted, is_enable_message_);
 }
 

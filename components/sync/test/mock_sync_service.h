@@ -34,6 +34,7 @@ class MockSyncService : public SyncService {
   // SyncService implementation.
   syncer::SyncUserSettings* GetUserSettings() override;
   const syncer::SyncUserSettings* GetUserSettings() const override;
+  MOCK_METHOD(void, SetSyncFeatureRequested, (), (override));
   MOCK_METHOD(DisableReasonSet, GetDisableReasons, (), (const override));
   MOCK_METHOD(TransportState, GetTransportState, (), (const override));
   MOCK_METHOD(UserActionableError,
@@ -53,6 +54,10 @@ class MockSyncService : public SyncService {
   MOCK_METHOD(bool, IsSetupInProgress, (), (const override));
   MOCK_METHOD(ModelTypeSet, GetPreferredDataTypes, (), (const override));
   MOCK_METHOD(ModelTypeSet, GetActiveDataTypes, (), (const override));
+  MOCK_METHOD(ModelTypeSet,
+              GetTypesWithPendingDownloadForInitialSync,
+              (),
+              (const override));
   MOCK_METHOD(void, StopAndClear, (), (override));
   MOCK_METHOD(void,
               OnDataTypeRequestsSyncStartup,

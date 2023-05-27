@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
 import android.view.MotionEvent;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
@@ -173,7 +173,7 @@ public class NavigationHandlerTest {
     @Test
     @SmallTest
     public void testSwipeNavigateOnRenderedPage() {
-        FeatureList.setTestFeatures(Map.of(ChromeFeatureList.BACK_FORWARD_TRANSITIONS, true));
+        FeatureList.setTestFeatures(Map.of(ChromeFeatureList.BACK_FORWARD_TRANSITIONS, false));
         testSwipeNavigateOnRenderedPageInternal();
     }
 

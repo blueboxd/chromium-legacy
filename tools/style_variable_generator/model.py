@@ -9,6 +9,13 @@ from style_variable_generator.opacity import Opacity
 from abc import ABC, abstractmethod
 
 
+def full_token_name(name, context):
+    namespace = context['token_namespace']
+    if namespace:
+        return f'{namespace}.{name}'
+    return name
+
+
 class Modes:
     LIGHT = 'light'
     DARK = 'dark'
@@ -26,6 +33,7 @@ class VariableType:
     UNTYPED_CSS = 'untyped_css'
     TYPEFACE = 'typeface'
     FONT_FAMILY = 'font_family'
+    LEGACY_MAPPING = 'legacy_mappings'
 
 
 class StyleVariable(object):
@@ -73,6 +81,10 @@ class Submodel(ABC):
 
 
 class ModeKeyedModel(collections.OrderedDict, Submodel):
+    def __init__(self):
+        # A map of all variables to their |StyleVariable| object.
+        self.variable_map = dict()
+
     def Add(self, name, value_obj, context):
         if name not in self:
             self[name] = {}
@@ -90,7 +102,10 @@ class ModeKeyedModel(collections.OrderedDict, Submodel):
                 self[name][mode] = value
         else:
             self[name][Modes.DEFAULT] = self._CreateValue(value_obj)
-        return [StyleVariable(self.variable_type, name, value_obj, context)]
+
+        variable = StyleVariable(self.variable_type, name, value_obj, context)
+        self.variable_map[name] = variable
+        return [variable]
 
     # Returns the value that |name| will have in |mode|. Resolves to the default
     # mode's value if the a value for |mode| isn't specified. Always returns a
@@ -125,6 +140,7 @@ class OpacityModel(ModeKeyedModel):
     '''
 
     def __init__(self):
+        super().__init__()
         self.variable_type = VariableType.OPACITY
 
     # Returns a float from 0-1 representing the concrete value of |opacity|.
@@ -144,16 +160,17 @@ class ColorModel(ModeKeyedModel):
     '''
 
     def __init__(self, opacity_model):
+        super().__init__()
         self.opacity_model = opacity_model
         self.variable_type = VariableType.COLOR
 
     def Add(self, name, value_obj, context):
+        name = full_token_name(name, context)
         added = []
         # If a color has generate_per_mode set, a separate variable will be
         # created for each mode, suffixed by mode name.
         # (e.g my_color_light, my_color_debug)
         generate_per_mode = False
-
         # If a color has generate_inverted set, a |color_name|_inverted will be
         # generated which uses the dark color for light mode and vice versa.
         generate_inverted = False
@@ -219,17 +236,22 @@ class ColorModel(ModeKeyedModel):
         (result.r, result.g, result.b) = (rgb.r, rgb.g, rgb.b)
         return result
 
-    def _ResolveBlendedColors(self):
+    def _ProcessBlendedColors(self, default_preblend):
         # Calculate the final RGBA for all blended colors because the
         # generator's subclasses can't blend yet.
         temp_model = {}
         for name, value in self.items():
             for mode, color in value.items():
-                if color.blended_colors:
+                context = self.variable_map[name].context
+                should_preblend = context.get('CSS',
+                                              {}).get('preblend',
+                                                      default_preblend)
+                if color.blended_colors and should_preblend:
                     assert len(color.blended_colors) == 2
                     if name not in temp_model:
                         temp_model[name] = {}
                     temp_model[name][mode] = self.ResolveToRGBA(name, mode)
+
         for name, value in temp_model.items():
             for mode, color in value.items():
                 self[name][mode] = temp_model[name][mode]
@@ -263,7 +285,6 @@ class ColorModel(ModeKeyedModel):
     def _CreateValue(self, value):
         return Color(value)
 
-
 class SimpleModel(collections.OrderedDict, Submodel):
     def __init__(self, variable_type, check_func=None):
         self.variable_type = variable_type
@@ -274,6 +295,13 @@ class SimpleModel(collections.OrderedDict, Submodel):
             self.check_func(name, value_obj, context)
         self[name] = value_obj
         return [StyleVariable(self.variable_type, name, value_obj, context)]
+
+
+# A simple model where all variables are prefixed with the current namespace.
+class NamespacedModel(SimpleModel):
+    def Add(self, name, value_obj, context):
+        name = full_token_name(name, context)
+        return super().Add(name, value_obj, context)
 
 
 class Model(object):
@@ -290,8 +318,11 @@ class Model(object):
         self.colors = ColorModel(self.opacities)
         self.submodels[VariableType.COLOR] = self.colors
 
-        self.untyped_css = SimpleModel(VariableType.UNTYPED_CSS)
+        self.untyped_css = NamespacedModel(VariableType.UNTYPED_CSS)
         self.submodels[VariableType.UNTYPED_CSS] = self.untyped_css
+
+        self.legacy_mappings = SimpleModel(VariableType.LEGACY_MAPPING)
+        self.submodels[VariableType.LEGACY_MAPPING] = self.legacy_mappings
 
         def CheckTypeFace(name, value_obj, context):
             assert value_obj['font_family']
@@ -299,23 +330,22 @@ class Model(object):
             assert value_obj['font_weight']
             assert value_obj['line_height']
 
-        self.typefaces = SimpleModel(VariableType.TYPEFACE, CheckTypeFace)
+        self.typefaces = NamespacedModel(VariableType.TYPEFACE, CheckTypeFace)
         self.submodels[VariableType.TYPEFACE] = self.typefaces
 
         def CheckFontFamily(name, value_obj, context):
             assert name.startswith('font_family_')
 
-        self.font_families = SimpleModel(VariableType.FONT_FAMILY,
-                                         CheckFontFamily)
+        self.font_families = NamespacedModel(VariableType.FONT_FAMILY,
+                                             CheckFontFamily)
         self.submodels[VariableType.FONT_FAMILY] = self.font_families
 
     def Add(self, variable_type, name, value_obj, context):
         '''Adds a new variable to the submodel for |variable_type|.
         '''
         try:
-            full_name = self.FullTokenName(name, context)
-            added = self.submodels[variable_type].Add(full_name, value_obj,
-                                                      context)
+            submodel = self.submodels[variable_type]
+            added = self.submodels[variable_type].Add(name, value_obj, context)
         except ValueError as err:
             raise ValueError(
                 f'Error parsing {variable_type} "{full_name}": {value_obj}'
@@ -326,20 +356,15 @@ class Model(object):
                 raise ValueError('Variable name "%s" is reused' % name)
             self.variable_map[var.name] = var
 
-    def FullTokenName(self, name, context):
-        namespace = context['token_namespace']
-        if namespace:
-            return f'{namespace}.{name}'
-        return name
 
-    def PostProcess(self, resolve_blended_colors=True):
+    def PostProcess(self, default_preblend=True):
         '''Called after all variables have been added to perform operations that
            require a complete worldview.
         '''
-        if resolve_blended_colors:
-            # Resolve blended colors after all the files are added because some
-            # color dependencies are between different files.
-            self.colors._ResolveBlendedColors()
+
+        # Resolve blended colors after all the files are added because some
+        # color dependencies are between different files.
+        self.colors._ProcessBlendedColors(default_preblend)
 
         self.Validate()
 

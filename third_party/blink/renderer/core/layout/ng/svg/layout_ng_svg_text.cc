@@ -8,6 +8,8 @@
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
@@ -21,6 +23,20 @@
 #include "third_party/blink/renderer/core/svg/svg_text_element.h"
 
 namespace blink {
+
+namespace {
+
+const LayoutNGSVGText* FindTextRoot(const LayoutObject* start) {
+  DCHECK(start);
+  for (; start; start = start->Parent()) {
+    if (const auto* ng_text = DynamicTo<LayoutNGSVGText>(start)) {
+      return ng_text;
+    }
+  }
+  return nullptr;
+}
+
+}  // namespace
 
 LayoutNGSVGText::LayoutNGSVGText(Element* element)
     : LayoutNGBlockFlowMixin<LayoutSVGBlock>(element),
@@ -213,7 +229,17 @@ void LayoutNGSVGText::UpdateBlockLayout(bool relayout_children) {
 
   gfx::RectF old_boundaries = ObjectBoundingBox();
 
-  UpdateNGBlockLayout();
+  if (RuntimeEnabledFeatures::LayoutNewSVGTextEntryEnabled()) {
+    const ComputedStyle& style = StyleRef();
+    NGConstraintSpaceBuilder builder(
+        style.GetWritingMode(), style.GetWritingDirection(),
+        /* is_new_fc */ true, /* adjust_inline_size_if_needed */ false);
+    builder.SetAvailableSize(LogicalSize());
+    NGBlockNode(this).Layout(builder.ToConstraintSpace());
+  } else {
+    UpdateNGBlockLayout();
+  }
+
   needs_update_bounding_box_ = true;
 
   gfx::RectF boundaries = ObjectBoundingBox();
@@ -349,6 +375,25 @@ void LayoutNGSVGText::SetNeedsTextMetricsUpdate() {
 bool LayoutNGSVGText::NeedsTextMetricsUpdate() const {
   NOT_DESTROYED();
   return needs_text_metrics_update_;
+}
+
+LayoutNGSVGText* LayoutNGSVGText::LocateLayoutSVGTextAncestor(
+    LayoutObject* start) {
+  return const_cast<LayoutNGSVGText*>(FindTextRoot(start));
+}
+
+const LayoutNGSVGText* LayoutNGSVGText::LocateLayoutSVGTextAncestor(
+    const LayoutObject* start) {
+  return FindTextRoot(start);
+}
+
+// static
+void LayoutNGSVGText::NotifySubtreeStructureChanged(
+    LayoutObject* object,
+    LayoutInvalidationReasonForTracing reason) {
+  if (auto* ng_text = LocateLayoutSVGTextAncestor(object)) {
+    ng_text->SubtreeStructureChanged(reason);
+  }
 }
 
 }  // namespace blink

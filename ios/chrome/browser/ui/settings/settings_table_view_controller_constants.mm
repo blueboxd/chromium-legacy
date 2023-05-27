@@ -19,6 +19,7 @@ NSString* const kSettingsSearchEngineCellId = @"kSettingsSearchEngineCellId";
 NSString* const kSettingsManagedSearchEngineCellId =
     @"kSettingsManagedSearchEngineCellId";
 NSString* const kSettingsVoiceSearchCellId = @"kSettingsVoiceSearchCellId";
+NSString* const kSettingsBottomOmniboxCellId = @"kSettingsBottomOmniboxCellId";
 NSString* const kSettingsGoogleSyncAndServicesCellId =
     @"kSettingsGoogleSyncAndServicesCellId";
 NSString* const kSettingsGoogleServicesCellId =
@@ -59,5 +60,7 @@ NSString* const kSettingsIncognitoInterstitialId =
     @"kSettingsIncognitoInterstitialId";
 NSString* const kSettingsIncognitoInterstitialDisabledId =
     @"kSettingsIncognitoInterstitialDisabledId";
-NSString* const kSettingsPriceNotificationsId =
-    @"kSettingsPriceNotificationsId";
+NSString* const kSettingsNotificationsId = @"kSettingsNotificationsId";
+NSString* const kSettingsTabsCellId = @"kSettingsTabsCellId";
+NSString* const kSettingsMoveInactiveTabsCellId =
+    @"kSettingsMoveInactiveTabsCellId";

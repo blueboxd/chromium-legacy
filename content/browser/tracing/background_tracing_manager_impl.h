@@ -20,10 +20,6 @@
 #include "services/tracing/public/mojom/background_tracing_agent.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace base {
-class Value;
-}  // namespace base
-
 namespace tracing::mojom {
 class BackgroundTracingAgent;
 class BackgroundTracingAgentProvider;
@@ -124,7 +120,6 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   CONTENT_EXPORT BackgroundTracingActiveScenario* GetActiveScenarioForTesting();
   CONTENT_EXPORT void InvalidateTriggersCallbackForTesting();
   CONTENT_EXPORT bool IsTracingForTesting();
-  void WhenIdle(IdleCallback idle_callback) override;
   CONTENT_EXPORT void AbortScenarioForTesting() override;
   CONTENT_EXPORT void SetTraceToUploadForTesting(
       std::unique_ptr<std::string> trace_data) override;
@@ -137,7 +132,6 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
   BackgroundTracingManagerImpl();
   ~BackgroundTracingManagerImpl() override;
 
-  absl::optional<base::Value::Dict> GenerateMetadataDict();
   void GenerateMetadataProto(
       perfetto::protos::pbzero::ChromeMetadataPacket* metadata,
       bool privacy_filtering_enabled);
@@ -163,8 +157,6 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
 
   std::map<int, mojo::Remote<tracing::mojom::BackgroundTracingAgentProvider>>
       pending_agents_;
-
-  IdleCallback idle_callback_;
 
   // This field contains serialized trace log proto.
   std::string trace_to_upload_;

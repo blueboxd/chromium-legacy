@@ -12,12 +12,9 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageUtils;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.directactions.DirectActionCoordinator;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
-import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
-import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.init.ChromeStartupDelegate;
@@ -57,20 +54,20 @@ import java.util.List;
  * go/apphooks-migration should be followed to solve this class of problems.
  */
 public abstract class AppHooks {
-    private static AppHooksImpl sInstance;
+    private static AppHooksImpl sInstanceForTesting;
 
     /**
      * Sets a mocked instance for testing.
      */
     @VisibleForTesting
     public static void setInstanceForTesting(AppHooksImpl instance) {
-        sInstance = instance;
+        sInstanceForTesting = instance;
     }
 
-    @CalledByNative
     public static AppHooks get() {
-        if (sInstance == null) sInstance = new AppHooksImpl();
-        return sInstance;
+        if (sInstanceForTesting != null) return sInstanceForTesting;
+        // R8 can better optimize if we return a new instance each time.
+        return new AppHooksImpl();
     }
 
     /**
@@ -141,13 +138,6 @@ public abstract class AppHooks {
      */
     public GSAHelper createGsaHelper() {
         return new GSAHelper();
-    }
-
-    /**
-     * Returns a new instance of HelpAndFeedbackLauncher.
-     */
-    public HelpAndFeedbackLauncher createHelpAndFeedbackLauncher() {
-        return new HelpAndFeedbackLauncherImpl();
     }
 
     public InstantAppsHandler createInstantAppsHandler() {

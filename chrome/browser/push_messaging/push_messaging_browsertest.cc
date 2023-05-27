@@ -265,8 +265,9 @@ class PushMessagingBrowserTestBase : public InProcessBrowserTest {
                  content::WebContents* web_contents) {
     if (!web_contents)
       web_contents = GetBrowser()->tab_strip_model()->GetActiveWebContents();
-    return content::ExecuteScriptAndExtractString(
-        web_contents->GetPrimaryMainFrame(), script, result);
+    *result = content::EvalJs(web_contents->GetPrimaryMainFrame(), script)
+                  .ExtractString();
+    return true;
   }
 
   gcm::GCMAppHandler* GetAppHandler() {
@@ -1281,12 +1282,6 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventSuccess) {
 
   // Check that we record this case in UMA.
   histogram_tester_.ExpectUniqueSample(
-      "PushMessaging.DeliveryStatus.FindServiceWorker",
-      0 /* SERVICE_WORKER_OK */, 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PushMessaging.DeliveryStatus.ServiceWorkerEvent",
-      0 /* SERVICE_WORKER_OK */, 1);
-  histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
       static_cast<int>(blink::mojom::PushEventStatus::SUCCESS), 1);
 }
@@ -1377,15 +1372,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventNoServiceWorker) {
 
   // No push data should have been received.
   std::string script_result;
-  ASSERT_TRUE(RunScript("resultQueue.popImmediately()", &script_result));
+  ASSERT_TRUE(
+      RunScript("String(resultQueue.popImmediately())", &script_result));
   EXPECT_EQ("null", script_result);
 
   // Check that we record this case in UMA.
-  histogram_tester_.ExpectUniqueSample(
-      "PushMessaging.DeliveryStatus.FindServiceWorker",
-      5 /* SERVICE_WORKER_ERROR_NOT_FOUND */, 1);
-  histogram_tester_.ExpectTotalCount(
-      "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
       static_cast<int>(blink::mojom::PushEventStatus::NO_SERVICE_WORKER), 1);
@@ -1430,14 +1421,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, NoSubscription) {
   SendMessageAndWaitUntilHandled(app_identifier, message);
 
   // No push data should have been received.
-  ASSERT_TRUE(RunScript("resultQueue.popImmediately()", &script_result));
+  ASSERT_TRUE(
+      RunScript("String(resultQueue.popImmediately())", &script_result));
   EXPECT_EQ("null", script_result);
 
   // Check that we record this case in UMA.
-  histogram_tester_.ExpectTotalCount(
-      "PushMessaging.DeliveryStatus.FindServiceWorker", 0);
-  histogram_tester_.ExpectTotalCount(
-      "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
       static_cast<int>(blink::mojom::PushEventStatus::UNKNOWN_APP_ID), 1);
@@ -1481,14 +1469,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, PushEventWithoutPermission) {
   SendMessageAndWaitUntilHandled(app_identifier, message);
 
   // No push data should have been received.
-  ASSERT_TRUE(RunScript("resultQueue.popImmediately()", &script_result));
+  ASSERT_TRUE(
+      RunScript("String(resultQueue.popImmediately())", &script_result));
   EXPECT_EQ("null", script_result);
 
   // Check that we record this case in UMA.
-  histogram_tester_.ExpectTotalCount(
-      "PushMessaging.DeliveryStatus.FindServiceWorker", 0);
-  histogram_tester_.ExpectTotalCount(
-      "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
       static_cast<int>(blink::mojom::PushEventStatus::PERMISSION_DENIED), 1);
@@ -1765,14 +1750,11 @@ IN_PROC_BROWSER_TEST_F(
   SendMessageAndWaitUntilHandled(app_identifier, message);
 
   // No push data should have been received.
-  ASSERT_TRUE(RunScript("resultQueue.popImmediately()", &script_result));
+  ASSERT_TRUE(
+      RunScript("String(resultQueue.popImmediately())", &script_result));
   EXPECT_EQ("null", script_result);
 
   // Check that we record this case in UMA.
-  histogram_tester_.ExpectTotalCount(
-      "PushMessaging.DeliveryStatus.FindServiceWorker", 0);
-  histogram_tester_.ExpectTotalCount(
-      "PushMessaging.DeliveryStatus.ServiceWorkerEvent", 0);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
       static_cast<int>(
@@ -1836,12 +1818,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("testdata", script_result);
 
   // Check that we record this case in UMA.
-  histogram_tester_.ExpectUniqueSample(
-      "PushMessaging.DeliveryStatus.FindServiceWorker",
-      0 /* SERVICE_WORKER_OK */, 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PushMessaging.DeliveryStatus.ServiceWorkerEvent",
-      0 /* SERVICE_WORKER_OK */, 1);
   histogram_tester_.ExpectUniqueSample(
       "PushMessaging.DeliveryStatus",
       static_cast<int>(blink::mojom::PushEventStatus::SUCCESS), 1);
@@ -2061,31 +2037,23 @@ IN_PROC_BROWSER_TEST_P(PushMessagingPartitionedBrowserTest, CrossOriginFrame) {
   GetPermissionRequestManager()->set_auto_response_for_test(
       permissions::PermissionRequestManager::ACCEPT_ALL);
 
-  std::string script_result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "requestNotificationPermission();", &script_result));
-  EXPECT_EQ("permission status - denied", script_result);
+  EXPECT_EQ("permission status - denied",
+            content::EvalJs(subframe, "requestNotificationPermission();"));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "registerServiceWorker()", &script_result));
-  ASSERT_EQ("ok - service worker registered", script_result);
+  ASSERT_EQ("ok - service worker registered",
+            content::EvalJs(subframe, "registerServiceWorker()"));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "pushManagerPermissionState()", &script_result));
-  EXPECT_EQ("permission status - denied", script_result);
+  EXPECT_EQ("permission status - denied",
+            content::EvalJs(subframe, "pushManagerPermissionState()"));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "notificationPermissionState()", &script_result));
-  EXPECT_EQ("permission status - denied", script_result);
+  EXPECT_EQ("permission status - denied",
+            content::EvalJs(subframe, "notificationPermissionState()"));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "notificationPermissionAPIState()", &script_result));
-  EXPECT_EQ("permission status - denied", script_result);
+  EXPECT_EQ("permission status - denied",
+            content::EvalJs(subframe, "notificationPermissionAPIState()"));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "documentSubscribePush()", &script_result));
   EXPECT_EQ("NotAllowedError - Registration failed - permission denied",
-            script_result);
+            content::EvalJs(subframe, "documentSubscribePush()"));
 
   // A cross-origin subframe that had been granted the NOTIFICATIONS permission
   // previously (in a first-party context) should see it as "granted", and be
@@ -2099,25 +2067,20 @@ IN_PROC_BROWSER_TEST_P(PushMessagingPartitionedBrowserTest, CrossOriginFrame) {
   GetPermissionRequestManager()->set_auto_response_for_test(
       permissions::PermissionRequestManager::DENY_ALL);
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "requestNotificationPermission();", &script_result));
-  EXPECT_EQ("permission status - granted", script_result);
+  EXPECT_EQ("permission status - granted",
+            content::EvalJs(subframe, "requestNotificationPermission();"));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "pushManagerPermissionState()", &script_result));
-  EXPECT_EQ("permission status - granted", script_result);
+  EXPECT_EQ("permission status - granted",
+            content::EvalJs(subframe, "pushManagerPermissionState()"));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "notificationPermissionState()", &script_result));
-  EXPECT_EQ("permission status - granted", script_result);
+  EXPECT_EQ("permission status - granted",
+            content::EvalJs(subframe, "notificationPermissionState()"));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "notificationPermissionAPIState()", &script_result));
-  EXPECT_EQ("permission status - granted", script_result);
+  EXPECT_EQ("permission status - granted",
+            content::EvalJs(subframe, "notificationPermissionAPIState()"));
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      subframe, "documentSubscribePush()", &script_result));
-  ASSERT_NO_FATAL_FAILURE(EndpointToToken(script_result));
+  ASSERT_NO_FATAL_FAILURE(EndpointToToken(
+      content::EvalJs(subframe, "documentSubscribePush()").ExtractString()));
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, UnsubscribeSuccess) {
@@ -2906,11 +2869,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest,
   // Register a service worker. This must be done in the primary page as the
   // service worker registration in a prerendered page is deferred until
   // prerender page activation.
-  std::string script_result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents()->GetPrimaryMainFrame(), "registerServiceWorker()",
-      &script_result));
-  ASSERT_EQ("ok - service worker registered", script_result);
+  ASSERT_EQ("ok - service worker registered",
+            content::EvalJs(web_contents()->GetPrimaryMainFrame(),
+                            "registerServiceWorker()"));
 
   // Start a prerender with the push messaging test URL.
   const GURL prerendering_url(
@@ -2942,6 +2903,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingIncognitoBrowserTest,
   prerender_helper_.NavigatePrimaryPage(prerendering_url);
   // Make sure that the prerender was activated.
   ASSERT_TRUE(prerender_observer.was_activated());
+  std::string script_result;
   do {
     ASSERT_TRUE(message_queue.WaitForMessage(&script_result));
   } while (script_result !=

@@ -14,6 +14,7 @@
 #include "ash/public/cpp/metrics_util.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -66,7 +67,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
     PagedAppsGridView* GetRootAppsGridView();
 
    private:
-    AppListView* const view_;
+    const raw_ptr<AppListView, ExperimentalAsh> view_;
   };
 
   class ASH_EXPORT ScopedAccessibilityAnnouncementLock {
@@ -81,7 +82,7 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
     }
 
    private:
-    AppListView* const view_;
+    const raw_ptr<AppListView, ExperimentalAsh> view_;
   };
 
   // Used to prevent the app list contents from being reset when the app list
@@ -291,13 +292,6 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // Gets the root apps grid view owned by this view.
   PagedAppsGridView* GetRootAppsGridView();
 
-  // Gets the AppListStateTransitionSource for |app_list_state_| to
-  // |target_state|. If we are not interested in recording a state transition
-  // (ie. PEEKING->PEEKING) then return kMaxAppListStateTransition. If this is
-  // modified, histograms will be affected.
-  AppListStateTransitionSource GetAppListStateTransitionSource(
-      AppListViewState target_state) const;
-
   // Overridden from views::WidgetDelegateView:
   views::View* GetInitiallyFocusedView() override;
 
@@ -312,15 +306,16 @@ class ASH_EXPORT AppListView : public views::WidgetDelegateView,
   // is snapped.
   void ResetSubpixelPositionOffset(ui::Layer* layer);
 
-  AppListViewDelegate* const delegate_;
+  const raw_ptr<AppListViewDelegate, ExperimentalAsh> delegate_;
 
   // Keeps track of the number of locks that prevent the app list view
   // from creating app list transition accessibility events. This is used to
   // prevent A11Y announcements when showing the assistant UI.
   int accessibility_event_disablers_ = 0;
-  AppListMainView* app_list_main_view_ = nullptr;
+  raw_ptr<AppListMainView, ExperimentalAsh> app_list_main_view_ = nullptr;
 
-  SearchBoxView* search_box_view_ = nullptr;  // Owned by views hierarchy.
+  raw_ptr<SearchBoxView, ExperimentalAsh> search_box_view_ =
+      nullptr;  // Owned by views hierarchy.
 
   // The time the AppListView was requested to be shown. Used for metrics.
   absl::optional<base::Time> time_shown_;

@@ -1702,6 +1702,7 @@ TEST_F(AutofillMetricsTest, AutofillProfileIsEnabledAtStartup) {
                        /*local_state=*/autofill_client_->GetPrefs(),
                        /*identity_manager=*/nullptr,
                        /*history_service=*/nullptr,
+                       /*sync_service=*/nullptr,
                        /*strike_database=*/nullptr,
                        /*image_fetcher=*/nullptr,
                        /*is_off_the_record=*/false);
@@ -1719,6 +1720,7 @@ TEST_F(AutofillMetricsTest, AutofillProfileIsDisabledAtStartup) {
                        /*local_state=*/autofill_client_->GetPrefs(),
                        /*identity_manager=*/nullptr,
                        /*history_service=*/nullptr,
+                       /*sync_service=*/nullptr,
                        /*strike_database=*/nullptr,
                        /*image_fetcher=*/nullptr,
                        /*is_off_the_record=*/false);
@@ -1736,6 +1738,7 @@ TEST_F(AutofillMetricsTest, AutofillCreditCardIsEnabledAtStartup) {
                        /*local_state=*/autofill_client_->GetPrefs(),
                        /*identity_manager=*/nullptr,
                        /*history_service=*/nullptr,
+                       /*sync_service=*/nullptr,
                        /*strike_database=*/nullptr,
                        /*image_fetcher=*/nullptr,
                        /*is_off_the_record=*/false);
@@ -1753,6 +1756,7 @@ TEST_F(AutofillMetricsTest, AutofillCreditCardIsDisabledAtStartup) {
                        /*local_state=*/autofill_client_->GetPrefs(),
                        /*identity_manager=*/nullptr,
                        /*history_service=*/nullptr,
+                       /*sync_service=*/nullptr,
                        /*strike_database=*/nullptr,
                        /*image_fetcher=*/nullptr,
                        /*is_off_the_record=*/false);
@@ -7920,9 +7924,8 @@ class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
                         /*masked_card_is_enrolled_for_virtual_card=*/false);
 
     credit_card_with_cvc_ = {
-        .credit_card = *autofill_manager()
-                            .personal_data_manager_for_test()
-                            .GetCreditCardsToSuggest()
+        .credit_card = *autofill_client_->GetPersonalDataManager()
+                            ->GetCreditCardsToSuggest()
                             .front(),
         .cvc = u"123"};
 
@@ -8347,11 +8350,13 @@ TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
           {UFIT::kIsFocusableName, true},
           {UFIT::kWasAutofilledName, i != 2},
           {UFIT::kAutofillSkippedStatusName,
-           DenseSet<SkipStatus>{status}.to_uint64()},
+           DenseSet<SkipStatus>{status}.data()[0]},
           {UFIT::kWasRefillName, false},
           {UFIT::kHadValueBeforeFillingName, false},
           {UFIT::kUserTypedIntoFieldName, i == 0},
           {UFIT::kHadTypedOrFilledValueAtSubmissionName, i != 2},
+          {UFIT::kFormControlTypeName,
+           static_cast<int>(FormControlType::kText)},
       };
       if (i == 0) {
         expected[UFIT::kSuggestionWasAvailableName] = true;
@@ -8384,7 +8389,8 @@ TEST_F(AutofillMetricsFromLogEventsTest, AddressSubmittedFormLogEvents) {
          AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
         {UFST::kFormSignatureName,
          Collapse(CalculateFormSignature(form)).value()},
-        {UFST::kAutofillFormEventsName, form_events.to_uint64()},
+        {UFST::kAutofillFormEventsName, form_events.data()[0]},
+        {UFST::kAutofillFormEvents2Name, form_events.data()[1]},
         {UFST::kIsInMainframeName, true},
         {UFST::kSampleRateName, 1},
         {UFST::kWasSubmittedName, true},
@@ -8515,6 +8521,7 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
         {UFIT::kRankInFieldSignatureGroupName, 1},
         {UFIT::kWasFocusedName, false},
         {UFIT::kUserTypedIntoFieldName, false},
+        {UFIT::kFormControlTypeName, static_cast<int>(FormControlType::kText)},
     };
     if (heuristic_types[i] != UNKNOWN_TYPE) {
       expected.merge(std::map<std::string, int64_t>({
@@ -8555,7 +8562,8 @@ TEST_F(AutofillMetricsFromLogEventsTest, AutofillFieldInfoMetricsFieldType) {
        AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
       {UFST::kFormSignatureName,
        Collapse(CalculateFormSignature(form)).value()},
-      {UFST::kAutofillFormEventsName, form_events.to_uint64()},
+      {UFST::kAutofillFormEventsName, form_events.data()[0]},
+      {UFST::kAutofillFormEvents2Name, form_events.data()[1]},
       {UFST::kIsInMainframeName, true},
       {UFST::kSampleRateName, 1},
       {UFST::kWasSubmittedName, true},
@@ -8648,6 +8656,7 @@ TEST_F(AutofillMetricsFromLogEventsTest,
         {UFIT::kIsFocusableName, true},
         {UFIT::kUserTypedIntoFieldName, true},
         {UFIT::kHadTypedOrFilledValueAtSubmissionName, true},
+        {UFIT::kFormControlTypeName, static_cast<int>(FormControlType::kText)},
     };
 
     EXPECT_EQ(expected.size(), entry->metrics.size());
@@ -8668,7 +8677,8 @@ TEST_F(AutofillMetricsFromLogEventsTest,
        AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
       {UFST::kFormSignatureName,
        Collapse(CalculateFormSignature(form)).value()},
-      {UFST::kAutofillFormEventsName, form_events.to_uint64()},
+      {UFST::kAutofillFormEventsName, form_events.data()[0]},
+      {UFST::kAutofillFormEvents2Name, form_events.data()[1]},
       {UFST::kIsInMainframeName, true},
       {UFST::kSampleRateName, 1},
       {UFST::kWasSubmittedName, true},
@@ -8718,7 +8728,7 @@ TEST_F(AutofillMetricsFromLogEventsTest,
   EXPECT_EQ(0u, entries.size());
   auto form_entries =
       test_ukm_recorder_->GetEntriesByName(UkmFormSummaryType::kEntryName);
-  ASSERT_EQ(0u, form_entries.size());
+  EXPECT_EQ(0u, form_entries.size());
 }
 
 // Test that we do not record FieldInfo/FormSummary UKM metrics for forms
@@ -8741,7 +8751,7 @@ TEST_F(AutofillMetricsFromLogEventsTest,
   EXPECT_EQ(0u, entries.size());
   auto form_entries =
       test_ukm_recorder_->GetEntriesByName(UkmFormSummaryType::kEntryName);
-  ASSERT_EQ(0u, form_entries.size());
+  EXPECT_EQ(0u, form_entries.size());
 }
 
 // Tests that the forms with only <input type="checkbox"> fields are not
@@ -8777,17 +8787,15 @@ TEST_F(AutofillMetricsFromLogEventsTest,
   EXPECT_EQ(0u, entries.size());
   auto form_entries =
       test_ukm_recorder_->GetEntriesByName(UkmFormSummaryType::kEntryName);
-  ASSERT_EQ(0u, form_entries.size());
+  EXPECT_EQ(0u, form_entries.size());
 }
 
-// Tests that the forms with <input type="checkbox"> fields and a text field are
-// recorded in UkmFieldInfo metrics.
-TEST_F(AutofillMetricsFromLogEventsTest,
-       AutofillFieldInfoMetricsRecordOnCheckBoxWithTextField) {
-  base::TimeTicks now = AutofillTickClock::NowTicks();
-  TestAutofillTickClock test_clock;
-  test_clock.SetNowTicks(now);
-
+// Tests that the forms with <input type="checkbox"> fields and a text field
+// which does not get a type from heuristics or the server are not recorded in
+// UkmFieldInfo metrics.
+TEST_F(
+    AutofillMetricsFromLogEventsTest,
+    AutofillFieldInfoMetricsNotRecordOnCheckBoxWithTextFieldWithUnknownType) {
   FormData form;
   form.url = GURL("http://www.foo.com/");
 
@@ -8823,6 +8831,64 @@ TEST_F(AutofillMetricsFromLogEventsTest,
   form.fields.push_back(field);
 
   SeeForm(form);
+  SubmitForm(form);
+  autofill_manager().Reset();
+
+  // This form only has one non-checkable field, so the local heuristics are
+  // not executed.
+  auto entries =
+      test_ukm_recorder_->GetEntriesByName(UkmFieldInfoType::kEntryName);
+  EXPECT_EQ(0u, entries.size());
+  auto form_entries =
+      test_ukm_recorder_->GetEntriesByName(UkmFormSummaryType::kEntryName);
+  EXPECT_EQ(0u, form_entries.size());
+}
+
+// Tests that the forms with <input type="checkbox"> fields and two text field
+// which have predicted types are recorded in UkmFieldInfo metrics.
+TEST_F(AutofillMetricsFromLogEventsTest,
+       AutofillFieldInfoMetricsRecordOnCheckBoxWithTextField) {
+  base::TimeTicks now = AutofillTickClock::NowTicks();
+  TestAutofillTickClock test_clock;
+  test_clock.SetNowTicks(now);
+
+  FormData form;
+  form.url = GURL("http://www.foo.com/");
+
+  // Start with two input text fields.
+  FormFieldData field;
+  field.label = u"First Name";
+  field.name = u"firstname";
+  field.form_control_type = "text";
+  field.unique_renderer_id = test::MakeFieldRendererId();
+  form.fields.push_back(field);
+
+  field.label = u"Last Name";
+  field.name = u"lastname";
+  field.form_control_type = "text";
+  field.unique_renderer_id = test::MakeFieldRendererId();
+  form.fields.push_back(field);
+
+  // Two checkable radio buttons.
+  field.label = u"female";
+  field.name = u"female";
+  field.form_control_type = "radio";
+  field.check_status = FormFieldData::CheckStatus::kCheckableButUnchecked;
+  field.unique_renderer_id = test::MakeFieldRendererId();
+  form.fields.push_back(field);
+
+  field.label = u"male";
+  field.name = u"male";
+  field.form_control_type = "radio";
+  field.check_status = FormFieldData::CheckStatus::kCheckableButUnchecked;
+  field.unique_renderer_id = test::MakeFieldRendererId();
+  form.fields.push_back(field);
+
+  // The two text fields have predicted types.
+  std::vector<ServerFieldType> field_types = {NAME_FIRST, NAME_LAST,
+                                              UNKNOWN_TYPE, UNKNOWN_TYPE};
+  autofill_manager().AddSeenForm(form, field_types);
+  SeeForm(form);
   base::TimeTicks parse_time = autofill_manager()
                                    .form_structures()
                                    .begin()
@@ -8832,12 +8898,12 @@ TEST_F(AutofillMetricsFromLogEventsTest,
   SubmitForm(form);
   autofill_manager().Reset();
 
-  // Record Autofill2.FieldInfo UKM event at autofill manager reset.
-  // This form only has one non-checkable field, so the local heuristics are
-  // not executed.
   auto entries =
       test_ukm_recorder_->GetEntriesByName(UkmFieldInfoType::kEntryName);
   ASSERT_EQ(4u, entries.size());
+  std::vector<FormControlType> form_control_types = {
+      FormControlType::kText, FormControlType::kText, FormControlType::kRadio,
+      FormControlType::kRadio};
   for (size_t i = 0; i < entries.size(); ++i) {
     SCOPED_TRACE(testing::Message() << i);
     using UFIT = UkmFieldInfoType;
@@ -8852,9 +8918,10 @@ TEST_F(AutofillMetricsFromLogEventsTest,
         {UFIT::kWasFocusedName, false},
         {UFIT::kIsFocusableName, true},
         {UFIT::kUserTypedIntoFieldName, false},
-        {UFIT::kOverallTypeName, UNKNOWN_TYPE},
+        {UFIT::kOverallTypeName, field_types[i]},
         {UFIT::kSectionIdName, 1},
         {UFIT::kTypeChangedByRationalizationName, false},
+        {UFIT::kFormControlTypeName, static_cast<int>(form_control_types[i])},
     };
 
     EXPECT_EQ(expected.size(), entry->metrics.size());
@@ -8869,13 +8936,14 @@ TEST_F(AutofillMetricsFromLogEventsTest,
   ASSERT_EQ(1u, form_entries.size());
   using UFST = UkmFormSummaryType;
   const auto* const form_entry = form_entries[0];
-  AutofillMetrics::FormEventSet form_events = {};
+  AutofillMetrics::FormEventSet form_events = {FORM_EVENT_DID_PARSE_FORM};
   std::map<std::string, int64_t> expected = {
       {UFST::kFormSessionIdentifierName,
        AutofillMetrics::FormGlobalIdToHash64Bit(form.global_id())},
       {UFST::kFormSignatureName,
        Collapse(CalculateFormSignature(form)).value()},
-      {UFST::kAutofillFormEventsName, form_events.to_uint64()},
+      {UFST::kAutofillFormEventsName, form_events.data()[0]},
+      {UFST::kAutofillFormEvents2Name, form_events.data()[1]},
       {UFST::kIsInMainframeName, true},
       {UFST::kSampleRateName, 1},
       {UFST::kWasSubmittedName, true},

@@ -19,6 +19,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -233,8 +234,9 @@ class TestAppManager : public lock_screen_apps::AppManager {
   void ResetLaunchCount() { launch_count_ = 0; }
 
  private:
-  const Profile* const expected_primary_profile_;
-  lock_screen_apps::LockScreenProfileCreator* lock_screen_profile_creator_;
+  const raw_ptr<const Profile, ExperimentalAsh> expected_primary_profile_;
+  raw_ptr<lock_screen_apps::LockScreenProfileCreator, ExperimentalAsh>
+      lock_screen_profile_creator_;
 
   base::RepeatingClosure change_callback_;
 
@@ -377,7 +379,7 @@ class TestAppWindow : public content::WebContentsObserver {
 
  private:
   std::unique_ptr<content::WebContents> web_contents_;
-  extensions::AppWindow* window_;
+  raw_ptr<extensions::AppWindow, ExperimentalAsh> window_;
   bool closed_ = false;
   bool initialized_ = false;
 };
@@ -386,7 +388,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
  public:
   LockScreenAppStateTest()
       : fake_user_manager_(new ash::FakeChromeUserManager),
-        user_manager_enabler_(base::WrapUnique(fake_user_manager_)) {}
+        user_manager_enabler_(base::WrapUnique(fake_user_manager_.get())) {}
 
   LockScreenAppStateTest(const LockScreenAppStateTest&) = delete;
   LockScreenAppStateTest& operator=(const LockScreenAppStateTest&) = delete;
@@ -517,7 +519,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     return std::make_unique<TestAppWindow>(
         profile, state_controller()->CreateAppWindowForLockScreenAction(
                      profile, extension,
-                     extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE,
+                     extensions::api::app_runtime::ActionType::kNewNote,
                      std::make_unique<ChromeAppDelegate>(profile, true)));
   }
 
@@ -671,7 +673,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
-  ash::FakeChromeUserManager* fake_user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 
   // Run loop used to throttle test until async state controller initialization
@@ -694,8 +696,9 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
   TestStateObserver observer_;
   TestTrayAction tray_action_;
-  FakeLockScreenProfileCreator* lock_screen_profile_creator_ = nullptr;
-  TestAppManager* app_manager_ = nullptr;
+  raw_ptr<FakeLockScreenProfileCreator, ExperimentalAsh>
+      lock_screen_profile_creator_ = nullptr;
+  raw_ptr<TestAppManager, ExperimentalAsh> app_manager_ = nullptr;
 
   std::unique_ptr<TestAppWindow> app_window_;
   scoped_refptr<const extensions::Extension> app_;
@@ -946,7 +949,7 @@ TEST_F(LockScreenAppStateTest, NoLockScreenProfile) {
       ->extension_service()
       ->AddExtension(app.get());
   EXPECT_FALSE(state_controller()->CreateAppWindowForLockScreenAction(
-      profile(), app.get(), extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE,
+      profile(), app.get(), extensions::api::app_runtime::ActionType::kNewNote,
       std::make_unique<ChromeAppDelegate>(profile(), true)));
 }
 
@@ -1088,7 +1091,7 @@ TEST_F(LockScreenAppStateTest, CloseAppWhileLaunching) {
             state_controller()->GetLockScreenNoteState());
 
   EXPECT_FALSE(state_controller()->CreateAppWindowForLockScreenAction(
-      profile(), app(), extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE,
+      profile(), app(), extensions::api::app_runtime::ActionType::kNewNote,
       std::make_unique<ChromeAppDelegate>(profile(), true)));
 
   ExpectObservedStatesMatch({TrayActionState::kAvailable},
@@ -1184,7 +1187,7 @@ TEST_F(LockScreenAppStateTest, AppWindowRegistration) {
 
   EXPECT_FALSE(state_controller()->CreateAppWindowForLockScreenAction(
       LockScreenProfile(), app(),
-      extensions::api::app_runtime::ACTION_TYPE_NONE,
+      extensions::api::app_runtime::ActionType::kNone,
       std::make_unique<ChromeAppDelegate>(LockScreenProfile(), true)));
 
   app_window = CreateNoteTakingWindow(LockScreenProfile(), app());
@@ -1424,7 +1427,7 @@ TEST_F(LockScreenAppStateTest, CloseNoteWhileLaunching) {
             state_controller()->GetLockScreenNoteState());
 
   EXPECT_FALSE(state_controller()->CreateAppWindowForLockScreenAction(
-      profile(), app(), extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE,
+      profile(), app(), extensions::api::app_runtime::ActionType::kNewNote,
       std::make_unique<ChromeAppDelegate>(profile(), true)));
 
   ExpectObservedStatesMatch({TrayActionState::kAvailable},

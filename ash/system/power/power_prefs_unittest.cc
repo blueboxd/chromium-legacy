@@ -20,6 +20,7 @@
 #include "base/command_line.h"
 #include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
@@ -223,6 +224,11 @@ class PowerPrefsTest : public NoSessionAshTestBase {
     FakeHumanPresenceDBusClient::Get()->set_hps_service_is_available(true);
     NoSessionAshTestBase::SetUp();
 
+    // Sets adaptive charging hardware support.
+    power_manager::PowerSupplyProperties power_props;
+    power_props.set_adaptive_charging_supported(true);
+    power_manager_client()->UpdatePowerProperties(power_props);
+
     power_policy_controller_ = chromeos::PowerPolicyController::Get();
     power_prefs_ = ShellTestApi().power_prefs();
 
@@ -294,9 +300,9 @@ class PowerPrefsTest : public NoSessionAshTestBase {
   // Start counting histogram updates before we load our first pref service.
   base::HistogramTester histogram_tester_;
 
-  chromeos::PowerPolicyController* power_policy_controller_ =
-      nullptr;                         // Not owned.
-  PowerPrefs* power_prefs_ = nullptr;  // Not owned.
+  raw_ptr<chromeos::PowerPolicyController, ExperimentalAsh>
+      power_policy_controller_ = nullptr;                       // Not owned.
+  raw_ptr<PowerPrefs, ExperimentalAsh> power_prefs_ = nullptr;  // Not owned.
   base::SimpleTestTickClock tick_clock_;
 
   scoped_refptr<TestingPrefStore> user_pref_store_ =
@@ -658,6 +664,19 @@ TEST_F(PowerPrefsTest, SetAdaptiveChargingParams) {
   // Should be enabled after setting the prefs to true.
   SetAdaptiveChargingPreference(true);
   EXPECT_TRUE(power_manager_client()->policy().adaptive_charging_enabled());
+
+  // Removes adaptive charging hardware support.
+  power_manager::PowerSupplyProperties power_props;
+  power_props.set_adaptive_charging_supported(false);
+  power_manager_client()->UpdatePowerProperties(power_props);
+
+  // Should be disabled in spite of the prefs setting because lack of hardware
+  // support.
+  SetAdaptiveChargingPreference(false);
+  EXPECT_FALSE(power_manager_client()->policy().adaptive_charging_enabled());
+
+  SetAdaptiveChargingPreference(true);
+  EXPECT_FALSE(power_manager_client()->policy().adaptive_charging_enabled());
 }
 
 }  // namespace ash

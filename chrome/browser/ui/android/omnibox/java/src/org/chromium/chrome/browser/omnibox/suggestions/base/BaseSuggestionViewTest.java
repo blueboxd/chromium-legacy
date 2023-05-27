@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.base;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -23,8 +25,8 @@ import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionLayout.LayoutParams;
+import org.chromium.chrome.browser.omnibox.test.R;
 
 /**
  * Tests for {@link BaseSuggestionView}.
@@ -127,7 +129,7 @@ public class BaseSuggestionViewTest {
         Assert.assertEquals("right view edge", right, v.getRight());
         Assert.assertEquals("bottom view edge", bottom, v.getBottom());
         Assert.assertEquals("view width", right - left, v.getMeasuredWidth());
-        Assert.assertThat("view height", v.getMeasuredHeight(), lessThanOrEqualTo(bottom - top));
+        assertThat("view height", v.getMeasuredHeight(), lessThanOrEqualTo(bottom - top));
     }
 
     @Test

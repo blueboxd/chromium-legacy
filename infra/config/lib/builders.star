@@ -145,7 +145,15 @@ reclient = struct(
         LOW_JOBS_FOR_CI = 80,
         HIGH_JOBS_FOR_CI = 500,
         LOW_JOBS_FOR_CQ = 150,
+        MID_JOBS_FOR_CQ = 225,
         HIGH_JOBS_FOR_CQ = 300,
+    ),
+)
+
+siso = struct(
+    project = struct(
+        DEFAULT_TRUSTED = reclient.instance.DEFAULT_TRUSTED,
+        DEFAULT_UNTRUSTED = reclient.instance.DEFAULT_UNTRUSTED,
     ),
 )
 
@@ -190,7 +198,7 @@ xcode = struct(
     # Xcode14 RC will be used to build Main iOS
     x14main = xcode_enum("14c18"),
     # A newer Xcode 14 RC  used on beta bots.
-    x14betabots = xcode_enum("14c18"),
+    x14betabots = xcode_enum("14e222b"),
     # in use by ios-webkit-tot
     x14wk = xcode_enum("14c18wk"),
 )
@@ -421,6 +429,9 @@ defaults = args.defaults(
     reclient_cache_silo = None,
     reclient_ensure_verified = None,
     reclient_disable_bq_upload = None,
+    siso_project = None,
+    siso_enable_cloud_profiler = None,
+    siso_enable_cloud_trace = None,
     health_spec = None,
 
     # Provide vars for bucket and executable so users don't have to
@@ -485,6 +496,9 @@ def builder(
         reclient_cache_silo = None,
         reclient_ensure_verified = None,
         reclient_disable_bq_upload = None,
+        siso_project = args.DEFAULT,
+        siso_enable_cloud_profiler = args.DEFAULT,
+        siso_enable_cloud_trace = args.DEFAULT,
         health_spec = args.DEFAULT,
         **kwargs):
     """Define a builder.
@@ -667,6 +681,10 @@ def builder(
             effect if reclient_instance is not set.
         reclient_disable_bq_upload: If True, rbe_metrics will not be uploaded to
             BigQuery after each build
+        siso_project: a string indicating the GCP project hosting the RBE
+            instance and other Cloud services. e.g. logging, trace etc.
+        siso_enable_cloud_profiler: If True, enable cloud profiler in siso.
+        siso_enable_cloud_trace: If True, enable cloud trace in siso.
         **kwargs: Additional keyword arguments to forward on to `luci.builder`.
 
     Returns:
@@ -831,6 +849,14 @@ def builder(
     )
     if reclient != None:
         properties["$build/reclient"] = reclient
+
+    siso = {
+        "project": defaults.get_value("siso_project", siso_project),
+        "enable_cloud_profiler": defaults.get_value("siso_enable_cloud_profiler", siso_enable_cloud_profiler),
+        "enable_cloud_trace": defaults.get_value("siso_enable_cloud_trace", siso_enable_cloud_trace),
+    }
+    if siso["project"]:
+        properties["$build/siso"] = siso
 
     kwargs = dict(kwargs)
     if bucket != args.COMPUTE:

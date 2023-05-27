@@ -521,19 +521,15 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const ResourceId single_plane_id(1337);
   const ResourceId multi_plane_id(1338);
   const SharedImageFormat single_plane_format = SinglePlaneFormat::kALPHA_8;
-  const SharedImageFormat multi_plane_format =
-      MultiPlaneFormat::kYUV_420_BIPLANAR;
-  const uint32_t tr_filter = 1234;
+  const SharedImageFormat multi_plane_format = MultiPlaneFormat::kNV12;
   const gfx::Size tr_size(1234, 5678);
   TransferableResource single_plane_resource;
   single_plane_resource.id = single_plane_id;
   single_plane_resource.format = single_plane_format;
-  single_plane_resource.filter = tr_filter;
   single_plane_resource.size = tr_size;
   TransferableResource multi_plane_resource;
   multi_plane_resource.id = multi_plane_id;
   multi_plane_resource.format = multi_plane_format;
-  multi_plane_resource.filter = tr_filter;
   multi_plane_resource.size = tr_size;
 
   // CompositorFrameMetadata constants.
@@ -567,12 +563,10 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   TransferableResource out_resource1 = output.resource_list[0];
   EXPECT_EQ(single_plane_id, out_resource1.id);
   EXPECT_EQ(single_plane_format, out_resource1.format);
-  EXPECT_EQ(tr_filter, out_resource1.filter);
   EXPECT_EQ(tr_size, out_resource1.size);
   TransferableResource out_resource2 = output.resource_list[1];
   EXPECT_EQ(multi_plane_id, out_resource2.id);
   EXPECT_EQ(multi_plane_format, out_resource2.format);
-  EXPECT_EQ(tr_filter, out_resource2.filter);
   EXPECT_EQ(tr_size, out_resource2.size);
 
   EXPECT_EQ(1u, output.render_pass_list.size());
@@ -621,10 +615,9 @@ TEST_F(StructTraitsTest, CompositorFrameTransitionDirective) {
   element.render_pass_id = frame.render_pass_list.front()->id;
   NavigationID navigation_id = base::UnguessableToken::Create();
   uint32_t sequence_id = 1u;
-  auto type = CompositorFrameTransitionDirective::Type::kSave;
   frame.metadata.transition_directives.push_back(
-      CompositorFrameTransitionDirective(navigation_id, sequence_id, type,
-                                         {element}));
+      CompositorFrameTransitionDirective::CreateSave(navigation_id, sequence_id,
+                                                     {element}));
 
   // This ensures de-serialization succeeds if all passes are present.
   CompositorFrame output;
@@ -634,15 +627,15 @@ TEST_F(StructTraitsTest, CompositorFrameTransitionDirective) {
   const auto& directive = output.metadata.transition_directives[0];
   EXPECT_EQ(directive.navigation_id(), navigation_id);
   EXPECT_EQ(directive.sequence_id(), sequence_id);
-  EXPECT_EQ(directive.type(), type);
+  EXPECT_EQ(directive.type(), CompositorFrameTransitionDirective::Type::kSave);
   EXPECT_EQ(directive.shared_elements().size(), 1u);
   EXPECT_EQ(directive.shared_elements()[0], element);
 
   element.render_pass_id = CompositorRenderPassId(
       frame.render_pass_list.back()->id.GetUnsafeValue() + 1);
   frame.metadata.transition_directives.push_back(
-      CompositorFrameTransitionDirective(navigation_id, sequence_id, type,
-                                         {element}));
+      CompositorFrameTransitionDirective::CreateSave(navigation_id, sequence_id,
+                                                     {element}));
 
   // This ensures de-serialization fails if a pass is missing.
   ASSERT_FALSE(mojo::test::SerializeAndDeserialize<mojom::CompositorFrame>(
@@ -1205,7 +1198,6 @@ TEST_F(StructTraitsTest, SurfaceId) {
 TEST_F(StructTraitsTest, TransferableResource) {
   const ResourceId id(1337);
   const SharedImageFormat format = SinglePlaneFormat::kALPHA_8;
-  const uint32_t filter = 1234;
   const gfx::Size size(1234, 5678);
   const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
       0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2};
@@ -1228,7 +1220,6 @@ TEST_F(StructTraitsTest, TransferableResource) {
   TransferableResource input;
   input.id = id;
   input.format = format;
-  input.filter = filter;
   input.size = size;
   input.mailbox_holder = mailbox_holder;
   input.synchronization_type = sync_type;
@@ -1241,7 +1232,6 @@ TEST_F(StructTraitsTest, TransferableResource) {
 
   EXPECT_EQ(id, output.id);
   EXPECT_EQ(format, output.format);
-  EXPECT_EQ(filter, output.filter);
   EXPECT_EQ(size, output.size);
   EXPECT_EQ(mailbox_holder.mailbox, output.mailbox_holder.mailbox);
   EXPECT_EQ(mailbox_holder.sync_token, output.mailbox_holder.sync_token);
@@ -1260,7 +1250,7 @@ TEST_F(StructTraitsTest, SharedImageFormatWithSinglePlane) {
 }
 
 TEST_F(StructTraitsTest, SharedImageFormatWithMultiPlane) {
-  SharedImageFormat input = MultiPlaneFormat::kYUV_420_BIPLANAR;
+  SharedImageFormat input = MultiPlaneFormat::kNV12;
   SharedImageFormat output;
   mojo::test::SerializeAndDeserialize<mojom::SharedImageFormat>(input, output);
   EXPECT_EQ(input, output);

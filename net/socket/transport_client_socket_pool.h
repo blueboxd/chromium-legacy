@@ -68,6 +68,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
  public:
   // Reasons for closing sockets. Exposed here for testing.
   static const char kCertDatabaseChanged[];
+  static const char kCertVerifierChanged[];
   static const char kClosedConnectionReturnedToPool[];
   static const char kDataReceivedUnexpectedly[];
   static const char kIdleTimeLimitExpired[];
@@ -262,7 +263,8 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   void OnIPAddressChanged() override;
 
   // SSLClientContext::Observer methods.
-  void OnSSLConfigChanged(bool is_cert_database_change) override;
+  void OnSSLConfigChanged(
+      SSLClientContext::SSLConfigChangeType change_type) override;
   void OnSSLConfigForServerChanged(const HostPortPair& server) override;
 
  private:
@@ -636,7 +638,7 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
 
   Group* GetOrCreateGroup(const GroupId& group_id);
   void RemoveGroup(const GroupId& group_id);
-  void RemoveGroup(GroupMap::iterator it);
+  GroupMap::iterator RemoveGroup(GroupMap::iterator it);
 
   // Called when the number of idle sockets changes.
   void IncrementIdleCount();
@@ -753,9 +755,9 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool
   // The group may be removed if this leaves the group empty. The caller must
   // call CheckForStalledSocketGroups() after all applicable groups have been
   // refreshed.
-  void RefreshGroup(GroupMap::iterator it,
-                    const base::TimeTicks& now,
-                    const char* net_log_reason_utf8);
+  GroupMap::iterator RefreshGroup(GroupMap::iterator it,
+                                  const base::TimeTicks& now,
+                                  const char* net_log_reason_utf8);
 
   GroupMap group_map_;
 

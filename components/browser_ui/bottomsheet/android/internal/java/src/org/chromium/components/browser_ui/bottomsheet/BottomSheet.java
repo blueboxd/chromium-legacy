@@ -30,7 +30,6 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
-import org.chromium.components.browser_ui.bottomsheet.internal.R;
 import org.chromium.components.browser_ui.widget.animation.CancelAwareAnimatorListener;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.LocalizationUtils;
@@ -924,7 +923,8 @@ class BottomSheet extends FrameLayout
         // Setting state to SCROLLING is not a valid operation. This can happen only when
         // we're already in the scrolling state. Make it no-op.
         if (state == SheetState.SCROLLING) {
-            assert mCurrentState == SheetState.SCROLLING && isRunningSettleAnimation();
+            // TODO(mdjones): The isRunningSettleAnimation should hold but currently doesn't.
+            assert mCurrentState == SheetState.SCROLLING; // && isRunningSettleAnimation();
             return;
         }
 

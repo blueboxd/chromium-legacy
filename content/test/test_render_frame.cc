@@ -26,6 +26,7 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom.h"
@@ -265,16 +266,20 @@ void TestRenderFrame::Navigate(
       std::move(common_params), std::move(commit_params), std::move(head),
       mojo::ScopedDataPipeConsumerHandle(),
       network::mojom::URLLoaderClientEndpointsPtr(),
-      std::move(pending_factory_bundle), absl::nullopt,
+      std::move(pending_factory_bundle),
+      /*subresource_overrides=*/absl::nullopt,
       blink::mojom::ControllerServiceWorkerInfoPtr(),
       blink::mojom::ServiceWorkerContainerInfoForClientPtr(),
-      mojo::NullRemote() /* prefetch_loader_factory */,
-      mojo::NullRemote() /* topics_loader_factory */, blink::DocumentToken(),
+      /*prefetch_loader_factory=*/mojo::NullRemote(),
+      /*topics_loader_factory=*/mojo::NullRemote(),
+      /*keep_alive_loader_factory=*/mojo::NullRemote(), blink::DocumentToken(),
       base::UnguessableToken::Create(), blink::ParsedPermissionsPolicy(),
       blink::mojom::PolicyContainer::New(
           blink::mojom::PolicyContainerPolicies::New(),
           mock_policy_container_host.BindNewEndpointAndPassDedicatedRemote()),
-      mojo::NullRemote() /* code_cache_host */, nullptr, nullptr,
+      /*code_cache_host=*/mojo::NullRemote(),
+      /*resource_cache=*/mojo::NullRemote(), /*cookie_manager_info=*/nullptr,
+      /*storage_info=*/nullptr,
       base::BindOnce(&MockFrameHost::DidCommitProvisionalLoad,
                      base::Unretained(mock_frame_host_.get())));
 }
@@ -358,7 +363,7 @@ void TestRenderFrame::BeginNavigation(
           blink::WebString::FromUTF8(charset), data);
     }
     if (url.IsAboutSrcdoc()) {
-      navigation_params->fallback_srcdoc_base_url = info->requestor_base_url;
+      navigation_params->fallback_base_url = info->requestor_base_url;
     }
 
     navigation_params->policy_container->policies.sandbox_flags =

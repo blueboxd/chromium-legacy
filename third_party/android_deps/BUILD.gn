@@ -1072,17 +1072,6 @@ if (!limit_android_deps) {
   }
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-  android_aar_prebuilt("google_play_services_fido_java") {
-    aar_path = "libs/com_google_android_gms_play_services_fido/play-services-fido-19.0.0-beta.aar"
-    info_path = "libs/com_google_android_gms_play_services_fido/com_google_android_gms_play_services_fido.info"
-    deps = [
-      ":google_play_services_base_java",
-      ":google_play_services_basement_java",
-      ":google_play_services_tasks_java",
-    ]
-  }
-
-  # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
   android_aar_prebuilt("google_play_services_gcm_java") {
     aar_path = "libs/com_google_android_gms_play_services_gcm/play-services-gcm-17.0.0.aar"
     info_path = "libs/com_google_android_gms_play_services_gcm/com_google_android_gms_play_services_gcm.info"
@@ -1337,7 +1326,7 @@ if (!limit_android_deps) {
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
   java_prebuilt("com_squareup_wire_wire_runtime_jvm_java") {
     jar_path =
-        "libs/com_squareup_wire_wire_runtime_jvm/wire-runtime-jvm-4.4.3.jar"
+        "libs/com_squareup_wire_wire_runtime_jvm/wire-runtime-jvm-4.5.1.jar"
     output_name = "com_squareup_wire_wire_runtime_jvm"
     supports_android = true
     testonly = true
@@ -1461,7 +1450,7 @@ if (!limit_android_deps) {
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
   java_prebuilt("org_jetbrains_kotlin_kotlin_stdlib_jdk7_java") {
-    jar_path = "libs/org_jetbrains_kotlin_kotlin_stdlib_jdk7/kotlin-stdlib-jdk7-1.8.0.jar"
+    jar_path = "libs/org_jetbrains_kotlin_kotlin_stdlib_jdk7/kotlin-stdlib-jdk7-1.8.20.jar"
     output_name = "org_jetbrains_kotlin_kotlin_stdlib_jdk7"
     supports_android = true
     deps = [ "//third_party/kotlin_stdlib:kotlin_stdlib_java" ]
@@ -1469,7 +1458,7 @@ if (!limit_android_deps) {
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
   java_prebuilt("org_jetbrains_kotlin_kotlin_stdlib_jdk8_java") {
-    jar_path = "libs/org_jetbrains_kotlin_kotlin_stdlib_jdk8/kotlin-stdlib-jdk8-1.8.0.jar"
+    jar_path = "libs/org_jetbrains_kotlin_kotlin_stdlib_jdk8/kotlin-stdlib-jdk8-1.8.20.jar"
     output_name = "org_jetbrains_kotlin_kotlin_stdlib_jdk8"
     supports_android = true
     deps = [
@@ -1480,7 +1469,7 @@ if (!limit_android_deps) {
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
   java_prebuilt("org_jetbrains_kotlinx_kotlinx_coroutines_android_java") {
-    jar_path = "libs/org_jetbrains_kotlinx_kotlinx_coroutines_android/kotlinx-coroutines-android-1.6.1.jar"
+    jar_path = "libs/org_jetbrains_kotlinx_kotlinx_coroutines_android/kotlinx-coroutines-android-1.6.4.jar"
     output_name = "org_jetbrains_kotlinx_kotlinx_coroutines_android"
     supports_android = true
     deps = [
@@ -1492,7 +1481,7 @@ if (!limit_android_deps) {
 
   # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
   java_prebuilt("org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm_java") {
-    jar_path = "libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm/kotlinx-coroutines-core-jvm-1.6.1.jar"
+    jar_path = "libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm/kotlinx-coroutines-core-jvm-1.6.4.jar"
     output_name = "org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm"
     supports_android = true
     deps = [

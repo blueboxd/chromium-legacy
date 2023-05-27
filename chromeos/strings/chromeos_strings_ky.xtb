@@ -123,6 +123,7 @@
 <translation id="1904932688895783618">Бул жерде башка пайдалуу булактар келтирилди:</translation>
 <translation id="1905710495812624430">Аракеттер уруксат берилген чегинен ашты.</translation>
 <translation id="1908234395526491708">Ишке ашпай калган UDP сурамдары</translation>
+<translation id="1923388006036088459">Негизги түстөр</translation>
 <translation id="1947737735496445907">Басып чыгарылды</translation>
 <translation id="1951012854035635156">Жардамчы</translation>
 <translation id="1962550982027027473">Демейки APN талап кылынат</translation>
@@ -140,6 +141,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Дагы параметрлер</translation>
 <translation id="2085089206770112532">Дисплейдин жарыктыгын азайтуу</translation>
+<translation id="209751264101900360">Таңдан баштап караңгыга чейин - Булут</translation>
 <translation id="2102231663024125441">Текстти оңдоо</translation>
 <translation id="2105810540595158374">Түзмөк — оюнду көзөмөлдөгүч.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, <ph name="MILESTONE_VERSION" /> версиясы</translation>
@@ -331,6 +333,7 @@
 <translation id="3967822245660637423">Жүктөп алуу аяктады</translation>
 <translation id="3969602104473960991">ChromeOS сырсөзү өзгөрдү</translation>
 <translation id="397105322502079400">Эсептелүүдө…</translation>
+<translation id="3974175076798940554">Эми эксклюзивдүү Chromebook Plus объекттери жеткиликтүү</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> күндөн мурунку басып чыгаруу тапшырмалары өчүрүлөт</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> түзмөгүңүз жаңыртылды</translation>
 <translation id="4003384961948020559">Басылып чыгарылган жок - Барактар тактасы толук</translation>
@@ -370,6 +373,7 @@
 <translation id="4275663329226226506">Медиа</translation>
 <translation id="4289540628985791613">Сереп салуу</translation>
 <translation id="4289849978083912975">Слайдшоу</translation>
+<translation id="4293621540182258188">Таңдан баштап караңгыга чейин - Жер</translation>
 <translation id="4297501883039923494">Токтоду – Белгисиз ката</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> сүрөт</translation>
 <translation id="4311195029067684288">Толук</translation>
@@ -513,6 +517,7 @@
 <translation id="5423849171846380976">Жандырылды</translation>
 <translation id="5430931332414098647">Ыкчам байланыш түйүнү</translation>
 <translation id="5431318178759467895">Түс</translation>
+<translation id="5456936324019847994">Бир да иштетилген жеке APN менен туташтырылган жок. Толук маалымат алуу үчүн мобилдик байланыш операторуна кайрылыңыз.</translation>
 <translation id="5457599981699367932">Конок катары серептөө</translation>
 <translation id="54609108002486618">Башкарылуучу</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} аракет калды}other{{0} аракет калды}}</translation>
@@ -544,6 +549,7 @@
 <translation id="576835345334454681">Дисплейдин жарыктыгын көбөйтүү</translation>
 <translation id="57838592816432529">Үнсүз</translation>
 <translation id="5784136236926853061">HTTP күтүү убакыты жогору</translation>
+<translation id="5809090008577139505">Уюл шооласы</translation>
 <translation id="5826644637650799838">Көркөм өнөр жөнүндө</translation>
 <translation id="5832805196449965646">Адам кошуу</translation>
 <translation id="583281660410589416">Белгисиз</translation>
@@ -562,10 +568,12 @@
 <translation id="5907649332524363701">баскычтын түсү</translation>
 <translation id="5916084858004523819">Тыюу салынат</translation>
 <translation id="5916664084637901428">Күйүк</translation>
+<translation id="5918201491776799918">Chromebook Plus үчүн эксклюзивдүү сүрөттү тандоо</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Файл ийгиликтүү скандалып, <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> папкасына сакталды.}other{Файлдар ийгиликтүү скандалып, <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> папкасына сакталды.}}</translation>
 <translation id="5931523347251946569">Файл табылган жок</translation>
 <translation id="5939518447894949180">Кайра коюу</translation>
 <translation id="594552776027197022">Башаламан иретте жуп ачкычты түзүү</translation>
+<translation id="5946538341867151940">Туташа элексиз. Эгер мобилдик байланыш операторуңуз жеке APN'ди сунуштаса, "+ Жаңы APN" дегенди тандап, APN маалыматын киргизиңиз</translation>
 <translation id="5972388717451707488">Каражатты жаңыртуу</translation>
 <translation id="5984145644188835034">Демейки тушкагаз</translation>
 <translation id="6017514345406065928">Жашыл</translation>
@@ -721,6 +729,7 @@
 <translation id="7281657306185710294">Жеңил шамал</translation>
 <translation id="7287310195820267359">Тушкагаз жыйнактары</translation>
 <translation id="7297226631177386107">HTTPS вебсайттарына тармактык коргоо аркылуу туташпай жатат</translation>
+<translation id="7297726121602187087">Күңүрт жашыл</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Chromebook'тун Жардам форумундагы адистерден сураңыз</translation>
@@ -755,12 +764,14 @@
 <translation id="7570674786725311828">USB сенсордук экраны</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> калды</translation>
 <translation id="7613724632293948900">Чычкан же жебе баскычтары менен жылдырыңыз.</translation>
+<translation id="7618774594543487847">Нейтралдуу</translation>
 <translation id="7620771111601174153">Жардам борборуна өтүп, кененирээк маалымат алыңыз</translation>
 <translation id="763165478673169849">Акыркы жолу баштапкы абалга келтирилген убакыт</translation>
 <translation id="7648838807254605802">HTTPS күтүү убакыты жогору</translation>
 <translation id="7656388927906093505">Түзмөк — чычкан.</translation>
 <translation id="7658239707568436148">Жокко чыгаруу</translation>
 <translation id="7665800271478495366">Аватарды өзгөртүү</translation>
+<translation id="7675241868020048622">Aurora (Plus үчүн)</translation>
 <translation id="7690294790491645610">Жаңы сырсөздү ырастаңыз</translation>
 <translation id="7701040980221191251">Эч бир</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +828,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> тандоо</translation>
 <translation id="8151185429379586178">Иштеп чыгуучунун куралдары</translation>
+<translation id="8153923300383192510">Chromebook Plus үчүн эксклюзивдүү</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Тиркөө</translation>
 <translation id="8206859287963243715">Уюктук</translation>
@@ -839,6 +851,7 @@
 <translation id="8352772353338965963">Бир нече профиль менен кирүү үчүн каттоо эсебин кошуңуз. Катталган бардык аккаунттарына кирүүдө сырсөз талап кылынбагандыктан, бул мүмкүнчүлүктү ишенимдүү каттоо эсептери гана колдонушу керек.</translation>
 <translation id="8364946094152050673">Ысым серверлери бош</translation>
 <translation id="8372477600026034341">Кошумча башкы түйүндөр</translation>
+<translation id="8373046809163484087">Тушкагазыңызга туура келген түстөрдүн топтомдорун колдонуңуз</translation>
 <translation id="8380114448424469341">Терезени экрандын <ph name="DIRECTION" /> жактагы жарымына бекитүү</translation>
 <translation id="8395584934117017006">Бул <ph name="DEVICE_TYPE" /> түзмөгүн ишкана башкарат</translation>
 <translation id="8398927464629426868">Түзмөк кубатталган же кубатталышы токтотулган деңгээл</translation>
@@ -858,6 +871,7 @@
 <translation id="8503813439785031346">Колдонуучунун ысымы</translation>
 <translation id="8503836310948963452">Дагы бир нече мүнөт калды...</translation>
 <translation id="8508640263392900755">APN тууралуу маалымат</translation>
+<translation id="8522687886059337719">Эми жаңы <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />тушкагаздарды<ph name="END_LINK_WALLPAPER_SUBPAGE" /> жана <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />көшөгөнү<ph name="END_LINK_SCREENSAVER_SUBPAGE" /> колдоно аласыз</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Тармакка туташуу үчүн байланыш оператору бул параметрди талап кылышы мүмкүн. Кеңири маалымат үчүн байланыш операторуңузга кайрылыңыз</translation>

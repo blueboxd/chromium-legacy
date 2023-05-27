@@ -502,6 +502,7 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("FILE_ITEMS_EXTRACTED", IDS_FILE_BROWSER_FILE_ITEMS_EXTRACTED);
   SET_STRING("FILE_ITEMS_MOVED", IDS_FILE_BROWSER_FILE_ITEMS_MOVED);
   SET_STRING("FILE_MOVED", IDS_FILE_BROWSER_FILE_MOVED);
+  SET_STRING("FILES_SETTINGS_LABEL", IDS_FILE_BROWSER_FILES_SETTINGS_LABEL);
   SET_STRING("FOLDER_SHARED_WITH_CROSTINI",
              IDS_FILE_BROWSER_FOLDER_SHARED_WITH_CROSTINI);
   SET_STRING("FOLDER_SHARED_WITH_CROSTINI_PLURAL",
@@ -799,8 +800,8 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_SEARCH_A11Y_CLEAR_SEARCH);
   SET_STRING("SEARCH_OPTIONS_LOCATION_EVERYWHERE",
              IDS_FILE_BROWSER_SEARCH_OPTIONS_LOCATION_EVERYWHERE);
-  SET_STRING("SEARCH_OPTIONS_LOCATION_THIS_CHROMEBOOK",
-             IDS_FILE_BROWSER_SEARCH_OPTIONS_LOCATION_THIS_CHROMEBOOK);
+  SET_STRING("SEARCH_OPTIONS_LOCATION_THIS_VOLUME",
+             IDS_FILE_BROWSER_SEARCH_OPTIONS_LOCATION_THIS_VOLUME);
   SET_STRING("SEARCH_OPTIONS_LOCATION_THIS_FOLDER",
              IDS_FILE_BROWSER_SEARCH_OPTIONS_LOCATION_THIS_FOLDER);
   SET_STRING("SEARCH_OPTIONS_RECENCY_ALL_TIME",
@@ -1080,18 +1081,17 @@ bool IsEligibleAndEnabledGoogleOneOfferFilesBanner() {
     return false;
   }
 
-  raw_ptr<user_manager::UserManager> user_manager =
-      user_manager::UserManager::Get();
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (!user_manager) {
     return false;
   }
 
-  raw_ptr<user_manager::User> user = user_manager->GetActiveUser();
+  user_manager::User* user = user_manager->GetActiveUser();
   if (!user) {
     return false;
   }
 
-  raw_ptr<Profile> profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile) {
     return false;
   }

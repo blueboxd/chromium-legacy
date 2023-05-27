@@ -30,7 +30,7 @@ namespace web {
 // Minimal implementation of WebState, to be used in tests.
 class FakeWebState : public WebState {
  public:
-  explicit FakeWebState(NSString* stable_identifier = nil);
+  FakeWebState();
   ~FakeWebState() override;
 
   // WebState implementation.
@@ -70,6 +70,7 @@ class FakeWebState : public WebState {
   void LoadData(NSData* data, NSString* mime_type, const GURL& url) override;
   void ExecuteUserJavaScript(NSString* javaScript) override;
   NSString* GetStableIdentifier() const override;
+  SessionID GetUniqueIdentifier() const override;
   const std::string& GetContentsMimeType() const override;
   bool ContentIsHTML() const override;
   const std::u16string& GetTitle() const override;
@@ -96,9 +97,6 @@ class FakeWebState : public WebState {
 
   bool SetSessionStateData(NSData* data) override;
   NSData* SessionStateData() override;
-
-  void SetSwipeRecognizerProvider(
-      id<CRWSwipeRecognizerProvider> delegate) override;
 
   PermissionState GetStateForPermission(Permission permission) const override
       API_AVAILABLE(ios(15.0));
@@ -186,6 +184,7 @@ class FakeWebState : public WebState {
  private:
   BrowserState* browser_state_ = nullptr;
   NSString* stable_identifier_ = nil;
+  const SessionID unique_identifier_;
   bool web_usage_enabled_ = true;
   bool is_realized_ = true;
   bool is_loading_ = false;

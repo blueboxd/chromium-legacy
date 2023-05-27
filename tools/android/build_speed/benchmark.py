@@ -128,15 +128,16 @@ class Benchmark:
 _BENCHMARKS = [
     Benchmark(
         name='chrome_java_nosig',
-        from_string='sInstance = instance;',
-        to_string='sInstance = instance;String test = "Test";',
+        from_string='sInstanceForTesting = instance;',
+        to_string='sInstanceForTesting = instance;String test = "Test";',
         change_file=
         'chrome/android/java/src/org/chromium/chrome/browser/AppHooks.java',
     ),
     Benchmark(
         name='chrome_java_sig',
-        from_string='AppHooksImpl sInstance;',
-        to_string='AppHooksImpl sInstance;public void NewInterfaceMethod(){}',
+        from_string='AppHooksImpl sInstanceForTesting;',
+        to_string=
+        'AppHooksImpl sInstanceForTesting;public void NewInterfaceMethod(){}',
         change_file=
         'chrome/android/java/src/org/chromium/chrome/browser/AppHooks.java',
     ),
@@ -288,17 +289,6 @@ def _emulator(emulator_avd_name):
     try:
         # Ensure the emulator and its disk are fully set up.
         device.WaitUntilFullyBooted(decrypt=True)
-        if device.build_version_sdk >= 28:
-            # In P, there are two settings:
-            #  * hidden_api_policy_p_apps
-            #  * hidden_api_policy_pre_p_apps
-            # In Q, there is just one:
-            #  * hidden_api_policy
-            if device.build_version_sdk == 28:
-                setting_name = 'hidden_api_policy_p_apps'
-            else:
-                setting_name = 'hidden_api_policy'
-            device.adb.Shell(f'settings put global {setting_name} 0')
         logging.info('Started emulator: %s', device.serial)
         yield device
     finally:

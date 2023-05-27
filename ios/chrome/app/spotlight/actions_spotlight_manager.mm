@@ -10,6 +10,7 @@
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/app/app_startup_parameters.h"
+#import "ios/chrome/app/spotlight/spotlight_interface.h"
 #import "ios/chrome/app/spotlight/spotlight_logger.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -115,7 +116,6 @@ BOOL SetStartupParametersForSpotlightAction(
 }  // namespace spotlight
 
 @interface ActionsSpotlightManager ()
-
 // Creates a new Spotlight entry with title `title` for the given `action`.
 - (CSSearchableItem*)itemForAction:(NSString*)action title:(NSString*)title;
 
@@ -129,7 +129,8 @@ BOOL SetStartupParametersForSpotlightAction(
 + (ActionsSpotlightManager*)actionsSpotlightManager {
   return [[ActionsSpotlightManager alloc]
       initWithLargeIconService:nil
-                        domain:spotlight::DOMAIN_ACTIONS];
+                        domain:spotlight::DOMAIN_ACTIONS
+            spotlightInterface:[SpotlightInterface defaultInterface]];
 }
 
 #pragma mark public methods
@@ -193,10 +194,8 @@ BOOL SetStartupParametersForSpotlightAction(
                                 title:defaultBrowserTitle],
           ];
 
-          [[CSSearchableIndex defaultSearchableIndex]
-              indexSearchableItems:spotlightItems
-                 completionHandler:nil];
-          [[SpotlightLogger sharedLogger] logIndexedItems:spotlightItems];
+          [self.spotlightInterface indexSearchableItems:spotlightItems
+                                      completionHandler:nil];
         });
   }];
 }

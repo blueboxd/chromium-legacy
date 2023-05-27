@@ -52,9 +52,13 @@
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/user_education/views/help_bubble_factory_views_ash.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #if BUILDFLAG(IS_MAC)
 #include "components/user_education/views/help_bubble_factory_mac.h"
-#endif
+#endif  // BUILDFLAG(IS_MAC)
 
 namespace {
 
@@ -185,6 +189,14 @@ void RegisterChromeHelpBubbleFactories(
     user_education::HelpBubbleFactoryRegistry& registry) {
   const user_education::HelpBubbleDelegate* const delegate =
       GetHelpBubbleDelegate();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // TODO(http://b/277994050): Move registration after Lacros launch.
+  // Try to create an Ash-specific help bubble first. Note that an Ash-specific
+  // help bubble will only take precedence over a standard Views-specific help
+  // bubble if the tracked element's help bubble context is explicitly set to
+  // `ash::HelpBubbleContext::kAsh`.
+  registry.MaybeRegister<ash::HelpBubbleFactoryViewsAsh>(delegate);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   registry.MaybeRegister<user_education::HelpBubbleFactoryViews>(delegate);
   // Try to create a floating bubble first, if it's allowed.
   registry.MaybeRegister<FloatingWebUIHelpBubbleFactoryBrowser>(delegate);
@@ -205,6 +217,16 @@ void MaybeRegisterChromeFeaturePromos(
   if (registry.IsFeatureRegistered(
           feature_engagement::kIPHDesktopPwaInstallFeature))
     return;
+
+  // TODO(1432894): Use toast or snooze instead of legacy promo.
+  // kIPHAutofillExternalAccountProfileSuggestionFeature:
+  registry.RegisterFeature(
+      std::move(FeaturePromoSpecification::CreateForLegacyPromo(
+                    &feature_engagement::
+                        kIPHAutofillExternalAccountProfileSuggestionFeature,
+                    kAutofillSuggestionElementId,
+                    IDS_AUTOFILL_IPH_EXTERNAL_ACCOUNT_PROFILE_SUGGESTION)
+                    .SetBubbleArrow(HelpBubbleArrow::kLeftCenter)));
 
   // kIPHAutofillVirtualCardSuggestionFeature:
   registry.RegisterFeature(std::move(
@@ -284,25 +306,25 @@ void MaybeRegisterChromeFeaturePromos(
       IDS_PASSWORD_MANAGER_IPH_MANAGEMENT_BUBBLE_DURING_SIGNIN_SCREENREADER,
       FeaturePromoSpecification::AcceleratorInfo()));
 
-  // kIPHPasswordsWebAppProfileSwitchFeature:
-  registry.RegisterFeature(
-      std::move(FeaturePromoSpecification::CreateForSnoozePromo(
-                    feature_engagement::kIPHPasswordsWebAppProfileSwitchFeature,
-                    kAvatarButtonElementId,
-                    IDS_PASSWORD_MANAGER_IPH_BODY_WEB_APP_PROFILE_SWITCH)
-                    .SetBubbleIcon(&vector_icons::kLightbulbOutlineIcon)));
-
   // kIPHPowerBookmarksSidePanelFeature:
   registry.RegisterFeature(FeaturePromoSpecification::CreateForSnoozePromo(
       feature_engagement::kIPHPowerBookmarksSidePanelFeature,
       kSidePanelButtonElementId, IDS_POWER_BOOKMARKS_SIDE_PANEL_PROMO));
 
-  // kIPHSwitchProfileFeature:
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // kIPHSwitchProfileFeature:
   registry.RegisterFeature(FeaturePromoSpecification::CreateForToastPromo(
       feature_engagement::kIPHProfileSwitchFeature, kAvatarButtonElementId,
       IDS_PROFILE_SWITCH_PROMO, IDS_PROFILE_SWITCH_PROMO_SCREENREADER,
       FeaturePromoSpecification::AcceleratorInfo(IDC_SHOW_AVATAR_MENU)));
+
+  // kIPHPasswordsWebAppProfileSwitchFeature:
+  registry.RegisterFeature(FeaturePromoSpecification::CreateForToastPromo(
+      feature_engagement::kIPHPasswordsWebAppProfileSwitchFeature,
+      kAvatarButtonElementId,
+      IDS_PASSWORD_MANAGER_IPH_BODY_WEB_APP_PROFILE_SWITCH,
+      IDS_PROFILE_SWITCH_PROMO_SCREENREADER,
+      FeaturePromoSpecification::AcceleratorInfo()));
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   // kIPHReadingListDiscoveryFeature:
@@ -314,16 +336,6 @@ void MaybeRegisterChromeFeaturePromos(
   registry.RegisterFeature(FeaturePromoSpecification::CreateForSnoozePromo(
       feature_engagement::kIPHReadingListEntryPointFeature,
       kBookmarkStarViewElementId, IDS_READING_LIST_ENTRY_POINT_PROMO));
-
-  // kIPHIntentChipFeature
-  registry.RegisterFeature(FeaturePromoSpecification::CreateForLegacyPromo(
-      &feature_engagement::kIPHIntentChipFeature, kIntentChipElementId,
-#if BUILDFLAG(IS_CHROMEOS)
-      IDS_INTENT_CHIP_IPH_CHROME_OS
-#else
-      IDS_INTENT_CHIP_IPH_GENERIC
-#endif
-      ));
 
   // kIPHReadingListInSidePanelFeature:
   registry.RegisterFeature(FeaturePromoSpecification::CreateForLegacyPromo(
@@ -391,25 +403,6 @@ void MaybeRegisterChromeFeaturePromos(
               }))
           .SetBubbleTitleText(IDS_BATTERY_SAVER_MODE_PROMO_TITLE)
           .SetBubbleArrow(HelpBubbleArrow::kTopRight)));
-
-  // kIPHHighEfficiencyInfoModeFeature:
-  registry.RegisterFeature(std::move(
-      FeaturePromoSpecification::CreateForCustomAction(
-          feature_engagement::kIPHHighEfficiencyInfoModeFeature,
-          kHighEfficiencyChipElementId,
-          IDS_HIGH_EFFICIENCY_INFO_MODE_PROMO_TEXT,
-          IDS_HIGH_EFFICIENCY_INFO_MODE_PROMO_ACTION_TEXT,
-          base::BindRepeating(
-              [](ui::ElementContext ctx,
-                 user_education::FeaturePromoHandle promo_handle) {
-                auto* browser = chrome::FindBrowserWithUiElementContext(ctx);
-                if (browser)
-                  chrome::ShowSettingsSubPage(browser,
-                                              chrome::kPerformanceSubPage);
-                RecordHighEfficiencyInfoIPHOpenSettings(browser != nullptr);
-              }))
-          .SetBubbleTitleText(IDS_HIGH_EFFICIENCY_INFO_MODE_PROMO_TITLE)
-          .SetBubbleArrow(HelpBubbleArrow::kTopCenter)));
 
   // kIPHHighEfficiencyModeFeature:
   registry.RegisterFeature(std::move(

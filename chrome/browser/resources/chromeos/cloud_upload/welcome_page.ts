@@ -11,6 +11,9 @@ import {getTemplate} from './welcome_page.html.js';
  * The WelcomePageElement represents the first page in the setup flow.
  */
 export class WelcomePageElement extends BaseSetupPageElement {
+  private isOfficeWebAppInstalled = false;
+  private isOdfsMounted = false;
+
   constructor() {
     super();
   }
@@ -20,11 +23,45 @@ export class WelcomePageElement extends BaseSetupPageElement {
 
     this.innerHTML = getTemplate();
 
+    const description = this.querySelector('#description') as HTMLElement;
     const actionButton = this.querySelector('.action-button') as HTMLElement;
-    actionButton.addEventListener('click', this.onActionButtonClick);
-
     const cancelButton = this.querySelector('.cancel-button') as HTMLElement;
+
+    const installOfficeWebAppDescription = 'Install Microsoft 365';
+    const installOdfsDescription = 'Connect to Microsoft OneDrive';
+    const moveFilesDescription =
+        'Files will move to OneDrive when opening in Microsoft 365';
+    const zeroStepActionButtonText = 'Set up';
+
+
+    if (this.isOfficeWebAppInstalled && this.isOdfsMounted) {
+      description.innerText = moveFilesDescription;
+      actionButton.innerText = zeroStepActionButtonText;
+    } else {
+      const ul = document.createElement('ul');
+      if (!this.isOfficeWebAppInstalled) {
+        const installOfficeWebAppElement = document.createElement('li');
+        installOfficeWebAppElement.innerText = installOfficeWebAppDescription;
+        ul.appendChild(installOfficeWebAppElement);
+      }
+      if (!this.isOdfsMounted) {
+        const installOdfsElement = document.createElement('li');
+        installOdfsElement.innerText = installOdfsDescription;
+        ul.appendChild(installOdfsElement);
+      }
+      const moveFilesElement = document.createElement('li');
+      moveFilesElement.innerText = moveFilesDescription;
+      ul.appendChild(moveFilesElement);
+      description.appendChild(ul);
+    }
+
+    actionButton.addEventListener('click', this.onActionButtonClick);
     cancelButton.addEventListener('click', this.onCancelButtonClick);
+  }
+
+  setInstalled(isOfficeWebAppInstalled: boolean, isOdfsMounted: boolean) {
+    this.isOfficeWebAppInstalled = isOfficeWebAppInstalled;
+    this.isOdfsMounted = isOdfsMounted;
   }
 
   private onActionButtonClick() {

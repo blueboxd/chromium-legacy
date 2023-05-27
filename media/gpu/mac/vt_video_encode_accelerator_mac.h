@@ -109,6 +109,8 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
 
   void SetEncoderColorSpace();
 
+  void NotifyErrorStatus(EncoderStatus status);
+
   base::ScopedCFTypeRef<VTCompressionSessionRef> compression_session_;
 
   gfx::Size input_visible_size_;
@@ -150,6 +152,8 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
 
   // To expose client callbacks from VideoEncodeAccelerator.
   Client* client_ = nullptr;
+
+  std::unique_ptr<MediaLog> media_log_;
 
   // Tracking information for ensuring flushes aren't completed until all
   // pending encodes have been returned.

@@ -14,6 +14,7 @@
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "build/blink_buildflags.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -148,7 +149,8 @@ class PasswordManager : public PasswordManagerInterface {
   void OnUserModifiedNonPasswordField(PasswordManagerDriver* driver,
                                       autofill::FieldRendererId renderer_id,
                                       const std::u16string& field_name,
-                                      const std::u16string& value);
+                                      const std::u16string& value,
+                                      bool autocomplete_attribute_has_username);
 
   // Handles user input and decides whether to show manual fallback for password
   // saving, i.e. the omnibox icon with the anchored hidden prompt.
@@ -177,7 +179,7 @@ class PasswordManager : public PasswordManagerInterface {
   void DropFormManagers();
 
   // Returns true if password element is detected on the current page.
-  bool IsPasswordFieldDetectedOnPage();
+  bool IsPasswordFieldDetectedOnPage() const;
 
 #if defined(UNIT_TEST)
   const std::vector<std::unique_ptr<PasswordFormManager>>& form_managers()
@@ -194,14 +196,14 @@ class PasswordManager : public PasswordManagerInterface {
   }
 #endif  // defined(UNIT_TEST)
 
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(USE_BLINK)
   // Reports the success from the renderer's PasswordAutofillAgent to fill
   // credentials into a site. This may be called multiple times, but only
   // the first result will be recorded for each PasswordFormManager.
   void LogFirstFillingResult(PasswordManagerDriver* driver,
                              autofill::FormRendererId form_renderer_id,
                              int32_t result);
-#endif  // !BUILDFLAG(IS_IOS)
+#endif  // BUILDFLAG(USE_BLINK)
 
   // Notifies that Credential Management API function store() is called.
   void NotifyStorePasswordCalled();

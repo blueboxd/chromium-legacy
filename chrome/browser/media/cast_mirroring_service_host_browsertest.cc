@@ -8,6 +8,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/task/bind_post_task.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
@@ -23,6 +24,7 @@
 #include "components/mirroring/mojom/session_observer.mojom.h"
 #include "components/mirroring/mojom/session_parameters.mojom.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -226,6 +228,18 @@ class CastMirroringServiceHostBrowserTest
     run_loop.Run();
   }
 
+  void PauseMirroring() {
+    base::RunLoop run_loop;
+    host_->Pause(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  void ResumeMirroring() {
+    base::RunLoop run_loop;
+    host_->Resume(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   void StopMirroring() {
     if (video_frame_receiver_) {
       base::RunLoop run_loop;
@@ -272,6 +286,7 @@ class CastMirroringServiceHostBrowserTest
   MOCK_METHOD(void, LogInfoMessage, (const std::string&));
   MOCK_METHOD(void, LogErrorMessage, (const std::string&));
   MOCK_METHOD(void, OnSourceChanged, ());
+  MOCK_METHOD(void, OnRemotingStateChanged, (bool is_remoting));
 
   // mojom::CastMessageChannel mock implementation (inbound messages).
   MOCK_METHOD(void, OnMessage, (mojom::CastMessagePtr));
@@ -360,6 +375,16 @@ IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, TabIndicator) {
     }
     observer.WaitForTabChange();
   }
+  StopMirroring();
+}
+
+IN_PROC_BROWSER_TEST_F(CastMirroringServiceHostBrowserTest, PauseSession) {
+  EnableAccessCodeCast();
+  StartTabMirroring();
+  GetVideoCaptureHost();
+  StartVideoCapturing();
+  PauseMirroring();
+  ResumeMirroring();
   StopMirroring();
 }
 

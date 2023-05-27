@@ -197,7 +197,15 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #endif
 
+#if defined(__has_attribute)
+#if __has_attribute(trivial_abi)
 #define SK_TRIVIAL_ABI [[clang::trivial_abi]]
+#else
+#define SK_TRIVIAL_ABI
+#endif
+#else
+#define SK_TRIVIAL_ABI
+#endif
 
 // These flags are no longer defined in Skia, but we have them (temporarily)
 // until we update our call-sites (typically these are for API changes).
@@ -214,20 +222,23 @@ SK_API void SkDebugf_FileLine(const char* file,
 // Temporarily insulate Chrome pixel tests from Skia LOD bias change on GPU.
 #define SK_USE_LEGACY_MIPMAP_LOD_BIAS
 
-// Temporarily insulate Chrome pixel tests from Skia luminance changes in RP.
-#define SK_USE_LEGACY_RP_LUMINANCE
-
 // Max. verb count for paths rendered by the edge-AA tessellating path renderer.
 #define GR_AA_TESSELLATOR_MAX_VERB_COUNT 100
 
-#define SK_SUPPORT_LEGACY_AAA_CHOICE
+#define SK_FORCE_AAA
 
 #define SK_SUPPORT_LEGACY_DRAWLOOPER
 
 #define SK_USE_LEGACY_MIPMAP_BUILDER
 
+#define SK_SUPPORT_LEGACY_CONIC_CHOP
+
+// To be replaced with SK_ENABLE_SKSL_IN_RASTER_PIPELINE (go/sksl-rp):
+#define SK_ENABLE_SKVM
+
 // Use the original std::vector based serializer
-#define SK_SUPPORT_LEGACY_STRIKE_SERIALIZATION
+// Remove when new streaming support operations has been verified.
+// #define SK_SUPPORT_LEGACY_STRIKE_SERIALIZATION
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 

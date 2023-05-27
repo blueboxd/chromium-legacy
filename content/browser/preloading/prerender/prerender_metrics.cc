@@ -9,6 +9,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_util.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/preloading/prerender/prerender_trigger_type_impl.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/public/browser/prerender_trigger_type.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -59,13 +60,17 @@ std::string GenerateHistogramName(const std::string& histogram_base_name,
                                   const std::string& embedder_suffix) {
   switch (trigger_type) {
     case PrerenderTriggerType::kSpeculationRule:
-      DCHECK(embedder_suffix.empty());
+      CHECK(embedder_suffix.empty());
       return std::string(histogram_base_name) + ".SpeculationRule";
+    case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
+      CHECK(embedder_suffix.empty());
+      return std::string(histogram_base_name) +
+             ".SpeculationRuleFromIsolatedWorld";
     case PrerenderTriggerType::kEmbedder:
-      DCHECK(!embedder_suffix.empty());
+      CHECK(!embedder_suffix.empty());
       return std::string(histogram_base_name) + ".Embedder_" + embedder_suffix;
   }
-  NOTREACHED();
+  NOTREACHED_NORETURN();
 }
 
 void ReportHeaderMismatch(const std::string& key,
@@ -151,7 +156,7 @@ void PrerenderCancellationReason::ReportMetrics(
     const std::string& embedder_histogram_suffix) const {
   switch (final_status_) {
     case PrerenderFinalStatus::kInactivePageRestriction:
-      DCHECK(absl::holds_alternative<uint64_t>(explanation_));
+      CHECK(absl::holds_alternative<uint64_t>(explanation_));
       base::UmaHistogramSparse(
           GenerateHistogramName("Prerender.CanceledForInactivePageRestriction."
                                 "DisallowActivationReason",
@@ -160,13 +165,13 @@ void PrerenderCancellationReason::ReportMetrics(
           absl::get<uint64_t>(explanation_));
       break;
     case PrerenderFinalStatus::kMojoBinderPolicy:
-      DCHECK(absl::holds_alternative<std::string>(explanation_));
+      CHECK(absl::holds_alternative<std::string>(explanation_));
       RecordPrerenderCancelledInterface(absl::get<std::string>(explanation_),
                                         trigger_type,
                                         embedder_histogram_suffix);
       break;
     default:
-      DCHECK(absl::holds_alternative<absl::monostate>(explanation_));
+      CHECK(absl::holds_alternative<absl::monostate>(explanation_));
       // Other types need not to report.
       break;
   }
@@ -175,16 +180,16 @@ void PrerenderCancellationReason::ReportMetrics(
 std::string PrerenderCancellationReason::ToDevtoolReasonString() const {
   switch (final_status_) {
     case PrerenderFinalStatus::kInactivePageRestriction:
-      DCHECK(absl::holds_alternative<uint64_t>(explanation_));
+      CHECK(absl::holds_alternative<uint64_t>(explanation_));
       // TODO(https://crbug.com/1328365): It seems we have to return an integer.
       // And devtool has to handle it based on the enum.xml, as the content
       // layer cannot know about the enums added by the embedder layer.
       return "";
     case PrerenderFinalStatus::kMojoBinderPolicy:
-      DCHECK(absl::holds_alternative<std::string>(explanation_));
+      CHECK(absl::holds_alternative<std::string>(explanation_));
       return absl::get<std::string>(explanation_);
     default:
-      DCHECK(absl::holds_alternative<absl::monostate>(explanation_));
+      CHECK(absl::holds_alternative<absl::monostate>(explanation_));
       return "";
   }
 }
@@ -207,15 +212,15 @@ void RecordPrerenderActivationTime(
 void RecordFailedPrerenderFinalStatus(
     const PrerenderCancellationReason& cancellation_reason,
     const PrerenderAttributes& attributes) {
-  DCHECK_NE(cancellation_reason.final_status(),
-            PrerenderFinalStatus::kActivated);
+  CHECK_NE(cancellation_reason.final_status(),
+           PrerenderFinalStatus::kActivated);
   RecordPrerenderFinalStatusUma(cancellation_reason.final_status(),
                                 attributes.trigger_type,
                                 attributes.embedder_histogram_suffix);
 
   if (attributes.initiator_ukm_id != ukm::kInvalidSourceId) {
     // `initiator_ukm_id` must be valid for the speculation rules.
-    DCHECK_EQ(attributes.trigger_type, PrerenderTriggerType::kSpeculationRule);
+    CHECK(IsSpeculationRuleType(attributes.trigger_type));
     ukm::builders::PrerenderPageLoad(attributes.initiator_ukm_id)
         .SetFinalStatus(static_cast<int>(cancellation_reason.final_status()))
         .Record(ukm::UkmRecorder::Get());
@@ -227,7 +232,7 @@ void RecordFailedPrerenderFinalStatus(
   if (!attributes.IsBrowserInitiated()) {
     auto* ftn = FrameTreeNode::GloballyFindByID(
         attributes.initiator_frame_tree_node_id);
-    DCHECK(ftn);
+    CHECK(ftn);
     // TODO(https://crbug.com/1332377): Discuss with devtools to finalize the
     // message protocol.
     if (attributes.initiator_devtools_navigation_token.has_value()) {
@@ -247,7 +252,7 @@ void ReportSuccessActivation(const PrerenderAttributes& attributes,
                                 attributes.embedder_histogram_suffix);
   if (attributes.initiator_ukm_id != ukm::kInvalidSourceId) {
     // `initiator_ukm_id` must be valid only for the speculation rules.
-    DCHECK_EQ(attributes.trigger_type, PrerenderTriggerType::kSpeculationRule);
+    CHECK(IsSpeculationRuleType(attributes.trigger_type));
     ukm::builders::PrerenderPageLoad(attributes.initiator_ukm_id)
         .SetFinalStatus(static_cast<int>(PrerenderFinalStatus::kActivated))
         .Record(ukm::UkmRecorder::Get());
@@ -275,7 +280,7 @@ void RecordPrerenderRedirectionMismatchType(
     PrerenderCrossOriginRedirectionMismatch mismatch_type,
     PrerenderTriggerType trigger_type,
     const std::string& embedder_histogram_suffix) {
-  DCHECK_EQ(trigger_type, PrerenderTriggerType::kEmbedder);
+  CHECK_EQ(trigger_type, PrerenderTriggerType::kEmbedder);
   base::UmaHistogramEnumeration(
       GenerateHistogramName(
           "Prerender.Experimental.PrerenderCrossOriginRedirectionMismatch",
@@ -287,7 +292,7 @@ void RecordPrerenderRedirectionProtocolChange(
     PrerenderCrossOriginRedirectionProtocolChange change_type,
     PrerenderTriggerType trigger_type,
     const std::string& embedder_histogram_suffix) {
-  DCHECK_EQ(trigger_type, PrerenderTriggerType::kEmbedder);
+  CHECK_EQ(trigger_type, PrerenderTriggerType::kEmbedder);
   base::UmaHistogramEnumeration(
       GenerateHistogramName(
           "Prerender.Experimental.CrossOriginRedirectionProtocolChange",
@@ -352,6 +357,38 @@ void AnalyzePrerenderActivationHeader(
   if (!detected) {
     ReportHeaderMismatch("", HeaderMismatchType::kMatch, trigger_type,
                          embedder_histogram_suffix);
+  }
+}
+
+static_assert(
+    static_cast<int>(PrerenderBackNavigationEligibility::kMaxValue) +
+        static_cast<int>(
+            PreloadingEligibility::kPreloadingEligibilityContentStart2) <
+    static_cast<int>(PreloadingEligibility::kPreloadingEligibilityContentEnd2));
+
+PreloadingEligibility ToPreloadingEligibility(
+    PrerenderBackNavigationEligibility eligibility) {
+  if (eligibility == PrerenderBackNavigationEligibility::kEligible) {
+    return PreloadingEligibility::kEligible;
+  }
+
+  return static_cast<PreloadingEligibility>(
+      static_cast<int>(eligibility) +
+      static_cast<int>(
+          PreloadingEligibility::kPreloadingEligibilityContentStart2));
+}
+
+void RecordPrerenderBackNavigationEligibility(
+    PreloadingPredictor predictor,
+    PrerenderBackNavigationEligibility eligibility,
+    PreloadingAttempt* preloading_attempt) {
+  const std::string histogram_name =
+      std::string("Preloading.PrerenderBackNavigationEligibility.") +
+      std::string(predictor.name());
+  base::UmaHistogramEnumeration(histogram_name, eligibility);
+
+  if (preloading_attempt) {
+    preloading_attempt->SetEligibility(ToPreloadingEligibility(eligibility));
   }
 }
 

@@ -6,6 +6,7 @@
 
 #include <numeric>
 
+#include "ash/system/media/quick_settings_media_view_container.h"
 #include "ash/system/media/unified_media_controls_container.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
@@ -19,6 +20,7 @@
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -83,7 +85,7 @@ class AccessibilityFocusHelperView : public views::View {
   }
 
  private:
-  UnifiedSystemTrayController* controller_;
+  raw_ptr<UnifiedSystemTrayController, ExperimentalAsh> controller_;
 };
 
 }  // namespace
@@ -113,7 +115,7 @@ class QuickSettingsView::SystemTrayContainer : public views::View {
   }
 
  private:
-  views::BoxLayout* const layout_manager_;
+  const raw_ptr<views::BoxLayout, ExperimentalAsh> layout_manager_;
 };
 
 BEGIN_METADATA(QuickSettingsView, SystemTrayContainer, views::View)
@@ -150,7 +152,11 @@ QuickSettingsView::QuickSettingsView(UnifiedSystemTrayController* controller)
                                ->total_pages() > 1));
   page_indicator_view_->SetProperty(views::kMarginsKey, kPageIndicatorMargin);
 
-  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS)) {
+  if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsCrOSUpdatedUI)) {
+    media_view_container_ = system_tray_container_->AddChildView(
+        std::make_unique<QuickSettingsMediaViewContainer>(controller_));
+  } else if (base::FeatureList::IsEnabled(
+                 media::kGlobalMediaControlsForChromeOS)) {
     media_controls_container_ = system_tray_container_->AddChildView(
         std::make_unique<UnifiedMediaControlsContainer>());
     media_controls_container_->SetExpandedAmount(1.0f);
@@ -187,8 +193,9 @@ void QuickSettingsView::AddTiles(
   feature_tiles_container_->AddTiles(std::move(tiles));
 }
 
-void QuickSettingsView::AddSliderView(views::View* slider_view) {
-  sliders_container_->AddChildView(slider_view);
+views::View* QuickSettingsView::AddSliderView(
+    std::unique_ptr<views::View> slider_view) {
+  return sliders_container_->AddChildView(std::move(slider_view));
 }
 
 void QuickSettingsView::AddMediaControlsView(views::View* media_controls) {
@@ -215,6 +222,18 @@ void QuickSettingsView::ShowMediaControls() {
       CalculateHeightForFeatureTilesContainer());
 }
 
+void QuickSettingsView::AddMediaView(std::unique_ptr<views::View> media_view) {
+  DCHECK(media_view);
+  DCHECK(media_view_container_);
+  media_view_container_->AddChildView(std::move(media_view));
+}
+
+void QuickSettingsView::SetShowMediaView(bool show_media_view) {
+  DCHECK(media_view_container_);
+  media_view_container_->SetShowMediaView(show_media_view);
+  PreferredSizeChanged();
+}
+
 void QuickSettingsView::SetDetailedView(
     std::unique_ptr<views::View> detailed_view) {
   detailed_view_container_->RemoveAllChildViews();
@@ -234,6 +253,9 @@ void QuickSettingsView::ResetDetailedView() {
   detailed_view_container_->SetVisible(false);
   if (media_controls_container_) {
     media_controls_container_->MaybeShowMediaControls();
+  }
+  if (media_view_container_) {
+    media_view_container_->MaybeShowMediaView();
   }
   system_tray_container_->SetVisible(true);
 }
@@ -265,11 +287,15 @@ int QuickSettingsView::CalculateHeightForFeatureTilesContainer() {
       media_controls_container_ ? media_controls_container_->GetExpandedHeight()
                                 : 0;
 
+  int media_view_container_height =
+      media_view_container_ ? media_view_container_->GetExpandedHeight() : 0;
+
   return max_height_ - header_->GetPreferredSize().height() -
          footer_->GetPreferredSize().height() -
          page_indicator_view_->GetPreferredSize().height() -
          sliders_container_->GetPreferredSize().height() -
-         media_controls_container_height - footer_->GetPreferredSize().height();
+         media_controls_container_height - media_view_container_height -
+         footer_->GetPreferredSize().height();
 }
 
 std::u16string QuickSettingsView::GetDetailedViewAccessibleName() const {

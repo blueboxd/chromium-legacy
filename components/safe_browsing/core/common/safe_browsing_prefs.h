@@ -120,6 +120,13 @@ extern const char kSafeBrowsingMetricsLastLogTime[];
 // Used for logging metrics. Structure: go/sb-event-ts-pref-struct.
 extern const char kSafeBrowsingEventTimestamps[];
 
+// A timestamp indicating the expiration time of the Oblivious HTTP key used by
+// hash prefix real time URL check.
+extern const char kSafeBrowsingHashRealTimeOhttpExpirationTime[];
+
+// The Oblivious HTTP key used by hash prefix real time URL check.
+extern const char kSafeBrowsingHashRealTimeOhttpKey[];
+
 // A timestamp indicating the last time the account tailored security boolean
 // was updated.
 extern const char kAccountTailoredSecurityUpdateTimestamp[];
@@ -149,6 +156,13 @@ extern const char kExtensionTelemetryFileData[];
 // will be sent to Safe Browsing regardless of Safe Browsing Protection Level.
 // If true, follow Safe Browsing Protection Level.
 extern const char kRealTimeDownloadProtectionRequestAllowedByPolicy[];
+
+// A boolean indicating if Safe Browsing extension blocklist is allowed by
+// policy. If false, Safe Browsing extension blocklist will be disabled and no
+// ClientCRXListInfoRequest will be sent to Safe Browsing regardless of Safe
+// Browsing Protection Level. If true, follow Safe Browsing Protection Level.
+// This policy does not impact extension blocklist due to Omaha updater.
+extern const char kSafeBrowsingExtensionProtectionAllowedByPolicy[];
 
 }  // namespace prefs
 
@@ -268,6 +282,10 @@ bool IsRealTimeDownloadProtectionRequestAllowed(const PrefService& prefs);
 // Returns whether Safe Browsing client side phishing protection is allowed for
 // the user.
 bool IsCsdPhishingProtectionAllowed(const PrefService& prefs);
+
+// Returns whether Safe Browsing extension protection is allowed for
+// the user.
+bool IsSafeBrowsingExtensionProtectionAllowed(const PrefService& prefs);
 
 // Updates UMA metrics about Safe Browsing Extended Reporting states.
 void RecordExtendedReportingMetrics(const PrefService& prefs);

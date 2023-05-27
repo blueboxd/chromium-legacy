@@ -17,7 +17,6 @@
 #include "base/check_op.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/queue.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -68,6 +67,7 @@
 #include "pdf/ui/file_name.h"
 #include "pdf/ui/thumbnail.h"
 #include "printing/metafile_skia.h"
+#include "printing/units.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
@@ -502,8 +502,8 @@ void PdfViewWebPlugin::UpdateScroll(const gfx::PointF& scroll_position) {
                          0.0f);
 
   gfx::PointF scaled_scroll_position(
-      base::clamp(scroll_position.x(), 0.0f, max_x),
-      base::clamp(scroll_position.y(), 0.0f, max_y));
+      std::clamp(scroll_position.x(), 0.0f, max_x),
+      std::clamp(scroll_position.y(), 0.0f, max_y));
   scaled_scroll_position.Scale(device_scale_);
 
   engine_->ScrolledToXPosition(scaled_scroll_position.x());
@@ -1295,6 +1295,8 @@ void PdfViewWebPlugin::OnMessage(const base::Value::Dict& message) {
            &PdfViewWebPlugin::HandleDisplayAnnotationsMessage},
           {"getNamedDestination",
            &PdfViewWebPlugin::HandleGetNamedDestinationMessage},
+          {"getPageBoundingBox",
+           &PdfViewWebPlugin::HandleGetPageBoundingBoxMessage},
           {"getPasswordComplete",
            &PdfViewWebPlugin::HandleGetPasswordCompleteMessage},
           {"getSelectedText", &PdfViewWebPlugin::HandleGetSelectedTextMessage},
@@ -1352,6 +1354,26 @@ void PdfViewWebPlugin::HandleGetNamedDestinationMessage(
 
     reply.Set("namedDestinationView", view_stream.str());
   }
+
+  client_->PostMessage(std::move(reply));
+}
+
+void PdfViewWebPlugin::HandleGetPageBoundingBoxMessage(
+    const base::Value::Dict& message) {
+  const int page_index = message.FindInt("page").value();
+  base::Value::Dict reply =
+      PrepareReplyMessage("getPageBoundingBoxReply", message);
+
+  gfx::RectF bounding_box = engine_->GetPageBoundingBox(page_index);
+  gfx::Rect page_bounds = engine_->GetPageBoundsRect(page_index);
+
+  // Flip the origin from bottom-left to top-left.
+  bounding_box.set_y(static_cast<float>(page_bounds.height()) -
+                     bounding_box.bottom());
+  reply.Set("x", bounding_box.x());
+  reply.Set("y", bounding_box.y());
+  reply.Set("width", bounding_box.width());
+  reply.Set("height", bounding_box.height());
 
   client_->PostMessage(std::move(reply));
 }

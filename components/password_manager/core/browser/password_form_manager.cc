@@ -385,13 +385,13 @@ void PasswordFormManager::OnUpdateUsernameFromPrompt(
     // knows about. Set `votes_uploader_`'s UsernameChangeState depending on
     // whether the username is present or not. Also set `username_element` if it
     // is a known username.
-    const auto& possible_usernames =
-        parsed_submitted_form_->all_possible_usernames;
-    auto possible_username_it = base::ranges::find(
-        possible_usernames, new_username, &ValueElementPair::first);
+    const auto& alternative_usernames =
+        parsed_submitted_form_->all_alternative_usernames;
+    auto alternative_username_it = base::ranges::find(
+        alternative_usernames, new_username, &AlternativeElement::value);
 
-    if (possible_username_it != possible_usernames.end()) {
-      parsed_submitted_form_->username_element = possible_username_it->second;
+    if (alternative_username_it != alternative_usernames.end()) {
+      parsed_submitted_form_->username_element = alternative_username_it->name;
       votes_uploader_.set_username_change_state(
           VotesUploader::UsernameChangeState::kChangedToKnownValue);
     } else {
@@ -414,12 +414,12 @@ void PasswordFormManager::OnUpdatePasswordFromPrompt(
   parsed_submitted_form_->new_password_value.clear();
   parsed_submitted_form_->new_password_element.clear();
 
-  for (const ValueElementPair& pair :
-       parsed_submitted_form_->all_possible_passwords) {
-    if (pair.first == new_password) {
-      parsed_submitted_form_->password_element = pair.second;
-      break;
-    }
+  const AlternativeElementVector& alternative_passwords =
+      parsed_submitted_form_->all_alternative_passwords;
+  auto alternative_password_it = base::ranges::find(
+      alternative_passwords, new_password, &AlternativeElement::value);
+  if (alternative_password_it != alternative_passwords.end()) {
+    parsed_submitted_form_->password_element = alternative_password_it->name;
   }
 
   CreatePendingCredentials();
@@ -796,19 +796,32 @@ bool PasswordFormManager::ProvisionallySave(
   if (IsPasswordFormAfterSingleUsernameForm(possible_username,
                                             password_form_had_username)) {
     if (IsPossibleSingleUsernameAvailable(possible_username)) {
-      // Suggest the possible username value in a prompt if the server confirmed
-      // it is a single username field. Otherwise, |possible_username| is used
-      // only for voting.
-      if (possible_username->HasSingleUsernameServerPrediction()) {
+      // Suggest the possible username value in a prompt in two cases:
+      // (1) If the server confirmed it is a single username field.
+      // (2) If the field has autocomplete = "username" attribute (used only if
+      // there are no server predictions, which lets us override the attribute).
+      // Otherwise, |possible_username| is used only for voting.
+      if (possible_username->HasSingleUsernameServerPrediction() ||
+          (!possible_username->HasServerPrediction() &&
+           possible_username->autocomplete_attribute_has_username &&
+           base::FeatureList::IsEnabled(
+               password_manager::features::
+                   kUsernameFirstFlowHonorAutocomplete))) {
         parsed_submitted_form_->username_value = possible_username->value;
         metrics_recorder_->set_possible_username_used(true);
-        LogUsingPossibleUsername(
-            client_, /*is_used*/ true,
-            "Valid possible username, populated in prompt");
+        if (possible_username->autocomplete_attribute_has_username) {
+          LogUsingPossibleUsername(client_, /*is_used=*/true,
+                                   "Valid possible username by autocomplete "
+                                   "attribue, populated in prompt");
+        } else {
+          LogUsingPossibleUsername(client_, /*is_used=*/true,
+                                   "Valid possible username by server "
+                                   "prediction, populated in prompt");
+        }
       } else {
-        LogUsingPossibleUsername(
-            client_, /*is_used*/ true,
-            "Valid possible username, not populated in prompt");
+        LogUsingPossibleUsername(client_, /*is_used=*/true,
+                                 "Valid possible username by local heuristic, "
+                                 "not populated in prompt");
       }
       votes_uploader_.set_single_username_vote_data(
           possible_username->renderer_id, possible_username->value,
@@ -1160,6 +1173,8 @@ bool PasswordFormManager::IsPossibleSingleUsernameAvailable(
   // PasswordManager does not upload votes for fields that have no names or
   // ids to avoid aggregation of multiple unrelated fields during single
   // username detection. (crbug.com/1209143)
+  // TODO(crbug.com/1260336): Delete after fields are not distinguished by
+  // |field_name|.
   if (possible_username->field_name.empty()) {
     LogUsingPossibleUsername(client_, /*is_used*/ false, "Empty field name");
     return false;

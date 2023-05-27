@@ -36,17 +36,8 @@ class SyncUserSettings {
  public:
   virtual ~SyncUserSettings() = default;
 
-  // Whether the user wants Sync to run. This is false by default, but gets set
-  // to true early in the Sync setup flow, after the user has pressed "turn on
-  // Sync" but before they have actually confirmed the settings (that's
-  // IsFirstSetupComplete()). After Sync is enabled, this can get set to false
-  // by the Sync feature toggle in settings, or when Sync gets reset from the
-  // dashboard. This maps to DISABLE_REASON_USER_CHOICE.
-  virtual bool IsSyncRequested() const = 0;
-  virtual void SetSyncRequested(bool requested) = 0;
-
-  // Whether the initial Sync setup has been completed, meaning the user has
-  // consented to Sync.
+  // Whether the initial Sync Feature setup has been completed, meaning the
+  // user has turned on Sync-the-Feature.
   // NOTE: On ChromeOS, this gets set automatically, so it doesn't really mean
   // anything. See |browser_defaults::kSyncAutoStarts|.
   virtual bool IsFirstSetupComplete() const = 0;

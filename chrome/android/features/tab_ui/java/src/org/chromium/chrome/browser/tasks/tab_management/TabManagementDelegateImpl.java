@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider.SYNTHETIC_TRIAL_POSTFIX;
-
 import android.app.Activity;
 import android.content.Context;
 import android.view.ViewGroup;
@@ -13,7 +11,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
@@ -23,11 +20,9 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -49,9 +44,9 @@ import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
     public Layout createTabSwitcherLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, TabSwitcher tabSwitcher, JankTracker jankTracker,
-            ViewGroup tabSwitcherScrimAnchor, ScrimCoordinator scrimCoordinator) {
-        return new TabSwitcherLayout(context, updateHost, renderHost, tabSwitcher, jankTracker,
+            LayoutRenderHost renderHost, TabSwitcher tabSwitcher, ViewGroup tabSwitcherScrimAnchor,
+            ScrimCoordinator scrimCoordinator) {
+        return new TabSwitcherLayout(context, updateHost, renderHost, tabSwitcher,
                 tabSwitcherScrimAnchor, scrimCoordinator);
     }
 
@@ -71,12 +66,6 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
             @NonNull ModalDialogManager modalDialogManager,
             @NonNull OneshotSupplier<IncognitoReauthController> incognitoReauthControllerSupplier,
             @Nullable BackPressManager backPressManager) {
-        if (UmaSessionStats.isMetricsServiceAvailable()) {
-            UmaSessionStats.registerSyntheticFieldTrial(
-                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
-                    "Downloaded_Enabled");
-        }
-
         return new TabSwitcherCoordinator(activity, activityLifecycleDispatcher, tabModelSelector,
                 tabContentManager, browserControlsStateProvider, tabCreatorManager,
                 menuOrKeyboardActionController, containerView, multiWindowModeStateDispatcher,

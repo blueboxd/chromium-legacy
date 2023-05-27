@@ -34,6 +34,7 @@
 
 #if BUILDFLAG(IS_OZONE)
 #include "ui/base/ui_base_features.h"                               // nogncheck
+#include "ui/events/ozone/events_ozone.h"                           // nogncheck
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"          // nogncheck
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"  // nogncheck
 #endif
@@ -786,6 +787,12 @@ void TouchEvent::DisableSynchronousHandling() {
   DispatcherApi dispatcher_api(this);
   dispatcher_api.set_result(
       static_cast<EventResult>(result() | ER_DISABLE_SYNC_HANDLING));
+}
+
+void TouchEvent::ForceProcessGesture() {
+  DispatcherApi dispatcher_api(this);
+  dispatcher_api.set_result(
+      static_cast<EventResult>(result() | ER_FORCE_PROCESS_GESTURE));
 }
 
 void TouchEvent::SetPointerDetailsForTest(

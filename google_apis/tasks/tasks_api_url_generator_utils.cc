@@ -23,14 +23,17 @@ constexpr char kPageTokenParameterName[] = "pageToken";
 constexpr char kShowCompletedParameterName[] = "showCompleted";
 
 constexpr char kTaskListsListUrl[] = "tasks/v1/users/@me/lists";
-constexpr char kTaskListsListRequestedFields[] = "kind,items(id,title,updated)";
+constexpr char kTaskListsListRequestedFields[] =
+    "kind,items(id,title,updated),nextPageToken";
 
 constexpr char kTasksListUrlTemplate[] = "tasks/v1/lists/$1/tasks";
 constexpr char kTasksListRequestedFields[] =
-    "kind,items(id,title,status,parent)";
+    "kind,items(id,title,status,parent,due),nextPageToken";
+
+constexpr char kTaskUrlTemplate[] = "tasks/v1/lists/$1/tasks/$2";
 
 GURL GetBaseUrl() {
-  return GaiaUrls::GetInstance()->google_apis_origin_url();
+  return GaiaUrls::GetInstance()->tasks_api_origin_url();
 }
 
 }  // namespace
@@ -56,7 +59,7 @@ GURL GetListTasksUrl(const std::string& task_list_id,
                      bool include_completed,
                      absl::optional<int> max_results,
                      const std::string& page_token) {
-  DCHECK(!task_list_id.empty());
+  CHECK(!task_list_id.empty());
   GURL url = GetBaseUrl().Resolve(base::ReplaceStringPlaceholders(
       kTasksListUrlTemplate, {task_list_id}, nullptr));
   url = net::AppendOrReplaceQueryParameter(url, kFieldsParameterName,
@@ -73,6 +76,14 @@ GURL GetListTasksUrl(const std::string& task_list_id,
                                              page_token);
   }
   return url;
+}
+
+GURL GetPatchTaskUrl(const std::string& task_list_id,
+                     const std::string& task_id) {
+  CHECK(!task_list_id.empty());
+  CHECK(!task_id.empty());
+  return GetBaseUrl().Resolve(base::ReplaceStringPlaceholders(
+      kTaskUrlTemplate, {task_list_id, task_id}, nullptr));
 }
 
 }  // namespace google_apis::tasks

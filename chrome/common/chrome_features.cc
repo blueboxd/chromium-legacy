@@ -52,7 +52,7 @@ BASE_FEATURE(kAppDeduplicationServiceFondue,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppPreloadService,
              "AppPreloadService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_MAC)
@@ -291,6 +291,17 @@ BASE_FEATURE(kDesktopPWAsRunOnOsLogin,
 #endif
 );
 
+// If enabled, allow-listed PWAs cannot be closed manually by the user.
+BASE_FEATURE(kDesktopPWAsPreventClose,
+             "DesktopPWAsPreventClose",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, allow-listed PWAs cannot will be prevented from throttling /
+// hibernation, even when idle.
+BASE_FEATURE(kDesktopPWAsKeepAlive,
+             "DesktopPWAsKeepAlive",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Runs diagnostics during start up to measure how broken web app icons are to
 // feed into metrics.
 BASE_FEATURE(kDesktopPWAsIconHealthChecks,
@@ -319,10 +330,10 @@ BASE_FEATURE(kChromeAppsDeprecation,
 // deprecation.
 BASE_FEATURE(kKeepForceInstalledPreinstalledApps,
              "KeepForceInstalledPreinstalledApps",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 // Controls if the 'launch anyways' button is shown.
 const base::FeatureParam<bool> kChromeAppsDeprecationHideLaunchAnyways{
-    &kChromeAppsDeprecation, "HideLaunchAnyways", false};
+    &kChromeAppsDeprecation, "HideLaunchAnyways", true};
 #endif
 
 // Enables notification permission revocation for origins that may send
@@ -535,7 +546,12 @@ BASE_FEATURE(kHappinessTrackingSystem,
 // survey.
 BASE_FEATURE(kHappinessTrackingSystemBluetoothRevamp,
              "HappinessTrackingSystemBluetoothRevamp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// Enables or disables the Happiness Tracking System for the Battery life
+// survey.
+BASE_FEATURE(kHappinessTrackingSystemBatteryLife,
+             "HappinessTrackingSystemBatteryLife",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 // Enables or disables the Happiness Tracking System for the Ent survey.
 BASE_FEATURE(kHappinessTrackingSystemEnt,
              "HappinessTrackingSystemEnt",
@@ -600,6 +616,10 @@ BASE_FEATURE(kHappinessTrackingGeneralCamera,
 BASE_FEATURE(kHappinessTrackingPrivacyHubBaseline,
              "HappinessTrackingPrivacyHubBaseline",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// Enables the Happiness Tracking System for OS Settings Search survey.
+BASE_FEATURE(kHappinessTrackingOsSettingsSearch,
+             "HappinessTrackingOsSettingsSearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Hides the origin text from showing up briefly in WebApp windows.
@@ -636,11 +656,12 @@ BASE_FEATURE(kImmersiveFullscreen,
 // for this feature to have an effect.
 BASE_FEATURE(kImmersiveFullscreenTabs,
              "ImmersiveFullscreenTabs",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables immersive fullscreen mode for PWA windows. PWA windows will use
-// immersive fullscreen mode if and only if both this and the previous feature
-// are enabled.
+// immersive fullscreen mode if and only if both this and kImmersiveFullscreen
+// are enabled. PWA windows currently do not use ImmersiveFullscreenTabs even if
+// the feature is enabled.
 BASE_FEATURE(kImmersiveFullscreenPWAs,
              "ImmersiveFullscreenPWAs",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -685,13 +706,6 @@ BASE_FEATURE(kIncognitoNtpRevamp,
 // install untrusted Isolated Web Apps.
 BASE_FEATURE(kIsolatedWebAppDevMode,
              "IsolatedWebAppDevMode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, the requests in a third party context to domains included in
-// the Masked Domain List Component will use the Privacy Proxy to shield the
-// client's IP.
-BASE_FEATURE(kMaskedDomainList,
-             "MaskedDomainList",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -796,12 +810,6 @@ BASE_FEATURE(kShowHiddenNetworkToggle,
 // Enables the new design of metrics settings.
 BASE_FEATURE(kMetricsSettingsAndroid,
              "MetricsSettingsAndroid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS)
-BASE_FEATURE(kMicrosoftOfficeWebAppExperiment,
-             "MicrosoftOfficeWebAppExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -1078,6 +1086,13 @@ BASE_FEATURE(kSupportTool, "SupportTool", base::FEATURE_DISABLED_BY_DEFAULT);
 // packet.
 BASE_FEATURE(kSupportToolScreenshot,
              "SupportToolScreenshot",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables copy token button on chrome://support-tool.url-generator page. The
+// token can be used in Admin Console to select the requested data collector
+// types.
+BASE_FEATURE(kSupportToolCopyTokenButton,
+             "SupportToolCopyTokenButton",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -1357,13 +1372,6 @@ const base::FeatureParam<base::TimeDelta>
         base::Seconds(5)};
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Enable uploading of a zip archive of system logs instead of individual files.
-BASE_FEATURE(kUploadZippedSystemLogs,
-             "UploadZippedSystemLogs",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
 #if BUILDFLAG(IS_MAC)
 BASE_FEATURE(kUseChromiumUpdater,
              "UseChromiumUpdater",
@@ -1385,6 +1393,18 @@ BASE_FEATURE(kWebAppManifestIconUpdating,
 
 BASE_FEATURE(kWebAppManifestImmediateUpdating,
              "WebAppManifestImmediateUpdating",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWebAppSyncGeneratedIconBackgroundFix,
+             "WebAppSyncGeneratedIconBackgroundFix",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWebAppSyncGeneratedIconRetroactiveFix,
+             "WebAppSyncGeneratedIconRetroactiveFix",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWebAppSyncGeneratedIconUpdateFix,
+             "WebAppSyncGeneratedIconUpdateFix",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -1440,17 +1460,17 @@ BASE_FEATURE(kWebShare, "WebShare", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kWebShare, "WebShare", base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-// Whether to enable "dark mode" enhancements in Mac Mojave or Windows 10 for
-// UIs implemented with web technologies.
+// Whether to enable "dark mode" enhancements in Mac Mojave, Windows 10, or
+// Linux for UIs implemented with web technologies.
 BASE_FEATURE(kWebUIDarkMode,
              "WebUIDarkMode",
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) || \
-    BUILDFLAG(IS_CHROMEOS)
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) ||
-        // BUILDFLAG(IS_CHROMEOS)
+        // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
 );
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1490,49 +1510,6 @@ bool IsParentAccessCodeForOnlineLoginEnabled() {
   return base::FeatureList::IsEnabled(kParentAccessCodeForOnlineLogin);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-// Enables omnibox trigger prerendering.
-BASE_FEATURE(kOmniboxTriggerForPrerender2,
-             "OmniboxTriggerForPrerender2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
-             "SupportSearchSuggestionForPrerender2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<SearchSuggestionPrerenderImplementationType>::Option
-    search_suggestion_implementation_types[] = {
-        {SearchSuggestionPrerenderImplementationType::kUsePrefetch,
-         "use_prefetch"},
-        {SearchSuggestionPrerenderImplementationType::kIgnorePrefetch,
-         "ignore_prefetch"}};
-const base::FeatureParam<SearchSuggestionPrerenderImplementationType>
-    kSearchSuggestionPrerenderImplementationTypeParam{
-        &kSupportSearchSuggestionForPrerender2, "implementation_type",
-        SearchSuggestionPrerenderImplementationType::kIgnorePrefetch,
-        &search_suggestion_implementation_types};
-
-const base::FeatureParam<SearchPreloadShareableCacheType>::Option
-    search_preload_shareable_cache_types[] = {
-        {SearchPreloadShareableCacheType::kEnabled, "enabled"},
-        {SearchPreloadShareableCacheType::kDisabled, "disabled"}};
-const base::FeatureParam<SearchPreloadShareableCacheType>
-    kSearchPreloadShareableCacheTypeParam{
-        &kSupportSearchSuggestionForPrerender2, "shareable_cache",
-        SearchPreloadShareableCacheType::kDisabled,
-        &search_preload_shareable_cache_types};
-
-BASE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff,
-             "AutocompleteActionPredictorConfidenceCutoff",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables omnibox trigger no state prefetch. Only one of
-// kOmniboxTriggerForPrerender2 or kOmniboxTriggerForNoStatePrefetch can be
-// enabled in the experiment. If both are enabled, only
-// kOmniboxTriggerForPrerender2 takes effect.
-// TODO(crbug.com/1267731): Remove this flag once the experiments are completed.
-BASE_FEATURE(kOmniboxTriggerForNoStatePrefetch,
-             "OmniboxTriggerForNoStatePrefetch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // A feature to indicate whether setting wake time >24hours away is supported by

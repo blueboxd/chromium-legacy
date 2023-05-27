@@ -16,6 +16,7 @@
 #import "components/password_manager/core/common/password_manager_features.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_multi_line_text_edit_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_multi_line_text_edit_item_delegate.h"
@@ -24,7 +25,6 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_handler.h"
@@ -47,6 +47,7 @@
 namespace {
 
 using base::UmaHistogramEnumeration;
+using password_manager::constants::kMaxPasswordNoteLength;
 using password_manager::metrics_util::LogPasswordSettingsReauthResult;
 using password_manager::metrics_util::PasswordCheckInteraction;
 using password_manager::metrics_util::ReauthResult;
@@ -631,8 +632,7 @@ const int kMinNoteCharAmountForWarning = 901;
 
   // Update save button state based on the note's length and validity of other
   // input fields.
-  BOOL noteValid = tableViewItem.text.length <=
-                   password_manager::constants::kMaxPasswordNoteLength;
+  BOOL noteValid = tableViewItem.text.length <= kMaxPasswordNoteLength;
   if (self.isNoteValid != noteValid) {
     self.isNoteValid = noteValid;
     tableViewItem.validText = noteValid;
@@ -640,6 +640,15 @@ const int kMinNoteCharAmountForWarning = 901;
     self.shouldEnableSave =
         noteValid && [self checkIfValidSite] && [self checkIfValidPassword];
     [self toggleNavigationBarRightButtonItem];
+  }
+
+  // Notify that the note character limit has been reached via VoiceOver.
+  if (!noteValid) {
+    NSString* tooLongNoteMessage = l10n_util::GetNSStringF(
+        IDS_IOS_SETTINGS_PASSWORDS_TOO_LONG_NOTE_DESCRIPTION,
+        base::NumberToString16(kMaxPasswordNoteLength));
+    UIAccessibilityPostNotification(UIAccessibilityAnnouncementNotification,
+                                    tooLongNoteMessage);
   }
 
   // Update note footer based on the note's length.

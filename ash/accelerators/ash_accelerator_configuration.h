@@ -12,6 +12,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/accelerator_configuration.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/mojom/accelerator_configuration.mojom-shared.h"
 #include "ash/public/mojom/accelerator_configuration.mojom.h"
 #include "ash/public/mojom/accelerator_info.mojom.h"
 #include "base/containers/flat_set.h"
@@ -62,8 +63,8 @@ class ASH_EXPORT AshAcceleratorConfiguration : public AcceleratorConfiguration {
       const ui::Accelerator& accelerator) override;
   mojom::AcceleratorConfigResult ReplaceAccelerator(
       AcceleratorActionId action_id,
-      const ui::Accelerator& old_acc,
-      const ui::Accelerator& new_acc) override;
+      const ui::Accelerator& old_accelerator,
+      const ui::Accelerator& new_accelerator) override;
   mojom::AcceleratorConfigResult RestoreDefault(
       AcceleratorActionId action_id) override;
   mojom::AcceleratorConfigResult RestoreAllDefaults() override;
@@ -117,6 +118,17 @@ class ASH_EXPORT AshAcceleratorConfiguration : public AcceleratorConfiguration {
   mojom::AcceleratorConfigResult DoRemoveAccelerator(
       AcceleratorActionId action_id,
       const ui::Accelerator& accelerator);
+
+  // Adds the accelerator, does not notify observers.
+  mojom::AcceleratorConfigResult DoAddAccelerator(
+      AcceleratorActionId action_id,
+      const ui::Accelerator& accelerator);
+
+  // Replace the accelerator, does not notify observers.
+  mojom::AcceleratorConfigResult DoReplaceAccelerator(
+      AcceleratorActionId action_id,
+      const ui::Accelerator& old_accelerator,
+      const ui::Accelerator& new_accelerator);
 
   void NotifyAcceleratorsUpdated();
 

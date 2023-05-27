@@ -96,11 +96,13 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
   void ScoreAd(
       const std::string& ad_metadata_json,
       double bid,
+      const absl::optional<blink::AdCurrency>& bid_currency,
       const blink::AuctionConfig::NonSharedParams&
           auction_ad_config_non_shared_params,
       const absl::optional<GURL>& direct_from_seller_seller_signals,
       const absl::optional<GURL>& direct_from_seller_auction_signals,
       mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
+      const absl::optional<blink::AdCurrency>& component_expect_bid_currency,
       const url::Origin& browser_signal_interest_group_owner,
       const GURL& browser_signal_render_url,
       const std::vector<GURL>& browser_signal_ad_components,
@@ -119,8 +121,11 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
       const url::Origin& browser_signal_interest_group_owner,
       const GURL& browser_signal_render_url,
       double browser_signal_bid,
+      const absl::optional<blink::AdCurrency>& browser_signal_bid_currency,
       double browser_signal_desirability,
       double browser_signal_highest_scoring_other_bid,
+      const absl::optional<blink::AdCurrency>&
+          browser_signal_highest_scoring_other_bid_currency,
       auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
           browser_signals_component_auction_report_result_params,
       uint32_t scoring_signals_data_version,
@@ -146,8 +151,10 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
     // safe to access after that happens.
     std::string ad_metadata_json;
     double bid;
+    absl::optional<blink::AdCurrency> bid_currency;
     blink::AuctionConfig::NonSharedParams auction_ad_config_non_shared_params;
     mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller;
+    absl::optional<blink::AdCurrency> component_expect_bid_currency;
     url::Origin browser_signal_interest_group_owner;
     GURL browser_signal_render_url;
     // While these are URLs, it's more concenient to store these as strings
@@ -205,8 +212,11 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
     url::Origin browser_signal_interest_group_owner;
     GURL browser_signal_render_url;
     double browser_signal_bid;
+    absl::optional<blink::AdCurrency> browser_signal_bid_currency;
     double browser_signal_desirability;
     double browser_signal_highest_scoring_other_bid;
+    absl::optional<blink::AdCurrency>
+        browser_signal_highest_scoring_other_bid_currency;
     auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
         browser_signals_component_auction_report_result_params;
     absl::optional<uint32_t> scoring_signals_data_version;
@@ -249,6 +259,7 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
         mojom::RejectReason reject_reason,
         mojom::ComponentAuctionModifiedBidParamsPtr
             component_auction_modified_bid_params,
+        absl::optional<double> bid_in_seller_currency,
         absl::optional<uint32_t> scoring_signals_data_version,
         absl::optional<GURL> debug_loss_report_url,
         absl::optional<GURL> debug_win_report_url,
@@ -278,6 +289,7 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
     void ScoreAd(
         const std::string& ad_metadata_json,
         double bid,
+        const absl::optional<blink::AdCurrency>& bid_currency,
         const blink::AuctionConfig::NonSharedParams&
             auction_ad_config_non_shared_params,
         DirectFromSellerSignalsRequester::Result
@@ -286,6 +298,7 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
             direct_from_seller_result_auction_signals,
         scoped_refptr<TrustedSignals::Result> trusted_scoring_signals,
         mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
+        const absl::optional<blink::AdCurrency>& component_expect_bid_currency,
         const url::Origin& browser_signal_interest_group_owner,
         const GURL& browser_signal_render_url,
         const std::vector<std::string>& browser_signal_ad_components,
@@ -306,8 +319,11 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
         const url::Origin& browser_signal_interest_group_owner,
         const GURL& browser_signal_render_url,
         double browser_signal_bid,
+        const absl::optional<blink::AdCurrency>& browser_signal_bid_currency,
         double browser_signal_desirability,
         double browser_signal_highest_scoring_other_bid,
+        const absl::optional<blink::AdCurrency>&
+            browser_signal_highest_scoring_other_bid_currency,
         auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
             browser_signals_component_auction_report_result_params,
         absl::optional<uint32_t> scoring_signals_data_version,
@@ -338,6 +354,7 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
         mojom::RejectReason reject_reason,
         mojom::ComponentAuctionModifiedBidParamsPtr
             component_auction_modified_bid_params,
+        absl::optional<double> bid_in_seller_currency,
         absl::optional<uint32_t> scoring_signals_data_version,
         absl::optional<GURL> debug_loss_report_url,
         absl::optional<GURL> debug_win_report_url,
@@ -418,6 +435,7 @@ class CONTENT_EXPORT SellerWorklet : public mojom::SellerWorklet {
       mojom::RejectReason reject_reason,
       mojom::ComponentAuctionModifiedBidParamsPtr
           component_auction_modified_bid_params,
+      absl::optional<double> bid_in_seller_currency,
       absl::optional<uint32_t> scoring_signals_data_version,
       absl::optional<GURL> debug_loss_report_url,
       absl::optional<GURL> debug_win_report_url,

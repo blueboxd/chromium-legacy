@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "try",
               "builder": "android_optional_gpu_tests_rel",
-              "project": "chromium-m113"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-fyi-archive",
@@ -34,7 +34,7 @@
         {
           "bucket": "try",
           "builder": "android_optional_gpu_tests_rel",
-          "project": "chromium-m113"
+          "project": "chromium"
         }
       ],
       "retry_failed_shards": false
@@ -56,5 +56,6 @@
     ]
   },
   "builder_group": "tryserver.chromium.android",
+  "cq": "path-based",
   "recipe": "chromium_trybot"
 }

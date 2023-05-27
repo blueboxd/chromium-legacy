@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Сертификат аутентификации отклонен локально</translation>
 <translation id="1775381402323441512">Информация о видео</translation>
 <translation id="180035236176489073">Для доступа к файлам необходимо подключение к Интернету.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Расширение с идентификатором}one{Расширения с идентификаторами}few{Расширения с идентификаторами}many{Расширения с идентификаторами}other{Расширения с идентификаторами}}</translation>
 <translation id="1807938677607439181">Все файлы</translation>
 <translation id="1810764548349082891">Предпросмотр недоступен</translation>
 <translation id="1812302367230252929">Амхарский, транслитерация</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Недопустимая запись совпадения с альтернативным именем субъекта</translation>
 <translation id="1838709767668011582">Сайт Google</translation>
 <translation id="1853795129690976061">Доступ к этой папке предоставлен Linux.</translation>
-<translation id="1859422890169495746">На этом устройстве Chromebook</translation>
 <translation id="1864756863218646478">Не удалось найти файл.</translation>
 <translation id="1884013283844450420">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, название – "<ph name="NETWORK_NAME" />", подключение</translation>
 <translation id="1920670151694390848">Малаялам, транслитерация</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Планета</translation>
 <translation id="2305020378527873881">Том <ph name="VOLUME_NAME" /> извлечен.</translation>
 <translation id="2307462900900812319">Настройка сети</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Расширение со следующим идентификатором не найдено: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> Обратитесь к администратору.}one{Расширения со следующими идентификаторами не найдены: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> Обратитесь к администратору.}few{Расширения со следующими идентификаторами не найдены: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> Обратитесь к администратору.}many{Расширения со следующими идентификаторами не найдены: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> Обратитесь к администратору.}other{Расширения со следующими идентификаторами не найдены: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> Обратитесь к администратору.}}</translation>
 <translation id="2325650632570794183">Этот тип файла не поддерживается. Зайдите в Интернет-магазин Chrome, чтобы найти приложение, с помощью которого его можно открыть.</translation>
 <translation id="2326539130272988168">Болгарский</translation>
 <translation id="2337715497728194187">Поделиться с Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Не защищена</translation>
 <translation id="3291218047831493686">Чтобы изменить настройки блокировки SIM-карты, подключитесь к этой сети</translation>
 <translation id="3293023191599135697">Сети WEP не поддерживаются</translation>
+<translation id="3295006446256079333">В этой области</translation>
 <translation id="3295357220137379386">Устройство занято.</translation>
 <translation id="3296763833017966289">Грузинский</translation>
 <translation id="3307875152560779385">Украинский</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Устройства Chromebase</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="485316830061041779">Немецкий</translation>
+<translation id="4862885579661885411">Настройки приложения "Файлы"</translation>
 <translation id="4867079195717347957">Нажмите, чтобы отсортировать значения в столбце по убыванию.</translation>
 <translation id="4867297348137739678">Последняя неделя</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> Б</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">Копирование объектов (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="7375951387215729722">Данные в столбце "<ph name="COLUMN_NAME" />" отсортированы по убыванию.</translation>
 <translation id="7377161162143020057">Администратор запретил копировать этот файл.</translation>
-<translation id="7392500733467492920">не удалось обнаружить. Обратитесь к администратору.</translation>
 <translation id="7402503521691663770">Устройства с Chrome OS Flex</translation>
 <translation id="7408870451288633753">Чешский</translation>
 <translation id="7417453074306512035">Эфиопская раскладка</translation>

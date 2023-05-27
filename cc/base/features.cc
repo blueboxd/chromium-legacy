@@ -94,10 +94,6 @@ BASE_FEATURE(kNormalPriorityImageDecoding,
              "NormalPriorityImageDecoding",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSkipCommitsIfNotSynchronizingCompositorState,
-             "SkipCommitsIfNotSynchronizingCompositorState",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kUseDMSAAForTiles,
              "UseDMSAAForTiles",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -108,7 +104,7 @@ BASE_FEATURE(kUpdateBrowserControlsWithoutProxy,
 
 BASE_FEATURE(kRasterTilePriorityQueue,
              "RasterTilePriorityQueue",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUIEnableSharedImageCacheForGpu,
              "UIEnableSharedImageCacheForGpu",
@@ -120,11 +116,11 @@ BASE_FEATURE(kUIEnableSharedImageCacheForGpu,
 
 BASE_FEATURE(kReclaimResourcesFlushInBackground,
              "ReclaimResourcesFlushInBackground",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMoreAggressiveSolidColorDetection,
              "MoreAggressiveSolidColorDetection",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReducedFrameRateEstimation,
              "kReducedFrameRateEstimation",

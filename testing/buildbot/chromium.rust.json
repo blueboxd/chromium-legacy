@@ -9,7 +9,6 @@
     "gtest_tests": [
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -17,7 +16,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -27,7 +28,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -35,17 +35,18 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt:gnrt_unittests/"
+        "test": "mojo_rust_integration_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_integration_unittests/"
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -53,7 +54,28 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -63,7 +85,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_cpp_including_rust_unittests",
@@ -72,7 +93,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -82,7 +105,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_serde_json_lenient",
@@ -91,7 +113,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -109,7 +133,6 @@
     "gtest_tests": [
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -117,7 +140,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -127,7 +152,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -135,17 +159,18 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt:gnrt_unittests/"
+        "test": "mojo_rust_integration_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_integration_unittests/"
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -153,7 +178,28 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -163,7 +209,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_cpp_including_rust_unittests",
@@ -172,7 +217,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -182,7 +229,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_serde_json_lenient",
@@ -191,7 +237,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -209,7 +257,6 @@
     "gtest_tests": [
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -217,7 +264,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -227,7 +276,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -235,17 +283,18 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt:gnrt_unittests/"
+        "test": "mojo_rust_integration_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_integration_unittests/"
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -253,7 +302,28 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -263,7 +333,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_cpp_including_rust_unittests",
@@ -272,7 +341,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -282,7 +353,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_serde_json_lenient",
@@ -291,7 +361,9 @@
           "dimension_sets": [
             {
               "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google"
+              "device_os_flavor": "google",
+              "device_type": "walleye",
+              "os": "Android"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -305,13 +377,13 @@
     "additional_compile_targets": [
       "gnrt_unittests",
       "mojo_rust",
-      "mojo_rust_tests",
+      "mojo_rust_integration_unittests",
+      "mojo_rust_unittests",
       "rust_build_tests"
     ],
     "gtest_tests": [
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -328,7 +400,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -345,7 +416,38 @@
       },
       {
         "merge": {
-          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_integration_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_integration_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_unittests/"
+      },
+      {
+        "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -362,7 +464,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_cpp_including_rust_unittests",
@@ -380,7 +481,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_serde_json_lenient",
@@ -401,7 +501,6 @@
       {
         "isolate_name": "build_rust_tests",
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "build_rust_tests",
@@ -416,25 +515,6 @@
         },
         "test": "build_rust_tests",
         "test_id_prefix": "ninja://build/rust/tests:build_rust_tests/"
-      },
-      {
-        "isolate_name": "mojo_rust_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mojo_rust_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "mojo_rust_tests",
-        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_tests/"
       }
     ]
   },
@@ -442,13 +522,13 @@
     "additional_compile_targets": [
       "gnrt_unittests",
       "mojo_rust",
-      "mojo_rust_tests",
+      "mojo_rust_integration_unittests",
+      "mojo_rust_unittests",
       "rust_build_tests"
     ],
     "gtest_tests": [
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -465,7 +545,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -482,7 +561,38 @@
       },
       {
         "merge": {
-          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_integration_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_integration_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_unittests/"
+      },
+      {
+        "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -499,7 +609,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_cpp_including_rust_unittests",
@@ -517,7 +626,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_serde_json_lenient",
@@ -538,7 +646,6 @@
       {
         "isolate_name": "build_rust_tests",
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "build_rust_tests",
@@ -553,162 +660,6 @@
         },
         "test": "build_rust_tests",
         "test_id_prefix": "ninja://build/rust/tests:build_rust_tests/"
-      },
-      {
-        "isolate_name": "mojo_rust_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mojo_rust_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "mojo_rust_tests",
-        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_tests/"
-      }
-    ]
-  },
-  "linux-rust-x64-rel-android-toolchain": {
-    "additional_compile_targets": [
-      "gnrt_unittests",
-      "mojo_rust",
-      "mojo_rust_tests",
-      "rust_build_tests"
-    ],
-    "gtest_tests": [
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "base_unittests",
-        "test_id_prefix": "ninja://base:base_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "gnrt_unittests",
-        "test_id_prefix": "ninja://tools/crates/gnrt:gnrt_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "rust_gtest_interop_unittests",
-        "test_id_prefix": "ninja://testing/rust_gtest_interop:rust_gtest_interop_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "test_cpp_including_rust_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "test_cpp_including_rust_unittests",
-        "test_id_prefix": "ninja://build/rust/tests/test_cpp_including_rust:test_cpp_including_rust_unittests/"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "test_serde_json_lenient",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "test_serde_json_lenient",
-        "test_id_prefix": "ninja://build/rust/tests/test_serde_json_lenient:test_serde_json_lenient/"
-      }
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "build_rust_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "build_rust_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "build_rust_tests",
-        "test_id_prefix": "ninja://build/rust/tests:build_rust_tests/"
-      },
-      {
-        "isolate_name": "mojo_rust_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mojo_rust_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "mojo_rust_tests",
-        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_tests/"
       }
     ]
   },
@@ -716,7 +667,8 @@
     "additional_compile_targets": [
       "gnrt_unittests",
       "mojo_rust",
-      "mojo_rust_tests",
+      "mojo_rust_integration_unittests",
+      "mojo_rust_unittests",
       "rust_build_tests"
     ],
     "gtest_tests": [
@@ -729,7 +681,6 @@
           "--xctest"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "resultdb": {
@@ -742,7 +693,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
             }
           ],
           "dimension_sets": [
@@ -771,7 +722,6 @@
           "--xctest"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "resultdb": {
@@ -784,7 +734,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
             }
           ],
           "dimension_sets": [
@@ -813,7 +763,6 @@
           "--xctest"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "resultdb": {
@@ -826,7 +775,89 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14c18",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_integration_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_integration_unittests/"
+      },
+      {
+        "args": [
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14c18",
+          "--xctest"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
+            }
+          ],
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Mac-12"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "xcode_ios_14c18",
+              "path": "Xcode.app"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_unittests/"
+      },
+      {
+        "args": [
+          "--out-dir",
+          "${ISOLATED_OUTDIR}",
+          "--xcode-build-version",
+          "14c18",
+          "--xctest"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "cipd_packages": [
+            {
+              "cipd_package": "infra/tools/mac_toolchain/${platform}",
+              "location": ".",
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
             }
           ],
           "dimension_sets": [
@@ -855,7 +886,6 @@
           "--xctest"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_cpp_including_rust_unittests",
@@ -869,7 +899,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
             }
           ],
           "dimension_sets": [
@@ -898,7 +928,6 @@
           "--xctest"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_serde_json_lenient",
@@ -912,7 +941,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
             }
           ],
           "dimension_sets": [
@@ -944,7 +973,6 @@
         ],
         "isolate_name": "build_rust_tests",
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "build_rust_tests",
@@ -958,7 +986,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
             }
           ],
           "dimension_sets": [
@@ -977,50 +1005,6 @@
         },
         "test": "build_rust_tests",
         "test_id_prefix": "ninja://build/rust/tests:build_rust_tests/"
-      },
-      {
-        "args": [
-          "--out-dir",
-          "${ISOLATED_OUTDIR}",
-          "--xcode-build-version",
-          "14c18",
-          "--xctest"
-        ],
-        "isolate_name": "mojo_rust_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mojo_rust_tests",
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/mac_toolchain/${platform}",
-              "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "xcode_ios_14c18",
-              "path": "Xcode.app"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "mojo_rust_tests",
-        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_tests/"
       }
     ]
   },
@@ -1028,13 +1012,13 @@
     "additional_compile_targets": [
       "gnrt_unittests",
       "mojo_rust",
-      "mojo_rust_tests",
+      "mojo_rust_integration_unittests",
+      "mojo_rust_unittests",
       "rust_build_tests"
     ],
     "gtest_tests": [
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -1052,7 +1036,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -1070,7 +1053,40 @@
       },
       {
         "merge": {
-          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_integration_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_integration_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_unittests/"
+      },
+      {
+        "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -1088,7 +1104,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_cpp_including_rust_unittests",
@@ -1107,7 +1122,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_serde_json_lenient",
@@ -1129,7 +1143,6 @@
       {
         "isolate_name": "build_rust_tests",
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "build_rust_tests",
@@ -1145,26 +1158,6 @@
         },
         "test": "build_rust_tests",
         "test_id_prefix": "ninja://build/rust/tests:build_rust_tests/"
-      },
-      {
-        "isolate_name": "mojo_rust_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mojo_rust_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "mojo_rust_tests",
-        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_tests/"
       }
     ]
   },
@@ -1172,13 +1165,13 @@
     "additional_compile_targets": [
       "gnrt_unittests",
       "mojo_rust",
-      "mojo_rust_tests",
+      "mojo_rust_integration_unittests",
+      "mojo_rust_unittests",
       "rust_build_tests"
     ],
     "gtest_tests": [
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -1196,7 +1189,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -1214,7 +1206,40 @@
       },
       {
         "merge": {
-          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_integration_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_integration_unittests/"
+      },
+      {
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "mojo_rust_unittests",
+        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_unittests/"
+      },
+      {
+        "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -1232,7 +1257,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_cpp_including_rust_unittests",
@@ -1251,7 +1275,6 @@
       },
       {
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "test_serde_json_lenient",
@@ -1273,7 +1296,6 @@
       {
         "isolate_name": "build_rust_tests",
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
         "name": "build_rust_tests",
@@ -1289,26 +1311,6 @@
         },
         "test": "build_rust_tests",
         "test_id_prefix": "ninja://build/rust/tests:build_rust_tests/"
-      },
-      {
-        "isolate_name": "mojo_rust_tests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "mojo_rust_tests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "mojo_rust_tests",
-        "test_id_prefix": "ninja://mojo/public/rust:mojo_rust_tests/"
       }
     ]
   }

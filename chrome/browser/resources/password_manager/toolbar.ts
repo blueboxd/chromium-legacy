@@ -55,7 +55,10 @@ export class PasswordManagerToolbarElement extends
     if (event.detail) {
       newParams.set(UrlParam.SEARCH_TERM, event.detail);
       // Switch to passwords page, since search is supported only on passwords.
-      Router.getInstance().navigateTo(Page.PASSWORDS);
+      if (Router.getInstance().currentRoute.page !== Page.PASSWORDS) {
+        Router.getInstance().navigateTo(Page.PASSWORDS, null, newParams);
+        return;
+      }
     }
     Router.getInstance().updateRouterParams(newParams);
   }
@@ -70,6 +73,14 @@ export class PasswordManagerToolbarElement extends
   private onHelpClick_() {
     OpenWindowProxyImpl.getInstance().openUrl(
         this.i18n('passwordManagerLearnMoreURL'));
+  }
+
+  private onKeyDown_(e: KeyboardEvent) {
+    if (e.key === 'Enter') {
+      this.dispatchEvent(new CustomEvent(
+          'search-enter-click', {bubbles: true, composed: true}));
+      e.preventDefault();
+    }
   }
 }
 

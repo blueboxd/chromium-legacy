@@ -6,24 +6,27 @@
 <script src="resources/helpers.js"></script>
 <script>
 attribution_reporting_promise_test(async t => {
-  const host = `https://{{host}}`;
+  const host = 'https://{{host}}';
 
-  await registerAttributionSrc(t, {
-    source: {
-      destination: host,
-      source_event_id: '333',
-      filter_data: {a: ['b']},
-    },
-  });
+  const expectedSourceEventId = generateSourceEventId();
 
-  await registerAttributionSrc(t, {
-    trigger: {
-      event_trigger_data: [{}],
-      filters: {a: ['c']},
-      debug_reporting: true,
+  registerAttributionSrcByImg(createRedirectChain([
+    {
+      source: {
+        destination: host,
+        filter_data: {a: ['b']},
+        source_event_id: expectedSourceEventId,
+      },
     },
-    cookie: attributionDebugCookie,
-  });
+    {
+      cookie: attributionDebugCookie,
+      trigger: {
+        debug_reporting: true,
+        event_trigger_data: [{}],
+        filters: {a: ['c']},
+      },
+    },
+  ]));
 
   const payload = await pollVerboseDebugReports();
   assert_equals(payload.reports.length, 1);
@@ -33,7 +36,7 @@ attribution_reporting_promise_test(async t => {
   assert_own_property(report[0], 'body');
   const reportBody = report[0].body;
   assert_equals(reportBody.attribution_destination, host);
-  assert_equals(reportBody.source_event_id, '333');
+  assert_equals(reportBody.source_event_id, expectedSourceEventId);
   assert_equals(reportBody.source_site, host);
   assert_not_own_property(reportBody, 'source_debug_key');
   assert_not_own_property(reportBody, 'trigger_debug_key');

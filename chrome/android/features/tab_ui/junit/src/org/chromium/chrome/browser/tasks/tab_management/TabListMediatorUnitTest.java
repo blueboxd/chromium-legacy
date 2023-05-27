@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.ACTION_CLICK;
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -13,7 +14,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -447,7 +447,7 @@ public class TabListMediatorUnitTest {
         mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
                 getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, false, null,
                 mGridCardOnClickListenerProvider, null, null, getClass().getSimpleName(),
-                UiType.CLOSABLE, null);
+                UiType.CLOSABLE);
         mMediator.registerOrientationListener(mGridLayoutManager);
         TrackerFactory.setTrackerForTests(mTracker);
 
@@ -474,6 +474,7 @@ public class TabListMediatorUnitTest {
         PseudoTab.clearForTesting();
         TabAttributeCache.clearAllForTesting();
         getGroupTitleSharedPreferences().edit().clear();
+        PriceTrackingFeatures.setPriceTrackingEnabledForTesting(null);
     }
 
     private static SharedPreferences getGroupTitleSharedPreferences() {
@@ -1330,7 +1331,7 @@ public class TabListMediatorUnitTest {
         mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
                 getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true, null,
                 mGridCardOnClickListenerProvider, null, null, getClass().getSimpleName(),
-                UiType.CLOSABLE, null);
+                UiType.CLOSABLE);
         mMediator.initWithNative();
         // mTabModelObserverCaptor captures on every initWithNative calls. There is one
         // initWithNative call in the setup already.
@@ -1568,70 +1569,6 @@ public class TabListMediatorUnitTest {
      */
     private void prepareForPriceDrop() {
         setPriceTrackingEnabledForTesting(true);
-        PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
-        PersistedTabDataConfiguration.setUseTestConfig(true);
-        initAndAssertAllProperties();
-        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER, TabListMode.GRID);
-    }
-
-    @Test
-    public void testCouponFetcherActiveForForUngroupedTabs() {
-        prepareForCoupon();
-        resetWithRegularTabs(false);
-
-        assertThat(mModel.size(), equalTo(2));
-        assertThat(mModel.get(0).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER),
-                instanceOf(TabListMediator.CouponPersistedTabDataFetcher.class));
-        assertThat(mModel.get(1).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER),
-                instanceOf(TabListMediator.CouponPersistedTabDataFetcher.class));
-    }
-
-    @Test
-    public void testCouponFetcherInactiveForForGroupedTabs() {
-        prepareForCoupon();
-        resetWithRegularTabs(true);
-
-        assertThat(mModel.size(), equalTo(2));
-        assertNull(mModel.get(0).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER));
-        assertNull(mModel.get(1).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER));
-    }
-
-    @Test
-    public void testCouponFetcherGroupedThenUngrouped() {
-        prepareForCoupon();
-        resetWithRegularTabs(true);
-        assertThat(mModel.size(), equalTo(2));
-        assertNull(mModel.get(0).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER));
-        assertNull(mModel.get(1).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER));
-        resetWithRegularTabs(false);
-        assertThat(mModel.size(), equalTo(2));
-        assertThat(mModel.get(0).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER),
-                instanceOf(TabListMediator.CouponPersistedTabDataFetcher.class));
-        assertThat(mModel.get(1).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER),
-                instanceOf(TabListMediator.CouponPersistedTabDataFetcher.class));
-    }
-
-    @Test
-    public void testCouponFetcherUngroupedThenGrouped() {
-        prepareForCoupon();
-        resetWithRegularTabs(false);
-
-        assertThat(mModel.size(), equalTo(2));
-        assertThat(mModel.get(0).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER),
-                instanceOf(TabListMediator.CouponPersistedTabDataFetcher.class));
-        assertThat(mModel.get(1).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER),
-                instanceOf(TabListMediator.CouponPersistedTabDataFetcher.class));
-        resetWithRegularTabs(true);
-        assertThat(mModel.size(), equalTo(2));
-        assertNull(mModel.get(0).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER));
-        assertNull(mModel.get(1).model.get(TabProperties.COUPON_PERSISTED_TAB_DATA_FETCHER));
-    }
-
-    /**
-     * Set flags and initialize for verifying coupon annotations behavior
-     */
-    private void prepareForCoupon() {
-        ChromeFeatureList.sCommerceCoupons.setForTesting(true);
         PriceTrackingFeatures.setIsSignedInAndSyncEnabledForTesting(true);
         PersistedTabDataConfiguration.setUseTestConfig(true);
         initAndAssertAllProperties();
@@ -3230,7 +3167,7 @@ public class TabListMediatorUnitTest {
         setPriceTrackingEnabledForTesting(true);
         mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
                 getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true, null,
-                null, null, null, getClass().getSimpleName(), TabProperties.UiType.CLOSABLE, null);
+                null, null, null, getClass().getSimpleName(), TabProperties.UiType.CLOSABLE);
         mMediator.registerOrientationListener(mGridLayoutManager);
         mMediator.initWithNative();
         initAndAssertAllProperties();
@@ -3247,7 +3184,7 @@ public class TabListMediatorUnitTest {
         setPriceTrackingEnabledForTesting(true);
         mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
                 getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true, null,
-                null, null, null, getClass().getSimpleName(), TabProperties.UiType.CLOSABLE, null);
+                null, null, null, getClass().getSimpleName(), TabProperties.UiType.CLOSABLE);
         mMediator.registerOrientationListener(mGridLayoutManager);
         mMediator.initWithNative();
         initWithThreeTabs();
@@ -3559,11 +3496,9 @@ public class TabListMediatorUnitTest {
         when(mSelectionDelegate.isItemSelected(TAB3_ID)).thenReturn(false);
         when(mTabModelSelector.isTabStateInitialized()).thenReturn(true);
         mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
-                getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true,
-                ()
-                        -> { return mSelectionDelegate; },
-                null, null, null, getClass().getSimpleName(), TabProperties.UiType.SELECTABLE,
-                null);
+                getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true, () -> {
+                    return mSelectionDelegate;
+                }, null, null, null, getClass().getSimpleName(), TabProperties.UiType.SELECTABLE);
         mMediator.registerOrientationListener(mGridLayoutManager);
         mMediator.initWithNative();
         initAndAssertAllProperties();
@@ -3594,11 +3529,9 @@ public class TabListMediatorUnitTest {
         when(mSelectionDelegate.isItemSelected(TAB3_ID)).thenReturn(false);
         when(mTabModelSelector.isTabStateInitialized()).thenReturn(true);
         mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
-                getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true,
-                ()
-                        -> { return mSelectionDelegate; },
-                null, null, null, getClass().getSimpleName(), TabProperties.UiType.SELECTABLE,
-                null);
+                getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true, () -> {
+                    return mSelectionDelegate;
+                }, null, null, null, getClass().getSimpleName(), TabProperties.UiType.SELECTABLE);
         mMediator.registerOrientationListener(mGridLayoutManager);
         mMediator.initWithNative();
         initAndAssertAllProperties();
@@ -3629,11 +3562,9 @@ public class TabListMediatorUnitTest {
         when(mSelectionDelegate.isItemSelected(TAB3_ID)).thenReturn(false);
         when(mTabModelSelector.isTabStateInitialized()).thenReturn(true);
         mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
-                getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true,
-                ()
-                        -> { return mSelectionDelegate; },
-                null, null, null, getClass().getSimpleName(), TabProperties.UiType.SELECTABLE,
-                null);
+                getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider, true, () -> {
+                    return mSelectionDelegate;
+                }, null, null, null, getClass().getSimpleName(), TabProperties.UiType.SELECTABLE);
         mMediator.registerOrientationListener(mGridLayoutManager);
         mMediator.initWithNative();
         initAndAssertAllProperties();
@@ -3838,8 +3769,7 @@ public class TabListMediatorUnitTest {
 
         mMediator = new TabListMediator(mActivity, mModel, mode, mTabModelSelector,
                 getTabThumbnailCallback(), mTitleProvider, mTabListFaviconProvider,
-                actionOnRelatedTabs, null, null, handler, null, getClass().getSimpleName(), uiType,
-                null);
+                actionOnRelatedTabs, null, null, handler, null, getClass().getSimpleName(), uiType);
         mMediator.registerOrientationListener(mGridLayoutManager);
 
         // TabGroupModelFilterObserver is registered when native is ready.
@@ -3954,9 +3884,9 @@ public class TabListMediatorUnitTest {
         FeatureList.TestValues testValues = new FeatureList.TestValues();
         testValues.addFeatureFlagOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING, true);
         testValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING,
-                PriceTrackingFeatures.PRICE_TRACKING_PARAM, String.valueOf(value));
-        testValues.addFieldTrialParamOverride(ChromeFeatureList.COMMERCE_PRICE_TRACKING,
                 PriceTrackingFeatures.PRICE_DROP_IPH_ENABLED_PARAM, String.valueOf(value));
         FeatureList.setTestValues(testValues);
+
+        PriceTrackingFeatures.setPriceTrackingEnabledForTesting(value);
     }
 }

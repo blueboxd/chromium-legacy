@@ -18,7 +18,6 @@
 @class ImmersiveModeMapper;
 @class ImmersiveModeTitlebarObserver;
 @class ImmersiveModeTitlebarViewController;
-@class ImmersiveModeWindowObserver;
 
 namespace gfx {
 class Rect;
@@ -46,14 +45,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   virtual void UpdateToolbarVisibility(mojom::ToolbarVisibilityStyle style);
   mojom::ToolbarVisibilityStyle last_used_style() { return last_used_style_; }
 
-  // Lock the titlebar in place forcing the attached top chrome to also lock in
-  // place. The titlebar will be unlocked once calls to TitlebarLock() are
-  // balanced with TitlebarUnlock(). When a lock is present, both the titlebar
-  // and the top chrome are visible.
-  virtual void TitlebarLock();
-  virtual void TitlebarUnlock();
-  int titlebar_lock_count() { return titlebar_lock_count_; }
-
   // Reveal top chrome leaving it visible until all outstanding calls to
   // RevealLock() are balanced with RevealUnlock(). Reveal locks will persist
   // through calls to UpdateToolbarVisibility(). For example, the current
@@ -68,8 +59,24 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   // Called when the NSTitlebarContainerView frame changes.
   virtual void OnTitlebarFrameDidChange(NSRect frame);
 
-  // Called when a child window is added to the overlay_window_.
+  // Called when a child window is added to the observed windows.
+  // `ObserveChildWindows` controls which windows are being observed.
   virtual void OnChildWindowAdded(NSWindow* child);
+
+  // Called when a child window is removed from the observed windows.
+  virtual void OnChildWindowRemoved(NSWindow* child);
+
+  // Start observing child windows of `window`.
+  void ObserveChildWindows(NSWindow* window);
+
+  // Stop observing child windows of `window`.
+  void StopObservingChildWindows(NSWindow* window);
+
+  // Return true if the child window should trigger OnChildWindowAdded and
+  // OnChildWindowRemoved events, otherwise return false.
+  // Called for browser window children that survive the transition to
+  // fullscreen.
+  virtual bool ShouldObserveChildWindow(NSWindow* child);
 
   NSWindow* browser_window() { return browser_window_; }
   NSWindow* overlay_window() { return overlay_window_; }
@@ -79,24 +86,18 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   // a different window.
   void ImmersiveModeViewWillMoveToWindow(NSWindow* window);
 
-  // When true the titlebar is assumed to be fully visible. For testing only.
-  void SetTitlebarFullyVisibleForTesting(bool fully_visible) {
-    titlebar_fully_visible_ = fully_visible;
-  }
-
   // Returns true if kImmersiveFullscreenTabs is being used.
   virtual bool IsTabbed();
 
+ protected:
+  // Used by derived classes to manually set last_used_style_. Typically this is
+  // used while a RevealLock is active, allowing for a style change after the
+  // last RevealLock has been released.
+  void set_last_used_style(mojom::ToolbarVisibilityStyle style) {
+    last_used_style_ = style;
+  }
+
  private:
-  // Pin or unpin the titlebar.
-  void SetTitlebarPinned(bool pinned);
-
-  // Start observing child windows of overlay_widget_.
-  void ObserveOverlayChildWindows();
-
-  // Reparent children of `source` to `target`.
-  void ReparentChildWindows(NSWindow* source, NSWindow* target);
-
   bool enabled_ = false;
 
   NSWindow* const browser_window_;
@@ -106,17 +107,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   // A controller for top chrome.
   base::scoped_nsobject<ImmersiveModeTitlebarViewController>
       immersive_mode_titlebar_view_controller_;
-
-  // A "clear" controller for locking the titlebar in place. Unfortunately
-  // there is no discovered way to make a controller actually clear. The
-  // controller's view is added to a discrete NSWindow controlled by AppKit.
-  // Making the view clear will simply make the underling portion of the
-  // NSWindow visible. To achieve "clear" this controller immediately hides
-  // itself. This has the side effect of still extending the mouse capture area
-  // allowing the title bar to stay visible while this controller's view is
-  // hidden.
-  base::scoped_nsobject<ClearTitlebarViewController>
-      clear_titlebar_view_controller_;
 
   // A controller that keeps a small portion (0.5px) of the fullscreen AppKit
   // NSWindow on screen.
@@ -128,23 +118,20 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
       thin_titlebar_view_controller_;
 
   base::scoped_nsobject<ImmersiveModeMapper> immersive_mode_mapper_;
-  base::scoped_nsobject<ImmersiveModeWindowObserver>
-      immersive_mode_window_observer_;
   base::scoped_nsobject<ImmersiveModeTitlebarObserver>
       immersive_mode_titlebar_observer_;
 
-  int titlebar_lock_count_ = 0;
   int reveal_lock_count_ = 0;
 
   mojom::ToolbarVisibilityStyle last_used_style_ =
       mojom::ToolbarVisibilityStyle::kAutohide;
 
-  bool titlebar_fully_visible_ = false;
-  bool titlebar_frame_change_barrier_ = false;
-
   // Keeps the view controllers hidden until the fullscreen transition is
   // complete.
   bool fullscreen_transition_complete_ = false;
+
+  // Keeps track of which windows have received titlebar and reveal locks.
+  std::set<NSWindow*> window_lock_received_;
 
   base::WeakPtrFactory<ImmersiveModeController> weak_ptr_factory_;
 };

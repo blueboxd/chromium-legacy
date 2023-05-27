@@ -30,11 +30,15 @@ class PrinterQueryOop : public PrinterQuery {
   // PrinterQuery overrides:
   std::unique_ptr<PrintJobWorker> TransferContextToNewWorker(
       PrintJob* print_job) override;
+#if BUILDFLAG(IS_WIN)
+  void UpdatePrintableArea(PrintSettings* print_settings,
+                           OnDidUpdatePrintableAreaCallback callback) override;
+#endif
   void SetClientId(PrintBackendServiceManager::ClientId client_id) override;
 
  protected:
-  // Local callback wrappers for Print Backend Service mojom call.  Virtual to
-  // support testing.
+  // Local callback wrappers for Print Backend Service mojom call.  Some
+  // wrappers are virtual to support testing.
   virtual void OnDidUseDefaultSettings(
       SettingsCallback callback,
       mojom::PrintSettingsResultPtr print_settings);
@@ -51,6 +55,11 @@ class PrinterQueryOop : public PrinterQuery {
   void OnDidUpdatePrintSettings(const std::string& device_name,
                                 SettingsCallback callback,
                                 mojom::PrintSettingsResultPtr print_settings);
+#if BUILDFLAG(IS_WIN)
+  void OnDidGetPaperPrintableArea(PrintSettings* print_settings,
+                                  OnDidUpdatePrintableAreaCallback callback,
+                                  const gfx::Rect& printable_area_um);
+#endif
 
   void UseDefaultSettings(SettingsCallback callback) override;
   void GetSettingsWithUI(uint32_t document_page_count,
@@ -61,6 +70,12 @@ class PrinterQueryOop : public PrinterQuery {
                            SettingsCallback callback) override;
 
   // Mojo support to send messages from UI thread.
+  void SendEstablishPrintingContext(
+      PrintBackendServiceManager::ClientId client_id,
+      const std::string& printer_name);
+  void SendUpdatePrintSettings(const std::string& printer_name,
+                               base::Value::Dict new_settings,
+                               SettingsCallback callback);
   void SendUseDefaultSettings(SettingsCallback callback);
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
   void SendAskUserForSettings(uint32_t document_page_count,
@@ -78,16 +93,19 @@ class PrinterQueryOop : public PrinterQuery {
     return print_document_client_id_;
   }
 
-  mojom::PrintTargetType print_target_type() const {
-    return print_target_type_;
+  bool print_from_system_dialog() const { return print_from_system_dialog_; }
+
+  const absl::optional<PrintBackendServiceManager::ContextId>& context_id()
+      const {
+    return context_id_;
   }
 
  private:
-  mojom::PrintTargetType print_target_type_ =
-      mojom::PrintTargetType::kDirectToDevice;
+  bool print_from_system_dialog_ = false;
   absl::optional<PrintBackendServiceManager::ClientId> query_with_ui_client_id_;
   absl::optional<PrintBackendServiceManager::ClientId>
       print_document_client_id_;
+  absl::optional<PrintBackendServiceManager::ContextId> context_id_;
 
   base::WeakPtrFactory<PrinterQueryOop> weak_factory_{this};
 };

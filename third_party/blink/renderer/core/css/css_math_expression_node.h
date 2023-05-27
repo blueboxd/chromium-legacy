@@ -35,11 +35,10 @@
 #include "base/dcheck_is_on.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_anchor_query_type.h"
+#include "third_party/blink/renderer/core/css/css_anchor_query_enums.h"
 #include "third_party/blink/renderer/core/css/css_math_operator.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
-#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_token_range.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -50,6 +49,7 @@ static const int kMaxExpressionDepth = 100;
 
 class CalculationExpressionNode;
 class CSSNumericLiteralValue;
+class CSSParserContext;
 
 // The order of this enum should not change since its elements are used as
 // indices in the addSubtractResult matrix.
@@ -64,6 +64,7 @@ enum CalculationCategory {
   kCalcAngle,
   kCalcTime,
   kCalcFrequency,
+  kCalcResolution,
   kCalcOther,
 };
 
@@ -252,6 +253,13 @@ class CORE_EXPORT CSSMathExpressionOperation final
       Operands&& operands,
       CSSValueID function_id);
 
+  static CSSMathExpressionNode* CreateSteppedValueFunction(Operands&& operands,
+                                                           CSSMathOperator op);
+
+  static CSSMathExpressionNode* CreateExponentialFunction(
+      Operands&& operands,
+      CSSValueID function_id);
+
   static CSSMathExpressionNode* CreateArithmeticOperationSimplified(
       const CSSMathExpressionNode* left_side,
       const CSSMathExpressionNode* right_side,
@@ -270,6 +278,8 @@ class CORE_EXPORT CSSMathExpressionOperation final
                              Operands&& operands,
                              CSSMathOperator op);
 
+  CSSMathExpressionOperation(CalculationCategory category, CSSMathOperator op);
+
   const Operands& GetOperands() const { return operands_; }
   CSSMathOperator OperatorType() const { return operator_; }
 
@@ -279,9 +289,23 @@ class CORE_EXPORT CSSMathExpressionOperation final
            operator_ == CSSMathOperator::kMax;
   }
   bool IsClamp() const { return operator_ == CSSMathOperator::kClamp; }
+  bool IsRoundingStrategyKeyword() const {
+    return CSSMathOperator::kRoundNearest <= operator_ &&
+           operator_ <= CSSMathOperator::kRoundToZero && !operands_.size();
+  }
+  bool IsSteppedValueFunction() const {
+    return CSSMathOperator::kRoundNearest <= operator_ &&
+           operator_ <= CSSMathOperator::kRem;
+  }
+  bool IsTrigonometricFunction() const {
+    return operator_ == CSSMathOperator::kHypot;
+  }
 
-  // TODO(crbug.com/1284199): Check other math functions too(clamp, etc).
-  bool IsMathFunction() const final { return IsMinOrMax() || IsClamp(); }
+  // TODO(crbug.com/1284199): Check other math functions too.
+  bool IsMathFunction() const final {
+    return IsMinOrMax() || IsClamp() || IsSteppedValueFunction() ||
+           IsTrigonometricFunction();
+  }
 
   String CSSTextAsClamp() const;
 

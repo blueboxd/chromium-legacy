@@ -4,16 +4,17 @@
 
 #include "ash/wm/desks/zero_state_button.h"
 
+#include <algorithm>
+
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
-#include "base/cxx17_backports.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
@@ -45,14 +46,15 @@ constexpr int kZeroStateDefaultDeskButtonMinWidth = 56;
 // -----------------------------------------------------------------------------
 // ZeroStateDefaultDeskButton:
 
-ZeroStateDefaultDeskButton::ZeroStateDefaultDeskButton(DesksBarView* bar_view)
+ZeroStateDefaultDeskButton::ZeroStateDefaultDeskButton(
+    DeskBarViewBase* bar_view)
     : DeskButtonBase(
           DesksController::Get()->desks()[0]->name(),
           /*set_text=*/true,
+          bar_view,
           base::BindRepeating(&ZeroStateDefaultDeskButton::OnButtonPressed,
                               base::Unretained(this)),
-          kCornerRadius),
-      bar_view_(bar_view) {
+          kCornerRadius) {
   GetViewAccessibility().OverrideName(
       l10n_util::GetStringFUTF16(IDS_ASH_DESKS_DESK_ACCESSIBLE_NAME,
                                  DesksController::Get()->desks()[0]->name()));
@@ -82,8 +84,8 @@ gfx::Size ZeroStateDefaultDeskButton::CalculatePreferredSize() const {
   const int max_width =
       std::max(preview_width, kZeroStateDefaultDeskButtonMinWidth);
   const int width =
-      base::clamp(label_width + 2 * kZeroStateDefaultButtonHorizontalPadding,
-                  min_width, max_width);
+      std::clamp(label_width + 2 * kZeroStateDefaultButtonHorizontalPadding,
+                 min_width, max_width);
   return gfx::Size(width, kZeroStateButtonHeight);
 }
 
@@ -106,11 +108,13 @@ END_METADATA
 // -----------------------------------------------------------------------------
 // ZeroStateIconButton:
 
-ZeroStateIconButton::ZeroStateIconButton(const gfx::VectorIcon* button_icon,
+ZeroStateIconButton::ZeroStateIconButton(DeskBarViewBase* bar_view,
+                                         const gfx::VectorIcon* button_icon,
                                          const std::u16string& text,
                                          base::RepeatingClosure callback)
     : DeskButtonBase(text,
                      /*set_text=*/false,
+                     bar_view,
                      std::move(callback),
                      kCornerRadius),
       button_icon_(button_icon) {

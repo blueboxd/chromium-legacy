@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -27,6 +28,7 @@
 #include "extensions/browser/api/declarative/rules_registry.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
 #include "extensions/browser/api/declarative_webrequest/webrequest_constants.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_registry.h"
@@ -81,17 +83,29 @@ constexpr char kBackgroundHelpers[] =
     R"(var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;
        var ShowAction = chrome.declarativeContent.ShowAction;
        var onPageChanged = chrome.declarativeContent.onPageChanged;
-       var reply = window.domAutomationController.send.bind(
-           window.domAutomationController);
+
+       function setRulesInPageEnvironment(rules, responseString) {
+         return new Promise(resolve => {
+           onPageChanged.removeRules(undefined, function() {
+             onPageChanged.addRules(rules, function() {
+               if (chrome.runtime.lastError) {
+                 resolve(chrome.runtime.lastError.message);
+                 return;
+               }
+               resolve(responseString);
+             });
+           });
+         });
+       };
 
        function setRules(rules, responseString) {
          onPageChanged.removeRules(undefined, function() {
            onPageChanged.addRules(rules, function() {
              if (chrome.runtime.lastError) {
-               reply(chrome.runtime.lastError.message);
+               chrome.test.sendScriptResult(chrome.runtime.lastError.message);
                return;
              }
-             reply(responseString);
+             chrome.test.sendScriptResult(responseString);
            });
          });
        };
@@ -99,26 +113,30 @@ constexpr char kBackgroundHelpers[] =
        function addRules(rules, responseString) {
          onPageChanged.addRules(rules, function() {
            if (chrome.runtime.lastError) {
-             reply(chrome.runtime.lastError.message);
+             chrome.test.sendScriptResult(chrome.runtime.lastError.message);
              return;
            }
-           reply(responseString);
+           chrome.test.sendScriptResult(responseString);
          });
        };
 
        function removeRule(id, responseString) {
          onPageChanged.removeRules([id], function() {
            if (chrome.runtime.lastError) {
-             reply(chrome.runtime.lastError.message);
+             chrome.test.sendScriptResult(chrome.runtime.lastError.message);
              return;
            }
-           reply(responseString);
+           chrome.test.sendScriptResult(responseString);
          });
        };)";
 
+using ContextType = ExtensionBrowserTest::ContextType;
+
 class DeclarativeContentApiTest : public ExtensionApiTest {
  public:
-  DeclarativeContentApiTest() {}
+  explicit DeclarativeContentApiTest(
+      ContextType context_type = ContextType::kNone)
+      : ExtensionApiTest(context_type) {}
 
   DeclarativeContentApiTest(const DeclarativeContentApiTest&) = delete;
   DeclarativeContentApiTest& operator=(const DeclarativeContentApiTest&) =
@@ -235,10 +253,11 @@ void DeclarativeContentApiTest::CheckBookmarkEvents(bool match_is_bookmarked) {
            actions: [new ShowAction()]
          }], 'test_rule');)";
 
-  EXPECT_EQ("test_rule", ExecuteScriptInBackgroundPage(
-      extension->id(),
-      base::StringPrintf(kSetIsBookmarkedRule,
-                         match_is_bookmarked ? "true" : "false")));
+  EXPECT_EQ("test_rule",
+            ExecuteScriptInBackgroundPage(
+                extension->id(),
+                base::StringPrintf(kSetIsBookmarkedRule,
+                                   match_is_bookmarked ? "true" : "false")));
   EXPECT_EQ(!match_is_bookmarked, action->GetIsVisible(tab_id));
 
   // Check rule evaluation on add/remove bookmark.
@@ -263,6 +282,27 @@ void DeclarativeContentApiTest::CheckBookmarkEvents(bool match_is_bookmarked) {
   EXPECT_EQ(!match_is_bookmarked, action->GetIsVisible(tab_id));
 }
 
+class DeclarativeContentApiTestWithContextType
+    : public DeclarativeContentApiTest,
+      public testing::WithParamInterface<ContextType> {
+ public:
+  DeclarativeContentApiTestWithContextType()
+      : DeclarativeContentApiTest(GetParam()) {}
+
+  DeclarativeContentApiTestWithContextType(
+      const DeclarativeContentApiTestWithContextType&) = delete;
+  DeclarativeContentApiTestWithContextType& operator=(
+      const DeclarativeContentApiTestWithContextType&) = delete;
+};
+
+INSTANTIATE_TEST_SUITE_P(PersistentBackground,
+                         DeclarativeContentApiTestWithContextType,
+                         ::testing::Values(ContextType::kPersistentBackground));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         DeclarativeContentApiTestWithContextType,
+                         ::testing::Values(ContextType::kServiceWorker));
+
+// TODO(crbug.com/1425203): Convert this to run in both modes.
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
   ext_dir_.WriteManifest(FormatManifest(SPANNING));
   ext_dir_.WriteFile(
@@ -339,7 +379,8 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, Overview) {
 
 // Test that adds two rules pointing to single action instance.
 // Regression test for http://crbug.com/574149.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, ReusedActionInstance) {
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
+                       ReusedActionInstance) {
   static constexpr char kBackgroundScript[] =
       R"(var declarative = chrome.declarative;
 
@@ -389,7 +430,8 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, ReusedActionInstance) {
 }
 
 // Tests that the rules are evaluated at the time they are added or removed.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesEvaluatedOnAddRemove) {
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
+                       RulesEvaluatedOnAddRemove) {
   ext_dir_.WriteManifest(FormatManifest(SPANNING));
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
   const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
@@ -438,11 +480,19 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RulesEvaluatedOnAddRemove) {
   EXPECT_FALSE(action->GetIsVisible(tab_id));
 }
 
+struct ShowActionParams {
+  constexpr ShowActionParams(const char* show_type, ContextType context_type)
+      : show_type(show_type), context_type(context_type) {}
+  const char* show_type;
+  ContextType context_type;
+};
+
 class ParameterizedShowActionDeclarativeContentApiTest
     : public DeclarativeContentApiTest,
-      public testing::WithParamInterface<const char*> {
+      public testing::WithParamInterface<ShowActionParams> {
  public:
-  ParameterizedShowActionDeclarativeContentApiTest() {}
+  ParameterizedShowActionDeclarativeContentApiTest()
+      : DeclarativeContentApiTest(GetParam().context_type) {}
 
   ParameterizedShowActionDeclarativeContentApiTest(
       const ParameterizedShowActionDeclarativeContentApiTest&) = delete;
@@ -504,15 +554,15 @@ void ParameterizedShowActionDeclarativeContentApiTest::TestShowAction(
       browser()->tab_strip_model()->GetActiveWebContents();
 
   static constexpr char kScript[] =
-      R"(setRules([{
+      R"(setRulesInPageEnvironment([{
            conditions: [new PageStateMatcher({pageUrl: {hostPrefix: 'test'}})],
            actions: [new chrome.declarativeContent.%s()]
          }], 'test_rule');)";
   static constexpr char kSuccessStr[] = "test_rule";
 
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      tab, base::StringPrintf(kScript, GetParam()), &result));
+  std::string result =
+      content::EvalJs(tab, base::StringPrintf(kScript, GetParam().show_type))
+          .ExtractString();
 
   // Since extensions with no action provided are given a page action by default
   // (for visibility reasons) and ShowAction() should also work with
@@ -574,7 +624,7 @@ IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
              }]
            }]
          })";
-  ext_dir_.WriteManifest(base::StringPrintf(manifest, GetParam()));
+  ext_dir_.WriteManifest(base::StringPrintf(manifest, GetParam().show_type));
   const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);
   const ExtensionAction* action =
@@ -595,41 +645,49 @@ IN_PROC_BROWSER_TEST_P(ParameterizedShowActionDeclarativeContentApiTest,
   EXPECT_FALSE(action->GetIsVisible(tab_id));
 }
 
-INSTANTIATE_TEST_SUITE_P(LegacyShowActionKey,
-                         ParameterizedShowActionDeclarativeContentApiTest,
-                         ::testing::Values("ShowPageAction"));
-INSTANTIATE_TEST_SUITE_P(ModernShowActionKey,
-                         ParameterizedShowActionDeclarativeContentApiTest,
-                         ::testing::Values("ShowAction"));
+INSTANTIATE_TEST_SUITE_P(
+    LegacyShowActionKey_PB,
+    ParameterizedShowActionDeclarativeContentApiTest,
+    ::testing::Values(ShowActionParams("ShowPageAction",
+                                       ContextType::kPersistentBackground)));
+
+INSTANTIATE_TEST_SUITE_P(
+    ModernShowActionKey_PB,
+    ParameterizedShowActionDeclarativeContentApiTest,
+    ::testing::Values(ShowActionParams("ShowAction",
+                                       ContextType::kPersistentBackground)));
 
 // Tests that rules are not evaluated in incognito browser windows when the
 // extension specifies spanning incognito mode but is not enabled for incognito.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
                        DisabledForSpanningIncognito) {
   CheckIncognito(SPANNING, false);
 }
 
 // Tests that rules are evaluated in incognito browser windows when the
 // extension specifies spanning incognito mode and is enabled for incognito.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, EnabledForSpanningIncognito) {
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
+                       EnabledForSpanningIncognito) {
   CheckIncognito(SPANNING, true);
 }
 
 // Tests that rules are not evaluated in incognito browser windows when the
 // extension specifies split incognito mode but is not enabled for incognito.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, DisabledForSplitIncognito) {
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
+                       DisabledForSplitIncognito) {
   CheckIncognito(SPLIT, false);
 }
 
 // Tests that rules are evaluated in incognito browser windows when the
 // extension specifies split incognito mode and is enabled for incognito.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, EnabledForSplitIncognito) {
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
+                       EnabledForSplitIncognito) {
   CheckIncognito(SPLIT, true);
 }
 
 // Tests that rules are evaluated for an incognito tab that exists at the time
 // the rules are added.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
                        RulesEvaluatedForExistingIncognitoTab) {
   Browser* incognito_browser = CreateIncognitoBrowser();
   content::WebContents* const incognito_tab =
@@ -660,14 +718,15 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 constexpr char kRulesExtensionName[] =
     "Declarative content persistence apitest";
 
-// TODO(crbug.com/512431): Flaky on Windows release builds.
-#if BUILDFLAG(IS_WIN) && defined(NDEBUG)
+// TODO(crbug.com/512431): Flaky on Windows release builds and on LACROS.
+#if (BUILDFLAG(IS_WIN) && defined(NDEBUG)) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_PRE_RulesPersistence DISABLED_PRE_RulesPersistence
 #else
 #define MAYBE_PRE_RulesPersistence PRE_RulesPersistence
 #endif
 // Sets up rules matching http://test1/ in a normal and incognito browser.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, MAYBE_PRE_RulesPersistence) {
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
+                       MAYBE_PRE_RulesPersistence) {
   ExtensionTestMessageListener ready("ready");
   ExtensionTestMessageListener ready_split("ready (split)");
   // An on-disk extension is required so that it can be reloaded later in the
@@ -684,15 +743,16 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, MAYBE_PRE_RulesPersistence) {
   ASSERT_TRUE(ready_split.WaitUntilSatisfied());
 }
 
-// TODO(crbug.com/512431): Flaky on Windows release builds.
-#if BUILDFLAG(IS_WIN) && defined(NDEBUG)
+// TODO(crbug.com/512431): Flaky on Windows release builds and on LACROS.
+#if (BUILDFLAG(IS_WIN) && defined(NDEBUG)) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_RulesPersistence DISABLED_RulesPersistence
 #else
 #define MAYBE_RulesPersistence RulesPersistence
 #endif
 // Reloads the extension from PRE_RulesPersistence and checks that the rules
 // continue to work as expected after being persisted and reloaded.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, MAYBE_RulesPersistence) {
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
+                       MAYBE_RulesPersistence) {
   const Extension* extension = GetSingleLoadedExtension();
   ASSERT_TRUE(extension) << message_;
   ASSERT_EQ(kRulesExtensionName, extension->name());
@@ -749,7 +809,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, MAYBE_RulesPersistence) {
 }
 
 // http://crbug.com/304373
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
                        UninstallWhileActivePageAction) {
   ext_dir_.WriteManifest(FormatManifest(SPANNING));
   std::string script =
@@ -809,6 +869,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 }
 
 // This tests against a renderer crash that was present during development.
+// TODO(crbug.com/1425203): Convert this to run in both modes.
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                        AddExtensionMatchingExistingTabWithDeadFrames) {
   ext_dir_.WriteManifest(FormatManifest(SPANNING));
@@ -851,7 +912,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 
   static constexpr char kRemoveScript[] =
       R"(onPageChanged.removeRules(undefined, function() {
-           window.domAutomationController.send('removed');
+           chrome.test.sendScriptResult('removed');
          });)";
   EXPECT_EQ("removed",
             ExecuteScriptInBackgroundPage(extension->id(), kRemoveScript));
@@ -859,6 +920,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   EXPECT_FALSE(action->GetIsVisible(tab_id));
 }
 
+// TODO(crbug.com/1425203): Convert this to run in both modes.
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                        CanonicalizesPageStateMatcherCss) {
   ext_dir_.WriteManifest(FormatManifest(SPANNING));
@@ -866,7 +928,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
       FILE_PATH_LITERAL("background.js"),
       R"(var PageStateMatcher = chrome.declarativeContent.PageStateMatcher;
          function Return(obj) {
-           window.domAutomationController.send('' + obj);
+            chrome.test.sendScriptResult('' + obj);
          })");
   const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);
@@ -885,9 +947,11 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
          } catch (e) {
            Return(e.message);
          })";
-  EXPECT_THAT(
-      ExecuteScriptInBackgroundPage(extension->id(), kSelectorNotAnArrayScript),
-      testing::ContainsRegex("css.*xpected '?array'?"));
+  base::Value result =
+      ExecuteScriptInBackgroundPage(extension->id(), kSelectorNotAnArrayScript);
+  ASSERT_TRUE(result.is_string());
+  EXPECT_THAT(result.GetString(),
+              testing::ContainsRegex("css.*xpected '?array'?"));
 
   // CSS selector is not a string.
   static constexpr char kSelectorNotStringScript[] =
@@ -897,9 +961,11 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
          } catch (e) {
            Return(e.message);
          })";
-  EXPECT_THAT(
-      ExecuteScriptInBackgroundPage(extension->id(), kSelectorNotStringScript),
-      testing::ContainsRegex("css.*0.*xpected '?string'?"));
+  result =
+      ExecuteScriptInBackgroundPage(extension->id(), kSelectorNotStringScript);
+  ASSERT_TRUE(result.is_string());
+  EXPECT_THAT(result.GetString(),
+              testing::ContainsRegex("css.*0.*xpected '?string'?"));
 
   // Invalid CSS selector.
   static constexpr char kInvalidSelectorScript[] =
@@ -909,9 +975,10 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
          } catch (e) {
            Return(e.message);
          })";
-  EXPECT_THAT(
-      ExecuteScriptInBackgroundPage(extension->id(), kInvalidSelectorScript),
-      testing::ContainsRegex("valid.*: input''$"));
+  result =
+      ExecuteScriptInBackgroundPage(extension->id(), kInvalidSelectorScript);
+  ASSERT_TRUE(result.is_string());
+  EXPECT_THAT(result.GetString(), testing::ContainsRegex("valid.*: input''$"));
 
   // "Complex" CSS selector.
   static constexpr char kComplexSelectorScript[] =
@@ -921,27 +988,29 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
          } catch (e) {
            Return(e.message);
          })";
-  EXPECT_THAT(
-      ExecuteScriptInBackgroundPage(extension->id(), kComplexSelectorScript),
-      testing::ContainsRegex("selector.*: div input$"));
+  result =
+      ExecuteScriptInBackgroundPage(extension->id(), kComplexSelectorScript);
+  ASSERT_TRUE(result.is_string());
+  EXPECT_THAT(result.GetString(),
+              testing::ContainsRegex("selector.*: div input$"));
 }
 
 // Tests that the rules with isBookmarked: true are evaluated when handling
 // bookmarking events.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
                        IsBookmarkedRulesEvaluatedOnBookmarkEvents) {
   CheckBookmarkEvents(true);
 }
 
 // Tests that the rules with isBookmarked: false are evaluated when handling
 // bookmarking events.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
                        NotBookmarkedRulesEvaluatedOnBookmarkEvents) {
   CheckBookmarkEvents(false);
 }
 
 // https://crbug.com/497586
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
                        WebContentsWithoutTabAddedNotificationAtOnLoaded) {
   // Add a web contents to the tab strip in a way that doesn't trigger
   // NOTIFICATION_TAB_ADDED.
@@ -957,7 +1026,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 }
 
 // https://crbug.com/501225
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
                        PendingWebContentsClearedOnRemoveRules) {
   ext_dir_.WriteManifest(FormatManifest(SPANNING));
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
@@ -1007,7 +1076,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 }
 
 // https://crbug.com/517492
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
                        RemoveAllRulesAfterExtensionUninstall) {
   ext_dir_.WriteManifest(FormatManifest(SPANNING));
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
@@ -1051,13 +1120,18 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 // be loaded.
 // Regression for crbug.com/1211316, which could cause this test to flake if
 // RulesRegistry::OnExtensionLoaded() was called before
-// UserScriptmanager::OnExtensionLoaded().
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RequestContentScriptRule) {
+// UserScriptManager::OnExtensionLoaded().
+IN_PROC_BROWSER_TEST_P(DeclarativeContentApiTestWithContextType,
+                       RequestContentScriptRule) {
   constexpr char kManifest[] = R"(
       {
         "name": "Declarative Content apitest",
         "version": "0.1",
         "manifest_version": 2,
+        "background": {
+          "scripts": ["background.js"],
+          "persistent": true
+        },
         "page_action": {},
         "permissions": [
           "declarativeContent"
@@ -1076,6 +1150,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, RequestContentScriptRule) {
       }
   )";
 
+  ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), "");
   ext_dir_.WriteManifest(kManifest);
   const Extension* extension = LoadExtension(ext_dir_.UnpackedPath());
   ASSERT_TRUE(extension);

@@ -5,11 +5,8 @@
 /**
  * @fileoverview The ChromeVox panel and menus.
  */
-import {AsyncUtil} from '../../common/async_util.js';
 import {BrowserUtil} from '../../common/browser_util.js';
 import {constants} from '../../common/constants.js';
-import {EventGenerator} from '../../common/event_generator.js';
-import {KeyCode} from '../../common/key_code.js';
 import {LocalStorage} from '../../common/local_storage.js';
 import {BackgroundBridge} from '../common/background_bridge.js';
 import {BrailleCommandData} from '../common/braille/braille_command_data.js';
@@ -344,17 +341,7 @@ export class Panel extends PanelInterface {
 
       // Add a menu item that opens the full list of ChromeBook keyboard
       // shortcuts. We want this to be at the top of the ChromeVox menu.
-      let localizedSlash =
-          await AsyncUtil.getLocalizedDomKeyStringForKeyCode(KeyCode.OEM_2);
-      if (!localizedSlash) {
-        localizedSlash = '/';
-      }
-      chromevoxMenu.addMenuItem(
-          Msgs.getMsg('open_keyboard_shortcuts_menu'),
-          `Ctrl+Alt+${localizedSlash}`, '', '', async () => {
-            EventGenerator.sendKeyPress(
-                KeyCode.OEM_2 /* forward slash */, {'ctrl': true, 'alt': true});
-          });
+      await this.menuManager_.addOSKeyboardShortcutsMenuItem(chromevoxMenu);
 
       // Create a mapping between categories from CommandStore, and our
       // top-level menus. Some categories aren't mapped to any menu.
@@ -728,42 +715,6 @@ export class Panel extends PanelInterface {
   }
 
   /**
-   * Advance the index of the current active menu by |delta|.
-   * @param {number} delta The number to add to the active menu index.
-   * @private
-   */
-  advanceActiveMenuBy_(delta) {
-    let activeIndex = -1;
-    for (let i = 0; i < this.menuManager_.menus.length; i++) {
-      if (this.menuManager_.activeMenu === this.menuManager_.menus[i]) {
-        activeIndex = i;
-        break;
-      }
-    }
-
-    if (activeIndex >= 0) {
-      activeIndex += delta;
-      activeIndex = (activeIndex + this.menuManager_.menus.length) %
-          this.menuManager_.menus.length;
-    } else {
-      if (delta >= 0) {
-        activeIndex = 0;
-      } else {
-        activeIndex = this.menuManager_.menus.length - 1;
-      }
-    }
-
-    activeIndex =
-        this.menuManager_.findEnabledMenuIndex(activeIndex, delta > 0 ? 1 : -1);
-    if (activeIndex === -1) {
-      return;
-    }
-
-    this.menuManager_.activateMenu(
-        this.menuManager_.menus[activeIndex], true /* activateFirstItem */);
-  }
-
-  /**
    * Advance the index of the current active menu item by |delta|.
    * @param {number} delta The number to add to the active menu item index.
    * @private
@@ -851,10 +802,10 @@ export class Panel extends PanelInterface {
 
     switch (event.key) {
       case 'ArrowLeft':
-        this.advanceActiveMenuBy_(-1);
+        this.menuManager_.advanceActiveMenuBy(-1);
         break;
       case 'ArrowRight':
-        this.advanceActiveMenuBy_(1);
+        this.menuManager_.advanceActiveMenuBy(1);
         break;
       case 'ArrowUp':
         this.advanceItemBy_(-1);
@@ -896,7 +847,7 @@ export class Panel extends PanelInterface {
    * @private
    */
   onOptions_() {
-    chrome.runtime.openOptionsPage();
+    BackgroundBridge.CommandHandler.onCommand(Command.SHOW_OPTIONS_PAGE);
     this.setMode_(PanelMode.COLLAPSED);
   }
 

@@ -18,8 +18,7 @@ namespace {
 
 // Array of features exposed through the Java ExternalIntentsFeatures API.
 const base::Feature* kFeaturesExposedToJava[] = {
-    &kExternalNavigationDebugLogs,       &kExternalNavigationSubframeRedirects,
-    &kBlockSubframeIntentToSelf,         &kBlockFrameRenavigations,
+    &kExternalNavigationDebugLogs, &kBlockFrameRenavigations,
     &kDoNotRequireSpecializedCCTHandler, &kBlockIntentsToSelf};
 
 }  // namespace
@@ -30,17 +29,9 @@ BASE_FEATURE(kExternalNavigationDebugLogs,
              "ExternalNavigationDebugLogs",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kExternalNavigationSubframeRedirects,
-             "ExternalNavigationSubframeRedirects",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kBlockSubframeIntentToSelf,
-             "BlockSubframeIntentToSelf",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kBlockFrameRenavigations,
-             "BlockFrameRenavigations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             "BlockFrameRenavigations2",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDoNotRequireSpecializedCCTHandler,
              "DoNotRequireSpecializedCCTHandler",

@@ -12,7 +12,6 @@
 #include "base/no_destructor.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -45,7 +44,6 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/command_line_switches.h"
@@ -80,6 +78,10 @@
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) ||
         // BUILDFLAG(IS_WIN)
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/webauthn/passkey_model_factory.h"
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 namespace {
 
@@ -174,11 +176,6 @@ std::unique_ptr<KeyedService> BuildSyncService(
       std::make_unique<syncer::SyncServiceImpl>(std::move(init_params));
   sync_service->Initialize();
 
-  // Hook |sync_service| into PersonalDataManager (a circular dependency).
-  autofill::PersonalDataManager* pdm =
-      autofill::PersonalDataManagerFactory::GetForProfile(profile);
-  pdm->OnSyncServiceInitialized(sync_service.get());
-
   // Notify PasswordStore of complete initialisation to resolve a circular
   // dependency.
   auto password_store = PasswordStoreFactory::GetForProfile(
@@ -230,7 +227,6 @@ SyncServiceFactory::SyncServiceFactory()
   // actually plumbed in ChromeSyncClient, which this factory constructs.
   DependsOn(AboutSigninInternalsFactory::GetInstance());
   DependsOn(AccountPasswordStoreFactory::GetInstance());
-  DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(BookmarkSyncServiceFactory::GetInstance());
   DependsOn(BookmarkUndoServiceFactory::GetInstance());
@@ -242,6 +238,9 @@ SyncServiceFactory::SyncServiceFactory()
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(ModelTypeStoreServiceFactory::GetInstance());
+#if !BUILDFLAG(IS_ANDROID)
+  DependsOn(PasskeyModelFactory::GetInstance());
+#endif  // !BUILDFLAG(IS_ANDROID)
   DependsOn(PasswordStoreFactory::GetInstance());
   DependsOn(PowerBookmarkServiceFactory::GetInstance());
   DependsOn(SecurityEventRecorderFactory::GetInstance());

@@ -30,9 +30,9 @@
 #include "content/public/browser/web_contents_observer.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/fast_checkout/fast_checkout_client.h"
 #include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_controller.h"
 #include "chrome/browser/ui/android/autofill/save_update_address_profile_flow_manager.h"
+#include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_controller_impl.h"
 #include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
 #else
@@ -46,6 +46,9 @@ namespace autofill {
 struct AutofillErrorDialogContext;
 class AutofillOptimizationGuide;
 class AutofillPopupControllerImpl;
+#if BUILDFLAG(IS_ANDROID)
+class AutofillSnackbarControllerImpl;
+#endif  // BUILDFLAG(IS_ANDROID)
 struct VirtualCardEnrollmentFields;
 class VirtualCardEnrollmentManager;
 struct VirtualCardManualFallbackBubbleOptions;
@@ -118,12 +121,13 @@ class ChromeAutofillClient : public ContentAutofillClient,
   translate::TranslateDriver* GetTranslateDriver() override;
   std::string GetVariationConfigCountryCode() const override;
   profile_metrics::BrowserProfileType GetProfileType() const override;
+  FastCheckoutClient* GetFastCheckoutClient() override;
   std::unique_ptr<webauthn::InternalAuthenticator>
   CreateCreditCardInternalAuthenticator(AutofillDriver* driver) override;
 
   void ShowAutofillSettings(PopupType popup_type) override;
   void ShowCardUnmaskOtpInputDialog(
-      const size_t& otp_length,
+      const CardUnmaskChallengeOption& challenge_option,
       base::WeakPtr<OtpUnmaskDelegate> delegate) override;
   void OnUnmaskOtpVerificationResult(OtpUnmaskResult unmask_result) override;
   void ShowUnmaskPrompt(
@@ -202,16 +206,6 @@ class ChromeAutofillClient : public ContentAutofillClient,
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
-  bool TryToShowFastCheckout(
-      const FormData& form,
-      const FormFieldData& field,
-      base::WeakPtr<AutofillManager> autofill_manager) override;
-  void HideFastCheckout(bool allow_further_runs) override;
-  bool IsFastCheckoutSupported(
-      const FormData& form,
-      const FormFieldData& field,
-      const AutofillManager& autofill_manager) override;
-  bool IsShowingFastCheckoutUI() override;
   bool IsTouchToFillCreditCardSupported() override;
   bool ShowTouchToFillCreditCard(
       base::WeakPtr<TouchToFillDelegate> delegate,
@@ -256,6 +250,8 @@ class ChromeAutofillClient : public ContentAutofillClient,
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   LogManager* GetLogManager() const override;
   FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
+  scoped_refptr<device_reauth::DeviceAuthenticator> GetDeviceAuthenticator()
+      const override;
 
   // RiskDataLoader:
   void LoadRiskData(
@@ -318,6 +314,9 @@ class ChromeAutofillClient : public ContentAutofillClient,
   CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
   SaveUpdateAddressProfileFlowManager save_update_address_profile_flow_manager_;
   TouchToFillCreditCardController touch_to_fill_credit_card_controller_{this};
+  std::unique_ptr<AutofillSnackbarControllerImpl>
+      autofill_snackbar_controller_impl_;
+  std::unique_ptr<FastCheckoutClient> fast_checkout_client_;
 #endif
   std::unique_ptr<CardUnmaskPromptControllerImpl> unmask_controller_;
   AutofillErrorDialogControllerImpl autofill_error_dialog_controller_;

@@ -75,6 +75,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsDropdownAdapter.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsDropdownEmbedder.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsDropdownScrollListener.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/PreWarmingRecycledViewPool.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/SuggestionCommonProperties.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/SuggestionHost.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/SuggestionListProperties.java",
@@ -96,6 +97,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewBinder.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewProcessor.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewProperties.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/HistoryClustersProcessor.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SimpleHorizontalLayoutView.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SimpleVerticalLayoutView.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SuggestionDrawableState.java",
@@ -245,7 +247,7 @@ android_library("javatests") {
     "//chrome/test/android:chrome_java_unit_test_support",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_sdk:android_test_mock_java",
-    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_test_monitor_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
@@ -353,6 +355,7 @@ proto_java_library("partner_location_descriptor_proto_java") {
 }
 
 android_library("unit_device_javatests") {
+  resources_package = "org.chromium.chrome.browser.omnibox"
   testonly = true
   sources = [
     "java/src/org/chromium/chrome/browser/omnibox/UrlBarUiUnitTest.java",
@@ -363,6 +366,7 @@ android_library("unit_device_javatests") {
     ":java",
     ":java_resources",
     "//base:base_java_test_support",
+    "//chrome/android:chrome_app_java_resources",
     "//chrome/browser/ui/android/toolbar:java",
     "//chrome/test/android:chrome_java_test_support_common",
     "//components/browser_ui/site_settings/android:java",
@@ -412,6 +416,7 @@ robolectric_library("junit") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/DropdownItemViewInfoListManagerUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/FaviconFetcherUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/OmniboxSuggestionsDropdownUnitTest.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/PreWarmingRecycledViewPoolTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerSuggestionProcessorUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/answer/AnswerTextNewLayoutUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/ActionChipsAdapterUnitTest.java",
@@ -419,6 +424,7 @@ robolectric_library("junit") {
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewBinderUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewProcessorUnitTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/BaseSuggestionViewTest.java",
+    "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/HistoryClustersProcessorTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SimpleHorizontalLayoutViewTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SimpleVerticalLayoutViewTest.java",
     "java/src/org/chromium/chrome/browser/omnibox/suggestions/base/SuggestionSpannableUnitTest.java",
@@ -443,11 +449,13 @@ robolectric_library("junit") {
   ]
   deps = [
     ":java",
+    ":java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//build/android:build_java",
     "//chrome/android:base_module_java",
+    "//chrome/android:chrome_app_java_resources",
     "//chrome/browser/commerce/merchant_viewer/android:java",
     "//chrome/browser/device:java",
     "//chrome/browser/flags:java",
@@ -489,9 +497,10 @@ robolectric_library("junit") {
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//testing/android/junit:junit_test_support",
+    "//third_party/android_deps:espresso_java",
     "//third_party/android_deps:material_design_java",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
     "//third_party/androidx:androidx_test_core_java",

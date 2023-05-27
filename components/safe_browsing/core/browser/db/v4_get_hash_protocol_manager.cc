@@ -33,6 +33,9 @@ using base::Time;
 
 namespace {
 
+// Represents the HTTP response code when it has not explicitly been set.
+const int kUnsetHttpResponseCode = 0;
+
 // Record a GetHash result.
 void RecordGetHashResult(safe_browsing::V4OperationResult result) {
   UMA_HISTOGRAM_ENUMERATION(
@@ -132,32 +135,10 @@ void RecordV4GetHashCheckResult(V4GetHashCheckResultType result_type) {
                             GET_HASH_CHECK_RESULT_MAX);
 }
 
-// Enumerate SePatternType for histogramming purposes. DO NOT CHANGE THE
-// ORDERING OF THESE VALUES.
-enum SocialEngineeringPatternType {
-  SOCIAL_ENGINEERING_PATTERN_ADS = 0,
-
-  SOCIAL_ENGINEERING_PATTERN_LANDING = 1,
-
-  SOCIAL_ENGINEERING_PATTERN_PHISHING = 2,
-
-  SOCIAL_ENGINEERING_PATTERN_UNKNOWN = 3,
-
-  // Memory space for histograms is determined by the max. ALWAYS
-  // ADD NEW VALUES BEFORE THIS ONE.
-  SOCIAL_ENGINEERING_PATTERN_MAX
-};
-
-// Record a social engineering pattern type.
-void RecordSocialEngineeringPattern(SocialEngineeringPatternType pattern_type) {
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.V4GetHash.SocialEngineeringPattern",
-                            pattern_type, SOCIAL_ENGINEERING_PATTERN_MAX);
-}
-
 bool ErrorIsRetriable(int net_error, int http_error) {
   return (net_error == net::ERR_INTERNET_DISCONNECTED ||
           net_error == net::ERR_NETWORK_CHANGED) &&
-         http_error != net::HTTP_OK;
+         (http_error == kUnsetHttpResponseCode || http_error == net::HTTP_OK);
 }
 
 const char kPermission[] = "permission";
@@ -318,6 +299,8 @@ void V4GetHashProtocolManager::GetFullHashes(
                            &prefixes_to_request, &cached_full_hash_infos,
                            mechanism_experiment_cache_selection);
 
+  base::UmaHistogramBoolean("SafeBrowsing.V4GetHash.CacheFullyHit",
+                            prefixes_to_request.empty());
   if (prefixes_to_request.empty()) {
     // 100% cache hits (positive or negative) so we can call the callback right
     // away.
@@ -733,21 +716,17 @@ void V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
          match.threat_entry_metadata().entries()) {
       if (m.key() == kSePatternType) {
         if (m.value() == kSocialEngineeringAds) {
-          RecordSocialEngineeringPattern(SOCIAL_ENGINEERING_PATTERN_ADS);
           metadata->threat_pattern_type =
               ThreatPatternType::SOCIAL_ENGINEERING_ADS;
           break;
         } else if (m.value() == kSocialEngineeringLanding) {
-          RecordSocialEngineeringPattern(SOCIAL_ENGINEERING_PATTERN_LANDING);
           metadata->threat_pattern_type =
               ThreatPatternType::SOCIAL_ENGINEERING_LANDING;
           break;
         } else if (m.value() == kPhishing) {
-          RecordSocialEngineeringPattern(SOCIAL_ENGINEERING_PATTERN_PHISHING);
           metadata->threat_pattern_type = ThreatPatternType::PHISHING;
           break;
         } else {
-          RecordSocialEngineeringPattern(SOCIAL_ENGINEERING_PATTERN_UNKNOWN);
           RecordParseGetHashResult(UNEXPECTED_METADATA_VALUE_ERROR);
           return;
         }
@@ -919,6 +898,18 @@ void V4GetHashProtocolManager::OnURLLoaderCompleteInternal(
 
   std::vector<FullHashInfo> full_hash_infos;
   Time negative_cache_expire;
+
+  if (net_error == net::ERR_INTERNET_DISCONNECTED) {
+    base::UmaHistogramSparse(
+        "SafeBrowsing.V4GetHash.Network.HttpResponseCode.InternetDisconnected",
+        response_code);
+  }
+  if (net_error == net::ERR_NETWORK_CHANGED) {
+    base::UmaHistogramSparse(
+        "SafeBrowsing.V4GetHash.Network.HttpResponseCode.NetworkChanged",
+        response_code);
+  }
+
   if (net_error == net::OK && response_code == net::HTTP_OK) {
     RecordGetHashResult(V4OperationResult::STATUS_200);
     if (gethash_error_count_)

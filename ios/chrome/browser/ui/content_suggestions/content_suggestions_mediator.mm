@@ -28,12 +28,15 @@
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp_tiles/most_visited_sites_observer_bridge.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
@@ -52,16 +55,13 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_tile_saver.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
-#import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/content_suggestions/start_suggest_service_factory.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/feed_delegate.h"
-#import "ios/chrome/browser/ui/ntp/metrics/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
@@ -92,9 +92,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   std::unique_ptr<ntp_tiles::MostVisitedSites> _mostVisitedSites;
   std::unique_ptr<ntp_tiles::MostVisitedSitesObserverBridge> _mostVisitedBridge;
   std::unique_ptr<ReadingListModelBridge> _readingListModelBridge;
-  std::unique_ptr<StartSuggestServiceResponseBridge>
-      _startSuggestServiceResponseBridge;
-  StartSuggestService* _startSuggestService;
 }
 
 // Whether the contents section should be hidden completely.
@@ -147,13 +144,8 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     BOOL showMostRecentTabStartSurfaceTile;
 // Whether the incognito mode is available.
 @property(nonatomic, assign) BOOL incognitoAvailable;
-// Recorder for the metrics related to the NTP.
-@property(nonatomic, strong) NTPHomeMetrics* NTPMetrics;
 // Browser reference.
 @property(nonatomic, assign) Browser* browser;
-
-@property(nonatomic, strong)
-    NSMutableArray<QuerySuggestionConfig*>* trendingQueries;
 
 @end
 
@@ -194,15 +186,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     _readingListModelBridge =
         std::make_unique<ReadingListModelBridge>(self, readingListModel);
     _browser = browser;
-    _NTPMetrics = [[NTPHomeMetrics alloc]
-        initWithBrowserState:_browser->GetBrowserState()];
-
-    if (IsTrendingQueriesModuleEnabled()) {
-      _startSuggestService = StartSuggestServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState(), true);
-      _startSuggestServiceResponseBridge =
-          std::make_unique<StartSuggestServiceResponseBridge>(self);
-    }
   }
   return self;
 }
@@ -234,12 +217,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   if ([self.mostVisitedItems count] && ![self shouldHideMVTForTileAblation]) {
     [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
   }
-  if (!ShouldHideShortcutsForTrendingQueries() &&
-      ![self shouldHideShortcutsForTileAblation]) {
+  if (![self shouldHideShortcutsForTileAblation]) {
     [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
   }
-  if (IsTrendingQueriesModuleEnabled()) {
-    [self fetchTrendingQueriesIfApplicable];
+  if (IsMagicStackEnabled()) {
+    [self.consumer setMagicStackOrder:@[
+      @(int(ContentSuggestionsModuleType::kShortcuts))
+    ]];
   }
 }
 
@@ -257,11 +241,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   _consumer = consumer;
   self.faviconMediator.consumer = consumer;
   [self reloadAllData];
-}
-
-- (void)setWebState:(web::WebState*)webState {
-  _webState = webState;
-  self.NTPMetrics.webState = self.webState;
 }
 
 + (NSUInteger)maxSitesShown {
@@ -312,33 +291,31 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)openMostVisitedItem:(NSObject*)item
                     atIndex:(NSInteger)mostVisitedIndex {
+  // Checks if the item is a shortcut tile. Does not include Most Visited URL
+  // tiles.
   if ([item isKindOfClass:[ContentSuggestionsMostVisitedActionItem class]]) {
-    [self.NTPMetrics recordContentSuggestionsActionForType:
-                         IOSContentSuggestionsActionType::kShortcuts];
+    [self.NTPMetricsDelegate shortcutTileOpened];
     ContentSuggestionsMostVisitedActionItem* mostVisitedItem =
         base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedActionItem>(
             item);
+    [self.contentSuggestionsMetricsRecorder
+        recordShortcutTileTapped:mostVisitedItem.collectionShortcutType];
     switch (mostVisitedItem.collectionShortcutType) {
       case NTPCollectionShortcutTypeBookmark:
-        base::RecordAction(base::UserMetricsAction("MobileNTPShowBookmarks"));
         LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
         [self.dispatcher showBookmarksManager];
         break;
       case NTPCollectionShortcutTypeReadingList:
-        base::RecordAction(base::UserMetricsAction("MobileNTPShowReadingList"));
         [self.dispatcher showReadingList];
         break;
       case NTPCollectionShortcutTypeRecentTabs:
-        base::RecordAction(base::UserMetricsAction("MobileNTPShowRecentTabs"));
         [self.dispatcher showRecentTabs];
         break;
       case NTPCollectionShortcutTypeHistory:
-        base::RecordAction(base::UserMetricsAction("MobileNTPShowHistory"));
         [self.dispatcher showHistory];
         break;
       case NTPCollectionShortcutTypeWhatsNew:
-        SetWhatsNewUsed();
-        base::RecordAction(base::UserMetricsAction("MobileNTPShowWhatsNew"));
+        SetWhatsNewUsed(self.promosManager);
         [self.dispatcher showWhatsNew];
         break;
       case NTPCollectionShortcutTypeCount:
@@ -358,21 +335,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
 }
 
-- (void)loadSuggestedQuery:(QuerySuggestionConfig*)config {
-  UMA_HISTOGRAM_ENUMERATION("IOS.TrendingQueries", config.index,
-                            kMaxTrendingQueries);
-  [self.NTPMetrics recordContentSuggestionsActionForType:
-                       IOSContentSuggestionsActionType::kTrendingQuery];
-  UrlLoadParams params = UrlLoadParams::InCurrentTab(config.URL);
-  params.web_params.transition_type = ui::PAGE_TRANSITION_LINK;
-  UrlLoadingBrowserAgent::FromBrowser(self.browser)->Load(params);
-}
-
 - (void)openMostRecentTab {
-  [self.NTPMetrics recordContentSuggestionsActionForType:
-                       IOSContentSuggestionsActionType::kReturnToRecentTab];
-  base::RecordAction(
-      base::UserMetricsAction("IOS.StartSurface.OpenMostRecentTab"));
+  [self.NTPMetricsDelegate recentTabTileOpened];
+  [self.contentSuggestionsMetricsRecorder recordMostRecentTabOpened];
   [self hideRecentTabTile];
   WebStateList* web_state_list = self.browser->GetWebStateList();
   web::WebState* web_state =
@@ -422,28 +387,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 - (void)removeMostVisited:(ContentSuggestionsMostVisitedItem*)item {
-  base::RecordAction(base::UserMetricsAction("MostVisited_UrlBlacklisted"));
+  [self.contentSuggestionsMetricsRecorder recordMostVisitedTileRemoved];
   [self blockMostVisitedURL:item.URL];
   [self showMostVisitedUndoForURL:item.URL];
-}
-
-#pragma mark - StartSuggestServiceDelegateBridge
-
-- (void)suggestionsReceived:(std::vector<QuerySuggestion>)suggestions {
-  self.trendingQueries = [NSMutableArray array];
-  int index = 0;
-  for (QuerySuggestion query : suggestions) {
-    if (index == kMaxTrendingQueries) {
-      break;
-    }
-    QuerySuggestionConfig* suggestion = [[QuerySuggestionConfig alloc] init];
-    suggestion.URL = query.destination_url;
-    suggestion.query = base::SysUTF16ToNSString(query.query);
-    suggestion.index = index;
-    index++;
-    [self.trendingQueries addObject:suggestion];
-  }
-  [self.consumer setTrendingQueriesWithConfigs:self.trendingQueries];
 }
 
 #pragma mark - StartSurfaceRecentTabObserving
@@ -553,13 +499,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // Logs a histogram due to a Most Visited item being opened.
 - (void)logMostVisitedOpening:(ContentSuggestionsMostVisitedItem*)item
                       atIndex:(NSInteger)mostVisitedIndex {
-  [self.NTPMetrics
-      recordAction:new_tab_page_uma::ACTION_OPENED_MOST_VISITED_ENTRY];
-  [self.NTPMetrics recordContentSuggestionsActionForType:
-                       IOSContentSuggestionsActionType::kMostVisitedTile];
-  base::RecordAction(base::UserMetricsAction("MobileNTPMostVisited"));
-  RecordNTPTileClick(mostVisitedIndex, item.source, item.titleSource,
-                     item.attributes, GURL());
+  [self.NTPMetricsDelegate mostVisitedTileOpened];
+  [self.contentSuggestionsMetricsRecorder
+      recordMostVisitedTileOpened:item
+                          atIndex:mostVisitedIndex
+                         webState:self.browser->GetWebStateList()
+                                      ->GetActiveWebState()];
 }
 
 // Shows a snackbar with an action to undo the removal of the most visited item
@@ -585,40 +530,6 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   message.action = action;
   message.category = @"MostVisitedUndo";
   [self.dispatcher showSnackbarMessage:message];
-}
-
-- (void)fetchTrendingQueriesIfApplicable {
-  PrefService* pref_service =
-      ChromeBrowserState::FromBrowserState(self.browser->GetBrowserState())
-          ->GetPrefs();
-
-  // Feed is disabled in safe mode.
-  SceneState* sceneState =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  BOOL isSafeMode = [sceneState.appState resumingFromSafeMode];
-
-  BOOL isFeedVisible =
-      (pref_service->GetBoolean(prefs::kArticlesForYouEnabled) &&
-       pref_service->GetBoolean(prefs::kNTPContentSuggestionsEnabled) &&
-       !IsFeedAblationEnabled()) &&
-      !isSafeMode &&
-      pref_service->GetBoolean(feed::prefs::kArticlesListVisible);
-  if (ShouldOnlyShowTrendingQueriesForDisabledFeed() && isFeedVisible) {
-    // Notify consumer with empty array so it knows to remove the module.
-    [self.consumer setTrendingQueriesWithConfigs:@[]];
-    return;
-  }
-
-  // Fetch Trending Queries
-  TemplateURLRef::SearchTermsArgs args;
-  args.request_source = RequestSource::NTP_MODULE;
-  BOOL isShowingStartSurface = NewTabPageTabHelper::FromWebState(self.webState)
-                                   ->ShouldShowStartSurface();
-  _startSuggestService->FetchSuggestions(
-      args,
-      base::BindOnce(&StartSuggestServiceResponseBridge::OnSuggestionsReceived,
-                     _startSuggestServiceResponseBridge->AsWeakPtr()),
-      isShowingStartSurface);
 }
 
 - (NSString*)constructReturnToRecentTabSubtitleWithPageTitle:
@@ -749,6 +660,14 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   for (ContentSuggestionsMostVisitedItem* item in self.freshMostVisitedItems) {
     item.commandHandler = commandHandler;
   }
+}
+
+- (void)setContentSuggestionsMetricsRecorder:
+    (ContentSuggestionsMetricsRecorder*)contentSuggestionsMetricsRecorder {
+  CHECK(self.faviconMediator);
+  _contentSuggestionsMetricsRecorder = contentSuggestionsMetricsRecorder;
+  self.faviconMediator.contentSuggestionsMetricsRecorder =
+      self.contentSuggestionsMetricsRecorder;
 }
 
 - (BOOL)contentSuggestionsEnabled {

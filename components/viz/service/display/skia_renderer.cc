@@ -1892,54 +1892,65 @@ SkiaRenderer::BypassMode SkiaRenderer::CalculateBypassParams(
                              std::size(params->draw_region->points));
   }
 
-  // Compute draw params for the bypass quad from scratch, but since the
-  // bypass_quad would have originally been drawn into the RP, the
-  // target_to_device transform is the full transform of the RPDQ. Must also
-  // include the RP's output rect as part of the scissor rect, since it would
-  // have been clipped to the edges of the RP's offscreen buffer normally.
-  DrawQuadParams bypass_params =
-      CalculateDrawQuadParams(gfx::AxisTransform2d() /* identity */,
-                              absl::nullopt, bypass_quad, nullptr);
-
-  // |params| already holds the correct |draw_region|, but must be updated to
-  // use the bypassed transform and geometry.
+  // BypassGeometry holds the RenderPassDrawQuad rect and visible_rect, which
+  // are in the bypassed render pass coordinate space, along with the transform
+  // from bypassed render pass to `bypass_quad` coordinate space.
   rpdq_params->bypass_geometry = DrawRPDQParams::BypassGeometry{
       bypass_to_rpdq, params->rect, params->visible_rect};
+
+  if (bypass_quad->shared_quad_state->clip_rect) {
+    // If bypass_quad->clip_rect isn't empty then normally it would be added to
+    // scissor_rect in SetScissorStateForQuad(). That never happens when the
+    // render pass is bypassed. The clip_rect is in the same coordinate space as
+    // the RPDQ + bypassed render pass aka the same as bypass_geometry.
+    rpdq_params->bypass_geometry->visible_rect.Intersect(
+        gfx::RectF(*bypass_quad->shared_quad_state->clip_rect));
+  }
+
+  // Compute draw params for `bypass_quad` to update some of the original draw
+  // params. Both transform and scissor_rect are already accounted for in
+  // BypassGeometry so pass identify and empty for those.
+  DrawQuadParams bypass_quad_params = CalculateDrawQuadParams(
+      /*target_to_device=*/gfx::AxisTransform2d(),
+      /*scissor_rect=*/absl::nullopt, bypass_quad,
+      /*draw_region=*/nullptr);
 
   // NOTE: params |content_device_transform| remains that of the RPDQ to prepare
   // the canvas' CTM to match what any image filters require. The above
   // BypassGeometry::transform is then applied when drawing so that these
   // updated coordinates are correctly transformed to device space.
-  params->visible_rect = bypass_params.visible_rect;
-  params->vis_tex_coords = bypass_params.vis_tex_coords;
+  params->visible_rect = bypass_quad_params.visible_rect;
+  params->vis_tex_coords = bypass_quad_params.vis_tex_coords;
 
   // Combine anti-aliasing policy (use AND so that any draw_region clipping
   // is preserved).
-  params->aa_flags &= bypass_params.aa_flags;
+  params->aa_flags &= bypass_quad_params.aa_flags;
 
   // Blending will use the top-level RPDQ blend mode, but factor in the
   // content's opacity as well, since that would have normally been baked into
   // the RP's buffer.
-  params->opacity *= bypass_params.opacity;
+  params->opacity *= bypass_quad_params.opacity;
 
   // Take the highest quality filter, since this single draw will reflect the
   // filtering decisions made both when drawing into the RP and when drawing the
   // RP results itself. The ord() lambda simulates this notion of "highest" when
   // we used to use FilterQuality.
   auto ord = [](const SkSamplingOptions& sampling) {
-    if (sampling.useCubic)
+    if (sampling.useCubic) {
       return 3;
-    if (sampling.mipmap != SkMipmapMode::kNone)
+    } else if (sampling.mipmap != SkMipmapMode::kNone) {
       return 2;
+    }
     return sampling.filter == SkFilterMode::kLinear ? 1 : 0;
   };
 
-  if (ord(bypass_params.sampling) > ord(params->sampling))
-    params->sampling = bypass_params.sampling;
+  if (ord(bypass_quad_params.sampling) > ord(params->sampling)) {
+    params->sampling = bypass_quad_params.sampling;
+  }
 
   // Rounded corner bounds are in device space, which gets tricky when bypassing
   // the device that the RP would have represented
-  DCHECK(!bypass_params.mask_filter_info.has_value());
+  DCHECK(!bypass_quad_params.mask_filter_info.has_value());
 
   return BypassMode::kDrawBypassQuad;
 }
@@ -2796,7 +2807,7 @@ sk_sp<SkColorFilter> SkiaRenderer::GetContentColorFilter() {
 
 SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
     const AggregatedRenderPassDrawQuad* quad,
-    DrawQuadParams* params) {
+    const DrawQuadParams* params) {
   DrawRPDQParams rpdq_params(params->visible_rect);
 
   // Prepare mask.
@@ -3205,7 +3216,7 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
     // TODO(tangm): We should clean this up by either avoiding HDR or using
     //              RGBAF16 surfaces in this case.
     const bool dcomp_surface_unsupported_format =
-        requirements.format == ResourceFormat::RGBA_1010102;
+        requirements.format == SinglePlaneFormat::kRGBA_1010102;
 
     if (requirements.scanout_dcomp_surface &&
         !dcomp_surface_unsupported_format) {
@@ -3223,7 +3234,7 @@ void SkiaRenderer::AllocateRenderPassResourceIfNeeded(
 
   auto mailbox = skia_output_surface_->CreateSharedImage(
       requirements.format, requirements.size, requirements.color_space, usage,
-      gpu::kNullSurfaceHandle);
+      "RenderPassBacking", gpu::kNullSurfaceHandle);
   render_pass_backings_.emplace(
       render_pass_id,
       RenderPassBacking({requirements.size, requirements.generate_mipmap,
@@ -3326,7 +3337,7 @@ SkiaRenderer::RenderPassOverlayParams*
 SkiaRenderer::GetOrCreateRenderPassOverlayBacking(
     AggregatedRenderPassId render_pass_id,
     const AggregatedRenderPassDrawQuad* rpdq,
-    ResourceFormat buffer_format,
+    SharedImageFormat buffer_format,
     gfx::ColorSpace color_space,
     const gfx::Size& buffer_size) {
   RenderPassOverlayParams overlay_params;
@@ -3346,7 +3357,7 @@ SkiaRenderer::GetOrCreateRenderPassOverlayBacking(
         gpu::SHARED_IMAGE_USAGE_DISPLAY_WRITE | gpu::SHARED_IMAGE_USAGE_RASTER;
     auto mailbox = skia_output_surface_->CreateSharedImage(
         buffer_format, buffer_size, color_space, kOverlayUsage,
-        gpu::kNullSurfaceHandle);
+        "RenderPassOverlay", gpu::kNullSurfaceHandle);
     overlay_params.render_pass_backing = {buffer_size,
                                           /*generate_mipmap=*/false,
                                           color_space,
@@ -3473,7 +3484,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   if (filter_bounds.IsEmpty())
     return;
 
-  ResourceFormat buffer_format{};
+  SharedImageFormat buffer_format;
   gfx::ColorSpace color_space;
 
   RenderPassBacking* src_quad_backing = nullptr;
@@ -3487,7 +3498,8 @@ void SkiaRenderer::PrepareRenderPassOverlay(
 
     // For bypassed render pass, we use the same format and color space for the
     // framebuffer.
-    buffer_format = GetResourceFormat(reshape_buffer_format());
+    buffer_format = SharedImageFormat::SinglePlane(
+        GetResourceFormat(reshape_buffer_format()));
     color_space = reshape_color_space();
   } else {
     // A real render pass that was turned into an image
@@ -3531,7 +3543,8 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   } else {
     current_canvas_ = skia_output_surface_->BeginPaintRenderPass(
         quad->render_pass_id, dst_overlay_backing.size,
-        dst_overlay_backing.format, /*mipmap=*/false,
+        dst_overlay_backing.format,
+        /*mipmap=*/false,
         /*scanout_dcomp_surface=*/false,
         RenderPassBackingSkColorSpace(dst_overlay_backing),
         /*is_overlay=*/true, overlay->mailbox);
@@ -3630,7 +3643,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   overlay->damage_rect = gfx::RectF(filter_bounds);
   // Fill in |format| and |color_space| information based on selected backing.
   overlay->color_space = color_space;
-  overlay->format = BufferFormat(buffer_format);
+  overlay->format = BufferFormat(buffer_format.resource_format());
 #endif  // BUILDFLAG(IS_APPLE)
 }
 #endif  // BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_OZONE)

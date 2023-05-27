@@ -7,9 +7,9 @@
 #import "base/ios/ios_util.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_actions_handler.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_visibility_configuration.h"
@@ -168,7 +168,7 @@ const CGFloat kSymbolToolbarPointSize = 24;
 - (ToolbarButton*)openNewTabButton {
   ToolbarButton* newTabButton;
   if (@available(iOS 15, *)) {
-    NSString* symbolName = base::FeatureList::IsEnabled(kSFSymbolsFollowup)
+    NSString* symbolName = base::FeatureList::IsEnabled(kSFSymbolsFollowUp)
                                ? kPlusCircleFillSymbol
                                : kLegacyPlusCircleFillSymbol;
     UIImage* image = SymbolWithPalette(
@@ -187,7 +187,7 @@ const CGFloat kSymbolToolbarPointSize = 24;
   [newTabButton addTarget:self.actionHandler
                    action:@selector(newTabAction:)
          forControlEvents:UIControlEventTouchUpInside];
-  BOOL isIncognito = self.style == INCOGNITO;
+  BOOL isIncognito = self.style == ToolbarStyle::kIncognito;
 
   [self configureButton:newTabButton width:kAdaptiveToolbarButtonWidth];
 

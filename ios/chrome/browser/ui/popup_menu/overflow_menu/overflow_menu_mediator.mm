@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/find_in_page/abstract_find_tab_helper.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
@@ -40,23 +41,23 @@
 #import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/reading_list/offline_url_utils.h"
+#import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
-#import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
+#import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history/constants.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/destination_usage_history/destination_usage_history.h"
@@ -65,7 +66,6 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
-#import "ios/chrome/browser/ui/settings/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
@@ -79,7 +79,6 @@
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/common/user_agent.h"
 #import "ios/web/public/js_messaging/web_frame.h"
-#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_client.h"
@@ -801,9 +800,7 @@ NSArray<OverflowMenuDestination*>* SortBadgedDestinations(
   auto handlerWithMetrics = ^{
     overflow_menu::RecordUmaActionForDestination(destination);
 
-    if (IsSmartSortingNewOverflowMenuEnabled()) {
-      [weakSelf.destinationUsageHistory recordClickForDestination:destination];
-    }
+    [weakSelf.destinationUsageHistory recordClickForDestination:destination];
 
     handler();
   };
@@ -939,7 +936,7 @@ NSArray<OverflowMenuDestination*>* SortBadgedDestinations(
 
   NSArray<OverflowMenuDestination*>* baseDestinations = [self baseDestinations];
 
-  if (self.destinationUsageHistory && IsSmartSortingNewOverflowMenuEnabled()) {
+  if (self.destinationUsageHistory) {
     baseDestinations = [self.destinationUsageHistory
         sortedDestinationsFromCarouselDestinations:baseDestinations];
   } else {
@@ -1307,32 +1304,35 @@ NSArray<OverflowMenuDestination*>* SortBadgedDestinations(
 
 // If an added or removed bookmark is the same as the current url, update the
 // toolbar so the star highlight is kept in sync.
-- (void)bookmarkNodeChildrenChanged:
-    (const bookmarks::BookmarkNode*)bookmarkNode {
+- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+    didChangeChildrenForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
   [self updateModel];
 }
 
 // If all bookmarks are removed, update the toolbar so the star highlight is
 // kept in sync.
-- (void)bookmarkModelRemovedAllNodes {
+- (void)bookmarkModelRemovedAllNodes:(bookmarks::BookmarkModel*)model {
   [self updateModel];
 }
 
 // In case we are on a bookmarked page before the model is loaded.
-- (void)bookmarkModelLoaded {
+- (void)bookmarkModelLoaded:(bookmarks::BookmarkModel*)model {
   [self updateModel];
 }
 
-- (void)bookmarkNodeChanged:(const bookmarks::BookmarkNode*)bookmarkNode {
+- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+        didChangeNode:(const bookmarks::BookmarkNode*)bookmarkNode {
   [self updateModel];
 }
-- (void)bookmarkNode:(const bookmarks::BookmarkNode*)bookmarkNode
-     movedFromParent:(const bookmarks::BookmarkNode*)oldParent
-            toParent:(const bookmarks::BookmarkNode*)newParent {
+- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+          didMoveNode:(const bookmarks::BookmarkNode*)bookmarkNode
+           fromParent:(const bookmarks::BookmarkNode*)oldParent
+             toParent:(const bookmarks::BookmarkNode*)newParent {
   // No-op -- required by BookmarkModelBridgeObserver but not used.
 }
-- (void)bookmarkNodeDeleted:(const bookmarks::BookmarkNode*)node
-                 fromFolder:(const bookmarks::BookmarkNode*)folder {
+- (void)bookmarkModel:(bookmarks::BookmarkModel*)model
+        didDeleteNode:(const bookmarks::BookmarkNode*)node
+           fromFolder:(const bookmarks::BookmarkNode*)folder {
   [self updateModel];
 }
 
@@ -1501,7 +1501,7 @@ NSArray<OverflowMenuDestination*>* SortBadgedDestinations(
 // Dismisses the menu and adds the current page as a bookmark or opens the
 // bookmark edit screen if the current page is bookmarked.
 - (void)addOrEditBookmark {
-  RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
+  RecordAction(UserMetricsAction("MobileMenuAddToOrEditBookmark"));
   // Dismissing the menu disconnects the mediator, so save anything cleaned up
   // there.
   web::WebState* currentWebState = self.webState;
@@ -1527,7 +1527,8 @@ NSArray<OverflowMenuDestination*>* SortBadgedDestinations(
 
   // Fetching the canonical URL is asynchronous (and happen on a background
   // thread), so the operation can be started before the UI is dismissed.
-  reading_list::AddToReadingListUsingCanonicalUrl(self.dispatcher, webState);
+  reading_list::AddToReadingListUsingCanonicalUrl(self.readingListBrowserAgent,
+                                                  webState);
 
   [self.popupMenuCommandsHandler dismissPopupMenuAnimated:YES];
 }
@@ -1661,7 +1662,7 @@ NSArray<OverflowMenuDestination*>* SortBadgedDestinations(
 // Dismisses the menu and opens What's New.
 - (void)openWhatsNew {
   if (!WasWhatsNewUsed()) {
-    SetWhatsNewUsed();
+    SetWhatsNewUsed(self.promosManager);
   }
 
   if (self.engagementTracker) {

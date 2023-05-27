@@ -19,8 +19,8 @@
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "ui/chromeos/events/mojom/modifier_key.mojom.h"
-#include "ui/chromeos/events/pref_names.h"
+#include "ui/events/ash/mojom/modifier_key.mojom.h"
+#include "ui/events/ash/pref_names.h"
 
 namespace ash {
 
@@ -101,7 +101,8 @@ class KeyboardModifierMetricsRecorderTest : public AshTestBase {
   }
 
  protected:
-  raw_ptr<KeyboardModifierMetricsRecorder> recorder_;
+  raw_ptr<KeyboardModifierMetricsRecorder, DanglingUntriaged | ExperimentalAsh>
+      recorder_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
@@ -124,7 +125,7 @@ class KeyboardModifierMetricsRecorderPrefChangedTest
   }
 
  protected:
-  raw_ptr<PrefService> pref_service_;
+  raw_ptr<PrefService, DanglingUntriaged | ExperimentalAsh> pref_service_;
 
   KeyboardModifierMetricsRecorderTestData data_;
   ui::mojom::ModifierKey modifier_key_from_;

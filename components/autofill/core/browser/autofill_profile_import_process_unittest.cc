@@ -21,6 +21,15 @@ namespace autofill {
 
 namespace {
 
+// Test that two AutofillProfiles have the same `source() and `Compare()` equal.
+// This is useful for testing profile migration, which changes a profile's
+// source and GUID (preventing the use of operator==).
+MATCHER(CompareWithSource, "") {
+  const AutofillProfile& a = std::get<0>(arg);
+  const AutofillProfile& b = std::get<1>(arg);
+  return a.source() == b.source() && a.Compare(b) == 0;
+}
+
 class AutofillProfileImportProcessTest : public testing::Test {
  protected:
   void BlockProfileForUpdates(const AutofillProfile& profile) {
@@ -312,8 +321,12 @@ TEST_F(AutofillProfileImportProcessTest, ImportSubsetProfile_kAccount) {
 }
 
 // Tests that importing a profile that is a superset of a kAccount profile is
-// rejected as a duplicate.
-TEST_F(AutofillProfileImportProcessTest, ImportSupersetProfile_kAccount) {
+// rejected as a duplicate when `kAutofillAccountProfileStorage` is disabled.
+TEST_F(AutofillProfileImportProcessTest,
+       ImportSupersetProfile_kAccount_PreStorage) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndDisableFeature(features::kAutofillAccountProfileStorage);
+
   AutofillProfile account_profile = test::SubsetOfStandardProfile();
   account_profile.set_source_for_testing(AutofillProfile::Source::kAccount);
   std::vector<AutofillProfile> existing_profiles = {account_profile};
@@ -330,6 +343,38 @@ TEST_F(AutofillProfileImportProcessTest, ImportSupersetProfile_kAccount) {
   EXPECT_FALSE(import_data.ProfilesChanged());
   EXPECT_THAT(import_data.GetResultingProfiles(),
               testing::ElementsAreArray(existing_profiles));
+}
+
+// Tests that importing a profile that is a superset of a kAccount profile
+// results in an update when `kAutofillAccountProfileStorage` is enabled.
+// The source of resulting profile remains kAccount.
+TEST_F(AutofillProfileImportProcessTest,
+       ImportSupersetProfile_kAccount_PostStorage) {
+  base::test::ScopedFeatureList feature;
+  feature.InitWithFeatures(
+      /*enabled_features=*/{features::kAutofillAccountProfilesUnionView,
+                            features::kAutofillAccountProfileStorage},
+      /*disabled_features=*/{});
+
+  AutofillProfile account_profile = test::SubsetOfStandardProfile();
+  account_profile.set_source_for_testing(AutofillProfile::Source::kAccount);
+  std::vector<AutofillProfile> existing_profiles = {account_profile};
+  personal_data_manager_.SetProfilesForAllSources(&existing_profiles);
+
+  ProfileImportProcess import_data(
+      /*observed_profile=*/test::StandardProfile(), "en_US", url_,
+      &personal_data_manager_,
+      /*allow_only_silent_updates=*/false);
+
+  EXPECT_EQ(import_data.import_type(),
+            AutofillProfileImportType::kConfirmableMerge);
+  import_data.AcceptWithoutPrompt();
+  EXPECT_TRUE(import_data.ProfilesChanged());
+  AutofillProfile expected_profile = test::StandardProfile();
+  expected_profile.set_guid(account_profile.guid());
+  expected_profile.set_source_for_testing(AutofillProfile::Source::kAccount);
+  EXPECT_THAT(import_data.GetResultingProfiles(),
+              testing::ElementsAre(expected_profile));
 }
 
 // Tests that an import cannot cause a silent update of a `kAccount` profile, if
@@ -924,6 +969,148 @@ TEST_F(AutofillProfileImportProcessTest,
   EXPECT_THAT(
       import_data.GetResultingProfiles(),
       testing::UnorderedElementsAre(mergeable_profile, updated_profile));
+}
+
+// Tests that for eligible users, new profiles are of source kAccount.
+TEST_F(AutofillProfileImportProcessTest, NewProfileSource) {
+  // Ineligible user.
+  {
+    personal_data_manager_.SetIsEligibleForAddressAccountStorage(false);
+    ProfileImportProcess import_data(test::StandardProfile(), "en_US", url_,
+                                     &personal_data_manager_,
+                                     /*allow_only_silent_updates=*/false);
+    EXPECT_EQ(import_data.import_candidate()->source(),
+              AutofillProfile::Source::kLocalOrSyncable);
+  }
+
+  // Eligible user.
+  {
+    personal_data_manager_.SetIsEligibleForAddressAccountStorage(true);
+    ProfileImportProcess import_data(test::StandardProfile(), "en_US", url_,
+                                     &personal_data_manager_,
+                                     /*allow_only_silent_updates=*/false);
+    EXPECT_EQ(import_data.import_candidate()->source(),
+              AutofillProfile::Source::kAccount);
+
+    // Profiles with an ineligible country are not stored in the account.
+    AutofillProfile ineligible_profile = test::StandardProfile();
+    ineligible_profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"SD");
+    import_data = ProfileImportProcess(ineligible_profile, "en_US", url_,
+                                       &personal_data_manager_,
+                                       /*allow_only_silent_updates=*/false);
+    EXPECT_EQ(import_data.import_candidate()->source(),
+              AutofillProfile::Source::kLocalOrSyncable);
+  }
+}
+
+// Two `kLocalOrSyncable` profiles are stored. One of them is observed during
+// submission. Expected that this profile is offered for migration.
+// After accepting, expect that the profile's source has changed and that the
+// second profile is left unaltered.
+TEST_F(AutofillProfileImportProcessTest, MigrateProfileToAccount) {
+  const AutofillProfile profile_to_migrate = test::StandardProfile();
+  const AutofillProfile other_profile = test::DifferentFromStandardProfile();
+  std::vector<AutofillProfile> existing_profiles = {profile_to_migrate,
+                                                    other_profile};
+  personal_data_manager_.SetProfilesForAllSources(&existing_profiles);
+  personal_data_manager_.SetIsEligibleForAddressAccountStorage(true);
+
+  ProfileImportProcess import_data(
+      /*observed_profile=*/profile_to_migrate, "en_US", url_,
+      &personal_data_manager_,
+      /*allow_only_silent_updates=*/false);
+  EXPECT_EQ(import_data.import_type(),
+            AutofillProfileImportType::kProfileMigration);
+  EXPECT_EQ(import_data.import_candidate(), profile_to_migrate);
+
+  import_data.AcceptWithoutEdits();
+  EXPECT_TRUE(import_data.ProfilesChanged());
+  EXPECT_THAT(
+      import_data.GetResultingProfiles(),
+      testing::UnorderedPointwise(
+          CompareWithSource(),
+          {profile_to_migrate.ConvertToAccountProfile(), other_profile}));
+}
+
+// Test that the profile to migrate can be silently updated. Expect that after
+// accepting the migration, the stored profile has source `kAccount` and was
+// silently updated.
+TEST_F(AutofillProfileImportProcessTest, MigrateProfileToAccount_SilentUpdate) {
+  const AutofillProfile profile_to_migrate = test::UpdateableStandardProfile();
+  const AutofillProfile observed_profile = test::StandardProfile();
+  std::vector<AutofillProfile> existing_profiles = {profile_to_migrate};
+  personal_data_manager_.SetProfilesForAllSources(&existing_profiles);
+  personal_data_manager_.SetIsEligibleForAddressAccountStorage(true);
+
+  ProfileImportProcess import_data(observed_profile, "en_US", url_,
+                                   &personal_data_manager_,
+                                   /*allow_only_silent_updates=*/false);
+  EXPECT_EQ(import_data.import_type(),
+            AutofillProfileImportType::kProfileMigrationAndSilentUpdate);
+  // The import candidate should be the existing profile (`profile_to_migrate`),
+  // silently updated with the `observed_profile`. This is effectively the
+  // `observed_profile` with a different GUID.
+  AutofillProfile expected_import_candidate = observed_profile;
+  expected_import_candidate.set_guid(profile_to_migrate.guid());
+  EXPECT_EQ(import_data.import_candidate(), expected_import_candidate);
+
+  import_data.AcceptWithoutEdits();
+  EXPECT_TRUE(import_data.ProfilesChanged());
+  EXPECT_THAT(
+      import_data.GetResultingProfiles(),
+      testing::UnorderedPointwise(
+          CompareWithSource(), {observed_profile.ConvertToAccountProfile()}));
+}
+
+// Even if a profile migration is rejected, silent updates are applied.
+TEST_F(AutofillProfileImportProcessTest,
+       MigrateProfileToAccount_SilentUpdate_Decline) {
+  const AutofillProfile migration_candidate = test::UpdateableStandardProfile();
+  const AutofillProfile observed_profile = test::StandardProfile();
+  std::vector<AutofillProfile> existing_profiles = {migration_candidate};
+  personal_data_manager_.SetProfilesForAllSources(&existing_profiles);
+  personal_data_manager_.SetIsEligibleForAddressAccountStorage(true);
+
+  ProfileImportProcess import_data(observed_profile, "en_US", url_,
+                                   &personal_data_manager_,
+                                   /*allow_only_silent_updates=*/false);
+  EXPECT_EQ(import_data.import_type(),
+            AutofillProfileImportType::kProfileMigrationAndSilentUpdate);
+  import_data.Declined();
+  EXPECT_TRUE(import_data.ProfilesChanged());
+  EXPECT_THAT(
+      import_data.GetResultingProfiles(),
+      testing::UnorderedPointwise(CompareWithSource(), {observed_profile}));
+}
+
+// Expect that no migration is offered for ineligible users.
+TEST_F(AutofillProfileImportProcessTest,
+       MigrateProfileToAccount_IneligibleUser) {
+  const AutofillProfile profile = test::StandardProfile();
+  std::vector<AutofillProfile> existing_profiles = {profile};
+  personal_data_manager_.SetProfilesForAllSources(&existing_profiles);
+  personal_data_manager_.SetIsEligibleForAddressAccountStorage(false);
+
+  ProfileImportProcess import_data(
+      /*observed_profile=*/profile, "en_US", url_, &personal_data_manager_,
+      /*allow_only_silent_updates=*/false);
+  EXPECT_EQ(import_data.import_type(),
+            AutofillProfileImportType::kDuplicateImport);
+}
+
+// Expect that no migration is offered for ineligible profiles.
+TEST_F(AutofillProfileImportProcessTest,
+       MigrateProfileToAccount_IneligibleProfile) {
+  AutofillProfile profile = test::StandardProfile();
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"KP");
+  std::vector<AutofillProfile> existing_profiles = {profile};
+  personal_data_manager_.SetProfilesForAllSources(&existing_profiles);
+
+  ProfileImportProcess import_data(
+      /*observed_profile=*/profile, "en_US", url_, &personal_data_manager_,
+      /*allow_only_silent_updates=*/false);
+  EXPECT_EQ(import_data.import_type(),
+            AutofillProfileImportType::kDuplicateImport);
 }
 
 }  // namespace

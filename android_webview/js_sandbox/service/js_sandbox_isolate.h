@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/scoped_file.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
@@ -161,6 +162,12 @@ class JsSandboxIsolate {
   // Should be used from isolate_task_runner_.
   std::unique_ptr<gin::IsolateHolder> isolate_holder_;
   // Should be used from isolate_task_runner_.
+  //
+  // This isolate scope is entered during initialization from inside the
+  // isolate_task_runner_ thread and exited only at isolate teardown. It is thus
+  // used implicitly by all tasks run on the isolate thread.
+  std::unique_ptr<v8::Isolate::Scope> isolate_scope_;
+  // Should be used from isolate_task_runner_.
   std::unique_ptr<gin::ContextHolder> context_holder_;
 
   base::Lock named_fd_lock_;
@@ -174,7 +181,9 @@ class JsSandboxIsolate {
   // of an evaluation is a JS promise which is pending resolution/rejection.
   //
   // This pointer must only be accessed from the isolate thread.
-  JsSandboxIsolateCallback* current_callback_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION JsSandboxIsolateCallback* current_callback_;
 
   bool console_enabled_;
 

@@ -17,9 +17,9 @@ import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVA
 import static org.chromium.components.embedder_support.util.UrlConstants.NTP_URL;
 
 import android.os.Build.VERSION_CODES;
-import android.support.test.InstrumentationRegistry;
 
 import androidx.annotation.Nullable;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.RecyclerViewActions;
@@ -48,9 +48,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
@@ -406,7 +406,7 @@ public class TabSwitcherAndStartSurfaceLayoutPerfTest {
             Thread.sleep(mWaitingTime);
             Espresso.onView(allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(
                                           mActivityTestRule.getActivity()))),
-                                    withId(org.chromium.chrome.tab_ui.R.id.tab_list_view)))
+                                    withId(R.id.tab_list_view)))
                     .perform(RecyclerViewActions.actionOnItemAtPosition(
                             targetIndex, ViewActions.click()));
 

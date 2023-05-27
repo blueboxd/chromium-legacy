@@ -17,9 +17,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -42,9 +44,12 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
@@ -52,6 +57,7 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +68,14 @@ import java.util.function.BooleanSupplier;
  * to the Partial Custom Tabs logic.
  */
 public class PartialCustomTabTestRule implements TestRule {
+    @Implements(SemanticColorUtils.class)
+    static class ShadowSemanticColorUtils {
+        @Implementation
+        public static int getDividerLineBgColor(Context context) {
+            return Color.LTGRAY;
+        }
+    }
+
     // Pixel 3 XL metrics
     static final float DENSITY = 1.25f;
     static final int DEVICE_HEIGHT = 2960;
@@ -72,6 +86,12 @@ public class PartialCustomTabTestRule implements TestRule {
     static final int STATUS_BAR_HEIGHT = 68;
     static final int FULL_HEIGHT = DEVICE_HEIGHT - NAVBAR_HEIGHT;
     static final int MULTIWINDOW_HEIGHT = FULL_HEIGHT / 2;
+
+    static final int DEVICE_WIDTH_MEDIUM = 700;
+    static final int DEVICE_WIDTH_COMPACT = 500;
+    static final int DEVICE_HEIGHT_COMPACT = 300;
+    static final int DEVICE_WIDTH_COMPACT_PORTRAIT = DEVICE_HEIGHT_COMPACT;
+    static final int DEVICE_HEIGHT_COMPACT_PORTRAIT = DEVICE_WIDTH_COMPACT;
 
     @Mock
     Activity mActivity;
@@ -119,11 +139,13 @@ public class PartialCustomTabTestRule implements TestRule {
     @Mock
     View mToolbarCoordinator;
     @Mock
-    View mDragBar;
+    CustomTabDragBar mDragBar;
     @Mock
     View mDragHandlebar;
     @Mock
     GradientDrawable mDragBarBackground;
+    @Mock
+    InsetDrawable mInsetDragBarBackground;
     @Mock
     ColorDrawable mColorDrawable;
     @Mock
@@ -142,6 +164,8 @@ public class PartialCustomTabTestRule implements TestRule {
             FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
     FrameLayout.LayoutParams mCoordinatorLayoutParams = new FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+    ViewGroup.LayoutParams mDragBarLayoutParams = new ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
     private void setUp() {
         ShadowLog.stream = System.out;
@@ -155,7 +179,7 @@ public class PartialCustomTabTestRule implements TestRule {
         when(mActivity.findViewById(R.id.custom_tabs_handle_view_stub)).thenReturn(mHandleViewStub);
         when(mActivity.findViewById(R.id.custom_tabs_handle_view)).thenReturn(mHandleView);
         when(mActivity.findViewById(R.id.drag_bar)).thenReturn(mDragBar);
-        when(mActivity.findViewById(R.id.drag_handlebar)).thenReturn(mDragHandlebar);
+        when(mActivity.findViewById(R.id.drag_handle)).thenReturn(mDragHandlebar);
         mAttributes = new WindowManager.LayoutParams();
         when(mWindow.getAttributes()).thenReturn(mAttributes);
         when(mWindow.getDecorView()).thenReturn(mDecorView);
@@ -184,9 +208,11 @@ public class PartialCustomTabTestRule implements TestRule {
         when(mToolbarView.getLayoutParams()).thenReturn(mLayoutParams);
         when(mColorDrawable.getColor()).thenReturn(2);
         when(mDragBar.getBackground()).thenReturn(mDragBarBackground);
+        when(mDragBar.getLayoutParams()).thenReturn(mDragBarLayoutParams);
         when(mHandleStrategyFactory.create(anyInt(), any(Context.class), any(BooleanSupplier.class),
                      any(Supplier.class),
-                     any(PartialCustomTabHandleStrategy.DragEventCallback.class)))
+                     any(PartialCustomTabHandleStrategy.DragEventCallback.class),
+                     any(Callback.class)))
                 .thenReturn(null);
         mConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
 
@@ -245,6 +271,11 @@ public class PartialCustomTabTestRule implements TestRule {
         when(mDisplay.getRotation()).thenReturn(Surface.ROTATION_90);
     }
 
+    public void configInsetDrawableBg() {
+        when(mDragBar.getBackground()).thenReturn(mInsetDragBarBackground);
+        when(mInsetDragBarBackground.getDrawable()).thenReturn(mDragBarBackground);
+    }
+
     public void configLandscapeMode() {
         configLandscapeMode(Surface.ROTATION_90);
     }
@@ -257,6 +288,27 @@ public class PartialCustomTabTestRule implements TestRule {
         mDisplaySize.set(DEVICE_HEIGHT, DEVICE_WIDTH);
         when(mContentFrame.getHeight()).thenReturn(DEVICE_WIDTH);
         when(mDisplay.getRotation()).thenReturn(direction);
+    }
+
+    public void configDeviceWidthMedium() {
+        mRealMetrics.widthPixels = DEVICE_WIDTH_MEDIUM;
+        mDisplaySize.set(DEVICE_WIDTH_MEDIUM, DEVICE_HEIGHT - NAVBAR_HEIGHT);
+    }
+
+    public void configCompactDevice() {
+        mConfiguration.orientation = Configuration.ORIENTATION_LANDSCAPE;
+        mRealMetrics.widthPixels = DEVICE_WIDTH_COMPACT;
+        mRealMetrics.heightPixels = DEVICE_HEIGHT_COMPACT;
+        mDisplaySize.set(DEVICE_WIDTH_COMPACT, DEVICE_HEIGHT_COMPACT);
+        when(mContentFrame.getHeight()).thenReturn(DEVICE_WIDTH_COMPACT);
+    }
+
+    public void configCompactDevice_Portrait() {
+        mConfiguration.orientation = Configuration.ORIENTATION_PORTRAIT;
+        mRealMetrics.widthPixels = DEVICE_WIDTH_COMPACT_PORTRAIT;
+        mRealMetrics.heightPixels = DEVICE_HEIGHT_COMPACT_PORTRAIT;
+        mDisplaySize.set(DEVICE_WIDTH_COMPACT_PORTRAIT, DEVICE_HEIGHT_COMPACT_PORTRAIT);
+        when(mContentFrame.getHeight()).thenReturn(DEVICE_HEIGHT_COMPACT_PORTRAIT);
     }
 
     public void verifyWindowFlagsSet() {

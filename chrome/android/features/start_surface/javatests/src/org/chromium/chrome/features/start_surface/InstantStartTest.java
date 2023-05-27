@@ -34,7 +34,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -42,8 +41,6 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.Callback;
 import org.chromium.base.NativeLibraryLoadedStatus;
 import org.chromium.base.SysUtils;
-import org.chromium.base.jank_tracker.JankMetricUMARecorder;
-import org.chromium.base.jank_tracker.JankMetricUMARecorderJni;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -134,12 +131,8 @@ public class InstantStartTest {
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
 
-    @Mock
-    JankMetricUMARecorder.Natives mJankRecorderNativeMock;
-
     @Before
     public void setUp() {
-        mJniMocker.mock(JankMetricUMARecorderJni.TEST_HOOKS, mJankRecorderNativeMock);
         ReturnToChromeUtil.setSkipInitializationCheckForTesting(true);
     }
 
@@ -207,7 +200,7 @@ public class InstantStartTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Assert.assertFalse(cta.isTablet());
         Assert.assertTrue(ChromeFeatureList.sInstantStart.isEnabled());
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
 
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
 
@@ -238,7 +231,7 @@ public class InstantStartTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Assert.assertFalse(cta.isTablet());
         Assert.assertTrue(ChromeFeatureList.sInstantStart.isEnabled());
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
 
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
 
@@ -378,13 +371,13 @@ public class InstantStartTest {
         collector.checkThat(StartSurfaceConfiguration.isStartSurfaceFlagEnabled(), is(true));
         collector.checkThat(TextUtils.isEmpty(HomepageManager.getHomepageUri()), is(false));
         Assert.assertFalse(
-                NativeLibraryLoadedStatus.getProviderForTesting().areMainDexNativeMethodsReady());
+                NativeLibraryLoadedStatus.getProviderForTesting().areNativeMethodsReady());
         ReturnToChromeUtil.shouldShowStartSurfaceAsTheHomePage(mActivityTestRule.getActivity());
         ReturnToChromeUtil.isStartSurfaceEnabled(mActivityTestRule.getActivity());
         PseudoTab.getAllPseudoTabsFromStateFile(mActivityTestRule.getActivity());
 
         Assert.assertFalse("There should be no GURL usages triggering native library loading",
-                NativeLibraryLoadedStatus.getProviderForTesting().areMainDexNativeMethodsReady());
+                NativeLibraryLoadedStatus.getProviderForTesting().areNativeMethodsReady());
     }
 
     @Test

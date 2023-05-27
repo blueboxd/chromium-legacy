@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/cros_next_desk_button_base.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
 
@@ -16,7 +17,7 @@ struct VectorIcon;
 
 namespace ash {
 
-class DesksBarView;
+class DeskBarViewBase;
 
 // A button view in the desks bar with an icon. The button have three different
 // states, and the three states are interchangeable.
@@ -31,9 +32,9 @@ class ASH_EXPORT CrOSNextDeskIconButton : public CrOSNextDeskButtonBase {
   // states has different sizes. Any state could be transformed into another
   // state under certain conditions.
   enum class State {
-    // The state of the button when the DesksBarView is in zero state.
+    // The state of the button when the desk bar view is in zero state.
     kZero,
-    // The state of the button when the DesksBarView is in expanded state.
+    // The state of the button when the desk bar view is in expanded state.
     kExpanded,
     // The state of when the user is interacting with the button. For the new
     // desk button, active state represents a state that a window is dragged
@@ -45,7 +46,7 @@ class ASH_EXPORT CrOSNextDeskIconButton : public CrOSNextDeskButtonBase {
     kActive,
   };
 
-  CrOSNextDeskIconButton(DesksBarView* bar_view,
+  CrOSNextDeskIconButton(DeskBarViewBase* bar_view,
                          const gfx::VectorIcon* button_icon,
                          const std::u16string& text,
                          ui::ColorId icon_color_id,
@@ -88,15 +89,13 @@ class ASH_EXPORT CrOSNextDeskIconButton : public CrOSNextDeskButtonBase {
   // initialization to show the button's correct enable state.
   void UpdateEnabledState();
 
-  DesksBarView* const bar_view_;
-
   State state_;
 
   // If `paint_as_active_` is true, then focus ring will be painted with color
   // id `kColorAshCurrentDeskColor` even if it's not already focused.
   bool paint_as_active_ = false;
 
-  const gfx::VectorIcon* const button_icon_;
+  const raw_ptr<const gfx::VectorIcon, ExperimentalAsh> button_icon_;
   const ui::ColorId icon_color_id_;
   const ui::ColorId background_color_id_;
 

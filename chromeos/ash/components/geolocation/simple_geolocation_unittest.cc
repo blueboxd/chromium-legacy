@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -22,6 +23,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -76,6 +78,12 @@ constexpr char kCellTower1MNC[] = "101";
 }  // anonymous namespace
 
 namespace ash {
+
+class MockUserGeolocationPermissionProvider
+    : public SimpleGeolocationProvider::Delegate {
+ public:
+  MOCK_METHOD(bool, IsPreciseGeolocationAllowed, (), (const, override));
+};
 
 // This implements fake Google MAPS Geolocation API remote endpoint.
 class TestGeolocationAPILoaderFactory : public network::TestURLLoaderFactory {
@@ -134,7 +142,7 @@ class TestGeolocationAPILoaderFactory : public network::TestURLLoaderFactory {
   std::string response_;
   const size_t require_retries_;
   size_t attempts_ = 0;
-  SimpleGeolocationProvider* provider_;
+  raw_ptr<SimpleGeolocationProvider, ExperimentalAsh> provider_;
 };
 
 class GeolocationReceiver {
@@ -186,6 +194,9 @@ class WirelessTestMonitor : public SimpleGeolocationRequestTestMonitor {
 };
 
 class SimpleGeolocationTest : public testing::Test {
+ protected:
+  MockUserGeolocationPermissionProvider mock_permission_provider_;
+
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
 };
@@ -195,10 +206,15 @@ TEST_F(SimpleGeolocationTest, ResponseOK) {
                                               kSimpleResponseBody,
                                               0 /* require_retries */);
   SimpleGeolocationProvider provider(
+      &mock_permission_provider_,
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
   url_factory.SetSimpleGeolocationProvider(&provider);
+
+  // Set user permission to granted.
+  EXPECT_CALL(mock_permission_provider_, IsPreciseGeolocationAllowed())
+      .WillRepeatedly(testing::Return(true));
 
   GeolocationReceiver receiver;
   provider.RequestGeolocation(
@@ -218,10 +234,15 @@ TEST_F(SimpleGeolocationTest, ResponseOKWithRetries) {
                                               3 /* require_retries */);
 
   SimpleGeolocationProvider provider(
+      &mock_permission_provider_,
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
   url_factory.SetSimpleGeolocationProvider(&provider);
+
+  // Set user permission to granted.
+  EXPECT_CALL(mock_permission_provider_, IsPreciseGeolocationAllowed())
+      .WillRepeatedly(testing::Return(true));
 
   GeolocationReceiver receiver;
   provider.RequestGeolocation(
@@ -239,18 +260,22 @@ TEST_F(SimpleGeolocationTest, InvalidResponse) {
                                               "invalid JSON string",
                                               0 /* require_retries */);
   SimpleGeolocationProvider provider(
+      &mock_permission_provider_,
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
   url_factory.SetSimpleGeolocationProvider(&provider);
 
-  GeolocationReceiver receiver;
+  // Set user permission to granted.
+  EXPECT_CALL(mock_permission_provider_, IsPreciseGeolocationAllowed())
+      .WillRepeatedly(testing::Return(true));
 
   const int timeout_seconds = 1;
   size_t expected_retries = static_cast<size_t>(
       timeout_seconds * 1000 / kRequestRetryIntervalMilliSeconds);
   ASSERT_GE(expected_retries, 2U);
 
+  GeolocationReceiver receiver;
   provider.RequestGeolocation(
       base::Seconds(timeout_seconds), false, false,
       base::BindOnce(&GeolocationReceiver::OnRequestDone,
@@ -291,10 +316,15 @@ TEST_F(SimpleGeolocationTest, NoWiFi) {
                                               kSimpleResponseBody,
                                               0 /* require_retries */);
   SimpleGeolocationProvider provider(
+      &mock_permission_provider_,
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
   url_factory.SetSimpleGeolocationProvider(&provider);
+
+  // Set user permission to granted.
+  EXPECT_CALL(mock_permission_provider_, IsPreciseGeolocationAllowed())
+      .WillRepeatedly(testing::Return(true));
 
   GeolocationReceiver receiver;
   provider.RequestGeolocation(
@@ -311,7 +341,8 @@ TEST_F(SimpleGeolocationTest, NoWiFi) {
 
 // Test sending of WiFi Access points and Cell Towers.
 // (This is mostly derived from GeolocationHandlerTest.)
-class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
+class SimpleGeolocationWirelessTest
+    : public ::testing::TestWithParam<std::tuple<bool, bool>> {
  public:
   SimpleGeolocationWirelessTest() : manager_test_(nullptr) {}
 
@@ -375,17 +406,21 @@ class SimpleGeolocationWirelessTest : public ::testing::TestWithParam<bool> {
   }
 
  protected:
+  MockUserGeolocationPermissionProvider mock_permission_provider_;
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   NetworkHandlerTestHelper network_handler_test_helper_;
   std::unique_ptr<GeolocationHandler> geolocation_handler_;
-  ShillManagerClient::TestInterface* manager_test_;
+  raw_ptr<ShillManagerClient::TestInterface, ExperimentalAsh> manager_test_;
   WifiAccessPointVector wifi_access_points_;
   CellTowerVector cell_towers_;
 };
 
 // Parameter is enable/disable sending of WiFi data.
 TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
+  bool send_wifi_access_points = std::get<0>(GetParam());
+  bool location_permission_granted = std::get<1>(GetParam());
+
   WirelessTestMonitor requests_monitor;
   SimpleGeolocationRequest::SetTestMonitor(&requests_monitor);
 
@@ -393,15 +428,20 @@ TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
                                               kSimpleResponseBody,
                                               0 /* require_retries */);
   SimpleGeolocationProvider provider(
+      &mock_permission_provider_,
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
+  // Set user permission to the test parameter.
+  EXPECT_CALL(mock_permission_provider_, IsPreciseGeolocationAllowed())
+      .WillRepeatedly(testing::Return(location_permission_granted));
+
   url_factory.SetSimpleGeolocationProvider(&provider);
   provider.set_geolocation_handler(geolocation_handler_.get());
   {
     GeolocationReceiver receiver;
     provider.RequestGeolocation(
-        base::Seconds(1), GetParam(), false,
+        base::Seconds(1), send_wifi_access_points, false,
         base::BindOnce(&GeolocationReceiver::OnRequestDone,
                        base::Unretained(&receiver)));
     receiver.WaitUntilRequestDone();
@@ -428,11 +468,11 @@ TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
   {
     GeolocationReceiver receiver;
     provider.RequestGeolocation(
-        base::Seconds(1), GetParam(), false,
+        base::Seconds(1), send_wifi_access_points, false,
         base::BindOnce(&GeolocationReceiver::OnRequestDone,
                        base::Unretained(&receiver)));
     receiver.WaitUntilRequestDone();
-    if (GetParam()) {
+    if (send_wifi_access_points && location_permission_granted) {
       // Sending WiFi data is enabled.
       EXPECT_EQ(kOneWiFiAPRequestBody, requests_monitor.last_request_body());
     } else {
@@ -450,9 +490,12 @@ TEST_P(SimpleGeolocationWirelessTest, WiFiExists) {
 // This test verifies that WiFi data is sent only if sending was requested.
 INSTANTIATE_TEST_SUITE_P(EnableDisableSendingWifiData,
                          SimpleGeolocationWirelessTest,
-                         testing::Bool());
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
+  bool send_cell_towers = std::get<0>(GetParam());
+  bool location_permission_granted = std::get<1>(GetParam());
+
   WirelessTestMonitor requests_monitor;
   SimpleGeolocationRequest::SetTestMonitor(&requests_monitor);
 
@@ -460,15 +503,20 @@ TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
                                               kSimpleResponseBody,
                                               0 /* require_retries */);
   SimpleGeolocationProvider provider(
+      &mock_permission_provider_,
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &url_factory),
       GURL(kTestGeolocationProviderUrl));
+  // Set user permission to the test parameter.
+  EXPECT_CALL(mock_permission_provider_, IsPreciseGeolocationAllowed())
+      .WillRepeatedly(testing::Return(location_permission_granted));
+
   url_factory.SetSimpleGeolocationProvider(&provider);
   provider.set_geolocation_handler(geolocation_handler_.get());
   {
     GeolocationReceiver receiver;
     provider.RequestGeolocation(
-        base::Seconds(1), false, GetParam(),
+        base::Seconds(1), false, send_cell_towers,
         base::BindOnce(&GeolocationReceiver::OnRequestDone,
                        base::Unretained(&receiver)));
     receiver.WaitUntilRequestDone();
@@ -493,11 +541,11 @@ TEST_P(SimpleGeolocationWirelessTest, CellularExists) {
   {
     GeolocationReceiver receiver;
     provider.RequestGeolocation(
-        base::Seconds(1), false, GetParam(),
+        base::Seconds(1), false, send_cell_towers,
         base::BindOnce(&GeolocationReceiver::OnRequestDone,
                        base::Unretained(&receiver)));
     receiver.WaitUntilRequestDone();
-    if (GetParam()) {
+    if (location_permission_granted && send_cell_towers) {
       // Sending Cellular data is enabled.
       EXPECT_EQ(kOneCellTowerRequestBody, requests_monitor.last_request_body());
     } else {

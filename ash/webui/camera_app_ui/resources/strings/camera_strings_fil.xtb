@@ -27,9 +27,7 @@
 <translation id="199526504800285197">Inihinto ang pag-record</translation>
 <translation id="1995951722691075581">Huminto ang iyong pag-record dahil sa mababang storage space ng device. Para mag-record ng higit pang video, kailangan mong magbakante ng espasyo sa iyong device.</translation>
 <translation id="2036868001356139588">Tagal ng timer</translation>
-<translation id="2050339315714019657">Portrait</translation>
 <translation id="2064538373111010176">Aktibo ang <ph name="CAMERA" /></translation>
-<translation id="2128052519899549250">Mag-record ng time-lapse na video</translation>
 <translation id="2134029355740465625">Mga setting ng video</translation>
 <translation id="2144806332417375165">Mga custom na parameter ng video</translation>
 <translation id="2175927920773552910">QR Code</translation>
@@ -82,6 +80,7 @@
 <translation id="4864143361253542638">Listahan ng naka-scan na page</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="491895758387112773">Pag-record ng multistream video</translation>
+<translation id="495170559598752135">Mga Pagkilos</translation>
 <translation id="4984613436295737187">Quad HD (1440p)</translation>
 <translation id="5034763830503483128">Aspect ratio ng larawan</translation>
 <translation id="5057360777601936059">Kasalukuyang hindi available ang iyong camera.
@@ -92,7 +91,6 @@
 <translation id="5317780077021120954">I-save</translation>
 <translation id="5320594929574852403">Gumagalaw pakaliwa</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
-<translation id="5577251651370645658">Time-lapse</translation>
 <translation id="5662366948659129155">Sina-scan ang page <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">Parisukat</translation>
 <translation id="5746169159649715125">I-save bilang PDF</translation>
@@ -122,6 +120,7 @@ Kung tungkol ang iyong feedback sa kalidad ng larawan o video, mag-attach ng hal
 <translation id="6888362557094394345">Gumagalaw pababa</translation>
 <translation id="695140971690006676">I-reset lahat</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965830616442491568">Portrait</translation>
 <translation id="698156982839284926">3 segundo</translation>
 <translation id="7134221860976209830">10 segundong timer</translation>
 <translation id="7191890674911603392">Uri ng pag-record</translation>
@@ -137,6 +136,7 @@ Kung tungkol ang iyong feedback sa kalidad ng larawan o video, mag-attach ng hal
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7670511624014457267">60 FPS</translation>
 <translation id="7671804233658741790">Kanang sulok sa ibaba ng dokumento</translation>
+<translation id="7684446460490665873">Mag-record ng time lapse na video</translation>
 <translation id="7692090236657809299">I-enable ang pag-pan, pag-tilt, at pag-zoom</translation>
 <translation id="7726641833034062494">Mag-record ng karaniwang video</translation>
 <translation id="7748344063862150053">Kanang sulok sa itaas ng dokumento</translation>
@@ -162,6 +162,7 @@ Kung tungkol ang iyong feedback sa kalidad ng larawan o video, mag-attach ng hal
 <translation id="9045010116236796332">Ilagay sa loob ng frame ang lahat ng gilid ng dokumento</translation>
 <translation id="9045155556724273246">10 segundo</translation>
 <translation id="906331135292332864">Pinoproseso ang larawan...</translation>
+<translation id="9161584225258678723">Time Lapse</translation>
 <translation id="922762992951083513">Naka-on ang Mirror</translation>
 <translation id="945522503751344254">Magpadala ng feedback</translation>
 </translationbundle>

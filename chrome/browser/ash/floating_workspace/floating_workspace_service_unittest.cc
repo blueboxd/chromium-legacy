@@ -6,6 +6,7 @@
 #include "ash/public/cpp/desk_template.h"
 #include "ash/wm/desks/templates/saved_desk_metrics_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -70,7 +71,7 @@ std::unique_ptr<ash::DeskTemplate> MakeTestFloatingWorkspaceDeskTemplate(
     std::string name) {
   std::unique_ptr<ash::DeskTemplate> desk_template =
       std::make_unique<ash::DeskTemplate>(
-          base::GUID::ParseCaseInsensitive(
+          base::Uuid::ParseCaseInsensitive(
               "c098bdcf-5803-484b-9bfd-d3a9a4b497ab"),
           ash::DeskTemplateSource::kUser, name, base::Time::Now(),
           DeskTemplateType::kFloatingWorkspace);
@@ -127,7 +128,8 @@ class MockOpenTabsUIDelegate : public sync_sessions::OpenTabsUIDelegate {
 
  private:
   std::vector<const sync_sessions::SyncedSession*> foreign_sessions_;
-  sync_sessions::SyncedSession* local_session_ = nullptr;
+  raw_ptr<sync_sessions::SyncedSession, ExperimentalAsh> local_session_ =
+      nullptr;
 };
 
 }  // namespace
@@ -178,7 +180,8 @@ class TestFloatingWorkSpaceService : public FloatingWorkspaceService {
   }
 
   const sync_sessions::SyncedSession* restored_session_ = nullptr;
-  const DeskTemplate* restored_floating_workspace_template_ = nullptr;
+  raw_ptr<const DeskTemplate, ExperimentalAsh>
+      restored_floating_workspace_template_ = nullptr;
   std::unique_ptr<MockOpenTabsUIDelegate> mock_open_tabs_;
 };
 

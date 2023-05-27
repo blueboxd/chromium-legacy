@@ -51,12 +51,26 @@
         var(--keyboard-key-top-radii, 4px)
         var(--keyboard-key-bottom-right-radius, 4px)
         4px;
+    --host-bg-color: var(--diagram-bg-color);
     --icon-size: min(100%, var(--keyboard-key-icon-size, 100%));
     --travel: var(--keyboard-key-travel, 4px);
     --text-color-unpressed: var(--cros-text-color-selection);
     --text-color-pressed: var(--cros-button-icon-color-primary);
     --text-color-tested: var(--cros-button-icon-color-primary);
     position: relative;
+  }
+
+  /* TODO(276493287): Remove host-context and replace default colors with jelly
+                      colors once experiment launches. */
+  :host-context(body.jelly-enabled) {
+    --background-color-disabled: var(--cros-sys-disabled_container);
+    --background-color-pressed: var(--cros-button-background-color-primary);
+    --background-color-unpressed: var(--cros-sys-highlight_shape);
+    --background-color-tested: var(--cros-sys-highlight_text);
+    --border-color: var(--cros-icon-color-prominent);
+    --text-color-unpressed: var(--cros-icon-color-prominent);
+    --text-color-pressed: var(--cros-button-icon-color-primary);
+    --text-color-tested: var(--cros-icon-color-prominent);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -66,6 +80,13 @@
       --background-color-unpressed: var(--cros-button-active-shadow-color-ambient-primary);
       --background-color-tested: rgba(var(--cros-icon-color-selection-rgb),
         .65);
+    }
+
+    /* TODO(276493287): Remove host-context and replace default colors with
+                        jelly colors once experiment launches. */
+    :host-context(body.jelly-enabled) {
+      --background-color-disabled: var(--cros-sys-disabled_container);
+      --background-color-tested: var(--cros-sys-highlight_text);
     }
   }
 
@@ -90,7 +111,7 @@
   }
 
   #key-background {
-    background-color: var(--cros-bg-color);
+    background-color: var(--host-bg-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     border-top-width: var(--keyboard-key-border-top-width, 1px);

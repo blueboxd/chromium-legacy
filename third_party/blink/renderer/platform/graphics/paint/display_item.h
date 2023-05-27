@@ -62,6 +62,7 @@ class PLATFORM_EXPORT DisplayItem {
     kDrawingPaintPhaseFirst = kDrawingFirst,
     kDrawingPaintPhaseLast = kDrawingFirst + kPaintPhaseMax,
     kBoxDecorationBackground,
+    kFixedAttachmentBackground,
     kCapsLockIndicator,
     kCaret,
     kColumnRules,
@@ -88,7 +89,6 @@ class PLATFORM_EXPORT DisplayItem {
     kScrollbarTickmarks,
     kSelectionTint,
     kTableCollapsedBorders,
-    kWebFont,
     kWebPlugin,
     kDrawingLast = kWebPlugin,
 

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/observer_list_types.h"
 #include "ui/display/display_export.h"
 
@@ -29,6 +30,7 @@ class DISPLAY_EXPORT DisplayObserver : public base::CheckedObserver {
     DISPLAY_METRIC_REFRESH_RATE = 1 << 7,
     DISPLAY_METRIC_INTERLACED = 1 << 8,
     DISPLAY_METRIC_LABEL = 1 << 9,
+    DISPLAY_METRIC_VRR = 1 << 10,
   };
 
   // This may be called before other methods to signal changes are about to
@@ -83,7 +85,9 @@ class DISPLAY_EXPORT ScopedOptionalDisplayObserver {
   ~ScopedOptionalDisplayObserver();
 
  private:
-  DisplayObserver* observer_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION DisplayObserver* observer_ = nullptr;
 };
 
 class DISPLAY_EXPORT ScopedDisplayObserver

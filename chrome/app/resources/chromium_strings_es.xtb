@@ -81,7 +81,6 @@ Los permisos que hayas dado a sitios web y aplicaciones se pueden aplicar a esta
 <translation id="2928420929544864228">Instalación completada.</translation>
 <translation id="2977470724722393594">Chromium está actualizado</translation>
 <translation id="2977506796191543575">Si un sitio intenta robarte tu contraseña o si descargas un archivo dañino, es posible que Chromium también envíe URLs, incluidos fragmentos de contenido de la página, a Navegación segura.</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium está conectado a un dispositivo HID}other{Chromium está conectado a dispositivos HID}}</translation>
 <translation id="3032706164202344641">Chromium no puede comprobar tus contraseñas. Vuelve a intentarlo más tarde.</translation>
 <translation id="3032787606318309379">Añadiendo a Chromium...</translation>
 <translation id="3038232873781883849">Esperando para instalar...</translation>
@@ -96,7 +95,6 @@ Los permisos que hayas dado a sitios web y aplicaciones se pueden aplicar a esta
 <translation id="3258596308407688501">Chromium no puede leer el directorio de datos ni escribir en él:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Esta guía te ayudará a descubrir las opciones que te ofrece Chromium para hacer que funcione como tú quieras</translation>
 <translation id="3283186697780795848">Está instalada la versión <ph name="PRODUCT_VERSION" /> de Chromium</translation>
 <translation id="3286538390144397061">Reiniciar ahora</translation>
 <translation id="328888136576916638">Faltan las claves de la API de Google. Se inhabilitarán algunas funciones de Chromium.</translation>
@@ -248,8 +246,10 @@ Los permisos que hayas dado a sitios web y aplicaciones se pueden aplicar a esta
 <translation id="6442900851116057561">Reiniciar ChromiumOS</translation>
 <translation id="6455857529632101747">Te damos la bienvenida a los perfiles de Chromium</translation>
 <translation id="6475912303565314141">También controla qué página se muestra al iniciar Chromium.</translation>
+<translation id="648319183876919572">Navegación segura mejorada te protege de forma más eficaz de los sitios web y las descargas peligrosos</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="6542839706527980775">Cada perfil almacena su propia información de Chromium, como los marcadores, el historial, las contraseñas y mucho más.</translation>
+<translation id="656935081669708576">Puedes cambiar de perfil para ver las contraseñas de otro perfil de Chromium</translation>
 <translation id="6570579332384693436">Para corregir errores ortográficos, Chromium envía a Google el texto que escribes en los campos de texto</translation>
 <translation id="6598877126913850652">Ir a los ajustes de notificaciones de Chromium</translation>
 <translation id="6613594504749178791">Los cambios se aplicarán la próxima vez que reinicies Chromium.</translation>
@@ -385,7 +385,6 @@ Chromium no puede recuperar tu configuración.</translation>
 <translation id="924957577793602335">Personaliza Chromium a tu gusto</translation>
 <translation id="93478295209880648">Es posible que Chromium no funcione correctamente porque ya no es compatible con Windows XP ni Windows Vista</translation>
 <translation id="942598560705308788">Certificados gestionados por Chromium</translation>
-<translation id="959579472876010517">Saca el máximo partido a Chromium</translation>
 <translation id="965162752251293939">¿Quién usa Chromium?</translation>
 <translation id="967427899662692980">Consigue la seguridad más potente de Chromium</translation>
 <translation id="9792300276217204">Borrar siempre los datos de sitios en tu dispositivo al cerrar Chromium</translation>

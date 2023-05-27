@@ -17,14 +17,17 @@ export enum AmbientActionName {
   SET_AMBIENT_MODE_ENABLED = 'set_ambient_mode_enabled',
   SET_ANIMATION_THEME = 'set_animation_theme',
   SET_PREVIEWS = 'set_previews',
+  SET_SCREEN_SAVER_DURATION = 'set_screen_saver_duration',
   SET_TEMPERATURE_UNIT = 'set_temperature_unit',
   SET_TOPIC_SOURCE = 'set_topic_source',
   SET_AMBIENT_UI_VISIBILITY = 'set_ambient_ui_visibility',
+  SET_SHOULD_SHOW_TIME_OF_DAY_BANNER = 'set_should_show_time_of_day_banner',
 }
 
 export type AmbientActions = SetAlbumsAction|SetAlbumSelectedAction|
     SetAmbientModeEnabledAction|SetAnimationThemeAction|SetPreviewsAction|
-    SetTopicSourceAction|SetTemperatureUnitAction|SetAmbientUiVisibilityAction;
+    SetScreenSaverDurationAction|SetTopicSourceAction|SetTemperatureUnitAction|
+    SetAmbientUiVisibilityAction|SetShouldShowTimeOfDayBannerAction;
 
 export type SetAlbumsAction = Action&{
   name: AmbientActionName.SET_ALBUMS,
@@ -50,6 +53,11 @@ export type SetPreviewsAction = Action&{
   previews: Url[],
 };
 
+export type SetScreenSaverDurationAction = Action&{
+  name: AmbientActionName.SET_SCREEN_SAVER_DURATION,
+  minutes: number,
+};
+
 export type SetTemperatureUnitAction = Action&{
   name: AmbientActionName.SET_TEMPERATURE_UNIT,
   temperatureUnit: TemperatureUnit,
@@ -63,6 +71,11 @@ export type SetTopicSourceAction = Action&{
 export type SetAmbientUiVisibilityAction = Action&{
   name: AmbientActionName.SET_AMBIENT_UI_VISIBILITY,
   ambientUiVisibility: AmbientUiVisibility,
+};
+
+export type SetShouldShowTimeOfDayBannerAction = Action&{
+  name: AmbientActionName.SET_SHOULD_SHOW_TIME_OF_DAY_BANNER,
+  shouldShowTimeOfDayBanner: boolean,
 };
 
 /**
@@ -100,6 +113,14 @@ export function setPreviewsAction(previews: Url[]): SetPreviewsAction {
 }
 
 /**
+ * Sets the current value of the screen saver duration.
+ */
+export function setScreenSaverDurationAction(minutes: number):
+    SetScreenSaverDurationAction {
+  return {name: AmbientActionName.SET_SCREEN_SAVER_DURATION, minutes};
+}
+
+/**
  * Sets the current value of the topic source.
  */
 export function setTopicSourceAction(topicSource: TopicSource):
@@ -123,5 +144,16 @@ export function setAmbientUiVisibilityAction(
   return {
     name: AmbientActionName.SET_AMBIENT_UI_VISIBILITY,
     ambientUiVisibility,
+  };
+}
+
+/**
+ * Sets the boolean that determines whether to show the time of day banner.
+ */
+export function setShouldShowTimeOfDayBannerAction(
+    shouldShowTimeOfDayBanner: boolean): SetShouldShowTimeOfDayBannerAction {
+  return {
+    name: AmbientActionName.SET_SHOULD_SHOW_TIME_OF_DAY_BANNER,
+    shouldShowTimeOfDayBanner,
   };
 }

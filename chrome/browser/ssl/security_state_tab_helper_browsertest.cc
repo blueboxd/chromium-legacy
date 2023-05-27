@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
+#include "chrome/browser/ssl/https_upgrades_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -109,14 +110,16 @@ using safe_browsing::LoginReputationClientResponse;
 using safe_browsing::RequestOutcome;
 
 const char kCreateFilesystemUrlJavascript[] =
-    "window.webkitRequestFileSystem(window.TEMPORARY, 4096, function(fs) {"
-    "  fs.root.getFile('test.html', {create: true}, function(fileEntry) {"
-    "    fileEntry.createWriter(function(writer) {"
-    "      writer.onwriteend = function(e) {"
-    "        window.domAutomationController.send(fileEntry.toURL());"
-    "      };"
-    "      var blob = new Blob(['<html>hello</html>'], {type: 'text/html'});"
-    "      writer.write(blob);"
+    "new Promise(resolve => {"
+    "  window.webkitRequestFileSystem(window.TEMPORARY, 4096, function(fs) {"
+    "    fs.root.getFile('test.html', {create: true}, function(fileEntry) {"
+    "      fileEntry.createWriter(function(writer) {"
+    "        writer.onwriteend = function(e) {"
+    "          resolve(fileEntry.toURL());"
+    "        };"
+    "        var blob = new Blob(['<html>hello</html>'], {type: 'text/html'});"
+    "        writer.write(blob);"
+    "      });"
     "    });"
     "  });"
     "});";
@@ -124,7 +127,7 @@ const char kCreateFilesystemUrlJavascript[] =
 const char kCreateBlobUrlJavascript[] =
     "var blob = new Blob(['<html>hello</html>'],"
     "                    {type: 'text/html'});"
-    "window.domAutomationController.send(URL.createObjectURL(blob));";
+    "URL.createObjectURL(blob);";
 
 enum CertificateStatus { VALID_CERTIFICATE, INVALID_CERTIFICATE };
 
@@ -329,9 +332,8 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
             "/empty.html")));
 
     // Create a URL and navigate to it.
-    std::string blob_or_filesystem_url;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        contents, javascript, &blob_or_filesystem_url));
+    std::string blob_or_filesystem_url =
+        content::EvalJs(contents, javascript).ExtractString();
     EXPECT_TRUE(GURL(blob_or_filesystem_url).SchemeIs(scheme));
 
     ASSERT_TRUE(
@@ -1362,6 +1364,10 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest, HttpErrorPage) {
   SecurityStateTabHelper* helper =
       SecurityStateTabHelper::FromWebContents(contents);
   ASSERT_TRUE(helper);
+
+  // Disable HTTPS upgrades on nonexistent.test for this test to work.
+  ScopedAllowHttpForHostnamesForTesting scoped_allow_http(
+      {"nonexistent.test"}, browser()->profile()->GetPrefs());
 
   // Navigate to a URL that results in an error page. Even though the displayed
   // URL is http://, there shouldn't be a Not Secure warning because the browser

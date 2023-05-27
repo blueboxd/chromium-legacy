@@ -59,7 +59,6 @@ class ScopedPasswordInputEnabler;
 
 namespace views {
 
-class Label;
 class MenuRunner;
 class TextfieldController;
 class ViewsTextServicesContextMenu;
@@ -304,12 +303,6 @@ class VIEWS_EXPORT Textfield : public View,
   // Clears Edit history.
   void ClearEditHistory();
 
-  // If the accessible name should be the same as the labelling view's text,
-  // use this. It will set the accessible label relationship and copy the
-  // accessible name from the labelling views's accessible name. Any view with
-  // an accessible name can be used, typically a Label, StyledLabel or Link.
-  void SetAssociatedLabel(View* labelling_view);
-
   // Set extra spacing placed between glyphs; used for obscured text styling.
   void SetObscuredGlyphSpacing(int spacing);
 
@@ -534,6 +527,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Update the cursor position in the text field.
   void UpdateCursorViewPosition();
 
+  // A callback function to periodically update the cursor node_data.
+  void UpdateCursorVisibility();
+
  private:
   friend class TextfieldTestApi;
 
@@ -583,9 +579,6 @@ class VIEWS_EXPORT Textfield : public View,
 
   // Updates cursor visibility and blinks the cursor if needed.
   void ShowCursor();
-
-  // A callback function to periodically update the cursor node_data.
-  void UpdateCursorVisibility();
 
   // Gets the style::TextStyle that should be used.
   int GetTextStyle() const;

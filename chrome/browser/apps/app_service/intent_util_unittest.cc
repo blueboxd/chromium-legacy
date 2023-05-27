@@ -12,6 +12,7 @@
 
 #include "base/check.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -176,6 +177,50 @@ TEST_F(IntentUtilsTest, CreateIntentForActivity) {
   EXPECT_EQ(activity_name, intent->activity_name.value());
 }
 
+TEST_F(IntentUtilsTest, CreateArcIntentExtras) {
+  // Test the case where both `share_type` and `extras` are filled in in intent.
+  const std::string& activity_name = "com.android.vending.AssetBrowserActivity";
+  const std::string& start_type = "initialStart";
+  const std::string& category = "android.intent.category.LAUNCHER";
+  apps::IntentPtr intent =
+      apps_util::MakeIntentForActivity(activity_name, start_type, category);
+  // Add extras other than share text, share type nor share title.
+  const std::string& extra_name = "android.intent.extra.TESTING";
+  const std::string& extra_value = "testing";
+  intent->extras = base::flat_map<std::string, std::string>();
+  intent->extras.insert(std::make_pair(extra_name, extra_value));
+
+  arc::mojom::IntentInfoPtr arc_intent =
+      apps_util::ConvertAppServiceToArcIntent(intent);
+
+  ASSERT_TRUE(intent);
+  ASSERT_TRUE(arc_intent);
+
+  std::string intent_str =
+      "#Intent;action=android.intent.action.MAIN;category=android.intent."
+      "category.LAUNCHER;launchFlags=0x10200000;component=com.android.vending/"
+      ".AssetBrowserActivity;S.org.chromium.arc.start_type=initialStart;"
+      "android.intent.extra.TESTING=testing;end";
+  EXPECT_EQ(intent_str,
+            apps_util::CreateLaunchIntent("com.android.vending", intent));
+
+  EXPECT_EQ(arc::kIntentActionMain, arc_intent->action);
+
+  // Check both share_type and extras exist in `arc_intent->extras`.
+  base::flat_map<std::string, std::string> extras;
+  extras.insert(std::make_pair("org.chromium.arc.start_type", start_type));
+  extras.insert(std::make_pair(extra_name, extra_value));
+  EXPECT_TRUE(arc_intent->extras.has_value());
+  EXPECT_EQ(extras, arc_intent->extras);
+
+  EXPECT_TRUE(arc_intent->categories.has_value());
+  EXPECT_EQ(category, arc_intent->categories.value()[0]);
+
+  arc_intent->extras = apps_util::CreateArcIntentExtras(intent);
+  EXPECT_TRUE(intent->activity_name.has_value());
+  EXPECT_EQ(activity_name, intent->activity_name.value());
+}
+
 TEST_F(IntentUtilsTest, CreateShareIntentFromText) {
   apps::IntentPtr intent = apps_util::MakeShareIntent("text", "title");
   std::string intent_str =
@@ -285,7 +330,7 @@ TEST_F(IntentUtilsTest, CreateIntentFiltersForChromeApp_FileHandlers) {
 TEST_F(IntentUtilsTest, CreateIntentFiltersForChromeApp_NoteTaking) {
   const std::string note_action_handler =
       extensions::api::app_runtime::ToString(
-          extensions::api::app_runtime::ACTION_TYPE_NEW_NOTE);
+          extensions::api::app_runtime::ActionType::kNewNote);
   // Foo app has a note-taking action handler.
   extensions::ExtensionBuilder foo_app("Foo");
   std::string manifest = base::StringPrintf(R"(
@@ -655,6 +700,23 @@ TEST_F(IntentUtilsTest, CrosapiIntentConversion) {
   converted_intent =
       apps_util::CreateAppServiceIntentFromCrosapi(crosapi_intent, nullptr);
   EXPECT_EQ(*original_intent, *converted_intent);
+
+  // Test intent with all params (except for files) filled in at once.
+  // `files` param requires profile which is null in this unit test.
+  original_intent = std::make_unique<apps::Intent>(apps_util::kIntentActionView,
+                                                   GURL("www.google.com"));
+  original_intent->share_text = "text";
+  original_intent->share_title = "title";
+  original_intent->activity_name = "com.android.vending.AssetBrowserActivity";
+  original_intent->data = "geo:0,0?q=1600%20amphitheatre%20parkway";
+  original_intent->ui_bypassed = true;
+  original_intent->extras = base::flat_map<std::string, std::string>{
+      {"android.intent.extra.TESTING", "testing"}};
+  crosapi_intent =
+      apps_util::ConvertAppServiceToCrosapiIntent(original_intent, nullptr);
+  converted_intent =
+      apps_util::CreateAppServiceIntentFromCrosapi(crosapi_intent, nullptr);
+  EXPECT_EQ(*original_intent, *converted_intent);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
@@ -703,7 +765,7 @@ class IntentUtilsFileTest : public ::testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile, ExperimentalAsh> profile_;
 };
 
 TEST_F(IntentUtilsFileTest, ConvertFileSystemScheme) {

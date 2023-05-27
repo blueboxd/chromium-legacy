@@ -68,8 +68,7 @@ class PrivacyHubNotificationControllerTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    controller_ =
-        Shell::Get()->system_notification_controller()->privacy_hub_.get();
+    controller_ = PrivacyHubNotificationController::Get();
   }
   void TearDown() override { AshTestBase::TearDown(); }
 
@@ -377,12 +376,7 @@ TEST_F(PrivacyHubNotificationControllerTest, OpenPrivacyHubSupportPage) {
 
   test_sensor(Sensor::kMicrophone, PrivacyHubLearnMoreSensor::kMicrophone);
   test_sensor(Sensor::kCamera, PrivacyHubLearnMoreSensor::kCamera);
-
-  if (DCHECK_IS_ON()) {
-    EXPECT_DEATH(
-        PrivacyHubNotificationController::OpenSupportUrl(Sensor::kLocation),
-        "");
-  }
+  test_sensor(Sensor::kLocation, PrivacyHubLearnMoreSensor::kGeolocation);
 }
 
 }  // namespace ash

@@ -12,6 +12,8 @@
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "base/observer_list_types.h"
 
+class AccountId;
+
 namespace ash {
 
 // An interface, implemented by ash, which allows chrome to retrieve and update
@@ -27,6 +29,8 @@ class ASH_PUBLIC_EXPORT InputDeviceSettingsController {
     virtual void OnKeyboardConnected(const mojom::Keyboard& keyboard) {}
     virtual void OnKeyboardDisconnected(const mojom::Keyboard& keyboard) {}
     virtual void OnKeyboardSettingsUpdated(const mojom::Keyboard& keyboard) {}
+    virtual void OnKeyboardPoliciesUpdated(
+        const mojom::KeyboardPolicies& keyboard_policies) {}
 
     virtual void OnTouchpadConnected(const mojom::Touchpad& touchpad) {}
     virtual void OnTouchpadDisconnected(const mojom::Touchpad& touchpad) {}
@@ -35,6 +39,8 @@ class ASH_PUBLIC_EXPORT InputDeviceSettingsController {
     virtual void OnMouseConnected(const mojom::Mouse& mouse) {}
     virtual void OnMouseDisconnected(const mojom::Mouse& mouse) {}
     virtual void OnMouseSettingsUpdated(const mojom::Mouse& mouse) {}
+    virtual void OnMousePoliciesUpdated(
+        const mojom::MousePolicies& keyboard_policies) {}
 
     virtual void OnPointingStickConnected(
         const mojom::PointingStick& pointing_stick) {}
@@ -69,7 +75,15 @@ class ASH_PUBLIC_EXPORT InputDeviceSettingsController {
   virtual const mojom::PointingStickSettings* GetPointingStickSettings(
       DeviceId id) = 0;
 
-  // Configure the settings for keyboard of `id` with the provided `settings`.
+  // Returns the current set of enterprise policies which control keyboard
+  // settings.
+  virtual const mojom::KeyboardPolicies& GetKeyboardPolicies() = 0;
+  // Returns the current set of enterprise policies which control mouse
+  // settings.
+  virtual const mojom::MousePolicies& GetMousePolicies() = 0;
+
+  // Configure the settings for keyboard of `id` with the provided
+  // `settings`.
   virtual void SetKeyboardSettings(DeviceId id,
                                    mojom::KeyboardSettingsPtr settings) = 0;
   // Configure the settings for touchpad of `id` with the provided `settings`.
@@ -83,6 +97,9 @@ class ASH_PUBLIC_EXPORT InputDeviceSettingsController {
   virtual void SetPointingStickSettings(
       DeviceId id,
       mojom::PointingStickSettingsPtr settings) = 0;
+
+  // Used to configure device settings on the login screen.
+  virtual void OnLoginScreenFocusedPodChanged(const AccountId& account_id) = 0;
 
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;

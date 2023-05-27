@@ -7,6 +7,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/time/time.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
@@ -284,18 +285,9 @@ TEST_F(TextPaintTimingDetectorTest,
   CheckSizeOfTextQueuedForPaintTimeAfterUpdateLifecyclePhases(1u);
 }
 
-#if BUILDFLAG(IS_IOS)
-// TODO(crbug.com/1141478)
-#define MAYBE_LargestTextPaint_TraceEvent_Candidate \
-  DISABLED_LargestTextPaint_TraceEvent_Candidate
-#else
-#define MAYBE_LargestTextPaint_TraceEvent_Candidate \
-  LargestTextPaint_TraceEvent_Candidate
-#endif  // BUILDFLAG(IS_IOS)
-TEST_F(TextPaintTimingDetectorTest,
-       MAYBE_LargestTextPaint_TraceEvent_Candidate) {
+TEST_F(TextPaintTimingDetectorTest, LargestTextPaint_TraceEvent_Candidate) {
   using trace_analyzer::Query;
-  trace_analyzer::Start("*");
+  trace_analyzer::Start("loading");
   {
     SetBodyInnerHTML(R"HTML(
       )HTML");
@@ -339,7 +331,7 @@ TEST_F(TextPaintTimingDetectorTest,
 TEST_F(TextPaintTimingDetectorTest,
        LargestTextPaint_TraceEvent_Candidate_Frame) {
   using trace_analyzer::Query;
-  trace_analyzer::Start("*");
+  trace_analyzer::Start("loading");
   {
     GetDocument().SetBaseURLOverride(KURL("http://test.com"));
     SetBodyInnerHTML(R"HTML(

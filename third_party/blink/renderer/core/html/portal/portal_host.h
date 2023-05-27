@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_PORTAL_HOST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_PORTAL_HOST_H_
 
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -56,7 +56,7 @@ class CORE_EXPORT PortalHost : public EventTargetWithInlineData,
  private:
   mojom::blink::PortalHost& GetPortalHostInterface();
 
-  mojo::AssociatedRemote<mojom::blink::PortalHost> portal_host_;
+  HeapMojoAssociatedRemote<mojom::blink::PortalHost> portal_host_;
 };
 
 }  // namespace blink

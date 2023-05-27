@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_NOTIFICATION_CENTER_STACKED_NOTIFICATION_BAR_H_
 
 #include "ash/system/notification_center/notification_center_view.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/views/view.h"
@@ -52,7 +53,6 @@ class StackedNotificationBar : public views::View,
   void SetExpanded();
 
   // views::View:
-  void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
 
   // message_center::MessageCenterObserver:
@@ -76,9 +76,6 @@ class StackedNotificationBar : public views::View,
   // Search for a icon view in the stacked notification bar based on a provided
   // notification id.
   const StackedNotificationBarIcon* GetIconFromId(const std::string& id) const;
-
-  // Set visibility based on number of stacked notifications or animation state.
-  void UpdateVisibility();
 
   // Add a stacked notification icon to the front or back of the row.
   void AddNotificationIcon(message_center::Notification* notification,
@@ -104,13 +101,14 @@ class StackedNotificationBar : public views::View,
   NotificationCenterAnimationState animation_state_ =
       NotificationCenterAnimationState::IDLE;
 
-  NotificationCenterView* const notification_center_view_;
-  views::View* notification_icons_container_;
-  views::Label* const count_label_;
-  views::View* const spacer_;
-  views::Button* const clear_all_button_;
-  views::Button* const expand_all_button_;
-  views::BoxLayout* const layout_manager_;
+  const raw_ptr<NotificationCenterView, ExperimentalAsh>
+      notification_center_view_;
+  raw_ptr<views::View, ExperimentalAsh> notification_icons_container_;
+  const raw_ptr<views::Label, ExperimentalAsh> count_label_;
+  const raw_ptr<views::View, ExperimentalAsh> spacer_;
+  const raw_ptr<views::Button, ExperimentalAsh> clear_all_button_;
+  const raw_ptr<views::Button, ExperimentalAsh> expand_all_button_;
+  const raw_ptr<views::BoxLayout, ExperimentalAsh> layout_manager_;
 
   base::WeakPtrFactory<StackedNotificationBar> weak_ptr_factory_{this};
 };

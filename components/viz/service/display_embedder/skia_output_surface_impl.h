@@ -6,12 +6,14 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/circular_deque.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -41,6 +43,10 @@ namespace gpu {
 class SharedImageRepresentationFactory;
 struct SwapBuffersCompleteParams;
 }  // namespace gpu
+
+namespace skgpu::graphite {
+class Recorder;
+}  // namespace skgpu::graphite
 
 namespace viz {
 
@@ -114,7 +120,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   SkCanvas* BeginPaintRenderPass(const AggregatedRenderPassId& id,
                                  const gfx::Size& surface_size,
-                                 ResourceFormat format,
+                                 SharedImageFormat format,
                                  bool mipmap,
                                  bool scanout_dcomp_surface,
                                  sk_sp<SkColorSpace> color_space,
@@ -131,7 +137,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const AggregatedRenderPassId& id,
       const gfx::Size& size,
-      ResourceFormat format,
+      SharedImageFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space,
       const gpu::Mailbox& mailbox) override;
@@ -150,10 +156,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void PreserveChildSurfaceControls() override;
   gpu::SyncToken Flush() override;
   bool EnsureMinNumberOfBuffers(int n) override;
-  gpu::Mailbox CreateSharedImage(ResourceFormat format,
+  gpu::Mailbox CreateSharedImage(SharedImageFormat format,
                                  const gfx::Size& size,
                                  const gfx::ColorSpace& color_space,
                                  uint32_t usage,
+                                 base::StringPiece debug_label,
                                  gpu::SurfaceHandle surface_handle) override;
   gpu::Mailbox CreateSolidColorSharedImage(
       const SkColor4f& color,
@@ -238,7 +245,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
   void ContextLost();
 
-  void RecreateRootRecorder();
+  void RecreateRootDDLRecorder();
 
   raw_ptr<OutputSurfaceClient> client_ = nullptr;
   bool needs_swap_size_notifications_ = false;
@@ -261,27 +268,31 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   gfx::Size size_;
   gfx::BufferFormat format_;
   int sample_count_ = 1;
-  SkSurfaceCharacterization characterization_;
-  bool reset_recorder_on_swap_ = false;
-  absl::optional<SkDeferredDisplayListRecorder> root_recorder_;
+  SkColorType color_type_ = kUnknown_SkColorType;
+  SkAlphaType alpha_type_ = kUnknown_SkAlphaType;
+  sk_sp<SkColorSpace> sk_color_space_;
+  bool reset_ddl_recorder_on_swap_ = false;
+  absl::optional<SkDeferredDisplayListRecorder> root_ddl_recorder_;
 
   class ScopedPaint {
    public:
-    explicit ScopedPaint(SkDeferredDisplayListRecorder* root_recorder);
+    explicit ScopedPaint(SkDeferredDisplayListRecorder* root_ddl_recorder);
     explicit ScopedPaint(SkSurfaceCharacterization characterization);
     ScopedPaint(SkSurfaceCharacterization characterization,
                 gpu::Mailbox mailbox);
     ~ScopedPaint();
 
-    SkDeferredDisplayListRecorder* recorder() { return recorder_; }
+    SkDeferredDisplayListRecorder* ddl_recorder() { return ddl_recorder_; }
     gpu::Mailbox mailbox() { return mailbox_; }
 
    private:
     // This is recorder being used for current paint
-    SkDeferredDisplayListRecorder* recorder_;
+    // This field is not a raw_ptr<> because it was filtered by the rewriter
+    // for: #union
+    RAW_PTR_EXCLUSION SkDeferredDisplayListRecorder* ddl_recorder_;
     // If we need new recorder for this Paint (i.e. it's not root render pass),
     // it's stored here
-    absl::optional<SkDeferredDisplayListRecorder> recorder_storage_;
+    absl::optional<SkDeferredDisplayListRecorder> ddl_recorder_storage_;
     const gpu::Mailbox mailbox_;
   };
 
@@ -319,7 +330,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // The SkDDL recorder is used for overdraw feedback. It is created by
   // BeginPaintOverdraw, and FinishPaintCurrentFrame will turn it into a SkDDL
   // and play the SkDDL back on the GPU thread.
-  absl::optional<SkDeferredDisplayListRecorder> overdraw_surface_recorder_;
+  absl::optional<SkDeferredDisplayListRecorder> overdraw_surface_ddl_recorder_;
 
   // |overdraw_canvas_| is used to record draw counts.
   absl::optional<SkOverdrawCanvas> overdraw_canvas_;
@@ -373,6 +384,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
 
   sk_sp<GrContextThreadSafeProxy> gr_context_thread_safe_;
+  raw_ptr<skgpu::graphite::Recorder> graphite_recorder_ = nullptr;
 
   bool has_set_draw_rectangle_for_frame_ = false;
   absl::optional<gfx::Rect> draw_rectangle_;

@@ -257,6 +257,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   const AtomicString& GetAttribute(const QualifiedName&) const override;
 
   // Modify or take an action on an object.
+  bool OnNativeBlurAction() final;
   bool OnNativeFocusAction() final;
   bool OnNativeIncrementAction() final;
   bool OnNativeDecrementAction() final;
@@ -296,6 +297,22 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                                             const QualifiedName&) const;
 
   bool IsNativeCheckboxInMixedState() const;
+
+  // This function returns the text of a tooltip associated with the element.
+  // Although there are two ways of doing this, it is unlikely that an author
+  // would provide 2 overlapping types of tooltips. Order of precedence:
+  // 1. The title attribute is currently preferred if present.
+  // 2. The contents of a plain hint, which has no interesting semantic or
+  // interactive content, is used next.
+  // TODO(accessibility): Follow-up with standards discussion to determine
+  // whether a different order of precedence makes sense.
+  String TextAlternativeFromTooltip(
+      ax::mojom::blink::NameFrom& name_from,
+      NameSources* name_sources,
+      bool* found_text_alternative,
+      String* text_alternative,
+      AXRelatedObjectVector* related_objects) const;
+
   String TextAlternativeFromTitleAttribute(
       const AtomicString& title,
       ax::mojom::blink::NameFrom& name_from,

@@ -1033,6 +1033,10 @@ base::SingleThreadTaskRunner* AudioManagerMac::GetTaskRunner() const {
   return AudioManagerBase::GetTaskRunner();
 }
 
+void AudioManagerMac::StopAmplitudePeakTrace() {
+  TraceAmplitudePeak(/*trace_start=*/false);
+}
+
 bool AudioManagerMac::IsOnBatteryPower() const {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return power_observer_->IsOnBatteryPower();
@@ -1238,6 +1242,18 @@ void AudioManagerMac::ReleaseOutputStream(AudioOutputStream* stream) {
   AudioManagerBase::ReleaseOutputStream(stream);
 }
 
+void AudioManagerMac::ReleaseInputStream(AudioInputStream* stream) {
+  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  auto stream_it = base::ranges::find(basic_input_streams_, stream);
+  if (stream_it == basic_input_streams_.end()) {
+    low_latency_input_streams_.remove(static_cast<AUAudioInputStream*>(stream));
+  } else {
+    basic_input_streams_.erase(stream_it);
+  }
+
+  AudioManagerBase::ReleaseInputStream(stream);
+}
+
 void AudioManagerMac::ReleaseOutputStreamUsingRealDevice(
     AudioOutputStream* stream,
     AudioDeviceID device_id) {
@@ -1251,7 +1267,8 @@ void AudioManagerMac::ReleaseOutputStreamUsingRealDevice(
   AudioManagerBase::ReleaseOutputStream(stream);
 }
 
-void AudioManagerMac::ReleaseInputStream(AudioInputStream* stream) {
+void AudioManagerMac::ReleaseInputStreamUsingRealDevice(
+    AudioInputStream* stream) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   auto stream_it = base::ranges::find(basic_input_streams_, stream);
   if (stream_it == basic_input_streams_.end())

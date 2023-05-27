@@ -53,8 +53,6 @@ void OobeTestAPIHandler::DeclareJSCallbacks() {
   AddCallback("OobeTestApi.loginAsGuest", &OobeTestAPIHandler::LoginAsGuest);
   AddCallback("OobeTestApi.showGaiaDialog",
               &OobeTestAPIHandler::ShowGaiaDialog);
-  AddCallback("OobeTestApi.isGaiaDialogVisible",
-              &OobeTestAPIHandler::IsGaiaDialogVisible);
 
   // Keeping the code in case the test using this will be ported to tast. The
   // function used to be called getPrimaryDisplayNameForTesting. In order to use
@@ -72,10 +70,9 @@ void OobeTestAPIHandler::GetAdditionalParameters(base::Value::Dict* dict) {
                 !switches::IsOOBENetworkScreenSkippingDisabledForTesting() &&
                 helper_.IsConnectedToEthernet());
 
-  dict->Set("testapi_shouldSkipGuestTos",
-            StartupUtils::IsEulaAccepted() ||
-                !features::IsOobeConsolidatedConsentEnabled() ||
-                !BUILDFLAG(GOOGLE_CHROME_BRANDING));
+  dict->Set(
+      "testapi_shouldSkipGuestTos",
+      StartupUtils::IsEulaAccepted() || !BUILDFLAG(GOOGLE_CHROME_BRANDING));
 
   dict->Set("testapi_isFingerprintSupported",
             quick_unlock::IsFingerprintSupported());
@@ -100,8 +97,7 @@ void OobeTestAPIHandler::GetAdditionalParameters(base::Value::Dict* dict) {
             TabletMode::Get()->InTabletMode() ||
                 switches::ShouldOobeUseTabletModeFirstRun());
   dict->Set("testapi_shouldSkipConsolidatedConsent",
-            !features::IsOobeConsolidatedConsentEnabled() ||
-                !BUILDFLAG(GOOGLE_CHROME_BRANDING));
+            !BUILDFLAG(GOOGLE_CHROME_BRANDING));
   dict->Set("testapi_isHPSEnabled", ash::features::IsQuickDimEnabled());
 }
 
@@ -170,10 +166,6 @@ void OobeTestAPIHandler::LoginAsGuest() {
 
 void OobeTestAPIHandler::ShowGaiaDialog() {
   LoginDisplayHost::default_host()->ShowGaiaDialog(EmptyAccountId());
-}
-
-void OobeTestAPIHandler::IsGaiaDialogVisible() {
-  LoginDisplayHost::default_host()->IsGaiaDialogVisibleForTesting();  // IN-TEST
 }
 
 void OobeTestAPIHandler::HandleGetPrimaryDisplayName(

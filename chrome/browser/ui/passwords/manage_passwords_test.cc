@@ -57,6 +57,7 @@ ManagePasswordsTest::ManagePasswordsTest() {
 ManagePasswordsTest::~ManagePasswordsTest() = default;
 
 void ManagePasswordsTest::SetUpOnMainThread() {
+  InteractiveBrowserTest::SetUpOnMainThread();
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url = embedded_test_server()->GetURL("/empty.html");
 
@@ -69,7 +70,7 @@ void ManagePasswordsTest::SetUpOnMainThread() {
 }
 
 void ManagePasswordsTest::SetUpInProcessBrowserTestFixture() {
-  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  InteractiveBrowserTest::SetUpInProcessBrowserTestFixture();
   create_services_subscription_ =
       BrowserContextDependencyManager::GetInstance()
           ->RegisterCreateServicesCallbackForTesting(
@@ -256,8 +257,9 @@ std::unique_ptr<PasswordFormManager> ManagePasswordsTest::CreateFormManager() {
   insecure_credential_ = password_form_;
   insecure_credential_.password_issues.insert(
       {password_manager::InsecureType::kLeaked,
-       password_manager::InsecurityMetadata(base::Time(),
-                                            password_manager::IsMuted(false))});
+       password_manager::InsecurityMetadata(
+           base::Time(), password_manager::IsMuted(false),
+           password_manager::TriggerBackendNotification(false))});
   fetcher_.set_insecure_credentials({&insecure_credential_});
 
   fetcher_.NotifyFetchCompleted();

@@ -335,26 +335,6 @@ extern const base::FeatureParam<int> kFuzzyUrlSuggestionsPenaltyLow;
 // applied and where the low penalty will be applied.
 extern const base::FeatureParam<int> kFuzzyUrlSuggestionsPenaltyTaperLength;
 
-// Returns true if the default browser pedal feature is enabled.
-bool IsDefaultBrowserPedalEnabled();
-
-// Indicates whether the default browser pedal should make the change
-// immediately by calling the shell_integration API directly. When
-// false (default), the pedal goes to settings to let the user see
-// and commit the change themselves.
-extern const base::FeatureParam<bool> kDefaultBrowserPedalImmediate;
-
-// Note: These two feature params are only relevant when the above
-// param `kDefaultBrowserPedalImmediate` is true.
-// Indicates whether the default browser pedal can be used when the
-// shell_integration API indicates the system sets default browser
-// interactively, e.g. by bringing up system settings.
-extern const base::FeatureParam<bool> kDefaultBrowserPedalInteractive;
-// Indicates whether the default browser pedal can be used when the
-// shell_integration API indicates the system sets default browser
-// without any further user interaction, i.e. "unattended".
-extern const base::FeatureParam<bool> kDefaultBrowserPedalUnattended;
-
 // Simply a convenient wrapper for testing a flag. Used downstream for an
 // assortment of keyword mode experiments.
 bool IsExperimentalKeywordModeEnabled();
@@ -400,7 +380,9 @@ extern const base::FeatureParam<int> kSuggestionRowHeight;
 // Specifies the vertical margin to use in one-line rich entity and answer
 // suggestions.
 extern const base::FeatureParam<int> kRichSuggestionVerticalMargin;
-
+// Omnibox GM3 - icons.
+// Returns true if the feature to enable GM3 icons is enabled.
+bool IsChromeRefreshIconsEnabled();
 // Omnibox GM3 - text style.
 // Returns true if the feature to enable GM3 text styling is enabled.
 bool IsGM3TextStyleEnabled();
@@ -562,9 +544,6 @@ extern const base::FeatureParam<bool>
 extern const base::FeatureParam<int>
     kShortBookmarkSuggestionsByTotalInputLengthThreshold;
 
-// Bookmark paths.
-extern const base::FeatureParam<std::string> kBookmarkPathsCounterfactual;
-
 // Shortcut Expanding.
 bool IsShortcutExpandingEnabled();
 
@@ -650,11 +629,6 @@ extern const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring;
 // ---------------------------------------------------------
 // ML Relevance Scoring ->
 
-// Whether the URL providers should pass more suggestion candidates to the
-// controller. If enabled, providers are no longer limited to
-// provider_max_matches.
-extern const base::FeatureParam<bool> kMlRelevanceScoringIncreaseNumCandidates;
-
 // The ML Relevance Scoring features and params configuration.
 // Use `GetMLConfig()` to get the current configuration.
 //
@@ -664,24 +638,29 @@ extern const base::FeatureParam<bool> kMlRelevanceScoringIncreaseNumCandidates;
 struct MLConfig {
   MLConfig();
 
-  // If true, logs Omnibox URL scoring signals to OmniboxEventProto in UMA.
+  // If true, logs Omnibox URL scoring signals to OmniboxEventProto.
   // Equivalent to omnibox::kLogUrlScoringSignals.
   bool log_url_scoring_signals{false};
 
-  // If true, enables scoring signal annotators.
-  // Requires omnibox::kLogUrlScoringSignals to be enabled.
+  // If true, enables scoring signal annotators for logging Omnibox URL scoring
+  // signals to OmniboxEventProto. Equivalent to
+  // OmniboxFieldTrial::kLogUrlScoringSignalsEnableScoringSignalsAnnotators.
   bool enable_scoring_signals_annotators{false};
 
-  // If true, runs the ML scoring model to assign relevance scores to URL
-  // suggestions. Also enables the autocomplete system related changes to
-  // support ML scoring and moves scoring out of the autocomplete providers into
-  // the autocomplete controller.
-  // Equivalent to omnibox::kMlRelevanceScoring.
-  bool ml_relevance_scoring{false};
+  // If true, runs the ML scoring model to assign new relevance scores to the
+  // URL suggestions and reranks them.
+  // Equivalent to omnibox::kMlUrlScoring.
+  bool ml_url_scoring{false};
 
-  // If true, increases the number of candidates the url autocomplete providers
-  // pass to the controller.
-  bool increase_num_candidates{false};
+  // If true, runs the ML scoring model but does not assign new relevance scores
+  // to the URL suggestions and does not rerank them.
+  // Equivalent to OmniboxFieldTrial::kMlUrlScoringCounterfactual.
+  bool ml_url_scoring_counterfactual{false};
+
+  // If true, increases the number of candidates the URL autocomplete providers
+  // pass to the controller beyond `provider_max_matches`.
+  // Equivalent to OmniboxFieldTrial::kMlUrlScoringIncreaseNumCandidates.
+  bool ml_url_scoring_increase_num_candidates{false};
 
   // If true, creates Omnibox autocompete URL scoring model.
   // Equivalent to omnibox::kUrlScoringModel.
@@ -708,33 +687,60 @@ class ScopedMLConfigForTesting {
 // Returns the current configuration.
 const MLConfig& GetMLConfig();
 
-// For logging Omnibox scoring signals for training machine learning models.
+// If enabled, logs Omnibox scoring signals to OmniboxEventProto for training
+// the ML scoring models.
 bool IsLogUrlScoringSignalsEnabled();
 
-// Returns whether the scoring signal annotators are enabled.
+// Whether the scoring signal annotators are enabled for logging Omnibox scoring
+// signals to OmniboxEventProto.
 bool AreScoringSignalsAnnotatorsEnabled();
 
-// If enabled, runs the machine learning scoring model and uses the ML-based
-// relevance scores. This flag enables the omnibox autocomplete system related
-// changes to support ML scoring and moves the responsibility for scoring and
-// trimming results from the providers into the autocomplete controller.
-bool IsMlRelevanceScoringEnabled();
+// If enabled, runs the ML scoring model to assign new relevance scores to the
+// URL suggestions and reranks them.
+bool IsMlUrlScoringEnabled();
+
+// If true, runs the ML scoring model but does not assign new relevance scores
+// to URL suggestions.
+bool IsMlUrlScoringCounterfactual();
 
 // If true, increases the number of candidates the url autocomplete providers
 // pass to the controller.
-bool IsMlRelevanceScoringIncreaseNumCandidatesEnabled();
+bool IsMlUrlScoringIncreaseNumCandidatesEnabled();
 
 // Whether the URL scoring model is enabled.
 bool IsUrlScoringModelEnabled();
 
 // <- ML Relevance Scoring
 // ---------------------------------------------------------
+// Two-column realbox ->
+
+// Specifies the number of zero-prefix suggestions in the 2nd column of realbox
+// when `omnibox::kRealboxSecondaryZeroSuggest` is enabled.
+extern const base::FeatureParam<int>
+    kRealboxMaxPreviousSearchRelatedSuggestions;
+// Does not show zero-prefix suggestions in the 2nd column of realbox, even if
+// they are available.
+extern const base::FeatureParam<bool>
+    kRealboxSecondaryZeroSuggestCounterfactual;
+
+// <- Two-column realbox
+// ---------------------------------------------------------
 // Inspire Me ->
+
 // Specify number of additional Related and Trending queries appended to the
 // suggestion list, when the Inspire Me feature is enabled.
 extern const base::FeatureParam<int> kInspireMeAdditionalRelatedQueries;
 extern const base::FeatureParam<int> kInspireMeAdditionalTrendingQueries;
+
 // <- Inspire Me
+// ---------------------------------------------------------
+// Actions In Suggest ->
+//
+// When set to true, permits Entity suggestion with associated Actions to be
+// promoted over the Escape Hatch.
+extern const base::FeatureParam<bool> kActionsInSuggestPromoteEntitySuggestion;
+// <- Actions In Suggest
+// ---------------------------------------------------------
 
 // New params should be inserted above this comment. They should be ordered
 // consistently with `omnibox_features.h`. They should be formatted as:

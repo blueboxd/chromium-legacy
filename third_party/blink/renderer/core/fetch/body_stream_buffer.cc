@@ -280,7 +280,7 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
     ReadableStream* stream1 = nullptr;
     ReadableStream* stream2 = nullptr;
 
-    stream_->Tee(script_state_, &stream1, &stream2, exception_state);
+    stream_->Tee(script_state_, &stream1, &stream2, true, exception_state);
     if (exception_state.HadException()) {
       stream_broken_ = true;
       return;
@@ -509,7 +509,10 @@ void BodyStreamBuffer::ProcessData() {
 }
 
 void BodyStreamBuffer::EndLoading() {
-  DCHECK(loader_);
+  if (!loader_) {
+    DCHECK(!keep_alive_);
+    return;
+  }
   virtual_time_pauser_.UnpauseVirtualTime();
   keep_alive_.Clear();
   loader_ = nullptr;

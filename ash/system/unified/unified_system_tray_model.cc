@@ -5,12 +5,14 @@
 #include "ash/system/unified/unified_system_tray_model.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/constants/ash_features.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/system/brightness_control_delegate.h"
 #include "ash/system/status_area_widget.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 
 namespace {
@@ -44,7 +46,7 @@ class UnifiedSystemTrayModel::DBusObserver
   void KeyboardBrightnessChanged(
       const power_manager::BacklightBrightnessChange& change) override;
 
-  UnifiedSystemTrayModel* const owner_;
+  const raw_ptr<UnifiedSystemTrayModel, ExperimentalAsh> owner_;
 
   base::WeakPtrFactory<DBusObserver> weak_ptr_factory_{this};
 };
@@ -68,7 +70,7 @@ class UnifiedSystemTrayModel::SizeObserver : public display::DisplayObserver,
 
   void Update();
 
-  UnifiedSystemTrayModel* const owner_;
+  const raw_ptr<UnifiedSystemTrayModel, ExperimentalAsh> owner_;
 
   display::ScopedDisplayObserver display_observer_{this};
 
@@ -164,6 +166,11 @@ void UnifiedSystemTrayModel::RemoveObserver(Observer* observer) {
 }
 
 bool UnifiedSystemTrayModel::IsExpandedOnOpen() const {
+  // They System Tray is always expanded with QsRevamp enabled.
+  if (features::IsQsRevampEnabled()) {
+    return true;
+  }
+
   return expanded_on_open_ != StateOnOpen::COLLAPSED ||
          Shell::Get()->accessibility_controller()->spoken_feedback().enabled();
 }

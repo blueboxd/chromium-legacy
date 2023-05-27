@@ -13,6 +13,7 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.firstrun.MobileFreProgress;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
@@ -35,6 +36,7 @@ import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.signin.metrics.SignoutReason;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -266,6 +268,17 @@ public class SigninFirstRunMediator
             return;
         }
 
+        if (BuildInfo.getInstance().isAutomotive) {
+            mDelegate.displayDeviceLockPage();
+            return;
+        }
+        proceedWithSignIn();
+    }
+
+    /**
+     * Accepts ToS and completes the account sign-in with the selected account.
+     */
+    public void proceedWithSignIn() {
         // This is needed to get metrics/crash reports from the sign-in flow itself.
         mDelegate.acceptTermsOfService(mAllowMetricsAndCrashUploading);
         if (mModel.get(SigninFirstRunProperties.IS_SELECTED_ACCOUNT_SUPERVISED)) {
@@ -291,8 +304,8 @@ public class SigninFirstRunMediator
         mModel.set(SigninFirstRunProperties.SHOW_SIGNIN_PROGRESS_SPINNER_WITH_TEXT, true);
         final SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
                 Profile.getLastUsedRegularProfile());
-        signinManager.signin(
-                AccountUtils.createAccountFromName(mSelectedAccountName), new SignInCallback() {
+        signinManager.signin(AccountUtils.createAccountFromName(mSelectedAccountName),
+                SigninAccessPoint.SIGNIN_PROMO, new SignInCallback() {
                     @Override
                     public void onSignInComplete() {
                         if (mDestroyed) {
@@ -324,6 +337,13 @@ public class SigninFirstRunMediator
 
         assert mDelegate.getNativeInitializationPromise().isFulfilled();
 
+        dismiss();
+    }
+
+    /**
+     * Dismisses the sign-in page and continues without a signed-in account.
+     */
+    public void dismiss() {
         mDelegate.recordFreProgressHistogram(MobileFreProgress.WELCOME_DISMISS);
         mDelegate.acceptTermsOfService(mAllowMetricsAndCrashUploading);
         SigninPreferencesManager.getInstance().temporarilySuppressNewTabPagePromos();

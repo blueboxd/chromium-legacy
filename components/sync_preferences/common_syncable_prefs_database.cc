@@ -29,16 +29,20 @@
 namespace sync_preferences {
 
 const char kSyncablePrefForTesting[] = "syncable-test-preference";
+const char kSyncableMergeableDictPrefForTesting[] =
+    "syncable-mergeable-dict-test-preference";
 
 namespace {
 // Not an enum class to ease cast to int.
 namespace syncable_prefs_ids {
 // These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
+// numeric values should never be reused. When adding a new entry, append the
+// enumerator to the end. When removing an unused enumerator, comment it out,
+// making it clear the value was previously used.
 // Please also add new entries to `SyncablePref` enum in
 // tools/metrics/histograms/enums.xml.
 enum {
-  kSyncablePrefForTesting = 0,
+  kSyncablePrefForTesting = 0,  // For tests.
   kAutofillCreditCardEnabled = 1,
   kAutofillEnabledDeprecated = 2,
   kAutofillHasSeenIban = 3,
@@ -100,7 +104,8 @@ enum {
   kPrefAlwaysTranslateList = 59,
   kPrefNeverPromptSitesWithTime = 60,
   kPrefTranslateRecentTarget = 61,
-  kPrefDogfoodGroups = 62
+  kPrefDogfoodGroups = 62,
+  kSyncableMergeableDictPrefForTesting = 63,  // For tests.
 };
 }  // namespace syncable_prefs_ids
 
@@ -223,9 +228,13 @@ const auto& SyncablePreferences() {
          {syncable_prefs_ids::kCookieControlsMode, syncer::PREFERENCES}},
         {prefs::kSafeBrowsingEnabled,
          {syncable_prefs_ids::kSafeBrowsingEnabled, syncer::PREFERENCES}},
+// TODO(crbug.com/1434910): Maybe move to chrome_syncable_prefs_database.cc,
+// see bug.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
         {prefs::kSyncedDefaultSearchProviderGUID,
          {syncable_prefs_ids::kSyncedDefaultSearchProviderGUID,
           syncer::PREFERENCES}},
+#endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
         {translate::TranslatePrefs::kPrefForceTriggerTranslateCount,
          {syncable_prefs_ids::kPrefForceTriggerTranslateCount,
           syncer::PREFERENCES}},
@@ -263,6 +272,9 @@ const auto& SyncablePreferences() {
           syncer::PRIORITY_PREFERENCES}},
         {kSyncablePrefForTesting,
          {syncable_prefs_ids::kSyncablePrefForTesting, syncer::PREFERENCES}},
+        {kSyncableMergeableDictPrefForTesting,
+         {syncable_prefs_ids::kSyncableMergeableDictPrefForTesting,
+          syncer::PREFERENCES}},
   });
   return kCommonSyncablePrefsAllowlist;
 }

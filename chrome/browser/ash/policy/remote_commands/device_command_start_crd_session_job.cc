@@ -13,6 +13,8 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -26,7 +28,6 @@
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "extensions/common/value_builder.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "remoting/host/chromeos/features.h"
@@ -35,8 +36,6 @@
 namespace policy {
 
 namespace {
-
-using extensions::DictionaryBuilder;
 
 // OAuth2 Token scopes
 constexpr char kCloudDevicesOAuth2Scope[] =
@@ -92,18 +91,21 @@ void SendSessionTypeToUma(
 }
 
 std::string CreateSuccessPayload(const std::string& access_code) {
-  return DictionaryBuilder()
-      .Set(kResultCodeFieldName, static_cast<int>(ResultCode::SUCCESS))
-      .Set(kResultAccessCodeFieldName, access_code)
-      .ToJSON();
+  return base::WriteJson(base::Value::Dict()
+                             .Set(kResultCodeFieldName,
+                                  static_cast<int>(ResultCode::SUCCESS))
+                             .Set(kResultAccessCodeFieldName, access_code))
+      .value();
 }
 
 std::string CreateNonIdlePayload(const base::TimeDelta& time_delta) {
-  return DictionaryBuilder()
-      .Set(kResultCodeFieldName, static_cast<int>(ResultCode::FAILURE_NOT_IDLE))
-      .Set(kResultLastActivityFieldName,
-           static_cast<int>(time_delta.InSeconds()))
-      .ToJSON();
+  return base::WriteJson(
+             base::Value::Dict()
+                 .Set(kResultCodeFieldName,
+                      static_cast<int>(ResultCode::FAILURE_NOT_IDLE))
+                 .Set(kResultLastActivityFieldName,
+                      static_cast<int>(time_delta.InSeconds())))
+      .value();
 }
 
 std::string CreateErrorPayload(ResultCode result_code,
@@ -111,12 +113,12 @@ std::string CreateErrorPayload(ResultCode result_code,
   DCHECK(result_code != ResultCode::SUCCESS);
   DCHECK(result_code != ResultCode::FAILURE_NOT_IDLE);
 
-  DictionaryBuilder builder;
-  builder.Set(kResultCodeFieldName, static_cast<int>(result_code));
+  auto payload = base::Value::Dict()  //
+                     .Set(kResultCodeFieldName, static_cast<int>(result_code));
   if (!error_message.empty()) {
-    builder.Set(kResultMessageFieldName, error_message);
+    payload.Set(kResultMessageFieldName, error_message);
   }
-  return builder.ToJSON();
+  return base::WriteJson(payload).value();
 }
 
 DeviceOAuth2TokenService& GetOAuthService() {
@@ -174,7 +176,7 @@ class DeviceCommandStartCrdSessionJob::OAuthTokenFetcher
     OAuth2AccessTokenManager::ScopeSet scopes{
         GaiaConstants::kGoogleUserInfoEmail, kCloudDevicesOAuth2Scope,
         kChromotingRemoteSupportOAuth2Scope, kTachyonOAuth2Scope};
-    oauth_request_ = oauth_service_.StartAccessTokenRequest(scopes, this);
+    oauth_request_ = oauth_service_->StartAccessTokenRequest(scopes, this);
   }
 
  private:
@@ -195,7 +197,7 @@ class DeviceCommandStartCrdSessionJob::OAuthTokenFetcher
         .Run(ResultCode::FAILURE_NO_OAUTH_TOKEN, error.ToString());
   }
 
-  DeviceOAuth2TokenService& oauth_service_;
+  const raw_ref<DeviceOAuth2TokenService, ExperimentalAsh> oauth_service_;
   absl::optional<std::string> oauth_token_for_test_;
   DeviceCommandStartCrdSessionJob::OAuthTokenCallback success_callback_;
   DeviceCommandStartCrdSessionJob::ErrorCallback error_callback_;

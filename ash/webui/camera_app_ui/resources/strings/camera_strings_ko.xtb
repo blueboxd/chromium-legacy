@@ -27,9 +27,7 @@
 <translation id="199526504800285197">녹화 중지됨</translation>
 <translation id="1995951722691075581">기기 저장공간이 부족하여 녹화가 중단되었습니다. 동영상을 더 녹화하려면 기기에서 여유 공간을 확보해야 합니다.</translation>
 <translation id="2036868001356139588">타이머 시간</translation>
-<translation id="2050339315714019657">인물 사진</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> 사용 중</translation>
-<translation id="2128052519899549250">타임랩스 동영상 녹화</translation>
 <translation id="2134029355740465625">동영상 설정</translation>
 <translation id="2144806332417375165">맞춤 동영상 매개변수</translation>
 <translation id="2175927920773552910">QR 코드</translation>
@@ -82,6 +80,7 @@
 <translation id="4864143361253542638">스캔 페이지 목록</translation>
 <translation id="4890010094662541459">3x3</translation>
 <translation id="491895758387112773">멀티스트림 동영상 녹화</translation>
+<translation id="495170559598752135">작업</translation>
 <translation id="4984613436295737187">QHD(1440p)</translation>
 <translation id="5034763830503483128">사진 가로세로 비율</translation>
 <translation id="5057360777601936059">현재 카메라를 사용할 수 없습니다.
@@ -92,7 +91,6 @@
 <translation id="5317780077021120954">저장</translation>
 <translation id="5320594929574852403">왼쪽으로 이동</translation>
 <translation id="5374917190292010970">4K(2160p)</translation>
-<translation id="5577251651370645658">타임랩스</translation>
 <translation id="5662366948659129155"><ph name="COUNT" />페이지 스캔 중</translation>
 <translation id="5671277269877808209">정사각형</translation>
 <translation id="5746169159649715125">PDF로 저장</translation>
@@ -122,6 +120,7 @@
 <translation id="6888362557094394345">하단으로 이동</translation>
 <translation id="695140971690006676">모두 재설정</translation>
 <translation id="6965382102122355670">확인</translation>
+<translation id="6965830616442491568">세로 모드</translation>
 <translation id="698156982839284926">3초</translation>
 <translation id="7134221860976209830">10초 타이머</translation>
 <translation id="7191890674911603392">녹화 유형</translation>
@@ -137,6 +136,7 @@
 <translation id="7658239707568436148">취소</translation>
 <translation id="7670511624014457267">60FPS</translation>
 <translation id="7671804233658741790">문서 오른쪽 하단</translation>
+<translation id="7684446460490665873">타임랩스 동영상 녹화</translation>
 <translation id="7692090236657809299">화면 이동, 기울이기, 확대/축소 사용 설정</translation>
 <translation id="7726641833034062494">일반 동영상 녹화</translation>
 <translation id="7748344063862150053">문서 오른쪽 상단</translation>
@@ -162,6 +162,7 @@
 <translation id="9045010116236796332">프레임 안에 문서의 네 모서리를 위치시키세요.</translation>
 <translation id="9045155556724273246">10초</translation>
 <translation id="906331135292332864">이미지 처리 중...</translation>
+<translation id="9161584225258678723">타임랩스</translation>
 <translation id="922762992951083513">미러링 켬</translation>
 <translation id="945522503751344254">의견 보내기</translation>
 </translationbundle>

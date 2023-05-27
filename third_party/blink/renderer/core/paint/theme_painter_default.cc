@@ -375,7 +375,12 @@ bool ThemePainterDefault::PaintSliderTrack(const Element& element,
                                            const ComputedStyle& style) {
   WebThemeEngine::ExtraParams extra_params;
   extra_params.slider.vertical =
-      style.EffectiveAppearance() == kSliderVerticalPart;
+      (RuntimeEnabledFeatures::
+           FormControlsVerticalWritingModeSupportEnabled() &&
+       !IsHorizontalWritingMode(style.GetWritingMode())) ||
+      (!RuntimeEnabledFeatures::
+           RemoveNonStandardAppearanceValueSliderVerticalEnabled() &&
+       style.EffectiveAppearance() == kSliderVerticalPart);
   extra_params.slider.in_drag = false;
 
   PaintSliderTicks(layout_object, paint_info, rect);
@@ -383,7 +388,12 @@ bool ThemePainterDefault::PaintSliderTrack(const Element& element,
   extra_params.slider.zoom = style.EffectiveZoom();
   extra_params.slider.thumb_x = 0;
   extra_params.slider.thumb_y = 0;
-  extra_params.slider.right_to_left = !style.IsLeftToRightDirection();
+  extra_params.slider.right_to_left =
+      !RuntimeEnabledFeatures::
+                  FormControlsVerticalWritingModeDirectionSupportEnabled() &&
+              extra_params.slider.vertical
+          ? true
+          : !style.IsLeftToRightDirection();
   if (auto* input = DynamicTo<HTMLInputElement>(element)) {
     Element* thumb_element = input->UserAgentShadowRoot()
                                  ? input->UserAgentShadowRoot()->getElementById(
@@ -415,7 +425,12 @@ bool ThemePainterDefault::PaintSliderThumb(const Element& element,
                                            const gfx::Rect& rect) {
   WebThemeEngine::ExtraParams extra_params;
   extra_params.slider.vertical =
-      style.EffectiveAppearance() == kSliderThumbVerticalPart;
+      (RuntimeEnabledFeatures::
+           FormControlsVerticalWritingModeSupportEnabled() &&
+       !IsHorizontalWritingMode(style.GetWritingMode())) ||
+      (!RuntimeEnabledFeatures::
+           RemoveNonStandardAppearanceValueSliderVerticalEnabled() &&
+       style.EffectiveAppearance() == kSliderThumbVerticalPart);
   extra_params.slider.in_drag = element.IsActive();
   extra_params.slider.zoom = style.EffectiveZoom();
 
@@ -559,9 +574,8 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
     Color search_field_text_color =
         cancel_button_object.StyleRef().VisitedDependentColor(
             GetCSSPropertyColor());
-    bool text_is_dark =
-        color_utils::GetRelativeLuminance(
-            search_field_text_color.ToSkColorDeprecated()) < 0.5;
+    bool text_is_dark = color_utils::GetRelativeLuminance4f(
+                            search_field_text_color.toSkColor4f()) < 0.5;
     color_scheme_adjusted_cancel_image =
         text_is_dark ? cancel_image_hc_light_mode : cancel_image_dark_mode;
     color_scheme_adjusted_cancel_pressed_image =

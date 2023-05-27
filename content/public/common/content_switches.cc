@@ -295,10 +295,6 @@ const char kDisable2dCanvasClipAntialiasing[] = "disable-2d-canvas-clip-aa";
 // Has no effect unless GPU rasterization is enabled.
 const char kDisableYUVImageDecoding[] = "disable-yuv-image-decoding";
 
-// Enables the Accept-CH cache for client hints to be durable past browser
-// restarts.
-const char kDurableClientHintsCache[] = "durable-client-hints-cache";
-
 // Enables LCD text.
 const char kEnableLCDText[]                 = "enable-lcd-text";
 
@@ -483,6 +479,11 @@ const char kForcePresentationReceiverForTesting[] =
 // Force renderer accessibility to be on instead of enabling it on demand when
 // a screen reader is detected. The disable-renderer-accessibility switch
 // overrides this if present.
+// This switch has an optional parameter that forces an AXMode bundle. The three
+// available bundle settings are: 'basic', 'form-controls', and 'complete'. If
+// the bundle argument is invalid, then the forced AXMode will default to
+// 'complete'. If the bundle argument is missing, then the initial AXMode will
+// default to complete but allow changes to the AXMode during execution.
 const char kForceRendererAccessibility[]    = "force-renderer-accessibility";
 
 // Force Skia's CPU backend to use analytic anti-aliasing for all content

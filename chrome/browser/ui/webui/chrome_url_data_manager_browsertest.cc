@@ -249,7 +249,10 @@ IN_PROC_BROWSER_TEST_P(ChromeURLDataManagerWebUITrustedTypesTest,
 //  2) Presence of TrustedTypes checks (see TrustedTypesEnabled test).
 static constexpr const char* const kChromeUrls[] = {
     "chrome://accessibility",
+// TODO:(https://crbug.com/1439754): Flakily crashes on ChromeOS.
+#if !BUILDFLAG(IS_CHROMEOS)
     "chrome://app-service-internals",
+#endif
     "chrome://attribution-internals",
     "chrome://autofill-internals",
     "chrome://bookmarks",
@@ -308,7 +311,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://privacy-sandbox-dialog/?debug",
     "chrome://process-internals",
     "chrome://quota-internals",
-    "chrome://read-anything-side-panel.top-chrome",
+    "chrome-untrusted://read-anything-side-panel.top-chrome",
     "chrome://read-later.top-chrome",
     "chrome://reset-password",
     "chrome://safe-browsing",
@@ -362,8 +365,10 @@ static constexpr const char* const kChromeUrls[] = {
     // TODO(crbug.com/1102129): DCHECK failure in
     // ArcGraphicsTracingHandler::ArcGraphicsTracingHandler.
     // "chrome://arc-graphics-tracing",
+    "chrome://app-disabled",
     "chrome://cryptohome",
     "chrome://drive-internals",
+    "chrome://emoji-picker",
     "chrome://family-link-user-internals",
     "chrome://help-app",
     "chrome://linux-proxy-config",
@@ -372,6 +377,7 @@ static constexpr const char* const kChromeUrls[] = {
     "chrome://power",
     "chrome://projector",
     "chrome://proximity-auth/proximity_auth.html",
+    "chrome://set-time",
     "chrome://slow",
 #endif
 #if !BUILDFLAG(IS_CHROMEOS)
@@ -394,8 +400,11 @@ static constexpr const char* const kChromeUrls[] = {
 #endif
 #if !BUILDFLAG(IS_MAC)
     "chrome://sandbox",
+// NaCl isn't supported on ARM64 Windows.
+#if !BUILDFLAG(IS_WIN) || !defined(ARCH_CPU_ARM64)
     "chrome://nacl",
 #endif
+#endif  // !BUILDFLAG(IS_MAC)
 #if !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
     // TODO(https://crbug.com/1219651): this test is flaky on mac.
     "chrome://bluetooth-internals",

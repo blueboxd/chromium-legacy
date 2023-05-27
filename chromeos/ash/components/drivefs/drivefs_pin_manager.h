@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
@@ -25,11 +26,17 @@
 #include "base/timer/elapsed_timer.h"
 #include "chromeos/ash/components/drivefs/drivefs_host_observer.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "chromeos/ash/components/drivefs/mojom/pin_manager_types.mojom.h"
 #include "components/drive/file_errors.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace drivefs::pinning {
+
+// Imbue the output stream with a locale that prints numbers with thousands
+// separators.
+COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)
+std::ostream& NiceNum(std::ostream& out);
 
 // Prints a size in bytes in a human-readable way.
 enum HumanReadableSize : int64_t;
@@ -37,32 +44,13 @@ enum HumanReadableSize : int64_t;
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)
 std::ostream& operator<<(std::ostream& out, HumanReadableSize size);
 
-// The PinManager first undergoes a setup phase, where it audits the current
-// disk space, pins all available files (disk space willing) then moves to
-// monitoring. This enum represents the various stages the setup goes through.
-enum class Stage {
-  // Initial stage.
-  kStopped,
-
-  // Paused because of unfavorable network conditions.
-  kPaused,
-
-  // In-progress stages.
-  kGettingFreeSpace,
-  kListingFiles,
-  kSyncing,
-
-  // Final success stage.
-  kSuccess,
-
-  // Final error stages.
-  kCannotGetFreeSpace,
-  kCannotListFiles,
-  kNotEnoughSpace,
-};
+using pin_manager_types::mojom::Stage;
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)
-std::ostream& operator<<(std::ostream& out, Stage stage);
+std::string ToString(Stage stage);
+
+COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)
+std::string ToString(base::TimeDelta time_delta);
 
 // When the manager is setting up, this struct maintains all the information
 // gathered.
@@ -101,9 +89,13 @@ struct COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) Progress {
   // Number of skipped items (files, directories and shortcuts).
   int skipped_items = 0;
 
-  // Number of all listed items (files, directories and shortcuts) seen during
-  // the kListingFiles stage.
+  // Numbers of items, directories, files, hosted documents and shortcuts found
+  // by search queries during the kListingFiles stage.
   int listed_items = 0;
+  int listed_dirs = 0;
+  int listed_files = 0;
+  int listed_docs = 0;
+  int listed_shortcuts = 0;
 
   // Number of "useful" (ie non-duplicated) events received from DriveFS so far.
   int useful_events = 0;
@@ -111,8 +103,21 @@ struct COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) Progress {
   // Number of duplicated events received from DriveFS so far.
   int duplicated_events = 0;
 
+  // Total number of search queries that have been started.
+  int total_queries = 0;
+
+  // Number of currently active search queries (ie started but not finished
+  // yet).
+  int active_queries = 0;
+
+  // High watermark of the number of active queries.
+  int max_active_queries = 0;
+
   // Stage of the setup process.
   Stage stage = Stage::kStopped;
+
+  base::TimeDelta time_spent_listing_items;
+  base::TimeDelta time_spent_pinning_files;
 
   // Has the PinManager ever emptied its set of tracking items?
   bool emptied_queue = false;
@@ -123,6 +128,9 @@ struct COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) Progress {
 
   // Returns whether required_space + some margin is less than free_space.
   bool HasEnoughFreeSpace() const;
+
+  // Returns whether the stage is a stopped or error stage.
+  bool IsError() const;
 };
 
 // Manages bulk pinning of items via DriveFS. This class handles the following:
@@ -153,6 +161,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // stopped.
   void Stop();
 
+  // Lists the files and calculates the required space and free disk space. This
+  // doesn't pin any files and doesn't keep the space calculations up to date.
+  void CalculateRequiredSpace();
+
   // Gets the current progress status.
   Progress GetProgress() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -176,8 +188,13 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
 
   void RemoveObserver(Observer* const observer) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(observers_.HasObserver(observer));
+    DCHECK(HasObserver(observer));
     observers_.RemoveObserver(observer);
+  }
+
+  bool HasObserver(Observer* const observer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return observers_.HasObserver(observer);
   }
 
   // Processes a syncing status event. Returns true if the event was useful.
@@ -289,25 +306,36 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   // Invoked on retrieval of free space at the beginning of the setup process.
   void OnFreeSpaceRetrieved1(int64_t free_space);
 
+  // Invoked once Docs offline has been enabled.
+  void OnDocsOfflineEnabled(drive::FileError error);
+
   // Periodically check for free space.
   void CheckFreeSpace();
 
   // Invoked on retrieval of free space during the periodic check.
   void OnFreeSpaceRetrieved2(int64_t free_space);
 
-  // Creates the Search Query.
-  void StartSearchQuery();
+  // Starts listing the items located in the given directory.
+  void ListItems(Id dir_id, Path dir_path);
 
-  // Gets the next batch of items when listing files.
-  void GetNextPage();
+  // Gets the next batch of items when listing items.
+  using Query = mojo::Remote<mojom::SearchQuery>;
+  void GetNextPage(Id dir_id, Path dir_path, Query query);
 
   // Once the free disk space has been retrieved, this method will be invoked
   // after every batch of searches to Drive complete. This is required as the
   // user may already have files pinned (which the `GetQuotaUsage` will include
   // in it's calculation).
-  void OnSearchResult(
-      drive::FileError error,
-      absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> items);
+  void OnSearchResult(Id dir_id,
+                      Path dir_path,
+                      Query query,
+                      drive::FileError error,
+                      base::span<const drivefs::mojom::QueryItemPtr> items);
+
+  // Handles one query item retrieved by a search query.
+  void HandleQueryItem(Id dir_id,
+                       const Path& dir_path,
+                       const drivefs::mojom::QueryItem& item);
 
   // When the pinning has finished, this ensures appropriate cleanup happens on
   // the underlying search query mojo connection.
@@ -379,10 +407,14 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   Progress progress_ GUARDED_BY_CONTEXT(sequence_checker_);
   base::ObserverList<Observer> observers_ GUARDED_BY_CONTEXT(sequence_checker_);
 
-  mojo::Remote<mojom::SearchQuery> search_query_
-      GUARDED_BY_CONTEXT(sequence_checker_);
   base::ElapsedTimer timer_ GUARDED_BY_CONTEXT(sequence_checker_);
   base::ElapsedTimer progress_timer_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Stable IDs of items that got listed during the kListingFiles stage. The
+  // mapped ID is the stable ID of the parent directory in which the given item
+  // was first encountered.
+  using ListedItems = std::unordered_map<Id, Id>;
+  ListedItems listed_items_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   // Stable IDs of the files to pin, and which are not already marked as pinned.
   std::unordered_set<Id> files_to_pin_ GUARDED_BY_CONTEXT(sequence_checker_);
@@ -420,6 +452,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) PinManager
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, PinSomeFiles);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, CheckStalledFiles);
   FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, NotifyProgress);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, OnSearchResult);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, HandleQueryItem);
+  FRIEND_TEST_ALL_PREFIXES(DriveFsPinManagerTest, DropQuery);
 };
 
 COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS)

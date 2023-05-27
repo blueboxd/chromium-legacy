@@ -54,13 +54,6 @@ const crosapi::mojom::DefaultPathsPtr& BrowserParamsProxy::DefaultPaths()
   return BrowserInitParams::Get()->default_paths;
 }
 
-const absl::optional<std::string>& BrowserParamsProxy::DeviceAccountGaiaId()
-    const {
-  if (IsLaunchedWithPostLoginParams())
-    return BrowserPostLoginParams::Get()->device_account_gaia_id;
-  return BrowserInitParams::Get()->device_account_gaia_id;
-}
-
 crosapi::mojom::MetricsReportingManaged BrowserParamsProxy::AshMetricsManaged()
     const {
   return BrowserInitParams::Get()->ash_metrics_managed;
@@ -290,6 +283,19 @@ const crosapi::mojom::StandaloneBrowserAppServiceBlockList*
 BrowserParamsProxy::StandaloneBrowserAppServiceBlockList() const {
   return BrowserInitParams::Get()
       ->standalone_browser_app_service_blocklist.get();
+}
+
+bool BrowserParamsProxy::EnableCpuMappableNativeGpuMemoryBuffers() const {
+  return BrowserInitParams::Get()
+      ->enable_cpu_mappable_native_gpu_memory_buffers;
+}
+
+bool BrowserParamsProxy::OopVideoDecodingEnabled() const {
+  return BrowserInitParams::Get()->oop_video_decoding_enabled;
+}
+
+bool BrowserParamsProxy::IsUploadOfficeToCloudEnabled() const {
+  return BrowserInitParams::Get()->is_upload_office_to_cloud_enabled;
 }
 
 }  // namespace chromeos

@@ -686,6 +686,7 @@ config("compiler") {
         "/lldltocache:" +
             rebase_path("$root_out_dir/thinlto-cache", root_build_dir),
         "/lldltocachepolicy:$cache_policy",
+        "-mllvm:-disable-auto-upgrade-debug-info",
       ]
     } else {
       ldflags += [ "-flto=thin" ]
@@ -726,6 +727,14 @@ config("compiler") {
       }
 
       ldflags += [ "-Wl,-mllvm,-import-instr-limit=$import_instr_limit" ]
+
+      if (!is_chromeos) {
+        # TODO(https://crbug.com/972449): turn on for ChromeOS when that
+        # toolchain has this flag.
+        # We only use one version of LLVM within a build so there's no need to
+        # upgrade debug info, which can be expensive since it runs the verifier.
+        ldflags += [ "-Wl,-mllvm,-disable-auto-upgrade-debug-info" ]
+      }
     }
 
     # TODO(https://crbug.com/1211155): investigate why this isn't effective on
@@ -927,7 +936,7 @@ config("thinlto_optimize_default") {
       ldflags = [ "-Wl,--lto-O" + lto_opt_level ]
     }
 
-    rustflags = [ "-Clto=thin" ]
+    rustflags = [ "-Clinker-plugin-lto=yes" ]
   }
 }
 
@@ -953,7 +962,7 @@ config("thinlto_optimize_max") {
       ldflags = [ "-Wl,--lto-O" + lto_opt_level ]
     }
 
-    rustflags = [ "-Clto=thin" ]
+    rustflags = [ "-Clinker-plugin-lto=yes" ]
   }
 }
 
@@ -1016,6 +1025,10 @@ config("compiler_cpu_abi") {
           !(is_chromeos_lacros && is_chromeos_device)) {
         cflags += [ "--target=aarch64-linux-gnu" ]
         ldflags += [ "--target=aarch64-linux-gnu" ]
+      }
+      if (is_high_end_android) {
+        cflags += [ "-march=armv8-a+lse" ]
+        ldflags += [ "-march=armv8-a+lse" ]
       }
     } else if (current_cpu == "mipsel" && !is_nacl) {
       ldflags += [ "-Wl,--hash-style=sysv" ]
@@ -1749,14 +1762,14 @@ config("chromium_code") {
       defines += [ "_FORTIFY_SOURCE=2" ]
     }
 
-    if (is_mac) {
-      cflags_objc = [ "-Wobjc-missing-property-synthesis" ]
-      cflags_objcc = [ "-Wobjc-missing-property-synthesis" ]
+    if (is_apple) {
+      cflags_objc = [ "-Wimplicit-retain-self" ]
+      cflags_objcc = [ "-Wimplicit-retain-self" ]
     }
 
-    if (is_ios) {
-      cflags_objc = [ "-Wimplicit-retain-self" ]
-      cflags_objcc = cflags_objc
+    if (is_mac) {
+      cflags_objc += [ "-Wobjc-missing-property-synthesis" ]
+      cflags_objcc += [ "-Wobjc-missing-property-synthesis" ]
     }
   }
 
@@ -2397,6 +2410,7 @@ config("win_pdbaltpath") {
 
 # Full symbols.
 config("symbols") {
+  rustflags = []
   if (is_win) {
     if (is_clang) {
       cflags = [
@@ -2435,11 +2449,13 @@ config("symbols") {
     if (!is_nacl && current_os != "aix") {
       if (use_dwarf5) {
         cflags += [ "-gdwarf-5" ]
+        rustflags += [ "-Zdwarf-version=5" ]
       } else if (!is_apple) {
         # Recent clang versions default to DWARF5 on Linux, and Android is about
         # to switch. TODO: Adopt that in controlled way.
         # Apple platforms still default to 4, so the flag is not needed there.
         cflags += [ "-gdwarf-4" ]
+        rustflags += [ "-Zdwarf-version=4" ]
       }
     }
 
@@ -2530,7 +2546,7 @@ config("symbols") {
       ]
     }
   }
-  rustflags = [ "-g" ]
+  rustflags += [ "-g" ]
 }
 
 # Minimal symbols.

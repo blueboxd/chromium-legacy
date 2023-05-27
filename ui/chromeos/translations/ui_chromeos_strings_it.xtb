@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Certificato di autenticazione rifiutato localmente</translation>
 <translation id="1775381402323441512">Info video</translation>
 <translation id="180035236176489073">Per poter accedere a questi file devi essere online.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{L'estensione con l'ID}other{Le estensioni con gli ID}}</translation>
 <translation id="1807938677607439181">Tutti i file</translation>
 <translation id="1810764548349082891">Anteprima non disponibile</translation>
 <translation id="1812302367230252929">Traslitterazione amarico</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Voce corrispondenza nome alternativo del soggetto non valida</translation>
 <translation id="1838709767668011582">Sito Google</translation>
 <translation id="1853795129690976061">Questa cartella è condivisa con Linux</translation>
-<translation id="1859422890169495746">Questo Chromebook</translation>
 <translation id="1864756863218646478">Impossibile trovare il file.</translation>
 <translation id="1884013283844450420">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, connetti</translation>
 <translation id="1920670151694390848">Traslitterazione malayalam</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Pianeta</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> è stato espulso.</translation>
 <translation id="2307462900900812319">Configura rete</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Impossibile trovare un'estensione con ID <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Contatta l'amministratore.}other{Impossibile trovare estensioni con ID <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Contatta l'amministratore.}}</translation>
 <translation id="2325650632570794183">Questo tipo di file non è supportato. Visita il Chrome Web Store per trovare un'applicazione in grado di aprire questo tipo di file.</translation>
 <translation id="2326539130272988168">Bulgaro</translation>
 <translation id="2337715497728194187">Condividi con Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Non protetta</translation>
 <translation id="3291218047831493686">Connettiti a questa rete per modificare l'impostazione del blocco SIM</translation>
 <translation id="3293023191599135697">Le reti WEP non sono supportate</translation>
+<translation id="3295006446256079333">Questo volume</translation>
 <translation id="3295357220137379386">Il dispositivo è occupato</translation>
 <translation id="3296763833017966289">Georgiano</translation>
 <translation id="3307875152560779385">Ucraino</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">I Chromebase</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="485316830061041779">Tedesco</translation>
+<translation id="4862885579661885411">Impostazioni file</translation>
 <translation id="4867079195717347957">Fai clic per ordinare la colonna in ordine decrescente.</translation>
 <translation id="4867297348137739678">Settimana scorsa</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byte</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347">Copia di <ph name="NUMBER_OF_ITEMS" /> elementi...</translation>
 <translation id="7375951387215729722">Elenco di file ordinato per <ph name="COLUMN_NAME" /> in ordine decrescente.</translation>
 <translation id="7377161162143020057">La copia di questo file è bloccata dal criterio dell'amministratore</translation>
-<translation id="7392500733467492920">non possono essere trovate. Contatta l'amministratore.</translation>
 <translation id="7402503521691663770">Dispositivi ChromeOS Flex</translation>
 <translation id="7408870451288633753">Ceco</translation>
 <translation id="7417453074306512035">Tastiera Etiope</translation>

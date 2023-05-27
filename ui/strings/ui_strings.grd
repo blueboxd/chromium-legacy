@@ -357,6 +357,36 @@ need to be translated for each locale.-->
                {YEARS, plural, =1 {1 year ago} other {# years ago}}
       </message>
 
+      <message name="IDS_TIME_TITLE_CASE_ELAPSED_LONG_SECS"
+               desc="Relative time in browsing history or file list, in title case. [ICU Syntax]">
+               {SECONDS, plural, =1 {1 Second Ago} other {# Seconds Ago}}
+      </message>
+
+      <message name="IDS_TIME_TITLE_CASE_ELAPSED_LONG_MINS"
+               desc="Relative time in browsing history or file list, in title case. [ICU Syntax]">
+               {SECONDS, plural, =1 {1 Minute Ago} other {# Minutes Ago}}
+      </message>
+
+      <message name="IDS_TIME_TITLE_CASE_ELAPSED_HOURS"
+               desc="Relative time in browsing history or file list, in title case. [ICU Syntax]">
+               {HOURS, plural, =1 {1 Hour Ago} other {# Hours Ago}}
+      </message>
+
+      <message name="IDS_TIME_TITLE_CASE_ELAPSED_DAYS"
+               desc="Relative time in browsing history or file list, in title case. [ICU Syntax]">
+               {DAYS, plural, =1 {1 Day Ago} other {# Days Ago}}
+      </message>
+
+      <message name="IDS_TIME_TITLE_CASE_ELAPSED_MONTHS"
+               desc="Relative time in browsing history or file list, in title case. [ICU Syntax]">
+               {MONTHS, plural, =1 {1 Month Ago} other {# Months Ago}}
+      </message>
+
+      <message name="IDS_TIME_TITLE_CASE_ELAPSED_YEARS"
+               desc="Relative time in browsing history or file list, in title case. [ICU Syntax]">
+               {YEARS, plural, =1 {1 Year Ago} other {# Years Ago}}
+      </message>
+
       <message name="IDS_PAST_TIME_TODAY" desc="Relative day today">
         Today
       </message>
@@ -803,7 +833,7 @@ need to be translated for each locale.-->
         +<ph name="NUMBER">$1<ex>3</ex></ph> more
       </message>
       <message name="IDS_MESSAGE_CENTER_NOTIFICATION_PROGRESS_PERCENTAGE" desc="The summary text in a notification that is shown with progress bar.">
-        <ph name="NUMBER">$1<ex>75</ex></ph> %
+        <ph name="NUMBER">$1<ex>75</ex></ph>%
       </message>
       <message name="IDS_MESSAGE_CENTER_NOTIFICATION_CHROMEOS_SYSTEM" desc="The label to describe the notification comes from ChromeOS system.">
         <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>ChromeOS</ex></ph> system
@@ -977,11 +1007,11 @@ need to be translated for each locale.-->
       </message>
 
       <!-- Sharing content types -->
-      <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT" desc="The label used to describe that the content type being shared is a text.">
-        Text
+      <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_TEXT" desc="This will be used as a placeholder in the message 'Can't share [content type].' so it should be lower-case unless this is a language where nouns are upper case." meaning="text as placeholder">
+        text
       </message>
-      <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_NUMBER" desc="The label used to describe that the content type being shared is a number.">
-        Number
+      <message name="IDS_BROWSER_SHARING_CONTENT_TYPE_NUMBER" desc="This references a phone number and will be used as a placeholder in the message 'Can't share [content type].' so it should be lower-case unless this is a language where nouns are upper case." meaning="phone number as placeholder">
+        number
       </message>
 
       <!-- Sharing dialog error messages -->

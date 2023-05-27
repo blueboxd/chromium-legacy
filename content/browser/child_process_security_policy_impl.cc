@@ -33,6 +33,7 @@
 #include "content/browser/url_info.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/common/content_navigation_policy.h"
+#include "content/common/features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_or_resource_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -897,6 +898,14 @@ bool ChildProcessSecurityPolicyImpl::IsPseudoScheme(
   return base::Contains(pseudo_schemes_, scheme);
 }
 
+void ChildProcessSecurityPolicyImpl::ClearRegisteredSchemeForTesting(
+    const std::string& scheme) {
+  base::AutoLock lock(lock_);
+  schemes_okay_to_request_in_any_process_.erase(scheme);
+  schemes_okay_to_commit_in_any_process_.erase(scheme);
+  pseudo_schemes_.erase(scheme);
+}
+
 void ChildProcessSecurityPolicyImpl::GrantCommitURL(int child_id,
                                                     const GURL& url) {
   // Can't grant the capability to commit invalid URLs.
@@ -1317,19 +1326,14 @@ bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadRequestBody(
-    SiteInstance* site_instance,
+    RenderProcessHost* process,
     const scoped_refptr<network::ResourceRequestBody>& body) {
-  DCHECK(site_instance);
+  CHECK(process);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  int child_id = site_instance->GetProcess()->GetID();
-
-  StoragePartition* storage_partition =
-      site_instance->GetBrowserContext()->GetStoragePartition(site_instance);
-  const storage::FileSystemContext* file_system_context =
-      storage_partition->GetFileSystemContext();
-
-  return CanReadRequestBody(child_id, file_system_context, body);
+  return CanReadRequestBody(
+      process->GetID(), process->GetStoragePartition()->GetFileSystemContext(),
+      body);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCreateReadWriteFile(
@@ -1843,19 +1847,22 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForMaybeOpaqueOrigin(
         } else {
           // Citadel-style enforcement - an unlocked process should not be
           // able to access data from origins that require a lock.
-#if !BUILDFLAG(IS_ANDROID)
-          // TODO(lukasza): https://crbug.com/566091: Once remote NTP is
-          // capable of embedding OOPIFs, start enforcing citadel-style checks
-          // on desktop platforms.
-          // TODO(lukasza): https://crbug.com/614463: Enforce isolation within
-          // GuestView (once OOPIFs are supported within GuestView).
-          return true;
-#else
-          // TODO(acolwell, lukasza): https://crbug.com/764958: Make it
-          // possible to call ShouldLockProcessToSite (and GetSiteForURL?) on
-          // the IO thread.
-          if (BrowserThread::CurrentlyOn(BrowserThread::IO))
+
+          // Allow the corresponding base::Feature to turn off enforcement.
+          if (!base::FeatureList::IsEnabled(kSiteIsolationCitadelEnforcement)) {
             return true;
+          }
+
+          // Skip these checks on the IO thread, since we can't use
+          // RenderProcessHost or ShouldLockProcessToSite() there.
+          //
+          // TODO(crbug.com/764958): Remove this once this is reachable only on
+          // the UI thread.
+          if (!ShouldRestrictCanAccessDataForOriginToUIThread() &&
+              BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+            return true;
+          }
+
           DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
           // TODO(lukasza): Consider making the checks below IO-thread-friendly,
@@ -1884,8 +1891,11 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForMaybeOpaqueOrigin(
           // origins that do not require a locked process.
           if (!site_info.ShouldLockProcessToSite(isolation_context))
             return true;
+
           failure_reason += " citadel_enforcement ";
-#endif
+          if (url_is_precursor_of_opaque_origin) {
+            failure_reason += "for_precursor ";
+          }
         }
       }
     }

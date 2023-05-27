@@ -125,6 +125,7 @@ const int kDefaultSize = 20;
 HTMLInputElement::HTMLInputElement(Document& document,
                                    const CreateElementFlags flags)
     : TextControlElement(html_names::kInputTag, document),
+      LazyActiveScriptWrappable<HTMLInputElement>({}),
       size_(kDefaultSize),
       has_dirty_value_(false),
       is_checked_(false),
@@ -592,8 +593,6 @@ void HTMLInputElement::UpdateType() {
       formOwner() && isConnected())
     formOwner()->InvalidateDefaultButtonStyle();
   NotifyFormStateChanged();
-
-  CheckAndPossiblyClosePopoverStack();
 }
 
 void HTMLInputElement::SubtreeHasChanged() {
@@ -935,9 +934,8 @@ bool HTMLInputElement::LayoutObjectIsNeeded(const DisplayStyle& style) const {
          TextControlElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style,
-                                                   LegacyLayout legacy) {
-  return input_type_view_->CreateLayoutObject(style, legacy);
+LayoutObject* HTMLInputElement::CreateLayoutObject(const ComputedStyle& style) {
+  return input_type_view_->CreateLayoutObject(style);
 }
 
 void HTMLInputElement::AttachLayoutTree(AttachContext& context) {

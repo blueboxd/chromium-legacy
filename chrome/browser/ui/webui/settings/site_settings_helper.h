@@ -27,10 +27,6 @@ namespace content {
 class WebUI;
 }
 
-namespace extensions {
-class ExtensionRegistry;
-}
-
 namespace permissions {
 class ObjectPermissionContextBase;
 }
@@ -74,7 +70,6 @@ constexpr char kFileReadGrants[] = "fileReadGrants";
 constexpr char kFileWriteGrants[] = "fileWriteGrants";
 constexpr char kNotificationInfoString[] = "notificationInfoString";
 constexpr char kPermissions[] = "permissions";
-constexpr char kExtensionName[] = "extensionName";
 constexpr char kExtensionNameWithId[] = "extensionNameWithId";
 
 enum class SiteSettingSource {
@@ -135,13 +130,11 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
                               base::Value::List* exceptions);
 
 // Fills in |exceptions| with Values for the given |type| from |profile|.
-void GetExceptionsForContentType(
-    ContentSettingsType type,
-    Profile* profile,
-    const extensions::ExtensionRegistry* extension_registry,
-    content::WebUI* web_ui,
-    bool incognito,
-    base::Value::List* exceptions);
+void GetExceptionsForContentType(ContentSettingsType type,
+                                 Profile* profile,
+                                 content::WebUI* web_ui,
+                                 bool incognito,
+                                 base::Value::List* exceptions);
 
 // Fills in object saying what the current settings is for the category (such as
 // enabled or blocked) and the source of that setting (such preference, policy,
@@ -166,19 +159,10 @@ void GetFileSystemGrantedEntries(std::vector<base::Value::Dict>* exceptions,
                                  Profile* profile,
                                  bool incognito);
 
-// Returns exceptions constructed from the policy-set allowed URLs
-// for the content settings |type| mic or camera.
-void GetPolicyAllowedUrls(
-    ContentSettingsType type,
-    std::vector<base::Value::Dict>* exceptions,
-    const extensions::ExtensionRegistry* extension_registry,
-    content::WebUI* web_ui,
-    bool incognito);
-
 // Returns all site permission exceptions for a given content type
-std::vector<ContentSettingPatternSource> GetSiteExceptionsForContentType(
-    HostContentSettingsMap* map,
-    ContentSettingsType content_type);
+std::vector<ContentSettingPatternSource>
+GetSingleOriginExceptionsForContentType(HostContentSettingsMap* map,
+                                        ContentSettingsType content_type);
 
 // This struct facilitates lookup of a chooser context factory function by name
 // for a given content settings type and is declared early so that it can used
@@ -215,14 +199,19 @@ base::Value::List GetChooserExceptionListFromProfile(
     Profile* profile,
     const ChooserTypeNameEntry& chooser_type);
 
-// Returns the short name of a web app in case of an Isolated Web App.
-absl::optional<std::string> GetIsolatedWebAppName(Profile* profile,
-                                                  GURL origin);
-
 // Returns the short name of a browser extension, or nullopt if `origin` is not
 // an extension URL.
 absl::optional<std::string> GetExtensionDisplayName(Profile* profile,
                                                     GURL origin);
+
+// Takes |url| and converts it into an individual origin string or retrieves
+// name of the extension or Isolated Web App it belongs to. If |hostname_only|
+// is true, returns |url|'s hostname for HTTP/HTTPS pages or unknown
+// extension/IWA URLs, otherwise an origin string will be returned that
+// includes the scheme if it's non-cryptographic.
+std::string GetDisplayNameForGURL(Profile* profile,
+                                  const GURL& url,
+                                  bool hostname_only);
 
 }  // namespace site_settings
 

@@ -20,9 +20,7 @@
 #include "content/public/common/user_agent.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
-#include "headless/lib/browser/headless_devtools_agent_host_client.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
-#include "headless/public/version.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 
 namespace headless {
@@ -132,6 +130,11 @@ std::string HeadlessBrowser::GetProductNameAndVersion() {
 /// static
 blink::UserAgentMetadata HeadlessBrowser::GetUserAgentMetadata() {
   auto metadata = embedder_support::GetUserAgentMetadata(nullptr);
+  // Skip override brand version information if components' API returns a blank
+  // UserAgentMetadata.
+  if (metadata == blink::UserAgentMetadata()) {
+    return metadata;
+  }
   std::string significant_version = version_info::GetMajorVersionNumber();
   constexpr bool kEnableUpdatedGreaseByPolicy = true;
 
@@ -302,16 +305,6 @@ HeadlessBrowserContext* HeadlessBrowserImpl::GetBrowserContextForId(
   return find_it->second.get();
 }
 
-HeadlessDevToolsTarget* HeadlessBrowserImpl::GetDevToolsTarget() {
-  return agent_host_ ? this : nullptr;
-}
-
-std::unique_ptr<HeadlessDevToolsChannel>
-HeadlessBrowserImpl::CreateDevToolsChannel() {
-  DCHECK(agent_host_);
-  return std::make_unique<HeadlessDevToolsAgentHostClient>(agent_host_);
-}
-
 #if defined(HEADLESS_USE_PREFS)
 PrefService* HeadlessBrowserImpl::GetPrefs() {
   return browser_main_parts_ ? browser_main_parts_->GetPrefs() : nullptr;
@@ -324,18 +317,5 @@ policy::PolicyService* HeadlessBrowserImpl::GetPolicyService() {
                              : nullptr;
 }
 #endif
-
-void HeadlessBrowserImpl::AttachClient(HeadlessDevToolsClient* client) {
-  client->AttachToChannel(CreateDevToolsChannel());
-}
-
-void HeadlessBrowserImpl::DetachClient(HeadlessDevToolsClient* client) {
-  client->DetachFromChannel();
-}
-
-bool HeadlessBrowserImpl::IsAttached() {
-  DCHECK(agent_host_);
-  return agent_host_->IsAttached();
-}
 
 }  // namespace headless

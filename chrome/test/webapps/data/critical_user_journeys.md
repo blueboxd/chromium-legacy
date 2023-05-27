@@ -121,18 +121,31 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | M | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | launch_from_platform_shortcut | check_window_created |
 | WMLC | install_or_shortcut_windowed | launch | check_window_display_standalone |
 | WMLC | install_or_shortcut_tabbed | set_open_in_window | launch | check_window_created |
-| WLC | install_or_shortcut_windowed | set_open_in_tab | launch_from_shortcut_or_list | check_tab_created |
+| WML | install_or_shortcut_windowed | set_open_in_tab | launch_from_chrome_apps | check_tab_not_created | check_app_loaded_in_tab |
+| C | install_or_shortcut_windowed | set_open_in_tab | launch_from_chrome_apps | check_tab_created(One) | check_app_loaded_in_tab |
+| WLC | install_or_shortcut_windowed | set_open_in_tab | launch_from_platform_shortcut | check_tab_created(One) | check_app_loaded_in_tab |
 | M | install_or_shortcut_by_user_windowed | set_open_in_tab | launch_from_platform_shortcut | check_tab_not_created |
-| M | install_or_shortcut_by_user_windowed | close_pwa | set_open_in_tab | launch_from_platform_shortcut | check_tab_created |
-| M | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | set_open_in_tab | launch_from_platform_shortcut | check_tab_created |
-| M | install_or_shortcut_windowed | set_open_in_tab | launch_from_chrome_apps | check_tab_created |
-| WMLC | install_or_shortcut_tabbed(NotPromotable) | launch_from_shortcut_or_list(NotPromotable) | check_tab_created |
+| M | install_or_shortcut_by_user_windowed | close_pwa | set_open_in_tab | launch_from_platform_shortcut | check_tab_created(One) | check_app_loaded_in_tab |
+| M | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | set_open_in_tab | launch_from_platform_shortcut | check_tab_created(One) | check_app_loaded_in_tab |
+| WMLC | install_or_shortcut_tabbed(NotPromotable) | launch_from_platform_shortcut(NotPromotable) | check_tab_created(One) | check_app_loaded_in_tab(NotPromotable) |
+| WML | install_or_shortcut_tabbed(NotPromotable) | launch_from_chrome_apps(NotPromotable) | check_tab_not_created | check_app_loaded_in_tab(NotPromotable) |
+| C | install_or_shortcut_tabbed(NotPromotable) | launch_from_chrome_apps(NotPromotable) | check_tab_created(One) | check_app_loaded_in_tab(NotPromotable) |
 | WMLC | install_or_shortcut_windowed(MinimalUi) | launch(MinimalUi) | check_window_display_minimal |
 | WMLC | install_or_shortcut_windowed(Tabbed) | maybe_close_pwa | launch(Tabbed) | check_window_display_tabbed |
 | WMLC | install_or_shortcut_windowed(NotPromotable) | launch_not_from_platform_shortcut(NotPromotable) | check_window_created |
 | WLC | install_or_shortcut_windowed(NotPromotable) | launch_from_platform_shortcut(NotPromotable) | check_window_created |
 | M | install_or_shortcut_by_user_windowed(NotPromotable) | launch_from_platform_shortcut(NotPromotable) | check_window_not_created |
 | M | install_policy_app(NotPromotable, ShortcutOptions::All, Windowed, WebApp) | launch_from_platform_shortcut(NotPromotable) | check_window_created |
+
+## Multi profile launches on Mac
+| #Platforms | Test -> | | | | | | | | | | | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| M | install_or_shortcut_by_user_windowed | switch_active_profile(Profile2) | install_or_shortcut_by_user_windowed | quit_app_shim | launch_from_platform_shortcut | check_pwa_window_created_in_profile(Standalone, One, Default) | check_pwa_window_created_in_profile(Standalone, One, Profile2) |
+| M | install_or_shortcut_by_user_windowed | switch_active_profile(Profile2) | install_or_shortcut_by_user_windowed | close_pwa | quit_app_shim | launch_from_platform_shortcut | check_pwa_window_created_in_profile(Standalone, One, Default) |
+| M | install_or_shortcut_by_user_windowed | close_pwa | switch_active_profile(Profile2) | install_or_shortcut_by_user_windowed | quit_app_shim | launch_from_platform_shortcut | check_pwa_window_created_in_profile(Standalone, One, Profile2) |
+| M | install_or_shortcut_by_user_windowed | switch_active_profile(Profile2) | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | quit_app_shim | launch_from_platform_shortcut | check_pwa_window_created_in_profile(Standalone, One, Default) |
+| M | install_or_shortcut_by_user_windowed | switch_active_profile(Profile2) | install_or_shortcut_by_user_tabbed | quit_app_shim | launch_from_platform_shortcut | check_pwa_window_created_in_profile(Standalone, One, Default) |
+| M | install_or_shortcut_by_user_tabbed | switch_active_profile(Profile2) | install_or_shortcut_by_user_windowed | quit_app_shim | launch_from_platform_shortcut | check_pwa_window_created_in_profile(Standalone, One, Profile2) |
 
 # Misc UX Flows
 | #Platforms | Test -> | | | | | | | | | | | | | | | | |
@@ -141,14 +154,14 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | WMLC | install_or_shortcut | delete_profile | check_app_list_empty |
 | WMLC | install_or_shortcut | delete_profile | check_app_not_in_list |
 | WMLC | install_or_shortcut_with_shortcut | delete_profile | check_platform_shortcut_not_exists |
-| WMLC | install_or_shortcut_tabbed_with_shortcut | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_tab_created |
+| WMLC | install_or_shortcut_tabbed_with_shortcut | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_tab_created(One) | check_app_loaded_in_tab |
 | WLC | install_or_shortcut_windowed_with_shortcut | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_window_created |
 | M | install_or_shortcut_by_user_windowed_with_shortcut | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_window_not_created |
 | M |  install_policy_app(Standalone, WithShortcut, Windowed, WebApp) | delete_platform_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_window_created |
-| WMLC | install_tabbed_no_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_tab_created |
+| WMLC | install_tabbed_no_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_tab_created(One) | check_app_loaded_in_tab |
 | WMLC | install_windowed_no_shortcut | create_shortcuts_from_list | launch_from_platform_shortcut | check_window_created |
-| WMLC | install_or_shortcut_by_user_windowed | open_in_chrome | check_tab_created |
-| WMLC | install_or_shortcut_by_user_windowed | navigate_pwa(Standalone, MinimalUi) | open_in_chrome | check_tab_created |
+| WMLC | install_or_shortcut_by_user_windowed | open_in_chrome | check_tab_created(One) | check_app_loaded_in_tab |
+| WMLC | install_or_shortcut_by_user_windowed | navigate_pwa(Standalone, MinimalUi) | open_in_chrome | check_tab_created(One) |
 | WML | install_or_shortcut_windowed | open_app_settings | check_browser_navigation_is_app_settings |
 
 ## Sync-initiated install tests
@@ -167,10 +180,15 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | WML | install_or_shortcut_by_user_windowed(NotPromotable) | switch_profile_clients | install_locally(NotPromotable) | navigate_browser(NotPromotable) | check_install_icon_not_shown |
 | WML | install_or_shortcut_by_user_windowed(NotPromotable) | switch_profile_clients | install_locally(NotPromotable) | navigate_browser(NotPromotable) | check_launch_icon_shown |
 | WML | install_or_shortcut_by_user(NotPromotable) | switch_profile_clients | install_locally(NotPromotable) | check_platform_shortcut_and_icon(NotPromotable) |
-| WML | install_or_shortcut_by_user_windowed | switch_profile_clients | install_locally | launch | check_window_created |
-| WMLC | install_or_shortcut_by_user_tabbed | switch_profile_clients | launch_from_shortcut_or_list | check_tab_created |
-| WML | install_or_shortcut_by_user_tabbed | switch_profile_clients | install_locally | launch_from_shortcut_or_list | check_tab_created |
-| WML | install_or_shortcut_by_user_windowed | switch_profile_clients | launch_from_shortcut_or_list | check_tab_created |
+| WML | install_or_shortcut_by_user_windowed | switch_profile_clients | install_locally | launch_not_from_platform_shortcut | check_window_created |
+| WL | install_or_shortcut_by_user_windowed | switch_profile_clients | install_locally | launch_from_platform_shortcut | check_window_created |
+| M | install_or_shortcut_by_user_windowed | switch_profile_clients | install_locally | launch_from_platform_shortcut | check_window_not_created |
+| M | install_or_shortcut_by_user_windowed | close_pwa | switch_profile_clients | install_locally | launch_from_platform_shortcut | check_window_created |
+| WML | install_or_shortcut_by_user_tabbed | switch_profile_clients | launch_from_chrome_apps | check_tab_not_created | check_app_loaded_in_tab |
+| C | install_or_shortcut_by_user_tabbed | switch_profile_clients | launch_from_chrome_apps | check_tab_created(One) | check_app_loaded_in_tab |
+| WML | install_or_shortcut_by_user_tabbed | switch_profile_clients | install_locally | launch_from_chrome_apps | check_tab_not_created | check_app_loaded_in_tab |
+| WML | install_or_shortcut_by_user_tabbed | switch_profile_clients | install_locally | launch_from_platform_shortcut | check_tab_created(One) | check_app_loaded_in_tab |
+| WML | install_or_shortcut_by_user_windowed | switch_profile_clients | launch_from_chrome_apps | check_tab_not_created | check_app_loaded_in_tab |
 | WMLC | install_or_shortcut_by_user | switch_profile_clients | uninstall_from_list | check_app_not_in_list |
 | WMLC | install_or_shortcut_by_user | switch_profile_clients | uninstall_from_list | switch_profile_clients(Client1) | check_app_not_in_list |
 | WML | install_or_shortcut_by_user | switch_profile_clients | check_app_in_list_not_locally_installed |
@@ -208,7 +226,9 @@ The tables are parsed in this file as critical user journeys. Lines are consider
 | WMLC | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | install_or_shortcut_by_user_windowed | check_app_in_list_windowed |
 | WMLC | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | install_or_shortcut_by_user_windowed | check_platform_shortcut_and_icon |
 | WMLC | install_policy_app(Standalone, ShortcutOptions::All, Browser, WebApp) | install_or_shortcut_by_user_windowed | check_window_created |
-| WMLC | install_or_shortcut_by_user_tabbed | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | launch_from_shortcut_or_list | check_tab_created |
+| WMLC | install_or_shortcut_by_user_tabbed | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | launch_from_platform_shortcut | check_tab_created(One) | check_app_loaded_in_tab |
+| WML | install_or_shortcut_by_user_tabbed | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | launch_from_chrome_apps | check_tab_not_created | check_app_loaded_in_tab |
+| C | install_or_shortcut_by_user_tabbed | install_policy_app(Standalone, ShortcutOptions::All, Windowed, WebApp) | launch_from_chrome_apps | check_tab_created(One) | check_app_loaded_in_tab |
 | WMLC | install_or_shortcut_by_user_tabbed | install_policy_app(Standalone, ShortcutOptions::All, WindowOptions::All, WebApp) | uninstall_policy_app | check_app_in_list_tabbed |
 | WMLC | install_or_shortcut_by_user_tabbed | install_policy_app(Standalone, ShortcutOptions::All, WindowOptions::All, WebApp) | uninstall_policy_app | check_platform_shortcut_and_icon |
 | WMLC | install_or_shortcut_by_user_windowed | install_policy_app(Standalone, ShortcutOptions::All, WindowOptions::All, WebApp) | uninstall_policy_app | check_app_in_list_windowed |
@@ -319,24 +339,66 @@ These mac specializations are required due to launching from platform shortcut a
 | #Platforms | Test -> | | | | | | | | | | | | | | | | |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | WMLC | install_or_shortcut(FileHandler) | check_site_handles_file(FileHandler, Foo) | check_site_handles_file(FileHandler, Bar) |
-| # Single open & multiple open behavior |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleFooFiles, Allow, AskAgain) |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleFooFiles, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, MultipleFooFiles) |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneBarFile, Allow, AskAgain) |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneBarFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneBarFile) |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) | check_pwa_window_created(FileHandler, Two) | check_files_loaded_in_site(FileHandler, MultipleBarFiles) |
-| # Dialog options |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, Remember) | launch_file_expect_no_dialog(FileHandler, OneFooFile) | check_pwa_window_created(FileHandler, One) |
+
+### Launching a single window or tab vs multiple
+
+The test behavior can change whether the site is configured to open as a window or open as a tab. To achieve this, we use three actions to enter those states:
+- `install_or_shortcut_windowed`
+- `install_or_shortcut_tabbed`
+- `install_or_shortcut_windowed` + `set_open_in_tab`
+
+| #Platforms | Test -> | | | | | | | | | | | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| # Single file opens should open just one window or tab. |
+| WMLC | install_or_shortcut_windowed(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| WMLC | install_or_shortcut_tabbed(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_tab_created(One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| WMLC | install_or_shortcut_windowed(FileHandler) | set_open_in_tab(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_tab_created(One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| WMLC | install_or_shortcut_windowed(FileHandler) | launch_file_expect_dialog(FileHandler, OneBarFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneBarFile) |
+| WMLC | install_or_shortcut_tabbed(FileHandler) | launch_file_expect_dialog(FileHandler, OneBarFile, Allow, AskAgain) | check_tab_created(One) | check_files_loaded_in_site(FileHandler, OneBarFile) |
+| WMLC | install_or_shortcut_windowed(FileHandler) | set_open_in_tab(FileHandler) | launch_file_expect_dialog(FileHandler, OneBarFile, Allow, AskAgain) | check_tab_created(One) | check_files_loaded_in_site(FileHandler, OneBarFile) |
+| # Opening multiple Foo files only opens one window or tab. |
+| WMLC | install_or_shortcut_windowed(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleFooFiles, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, MultipleFooFiles) |
+| WMLC | install_or_shortcut_tabbed(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleFooFiles, Allow, AskAgain) | check_tab_created(One) | check_files_loaded_in_site(FileHandler, MultipleFooFiles) |
+| WMLC | install_or_shortcut_windowed(FileHandler) | set_open_in_tab(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleFooFiles, Allow, AskAgain) | check_tab_created(One) | check_files_loaded_in_site(FileHandler, MultipleFooFiles) |
+| # Opening multiple Bar files opens multiple windows or tabs. |
+| WMLC | install_or_shortcut_windowed(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) | check_pwa_window_created(FileHandler, Two) | check_files_loaded_in_site(FileHandler, MultipleBarFiles) |
+| WMLC | install_or_shortcut_tabbed(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) | check_tab_created(Two) | check_files_loaded_in_site(FileHandler, MultipleBarFiles) |
+| WMLC | install_or_shortcut_windowed(FileHandler) | set_open_in_tab(FileHandler) | launch_file_expect_dialog(FileHandler, MultipleBarFiles, Allow, AskAgain) | check_tab_created(Two) | check_files_loaded_in_site(FileHandler, MultipleBarFiles) |
+
+### Multi-profile behavior
+
+| #Platforms | Test -> | | | | | | | | | | | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| # To slightly reduce number of generated tests, and work around test name limitations, separate out some by_user and policy install cases.
+| # Launch a file in the primary profile, while the PWA is not currently open.
+| WML | install_or_shortcut_by_user_windowed(FileHandler) | maybe_close_pwa | switch_active_profile(Profile2) | install_or_shortcut(FileHandler) | maybe_close_pwa | disable_file_handling(FileHandler) | switch_active_profile(Default) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| WML | install_or_shortcut_by_user_tabbed(FileHandler) | switch_active_profile(Profile2) | install_or_shortcut(FileHandler) | maybe_close_pwa | disable_file_handling(FileHandler) | switch_active_profile(Default) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_tab_created(One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| # Launch a file in the primary profile, while the PWA is open in the secondary profile.
+| WML | install_or_shortcut_by_user_windowed(FileHandler) | maybe_close_pwa | switch_active_profile(Profile2) | install_or_shortcut(FileHandler) | disable_file_handling(FileHandler) | switch_active_profile(Default) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| WML | install_or_shortcut_by_user_tabbed(FileHandler) | switch_active_profile(Profile2) | install_or_shortcut(FileHandler) | disable_file_handling(FileHandler) | switch_active_profile(Default) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_tab_created(One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| WML | install_policy_app(FileHandler, ShortcutOptions::All, Windowed, WebApp) | switch_active_profile(Profile2) | install_or_shortcut(FileHandler) | disable_file_handling(FileHandler) | switch_active_profile(Default) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_pwa_window_created(FileHandler, One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| WML | install_policy_app(FileHandler, ShortcutOptions::All, Browser, WebApp) | switch_active_profile(Profile2) | install_or_shortcut(FileHandler) | disable_file_handling(FileHandler) | switch_active_profile(Default) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | check_tab_created(One) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+
+
+### Dialog option
+
+| #Platforms | Test -> | | | | | | | | | | | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| WMLC | install_or_shortcut_windowed(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, Remember) | launch_file_expect_no_dialog(FileHandler, OneFooFile) |
+| WMLC | install_or_shortcut_windowed(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, Remember) | close_pwa | launch_file_expect_no_dialog(FileHandler, OneFooFile) | check_files_loaded_in_site(FileHandler, OneFooFile) |
+| WMLC | install_or_shortcut_windowed(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, Remember) | close_pwa | launch_file_expect_no_dialog(FileHandler, OneFooFile) | check_files_loaded_in_site(FileHandler, OneFooFile) |
 | WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Deny, AskAgain) | check_window_not_created | check_site_handles_file(FileHandler, Foo) | check_site_handles_file(FileHandler, Bar) |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Deny, AskAgain) | check_window_not_created | check_tab_not_created | check_site_handles_file(FileHandler, Foo) | check_site_handles_file(FileHandler, Bar) |
 | WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Deny, AskAgain) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) |
-| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Deny, Remember) | check_window_not_created | check_site_not_handles_file(FileHandler, Foo) | check_site_not_handles_file(FileHandler, Bar) |
-| # Policy approval |
+| WMLC | install_or_shortcut(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Deny, Remember) | check_window_not_created | check_tab_not_created | check_site_not_handles_file(FileHandler, Foo) | check_site_not_handles_file(FileHandler, Bar) |
+
+### Policy test for forcing file handling approval
+
+| #Platforms | Test -> | | | | | | | | | | | | | | | | |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | WMLC | install_or_shortcut(FileHandler) | add_file_handling_policy_approval(FileHandler) | launch_file_expect_no_dialog(FileHandler, OneFooFile) | check_pwa_window_created(FileHandler, One) |
 | WMLC | install_or_shortcut(FileHandler) | add_file_handling_policy_approval(FileHandler) | remove_file_handling_policy_approval(FileHandler) | launch_file_expect_dialog(FileHandler, OneFooFile, Allow, AskAgain) |
+
 
 ## Sub Apps
 

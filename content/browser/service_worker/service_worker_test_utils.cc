@@ -95,11 +95,14 @@ class FakeNavigationClient : public mojom::NavigationClient {
           prefetch_loader_factory,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           topics_loader_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          keep_alive_loader_factory,
       const blink::DocumentToken& document_token,
       const base::UnguessableToken& devtools_navigation_token,
       const absl::optional<blink::ParsedPermissionsPolicy>& permissions_policy,
       blink::mojom::PolicyContainerPtr policy_container,
       mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host,
+      mojo::PendingRemote<blink::mojom::ResourceCache> resource_cache,
       mojom::CookieManagerInfoPtr cookie_manager_info,
       mojom::StorageInfoPtr storage_info,
       CommitNavigationCallback callback) override {
@@ -260,11 +263,19 @@ void ServiceWorkerRemoteContainerEndpoint::BindForWindow(
       blink::CreateCommonNavigationParams(),
       blink::CreateCommitNavigationParams(),
       network::mojom::URLResponseHead::New(),
-      mojo::ScopedDataPipeConsumerHandle(), nullptr, nullptr, absl::nullopt,
-      nullptr, std::move(info), mojo::NullRemote(), mojo::NullRemote(),
-      blink::DocumentToken(), base::UnguessableToken::Create(),
+      mojo::ScopedDataPipeConsumerHandle(),
+      /*url_loader_client_endpoints=*/nullptr,
+      /*subresource_loader_factories=*/nullptr,
+      /*subresource_overrides=*/absl::nullopt,
+      /*controller_service_worker_info=*/nullptr, std::move(info),
+      /*prefetch_loader_factory=*/mojo::NullRemote(),
+      /*topics_loader_factory=*/mojo::NullRemote(),
+      /*keep_alive_loader_factory=*/mojo::NullRemote(), blink::DocumentToken(),
+      base::UnguessableToken::Create(),
       std::vector<blink::ParsedPermissionsPolicyDeclaration>(),
-      CreateStubPolicyContainer(), mojo::NullRemote(), nullptr, nullptr,
+      CreateStubPolicyContainer(), /*code_cache_host=*/mojo::NullRemote(),
+      /*resource_cache=*/mojo::NullRemote(), /*cookie_manager_info=*/nullptr,
+      /*storage_info=*/nullptr,
       base::BindOnce(
           [](mojom::DidCommitProvisionalLoadParamsPtr validated_params,
              mojom::DidCommitProvisionalLoadInterfaceParamsPtr
@@ -341,6 +352,20 @@ ReceiveServiceWorkerStatus(absl::optional<blink::ServiceWorkerStatusCode>* out,
         std::move(quit_closure).Run();
       },
       std::move(quit_closure), out);
+}
+
+blink::ServiceWorkerStatusCode WarmUpServiceWorker(
+    ServiceWorkerVersion* version) {
+  blink::ServiceWorkerStatusCode status;
+  base::RunLoop run_loop;
+  version->StartWorker(ServiceWorkerMetrics::EventType::WARM_UP,
+                       base::BindLambdaForTesting(
+                           [&](blink::ServiceWorkerStatusCode result_status) {
+                             status = result_status;
+                             run_loop.Quit();
+                           }));
+  run_loop.Run();
+  return status;
 }
 
 blink::ServiceWorkerStatusCode StartServiceWorker(

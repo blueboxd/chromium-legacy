@@ -323,14 +323,17 @@ apps::UrlHandlers ToWebAppUrlHandlers(
   return apps_url_handlers;
 }
 
-std::vector<ScopeExtensionInfo> ToWebAppScopeExtensions(
+ScopeExtensions ToWebAppScopeExtensions(
     const std::vector<blink::mojom::ManifestScopeExtensionPtr>&
         scope_extensions) {
-  std::vector<ScopeExtensionInfo> apps_scope_extensions;
+  ScopeExtensions apps_scope_extensions;
   for (const auto& scope_extension : scope_extensions) {
     DCHECK(scope_extension);
-    apps_scope_extensions.emplace_back(scope_extension->origin,
-                                       scope_extension->has_origin_wildcard);
+    ScopeExtensionInfo new_scope_extension;
+    new_scope_extension.origin = scope_extension->origin;
+    new_scope_extension.has_origin_wildcard =
+        scope_extension->has_origin_wildcard;
+    apps_scope_extensions.insert(std::move(new_scope_extension));
   }
   return apps_scope_extensions;
 }
@@ -892,15 +895,11 @@ void PopulateProductIcons(WebAppInstallInfo* web_app_info,
       web_app_info->icon_bitmaps.monochrome[bitmap.width()] = std::move(bitmap);
   }
 
-  char32_t icon_letter = 0;
-  const auto& title = web_app_info->title;
-  if (title.empty()) {
-    icon_letter = GenerateIconLetterFromUrl(web_app_info->start_url);
-  } else {
-    GURL url(title);
-    icon_letter = url.is_valid() ? GenerateIconLetterFromUrl(url)
-                                 : GenerateIconLetterFromAppName(title);
-  }
+  char32_t icon_letter =
+      web_app_info->title.empty()
+          ? GenerateIconLetterFromUrl(web_app_info->start_url)
+          : GenerateIconLetterFromAppName(web_app_info->title);
+
   // Ensure that all top-level icons that are in web_app_info with  Purpose::ANY
   // are present, by generating icons for any sizes that have failed to
   // download. This ensures that the created manifest for the web app does not
@@ -1315,6 +1314,8 @@ void ApplyParamsToFinalizeOptions(
   options.add_to_applications_menu = install_params.add_to_applications_menu;
   options.add_to_desktop = install_params.add_to_desktop;
   options.add_to_quick_launch_bar = install_params.add_to_quick_launch_bar;
+  options.skip_origin_association_validation =
+      install_params.skip_origin_association_validation;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (install_params.system_app_type.has_value()) {
     options.system_web_app_data.emplace();

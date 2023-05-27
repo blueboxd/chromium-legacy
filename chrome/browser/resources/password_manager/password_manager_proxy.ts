@@ -46,6 +46,29 @@ export enum PasswordCheckInteraction {
 }
 
 /**
+ * Should be kept in sync with
+ * |password_manager::metrics_util::PasswordViewPageInteractions|.
+ * These values are persisted to logs. Entries should not be renumbered and
+ * numeric values should never be reused.
+ */
+export enum PasswordViewPageInteractions {
+  CREDENTIAL_ROW_CLICKED = 0,
+  CREDENTIAL_FOUND = 1,
+  CREDENTIAL_NOT_FOUND = 2,
+  USERNAME_COPY_BUTTON_CLICKED = 3,
+  PASSWORD_COPY_BUTTON_CLICKED = 4,
+  PASSWORD_SHOW_BUTTON_CLICKED = 5,
+  PASSWORD_EDIT_BUTTON_CLICKED = 6,
+  PASSWORD_DELETE_BUTTON_CLICKED = 7,
+  CREDENTIAL_EDITED = 8,
+  TIMED_OUT_IN_EDIT_DIALOG = 9,
+  TIMED_OUT_IN_VIEW_PAGE = 10,
+  CREDENTIAL_REQUESTED_BY_URL = 11,
+  // Must be last.
+  COUNT = 12,
+}
+
+/**
  * Interface for all callbacks to the password API.
  */
 export interface PasswordManagerProxy {
@@ -138,6 +161,12 @@ export interface PasswordManagerProxy {
   recordPasswordCheckInteraction(interaction: PasswordCheckInteraction): void;
 
   /**
+   * Records a given interaction on the Password details page.
+   */
+  recordPasswordViewInteraction(interaction: PasswordViewPageInteractions):
+      void;
+
+  /**
    * Triggers the shortcut creation dialog.
    */
   showAddShortcutDialog(): void;
@@ -211,6 +240,29 @@ export interface PasswordManagerProxy {
    * the list has changed.
    */
   undoRemoveSavedPasswordOrException(): void;
+
+  /**
+   * Triggers the dialog for importing passwords.
+   * @return A promise that resolves to the import results.
+   */
+  importPasswords(toStore: chrome.passwordsPrivate.PasswordStoreSet):
+      Promise<chrome.passwordsPrivate.ImportResults>;
+
+  /**
+   * Resumes the password import process when user has selected which passwords
+   * to replace.
+   * @return A promise that resolves to the |ImportResults|.
+   */
+  continueImport(selectedIds: number[]):
+      Promise<chrome.passwordsPrivate.ImportResults>;
+
+  /**
+   * Resets the PasswordImporter if it is in the CONFLICTS/FINISHED state and
+   * the user closes the dialog. Only when the PasswordImporter is in FINISHED
+   * state, |deleteFile| option is taken into account.
+   * @param deleteFile Whether to trigger deletion of the last imported file.
+   */
+  resetImporter(deleteFile: boolean): Promise<void>;
 
   /**
    * Queries the status of any ongoing export.
@@ -294,6 +346,26 @@ export interface PasswordManagerProxy {
    * @return A promise that resolves to the opt-in state.
    */
   isOptedInForAccountStorage(): Promise<boolean>;
+
+  /**
+   * Triggers the opt-in or opt-out flow for the account storage.
+   * @param optIn Whether the user wants to opt in or opt out.
+   */
+  optInForAccountStorage(optIn: boolean): void;
+
+  /**
+   * Requests whether the account store is a default location for saving
+   * passwords. False means the device store is a default one. Must be called
+   * when the current user has already opted-in for account storage.
+   * @return A promise that resolves to whether the account store is default.
+   */
+  isAccountStoreDefault(): Promise<boolean>;
+
+  /**
+   * Moves a list of passwords from the device to the account
+   * @param ids The ids for the password entries being moved.
+   */
+  movePasswordsToAccount(ids: number[]): void;
 }
 
 /**
@@ -374,6 +446,12 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
         PasswordCheckInteraction.COUNT);
   }
 
+  recordPasswordViewInteraction(interaction: PasswordViewPageInteractions) {
+    chrome.metricsPrivate.recordEnumerationValue(
+        'PasswordManager.PasswordViewPage.UserActions', interaction,
+        PasswordViewPageInteractions.COUNT);
+  }
+
   showAddShortcutDialog() {
     chrome.passwordsPrivate.showAddShortcutDialog();
   }
@@ -417,6 +495,18 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
 
   undoRemoveSavedPasswordOrException() {
     chrome.passwordsPrivate.undoRemoveSavedPasswordOrException();
+  }
+
+  importPasswords(toStore: chrome.passwordsPrivate.PasswordStoreSet) {
+    return chrome.passwordsPrivate.importPasswords(toStore);
+  }
+
+  continueImport(selectedIds: number[]) {
+    return chrome.passwordsPrivate.continueImport(selectedIds);
+  }
+
+  resetImporter(deleteFile: boolean) {
+    return chrome.passwordsPrivate.resetImporter(deleteFile);
   }
 
   requestExportProgressStatus() {
@@ -483,6 +573,18 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
 
   isOptedInForAccountStorage() {
     return chrome.passwordsPrivate.isOptedInForAccountStorage();
+  }
+
+  optInForAccountStorage(optIn: boolean) {
+    chrome.passwordsPrivate.optInForAccountStorage(optIn);
+  }
+
+  isAccountStoreDefault() {
+    return chrome.passwordsPrivate.isAccountStoreDefault();
+  }
+
+  movePasswordsToAccount(ids: number[]) {
+    chrome.passwordsPrivate.movePasswordsToAccount(ids);
   }
 
   static getInstance(): PasswordManagerProxy {

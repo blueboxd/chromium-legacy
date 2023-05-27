@@ -7,6 +7,7 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ref.h"
+#include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -51,7 +52,9 @@ class DeleteProfileHelper {
   // Schedules the ephemeral profile at the given path to be deleted. New
   // profiles will not be created. If the profile is not loaded, this may
   // trigger a reload of the profile so that user data is cleaned up.
-  void ScheduleEphemeralProfileForDeletion(const base::FilePath& profile_dir);
+  void ScheduleEphemeralProfileForDeletion(
+      const base::FilePath& profile_dir,
+      std::unique_ptr<ScopedProfileKeepAlive> keep_alive);
 
   // Checks if any profiles are left behind (e.g. because of a browser
   // crash) and schedule them for deletion. Unlike the "Schedule" methods above,
@@ -66,28 +69,38 @@ class DeleteProfileHelper {
   // browsers tabs. Creates a new profile if the profile to be deleted is the
   // last non-supervised profile. In the Mac, loads the next non-supervised
   // profile if the profile to be deleted is the active profile.
+  // `profile_keep_alive` is used to avoid unloading the profile during the
+  // deletion process and is null if the profile is not loaded.
   void EnsureActiveProfileExistsBeforeDeletion(
       std::unique_ptr<ScopedKeepAlive> keep_alive,
+      std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive,
       ProfileLoadedCallback callback,
       const base::FilePath& profile_dir);
 
   // Schedules the profile at the given path to be deleted on shutdown,
   // and marks the new profile as active.
-  void FinishDeletingProfile(const base::FilePath& profile_dir,
-                             const base::FilePath& new_active_profile_dir);
-  void OnLoadProfileForProfileDeletion(const base::FilePath& profile_dir,
-                                       Profile* profile);
+  void FinishDeletingProfile(
+      const base::FilePath& profile_dir,
+      const base::FilePath& new_active_profile_dir,
+      std::unique_ptr<ScopedProfileKeepAlive> keep_alive);
+  void OnLoadProfileForProfileDeletion(
+      const base::FilePath& profile_dir,
+      std::unique_ptr<ScopedProfileKeepAlive> keep_alive,
+      Profile* profile);
 
   // If the `loaded_profile` has been loaded successfully and isn't already
   // scheduled for deletion, then finishes adding `profile_to_delete_dir` to the
   // queue of profiles to be deleted, and updates the kProfileLastUsed
   // preference based on `last_non_supervised_profile_path`. `keep_alive` may be
-  // null and is used to ensure shutdown does not start.
+  // null and is used to ensure shutdown does not start. `profile_keep_alive` is
+  // used to avoid unloading the profile during the deletion process and is null
+  // if the profile is not loaded.
   void OnNewActiveProfileInitialized(
       const base::FilePath& profile_to_delete_path,
       const base::FilePath& last_non_supervised_profile_path,
       ProfileLoadedCallback callback,
       std::unique_ptr<ScopedKeepAlive> keep_alive,
+      std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive,
       Profile* loaded_profile);
 
   const raw_ref<ProfileManager>

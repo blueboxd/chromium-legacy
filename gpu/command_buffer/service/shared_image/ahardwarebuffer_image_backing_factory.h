@@ -7,6 +7,8 @@
 
 #include <dawn/dawn_proc_table.h>
 
+#include "base/containers/flat_map.h"
+#include "gpu/command_buffer/service/gles2_cmd_validation.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing_factory.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/gl_bindings.h"
@@ -51,6 +53,7 @@ class GPU_GLES2_EXPORT AHardwareBufferImageBackingFactory
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -60,6 +63,7 @@ class GPU_GLES2_EXPORT AHardwareBufferImageBackingFactory
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -70,7 +74,8 @@ class GPU_GLES2_EXPORT AHardwareBufferImageBackingFactory
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage) override;
+      uint32_t usage,
+      std::string debug_label) override;
   bool IsSupported(uint32_t usage,
                    viz::SharedImageFormat format,
                    const gfx::Size& size,
@@ -85,8 +90,6 @@ class GPU_GLES2_EXPORT AHardwareBufferImageBackingFactory
     FormatInfo();
     ~FormatInfo();
 
-    // Whether this format is supported by AHardwareBuffer.
-    bool ahb_supported = false;
     unsigned int ahb_format = 0;
 
     // Whether this format can be used to create a GL texture from the AHB.
@@ -97,6 +100,12 @@ class GPU_GLES2_EXPORT AHardwareBufferImageBackingFactory
     GLenum gl_format = 0;
     GLenum gl_type = 0;
   };
+
+  // Constructs and returns a FormatInfo corresponding to `format`, which must
+  // be a supported format.
+  static FormatInfo FormatInfoForSupportedFormat(
+      viz::SharedImageFormat format,
+      const gles2::Validators* validators);
 
   bool ValidateUsage(uint32_t usage,
                      const gfx::Size& size,
@@ -115,12 +124,13 @@ class GPU_GLES2_EXPORT AHardwareBufferImageBackingFactory
       bool is_thread_safe,
       base::span<const uint8_t> pixel_data);
 
-  // WARNING: Format must be single plane.
   const FormatInfo& GetFormatInfo(viz::SharedImageFormat format) const {
-    return format_info_[format.resource_format()];
+    auto iter = format_infos_.find(format);
+    CHECK(iter != format_infos_.end());
+    return iter->second;
   }
 
-  FormatInfo format_info_[viz::RESOURCE_FORMAT_MAX + 1];
+  base::flat_map<viz::SharedImageFormat, FormatInfo> format_infos_;
 
   // Used to limit the max size of AHardwareBuffer.
   int32_t max_gl_texture_size_ = 0;

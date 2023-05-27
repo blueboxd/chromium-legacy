@@ -9,6 +9,7 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 
@@ -27,32 +28,9 @@ BASE_FEATURE(kBackgroundTabLoadingFromPerformanceManager,
              "BackgroundTabLoadingFromPerformanceManager",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kHighEfficiencyModeAvailable,
-             "HighEfficiencyModeAvailable",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kBatterySaverModeAvailable,
              "BatterySaverModeAvailable",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-const base::FeatureParam<base::TimeDelta> kHighEfficiencyModeTimeBeforeDiscard{
-    &kHighEfficiencyModeAvailable, "time_before_discard", base::Hours(2)};
-
-const base::FeatureParam<bool> kHighEfficiencyModeDefaultState{
-    &kHighEfficiencyModeAvailable, "default_state", false};
-
-// 10 tabs is the 70th percentile of tab counts based on UMA data.
-const base::FeatureParam<int> kHighEfficiencyModePromoTabCountThreshold{
-    &kHighEfficiencyModeAvailable,
-    "tab_count_threshold",
-    10,
-};
-
-const base::FeatureParam<int> kHighEfficiencyModePromoMemoryPercentThreshold{
-    &kHighEfficiencyModeAvailable,
-    "memory_percent_threshold",
-    70,
-};
 
 BASE_FEATURE(kPerformanceControlsPerformanceSurvey,
              "PerformanceControlsPerformanceSurvey",
@@ -103,8 +81,43 @@ const base::FeatureParam<int>
     kHeuristicMemorySaverAvailableMemoryThresholdPercent{
         &kHeuristicMemorySaver, "threshold_percent", 5};
 
+const base::FeatureParam<int> kHeuristicMemorySaverAvailableMemoryThresholdMb{
+    &kHeuristicMemorySaver, "threshold_mb", 4096};
+
+const base::FeatureParam<int> kHeuristicMemorySaverPageCacheDiscountMac{
+    &kHeuristicMemorySaver, "mac_page_cache_available_percent", 50};
+
 const base::FeatureParam<int> kHeuristicMemorySaverMinimumMinutesInBackground{
     &kHeuristicMemorySaver, "minimum_minutes_in_background", 120};
+
+BASE_FEATURE(kHighEfficiencyMultistateMode,
+             "HighEfficiencyMultistateMode",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kDiscardedTabTreatment,
+             "DiscardedTabTreatment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kMemoryUsageInHovercards,
+             "MemoryUsageInHovercards",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kDiscardExceptionsImprovements,
+             "DiscardExceptionsImprovements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kMemorySavingsReportingImprovements,
+             "MemorySavingsReportingImprovements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<base::TimeDelta> kExpandedHighEfficiencyChipFrequency{
+    &kMemorySavingsReportingImprovements,
+    "expanded_high_efficiency_chip_frequency", base::Days(1)};
+
+const base::FeatureParam<int> kExpandedHighEfficiencyChipThresholdBytes{
+    &kMemorySavingsReportingImprovements,
+    "expanded_high_efficiency_chip_threshold_bytes", 200 * 1024 * 1024};
+
+const base::FeatureParam<base::TimeDelta>
+    kExpandedHighEfficiencyChipDiscardedDuration{
+        &kMemorySavingsReportingImprovements,
+        "expanded_high_efficiency_chip_discarded_duration", base::Hours(6)};
 
 #endif
 

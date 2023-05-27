@@ -7,14 +7,15 @@ import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.j
 import {queryRequiredElement} from '../common/js/dom_utils.js';
 import {str, util} from '../common/js/util.js';
 import {VolumeManagerCommon} from '../common/js/volume_manager_types.js';
-import {PropStatus, SearchData, SearchFileType, SearchLocation, SearchOptions, SearchRecency, State} from '../externs/ts/state.js';
+import {CurrentDirectory, PropStatus, SearchData, SearchLocation, SearchOptions, SearchRecency, State} from '../externs/ts/state.js';
 import {VolumeManager} from '../externs/volume_manager.js';
 import {PathComponent} from '../foreground/js/path_component.js';
 import {SearchAutocompleteList} from '../foreground/js/ui/search_autocomplete_list.js';
-import {clearSearch, updateSearch} from '../state/actions.js';
+import {clearSearch, updateSearch} from '../state/actions/search.js';
 import {getDefaultSearchOptions, getStore, Store} from '../state/store.js';
 import {XfPathDisplayElement} from '../widgets/xf_path_display.js';
 import {OptionKind, SEARCH_OPTIONS_CHANGED, SearchOptionsChangedEvent, XfSearchOptionsElement} from '../widgets/xf_search_options.js';
+import {XfOption} from '../widgets/xf_select.js';
 
 /**
  * @fileoverview
@@ -33,6 +34,14 @@ enum SearchInputState {
   OPENING = 'opening',
   OPEN = 'open',
   CLOSING = 'closing',
+}
+
+/**
+ * Helper function that centralizes the test if we are searching the "Recents"
+ * directory.
+ */
+function isInRecent(dir: CurrentDirectory|undefined): boolean {
+  return dir?.rootType == VolumeManagerCommon.RootType.RECENT;
 }
 
 /**
@@ -250,11 +259,8 @@ export class SearchContainer extends EventTarget {
       this.setQuery(query);
     }
     if (util.isSearchV2Enabled()) {
-      const dir = state.currentDirectory;
-      const status = search.status;
-      if (status === PropStatus.STARTED && query &&
-          dir?.rootType !== VolumeManagerCommon.RootType.RECENT) {
-        this.showOptions_();
+      if (search.status === PropStatus.STARTED && query) {
+        this.showOptions_(state);
         this.showPathDisplay_();
       }
     }
@@ -273,6 +279,7 @@ export class SearchContainer extends EventTarget {
       this.pathDisplay_.removeAttribute('hidden');
       this.pathDisplay_.path = path;
     } else {
+      this.pathDisplay_.path = '';
       this.pathDisplay_.setAttribute('hidden', '');
     }
   }
@@ -283,43 +290,26 @@ export class SearchContainer extends EventTarget {
    */
   private getSelectedPath_(state: State): string {
     const keys = state.currentDirectory?.selection?.keys;
-    if (!keys) {
+    if (!keys || keys.length !== 1) {
       return '';
     }
-    const pathSet = new Set();
-    for (const dirKey of keys) {
-      const entry = state.allEntries[dirKey!]?.entry;
-      if (!entry) {
-        continue;
-      }
-      // TODO(b:274559834): Improve efficiency of these computations.
-      const parts: PathComponent[] =
-          PathComponent.computeComponentsFromEntry(entry, this.volumeManager_);
-      // Drop the file name; keep the folders only.
-      pathSet.add(parts.slice(0, -1).map(p => p.name).join('/'));
-    }
-    if (pathSet.size === 0) {
+    const entry = state.allEntries[keys[0]!]?.entry;
+    if (!entry) {
       return '';
     }
-    if (pathSet.size === 1) {
-      return pathSet.values().next().value;
-    }
-
-    return str('SEARCH_RESULTS_MULTIPLE_SELECTION');
+    // TODO(b:274559834): Improve efficiency of these computations.
+    const parts: PathComponent[] =
+        PathComponent.computeComponentsFromEntry(entry, this.volumeManager_);
+    return parts.map(p => p.name).join('/');
   }
 
   /**
    * Hides the element that allows users to manipulate search options.
    */
   private hideOptions_() {
-    const element = this.getSearchOptionsElement_();
-    if (element) {
-      element.hidden = true;
-      // Reset options so that we always start searching with the defaults.
-      this.currentOptions_ = getDefaultSearchOptions();
-      element.getLocationSelector().value = this.currentOptions_.location;
-      element.getRecencySelector().value = this.currentOptions_.recency;
-      element.getFileTypeSelector().value = this.currentOptions_.type;
+    if (this.searchOptions_) {
+      this.searchOptions_.remove();
+      this.searchOptions_ = null;
     }
   }
 
@@ -327,10 +317,10 @@ export class SearchContainer extends EventTarget {
    * Shows or creates the element that allows the user to manipulate search
    * options.
    */
-  private showOptions_() {
+  private showOptions_(state: State) {
     let element = this.getSearchOptionsElement_();
     if (!element) {
-      element = this.createSearchOptionsElement_();
+      element = this.createSearchOptionsElement_(state);
     }
     element.hidden = false;
   }
@@ -379,71 +369,113 @@ export class SearchContainer extends EventTarget {
     return this.searchOptions_;
   }
 
-  private createSearchOptionsElement_(): XfSearchOptionsElement {
-    const element = document.createElement('xf-search-options');
-    this.optionsContainer_.appendChild(element);
-
-    element.id = 'search-options';
-    element.getLocationSelector().options = [
+  /**
+   * Creates location options. These always consist of 'Everywhere' and the
+   * local folder. However, if the local folder has a parent, that is different
+   * from it, we also add the parent between Everywhere and the local folder.
+   */
+  private createLocationOptions_(state: State): XfOption[] {
+    const dir = state.currentDirectory;
+    const dirPath = dir?.pathComponents || [];
+    const options: XfOption[] = [
       {
         value: SearchLocation.EVERYWHERE,
         text: str('SEARCH_OPTIONS_LOCATION_EVERYWHERE'),
-      },
-      {
-        value: SearchLocation.THIS_CHROMEBOOK,
-        text: str('SEARCH_OPTIONS_LOCATION_THIS_CHROMEBOOK'),
-      },
-      {
-        value: SearchLocation.THIS_FOLDER,
-        text: str('SEARCH_OPTIONS_LOCATION_THIS_FOLDER'),
-        default: true,
+        default: !dirPath,
       },
     ];
-    element.getRecencySelector().options = [
-      {
-        value: SearchRecency.ANYTIME,
-        text: str('SEARCH_OPTIONS_RECENCY_ALL_TIME'),
-      },
-      {
-        value: SearchRecency.TODAY,
-        text: str('SEARCH_OPTIONS_RECENCY_TODAY'),
-      },
-      {
-        value: SearchRecency.YESTERDAY,
-        text: str('SEARCH_OPTIONS_RECENCY_YESTERDAY'),
-      },
-      {
-        value: SearchRecency.LAST_WEEK,
-        text: str('SEARCH_OPTIONS_RECENCY_LAST_WEEK'),
-      },
-      {
-        value: SearchRecency.LAST_MONTH,
-        text: str('SEARCH_OPTIONS_RECENCY_LAST_MONTH'),
-      },
-      {
-        value: SearchRecency.LAST_YEAR,
-        text: str('SEARCH_OPTIONS_RECENCY_LAST_YEAR'),
-      },
-    ];
+    if (dirPath) {
+      if (dir?.rootType === VolumeManagerCommon.RootType.DRIVE) {
+        // For Google Drive we currently do not have the ability to search a
+        // specific folder. Thus the only options shown, when the user is
+        // triggering search from a location in Drive, is Everywhere (set up
+        // above) and Drive.
+        options.push({
+          value: SearchLocation.ROOT_FOLDER,
+          text: str('DRIVE_DIRECTORY_LABEL'),
+          default: true,
+        });
+      } else if (isInRecent(dir)) {
+        options.push({
+          value: SearchLocation.THIS_FOLDER,
+          text: dirPath[dirPath.length - 1]?.label ||
+              str('SEARCH_OPTIONS_LOCATION_THIS_FOLDER'),
+          default: true,
+        });
+      } else {
+        options.push({
+          value: dirPath.length > 1 ? SearchLocation.ROOT_FOLDER :
+                                      SearchLocation.THIS_FOLDER,
+          text: dirPath[0]?.label || str('SEARCH_OPTIONS_LOCATION_THIS_VOLUME'),
+          default: dirPath.length === 1,
+        });
+        if (dirPath.length > 1) {
+          options.push({
+            value: SearchLocation.THIS_FOLDER,
+            text: dirPath[dirPath.length - 1]?.label ||
+                str('SEARCH_OPTIONS_LOCATION_THIS_FOLDER'),
+            default: true,
+          });
+        }
+      }
+    }
+    return options;
+  }
+
+  private createSearchOptionsElement_(state: State): XfSearchOptionsElement {
+    const element = document.createElement('xf-search-options');
+    this.optionsContainer_.appendChild(element);
+    element.id = 'search-options';
+    element.getLocationSelector().options = this.createLocationOptions_(state);
+    if (isInRecent(state.currentDirectory)) {
+      element.getRecencySelector().setAttribute('hidden', '');
+    } else {
+      element.getRecencySelector().options = [
+        {
+          value: SearchRecency.ANYTIME,
+          text: str('SEARCH_OPTIONS_RECENCY_ALL_TIME'),
+        },
+        {
+          value: SearchRecency.TODAY,
+          text: str('SEARCH_OPTIONS_RECENCY_TODAY'),
+        },
+        {
+          value: SearchRecency.YESTERDAY,
+          text: str('SEARCH_OPTIONS_RECENCY_YESTERDAY'),
+        },
+        {
+          value: SearchRecency.LAST_WEEK,
+          text: str('SEARCH_OPTIONS_RECENCY_LAST_WEEK'),
+        },
+        {
+          value: SearchRecency.LAST_MONTH,
+          text: str('SEARCH_OPTIONS_RECENCY_LAST_MONTH'),
+        },
+        {
+          value: SearchRecency.LAST_YEAR,
+          text: str('SEARCH_OPTIONS_RECENCY_LAST_YEAR'),
+        },
+      ];
+    }
     element.getFileTypeSelector().options = [
       {
-        value: SearchFileType.ALL_TYPES,
+        value: chrome.fileManagerPrivate.FileCategory.ALL,
         text: str('SEARCH_OPTIONS_TYPES_ALL_TYPES'),
       },
       {
-        value: SearchFileType.AUDIO,
+        value: chrome.fileManagerPrivate.FileCategory.AUDIO,
         text: str('SEARCH_OPTIONS_TYPES_AUDIO'),
       },
       {
-        value: SearchFileType.DOCUMENTS,
+        value: chrome.fileManagerPrivate.FileCategory.DOCUMENT,
         text: str('SEARCH_OPTIONS_TYPES_DOCUMENTS'),
       },
       {
-        value: SearchFileType.IMAGES,
+        value: chrome.fileManagerPrivate.FileCategory.IMAGE,
         text: str('SEARCH_OPTIONS_TYPES_IMAGES'),
       },
       {
-        value: SearchFileType.VIDEOS,
+        value: chrome.fileManagerPrivate.FileCategory.VIDEO,
         text: str('SEARCH_OPTIONS_TYPES_VIDEOS'),
       },
     ];
@@ -474,9 +506,10 @@ export class SearchContainer extends EventTarget {
         break;
       }
       case OptionKind.FILE_TYPE: {
-        const type = value as unknown as SearchFileType;
-        if (type !== this.currentOptions_.type) {
-          this.currentOptions_.type = type;
+        const category =
+            value as unknown as chrome.fileManagerPrivate.FileCategory;
+        if (category !== this.currentOptions_.fileCategory) {
+          this.currentOptions_.fileCategory = category;
           this.updateSearchOptions_();
         }
         break;
@@ -493,7 +526,7 @@ export class SearchContainer extends EventTarget {
   private updateSearchOptions_() {
     if (util.isSearchV2Enabled()) {
       this.store_.dispatch(updateSearch({
-        query: undefined,   // do not change
+        query: this.getQuery(),
         status: undefined,  // do not change
         options: this.currentOptions_,
       }));
@@ -604,6 +637,7 @@ export class SearchContainer extends EventTarget {
       this.searchWrapper_.classList.remove('has-cursor', 'has-text');
       this.searchBox_.classList.remove('has-cursor', 'has-text');
       this.searchButton_.tabIndex = 0;
+      this.currentOptions_ = getDefaultSearchOptions();
     }
   }
 

@@ -113,10 +113,11 @@ MediaSource* MediaSource::Create(ExecutionContext* context) {
 }
 
 MediaSource::MediaSource(ExecutionContext* context)
-    : ExecutionContextLifecycleObserver(context),
+    : ActiveScriptWrappable<MediaSource>({}),
+      ExecutionContextLifecycleObserver(context),
       ready_state_(ReadyState::kClosed),
       async_event_queue_(
-          MakeGarbageCollected<EventQueue>(context,
+          MakeGarbageCollected<EventQueue>(GetExecutionContext(),
                                            TaskType::kMediaElementEvent)),
       context_already_destroyed_(false),
       source_buffers_(
@@ -129,13 +130,8 @@ MediaSource::MediaSource(ExecutionContext* context)
       live_seekable_range_start_(0.0),
       live_seekable_range_end_(0.0) {
   DVLOG(1) << __func__ << " this=" << this;
-
-  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(
-             GetExecutionContext()) ||
-         IsMainThread());
-
   if (!IsMainThread()) {
-    DCHECK(context->IsDedicatedWorkerGlobalScope());
+    DCHECK(GetExecutionContext()->IsDedicatedWorkerGlobalScope());
   }
 }
 
@@ -632,9 +628,6 @@ bool MediaSource::IsTypeSupportedInternal(ExecutionContext* context,
 
 // static
 bool MediaSource::canConstructInDedicatedWorker(ExecutionContext* context) {
-  // This method's visibility in IDL is restricted to MSE-in-Workers feature
-  // being enabled.
-  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(context));
   return true;
 }
 
@@ -1211,11 +1204,6 @@ MediaSourceHandleImpl* MediaSource::handle() {
   base::AutoLock lock(attachment_link_lock_);
 
   DVLOG(3) << __func__;
-
-  DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(
-             GetExecutionContext()) &&
-         RuntimeEnabledFeatures::MediaSourceInWorkersUsingHandleEnabled(
-             GetExecutionContext()));
 
   // TODO(crbug.com/506273): Support MediaSource srcObject attachment idiom for
   // main-thread-owned MediaSource objects (would need MSE spec updates, too,

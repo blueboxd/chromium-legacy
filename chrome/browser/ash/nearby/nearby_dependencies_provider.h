@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_NEARBY_NEARBY_DEPENDENCIES_PROVIDER_H_
 #define CHROME_BROWSER_ASH_NEARBY_NEARBY_DEPENDENCIES_PROVIDER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "chromeos/ash/services/nearby/public/mojom/sharing.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -39,6 +40,8 @@ class NearbyDependenciesProvider : public KeyedService {
 
   virtual void PrepareForShutdown();
 
+  static void EnsureFactoryBuilt();
+
  private:
   friend class NearbyProcessManagerImplTest;
 
@@ -48,7 +51,7 @@ class NearbyDependenciesProvider : public KeyedService {
   // Test-only constructor.
   NearbyDependenciesProvider();
 
-  mojo::PendingRemote<bluetooth::mojom::Adapter>
+  mojo::PendingRemote<::bluetooth::mojom::Adapter>
   GetBluetoothAdapterPendingRemote();
 
   sharing::mojom::WebRtcDependenciesPtr GetWebRtcDependencies();
@@ -61,8 +64,8 @@ class NearbyDependenciesProvider : public KeyedService {
 
   bool shut_down_ = false;
 
-  Profile* profile_ = nullptr;
-  signin::IdentityManager* identity_manager_ = nullptr;
+  raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
+  raw_ptr<signin::IdentityManager, ExperimentalAsh> identity_manager_ = nullptr;
 };
 
 }  // namespace ash::nearby

@@ -4,7 +4,7 @@
 
 import 'chrome://password-manager/password_manager.js';
 
-import {EditPasswordDialogElement, Page, PasswordDetailsCardElement, PasswordManagerImpl, Router} from 'chrome://password-manager/password_manager.js';
+import {EditPasswordDialogElement, Page, PasswordDetailsCardElement, PasswordManagerImpl, PasswordViewPageInteractions, Router} from 'chrome://password-manager/password_manager.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
@@ -81,6 +81,9 @@ suite('PasswordDetailsCardTest', function() {
 
     card.$.copyUsernameButton.click();
     await passwordManager.whenCalled('extendAuthValidity');
+    assertEquals(
+        PasswordViewPageInteractions.USERNAME_COPY_BUTTON_CLICKED,
+        await passwordManager.whenCalled('recordPasswordViewInteraction'));
 
     assertTrue(card.$.toast.open);
     assertEquals(
@@ -106,6 +109,9 @@ suite('PasswordDetailsCardTest', function() {
         await passwordManager.whenCalled('requestPlaintextPassword');
     assertEquals(password.id, id);
     assertEquals(chrome.passwordsPrivate.PlaintextReason.COPY, reason);
+    assertEquals(
+        PasswordViewPageInteractions.PASSWORD_COPY_BUTTON_CLICKED,
+        await passwordManager.whenCalled('recordPasswordViewInteraction'));
 
     await flushTasks();
     assertTrue(card.$.toast.open);
@@ -158,6 +164,9 @@ suite('PasswordDetailsCardTest', function() {
         'icon-visibility', card.$.showPasswordButton.getAttribute('class'));
 
     card.$.showPasswordButton.click();
+    assertEquals(
+        PasswordViewPageInteractions.PASSWORD_SHOW_BUTTON_CLICKED,
+        await passwordManager.whenCalled('recordPasswordViewInteraction'));
 
     assertEquals(
         loadTimeData.getString('hidePassword'),
@@ -181,6 +190,9 @@ suite('PasswordDetailsCardTest', function() {
     card.$.editButton.click();
     await eventToPromise('cr-dialog-open', card);
     await passwordManager.whenCalled('extendAuthValidity');
+    assertEquals(
+        PasswordViewPageInteractions.PASSWORD_EDIT_BUTTON_CLICKED,
+        await passwordManager.whenCalled('recordPasswordViewInteraction'));
     await flushTasks();
 
     const editDialog =
@@ -205,6 +217,9 @@ suite('PasswordDetailsCardTest', function() {
     assertTrue(isVisible(card.$.deleteButton));
 
     card.$.deleteButton.click();
+    assertEquals(
+        PasswordViewPageInteractions.PASSWORD_DELETE_BUTTON_CLICKED,
+        await passwordManager.whenCalled('recordPasswordViewInteraction'));
 
     const params = await passwordManager.whenCalled('removeSavedPassword');
     assertEquals(params.id, password.id);
@@ -254,5 +269,167 @@ suite('PasswordDetailsCardTest', function() {
     card.$.showMore.click();
     assertFalse(card.$.noteValue.hasAttribute('limit-note'));
     await passwordManager.whenCalled('extendAuthValidity');
+  });
+
+  [chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT,
+   chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
+   chrome.passwordsPrivate.PasswordStoreSet.ACCOUNT]
+      .forEach(
+          store => test(
+              `delete multi store password from ${store} `, async function() {
+                const password = createPasswordEntry({
+                  url: 'test.com',
+                  username: 'vik',
+                  id: 0,
+                });
+                password.affiliatedDomains = [
+                  createAffiliatedDomain('test.com'),
+                  createAffiliatedDomain('m.test.com'),
+                ];
+                password.storedIn =
+                    chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT;
+
+                const card = document.createElement('password-details-card');
+                card.password = password;
+                document.body.appendChild(card);
+                await flushTasks();
+
+                assertTrue(isVisible(card.$.deleteButton));
+
+                card.$.deleteButton.click();
+                await flushTasks();
+
+                // Verify that password was not deleted immediately.
+                assertEquals(
+                    0, passwordManager.getCallCount('removeSavedPassword'));
+
+                const deleteDialog = card.shadowRoot!.querySelector(
+                    'multi-store-delete-password-dialog');
+                assertTrue(!!deleteDialog);
+                assertTrue(deleteDialog.$.dialog.open);
+
+                assertTrue(deleteDialog.$.removeFromAccountCheckbox.checked);
+                assertTrue(deleteDialog.$.removeFromDeviceCheckbox.checked);
+
+                if (store === chrome.passwordsPrivate.PasswordStoreSet.DEVICE) {
+                  deleteDialog.$.removeFromAccountCheckbox.click();
+                } else if (
+                    store ===
+                    chrome.passwordsPrivate.PasswordStoreSet.ACCOUNT) {
+                  deleteDialog.$.removeFromDeviceCheckbox.click();
+                }
+                deleteDialog.$.removeButton.click();
+
+                const params =
+                    await passwordManager.whenCalled('removeSavedPassword');
+                assertEquals(password.id, params.id);
+                assertEquals(store, params.fromStores);
+              }));
+
+  test('delete disabled when no store selected', async function() {
+    const password = createPasswordEntry({
+      url: 'test.com',
+      username: 'vik',
+      id: 0,
+      inAccountStore: true,
+      inProfileStore: true,
+    });
+    password.affiliatedDomains = [
+      createAffiliatedDomain('test.com'),
+      createAffiliatedDomain('m.test.com'),
+    ];
+
+    const card = document.createElement('password-details-card');
+    card.password = password;
+    document.body.appendChild(card);
+    await flushTasks();
+
+    assertTrue(isVisible(card.$.deleteButton));
+
+    card.$.deleteButton.click();
+    await flushTasks();
+
+    // Verify that password was not deleted immediately.
+    assertEquals(0, passwordManager.getCallCount('removeSavedPassword'));
+
+    const deleteDialog =
+        card.shadowRoot!.querySelector('multi-store-delete-password-dialog');
+    assertTrue(!!deleteDialog);
+    assertTrue(deleteDialog.$.dialog.open);
+    deleteDialog.$.removeFromAccountCheckbox.click();
+    deleteDialog.$.removeFromDeviceCheckbox.click();
+
+    assertFalse(deleteDialog.$.removeFromAccountCheckbox.checked);
+    assertFalse(deleteDialog.$.removeFromDeviceCheckbox.checked);
+
+    assertTrue(deleteDialog.$.removeButton.disabled);
+  });
+
+  test('Sites title', async function() {
+    const password = createPasswordEntry(
+        {url: 'test.com', username: 'vik', password: 'password69'});
+    password.affiliatedDomains = [
+      {
+        name: 'test.com',
+        url: 'https://test.com',
+        signonRealm: 'https://test.com/',
+      },
+    ];
+
+    const card = document.createElement('password-details-card');
+    card.password = password;
+    document.body.appendChild(card);
+    await flushTasks();
+
+    assertEquals(
+        card.$.domainLabel.textContent!.trim(),
+        loadTimeData.getString('sitesLabel'));
+  });
+
+  test('Apps title', async function() {
+    const password = createPasswordEntry(
+        {url: 'test.com', username: 'vik', password: 'password69'});
+    password.affiliatedDomains = [
+      {
+        name: 'test.com',
+        url: 'https://test.com',
+        signonRealm: 'android://someHash/',
+      },
+    ];
+
+    const card = document.createElement('password-details-card');
+    card.password = password;
+    document.body.appendChild(card);
+    await flushTasks();
+
+    assertEquals(
+        card.$.domainLabel.textContent!.trim(),
+        loadTimeData.getString('appsLabel'));
+  });
+
+  test('Apps and sites title', async function() {
+    const password = createPasswordEntry(
+        {url: 'test.com', username: 'vik', password: 'password69'});
+    password.affiliatedDomains = [
+      {
+        name: 'test.com',
+        url: 'https://test.com',
+        signonRealm: 'android://someHash/',
+      },
+      {
+        name: 'test.com',
+        url: 'https://test.com',
+        signonRealm: 'https://test.com/',
+      },
+    ];
+
+    const card = document.createElement('password-details-card');
+    card.password = password;
+    document.body.appendChild(card);
+    await flushTasks();
+
+    assertEquals(
+        card.$.domainLabel.textContent!.trim(),
+        loadTimeData.getString('sitesAndAppsLabel'));
   });
 });

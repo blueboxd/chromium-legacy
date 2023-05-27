@@ -103,6 +103,9 @@ constexpr char kExtraDiagnosticsKey[] = "EXTRA_DIAGNOSTICS";
 
 }  // namespace
 
+ChromeOsFeedbackDelegate::ChromeOsFeedbackDelegate(content::WebUI* web_ui)
+    : ChromeOsFeedbackDelegate(Profile::FromWebUI(web_ui)) {}
+
 ChromeOsFeedbackDelegate::ChromeOsFeedbackDelegate(Profile* profile)
     : ChromeOsFeedbackDelegate(profile,
                                FeedbackPrivateAPI::GetFactoryInstance()
@@ -119,6 +122,17 @@ ChromeOsFeedbackDelegate::ChromeOsFeedbackDelegate(
     page_url_ = chrome::GetTargetTabUrl(
         browser->session_id(), browser->tab_strip_model()->active_index());
   }
+}
+
+ChromeOsFeedbackDelegate ChromeOsFeedbackDelegate::CreateForTesting(
+    Profile* profile) {
+  return ChromeOsFeedbackDelegate(profile);
+}
+
+ChromeOsFeedbackDelegate ChromeOsFeedbackDelegate::CreateForTesting(
+    Profile* profile,
+    scoped_refptr<extensions::FeedbackService> feedback_service) {
+  return ChromeOsFeedbackDelegate(profile, feedback_service);
 }
 
 ChromeOsFeedbackDelegate::~ChromeOsFeedbackDelegate() {
@@ -293,7 +307,7 @@ void ChromeOsFeedbackDelegate::SendReport(
     feedback_params.load_system_info = false;
   }
 
-  feedback_service_->SendFeedback(
+  feedback_service_->RedactThenSendFeedback(
       feedback_params, feedback_data,
       base::BindOnce(&ChromeOsFeedbackDelegate::OnSendFeedbackDone,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));

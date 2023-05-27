@@ -8,13 +8,14 @@
 #import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/scoped_feature_list.h"
+#import "components/sessions/core/session_id.h"
 #import "ios/web/common/features.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_test_util.h"
 #import "ios/web/navigation/serializable_user_data_manager_impl.h"
 #import "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
-#import "ios/web/session/crw_session_user_data.h"
+#import "ios/web/public/session/crw_session_user_data.h"
 #import "net/base/mac/url_conversions.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -68,12 +69,14 @@ CRWSessionUserData* SessionUserDataFromDictionary(
 
 class CRWSessionStorageTest : public PlatformTest {
  protected:
-  CRWSessionStorageTest() : session_storage_([[CRWSessionStorage alloc] init]) {
+  CRWSessionStorageTest() {
     // Set up `session_storage_`.
+    session_storage_ = [[CRWSessionStorage alloc] init];
     session_storage_.hasOpener = YES;
     session_storage_.lastCommittedItemIndex = 4;
     session_storage_.userAgentType = web::UserAgentType::DESKTOP;
     session_storage_.stableIdentifier = [[NSUUID UUID] UUIDString];
+    session_storage_.uniqueIdentifier = SessionID::NewUnique();
     session_storage_.userData =
         SessionUserDataFromDictionary(@{@"key" : @"value"});
 
@@ -85,8 +88,6 @@ class CRWSessionStorageTest : public PlatformTest {
         web::Referrer(GURL("http://referrer.url"), web::ReferrerPolicyDefault);
     item_storage.timestamp = base::Time::Now();
     item_storage.title = base::SysNSStringToUTF16(@"Title");
-    item_storage.displayState =
-        web::PageDisplayState(CGPointZero, UIEdgeInsetsZero, 0.0, 0.0, 0.0);
     item_storage.HTTPRequestHeaders = @{@"HeaderKey" : @"HeaderValue"};
     session_storage_.itemStorages = @[ item_storage ];
   }

@@ -10,6 +10,7 @@
 
 #include "ash/components/arc/mojom/app.mojom.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -47,6 +48,7 @@ class ApkWebAppInstaller {
   // with either the id of the installed web app if installation was successful,
   // or an empty id if not.
   static void Install(Profile* profile,
+                      const std::string& package_name,
                       arc::mojom::WebAppInfoPtr web_app_info,
                       arc::mojom::RawIconPngDataPtr icon,
                       InstallFinishCallback callback,
@@ -60,7 +62,8 @@ class ApkWebAppInstaller {
   virtual ~ApkWebAppInstaller();
 
   // Starts the installation flow by decoding icon data.
-  void Start(arc::mojom::WebAppInfoPtr web_app_info,
+  void Start(const std::string& package_name,
+             arc::mojom::WebAppInfoPtr web_app_info,
              arc::mojom::RawIconPngDataPtr icon);
 
   // Calls |callback_| with |id|, and deletes this object. Virtual for testing.
@@ -89,7 +92,7 @@ class ApkWebAppInstaller {
   // If |weak_owner_| is ever invalidated while this class is working,
   // installation will be aborted. |weak_owner_|'s lifetime must be equal to or
   // shorter than that of |profile_|.
-  Profile* profile_;
+  raw_ptr<Profile, ExperimentalAsh> profile_;
   bool is_web_only_twa_;
   absl::optional<std::string> sha256_fingerprint_;
   InstallFinishCallback callback_;

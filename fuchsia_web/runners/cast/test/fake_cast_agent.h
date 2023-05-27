@@ -5,6 +5,7 @@
 #ifndef FUCHSIA_WEB_RUNNERS_CAST_TEST_FAKE_CAST_AGENT_H_
 #define FUCHSIA_WEB_RUNNERS_CAST_TEST_FAKE_CAST_AGENT_H_
 
+#include <chromium/cast/cpp/fidl.h>
 #include <fuchsia/legacymetrics/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/sys/component/cpp/testing/realm_builder.h>
@@ -14,8 +15,7 @@
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/strings/string_piece.h"
-#include "fuchsia_web/runners/cast/fake_application_config_manager.h"
-#include "fuchsia_web/runners/cast/fidl/fidl/hlcpp/chromium/cast/cpp/fidl.h"
+#include "fuchsia_web/runners/cast/test/fake_application_config_manager.h"
 
 namespace test {
 
@@ -31,8 +31,11 @@ class FakeCastAgent final : public ::component_testing::LocalComponentImpl,
   FakeCastAgent& operator=(const FakeCastAgent&) = delete;
 
   // Registers a callback to be invoked every time the specified service is
-  // requested. This can be combined with Expect[Not]RunClosure() to express
-  // simple expectations on whether services are connected-to.
+  // requested. This can be combined with e.g:
+  // - Expect[Not]RunClosure() to express simple expectations on whether
+  //   services are connected-to.
+  // - DoNothing() to prevent default services (e.g. CorsExemptHeaderProvider)
+  //   being handled by the fake.
   void RegisterOnConnectClosure(base::StringPiece service,
                                 base::RepeatingClosure callback);
 
@@ -49,6 +52,12 @@ class FakeCastAgent final : public ::component_testing::LocalComponentImpl,
   // chromium::cast::CorsExemptHeaderProvider implementation.
   void GetCorsExemptHeaderNames(
       GetCorsExemptHeaderNamesCallback callback) override;
+
+  // Adds the service provided by the supplied `request_handler` to the
+  // fake component's outgoing service directory, unless the caller has
+  // registered an on-connect closure for that service already.
+  template <class T>
+  void MaybeAddDefaultService(fidl::InterfaceRequestHandler<T> request_handler);
 
   bool is_started_ = false;
 

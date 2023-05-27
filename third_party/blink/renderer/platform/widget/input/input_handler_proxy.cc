@@ -56,6 +56,9 @@ namespace {
 
 cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
   cc::ScrollStateData scroll_state_data;
+  if (event.SourceDevice() == WebGestureDevice::kScrollbar) {
+    scroll_state_data.is_scrollbar_interaction = true;
+  }
   switch (event.GetType()) {
     case WebInputEvent::Type::kGestureScrollBegin:
       scroll_state_data.position_x = event.PositionInWidget().x();
@@ -79,14 +82,14 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
 
         // If the target scroller comes from a main thread hit test, we're in
         // scroll unification.
-        scroll_state_data.is_main_thread_hit_tested =
-            event.data.scroll_begin.main_thread_hit_tested;
-        DCHECK(!event.data.scroll_begin.main_thread_hit_tested ||
+        scroll_state_data.main_thread_hit_tested_reasons =
+            event.data.scroll_begin.main_thread_hit_tested_reasons;
+        DCHECK(!event.data.scroll_begin.main_thread_hit_tested_reasons ||
                base::FeatureList::IsEnabled(::features::kScrollUnification));
       } else {
         // If a main thread hit test didn't yield a target we should have
         // discarded this event before this point.
-        DCHECK(!event.data.scroll_begin.main_thread_hit_tested);
+        DCHECK(!event.data.scroll_begin.main_thread_hit_tested_reasons);
       }
 
       break;
@@ -100,8 +103,6 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
           WebGestureEvent::InertialPhaseState::kMomentum;
       scroll_state_data.delta_granularity =
           event.data.scroll_update.delta_units;
-      if (event.SourceDevice() == WebGestureDevice::kScrollbar)
-        scroll_state_data.is_scrollbar_interaction = true;
       break;
     case WebInputEvent::Type::kGestureScrollEnd:
       scroll_state_data.is_ending = true;
@@ -354,21 +355,19 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
         gesture_event.SourceDevice() == WebGestureDevice::kTouchpad &&
         is_first_gesture_scroll_update;
 
+    bool queue_was_empty = compositor_event_queue_->empty();
+    compositor_event_queue_->Queue(std::move(event_with_callback),
+                                   tick_clock_->NowTicks());
+
     // |synchronous_input_handler_| is WebView only. WebView has different
     // mechanisms and we want to forward all events immediately.
     if (is_from_blocking_touch || is_scroll_end_from_wheel ||
         is_first_wheel_scroll_update || synchronous_input_handler_) {
-      compositor_event_queue_->Queue(std::move(event_with_callback),
-                                     tick_clock_->NowTicks());
-      DispatchQueuedInputEvents();
-      return;
+      DispatchQueuedInputEvents(false /* frame_aligned */);
     }
-
-    bool needs_animate_input = compositor_event_queue_->empty();
-    compositor_event_queue_->Queue(std::move(event_with_callback),
-                                   tick_clock_->NowTicks());
-    if (needs_animate_input)
+    if (queue_was_empty && !compositor_event_queue_->empty()) {
       input_handler_->SetNeedsAnimateInput();
+    }
     return;
   }
 
@@ -386,11 +385,14 @@ void InputHandlerProxy::ContinueScrollBeginAfterMainThreadHitTest(
   DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
   DCHECK_EQ(event->Event().GetType(),
             WebGestureEvent::Type::kGestureScrollBegin);
-  DCHECK(hit_testing_scroll_begin_on_main_thread_);
+  DCHECK(scroll_begin_main_thread_hit_test_reasons_);
   DCHECK(currently_active_gesture_device_);
   DCHECK(input_handler_);
 
-  hit_testing_scroll_begin_on_main_thread_ = false;
+  uint32_t main_thread_hit_test_reasons =
+      scroll_begin_main_thread_hit_test_reasons_;
+  scroll_begin_main_thread_hit_test_reasons_ =
+      cc::MainThreadScrollingReason::kNotScrollingOnMain;
 
   // HandleGestureScrollBegin has logic to end an existing scroll when an
   // unexpected scroll begin arrives. We currently think we're in a scroll
@@ -403,7 +405,8 @@ void InputHandlerProxy::ContinueScrollBeginAfterMainThreadHitTest(
   if (hit_test_result) {
     gesture_event->data.scroll_begin.scrollable_area_element_id =
         hit_test_result.GetInternalValue();
-    gesture_event->data.scroll_begin.main_thread_hit_tested = true;
+    gesture_event->data.scroll_begin.main_thread_hit_tested_reasons =
+        main_thread_hit_test_reasons;
 
     if (metrics) {
       // The event is going to be re-processed on the compositor thread; so,
@@ -418,15 +421,6 @@ void InputHandlerProxy::ContinueScrollBeginAfterMainThreadHitTest(
     DispatchSingleInputEvent(std::move(event_with_callback),
                              tick_clock_->NowTicks());
   } else {
-    // TODO(bokan): This looks odd but is actually what happens in the
-    // non-unified path. If a scroll is DROP_EVENT'ed, we still call
-    // RecordMainThreadScrollingReasons and then LTHI::RecordScrollEnd when we
-    // DROP the ScrollEnd. We call this to ensure symmetry between
-    // RecordScrollBegin and RecordScrollEnd but we should probably be avoiding
-    // this if the scroll never starts. https://crbug.com/1082601.
-    RecordMainThreadScrollingReasons(gesture_event->SourceDevice(), 0, false,
-                                     0);
-
     // If the main thread failed to return a scroller for whatever reason,
     // consider the ScrollBegin to be dropped.
     scroll_sequence_ignored_ = true;
@@ -440,7 +434,7 @@ void InputHandlerProxy::ContinueScrollBeginAfterMainThreadHitTest(
   // We blocked the compositor gesture event queue while the hit test was
   // pending so scroll updates may be waiting in the queue. Now that we've
   // finished the hit test and performed the scroll begin, flush the queue.
-  DispatchQueuedInputEvents();
+  DispatchQueuedInputEvents(false /* frame_aligned */);
 }
 
 void InputHandlerProxy::DispatchSingleInputEvent(
@@ -521,23 +515,34 @@ void InputHandlerProxy::DispatchSingleInputEvent(
                                     std::move(current_scroll_result_data_));
 }
 
-bool InputHandlerProxy::HasQueuedEventsReadyForDispatch() {
+bool InputHandlerProxy::HasQueuedEventsReadyForDispatch(bool frame_aligned) {
   // Block flushing the compositor gesture event queue while there's an async
   // scroll begin hit test outstanding. We'll flush the queue when the hit test
   // responds.
-  if (hit_testing_scroll_begin_on_main_thread_) {
+  if (scroll_begin_main_thread_hit_test_reasons_) {
     DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
     return false;
   }
 
-  return !compositor_event_queue_->empty();
+  if (compositor_event_queue_->empty()) {
+    return false;
+  }
+
+  // Defer scroll updates if they need to be frame-aligned.
+  if (compositor_event_queue_->PeekType() ==
+          WebGestureEvent::Type::kGestureScrollUpdate &&
+      input_handler_->CurrentScrollNeedsFrameAlignment() && !frame_aligned) {
+    return false;
+  }
+  return true;
 }
 
-void InputHandlerProxy::DispatchQueuedInputEvents() {
+void InputHandlerProxy::DispatchQueuedInputEvents(bool frame_aligned) {
   // Calling |NowTicks()| is expensive so we only want to do it once.
   base::TimeTicks now = tick_clock_->NowTicks();
-  while (HasQueuedEventsReadyForDispatch())
+  while (HasQueuedEventsReadyForDispatch(frame_aligned)) {
     DispatchSingleInputEvent(compositor_event_queue_->Pop(), now);
+  }
 }
 
 void InputHandlerProxy::UpdateElasticOverscroll() {
@@ -850,10 +855,10 @@ WebInputEventAttribution InputHandlerProxy::PerformEventAttribution(
   }
 }
 
-void InputHandlerProxy::RecordMainThreadScrollingReasons(
+void InputHandlerProxy::RecordScrollBegin(
     WebGestureDevice device,
     uint32_t reasons_from_scroll_begin,
-    bool was_main_thread_hit_tested,
+    uint32_t main_thread_hit_tested_reasons,
     uint32_t main_thread_repaint_reasons) {
   if (device != WebGestureDevice::kTouchpad &&
       device != WebGestureDevice::kScrollbar &&
@@ -881,7 +886,7 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
       disposition.has_value() && disposition == DID_NOT_HANDLE;
 
   bool blocked_on_main_at_begin =
-      blocked_on_main_thread_handler || was_main_thread_hit_tested;
+      blocked_on_main_thread_handler || main_thread_hit_tested_reasons;
 
   auto scroll_start_state = RecordScrollingThread(
       is_compositor_scroll, blocked_on_main_at_begin, device);
@@ -897,15 +902,25 @@ void InputHandlerProxy::RecordMainThreadScrollingReasons(
              ? cc::MainThreadScrollingReason::kWheelEventHandlerRegion
              : cc::MainThreadScrollingReason::kTouchEventHandlerRegion);
   }
-  if (was_main_thread_hit_tested) {
-    reportable_reasons |= cc::MainThreadScrollingReason::kFailedHitTest;
-  }
+  reportable_reasons |= main_thread_hit_tested_reasons;
 
   // With scroll unification, we never scroll "on main" from the perspective
   // of cc::InputHandler, but we still want to log reasons if the user will not
   // see new pixels until the next BeginMainFrame. These reasons are passed as
   // main_thread_repaint_reasons instead of reasons_from_scroll_begin.
   reportable_reasons |= main_thread_repaint_reasons;
+
+  if (reportable_reasons &&
+      !base::FeatureList::IsEnabled(::features::kScrollUnification)) {
+    // In pre-ScrollUnification, there may be non-composited scroll nodes that
+    // are ancestors of composited scroll nodes. Don't report non-composited
+    // main-thread scrolling reasons here because ScrollManager will report
+    // them.
+    reportable_reasons &= ~cc::MainThreadScrollingReason::kNonCompositedReasons;
+    if (!reportable_reasons) {
+      reportable_reasons = cc::MainThreadScrollingReason::kNoScrollingLayer;
+    }
+  }
 
   RecordScrollReasonsMetric(device, reportable_reasons);
 }
@@ -992,20 +1007,25 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
     scroll_status = input_handler_->ScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()));
   }
+  DCHECK_EQ(scroll_status.thread == ScrollThread::SCROLL_ON_MAIN_THREAD,
+            !!scroll_status.main_thread_scrolling_reasons);
 
   // If we need a hit test from the main thread, we'll reinject this scroll
   // begin event once the hit test is complete so avoid everything below for
   // now, it'll be run on the second iteration.
-  if (scroll_status.needs_main_thread_hit_test) {
+  if (scroll_status.main_thread_hit_test_reasons) {
     DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
-    hit_testing_scroll_begin_on_main_thread_ = true;
+    scroll_begin_main_thread_hit_test_reasons_ =
+        scroll_status.main_thread_hit_test_reasons;
     return REQUIRES_MAIN_THREAD_HIT_TEST;
   }
 
-  RecordMainThreadScrollingReasons(gesture_event.SourceDevice(),
-                                   scroll_status.main_thread_scrolling_reasons,
-                                   scroll_state.is_main_thread_hit_tested(),
-                                   scroll_status.main_thread_repaint_reasons);
+  if (scroll_status.thread != ScrollThread::SCROLL_IGNORED) {
+    RecordScrollBegin(gesture_event.SourceDevice(),
+                      scroll_status.main_thread_scrolling_reasons,
+                      scroll_state.main_thread_hit_tested_reasons(),
+                      scroll_status.main_thread_repaint_reasons);
+  }
 
   InputHandlerProxy::EventDisposition result = DID_NOT_HANDLE;
   scroll_sequence_ignored_ = false;
@@ -1152,19 +1172,13 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollEnd");
 
-  // TODO(bokan): It seems odd that we'd record a ScrollEnd for a scroll
-  // secuence that was ignored (i.e. the ScrollBegin was dropped). However,
-  // RecordScrollBegin does get called in that case so this needs to be this
-  // way for now. This makes life rather awkward for the unified scrolling path
-  // so perhaps we should only record a scrolling thread if a scroll actually
-  // started? https://crbug.com/1082601.
-  input_handler_->RecordScrollEnd(
-      GestureScrollInputType(gesture_event.SourceDevice()));
-
   if (scroll_sequence_ignored_) {
     DCHECK(!currently_active_gesture_device_.has_value());
     return DROP_EVENT;
   }
+
+  input_handler_->RecordScrollEnd(
+      GestureScrollInputType(gesture_event.SourceDevice()));
 
   if (!handling_gesture_on_impl_thread_) {
     DCHECK(!currently_active_gesture_device_.has_value());
@@ -1499,10 +1513,10 @@ void InputHandlerProxy::UpdateRootLayerStateForSynchronousInputHandler(
 void InputHandlerProxy::DeliverInputForBeginFrame(
     const viz::BeginFrameArgs& args) {
   if (!scroll_predictor_)
-    DispatchQueuedInputEvents();
+    DispatchQueuedInputEvents(true /* frame_aligned */);
 
   // Resampling GSUs and dispatch queued input events.
-  while (HasQueuedEventsReadyForDispatch()) {
+  while (HasQueuedEventsReadyForDispatch(true /* frame_aligned */)) {
     std::unique_ptr<EventWithCallback> event_with_callback =
         scroll_predictor_->ResampleScrollEvents(compositor_event_queue_->Pop(),
                                                 args.frame_time, args.interval);
@@ -1514,7 +1528,7 @@ void InputHandlerProxy::DeliverInputForBeginFrame(
 void InputHandlerProxy::DeliverInputForHighLatencyMode() {
   // When prediction enabled, do not handle input after commit complete.
   if (!scroll_predictor_)
-    DispatchQueuedInputEvents();
+    DispatchQueuedInputEvents(false /* frame_aligned */);
 }
 
 void InputHandlerProxy::SetSynchronousInputHandler(

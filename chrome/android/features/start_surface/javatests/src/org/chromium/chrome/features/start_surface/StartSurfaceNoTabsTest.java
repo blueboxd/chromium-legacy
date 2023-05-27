@@ -40,13 +40,13 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -87,9 +87,9 @@ public class StartSurfaceNoTabsTest {
         if (mImmediateReturn) {
             START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
             assertEquals(0, START_SURFACE_RETURN_TIME_SECONDS.getValue());
-            assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+            assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
         } else {
-            assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+            assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
         }
         ReturnToChromeUtil.setSkipInitializationCheckForTesting(true);
 
@@ -112,7 +112,7 @@ public class StartSurfaceNoTabsTest {
         onView(withId(R.id.search_box_text)).check(matches(isDisplayed()));
         onView(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
         onView(withId(R.id.tab_switcher_title)).check(matches(withEffectiveVisibility(GONE)));
-        onView(withId(R.id.carousel_tab_switcher_container))
+        onView(withId(R.id.tab_switcher_module_container))
                 .check(matches(withEffectiveVisibility(GONE)));
         onView(withId(R.id.single_tab_view)).check(matches(withEffectiveVisibility(GONE)));
         onView(withId(R.id.more_tabs)).check(matches(withEffectiveVisibility(GONE)));

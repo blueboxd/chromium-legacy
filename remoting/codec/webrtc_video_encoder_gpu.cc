@@ -41,7 +41,6 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "base/win/scoped_com_initializer.h"
-#include "media/gpu/windows/media_foundation_video_encode_accelerator_win.h"
 #endif
 
 namespace {
@@ -125,7 +124,7 @@ class WebrtcVideoEncoderGpu::Core
   void BitstreamBufferReady(
       int32_t bitstream_buffer_id,
       const media::BitstreamBufferMetadata& metadata) override;
-  void NotifyError(media::VideoEncodeAccelerator::Error error) override;
+  void NotifyErrorStatus(const media::EncoderStatus& status) override;
 
  private:
   enum State { UNINITIALIZED, INITIALIZING, INITIALIZED, INITIALIZATION_ERROR };
@@ -341,10 +340,12 @@ void WebrtcVideoEncoderGpu::Core::BitstreamBufferReady(
   callbacks_.erase(metadata.timestamp);
 }
 
-void WebrtcVideoEncoderGpu::Core::NotifyError(
-    media::VideoEncodeAccelerator::Error error) {
+void WebrtcVideoEncoderGpu::Core::NotifyErrorStatus(
+    const media::EncoderStatus& status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  LOG(ERROR) << __func__ << " error: " << error;
+  LOG(ERROR) << "NotifyErrorStatus() is called, code="
+             << static_cast<int32_t>(status.code())
+             << ", message=" << status.message();
 }
 
 void WebrtcVideoEncoderGpu::Core::BeginInitialization() {
@@ -416,9 +417,6 @@ bool WebrtcVideoEncoderGpu::IsSupportedByH264(const Profile& profile) {
   // H.264 and run the encoder on a different thread, we use a locally scoped
   // object for now.
   base::win::ScopedCOMInitializer scoped_com_initializer;
-
-  // Ensure the required MF DLLs are loaded before we call into the VEA below.
-  media::MediaFoundationVideoEncodeAccelerator::PreSandboxInitialization();
 #endif
 
   media::VideoEncodeAccelerator::SupportedProfiles profiles =

@@ -6,7 +6,11 @@
 #define CHROME_BROWSER_UI_WEBUI_SIDE_PANEL_COMPANION_COMPANION_PAGE_HANDLER_H_
 
 #include "base/memory/raw_ptr.h"
-#include "chrome/browser/ui/webui/side_panel/companion/companion.mojom.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/companion/core/constants.h"
+#include "chrome/browser/companion/core/mojom/companion.mojom.h"
+#include "chrome/browser/companion/core/msbb_delegate.h"
+#include "components/lens/buildflags.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -15,53 +19,78 @@
 
 class Browser;
 class CompanionSidePanelUntrustedUI;
+class Profile;
 
-// Query parameter for the url of the main web content.
-inline constexpr char kUrlQueryParameterKey[] = "url";
-// Query parameter for the Chrome WebUI origin.
-inline constexpr char kOriginQueryParameterKey[] = "origin";
-// Query parameter value for the Chrome WebUI origin. This needs to be different
-// from the WebUI URL constant because it does not include the last '/'.
-inline constexpr char kOriginQueryParameterValue[] =
-    "chrome-untrusted://companion-side-panel.top-chrome";
+namespace companion {
+class CompanionMetricsLogger;
+class CompanionUrlBuilder;
+class PromoHandler;
+class SigninDelegate;
 
 class CompanionPageHandler : public side_panel::mojom::CompanionPageHandler,
-                             public content::WebContentsObserver {
+                             public content::WebContentsObserver,
+                             public MsbbDelegate {
  public:
-  explicit CompanionPageHandler(
+  CompanionPageHandler(
       mojo::PendingReceiver<side_panel::mojom::CompanionPageHandler> receiver,
       mojo::PendingRemote<side_panel::mojom::CompanionPage> page,
-      Browser* browser,
-      CompanionSidePanelUntrustedUI* search_companion_ui);
+      CompanionSidePanelUntrustedUI* companion_ui);
   CompanionPageHandler(const CompanionPageHandler&) = delete;
   CompanionPageHandler& operator=(const CompanionPageHandler&) = delete;
   ~CompanionPageHandler() override;
 
   // side_panel::mojom::CompanionPageHandler:
   void ShowUI() override;
+  void OnPromoAction(side_panel::mojom::PromoType promo_type,
+                     side_panel::mojom::PromoAction promo_action) override;
+  void OnRegionSearchClicked() override;
+  void OnExpsOptInStatusAvailable(bool is_exps_opted_in) override;
+  void OnOpenInNewTabButtonURLChanged(const ::GURL& url_to_open) override;
+  void RecordUiSurfaceShown(side_panel::mojom::UiSurface ui_surface,
+                            uint32_t child_element_count) override;
+  void RecordUiSurfaceClicked(side_panel::mojom::UiSurface ui_surface) override;
 
   // content::WebContentsObserver:
   void PrimaryPageChanged(content::Page& page) override;
 
+  // Informs the page handler that a new text query to initialize / reload the
+  // page with was sent from client.
+  void OnSearchTextQuery(const std::string& text_query);
+  void OnImageQuery(side_panel::mojom::ImageQuery image_query);
+
+  // Returns the latest set url to be used for the 'open in new tab' button in
+  // the side panel header.
+  GURL GetNewTabButtonUrl();
+
  private:
-  // Notifies the companion page of the initial URL it should load if any.
-  // Otherwise, it will load the zero state.
-  void InitializePage();
+  // MsbbDelegate overrides.
+  void EnableMsbb(bool enable_msbb) override;
 
-  // Notifies the companion page of the visible URL when the active tab has
-  // changed or when the primary page has changed on the active tab.
-  void NotifyURLChanged();
-  bool IsMsbbEnabled();
+  // Notifies the companion side panel about the URL of the main frame. Based on
+  // the call site, either does a full reload of the side panel or does a
+  // postmessage() update. Reload is done during initial load of the side panel,
+  // and context menu initiated navigations, while postmessage() is used for
+  // subsequent navigations on the main frame.
+  void NotifyURLChanged(bool is_full_reload);
 
-  // Returns the companion URL that will be loaded in the side panel with the
-  // URL query parameter set to `url_query_param_value` and the origin query
-  // parameter set the to URL of the WebUI.
-  GURL GetCompanionURLWithQueryParams(GURL url_query_param_value);
-  GURL GetHomepageURLForCompanion();
+  // Get the current browser associated with the WebUI.
+  Browser* GetBrowser();
+  // Get the profile associated with the WebUI.
+  Profile* GetProfile();
 
   mojo::Receiver<side_panel::mojom::CompanionPageHandler> receiver_;
   mojo::Remote<side_panel::mojom::CompanionPage> page_;
   raw_ptr<CompanionSidePanelUntrustedUI> companion_untrusted_ui_ = nullptr;
+  std::unique_ptr<SigninDelegate> signin_delegate_;
+  std::unique_ptr<CompanionUrlBuilder> url_builder_;
+  std::unique_ptr<PromoHandler> promo_handler_;
+  GURL open_in_new_tab_url_;
+
+  // Logs metrics for companion page. Reset when there is a new navigation.
+  std::unique_ptr<CompanionMetricsLogger> metrics_logger_;
+
+  base::WeakPtrFactory<CompanionPageHandler> weak_ptr_factory_{this};
 };
+}  // namespace companion
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIDE_PANEL_COMPANION_COMPANION_PAGE_HANDLER_H_

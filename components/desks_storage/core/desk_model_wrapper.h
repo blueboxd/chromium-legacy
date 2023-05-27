@@ -11,8 +11,9 @@
 #include <memory>
 
 #include "ash/public/cpp/desk_template.h"
-#include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/uuid.h"
 #include "components/account_id/account_id.h"
 #include "components/desks_storage/core/desk_model.h"
 #include "components/desks_storage/core/desk_sync_bridge.h"
@@ -37,10 +38,10 @@ class DeskModelWrapper : public DeskModel {
   // DeskModel:
   DeskModel::GetAllEntriesResult GetAllEntries() override;
   DeskModel::GetEntryByUuidResult GetEntryByUUID(
-      const base::GUID& uuid) override;
+      const base::Uuid& uuid) override;
   void AddOrUpdateEntry(std::unique_ptr<ash::DeskTemplate> new_entry,
                         AddOrUpdateEntryCallback callback) override;
-  void DeleteEntry(const base::GUID& uuid,
+  void DeleteEntry(const base::Uuid& uuid,
                    DeleteEntryCallback callback) override;
   void DeleteAllEntries(DeleteEntryCallback callback) override;
   size_t GetEntryCount() const override;
@@ -48,13 +49,13 @@ class DeskModelWrapper : public DeskModel {
   size_t GetDeskTemplateEntryCount() const override;
   size_t GetMaxSaveAndRecallDeskEntryCount() const override;
   size_t GetMaxDeskTemplateEntryCount() const override;
-  std::vector<base::GUID> GetAllEntryUuids() const override;
+  std::vector<base::Uuid> GetAllEntryUuids() const override;
   bool IsReady() const override;
   bool IsSyncing() const override;
   ash::DeskTemplate* FindOtherEntryWithName(
       const std::u16string& name,
       ash::DeskTemplateType type,
-      const base::GUID& uuid) const override;
+      const base::Uuid& uuid) const override;
 
   // Setter method to set `desk_template_model_` to the correct `bridge`.
   void SetDeskSyncBridge(desks_storage::DeskSyncBridge* bridge) {
@@ -69,9 +70,10 @@ class DeskModelWrapper : public DeskModel {
   void OnDeleteAllEntries(DeskModel::DeleteEntryCallback callback,
                           desks_storage::DeskModel::DeleteEntryStatus status);
 
-  desks_storage::DeskModel* save_and_recall_desks_model_;
+  raw_ptr<desks_storage::DeskModel, ExperimentalAsh>
+      save_and_recall_desks_model_;
 
-  desks_storage::DeskSyncBridge* desk_template_model_;
+  raw_ptr<desks_storage::DeskSyncBridge, ExperimentalAsh> desk_template_model_;
 
   base::WeakPtrFactory<DeskModelWrapper> weak_ptr_factory_{this};
 };

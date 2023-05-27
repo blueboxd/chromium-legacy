@@ -8,6 +8,7 @@
 #include "ash/login/ui/auth_icon_view.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/raw_ptr.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,12 +36,6 @@ constexpr LabelTestcase kLabelTestcases[] = {
      IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED,
      IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED},
     {SmartLockState::kInactive, /*can_use_pin=*/false,
-     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED,
-     IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED},
-    {SmartLockState::kPasswordReentryRequired, /*can_use_pin=*/true,
-     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED,
-     IDS_AUTH_FACTOR_LABEL_PASSWORD_OR_PIN_REQUIRED},
-    {SmartLockState::kPasswordReentryRequired, /*can_use_pin=*/false,
      IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED,
      IDS_AUTH_FACTOR_LABEL_PASSWORD_REQUIRED},
     {SmartLockState::kPrimaryUserAbsent, /*can_use_pin=*/true,
@@ -116,7 +111,7 @@ class SmartLockAuthFactorModelUnittest : public AshTestBase {
   }
 
   std::unique_ptr<SmartLockAuthFactorModel> smart_lock_model_;
-  AuthFactorModel* model_ = nullptr;
+  raw_ptr<AuthFactorModel, ExperimentalAsh> model_ = nullptr;
   AuthIconView icon_;
   bool on_state_changed_called_ = false;
   bool arrow_button_tap_callback_called_ = false;
@@ -178,8 +173,7 @@ TEST_F(SmartLockAuthFactorModelUnittest, AvailableStates) {
 
 TEST_F(SmartLockAuthFactorModelUnittest, ErrorStates) {
   InitializeSmartLockAuthFactorModel();
-  for (SmartLockState state : {SmartLockState::kPasswordReentryRequired,
-                               SmartLockState::kPrimaryUserAbsent,
+  for (SmartLockState state : {SmartLockState::kPrimaryUserAbsent,
                                SmartLockState::kPhoneNotAuthenticated,
                                SmartLockState::kBluetoothDisabled,
                                SmartLockState::kPhoneNotLockable}) {
@@ -239,8 +233,6 @@ TEST_F(SmartLockAuthFactorModelUnittest, ArrowButtonTapCallback) {
       SmartLockState::kPhoneFoundUnlockedAndDistant, false);
   TestArrowButtonAndCheckCallbackCalled(SmartLockState::kPhoneAuthenticated,
                                         true);
-  TestArrowButtonAndCheckCallbackCalled(
-      SmartLockState::kPasswordReentryRequired, false);
   TestArrowButtonAndCheckCallbackCalled(SmartLockState::kPrimaryUserAbsent,
                                         false);
 }

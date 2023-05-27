@@ -236,8 +236,9 @@ suite('KeyboardBacklightTest', function() {
     assertTrue(!!selectorContainer);
     const colorContainers = selectorContainer!.querySelectorAll('.selectable');
     assertEquals(9, colorContainers!.length);
-    assertEquals(
-        'Wallpaper color', (colorContainers[8] as HTMLElement).ariaLabel);
+    const wallpaperColorIcon =
+        colorContainers[8]!.querySelector('color-icon') as HTMLElement;
+    assertEquals('Wallpaper color', wallpaperColorIcon.ariaLabel);
     assertEquals(0, selectorContainer!.querySelectorAll('.divider').length);
     assertTrue(!!colorSelectorElement?.shadowRoot!.getElementById(
         'wallpaperColorDescription'));
@@ -262,8 +263,9 @@ suite('KeyboardBacklightTest', function() {
         const colorContainers =
             selectorContainer!.querySelectorAll('.selectable');
         assertEquals(9, colorContainers!.length);
-        assertEquals(
-            'Wallpaper color', (colorContainers[0] as HTMLElement).ariaLabel);
+        const wallpaperColorIcon =
+            colorContainers[0]!.querySelector('color-icon') as HTMLElement;
+        assertEquals('Wallpaper color', wallpaperColorIcon.ariaLabel);
         assertEquals(1, selectorContainer!.querySelectorAll('.divider').length);
         assertFalse(!!keyboardBacklightElement?.shadowRoot!.getElementById(
             'wallpaperColorDescription'));
@@ -284,10 +286,9 @@ suite('KeyboardBacklightTest', function() {
         keyboardBacklightElement.shadowRoot!.querySelector(
             'zone-customization');
     assertTrue(!!zoneCustomizationElement);
-    const zoneButtons =
-        zoneCustomizationElement.shadowRoot!.querySelectorAll('.zone-button');
+    const zoneTabs =
+        zoneCustomizationElement.shadowRoot!.querySelectorAll('.zone-tab');
     assertEquals(
-        5, zoneButtons!.length,
-        '5 zones should display in customization dialog');
+        5, zoneTabs!.length, '5 zones should display in customization dialog');
   });
 });

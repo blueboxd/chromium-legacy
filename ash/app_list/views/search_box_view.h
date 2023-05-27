@@ -14,9 +14,11 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_box_model_observer.h"
+#include "ash/app_list/views/launcher_search_iph_view.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/search_box/search_box_view_base.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -39,7 +41,8 @@ class SearchResultBaseView;
 // contents and selection model of the Textfield.
 class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
                                  public AppListModelProvider::Observer,
-                                 public SearchBoxModelObserver {
+                                 public SearchBoxModelObserver,
+                                 public LauncherSearchIphView::Delegate {
  public:
   enum class PlaceholderTextType {
     kShortcuts = 0,
@@ -84,7 +87,6 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
                          bool initiated_by_user) override;
   void UpdatePlaceholderTextStyle() override;
   void UpdateSearchBoxBorder() override;
-  void RecordSearchBoxActivationHistogram(ui::EventType event_type) override;
   void OnSearchBoxActiveChanged(bool active) override;
   void UpdateSearchBoxFocusPaint() override;
 
@@ -101,6 +103,11 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   void OnThemeChanged() override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void AddedToWidget() override;
+
+  // LauncherSearchIphView::Delegate:
+  void RunLauncherSearchQuery(const std::u16string& query) override;
+  void OpenAssistantPage() override;
+  void OpenSearchBoxIphUrl() override;
 
   // Updates the search box's background corner radius and color based on the
   // state of AppListModel.
@@ -161,6 +168,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   int GetSearchBoxIconSize();
   int GetSearchBoxButtonSize();
 
+  // Sets whether an IPH can be shown now or not.
+  void SetIsIphAllowed(bool iph_allowed);
+
  private:
   class FocusRingLayer;
 
@@ -182,6 +192,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // Updates the search box placeholder text and accessible name.
   void UpdatePlaceholderTextAndAccessibleName();
+
+  // Updates the visibility of an IPH view.
+  void UpdateIphViewVisibility();
 
   // Notifies SearchBoxViewDelegate that the autocomplete text is valid.
   void AcceptAutocompleteText();
@@ -209,6 +222,7 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // Overridden from SearchBoxModelObserver:
   void SearchEngineChanged() override;
   void ShowAssistantChanged() override;
+  void OnWouldTriggerIphChanged() override;
 
   // Updates search_box() for the |selected_result|. Should be called when the
   // selected search result changes.
@@ -234,8 +248,8 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // The key most recently pressed.
   ui::KeyboardCode last_key_pressed_ = ui::VKEY_UNKNOWN;
 
-  SearchBoxViewDelegate* const delegate_;
-  AppListViewDelegate* const view_delegate_;
+  const raw_ptr<SearchBoxViewDelegate, ExperimentalAsh> delegate_;
+  const raw_ptr<AppListViewDelegate, ExperimentalAsh> view_delegate_;
 
   // The layer that will draw the focus ring if needed. Could be a nullptr if
   // the search box is in the bubble launcher.
@@ -250,6 +264,9 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // The corner radius of the search box background.
   int corner_radius_ = 0;
 
+  // Whether an IPH is allowed to be shown or not.
+  bool is_iph_allowed_ = false;
+
   // Set by SearchResultPageView when the accessibility selection moves to a
   // search result view - the value is the ID of the currently selected result
   // view.
@@ -257,7 +274,8 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
 
   // Owned by SearchResultPageView (for fullscreen launcher) or
   // ProductivityLauncherSearchPage (for bubble launcher).
-  ResultSelectionController* result_selection_controller_ = nullptr;
+  raw_ptr<ResultSelectionController, ExperimentalAsh>
+      result_selection_controller_ = nullptr;
 
   // The timestamp taken when the search box model's query is updated by the
   // user. Used in metrics. Metrics are only recorded for search model updates
@@ -267,6 +285,8 @@ class ASH_EXPORT SearchBoxView : public SearchBoxViewBase,
   // If true, `SelectPlaceholderText()` always returns a fixed placeholder text
   // instead of the one picked randomly.
   bool use_fixed_placeholder_text_for_test_ = false;
+
+  const bool is_jelly_enabled_ = false;
 
   base::ScopedObservation<SearchBoxModel, SearchBoxModelObserver>
       search_box_model_observer_{this};

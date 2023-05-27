@@ -21,8 +21,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_types.h"
 
 namespace ash {
 
@@ -31,11 +29,12 @@ NotificationCenterTray::NotificationCenterTray(Shelf* shelf)
                          TrayBackgroundViewCatalogName::kNotificationCenter,
                          RoundedCornerBehavior::kStartRounded),
       notification_icons_controller_(
-          std::make_unique<NotificationIconsController>(shelf)) {
+          std::make_unique<NotificationIconsController>(
+              shelf,
+              /*model=*/nullptr,
+              /*notification_center_tray=*/this)) {
   SetID(VIEW_ID_SA_NOTIFICATION_TRAY);
   set_use_bounce_in_animation(false);
-
-  message_center::MessageCenter::Get()->AddObserver(this);
 
   tray_container()->SetMargin(
       /*main_axis_margin=*/kUnifiedTrayContentPadding -
@@ -48,17 +47,35 @@ NotificationCenterTray::NotificationCenterTray(Shelf* shelf)
   // only added by host views.
   notification_icons_controller_->AddNotificationTrayItems(tray_container());
 
-  // Do not show this indicator if video conference feature is enabled since
-  // privacy indicator is already shown there.
-  if (features::IsPrivacyIndicatorsEnabled() &&
-      !features::IsVideoConferenceEnabled()) {
+  if (features::IsPrivacyIndicatorsEnabled()) {
     privacy_indicators_view_ = tray_container()->AddChildView(
         std::make_unique<PrivacyIndicatorsTrayItemView>(shelf));
+  }
+
+  for (auto* tray_item : tray_container()->children()) {
+    static_cast<TrayItemView*>(tray_item)->AddObserver(this);
   }
 }
 
 NotificationCenterTray::~NotificationCenterTray() {
-  message_center::MessageCenter::Get()->RemoveObserver(this);
+  for (auto* tray_item : tray_container()->children()) {
+    static_cast<TrayItemView*>(tray_item)->RemoveObserver(this);
+  }
+}
+
+void NotificationCenterTray::OnTrayItemVisibilityAboutToChange(
+    bool target_visibility) {
+  // A change in one of this tray's tray items could have implications for this
+  // tray's overall visibility (e.g. if the only visible tray item wants to
+  // become hidden, which could happen when dismissing all notifications). We
+  // need to update this tray's visibility here, before the tray item gets a
+  // chance to start its own visibility change animation, so that this tray does
+  // not briefly become empty, for instance.
+  //
+  // If the tray item's visibility change does not imply a change in visibility
+  // for this tray, then `SetVisiblePreferred()` (which is called by
+  // `UpdateVisibility()`) will do nothing.
+  UpdateVisibility();
 }
 
 void NotificationCenterTray::OnSystemTrayVisibilityChanged(
@@ -161,40 +178,13 @@ void NotificationCenterTray::OnAnyBubbleVisibilityChanged(
   }
 }
 
-void NotificationCenterTray::OnNotificationAdded(
-    const std::string& notification_id) {
-  UpdateVisibility();
-}
-
-void NotificationCenterTray::OnNotificationDisplayed(
-    const std::string& notification_id,
-    const message_center::DisplaySource source) {
-  UpdateVisibility();
-}
-
-void NotificationCenterTray::OnNotificationRemoved(
-    const std::string& notification_id,
-    bool by_user) {
-  UpdateVisibility();
-}
-
-void NotificationCenterTray::OnNotificationUpdated(
-    const std::string& notification_id) {
-  UpdateVisibility();
-}
-
 void NotificationCenterTray::UpdateVisibility() {
+  // `NotificationIconsController` handles updating this tray's tray items, so
+  // no need to do that here.
   const bool new_visibility =
       message_center::MessageCenter::Get()->NotificationCount() > 0 &&
       system_tray_visible_;
-  if (new_visibility == visible_preferred()) {
-    return;
-  }
-
   SetVisiblePreferred(new_visibility);
-
-  notification_icons_controller_->UpdateNotificationIcons();
-  notification_icons_controller_->UpdateNotificationIndicators();
 
   // We should close the bubble if there are no more notifications to show.
   if (!new_visibility && bubble_) {

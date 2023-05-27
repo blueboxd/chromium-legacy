@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button_style.css.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
-import '../../settings_shared.css.js';
 
 import {CrRadioButtonMixin, CrRadioButtonMixinInterface} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button_mixin.js';
 import {PaperRippleBehavior} from 'chrome://resources/polymer/v3_0/paper-behaviors/paper-ripple-behavior.js';
@@ -81,7 +81,7 @@ class MultideviceRadioButtonElement extends MultideviceRadioButtonElementBase {
    * Prevents on-click handles on the control from being activated when the
    * indicator is clicked.
    */
-  private onIndicatorTap_(e: Event): void {
+  private onIndicatorClick_(e: Event): void {
     e.preventDefault();
     e.stopPropagation();
   }

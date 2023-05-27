@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_TEST_FAKE_SKIA_OUTPUT_SURFACE_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -67,7 +68,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   void SwapBuffersSkipped(const gfx::Rect root_pass_damage_rect) override {}
   SkCanvas* BeginPaintRenderPass(const AggregatedRenderPassId& id,
                                  const gfx::Size& surface_size,
-                                 ResourceFormat format,
+                                 SharedImageFormat format,
                                  bool mipmap,
                                  bool scanout_dcomp_surface,
                                  sk_sp<SkColorSpace> color_space,
@@ -84,7 +85,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const AggregatedRenderPassId& id,
       const gfx::Size& size,
-      ResourceFormat format,
+      SharedImageFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space,
       const gpu::Mailbox& mailbox) override;
@@ -104,10 +105,11 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
   gpu::SyncToken Flush() override;
   bool EnsureMinNumberOfBuffers(int n) override;
   void PreserveChildSurfaceControls() override {}
-  gpu::Mailbox CreateSharedImage(ResourceFormat format,
+  gpu::Mailbox CreateSharedImage(SharedImageFormat format,
                                  const gfx::Size& size,
                                  const gfx::ColorSpace& color_space,
                                  uint32_t usage,
+                                 base::StringPiece debug_label,
                                  gpu::SurfaceHandle surface_handle) override;
   gpu::Mailbox CreateSolidColorSharedImage(
       const SkColor4f& color,

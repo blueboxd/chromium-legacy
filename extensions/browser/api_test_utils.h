@@ -21,11 +21,6 @@ class BrowserContext;
 namespace extensions {
 class ExtensionFunctionDispatcher;
 
-// TODO(yoz): crbug.com/394840: Remove duplicate functionality in
-// chrome/browser/extensions/extension_function_test_utils.h.
-//
-// TODO(ckehoe): Accept args as std::unique_ptr<base::Value>,
-// and migrate existing users to the new API.
 namespace api_test_utils {
 
 // A helper class to handle waiting for a function response.
@@ -57,11 +52,11 @@ class SendResponseHelper {
   std::unique_ptr<bool> response_;
 };
 
-enum RunFunctionFlags { NONE = 0, INCLUDE_INCOGNITO = 1 << 0 };
-
-// Parses JSON and returns the dictionary, or absl::nullopt if the JSON is
-// invalid or not a dictionary.
-absl::optional<base::Value::Dict> ParseDictionary(const std::string& data);
+// The mode a function is supposed to be run with.
+enum class FunctionMode {
+  kNone,
+  kIncognito,
+};
 
 // Get |key| from |val| as the specified type. If |key| does not exist, or is
 // not of the specified type, adds a failure to the current test and returns
@@ -72,6 +67,11 @@ std::string GetString(const base::Value::Dict& val, const std::string& key);
 base::Value::List GetList(const base::Value::Dict& val, const std::string& key);
 base::Value::Dict GetDict(const base::Value::Dict& val, const std::string& key);
 
+// If |val| is a dictionary, return it as one, otherwise create an empty one.
+base::Value::Dict ToDict(absl::optional<base::ValueView> val);
+// If |val| is a list, return it as one, otherwise create an empty one.
+base::Value::List ToList(absl::optional<base::ValueView> val);
+
 // Run |function| with |args| and return the result. Adds an error to the
 // current test if |function| returns an error. Takes ownership of
 // |function|. The caller takes ownership of the result.
@@ -79,33 +79,33 @@ absl::optional<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
     scoped_refptr<ExtensionFunction> function,
     const std::string& args,
     std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
-    RunFunctionFlags flags);
+    FunctionMode mode);
 absl::optional<base::Value> RunFunctionWithDelegateAndReturnSingleResult(
     scoped_refptr<ExtensionFunction> function,
     base::Value::List args,
     std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
-    RunFunctionFlags flags);
+    FunctionMode mode);
 
 // RunFunctionWithDelegateAndReturnSingleResult, except with a NULL
 // implementation of the Delegate.
 absl::optional<base::Value> RunFunctionAndReturnSingleResult(
-    ExtensionFunction* function,
+    scoped_refptr<ExtensionFunction> function,
     const std::string& args,
     content::BrowserContext* context);
 absl::optional<base::Value> RunFunctionAndReturnSingleResult(
-    ExtensionFunction* function,
+    scoped_refptr<ExtensionFunction> function,
     const std::string& args,
     content::BrowserContext* context,
-    RunFunctionFlags flags);
+    FunctionMode mode);
 
 // Run |function| with |args| and return the resulting error. Adds an error to
 // the current test if |function| returns a result. Takes ownership of
 // |function|.
-std::string RunFunctionAndReturnError(ExtensionFunction* function,
+std::string RunFunctionAndReturnError(scoped_refptr<ExtensionFunction> function,
                                       const std::string& args,
                                       content::BrowserContext* context,
-                                      RunFunctionFlags flags);
-std::string RunFunctionAndReturnError(ExtensionFunction* function,
+                                      FunctionMode mode);
+std::string RunFunctionAndReturnError(scoped_refptr<ExtensionFunction> function,
                                       const std::string& args,
                                       content::BrowserContext* context);
 
@@ -119,17 +119,18 @@ std::string RunFunctionAndReturnError(ExtensionFunction* function,
 // TODO(aa): I'm concerned that this style won't scale to all the bits and bobs
 // we're going to need to frob for all the different extension functions. But
 // we can refactor when we see what is needed.
-bool RunFunction(ExtensionFunction* function,
+bool RunFunction(scoped_refptr<ExtensionFunction> function,
                  const std::string& args,
-                 content::BrowserContext* context);
-bool RunFunction(ExtensionFunction* function,
+                 content::BrowserContext* context,
+                 FunctionMode mode = FunctionMode::kNone);
+bool RunFunction(scoped_refptr<ExtensionFunction> function,
                  const std::string& args,
                  std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
-                 RunFunctionFlags flags);
-bool RunFunction(ExtensionFunction* function,
+                 FunctionMode mode);
+bool RunFunction(scoped_refptr<ExtensionFunction> function,
                  base::Value::List args,
                  std::unique_ptr<ExtensionFunctionDispatcher> dispatcher,
-                 RunFunctionFlags flags);
+                 FunctionMode mode);
 
 }  // namespace api_test_utils
 }  // namespace extensions

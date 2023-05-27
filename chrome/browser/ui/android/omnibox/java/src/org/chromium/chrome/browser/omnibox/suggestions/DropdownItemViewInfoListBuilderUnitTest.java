@@ -35,7 +35,8 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.omnibox.suggestions.base.HistoryClustersProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.dividerline.DividerLineProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
 import org.chromium.chrome.test.util.browser.Features;
@@ -43,6 +44,7 @@ import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.AutocompleteResult;
 import org.chromium.components.omnibox.GroupsProto.GroupsInfo;
+import org.chromium.components.omnibox.OmniboxSuggestionType;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.ShadowGURL;
 
@@ -64,6 +66,8 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     private @Mock HeaderProcessor mMockHeaderProcessor;
     private @Mock DividerLineProcessor mMockDividerLineProcessor;
     private @Mock ActionChipsDelegate mMockActionChipsDelegate;
+    @Mock
+    private HistoryClustersProcessor.OpenHistoryClustersDelegate mOpenHistoryClustersDelegate;
     DropdownItemViewInfoListBuilder mBuilder;
 
     @Before
@@ -77,7 +81,7 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         when(mMockHeaderProcessor.getViewTypeId()).thenReturn(OmniboxSuggestionUiType.HEADER);
 
         mBuilder = new DropdownItemViewInfoListBuilder(
-                () -> null, (url) -> false, mMockActionChipsDelegate);
+                () -> null, (url) -> false, mMockActionChipsDelegate, mOpenHistoryClustersDelegate);
         mBuilder.registerSuggestionProcessor(mMockSuggestionProcessor);
         mBuilder.setHeaderProcessorForTest(mMockHeaderProcessor);
     }
@@ -512,5 +516,52 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         Assert.assertEquals(0, infoList.size());
 
         mBuilder.setDividerLineProcessorForTest(null);
+    }
+
+    @Test
+    @SmallTest
+    @Features.
+    EnableFeatures(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_VISIBLE_GROUP_ELIGIBILITY_UPDATE)
+    public void visibleSuggestions_updatedVisibleGroupEligibilityLogic() {
+        final SuggestionProcessor mockProcessor = mock(SuggestionProcessor.class);
+        mBuilder.registerSuggestionProcessor(mockProcessor);
+        final AutocompleteMatchBuilder builder =
+                AutocompleteMatchBuilder.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST);
+        final AutocompleteMatch match1 = builder.setDescription("1").build();
+        final AutocompleteMatch match2 = builder.setDescription("2").build();
+        final AutocompleteResult result =
+                AutocompleteResult.fromCache(Arrays.asList(match1, match2), null);
+
+        // Each suggestion is 20dp tall, asking 40dp total space.
+        when(mMockSuggestionProcessor.doesProcessSuggestion(any(), anyInt())).thenReturn(true);
+        when(mMockSuggestionProcessor.getMinimumViewHeight()).thenReturn(20);
+
+        // Given 40dp area, both suggestions should be fully exposed.
+        mBuilder.setDropdownHeightWithKeyboardActive(40);
+        Assert.assertEquals(2, mBuilder.getVisibleSuggestionsCount(result));
+
+        // Given 30dp area, both suggestions should be still considered fully visible:
+        // One suggestion is 100% exposed, the other is 50% exposed
+        mBuilder.setDropdownHeightWithKeyboardActive(30);
+        Assert.assertEquals(2, mBuilder.getVisibleSuggestionsCount(result));
+
+        // Given 29dp area, one of the suggestions is no longer considered exposed.
+        // 9dp is less than 50% of the 20dp it needs.
+        mBuilder.setDropdownHeightWithKeyboardActive(29);
+        Assert.assertEquals(1, mBuilder.getVisibleSuggestionsCount(result));
+
+        // Given 20dp area, one of the suggestions is fully concealed.
+        mBuilder.setDropdownHeightWithKeyboardActive(20);
+        Assert.assertEquals(1, mBuilder.getVisibleSuggestionsCount(result));
+
+        // Given 10dp area, one of the suggestions is still considered exposed,
+        // while the other is fully conealed. This is because 10dp is 50% of required 20dp.
+        mBuilder.setDropdownHeightWithKeyboardActive(10);
+        Assert.assertEquals(1, mBuilder.getVisibleSuggestionsCount(result));
+
+        // Given 9dp area, none of the suggestions are considered visible.
+        // There's not enough space to show even one of them.
+        mBuilder.setDropdownHeightWithKeyboardActive(9);
+        Assert.assertEquals(0, mBuilder.getVisibleSuggestionsCount(result));
     }
 }

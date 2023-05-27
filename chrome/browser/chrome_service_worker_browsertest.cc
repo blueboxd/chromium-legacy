@@ -428,6 +428,24 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest, MAYBE_SubresourceCountUKM) {
   test_recorder.ExpectEntryMetric(
       entries[0],
       ukm::builders::ServiceWorker_OnLoad::kSubResourceFallbackRatioName, 50);
+  test_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::ServiceWorker_OnLoad::kAudioFallbackName, 0);
+  test_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::ServiceWorker_OnLoad::kAudioHandledName, 0);
+  test_recorder.ExpectEntryMetric(
+      entries[0],
+      ukm::builders::ServiceWorker_OnLoad::kCSSStyleSheetFallbackName, 1);
+  test_recorder.ExpectEntryMetric(
+      entries[0],
+      ukm::builders::ServiceWorker_OnLoad::kCSSStyleSheetHandledName, 1);
+  test_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::ServiceWorker_OnLoad::kFontFallbackName, 0);
+  test_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::ServiceWorker_OnLoad::kFontHandledName, 0);
+  test_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::ServiceWorker_OnLoad::kImageFallbackName, 0);
+  test_recorder.ExpectEntryMetric(
+      entries[0], ukm::builders::ServiceWorker_OnLoad::kImageHandledName, 0);
 }
 
 // TODO(crbug.com/1395715): The test is flaky. Re-enable it.
@@ -491,14 +509,14 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest, MAYBE_SubresourceCountUMA) {
 
   // Sync the histogram data between the renderer and browser processes.
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  histogram_tester.ExpectTotalCount("ServiceWorker.Subresource.Handled.Type",
+  histogram_tester.ExpectTotalCount("ServiceWorker.Subresource.Handled.Type2",
                                     1);
-  histogram_tester.ExpectUniqueSample("ServiceWorker.Subresource.Handled.Type",
+  histogram_tester.ExpectUniqueSample("ServiceWorker.Subresource.Handled.Type2",
                                       2 /* kCSSStyleSheet */, 1);
-  histogram_tester.ExpectTotalCount("ServiceWorker.Subresource.Fallbacked.Type",
-                                    1);
+  histogram_tester.ExpectTotalCount(
+      "ServiceWorker.Subresource.Fallbacked.Type2", 1);
   histogram_tester.ExpectUniqueSample(
-      "ServiceWorker.Subresource.Fallbacked.Type", 2 /* kCSSStyleSheet */, 1);
+      "ServiceWorker.Subresource.Fallbacked.Type2", 2 /* kCSSStyleSheet */, 1);
 }
 
 class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
@@ -517,13 +535,6 @@ class ChromeServiceWorkerFetchTest : public ChromeServiceWorkerTest {
         service_worker_dir_.GetPath());
     ASSERT_TRUE(embedded_test_server()->Start());
     InitializeServiceWorkerFetchTestPage();
-  }
-
-  std::string ExecuteScriptAndExtractString(const std::string& js) {
-    std::string result;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents(), js, &result));
-    return result;
   }
 
   std::string RequestString(const std::string& url,
@@ -696,7 +707,9 @@ class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
                            url.c_str()));
     ExecuteJavaScriptForTests(js);
     waiter.Wait();
-    return ExecuteScriptAndExtractString("reportRequests();");
+    return EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                  "reportRequests();", content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+        .ExtractString();
   }
 
   void CopyTestFile(const std::string& src, const std::string& dst) {
@@ -733,9 +746,11 @@ class ChromeServiceWorkerLinkFetchTest : public ChromeServiceWorkerFetchTest {
         .GetManifest(
             base::BindOnce(&ManifestCallbackAndRun, run_loop.QuitClosure()));
     run_loop.Run();
-    return ExecuteScriptAndExtractString(
-        "if (issuedRequests.length != 0) reportRequests();"
-        "else reportOnFetch = true;");
+    return EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                  "if (issuedRequests.length != 0) reportRequests();"
+                  "else reportOnFetch = true;",
+                  content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+        .ExtractString();
   }
 
   static void ManifestCallbackAndRun(base::OnceClosure continuation,
@@ -835,14 +850,20 @@ class ChromeServiceWorkerFetchPPAPITest : public ChromeServiceWorkerFetchTest {
   }
 
   std::string ExecutePNACLUrlLoaderTest(const std::string& mode) {
-    std::string result(ExecuteScriptAndExtractString(
-        base::StringPrintf("reportOnFetch = false;"
-                           "var iframe = document.createElement('iframe');"
-                           "iframe.src='%s#%s';"
-                           "document.body.appendChild(iframe);",
-                           test_page_url_.c_str(), mode.c_str())));
+    std::string result(
+        EvalJs(
+            browser()->tab_strip_model()->GetActiveWebContents(),
+            base::StringPrintf("reportOnFetch = false;"
+                               "var iframe = document.createElement('iframe');"
+                               "iframe.src='%s#%s';"
+                               "document.body.appendChild(iframe);",
+                               test_page_url_.c_str(), mode.c_str()),
+            content::EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+            .ExtractString());
     EXPECT_EQ(base::StringPrintf("OnOpen%s", mode.c_str()), result);
-    return ExecuteScriptAndExtractString("reportRequests();");
+    return EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                  "reportRequests();")
+        .ExtractString();
   }
 
  private:
@@ -1065,7 +1086,8 @@ class TestWebUIConfig : public content::WebUIConfig {
   ~TestWebUIConfig() override = default;
 
   std::unique_ptr<content::WebUIController> CreateWebUIController(
-      content::WebUI* web_ui) override {
+      content::WebUI* web_ui,
+      const GURL& url) override {
     return std::make_unique<StaticWebUIController>(web_ui, data_source_key_);
   }
 

@@ -9,11 +9,13 @@
 
 #include "ash/accessibility/default_accessibility_delegate.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
+#include "ash/game_dashboard/test_game_dashboard_delegate.h"
 #include "ash/glanceables/test_glanceables_delegate.h"
 #include "ash/public/cpp/test/test_nearby_share_delegate.h"
 #include "ash/public/cpp/test/test_saved_desk_delegate.h"
 #include "ash/system/geolocation/test_geolocation_url_loader_factory.h"
 #include "ash/system/test_system_sounds_delegate.h"
+#include "ash/user_education/user_education_delegate.h"
 #include "ash/wm/gestures/back_gesture/test_back_gesture_contextual_nudge_delegate.h"
 #include "url/gurl.h"
 
@@ -30,6 +32,11 @@ bool TestShellDelegate::CanShowWindowForUser(const aura::Window* window) const {
 std::unique_ptr<CaptureModeDelegate>
 TestShellDelegate::CreateCaptureModeDelegate() const {
   return std::make_unique<TestCaptureModeDelegate>();
+}
+
+std::unique_ptr<GameDashboardDelegate>
+TestShellDelegate::CreateGameDashboardDelegate() const {
+  return std::make_unique<TestGameDashboardDelegate>();
 }
 
 std::unique_ptr<GlanceablesDelegate>
@@ -71,7 +78,9 @@ TestShellDelegate::CreateSystemSoundsDelegate() const {
 
 std::unique_ptr<UserEducationDelegate>
 TestShellDelegate::CreateUserEducationDelegate() const {
-  return nullptr;
+  return user_education_delegate_factory_
+             ? user_education_delegate_factory_.Run()
+             : nullptr;
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

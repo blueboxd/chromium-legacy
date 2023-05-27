@@ -29,6 +29,7 @@
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_education/common/user_education_class_properties.h"
@@ -62,6 +63,8 @@ StarView::StarView(CommandUpdater* command_updater,
   SetID(VIEW_ID_STAR_BUTTON);
   SetProperty(views::kElementIdentifierKey, kBookmarkStarViewElementId);
   SetActive(false);
+  SetAccessibilityProperties(/*role*/ absl::nullopt,
+                             l10n_util::GetStringUTF16(IDS_TOOLTIP_STAR));
 }
 
 StarView::~StarView() = default;
@@ -83,6 +86,8 @@ void StarView::AfterPropertyChange(const void* key, int64_t old_value) {
 void StarView::UpdateImpl() {
   SetVisible(browser_defaults::bookmarks_enabled &&
              edit_bookmarks_enabled_.GetValue());
+  SetAccessibleName(l10n_util::GetStringUTF16(GetActive() ? IDS_TOOLTIP_STARRED
+                                                          : IDS_TOOLTIP_STAR));
 }
 
 void StarView::OnExecuting(PageActionIconView::ExecuteSource execute_source) {
@@ -111,12 +116,12 @@ views::BubbleDialogDelegate* StarView::GetBubble() const {
 }
 
 const gfx::VectorIcon& StarView::GetVectorIcon() const {
-  return GetActive() ? omnibox::kStarActiveIcon : omnibox::kStarIcon;
-}
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
+    return GetActive() ? omnibox::kStarActiveChromeRefreshIcon
+                       : omnibox::kStarChromeRefreshIcon;
+  }
 
-std::u16string StarView::GetTextForTooltipAndAccessibleName() const {
-  return l10n_util::GetStringUTF16(GetActive() ? IDS_TOOLTIP_STARRED
-                                               : IDS_TOOLTIP_STAR);
+  return GetActive() ? omnibox::kStarActiveIcon : omnibox::kStarIcon;
 }
 
 void StarView::EditBookmarksPrefUpdated() {

@@ -5,8 +5,10 @@
 #include "chrome/browser/ash/account_manager/account_apps_availability.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -92,9 +94,9 @@ class AccountAppsAvailabilityTest : public testing::Test {
     AccountAppsAvailability::RegisterPrefs(pref_service_->registry());
 
     auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
-    fake_user_manager_ = new user_manager::FakeUserManager();
+    fake_user_manager_ = fake_user_manager.get();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
-        base::WrapUnique(fake_user_manager_));
+        std::move(fake_user_manager));
 
     primary_account_ = identity_test_env()->MakePrimaryAccountAvailable(
         kPrimaryAccountEmail, signin::ConsentLevel::kSignin);
@@ -129,7 +131,8 @@ class AccountAppsAvailabilityTest : public testing::Test {
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   AccountInfo primary_account_;
   // Owned by `scoped_user_manager_`.
-  user_manager::FakeUserManager* fake_user_manager_ = nullptr;
+  raw_ptr<user_manager::FakeUserManager, ExperimentalAsh> fake_user_manager_ =
+      nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 };
 

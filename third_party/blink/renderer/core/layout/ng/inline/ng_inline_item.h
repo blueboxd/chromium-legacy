@@ -69,7 +69,7 @@ class CORE_EXPORT NGInlineItem {
                scoped_refptr<const ShapeResult>);
 
   NGInlineItemType Type() const { return type_; }
-  const char* NGInlineItemTypeToString(int val) const;
+  const char* NGInlineItemTypeToString(NGInlineItemType val) const;
 
   NGTextType TextType() const { return static_cast<NGTextType>(text_type_); }
   bool IsForcedLineBreak() const {
@@ -165,18 +165,6 @@ class CORE_EXPORT NGInlineItem {
     end_offset_ = end_offset;
     // Any modification to the offset will invalidate the shape result.
     shape_result_ = nullptr;
-  }
-
-  bool HasStartEdge() const {
-    DCHECK(Type() == kOpenTag || Type() == kCloseTag);
-    // TODO(kojii): Should use break token when NG has its own tree building.
-    return !GetLayoutObject()->IsInlineElementContinuation();
-  }
-  bool HasEndEdge() const {
-    DCHECK(Type() == kOpenTag || Type() == kCloseTag);
-    // TODO(kojii): Should use break token when NG has its own tree building.
-    return !GetLayoutObject()->IsLayoutInline() ||
-           !To<LayoutInline>(GetLayoutObject())->Continuation();
   }
 
   void SetStyleVariant(NGStyleVariant style_variant) {

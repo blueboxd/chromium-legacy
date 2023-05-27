@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Decodificador de imágenes</translation>
 <translation id="1785415724048343560">Recomendado para disfrutar de la mejor experiencia</translation>
 <translation id="1818308510395330587">Para que <ph name="APP_NAME" /> pueda usar la realidad aumentada, activa la cámara también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">De <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Los sitios relacionados pueden ver tu actividad en el grupo</translation>
 <translation id="1887786770086287077">El acceso a la ubicación está desactivado en este dispositivo. Actívalo en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Colgar</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Descarga finalizada <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Es posible que las funciones de algunos sitios no funcionen en modo Incógnito</translation>
 <translation id="2442870161001914531">Solicitar siempre la vista para ordenador</translation>
+<translation id="2479148705183875116">Ve a Ajustes</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2490684707762498678">Gestionadas por <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Direcciones de correo electrónico</translation>
 <translation id="2750481671343847896">Los sitios pueden mostrar solicitudes de inicio de sesión de servicios de identidad.</translation>
 <translation id="2822354292072154809">¿Seguro que quieres restablecer todos los permisos de los sitios de <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Solicita la vista para móvil</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2891975107962658722">Impide que un sitio guarde datos en tu dispositivo</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Los sitios pueden usar cookies para mejorar tu experiencia de navegación, por ejemplo, para mantener tu sesión iniciada o recordar los artículos de tu carrito de la compra.</translation>
 <translation id="3165022941318558018">Permitir que un sitio use cookies de terceros</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de datos almacenados</translation>
-<translation id="3203366800380907218">Información del sitio web</translation>
 <translation id="321187648315454507">Para que <ph name="APP_NAME" /> pueda enviarte notificaciones, actívalas también en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Micrófono</translation>
 <translation id="3248611290851046188">Este sitio define intereses que otros sitios pueden usar para mostrarte anuncios. Este sitio también consulta tus intereses de Chrome para mostrarte anuncios más relevantes.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Solicita la vista para ordenador</translation>
 <translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
 <translation id="5123685120097942451">Pestaña de Incógnito</translation>
-<translation id="5134599672855298214">Solicita la vista para móvil (recomendada)</translation>
 <translation id="5186036860380548585">Opción disponible cerca de la parte superior de la pantalla</translation>
 <translation id="5197729504361054390">Los contactos que selecciones se compartirán con <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Última visita: hoy</translation>

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.toolbar.optional_button;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static junit.framework.Assert.assertFalse;
 
 import static org.junit.Assert.assertEquals;
@@ -53,11 +55,11 @@ import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.FeatureList.TestValues;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
 import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
+import org.chromium.chrome.browser.toolbar.R;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.toolbar.optional_button.OptionalButtonConstants.TransitionType;
 
@@ -141,16 +143,16 @@ public class OptionalButtonViewTest {
         return buttonData;
     }
 
-    private ButtonDataImpl getDataForPriceTrackingIconButton() {
+    private ButtonDataImpl getDataForReaderModeIconButton() {
         Drawable iconDrawable = AppCompatResources.getDrawable(mActivity, R.drawable.btn_mic);
         OnClickListener clickListener = mock(OnClickListener.class);
         OnLongClickListener longClickListener = mock(OnLongClickListener.class);
-        String contentDescription = mActivity.getString(R.string.enable_price_tracking_menu_item);
+        String contentDescription = mActivity.getString(R.string.reader_view_text_alt);
 
         // Whether a button is static or dynamic is determined by the button variant.
         ButtonSpec buttonSpec = new ButtonSpec(iconDrawable, clickListener, longClickListener,
                 contentDescription, true, null, /* buttonVariant= */
-                AdaptiveToolbarButtonVariant.PRICE_TRACKING,
+                AdaptiveToolbarButtonVariant.READER_MODE,
                 /*actionChipLabelResId=*/Resources.ID_NULL);
         ButtonDataImpl buttonData = new ButtonDataImpl();
         buttonData.setButtonSpec(buttonSpec);
@@ -160,7 +162,7 @@ public class OptionalButtonViewTest {
         return buttonData;
     }
 
-    private ButtonDataImpl getDataForPriceTrackingActionChip() {
+    private ButtonDataImpl getDataForReaderModeActionChip() {
         Drawable iconDrawable = AppCompatResources.getDrawable(mActivity, R.drawable.new_tab_icon);
         OnClickListener clickListener = mock(OnClickListener.class);
         OnLongClickListener longClickListener = mock(OnLongClickListener.class);
@@ -169,7 +171,7 @@ public class OptionalButtonViewTest {
 
         ButtonSpec buttonSpec = new ButtonSpec(iconDrawable, clickListener, longClickListener,
                 contentDescription, true, null, /* buttonVariant= */
-                AdaptiveToolbarButtonVariant.PRICE_TRACKING,
+                AdaptiveToolbarButtonVariant.READER_MODE,
                 /*actionChipLabelResId=*/actionChipLabelResId);
         ButtonDataImpl buttonData = new ButtonDataImpl();
         buttonData.setButtonSpec(buttonSpec);
@@ -181,7 +183,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetButtonEnabled() {
-        ButtonDataImpl disabledButton = getDataForPriceTrackingIconButton();
+        ButtonDataImpl disabledButton = getDataForReaderModeIconButton();
         disabledButton.setEnabled(false);
 
         mOptionalButtonView.updateButtonWithAnimation(disabledButton);
@@ -214,7 +216,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetIconDrawableWithAnimation_fromHiddenToIcon() {
-        ButtonData buttonData = getDataForPriceTrackingIconButton();
+        ButtonData buttonData = getDataForReaderModeIconButton();
         String contentDescriptionString = buttonData.getButtonSpec().getContentDescription();
 
         mOptionalButtonView.updateButtonWithAnimation(buttonData);
@@ -234,7 +236,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetIconDrawableWithAnimation_swapIcons() {
-        ButtonData firstButtonData = getDataForPriceTrackingIconButton();
+        ButtonData firstButtonData = getDataForReaderModeIconButton();
         ButtonData secondButtonData = getDataForStaticNewTabIconButton();
 
         // Transition from hidden to firstIcon.
@@ -272,7 +274,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetIconDrawableWithAnimation_expandActionChipFromHidden() {
-        ButtonData actionChipButtonData = getDataForPriceTrackingActionChip();
+        ButtonData actionChipButtonData = getDataForReaderModeActionChip();
         String actionChipLabel = mActivity.getResources().getString(
                 actionChipButtonData.getButtonSpec().getActionChipLabelResId());
 
@@ -298,7 +300,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testSetIconDrawableWithAnimation_expandAndCollapseActionChipFromHidden() {
-        ButtonData actionChipButtonData = getDataForPriceTrackingActionChip();
+        ButtonData actionChipButtonData = getDataForReaderModeActionChip();
 
         // Setting an action chip label string indicates that the button should transition to an
         // action chip
@@ -329,7 +331,7 @@ public class OptionalButtonViewTest {
     @Test
     public void testSetIconDrawableWithAnimation_expandActionChipFromAnotherIcon() {
         ButtonData staticButtonData = getDataForStaticNewTabIconButton();
-        ButtonData actionChipButtonData = getDataForPriceTrackingActionChip();
+        ButtonData actionChipButtonData = getDataForReaderModeActionChip();
 
         // Transition from hidden to staticButton.
         mOptionalButtonView.updateButtonWithAnimation(staticButtonData);
@@ -360,12 +362,11 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testUpdateButtonWithAnimation_actionChipWithAlternativeColor() {
-        ButtonData actionChipButtonData = getDataForPriceTrackingActionChip();
+        ButtonData actionChipButtonData = getDataForReaderModeActionChip();
 
         // Alternative color is controlled by a field trial param.
         TestValues testValues = new TestValues();
-        testValues.addFieldTrialParamOverride(
-                ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_PRICE_TRACKING,
+        testValues.addFieldTrialParamOverride(ChromeFeatureList.CONTEXTUAL_PAGE_ACTION_READER_MODE,
                 "action_chip_with_different_color", "true");
         FeatureList.setTestValues(testValues);
 
@@ -421,8 +422,8 @@ public class OptionalButtonViewTest {
     @Test
     public void testTransitionCallbacks() {
         ButtonData firstButton = getDataForStaticNewTabIconButton();
-        ButtonData secondButton = getDataForPriceTrackingIconButton();
-        ButtonData actionChipButton = getDataForPriceTrackingActionChip();
+        ButtonData secondButton = getDataForReaderModeIconButton();
+        ButtonData actionChipButton = getDataForReaderModeActionChip();
 
         Runnable beforeHideTransitionCallback = mock(Runnable.class);
         Callback<Integer> transitionStartedCallback = mock(Callback.class);
@@ -486,8 +487,8 @@ public class OptionalButtonViewTest {
     @Test
     public void testTransitionCallbacks_withAnimationDisabled() {
         ButtonData firstButton = getDataForStaticNewTabIconButton();
-        ButtonData secondButton = getDataForPriceTrackingIconButton();
-        ButtonData actionChipButton = getDataForPriceTrackingActionChip();
+        ButtonData secondButton = getDataForReaderModeIconButton();
+        ButtonData actionChipButton = getDataForReaderModeActionChip();
         when(mMockAnimationChecker.getAsBoolean()).thenReturn(false);
 
         Runnable beforeHideTransitionCallback = mock(Runnable.class);
@@ -561,13 +562,13 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testUpdateButton_earlyReturnIfSameVariant() {
-        ButtonData priceTrackingButtonData = getDataForPriceTrackingIconButton();
+        ButtonData readerModeButtonData = getDataForReaderModeIconButton();
 
-        mOptionalButtonView.updateButtonWithAnimation(priceTrackingButtonData);
+        mOptionalButtonView.updateButtonWithAnimation(readerModeButtonData);
         mOptionalButtonView.onTransitionStart(null);
         mOptionalButtonView.onTransitionEnd(null);
 
-        mOptionalButtonView.updateButtonWithAnimation(priceTrackingButtonData);
+        mOptionalButtonView.updateButtonWithAnimation(readerModeButtonData);
 
         // Calling updateButtonWithAnimation with the same button variant many times shouldn't begin
         // repeated animations.
@@ -576,24 +577,24 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testUpdateButton_sameButtonWithDifferentDrawableTriggersTransition() {
-        ButtonDataImpl priceTrackingButtonData = getDataForPriceTrackingIconButton();
+        ButtonDataImpl readerModeButtonData = getDataForReaderModeIconButton();
 
-        mOptionalButtonView.updateButtonWithAnimation(priceTrackingButtonData);
+        mOptionalButtonView.updateButtonWithAnimation(readerModeButtonData);
         mOptionalButtonView.onTransitionStart(null);
         mOptionalButtonView.onTransitionEnd(null);
 
         Drawable newIconDrawable =
                 AppCompatResources.getDrawable(mActivity, R.drawable.new_tab_icon);
-        ButtonSpec originalButtonSpec = priceTrackingButtonData.getButtonSpec();
+        ButtonSpec originalButtonSpec = readerModeButtonData.getButtonSpec();
         // Create a copy of the original ButtonSpec with a different variant.
-        priceTrackingButtonData.setButtonSpec(new ButtonSpec(newIconDrawable,
+        readerModeButtonData.setButtonSpec(new ButtonSpec(newIconDrawable,
                 originalButtonSpec.getOnClickListener(),
                 originalButtonSpec.getOnLongClickListener(),
                 originalButtonSpec.getContentDescription(), originalButtonSpec.getSupportsTinting(),
                 originalButtonSpec.getIPHCommandBuilder(), originalButtonSpec.getButtonVariant(),
                 originalButtonSpec.getActionChipLabelResId()));
 
-        mOptionalButtonView.updateButtonWithAnimation(priceTrackingButtonData);
+        mOptionalButtonView.updateButtonWithAnimation(readerModeButtonData);
         mOptionalButtonView.onTransitionStart(null);
         mOptionalButtonView.onTransitionEnd(null);
 
@@ -611,7 +612,7 @@ public class OptionalButtonViewTest {
         mOptionalButtonView.onTransitionEnd(null);
 
         // Keep the same ButtonData instance, but use a different spec.
-        buttonData.setButtonSpec(getDataForPriceTrackingIconButton().getButtonSpec());
+        buttonData.setButtonSpec(getDataForReaderModeIconButton().getButtonSpec());
 
         mOptionalButtonView.updateButtonWithAnimation(buttonData);
 
@@ -640,7 +641,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testUpdateButton_actionChipWidthIsRestricted() {
-        ButtonDataImpl buttonData = getDataForPriceTrackingActionChip();
+        ButtonDataImpl buttonData = getDataForReaderModeActionChip();
         // Set a string that's too long as an action chip label. Real code measures the number of
         // pixels this will take on screen, but robolectric just uses the character count, so use
         // any string with more than 150 characters.
@@ -654,13 +655,13 @@ public class OptionalButtonViewTest {
         mOptionalButtonView.onTransitionEnd(null);
 
         // Button shouldn't be wider than the established maximum.
-        Assert.assertThat(mOptionalButtonView.getLayoutParams().width,
+        assertThat(mOptionalButtonView.getLayoutParams().width,
                 Matchers.lessThanOrEqualTo(maxActionChipWidth));
     }
 
     @Test
     public void testUpdateButton_shouldWaitUntilTransitionRootIsLaidOut() {
-        ButtonDataImpl buttonData = getDataForPriceTrackingActionChip();
+        ButtonDataImpl buttonData = getDataForReaderModeActionChip();
 
         // Set transition root to be not laid out. If this happens then TransitionManager won't run
         // any transitions.
@@ -682,7 +683,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testUpdateButton_shouldIgnoreChangesWhileWaitingForLayout() {
-        ButtonDataImpl buttonData = getDataForPriceTrackingActionChip();
+        ButtonDataImpl buttonData = getDataForReaderModeActionChip();
 
         // Set transition root to be not laid out. If this happens then TransitionManager won't run
         // any transitions.
@@ -712,7 +713,7 @@ public class OptionalButtonViewTest {
 
     @Test
     public void testUpdateButton_shouldHideActionChipLabelWhenUpdatingWithoutAnimations() {
-        ButtonDataImpl actionChipButtonData = getDataForPriceTrackingActionChip();
+        ButtonDataImpl actionChipButtonData = getDataForReaderModeActionChip();
         ButtonDataImpl regularButtonData = getDataForStaticNewTabIconButton();
 
         // Allow animations
@@ -778,7 +779,7 @@ public class OptionalButtonViewTest {
                 ArgumentCaptor.forClass(Transition.class);
         // Create two ButtonData objects with different variants.
         ButtonData newTabButtonData = getDataForStaticNewTabIconButton();
-        ButtonData priceTrackingButtonData = getDataForPriceTrackingIconButton();
+        ButtonData readerModeButtonData = getDataForReaderModeIconButton();
 
         // First show the new tab variant.
         mOptionalButtonView.updateButtonWithAnimation(newTabButtonData);
@@ -789,8 +790,8 @@ public class OptionalButtonViewTest {
         mOptionalButtonView.onTransitionStart(null);
         mOptionalButtonView.onTransitionEnd(null);
 
-        // Now show the price tracking button.
-        mOptionalButtonView.updateButtonWithAnimation(priceTrackingButtonData);
+        // Now show the reader mode button.
+        mOptionalButtonView.updateButtonWithAnimation(readerModeButtonData);
 
         verify(mMockBeginDelayedTransition, times(2)).onResult(transitionArgumentCaptor.capture());
         // Changing variants should be animated.

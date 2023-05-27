@@ -31,12 +31,6 @@ BASE_DECLARE_FEATURE(kDesktopPWAsAppHomePage);
 
 BASE_DECLARE_FEATURE(kChromeLabs);
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-BASE_DECLARE_FEATURE(kChromeTipsInMainMenu);
-
-BASE_DECLARE_FEATURE(kChromeTipsInMainMenuNewBadge);
-#endif
-
 BASE_DECLARE_FEATURE(kChromeWhatsNewUI);
 
 BASE_DECLARE_FEATURE(kExtensionsMenuInAppMenu);
@@ -49,8 +43,26 @@ BASE_DECLARE_FEATURE(kDisplayOpenLinkAsProfile);
 
 BASE_DECLARE_FEATURE(kEvDetailsInPageInfo);
 
-#if !defined(ANDROID)
-BASE_DECLARE_FEATURE(kGetTheMostOutOfProgram);
+#if !BUILDFLAG(IS_ANDROID) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+BASE_DECLARE_FEATURE(kGetTheMostOutOfChrome);
+
+BASE_DECLARE_FEATURE(kIOSPromoPasswordBubble);
+
+// This enum lists the possible params for the kIOSPromoPasswordBubble promo.
+// The first two are the launch candidates, the second two are for experimental
+// groups and the last two are for debugging/testing. Direct/indirect refers to
+// the experiment variant (whether showing the user a QR directly or show them a
+// landing page first).
+enum class IOSPromoPasswordBubbleActivation {
+  kContextualDirect,
+  kContextualIndirect,
+  kNonContextualDirect,
+  kNonContextualIndirect,
+  kAlwaysShowWithPasswordBubbleDirect,
+  kAlwaysShowWithPasswordBubbleIndirect,
+};
+extern const base::FeatureParam<IOSPromoPasswordBubbleActivation>
+    kIOSPromoPasswordBubbleActivationParam;
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -78,13 +90,13 @@ extern const char kScrollableTabStripOverflowModeName[];
 BASE_DECLARE_FEATURE(kSidePanelWebView);
 
 #if !defined(ANDROID)
-BASE_DECLARE_FEATURE(kSidePanelCompanion);
-extern const base::FeatureParam<std::string> kHomepageURLForCompanion;
+BASE_DECLARE_FEATURE(kSidePanelCompanionDefaultPinned);
 #endif
 
 BASE_DECLARE_FEATURE(kSidePanelJourneysQueryless);
 BASE_DECLARE_FEATURE(kSidePanelSearchCompanion);
 
+BASE_DECLARE_FEATURE(kSideSearch);
 BASE_DECLARE_FEATURE(kSideSearchFeedback);
 BASE_DECLARE_FEATURE(kSearchWebInSidePanel);
 
@@ -191,6 +203,11 @@ BASE_DECLARE_FEATURE(kToolbarUseHardwareBitmapDraw);
 
 BASE_DECLARE_FEATURE(kTopChromeWebUIUsesSpareRenderer);
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+BASE_DECLARE_FEATURE(kUpdateTextOptions);
+extern const base::FeatureParam<int> kUpdateTextOptionNumber;
+#endif
+
 BASE_DECLARE_FEATURE(kWebUIBubblePerProfilePersistence);
 
 BASE_DECLARE_FEATURE(kWebUITabStrip);
@@ -213,10 +230,6 @@ BASE_DECLARE_FEATURE(kViewsJSAppModalDialog);
 
 int GetLocationPermissionsExperimentBubblePromptLimit();
 int GetLocationPermissionsExperimentLabelPromptLimit();
-#endif
-
-#if BUILDFLAG(IS_WIN)
-BASE_DECLARE_FEATURE(kWin10TabSearchCaptionButton);
 #endif
 
 BASE_DECLARE_FEATURE(kStopLoadingAnimationForHiddenWindow);

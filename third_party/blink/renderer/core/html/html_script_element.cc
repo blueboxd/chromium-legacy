@@ -116,9 +116,9 @@ void HTMLScriptElement::ParseAttribute(
           *this);
     }
   } else if (params.name == html_names::kAttributionsrcAttr) {
-    if (!params.new_value.empty() && GetDocument().GetFrame()) {
+    if (GetDocument().GetFrame()) {
       GetDocument().GetFrame()->GetAttributionSrcLoader()->Register(
-          GetDocument().CompleteURL(params.new_value), this);
+          params.new_value, /*element=*/this);
     }
   } else {
     HTMLElement::ParseAttribute(params);
@@ -299,8 +299,7 @@ bool HTMLScriptElement::AllowInlineScriptForCSP(
     const WTF::OrdinalNumber& context_line,
     const String& script_content) {
   // Support 'inline-speculation-rules' source.
-  // https://github.com/WICG/nav-speculation/blob/main/triggers.md#content-security-policy
-  // TODO(http://crbug.com/1382361): Standardize it officially.
+  // https://wicg.github.io/nav-speculation/speculation-rules.html#content-security-policy
   DCHECK(loader_);
   ContentSecurityPolicy::InlineType inline_type =
       loader_->GetScriptType() ==

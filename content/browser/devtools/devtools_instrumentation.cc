@@ -202,6 +202,10 @@ std::string FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::kErrorFetchingWellKnownListEmpty: {
       return FederatedAuthRequestIssueReasonEnum::WellKnownListEmpty;
     }
+    case FederatedAuthRequestResult::
+        kErrorFetchingWellKnownInvalidContentType: {
+      return FederatedAuthRequestIssueReasonEnum::WellKnownInvalidContentType;
+    }
     case FederatedAuthRequestResult::kErrorConfigNotInWellKnown: {
       return FederatedAuthRequestIssueReasonEnum::ConfigNotInWellKnown;
     }
@@ -217,6 +221,9 @@ std::string FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::kErrorFetchingConfigInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::ConfigInvalidResponse;
     }
+    case FederatedAuthRequestResult::kErrorFetchingConfigInvalidContentType: {
+      return FederatedAuthRequestIssueReasonEnum::ConfigInvalidContentType;
+    }
     case FederatedAuthRequestResult::kErrorFetchingClientMetadataHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::ClientMetadataHttpNotFound;
     }
@@ -226,6 +233,11 @@ std::string FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::
         kErrorFetchingClientMetadataInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::ClientMetadataInvalidResponse;
+    }
+    case FederatedAuthRequestResult::
+        kErrorFetchingClientMetadataInvalidContentType: {
+      return FederatedAuthRequestIssueReasonEnum::
+          ClientMetadataInvalidContentType;
     }
     case FederatedAuthRequestResult::kErrorFetchingAccountsHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::AccountsHttpNotFound;
@@ -239,6 +251,9 @@ std::string FederatedAuthRequestResultToProtocol(
     case FederatedAuthRequestResult::kErrorFetchingAccountsListEmpty: {
       return FederatedAuthRequestIssueReasonEnum::AccountsListEmpty;
     }
+    case FederatedAuthRequestResult::kErrorFetchingAccountsInvalidContentType: {
+      return FederatedAuthRequestIssueReasonEnum::AccountsInvalidContentType;
+    }
     case FederatedAuthRequestResult::kErrorFetchingIdTokenHttpNotFound: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenHttpNotFound;
     }
@@ -247,6 +262,9 @@ std::string FederatedAuthRequestResultToProtocol(
     }
     case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse: {
       return FederatedAuthRequestIssueReasonEnum::IdTokenInvalidResponse;
+    }
+    case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidContentType: {
+      return FederatedAuthRequestIssueReasonEnum::IdTokenInvalidContentType;
     }
     case FederatedAuthRequestResult::kErrorCanceled: {
       return FederatedAuthRequestIssueReasonEnum::Canceled;
@@ -328,6 +346,30 @@ std::unique_ptr<protocol::Audits::InspectorIssue> BuildDeprecationIssue(
           .Build();
 
   return deprecation_issue;
+}
+
+std::unique_ptr<protocol::Audits::InspectorIssue> BuildBounceTrackingIssue(
+    const blink::mojom::BounceTrackingIssueDetailsPtr& issue_details) {
+  auto bounce_tracking_issue_details =
+      protocol::Audits::BounceTrackingIssueDetails::Create()
+          .SetTrackingSites(std::make_unique<protocol::Array<protocol::String>>(
+              issue_details->tracking_sites))
+          .Build();
+
+  auto protocol_issue_details =
+      protocol::Audits::InspectorIssueDetails::Create()
+          .SetBounceTrackingIssueDetails(
+              std::move(bounce_tracking_issue_details))
+          .Build();
+
+  auto issue =
+      protocol::Audits::InspectorIssue::Create()
+          .SetCode(
+              protocol::Audits::InspectorIssueCodeEnum::BounceTrackingIssue)
+          .SetDetails(std::move(protocol_issue_details))
+          .Build();
+
+  return issue;
 }
 
 void UpdateChildFrameTrees(FrameTreeNode* ftn, bool update_target_info) {
@@ -1263,6 +1305,11 @@ void WillStartDragging(FrameTreeNode* main_frame_tree_node,
                    *drag_data, drag_operations_mask, intercepted);
 }
 
+void DragEnded(FrameTreeNode& node) {
+  DCHECK(node.frame_tree().root() == &node);
+  DispatchToAgents(&node, &protocol::InputHandler::DragEnded);
+}
+
 namespace {
 std::unique_ptr<protocol::Array<protocol::String>> BuildExclusionReasons(
     net::CookieInclusionStatus status) {
@@ -1496,6 +1543,10 @@ void BuildAndReportBrowserInitiatedIssue(
   } else if (info->code ==
              blink::mojom::InspectorIssueCode::kDeprecationIssue) {
     issue = BuildDeprecationIssue(info->details->deprecation_issue_details);
+  } else if (info->code ==
+             blink::mojom::InspectorIssueCode::kBounceTrackingIssue) {
+    issue =
+        BuildBounceTrackingIssue(info->details->bounce_tracking_issue_details);
   } else {
     NOTREACHED() << "Unsupported type of browser-initiated issue";
   }

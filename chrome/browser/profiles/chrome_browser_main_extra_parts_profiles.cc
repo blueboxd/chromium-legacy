@@ -98,9 +98,9 @@
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
-#include "chrome/browser/permissions/last_tab_standing_tracker_factory.h"
 #include "chrome/browser/permissions/notification_permission_review_service_factory.h"
 #include "chrome/browser/permissions/notifications_engagement_service_factory.h"
+#include "chrome/browser/permissions/one_time_permissions_tracker_factory.h"
 #include "chrome/browser/permissions/origin_keyed_permission_action_service_factory.h"
 #include "chrome/browser/permissions/permission_actions_history_factory.h"
 #include "chrome/browser/permissions/permission_auditing_service_factory.h"
@@ -234,6 +234,7 @@
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
 #include "chrome/browser/new_tab_page/modules/drive/drive_service_factory.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_module_service_factory.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes_service_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
 #include "chrome/browser/profile_resetter/reset_report_uploader_factory.h"
@@ -312,6 +313,7 @@
 #include "extensions/browser/browser_context_keyed_service_factories.h"
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/extensions/telemetry/api/telemetry_extension_api_browser_context_keyed_service_factories.h"
 #include "chrome/browser/extensions/api/chromeos_api_browser_context_keyed_service_factories.h"
 #endif
 #endif
@@ -375,6 +377,7 @@
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
 #include "chrome/browser/enterprise/connectors/analysis/local_binary_upload_service_factory.h"
 #include "chrome/browser/enterprise/signals/signals_aggregator_factory.h"
+#include "chrome/browser/policy/cloud/profile_token_policy_web_signin_service_factory.h"
 #include "chrome/browser/signin/profile_token_web_signin_interceptor_factory.h"
 #endif
 
@@ -426,6 +429,10 @@
 #include "components/services/screen_ai/public/cpp/screen_ai_service_router_factory.h"
 #endif
 
+#if BUILDFLAG(USE_NSS_CERTS)
+#include "chrome/browser/net/nss_service_factory.h"
+#endif
+
 namespace chrome {
 
 void AddProfilesExtraParts(ChromeBrowserMainParts* main_parts) {
@@ -462,6 +469,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   chrome_apps::api::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chrome_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #if BUILDFLAG(IS_CHROMEOS)
+  chromeos::EnsureBrowserContextKeyedServiceFactoriesBuilt();
   chromeos_extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 #endif  // BUILDFLAG(IS_CHROMEOS)
   extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
@@ -657,13 +665,16 @@ void ChromeBrowserMainExtraPartsProfiles::
   HidConnectionTrackerFactory::GetInstance();
 #endif
   HistoryClustersServiceFactory::EnsureFactoryBuilt();
+#if !BUILDFLAG(IS_ANDROID)
+  HistoryClustersModuleServiceFactory::GetInstance();
+#endif
   HistoryServiceFactory::GetInstance();
   HistoryUiFaviconRequestHandlerFactory::GetInstance();
   HostContentSettingsMapFactory::GetInstance();
   HttpsEngagementServiceFactory::GetInstance();
   HttpsFirstModeServiceFactory::GetInstance();
   IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
-  image_service::ImageServiceFactory::EnsureFactoryBuilt();
+  page_image_service::ImageServiceFactory::EnsureFactoryBuilt();
   InMemoryURLIndexFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   InstantServiceFactory::GetInstance();
@@ -673,11 +684,11 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   KAnonymityServiceFactory::GetInstance();
   LanguageModelManagerFactory::GetInstance();
-  if (base::FeatureList::IsEnabled(
-          permissions::features::kOneTimeGeolocationPermission)) {
-    LastTabStandingTrackerFactory::GetInstance();
-  }
 #if !BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(permissions::features::kOneTimePermission)) {
+    OneTimePermissionsTrackerFactory::GetInstance();
+  }
+
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
   captions::LiveCaptionControllerFactory::GetInstance();
 #endif
@@ -736,6 +747,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   NotificationPermissionsReviewServiceFactory::GetInstance();
   NotificationsEngagementServiceFactory::GetInstance();
   NotifierStateTrackerFactory::GetInstance();
+#if BUILDFLAG(USE_NSS_CERTS)
+  NssServiceFactory::GetInstance();
+#endif
 #if !BUILDFLAG(IS_ANDROID)
   NTPResourceCacheFactory::GetInstance();
   NtpBackgroundServiceFactory::GetInstance();
@@ -785,9 +799,11 @@ void ChromeBrowserMainExtraPartsProfiles::
   policy::ManagementServiceFactory::GetInstance();
   PolicyBlocklistFactory::GetInstance();
   PredictionServiceFactory::GetInstance();
+
   PrimaryAccountPolicyManagerFactory::GetInstance();
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   ProfileTokenWebSigninInterceptorFactory::GetInstance();
+  policy::ProfileTokenPolicyWebSigninServiceFactory::GetInstance();
 #endif
 #if !BUILDFLAG(IS_ANDROID)
   PromoServiceFactory::GetInstance();

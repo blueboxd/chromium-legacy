@@ -97,9 +97,6 @@ enum class CheckInstallationVersions {
 template <typename ComInterface>
 HRESULT CreateLocalServer(GUID clsid,
                           Microsoft::WRL::ComPtr<ComInterface>& server) {
-  // crbug.com/1259178 - there is known race condition between the COM server
-  // shutdown and server start up.
-  base::PlatformThread::Sleep(kCreateUpdaterInstanceDelay);
   return ::CoCreateInstance(clsid, nullptr, CLSCTX_LOCAL_SERVER,
                             IID_PPV_ARGS(&server));
 }
@@ -188,6 +185,10 @@ void CheckInstallation(UpdaterScope scope,
                                &uninstall_cmd_line_string));
       EXPECT_TRUE(base::CommandLine::FromString(uninstall_cmd_line_string)
                       .HasSwitch(kWakeSwitch));
+
+      EXPECT_EQ(ERROR_SUCCESS,
+                base::win::RegKey(root, UPDATER_KEY, Wow6432(KEY_READ))
+                    .HasValue(kRegValueVersion));
 
       if (!IsSystemInstall(scope)) {
         std::wstring run_updater_wake_command;
@@ -616,9 +617,13 @@ void Clean(UpdaterScope scope) {
   VLOG(0) << __func__ << " end.";
 }
 
-void EnterTestMode(const GURL& url) {
+void EnterTestMode(const GURL& update_url,
+                   const GURL& crash_upload_url,
+                   const GURL& device_management_url) {
   ASSERT_TRUE(ExternalConstantsBuilder()
-                  .SetUpdateURL(std::vector<std::string>{url.spec()})
+                  .SetUpdateURL(std::vector<std::string>{update_url.spec()})
+                  .SetCrashUploadURL(crash_upload_url.spec())
+                  .SetDeviceManagementURL(device_management_url.spec())
                   .SetUseCUP(false)
                   .SetInitialDelay(base::Milliseconds(100))
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
@@ -647,11 +652,11 @@ void Uninstall(UpdaterScope scope) {
   // dir, because it is useful for tests to be able to run it to clean the
   // system even if installation has failed or the installed binaries have
   // already been removed.
-  base::FilePath path =
-      GetSetupExecutablePath().DirName().Append(GetExecutableRelativePath());
+  base::FilePath path = GetSetupExecutablePath().DirName().Append(
+      FILE_PATH_LITERAL("updater_test.exe"));
   ASSERT_FALSE(path.empty());
   base::CommandLine command_line(path);
-  command_line.AppendSwitch("uninstall");
+  command_line.AppendSwitch(kUninstallSwitch);
   int exit_code = -1;
   Run(scope, command_line, &exit_code);
 
@@ -1456,6 +1461,9 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
       ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueBrandCode, L"GGLS"), ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueAP, L"TestAP"), ERROR_SUCCESS);
+  ASSERT_EQ(key.WriteValue(kRegValueDateOfLastActivity, 0xFFFFFFFF),
+            ERROR_SUCCESS);
+  ASSERT_EQ(key.WriteValue(kRegValueDateOfLastRollcall, 5929), ERROR_SUCCESS);
   key.Close();
 
   ASSERT_EQ(
@@ -1466,6 +1474,8 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
       ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueBrandCode, L"GGLS"), ERROR_SUCCESS);
   ASSERT_EQ(key.WriteValue(kRegValueAP, L"TestAP"), ERROR_SUCCESS);
+  ASSERT_EQ(key.WriteValue(kRegValueDateOfLastActivity, L"5900"),
+            ERROR_SUCCESS);
   key.Close();
 
   if (IsSystemInstall(scope)) {
@@ -1510,17 +1520,47 @@ void SetupFakeLegacyUpdater(UpdaterScope scope) {
   ASSERT_TRUE(google_update_exe.has_value());
 
   const base::FilePath exe_dir(google_update_exe->DirName());
-
-  base::FilePath cmd_exe_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd_exe_path));
-  cmd_exe_path = cmd_exe_path.Append(L"cmd.exe");
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(scope, test::GetTestName());
 
   for (const base::FilePath& dir :
        {exe_dir, exe_dir.Append(L"1.2.3.4"), exe_dir.Append(L"Download"),
         exe_dir.Append(L"Install")}) {
     ASSERT_TRUE(base::CreateDirectory(dir));
-    ASSERT_TRUE(base::CopyFile(cmd_exe_path, dir.Append(kLegacyExeName)));
-    ASSERT_TRUE(base::CopyFile(cmd_exe_path, dir.Append(L"mock.exe")));
+
+    for (const std::wstring exe_name : {kLegacyExeName, L"mock.exe"}) {
+      const base::FilePath exe(dir.Append(exe_name));
+      ASSERT_TRUE(base::CopyFile(command_line.GetProgram(), exe));
+    }
+  }
+}
+
+void RunFakeLegacyUpdater(UpdaterScope scope) {
+  const absl::optional<base::FilePath> google_update_exe =
+      GetGoogleUpdateExePath(scope);
+  ASSERT_TRUE(base::PathExists(*google_update_exe));
+
+  const base::FilePath exe_dir(google_update_exe->DirName());
+  base::CommandLine command_line =
+      GetTestProcessCommandLine(scope, test::GetTestName());
+  command_line.AppendSwitchASCII(
+      updater::kTestSleepSecondsSwitch,
+      base::NumberToString(TestTimeouts::action_timeout().InSeconds() / 4));
+
+  for (const base::FilePath& dir :
+       {exe_dir, exe_dir.Append(L"1.2.3.4"), exe_dir.Append(L"Download"),
+        exe_dir.Append(L"Install")}) {
+    for (const std::wstring exe_name : {kLegacyExeName, L"mock.exe"}) {
+      const base::FilePath exe(dir.Append(exe_name));
+      ASSERT_TRUE(base::PathExists(exe));
+
+      base::Process process = base::LaunchProcess(
+          base::StrCat(
+              {base::CommandLine::QuoteForCommandLineToArgvW(exe.value()), L" ",
+               command_line.GetArgumentsString()}),
+          {});
+      ASSERT_TRUE(process.IsValid());
+    }
   }
 }
 
@@ -1544,12 +1584,16 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_TRUE(persisted_data->GetAP(kNoPVAppId).empty());
   EXPECT_TRUE(persisted_data->GetBrandCode(kNoPVAppId).empty());
   EXPECT_TRUE(persisted_data->GetFingerprint(kNoPVAppId).empty());
+  EXPECT_FALSE(persisted_data->GetDateLastActive(kNoPVAppId));
+  EXPECT_FALSE(persisted_data->GetDateLastRollcall(kNoPVAppId));
 
   EXPECT_EQ(persisted_data->GetProductVersion(kChromeAppId),
             base::Version("99.0.0.1"));
   EXPECT_EQ(persisted_data->GetAP(kChromeAppId), "TestAP");
   EXPECT_EQ(persisted_data->GetBrandCode(kChromeAppId), "GGLS");
   EXPECT_TRUE(persisted_data->GetFingerprint(kChromeAppId).empty());
+  EXPECT_EQ(persisted_data->GetDateLastActive(kChromeAppId).value(), -1);
+  EXPECT_EQ(persisted_data->GetDateLastRollcall(kChromeAppId).value(), 5929);
 
   int count_entries = 0;
   if (IsSystemInstall(scope)) {

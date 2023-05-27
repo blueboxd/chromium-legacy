@@ -879,6 +879,8 @@ xmlValidCtxtPtr xmlNewValidCtxt(void) {
  */
 void
 xmlFreeValidCtxt(xmlValidCtxtPtr cur) {
+    if (cur == NULL)
+        return;
     if (cur->vstateTab != NULL)
         xmlFree(cur->vstateTab);
     if (cur->nodeTab != NULL)
@@ -5997,11 +5999,12 @@ xmlValidatePopElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc ATTRIBUTE_UNUSED,
 	    if (elemDecl->etype == XML_ELEMENT_TYPE_ELEMENT) {
 		if (state->exec != NULL) {
 		    ret = xmlRegExecPushString(state->exec, NULL, NULL);
-		    if (ret == 0) {
+		    if (ret <= 0) {
 			xmlErrValidNode(ctxt, state->node,
 			                XML_DTD_CONTENT_MODEL,
-	   "Element %s content does not follow the DTD, Expecting more child\n",
+	   "Element %s content does not follow the DTD, Expecting more children\n",
 			       state->node->name, NULL,NULL);
+			ret = 0;
 		    } else {
 			/*
 			 * previous validation errors should not generate
@@ -6465,60 +6468,60 @@ name_ok:
  */
 
 int
-xmlValidateElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlNodePtr elem) {
-    xmlNodePtr child;
+xmlValidateElement(xmlValidCtxtPtr ctxt, xmlDocPtr doc, xmlNodePtr root) {
+    xmlNodePtr elem;
     xmlAttrPtr attr;
     xmlNsPtr ns;
     const xmlChar *value;
     int ret = 1;
 
-    if (elem == NULL) return(0);
-
-    /*
-     * XInclude elements were added after parsing in the infoset,
-     * they don't really mean anything validation wise.
-     */
-    if ((elem->type == XML_XINCLUDE_START) ||
-	(elem->type == XML_XINCLUDE_END) ||
-	(elem->type == XML_NAMESPACE_DECL))
-	return(1);
+    if (root == NULL) return(0);
 
     CHECK_DTD;
 
-    /*
-     * Entities references have to be handled separately
-     */
-    if (elem->type == XML_ENTITY_REF_NODE) {
-	return(1);
+    elem = root;
+    while (1) {
+        ret &= xmlValidateOneElement(ctxt, doc, elem);
+
+        if (elem->type == XML_ELEMENT_NODE) {
+            attr = elem->properties;
+            while (attr != NULL) {
+                value = xmlNodeListGetString(doc, attr->children, 0);
+                ret &= xmlValidateOneAttribute(ctxt, doc, elem, attr, value);
+                if (value != NULL)
+                    xmlFree((char *)value);
+                attr= attr->next;
+            }
+
+            ns = elem->nsDef;
+            while (ns != NULL) {
+                if (elem->ns == NULL)
+                    ret &= xmlValidateOneNamespace(ctxt, doc, elem, NULL,
+                                                   ns, ns->href);
+                else
+                    ret &= xmlValidateOneNamespace(ctxt, doc, elem,
+                                                   elem->ns->prefix, ns,
+                                                   ns->href);
+                ns = ns->next;
+            }
+
+            if (elem->children != NULL) {
+                elem = elem->children;
+                continue;
+            }
+        }
+
+        while (1) {
+            if (elem == root)
+                goto done;
+            if (elem->next != NULL)
+                break;
+            elem = elem->parent;
+        }
+        elem = elem->next;
     }
 
-    ret &= xmlValidateOneElement(ctxt, doc, elem);
-    if (elem->type == XML_ELEMENT_NODE) {
-	attr = elem->properties;
-	while (attr != NULL) {
-	    value = xmlNodeListGetString(doc, attr->children, 0);
-	    ret &= xmlValidateOneAttribute(ctxt, doc, elem, attr, value);
-	    if (value != NULL)
-		xmlFree((char *)value);
-	    attr= attr->next;
-	}
-	ns = elem->nsDef;
-	while (ns != NULL) {
-	    if (elem->ns == NULL)
-		ret &= xmlValidateOneNamespace(ctxt, doc, elem, NULL,
-					       ns, ns->href);
-	    else
-		ret &= xmlValidateOneNamespace(ctxt, doc, elem,
-		                               elem->ns->prefix, ns, ns->href);
-	    ns = ns->next;
-	}
-    }
-    child = elem->children;
-    while (child != NULL) {
-        ret &= xmlValidateElement(ctxt, doc, child);
-        child = child->next;
-    }
-
+done:
     return(ret);
 }
 

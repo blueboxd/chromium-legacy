@@ -227,12 +227,11 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::UpdateOrCreateBucket(
       GetBucket(params.storage_key, params.name, StorageType::kTemporary);
 
   if (!bucket_result.has_value()) {
-    if (bucket_result.error() == QuotaError::kNotFound) {
-      return CreateBucketInternal(params, StorageType::kTemporary,
-                                  max_bucket_count);
+    if (bucket_result.error() != QuotaError::kNotFound) {
+      return bucket_result;
     }
-
-    return bucket_result;
+    return CreateBucketInternal(params, StorageType::kTemporary,
+                                max_bucket_count);
   }
 
   // Don't bother updating anything if the bucket is expired.
@@ -273,7 +272,7 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::GetOrCreateBucketDeprecated(
   }
 
   if (bucket_result.error() != QuotaError::kNotFound) {
-    return base::unexpected(bucket_result.error());
+    return bucket_result;
   }
 
   return CreateBucketInternal(params, type);
@@ -665,14 +664,16 @@ QuotaErrorOr<BucketLocator> QuotaDatabase::GetLruEvictableBucket(
       continue;
     }
 
-    GURL read_gurl = read_storage_key->origin().GetURL();
-    if (special_storage_policy &&
+    // Only the default bucket is persisted by `navigator.storage.persist()`.
+    const bool is_default = statement.ColumnString(2) == kDefaultBucketName;
+    const GURL read_gurl = read_storage_key->origin().GetURL();
+    if (is_default && special_storage_policy &&
         (special_storage_policy->IsStorageDurable(read_gurl) ||
          special_storage_policy->IsStorageUnlimited(read_gurl))) {
       continue;
     }
     return BucketLocator(read_bucket_id, std::move(read_storage_key).value(),
-                         type, statement.ColumnString(2) == kDefaultBucketName);
+                         type, is_default);
   }
   return base::unexpected(QuotaError::kNotFound);
 }
@@ -1203,6 +1204,9 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::CreateBucketInternal(
     if (current_bucket_count >= max_bucket_count) {
       return base::unexpected(QuotaError::kQuotaExceeded);
     }
+
+    base::UmaHistogramCounts100000("Storage.Buckets.BucketCount",
+                                   current_bucket_count + 1);
   }
 
   static constexpr char kSql[] =
@@ -1211,10 +1215,11 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::CreateBucketInternal(
         " RETURNING " BUCKET_INFO_FIELDS_SELECTOR;
   // clang-format on
 
+  const base::Time now = GetNow();
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   BindBucketInitParamsToInsertStatement(params, type, /*use_count=*/0,
-                                        /*last_accessed=*/GetNow(),
-                                        /*last_modified=*/GetNow(), statement);
+                                        /*last_accessed=*/now,
+                                        /*last_modified=*/now, statement);
   QuotaErrorOr<BucketInfo> result = BucketInfoFromSqlStatement(statement);
   const bool done = !statement.Step();
   DCHECK(done);

@@ -61,12 +61,13 @@ class TestGLTexturePassthroughImageRepresentation
   const scoped_refptr<gles2::TexturePassthrough> texture_;
 };
 
-class TestSkiaImageRepresentation : public SkiaImageRepresentation {
+class TestSkiaImageRepresentation : public SkiaGaneshImageRepresentation {
  public:
-  TestSkiaImageRepresentation(SharedImageManager* manager,
+  TestSkiaImageRepresentation(GrDirectContext* gr_context,
+                              SharedImageManager* manager,
                               SharedImageBacking* backing,
                               MemoryTypeTracker* tracker)
-      : SkiaImageRepresentation(manager, backing, tracker) {}
+      : SkiaGaneshImageRepresentation(gr_context, manager, backing, tracker) {}
 
  protected:
   std::vector<sk_sp<SkSurface>> BeginWriteAccess(
@@ -226,7 +227,7 @@ TestImageBacking::TestImageBacking(const Mailbox& mailbox,
 TestImageBacking::~TestImageBacking() {
   // Pretend our context is lost to avoid actual cleanup in |texture_| or
   // |passthrough_texture_|.
-  texture_->RemoveLightweightRef(/*have_context=*/false);
+  texture_.ExtractAsDangling()->RemoveLightweightRef(/*have_context=*/false);
   texture_passthrough_->MarkContextLost();
   texture_passthrough_.reset();
 
@@ -290,11 +291,14 @@ TestImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
       manager, this, tracker, texture_passthrough_);
 }
 
-std::unique_ptr<SkiaImageRepresentation> TestImageBacking::ProduceSkia(
+std::unique_ptr<SkiaGaneshImageRepresentation>
+TestImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
-  return std::make_unique<TestSkiaImageRepresentation>(manager, this, tracker);
+  return std::make_unique<TestSkiaImageRepresentation>(
+      context_state ? context_state->gr_context() : nullptr, manager, this,
+      tracker);
 }
 
 std::unique_ptr<DawnImageRepresentation> TestImageBacking::ProduceDawn(

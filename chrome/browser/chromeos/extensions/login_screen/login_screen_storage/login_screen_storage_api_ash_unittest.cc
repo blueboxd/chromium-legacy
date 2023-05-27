@@ -115,7 +115,7 @@ TEST_F(LoginScreenStorageApiUnittest, StorePersistentDataSuccess) {
       base::MakeRefCounted<LoginScreenStorageStorePersistentDataFunction>();
   std::string args = base::StringPrintf(R"([["%s", "%s"],  "%s"])",
                                         kExtensionId1, kExtensionId2, kData);
-  EXPECT_EQ(nullptr, RunFunctionAndReturnValue(function.get(), args));
+  EXPECT_FALSE(RunFunctionAndReturnValue(function.get(), args));
 }
 
 TEST_F(LoginScreenStorageApiUnittest, StorePersistentDataError) {
@@ -170,7 +170,7 @@ TEST_F(LoginScreenStorageApiUnittest, StoreCredentialsSuccess) {
       base::MakeRefCounted<LoginScreenStorageStoreCredentialsFunction>();
   std::string args =
       base::StringPrintf(R"(["%s", "%s"])", kExtensionId1, kData);
-  EXPECT_EQ(nullptr, RunFunctionAndReturnValue(function.get(), args));
+  EXPECT_FALSE(RunFunctionAndReturnValue(function.get(), args));
 }
 
 TEST_F(LoginScreenStorageApiUnittest, StoreCredentialsError) {

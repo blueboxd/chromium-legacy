@@ -81,7 +81,6 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="2928420929544864228">Usakinishaji umekamilika.</translation>
 <translation id="2977470724722393594">Chromium imesasishwa</translation>
 <translation id="2977506796191543575">Ikiwa tovuti inajaribu kuiba nenosiri lako au unapopakua faili hatari, Chromium inaweza pia kutuma URL, ikiwa ni pamoja na sehemu za maudhui ya ukurasa, kwenye kipengele cha Kuvinjari Salama</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium imeunganishwa kwenye kifaa cha HID}other{Chromium imeunganishwa kwenye vifaa vya HID}}</translation>
 <translation id="3032706164202344641">Chromium imeshindwa kukagua manenosiri yako. Jaribu tena baadaye.</translation>
 <translation id="3032787606318309379">Inaongeza kwenye Chromium...</translation>
 <translation id="3038232873781883849">Inasubiri kusakinisha...</translation>
@@ -96,7 +95,6 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="3258596308407688501">Chromium haiwezi kusoma na kuandika kwenye saraka yake ya data:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Mwongozo huu hukusaidia uelewe uteuzi wako, ili Chromium ifanye kazi jinsi unavyopenda</translation>
 <translation id="3283186697780795848">Umesakinisha toleo la Chromium la <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3286538390144397061">Zima na uwashe sasa</translation>
 <translation id="328888136576916638">Funguo za Google API zinakosekana. Utendaji fulani wa Chromium utazimwa.</translation>
@@ -248,8 +246,10 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="6442900851116057561">Zima kisha uwashe Mfumo wa Uendeshaji wa Chromium</translation>
 <translation id="6455857529632101747">Karibu kwenye kipengele cha wasifu kwenye Chromium</translation>
 <translation id="6475912303565314141">Pia inadhibiti ukurasa unaoonyeshwa unapoanzisha Chromium.</translation>
+<translation id="648319183876919572">Kipengele cha Kuvinjari Salama Kilichoboreshwa hufanya mengi zaidi ili kukulinda dhidi ya tovuti na vipakuliwa hatarishi.</translation>
 <translation id="6510925080656968729">Ondoa Chromium</translation>
 <translation id="6542839706527980775">Kila wasifu una maelezo yake ya Chromium kama vile alamisho, historia, manenosiri na mengine</translation>
+<translation id="656935081669708576">Unaweza kubadilisha ili uone manenosiri kwenye wasifu mwingine wa Chromium</translation>
 <translation id="6570579332384693436">Ili kurekebisha makosa ya tahajia, Chromium hutuma maandishi unayoandika kwenye sehemu za maandishi kwa Google</translation>
 <translation id="6598877126913850652">Nenda kwenye mipangilio ya arifa ya Chromium</translation>
 <translation id="6613594504749178791">Mabadiliko yako yataanza kufanya kazi wakati ujao utakapozindua upya Chromium.</translation>
@@ -385,7 +385,6 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="924957577793602335">Badilisha Chromium upendavyo</translation>
 <translation id="93478295209880648">Huenda Chromium isifanye kazi vizuri kwa sababu haitumiki tena kwenye Windows XP au Windows Vista</translation>
 <translation id="942598560705308788">Vyeti vinavyodhibitiwa na Chromium</translation>
-<translation id="959579472876010517">Nufaika zaidi na Chromium</translation>
 <translation id="965162752251293939">Ni nani anayetumia Chromium?</translation>
 <translation id="967427899662692980">Pata usalama thabiti zaidi kutoka Chromium</translation>
 <translation id="9792300276217204">Futa data ya tovuti kila wakati kwenye kifaa chako unapofunga Chromium</translation>

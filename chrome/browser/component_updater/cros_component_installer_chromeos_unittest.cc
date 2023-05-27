@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
@@ -348,7 +349,8 @@ class CrOSComponentInstallerTest : public testing::Test {
   user_manager::ScopedUserManager user_manager_;
 
   // Image loader client that is active during the test.
-  ash::FakeImageLoaderClient* image_loader_client_ = nullptr;
+  raw_ptr<ash::FakeImageLoaderClient, ExperimentalAsh> image_loader_client_ =
+      nullptr;
 
   base::ScopedTempDir base_component_paths_;
 
@@ -439,11 +441,28 @@ TEST_F(CrOSComponentInstallerTest, LacrosMinVersion) {
                         /*manifest=*/base::Value::Dict());
   EXPECT_TRUE(installer->GetCompatiblePath("lacros-fishfood").empty());
 
-  // Simulate finding a compatible existing install.
   policy.ComponentReady(base::Version("9.0.0.0"),
                         base::FilePath("/lacros/9.0.0.0"),
                         /*manifest=*/base::Value::Dict());
-  EXPECT_EQ("/lacros/9.0.0.0",
+  EXPECT_TRUE(installer->GetCompatiblePath("lacros-fishfood").empty());
+
+  // Simulate finding a compatible existing install.
+  policy.ComponentReady(base::Version("10.0.0.0"),
+                        base::FilePath("/lacros/10.0.0.0"),
+                        /*manifest=*/base::Value::Dict());
+  EXPECT_EQ("/lacros/10.0.0.0",
+            installer->GetCompatiblePath("lacros-fishfood").MaybeAsASCII());
+
+  policy.ComponentReady(base::Version("11.0.0.0"),
+                        base::FilePath("/lacros/11.0.0.0"),
+                        /*manifest=*/base::Value::Dict());
+  EXPECT_EQ("/lacros/11.0.0.0",
+            installer->GetCompatiblePath("lacros-fishfood").MaybeAsASCII());
+
+  policy.ComponentReady(base::Version("12.0.0.0"),
+                        base::FilePath("/lacros/12.0.0.0"),
+                        /*manifest=*/base::Value::Dict());
+  EXPECT_EQ("/lacros/12.0.0.0",
             installer->GetCompatiblePath("lacros-fishfood").MaybeAsASCII());
 
   LacrosInstallerPolicy::SetAshVersionForTest(nullptr);

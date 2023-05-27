@@ -35,7 +35,6 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
-import org.chromium.components.browser_ui.settings.SettingsFeatureList;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 
 /**
@@ -45,7 +44,6 @@ import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 @Config(manifest = Config.NONE)
 @EnableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2})
 @DisableFeatures({ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR,
-        SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID,
         ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_TRANSLATE,
         ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_ADD_TO_BOOKMARKS})
 public class AdaptiveToolbarPreferenceFragmentTest {
@@ -78,7 +76,7 @@ public class AdaptiveToolbarPreferenceFragmentTest {
     public void testSelectShortcuts() {
         FragmentScenario<AdaptiveToolbarPreferenceFragment> scenario =
                 FragmentScenario.launchInContainer(AdaptiveToolbarPreferenceFragment.class,
-                        Bundle.EMPTY, org.chromium.chrome.R.style.Theme_Chromium_Settings);
+                        Bundle.EMPTY, R.style.Theme_Chromium_Settings);
         scenario.onFragment(fragment -> {
             mSwitchPreference = (ChromeSwitchPreference) fragment.findPreference(
                     AdaptiveToolbarPreferenceFragment.PREF_TOOLBAR_SHORTCUT_SWITCH);
@@ -157,7 +155,7 @@ public class AdaptiveToolbarPreferenceFragmentTest {
     public void testTranslateOption_Enabled() {
         FragmentScenario<AdaptiveToolbarPreferenceFragment> scenario =
                 FragmentScenario.launchInContainer(AdaptiveToolbarPreferenceFragment.class,
-                        Bundle.EMPTY, org.chromium.chrome.R.style.Theme_Chromium_Settings);
+                        Bundle.EMPTY, R.style.Theme_Chromium_Settings);
         scenario.onFragment(fragment -> {
             mRadioPreference = (RadioButtonGroupAdaptiveToolbarPreference) fragment.findPreference(
                     AdaptiveToolbarPreferenceFragment.PREF_ADAPTIVE_RADIO_GROUP);
@@ -184,7 +182,7 @@ public class AdaptiveToolbarPreferenceFragmentTest {
                 ADAPTIVE_TOOLBAR_CUSTOMIZATION_SETTINGS, AdaptiveToolbarButtonVariant.TRANSLATE);
         FragmentScenario<AdaptiveToolbarPreferenceFragment> scenario =
                 FragmentScenario.launchInContainer(AdaptiveToolbarPreferenceFragment.class,
-                        Bundle.EMPTY, org.chromium.chrome.R.style.Theme_Chromium_Settings);
+                        Bundle.EMPTY, R.style.Theme_Chromium_Settings);
         scenario.onFragment(fragment -> {
             mRadioPreference = (RadioButtonGroupAdaptiveToolbarPreference) fragment.findPreference(
                     AdaptiveToolbarPreferenceFragment.PREF_ADAPTIVE_RADIO_GROUP);
@@ -208,7 +206,7 @@ public class AdaptiveToolbarPreferenceFragmentTest {
     public void testAddToBookmarksOption_Enabled() {
         FragmentScenario<AdaptiveToolbarPreferenceFragment> scenario =
                 FragmentScenario.launchInContainer(AdaptiveToolbarPreferenceFragment.class,
-                        Bundle.EMPTY, org.chromium.chrome.R.style.Theme_Chromium_Settings);
+                        Bundle.EMPTY, R.style.Theme_Chromium_Settings);
         scenario.onFragment(fragment -> {
             mRadioPreference = (RadioButtonGroupAdaptiveToolbarPreference) fragment.findPreference(
                     AdaptiveToolbarPreferenceFragment.PREF_ADAPTIVE_RADIO_GROUP);
@@ -236,7 +234,7 @@ public class AdaptiveToolbarPreferenceFragmentTest {
                 AdaptiveToolbarButtonVariant.ADD_TO_BOOKMARKS);
         FragmentScenario<AdaptiveToolbarPreferenceFragment> scenario =
                 FragmentScenario.launchInContainer(AdaptiveToolbarPreferenceFragment.class,
-                        Bundle.EMPTY, org.chromium.chrome.R.style.Theme_Chromium_Settings);
+                        Bundle.EMPTY, R.style.Theme_Chromium_Settings);
         scenario.onFragment(fragment -> {
             mRadioPreference = (RadioButtonGroupAdaptiveToolbarPreference) fragment.findPreference(
                     AdaptiveToolbarPreferenceFragment.PREF_ADAPTIVE_RADIO_GROUP);

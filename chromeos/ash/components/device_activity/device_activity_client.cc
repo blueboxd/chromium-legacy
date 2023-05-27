@@ -96,6 +96,32 @@ const char kDeviceActiveClientTransitionOutOfIdleMinute[] =
 const char kDeviceActiveClientTransitionToCheckInMinute[] =
     "Ash.DeviceActiveClient.RecordedTransitionToCheckInMinute";
 
+// Record the NetError status integer returned by the OPRF network response.
+const char kDeviceActiveClientPsmOprfResponseNetErrorCode[] =
+    "Ash.DeviceActiveClient.PsmOprfResponseNetErrorCode";
+
+// Record a boolean success if the PSM Oprf response body exists.
+const char kDeviceActiveClientIsPsmOprfResponseBodySet[] =
+    "Ash.DeviceActiveClient.IsPsmOprfResponseBodySet";
+
+// Record a boolean success if the PSM Oprf response body was parsed correctly
+// to the FresnelPsmRlweOprfResponse proto object.
+const char kDeviceActiveClientIsPsmOprfResponseParsedCorrectly[] =
+    "Ash.DeviceActiveClient.IsPsmOprfResponseParsedCorrectly";
+
+// Record the NetError status integer returned by the Query network response.
+const char kDeviceActiveClientPsmQueryResponseNetErrorCode[] =
+    "Ash.DeviceActiveClient.PsmQueryResponseNetErrorCode";
+
+// Record a boolean success if the PSM Query response body exists.
+const char kDeviceActiveClientIsPsmQueryResponseBodySet[] =
+    "Ash.DeviceActiveClient.IsPsmQueryResponseBodySet";
+
+// Record a boolean success if the PSM Query response body was parsed correctly
+// to the FresnelPsmRlweQueryResponse proto object.
+const char kDeviceActiveClientIsPsmQueryResponseParsedCorrectly[] =
+    "Ash.DeviceActiveClient.IsPsmQueryResponseParsedCorrectly";
+
 // Traffic annotation for check device activity status
 const net::NetworkTrafficAnnotationTag check_membership_traffic_annotation =
     net::DefineNetworkTrafficAnnotation(
@@ -303,6 +329,47 @@ void RecordCheckMembershipCases(
                                 check_membership_case);
 }
 
+// Histogram to record the NetError code returned apart of the PSM Oprf
+// Response.
+void RecordPsmOprfResponseNetErrorCode(int net_error) {
+  base::UmaHistogramSparse(kDeviceActiveClientPsmOprfResponseNetErrorCode,
+                           net_error);
+}
+
+// Histogram to record whether the PSM Oprf response body is set.
+void RecordIsPsmOprfResponseBodySet(bool is_set) {
+  base::UmaHistogramBoolean(kDeviceActiveClientIsPsmOprfResponseBodySet,
+                            is_set);
+}
+
+// Histogram to record whether the PSM Oprf response was able to be parsed
+// correctly.
+void RecordIsPsmOprfResponseParsedCorrectly(bool is_parsed_correctly) {
+  base::UmaHistogramBoolean(kDeviceActiveClientIsPsmOprfResponseParsedCorrectly,
+                            is_parsed_correctly);
+}
+
+// Histogram to record the NetError code returned apart of the PSM Query
+// Response.
+void RecordPsmQueryResponseNetErrorCode(int net_error) {
+  base::UmaHistogramSparse(kDeviceActiveClientPsmQueryResponseNetErrorCode,
+                           net_error);
+}
+
+// Histogram to record whether the PSM Query response body is set.
+void RecordIsPsmQueryResponseBodySet(bool is_set) {
+  base::UmaHistogramBoolean(kDeviceActiveClientIsPsmQueryResponseBodySet,
+                            is_set);
+}
+
+// Histogram to record whether the PSM Query response was able to be parsed
+// correctly.
+void RecordIsPsmQueryResponseParsedCorrectly(bool is_parsed_correctly) {
+  base::UmaHistogramBoolean(
+      kDeviceActiveClientIsPsmQueryResponseParsedCorrectly,
+      is_parsed_correctly);
+}
+
 std::unique_ptr<network::ResourceRequest> GenerateResourceRequest(
     const std::string& request_method,
     const GURL& url,
@@ -358,7 +425,7 @@ DeviceActivityClient::DeviceActivityClient(
   report_timer_->Start(FROM_HERE, kTimeToRepeat, this,
                        &DeviceActivityClient::ReportingTriggeredByTimer);
 
-  network_state_handler_observer_.Observe(network_state_handler_);
+  network_state_handler_observer_.Observe(network_state_handler_.get());
 
   // Send DBus method to read preserved files for last ping timestamps.
   GetLastPingDatesStatus();
@@ -1067,17 +1134,28 @@ void DeviceActivityClient::OnCheckMembershipOprfDone(
 
   int net_code = url_loader->NetError();
   RecordResponseStateMetric(state_, net_code);
+  RecordPsmOprfResponseNetErrorCode(net_code);
 
   // Convert serialized response body to oprf response protobuf.
+  // Add UMA histogram for diagnostic purposes.
   FresnelPsmRlweOprfResponse psm_oprf_response;
-  if (!response_body || !psm_oprf_response.ParseFromString(*response_body)) {
+  bool is_response_body_set = response_body.get() != nullptr;
+  RecordIsPsmOprfResponseBodySet(is_response_body_set);
+
+  if (!is_response_body_set ||
+      !psm_oprf_response.ParseFromString(*response_body)) {
     RecordDurationStateMetric(state_, state_timer_.Elapsed());
     RecordCheckMembershipCases(
         DeviceActivityClient::CheckMembershipResponseCases::
             kOprfResponseBodyFailed);
+    RecordIsPsmOprfResponseParsedCorrectly(false);
+
     TransitionToIdle(current_use_case);
     return;
   }
+
+  // Oprf response was parsed successfully.
+  RecordIsPsmOprfResponseParsedCorrectly(true);
 
   // Parse |fresnel_oprf_response| for oprf_response.
   if (!psm_oprf_response.has_rlwe_oprf_response()) {
@@ -1168,17 +1246,27 @@ void DeviceActivityClient::OnCheckMembershipQueryDone(
 
   int net_code = url_loader->NetError();
   RecordResponseStateMetric(state_, net_code);
+  RecordPsmQueryResponseNetErrorCode(net_code);
 
   // Convert serialized response body to fresnel query response protobuf.
   FresnelPsmRlweQueryResponse psm_query_response;
-  if (!response_body || !psm_query_response.ParseFromString(*response_body)) {
+  bool is_response_body_set = response_body.get() != nullptr;
+  RecordIsPsmQueryResponseBodySet(is_response_body_set);
+
+  if (!is_response_body_set ||
+      !psm_query_response.ParseFromString(*response_body)) {
     RecordDurationStateMetric(state_, state_timer_.Elapsed());
     RecordCheckMembershipCases(
         DeviceActivityClient::CheckMembershipResponseCases::
             kQueryResponseBodyFailed);
+    RecordIsPsmQueryResponseParsedCorrectly(false);
+
     TransitionToIdle(current_use_case);
     return;
   }
+
+  // Query response body was parsed successfully.
+  RecordIsPsmQueryResponseParsedCorrectly(true);
 
   // Parse |fresnel_query_response| for psm query_response.
   if (!psm_query_response.has_rlwe_query_response()) {

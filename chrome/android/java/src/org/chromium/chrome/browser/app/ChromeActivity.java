@@ -47,7 +47,6 @@ import org.chromium.base.PowerMonitor;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.jank_tracker.DummyJankTracker;
 import org.chromium.base.memory.MemoryPurgeManager;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -151,7 +150,6 @@ import org.chromium.chrome.browser.share.ShareDelegateImpl;
 import org.chromium.chrome.browser.share.ShareDelegateSupplier;
 import org.chromium.chrome.browser.stylus_handwriting.StylusWritingCoordinator;
 import org.chromium.chrome.browser.sync.SyncService;
-import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
@@ -313,7 +311,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private boolean mNativeInitialized;
     private boolean mRemoveWindowBackgroundDone;
-    protected AccessibilityVisibilityHandler mAccessibilityVisibilityHandler;
 
     // Observes when sync becomes ready to create the mContextReporter.
     private SyncService.SyncStateChangedListener mSyncStateChangedListener;
@@ -522,7 +519,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 getTabModelSelectorSupplier(), new OneshotSupplierImpl<>(),
                 new OneshotSupplierImpl<>(), new OneshotSupplierImpl<>(),
                 new OneshotSupplierImpl<>(), () -> null, mBrowserControlsManagerSupplier.get(),
-                getWindowAndroid(), new DummyJankTracker(), getLifecycleDispatcher(),
+                getWindowAndroid(), getLifecycleDispatcher(),
                 getLayoutManagerSupplier(), /* menuOrKeyboardActionController= */ this,
                 this::getActivityThemeColor, getModalDialogManagerSupplier(),
                 /* appMenuBlocker= */ this, this::supportsAppMenu, this::supportsFindInPage,
@@ -1603,6 +1600,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mStylusWritingCoordinator.destroy();
             mStylusWritingCoordinator = null;
         }
+
+        // Destroy spare tab on activitiy destruction.
+        WarmupManager warmupManager = WarmupManager.getInstance();
+        warmupManager.destroySpareTab();
 
         mActivityTabProvider.destroy();
         ChromeActivitySessionTracker.getInstance().unregisterTabModelSelectorSupplier(this);

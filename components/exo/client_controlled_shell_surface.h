@@ -13,6 +13,7 @@
 #include "ash/wm/client_controlled_state.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "components/exo/client_controlled_accelerators.h"
 #include "components/exo/shell_surface_base.h"
 #include "ui/base/hit_test.h"
@@ -62,7 +63,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   ClientControlledShellSurface(Surface* surface,
                                bool can_minimize,
                                int container,
-                               bool default_scale_cancellation);
+                               bool default_scale_cancellation,
+                               bool supports_floated_state);
 
   ClientControlledShellSurface(const ClientControlledShellSurface&) = delete;
   ClientControlledShellSurface& operator=(const ClientControlledShellSurface&) =
@@ -169,10 +171,6 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // Set the extra title for the surface.
   void SetExtraTitle(const std::u16string& extra_title);
 
-  // Set the accessibility ID provided by client for the surface. If
-  // |accessibility_id| is negative value, it will unset the ID.
-  void SetClientAccessibilityId(int32_t accessibility_id);
-
   // Rebind a surface as the root surface of the shell surface.
   void RebindRootSurface(Surface* root_surface,
                          bool can_minimize,
@@ -208,6 +206,7 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   void OnDeviceScaleFactorChanged(float old_dsf, float new_dsf) override;
 
   // Overridden from aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
 
   // Overridden from display::DisplayObserver:
@@ -320,7 +319,8 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   Orientation orientation_ = Orientation::LANDSCAPE;
   Orientation expected_orientation_ = Orientation::LANDSCAPE;
 
-  ash::ClientControlledState* client_controlled_state_ = nullptr;
+  raw_ptr<ash::ClientControlledState, ExperimentalAsh>
+      client_controlled_state_ = nullptr;
 
   chromeos::WindowStateType pending_window_state_ =
       chromeos::WindowStateType::kNormal;
@@ -369,11 +369,11 @@ class ClientControlledShellSurface : public ShellSurfaceBase,
   // Client controlled specific accelerator target.
   std::unique_ptr<ClientControlledAcceleratorTarget> accelerator_target_;
 
-  // Accessibility ID provided by client.
-  absl::optional<int32_t> client_accessibility_id_;
-
   ash::ArcResizeLockType pending_resize_lock_type_ =
       ash::ArcResizeLockType::NONE;
+
+  // True if the window supports the floated state.
+  const bool supports_floated_state_;
 };
 
 }  // namespace exo

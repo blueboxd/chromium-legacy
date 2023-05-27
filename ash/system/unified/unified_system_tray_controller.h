@@ -15,6 +15,7 @@
 #include "ash/system/time/calendar_metrics.h"
 #include "ash/system/time/calendar_model.h"
 #include "ash/system/unified/unified_system_tray_model.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "quick_settings_view.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -38,6 +39,7 @@ namespace ash {
 class DetailedViewController;
 class FeaturePodControllerBase;
 class PaginationController;
+class QuickSettingsMediaViewController;
 class UnifiedMediaControlsController;
 class UnifiedBrightnessSliderController;
 class UnifiedVolumeSliderController;
@@ -183,6 +185,9 @@ class ASH_EXPORT UnifiedSystemTrayController
   void ShowMediaControls() override;
   void OnMediaControlsViewClicked() override;
 
+  // Sets whether the quick settings view should show the media view.
+  void SetShowMediaView(bool show_media_view);
+
   // Return true if UnifiedSystemTray is expanded.
   bool IsExpanded() const;
 
@@ -197,6 +202,11 @@ class ASH_EXPORT UnifiedSystemTrayController
 
   DetailedViewController* detailed_view_controller() {
     return detailed_view_controller_.get();
+  }
+
+  QuickSettingsMediaViewController* media_view_controller() {
+    DCHECK(media_view_controller_);
+    return media_view_controller_.get();
   }
 
   bool showing_audio_detailed_view() const {
@@ -276,14 +286,14 @@ class ASH_EXPORT UnifiedSystemTrayController
   scoped_refptr<UnifiedSystemTrayModel> model_;
 
   // Unowned. Owned by Views hierarchy.
-  UnifiedSystemTrayView* unified_view_ = nullptr;
-  QuickSettingsView* quick_settings_view_ = nullptr;
+  raw_ptr<UnifiedSystemTrayView, ExperimentalAsh> unified_view_ = nullptr;
+  raw_ptr<QuickSettingsView, ExperimentalAsh> quick_settings_view_ = nullptr;
 
   // Unowned.
-  UnifiedSystemTrayBubble* bubble_ = nullptr;
+  raw_ptr<UnifiedSystemTrayBubble, ExperimentalAsh> bubble_ = nullptr;
 
   // The pref service of the currently active user. Can be null in tests.
-  PrefService* active_user_prefs_ = nullptr;
+  raw_ptr<PrefService, ExperimentalAsh> active_user_prefs_ = nullptr;
 
   // The controller of the current detailed view. If the main view is shown,
   // it's null. Owned.
@@ -296,15 +306,16 @@ class ASH_EXPORT UnifiedSystemTrayController
   std::unique_ptr<PaginationController> pagination_controller_;
 
   std::unique_ptr<UnifiedMediaControlsController> media_controls_controller_;
+  std::unique_ptr<QuickSettingsMediaViewController> media_view_controller_;
 
   // Controller of volume slider. Owned.
   std::unique_ptr<UnifiedVolumeSliderController> volume_slider_controller_;
-  views::View* unified_volume_view_ = nullptr;
+  raw_ptr<views::View, ExperimentalAsh> unified_volume_view_ = nullptr;
 
   // Controller of brightness slider. Owned.
   std::unique_ptr<UnifiedBrightnessSliderController>
       brightness_slider_controller_;
-  views::View* unified_brightness_view_ = nullptr;
+  raw_ptr<views::View, ExperimentalAsh> unified_brightness_view_ = nullptr;
 
   // If the previous state is expanded or not. Only valid during dragging (from
   // BeginDrag to EndDrag).

@@ -2,6 +2,8 @@
 // META: script=/common/utils.js
 // META: script=resources/fledge-util.js
 
+"use strict;"
+
 // These tests are focused on joinAdInterestGroup() and leaveAdInterestGroup().
 // Most join tests do not run auctions, but instead only check the result of
 // the returned promise, since testing that interest groups are actually
@@ -459,9 +461,34 @@ const SIMPLE_JOIN_LEAVE_TEST_CASES = [
                      matter: 'at',
                      all: [3,4,5] }
   },
+
+  // Interest group dictionaries must be less than 1 MB (1048576 bytes), so
+  // test that here by using a large name on an otherwise valid interest group
+  // dictionary. The first case is the largest name value that still results in
+  // a valid dictionary, whereas the second test case produces a dictionary
+  // that's one byte too large.
+  { expectJoinSucces: true,
+    expectLeaveSucces: true,
+    interestGroup: { ...BASE_INTEREST_GROUP,
+                     name: 'a'.repeat(1048528) },
+    testCaseName: "Largest possible interest group dictionary",
+  },
+  { expectJoinSucces: false,
+    expectLeaveSucces: true,
+    interestGroup: { ...BASE_INTEREST_GROUP,
+                     name: 'a'.repeat(1048529) },
+    testCaseName: "Oversized interest group dictionary",
+  },
 ];
 
 for (testCase of SIMPLE_JOIN_LEAVE_TEST_CASES) {
+  var test_name = 'Join and leave interest group: ';
+  if ('testCaseName' in testCase) {
+    test_name += testCase.testCaseName;
+  } else {
+    test_name += JSON.stringify(testCase);
+  }
+
   promise_test((async (testCase) => {
     const INTEREST_GROUP_LIFETIME_SECS = 1;
 
@@ -480,8 +507,7 @@ for (testCase of SIMPLE_JOIN_LEAVE_TEST_CASES) {
       assert_true(joinExceptionThrown, 'Exception not thrown on join.');
     }
 
-    let leave_promise = navigator.leaveAdInterestGroup(testCase.interestGroup,
-                                                       INTEREST_GROUP_LIFETIME_SECS);
+    let leave_promise = navigator.leaveAdInterestGroup(testCase.interestGroup);
     assert_true(leave_promise instanceof Promise, "leave should return a promise");
     if (testCase.expectLeaveSucces) {
       assert_equals(await leave_promise, undefined);
@@ -494,7 +520,7 @@ for (testCase of SIMPLE_JOIN_LEAVE_TEST_CASES) {
       }
       assert_true(leaveExceptionThrown, 'Exception not thrown on leave.');
     }
-  }).bind(undefined, testCase), 'Join and leave interest group: ' + JSON.stringify(testCase));
+  }).bind(undefined, testCase), test_name);
 }
 
 promise_test(async test => {
@@ -510,9 +536,10 @@ promise_test(async test => {
   // the previously joined interest group, and re-run the auction. There should
   // be a winner this time.
   await joinInterestGroup(test, uuid);
-  let url = await runBasicFledgeAuction(test, uuid);
-  assert_true('string' === typeof url,
-              'Wrong value type returned from auction: ' + typeof url);
+  let config = await runBasicFledgeAuction(test, uuid);
+  assert_true(config instanceof FencedFrameConfig,
+              'Wrong value type returned from auction: ' +
+              config.constructor.name);
 
   // Re-join the first interest group, and re-run the auction. The interest
   // group should be overwritten again, and there should be no winner.
@@ -526,9 +553,10 @@ promise_test(async test => {
 
   // Join an interest group, run an auction to make sure it was joined.
   await joinInterestGroup(test, uuid);
-  let url = await runBasicFledgeAuction(test, uuid);
-  assert_true('string' === typeof url,
-              'Wrong value type returned from auction: ' + typeof url);
+  let config = await runBasicFledgeAuction(test, uuid);
+  assert_true(config instanceof FencedFrameConfig,
+              'Wrong value type returned from auction: ' +
+              config.constructor.name);
 
   // Leave the interest group, re-run the auction. There should be no winner.
   await leaveInterestGroup();

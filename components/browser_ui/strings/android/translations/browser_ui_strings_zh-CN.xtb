@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">图片解码器</translation>
 <translation id="1785415724048343560">建议勾选此选项以获得最佳体验</translation>
 <translation id="1818308510395330587">若要允许 <ph name="APP_NAME" /> 使用 AR 功能，您还需在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启摄像头。</translation>
-<translation id="1864927262126810325">来自<ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">相关网站能查看您在该群组中的活动记录</translation>
 <translation id="1887786770086287077">此设备的位置信息使用权已关闭；若想开启这项权限，请转到 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />。</translation>
 <translation id="1915307458270490472">中止</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">下载完成 <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">在无痕模式下，某些网站上的功能可能会无法正常运行</translation>
 <translation id="2442870161001914531">始终请求访问桌面版网站</translation>
+<translation id="2479148705183875116">转到“设置”</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2485422356828889247">卸载</translation>
 <translation id="2490684707762498678">由 <ph name="APP_NAME" /> 管理</translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">电子邮件地址</translation>
 <translation id="2750481671343847896">网站可以显示来自身份服务的登录提示。</translation>
 <translation id="2822354292072154809">确定要重置<ph name="CHOSEN_OBJECT_NAME" />的所有网站权限吗？</translation>
+<translation id="2850913818900871965">请求使用移动视图</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2874939134665556319">上一首</translation>
 <translation id="2891975107962658722">禁止某个网站将数据保存在您的设备上</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">网站可以使用 Cookie 来提升您的浏览体验，例如让您保持登录状态或记住您购物车中的商品</translation>
 <translation id="3165022941318558018">允许网站使用第三方 Cookie</translation>
 <translation id="3198916472715691905">已存储 <ph name="STORAGE_AMOUNT" /> 数据</translation>
-<translation id="3203366800380907218">来自网络</translation>
 <translation id="321187648315454507">若要允许 <ph name="APP_NAME" /> 向您发送通知，您还需在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中开启通知。</translation>
 <translation id="3227137524299004712">麦克风</translation>
 <translation id="3248611290851046188">此网站界定了多项可供其他网站用以向您展示广告的兴趣。此网站还会从 Chrome 了解您的兴趣，从而向您展示与您的需求更相符的广告。</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">请求获取桌面版视图</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="5123685120097942451">无痕式标签页</translation>
-<translation id="5134599672855298214">请求获取移动版视图（推荐）</translation>
 <translation id="5186036860380548585">选项位于屏幕顶部附近</translation>
 <translation id="5197729504361054390">系统会将您所选联系人的详细信息分享给 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />。</translation>
 <translation id="5216942107514965959">上次访问时间：今天</translation>

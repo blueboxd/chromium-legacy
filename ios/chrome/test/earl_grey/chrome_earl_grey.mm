@@ -402,9 +402,36 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   EG_TEST_HELPER_ASSERT_TRUE(matchedElement, errorDescription);
 }
 
+- (void)waitForNotSufficientlyVisibleElementWithMatcher:
+    (id<GREYMatcher>)matcher {
+  NSString* errorDescription = [NSString
+      stringWithFormat:
+          @"Failed waiting for element with matcher %@ to become not visible",
+          matcher];
+
+  GREYCondition* waitForElement = [GREYCondition
+      conditionWithName:errorDescription
+                  block:^{
+                    NSError* error = nil;
+                    [[EarlGrey selectElementWithMatcher:matcher]
+                        assertWithMatcher:grey_sufficientlyVisible()
+                                    error:&error];
+                    return error != nil;
+                  }];
+
+  bool matchedElement =
+      [waitForElement waitWithTimeout:kWaitForUIElementTimeout.InSecondsF()];
+  EG_TEST_HELPER_ASSERT_TRUE(matchedElement, errorDescription);
+}
+
 - (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher {
   [self waitForUIElementToAppearWithMatcher:matcher
                                     timeout:kWaitForUIElementTimeout];
+}
+
+- (BOOL)testUIElementAppearanceWithMatcher:(id<GREYMatcher>)matcher {
+  return [self testUIElementAppearanceWithMatcher:matcher
+                                          timeout:kWaitForUIElementTimeout];
 }
 
 - (void)waitForUIElementToAppearWithMatcher:(id<GREYMatcher>)matcher
@@ -412,7 +439,13 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   NSString* errorDescription = [NSString
       stringWithFormat:@"Failed waiting for element with matcher %@ to appear",
                        matcher];
+  bool matched = [self testUIElementAppearanceWithMatcher:matcher
+                                                  timeout:timeout];
+  EG_TEST_HELPER_ASSERT_TRUE(matched, errorDescription);
+}
 
+- (BOOL)testUIElementAppearanceWithMatcher:(id<GREYMatcher>)matcher
+                                   timeout:(base::TimeDelta)timeout {
   ConditionBlock condition = ^{
     NSError* error = nil;
     [[EarlGrey selectElementWithMatcher:matcher] assertWithMatcher:grey_notNil()
@@ -420,8 +453,7 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
     return error == nil;
   };
 
-  bool matched = WaitUntilConditionOrTimeout(timeout, condition);
-  EG_TEST_HELPER_ASSERT_TRUE(matched, errorDescription);
+  return WaitUntilConditionOrTimeout(timeout, condition);
 }
 
 - (void)waitForUIElementToDisappearWithMatcher:(id<GREYMatcher>)matcher {
@@ -752,14 +784,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (void)signInWithoutSyncWithIdentity:(FakeSystemIdentity*)identity {
   [ChromeEarlGreyAppInterface signInWithoutSyncWithIdentity:identity];
-}
-
-- (void)startSync {
-  [ChromeEarlGreyAppInterface startSync];
-}
-
-- (void)stopSync {
-  [ChromeEarlGreyAppInterface stopSync];
 }
 
 - (void)
@@ -1355,8 +1379,11 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 #pragma mark - Default Utilities (EG2)
 
 - (void)setUserDefaultObject:(id)value forKey:(NSString*)defaultName {
-  return [ChromeEarlGreyAppInterface setUserDefaultObject:value
-                                                   forKey:defaultName];
+  [ChromeEarlGreyAppInterface setUserDefaultObject:value forKey:defaultName];
+}
+
+- (void)removeUserDefaultObjectForKey:(NSString*)key {
+  [ChromeEarlGreyAppInterface removeUserDefaultObjectForKey:key];
 }
 
 #pragma mark - Pref Utilities (EG2)

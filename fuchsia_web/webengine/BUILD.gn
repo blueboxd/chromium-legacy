@@ -130,6 +130,7 @@ repack("web_engine_pak") {
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
+    "$root_gen_dir/content/gpu_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
@@ -141,6 +142,7 @@ repack("web_engine_pak") {
     "//components/resources:components_resources",
     "//content:content_resources",
     "//content:dev_ui_content_resources",
+    "//content/browser/resources/gpu:resources",
     "//content/browser/tracing:resources",
     "//gpu/command_buffer/service",
     "//mojo/public/js:resources",
@@ -237,7 +239,8 @@ component("web_engine_core") {
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger:fuchsia.logger_cpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger:fuchsia.logger_cpp_hlcpp_conversion",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.math:fuchsia.math_hlcpp",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media.sessions2:fuchsia.media.sessions2_hlcpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media.sessions2:fuchsia.media.sessions2_cpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media.sessions2:fuchsia.media.sessions2_cpp_hlcpp_conversion",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem:fuchsia.mem_hlcpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.settings:fuchsia.settings_hlcpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.gfx:fuchsia.ui.gfx_hlcpp",
@@ -404,7 +407,6 @@ source_set("switches") {
   visibility += [
     "//fuchsia_web/shell:cast_streaming_shell_exe",
     "//fuchsia_web/webinstance_host:webinstance_host",
-    "//fuchsia_web/webinstance_host:webinstance_host_v1",
   ]
   deps = [ "//base" ]
   public_deps = [ "//build:chromecast_buildflags" ]
@@ -465,11 +467,6 @@ fuchsia_component("web_instance_with_svc_directory_component") {
   include_coverage_shard = false
 }
 
-fuchsia_component("web_instance_component_cfv1") {
-  manifest = "web_instance.cmx"
-  data_deps = [ ":web_engine_exe" ]
-}
-
 # Component definition for the legacy fuchsia.web.ContextProvider service.
 # TODO(crbug.com/1010222): Remove once all callers have migrated to launching
 # instances directly as Components.
@@ -483,7 +480,6 @@ fuchsia_package("web_engine") {
   deps = [
     ":context_provider_component",
     ":web_instance_component",
-    ":web_instance_component_cfv1",
     ":web_instance_with_svc_directory_component",
   ]
   excluded_files = _web_engine_excluded_files
@@ -505,7 +501,6 @@ fuchsia_package("web_engine_with_webui") {
   # TODO(fxbug.dev/100944): Add appropriate visibility when fixed.
   deps = [
     ":web_instance_component",
-    ":web_instance_component_cfv1",
     ":webui_resources",
   ]
   excluded_files = _web_engine_excluded_files
@@ -528,8 +523,6 @@ source_set("browsertest_core") {
   ]
   testonly = true
   sources = [
-    "test/frame_for_test.cc",
-    "test/frame_for_test.h",
     "test/scenic_test_helper.cc",
     "test/scenic_test_helper.h",
     "test/scoped_connection_checker.h",
@@ -605,15 +598,16 @@ test("web_engine_browsertests") {
     "//content/test:test_support",
     "//fuchsia_web/common",
     "//fuchsia_web/common/test:test_support",
+    "//media/fuchsia/codec:test_support",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics:fuchsia.accessibility.semantics_hlcpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.element:fuchsia.element_hlcpp",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.input.virtualkeyboard:fuchsia.input.virtualkeyboard_hlcpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.input.virtualkeyboard:fuchsia.input.virtualkeyboard_cpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec:fuchsia.mediacodec_hlcpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem:fuchsia.mem_hlcpp",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input3:fuchsia.ui.input3_hlcpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input3:fuchsia.ui.input3_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//ui/gfx",
     "//ui/ozone",
@@ -671,6 +665,7 @@ test("web_engine_unittests") {
     "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media.sessions2:fuchsia.media.sessions2_cpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web:fuchsia.web_hlcpp",
     "//third_party/fuchsia-sdk/sdk/pkg/fdio",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
@@ -681,7 +676,6 @@ test("web_engine_unittests") {
   ]
 
   additional_manifest_fragments = [
-    "//build/config/fuchsia/test/cfv1_launcher.shard.test-cml",
     "//build/config/fuchsia/test/network.shard.test-cml",
     "//build/config/fuchsia/test/sysmem.shard.test-cml",
   ]
@@ -689,8 +683,6 @@ test("web_engine_unittests") {
 
 test("web_engine_integration_tests") {
   sources = [
-    "test_debug_listener.cc",
-    "test_debug_listener.h",
     "web_engine_debug_integration_test.cc",
     "web_engine_integration_logging_test.cc",
     "web_engine_integration_test.cc",
@@ -707,7 +699,6 @@ test("web_engine_integration_tests") {
     "//fuchsia_web/common/test:run_all_integration_tests",
     "//fuchsia_web/common/test:test_support",
     "//fuchsia_web/webengine/test:integration",
-    "//fuchsia_web/webinstance_host:webinstance_host_integration_test",
     "//media",
     "//media/fuchsia/audio:test_support",
     "//media/fuchsia/camera:test_support",
@@ -732,7 +723,6 @@ test("web_engine_integration_tests") {
     "//build/config/fuchsia/test/audio_output.shard.test-cml",
     "//build/config/fuchsia/test/fonts.shard.test-cml",
     "//build/config/fuchsia/test/network.shard.test-cml",
-    "//build/config/fuchsia/test/web_instance_host.shard.test-cml",
     "//fuchsia_web/webengine/web_engine_integration_tests.shard.test-cml",
     "//third_party/fuchsia-sdk/sdk/pkg/sys/component/realm_builder_absolute.shard.cml",
     "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
@@ -750,6 +740,7 @@ source_set("cast_streaming_receiver") {
     ":switches",
     "//components/cast/message_port",
     "//components/cast_streaming/browser",
+    "//ui/display",
     "//url",
   ]
   public = [

@@ -46,6 +46,11 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
   // Returns true if DXGI swap chain shared images for overlays are supported.
   static bool IsSwapChainSupported();
 
+  // Clears the current back buffer to opaque black on the immediate context.
+  static bool ClearBackBufferToOpaque(
+      Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain,
+      Microsoft::WRL::ComPtr<ID3D11Device>& d3d11_device);
+
   struct GPU_GLES2_EXPORT SwapChainBackings {
     SwapChainBackings(std::unique_ptr<SharedImageBacking> front_buffer,
                       std::unique_ptr<SharedImageBacking> back_buffer);
@@ -81,6 +86,7 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       bool is_thread_safe) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -90,6 +96,7 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       base::span<const uint8_t> pixel_data) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -99,6 +106,7 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       gfx::GpuMemoryBufferHandle handle) override;
   std::unique_ptr<SharedImageBacking> CreateSharedImage(
       const Mailbox& mailbox,
@@ -109,7 +117,8 @@ class GPU_GLES2_EXPORT D3DImageBackingFactory
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage) override;
+      uint32_t usage,
+      std::string debug_label) override;
 
   bool IsSupported(uint32_t usage,
                    viz::SharedImageFormat format,

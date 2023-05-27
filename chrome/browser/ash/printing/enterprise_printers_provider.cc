@@ -9,6 +9,7 @@
 #include "base/hash/md5.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/printing/bulk_printers_calculator.h"
 #include "chrome/browser/ash/printing/bulk_printers_calculator_factory.h"
 #include "chrome/browser/ash/printing/calculators_policies_binder.h"
@@ -18,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/printing/printer_translator.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -199,11 +201,19 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
     if (device_printers_) {
       complete_ = complete_ && device_printers_is_complete_;
       const auto& printers = device_printers_->GetPrinters();
+      PRINTER_LOG(DEBUG)
+          << "EnterprisePrintersProvider::RecalculateCurrentPrintersList()"
+          << "-device-printers: complete=" << device_printers_is_complete_
+          << " count=" << printers.size();
       AddPrintersFromMap(printers, &current_printers);
     }
     if (user_printers_) {
       complete_ = complete_ && user_printers_is_complete_;
       const auto& printers = user_printers_->GetPrinters();
+      PRINTER_LOG(DEBUG)
+          << "EnterprisePrintersProvider::RecalculateCurrentPrintersList()"
+          << "-user-printers: complete=" << user_printers_is_complete_
+          << " count=" << printers.size();
       AddPrintersFromMap(printers, &current_printers);
     }
 
@@ -265,7 +275,7 @@ class EnterprisePrintersProviderImpl : public EnterprisePrintersProvider,
   std::unique_ptr<CalculatorsPoliciesBinder> profile_binder_;
 
   // Profile (user) settings.
-  Profile* profile_;
+  raw_ptr<Profile, ExperimentalAsh> profile_;
   AccountId account_id_;
   PrefChangeRegistrar pref_change_registrar_;
 

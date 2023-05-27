@@ -1213,7 +1213,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // service is unavailable).
   ScriptPromise hasPrivateToken(ScriptState* script_state,
                                 const String& issuer,
-                                const String& type,
                                 ExceptionState&);
 
   // Sends a query via Mojo to ask whether the user has a redemption record.
@@ -1223,7 +1222,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // is unavailable).
   ScriptPromise hasRedemptionRecord(ScriptState* script_state,
                                     const String& issuer,
-                                    const String& type,
                                     ExceptionState&);
 
   void ariaNotify(const String announcement, const AriaNotificationOptions*);
@@ -2243,12 +2241,12 @@ class CORE_EXPORT Document : public ContainerNode,
   KURL base_url_override_;  // An alternative base URL that takes precedence
                             // over base_url_ (but not base_element_url_).
 
-  // Used in FallbackBaseURL() to provide the base URL for srcdoc documents,
-  // which is the initiator's base URL at the time the navigation was initiated.
-  // Separate from the base_url_* fields because the fallback base URL should
-  // not take precedence over things like <base>.
-  // Note: this currently is only used when IsolateSandboxedIframes is enabled.
-  KURL fallback_base_url_for_srcdoc_;
+  // Used in FallbackBaseURL() to provide the base URL for  about:srcdoc  and
+  // about:blank documents, which is the initiator's base URL at the time the
+  // navigation was initiated. Separate from the base_url_* fields because the
+  // fallback base URL should not take precedence over things like <base>. Note:
+  // this currently is only used when NewBaseUrlInheritanceBehavior is enabled.
+  KURL fallback_base_url_;
 
   KURL base_element_url_;   // The URL set by the <base> element.
   KURL cookie_url_;         // The URL to use for cookie access.
@@ -2441,7 +2439,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 
-  // top_layer_elements_ to be removed when top-layer computes to none.
+  // top_layer_elements_ to be removed when overlay computes to none.
   HeapHashSet<Member<Element>> top_layer_elements_pending_removal_;
 
   // The stack of currently-displayed `popover=auto` elements. Elements in the

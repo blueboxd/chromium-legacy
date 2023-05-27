@@ -79,7 +79,6 @@
 <translation id="2928420929544864228">ಇನ್‌ಸ್ಟಾಲೇಶನ್ ಪೂರ್ಣಗೊಂಡಿದೆ.</translation>
 <translation id="2977470724722393594">Chromium ಅಪ್‌ ಟು ಡೇಟ್‌ ಆಗಿದೆ</translation>
 <translation id="2977506796191543575">ಯಾವುದಾದರೂ ಸೈಟ್ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಕದಿಯಲು ಪ್ರಯತ್ನಿಸಿದರೆ ಅಥವಾ ನೀವು ಹಾನಿಕಾರಕ ಫೈಲ್ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿದಾಗ, ಪುಟದ ವಿಷಯದ ತುಣುಕುಗಳನ್ನು ಒಳಗೊಂಡ URL ಗಳನ್ನು ಸಹ Chromium, ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್‌ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium ಅನ್ನು HID ಸಾಧನಕ್ಕೆ ಕನೆಕ್ಟ್ ಮಾಡಲಾಗಿದೆ}one{Chromium ಅನ್ನು HID ಸಾಧನಗಳಿಗೆ ಕನೆಕ್ಟ್ ಮಾಡಲಾಗಿದೆ}other{Chromium ಅನ್ನು HID ಸಾಧನಗಳಿಗೆ ಕನೆಕ್ಟ್ ಮಾಡಲಾಗಿದೆ}}</translation>
 <translation id="3032706164202344641">Chromium ಗೆ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3032787606318309379">Chromium ಗೆ ಸೇರಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3038232873781883849">ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲು ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -92,7 +91,6 @@
 <translation id="3185330573522821672">ನಿಮ್ಮ ಹೊಸ Chromium ಪ್ರೊಫೈಲ್ ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ</translation>
 <translation id="3190315855212034486">ಓಹ್! Chromium ಕ್ರ್ಯಾಶ್ ಆಗಿದೆ. ಮತ್ತೊಮ್ಮೆ ಪ್ರಾರಂಭಿಸುವುದೇ?</translation>
 <translation id="3258596308407688501">Chromium ಗೆ ಇದರ ಡೇಟಾ ಡೈರೆಕ್ಟರಿಯನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ ಮತ್ತು ಬರೆಯಲಾಗುವುದಿಲ್ಲ: <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">ನಿಮ್ಮ ಆಯ್ಕೆಗಳನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು ಈ ಗೈಡ್ ನಿಮಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ, ಇದರಿಂದ Chromium ನಿಮಗೆ ಬೇಕಾದ ರೀತಿಯಲ್ಲಿ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ</translation>
 <translation id="3283186697780795848">Chromium ಆವೃತ್ತಿ <ph name="PRODUCT_VERSION" /> ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="3286538390144397061">ಈಗ ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="328888136576916638">Google API ಕೀಗಳು ಕಾಣೆಯಾಗಿವೆ. Chromium ನ ಕೆಲವು ಕಾರ್ಯವಿಧಾನಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತದೆ.</translation>
@@ -244,8 +242,10 @@
 <translation id="6442900851116057561">ChromiumOS ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="6455857529632101747">Chromium ಪ್ರೊಫೈಲ್‌ಗಳಿಗೆ ಸುಸ್ವಾಗತ</translation>
 <translation id="6475912303565314141">ನೀವು Chromium ಪ್ರಾರಂಭಿಸಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
+<translation id="648319183876919572">ಅಪಾಯಕಾರಿ ವೆಬ್‌ಸೈಟ್‌ಗಳು ಮತ್ತು ಡೌನ್‌ಲೋಡ್‌ಗಳ ವಿರುದ್ಧ ನಿಮ್ಮನ್ನು ರಕ್ಷಿಸಲು ವರ್ಧಿತ ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್ ಹೆಚ್ಚಿನ ಸಹಾಯ ಮಾಡುತ್ತದೆ</translation>
 <translation id="6510925080656968729">Chromium ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="6542839706527980775">ಪ್ರತಿಯೊಂದು ಪ್ರೊಫೈಲ್ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ, ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹಾಗೂ ಇನ್ನಷ್ಟವುಗಳಂತಹ ತನ್ನ ಸ್ವಂತ Chromium ಮಾಹಿತಿಯನ್ನು ಒಳಗೊಂಡಿರುತ್ತವೆ</translation>
+<translation id="656935081669708576">ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ವೀಕ್ಷಿಸಲು ನೀವು ಇನ್ನೊಂದು Chromium ಪ್ರೊಫೈಲ್‌ಗೆ ಬದಲಾಯಿಸಬಹುದು</translation>
 <translation id="6570579332384693436">ಕಾಗುಣಿತ ದೋಷಗಳನ್ನು ಸರಿಪಡಿಸಲು, ನೀವು ಪಠ್ಯ ಕ್ಷೇತ್ರಗಳಲ್ಲಿ ಟೈಪ್ ಮಾಡುವ ಪಠ್ಯವನ್ನು Chromium, Google ಗೆ ಕಳುಹಿಸುತ್ತದೆ</translation>
 <translation id="6598877126913850652">Chromium ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ</translation>
 <translation id="6613594504749178791">ನೀವು ಮುಂದಿನ ಬಾರಿ Chromium ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
@@ -376,7 +376,6 @@
 <translation id="924957577793602335">ನಿಮ್ಮ ಸ್ವಂತ Chromium ಅನ್ನು ರಚಿಸಿ</translation>
 <translation id="93478295209880648">Windows XP ಅಥವಾ Windows Vista ದಲ್ಲಿ Chromium ಗೆ ಈಗ ಬೆಂಬಲವಿಲ್ಲದೇ ಇರುವುದರಿಂದ ಅದು ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದೇ ಇರಬಹುದು</translation>
 <translation id="942598560705308788">Chromium ನಿರ್ವಹಿತ ಮಾಣೀಕರಣಗಳು</translation>
-<translation id="959579472876010517">Chromium ನಿಂದ ಹೆಚ್ಚಿನ ಪ್ರಯೋಜನ ಪಡೆಯಿರಿ</translation>
 <translation id="965162752251293939">Chromium ಅನ್ನು ಯಾರು ಬಳಸುತ್ತಿದ್ದಾರೆ?</translation>
 <translation id="967427899662692980">Chromium ನ ಪ್ರಬಲ ಭದ್ರತೆಯನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="9792300276217204">ನೀವು Chromium ಅನ್ನು ಮುಚ್ಚಿದಾಗ ನಿಮ್ಮ ಸಾಧನದಿಂದ ಸೈಟ್ ಡೇಟಾವನ್ನು ಯಾವಾಗಲೂ ತೆರವುಗೊಳಿಸಿ</translation>

@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/desk_template.h"
 #include "ash/shell.h"
+#include "ash/wm/desks/templates/saved_desk_constants.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -34,8 +35,6 @@ namespace {
 
 constexpr int kLandscapeMaxColumns = 3;
 constexpr int kPortraitMaxColumns = 2;
-
-constexpr int kGridPaddingDp = 24;
 
 // This is the maximum number of saved desks we will show in the grid. This
 // constant is used instead of the Desk model `GetMaxEntryCount()` because that
@@ -84,7 +83,7 @@ SavedDeskGridView::SavedDeskGridView()
 
 SavedDeskGridView::~SavedDeskGridView() = default;
 
-void SavedDeskGridView::SortEntries(const base::GUID& order_first_uuid) {
+void SavedDeskGridView::SortEntries(const base::Uuid& order_first_uuid) {
   // Sort the `grid_items_` into alphabetical order based on saved desk name.
   // Note that this doesn't update the order of the child views, but just sorts
   // the vector. `Layout` is responsible for placing the views in the correct
@@ -98,7 +97,7 @@ void SavedDeskGridView::SortEntries(const base::GUID& order_first_uuid) {
   // front of the grid, and sort the rest of the entries after it.
   auto rest = base::ranges::partition(
       grid_items_,
-      [&order_first_uuid](const base::GUID& uuid) {
+      [&order_first_uuid](const base::Uuid& uuid) {
         return uuid == order_first_uuid;
       },
       &SavedDeskItemView::uuid);
@@ -127,7 +126,7 @@ void SavedDeskGridView::SortEntries(const base::GUID& order_first_uuid) {
 
 void SavedDeskGridView::AddOrUpdateEntries(
     const std::vector<const DeskTemplate*>& entries,
-    const base::GUID& order_first_uuid,
+    const base::Uuid& order_first_uuid,
     bool animate) {
   std::vector<SavedDeskItemView*> new_grid_items;
 
@@ -152,7 +151,7 @@ void SavedDeskGridView::AddOrUpdateEntries(
     AnimateGridItems(new_grid_items);
 }
 
-void SavedDeskGridView::DeleteEntries(const std::vector<base::GUID>& uuids,
+void SavedDeskGridView::DeleteEntries(const std::vector<base::Uuid>& uuids,
                                       bool delete_animation) {
   OverviewHighlightController* highlight_controller =
       Shell::Get()
@@ -161,7 +160,7 @@ void SavedDeskGridView::DeleteEntries(const std::vector<base::GUID>& uuids,
           ->highlight_controller();
   DCHECK(highlight_controller);
 
-  for (const base::GUID& uuid : uuids) {
+  for (const base::Uuid& uuid : uuids) {
     auto iter = base::ranges::find(grid_items_, uuid, &SavedDeskItemView::uuid);
 
     if (iter == grid_items_.end())
@@ -221,8 +220,8 @@ gfx::Size SavedDeskGridView::CalculatePreferredSize() const {
   const int item_width = SavedDeskItemView::kPreferredSize.width();
   const int item_height = SavedDeskItemView::kPreferredSize.height();
 
-  return gfx::Size(cols * item_width + (cols - 1) * kGridPaddingDp,
-                   rows * item_height + (rows - 1) * kGridPaddingDp);
+  return gfx::Size(cols * item_width + (cols - 1) * kSaveDeskPaddingDp,
+                   rows * item_height + (rows - 1) * kSaveDeskPaddingDp);
 }
 
 void SavedDeskGridView::Layout() {
@@ -250,7 +249,7 @@ bool SavedDeskGridView::IsAnimating() const {
   return bounds_animator_.IsAnimating();
 }
 
-SavedDeskItemView* SavedDeskGridView::GetItemForUUID(const base::GUID& uuid) {
+SavedDeskItemView* SavedDeskGridView::GetItemForUUID(const base::Uuid& uuid) {
   if (!uuid.is_valid())
     return nullptr;
 
@@ -281,12 +280,12 @@ std::vector<gfx::Rect> SavedDeskGridView::CalculateGridItemPositions() const {
     if (i != 0 && i % column_count == 0) {
       // Move the position to the start of the next row.
       x = 0;
-      y += grid_item_size.height() + kGridPaddingDp;
+      y += grid_item_size.height() + kSaveDeskPaddingDp;
     }
 
     positions.emplace_back(gfx::Point(x, y), grid_item_size);
 
-    x += grid_item_size.width() + kGridPaddingDp;
+    x += grid_item_size.width() + kSaveDeskPaddingDp;
   }
 
   DCHECK_EQ(positions.size(), grid_items_.size());

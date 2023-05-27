@@ -17,6 +17,7 @@
 #include "components/history_clusters/core/history_clusters_service.h"
 #include "components/history_clusters/core/on_device_clustering_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/search/ntp_features.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace history_clusters {
@@ -137,14 +138,6 @@ Config::Config() {
   {
     omnibox_action = base::FeatureList::IsEnabled(internal::kOmniboxAction);
 
-    omnibox_action_on_urls = base::GetFieldTrialParamByFeatureAsBool(
-        internal::kOmniboxAction, "omnibox_action_on_urls",
-        omnibox_action_on_urls);
-
-    omnibox_action_on_noisy_urls = base::GetFieldTrialParamByFeatureAsBool(
-        internal::kOmniboxAction, "omnibox_action_on_noisy_urls",
-        omnibox_action_on_noisy_urls);
-
     omnibox_action_with_pedals = base::GetFieldTrialParamByFeatureAsBool(
         internal::kOmniboxAction, "omnibox_action_with_pedals",
         omnibox_action_with_pedals);
@@ -253,7 +246,7 @@ Config::Config() {
     DCHECK_LE(entity_relevance_threshold, 100);
 
     content_visibility_threshold = GetFieldTrialParamByFeatureAsDouble(
-        features::kOnDeviceClustering, "content_visibility_threshold", 0.7);
+        features::kOnDeviceClustering, "content_visibility_threshold", 0.5);
     // Ensure that the value is [0.0 and 1.0].
     DCHECK_GE(content_visibility_threshold, 0.0f);
     DCHECK_LE(content_visibility_threshold, 1.0f);
@@ -378,12 +371,6 @@ Config::Config() {
             internal::kHistoryClustersNavigationContextClustering,
             "cluster_triggerability_cutoff_duration_minutes",
             cluster_triggerability_cutoff_duration.InMinutes()));
-
-    fetch_persisted_clusters_after_filtered_clusters_empty =
-        GetFieldTrialParamByFeatureAsBool(
-            internal::kHistoryClustersNavigationContextClustering,
-            "fetch_persisted_clusters_after_filtered_clusters_empty",
-            fetch_persisted_clusters_after_filtered_clusters_empty);
   }
 
   // WebUI features and params.
@@ -392,6 +379,35 @@ Config::Config() {
 
     hide_visits_icon = GetFieldTrialParamByFeatureAsBool(
         internal::kHideVisits, "hide_visits_icon", hide_visits_icon);
+  }
+
+  // The `kUseUrlForDisplayCache` feature and child params.
+  {
+    use_url_for_display_cache =
+        base::FeatureList::IsEnabled(internal::kUseUrlForDisplayCache);
+
+    url_for_display_cache_size = GetFieldTrialParamByFeatureAsInt(
+        internal::kUseUrlForDisplayCache, "url_for_display_cache_size",
+        url_for_display_cache_size);
+  }
+
+  // The `kJourneysZeroStateFiltering` feature and child params.
+  {
+    apply_zero_state_filtering =
+        base::FeatureList::IsEnabled(internal::kJourneysZeroStateFiltering);
+  }
+
+  // The `kNtpChromeCartInHistoryClusterModule` child params.
+  {
+    use_ntp_specific_intracluster_ranking = GetFieldTrialParamByFeatureAsBool(
+        ntp_features::kNtpChromeCartInHistoryClusterModule,
+        "use_ntp_specific_intracluster_ranking",
+        use_ntp_specific_intracluster_ranking);
+
+    ntp_visit_duration_ranking_weight = GetFieldTrialParamByFeatureAsDouble(
+        ntp_features::kNtpChromeCartInHistoryClusterModule,
+        "ntp_visit_duration_ranking_weight", ntp_visit_duration_ranking_weight);
+    DCHECK_GE(ntp_visit_duration_ranking_weight, 0.0f);
   }
 
   // Lonely features without child params.

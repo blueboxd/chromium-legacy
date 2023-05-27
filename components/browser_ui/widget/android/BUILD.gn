@@ -62,6 +62,7 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/widget/dragreorder/DragReorderableListAdapter.java",
     "java/src/org/chromium/components/browser_ui/widget/dragreorder/DragReorderableRecyclerViewAdapter.java",
     "java/src/org/chromium/components/browser_ui/widget/dragreorder/DragStateDelegate.java",
+    "java/src/org/chromium/components/browser_ui/widget/dragreorder/DragUtils.java",
     "java/src/org/chromium/components/browser_ui/widget/gesture/BackPressHandler.java",
     "java/src/org/chromium/components/browser_ui/widget/gesture/SwipeGestureListener.java",
     "java/src/org/chromium/components/browser_ui/widget/highlight/PulseDrawable.java",
@@ -98,6 +99,7 @@ android_library("java") {
     "java/src/org/chromium/components/browser_ui/widget/scrim/ScrimProperties.java",
     "java/src/org/chromium/components/browser_ui/widget/scrim/ScrimView.java",
     "java/src/org/chromium/components/browser_ui/widget/scrim/ScrimViewBinder.java",
+    "java/src/org/chromium/components/browser_ui/widget/selectable_list/CheckableSelectableItemView.java",
     "java/src/org/chromium/components/browser_ui/widget/selectable_list/SelectableItemView.java",
     "java/src/org/chromium/components/browser_ui/widget/selectable_list/SelectableItemViewBase.java",
     "java/src/org/chromium/components/browser_ui/widget/selectable_list/SelectableItemViewHolder.java",
@@ -224,6 +226,7 @@ android_resources("java_resources") {
     "java/res/drawable/oval_surface_2.xml",
     "java/res/drawable/query_tile_overlay.xml",
     "java/res/drawable/rectangle_surface_1.xml",
+    "java/res/drawable/rounded_rectangle_surface_0.xml",
     "java/res/drawable/rounded_rectangle_surface_1.xml",
     "java/res/drawable/search_toolbar_modern_bg.xml",
     "java/res/drawable/tile_view_highlight.xml",
@@ -239,7 +242,6 @@ android_resources("java_resources") {
     "java/res/layout/indeterminate_progress_view.xml",
     "java/res/layout/list_menu_item.xml",
     "java/res/layout/modern_list_item_view.xml",
-    "java/res/layout/modern_list_item_view_v2.xml",
     "java/res/layout/more_progress_button.xml",
     "java/res/layout/number_roll_view.xml",
     "java/res/layout/promo_card_view_compact.xml",
@@ -280,6 +282,7 @@ android_resources("java_resources") {
 
 android_library("test_support_java") {
   testonly = true
+  resources_package = "org.chromium.components.browser_ui.widget"
 
   sources = [
     "test/java/src/org/chromium/components/browser_ui/widget/RecyclerViewTestUtils.java",
@@ -297,6 +300,7 @@ android_library("test_support_java") {
 
 android_library("unit_device_javatests") {
   testonly = true
+  resources_package = "org.chromium.components.browser_ui.widget.test"
 
   sources = [
     "java/src/org/chromium/components/browser_ui/widget/CheckBoxWithDescriptionTest.java",
@@ -331,12 +335,11 @@ android_library("unit_device_javatests") {
     "//components/browser_ui/test/android:test_support_java",
     "//components/browser_ui/theme/android:java_resources",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_support_test_runner:rules_java",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
+    "//third_party/androidx:androidx_test_monitor_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
@@ -344,7 +347,6 @@ android_library("unit_device_javatests") {
     "//ui/android:ui_java",
     "//ui/android:ui_java_test_support",
   ]
-  resources_package = "org.chromium.components.browser_ui.widget.test"
 }
 
 android_resources("java_test_resources") {
@@ -381,6 +383,7 @@ android_resources("java_test_resources") {
 }
 
 robolectric_library("junit") {
+  resources_package = "org.chromium.components.browser_ui.widget"
   sources = [
     "java/src/org/chromium/components/browser_ui/widget/ChromeTransitionDrawableTest.java",
     "java/src/org/chromium/components/browser_ui/widget/CompositeTouchDelegateUnitTest.java",
@@ -394,6 +397,7 @@ robolectric_library("junit") {
   ]
   deps = [
     ":java",
+    ":java_resources",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",

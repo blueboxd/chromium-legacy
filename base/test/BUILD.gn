@@ -13,6 +13,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+if (is_ios) {
+  import("//build/config/ios/rules.gni")
+}
+
 static_library("test_config") {
   testonly = true
   sources = [
@@ -168,6 +172,17 @@ static_library("test_support") {
 
   if (enable_base_tracing) {
     public_deps += [ "//third_party/perfetto:perfetto_test_support" ]
+    if (!is_chromeos) {
+      # TODO(rasikan): Add to ios and chromeos when unblocked by the chromiumos
+      # change to add the shared lib to the chrome-binary-tests directory.
+      public_deps += [ ":test_trace_processor" ]
+      if (is_ios) {
+        deps += [
+          ":test_trace_processor+bundle",
+          ":test_trace_processor+link",
+        ]
+      }
+    }
   }
 
   if (is_win) {
@@ -230,8 +245,6 @@ static_library("test_support") {
 
   if (is_ios) {
     sources += [
-      "../ios/weak_nsobject.h",
-      "../ios/weak_nsobject.mm",
       "ios/wait_util.h",
       "ios/wait_util.mm",
       "test_file_util_mac.cc",
@@ -240,7 +253,10 @@ static_library("test_support") {
       "test_support_ios.h",
       "test_support_ios.mm",
     ]
-    deps += [ ":google_test_runner_shared_headers" ]
+    deps += [
+      ":google_test_runner_shared_headers",
+      "//build:blink_buildflags",
+    ]
 
     # With blink, we use the standard unit_test_launcher.cc.
     if (!use_blink) {
@@ -265,8 +281,6 @@ static_library("test_support") {
     sources += [
       "../fuchsia/test_component_context_for_process.cc",
       "../fuchsia/test_component_context_for_process.h",
-      "../fuchsia/test_component_controller.cc",
-      "../fuchsia/test_component_controller.h",
       "scoped_dev_zero_fuchsia.cc",
       "scoped_dev_zero_fuchsia.h",
     ]
@@ -468,15 +482,20 @@ executable("test_child_process") {
 }
 
 if (enable_base_tracing) {
-  # We encapsulate the trace processor as a separate component to prevent any
-  # duplicate symbols issues.Perfetto symbols are exported by chromium's base via
-  # a public_dep on libperfetto; libtrace_processor also depends on these symbols.
-  # The issue can occur if we try to use some symbol exported by both libperfetto
-  # and libtrace_processor.By encapsulating the libtrace_processor in a
-  # component, we can "hide" the perfetto symbols from the exported interface of
-  # this component and limit the issue to TestTraceProcessor only, rather than all
-  # of test_support.
-  component("test_trace_processor") {
+  # We encapsulate the trace processor in a separate shared library to prevent
+  # any duplicate symbol issues. Perfetto symbols are exported by chromium’s
+  # base via a public_dep on libperfetto; libtrace_processor also depends on
+  # these symbols. So we “hide” the perfetto symbols exported from this
+  # interface. Also, chrome targets depend on chromium_sqlite and the trace
+  # processor depends on dev_sqlite. The two share the same symbols but have
+  # different implementations, so we need to hide dev_sqlite in this shared
+  # library even in non-component builds to prevent duplicate symbols.
+  _target_type = "shared_library"
+  if (is_ios) {
+    _target_type = "ios_framework_bundle"
+  }
+
+  target(_target_type, "test_trace_processor") {
     defines = [ "TEST_TRACE_PROCESSOR_IMPL" ]
     testonly = true
     sources = [
@@ -488,5 +507,41 @@ if (enable_base_tracing) {
       "//third_party/abseil-cpp:absl",
       "//third_party/perfetto:libtrace_processor",
     ]
+    if (is_android) {
+      configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    }
+
+    if (is_ios) {
+      info_plist = "test_trace_processor.plist"
+      output_name = "TestTraceProcessor"
+      bundle_deps_filter = [ "//third_party/icu:icudata" ]
+    }
+
+    # Set rpath on dependent tests so that they can find the shared library
+    # in a non-component build.
+    if (!is_component_build) {
+      all_dependent_configs = []
+      if (is_linux || is_chromeos) {
+        all_dependent_configs +=
+            [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
+      }
+      if (is_mac) {
+        # We need the lib to be in $root_out_dir/Libraries so the library is where
+        # the linker expects it, since we set the install_name flag. We need to
+        # set this flag so that the library can be found when it is bundled in the
+        # Content Shell Framework (see test_trace_processor_bundle_data).
+        output_dir = "$root_out_dir/Libraries"
+        ldflags = [ "-Wl,-install_name,@loader_path/Libraries/libtest_trace_processor.dylib" ]
+      }
+    }
+  }
+
+  if (!is_component_build && is_mac) {
+    bundle_data("test_trace_processor_bundle_data") {
+      testonly = true
+      sources = [ "$root_out_dir/Libraries/libtest_trace_processor.dylib" ]
+      outputs = [ "{{bundle_contents_dir}}/Libraries/{{source_file_part}}" ]
+      public_deps = [ ":test_trace_processor" ]
+    }
   }
 }

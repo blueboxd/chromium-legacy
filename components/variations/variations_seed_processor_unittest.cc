@@ -18,6 +18,7 @@
 #include "base/format_macros.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ref.h"
 #include "base/metrics/field_trial_list_including_low_anonymity.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_split.h"
@@ -235,19 +236,6 @@ class VariationsSeedProcessorTest : public ::testing::Test {
   TestOverrideStringCallback override_callback_;
 };
 
-// This is exposed on the test class rather than called directly from tests
-// because |FieldTrialListIncludingLowAnonymity| needs to friend the call site
-// but |FRIEND_TEST| / |FRIEND_TEST_ALL_PREFIXES| doesn't work with
-// |TYPED_TEST|.
-class VariationsSeedProcessorTestLowAnonymityHelper {
- public:
-  static void GetActiveFieldTrialGroups(
-      base::FieldTrial::ActiveGroups* active_groups) {
-    base::FieldTrialListIncludingLowAnonymity::GetActiveFieldTrialGroups(
-        active_groups);
-  }
-};
-
 using EnvironmentTypes =
     ::testing::Types<ChromeEnvironment, WebViewEnvironment>;
 TYPED_TEST_SUITE(VariationsSeedProcessorTest, EnvironmentTypes);
@@ -352,8 +340,9 @@ TYPED_TEST(VariationsSeedProcessorTest, ForceGroupWithFlag1_LowAnonymity) {
   EXPECT_EQ(active_groups.size(), 0u);
 
   base::FieldTrial::ActiveGroups active_groups_including_low_anonymity;
-  VariationsSeedProcessorTestLowAnonymityHelper::GetActiveFieldTrialGroups(
-      &active_groups_including_low_anonymity);
+  base::FieldTrialListIncludingLowAnonymity::
+      GetActiveFieldTrialGroupsForTesting(
+          &active_groups_including_low_anonymity);
   EXPECT_EQ(active_groups_including_low_anonymity.size(), 1u);
 }
 
@@ -663,7 +652,7 @@ TYPED_TEST(VariationsSeedProcessorTest, FeatureAssociationAndForcing) {
   const char kForcedOffGroup[] = "ForcedOff";
 
   struct {
-    const base::Feature& feature;
+    const raw_ref<const base::Feature, ExperimentalAsh> feature;
     const char* enable_features_command_line;
     const char* disable_features_command_line;
     OneHundredPercentGroup one_hundred_percent_group;
@@ -675,54 +664,59 @@ TYPED_TEST(VariationsSeedProcessorTest, FeatureAssociationAndForcing) {
       // Check what happens without and command-line forcing flags - that the
       // |one_hundred_percent_group| gets correctly selected and does the right
       // thing w.r.t. to affecting the feature / activating the trial.
-      {kFeatureOffByDefault, "", "", DEFAULT_GROUP, kDefaultGroup, false, true},
-      {kFeatureOffByDefault, "", "", ENABLE_GROUP, kEnabledGroup, true, true},
-      {kFeatureOffByDefault, "", "", DISABLE_GROUP, kDisabledGroup, false,
+      {raw_ref(kFeatureOffByDefault), "", "", DEFAULT_GROUP, kDefaultGroup,
+       false, true},
+      {raw_ref(kFeatureOffByDefault), "", "", ENABLE_GROUP, kEnabledGroup, true,
        true},
+      {raw_ref(kFeatureOffByDefault), "", "", DISABLE_GROUP, kDisabledGroup,
+       false, true},
 
       // Do the same as above, but for kFeatureOnByDefault feature.
-      {kFeatureOnByDefault, "", "", DEFAULT_GROUP, kDefaultGroup, true, true},
-      {kFeatureOnByDefault, "", "", ENABLE_GROUP, kEnabledGroup, true, true},
-      {kFeatureOnByDefault, "", "", DISABLE_GROUP, kDisabledGroup, false, true},
+      {raw_ref(kFeatureOnByDefault), "", "", DEFAULT_GROUP, kDefaultGroup, true,
+       true},
+      {raw_ref(kFeatureOnByDefault), "", "", ENABLE_GROUP, kEnabledGroup, true,
+       true},
+      {raw_ref(kFeatureOnByDefault), "", "", DISABLE_GROUP, kDisabledGroup,
+       false, true},
 
       // Test forcing each feature on and off through the command-line and that
       // the correct associated experiment gets chosen.
-      {kFeatureOffByDefault, kFeatureOffByDefault.name, "", DEFAULT_GROUP,
-       kForcedOnGroup, true, true},
-      {kFeatureOffByDefault, "", kFeatureOffByDefault.name, DEFAULT_GROUP,
-       kForcedOffGroup, false, true},
-      {kFeatureOnByDefault, kFeatureOnByDefault.name, "", DEFAULT_GROUP,
-       kForcedOnGroup, true, true},
-      {kFeatureOnByDefault, "", kFeatureOnByDefault.name, DEFAULT_GROUP,
-       kForcedOffGroup, false, true},
+      {raw_ref(kFeatureOffByDefault), kFeatureOffByDefault.name, "",
+       DEFAULT_GROUP, kForcedOnGroup, true, true},
+      {raw_ref(kFeatureOffByDefault), "", kFeatureOffByDefault.name,
+       DEFAULT_GROUP, kForcedOffGroup, false, true},
+      {raw_ref(kFeatureOnByDefault), kFeatureOnByDefault.name, "",
+       DEFAULT_GROUP, kForcedOnGroup, true, true},
+      {raw_ref(kFeatureOnByDefault), "", kFeatureOnByDefault.name,
+       DEFAULT_GROUP, kForcedOffGroup, false, true},
 
       // Check that even if a feature should be enabled or disabled based on the
       // the experiment probability weights, the forcing flag association still
       // takes precedence. This is 4 cases as above, but with different values
       // for |one_hundred_percent_group|.
-      {kFeatureOffByDefault, kFeatureOffByDefault.name, "", ENABLE_GROUP,
+      {raw_ref(kFeatureOffByDefault), kFeatureOffByDefault.name, "",
+       ENABLE_GROUP, kForcedOnGroup, true, true},
+      {raw_ref(kFeatureOffByDefault), "", kFeatureOffByDefault.name,
+       ENABLE_GROUP, kForcedOffGroup, false, true},
+      {raw_ref(kFeatureOnByDefault), kFeatureOnByDefault.name, "", ENABLE_GROUP,
        kForcedOnGroup, true, true},
-      {kFeatureOffByDefault, "", kFeatureOffByDefault.name, ENABLE_GROUP,
+      {raw_ref(kFeatureOnByDefault), "", kFeatureOnByDefault.name, ENABLE_GROUP,
        kForcedOffGroup, false, true},
-      {kFeatureOnByDefault, kFeatureOnByDefault.name, "", ENABLE_GROUP,
-       kForcedOnGroup, true, true},
-      {kFeatureOnByDefault, "", kFeatureOnByDefault.name, ENABLE_GROUP,
-       kForcedOffGroup, false, true},
-      {kFeatureOffByDefault, kFeatureOffByDefault.name, "", DISABLE_GROUP,
-       kForcedOnGroup, true, true},
-      {kFeatureOffByDefault, "", kFeatureOffByDefault.name, DISABLE_GROUP,
-       kForcedOffGroup, false, true},
-      {kFeatureOnByDefault, kFeatureOnByDefault.name, "", DISABLE_GROUP,
-       kForcedOnGroup, true, true},
-      {kFeatureOnByDefault, "", kFeatureOnByDefault.name, DISABLE_GROUP,
-       kForcedOffGroup, false, true},
+      {raw_ref(kFeatureOffByDefault), kFeatureOffByDefault.name, "",
+       DISABLE_GROUP, kForcedOnGroup, true, true},
+      {raw_ref(kFeatureOffByDefault), "", kFeatureOffByDefault.name,
+       DISABLE_GROUP, kForcedOffGroup, false, true},
+      {raw_ref(kFeatureOnByDefault), kFeatureOnByDefault.name, "",
+       DISABLE_GROUP, kForcedOnGroup, true, true},
+      {raw_ref(kFeatureOnByDefault), "", kFeatureOnByDefault.name,
+       DISABLE_GROUP, kForcedOffGroup, false, true},
   };
 
   for (size_t i = 0; i < std::size(test_cases); i++) {
     const auto& test_case = test_cases[i];
     const int group = test_case.one_hundred_percent_group;
     SCOPED_TRACE(base::StringPrintf(
-        "Test[%" PRIuS "]: %s [%s] [%s] %d", i, test_case.feature.name,
+        "Test[%" PRIuS "]: %s [%s] [%s] %d", i, test_case.feature->name,
         test_case.enable_features_command_line,
         test_case.disable_features_command_line, static_cast<int>(group)));
 
@@ -744,19 +738,19 @@ TYPED_TEST(VariationsSeedProcessorTest, FeatureAssociationAndForcing) {
     Study::Experiment* feature_enable =
         AddExperiment(kEnabledGroup, group == ENABLE_GROUP ? 1 : 0, study);
     feature_enable->mutable_feature_association()->add_enable_feature(
-        test_case.feature.name);
+        test_case.feature->name);
 
     Study::Experiment* feature_disable =
         AddExperiment(kDisabledGroup, group == DISABLE_GROUP ? 1 : 0, study);
     feature_disable->mutable_feature_association()->add_disable_feature(
-        test_case.feature.name);
+        test_case.feature->name);
 
     AddExperiment(kForcedOnGroup, 0, study)
         ->mutable_feature_association()
-        ->set_forcing_feature_on(test_case.feature.name);
+        ->set_forcing_feature_on(test_case.feature->name);
     AddExperiment(kForcedOffGroup, 0, study)
         ->mutable_feature_association()
-        ->set_forcing_feature_off(test_case.feature.name);
+        ->set_forcing_feature_off(test_case.feature->name);
 
     this->CreateTrialsFromSeed(seed, feature_list.get());
     base::test::ScopedFeatureList scoped_feature_list;
@@ -766,7 +760,7 @@ TYPED_TEST(VariationsSeedProcessorTest, FeatureAssociationAndForcing) {
     // depending on the expected values.
     EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study->name()));
     EXPECT_EQ(test_case.expected_feature_state,
-              base::FeatureList::IsEnabled(test_case.feature));
+              base::FeatureList::IsEnabled(*test_case.feature));
     EXPECT_EQ(test_case.expected_trial_activated,
               base::FieldTrialList::IsTrialActive(study->name()));
   }
@@ -1519,8 +1513,9 @@ TYPED_TEST(VariationsSeedProcessorTest, StudiesWithOverlappingEnabledFeatures) {
 
   // Both studies are returned by in the full list including low anonymity.
   base::FieldTrial::ActiveGroups active_groups_including_low_anonymity;
-  VariationsSeedProcessorTestLowAnonymityHelper::GetActiveFieldTrialGroups(
-      &active_groups_including_low_anonymity);
+  base::FieldTrialListIncludingLowAnonymity::
+      GetActiveFieldTrialGroupsForTesting(
+          &active_groups_including_low_anonymity);
   EXPECT_EQ(active_groups_including_low_anonymity.size(), 2u);
 }
 
@@ -1574,8 +1569,9 @@ TYPED_TEST(VariationsSeedProcessorTest,
 
   // Both studies are returned by in the full list including low anonymity.
   base::FieldTrial::ActiveGroups active_groups_including_low_anonymity;
-  VariationsSeedProcessorTestLowAnonymityHelper::GetActiveFieldTrialGroups(
-      &active_groups_including_low_anonymity);
+  base::FieldTrialListIncludingLowAnonymity::
+      GetActiveFieldTrialGroupsForTesting(
+          &active_groups_including_low_anonymity);
   EXPECT_EQ(active_groups_including_low_anonymity.size(), 2u);
 }
 
@@ -1630,8 +1626,9 @@ TYPED_TEST(VariationsSeedProcessorTest,
   EXPECT_EQ(active_groups.size(), 0u);
 
   base::FieldTrial::ActiveGroups active_groups_including_low_anonymity;
-  VariationsSeedProcessorTestLowAnonymityHelper::GetActiveFieldTrialGroups(
-      &active_groups_including_low_anonymity);
+  base::FieldTrialListIncludingLowAnonymity::
+      GetActiveFieldTrialGroupsForTesting(
+          &active_groups_including_low_anonymity);
   EXPECT_EQ(active_groups_including_low_anonymity.size(), 1u);
 }
 
@@ -1663,8 +1660,9 @@ TYPED_TEST(VariationsSeedProcessorTest,
   EXPECT_EQ(active_groups.size(), 1u);
 
   base::FieldTrial::ActiveGroups active_groups_including_low_anonymity;
-  VariationsSeedProcessorTestLowAnonymityHelper::GetActiveFieldTrialGroups(
-      &active_groups_including_low_anonymity);
+  base::FieldTrialListIncludingLowAnonymity::
+      GetActiveFieldTrialGroupsForTesting(
+          &active_groups_including_low_anonymity);
   EXPECT_EQ(active_groups_including_low_anonymity.size(), 1u);
 }
 

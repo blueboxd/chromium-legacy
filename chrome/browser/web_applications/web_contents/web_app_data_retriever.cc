@@ -134,14 +134,12 @@ void WebAppDataRetriever::GetIcons(content::WebContents* web_contents,
   CHECK(!get_icons_callback_);
   get_icons_callback_ = std::move(callback);
 
+  IconDownloaderOptions options = {.skip_page_favicons = skip_page_favicons};
   icon_downloader_ = std::make_unique<WebAppIconDownloader>(
       web_contents, std::move(icon_urls),
       base::BindOnce(&WebAppDataRetriever::OnIconsDownloaded,
-                     weak_ptr_factory_.GetWeakPtr()));
-
-  if (skip_page_favicons) {
-    icon_downloader_->SkipPageFavicons();
-  }
+                     weak_ptr_factory_.GetWeakPtr()),
+      options);
 
   icon_downloader_->Start();
 }
@@ -167,6 +165,7 @@ void WebAppDataRetriever::OnGetWebPageMetadata(
     int last_committed_nav_entry_unique_id,
     webapps::mojom::WebPageMetadataPtr web_page_metadata) {
   if (ShouldStopRetrieval()) {
+    CallCallbackOnError(webapps::InstallableStatusCode::RENDERER_CANCELLED);
     return;
   }
 
@@ -205,6 +204,7 @@ void WebAppDataRetriever::OnGetWebPageMetadata(
 void WebAppDataRetriever::OnDidPerformInstallableCheck(
     const webapps::InstallableData& data) {
   if (ShouldStopRetrieval()) {
+    CallCallbackOnError(webapps::InstallableStatusCode::RENDERER_CANCELLED);
     return;
   }
 
@@ -229,6 +229,7 @@ void WebAppDataRetriever::OnIconsDownloaded(
     IconsMap icons_map,
     DownloadedIconsHttpResults icons_http_results) {
   if (ShouldStopRetrieval()) {
+    CallCallbackOnError(webapps::InstallableStatusCode::RENDERER_CANCELLED);
     return;
   }
 

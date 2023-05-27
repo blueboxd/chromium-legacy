@@ -15,7 +15,6 @@
 #import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/sessions/session_window_ios.h"
-#import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_order_controller.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_removing_indexes.h"
@@ -58,6 +57,67 @@ WebStateListRemovingIndexes GetIndexOfWebStatesToDrop(
     }
   }
   return WebStateListRemovingIndexes(std::move(web_state_to_skip_indexes));
+}
+
+// Returns pinned state for the provided `web_state`.
+bool GetPinnedStateForWebState(web::WebState* web_state) {
+  web::SerializableUserDataManager* user_data_manager =
+      web::SerializableUserDataManager::FromWebState(web_state);
+  NSNumber* pinned_state = base::mac::ObjCCast<NSNumber>(
+      user_data_manager->GetValueForSerializationKey(kPinnedStateKey));
+  return [pinned_state boolValue];
+}
+
+// Checks whether provided `web_state` is in the `session_restoration_scope`.
+bool IsWebStateInRestorationScope(
+    web::WebState* web_state,
+    SessionRestorationScope session_restoration_scope,
+    bool enable_pinned_web_states) {
+  switch (session_restoration_scope) {
+    case SessionRestorationScope::kAll:
+      return true;
+    case SessionRestorationScope::kPinnedOnly:
+      return enable_pinned_web_states ? GetPinnedStateForWebState(web_state)
+                                      : false;
+    case SessionRestorationScope::kRegularOnly:
+      return enable_pinned_web_states ? !GetPinnedStateForWebState(web_state)
+                                      : true;
+  }
+}
+
+// Returns proper (e.g. "adjusted") selected index within the newly restored
+// WebStates taking into the account the `session_restoration_scope`.
+NSInteger GetAdjustedSelectedIndex(
+    SessionWindowIOS* session_window,
+    NSInteger restored_sessions_count,
+    SessionRestorationScope session_restoration_scope) {
+  const NSInteger selected_index = session_window.selectedIndex;
+  const NSInteger dropped_sessions_count =
+      session_window.sessions.count - restored_sessions_count;
+
+  NSInteger adjusted_selected_index = NSNotFound;
+
+  if (dropped_sessions_count == 0) {
+    adjusted_selected_index = selected_index;
+
+    // Has dropped pinned sessions.
+  } else if (session_restoration_scope ==
+             SessionRestorationScope::kRegularOnly) {
+    adjusted_selected_index = selected_index - dropped_sessions_count;
+
+    // Has dropped regular sessions.
+  } else if (session_restoration_scope ==
+             SessionRestorationScope::kPinnedOnly) {
+    adjusted_selected_index =
+        selected_index < restored_sessions_count ? selected_index : NSNotFound;
+  }
+
+  if ((adjusted_selected_index < 0) ||
+      (adjusted_selected_index > restored_sessions_count)) {
+    adjusted_selected_index = NSNotFound;
+  }
+
+  return adjusted_selected_index;
 }
 }  // namespace
 
@@ -121,13 +181,29 @@ SessionWindowIOS* SerializeWebStateList(WebStateList* web_state_list) {
 
 void DeserializeWebStateList(WebStateList* web_state_list,
                              SessionWindowIOS* session_window,
+                             SessionRestorationScope session_restoration_scope,
+                             bool enable_pinned_web_states,
                              const WebStateFactory& web_state_factory) {
   const int old_count = web_state_list->count();
   for (CRWSessionStorage* session in session_window.sessions) {
     std::unique_ptr<web::WebState> web_state = web_state_factory.Run(session);
+
+    // Drop WebState that is not in the restoration scope.
+    if (!IsWebStateInRestorationScope(web_state.get(),
+                                      session_restoration_scope,
+                                      enable_pinned_web_states)) {
+      continue;
+    }
+
     web_state_list->InsertWebState(
         web_state_list->count(), std::move(web_state),
         WebStateList::INSERT_FORCE_INDEX, WebStateOpener());
+  }
+
+  const NSInteger restored_sessions_count = web_state_list->count() - old_count;
+
+  if (restored_sessions_count == 0) {
+    return;
   }
 
   // Restore the WebStates pinned state and opener-opened relationship.
@@ -135,14 +211,6 @@ void DeserializeWebStateList(WebStateList* web_state_list,
     web::WebState* web_state = web_state_list->GetWebStateAt(index);
     web::SerializableUserDataManager* user_data_manager =
         web::SerializableUserDataManager::FromWebState(web_state);
-
-    if (IsPinnedTabsEnabled()) {
-      // If Pinned Tabs feature has been disabled, add WebStates back as regular
-      // ones.
-      NSNumber* pinned_state = base::mac::ObjCCast<NSNumber>(
-          user_data_manager->GetValueForSerializationKey(kPinnedStateKey));
-      web_state_list->SetWebStatePinnedAt(index, [pinned_state boolValue]);
-    }
 
     NSNumber* boxed_opener_index = base::mac::ObjCCast<NSNumber>(
         user_data_manager->GetValueForSerializationKey(kOpenerIndexKey));
@@ -170,10 +238,26 @@ void DeserializeWebStateList(WebStateList* web_state_list,
         WebStateOpener(opener, [boxed_opener_navigation_index intValue]));
   }
 
-  if (session_window.selectedIndex != NSNotFound) {
-    DCHECK_LT(session_window.selectedIndex, session_window.sessions.count);
-    DCHECK_LT(session_window.selectedIndex, static_cast<NSUInteger>(INT_MAX));
-    web_state_list->ActivateWebStateAt(
-        old_count + static_cast<int>(session_window.selectedIndex));
+  const NSInteger selected_index = GetAdjustedSelectedIndex(
+      session_window, restored_sessions_count, session_restoration_scope);
+
+  if (selected_index != NSNotFound) {
+    web_state_list->ActivateWebStateAt(old_count +
+                                       static_cast<int>(selected_index));
+  }
+
+  // By default all the restored tabs are not pinned.
+  if (enable_pinned_web_states) {
+    // Restore the WebStates pinned state. This should be done in a separate
+    // cycle, since pinning the WebStates may cause WebStates indexes to change.
+    for (int index = old_count; index < web_state_list->count(); ++index) {
+      web::WebState* web_state = web_state_list->GetWebStateAt(index);
+      web::SerializableUserDataManager* user_data_manager =
+          web::SerializableUserDataManager::FromWebState(web_state);
+
+      NSNumber* pinned_state = base::mac::ObjCCast<NSNumber>(
+          user_data_manager->GetValueForSerializationKey(kPinnedStateKey));
+      web_state_list->SetWebStatePinnedAt(index, [pinned_state boolValue]);
+    }
   }
 }

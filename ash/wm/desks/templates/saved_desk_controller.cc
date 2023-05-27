@@ -5,12 +5,14 @@
 #include "ash/wm/desks/templates/saved_desk_controller.h"
 
 #include "ash/public/cpp/desk_template.h"
-#include "ash/public/cpp/saved_desk_delegate.h"
 #include "ash/shell.h"
-#include "ash/wm/desks/desks_controller.h"
+#include "ash/wm/desks/templates/admin_template_launch_tracker.h"
+#include "base/check.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/app_restore/app_restore_data.h"
 #include "components/app_restore/restore_data.h"
 
 namespace ash {
@@ -26,7 +28,6 @@ constexpr char kPlaceholderJson[] = R"json(
          "active_tab_index": 0,
          "app_name": "",
          "current_bounds": [ 100, 50, 640, 480 ],
-         "display_id": "2200000000",
          "index": 0,
          "title": "Chrome",
          "urls": [ "https://www.google.com/" ],
@@ -38,7 +39,7 @@ constexpr char kPlaceholderJson[] = R"json(
 // Creates a placeholder template that will be used during development.
 std::unique_ptr<DeskTemplate> CreatePlaceholderTemplate() {
   auto desk_template = std::make_unique<DeskTemplate>(
-      base::GUID::ParseLowercase(kPlaceholderUuid), DeskTemplateSource::kPolicy,
+      base::Uuid::ParseLowercase(kPlaceholderUuid), DeskTemplateSource::kPolicy,
       kPlaceholderName, base::Time::Now(), DeskTemplateType::kTemplate);
 
   // Create restore data from json.
@@ -55,35 +56,77 @@ std::unique_ptr<DeskTemplate> CreatePlaceholderTemplate() {
   return desk_template;
 }
 
+// Pointer to the global `SavedDeskController` instance.
+SavedDeskController* g_instance = nullptr;
+
 }  // namespace
 
-SavedDeskController::SavedDeskController() = default;
+SavedDeskController::SavedDeskController() {
+  CHECK(!g_instance);
+  g_instance = this;
+}
 
-SavedDeskController::~SavedDeskController() = default;
+SavedDeskController::~SavedDeskController() {
+  g_instance = nullptr;
+}
+
+SavedDeskController* SavedDeskController::Get() {
+  return g_instance;
+}
 
 std::vector<AdminTemplateMetadata>
 SavedDeskController::GetAdminTemplateMetadata() const {
   return {AdminTemplateMetadata{
-      .uuid = base::GUID::ParseLowercase(kPlaceholderUuid),
-      .name = kPlaceholderName}};
+      .uuid = base::Uuid::ParseLowercase(kPlaceholderUuid),
+      .name = base::UTF8ToUTF16(base::StringPiece(kPlaceholderName))}};
 }
 
-bool SavedDeskController::LaunchAdminTemplate(const base::GUID& template_uuid) {
-  auto placeholder_template = CreatePlaceholderTemplate();
-  if (!placeholder_template || template_uuid != placeholder_template->uuid()) {
+bool SavedDeskController::LaunchAdminTemplate(const base::Uuid& template_uuid,
+                                              int64_t default_display_id) {
+  auto admin_template = GetAdminTemplate(template_uuid);
+  if (!admin_template) {
     return false;
   }
 
-  // Set apps to launch on the current desk.
-  auto* desks_controller = DesksController::Get();
-  const int desk_index =
-      desks_controller->GetDeskIndex(desks_controller->active_desk());
-  placeholder_template->SetDeskIndex(desk_index);
+  int64_t launch_id = ++admin_template_launch_id_;
+  admin_template_launch_trackers_[launch_id] =
+      std::make_unique<AdminTemplateLaunchTracker>(
+          std::move(admin_template),
+          base::BindRepeating(&SavedDeskController::OnAdminTemplateUpdate,
+                              base::Unretained(this)));
 
-  Shell::Get()->saved_desk_delegate()->LaunchAppsFromSavedDesk(
-      std::move(placeholder_template));
+  admin_template_launch_trackers_[launch_id]->LaunchTemplate(
+      Shell::Get()->saved_desk_delegate(), default_display_id);
+
+  // TODO(dandersson): Remove the launch tracker when all its windows have been
+  // closed.
 
   return true;
+}
+
+void SavedDeskController::OnAdminTemplateUpdate(
+    const DeskTemplate& admin_template) {
+  // TODO(dandersson): Write to desk model.
+}
+
+std::unique_ptr<DeskTemplate> SavedDeskController::GetAdminTemplate(
+    const base::Uuid& template_uuid) const {
+  if (admin_template_for_testing_ &&
+      admin_template_for_testing_->uuid() == template_uuid) {
+    return admin_template_for_testing_->Clone();
+  }
+
+  auto placeholder_template = CreatePlaceholderTemplate();
+  if (placeholder_template && template_uuid == placeholder_template->uuid()) {
+    return placeholder_template;
+  }
+
+  return nullptr;
+}
+
+void SavedDeskController::SetAdminTemplateForTesting(
+    std::unique_ptr<DeskTemplate> admin_template) {
+  admin_template_for_testing_ = std::move(admin_template);
 }
 
 }  // namespace ash

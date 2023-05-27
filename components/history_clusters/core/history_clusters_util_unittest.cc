@@ -6,6 +6,7 @@
 
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
+#include "components/history_clusters/core/clustering_test_utils.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/history_clusters_service_test_api.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -13,6 +14,8 @@
 
 namespace history_clusters {
 namespace {
+
+using ::testing::ElementsAre;
 
 TEST(HistoryClustersUtilTest, ComputeURLForDeduping) {
   {
@@ -52,47 +55,6 @@ TEST(HistoryClustersUtilTest, ComputeURLForDeduping) {
     EXPECT_EQ(ComputeURLForDeduping(GURL("https://google.com/path/")),
               "https://google.com/")
         << "Strips path.";
-  }
-}
-
-TEST(HistoryClustersUtilTest, ComputeURLKeywordForLookup) {
-  {
-    Config config;
-    config.use_host_for_visit_deduping = false;
-    SetConfigForTesting(config);
-
-    EXPECT_EQ(ComputeURLKeywordForLookup(GURL("http://www.google.com/")),
-              "http://google.com/")
-        << "Strip off WWW.";
-    EXPECT_EQ(ComputeURLKeywordForLookup(GURL("https://google.com/")),
-              "http://google.com/")
-        << "Normalizes scheme to http.";
-    EXPECT_EQ(ComputeURLKeywordForLookup(
-                  GURL("http://google.com/path?foo=bar#reftag")),
-              "http://google.com/path")
-        << "Strips ref and query, leaves path.";
-    EXPECT_EQ(ComputeURLKeywordForLookup(
-                  GURL("https://www.google.com/path?foo=bar#reftag")),
-              "http://google.com/path")
-        << "Does all of the above at once.";
-    EXPECT_EQ(ComputeURLKeywordForLookup(GURL("http://google.com/path")),
-              "http://google.com/path")
-        << "Sanity check when no replacements needed.";
-  }
-
-  {
-    Config config;
-    config.use_host_for_visit_deduping = true;
-    SetConfigForTesting(config);
-
-    EXPECT_EQ(ComputeURLKeywordForLookup(GURL("https://google.com/path/")),
-              "http://google.com/")
-        << "Strips path.";
-
-    EXPECT_EQ(ComputeURLKeywordForLookup(
-                  GURL("https://www.google.com/path?foo=bar#reftag")),
-              "http://google.com/")
-        << "Does everything at once.";
   }
 }
 
@@ -359,9 +321,9 @@ TEST(HistoryClustersUtilTest, CoalesceRelatedSearches) {
   clusters.push_back(cluster);
 
   CoalesceRelatedSearches(clusters);
-  EXPECT_THAT(clusters[0].related_searches,
-              testing::ElementsAre("search1", "search2", "search3", "search4",
-                                   "search5"));
+  EXPECT_THAT(
+      clusters[0].related_searches,
+      ElementsAre("search1", "search2", "search3", "search4", "search5"));
 }
 
 // Verifies crbug.com/1426657.
@@ -382,12 +344,12 @@ TEST(HistoryClustersUtilTest,
 
   // Verify that we correctly coalesce searches for BOTH clusters.
   CoalesceRelatedSearches(clusters);
-  EXPECT_THAT(clusters[0].related_searches,
-              testing::ElementsAre("search1", "search2", "search3", "search4",
-                                   "search5"));
-  EXPECT_THAT(clusters[1].related_searches,
-              testing::ElementsAre("search1", "search2", "search3", "search4",
-                                   "search5"));
+  EXPECT_THAT(
+      clusters[0].related_searches,
+      ElementsAre("search1", "search2", "search3", "search4", "search5"));
+  EXPECT_THAT(
+      clusters[1].related_searches,
+      ElementsAre("search1", "search2", "search3", "search4", "search5"));
 }
 
 TEST(HistoryClustersUtilTest, SortClusters) {
@@ -422,6 +384,35 @@ TEST(HistoryClustersUtilTest, SortClusters) {
   ASSERT_EQ(visits.size(), 2u);
   EXPECT_FLOAT_EQ(visits[0].score, 0.9);
   EXPECT_FLOAT_EQ(visits[1].score, 0.5);
+}
+
+TEST(HistoryClustersUtilTest, IsShownVisitCandidateZeroScore) {
+  history::ClusterVisit cluster_visit = testing::CreateClusterVisit(
+      testing::CreateDefaultAnnotatedVisit(2, GURL("https://two.com/"),
+                                           base::Time::FromTimeT(10)),
+      absl::nullopt, 0.0);
+
+  ASSERT_FALSE(IsShownVisitCandidate(cluster_visit));
+}
+
+TEST(HistoryClustersUtilTest, IsShownVisitCandidateNoTitle) {
+  history::ClusterVisit cluster_visit = testing::CreateClusterVisit(
+      testing::CreateDefaultAnnotatedVisit(2, GURL("https://two.com/"),
+                                           base::Time::FromTimeT(10)),
+      absl::nullopt, 0.0);
+  cluster_visit.annotated_visit.url_row.set_title(u"");
+
+  ASSERT_FALSE(IsShownVisitCandidate(cluster_visit));
+}
+
+TEST(HistoryClustersUtilTest, IsShownVisitCandidate) {
+  history::ClusterVisit cluster_visit = testing::CreateClusterVisit(
+      testing::CreateDefaultAnnotatedVisit(2, GURL("https://two.com/"),
+                                           base::Time::FromTimeT(10)),
+      absl::nullopt, 1.0);
+  cluster_visit.annotated_visit.url_row.set_title(u"sometitle");
+
+  ASSERT_TRUE(IsShownVisitCandidate(cluster_visit));
 }
 
 }  // namespace

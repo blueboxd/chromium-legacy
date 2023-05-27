@@ -21,14 +21,17 @@ BASE_FEATURE(kBluetoothSessionizedMetrics,
              "BluetoothSessionizedMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kDelayUploadUntilHwid,
-             "DelayUploadUntilHwid",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kFastPairMetrics,
+             "FastPairMetrics",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 constexpr base::FeatureParam<int> kLimitFilesPerScanParam{&kStructuredMetrics,
                                                           "file_limit", 50};
 constexpr base::FeatureParam<int> kFileSizeByteLimitParam{
     &kStructuredMetrics, "file_byte_limit", 50000};
+
+constexpr base::FeatureParam<std::string> kDisallowedProjectsParam{
+    &kStructuredMetrics, "disabled_projects", ""};
 
 bool IsIndependentMetricsUploadEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
@@ -41,6 +44,10 @@ int GetFileLimitPerScan() {
 
 int GetFileSizeByteLimit() {
   return kFileSizeByteLimitParam.Get();
+}
+
+std::string GetDisabledProjects() {
+  return kDisallowedProjectsParam.Get();
 }
 
 }  // namespace metrics::structured

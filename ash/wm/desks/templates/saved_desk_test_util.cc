@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
+#include "base/memory/raw_ref.h"
 
 #include "ash/shell.h"
 #include "ash/style/icon_button.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
+#include "ash/wm/desks/legacy_desk_bar_view.h"
+#include "ash/wm/desks/templates/saved_desk_controller.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/desks/templates/saved_desk_icon_container.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
@@ -41,17 +43,18 @@ class BoundsAnimatorWaiter : public views::BoundsAnimatorObserver {
  public:
   explicit BoundsAnimatorWaiter(views::BoundsAnimator& animator)
       : animator_(animator) {
-    animator_.AddObserver(this);
+    animator_->AddObserver(this);
   }
 
   BoundsAnimatorWaiter(const BoundsAnimatorWaiter&) = delete;
   BoundsAnimatorWaiter& operator=(const BoundsAnimatorWaiter&) = delete;
 
-  ~BoundsAnimatorWaiter() override { animator_.RemoveObserver(this); }
+  ~BoundsAnimatorWaiter() override { animator_->RemoveObserver(this); }
 
   void Wait() {
-    if (!animator_.IsAnimating())
+    if (!animator_->IsAnimating()) {
       return;
+    }
 
     run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
@@ -65,7 +68,7 @@ class BoundsAnimatorWaiter : public views::BoundsAnimatorObserver {
       run_loop_->Quit();
   }
 
-  views::BoundsAnimator& animator_;
+  const raw_ref<views::BoundsAnimator, ExperimentalAsh> animator_;
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
@@ -145,6 +148,17 @@ SavedDeskIconViewTestApi::SavedDeskIconViewTestApi(
 }
 
 SavedDeskIconViewTestApi::~SavedDeskIconViewTestApi() = default;
+
+SavedDeskControllerTestApi::SavedDeskControllerTestApi(
+    SavedDeskController* saved_desk_controller)
+    : saved_desk_controller_(saved_desk_controller) {}
+
+SavedDeskControllerTestApi::~SavedDeskControllerTestApi() = default;
+
+void SavedDeskControllerTestApi::SetAdminTemplate(
+    std::unique_ptr<DeskTemplate> admin_template) {
+  saved_desk_controller_->SetAdminTemplateForTesting(std::move(admin_template));
+}
 
 std::vector<SavedDeskItemView*> GetItemViewsFromDeskLibrary(
     const OverviewGrid* overview_grid) {

@@ -26,6 +26,7 @@
 #include "base/numerics/safe_math.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/lock.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -50,6 +51,7 @@
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -60,6 +62,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
+#include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -124,8 +127,8 @@ enum ImageUsageState : int {
 bool SkipImage(const DrawImage& draw_image) {
   if (!SkIRect::Intersects(
           draw_image.src_rect(),
-          SkIRect::MakeWH(draw_image.paint_image().width(),
-                          draw_image.paint_image().height()))) {
+          SkIRect::MakeSize(
+              draw_image.paint_image().GetSkISize(AuxImage::kDefault)))) {
     return true;
   }
   if (std::abs(draw_image.scale().width()) <
@@ -149,30 +152,30 @@ PaintFlags::FilterQuality CalculateDesiredFilterQuality(
 // Calculates the scale factor which can be used to scale an image to a given
 // mip level.
 SkSize CalculateScaleFactorForMipLevel(const DrawImage& draw_image,
+                                       AuxImage aux_image,
                                        int upload_scale_mip_level) {
-  gfx::Size base_size(draw_image.paint_image().width(),
-                      draw_image.paint_image().height());
+  gfx::Size base_size = draw_image.paint_image().GetSize(aux_image);
   return MipMapUtil::GetScaleAdjustmentForLevel(base_size,
                                                 upload_scale_mip_level);
 }
 
 // Calculates the size of a given mip level.
 gfx::Size CalculateSizeForMipLevel(const DrawImage& draw_image,
+                                   AuxImage aux_image,
                                    int upload_scale_mip_level) {
-  gfx::Size base_size(draw_image.paint_image().width(),
-                      draw_image.paint_image().height());
+  gfx::Size base_size = draw_image.paint_image().GetSize(aux_image);
   return MipMapUtil::GetSizeForLevel(base_size, upload_scale_mip_level);
 }
 
 // Determines whether a draw image requires mips.
 bool ShouldGenerateMips(const DrawImage& draw_image,
+                        AuxImage aux_image,
                         int upload_scale_mip_level) {
   // If filter quality is less than medium, don't generate mips.
   if (draw_image.filter_quality() < PaintFlags::FilterQuality::kMedium)
     return false;
 
-  gfx::Size base_size(draw_image.paint_image().width(),
-                      draw_image.paint_image().height());
+  gfx::Size base_size = draw_image.paint_image().GetSize(aux_image);
   // Take the abs of the scale, as mipmap functions don't handle (and aren't
   // impacted by) negative image dimensions.
   gfx::SizeF scaled_size = gfx::ScaleSize(
@@ -181,8 +184,8 @@ bool ShouldGenerateMips(const DrawImage& draw_image,
 
   // If our target size is smaller than our scaled size in both dimension, we
   // need to generate mips.
-  gfx::SizeF target_size =
-      gfx::SizeF(CalculateSizeForMipLevel(draw_image, upload_scale_mip_level));
+  gfx::SizeF target_size = gfx::SizeF(
+      CalculateSizeForMipLevel(draw_image, aux_image, upload_scale_mip_level));
   if (scaled_size.width() < target_size.width() &&
       scaled_size.height() < target_size.height()) {
     return true;
@@ -238,24 +241,24 @@ size_t EstimateHardwareDecodedDataSize(
 // if not, decodes to a compatible temporary pixmap and then converts that into
 // the |target_pixmap|.
 bool DrawAndScaleImageRGB(const DrawImage& draw_image,
+                          AuxImage aux_image,
                           SkPixmap& target_pixmap,
                           PaintImage::GeneratorClientId client_id) {
   const PaintImage& paint_image = draw_image.paint_image();
   const bool is_original_size_decode =
-      SkISize::Make(paint_image.width(), paint_image.height()) ==
-      target_pixmap.dimensions();
+      paint_image.GetSkISize(aux_image) == target_pixmap.dimensions();
   const bool is_nearest_neighbor =
       draw_image.filter_quality() == PaintFlags::FilterQuality::kNone;
 
   SkISize supported_size =
-      paint_image.GetSupportedDecodeSize(target_pixmap.dimensions());
+      paint_image.GetSupportedDecodeSize(target_pixmap.dimensions(), aux_image);
 
   // We can directly decode into target pixmap if we are doing an original
   // decode or we are decoding to scale without nearest neighbor filtering.
   const bool can_directly_decode =
       is_original_size_decode || !is_nearest_neighbor;
   if (supported_size == target_pixmap.dimensions() && can_directly_decode) {
-    if (!paint_image.Decode(target_pixmap, draw_image.frame_index(),
+    if (!paint_image.Decode(target_pixmap, draw_image.frame_index(), aux_image,
                             client_id)) {
       DLOG(ERROR) << "Failed to decode image.";
       return false;
@@ -267,9 +270,7 @@ bool DrawAndScaleImageRGB(const DrawImage& draw_image,
   // Step 1: Decode at the nearest (larger) directly supported size or the
   // original size if nearest neighbor quality is requested.
   const SkISize decode_size =
-      is_nearest_neighbor
-          ? SkISize::Make(paint_image.width(), paint_image.height())
-          : supported_size;
+      is_nearest_neighbor ? paint_image.GetSkISize(aux_image) : supported_size;
   SkImageInfo decode_info = target_pixmap.info().makeDimensions(decode_size);
   SkBitmap decode_bitmap;
   if (!decode_bitmap.tryAllocPixels(decode_info)) {
@@ -277,7 +278,8 @@ bool DrawAndScaleImageRGB(const DrawImage& draw_image,
     return false;
   }
   SkPixmap decode_pixmap = decode_bitmap.pixmap();
-  if (!paint_image.Decode(decode_pixmap, draw_image.frame_index(), client_id)) {
+  if (!paint_image.Decode(decode_pixmap, draw_image.frame_index(), aux_image,
+                          client_id)) {
     DLOG(ERROR) << "Failed to decode unscaled image.";
     return false;
   }
@@ -296,122 +298,92 @@ bool DrawAndScaleImageRGB(const DrawImage& draw_image,
 
 // Decode and scale for YUV pixmaps.
 //
-// The pixmaps `pixmap_y`, `pixmap_u`, and `pixmap_v` share a contiguous block
-// of allocated backing memory. If scaling needs to happen, it is done
-// individually for each plane.
-//
-// The |yuva_data_type| field indicates the bit depth and type that should be
-// used for Y, U, and V values.
+// The pixmaps in `yuva_pixmaps` share a contiguous block of allocated backing
+// memory. If scaling needs to happen, it is done individually for each plane.
 bool DrawAndScaleImageYUV(
     const DrawImage& draw_image,
-    const SkISize& target_size,
-    void* buffer,
+    AuxImage aux_image,
     PaintImage::GeneratorClientId client_id,
     const SkYUVAPixmapInfo::SupportedDataTypes& yuva_supported_data_types,
-    const SkYUVAPixmapInfo::DataType yuva_data_type,
-    SkPixmap& pixmap_y,
-    SkPixmap& pixmap_u,
-    SkPixmap& pixmap_v) {
+    SkYUVAPixmaps& yuva_pixmaps) {
   const PaintImage& paint_image = draw_image.paint_image();
-  const bool is_original_size_decode =
-      SkISize::Make(paint_image.width(), paint_image.height()) == target_size;
-  SkYUVAPixmapInfo yuva_pixmap_info;
+  const int num_planes = yuva_pixmaps.numPlanes();
 
-  const bool yuva_info_initialized =
-      paint_image.IsYuv(yuva_supported_data_types, &yuva_pixmap_info);
-  DCHECK(yuva_info_initialized);
-  DCHECK_EQ(yuva_pixmap_info.dataType(), yuva_data_type);
-  // Only tri-planar YUV with no alpha is currently supported.
-  DCHECK_EQ(yuva_pixmap_info.numPlanes(), 3);
-  const size_t yuva_bytes = yuva_pixmap_info.computeTotalBytes();
-  if (SkImageInfo::ByteSizeOverflowed(yuva_bytes)) {
-    DLOG(ERROR) << "YUVA image size overflowed.";
-    return false;
+  // Query the decoder's SkYUVAPixmapInfo.
+  SkYUVAPixmapInfo decodable_yuva_pixmap_info;
+  {
+    const bool yuva_info_initialized = paint_image.IsYuv(
+        yuva_supported_data_types, aux_image, &decodable_yuva_pixmap_info);
+    DCHECK(yuva_info_initialized);
+    DCHECK_EQ(decodable_yuva_pixmap_info.dataType(), yuva_pixmaps.dataType());
+    DCHECK_EQ(decodable_yuva_pixmap_info.numPlanes(), num_planes);
+
+    // The Y size reported by IsYuv must be a supported decode size.
+    SkISize y_target_size =
+        decodable_yuva_pixmap_info.planeInfo(0).dimensions();
+    SkISize supported_size =
+        paint_image.GetSupportedDecodeSize(y_target_size, aux_image);
+    DCHECK(y_target_size == supported_size);
   }
 
-  SkISize supported_size = paint_image.GetSupportedDecodeSize(target_size);
-  // We can directly decode into target pixmap if we are doing an original
+  // We can directly decode into target pixmap if we are doing an original size
   // decode.
   // TODO(crbug.com/927437): Although the JPEG decoder supports decoding to
   // scale, we have not yet implemented YUV + decoding to scale, so we skip it.
-  const bool can_directly_decode = is_original_size_decode;
-  if (supported_size == target_size && can_directly_decode) {
-    SkYUVAPixmaps yuva_pixmaps =
-        SkYUVAPixmaps::FromExternalMemory(yuva_pixmap_info, buffer);
-    // Only tri-planar YUV with no alpha is currently supported.
-    DCHECK_EQ(yuva_pixmaps.numPlanes(), 3);
-    pixmap_y = yuva_pixmaps.plane(0);
-    pixmap_u = yuva_pixmaps.plane(1);
-    pixmap_v = yuva_pixmaps.plane(2);
-    if (!paint_image.DecodeYuv(yuva_pixmaps, draw_image.frame_index(),
-                               client_id)) {
-      DLOG(ERROR) << "Failed to decode image as YUV.";
-      return false;
+  {
+    bool is_directly_decodable = true;
+    for (int i = 0; i < num_planes; ++i) {
+      is_directly_decodable &=
+          yuva_pixmaps.plane(i).info().dimensions() ==
+          decodable_yuva_pixmap_info.planeInfo(i).dimensions();
     }
-    return true;
+    if (is_directly_decodable) {
+      if (!paint_image.DecodeYuv(yuva_pixmaps, draw_image.frame_index(),
+                                 aux_image, client_id)) {
+        DLOG(ERROR) << "Failed to decode image as YUV.";
+        return false;
+      }
+      return true;
+    }
   }
 
-  // Allocate `yuva_bytes` in an SkBitmap (so that we can use tryAlloc to avoid
-  // crashing if allocation fails).
-  SkBitmap decode_bitmap;
-  if (!decode_bitmap.tryAllocPixels(SkImageInfo::Make(
-          yuva_bytes, 1, kR8_unorm_SkColorType, kOpaque_SkAlphaType))) {
-    DLOG(ERROR) << "Failed to allocate unscaled YUV storage.";
+  // Allocate `decode_yuva_bytes` in an SkBitmap. This is so that we can use
+  // tryAlloc to avoid crashing if allocation fails (having a TryAlloc on
+  // SkYUVAPixmaps would be less convolued).
+  const size_t decode_yuva_bytes =
+      decodable_yuva_pixmap_info.computeTotalBytes();
+  if (SkImageInfo::ByteSizeOverflowed(decode_yuva_bytes)) {
+    DLOG(ERROR) << "YUVA image size overflowed.";
+    return false;
+  }
+  SkBitmap decode_buffer_bitmap;
+  if (!decode_buffer_bitmap.tryAllocPixels(SkImageInfo::Make(
+          decode_yuva_bytes, 1, kR8_unorm_SkColorType, kOpaque_SkAlphaType))) {
+    DLOG(ERROR) << "Failed to allocate decode YUV storage.";
     return false;
   }
 
-  // If we can't decode/scale directly, we will handle this in 2 steps.
-  // Step 1: Decode at the nearest (larger) directly supported size or the
-  // original size if nearest neighbor quality is requested.
-  SkYUVAPixmaps unscaled_yuva_pixmaps;
-  unscaled_yuva_pixmaps = SkYUVAPixmaps::FromExternalMemory(
-      yuva_pixmap_info, decode_bitmap.getPixels());
-  if (!paint_image.DecodeYuv(unscaled_yuva_pixmaps, draw_image.frame_index(),
-                             client_id)) {
-    DLOG(ERROR) << "Failed to decode unscaled image as YUV.";
+  // Decode at the original size.
+  SkYUVAPixmaps decode_yuva_pixmaps = SkYUVAPixmaps::FromExternalMemory(
+      decodable_yuva_pixmap_info, decode_buffer_bitmap.getPixels());
+  if (!paint_image.DecodeYuv(decode_yuva_pixmaps, draw_image.frame_index(),
+                             aux_image, client_id)) {
+    DLOG(ERROR) << "Failed to decode decode image as YUV.";
     return false;
   }
-  const SkPixmap& pixmap_y_unscaled = unscaled_yuva_pixmaps.plane(0);
-  const SkPixmap& pixmap_u_unscaled = unscaled_yuva_pixmaps.plane(1);
-  const SkPixmap& pixmap_v_unscaled = unscaled_yuva_pixmaps.plane(2);
 
-  // Always promote scaled images to 4:4:4 to avoid blurriness. By using the
-  // same dimensions for the UV planes, we can avoid scaling them completely
-  // or at least avoid scaling the width.
-  //
-  // E.g., consider an original (100, 100) image scaled to mips level 1 (50%),
-  // the Y plane size will be (50, 50), but unscaled UV planes are already
-  // (50, 50) for 4:2:0, and (50, 100) for 4:2:2, so leaving them completely
-  // unscaled or only scaling the height for 4:2:2 has superior quality.
-  const SkImageInfo y_info_scaled =
-      pixmap_y_unscaled.info().makeDimensions(target_size);
-  const SkImageInfo u_info_scaled =
-      pixmap_u_unscaled.info().makeDimensions(target_size);
-  const SkImageInfo v_info_scaled =
-      pixmap_v_unscaled.info().makeDimensions(target_size);
-
-  // The backing memory for `buffer` has been allocated based on
-  // image_data->size, so it is big enough for a YUV 4:4:4 image.
-  pixmap_y.reset(y_info_scaled, buffer, y_info_scaled.minRowBytes());
-  pixmap_u.reset(u_info_scaled,
-                 reinterpret_cast<const uint8_t*>(pixmap_y.addr()) +
-                     pixmap_y.computeByteSize(),
-                 u_info_scaled.minRowBytes());
-  pixmap_v.reset(v_info_scaled,
-                 reinterpret_cast<const uint8_t*>(pixmap_u.addr()) +
-                     pixmap_u.computeByteSize(),
-                 v_info_scaled.minRowBytes());
-
-  // Step 2: Scale to `target_size`. Resizing happens on a plane-by-plane basis.
+  // Scale to the target size, plane-by-plane.
   const PaintFlags::FilterQuality filter_quality =
       CalculateDesiredFilterQuality(draw_image);
   const SkSamplingOptions sampling(
       PaintFlags::FilterQualityToSkSamplingOptions(filter_quality));
-  if (!pixmap_y_unscaled.scalePixels(pixmap_y, sampling) ||
-      !pixmap_u_unscaled.scalePixels(pixmap_u, sampling) ||
-      !pixmap_v_unscaled.scalePixels(pixmap_v, sampling)) {
-    DLOG(ERROR) << "Failed to scale YUV planes.";
-    return false;
+  for (int i = 0; i < num_planes; ++i) {
+    const SkPixmap& decode = decode_yuva_pixmaps.plane(i);
+    const SkPixmap& scaled = yuva_pixmaps.plane(i);
+    if (!decode.scalePixels(scaled, sampling)) {
+      DLOG(ERROR) << "Failed to scale YUV planes.";
+      return false;
+    }
   }
   return true;
 }
@@ -426,18 +398,20 @@ sk_sp<SkImage> TakeOwnershipOfSkImageBacking(GrDirectContext* context,
   }
 
   GrSurfaceOrigin origin;
-  image->getBackendTexture(false /* flushPendingGrContextIO */, &origin);
+  SkImages::GetBackendTextureFromImage(
+      image, nullptr, false /* flushPendingGrContextIO */, &origin);
   SkColorType color_type = image->colorType();
   if (color_type == kUnknown_SkColorType) {
     return nullptr;
   }
   sk_sp<SkColorSpace> color_space = image->refColorSpace();
   GrBackendTexture backend_texture;
-  SkImage::BackendTextureReleaseProc release_proc;
-  SkImage::MakeBackendTextureFromSkImage(context, std::move(image),
-                                         &backend_texture, &release_proc);
-  return SkImage::MakeFromTexture(context, backend_texture, origin, color_type,
-                                  kPremul_SkAlphaType, std::move(color_space));
+  SkImages::BackendTextureReleaseProc release_proc;
+  SkImages::MakeBackendTextureFromImage(context, std::move(image),
+                                        &backend_texture, &release_proc);
+  return SkImages::BorrowTextureFrom(context, backend_texture, origin,
+                                     color_type, kPremul_SkAlphaType,
+                                     std::move(color_space));
 }
 
 // Immediately deletes an SkImage, preventing caching of that image. Must be
@@ -460,7 +434,7 @@ void DeleteSkImageAndPreventCaching(viz::RasterContextProvider* context,
   }
 }
 
-// TODO(ericrk): Replace calls to this with calls to SkImage::makeTextureImage,
+// TODO(ericrk): Replace calls to this with calls to SkImages::TextureFromImage,
 // once that function handles colorspaces. https://crbug.com/834837
 sk_sp<SkImage> MakeTextureImage(viz::RasterContextProvider* context,
                                 sk_sp<SkImage> source_image,
@@ -471,8 +445,8 @@ sk_sp<SkImage> MakeTextureImage(viz::RasterContextProvider* context,
   // conversion, in step 3.
   bool add_mips_after_color_conversion =
       (target_color_space && mip_mapped == GrMipMapped::kYes);
-  sk_sp<SkImage> uploaded_image = source_image->makeTextureImage(
-      context->GrContext(),
+  sk_sp<SkImage> uploaded_image = SkImages::TextureFromImage(
+      context->GrContext(), source_image,
       add_mips_after_color_conversion ? GrMipMapped::kNo : mip_mapped);
 
   // Step 2: Apply a color-space conversion if necessary.
@@ -489,8 +463,8 @@ sk_sp<SkImage> MakeTextureImage(viz::RasterContextProvider* context,
   // add mips here.
   if (uploaded_image && add_mips_after_color_conversion) {
     sk_sp<SkImage> pre_mipped_image = uploaded_image;
-    uploaded_image = uploaded_image->makeTextureImage(context->GrContext(),
-                                                      GrMipMapped::kYes);
+    uploaded_image = SkImages::TextureFromImage(
+        context->GrContext(), uploaded_image, GrMipMapped::kYes);
     DCHECK_NE(pre_mipped_image, uploaded_image);
     DeleteSkImageAndPreventCaching(context, std::move(pre_mipped_image));
   }
@@ -535,6 +509,49 @@ class HeapDiscardableMemory : public base::DiscardableMemory {
   std::unique_ptr<char[]> memory_;
   size_t size_;
 };
+
+absl::optional<SkYUVAPixmapInfo> GetYUVADecodeInfo(
+    const DrawImage& draw_image,
+    AuxImage aux_image,
+    const SkISize target_size,
+    const SkYUVAPixmapInfo::SupportedDataTypes& yuva_supported_data_types) {
+  SkYUVAPixmapInfo original_yuva_pixmap_info;
+  if (!draw_image.paint_image().IsYuv(yuva_supported_data_types, aux_image,
+                                      &original_yuva_pixmap_info)) {
+    return absl::nullopt;
+  }
+  DCHECK(original_yuva_pixmap_info.isValid());
+
+  if (target_size != original_yuva_pixmap_info.yuvaInfo().dimensions()) {
+    // Always promote scaled images to 4:4:4 to avoid blurriness. By using the
+    // same dimensions for the UV planes, we can avoid scaling them completely
+    // or at least avoid scaling the width.
+    //
+    // E.g., consider an original (100, 100) image scaled to mips level 1 (50%),
+    // the Y plane size will be (50, 50), but unscaled UV planes are already
+    // (50, 50) for 4:2:0, and (50, 100) for 4:2:2, so leaving them completely
+    // unscaled or only scaling the height for 4:2:2 has superior quality.
+    SkYUVAInfo scaled_yuva_info =
+        original_yuva_pixmap_info.yuvaInfo()
+            .makeSubsampling(SkYUVAInfo::Subsampling::k444)
+            .makeDimensions(target_size);
+    return SkYUVAPixmapInfo(scaled_yuva_info,
+                            original_yuva_pixmap_info.dataType(), nullptr);
+  }
+  // Original size decode.
+  return original_yuva_pixmap_info;
+}
+
+bool NeedsToneMapping(sk_sp<SkColorSpace> image_color_space, bool has_gainmap) {
+  if (has_gainmap) {
+    return true;
+  }
+  if (image_color_space &&
+      gfx::ColorSpace(*image_color_space).IsToneMappedByDefault()) {
+    return true;
+  }
+  return false;
+}
 
 }  // namespace
 
@@ -630,7 +647,7 @@ class GpuImageDecodeTaskImpl : public TileTask {
   ~GpuImageDecodeTaskImpl() override = default;
 
  private:
-  raw_ptr<GpuImageDecodeCache> cache_;
+  raw_ptr<GpuImageDecodeCache, DanglingUntriaged> cache_;
   DrawImage image_;
   const ImageDecodeCache::TracingInfo tracing_info_;
   const GpuImageDecodeCache::DecodeTaskType task_type_;
@@ -686,6 +703,9 @@ class ImageUploadTaskImpl : public TileTask {
   const ImageDecodeCache::TracingInfo tracing_info_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// GpuImageDecodeCache::ImageDataBase
+
 GpuImageDecodeCache::ImageDataBase::ImageDataBase() = default;
 GpuImageDecodeCache::ImageDataBase::~ImageDataBase() = default;
 
@@ -731,90 +751,209 @@ int GpuImageDecodeCache::ImageDataBase::UsageState() const {
   return state;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// GpuImageDecodeCache::DecodedAuxImageData
+
+GpuImageDecodeCache::DecodedAuxImageData::DecodedAuxImageData() = default;
+
+GpuImageDecodeCache::DecodedAuxImageData::DecodedAuxImageData(
+    const SkPixmap& rgba_pixmap,
+    std::unique_ptr<base::DiscardableMemory> in_data) {
+  data = std::move(in_data);
+  auto release_proc = [](const void*, void*) {};
+  images[0] = SkImages::RasterFromPixmap(rgba_pixmap, release_proc, nullptr);
+  pixmaps[0] = rgba_pixmap;
+  ValidateImagesMatchPixmaps();
+}
+
+GpuImageDecodeCache::DecodedAuxImageData::DecodedAuxImageData(
+    const SkYUVAPixmaps& yuva_pixmaps,
+    std::unique_ptr<base::DiscardableMemory> in_data) {
+  data = std::move(in_data);
+  auto release_proc = [](const void*, void*) {};
+  for (int plane = 0; plane < yuva_pixmaps.numPlanes(); ++plane) {
+    images[plane] = SkImages::RasterFromPixmap(yuva_pixmaps.plane(plane),
+                                               release_proc, nullptr);
+    pixmaps[plane] = yuva_pixmaps.plane(plane);
+  }
+  ValidateImagesMatchPixmaps();
+}
+
+GpuImageDecodeCache::DecodedAuxImageData::DecodedAuxImageData(
+    DecodedAuxImageData&& other)
+    : data(std::move(other.data)) {
+  for (int plane = 0; plane < SkYUVAInfo::kMaxPlanes; ++plane) {
+    images[plane] = std::move(other.images[plane]);
+    pixmaps[plane] = other.pixmaps[plane];
+  }
+  ValidateImagesMatchPixmaps();
+  other.ResetData();
+}
+
+GpuImageDecodeCache::DecodedAuxImageData&
+GpuImageDecodeCache::DecodedAuxImageData::operator=(
+    DecodedAuxImageData&& other) {
+  data = std::move(other.data);
+  other.data = nullptr;
+  for (int plane = 0; plane < SkYUVAInfo::kMaxPlanes; ++plane) {
+    images[plane] = std::move(other.images[plane]);
+    pixmaps[plane] = other.pixmaps[plane];
+    other.images[plane] = nullptr;
+    other.pixmaps[plane] = SkPixmap();
+  }
+  ValidateImagesMatchPixmaps();
+  return *this;
+}
+
+GpuImageDecodeCache::DecodedAuxImageData::~DecodedAuxImageData() = default;
+
+bool GpuImageDecodeCache::DecodedAuxImageData::IsEmpty() const {
+  ValidateImagesMatchPixmaps();
+
+  // If `data` is present, then there must be at least one image and pixmap.
+  if (data) {
+    DCHECK(images[0]);
+    return false;
+  }
+  // A bitmap-backed DecodedAuxImageData will have an `images` and `pixmaps`,
+  // but no data.
+  if (images[0]) {
+    for (int i = 1; i < SkYUVAInfo::kMaxPlanes; ++i) {
+      DCHECK(!images[i]);
+    }
+    return false;
+  }
+  return true;
+}
+
+void GpuImageDecodeCache::DecodedAuxImageData::ResetData() {
+  ValidateImagesMatchPixmaps();
+  data = nullptr;
+  for (auto& image : images) {
+    image = nullptr;
+  }
+  for (auto& pixmap : pixmaps) {
+    pixmap = SkPixmap();
+  }
+  ValidateImagesMatchPixmaps();
+  DCHECK(IsEmpty());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GpuImageDecodeCache::DecodedImageData
+
 GpuImageDecodeCache::DecodedImageData::DecodedImageData(
     bool is_bitmap_backed,
     bool can_do_hardware_accelerated_decode,
     bool do_hardware_accelerated_decode)
     : is_bitmap_backed_(is_bitmap_backed),
       can_do_hardware_accelerated_decode_(can_do_hardware_accelerated_decode),
-      do_hardware_accelerated_decode_(do_hardware_accelerated_decode) {}
+      do_hardware_accelerated_decode_(do_hardware_accelerated_decode) {
+  for (const auto& aux_image_data : aux_image_data_) {
+    aux_image_data.ValidateImagesMatchPixmaps();
+  }
+}
+
 GpuImageDecodeCache::DecodedImageData::~DecodedImageData() {
+  for (const auto& aux_image_data : aux_image_data_) {
+    aux_image_data.ValidateImagesMatchPixmaps();
+  }
   ResetData();
 }
 
 bool GpuImageDecodeCache::DecodedImageData::Lock() {
-  if (data_->Lock())
+  DCHECK(!is_bitmap_backed_);
+  for (const auto& aux_image_data : aux_image_data_) {
+    aux_image_data.ValidateImagesMatchPixmaps();
+  }
+
+  bool did_lock = true;
+  bool did_lock_image[kAuxImageCount] = {false, false};
+  for (size_t i = 0; i < kAuxImageCount; ++i) {
+    if (!aux_image_data_[i].data) {
+      continue;
+    }
+    did_lock_image[i] = aux_image_data_[i].data->Lock();
+    if (did_lock_image[i]) {
+      continue;
+    }
+
+    // If we fail to lock an image, unlock all images that we locked in this
+    // loop, and break out of the loop.
+    for (size_t j = 0; j < i; ++j) {
+      if (did_lock_image[j]) {
+        aux_image_data_[j].data->Unlock();
+      }
+    }
+    did_lock = false;
+    break;
+  }
+  if (did_lock) {
     OnLock();
+  }
   return is_locked_;
 }
 
 void GpuImageDecodeCache::DecodedImageData::Unlock() {
-  data_->Unlock();
+  for (auto& aux_image_data : aux_image_data_) {
+    if (aux_image_data.data) {
+      aux_image_data.data->Unlock();
+    }
+  }
   OnUnlock();
 }
 
 void GpuImageDecodeCache::DecodedImageData::SetLockedData(
-    std::unique_ptr<base::DiscardableMemory> data,
-    sk_sp<SkImage> image,
+    DecodedAuxImageData aux_image_data[kAuxImageCount],
     bool out_of_raster) {
-  DCHECK(data);
-  DCHECK(!data_);
-  DCHECK(image);
-  DCHECK(!image_);
-  data_ = std::move(data);
-  image_ = std::move(image);
-  OnSetLockedData(out_of_raster);
-}
+  for (size_t i = 0; i < kAuxImageCount; ++i) {
+    DCHECK(aux_image_data_[i].IsEmpty());
+    aux_image_data[i].ValidateImagesMatchPixmaps();
+    aux_image_data_[i] = std::move(aux_image_data[i]);
+  }
 
-void GpuImageDecodeCache::DecodedImageData::SetLockedData(
-    std::unique_ptr<base::DiscardableMemory> data,
-    sk_sp<SkImage> image_y,
-    sk_sp<SkImage> image_u,
-    sk_sp<SkImage> image_v,
-    bool out_of_raster) {
-  DCHECK(data);
-  DCHECK(!data_);
-  DCHECK(image_y);
-  DCHECK(image_u);
-  DCHECK(image_v);
-  DCHECK(!image_yuv_planes_);
-  data_ = std::move(data);
-  image_yuv_planes_ = std::array<sk_sp<SkImage>, kNumYUVPlanes>();
-  image_yuv_planes_->at(static_cast<size_t>(YUVIndex::kY)) = std::move(image_y);
-  image_yuv_planes_->at(static_cast<size_t>(YUVIndex::kU)) = std::move(image_u);
-  image_yuv_planes_->at(static_cast<size_t>(YUVIndex::kV)) = std::move(image_v);
+  // A default image must have been set.
+  DCHECK(!aux_image_data_[kAuxImageIndexDefault].IsEmpty());
+  for (size_t i = 0; i < kAuxImageCount; ++i) {
+    aux_image_data_[i].ValidateImagesMatchPixmaps();
+  }
   OnSetLockedData(out_of_raster);
 }
 
 void GpuImageDecodeCache::DecodedImageData::SetBitmapImage(
     sk_sp<SkImage> image) {
   DCHECK(is_bitmap_backed_);
-  image_ = std::move(image);
+  for (const auto& aux_image_data : aux_image_data_) {
+    DCHECK(aux_image_data.IsEmpty());
+  }
+  aux_image_data_[kAuxImageIndexDefault].images[0] = std::move(image);
+  aux_image_data_[kAuxImageIndexDefault].images[0]->peekPixels(
+      &aux_image_data_[kAuxImageIndexDefault].pixmaps[0]);
+  aux_image_data_[kAuxImageIndexDefault].ValidateImagesMatchPixmaps();
+
+  for (const auto& aux_image_data : aux_image_data_) {
+    aux_image_data.ValidateImagesMatchPixmaps();
+  }
   OnLock();
 }
 
 void GpuImageDecodeCache::DecodedImageData::ResetBitmapImage() {
   DCHECK(is_bitmap_backed_);
-  image_ = nullptr;
-  image_yuv_planes_.reset();
+  // Bitmaps only ever have a single SkImage.
+  aux_image_data_[0].ResetData();
+  for (auto& aux_image_data : aux_image_data_) {
+    DCHECK(aux_image_data.IsEmpty());
+  }
   OnUnlock();
 }
 
 void GpuImageDecodeCache::DecodedImageData::ResetData() {
-  if (data_) {
-    if (is_yuv()) {
-      DCHECK(image_yuv_planes_);
-      DCHECK(image_yuv_planes_->at(static_cast<size_t>(YUVIndex::kY)));
-      DCHECK(image_yuv_planes_->at(static_cast<size_t>(YUVIndex::kU)));
-      DCHECK(image_yuv_planes_->at(static_cast<size_t>(YUVIndex::kV)));
-    } else {
-      DCHECK(image_);
-    }
+  if (aux_image_data_[kAuxImageIndexDefault].data) {
     ReportUsageStats();
   }
-  image_ = nullptr;
-  image_yuv_planes_.reset();
-  data_ = nullptr;
+  for (auto& aux_image_data : aux_image_data_) {
+    aux_image_data.ResetData();
+  }
   OnResetData();
 }
 
@@ -837,6 +976,9 @@ void GpuImageDecodeCache::DecodedImageData::ReportUsageStats() const {
         "Renderer4.GpuImageDecodeState.FirstLockWasted.OutOfRaster",
         usage_stats_.first_lock_wasted);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// GpuImageDecodeCache::UploadedImageData
 
 GpuImageDecodeCache::UploadedImageData::UploadedImageData() = default;
 GpuImageDecodeCache::UploadedImageData::~UploadedImageData() {
@@ -926,10 +1068,34 @@ void GpuImageDecodeCache::UploadedImageData::ReportUsageStats() const {
                         usage_stats_.first_lock_wasted);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// GpuImageDecodeCache::ImageInfo
+
+GpuImageDecodeCache::ImageInfo::ImageInfo() = default;
+
+GpuImageDecodeCache::ImageInfo::ImageInfo(const SkImageInfo& rgba)
+    : rgba(rgba), size(rgba.computeMinByteSize()) {
+  DCHECK(!SkImageInfo::ByteSizeOverflowed(size));
+}
+
+GpuImageDecodeCache::ImageInfo::ImageInfo(const SkYUVAPixmapInfo& yuva)
+    : yuva(yuva), size(yuva.computeTotalBytes()) {
+  DCHECK(!SkImageInfo::ByteSizeOverflowed(size));
+}
+
+GpuImageDecodeCache::ImageInfo::ImageInfo(const ImageInfo&) = default;
+
+GpuImageDecodeCache::ImageInfo& GpuImageDecodeCache::ImageInfo::operator=(
+    const ImageInfo&) = default;
+
+GpuImageDecodeCache::ImageInfo::~ImageInfo() = default;
+
+////////////////////////////////////////////////////////////////////////////////
+// GpuImageDecodeCache::ImageData
+
 GpuImageDecodeCache::ImageData::ImageData(
     PaintImage::Id paint_image_id,
     DecodedDataMode mode,
-    size_t size,
     const TargetColorParams& target_color_params,
     PaintFlags::FilterQuality quality,
     int upload_scale_mip_level,
@@ -937,22 +1103,22 @@ GpuImageDecodeCache::ImageData::ImageData(
     bool is_bitmap_backed,
     bool can_do_hardware_accelerated_decode,
     bool do_hardware_accelerated_decode,
-    absl::optional<SkYUVAPixmapInfo> yuva_info)
+    ImageInfo image_info[kAuxImageCount])
     : paint_image_id(paint_image_id),
       mode(mode),
-      size(size),
       target_color_params(target_color_params),
       quality(quality),
       upload_scale_mip_level(upload_scale_mip_level),
       needs_mips(needs_mips),
       is_bitmap_backed(is_bitmap_backed),
-      yuva_pixmap_info(yuva_info),
+      info(std::move(image_info[kAuxImageIndexDefault])),
+      gainmap_info(std::move(image_info[kAuxImageIndexGainmap])),
       decode(is_bitmap_backed,
              can_do_hardware_accelerated_decode,
              do_hardware_accelerated_decode) {
-  if (yuva_pixmap_info.has_value()) {
-    // This is the only plane config supported currently.
-    DCHECK_EQ(yuva_pixmap_info->yuvaInfo().planeConfig(),
+  if (info.yuva.has_value()) {
+    // This is the only plane config supported by non-OOP raster.
+    DCHECK_EQ(info.yuva->yuvaInfo().planeConfig(),
               SkYUVAInfo::PlaneConfig::kY_U_V);
   }
 }
@@ -980,7 +1146,7 @@ bool GpuImageDecodeCache::ImageData::HasUploadedData() const {
       if (upload.image()) {
         // TODO(915968): Be smarter about being able to re-upload planes
         // selectively if only some get deleted from under us.
-        DCHECK(!yuva_pixmap_info.has_value() || upload.has_yuv_planes());
+        DCHECK(!info.yuva.has_value() || upload.has_yuv_planes());
         return true;
       }
       return false;
@@ -998,17 +1164,31 @@ void GpuImageDecodeCache::ImageData::ValidateBudgeted() const {
   DCHECK_GT(upload.ref_count, 0u);
 }
 
+size_t GpuImageDecodeCache::ImageData::GetTotalSize() const {
+  size_t size = 0;
+  for (const auto aux_image : kAllAuxImages) {
+    const auto& aux_image_info = GetImageInfo(aux_image);
+    size += aux_image_info.size;
+  }
+  return size;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// GpuImageDecodeCache
+
 // static
 GrGLuint GpuImageDecodeCache::GlIdFromSkImage(const SkImage* image) {
   DCHECK(image->isTextureBacked());
-  GrBackendTexture backend_texture =
-      image->getBackendTexture(true /* flushPendingGrContextIO */);
-  if (!backend_texture.isValid())
+  GrBackendTexture backend_texture;
+  if (!SkImages::GetBackendTextureFromImage(
+          image, &backend_texture, true /* flushPendingGrContextIO */)) {
     return 0;
+  }
 
   GrGLTextureInfo info;
-  if (!backend_texture.getGLTextureInfo(&info))
+  if (!backend_texture.getGLTextureInfo(&info)) {
     return 0;
+  }
 
   return info.fID;
 }
@@ -1131,7 +1311,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
                       false /* can_do_hardware_accelerated_decode */);
   }
 
-  base::AutoLock lock(lock_);
+  base::AutoLock locker(lock_);
   const InUseCacheKey cache_key = InUseCacheKeyFromDrawImage(draw_image);
   ImageData* image_data = GetImageDataForDrawImage(draw_image, cache_key);
   scoped_refptr<ImageData> new_data;
@@ -1219,7 +1399,7 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
 
   // Ensure that the image we're about to decode/upload will fit in memory, if
   // not already budgeted.
-  if (!image_data->is_budgeted && !EnsureCapacity(image_data->size)) {
+  if (!image_data->is_budgeted && !EnsureCapacity(image_data->GetTotalSize())) {
     // Image will not fit, do an at-raster decode.
     return TaskResult(false /* need_unref */, true /* is_at_raster_decode */,
                       image_data->decode.can_do_hardware_accelerated_decode());
@@ -1338,7 +1518,7 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
     DCHECK(id || image_data->decode.decode_failure);
 
     SkSize scale_factor = CalculateScaleFactorForMipLevel(
-        draw_image, image_data->upload_scale_mip_level);
+        draw_image, AuxImage::kDefault, image_data->upload_scale_mip_level);
     DecodedDrawImage decoded_draw_image(
         id, std::move(dark_mode_color_filter), SkSize(), scale_factor,
         CalculateDesiredFilterQuality(draw_image), image_data->needs_mips,
@@ -1352,7 +1532,7 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
     DCHECK(image || image_data->decode.decode_failure);
 
     SkSize scale_factor = CalculateScaleFactorForMipLevel(
-        draw_image, image_data->upload_scale_mip_level);
+        draw_image, AuxImage::kDefault, image_data->upload_scale_mip_level);
     DecodedDrawImage decoded_draw_image(
         std::move(image), std::move(dark_mode_color_filter), SkSize(),
         scale_factor, CalculateDesiredFilterQuality(draw_image),
@@ -1387,10 +1567,14 @@ void GpuImageDecodeCache::DrawWithImageFinished(
   RunPendingContextThreadOperations();
 }
 
-void GpuImageDecodeCache::ReduceCacheUsage() NO_THREAD_SAFETY_ANALYSIS {
+void GpuImageDecodeCache::ReduceCacheUsage() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::ReduceCacheUsage");
   base::AutoLock lock(lock_);
+  ReduceCacheUsageLocked();
+}
+
+void GpuImageDecodeCache::ReduceCacheUsageLocked() NO_THREAD_SAFETY_ANALYSIS {
   EnsureCapacity(0);
 
   // This is typically called when no tasks are running (between scheduling
@@ -1460,8 +1644,6 @@ void GpuImageDecodeCache::RecordStats() {
 
 void GpuImageDecodeCache::AddToPersistentCache(const DrawImage& draw_image,
                                                scoped_refptr<ImageData> data) {
-  lock_.AssertAcquired();
-
   if (base::FeatureList::IsEnabled(kLimitImageDecodeCacheSize)) {
     // Make sure we're not over capacity. If we are, this will purge older cache
     // entries until we're not.
@@ -1471,14 +1653,12 @@ void GpuImageDecodeCache::AddToPersistentCache(const DrawImage& draw_image,
   MaybePurgeOldCacheEntries();
 
   WillAddCacheEntry(draw_image);
-  persistent_cache_memory_size_ += data->size;
+  persistent_cache_memory_size_ += data->GetTotalSize();
   persistent_cache_.Put(draw_image.frame_key(), std::move(data));
 }
 
 template <typename Iterator>
 Iterator GpuImageDecodeCache::RemoveFromPersistentCache(Iterator it) {
-  lock_.AssertAcquired();
-
   if (it->second->decode.ref_count != 0 || it->second->upload.ref_count != 0) {
     // Orphan the image and erase it from the |persisent_cache_|. This ensures
     // that the image will be deleted once all refs are removed.
@@ -1505,7 +1685,7 @@ Iterator GpuImageDecodeCache::RemoveFromPersistentCache(Iterator it) {
   if (entries_it->second.count == 0u)
     paint_image_entries_.erase(entries_it);
 
-  persistent_cache_memory_size_ -= it->second->size;
+  persistent_cache_memory_size_ -= it->second->GetTotalSize();
   return persistent_cache_.Erase(it);
 }
 
@@ -1529,6 +1709,7 @@ void GpuImageDecodeCache::MaybePurgeOldCacheEntries() {
 }
 
 size_t GpuImageDecodeCache::GetMaximumMemoryLimitBytes() const {
+  base::AutoLock locker(lock_);
   return max_working_set_bytes_;
 }
 
@@ -1564,7 +1745,7 @@ void GpuImageDecodeCache::MemoryDumpYUVImage(
     const std::string& dump_base_name,
     size_t locked_size) const {
   using base::trace_event::MemoryAllocatorDump;
-  DCHECK(image_data->yuva_pixmap_info.has_value());
+  DCHECK(image_data->info.yuva.has_value());
   DCHECK(image_data->upload.has_yuv_planes());
 
   struct PlaneMemoryDumpInfo {
@@ -1602,9 +1783,12 @@ bool GpuImageDecodeCache::OnMemoryDump(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::OnMemoryDump");
 
+  base::AutoLock locker(lock_);
+
+  std::string dump_name = base::StringPrintf(
+      "cc/image_memory/cache_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
+
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
-    std::string dump_name = base::StringPrintf(
-        "cc/image_memory/cache_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes, working_set_bytes_);
@@ -1618,54 +1802,80 @@ bool GpuImageDecodeCache::OnMemoryDump(
     int image_id = static_cast<int>(image_pair.first.hash());
 
     // If we have discardable decoded data, dump this here.
-    if (image_data->decode.data()) {
+    for (const auto aux_image : kAllAuxImages) {
+      const auto& info = image_data->GetImageInfo(aux_image);
+      const auto* data = image_data->decode.data(aux_image);
+      if (!data) {
+        continue;
+      }
       std::string discardable_dump_name = base::StringPrintf(
-          "cc/image_memory/cache_0x%" PRIXPTR "/discardable/image_%d",
-          reinterpret_cast<uintptr_t>(this), image_id);
+          "%s/discardable/image_%d%s", dump_name.c_str(), image_id,
+          aux_image == AuxImage::kDefault ? "" : AuxImageName(aux_image));
       MemoryAllocatorDump* dump =
-          image_data->decode.data()->CreateMemoryAllocatorDump(
-              discardable_dump_name.c_str(), pmd);
+          data->CreateMemoryAllocatorDump(discardable_dump_name.c_str(), pmd);
       // Dump the "locked_size" as an additional column.
       // This lets us see the amount of discardable which is contributing to
       // memory pressure.
-      size_t locked_size =
-          image_data->decode.is_locked() ? image_data->size : 0u;
+      size_t locked_size = image_data->decode.is_locked() ? info.size : 0u;
       dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
                       locked_size);
     }
 
     // If we have an uploaded image (that is actually on the GPU, not just a
     // CPU wrapper), upload it here.
-    if (image_data->HasUploadedData() &&
-        image_data->mode == DecodedDataMode::kGpu) {
-      size_t discardable_size = image_data->size;
-      auto* context_support = context_->ContextSupport();
-      // If the discardable system has deleted this out from under us, log a
-      // size of 0 to match software discardable.
-      if (image_data->yuva_pixmap_info.has_value() &&
-          context_support->ThreadsafeDiscardableTextureIsDeletedForTracing(
-              image_data->upload.gl_y_id()) &&
-          context_support->ThreadsafeDiscardableTextureIsDeletedForTracing(
-              image_data->upload.gl_u_id()) &&
-          context_support->ThreadsafeDiscardableTextureIsDeletedForTracing(
-              image_data->upload.gl_v_id())) {
-        discardable_size = 0;
-      } else if (context_support
-                     ->ThreadsafeDiscardableTextureIsDeletedForTracing(
-                         image_data->upload.gl_id())) {
-        discardable_size = 0;
-      }
+    if (image_data->HasUploadedData()) {
+      switch (image_data->mode) {
+        case DecodedDataMode::kGpu: {
+          // The GPU path does not support auxiliary images, so we can assume
+          // that this is the default image.
+          const auto& info = image_data->info;
+          size_t discardable_size = info.size;
+          auto* context_support = context_->ContextSupport();
+          // If the discardable system has deleted this out from under us, log a
+          // size of 0 to match software discardable.
+          if (info.yuva.has_value() &&
+              context_support->ThreadsafeDiscardableTextureIsDeletedForTracing(
+                  image_data->upload.gl_y_id()) &&
+              context_support->ThreadsafeDiscardableTextureIsDeletedForTracing(
+                  image_data->upload.gl_u_id()) &&
+              context_support->ThreadsafeDiscardableTextureIsDeletedForTracing(
+                  image_data->upload.gl_v_id())) {
+            discardable_size = 0;
+          } else if (context_support
+                         ->ThreadsafeDiscardableTextureIsDeletedForTracing(
+                             image_data->upload.gl_id())) {
+            discardable_size = 0;
+          }
 
-      std::string gpu_dump_base_name = base::StringPrintf(
-          "cc/image_memory/cache_0x%" PRIXPTR "/gpu/image_%d",
-          reinterpret_cast<uintptr_t>(this), image_id);
-      size_t locked_size =
-          image_data->upload.is_locked() ? discardable_size : 0u;
-      if (image_data->yuva_pixmap_info.has_value()) {
-        MemoryDumpYUVImage(pmd, image_data, gpu_dump_base_name, locked_size);
-      } else {
-        AddTextureDump(pmd, gpu_dump_base_name, discardable_size,
-                       image_data->upload.gl_id(), locked_size);
+          std::string gpu_dump_base_name = base::StringPrintf(
+              "%s/gpu/image_%d", dump_name.c_str(), image_id);
+          size_t locked_size =
+              image_data->upload.is_locked() ? discardable_size : 0u;
+          if (info.yuva.has_value()) {
+            MemoryDumpYUVImage(pmd, image_data, gpu_dump_base_name,
+                               locked_size);
+          } else {
+            AddTextureDump(pmd, gpu_dump_base_name, discardable_size,
+                           image_data->upload.gl_id(), locked_size);
+          }
+        } break;
+        case DecodedDataMode::kTransferCache: {
+          // TODO(lizeb): Include the right ID to link it with the GPU-side
+          // resource.
+          std::string uploaded_dump_name = base::StringPrintf(
+              "%s/gpu/image_%d", dump_name.c_str(),
+              image_data->upload.transfer_cache_id().value());
+          MemoryAllocatorDump* dump =
+              pmd->CreateAllocatorDump(uploaded_dump_name);
+          dump->AddScalar(MemoryAllocatorDump::kNameSize,
+                          MemoryAllocatorDump::kUnitsBytes,
+                          image_data->GetTotalSize());
+        } break;
+
+        case DecodedDataMode::kCpu:
+          // Not uploaded in this case.
+          NOTREACHED();
+          break;
       }
     }
   }
@@ -1753,20 +1963,20 @@ void GpuImageDecodeCache::OnImageUploadTaskCompleted(
 }
 
 int GpuImageDecodeCache::CalculateUploadScaleMipLevel(
-    const DrawImage& draw_image) const {
+    const DrawImage& draw_image,
+    AuxImage aux_image) const {
   // Images which are being clipped will have color-bleeding if scaled.
   // TODO(ericrk): Investigate uploading clipped images to handle this case and
   // provide further optimization. crbug.com/620899
   if (!enable_clipped_image_scaling_) {
-    const bool is_clipped = draw_image.src_rect() !=
-                            SkIRect::MakeWH(draw_image.paint_image().width(),
-                                            draw_image.paint_image().height());
+    const bool is_clipped =
+        draw_image.src_rect() !=
+        SkIRect::MakeSize(draw_image.paint_image().GetSkISize(aux_image));
     if (is_clipped)
       return 0;
   }
 
-  gfx::Size base_size(draw_image.paint_image().width(),
-                      draw_image.paint_image().height());
+  gfx::Size base_size = draw_image.paint_image().GetSize(aux_image);
   // Ceil our scaled size so that the mip map generated is guaranteed to be
   // larger. Take the abs of the scale, as mipmap functions don't handle
   // (and aren't impacted by) negative image dimensions.
@@ -1780,7 +1990,8 @@ int GpuImageDecodeCache::CalculateUploadScaleMipLevel(
 GpuImageDecodeCache::InUseCacheKey
 GpuImageDecodeCache::InUseCacheKeyFromDrawImage(
     const DrawImage& draw_image) const {
-  return InUseCacheKey(draw_image, CalculateUploadScaleMipLevel(draw_image));
+  return InUseCacheKey(
+      draw_image, CalculateUploadScaleMipLevel(draw_image, AuxImage::kDefault));
 }
 
 // Checks if an image decode needs a decode task and returns it.
@@ -1791,8 +2002,6 @@ scoped_refptr<TileTask> GpuImageDecodeCache::GetImageDecodeTaskAndRef(
     DecodeTaskType task_type) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetImageDecodeTaskAndRef");
-  lock_.AssertAcquired();
-
   auto cache_key = InUseCacheKeyFromDrawImage(draw_image);
 
   // This ref is kept alive while an upload task may need this decode. We
@@ -1836,7 +2045,6 @@ void GpuImageDecodeCache::RefImageDecode(const DrawImage& draw_image,
                                          const InUseCacheKey& cache_key) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::RefImageDecode");
-  lock_.AssertAcquired();
   auto found = in_use_cache_.find(cache_key);
   DCHECK(found != in_use_cache_.end());
   ++found->second.ref_count;
@@ -1848,7 +2056,6 @@ void GpuImageDecodeCache::UnrefImageDecode(const DrawImage& draw_image,
                                            const InUseCacheKey& cache_key) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::UnrefImageDecode");
-  lock_.AssertAcquired();
   auto found = in_use_cache_.find(cache_key);
   DCHECK(found != in_use_cache_.end());
   DCHECK_GT(found->second.image_data->decode.ref_count, 0u);
@@ -1865,7 +2072,6 @@ void GpuImageDecodeCache::RefImage(const DrawImage& draw_image,
                                    const InUseCacheKey& cache_key) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::RefImage");
-  lock_.AssertAcquired();
   auto found = in_use_cache_.find(cache_key);
 
   // If no secondary cache entry was found for the given |draw_image|, then
@@ -1889,7 +2095,6 @@ void GpuImageDecodeCache::RefImage(const DrawImage& draw_image,
 
 void GpuImageDecodeCache::UnrefImageInternal(const DrawImage& draw_image,
                                              const InUseCacheKey& cache_key) {
-  lock_.AssertAcquired();
   auto found = in_use_cache_.find(cache_key);
   DCHECK(found != in_use_cache_.end());
   DCHECK_GT(found->second.image_data->upload.ref_count, 0u);
@@ -1906,24 +2111,22 @@ void GpuImageDecodeCache::UnrefImageInternal(const DrawImage& draw_image,
 // necessary memory budget book-keeping and cleanup.
 void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
                                            ImageData* image_data) {
-  lock_.AssertAcquired();
-
   bool has_any_refs =
       image_data->upload.ref_count > 0 || image_data->decode.ref_count > 0;
   // If we have no image refs on an image, we should unbudget it.
   if (!has_any_refs && image_data->is_budgeted) {
-    DCHECK_GE(working_set_bytes_, image_data->size);
+    DCHECK_GE(working_set_bytes_, image_data->GetTotalSize());
     DCHECK_GE(working_set_items_, 1u);
-    working_set_bytes_ -= image_data->size;
+    working_set_bytes_ -= image_data->GetTotalSize();
     working_set_items_ -= 1;
     image_data->is_budgeted = false;
   }
 
   // Don't keep around completely empty images. This can happen if an image's
   // decode/upload tasks were both cancelled before completing.
-  const bool has_cpu_data =
-      image_data->decode.data() ||
-      (image_data->is_bitmap_backed && image_data->decode.image());
+  const bool has_cpu_data = image_data->decode.HasData() ||
+                            (image_data->is_bitmap_backed &&
+                             image_data->decode.image(0, AuxImage::kDefault));
   if (!has_any_refs && !image_data->HasUploadedData() && !has_cpu_data &&
       !image_data->is_orphaned) {
     auto found_persistent = persistent_cache_.Peek(draw_image.frame_key());
@@ -1961,8 +2164,8 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
 
   // If we have image that could be budgeted, but isn't, budget it now.
   if (has_any_refs && !image_data->is_budgeted &&
-      CanFitInWorkingSet(image_data->size)) {
-    working_set_bytes_ += image_data->size;
+      CanFitInWorkingSet(image_data->GetTotalSize())) {
+    working_set_bytes_ += image_data->GetTotalSize();
     working_set_items_ += 1;
     image_data->is_budgeted = true;
   }
@@ -1976,10 +2179,10 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
 
   if (should_unlock_decode && image_data->decode.is_locked()) {
     if (image_data->is_bitmap_backed) {
-      DCHECK(!image_data->decode.data());
+      DCHECK(!image_data->decode.HasData());
       image_data->decode.ResetBitmapImage();
     } else {
-      DCHECK(image_data->decode.data());
+      DCHECK(image_data->decode.HasData());
       image_data->decode.Unlock();
     }
   }
@@ -2004,8 +2207,6 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
 bool GpuImageDecodeCache::EnsureCapacity(size_t required_size) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::EnsureCapacity");
-  lock_.AssertAcquired();
-
   // While we are over preferred item capacity, we iterate through our set of
   // cached image data in LRU order, removing unreferenced images.
   for (auto it = persistent_cache_.rbegin();
@@ -2037,8 +2238,6 @@ bool GpuImageDecodeCache::CanFitInWorkingSet(size_t size) const {
 }
 
 bool GpuImageDecodeCache::ExceedsCacheLimits() const {
-  lock_.AssertAcquired();
-
   size_t items_limit;
   if (aggressively_freeing_resources_) {
     items_limit = kSuspendedMaxItemsInCacheForGpu;
@@ -2086,8 +2285,9 @@ bool GpuImageDecodeCache::NeedsDarkModeFilter(const DrawImage& draw_image,
   DCHECK(dark_mode_filter_);
 
   // TODO(prashant.n): RSDM - Add support for YUV decoded data.
-  if (image_data->yuva_pixmap_info.has_value())
+  if (image_data->info.yuva.has_value()) {
     return false;
+  }
 
   // Dark mode filter is already generated and cached.
   if (image_data->decode.dark_mode_color_filter_cache.find(
@@ -2102,8 +2302,6 @@ void GpuImageDecodeCache::DecodeImageAndGenerateDarkModeFilterIfNecessary(
     const DrawImage& draw_image,
     ImageData* image_data,
     TaskType task_type) {
-  lock_.AssertAcquired();
-
   // Check if image needs dark mode to be applied, based on this image may be
   // decoded again if decoded data is not available.
   bool needs_dark_mode_filter = NeedsDarkModeFilter(draw_image, image_data);
@@ -2118,8 +2316,6 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(
     ImageData* image_data,
     TaskType task_type,
     bool needs_decode_for_dark_mode) {
-  lock_.AssertAcquired();
-
   DCHECK_GT(image_data->decode.ref_count, 0u);
 
   if (image_data->decode.do_hardware_accelerated_decode()) {
@@ -2142,7 +2338,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(
 
   if (image_data->is_bitmap_backed) {
     DCHECK(!draw_image.paint_image().IsLazyGenerated());
-    if (image_data->yuva_pixmap_info.has_value()) {
+    if (image_data->info.yuva.has_value()) {
       DLOG(ERROR) << "YUV + Bitmap is unknown and unimplemented!";
       NOTREACHED();
     } else {
@@ -2152,7 +2348,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(
     return;
   }
 
-  if (image_data->decode.data() &&
+  if (image_data->decode.HasData() &&
       (image_data->decode.is_locked() || image_data->decode.Lock())) {
     // We already decoded this, or we just needed to lock, early out.
     return;
@@ -2161,93 +2357,104 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(
   TRACE_EVENT0("cc,benchmark", "GpuImageDecodeCache::DecodeImage");
 
   image_data->decode.ResetData();
-  std::unique_ptr<base::DiscardableMemory> backing_memory;
-  sk_sp<SkImage> image;
-  // These are used only for decoding into YUV.
-  sk_sp<SkImage> image_y;
-  sk_sp<SkImage> image_u;
-  sk_sp<SkImage> image_v;
+
+  // Decode the image into `aux_image_data` while the lock is not held.
+  DecodedAuxImageData aux_image_data[kAuxImageCount];
   {
     base::AutoUnlock unlock(lock_);
-    if (base::FeatureList::IsEnabled(
-            features::kNoDiscardableMemoryForGpuDecodePath)) {
-      backing_memory =
-          std::make_unique<HeapDiscardableMemory>(image_data->size);
-    } else {
-      auto* allocator = base::DiscardableMemoryAllocator::GetInstance();
-      backing_memory = allocator->AllocateLockedDiscardableMemoryWithRetryOrDie(
-          image_data->size, base::BindOnce(&GpuImageDecodeCache::ClearCache,
-                                           base::Unretained(this)));
-    }
-
-    SkImageInfo image_info = CreateImageInfoForDrawImage(
-        draw_image, image_data->upload_scale_mip_level);
-    image_info = image_info.makeColorSpace(
-        ColorSpaceForImageDecode(draw_image, image_data->mode));
-    auto release_proc = [](const void*, void*) {};
-
-    if (image_data->yuva_pixmap_info.has_value()) {
-      DVLOG(3) << "GpuImageDecodeCache wants to do YUV decoding/rendering";
-      SkPixmap pixmap_y;
-      SkPixmap pixmap_u;
-      SkPixmap pixmap_v;
-      if (!DrawAndScaleImageYUV(draw_image, image_info.dimensions(),
-                                backing_memory->data(), generator_client_id_,
-                                yuva_supported_data_types_,
-                                image_data->yuva_pixmap_info->dataType(),
-                                pixmap_y, pixmap_u, pixmap_v)) {
-        DLOG(ERROR) << "DrawAndScaleImageYUV failed.";
-        backing_memory->Unlock();
-        backing_memory.reset();
-      } else {
-        image_y = SkImage::MakeFromRaster(pixmap_y, release_proc, nullptr);
-        image_u = SkImage::MakeFromRaster(pixmap_u, release_proc, nullptr);
-        image_v = SkImage::MakeFromRaster(pixmap_v, release_proc, nullptr);
+    for (auto aux_image : kAllAuxImages) {
+      if (aux_image == AuxImage::kGainmap) {
+        if (!draw_image.paint_image().HasGainmap()) {
+          continue;
+        }
       }
-    } else {  // RGBX decoding is the default path.
-      SkPixmap pixmap(image_info, backing_memory->data(),
-                      image_info.minRowBytes());
-      if (!DrawAndScaleImageRGB(draw_image, pixmap, generator_client_id_)) {
-        DLOG(ERROR) << "DrawAndScaleImageRGB failed.";
-        backing_memory->Unlock();
-        backing_memory.reset();
+      const auto aux_image_index = AuxImageIndex(aux_image);
+      const auto info = image_data->GetImageInfo(aux_image);
+
+      // Allocate the backing memory for the decode.
+      std::unique_ptr<base::DiscardableMemory> backing_memory;
+      if (base::FeatureList::IsEnabled(
+              features::kNoDiscardableMemoryForGpuDecodePath)) {
+        backing_memory = std::make_unique<HeapDiscardableMemory>(info.size);
       } else {
-        image = SkImage::MakeFromRaster(pixmap, release_proc, nullptr);
+        auto* allocator = base::DiscardableMemoryAllocator::GetInstance();
+        backing_memory =
+            allocator->AllocateLockedDiscardableMemoryWithRetryOrDie(
+                info.size, base::BindOnce(&GpuImageDecodeCache::ClearCache,
+                                          base::Unretained(this)));
+      }
+
+      // Do the decode.
+      if (info.yuva.has_value()) {
+        // Decode as YUV.
+        DCHECK(!info.rgba.has_value());
+        DVLOG(3) << "GpuImageDecodeCache (" << AuxImageName(aux_image)
+                 << "wants to do YUV decoding/rendering";
+        SkYUVAPixmaps yuva_pixmaps = SkYUVAPixmaps::FromExternalMemory(
+            info.yuva.value(), backing_memory->data());
+        if (DrawAndScaleImageYUV(draw_image, aux_image, generator_client_id_,
+                                 yuva_supported_data_types_, yuva_pixmaps)) {
+          aux_image_data[aux_image_index] =
+              DecodedAuxImageData(yuva_pixmaps, std::move(backing_memory));
+        } else {
+          DLOG(ERROR) << "DrawAndScaleImageYUV failed.";
+          backing_memory->Unlock();
+          backing_memory.reset();
+          break;
+        }
+      } else {
+        // Decode as RGB.
+        DCHECK(info.rgba.has_value());
+        SkImageInfo image_info = info.rgba->makeColorSpace(
+            ColorSpaceForImageDecode(draw_image, image_data->mode));
+        SkPixmap pixmap(image_info, backing_memory->data(),
+                        image_info.minRowBytes());
+        if (DrawAndScaleImageRGB(draw_image, aux_image, pixmap,
+                                 generator_client_id_)) {
+          aux_image_data[aux_image_index] =
+              DecodedAuxImageData(pixmap, std::move(backing_memory));
+        } else {
+          DLOG(ERROR) << "DrawAndScaleImageRGB failed.";
+          backing_memory->Unlock();
+          backing_memory.reset();
+          break;
+        }
       }
     }
   }
 
-  if (image_data->decode.data()) {
-    // An at-raster task decoded this before us. Ignore our decode.
-    if (image_data->yuva_pixmap_info.has_value()) {
-      DCHECK(image_data->decode.y_image());
-      DCHECK(image_data->decode.u_image());
-      DCHECK(image_data->decode.v_image());
-    } else {
-      DCHECK(image_data->decode.image());
+  if (image_data->decode.HasData()) {
+    // An at-raster task decoded this before us. Ignore our decode, but ensure
+    // that the expected number of images are populated.
+    for (auto aux_image : kAllAuxImages) {
+      const auto info = image_data->GetImageInfo(aux_image);
+      int num_planes = 0;
+      if (info.yuva) {
+        num_planes = image_data->info.yuva->numPlanes();
+      }
+      if (info.rgba) {
+        num_planes = 1;
+      }
+      for (int i = 0; i < SkYUVAInfo::kMaxPlanes; ++i) {
+        if (i < num_planes) {
+          DCHECK(image_data->decode.image(i, aux_image));
+        } else {
+          DCHECK(!image_data->decode.image(i, aux_image));
+        }
+      }
     }
     return;
   }
 
-  if (!backing_memory) {
-    DCHECK(!image);
-    DCHECK(!image_y);
-    DCHECK(!image_u);
-    DCHECK(!image_v);
-    // If |backing_memory| was not populated, we had a non-decodable image.
+  // If the default image's `data` was not populated, we had a non-decodable
+  // image. Do not fail if the gainmap failed to decode.
+  if (!aux_image_data[kAuxImageIndexDefault].data) {
     image_data->decode.decode_failure = true;
     return;
   }
 
-  if (image_data->yuva_pixmap_info.has_value()) {
-    image_data->decode.SetLockedData(
-        std::move(backing_memory), std::move(image_y), std::move(image_u),
-        std::move(image_v), task_type == TaskType::kOutOfRaster);
-  } else {
-    image_data->decode.SetLockedData(std::move(backing_memory),
-                                     std::move(image),
-                                     task_type == TaskType::kOutOfRaster);
-  }
+  image_data->decode.SetLockedData(aux_image_data,
+                                   task_type == TaskType::kOutOfRaster);
 }
 
 void GpuImageDecodeCache::GenerateDarkModeFilter(const DrawImage& draw_image,
@@ -2256,7 +2463,7 @@ void GpuImageDecodeCache::GenerateDarkModeFilter(const DrawImage& draw_image,
   // Caller must ensure draw image needs dark mode to be applied.
   DCHECK(NeedsDarkModeFilter(draw_image, image_data));
   // Caller must ensure image is valid and has decoded data.
-  DCHECK(image_data->decode.image());
+  DCHECK(image_data->decode.image(0, AuxImage::kDefault));
 
   // TODO(prashant.n): Calling ApplyToImage() from |dark_mode_filter_| can be
   // expensive. Check the possibilitiy of holding |lock_| only for accessing and
@@ -2266,8 +2473,7 @@ void GpuImageDecodeCache::GenerateDarkModeFilter(const DrawImage& draw_image,
   if (image_data->decode.decode_failure)
     return;
 
-  SkPixmap pixmap;
-  image_data->decode.image()->peekPixels(&pixmap);
+  const SkPixmap& pixmap = image_data->decode.pixmaps(AuxImage::kDefault)[0];
   image_data->decode.dark_mode_color_filter_cache[draw_image.src_rect()] =
       dark_mode_filter_->ApplyToImage(pixmap, draw_image.src_rect());
 }
@@ -2275,8 +2481,6 @@ void GpuImageDecodeCache::GenerateDarkModeFilter(const DrawImage& draw_image,
 void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
                                                  ImageData* image_data) {
   CheckContextLockAcquiredIfNecessary();
-  lock_.AssertAcquired();
-
   // We are about to upload a new image and are holding the context lock.
   // Ensure that any images which have been marked for deletion are actually
   // cleaned up so we don't exceed our memory limit during this upload.
@@ -2322,8 +2526,10 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
   // have happened at decode time.
   sk_sp<SkColorSpace> decoded_target_colorspace =
       ColorSpaceForImageDecode(draw_image, image_data->mode);
+  const bool needs_tone_mapping = NeedsToneMapping(
+      decoded_target_colorspace, draw_image.paint_image().HasGainmap());
   if (target_color_space && decoded_target_colorspace) {
-    if (!gfx::ColorSpace(*decoded_target_colorspace).IsToneMappedByDefault() &&
+    if (!needs_tone_mapping &&
         SkColorSpace::Equals(target_color_space.get(),
                              decoded_target_colorspace.get())) {
       target_color_space = nullptr;
@@ -2345,25 +2551,27 @@ void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,
     if (image_data->decode.do_hardware_accelerated_decode()) {
       UploadImageIfNecessary_TransferCache_HardwareDecode(
           draw_image, image_data, target_color_space);
-    } else if (image_data->yuva_pixmap_info.has_value()) {
-      const bool needs_tone_mapping =
-          decoded_target_colorspace &&
-          gfx::ColorSpace(*decoded_target_colorspace).IsToneMappedByDefault();
-      UploadImageIfNecessary_TransferCache_SoftwareDecode_YUVA(
-          draw_image, image_data, decoded_target_colorspace,
-          needs_tone_mapping ? target_color_params : absl::nullopt);
     } else {
-      UploadImageIfNecessary_TransferCache_SoftwareDecode_RGBA(
-          draw_image, image_data, target_color_params);
+      // Do not color convert YUVA images unless the the color conversion also
+      // performs tone mapping.
+      if (image_data->info.yuva.has_value()) {
+        if (!needs_tone_mapping) {
+          target_color_params = absl::nullopt;
+        }
+      }
+      UploadImageIfNecessary_TransferCache_SoftwareDecode(
+          draw_image, image_data, decoded_target_colorspace,
+          target_color_params);
     }
   } else {
     // Grab a reference to our decoded image. For the kCpu path, we will use
     // this directly as our "uploaded" data.
-    sk_sp<SkImage> uploaded_image = image_data->decode.image();
+    sk_sp<SkImage> uploaded_image =
+        image_data->decode.image(0, AuxImage::kDefault);
     GrMipMapped image_needs_mips =
         image_data->needs_mips ? GrMipMapped::kYes : GrMipMapped::kNo;
 
-    if (image_data->yuva_pixmap_info.has_value()) {
+    if (image_data->info.yuva.has_value()) {
       UploadImageIfNecessary_GpuCpu_YUVA(
           draw_image, image_data, uploaded_image, image_needs_mips,
           decoded_target_colorspace, target_color_space);
@@ -2385,8 +2593,8 @@ void GpuImageDecodeCache::UploadImageIfNecessary_TransferCache_HardwareDecode(
   // The assumption is that scaling is not currently supported for
   // hardware-accelerated decodes.
   DCHECK_EQ(0, image_data->upload_scale_mip_level);
-  const gfx::Size output_size(draw_image.paint_image().width(),
-                              draw_image.paint_image().height());
+  const gfx::Size output_size =
+      draw_image.paint_image().GetSize(AuxImage::kDefault);
 
   // Get the encoded data in a contiguous form.
   sk_sp<SkData> encoded_data =
@@ -2418,50 +2626,46 @@ void GpuImageDecodeCache::UploadImageIfNecessary_TransferCache_HardwareDecode(
       decode_sync_token.GetConstData());
 }
 
-void GpuImageDecodeCache::
-    UploadImageIfNecessary_TransferCache_SoftwareDecode_YUVA(
-        const DrawImage& draw_image,
-        ImageData* image_data,
-        sk_sp<SkColorSpace> decoded_target_colorspace,
-        absl::optional<TargetColorParams> target_color_params) {
+void GpuImageDecodeCache::UploadImageIfNecessary_TransferCache_SoftwareDecode(
+    const DrawImage& draw_image,
+    ImageData* image_data,
+    sk_sp<SkColorSpace> decoded_target_colorspace,
+    absl::optional<TargetColorParams> target_color_params) {
   DCHECK_EQ(image_data->mode, DecodedDataMode::kTransferCache);
   DCHECK(use_transfer_cache_);
   DCHECK(!image_data->decode.do_hardware_accelerated_decode());
-  DCHECK(image_data->yuva_pixmap_info.has_value());
 
-  SkPixmap yuv_pixmaps[3];
-  if (!image_data->decode.y_image()->peekPixels(&yuv_pixmaps[0]) ||
-      !image_data->decode.u_image()->peekPixels(&yuv_pixmaps[1]) ||
-      !image_data->decode.v_image()->peekPixels(&yuv_pixmaps[2])) {
-    return;
+  ClientImageTransferCacheEntry::Image image[kAuxImageCount];
+  bool has_gainmap = false;
+
+  for (auto aux_image : kAllAuxImages) {
+    auto aux_image_index = AuxImageIndex(aux_image);
+    const auto& info = image_data->GetImageInfo(aux_image);
+    if (aux_image == AuxImage::kGainmap) {
+      has_gainmap = info.rgba.has_value() || info.yuva.has_value();
+    }
+    if (info.yuva.has_value()) {
+      DCHECK(!info.rgba.has_value());
+      image[aux_image_index] = ClientImageTransferCacheEntry::Image(
+          image_data->decode.pixmaps(aux_image), info.yuva->yuvaInfo(),
+          decoded_target_colorspace.get());
+    }
+    if (info.rgba.has_value()) {
+      DCHECK(!info.yuva.has_value());
+      image[aux_image_index] = ClientImageTransferCacheEntry::Image(
+          image_data->decode.pixmaps(aux_image));
+    }
   }
-  ClientImageTransferCacheEntry image_entry(
-      yuv_pixmaps, image_data->yuva_pixmap_info->yuvaInfo().planeConfig(),
-      image_data->yuva_pixmap_info->yuvaInfo().subsampling(),
-      decoded_target_colorspace.get(),
-      image_data->yuva_pixmap_info->yuvaInfo().yuvColorSpace(),
-      image_data->needs_mips, target_color_params);
-  if (!image_entry.IsValid())
-    return;
-  InsertTransferCacheEntry(image_entry, image_data);
-}
 
-void GpuImageDecodeCache::
-    UploadImageIfNecessary_TransferCache_SoftwareDecode_RGBA(
-        const DrawImage& draw_image,
-        ImageData* image_data,
-        absl::optional<TargetColorParams> target_color_params) {
-  DCHECK_EQ(image_data->mode, DecodedDataMode::kTransferCache);
-  DCHECK(use_transfer_cache_);
-  DCHECK(!image_data->decode.do_hardware_accelerated_decode());
-  DCHECK(!image_data->yuva_pixmap_info.has_value());
-
-  SkPixmap pixmap;
-  if (!image_data->decode.image()->peekPixels(&pixmap))
-    return;
-
-  ClientImageTransferCacheEntry image_entry(&pixmap, image_data->needs_mips,
-                                            target_color_params);
+  ClientImageTransferCacheEntry image_entry =
+      has_gainmap
+          ? ClientImageTransferCacheEntry(
+                image[kAuxImageIndexDefault], image[kAuxImageIndexGainmap],
+                draw_image.paint_image().GetGainmapInfo(),
+                image_data->needs_mips, target_color_params)
+          : ClientImageTransferCacheEntry(image[kAuxImageIndexDefault],
+                                          image_data->needs_mips,
+                                          target_color_params);
   if (!image_entry.IsValid())
     return;
   InsertTransferCacheEntry(image_entry, image_data);
@@ -2475,24 +2679,30 @@ void GpuImageDecodeCache::UploadImageIfNecessary_GpuCpu_YUVA(
     sk_sp<SkColorSpace> decoded_target_colorspace,
     sk_sp<SkColorSpace> color_space) {
   DCHECK(!use_transfer_cache_);
-  DCHECK(image_data->yuva_pixmap_info.has_value());
+  DCHECK(image_data->info.yuva.has_value());
 
   // Grab a reference to our decoded image. For the kCpu path, we will use
-  // this directly as our "uploaded" data.
-  sk_sp<SkImage> uploaded_y_image = image_data->decode.y_image();
-  sk_sp<SkImage> uploaded_u_image = image_data->decode.u_image();
-  sk_sp<SkImage> uploaded_v_image = image_data->decode.v_image();
+  // this directly as our "uploaded" data. This path only supports tri-planar
+  // YUV with no alpha.
+  DCHECK_EQ(image_data->info.yuva->yuvaInfo().planeConfig(),
+            SkYUVAInfo::PlaneConfig::kY_U_V);
+  sk_sp<SkImage> uploaded_y_image =
+      image_data->decode.image(0, AuxImage::kDefault);
+  sk_sp<SkImage> uploaded_u_image =
+      image_data->decode.image(1, AuxImage::kDefault);
+  sk_sp<SkImage> uploaded_v_image =
+      image_data->decode.image(2, AuxImage::kDefault);
 
   // For kGpu, we upload and color convert (if necessary).
   if (image_data->mode == DecodedDataMode::kGpu) {
     DCHECK(!use_transfer_cache_);
     base::AutoUnlock unlock(lock_);
-    uploaded_y_image = uploaded_y_image->makeTextureImage(context_->GrContext(),
-                                                          image_needs_mips);
-    uploaded_u_image = uploaded_u_image->makeTextureImage(context_->GrContext(),
-                                                          image_needs_mips);
-    uploaded_v_image = uploaded_v_image->makeTextureImage(context_->GrContext(),
-                                                          image_needs_mips);
+    uploaded_y_image = SkImages::TextureFromImage(
+        context_->GrContext(), uploaded_y_image, image_needs_mips);
+    uploaded_u_image = SkImages::TextureFromImage(
+        context_->GrContext(), uploaded_u_image, image_needs_mips);
+    uploaded_v_image = SkImages::TextureFromImage(
+        context_->GrContext(), uploaded_v_image, image_needs_mips);
     if (!uploaded_y_image || !uploaded_u_image || !uploaded_v_image) {
       DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
       return;
@@ -2503,9 +2713,9 @@ void GpuImageDecodeCache::UploadImageIfNecessary_GpuCpu_YUVA(
     uploaded_image = CreateImageFromYUVATexturesInternal(
         uploaded_y_image.get(), uploaded_u_image.get(), uploaded_v_image.get(),
         image_width, image_height,
-        image_data->yuva_pixmap_info->yuvaInfo().planeConfig(),
-        image_data->yuva_pixmap_info->yuvaInfo().subsampling(),
-        image_data->yuva_pixmap_info->yuvaInfo().yuvColorSpace(), color_space,
+        image_data->info.yuva->yuvaInfo().planeConfig(),
+        image_data->info.yuva->yuvaInfo().subsampling(),
+        image_data->info.yuva->yuvaInfo().yuvColorSpace(), color_space,
         decoded_target_colorspace);
   }
 
@@ -2517,8 +2727,8 @@ void GpuImageDecodeCache::UploadImageIfNecessary_GpuCpu_YUVA(
       DCHECK(uploaded_u_image);
       DCHECK(uploaded_v_image);
       // We do not call DeleteSkImageAndPreventCaching for |uploaded_image|
-      // because calls to getBackendTexture will flatten the YUV planes to
-      // an RGB texture only to immediately delete it.
+      // because calls to GetBackendTextureFromImage will flatten the YUV planes
+      // to an RGB texture only to immediately delete it.
       DeleteSkImageAndPreventCaching(context_, std::move(uploaded_y_image));
       DeleteSkImageAndPreventCaching(context_, std::move(uploaded_u_image));
       DeleteSkImageAndPreventCaching(context_, std::move(uploaded_v_image));
@@ -2542,7 +2752,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary_GpuCpu_YUVA(
                                                    std::move(uploaded_v_image));
 
   image_data->upload.SetImage(std::move(uploaded_image),
-                              image_data->yuva_pixmap_info.has_value());
+                              image_data->info.yuva.has_value());
   image_data->upload.SetYuvImage(std::move(uploaded_y_image),
                                  std::move(uploaded_u_image),
                                  std::move(uploaded_v_image));
@@ -2568,7 +2778,7 @@ void GpuImageDecodeCache::UploadImageIfNecessary_GpuCpu_RGBA(
     GrMipMapped image_needs_mips,
     sk_sp<SkColorSpace> color_space) {
   DCHECK(!use_transfer_cache_);
-  DCHECK(!image_data->yuva_pixmap_info.has_value());
+  DCHECK(!image_data->info.yuva.has_value());
 
   // RGBX decoding is below.
   // For kGpu, we upload and color convert (if necessary).
@@ -2618,15 +2828,34 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
                                      bool allow_hardware_decode) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::CreateImageData");
-  lock_.AssertAcquired();
+  ImageInfo image_info[kAuxImageCount];
 
-  int upload_scale_mip_level = CalculateUploadScaleMipLevel(draw_image);
-  bool needs_mips = ShouldGenerateMips(draw_image, upload_scale_mip_level);
-  SkImageInfo image_info =
-      CreateImageInfoForDrawImage(draw_image, upload_scale_mip_level);
+  // Extract ImageInfo and SkImageInfo for the default image, assuming software
+  // decoding to RGBA.
+  const auto [sk_image_info, upload_scale_mip_level] =
+      CreateImageInfoForDrawImage(draw_image, AuxImage::kDefault);
+  image_info[kAuxImageIndexDefault] = ImageInfo(sk_image_info);
+  bool needs_mips = ShouldGenerateMips(draw_image, AuxImage::kDefault,
+                                       upload_scale_mip_level);
+
+  // Extract ImageInfo and SkImageInfo for the gainmap image, if it exists,
+  // assuming software decoindg to RGBA.
+  const bool has_gainmap = draw_image.paint_image().HasGainmap();
+  SkImageInfo gainmap_sk_image_info;
+  ImageInfo gainmap_info;
+  if (has_gainmap) {
+    gainmap_sk_image_info = std::get<0>(
+        CreateImageInfoForDrawImage(draw_image, AuxImage::kGainmap));
+    image_info[kAuxImageIndexGainmap] = ImageInfo(gainmap_sk_image_info);
+  }
+
+  // Determine if the image can fit in a texture (to determine mode and RGBA vs
+  // YUVA decode).
   const bool image_larger_than_max_texture =
-      image_info.width() > max_texture_size_ ||
-      image_info.height() > max_texture_size_;
+      sk_image_info.width() > max_texture_size_ ||
+      sk_image_info.height() > max_texture_size_ ||
+      (has_gainmap && (gainmap_sk_image_info.width() > max_texture_size_ ||
+                       gainmap_sk_image_info.height() > max_texture_size_));
   DecodedDataMode mode;
   if (use_transfer_cache_) {
     mode = DecodedDataMode::kTransferCache;
@@ -2636,9 +2865,6 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   } else {
     mode = DecodedDataMode::kGpu;
   }
-
-  size_t data_size = image_info.computeMinByteSize();
-  DCHECK(!SkImageInfo::ByteSizeOverflowed(data_size));
 
   // We need to cache the result of color conversion on the cpu if the image
   // will be color converted during the decode.
@@ -2664,6 +2890,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   // - The caller allows hardware decodes.
   // - We are using the transfer cache (OOP-R).
   // - The image does not require downscaling for uploading (see TODO below).
+  // - The image does not have a gainmap.
   // - The image is supported according to the profiles advertised by the GPU
   //   service.
   //
@@ -2675,7 +2902,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
   bool can_do_hardware_accelerated_decode = false;
   bool do_hardware_accelerated_decode = false;
   if (allow_hardware_decode && mode == DecodedDataMode::kTransferCache &&
-      upload_scale_mip_level == 0 &&
+      upload_scale_mip_level == 0 && !has_gainmap &&
       context_->ContextSupport()->CanDecodeWithHardwareAcceleration(
           image_metadata)) {
     DCHECK(image_metadata);
@@ -2690,45 +2917,43 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image,
     if ((is_jpeg && allow_accelerated_jpeg_decodes_) ||
         (is_webp && allow_accelerated_webp_decodes_)) {
       do_hardware_accelerated_decode = true;
-      data_size = EstimateHardwareDecodedDataSize(image_metadata);
       DCHECK(!is_bitmap_backed);
     }
-  }
 
-  SkYUVAPixmapInfo yuva_pixmap_info;
-  const bool is_yuv = !do_hardware_accelerated_decode &&
-                      draw_image.paint_image().IsYuv(yuva_supported_data_types_,
-                                                     &yuva_pixmap_info) &&
-                      mode != DecodedDataMode::kCpu &&
-                      !image_larger_than_max_texture;
-
-  absl::optional<SkYUVAPixmapInfo> optional_yuva_pixmap_info;
-  if (is_yuv) {
-    DCHECK(yuva_pixmap_info.isValid());
-    if (upload_scale_mip_level > 0) {
-      // Scaled decode. We always promote to 4:4:4 when scaling YUV to avoid
-      // blurriness. See comment in DrawAndScaleImage() for details 0
-      SkYUVAInfo yuva_info = yuva_pixmap_info.yuvaInfo().makeSubsampling(
-          SkYUVAInfo::Subsampling::k444);
-      size_t row_bytes[SkYUVAInfo::kMaxPlanes] = {};
-      for (int i = 0; i < yuva_info.numPlanes(); ++i) {
-        row_bytes[i] = yuva_pixmap_info.rowBytes(0);
-      }
-      optional_yuva_pixmap_info =
-          SkYUVAPixmapInfo(yuva_info, yuva_pixmap_info.dataType(), row_bytes);
-    } else {
-      // Original size decode.
-      optional_yuva_pixmap_info = yuva_pixmap_info;
+    // Override the estimated size if we are doing hardware decode.
+    if (do_hardware_accelerated_decode) {
+      image_info[kAuxImageIndexDefault].size =
+          EstimateHardwareDecodedDataSize(image_metadata);
     }
-    data_size = optional_yuva_pixmap_info->computeTotalBytes();
-    DCHECK(!SkImageInfo::ByteSizeOverflowed(data_size));
   }
+
+  // Determine if we will do YUVA decoding for the image and the gainmap, and
+  // update `image_info` to reflect that.
+  if (!do_hardware_accelerated_decode && mode != DecodedDataMode::kCpu &&
+      !image_larger_than_max_texture) {
+    auto yuva_info = GetYUVADecodeInfo(draw_image, AuxImage::kDefault,
+                                       sk_image_info.dimensions(),
+                                       yuva_supported_data_types_);
+    if (yuva_info.has_value()) {
+      image_info[kAuxImageIndexDefault] = ImageInfo(yuva_info.value());
+    }
+    if (has_gainmap) {
+      auto gainmap_yuva_info = GetYUVADecodeInfo(
+          draw_image, AuxImage::kGainmap, gainmap_sk_image_info.dimensions(),
+          yuva_supported_data_types_);
+      if (gainmap_yuva_info.has_value()) {
+        image_info[kAuxImageIndexGainmap] =
+            ImageInfo(gainmap_yuva_info.value());
+      }
+    }
+  }
+
   return base::WrapRefCounted(new ImageData(
-      draw_image.paint_image().stable_id(), mode, data_size,
+      draw_image.paint_image().stable_id(), mode,
       draw_image.target_color_params(),
       CalculateDesiredFilterQuality(draw_image), upload_scale_mip_level,
       needs_mips, is_bitmap_backed, can_do_hardware_accelerated_decode,
-      do_hardware_accelerated_decode, optional_yuva_pixmap_info));
+      do_hardware_accelerated_decode, image_info));
 }
 
 void GpuImageDecodeCache::WillAddCacheEntry(const DrawImage& draw_image) {
@@ -2785,7 +3010,7 @@ void GpuImageDecodeCache::DeleteImage(ImageData* image_data) {
   if (image_data->HasUploadedData()) {
     DCHECK(!image_data->upload.is_locked());
     if (image_data->mode == DecodedDataMode::kGpu) {
-      if (image_data->yuva_pixmap_info.has_value()) {
+      if (image_data->info.yuva.has_value()) {
         images_pending_deletion_.push_back(image_data->upload.y_image());
         images_pending_deletion_.push_back(image_data->upload.u_image());
         images_pending_deletion_.push_back(image_data->upload.v_image());
@@ -2803,7 +3028,7 @@ void GpuImageDecodeCache::DeleteImage(ImageData* image_data) {
 void GpuImageDecodeCache::UnlockImage(ImageData* image_data) {
   DCHECK(image_data->HasUploadedData());
   if (image_data->mode == DecodedDataMode::kGpu) {
-    if (image_data->yuva_pixmap_info.has_value()) {
+    if (image_data->info.yuva.has_value()) {
       images_pending_unlock_.push_back(image_data->upload.y_image().get());
       images_pending_unlock_.push_back(image_data->upload.u_image().get());
       images_pending_unlock_.push_back(image_data->upload.v_image().get());
@@ -2817,11 +3042,11 @@ void GpuImageDecodeCache::UnlockImage(ImageData* image_data) {
   }
   image_data->upload.OnUnlock();
 
-  // If we were holding onto an unmipped image for defering deletion, do it now
-  // it is guarenteed to have no-refs.
+  // If we were holding onto an unmipped image for deferring deletion, do it now
+  // it is guaranteed to have no-refs.
   auto unmipped_image = image_data->upload.take_unmipped_image();
   if (unmipped_image) {
-    if (image_data->yuva_pixmap_info.has_value()) {
+    if (image_data->info.yuva.has_value()) {
       auto unmipped_y_image = image_data->upload.take_unmipped_y_image();
       auto unmipped_u_image = image_data->upload.take_unmipped_u_image();
       auto unmipped_v_image = image_data->upload.take_unmipped_v_image();
@@ -2845,9 +3070,9 @@ void GpuImageDecodeCache::UnlockImage(ImageData* image_data) {
 void GpuImageDecodeCache::FlushYUVImages(
     std::vector<sk_sp<SkImage>>* yuv_images) {
   CheckContextLockAcquiredIfNecessary();
-  lock_.AssertAcquired();
+  GrDirectContext* ctx = context_->GrContext();
   for (auto& image : *yuv_images) {
-    image->flushAndSubmit(context_->GrContext());
+    ctx->flushAndSubmit(image);
   }
   yuv_images->clear();
 }
@@ -2873,7 +3098,6 @@ void GpuImageDecodeCache::FlushYUVImages(
 // lock and its textures have been deleted.
 void GpuImageDecodeCache::RunPendingContextThreadOperations() {
   CheckContextLockAcquiredIfNecessary();
-  lock_.AssertAcquired();
 
   for (auto* image : images_pending_complete_lock_) {
     context_->ContextSupport()->CompleteLockDiscardableTexureOnContextThread(
@@ -2914,11 +3138,13 @@ void GpuImageDecodeCache::RunPendingContextThreadOperations() {
   ids_pending_deletion_.clear();
 }
 
-SkImageInfo GpuImageDecodeCache::CreateImageInfoForDrawImage(
+std::tuple<SkImageInfo, int> GpuImageDecodeCache::CreateImageInfoForDrawImage(
     const DrawImage& draw_image,
-    int upload_scale_mip_level) const {
+    AuxImage aux_image) const {
+  const int upload_scale_mip_level =
+      CalculateUploadScaleMipLevel(draw_image, AuxImage::kDefault);
   gfx::Size mip_size =
-      CalculateSizeForMipLevel(draw_image, upload_scale_mip_level);
+      CalculateSizeForMipLevel(draw_image, aux_image, upload_scale_mip_level);
 
   // Decide the SkColorType for the buffer for the PaintImage to draw or
   // decode into. Default to using the cache's color type.
@@ -2928,7 +3154,8 @@ SkImageInfo GpuImageDecodeCache::CreateImageInfoForDrawImage(
   // its SkColorType to kRGBA_F16_SkColorType. Only set the target SkColorType
   // to this value if the PaintImage itself reports it. Otherwise, the content
   // may not appear, see https://crbug.com/1266456.
-  const auto image_color_type = draw_image.paint_image().GetColorType();
+  const auto image_color_type =
+      draw_image.paint_image().GetSkImageInfo(aux_image).colorType();
   if (image_color_type == kRGBA_F16_SkColorType) {
     // Only set the target SkColorType to kRGBA_F16_SkColorType if the content
     // is HDR and the target display is HDR capable. This is done to preserve
@@ -2941,8 +3168,9 @@ SkImageInfo GpuImageDecodeCache::CreateImageInfoForDrawImage(
     }
   }
 
-  return SkImageInfo::Make(mip_size.width(), mip_size.height(), color_type,
-                           kPremul_SkAlphaType);
+  return {SkImageInfo::Make(mip_size.width(), mip_size.height(), color_type,
+                            kPremul_SkAlphaType),
+          upload_scale_mip_level};
 }
 
 bool GpuImageDecodeCache::TryLockImage(HaveContextLock have_context_lock,
@@ -2967,7 +3195,7 @@ bool GpuImageDecodeCache::TryLockImage(HaveContextLock have_context_lock,
     // If |have_context_lock|, we can immediately lock the image and send
     // the lock command to the GPU process.
     // TODO(crbug.com/914622): Add Chrome GL extension to upload texture array.
-    if (data->yuva_pixmap_info.has_value() &&
+    if (data->info.yuva.has_value() &&
         ri->LockDiscardableTextureCHROMIUM(data->upload.gl_y_id()) &&
         ri->LockDiscardableTextureCHROMIUM(data->upload.gl_u_id()) &&
         ri->LockDiscardableTextureCHROMIUM(data->upload.gl_v_id())) {
@@ -2975,7 +3203,7 @@ bool GpuImageDecodeCache::TryLockImage(HaveContextLock have_context_lock,
       DCHECK(data->mode == DecodedDataMode::kGpu);
       data->upload.OnLock();
       return true;
-    } else if (!data->yuva_pixmap_info.has_value() &&
+    } else if (!data->info.yuva.has_value() &&
                ri->LockDiscardableTextureCHROMIUM(data->upload.gl_id())) {
       DCHECK(!use_transfer_cache_);
       DCHECK(data->mode == DecodedDataMode::kGpu);
@@ -2993,7 +3221,7 @@ bool GpuImageDecodeCache::TryLockImage(HaveContextLock have_context_lock,
     // UploadImageIfNecessary, which is guaranteed to run before the texture
     // is used.
     auto* context_support = context_->ContextSupport();
-    if (data->yuva_pixmap_info.has_value() &&
+    if (data->info.yuva.has_value() &&
         context_support->ThreadSafeShallowLockDiscardableTexture(
             data->upload.gl_y_id()) &&
         context_support->ThreadSafeShallowLockDiscardableTexture(
@@ -3007,7 +3235,7 @@ bool GpuImageDecodeCache::TryLockImage(HaveContextLock have_context_lock,
       images_pending_complete_lock_.push_back(data->upload.u_image().get());
       images_pending_complete_lock_.push_back(data->upload.v_image().get());
       return true;
-    } else if (!data->yuva_pixmap_info.has_value() &&
+    } else if (!data->info.yuva.has_value() &&
                context_support->ThreadSafeShallowLockDiscardableTexture(
                    data->upload.gl_id())) {
       DCHECK(!use_transfer_cache_);
@@ -3031,7 +3259,6 @@ GpuImageDecodeCache::ImageData* GpuImageDecodeCache::GetImageDataForDrawImage(
     const InUseCacheKey& key) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::GetImageDataForDrawImage");
-  lock_.AssertAcquired();
   DCHECK(UseCacheForDrawImage(draw_image));
 
   auto found_in_use = in_use_cache_.find(key);
@@ -3059,15 +3286,18 @@ GpuImageDecodeCache::ImageData* GpuImageDecodeCache::GetImageDataForDrawImage(
 bool GpuImageDecodeCache::IsCompatible(const ImageData* image_data,
                                        const DrawImage& draw_image) const {
   bool is_scaled = image_data->upload_scale_mip_level != 0;
-  bool scale_is_compatible = CalculateUploadScaleMipLevel(draw_image) >=
-                             image_data->upload_scale_mip_level;
+  bool scale_is_compatible =
+      CalculateUploadScaleMipLevel(draw_image, AuxImage::kDefault) >=
+      image_data->upload_scale_mip_level;
   bool quality_is_compatible =
       CalculateDesiredFilterQuality(draw_image) <= image_data->quality;
   sk_sp<SkColorSpace> decoded_target_colorspace =
       ColorSpaceForImageDecode(draw_image, image_data->mode);
+  const bool needs_tone_mapping = NeedsToneMapping(
+      decoded_target_colorspace, draw_image.paint_image().HasGainmap());
+
   bool color_is_compatible = false;
-  if (!decoded_target_colorspace ||
-      !gfx::ColorSpace(*decoded_target_colorspace).IsToneMappedByDefault()) {
+  if (!needs_tone_mapping) {
     color_is_compatible = image_data->target_color_params.color_space ==
                           draw_image.target_color_space();
   } else {
@@ -3085,7 +3315,7 @@ size_t GpuImageDecodeCache::GetDrawImageSizeForTesting(const DrawImage& image) {
   base::AutoLock lock(lock_);
   scoped_refptr<ImageData> data =
       CreateImageData(image, false /* allow_hardware_decode */);
-  return data->size;
+  return data->GetTotalSize();
 }
 
 void GpuImageDecodeCache::SetImageDecodingFailedForTesting(
@@ -3108,12 +3338,14 @@ bool GpuImageDecodeCache::DiscardableIsLockedForTesting(
 
 bool GpuImageDecodeCache::IsInInUseCacheForTesting(
     const DrawImage& image) const {
+  base::AutoLock locker(lock_);
   auto found = in_use_cache_.find(InUseCacheKeyFromDrawImage(image));
   return found != in_use_cache_.end();
 }
 
 bool GpuImageDecodeCache::IsInPersistentCacheForTesting(
     const DrawImage& image) const {
+  base::AutoLock locker(lock_);
   auto found = persistent_cache_.Peek(image.frame_key());
   return found != persistent_cache_.end();
 }
@@ -3124,7 +3356,7 @@ sk_sp<SkImage> GpuImageDecodeCache::GetSWImageDecodeForTesting(
   auto found = persistent_cache_.Peek(image.frame_key());
   DCHECK(found != persistent_cache_.end());
   ImageData* image_data = found->second.get();
-  DCHECK(!image_data->yuva_pixmap_info.has_value());
+  DCHECK(!image_data->info.yuva.has_value());
   return image_data->decode.ImageForTesting();
 }
 
@@ -3137,8 +3369,9 @@ sk_sp<SkImage> GpuImageDecodeCache::GetUploadedPlaneForTesting(
   base::AutoLock lock(lock_);
   ImageData* image_data = GetImageDataForDrawImage(
       draw_image, InUseCacheKeyFromDrawImage(draw_image));
-  if (!image_data->yuva_pixmap_info.has_value())
+  if (!image_data->info.yuva.has_value()) {
     return nullptr;
+  }
   switch (index) {
     case YUVIndex::kY:
       return image_data->upload.y_image();
@@ -3176,7 +3409,7 @@ void GpuImageDecodeCache::OnMemoryPressure(
 
   base::AutoLock lock(lock_);
   base::AutoReset<bool> reset(&aggressively_freeing_resources_, true);
-  EnsureCapacity(0);
+  ReduceCacheUsageLocked();
 }
 
 bool GpuImageDecodeCache::SupportsColorSpaceConversion() const {
@@ -3224,9 +3457,12 @@ sk_sp<SkImage> GpuImageDecodeCache::CreateImageFromYUVATexturesInternal(
   SkYUVAInfo yuva_info({image_width, image_height}, yuva_plane_config,
                        yuva_subsampling, yuv_color_space);
   GrBackendTexture yuv_textures[3]{};
-  yuv_textures[0] = uploaded_y_image->getBackendTexture(false);
-  yuv_textures[1] = uploaded_u_image->getBackendTexture(false);
-  yuv_textures[2] = uploaded_v_image->getBackendTexture(false);
+  CHECK(SkImages::GetBackendTextureFromImage(uploaded_y_image, &yuv_textures[0],
+                                             false));
+  CHECK(SkImages::GetBackendTextureFromImage(uploaded_u_image, &yuv_textures[1],
+                                             false));
+  CHECK(SkImages::GetBackendTextureFromImage(uploaded_v_image, &yuv_textures[2],
+                                             false));
   GrYUVABackendTextures yuva_backend_textures(yuva_info, yuv_textures,
                                               kTopLeft_GrSurfaceOrigin);
   DCHECK(yuva_backend_textures.isValid());
@@ -3236,12 +3472,13 @@ sk_sp<SkImage> GpuImageDecodeCache::CreateImageFromYUVATexturesInternal(
     target_color_space = nullptr;
   }
 
-  sk_sp<SkImage> yuva_image = SkImage::MakeFromYUVATextures(
+  sk_sp<SkImage> yuva_image = SkImages::TextureFromYUVATextures(
       context_->GrContext(), yuva_backend_textures,
       std::move(decoded_color_space));
-  if (target_color_space)
+  if (target_color_space && yuva_image) {
     return yuva_image->makeColorSpace(target_color_space,
                                       context_->GrContext());
+  }
 
   return yuva_image;
 }
@@ -3253,8 +3490,8 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
   if (image_data->needs_mips)
     return;
 
-  bool needs_mips =
-      ShouldGenerateMips(draw_image, image_data->upload_scale_mip_level);
+  bool needs_mips = ShouldGenerateMips(draw_image, AuxImage::kDefault,
+                                       image_data->upload_scale_mip_level);
   if (!needs_mips)
     return;
 
@@ -3266,7 +3503,7 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
       image_data->mode != DecodedDataMode::kGpu)
     return;
 
-  if (image_data->yuva_pixmap_info.has_value()) {
+  if (image_data->info.yuva.has_value()) {
     // Need to generate mips. Take a reference on the planes we're about to
     // delete, delaying deletion.
     // TODO(crbug.com/910276): Change after alpha support.
@@ -3275,12 +3512,12 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
     sk_sp<SkImage> previous_v_image = image_data->upload.v_image();
 
     // Generate a new image from the previous, adding mips.
-    sk_sp<SkImage> image_y_with_mips = previous_y_image->makeTextureImage(
-        context_->GrContext(), GrMipMapped::kYes);
-    sk_sp<SkImage> image_u_with_mips = previous_u_image->makeTextureImage(
-        context_->GrContext(), GrMipMapped::kYes);
-    sk_sp<SkImage> image_v_with_mips = previous_v_image->makeTextureImage(
-        context_->GrContext(), GrMipMapped::kYes);
+    sk_sp<SkImage> image_y_with_mips = SkImages::TextureFromImage(
+        context_->GrContext(), previous_y_image, GrMipMapped::kYes);
+    sk_sp<SkImage> image_u_with_mips = SkImages::TextureFromImage(
+        context_->GrContext(), previous_u_image, GrMipMapped::kYes);
+    sk_sp<SkImage> image_v_with_mips = SkImages::TextureFromImage(
+        context_->GrContext(), previous_v_image, GrMipMapped::kYes);
 
     // Handle lost context.
     if (!image_y_with_mips || !image_u_with_mips || !image_v_with_mips) {
@@ -3327,10 +3564,10 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
         CreateImageFromYUVATexturesInternal(
             image_y_with_mips_owned.get(), image_u_with_mips_owned.get(),
             image_v_with_mips_owned.get(), width, height,
-            image_data->yuva_pixmap_info->yuvaInfo().planeConfig(),
-            image_data->yuva_pixmap_info->yuvaInfo().subsampling(),
-            image_data->yuva_pixmap_info->yuvaInfo().yuvColorSpace(),
-            color_space, upload_color_space);
+            image_data->info.yuva->yuvaInfo().planeConfig(),
+            image_data->info.yuva->yuvaInfo().subsampling(),
+            image_data->info.yuva->yuvaInfo().yuvColorSpace(), color_space,
+            upload_color_space);
     // In case of lost context
     if (!yuv_image_with_mips_owned) {
       DLOG(WARNING) << "TODO(crbug.com/740737): Context was lost. Early out.";
@@ -3364,8 +3601,8 @@ void GpuImageDecodeCache::UpdateMipsIfNeeded(const DrawImage& draw_image,
   sk_sp<SkImage> previous_image = image_data->upload.image();
 
   // Generate a new image from the previous, adding mips.
-  sk_sp<SkImage> image_with_mips = previous_image->makeTextureImage(
-      context_->GrContext(), GrMipMapped::kYes);
+  sk_sp<SkImage> image_with_mips = SkImages::TextureFromImage(
+      context_->GrContext(), previous_image, GrMipMapped::kYes);
 
   // Handle lost context.
   if (!image_with_mips) {

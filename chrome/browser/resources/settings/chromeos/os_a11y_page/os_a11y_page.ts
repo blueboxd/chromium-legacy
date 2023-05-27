@@ -12,23 +12,13 @@ import '../../controls/settings_toggle_button.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
 import '../../settings_shared.css.js';
-import './manage_a11y_page.js';
-import './text_to_speech_page.js';
-import './display_and_magnification_page.js';
-import './keyboard_and_text_input_page.js';
-import './cursor_and_touchpad_page.js';
-import './audio_and_captions_page.js';
-import './chromevox_subpage.js';
-import './select_to_speak_subpage.js';
-import './switch_access_subpage.js';
-import './tts_subpage.js';
 
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';
-import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
@@ -38,7 +28,7 @@ import {Route, Router} from '../router.js';
 import {getTemplate} from './os_a11y_page.html.js';
 import {OsA11yPageBrowserProxy, OsA11yPageBrowserProxyImpl} from './os_a11y_page_browser_proxy.js';
 
-interface OsSettingsA11yPageElement {
+export interface OsSettingsA11yPageElement {
   $: {
     a11yImageLabels: SettingsToggleButtonElement,
   };
@@ -47,7 +37,7 @@ interface OsSettingsA11yPageElement {
 const OsSettingsA11yPageElementBase = DeepLinkingMixin(
     RouteOriginMixin(PrefsMixin(WebUiListenerMixin(PolymerElement))));
 
-class OsSettingsA11yPageElement extends OsSettingsA11yPageElementBase {
+export class OsSettingsA11yPageElement extends OsSettingsA11yPageElementBase {
   static get is() {
     return 'os-settings-a11y-page';
   }
@@ -219,27 +209,27 @@ class OsSettingsA11yPageElement extends OsSettingsA11yPageElementBase {
     }
   }
 
-  private onManageAccessibilityFeaturesTap_(): void {
+  private onManageAccessibilityFeaturesClick_(): void {
     Router.getInstance().navigateTo(routes.MANAGE_ACCESSIBILITY);
   }
 
-  private onTextToSpeechTap_(): void {
+  private onTextToSpeechClick_(): void {
     Router.getInstance().navigateTo(routes.A11Y_TEXT_TO_SPEECH);
   }
 
-  private onDisplayAndMagnificationTap_(): void {
+  private onDisplayAndMagnificationClick_(): void {
     Router.getInstance().navigateTo(routes.A11Y_DISPLAY_AND_MAGNIFICATION);
   }
 
-  private onKeyboardAndTextInputTap_(): void {
+  private onKeyboardAndTextInputClick_(): void {
     Router.getInstance().navigateTo(routes.A11Y_KEYBOARD_AND_TEXT_INPUT);
   }
 
-  private onCursorAndTouchpadTap_(): void {
+  private onCursorAndTouchpadClick_(): void {
     Router.getInstance().navigateTo(routes.A11Y_CURSOR_AND_TOUCHPAD);
   }
 
-  private onAudioAndCaptionsTap_(): void {
+  private onAudioAndCaptionsClick_(): void {
     Router.getInstance().navigateTo(routes.A11Y_AUDIO_AND_CAPTIONS);
   }
 

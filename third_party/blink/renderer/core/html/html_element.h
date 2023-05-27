@@ -224,9 +224,17 @@ class CORE_EXPORT HTMLElement : public Element {
   void setPopover(const AtomicString& value);
   PopoverValueType PopoverType() const;
   bool popoverOpen() const;
+  // IsPopoverReady returns true if the popover is in a state where it can be
+  // either shown or hidden based on |action|. If exception_state is set, then
+  // it will throw an exception if the state is not ready to transition to the
+  // state in |action|. |include_event_handler_text| adds some additional text
+  // to the exception if an exception is thrown. When |expected_document| is
+  // set, it will be compared to the current document and return false if they
+  // do not match.
   bool IsPopoverReady(PopoverTriggerAction action,
                       ExceptionState* exception_state,
-                      bool include_event_handler_text = false) const;
+                      bool include_event_handler_text,
+                      Document* expected_document) const;
   void togglePopover(ExceptionState& exception_state);
   void togglePopover(bool force, ExceptionState& exception_state);
   void showPopover(ExceptionState& exception_state);
@@ -234,7 +242,7 @@ class CORE_EXPORT HTMLElement : public Element {
   // |exception_state| can be nullptr when exceptions can't be thrown, such as
   // when the browser hides a popover during light dismiss or shows a popover in
   // response to clicking a button with popovershowtarget.
-  void ShowPopoverInternal(ExceptionState* exception_state);
+  void ShowPopoverInternal(Element* invoker, ExceptionState* exception_state);
   void HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
                            HidePopoverTransitionBehavior event_firing,
                            ExceptionState* exception_state);
@@ -255,12 +263,6 @@ class CORE_EXPORT HTMLElement : public Element {
                                    HidePopoverFocusBehavior,
                                    HidePopoverTransitionBehavior,
                                    HidePopoverIndependence);
-  // This function checks that the ancestor relationships are still valid for
-  // the entire popover stack. These can change in various ways, such as a
-  // triggering element changing its `disabled` attribute. If any relationships
-  // are invalid, the entire popover stack is closed, and a console warning is
-  // emitted.
-  void CheckAndPossiblyClosePopoverStack();
 
   void SetOwnerSelectMenuElement(HTMLSelectMenuElement* element);
   HTMLSelectMenuElement* ownerSelectMenuElement() const;

@@ -16,6 +16,8 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/app_list_test_model.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/quick_app_access_model.h"
+#include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/functional/callback_forward.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -102,6 +104,8 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool AppListTargetVisibility() const override;
   bool IsInTabletMode() override;
   AppListNotifier* GetNotifier() override;
+  std::unique_ptr<ScopedIphSession> CreateLauncherSearchIphSession() override;
+  void OpenSearchBoxIphUrl() override;
   void LoadIcon(const std::string& app_id) override {}
   bool HasValidProfile() const override;
   bool ShouldHideContinueSection() const override;
@@ -136,6 +140,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   AppListModelProvider model_provider_;
   std::unique_ptr<AppListTestModel> model_;
   std::unique_ptr<SearchModel> search_model_;
+  std::unique_ptr<QuickAppAccessModel> quick_app_access_model_;
 };
 
 }  // namespace test

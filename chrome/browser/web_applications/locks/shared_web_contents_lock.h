@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_LOCKS_SHARED_WEB_CONTENTS_LOCK_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_LOCKS_SHARED_WEB_CONTENTS_LOCK_H_
 
-#include "base/memory/raw_ref.h"
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/locks/lock.h"
+#include "chrome/browser/web_applications/locks/with_shared_web_contents_resources.h"
 
 namespace content {
 class WebContents;
@@ -16,45 +18,32 @@ struct PartitionedLockHolder;
 
 namespace web_app {
 
+class WebAppLockManager;
+
 // This locks the background shared web contents that is used by the
 // WebAppProvider system to do operations in the background that require a web
 // contents, like install web apps and fetch data.
 //
-// Locks can be acquired by using the `WebAppLockManager`. The lock is acquired
-// when the callback given to the WebAppLockManager is called. Destruction of
-// this class will release the lock or cancel the lock request if it is not
-// acquired yet.
+// Locks can be acquired by using the `WebAppLockManager`.
 class SharedWebContentsLockDescription : public LockDescription {
  public:
   SharedWebContentsLockDescription();
   ~SharedWebContentsLockDescription();
 };
 
-// This gives access to a `content::WebContents` instance that's managed by
-// `WebAppCommandManager`. A lock class that needs access to
-// `content::WebContents` can inherit from this class.
-class WithSharedWebContentsResources {
- public:
-  explicit WithSharedWebContentsResources(
-      content::WebContents& shared_web_contents);
-  ~WithSharedWebContentsResources();
-
-  content::WebContents& shared_web_contents() const {
-    return *shared_web_contents_;
-  }
-
- private:
-  raw_ref<content::WebContents> shared_web_contents_;
-};
-
+// Holding this locks means you have exclusive access to a background web
+// contents that is shared by the WebAppProvider system.
+//
+// See `WebAppLockManager` for how to use locks. Destruction of this class will
+// release the lock or cancel the lock request if it is not acquired yet.
+//
+// Note: Accessing a lock will CHECK-fail if the WebAppProvider system has
+// shutdown (or the profile has shut down).
 class SharedWebContentsLock : public Lock,
                               public WithSharedWebContentsResources {
  public:
   using LockDescription = SharedWebContentsLockDescription;
 
-  explicit SharedWebContentsLock(
-      std::unique_ptr<content::PartitionedLockHolder> holder,
-      content::WebContents& shared_web_contents);
   ~SharedWebContentsLock();
 
   base::WeakPtr<SharedWebContentsLock> AsWeakPtr() {
@@ -62,6 +51,11 @@ class SharedWebContentsLock : public Lock,
   }
 
  private:
+  friend class WebAppLockManager;
+  SharedWebContentsLock(base::WeakPtr<WebAppLockManager> lock_manager,
+                        std::unique_ptr<content::PartitionedLockHolder> holder,
+                        content::WebContents& shared_web_contents);
+
   base::WeakPtrFactory<SharedWebContentsLock> weak_factory_{this};
 };
 

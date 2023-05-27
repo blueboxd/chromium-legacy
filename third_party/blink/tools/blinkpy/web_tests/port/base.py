@@ -127,6 +127,8 @@ VALID_FILE_NAME_REGEX = re.compile(r'^[\w\-=]+$')
 # contain all the disc artifacts created by web tests
 ARTIFACTS_SUB_DIR = 'layout-test-results'
 
+ENABLE_THREADED_COMPOSITING_FLAG = '--enable-threaded-compositing'
+
 
 class Port(object):
     """Abstract class for Port-specific hooks for the web_test package."""
@@ -1116,7 +1118,9 @@ class Port(object):
                                                     filename))
 
     @memoized
-    def wpt_manifest(self, path):
+    def wpt_manifest(self,
+                     path: str,
+                     exclude_jsshell: bool = True) -> WPTManifest:
         assert path in self.WPT_DIRS
         # Convert '/' to the platform-specific separator.
         path = self._filesystem.normpath(path)
@@ -1128,7 +1132,7 @@ class Port(object):
                 'manifest_update', False):
             _log.debug('Generating MANIFEST.json for %s...', path)
             WPTManifest.ensure_manifest(self, path)
-        return WPTManifest(self.host, manifest_path)
+        return WPTManifest(self.host, manifest_path, exclude_jsshell)
 
     def is_wpt_file(self, path):
         """Returns whether a path is a WPT test file."""
@@ -1625,6 +1629,11 @@ class Port(object):
             file_name = 'trace_layout_test_{}_{}.json'.format(
                 self._filesystem.sanitize_filename(test_name), current_time)
             args.append('--trace-startup-file=' + file_name)
+
+        if self._is_in_allowlist_for_threaded_compositing(test_name):
+            if (ENABLE_THREADED_COMPOSITING_FLAG not in args):
+                args.append(ENABLE_THREADED_COMPOSITING_FLAG)
+
         return args
 
     @memoized
@@ -2518,6 +2527,12 @@ class Port(object):
             if normalized_test_name.startswith(suite.full_prefix):
                 return suite.args
         return []
+
+    def _is_in_allowlist_for_threaded_compositing(self, test_name):
+        # We start with a very simple and small subset of the tests to create
+        # the infrastructure for an allowlist and plan to move to an external
+        # file soon.
+        return test_name.startswith("vibration")
 
     def _build_path(self, *comps):
         """Returns a path from the build directory."""

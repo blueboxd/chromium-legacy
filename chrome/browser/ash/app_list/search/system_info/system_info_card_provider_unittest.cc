@@ -16,7 +16,10 @@
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/system/sys_info.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_running_on_chromeos.h"
+#include "base/timer/mock_timer.h"
+#include "chrome/browser/ash/app_list/search/system_info/system_info_util.h"
 #include "chrome/browser/ash/app_list/search/test/test_search_controller.h"
 #include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
@@ -43,6 +46,16 @@ namespace app_list::test {
 namespace {
 
 namespace healthd_mojom = ash::cros_healthd::mojom;
+
+constexpr char kBatteryDataError[] =
+    "Apps.AppList.SystemInfoProvider.Error.Battery";
+
+constexpr char kProbeErrorBatteryInfo[] =
+    "Apps.AppList.SystemInfoProvider.CrosHealthdProbeError.BatteryInfo";
+constexpr char kProbeErrorCpuInfo[] =
+    "Apps.AppList.SystemInfoProvider.CrosHealthdProbeError.CpuInfo";
+constexpr char kProbeErrorMemoryInfo[] =
+    "Apps.AppList.SystemInfoProvider.CrosHealthdProbeError.MemoryInfo";
 
 void SetProbeTelemetryInfoResponse(healthd_mojom::BatteryInfoPtr battery_info,
                                    healthd_mojom::CpuInfoPtr cpu_info,
@@ -99,29 +112,6 @@ void SetCrosHealthdCpuResponse(
   SetProbeTelemetryInfoResponse(/*battery_info=*/nullptr,
                                 std::move(cpu_info_ptr),
                                 /*memory_info=*/nullptr);
-}
-
-// Sets the CpuUsage response on cros_healthd. `usage_data` should contain one
-// entry for each logical cpu.
-void SetCrosHealthdCpuUsageResponse(
-    const std::vector<CpuUsageData>& usage_data) {
-  // Use fake temp and scaled clock speed data since none was supplied.
-  const std::vector<uint32_t> scaled_clock_speeds(usage_data.size(), 10000);
-  SetCrosHealthdCpuResponse(usage_data, {50}, scaled_clock_speeds);
-}
-
-void SetCrosHealthdCpuTemperatureResponse(
-    const std::vector<int32_t>& cpu_temps) {
-  // Use fake usage_data and scaled clock speed data since none was supplied.
-  SetCrosHealthdCpuResponse({CpuUsageData(1000, 1000, 1000)}, cpu_temps,
-                            {10000});
-}
-
-void SetCrosHealthdCpuScalingResponse(const std::vector<uint32_t>& cpu_speeds) {
-  // Use fake temp and usage_data data since none was supplied.
-  const std::vector<CpuUsageData> usage_data(cpu_speeds.size(),
-                                             CpuUsageData(1000, 1000, 1000));
-  SetCrosHealthdCpuResponse(usage_data, {50}, cpu_speeds);
 }
 
 void SetCrosHealthdMemoryUsageResponse(uint32_t total_memory_kib,
@@ -252,6 +242,50 @@ void AddFile(const std::string& file_name,
   ASSERT_EQ(expected_size, stat.st_size);
 }
 
+healthd_mojom::ProbeErrorPtr CreateProbeError(
+    healthd_mojom::ErrorType error_type) {
+  auto probe_error = healthd_mojom::ProbeError::New();
+  probe_error->type = error_type;
+  probe_error->msg = "probe error";
+  return probe_error;
+}
+
+void VerifyProbeErrorBucketCounts(const base::HistogramTester& tester,
+                                  const std::string& metric_name,
+                                  size_t expected_unknown_error,
+                                  size_t expected_parse_error,
+                                  size_t expected_service_unavailable,
+                                  size_t expected_system_utility_error,
+                                  size_t expected_file_read_error) {
+  tester.ExpectBucketCount(metric_name, healthd_mojom::ErrorType::kUnknown,
+                           expected_unknown_error);
+  tester.ExpectBucketCount(metric_name, healthd_mojom::ErrorType::kParseError,
+                           expected_parse_error);
+  tester.ExpectBucketCount(metric_name,
+                           healthd_mojom::ErrorType::kServiceUnavailable,
+                           expected_service_unavailable);
+  tester.ExpectBucketCount(metric_name,
+                           healthd_mojom::ErrorType::kSystemUtilityError,
+                           expected_system_utility_error);
+  tester.ExpectBucketCount(metric_name,
+                           healthd_mojom::ErrorType::kFileReadError,
+                           expected_file_read_error);
+}
+
+void VerifyBatteryDataErrorBucketCounts(
+    const base::HistogramTester& tester,
+    size_t expected_no_data_error,
+    size_t expected_not_a_number_error,
+    size_t expected_expectation_not_met_error) {
+  tester.ExpectBucketCount(kBatteryDataError, BatteryDataError::kNoData,
+                           expected_no_data_error);
+  tester.ExpectBucketCount(kBatteryDataError, BatteryDataError::kNotANumber,
+                           expected_not_a_number_error);
+  tester.ExpectBucketCount(kBatteryDataError,
+                           BatteryDataError::kExpectationNotMet,
+                           expected_expectation_not_met_error);
+}
+
 }  // namespace
 
 class SystemInfoCardProviderTest : public testing::Test {
@@ -323,7 +357,7 @@ class SystemInfoCardProviderTest : public testing::Test {
   std::unique_ptr<SystemInfoCardProvider> provider_;
 };
 
-TEST_F(SystemInfoCardProviderTest, version) {
+TEST_F(SystemInfoCardProviderTest, Version) {
   StartSearch(u"version");
   Wait();
   std::u16string official =
@@ -361,18 +395,22 @@ TEST_F(SystemInfoCardProviderTest, version) {
   EXPECT_TRUE(details.GetTextTags().empty());
 }
 
-TEST_F(SystemInfoCardProviderTest, cpu) {
+TEST_F(SystemInfoCardProviderTest, Cpu) {
+  // Setup Timer
+  auto timer = std::make_unique<base::MockRepeatingTimer>();
+  auto* timer_ptr = timer.get();
+  provider_->SetCpuUsageTimerForTesting(std::move(timer));
+
   int temp_1 = 40;
   int temp_2 = 50;
   int temp_3 = 15;
-  uint32_t core_1_speed = 4000;
-  uint32_t core_2_speed = 5000;
+  uint32_t core_1_speed = 4000000;
+  uint32_t core_2_speed = 2000000;
   CpuUsageData core_1(1000, 1000, 1000);
   CpuUsageData core_2(2000, 2000, 2000);
 
-  SetCrosHealthdCpuUsageResponse({core_1, core_2});
-  SetCrosHealthdCpuScalingResponse({core_1_speed, core_2_speed});
-  SetCrosHealthdCpuTemperatureResponse({temp_1, temp_2, temp_3});
+  SetCrosHealthdCpuResponse({core_1, core_2}, {temp_1, temp_2, temp_3},
+                            {core_1_speed, core_2_speed});
 
   StartSearch(u"cpu");
   Wait();
@@ -396,11 +434,72 @@ TEST_F(SystemInfoCardProviderTest, cpu) {
   ASSERT_EQ(results()[0]->details_text_vector().size(), 1u);
   const auto& details = results()[0]->details_text_vector()[0];
   ASSERT_EQ(details.GetType(), ash::SearchResultTextItemType::kString);
-  EXPECT_EQ(details.GetText(), u"Temperature: 35°C - Current speed: 0.01GHz");
+  EXPECT_EQ(details.GetText(), u"Temperature: 35°C - Current speed: 3GHz");
   EXPECT_TRUE(details.GetTextTags().empty());
+
+  int new_temp_1 = 20;
+  int new_temp_2 = 30;
+  int new_temp_3 = 10;
+  core_1_speed = 5000000;
+  core_2_speed = 6000000;
+
+  CpuUsageData core_1_delta(3000, 2500, 4500);
+  CpuUsageData core_2_delta(1000, 5500, 3500);
+
+  SetCrosHealthdCpuResponse({core_1 + core_1_delta, core_2 + core_2_delta},
+                            {new_temp_1, new_temp_2, new_temp_3},
+                            {core_1_speed, core_2_speed});
+
+  timer_ptr->Fire();
+  Wait();
+
+  EXPECT_EQ(title.GetText(), u"CPU current usage: 60%");
+  EXPECT_EQ(details.GetText(), u"Temperature: 20°C - Current speed: 5.5GHz");
+
+  SetCrosHealthdCpuResponse({core_1 + core_1_delta + core_1_delta,
+                             core_2 + core_2_delta + core_2_delta},
+                            {new_temp_1, new_temp_2, new_temp_3},
+                            {core_1_speed, core_2_speed});
+
+  StartSearch(u"cpu usage");
+  Wait();
+
+  ASSERT_FALSE(results().empty());
+  EXPECT_EQ(results().size(), 1u);
+  const auto& title2 = results()[0]->title_text_vector()[0];
+  EXPECT_EQ(title2.GetText(), u"CPU current usage: 60%");
+  const auto& details2 = results()[0]->details_text_vector()[0];
+  EXPECT_EQ(details2.GetText(), u"Temperature: 20°C - Current speed: 5.5GHz");
 }
 
-TEST_F(SystemInfoCardProviderTest, memory) {
+TEST_F(SystemInfoCardProviderTest, CpuProbeError) {
+  auto info = healthd_mojom::TelemetryInfo::New();
+  base::HistogramTester histogram_tester;
+
+  auto cpu_result = healthd_mojom::CpuResult::NewError(
+      CreateProbeError(healthd_mojom::ErrorType::kFileReadError));
+  info->cpu_result = std::move(cpu_result);
+  ash::cros_healthd::FakeCrosHealthd::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(info);
+
+  StartSearch(u"cpu");
+  Wait();
+
+  EXPECT_TRUE(results().empty());
+  VerifyProbeErrorBucketCounts(histogram_tester, kProbeErrorCpuInfo,
+                               /*expected_unknown_error=*/0,
+                               /*expected_parse_error=*/0,
+                               /*expected_service_unavailable=*/0,
+                               /*expected_system_utility_error=*/0,
+                               /*expected_file_read_error=*/1);
+}
+
+TEST_F(SystemInfoCardProviderTest, Memory) {
+  // Setup Timer
+  auto timer = std::make_unique<base::MockRepeatingTimer>();
+  auto* timer_ptr = timer.get();
+  provider_->SetMemoryTimerForTesting(std::move(timer));
+
   const uint32_t total_memory_kib = 8000000;
   const uint32_t free_memory_kib = 2000000;
   const uint32_t available_memory_kib = 4000000;
@@ -425,18 +524,65 @@ TEST_F(SystemInfoCardProviderTest, memory) {
 
   ASSERT_EQ(results()[0]->title_text_vector().size(), 1u);
   const auto& title = results()[0]->title_text_vector()[0];
-  ASSERT_EQ(title.GetType(), ash::SearchResultTextItemType::kString);
+  EXPECT_EQ(title.GetType(), ash::SearchResultTextItemType::kString);
   EXPECT_EQ(title.GetText(), u"");
   EXPECT_TRUE(title.GetTextTags().empty());
 
   ASSERT_EQ(results()[0]->details_text_vector().size(), 1u);
   const auto& details = results()[0]->details_text_vector()[0];
-  ASSERT_EQ(details.GetType(), ash::SearchResultTextItemType::kString);
+  EXPECT_EQ(details.GetType(), ash::SearchResultTextItemType::kString);
   EXPECT_EQ(details.GetText(), u"3.8 GB of 7.6 GB available");
   EXPECT_TRUE(details.GetTextTags().empty());
+
+  const uint32_t total_memory_kib_2 = 8000000;
+  const uint32_t free_memory_kib_2 = 2000000;
+  const uint32_t available_memory_kib_2 = 2000000;
+
+  SetCrosHealthdMemoryUsageResponse(total_memory_kib_2, free_memory_kib_2,
+                                    available_memory_kib_2);
+
+  timer_ptr->Fire();
+  Wait();
+
+  EXPECT_EQ(title.GetText(), u"");
+  EXPECT_EQ(details.GetText(), u"1.9 GB of 7.6 GB available");
+  EXPECT_EQ(results()[0]->system_info_answer_card_data()->bar_chart_percentage,
+            75);
+
+  StartSearch(u"memory usage");
+  Wait();
+
+  ASSERT_FALSE(results().empty());
+  EXPECT_EQ(results().size(), 1u);
+  const auto& details2 = results()[0]->details_text_vector()[0];
+  EXPECT_EQ(details2.GetText(), u"1.9 GB of 7.6 GB available");
+  EXPECT_EQ(results()[0]->system_info_answer_card_data()->bar_chart_percentage,
+            75);
 }
 
-TEST_F(SystemInfoCardProviderTest, battery) {
+TEST_F(SystemInfoCardProviderTest, MemoryProbeError) {
+  auto info = healthd_mojom::TelemetryInfo::New();
+  base::HistogramTester histogram_tester;
+
+  auto memory_result = healthd_mojom::MemoryResult::NewError(
+      CreateProbeError(healthd_mojom::ErrorType::kSystemUtilityError));
+  info->memory_result = std::move(memory_result);
+  ash::cros_healthd::FakeCrosHealthd::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(info);
+
+  StartSearch(u"memory");
+  Wait();
+
+  EXPECT_TRUE(results().empty());
+  VerifyProbeErrorBucketCounts(histogram_tester, kProbeErrorMemoryInfo,
+                               /*expected_unknown_error=*/0,
+                               /*expected_parse_error=*/0,
+                               /*expected_service_unavailable=*/0,
+                               /*expected_system_utility_error=*/1,
+                               /*expected_file_read_error=*/0);
+}
+
+TEST_F(SystemInfoCardProviderTest, Battery) {
   const double charge_full_now = 20;
   const double charge_full_design = 26;
   const int32_t cycle_count = 500;
@@ -503,7 +649,95 @@ TEST_F(SystemInfoCardProviderTest, battery) {
   EXPECT_TRUE(updated_title.GetTextTags().empty());
 }
 
-TEST_F(SystemInfoCardProviderTest, storage) {
+TEST_F(SystemInfoCardProviderTest, BatteryProbeError) {
+  auto info = healthd_mojom::TelemetryInfo::New();
+  base::HistogramTester histogram_tester;
+
+  auto battery_result = healthd_mojom::BatteryResult::NewError(
+      CreateProbeError(healthd_mojom::ErrorType::kParseError));
+  info->battery_result = std::move(battery_result);
+  ash::cros_healthd::FakeCrosHealthd::Get()
+      ->SetProbeTelemetryInfoResponseForTesting(info);
+
+  const auto power_source =
+      power_manager::PowerSupplyProperties_ExternalPower_AC;
+  const auto battery_state =
+      power_manager::PowerSupplyProperties_BatteryState_CHARGING;
+  const bool is_calculating_battery_time = false;
+  const int64_t time_to_full_secs = 1000;
+  const int64_t time_to_empty_secs = 0;
+  const double battery_percent = 94.0;
+
+  SetPowerManagerProperties(power_source, battery_state,
+                            is_calculating_battery_time, time_to_full_secs,
+                            time_to_empty_secs, battery_percent);
+
+  StartSearch(u"battery");
+  Wait();
+
+  VerifyProbeErrorBucketCounts(histogram_tester, kProbeErrorBatteryInfo,
+                               /*expected_unknown_error=*/0,
+                               /*expected_parse_error=*/1,
+                               /*expected_service_unavailable=*/0,
+                               /*expected_system_utility_error=*/0,
+                               /*expected_file_read_error=*/0);
+  EXPECT_TRUE(results().empty());
+}
+
+TEST_F(SystemInfoCardProviderTest, BatteryProbeDataError) {
+  auto info = healthd_mojom::TelemetryInfo::New();
+  base::HistogramTester histogram_tester;
+
+  SetCrosHealthdBatteryHealthResponse(0, 0, 0);
+
+  const auto power_source =
+      power_manager::PowerSupplyProperties_ExternalPower_AC;
+  const auto battery_state =
+      power_manager::PowerSupplyProperties_BatteryState_CHARGING;
+  const bool is_calculating_battery_time = false;
+  const int64_t time_to_full_secs = 1000;
+  const int64_t time_to_empty_secs = 0;
+  const double battery_percent = 94.0;
+
+  SetPowerManagerProperties(power_source, battery_state,
+                            is_calculating_battery_time, time_to_full_secs,
+                            time_to_empty_secs, battery_percent);
+
+  StartSearch(u"battery");
+  Wait();
+
+  VerifyBatteryDataErrorBucketCounts(histogram_tester,
+                                     /*expected_no_data_error=*/0,
+                                     /*expected_not_a_number_error=*/0,
+                                     /*expected_expectation_not_met_error=*/1);
+  EXPECT_TRUE(results().empty());
+}
+
+TEST_F(SystemInfoCardProviderTest, BatteryPowerManagerError) {
+  auto info = healthd_mojom::TelemetryInfo::New();
+  base::HistogramTester histogram_tester;
+
+  const double charge_full_now = 20;
+  const double charge_full_design = 26;
+  const int32_t cycle_count = 500;
+
+  SetCrosHealthdBatteryHealthResponse(charge_full_now, charge_full_design,
+                                      cycle_count);
+
+  absl::nullopt_t props = absl::nullopt;
+  chromeos::FakePowerManagerClient::Get()->UpdatePowerProperties(props);
+
+  StartSearch(u"battery");
+  Wait();
+
+  VerifyBatteryDataErrorBucketCounts(histogram_tester,
+                                     /*expected_no_data_error=*/1,
+                                     /*expected_not_a_number_error=*/0,
+                                     /*expected_expectation_not_met_error=*/0);
+  EXPECT_TRUE(results().empty());
+}
+
+TEST_F(SystemInfoCardProviderTest, Storage) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   // Get local filesystem storage statistics.

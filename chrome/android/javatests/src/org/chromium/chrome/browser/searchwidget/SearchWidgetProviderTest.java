@@ -9,7 +9,6 @@ import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
@@ -17,6 +16,7 @@ import android.widget.FrameLayout;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -29,7 +29,6 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -40,6 +39,7 @@ import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDel
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityConstants;
 import org.chromium.chrome.browser.ui.searchactivityutils.SearchActivityPreferencesManager.SearchActivityPreferences;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 

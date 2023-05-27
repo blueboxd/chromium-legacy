@@ -43,6 +43,7 @@
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/legacy_directory_deletion.h"
+#include "components/sync/base/model_type.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/data_type_manager_impl.h"
@@ -54,6 +55,7 @@
 #include "components/sync/invalidations/sync_invalidations_service.h"
 #include "components/sync/model/forwarding_model_type_controller_delegate.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
+#include "components/sync_bookmarks/bookmark_model_type_controller.h"
 #include "components/sync_bookmarks/bookmark_sync_service.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -257,22 +259,10 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
     // Wallet data sync is enabled by default. Register unless explicitly
     // disabled.
     if (!disabled_types.Has(syncer::AUTOFILL_WALLET_DATA)) {
-      if (base::FeatureList::IsEnabled(
-              autofill::features::kAutofillEnableAccountWalletStorage)) {
-        controllers.push_back(
-            CreateWalletModelTypeControllerWithInMemorySupport(
-                syncer::AUTOFILL_WALLET_DATA,
-                base::BindRepeating(&AutofillWalletDelegateFromDataService),
-                sync_service));
-      } else {
-        // Create without a transport-mode delegate otherwise.
-        // Since the feature is already enabled by default, this path is only
-        // executed in integration tests.
-        controllers.push_back(CreateWalletModelTypeController(
-            syncer::AUTOFILL_WALLET_DATA,
-            base::BindRepeating(&AutofillWalletDelegateFromDataService),
-            sync_service));
-      }
+      controllers.push_back(CreateWalletModelTypeControllerWithInMemorySupport(
+          syncer::AUTOFILL_WALLET_DATA,
+          base::BindRepeating(&AutofillWalletDelegateFromDataService),
+          sync_service));
     }
 
     // Wallet metadata sync depends on Wallet data sync. Register if neither
@@ -300,11 +290,10 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
     if (base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletUsageData) &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_DATA) &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_USAGE)) {
-      controllers.push_back(
-          CreateWalletModelTypeControllerWithInMemorySupport(
-              syncer::AUTOFILL_WALLET_USAGE,
-              base::BindRepeating(&AutofillWalletUsageDataDelegateFromDataService),
-              sync_service));
+      controllers.push_back(CreateWalletModelTypeControllerWithInMemorySupport(
+          syncer::AUTOFILL_WALLET_USAGE,
+          base::BindRepeating(&AutofillWalletUsageDataDelegateFromDataService),
+          sync_service));
     }
   }
 
@@ -327,9 +316,10 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
                         ->GetBookmarkSyncControllerDelegate(favicon_service)
                         .get())
               : nullptr;
-      controllers.push_back(std::make_unique<ModelTypeController>(
-          syncer::BOOKMARKS, std::move(full_mode_delegate),
-          std::move(transport_mode_delegate)));
+      controllers.push_back(
+          std::make_unique<sync_bookmarks::BookmarkModelTypeController>(
+              std::move(full_mode_delegate),
+              std::move(transport_mode_delegate)));
     }
 
     if (!disabled_types.Has(syncer::POWER_BOOKMARK) &&
@@ -479,6 +469,18 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
         /*delegate_for_transport_mode=*/
         CreateForwardingControllerDelegate(syncer::USER_CONSENTS)));
   }
+
+#if !BUILDFLAG(IS_ANDROID) || !BUILDFLAG(IS_IOS)
+  if (base::FeatureList::IsEnabled(syncer::kSyncWebauthnCredentials) &&
+      !disabled_types.Has(syncer::WEBAUTHN_CREDENTIAL)) {
+    controllers.push_back(std::make_unique<ModelTypeController>(
+        syncer::WEBAUTHN_CREDENTIAL,
+        /*delegate_for_full_sync_mode=*/
+        CreateForwardingControllerDelegate(syncer::WEBAUTHN_CREDENTIAL),
+        /*delegate_for_transport_mode=*/
+        CreateForwardingControllerDelegate(syncer::WEBAUTHN_CREDENTIAL)));
+  }
+#endif
 
   return controllers;
 }

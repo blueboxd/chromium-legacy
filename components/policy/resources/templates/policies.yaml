@@ -1093,7 +1093,10 @@ policies:
   1092: ScreenCaptureWithoutGestureAllowedForOrigins
   1093: FileOrDirectoryPickerWithoutGestureAllowedForOrigins
   1094: AppLaunchAutomation
-
+  1095: InsecureHashesInTLSHandshakesEnabled
+  1096: DeviceLoginScreenGeolocationAccessLevel
+  1097: DeviceReportNetworkEvents
+  1098: SafeBrowsingExtensionProtectionAllowed
 atomic_groups:
   1: Homepage
   2: RemoteAccess

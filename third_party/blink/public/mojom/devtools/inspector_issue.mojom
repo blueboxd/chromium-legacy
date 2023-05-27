@@ -22,6 +22,7 @@ enum InspectorIssueCode {
   kHeavyAdIssue,
   kLowTextContrastIssue,
   kFederatedAuthRequestIssue,
+  kBounceTrackingIssue,
   kGenericIssue,
   kDeprecationIssue,
 };
@@ -196,21 +197,26 @@ enum FederatedAuthRequestResult {
   kErrorFetchingWellKnownNoResponse,
   kErrorFetchingWellKnownInvalidResponse,
   kErrorFetchingWellKnownListEmpty,
+  kErrorFetchingWellKnownInvalidContentType,
   kErrorConfigNotInWellKnown,
   kErrorWellKnownTooBig,
   kErrorFetchingConfigHttpNotFound,
   kErrorFetchingConfigNoResponse,
   kErrorFetchingConfigInvalidResponse,
+  kErrorFetchingConfigInvalidContentType,
   kErrorFetchingClientMetadataHttpNotFound,
   kErrorFetchingClientMetadataNoResponse,
   kErrorFetchingClientMetadataInvalidResponse,
+  kErrorFetchingClientMetadataInvalidContentType,
   kErrorFetchingAccountsHttpNotFound,
   kErrorFetchingAccountsNoResponse,
   kErrorFetchingAccountsInvalidResponse,
   kErrorFetchingAccountsListEmpty,
+  kErrorFetchingAccountsInvalidContentType,
   kErrorFetchingIdTokenHttpNotFound,
   kErrorFetchingIdTokenNoResponse,
   kErrorFetchingIdTokenInvalidResponse,
+  kErrorFetchingIdTokenInvalidContentType,
   kErrorCanceled,
   kErrorRpPageNotVisible,
   kError,
@@ -218,6 +224,10 @@ enum FederatedAuthRequestResult {
 
 struct FederatedAuthRequestIssueDetails {
   FederatedAuthRequestResult status;
+};
+
+struct BounceTrackingIssueDetails {
+  array<string> tracking_sites;
 };
 
 enum GenericIssueErrorType {
@@ -239,6 +249,7 @@ struct GenericIssueDetails {
   string? frame_id;
   // 0 is not a valid node id and is used to indicate absence.
   int32 violating_node_id = 0;
+  string? violating_node_attribute;
 };
 
 enum DeprecationIssueType {
@@ -262,6 +273,7 @@ struct InspectorIssueDetails {
   HeavyAdIssueDetails? heavy_ad_issue_details;
   LowTextContrastIssue? low_text_contrast_details;
   FederatedAuthRequestIssueDetails? federated_auth_request_details;
+  BounceTrackingIssueDetails? bounce_tracking_issue_details;
   GenericIssueDetails? generic_issue_details;
   DeprecationIssueDetails? deprecation_issue_details;
   mojo_base.mojom.UnguessableToken? issue_id;

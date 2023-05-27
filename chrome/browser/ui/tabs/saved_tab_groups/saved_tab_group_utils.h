@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_UI_TABS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_UTILS_H_
 #define CHROME_BROWSER_UI_TABS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_UTILS_H_
 
-#include "base/guid.h"
+#include "base/uuid.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -26,13 +27,23 @@ class SavedTabGroupUtils {
   // Converts a webcontents into a SavedTabGroupTab.
   static SavedTabGroupTab CreateSavedTabGroupTabFromWebContents(
       content::WebContents* contents,
-      base::GUID saved_tab_group_id);
+      base::Uuid saved_tab_group_id);
 
   static content::WebContents* OpenTabInBrowser(
       const GURL& url,
       Browser* browser,
       Profile* profile,
       WindowOpenDisposition disposition);
+
+  // Returns the Browser that contains a local group with id `group_id`.
+  static Browser* GetBrowserWithTabGroupId(tab_groups::TabGroupId group_id);
+
+  // Finds the TabGroup with id `group_id` across all Browsers.
+  static TabGroup* GetTabGroupWithId(tab_groups::TabGroupId group_id);
+
+  // Returns the list of WebContentses in the local group `group_id` in order.
+  static std::vector<content::WebContents*> GetWebContentsesInGroup(
+      tab_groups::TabGroupId group_id);
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_UTILS_H_

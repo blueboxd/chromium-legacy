@@ -498,7 +498,8 @@ WaylandRemoteShell::CreateShellSurface(Surface* surface,
                                        double default_device_scale_factor) {
   return display_->CreateOrGetClientControlledShellSurface(
       surface, container, default_device_scale_factor,
-      use_default_scale_cancellation_);
+      use_default_scale_cancellation_,
+      /*supports_floated_state=*/event_mapping_.has_bounds_change_reason_float);
 }
 
 std::unique_ptr<ClientControlledShellSurface::Delegate>
@@ -1025,6 +1026,9 @@ uint32_t CaptionButtonMask(uint32_t mask) {
     caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_ZOOM;
   if (mask & ZCR_REMOTE_SURFACE_V1_FRAME_BUTTON_TYPE_CENTER)
     caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_CENTER;
+  if (mask & ZCR_REMOTE_SURFACE_V2_FRAME_BUTTON_TYPE_FLOAT) {
+    caption_button_icon_mask |= 1 << views::CAPTION_BUTTON_ICON_FLOAT;
+  }
   return caption_button_icon_mask;
 }
 
@@ -1391,11 +1395,10 @@ void remote_surface_unblock_ime(wl_client* client, wl_resource* resource) {
   NOTIMPLEMENTED();
 }
 
-void remote_surface_set_accessibility_id(wl_client* client,
-                                         wl_resource* resource,
-                                         int32_t accessibility_id) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)
-      ->SetClientAccessibilityId(accessibility_id);
+void remote_surface_set_accessibility_id_DEPRECATED(wl_client* client,
+                                                    wl_resource* resource,
+                                                    int32_t accessibility_id) {
+  NOTREACHED();
 }
 
 void remote_surface_set_pip_original_window(wl_client* client,

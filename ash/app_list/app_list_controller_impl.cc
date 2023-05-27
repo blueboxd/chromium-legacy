@@ -11,6 +11,9 @@
 #include "ash/app_list/app_list_bubble_presenter.h"
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_presenter_impl.h"
+#include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/model/search/search_box_model.h"
+#include "ash/app_list/quick_app_access_model.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_toast_container_view.h"
@@ -19,6 +22,7 @@
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller_impl.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
@@ -41,6 +45,8 @@
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/home_button.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/float/float_controller.h"
@@ -58,6 +64,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
@@ -150,7 +157,8 @@ class WindowAnimationsCallback : public ui::LayerAnimationObserver {
   }
 
   base::OnceClosure callback_;
-  ui::LayerAnimator* animator_;  // Owned by the layer that is animating.
+  raw_ptr<ui::LayerAnimator, ExperimentalAsh>
+      animator_;  // Owned by the layer that is animating.
   base::CallbackListSubscription subscription_;
 };
 
@@ -324,18 +332,35 @@ AppListNotifier* AppListControllerImpl::GetNotifier() {
   return client_->GetNotifier();
 }
 
-void AppListControllerImpl::SetActiveModel(int profile_id,
-                                           AppListModel* model,
-                                           SearchModel* search_model) {
+std::unique_ptr<ScopedIphSession>
+AppListControllerImpl::CreateLauncherSearchIphSession() {
+  if (!client_) {
+    return nullptr;
+  }
+  return client_->CreateLauncherSearchIphSession();
+}
+
+void AppListControllerImpl::OpenSearchBoxIphUrl() {
+  if (!client_) {
+    return;
+  }
+  client_->OpenSearchBoxIphUrl();
+}
+
+void AppListControllerImpl::SetActiveModel(
+    int profile_id,
+    AppListModel* model,
+    SearchModel* search_model,
+    QuickAppAccessModel* quick_app_access_model) {
   profile_id_ = profile_id;
-  model_provider_->SetActiveModel(model, search_model);
-  UpdateAssistantVisibility();
+  model_provider_->SetActiveModel(model, search_model, quick_app_access_model);
+  UpdateSearchBoxUiVisibilities();
 }
 
 void AppListControllerImpl::ClearActiveModel() {
   profile_id_ = kAppListInvalidProfileID;
   model_provider_->ClearActiveModel();
-  UpdateAssistantVisibility();
+  UpdateSearchBoxUiVisibilities();
 }
 
 void AppListControllerImpl::DismissAppList() {
@@ -848,16 +873,16 @@ void AppListControllerImpl::OnKeyboardVisibilityChanged(const bool is_visible) {
 
 void AppListControllerImpl::OnAssistantStatusChanged(
     assistant::AssistantStatus status) {
-  UpdateAssistantVisibility();
+  UpdateSearchBoxUiVisibilities();
 }
 
 void AppListControllerImpl::OnAssistantSettingsEnabled(bool enabled) {
-  UpdateAssistantVisibility();
+  UpdateSearchBoxUiVisibilities();
 }
 
 void AppListControllerImpl::OnAssistantFeatureAllowedChanged(
     assistant::AssistantAllowedState state) {
-  UpdateAssistantVisibility();
+  UpdateSearchBoxUiVisibilities();
 }
 
 void AppListControllerImpl::OnDisplayConfigurationChanged() {
@@ -883,7 +908,7 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
 }
 
 void AppListControllerImpl::OnAssistantReady() {
-  UpdateAssistantVisibility();
+  UpdateSearchBoxUiVisibilities();
 }
 
 void AppListControllerImpl::OnUiVisibilityChanged(
@@ -1121,14 +1146,16 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
   if (launch_type == AppListLaunchType::kAppSearchResult) {
     switch (launched_from) {
       case AppListLaunchedFrom::kLaunchedFromSearchBox:
-      case AppListLaunchedFrom::kLaunchedFromSuggestionChip:
       case AppListLaunchedFrom::kLaunchedFromRecentApps:
         RecordAppLaunched(launched_from);
         break;
       case AppListLaunchedFrom::kLaunchedFromGrid:
       case AppListLaunchedFrom::kLaunchedFromShelf:
       case AppListLaunchedFrom::kLaunchedFromContinueTask:
+      case AppListLaunchedFrom::kLaunchedFromQuickAppAccess:
         break;
+      case AppListLaunchedFrom::DEPRECATED_kLaunchedFromSuggestionChip:
+        NOTREACHED();
     }
   }
 
@@ -1149,10 +1176,6 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
           break;
       }
       break;
-    case AppListLaunchedFrom::kLaunchedFromSuggestionChip:
-      RecordLauncherWorkflowMetrics(AppListUserAction::kOpenSuggestionChip,
-                                    is_tablet_mode, last_show_timestamp_);
-      break;
     case AppListLaunchedFrom::kLaunchedFromContinueTask:
       RecordLauncherWorkflowMetrics(AppListUserAction::kOpenContinueSectionTask,
                                     is_tablet_mode, last_show_timestamp_);
@@ -1160,15 +1183,13 @@ void AppListControllerImpl::OpenSearchResult(const std::string& result_id,
     case AppListLaunchedFrom::kLaunchedFromGrid:
     case AppListLaunchedFrom::kLaunchedFromRecentApps:
     case AppListLaunchedFrom::kLaunchedFromShelf:
+    case AppListLaunchedFrom::DEPRECATED_kLaunchedFromSuggestionChip:
+    case AppListLaunchedFrom::kLaunchedFromQuickAppAccess:
       NOTREACHED();
       break;
   }
 
-  // Suggestion chips are not represented to the user as search results, so do
-  // not record search result metrics for them.
-  if (launched_from != AppListLaunchedFrom::kLaunchedFromSuggestionChip) {
-    base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
-  }
+  base::RecordAction(base::UserMetricsAction("AppList_OpenSearchResult"));
 
   if (client_) {
     client_->OpenSearchResult(profile_id_, result_id, event_flags,
@@ -1187,10 +1208,7 @@ void AppListControllerImpl::InvokeSearchResultAction(
 }
 
 void AppListControllerImpl::ViewShown(int64_t display_id) {
-  UpdateAssistantVisibility();
-
-  if (client_)
-    client_->ViewShown(display_id);
+  UpdateSearchBoxUiVisibilities();
 
   // Note that IsHomeScreenVisible() might still return false at this point, as
   // the home screen visibility takes into account whether the app list view is
@@ -1210,9 +1228,6 @@ bool AppListControllerImpl::AppListTargetVisibility() const {
 }
 
 void AppListControllerImpl::ViewClosing() {
-  if (client_)
-    client_->ViewClosing();
-
   split_view_observation_.Reset();
 }
 
@@ -1231,10 +1246,14 @@ void AppListControllerImpl::ActivateItem(const std::string& id,
       RecordLauncherWorkflowMetrics(AppListUserAction::kAppLaunchFromRecentApps,
                                     is_tablet_mode, last_show_timestamp_);
       break;
-    case AppListLaunchedFrom::kLaunchedFromSuggestionChip:
+    case AppListLaunchedFrom::kLaunchedFromQuickAppAccess:
+      // TODO(b/266734005): Implement user action to record launching from quick
+      // app access.
+      break;
     case AppListLaunchedFrom::kLaunchedFromContinueTask:
     case AppListLaunchedFrom::kLaunchedFromSearchBox:
     case AppListLaunchedFrom::kLaunchedFromShelf:
+    case AppListLaunchedFrom::DEPRECATED_kLaunchedFromSuggestionChip:
       NOTREACHED();
       break;
   }
@@ -1456,6 +1475,10 @@ void AppListControllerImpl::OnVisibilityChanged(bool visible,
   // In the Kiosk session we should never show the app list.
   CHECK(!visible || !IsKioskSession());
 
+  if (client_) {
+    client_->RecalculateWouldTriggerLauncherSearchIph();
+  }
+
   DVLOG(1) << __PRETTY_FUNCTION__ << " visible " << visible << " display_id "
            << display_id;
   // Focus and app visibility changes while finishing home launcher state
@@ -1608,9 +1631,15 @@ SearchModel* AppListControllerImpl::GetSearchModel() {
   return model_provider_->search_model();
 }
 
-void AppListControllerImpl::UpdateAssistantVisibility() {
+void AppListControllerImpl::UpdateSearchBoxUiVisibilities() {
   GetSearchModel()->search_box()->SetShowAssistantButton(
       IsAssistantAllowedAndEnabled());
+
+  if (!client_) {
+    return;
+  }
+
+  client_->RecalculateWouldTriggerLauncherSearchIph();
 }
 
 int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
@@ -1880,6 +1909,13 @@ int AppListControllerImpl::GetPreferredBubbleWidth(
   DCHECK(bubble_presenter_);
 
   return bubble_presenter_->GetPreferredBubbleWidth(root_window);
+}
+
+bool AppListControllerImpl::SetHomeButtonQuickApp(const std::string& app_id) {
+  if (!features::IsHomeButtonQuickAppAccessEnabled()) {
+    return false;
+  }
+  return model_provider_->quick_app_access_model()->SetQuickApp(app_id);
 }
 
 }  // namespace ash

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -33,6 +34,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scroll_animator_base.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
+#include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/widget/input/input_metrics.h"
@@ -402,9 +404,20 @@ bool ScrollManager::LogicalScroll(mojom::blink::ScrollDirection direction,
         [](WeakPersistent<ScrollableArea> area,
            ScrollableArea::ScrollCompletionMode completion_mode) {
           if (area) {
-            area->OnScrollFinished(
-                /*enqueue_scrollend=*/completion_mode ==
-                ScrollableArea::ScrollCompletionMode::kFinished);
+            bool enqueue_scrollend =
+                completion_mode ==
+                ScrollableArea::ScrollCompletionMode::kFinished;
+
+            // Viewport scrolls should only fire scrollend if the
+            // LayoutViewport was scrolled.
+            if (enqueue_scrollend && IsA<RootFrameViewport>(area.Get())) {
+              auto* root_frame_viewport = To<RootFrameViewport>(area.Get());
+              if (!root_frame_viewport->ScrollAffectsLayoutViewport()) {
+                enqueue_scrollend = false;
+              }
+            }
+
+            area->OnScrollFinished(enqueue_scrollend);
           }
         },
         WrapWeakPersistent(scrollable_area)));
@@ -469,11 +482,13 @@ uint32_t ScrollManager::GetNonCompositedMainThreadScrollingReasons() const {
     if (!scrollable_area || !scrollable_area->ScrollsOverflow())
       continue;
 
-    // TODO(bokan): This DCHECK is occasionally tripped. See crbug.com/944706.
-    // DCHECK(!scrollable_area->UsesCompositedScrolling() ||
-    //        !scrollable_area->GetNonCompositedMainThreadScrollingReasons());
-    non_composited_main_thread_scrolling_reasons |=
-        scrollable_area->GetNonCompositedMainThreadScrollingReasons();
+    if (auto* compositor =
+            cur_box->GetFrameView()->GetPaintArtifactCompositor()) {
+      non_composited_main_thread_scrolling_reasons |=
+          (compositor->GetMainThreadScrollingReasons(
+               *cur_box->FirstFragment().PaintProperties()->Scroll()) &
+           cc::MainThreadScrollingReason::kNonCompositedReasons);
+    }
   }
   return non_composited_main_thread_scrolling_reasons;
 }

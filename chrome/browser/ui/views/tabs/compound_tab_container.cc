@@ -30,7 +30,7 @@ namespace {
 class PinnedTabContainerController final : public TabContainerController {
  public:
   explicit PinnedTabContainerController(
-      raw_ref<TabContainerController> base_controller,
+      TabContainerController& base_controller,
       CompoundTabContainer& compound_tab_container)
       : base_controller_(base_controller),
         compound_tab_container_(compound_tab_container) {}
@@ -98,7 +98,7 @@ class PinnedTabContainerController final : public TabContainerController {
 class UnpinnedTabContainerController final : public TabContainerController {
  public:
   explicit UnpinnedTabContainerController(
-      raw_ref<TabContainerController> base_controller,
+      TabContainerController& base_controller,
       CompoundTabContainer& compound_tab_container)
       : base_controller_(base_controller),
         compound_tab_container_(compound_tab_container) {}
@@ -215,7 +215,7 @@ class PinUnpinAnimationDelegate : public TabSlotAnimationDelegate {
 }  // namespace
 
 CompoundTabContainer::CompoundTabContainer(
-    const raw_ref<TabContainerController> controller,
+    TabContainerController& controller,
     TabHoverCardController* hover_card_controller,
     TabDragContextBase* drag_context,
     TabSlotController& tab_slot_controller,
@@ -360,7 +360,7 @@ Tab* CompoundTabContainer::AddTabToViewModel(Tab* tab,
 }
 
 void CompoundTabContainer::ReturnTabSlotView(TabSlotView* view) {
-  GetTabContainerFor(view)->ReturnTabSlotView(view);
+  GetTabContainerFor(view).ReturnTabSlotView(view);
 }
 
 void CompoundTabContainer::ScrollTabToVisible(int model_index) {
@@ -528,7 +528,7 @@ CompoundTabContainer::GetTrailingElementForZOrdering() const {
 }
 
 void CompoundTabContainer::OnTabSlotAnimationProgressed(TabSlotView* view) {
-  GetTabContainerFor(view)->OnTabSlotAnimationProgressed(view);
+  GetTabContainerFor(view).OnTabSlotAnimationProgressed(view);
 }
 
 void CompoundTabContainer::OnTabCloseAnimationCompleted(Tab* tab) {
@@ -692,8 +692,8 @@ void CompoundTabContainer::Layout() {
       gfx::Rect(pinned_tab_container_->GetPreferredSize()));
 
   // Unpinned container can have whatever is left over.
-  const int unpinned_container_leading_x =
-      std::max(0, pinned_tab_container_->width() - TabStyle::GetTabOverlap());
+  const int unpinned_container_leading_x = std::max(
+      0, pinned_tab_container_->width() - TabStyle::Get()->GetTabOverlap());
   const int available_width = width() - unpinned_container_leading_x;
 
   const gfx::Size pref_size = unpinned_tab_container_->GetPreferredSize();
@@ -943,7 +943,7 @@ void CompoundTabContainer::AnimateTabTo(Tab* tab, gfx::Rect ideal_bounds) {
   } else {
     bounds_animator_.AnimateViewTo(tab, ideal_bounds,
                                    std::make_unique<PinUnpinAnimationDelegate>(
-                                       &GetTabContainerFor(tab).get(), tab));
+                                       &GetTabContainerFor(tab), tab));
   }
 }
 
@@ -955,13 +955,15 @@ gfx::Rect CompoundTabContainer::ConvertUnpinnedContainerIdealBoundsToLocal(
   return ideal_bounds;
 }
 
-raw_ref<TabContainer, DanglingUntriaged>
-CompoundTabContainer::GetTabContainerFor(TabSlotView* view) const {
-  if (view->GetTabSlotViewType() == TabSlotView::ViewType::kTabGroupHeader)
-    return unpinned_tab_container_;
+TabContainer& CompoundTabContainer::GetTabContainerFor(
+    TabSlotView* view) const {
+  if (view->GetTabSlotViewType() == TabSlotView::ViewType::kTabGroupHeader) {
+    return unpinned_tab_container_.get();
+  }
 
   Tab* tab = views::AsViewClass<Tab>(view);
-  return tab->data().pinned ? pinned_tab_container_ : unpinned_tab_container_;
+  return tab->data().pinned ? pinned_tab_container_.get()
+                            : unpinned_tab_container_.get();
 }
 
 TabContainer* CompoundTabContainer::GetTabContainerForDrop(
@@ -1006,7 +1008,7 @@ int CompoundTabContainer::GetUnpinnedContainerIdealLeadingX() const {
   return NumPinnedTabs() > 0
              ? pinned_tab_container_->GetIdealBounds(NumPinnedTabs() - 1)
                        .right() -
-                   TabStyle::GetTabOverlap()
+                   TabStyle::Get()->GetTabOverlap()
              : 0;
 }
 
@@ -1022,8 +1024,8 @@ gfx::Size CompoundTabContainer::GetCombinedSizeForTabContainerSizes(
   gfx::Size largest_container = pinned_size;
   largest_container.SetToMax(unpinned_size);
 
-  const int width_with_overlap =
-      pinned_size.width() + unpinned_size.width() - TabStyle::GetTabOverlap();
+  const int width_with_overlap = pinned_size.width() + unpinned_size.width() -
+                                 TabStyle::Get()->GetTabOverlap();
   return gfx::Size(std::max(width_with_overlap, largest_container.width()),
                    largest_container.height());
 }

@@ -72,6 +72,7 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
     // responses. It is used to classify a successful response where the list in
     // the response is empty.
     kEmptyListError,
+    kInvalidContentTypeError,
   };
   struct FetchStatus {
     ParseStatus parse_status;
@@ -127,7 +128,8 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
       base::OnceCallback<void(FetchStatus, AccountList)>;
   using DownloadCallback =
       base::OnceCallback<void(std::unique_ptr<std::string> response_body,
-                              int response_code)>;
+                              int response_code,
+                              const std::string& mime_type)>;
   using FetchWellKnownCallback =
       base::OnceCallback<void(FetchStatus, const std::set<GURL>&)>;
   using FetchConfigCallback = base::OnceCallback<
@@ -140,6 +142,7 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
                               data_decoder::DataDecoder::ValueOrError)>;
   using TokenRequestCallback =
       base::OnceCallback<void(FetchStatus, const std::string&)>;
+  using ContinueOnCallback = base::OnceCallback<void(FetchStatus, const GURL&)>;
 
   static std::unique_ptr<IdpNetworkRequestManager> Create(
       RenderFrameHostImpl* host);
@@ -181,7 +184,8 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   virtual void SendTokenRequest(const GURL& token_url,
                                 const std::string& account,
                                 const std::string& url_encoded_post_data,
-                                TokenRequestCallback callback);
+                                TokenRequestCallback callback,
+                                ContinueOnCallback continue_on);
 
   // Sends metrics to metrics endpoint after a token was successfully generated.
   virtual void SendSuccessfulTokenRequestMetrics(

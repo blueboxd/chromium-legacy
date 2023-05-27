@@ -37,7 +37,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_agent_host_client_channel.h"
 #include "content/public/browser/render_frame_host.h"
@@ -54,9 +54,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
-#include "chrome/common/channel_info.h"
-#include "components/version_info/version_info.h"
-#include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
 
 using content::DevToolsAgentHost;
@@ -93,8 +90,10 @@ bool GetExtensionInfo(content::WebContents* wc,
     *type = ChromeDevToolsManagerDelegate::kTypeApp;
     return true;
   }
-  if (extensions::GetViewType(wc) ==
-      extensions::mojom::ViewType::kExtensionPopup) {
+
+  auto view_type = extensions::GetViewType(wc);
+  if (view_type == extensions::mojom::ViewType::kExtensionPopup ||
+      view_type == extensions::mojom::ViewType::kExtensionSidePanel) {
     // Note that we are intentionally not setting name here, so that we can
     // construct a name based on the URL or page title in
     // RenderFrameDevToolsAgentHost::GetTitle()
@@ -215,21 +214,6 @@ bool ChromeDevToolsManagerDelegate::AllowInspection(
     content::WebContents* web_contents) {
   const extensions::Extension* extension = nullptr;
   if (web_contents) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // Disable devtools for ash webui for dev, beta, stable channels unless
-    // device is in devmode, or running with `--force-devtools-available'.
-    GURL url = web_contents->GetLastCommittedURL();
-    if ((url.SchemeIs("chrome") && url.host() != "inspect") ||
-        url.SchemeIs("os")) {
-      base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-      if (chrome::GetChannel() >= version_info::Channel::DEV &&
-          !command_line->HasSwitch(chromeos::switches::kSystemInDevMode) &&
-          !command_line->HasSwitch(ash::switches::kForceDevToolsAvailable)) {
-        return false;
-      }
-    }
-#endif
-
     if (auto* process_manager = extensions::ProcessManager::Get(
             web_contents->GetBrowserContext())) {
       extension = process_manager->GetExtensionForWebContents(web_contents);

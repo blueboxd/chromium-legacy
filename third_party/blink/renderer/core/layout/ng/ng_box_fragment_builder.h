@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_overflow_calculator.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -236,14 +237,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                                    const NGLogicalStaticPosition&,
                                    const LayoutInline* inline_container);
 
-  // Remove the fragment previously generated for an out-of-flow positioned flex
-  // item inside an out-of-flow legacy flex container. This is a work-around for
-  // OOFs being laid out out-of-document-order, which is an issue with the
-  // legacy engine (although it's not known to cause any other actual problems
-  // than this). We'll call this method to correct a document-out-of-order
-  // issue.
-  void RemoveOldLegacyOOFFlexItem(const LayoutObject&);
-
   // Before layout we'll determine whether we can tell for sure that the node
   // (or what's left of it to lay out, in case we've already broken) will fit in
   // the current fragmentainer. If this is the case, we'll know that any
@@ -302,6 +295,13 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // NGBlockBreakToken::ConsumedBlockSizeForLegacy() for more details.
   void SetConsumedBlockSizeLegacyAdjustment(LayoutUnit adjustment) {
     EnsureBreakTokenData()->consumed_block_size_legacy_adjustment = adjustment;
+  }
+
+  void ReserveSpaceForMonolithicOverflow(LayoutUnit monolithic_overflow) {
+    DCHECK(ConstraintSpace().IsPaginated());
+    auto* data = EnsureBreakTokenData();
+    data->monolithic_overflow =
+        std::max(data->monolithic_overflow, monolithic_overflow);
   }
 
   // Set how much of the column block-size we've used so far. This will be used

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "chrome/browser/fast_checkout/mock_fast_checkout_client.h"
 #include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_controller.h"
 #include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_view.h"
 #include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_view_controller.h"
@@ -54,18 +53,18 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
   MOCK_METHOD(void, SetShouldSuppressKeyboard, (bool), (override));
 };
 
-class MockTouchToFillDelegateImpl : public TouchToFillDelegateImpl {
+class MockTouchToFillDelegateAndroidImpl
+    : public TouchToFillDelegateAndroidImpl {
  public:
-  explicit MockTouchToFillDelegateImpl(
-      MockBrowserAutofillManager* autofill_manager,
-      MockFastCheckoutClient* fast_checkout_client)
-      : TouchToFillDelegateImpl(autofill_manager, fast_checkout_client) {
+  explicit MockTouchToFillDelegateAndroidImpl(
+      MockBrowserAutofillManager* autofill_manager)
+      : TouchToFillDelegateAndroidImpl(autofill_manager) {
     ON_CALL(*this, GetManager).WillByDefault(Return(autofill_manager));
     ON_CALL(*this, ShouldShowScanCreditCard).WillByDefault(Return(true));
   }
-  ~MockTouchToFillDelegateImpl() override = default;
+  ~MockTouchToFillDelegateAndroidImpl() override = default;
 
-  base::WeakPtr<MockTouchToFillDelegateImpl> GetWeakPointer() {
+  base::WeakPtr<MockTouchToFillDelegateAndroidImpl> GetWeakPointer() {
     return weak_factory_.GetWeakPtr();
   }
 
@@ -87,7 +86,7 @@ class MockTouchToFillDelegateImpl : public TouchToFillDelegateImpl {
 
  private:
   std::unique_ptr<TouchToFillKeyboardSuppressor> suppressor_;
-  base::WeakPtrFactory<MockTouchToFillDelegateImpl> weak_factory_{this};
+  base::WeakPtrFactory<MockTouchToFillDelegateAndroidImpl> weak_factory_{this};
 };
 
 }  // namespace
@@ -103,11 +102,9 @@ class TouchToFillCreditCardControllerTest
     NavigateAndCommit(GURL("about:blank"));
     credit_card_controller_ =
         std::make_unique<TouchToFillCreditCardController>(&autofill_client());
-    fast_checkout_client_ =
-        std::make_unique<MockFastCheckoutClient>(web_contents());
     autofill_manager().set_touch_to_fill_delegate(
-        std::make_unique<MockTouchToFillDelegateImpl>(
-            &autofill_manager(), fast_checkout_client_.get()));
+        std::make_unique<MockTouchToFillDelegateAndroidImpl>(
+            &autofill_manager()));
     mock_view_ = std::make_unique<MockTouchToFillCreditCardViewImpl>();
   }
 
@@ -125,8 +122,8 @@ class TouchToFillCreditCardControllerTest
     return *autofill_manager_injector_[web_contents()];
   }
 
-  MockTouchToFillDelegateImpl& ttf_delegate() {
-    return *static_cast<MockTouchToFillDelegateImpl*>(
+  MockTouchToFillDelegateAndroidImpl& ttf_delegate() {
+    return *static_cast<MockTouchToFillDelegateAndroidImpl*>(
         autofill_manager().touch_to_fill_delegate());
   }
 
@@ -162,7 +159,6 @@ class TouchToFillCreditCardControllerTest
       autofill_client_injector_;
   TestAutofillManagerInjector<MockBrowserAutofillManager>
       autofill_manager_injector_;
-  std::unique_ptr<MockFastCheckoutClient> fast_checkout_client_;
   FormGlobalId some_form_ = test::MakeFormGlobalId();
   FieldGlobalId some_field_ = test::MakeFieldGlobalId();
 };

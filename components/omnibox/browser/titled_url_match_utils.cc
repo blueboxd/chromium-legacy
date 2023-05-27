@@ -16,12 +16,14 @@
 #include "components/omnibox/browser/history_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
-#include "components/omnibox/common/omnibox_features.h"
 #include "components/query_parser/snippet.h"
 #include "components/url_formatter/url_formatter.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 
 namespace bookmarks {
 namespace {
+
+using ScoringSignals = ::metrics::OmniboxEventProto::Suggestion::ScoringSignals;
 
 // Concatenates |ancestors| in reverse order and using '/' as the delimiter.
 std::u16string ConcatAncestorsTitles(
@@ -75,11 +77,8 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
 
   // Display the URL only if the input matches the URL but not the path.
   // Otherwise, display the path, even if the input matches both or neither.
-  // Except if kBookmarkPaths is disabled, in which case, always display the
-  // URL.
-  bool show_path = base::FeatureList::IsEnabled(omnibox::kBookmarkPaths) &&
-                   (titled_url_match.has_ancestor_match ||
-                    titled_url_match.url_match_positions.empty());
+  bool show_path = titled_url_match.has_ancestor_match ||
+                   titled_url_match.url_match_positions.empty();
   match.contents = show_path ? path : formatted_url;
   // The path can become stale (when the bookmark is moved). So persist the URL
   // instead when creating shortcuts.
@@ -148,16 +147,17 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
   }
 
   if (OmniboxFieldTrial::IsLogUrlScoringSignalsEnabled()) {
+    match.scoring_signals = absl::make_optional<ScoringSignals>();
     // Populate ACMatches with signals for ML model scoring and training.
     if (!titled_url_match.title_match_positions.empty())
-      match.scoring_signals.set_first_bookmark_title_match_position(
+      match.scoring_signals->set_first_bookmark_title_match_position(
           titled_url_match.title_match_positions[0].first);
-    match.scoring_signals.set_total_bookmark_title_match_length(
+    match.scoring_signals->set_total_bookmark_title_match_length(
         GetTotalTitleMatchLength(titled_url_match.title_match_positions));
-    match.scoring_signals.set_allowed_to_be_default_match(
+    match.scoring_signals->set_allowed_to_be_default_match(
         match.allowed_to_be_default_match);
-    match.scoring_signals.set_length_of_url(url.spec().length());
-    match.scoring_signals.set_num_bookmarks_of_url(bookmark_count);
+    match.scoring_signals->set_length_of_url(url.spec().length());
+    match.scoring_signals->set_num_bookmarks_of_url(bookmark_count);
   }
 
   return match;

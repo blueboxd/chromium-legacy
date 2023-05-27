@@ -6,7 +6,6 @@
 
 #include <numeric>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -25,6 +24,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/memory/raw_ptr.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -57,8 +57,9 @@ class DetailedViewContainer : public views::View {
 
   // views::View:
   void Layout() override {
-    for (auto* child : children())
+    for (auto* child : children()) {
       child->SetBoundsRect(GetContentsBounds());
+    }
     views::View::Layout();
   }
 
@@ -83,7 +84,7 @@ class AccessibilityFocusHelperView : public views::View {
   }
 
  private:
-  UnifiedSystemTrayController* controller_;
+  raw_ptr<UnifiedSystemTrayController, ExperimentalAsh> controller_;
 };
 
 }  // namespace
@@ -171,7 +172,7 @@ class UnifiedSystemTrayView::SystemTrayContainer : public views::View {
   const char* GetClassName() const override { return "SystemTrayContainer"; }
 
  private:
-  views::BoxLayout* const layout_manager_;
+  const raw_ptr<views::BoxLayout, ExperimentalAsh> layout_manager_;
 };
 
 UnifiedSystemTrayView::UnifiedSystemTrayView(
@@ -196,12 +197,6 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
   auto add_layered_child = [](views::View* parent, views::View* child) {
     parent->AddChildView(child);
-    // In dark light mode, we switch TrayBubbleView to use a textured layer
-    // instead of solid color layer, so no need to create an extra layer here.
-    if (!features::IsDarkLightModeEnabled()) {
-      child->SetPaintToLayer();
-      child->layer()->SetFillsBoundsOpaquely(false);
-    }
   };
 
   SessionControllerImpl* session_controller =
@@ -213,19 +208,19 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       !AshMessageCenterLockScreenController::IsEnabled());
   add_layered_child(system_tray_container_, notification_hidden_view_);
 
-  AddChildView(system_tray_container_);
+  AddChildView(system_tray_container_.get());
 
   add_layered_child(system_tray_container_, top_shortcuts_view_);
-  system_tray_container_->AddChildView(feature_pods_container_);
-  system_tray_container_->AddChildView(page_indicator_view_);
+  system_tray_container_->AddChildView(feature_pods_container_.get());
+  system_tray_container_->AddChildView(page_indicator_view_.get());
 
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS)) {
     media_controls_container_ = new UnifiedMediaControlsContainer();
-    system_tray_container_->AddChildView(media_controls_container_);
+    system_tray_container_->AddChildView(media_controls_container_.get());
     media_controls_container_->SetExpandedAmount(expanded_amount_);
   }
 
-  system_tray_container_->AddChildView(sliders_container_);
+  system_tray_container_->AddChildView(sliders_container_.get());
 
   add_layered_child(system_tray_container_, system_info_view_);
 
@@ -264,8 +259,9 @@ void UnifiedSystemTrayView::AddFeaturePodButton(FeaturePodButton* button) {
   feature_pods_container_->AddFeaturePodButton(button);
 }
 
-void UnifiedSystemTrayView::AddSliderView(views::View* slider_view) {
-  sliders_container_->AddChildView(slider_view);
+void UnifiedSystemTrayView::AddSliderView(
+    std::unique_ptr<views::View> slider_view) {
+  sliders_container_->AddChildView(std::move(slider_view));
 }
 
 void UnifiedSystemTrayView::AddMediaControlsView(views::View* media_controls) {
@@ -280,11 +276,13 @@ void UnifiedSystemTrayView::AddMediaControlsView(views::View* media_controls) {
 void UnifiedSystemTrayView::ShowMediaControls() {
   media_controls_container_->SetShouldShowMediaControls(true);
 
-  if (detailed_view_container_->GetVisible())
+  if (detailed_view_container_->GetVisible()) {
     return;
+  }
 
-  if (media_controls_container_->MaybeShowMediaControls())
+  if (media_controls_container_->MaybeShowMediaControls()) {
     PreferredSizeChanged();
+  }
 }
 
 void UnifiedSystemTrayView::SetDetailedView(
@@ -304,8 +302,9 @@ void UnifiedSystemTrayView::SetDetailedView(
 void UnifiedSystemTrayView::ResetDetailedView() {
   detailed_view_container_->RemoveAllChildViews();
   detailed_view_container_->SetVisible(false);
-  if (media_controls_container_)
+  if (media_controls_container_) {
     media_controls_container_->MaybeShowMediaControls();
+  }
   system_tray_container_->SetVisible(true);
   sliders_container_->UpdateOpacity();
   PreferredSizeChanged();
@@ -314,15 +313,17 @@ void UnifiedSystemTrayView::ResetDetailedView() {
 
 void UnifiedSystemTrayView::SaveFocus() {
   auto* focus_manager = GetFocusManager();
-  if (!focus_manager)
+  if (!focus_manager) {
     return;
+  }
 
   saved_focused_view_ = focus_manager->GetFocusedView();
 }
 
 void UnifiedSystemTrayView::RestoreFocus() {
-  if (saved_focused_view_)
+  if (saved_focused_view_) {
     saved_focused_view_->RequestFocus();
+  }
 }
 
 void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
@@ -332,8 +333,9 @@ void UnifiedSystemTrayView::SetExpandedAmount(double expanded_amount) {
   top_shortcuts_view_->SetExpandedAmount(expanded_amount);
   feature_pods_container_->SetExpandedAmount(expanded_amount);
   page_indicator_view_->SetExpandedAmount(expanded_amount);
-  if (media_controls_container_)
+  if (media_controls_container_) {
     media_controls_container_->SetExpandedAmount(expanded_amount);
+  }
   sliders_container_->SetExpandedAmount(expanded_amount);
 
   PreferredSizeChanged();
@@ -444,10 +446,11 @@ void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void UnifiedSystemTrayView::Layout() {
-  if (system_tray_container_->GetVisible())
+  if (system_tray_container_->GetVisible()) {
     system_tray_container_->SetBoundsRect(GetContentsBounds());
-  else if (detailed_view_container_->GetVisible())
+  } else if (detailed_view_container_->GetVisible()) {
     detailed_view_container_->SetBoundsRect(GetContentsBounds());
+  }
 }
 
 void UnifiedSystemTrayView::ChildPreferredSizeChanged(views::View* child) {
@@ -462,13 +465,15 @@ const char* UnifiedSystemTrayView::GetClassName() const {
 
 void UnifiedSystemTrayView::AddedToWidget() {
   focus_manager_ = GetFocusManager();
-  if (focus_manager_)
+  if (focus_manager_) {
     focus_manager_->AddFocusChangeListener(this);
+  }
 }
 
 void UnifiedSystemTrayView::RemovedFromWidget() {
-  if (!focus_manager_)
+  if (!focus_manager_) {
     return;
+  }
   focus_manager_->RemoveFocusChangeListener(this);
   focus_manager_ = nullptr;
 }
@@ -502,10 +507,11 @@ void UnifiedSystemTrayView::OnDidChangeFocus(views::View* before,
   views::View* last_view = GetLastFocusableChild();
 
   bool focused_out = false;
-  if (before == last_view && now == first_view)
+  if (before == last_view && now == first_view) {
     focused_out = controller_->FocusOut(false);
-  else if (before == first_view && now == last_view)
+  } else if (before == first_view && now == last_view) {
     focused_out = controller_->FocusOut(true);
+  }
 
   if (focused_out) {
     GetFocusManager()->ClearFocus();

@@ -10,6 +10,7 @@
 
 #include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -489,6 +490,11 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     mutable_chromeos_data->set_oem_installed(chromeos_data.oem_installed);
     mutable_chromeos_data->set_handles_file_open_intents(
         chromeos_data.handles_file_open_intents);
+    if (chromeos_data.app_profile_path.has_value()) {
+      CHECK(!chromeos_data.app_profile_path.value().empty());
+      mutable_chromeos_data->set_app_profile_path(
+          FilePathToProto(chromeos_data.app_profile_path.value()));
+    }
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -672,6 +678,14 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         scope_extension.has_origin_wildcard);
   }
 
+  for (const auto& valid_extension : web_app.validated_scope_extensions()) {
+    WebAppScopeExtensionProto* scope_extension_proto =
+        local_data->add_scope_extensions_validated();
+    scope_extension_proto->set_origin(valid_extension.origin.Serialize());
+    scope_extension_proto->set_has_origin_wildcard(
+        valid_extension.has_origin_wildcard);
+  }
+
   if (web_app.lock_screen_start_url().is_valid()) {
     local_data->set_lock_screen_start_url(
         web_app.lock_screen_start_url().spec());
@@ -719,13 +733,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         continue;
       const std::string feature_string(feature_name->second);
       proto_policy.set_feature(feature_string);
-      // TODO(crbug.com/1418009): Consolidate code and filter opaque origins.
-      if (decl.self_if_matches) {
-        proto_policy.add_allowed_origins(decl.self_if_matches->Serialize());
-      }
-      for (const auto& origin_with_possible_wildcards : decl.allowed_origins) {
-        proto_policy.add_allowed_origins(
-            origin_with_possible_wildcards.Serialize());
+      for (const auto& allowed_origin : GetSerializedAllowedOrigins(decl)) {
+        proto_policy.add_allowed_origins(allowed_origin);
       }
       proto_policy.set_matches_all_origins(decl.matches_all_origins);
       proto_policy.set_matches_opaque_src(decl.matches_opaque_src);
@@ -734,15 +743,20 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   }
 
   if (!web_app.management_to_external_config_map().empty()) {
-    for (const auto& entry : web_app.management_to_external_config_map()) {
+    for (const auto& [source, external_config] :
+         web_app.management_to_external_config_map()) {
       ManagementToExternalConfigInfo* management_config_proto =
           local_data->add_management_to_external_config_info();
-      management_config_proto->set_management(
-          WebAppManagementToProto(entry.first));
-      management_config_proto->set_is_placeholder(entry.second.is_placeholder);
-      for (const auto& url : entry.second.install_urls) {
+      management_config_proto->set_management(WebAppManagementToProto(source));
+      management_config_proto->set_is_placeholder(
+          external_config.is_placeholder);
+      for (const auto& url : external_config.install_urls) {
         DCHECK(url.is_valid());
         management_config_proto->add_install_urls(url.spec());
+      }
+      for (const auto& policy_id : external_config.additional_policy_ids) {
+        DCHECK(!policy_id.empty());
+        management_config_proto->add_additional_policy_ids(policy_id);
       }
     }
   }
@@ -938,6 +952,13 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     chromeos_data->oem_installed = chromeos_data_proto.oem_installed();
     chromeos_data->handles_file_open_intents =
         chromeos_data_proto.handles_file_open_intents();
+    if (chromeos_data_proto.has_app_profile_path()) {
+      auto parsed_path =
+          ProtoToFilePath(chromeos_data_proto.app_profile_path());
+      CHECK(parsed_path.has_value());
+      CHECK(!parsed_path.value().empty());
+      chromeos_data->app_profile_path = std::move(parsed_path);
+    }
     web_app->SetWebAppChromeOsData(std::move(chromeos_data));
   }
 
@@ -1289,7 +1310,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetUrlHandlers(std::move(url_handlers));
 
-  std::vector<ScopeExtensionInfo> scope_extensions;
+  base::flat_set<ScopeExtensionInfo> scope_extensions;
   for (const auto& scope_extension_proto : local_data.scope_extensions()) {
     ScopeExtensionInfo scope_extension;
 
@@ -1304,9 +1325,29 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     scope_extension.has_origin_wildcard =
         scope_extension_proto.has_origin_wildcard();
 
-    scope_extensions.push_back(std::move(scope_extension));
+    scope_extensions.insert(std::move(scope_extension));
   }
   web_app->SetScopeExtensions(std::move(scope_extensions));
+
+  base::flat_set<ScopeExtensionInfo> valid_scope_extensions;
+  for (const auto& scope_extension_proto :
+       local_data.scope_extensions_validated()) {
+    ScopeExtensionInfo scope_extension;
+
+    url::Origin origin =
+        url::Origin::Create(GURL(scope_extension_proto.origin()));
+    if (origin.opaque()) {
+      DLOG(ERROR) << "WebApp ScopeExtension proto url parse error: "
+                  << origin.GetDebugString();
+      return nullptr;
+    }
+    scope_extension.origin = std::move(origin);
+    scope_extension.has_origin_wildcard =
+        scope_extension_proto.has_origin_wildcard();
+
+    valid_scope_extensions.insert(std::move(scope_extension));
+  }
+  web_app->SetValidatedScopeExtensions(std::move(valid_scope_extensions));
 
   if (local_data.has_lock_screen_start_url()) {
     web_app->SetLockScreenStartUrl(GURL(local_data.lock_screen_start_url()));
@@ -1414,8 +1455,18 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       }
       install_urls.emplace(install_url);
     }
+    base::flat_set<std::string> additional_policy_ids;
+    for (const auto& policy_id : management_proto.additional_policy_ids()) {
+      if (policy_id.empty()) {
+        DLOG(ERROR) << "WebApp proto empty policy_id";
+        return nullptr;
+      }
+      additional_policy_ids.emplace(policy_id);
+    }
+
     config.is_placeholder = management_proto.is_placeholder();
-    config.install_urls = install_urls;
+    config.install_urls = std::move(install_urls);
+    config.additional_policy_ids = std::move(additional_policy_ids);
     management_to_external_config.insert_or_assign(
         ProtoToWebAppManagement(management_proto.management()),
         std::move(config));

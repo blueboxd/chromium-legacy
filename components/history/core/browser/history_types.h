@@ -18,6 +18,7 @@
 #include "base/containers/stack_container.h"
 #include "base/functional/callback_forward.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_context.h"
 #include "components/history/core/browser/keyword_search_term.h"
@@ -25,6 +26,7 @@
 #include "components/query_parser/query_parser.h"
 #include "components/query_parser/snippet.h"
 #include "components/sessions/core/session_id.h"
+#include "components/sync_device_info/device_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -132,6 +134,12 @@ class VisitRow {
   // whereas `referring_visit` is only populated if the Referrer is from the
   // same tab.
   VisitID opener_visit = kInvalidVisitID;
+
+  // Specifies whether a navigation should contribute to the Most Visited tiles
+  // in the New Tab Page. Note that setting this to true (most common case)
+  // doesn't guarantee it's relevant for Most Visited, since other requirements
+  // exist (e.g. certain page transition types).
+  bool consider_for_ntp_most_visited = true;
 
   // These are set only for synced visits originating from a different machine.
   // `originator_cache_guid` is the originator machine's unique client ID. It's
@@ -456,6 +464,17 @@ struct TopSitesDelta {
 // Map from origins to a count of matching URLs and the last visited time to any
 // URL under that origin.
 typedef std::map<GURL, std::pair<int, base::Time>> OriginCountAndLastVisitMap;
+
+// Segments -------------------------------------------------------------------
+
+// Contains device information (i.e. OS Type, Form Factor) for all syncing
+// devices (including the local device). Devices are identified by their
+// Originator Cache GUID. Has the following shape:
+//
+// originator_cache_guid : { OsType, FormFactor }
+using SyncDeviceInfoMap = std::map<
+    std::string,
+    std::pair<syncer::DeviceInfo::OsType, syncer::DeviceInfo::FormFactor>>;
 
 // Statistics -----------------------------------------------------------------
 
@@ -1065,7 +1084,7 @@ struct HistoryAddPageArgs {
                      bool consider_for_ntp_most_visited,
                      absl::optional<std::u16string> title = absl::nullopt,
                      absl::optional<Opener> opener = absl::nullopt,
-                     absl::optional<int64_t> bookmark_id = absl::nullopt,
+                     absl::optional<base::Uuid> bookmark_id = absl::nullopt,
                      absl::optional<VisitContextAnnotations::OnVisitFields>
                          context_annotations = absl::nullopt);
   HistoryAddPageArgs(const HistoryAddPageArgs& other);
@@ -1088,7 +1107,7 @@ struct HistoryAddPageArgs {
   bool consider_for_ntp_most_visited;
   absl::optional<std::u16string> title;
   absl::optional<Opener> opener;
-  absl::optional<int64_t> bookmark_id;
+  absl::optional<base::Uuid> bookmark_id;
   absl::optional<VisitContextAnnotations::OnVisitFields> context_annotations;
 };
 

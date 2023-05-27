@@ -20,6 +20,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/color_util.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -193,8 +194,8 @@ class AnimationWillRepeatObserver : public ui::LayerAnimationObserver {
   }
 
  private:
-  views::View* shown_now_;
-  views::View* shown_after_;
+  raw_ptr<views::View, ExperimentalAsh> shown_now_;
+  raw_ptr<views::View, ExperimentalAsh> shown_after_;
 };
 
 }  // namespace
@@ -315,12 +316,10 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
 
   ~EasyUnlockIcon() override = default;
 
-  void Init(const OnEasyUnlockIconHovered& on_hovered,
-            views::Button::PressedCallback on_tapped) {
+  void Init(const OnEasyUnlockIconHovered& on_hovered) {
     DCHECK(on_hovered);
 
     on_hovered_ = on_hovered;
-    SetCallback(std::move(on_tapped));
 
     hover_notifier_ = std::make_unique<HoverNotifier>(
         this, base::BindRepeating(
@@ -384,10 +383,6 @@ class LoginPasswordView::EasyUnlockIcon : public views::ImageButton {
     switch (icon_state) {
       case EasyUnlockIconState::NONE:
         // The easy unlock icon will be set to invisible. Do nothing.
-        break;
-      case EasyUnlockIconState::HARDLOCKED:
-        color = color_provider->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconColorProminent);
         break;
       case EasyUnlockIconState::LOCKED:
         // This is the default case in terms of icon and color.
@@ -555,14 +550,6 @@ views::ToggleImageButton* LoginPasswordView::TestApi::display_password_button()
   return view_->display_password_button_;
 }
 
-views::View* LoginPasswordView::TestApi::easy_unlock_icon() const {
-  return view_->easy_unlock_icon_;
-}
-
-views::View* LoginPasswordView::TestApi::capslock_icon() const {
-  return view_->capslock_icon_;
-}
-
 void LoginPasswordView::TestApi::set_immediately_hover_easy_unlock_icon() {
   view_->easy_unlock_icon_->set_immediately_hover_for_test();
 }
@@ -687,14 +674,12 @@ LoginPasswordView::~LoginPasswordView() {
 void LoginPasswordView::Init(
     const OnPasswordSubmit& on_submit,
     const OnPasswordTextChanged& on_password_text_changed,
-    const OnEasyUnlockIconHovered& on_easy_unlock_icon_hovered,
-    views::Button::PressedCallback on_easy_unlock_icon_tapped) {
+    const OnEasyUnlockIconHovered& on_easy_unlock_icon_hovered) {
   DCHECK(on_submit);
   DCHECK(on_password_text_changed);
   on_submit_ = on_submit;
   on_password_text_changed_ = on_password_text_changed;
-  easy_unlock_icon_->Init(on_easy_unlock_icon_hovered,
-                          std::move(on_easy_unlock_icon_tapped));
+  easy_unlock_icon_->Init(on_easy_unlock_icon_hovered);
 }
 
 void LoginPasswordView::SetEnabledOnEmptyPassword(bool enabled) {

@@ -95,8 +95,16 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
   DCHECK_EQ(old_child->Parent(), owner);
   DCHECK_EQ(this, owner->VirtualChildren());
 
-  if (old_child->IsFloatingOrOutOfFlowPositioned())
-    To<LayoutBox>(old_child)->RemoveFloatingOrPositionedChildFromBlockLists();
+  if (RuntimeEnabledFeatures::LayoutDisableBrokenFloatInvalidationEnabled()) {
+    if (!owner->DocumentBeingDestroyed() &&
+        old_child->IsOutOfFlowPositioned()) {
+      LayoutBlock::RemovePositionedObject(To<LayoutBox>(old_child));
+    }
+  } else {
+    if (old_child->IsFloatingOrOutOfFlowPositioned()) {
+      To<LayoutBox>(old_child)->RemoveFloatingOrPositionedChildFromBlockLists();
+    }
+  }
 
   if (!owner->DocumentBeingDestroyed()) {
     // So that we'll get the appropriate dirty bit set (either that a normal
@@ -112,10 +120,6 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
     }
     InvalidatePaintOnRemoval(*old_child);
   }
-
-  // If we have a line box wrapper, delete it.
-  if (old_child->IsBox())
-    To<LayoutBox>(old_child)->DeleteLineBoxWrapper();
 
   if (!owner->DocumentBeingDestroyed()) {
     if (notify_layout_object) {
@@ -231,12 +235,6 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   // child nodes.
   if (owner->HasSubtreeChangeListenerRegistered())
     new_child->RegisterSubtreeChangeListenerOnDescendants(true);
-
-  if (UNLIKELY(!new_child->IsLayoutNGObject())) {
-    if (owner->ForceLegacyLayoutForChildren()) {
-      new_child->SetForceLegacyLayout();
-    }
-  }
 
   // Mark the ancestor chain for paint invalidation checking.
   owner->SetShouldCheckForPaintInvalidation();

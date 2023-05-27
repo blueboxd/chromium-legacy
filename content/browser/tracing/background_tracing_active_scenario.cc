@@ -45,8 +45,8 @@ class BackgroundTracingActiveScenario::TracingTimer {
   }
   ~TracingTimer() = default;
 
-  void StartTimer(int seconds) {
-    tracing_timer_.Start(FROM_HERE, base::Seconds(seconds), this,
+  void StartTimer(base::TimeDelta delay) {
+    tracing_timer_.Start(FROM_HERE, delay, this,
                          &TracingTimer::TracingTimerFired);
   }
   void CancelTimer() { tracing_timer_.Stop(); }
@@ -417,7 +417,7 @@ bool BackgroundTracingActiveScenario::OnRuleTriggered(
 
   last_triggered_rule_ = triggered_rule;
 
-  int trace_delay = triggered_rule->GetTraceDelay();
+  base::TimeDelta trace_delay = triggered_rule->GetTraceDelay();
 
   switch (config_->tracing_mode()) {
     case BackgroundTracingConfigImpl::REACTIVE:
@@ -454,7 +454,7 @@ bool BackgroundTracingActiveScenario::OnRuleTriggered(
       break;
   }
 
-  if (trace_delay < 0) {
+  if (trace_delay.is_zero()) {
     BeginFinalizing();
   } else {
     tracing_timer_ = std::make_unique<TracingTimer>(this);
@@ -465,18 +465,6 @@ bool BackgroundTracingActiveScenario::OnRuleTriggered(
     rule_triggered_callback_for_testing_.Run();
   }
   return true;
-}
-
-base::Value::Dict BackgroundTracingActiveScenario::GenerateMetadataDict() {
-  base::Value::Dict metadata_dict;
-  metadata_dict.Set("config", config_->ToDict());
-  metadata_dict.Set("scenario_name", config_->scenario_name());
-
-  if (last_triggered_rule_) {
-    metadata_dict.Set("last_triggered_rule", last_triggered_rule_->ToDict());
-  }
-
-  return metadata_dict;
 }
 
 void BackgroundTracingActiveScenario::GenerateMetadataProto(

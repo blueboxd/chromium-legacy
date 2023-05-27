@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import static org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider.SYNTHETIC_TRIAL_POSTFIX;
-
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -22,12 +20,10 @@ import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
-import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
@@ -145,16 +141,10 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController,
             Callback<Object> onModelTokenChange) {
         try (TraceEvent e = TraceEvent.scoped("TabGroupUiCoordinator.initializeWithNative")) {
-            if (UmaSessionStats.isMetricsServiceAvailable()) {
-                UmaSessionStats.registerSyntheticFieldTrial(
-                        ChromeFeatureList.TAB_GROUPS_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
-                        "Downloaded_Enabled");
-            }
-
             mTabStripCoordinator = new TabListCoordinator(TabListCoordinator.TabListMode.STRIP,
                     mContext, mTabModelSelector, null, null, false, null, null,
                     TabProperties.UiType.STRIP, null, null, mTabListContainerView, true,
-                    COMPONENT_NAME, mRootView, onModelTokenChange, null);
+                    COMPONENT_NAME, mRootView, onModelTokenChange);
             mTabStripCoordinator.initWithNative(mDynamicResourceLoaderSupplier.get());
 
             mModelChangeProcessor = PropertyModelChangeProcessor.create(mModel,

@@ -39,6 +39,7 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/posix/eintr_wrapper.h"
@@ -64,6 +65,7 @@
 #include "chromeos/components/sensors/buildflags.h"
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "chromeos/system/core_scheduling.h"
+#include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display.h"
@@ -880,8 +882,12 @@ class ArcVmClientAdapter : public ArcClientAdapter,
       return;
     }
 
-    // Use LVM backend if LVM application containers feature is supported.
-    bool use_lvm = base::FeatureList::IsEnabled(kLvmApplicationContainers);
+    // Use LVM backend if LVM application containers feature is supported and
+    // user cryptohome data is not ephemeral (b/278305150).
+    bool use_lvm =
+        base::FeatureList::IsEnabled(kLvmApplicationContainers) &&
+        !user_manager::UserManager::Get()->IsUserCryptohomeDataEphemeral(
+            arc::ArcServiceManager::Get()->account_id());
 
     // Allow tests to override use_lvm param.
     if (base::FeatureList::IsEnabled(kVirtioBlkDataConfigOverride)) {
@@ -1176,7 +1182,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
   FileSystemStatusRewriter file_system_status_rewriter_for_testing_;
 
   // The delegate is owned by ArcSessionRunner.
-  DemoModeDelegate* demo_mode_delegate_ = nullptr;
+  raw_ptr<DemoModeDelegate, ExperimentalAsh> demo_mode_delegate_ = nullptr;
 
   // For callbacks.
   base::WeakPtrFactory<ArcVmClientAdapter> weak_factory_{this};

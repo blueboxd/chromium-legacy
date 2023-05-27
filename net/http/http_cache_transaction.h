@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -78,16 +79,6 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
     WRITE           = 1 << 2,
     READ_WRITE      = READ | WRITE,
     UPDATE          = READ_META | WRITE,  // READ_WRITE & ~READ_DATA
-  };
-
-  // This enum backs a histogram. Please keep enums.xml up to date with any
-  // changes, and new entries should be appended at the end. Never re-arrange /
-  // re-use values.
-  enum class NetworkIsolationKeyPresent {
-    kNotPresentCacheableRequest = 0,
-    kNotPresentNonCacheableRequest = 1,
-    kPresent = 2,
-    kMaxValue = kPresent,
   };
 
   Transaction(RequestPriority priority,
@@ -642,7 +633,9 @@ class NET_EXPORT_PRIVATE HttpCache::Transaction : public HttpTransaction {
   ValidationHeaders external_validation_;
   base::WeakPtr<HttpCache> cache_;
   raw_ptr<HttpCache::ActiveEntry, DanglingUntriaged> entry_ = nullptr;
-  HttpCache::ActiveEntry* new_entry_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION HttpCache::ActiveEntry* new_entry_ = nullptr;
   std::unique_ptr<HttpTransaction> network_trans_;
   CompletionOnceCallback callback_;  // Consumer's callback.
   HttpResponseInfo response_;

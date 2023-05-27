@@ -16,6 +16,7 @@
 #include "ash/system/privacy/privacy_indicators_controller.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/system/sys_info.h"
@@ -207,24 +208,35 @@ class VmCameraMicManager::VmInfo : public message_center::NotificationObserver {
       NotificationType new_notification) {
     DCHECK_NE(notifications_.active, new_notification);
 
+    auto app_name = l10n_util::GetStringUTF16(name_id_);
+    auto delegate = base::MakeRefCounted<PrivacyIndicatorsNotificationDelegate>(
+        /*launch_app=*/absl::nullopt,
+        /*launch_settings=*/base::BindRepeating(
+            &VmCameraMicManager::VmInfo::OpenSettings,
+            weak_ptr_factory_.GetWeakPtr()));
+
     if (notifications_.active != kNoNotification) {
-      CloseNotification(notifications_.active);
       if (features::IsPrivacyIndicatorsEnabled()) {
-        UpdatePrivacyIndicatorsView(
+        PrivacyIndicatorsController::Get()->UpdatePrivacyIndicators(
             /*app_id=*/GetNotificationId(vm_type_, notifications_.active),
-            /*is_camera_used=*/false, /*is_microphone_used=*/false);
+            app_name, /*is_camera_used=*/false, /*is_microphone_used=*/false,
+            delegate, PrivacyIndicatorsSource::kLinuxVm);
+      } else {
+        CloseNotification(notifications_.active);
       }
     }
 
     if (new_notification != kNoNotification) {
-      OpenNotification(new_notification);
       if (features::IsPrivacyIndicatorsEnabled()) {
-        UpdatePrivacyIndicatorsView(
-            /*app_id=*/GetNotificationId(vm_type_, new_notification),
+        PrivacyIndicatorsController::Get()->UpdatePrivacyIndicators(
+            /*app_id=*/GetNotificationId(vm_type_, new_notification), app_name,
             /*is_camera_used=*/
             new_notification[static_cast<size_t>(DeviceType::kCamera)],
             /*is_microphone_used=*/
-            new_notification[static_cast<size_t>(DeviceType::kMic)]);
+            new_notification[static_cast<size_t>(DeviceType::kMic)], delegate,
+            PrivacyIndicatorsSource::kLinuxVm);
+      } else {
+        OpenNotification(new_notification);
       }
     }
 
@@ -256,7 +268,8 @@ class VmCameraMicManager::VmInfo : public message_center::NotificationObserver {
   }
 
   void OpenNotification(NotificationType type) const {
-    DCHECK_NE(type, kNoNotification);
+    CHECK(!features::IsPrivacyIndicatorsEnabled());
+    CHECK_NE(type, kNoNotification);
 
     const gfx::VectorIcon* source_icon = nullptr;
     int message_id;
@@ -280,27 +293,6 @@ class VmCameraMicManager::VmInfo : public message_center::NotificationObserver {
         l10n_util::GetStringUTF16(IDS_INTERNAL_APP_SETTINGS));
     rich_notification_data.fullscreen_visibility =
         message_center::FullscreenVisibility::OVER_USER;
-
-    if (features::IsPrivacyIndicatorsEnabled()) {
-      // We will use the notification id's logic here for `app_id`
-      auto notification = CreatePrivacyIndicatorsNotification(
-          GetNotificationId(vm_type_, type),
-          l10n_util::GetStringUTF16(name_id_),
-          type[static_cast<size_t>(DeviceType::kCamera)],
-          type[static_cast<size_t>(DeviceType::kMic)],
-          base::MakeRefCounted<PrivacyIndicatorsNotificationDelegate>(
-              /*launch_app=*/absl::nullopt,
-              /*launch_settings=*/base::BindRepeating(
-                  &VmCameraMicManager::VmInfo::OpenSettings,
-                  weak_ptr_factory_.GetMutableWeakPtr())));
-      notification->set_fullscreen_visibility(
-          message_center::FullscreenVisibility::OVER_USER);
-
-      NotificationDisplayService::GetForProfile(profile_)->Display(
-          NotificationHandler::Type::TRANSIENT, *notification,
-          /*metadata=*/nullptr);
-      return;
-    }
 
     message_center::Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE,
@@ -326,16 +318,12 @@ class VmCameraMicManager::VmInfo : public message_center::NotificationObserver {
   }
 
   void CloseNotification(NotificationType type) const {
-    DCHECK_NE(type, kNoNotification);
-
-    auto notification_id = GetNotificationId(vm_type_, type);
-    if (ash::features::IsPrivacyIndicatorsEnabled()) {
-      notification_id =
-          ash::GetPrivacyIndicatorsNotificationId(notification_id);
-    }
+    CHECK(!features::IsPrivacyIndicatorsEnabled());
+    CHECK_NE(type, kNoNotification);
 
     NotificationDisplayService::GetForProfile(profile_)->Close(
-        NotificationHandler::Type::TRANSIENT, notification_id);
+        NotificationHandler::Type::TRANSIENT,
+        GetNotificationId(vm_type_, type));
   }
 
   // message_center::NotificationObserver:
@@ -347,7 +335,7 @@ class VmCameraMicManager::VmInfo : public message_center::NotificationObserver {
   }
 
   // Opens the settings page.
-  void OpenSettings() {
+  void OpenSettings() const {
     switch (vm_type_) {
       case VmType::kCrostiniVm:
         chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
@@ -366,7 +354,7 @@ class VmCameraMicManager::VmInfo : public message_center::NotificationObserver {
     }
   }
 
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
   const VmType vm_type_;
   const int name_id_;
   base::RepeatingClosure notification_changed_callback_;

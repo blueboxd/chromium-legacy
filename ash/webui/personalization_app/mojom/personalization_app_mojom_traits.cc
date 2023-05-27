@@ -158,6 +158,8 @@ EnumTraits<MojomOnlineImageType, ::backdrop::Image::ImageType>::ToMojom(
       return MojomOnlineImageType::kMorning;
     case ::backdrop::Image::IMAGE_TYPE_LATE_AFTERNOON_MODE:
       return MojomOnlineImageType::kLateAfternoon;
+    case ::backdrop::Image::IMAGE_TYPE_PREVIEW_MODE:
+      return MojomOnlineImageType::kPreview;
   }
 }
 
@@ -180,6 +182,9 @@ bool EnumTraits<MojomOnlineImageType, ::backdrop::Image::ImageType>::FromMojom(
     case MojomOnlineImageType::kLateAfternoon:
       *output = ::backdrop::Image::IMAGE_TYPE_LATE_AFTERNOON_MODE;
       return true;
+    case MojomOnlineImageType::kPreview:
+      *output = ::backdrop::Image::IMAGE_TYPE_PREVIEW_MODE;
+      return true;
   }
   NOTREACHED();
   return false;
@@ -199,8 +204,9 @@ const std::string& StructTraits<
 
 const std::string& StructTraits<
     ash::personalization_app::mojom::WallpaperCollectionDataView,
-    backdrop::Collection>::description(const backdrop::Collection& collection) {
-  return collection.description();
+    backdrop::Collection>::description_content(const backdrop::Collection&
+                                                   collection) {
+  return collection.description_content();
 }
 
 std::vector<GURL> StructTraits<
@@ -227,38 +233,6 @@ bool StructTraits<ash::personalization_app::mojom::WallpaperCollectionDataView,
                                                     collection) {
   return !(collection.has_collection_id() && collection.has_collection_name() &&
            collection.preview_size() > 0);
-}
-
-const std::string& StructTraits<
-    ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView,
-    backdrop::Image::Description>::title(const backdrop::Image::Description&
-                                             description) {
-  return description.title();
-}
-
-const std::string& StructTraits<
-    ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView,
-    backdrop::Image::Description>::content(const backdrop::Image::Description&
-                                               description) {
-  return description.content();
-}
-
-// Default to false as we don't ever need to convert back to
-// `Backdrop::Image::Description`
-bool StructTraits<
-    ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView,
-    backdrop::Image::Description>::
-    Read(ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView
-             data,
-         backdrop::Image::Description* out) {
-  return false;
-}
-
-bool StructTraits<
-    ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView,
-    backdrop::Image::Description>::IsNull(const backdrop::Image::Description&
-                                              description) {
-  return !description.has_content() && !description.has_title();
 }
 
 GURL StructTraits<ash::personalization_app::mojom::WallpaperImageDataView,
@@ -437,6 +411,8 @@ EnumTraits<MojomTopicSource, ash::AmbientModeTopicSource>::ToMojom(
       return MojomTopicSource::kGooglePhotos;
     case ash::AmbientModeTopicSource::kArtGallery:
       return MojomTopicSource::kArtGallery;
+    case ash::AmbientModeTopicSource::kVideo:
+      return MojomTopicSource::kVideo;
   }
 }
 
@@ -449,6 +425,9 @@ bool EnumTraits<MojomTopicSource, ash::AmbientModeTopicSource>::FromMojom(
       return true;
     case MojomTopicSource::kArtGallery:
       *output = ash::AmbientModeTopicSource::kArtGallery;
+      return true;
+    case MojomTopicSource::kVideo:
+      *output = ash::AmbientModeTopicSource::kVideo;
       return true;
   }
   NOTREACHED();

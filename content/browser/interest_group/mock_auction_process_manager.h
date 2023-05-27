@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/interest_group/ad_auction_currencies.h"
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "url/gurl.h"
@@ -83,9 +84,15 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet,
       const std::string& seller_signals_json,
       const GURL& browser_signal_render_url,
       double browser_signal_bid,
+      const absl::optional<blink::AdCurrency>& browser_signal_bid_currency,
       double browser_signal_highest_scoring_other_bid,
+      const absl::optional<blink::AdCurrency>&
+          browser_signal_highest_scoring_other_bid_currency,
       bool browser_signal_made_highest_scoring_other_bid,
       absl::optional<double> browser_signal_ad_cost,
+      absl::optional<uint16_t> browser_signal_modeling_signals,
+      uint8_t browser_signal_join_count,
+      uint8_t browser_signal_recency,
       const url::Origin& browser_signal_seller_origin,
       const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
       uint32_t bidding_signals_data_version,
@@ -101,6 +108,7 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet,
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
       const absl::optional<base::TimeDelta> per_buyer_timeout,
+      const absl::optional<blink::AdCurrency>& per_buyer_currency,
       const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
       const absl::optional<GURL>& direct_from_seller_auction_signals) override;
 
@@ -117,6 +125,7 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet,
   // should be offered. Waits for the GenerateBid() call first, if needed.
   void InvokeGenerateBidCallback(
       absl::optional<double> bid,
+      const absl::optional<blink::AdCurrency>& bid_currency = absl::nullopt,
       const blink::AdDescriptor& ad_descriptor = blink::AdDescriptor(),
       auction_worklet::mojom::BidderWorkletKAnonEnforcedBidPtr mojo_kanon_bid =
           auction_worklet::mojom::BidderWorkletKAnonEnforcedBidPtr(),
@@ -207,22 +216,25 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
   ~MockSellerWorklet() override;
 
   // auction_worklet::mojom::SellerWorklet implementation:
-  void ScoreAd(const std::string& ad_metadata_json,
-               double bid,
-               const blink::AuctionConfig::NonSharedParams&
-                   auction_ad_config_non_shared_params,
-               const absl::optional<GURL>& direct_from_seller_seller_signals,
-               const absl::optional<GURL>& direct_from_seller_auction_signals,
-               auction_worklet::mojom::ComponentAuctionOtherSellerPtr
-                   browser_signals_other_seller,
-               const url::Origin& browser_signal_interest_group_owner,
-               const GURL& browser_signal_render_url,
-               const std::vector<GURL>& browser_signal_ad_components,
-               uint32_t browser_signal_bidding_duration_msecs,
-               const absl::optional<base::TimeDelta> seller_timeout,
-               uint64_t trace_id,
-               mojo::PendingRemote<auction_worklet::mojom::ScoreAdClient>
-                   score_ad_client) override;
+  void ScoreAd(
+      const std::string& ad_metadata_json,
+      double bid,
+      const absl::optional<blink::AdCurrency>& bid_currency,
+      const blink::AuctionConfig::NonSharedParams&
+          auction_ad_config_non_shared_params,
+      const absl::optional<GURL>& direct_from_seller_seller_signals,
+      const absl::optional<GURL>& direct_from_seller_auction_signals,
+      auction_worklet::mojom::ComponentAuctionOtherSellerPtr
+          browser_signals_other_seller,
+      const absl::optional<blink::AdCurrency>& component_expect_bid_currency,
+      const url::Origin& browser_signal_interest_group_owner,
+      const GURL& browser_signal_render_url,
+      const std::vector<GURL>& browser_signal_ad_components,
+      uint32_t browser_signal_bidding_duration_msecs,
+      const absl::optional<base::TimeDelta> seller_timeout,
+      uint64_t trace_id,
+      mojo::PendingRemote<auction_worklet::mojom::ScoreAdClient>
+          score_ad_client) override;
   void SendPendingSignalsRequests() override;
   void ReportResult(
       const blink::AuctionConfig::NonSharedParams&
@@ -234,8 +246,11 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
       const url::Origin& browser_signal_interest_group_owner,
       const GURL& browser_signal_render_url,
       double browser_signal_bid,
+      const absl::optional<blink::AdCurrency>& browser_signal_bid_currency,
       double browser_signal_desirability,
       double browser_signal_highest_scoring_other_bid,
+      const absl::optional<blink::AdCurrency>&
+          browser_signal_highest_scoring_other_bid_currency,
       auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
           browser_signals_component_auction_report_result_params,
       uint32_t browser_signal_data_version,

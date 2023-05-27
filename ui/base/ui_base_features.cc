@@ -131,11 +131,6 @@ bool IsPercentBasedScrollingEnabled() {
   return base::FeatureList::IsEnabled(features::kWindowsScrollingPersonality);
 }
 
-// Allows requesting unadjusted movement when entering pointerlock.
-BASE_FEATURE(kPointerLockOptions,
-             "PointerLockOptions",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Uses a stylus-specific tap slop region parameter for gestures.  Stylus taps
 // tend to slip more than touch taps (presumably because the user doesn't feel
 // the movement friction with a stylus).  As a result, it is harder to tap with
@@ -464,6 +459,44 @@ BASE_FEATURE(kChromeRefresh2023,
 bool IsChromeRefresh2023() {
   return base::FeatureList::IsEnabled(kChromeRefresh2023);
 }
+
+BASE_FEATURE(kChromeWebuiRefresh2023,
+             "ChromeWebuiRefresh2023",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsChromeWebuiRefresh2023() {
+  return IsChromeRefresh2023() &&
+         base::FeatureList::IsEnabled(kChromeWebuiRefresh2023);
+}
+
+constexpr base::FeatureParam<ChromeRefresh2023Level>::Option
+    kChromeRefresh2023LevelOption[] = {{ChromeRefresh2023Level::kLevel1, "1"},
+                                       {ChromeRefresh2023Level::kLevel2, "2"}};
+
+const base::FeatureParam<ChromeRefresh2023Level> kChromeRefresh2023Level(
+    &kChromeRefresh2023,
+    "level",
+    ChromeRefresh2023Level::kLevel2,
+    &kChromeRefresh2023LevelOption);
+
+ChromeRefresh2023Level GetChromeRefresh2023Level() {
+  return IsChromeRefresh2023() ? kChromeRefresh2023Level.Get()
+                               : ChromeRefresh2023Level::kDisabled;
+}
+
+#if !BUILDFLAG(IS_LINUX)
+BASE_FEATURE(kWebUiSystemFont,
+             "WebUiSystemFont",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(IS_APPLE)
+// Font Smoothing was enabled by default prior to introducing this feature.
+// We want to experiment with disabling it to align with CR2023 designs.
+BASE_FEATURE(kCr2023MacFontSmoothing,
+             "Cr2023MacFontSmoothing",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
 BASE_FEATURE(kUseNanosecondsForMotionEvent,
              "UseNanosecondsForMotionEvent",

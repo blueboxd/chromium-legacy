@@ -18,12 +18,13 @@ void NGFragmentPainter::PaintOutline(const PaintInfo& paint_info,
                                      const ComputedStyle& style_to_use) {
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
   DCHECK(NGOutlineUtils::HasPaintedOutline(style_to_use, fragment.GetNode()));
-  Vector<PhysicalRect> outline_rects;
+  VectorOutlineRectCollector collector;
   LayoutObject::OutlineInfo info;
   fragment.AddSelfOutlineRects(
       paint_offset, style_to_use.OutlineRectsShouldIncludeBlockVisualOverflow(),
-      &outline_rects, &info);
+      collector, &info);
 
+  VectorOf<PhysicalRect> outline_rects = collector.TakeRects();
   if (outline_rects.empty())
     return;
 
@@ -36,11 +37,10 @@ void NGFragmentPainter::AddURLRectIfNeeded(const PaintInfo& paint_info,
                                            const PhysicalOffset& paint_offset) {
   DCHECK(paint_info.ShouldAddUrlMetadata());
 
-  // TODO(layout-dev): Should use break token when NG has its own tree building.
   const NGPhysicalBoxFragment& fragment = PhysicalFragment();
-  if (fragment.GetLayoutObject()->IsElementContinuation() ||
-      fragment.Style().Visibility() != EVisibility::kVisible)
+  if (fragment.Style().Visibility() != EVisibility::kVisible) {
     return;
+  }
 
   Node* node = fragment.GetNode();
   if (!node || !node->IsLink())

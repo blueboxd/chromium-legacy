@@ -6,20 +6,23 @@ source_set("pinned_tabs") {
   sources = [
     "pinned_tabs_mediator.h",
     "pinned_tabs_mediator.mm",
+    "pinned_web_state_tab_switcher_item.h",
+    "pinned_web_state_tab_switcher_item.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":constants",
     ":pinned_tabs_ui",
     "//base",
     "//components/favicon/ios:ios",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/drag_and_drop",
     "//ios/chrome/browser/main",
+    "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs:features",
-    "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/browser/ui/tab_switcher:tab_utils",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid:tab_collection_commands",
@@ -32,24 +35,32 @@ source_set("pinned_tabs") {
   frameworks = [ "UniformTypeIdentifiers.framework" ]
 }
 
+source_set("constants") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "pinned_tabs_constants.h",
+    "pinned_tabs_constants.mm",
+  ]
+  deps = []
+}
+
 source_set("pinned_tabs_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "pinned_cell.h",
     "pinned_cell.mm",
-    "pinned_tabs_constants.h",
-    "pinned_tabs_constants.mm",
     "pinned_tabs_layout.h",
     "pinned_tabs_layout.mm",
     "pinned_tabs_view_controller.h",
     "pinned_tabs_view_controller.mm",
   ]
   deps = [
+    ":constants",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/shared/ui/elements",
+    "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/shared/ui/util",
     "//ios/chrome/browser/tabs:features",
-    "//ios/chrome/browser/ui/elements",
-    "//ios/chrome/browser/ui/icons:symbols",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_ui",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_ui_constants",
@@ -59,6 +70,7 @@ source_set("pinned_tabs_ui") {
     "//ios/chrome/common/ui/colors",
     "//ios/chrome/common/ui/elements",
     "//ios/chrome/common/ui/util",
+    "//ios/public/provider/chrome/browser/modals:modals_api",
     "//ios/third_party/material_components_ios",
     "//ui/base",
   ]

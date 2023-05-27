@@ -19,11 +19,11 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {AmbientModeAlbum, AnimationTheme, TemperatureUnit, TopicSource} from '../../personalization_app.mojom-webui.js';
-import {isAmbientModeAllowed, isPersonalizationJellyEnabled} from '../load_time_booleans.js';
-import {Paths} from '../personalization_router_element.js';
+import {isAmbientModeAllowed, isPersonalizationJellyEnabled, isScreenSaverDurationEnabled} from '../load_time_booleans.js';
+import {Paths, ScrollableTarget} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
-import {setAmbientModeEnabled} from './ambient_controller.js';
+import {dismissTimeOfDayBanner, setAmbientModeEnabled} from './ambient_controller.js';
 import {getAmbientProvider} from './ambient_interface_provider.js';
 import {AmbientObserver} from './ambient_observer.js';
 import {getTemplate} from './ambient_subpage_element.html.js';
@@ -54,6 +54,11 @@ export class AmbientSubpage extends WithPersonalizationStore {
       ambientModeEnabled_: {
         type: Boolean,
         value: null,
+        observer: 'onAmbientModeEnabledChanged_',
+      },
+      duration_: {
+        type: Number,
+        value: null,
       },
       temperatureUnit_: {
         type: Number,
@@ -67,11 +72,19 @@ export class AmbientSubpage extends WithPersonalizationStore {
         type: Boolean,
         computed:
             'computeLoading_(ambientModeEnabled_, albums_, temperatureUnit_, topicSource_)',
+        observer: 'onLoadingChanged_',
       },
       isPersonalizationJellyEnabled_: {
         type: Boolean,
         value() {
           return isPersonalizationJellyEnabled();
+        },
+      },
+      isScreenSaverDurationEnabled_: {
+        readOnly: true,
+        type: Boolean,
+        value() {
+          return isScreenSaverDurationEnabled();
         },
       },
     };
@@ -82,8 +95,10 @@ export class AmbientSubpage extends WithPersonalizationStore {
   private albums_: AmbientModeAlbum[]|null;
   private ambientModeEnabled_: boolean|null;
   private animationTheme_: AnimationTheme|null;
+  private duration_: number|null;
   private temperatureUnit_: TemperatureUnit|null;
   private topicSource_: TopicSource|null;
+  private isScreenSaverDurationEnabled_: boolean;
   private isPersonalizationJellyEnabled_: boolean;
 
   // Refetch albums if the user is currently viewing ambient subpage, focuses
@@ -121,6 +136,8 @@ export class AmbientSubpage extends WithPersonalizationStore {
         'temperatureUnit_', state => state.ambient.temperatureUnit);
     this.watch<AmbientSubpage['topicSource_']>(
         'topicSource_', state => state.ambient.topicSource);
+    this.watch<AmbientSubpage['duration_']>(
+        'duration_', state => state.ambient.duration);
     this.updateFromStore();
 
     getAmbientProvider().setPageViewed();
@@ -131,6 +148,30 @@ export class AmbientSubpage extends WithPersonalizationStore {
   override disconnectedCallback() {
     super.disconnectedCallback();
     window.removeEventListener('focus', this.onFocus_);
+  }
+
+  // Scroll down to the topic source list.
+  private scrollToTopicSourceList_() {
+    const elem = this.shadowRoot!.querySelector('topic-source-list');
+    if (elem) {
+      elem.scrollIntoView();
+      elem.focus();
+    }
+  }
+
+  private onAmbientModeEnabledChanged_(value: boolean) {
+    if (value) {
+      // Dismisses the banner after the user visits this subpage and ambient
+      // mode is enabled.
+      dismissTimeOfDayBanner(this.getStore());
+    }
+  }
+
+  private onLoadingChanged_(value: boolean) {
+    if (!value && !!this.queryParams &&
+        this.queryParams['scrollTo'] === ScrollableTarget.TOPIC_SOURCE_LIST) {
+      afterNextRender(this, () => this.scrollToTopicSourceList_());
+    }
   }
 
   private onClickAmbientModeButton_(event: Event) {
@@ -193,7 +234,8 @@ export class AmbientSubpage extends WithPersonalizationStore {
 
   private computeLoading_(): boolean {
     return this.ambientModeEnabled_ === null || this.albums_ === null ||
-        this.topicSource_ === null || this.temperatureUnit_ === null;
+        this.topicSource_ === null || this.temperatureUnit_ === null ||
+        (this.isScreenSaverDurationEnabled_ && this.duration_ === null);
   }
 
   private getPlaceholders_(x: number): number[] {

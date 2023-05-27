@@ -8,7 +8,7 @@
 //     com/google/vr/cardboard/DisplaySynchronizer
 
 // Local modification includes:
-// 1. Remove all implementaiton, only keep definition.
+// 1. Remove all implementation, only keep definition.
 // 2. Use absolute path instead of relative path.
 // 3. Removed all helper functions such as: Create.
 // 4. Added function RegisterDisplaySynchronizerNatives at the end of this file.
@@ -126,9 +126,6 @@ static const JNINativeMethod kMethodsDisplaySynchronizer[] = {
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
-  if (base::android::IsSelectiveJniRegistrationEnabled(env))
-    return true;
-
   const int kMethodsDisplaySynchronizerSize =
       std::extent<decltype(kMethodsDisplaySynchronizer)>();
 

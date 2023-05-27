@@ -71,8 +71,8 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(
 
       // We're at the beginning of the inline formatting context.
       last_inline_break_token_ = NGInlineBreakToken::Create(
-          *child_inline_node, /* style */ nullptr, /* item_index */ 0,
-          /* text_offset */ 0, NGInlineBreakToken::kDefault);
+          *child_inline_node, /* style */ nullptr, NGInlineItemTextIndex(),
+          NGInlineBreakToken::kDefault);
     }
     return;
   }
@@ -283,30 +283,10 @@ void NGBoxFragmentBuilder::AddOutOfFlowLegacyCandidate(
     NGBlockNode node,
     const NGLogicalStaticPosition& static_position,
     const LayoutInline* inline_container) {
-  if (inline_container)
-    inline_container = To<LayoutInline>(inline_container->ContinuationRoot());
   oof_positioned_candidates_.emplace_back(
       node, static_position,
       NGInlineContainer<LogicalOffset>(inline_container,
                                        /* relative_offset */ LogicalOffset()));
-}
-
-void NGBoxFragmentBuilder::RemoveOldLegacyOOFFlexItem(
-    const LayoutObject& object) {
-  // While what this method does should "work" for any child fragment in
-  // general, it's only expected to be called under very specific legacy
-  // circumstances, and besides it's evil.
-  DCHECK(object.IsOutOfFlowPositioned());
-  DCHECK(object.Parent()->IsFlexibleBox());
-  DCHECK(object.Parent()->IsOutOfFlowPositioned());
-  for (wtf_size_t idx = 0; idx < children_.size(); idx++) {
-    const NGLogicalLink& child = children_[idx];
-    if (child.fragment->GetLayoutObject() == &object) {
-      children_.EraseAt(idx);
-      return;
-    }
-  }
-  NOTREACHED();
 }
 
 NGPhysicalFragment::NGBoxType NGBoxFragmentBuilder::BoxType() const {
@@ -405,22 +385,48 @@ void NGBoxFragmentBuilder::PropagateBreakInfo(
       is_block_size_for_fragmentation_clamped_ = true;
   }
 
+  const NGPhysicalFragment& child_fragment =
+      child_layout_result.PhysicalFragment();
   const auto* child_box_fragment =
-      DynamicTo<NGPhysicalBoxFragment>(&child_layout_result.PhysicalFragment());
+      DynamicTo<NGPhysicalBoxFragment>(child_fragment);
+  const NGBlockBreakToken* token =
+      child_box_fragment ? child_box_fragment->BreakToken() : nullptr;
+
+  // Figure out if this child break is in the same flow as this parent. If it's
+  // an out-of-flow positioned box, it's not. If it's in a parallel flow, it's
+  // also not.
+  bool child_is_in_same_flow =
+      ((!token || !token->IsAtBlockEnd()) &&
+       !child_fragment.IsFloatingOrOutOfFlowPositioned()) ||
+      child_layout_result.ShouldForceSameFragmentationFlow();
+
+  if (ConstraintSpace().IsPaginated() && child_is_in_same_flow &&
+      !IsFragmentainerBoxType()) {
+    DCHECK(ConstraintSpace().HasKnownFragmentainerBlockSize());
+    NGFragment logical_fragment(child_fragment.Style().GetWritingDirection(),
+                                child_fragment);
+    LayoutUnit fragment_block_end =
+        offset.block_offset + logical_fragment.BlockSize();
+    LayoutUnit fragmentainer_overflow =
+        fragment_block_end - FragmentainerSpaceLeft(ConstraintSpace());
+    if (fragmentainer_overflow > LayoutUnit()) {
+      // This child overflows the page, because there's something monolithic
+      // inside. We need to be aware of this when laying out subsequent pages,
+      // so that we can move past it, rather than overlapping with it. This
+      // approach works (kind of) because in our implementation, pages are
+      // stacked in the block direction, so that the block-start offset of the
+      // next page is the same as the block-end offset of the preceding page.
+      ReserveSpaceForMonolithicOverflow(fragmentainer_overflow);
+    }
+  }
+
   if (!child_box_fragment)
     return;
 
-  const NGBlockBreakToken* token = child_box_fragment->BreakToken();
   if (IsBreakInside(token)) {
-    // Figure out if this child break is in the same flow as this parent. If
-    // it's an out-of-flow positioned box, it's not. If it's in a parallel flow,
-    // it's also not.
-    if (!token->IsAtBlockEnd() &&
-        !child_box_fragment->IsFloatingOrOutOfFlowPositioned())
+    if (child_is_in_same_flow) {
       has_inflow_child_break_inside_ = true;
-
-    if (child_layout_result.ShouldForceSameFragmentationFlow())
-      has_inflow_child_break_inside_ = true;
+    }
 
     // Downgrade the appeal of breaking inside this container, if the break
     // inside the child is less appealing than what we've found so far.

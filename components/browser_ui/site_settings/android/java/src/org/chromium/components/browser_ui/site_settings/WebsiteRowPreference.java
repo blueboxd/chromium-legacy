@@ -4,14 +4,20 @@
 
 package org.chromium.components.browser_ui.site_settings;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.format.Formatter;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
+import androidx.annotation.VisibleForTesting;
+import androidx.appcompat.app.AlertDialog;
 import androidx.preference.PreferenceViewHolder;
 
 import org.chromium.components.browser_ui.settings.ChromeImageViewPreference;
@@ -30,11 +36,20 @@ public class WebsiteRowPreference extends ChromeImageViewPreference {
     // Whether the favicon has been fetched already.
     private boolean mFaviconFetched;
 
-    WebsiteRowPreference(
-            Context context, SiteSettingsDelegate siteSettingsDelegate, WebsiteEntry siteEntry) {
+    private Dialog mConfirmationDialog;
+
+    private LayoutInflater mLayoutInflater;
+
+    private Runnable mOnDeleteCallback;
+
+    WebsiteRowPreference(Context context, SiteSettingsDelegate siteSettingsDelegate,
+            WebsiteEntry siteEntry, LayoutInflater layoutInflater) {
         super(context);
         mSiteSettingsDelegate = siteSettingsDelegate;
         mSiteEntry = siteEntry;
+        mLayoutInflater = layoutInflater;
+        // Initialize with an empty callback.
+        mOnDeleteCallback = () -> {};
 
         // To make sure the layout stays stable throughout, we assign a
         // transparent drawable as the icon initially. This is so that
@@ -43,8 +58,8 @@ public class WebsiteRowPreference extends ChromeImageViewPreference {
         // favicon becomes available.
         setIcon(new ColorDrawable(Color.TRANSPARENT));
         setTitle(mSiteEntry.getTitleForPreferenceRow());
-        setImageView(
-                R.drawable.ic_delete_white_24dp, R.string.webstorage_clear_data_dialog_title, null);
+        setImageView(R.drawable.ic_delete_white_24dp, R.string.webstorage_clear_data_dialog_title,
+                (View view) -> { displayResetDialog(); });
         updateSummary();
     }
 
@@ -73,6 +88,50 @@ public class WebsiteRowPreference extends ChromeImageViewPreference {
             mSiteSettingsDelegate.getFaviconImageForURL(
                     mSiteEntry.getFaviconUrl(), this::onFaviconAvailable);
             mFaviconFetched = true;
+        }
+    }
+
+    public void setOnDeleteCallback(Runnable callback) {
+        mOnDeleteCallback = callback;
+    }
+
+    private void displayResetDialog() {
+        View dialogView = mLayoutInflater.inflate(R.layout.clear_reset_dialog, null);
+        TextView mainMessage = dialogView.findViewById(R.id.main_message);
+        mainMessage.setText(R.string.website_reset_confirmation);
+        TextView signedOutText = dialogView.findViewById(R.id.signed_out_text);
+        signedOutText.setText(R.string.webstorage_clear_data_dialog_sign_out_message);
+        TextView offlineText = dialogView.findViewById(R.id.offline_text);
+        offlineText.setText(R.string.webstorage_clear_data_dialog_offline_message);
+        if (mSiteSettingsDelegate.isPrivacySandboxSettings4Enabled()) {
+            TextView adPersonalizationText = dialogView.findViewById(R.id.ad_personalization_text);
+            adPersonalizationText.setVisibility(View.VISIBLE);
+        }
+        // TODO(crbug.com/1342991): Refactor and combine this with the ClearWebsiteStorageDialog
+        // code.
+        mConfirmationDialog =
+                new AlertDialog.Builder(getContext(), R.style.ThemeOverlay_BrowserUI_AlertDialog)
+                        .setView(dialogView)
+                        .setTitle(R.string.website_reset_confirmation_title)
+                        .setPositiveButton(
+                                R.string.website_reset, (dialog, which) -> { resetEntry(); })
+                        .setNegativeButton(
+                                R.string.cancel, (dialog, which) -> mConfirmationDialog = null)
+                        .show();
+    }
+
+    @VisibleForTesting
+    void resetEntry() {
+        if (mSiteEntry instanceof Website) {
+            SiteDataCleaner.resetPermissions(
+                    mSiteSettingsDelegate.getBrowserContextHandle(), (Website) mSiteEntry);
+            SiteDataCleaner.clearData(mSiteSettingsDelegate.getBrowserContextHandle(),
+                    (Website) mSiteEntry, mOnDeleteCallback);
+        } else {
+            SiteDataCleaner.resetPermissions(
+                    mSiteSettingsDelegate.getBrowserContextHandle(), (WebsiteGroup) mSiteEntry);
+            SiteDataCleaner.clearData(mSiteSettingsDelegate.getBrowserContextHandle(),
+                    (WebsiteGroup) mSiteEntry, mOnDeleteCallback);
         }
     }
 

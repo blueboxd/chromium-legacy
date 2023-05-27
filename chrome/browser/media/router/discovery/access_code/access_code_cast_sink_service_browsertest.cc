@@ -5,10 +5,12 @@
 #include "chrome/test/media_router/access_code_cast/access_code_cast_integration_browsertest.h"
 
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_constants.h"
+#include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
+#include "chrome/browser/media/router/discovery/access_code/access_code_cast_pref_updater_impl.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_media_sink_util.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_test_util.h"
 #include "components/sessions/content/session_tab_helper.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;

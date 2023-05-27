@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.provider.Settings;
 
+import androidx.test.InstrumentationRegistry;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -115,7 +117,8 @@ public class DisableAnimationsTestRule implements TestRule {
                             "settings put global transition_animation_scale " + scaleFactor,
                             "settings put global window_animation_scale " + scaleFactor);
             for (String command : commandToRuns) {
-                Runtime.getRuntime().exec(command);
+                InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(
+                        command);
             }
         } else {
             // Set animation scales through reflection in R-.

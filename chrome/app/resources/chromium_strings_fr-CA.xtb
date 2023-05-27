@@ -81,7 +81,6 @@ Les autorisations que vous avez déjà accordées à des sites Web et à des app
 <translation id="2928420929544864228">Installation terminée.</translation>
 <translation id="2977470724722393594">Chromium est à jour</translation>
 <translation id="2977506796191543575">Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chromium peut également envoyer les URL concernées, y compris des extraits du contenu de pages, à la navigation sécurisée</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium est connecté à un appareil HID}one{Chromium est connecté à un appareil HID}other{Chromium est connecté aux appareils HID}}</translation>
 <translation id="3032706164202344641">Chromium ne peut pas vérifier vos mots de passe. Réessayez plus tard.</translation>
 <translation id="3032787606318309379">Ajout à Chromium en cours...</translation>
 <translation id="3038232873781883849">Installation en attente…</translation>
@@ -96,7 +95,6 @@ Les autorisations que vous avez déjà accordées à des sites Web et à des app
 <translation id="3258596308407688501">Chromium ne peut pas lire et écrire dans son répertoire de données :
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Ce guide vous aide à comprendre vos choix, afin que Chromium fonctionne comme vous le souhaitez</translation>
 <translation id="3283186697780795848">La version <ph name="PRODUCT_VERSION" /> de Chromium est installée</translation>
 <translation id="3286538390144397061">Redémarrer maintenant</translation>
 <translation id="328888136576916638">Les clés d'API Google sont manquantes. Certaines fonctionnalités de Chromium seront désactivées</translation>
@@ -250,6 +248,7 @@ Les autorisations que vous avez déjà accordées à des sites Web et à des app
 <translation id="6475912303565314141">Elle gère également la page qui s'affiche au démarrage de Chromium.</translation>
 <translation id="6510925080656968729">Désinstaller Chromium</translation>
 <translation id="6542839706527980775">Chaque profil Chromium contient ses propres données, comme les favoris, l'historique, les mots de passe, etc.</translation>
+<translation id="656935081669708576">Vous pouvez passer à un autre profil Chromium pour voir les mots de passe</translation>
 <translation id="6570579332384693436">Pour corriger les fautes d'orthographe, Chromium envoie le texte que vous entrez dans des zones de texte à Google</translation>
 <translation id="6598877126913850652">Accéder aux paramètres de notification Chromium</translation>
 <translation id="6613594504749178791">Vos modifications seront prises en compte au prochain redémarrage de Chromium.</translation>
@@ -384,7 +383,6 @@ Chromium est incapable de récupérer vos paramètres.</translation>
 <translation id="924957577793602335">Personnalisez Chromium</translation>
 <translation id="93478295209880648">Il se peut que Chromium ne fonctionne pas correctement, car il n'est plus compatible avec Windows XP ni Windows Vista</translation>
 <translation id="942598560705308788">Certificats gérés par Chromium</translation>
-<translation id="959579472876010517">Tirer le meilleur parti de Chromium</translation>
 <translation id="965162752251293939">Qui utilise Chromium?</translation>
 <translation id="967427899662692980">Profiter de la sécurité la plus robuste de Chromium</translation>
 <translation id="9792300276217204">Toujours effacer les données relatives aux sites sur votre appareil lorsque vous fermez Chromium</translation>

@@ -79,11 +79,14 @@ constexpr char kTestEmail[] = "user@gmail.com";
 
 constexpr char16_t kUsername1[] = u"alice";
 constexpr char16_t kUsername2[] = u"bob";
+constexpr char16_t kUsername3[] = u"eve";
 
 constexpr char16_t kPassword1[] = u"fnlsr4@cm^mdls@fkspnsg3d";
 constexpr char16_t kPassword2[] = u"pmsFlsnoab4nsl#losb@skpfnsbkjb^klsnbs!cns";
 constexpr char16_t kWeakPassword1[] = u"123456";
 constexpr char16_t kWeakPassword2[] = u"111111";
+
+constexpr char kGoogleAccounts[] = "https://accounts.google.com";
 
 using api::passwords_private::CompromisedInfo;
 using api::passwords_private::PasswordCheckStatus;
@@ -102,6 +105,7 @@ using password_manager::PasswordChangeSuccessTrackerFactory;
 using password_manager::PasswordForm;
 using password_manager::SavedPasswordsPresenter;
 using password_manager::TestPasswordStore;
+using password_manager::TriggerBackendNotification;
 using password_manager::prefs::kLastTimePasswordCheckCompleted;
 using signin::IdentityTestEnvironment;
 using ::testing::AllOf;
@@ -192,13 +196,29 @@ PasswordForm MakeSavedPassword(
   return form;
 }
 
+PasswordForm MakeSavedFederatedCredential(
+    base::StringPiece signon_realm,
+    base::StringPiece16 username,
+    base::StringPiece provider = kGoogleAccounts,
+    PasswordForm::Store store = PasswordForm::Store::kProfileStore) {
+  PasswordForm form;
+  form.signon_realm = std::string(signon_realm);
+  form.url = GURL(signon_realm);
+  form.username_value = std::u16string(username);
+  form.federation_origin = url::Origin::Create(GURL(provider));
+  CHECK(!form.federation_origin.opaque());
+  form.in_store = store;
+  return form;
+}
+
 void AddIssueToForm(PasswordForm* form,
                     InsecureType type,
                     base::TimeDelta time_since_creation = base::TimeDelta(),
                     const bool is_muted = false) {
   form->password_issues.insert_or_assign(
-      type, InsecurityMetadata(base::Time::Now() - time_since_creation,
-                               IsMuted(is_muted)));
+      type,
+      InsecurityMetadata(base::Time::Now() - time_since_creation,
+                         IsMuted(is_muted), TriggerBackendNotification(false)));
 }
 
 std::string MakeAndroidRealm(base::StringPiece package_name) {
@@ -706,8 +726,7 @@ TEST_F(PasswordCheckDelegateTest,
 TEST_F(PasswordCheckDelegateTest,
        RecordChangePasswordFlowStartedForAppWithoutWebRealm) {
   // Create an insecure credential.
-  PasswordForm form =
-      MakeSavedAndroidPassword(kExampleApp, kUsername1, "", kExampleCom);
+  PasswordForm form = MakeSavedAndroidPassword(kExampleApp, kUsername1, "", "");
   AddIssueToForm(&form, InsecureType::kLeaked);
   store().AddLogin(form);
   RunUntilIdle();
@@ -771,7 +790,8 @@ TEST_F(PasswordCheckDelegateTest, OnLeakFoundCreatesCredential) {
 
   form.password_issues.insert_or_assign(
       InsecureType::kLeaked,
-      InsecurityMetadata(base::Time::Now(), IsMuted(false)));
+      InsecurityMetadata(base::Time::Now(), IsMuted(false),
+                         TriggerBackendNotification(false)));
   EXPECT_THAT(store().stored_passwords(),
               ElementsAre(Pair(kExampleCom, ElementsAre(form))));
 }
@@ -810,16 +830,20 @@ TEST_F(PasswordCheckDelegateTest, OnLeakFoundCreatesMultipleCredential) {
 
   form_com_username1.password_issues.insert_or_assign(
       InsecureType::kLeaked,
-      InsecurityMetadata(base::Time::Now(), IsMuted(false)));
+      InsecurityMetadata(base::Time::Now(), IsMuted(false),
+                         TriggerBackendNotification(false)));
   form_org_username1.password_issues.insert_or_assign(
       InsecureType::kLeaked,
-      InsecurityMetadata(base::Time::Now(), IsMuted(false)));
+      InsecurityMetadata(base::Time::Now(), IsMuted(false),
+                         TriggerBackendNotification(false)));
   form_com_username2.password_issues.insert_or_assign(
       InsecureType::kLeaked,
-      InsecurityMetadata(base::Time::Now(), IsMuted(false)));
+      InsecurityMetadata(base::Time::Now(), IsMuted(false),
+                         TriggerBackendNotification(false)));
   form_org_username2.password_issues.insert_or_assign(
       InsecureType::kLeaked,
-      InsecurityMetadata(base::Time::Now(), IsMuted(false)));
+      InsecurityMetadata(base::Time::Now(), IsMuted(false),
+                         TriggerBackendNotification(false)));
   EXPECT_THAT(store().stored_passwords(),
               UnorderedElementsAre(
                   Pair(kExampleCom, UnorderedElementsAre(form_com_username1,
@@ -876,6 +900,20 @@ TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusRunning) {
   EXPECT_EQ(api::passwords_private::PASSWORD_CHECK_STATE_RUNNING, status.state);
   EXPECT_EQ(0, *status.already_processed);
   EXPECT_EQ(1, *status.remaining_in_queue);
+}
+
+// Verifies that the total password count is reported accurately.
+// Regression test for crbug.com/1432734.
+TEST_F(PasswordCheckDelegateTest, GetPasswordCheckStatusCount) {
+  identity_test_env().MakeAccountAvailable(kTestEmail);
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kPassword1));
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername2, kPassword2));
+  store().AddLogin(MakeSavedFederatedCredential(kExampleCom, kUsername3));
+  RunUntilIdle();
+
+  delegate().StartPasswordCheck();
+  PasswordCheckStatus status = delegate().GetPasswordCheckStatus();
+  EXPECT_EQ(*status.total_number_of_passwords, 2);
 }
 
 // Verifies that the case where the check is canceled is reported correctly.
@@ -1103,7 +1141,7 @@ TEST_F(PasswordCheckDelegateTest, WellKnownChangePasswordUrl) {
 
 TEST_F(PasswordCheckDelegateTest, WellKnownChangePasswordUrl_androidrealm) {
   PasswordForm form1 =
-      MakeSavedAndroidPassword(kExampleApp, kUsername1, "", kExampleCom);
+      MakeSavedAndroidPassword(kExampleApp, kUsername1, "", "");
   AddIssueToForm(&form1, InsecureType::kLeaked);
   store().AddLogin(form1);
 
@@ -1169,6 +1207,26 @@ TEST_F(PasswordCheckDelegateTest,
                         "details?id=com.example.app",
                         "https://example.com/.well-known/change-password",
                         kUsername2)))));
+}
+
+TEST_F(PasswordCheckDelegateTest,
+       GetCredentialsWithReusedPasswordAvoidsSingleReuse) {
+  base::test::ScopedFeatureList scoped_feature_list(
+      password_manager::features::kPasswordManagerRedesign);
+
+  store().AddLogin(MakeSavedPassword(kExampleCom, kUsername1, kWeakPassword1));
+  store().AddLogin(MakeSavedPassword(kExampleApp, kUsername2, kWeakPassword1));
+  RunUntilIdle();
+  delegate().StartPasswordCheck();
+  RunUntilIdle();
+
+  EXPECT_EQ(1u, delegate().GetCredentialsWithReusedPassword().size());
+
+  store().RemoveLogin(
+      MakeSavedPassword(kExampleCom, kUsername1, kWeakPassword1));
+  RunUntilIdle();
+
+  EXPECT_THAT(delegate().GetCredentialsWithReusedPassword(), IsEmpty());
 }
 
 }  // namespace extensions

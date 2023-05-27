@@ -64,7 +64,7 @@ def main():
     register_device_args(parser)
     register_emulator_args(parser)
     register_executable_test_args(parser)
-    register_update_args(parser, default_os_check='ignore', default_pave=True)
+    register_update_args(parser, default_os_check='ignore', default_pave=False)
     register_log_args(parser)
     register_package_args(parser, allow_temp_repo=True)
     register_serve_args(parser)
@@ -82,9 +82,6 @@ def main():
         if running_unattended():
             set_ffx_isolate_dir(
                 stack.enter_context(tempfile.TemporaryDirectory()))
-        # crbug.com/1408189: overnet.cso causes flakes in overnet.
-        # Need to restart daemon before we start
-        stack.enter_context(ScopedFfxConfig('overnet.cso', 'disabled'))
         run_ffx_command(('daemon', 'stop'), check=False)
         if running_unattended():
             stack.enter_context(

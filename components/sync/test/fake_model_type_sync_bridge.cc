@@ -185,7 +185,7 @@ FakeModelTypeSyncBridge::CreateMetadataChangeList() {
   return std::make_unique<InMemoryMetadataChangeList>();
 }
 
-absl::optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
+absl::optional<ModelError> FakeModelTypeSyncBridge::MergeFullSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
     EntityChangeList entity_data) {
   if (error_next_) {
@@ -230,7 +230,7 @@ absl::optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
   return {};
 }
 
-absl::optional<ModelError> FakeModelTypeSyncBridge::ApplySyncChanges(
+absl::optional<ModelError> FakeModelTypeSyncBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityChangeList entity_changes) {
   if (error_next_) {
@@ -358,12 +358,6 @@ ConflictResolution FakeModelTypeSyncBridge::ResolveConflict(
     const std::string& storage_key,
     const EntityData& remote_data) const {
   return conflict_resolution_;
-}
-
-void FakeModelTypeSyncBridge::ApplyStopSyncChanges(
-    std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
-  ModelTypeSyncBridge::ApplyStopSyncChanges(
-      std::move(delete_metadata_change_list));
 }
 
 sync_pb::EntitySpecifics

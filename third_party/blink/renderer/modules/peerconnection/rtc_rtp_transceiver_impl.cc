@@ -151,10 +151,6 @@ absl::optional<std::string> RtpTransceiverState::mid() const {
   return mid_;
 }
 
-void RtpTransceiverState::set_mid(absl::optional<std::string> mid) {
-  mid_ = mid;
-}
-
 webrtc::RtpTransceiverDirection RtpTransceiverState::direction() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   return direction_;
@@ -189,7 +185,8 @@ class RTCRtpTransceiverImpl::RTCRtpTransceiverInternal
           RTCRtpTransceiverImpl::RTCRtpTransceiverInternalTraits> {
  public:
   RTCRtpTransceiverInternal(
-      scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
+      rtc::scoped_refptr<webrtc::PeerConnectionInterface>
+          native_peer_connection,
       scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
       RtpTransceiverState state,
       bool encoded_insertable_streams)
@@ -240,8 +237,6 @@ class RTCRtpTransceiverImpl::RTCRtpTransceiverInternal
     sender_->set_state(std::move(sender_state));
     receiver_->set_state(state_.MoveReceiverState());
   }
-
-  void set_mid(absl::optional<std::string> mid) { state_.set_mid(mid); }
 
   blink::RTCRtpSenderImpl* content_sender() {
     DCHECK(main_task_runner_->BelongsToCurrentThread());
@@ -336,7 +331,7 @@ uintptr_t RTCRtpTransceiverImpl::GetId(
 }
 
 RTCRtpTransceiverImpl::RTCRtpTransceiverImpl(
-    scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
+    rtc::scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
     scoped_refptr<blink::WebRtcMediaStreamTrackAdapterMap> track_map,
     RtpTransceiverState transceiver_state,
     bool encoded_insertable_streams)
@@ -386,11 +381,6 @@ uintptr_t RTCRtpTransceiverImpl::Id() const {
 String RTCRtpTransceiverImpl::Mid() const {
   const auto& mid = internal_->state().mid();
   return mid ? String::FromUTF8(*mid) : String();
-}
-
-void RTCRtpTransceiverImpl::SetMid(absl::optional<String> mid) {
-  internal_->set_mid(mid ? absl::optional<std::string>(mid->Utf8())
-                         : absl::nullopt);
 }
 
 std::unique_ptr<blink::RTCRtpSenderPlatform> RTCRtpTransceiverImpl::Sender()

@@ -12,14 +12,13 @@
 namespace blink {
 
 class CounterStyle;
-class LayoutListItem;
 class LayoutNGListItem;
 class LayoutTextFragment;
 
 // This class holds code shared among all classes for list markers, for both
 // legacy layout and LayoutNG.
 class CORE_EXPORT ListMarker {
-  friend class LayoutListItem;
+  friend class LayoutNGInlineListItem;
   friend class LayoutNGListItem;
 
  public:
@@ -31,7 +30,6 @@ class CORE_EXPORT ListMarker {
   static LayoutObject* MarkerFromListItem(const LayoutObject*);
 
   LayoutObject* ListItem(const LayoutObject&) const;
-  LayoutBlockFlow* ListItemBlockFlow(const LayoutObject&) const;
 
   String MarkerTextWithSuffix(const LayoutObject&) const;
   String MarkerTextWithoutSuffix(const LayoutObject&) const;

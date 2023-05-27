@@ -1,27 +1,16 @@
-<style include="settings-shared">
-  h2 {
-    padding-inline-start: var(--cr-section-padding);
-  }
-
-  .subsection {
-    padding-inline-end: var(--cr-section-padding);
-    padding-inline-start: var(--cr-section-indent-padding);
-  }
-
-  .subsection > cr-link-row,
-  .subsection > settings-toggle-button {
-    padding-inline-end: 0;
-    padding-inline-start: 0;
-  }
+<style include="settings-shared input-device-settings-shared">
 </style>
-<h2>[[getKeyboardName(keyboard.name)]]</h2>
+<h2 class="device-name">[[getKeyboardName(keyboard.name)]]</h2>
 <div class="subsection">
   <template is="dom-if" if="[[keyboard.isExternal]]" restamp>
     <settings-toggle-button
-        class="hr" inverted="true"
+        inverted="true"
         id="externalTopRowAreFunctionKeysButton"
         pref="{{topRowAreFunctionKeysPref}}"
         label="$i18n{keyboardSendInvertedFunctionKeys}"
+        aria-label=
+            "[[getKeyboardName(keyboard.name)]]
+             $i18n{keyboardSendInvertedFunctionKeys}"
         sub-label="$i18n{keyboardSendInvertedFunctionKeysDescription}"
         deep-link-focus-id$="[[Setting.kKeyboardFunctionKeys]]">
     </settings-toggle-button>
@@ -29,21 +18,30 @@
         class="hr" id="blockMetaFunctionKeyRewritesButton"
         pref="{{blockMetaFunctionKeyRewritesPref}}"
         label="$i18n{keyboardBlockMetaFunctionKeyRewrites}"
-        sub-label="$i18n{keyboardBlockMetaFunctionKeyRewritesDescription}">
+        aria-label=
+            "[[getKeyboardName(keyboard.name)]]
+             $i18n{keyboardBlockMetaFunctionKeyRewrites}"
+        sub-label="$i18n{keyboardBlockMetaFunctionKeyRewritesDescription}"
+        deep-link-focus-id$="[[Setting.kKeyboardBlockMetaFkeyRewrites]]">
     </settings-toggle-button>
   </template>
   <template is="dom-if" if="[[!keyboard.isExternal]]" restamp>
     <settings-toggle-button
-        class="hr" id="internalTopRowAreFunctionKeysButton"
+        id="internalTopRowAreFunctionKeysButton"
         pref="{{topRowAreFunctionKeysPref}}"
         label="$i18n{keyboardSendFunctionKeys}"
+        aria-label=
+            "[[getKeyboardName(keyboard.name)]] $i18n{keyboardSendFunctionKeys}"
         sub-label="$i18n{keyboardSendFunctionKeysDescription}"
         deep-link-focus-id$="[[Setting.kKeyboardFunctionKeys]]">
     </settings-toggle-button>
   </template>
   <cr-link-row id="remapKeyboardKeys"
-    class="hr" on-click="onRemapKeyboardKeysTap"
-    label="$i18n{remapKeyboardKeysRowLabel}"
-    sub-label$="[[remapKeyboardKeysSublabel]]">
+      class="hr" on-click="onRemapKeyboardKeysTap"
+      label="$i18n{remapKeyboardKeysRowLabel}"
+      sub-label$="[[remapKeyboardKeysSublabel]]"
+      aria-label=
+          "[[getKeyboardName(keyboard.name)]] $i18n{remapKeyboardKeysRowLabel}"
+      deep-link-focus-id$="[[Setting.kKeyboardRemapKeys]]">
   </cr-link-row>
 </div>

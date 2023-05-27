@@ -50,12 +50,6 @@ BASE_FEATURE(kDismissPromos,
              "DismissNtpPromos",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, the NTP "realbox" will be themed like the omnibox
-// (same background/text/selected/hover colors).
-BASE_FEATURE(kRealboxMatchOmniboxTheme,
-             "NtpRealboxMatchOmniboxTheme",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, the NTP "realbox" will have same border/drop shadow in hover
 // state as searchbox.
 BASE_FEATURE(kRealboxMatchSearchboxTheme,
@@ -72,6 +66,11 @@ BASE_FEATURE(kRealboxRoundedCorners,
 // Google (g) icon instead of the typical magnifying glass (aka loupe).
 BASE_FEATURE(kRealboxUseGoogleGIcon,
              "NtpRealboxUseGoogleGIcon",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, alpha NTP backgrounds will show in Customize Chrome.
+BASE_FEATURE(kNtpAlphaBackgroundCollections,
+             "NtpAlphaBackgroundCollections",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, chrome cart module will be shown.
@@ -280,6 +279,12 @@ BASE_FEATURE(kNtpModulesHeaderIcon,
              "NtpModulesHeaderIcon",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, ChromeCart tile will show in the History clusters module when
+// available.
+BASE_FEATURE(kNtpChromeCartInHistoryClusterModule,
+             "NtpChromeCartInHistoryClusterModule",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::FeatureParam<double>
     kNtpElementLuminosityChangeForLightBackgroundParam{
         &kNtpComprehensiveTheming,
@@ -317,7 +322,9 @@ const char kNtpDriveModuleCacheMaxAgeSParam[] =
 const char kNtpDriveModuleExperimentGroupParam[] =
     "NtpDriveModuleExperimentGroupParam";
 const char kNtpHistoryClustersModuleDataParam[] =
-    "NtpRecipeTasksModuleDataParam";
+    "NtpHistoryClustersModuleDataParam";
+const char kNtpChromeCartInHistoryClustersModuleDataParam[] =
+    "NtpChromeCartInHistoryClustersModuleDataParam";
 const char kNtpMiddleSlotPromoDismissalParam[] =
     "NtpMiddleSlotPromoDismissalParam";
 const char kNtpPhotosModuleDataParam[] = "NtpPhotosModuleDataParam";
@@ -328,8 +335,6 @@ const char kNtpSafeBrowsingModuleCooldownPeriodDaysParam[] =
     "NtpSafeBrowsingModuleCooldownPeriodDaysParam";
 const char kNtpSafeBrowsingModuleCountMaxParam[] =
     "NtpSafeBrowsingModuleCountMaxParam";
-const char kRealboxMatchOmniboxThemeVariantParam[] =
-    "RealboxMatchOmniboxThemeVariantParam";
 const char kNtpRecipeTasksModuleDataParam[] = "NtpRecipeTasksModuleDataParam";
 const char kNtpRecipeTasksModuleCacheMaxAgeSParam[] =
     "NtpRecipeTasksModuleCacheMaxAgeSParam";

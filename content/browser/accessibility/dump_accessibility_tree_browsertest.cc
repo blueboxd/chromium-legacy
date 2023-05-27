@@ -1868,7 +1868,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityFieldset) {
 }
 
 // TODO(crbug.com/1307316): failing on Linux bots and flaky on Fuchsia bots.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA)
 #define MAYBE_AccessibilityFigcaption DISABLED_AccessibilityFigcaption
 #else
 #define MAYBE_AccessibilityFigcaption AccessibilityFigcaption
@@ -2035,7 +2035,8 @@ class DumpAccessibilityTreeFencedFrameTest : public DumpAccessibilityTreeTest {
  protected:
   DumpAccessibilityTreeFencedFrameTest() {
     feature_list_.InitWithFeatures({{blink::features::kFencedFrames},
-                                    {features::kPrivacySandboxAdsAPIsOverride}},
+                                    {features::kPrivacySandboxAdsAPIsOverride},
+                                    {blink::features::kFencedFramesAPIChanges}},
                                    {/* disabled_features */});
 
     UseHttpsTestServer();
@@ -2058,8 +2059,16 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::ValuesIn(ui::AXInspectTestHelper::TreeTestPasses()),
     DumpAccessibilityTreeTestPassToString());
 
+// TODO(crbug.com/1428918): Re-enable this test.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_AccessibilityFencedFrameScrollable \
+  DISABLED_AccessibilityFencedFrameScrollable
+#else
+#define MAYBE_AccessibilityFencedFrameScrollable \
+  AccessibilityFencedFrameScrollable
+#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeFencedFrameTest,
-                       AccessibilityFencedFrameScrollable) {
+                       MAYBE_AccessibilityFencedFrameScrollable) {
   RunHtmlTest(FILE_PATH_LITERAL("fencedframe-scrollable-mparch.html"));
 }
 
@@ -2788,6 +2797,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("popover-collapsed.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityPopoverHint) {
+  RunPopoverHintTest(FILE_PATH_LITERAL("popover-hint.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityPre) {
   RunHtmlTest(FILE_PATH_LITERAL("pre.html"));
 }
@@ -2826,8 +2839,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_AccessibilityPortal) 
   RunHtmlTest(FILE_PATH_LITERAL("portal.html"));
 }
 
+// TODO(crbug.com/1367886): Flaky on multiple platforms
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityPortalNameFromText) {
+                       DISABLED_AccessibilityPortalNameFromText) {
   RunHtmlTest(FILE_PATH_LITERAL("portal-name-from-text.html"));
 }
 
@@ -3403,6 +3417,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
       FILE_PATH_LITERAL("clear-children-while-computing-name.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       FrozenAncestorCannotChangeDescendants) {
+  RunRegressionTest(
+      FILE_PATH_LITERAL("frozen-ancestor-cannot-change-descendants.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, HiddenTable) {
   RunRegressionTest(FILE_PATH_LITERAL("hidden-table.html"));
 }
@@ -3522,6 +3542,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathMLSpace) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathMLUnknown) {
   RunMathMLTest(FILE_PATH_LITERAL("unknown.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MalformedMap) {
+  RunHtmlTest(FILE_PATH_LITERAL("malformed-map.html"));
 }
 
 //

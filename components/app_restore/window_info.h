@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_APP_RESTORE_WINDOW_INFO_H_
 #define COMPONENTS_APP_RESTORE_WINDOW_INFO_H_
 
+#include "base/memory/raw_ptr.h"
+#include "base/uuid.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window.h"
@@ -36,7 +38,7 @@ struct COMPONENT_EXPORT(APP_RESTORE) WindowInfo {
 
   WindowInfo* Clone();
 
-  aura::Window* window;
+  raw_ptr<aura::Window, DanglingUntriaged | ExperimentalAsh> window;
 
   // Index in MruWindowTracker to restore window stack. A lower index
   // indicates a more recently used window.
@@ -44,6 +46,9 @@ struct COMPONENT_EXPORT(APP_RESTORE) WindowInfo {
 
   // Virtual desk id.
   absl::optional<int32_t> desk_id;
+
+  // Virtual desk guid.
+  base::Uuid desk_guid;
 
   // Current bounds in screen in coordinates. If the window has restore bounds,
   // then this contains the restore bounds.

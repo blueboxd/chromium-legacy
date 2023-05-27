@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
@@ -26,6 +25,8 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/pointer_events_hit_rules.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
@@ -56,7 +57,6 @@
 #include "third_party/blink/renderer/core/paint/url_metadata_utils.h"
 #include "third_party/blink/renderer/core/paint/view_painter.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
@@ -410,7 +410,7 @@ void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
       !box_fragment_.HasSelfPaintingLayer() &&
       paint_info.phase != PaintPhase::kOverlayOverflowControls) {
     PaintAllPhasesAtomically(paint_info);
-  } else if (layout_object && layout_object->IsNGSVGForeignObject()) {
+  } else if (layout_object && layout_object->IsSVGForeignObject()) {
     ScopedSVGPaintState paint_state(*layout_object, paint_info);
     PaintTiming::From(layout_object->GetDocument()).MarkFirstContentfulPaint();
     PaintInternal(paint_info);
@@ -702,7 +702,6 @@ void NGBoxFragmentPainter::PaintCaretsIfNeeded(
 
   // Apply overflow clip if needed.
   // reveal-caret-of-multiline-contenteditable.html needs this.
-  // TDOO(yoisn): We should share this code with |BlockPainter::Paint()|
   absl::optional<ScopedPaintChunkProperties> paint_chunk_properties;
   if (const auto* fragment = paint_state.FragmentToPaint()) {
     if (const auto* properties = fragment->PaintProperties()) {
@@ -1103,20 +1102,81 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRect(
     return;
   }
 
+  const auto& box = To<LayoutBox>(*box_fragment_.GetLayoutObject());
   absl::optional<DisplayItemCacheSkipper> cache_skipper;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      ShouldSkipPaintUnderInvalidationChecking(
-          To<LayoutBox>(*box_fragment_.GetLayoutObject()))) {
+      ShouldSkipPaintUnderInvalidationChecking(box)) {
     cache_skipper.emplace(paint_info.context);
   }
 
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          paint_info.context, background_client,
-          DisplayItem::kBoxDecorationBackground))
+  if (box.CanCompositeBackgroundAttachmentFixed() &&
+      BackgroundImageGeometry::HasBackgroundFixedToViewport(box)) {
+    PaintCompositeBackgroundAttachmentFixed(paint_info, background_client,
+                                            box_decoration_data);
+    if (box_decoration_data.ShouldPaintBorder()) {
+      PaintBoxDecorationBackgroundWithDecorationData(
+          paint_info, visual_rect, paint_rect, background_client,
+          DisplayItem::kBoxDecorationBackground,
+          box_decoration_data.BorderOnly());
+    }
+  } else {
+    PaintBoxDecorationBackgroundWithDecorationData(
+        paint_info, visual_rect, paint_rect, background_client,
+        DisplayItem::kBoxDecorationBackground, box_decoration_data);
+  }
+}
+
+void NGBoxFragmentPainter::PaintCompositeBackgroundAttachmentFixed(
+    const PaintInfo& paint_info,
+    const DisplayItemClient& background_client,
+    const BoxDecorationData& box_decoration_data) {
+  const auto& box = To<LayoutBox>(*box_fragment_.GetLayoutObject());
+  DCHECK(box.CanCompositeBackgroundAttachmentFixed());
+  const FragmentData* fragment_data = box_fragment_.GetFragmentData();
+  if (!fragment_data) {
     return;
+  }
+
+  // Paint the background-attachment:fixed background in the view's transform
+  // space, clipped by BackgroundClip.
+  DCHECK(!box_decoration_data.IsPaintingBackgroundInContentsSpace());
+  DCHECK(!box_decoration_data.HasAppearance());
+  DCHECK(!box_decoration_data.ShouldPaintShadow());
+  DCHECK(box_decoration_data.ShouldPaintBackground());
+  DCHECK(fragment_data->PaintProperties());
+  DCHECK(fragment_data->PaintProperties()->BackgroundClip());
+  PropertyTreeStateOrAlias state(
+      box.View()->FirstFragment().LocalBorderBoxProperties().Transform(),
+      *fragment_data->PaintProperties()->BackgroundClip(),
+      paint_info.context.GetPaintController()
+          .CurrentPaintChunkProperties()
+          .Effect());
+  const ScrollableArea* layout_viewport = box.GetFrameView()->LayoutViewport();
+  DCHECK(layout_viewport);
+  gfx::Rect background_rect(layout_viewport->VisibleContentRect().size());
+  ScopedPaintChunkProperties fixed_background_properties(
+      paint_info.context.GetPaintController(), state, background_client,
+      DisplayItem::kFixedAttachmentBackground);
+  PaintBoxDecorationBackgroundWithDecorationData(
+      paint_info, background_rect, PhysicalRect(background_rect),
+      background_client, DisplayItem::kFixedAttachmentBackground,
+      box_decoration_data.BackgroundOnly());
+}
+
+void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithDecorationData(
+    const PaintInfo& paint_info,
+    const gfx::Rect& visual_rect,
+    const PhysicalRect& paint_rect,
+    const DisplayItemClient& background_client,
+    DisplayItem::Type display_item_type,
+    const BoxDecorationData& box_decoration_data) {
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
+          paint_info.context, background_client, display_item_type)) {
+    return;
+  }
 
   DrawingRecorder recorder(paint_info.context, background_client,
-                           DisplayItem::kBoxDecorationBackground, visual_rect);
+                           display_item_type, visual_rect);
 
   if (PhysicalFragment().IsFieldsetContainer()) {
     NGFieldsetPainter(box_fragment_)
@@ -1167,32 +1227,18 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackgroundWithRectImpl(
   }
 
   bool needs_end_layer = false;
-  if (!box_decoration_data.IsPaintingBackgroundInContentsSpace()) {
-    if (box_fragment_.HasSelfPaintingLayer() && layout_box.IsTableCell() &&
-        ToInterface<LayoutNGTableCellInterface>(layout_box)
-            .TableInterface()
-            ->ShouldCollapseBorders()) {
-      // TODO(crbug.com/1081425) This branch is only used by Legacy
-      // tables. Remove when Legacy tables are removed.
-      // We have to clip here because the background would paint on top of the
-      // collapsed table borders otherwise, since this is a self-painting layer.
-      PhysicalRect clip_rect = paint_rect;
-      clip_rect.Expand(layout_box.BorderInsets());
-      state_saver.Save();
-      paint_info.context.Clip(ToPixelSnappedRect(clip_rect));
-    } else if (BleedAvoidanceIsClipping(
-                   box_decoration_data.GetBackgroundBleedAvoidance())) {
-      state_saver.Save();
-      FloatRoundedRect border =
-          RoundedBorderGeometry::PixelSnappedRoundedBorder(
-              style, paint_rect, box_fragment_.SidesToInclude());
-      paint_info.context.ClipRoundedRect(border);
+  if (!box_decoration_data.IsPaintingBackgroundInContentsSpace() &&
+      BleedAvoidanceIsClipping(
+          box_decoration_data.GetBackgroundBleedAvoidance())) {
+    state_saver.Save();
+    FloatRoundedRect border = RoundedBorderGeometry::PixelSnappedRoundedBorder(
+        style, paint_rect, box_fragment_.SidesToInclude());
+    paint_info.context.ClipRoundedRect(border);
 
-      if (box_decoration_data.GetBackgroundBleedAvoidance() ==
-          kBackgroundBleedClipLayer) {
-        paint_info.context.BeginLayer();
-        needs_end_layer = true;
-      }
+    if (box_decoration_data.GetBackgroundBleedAvoidance() ==
+        kBackgroundBleedClipLayer) {
+      paint_info.context.BeginLayer();
+      needs_end_layer = true;
     }
   }
 
@@ -1815,21 +1861,20 @@ PhysicalRect NGBoxFragmentPainter::AdjustRectForScrolledContent(
     // the ends.
     scrolled_paint_rect.offset -=
         PhysicalOffset(physical.PixelSnappedScrolledContentOffset());
-    LayoutRectOutsets borders = AdjustedBorderOutsets(info);
+    NGPhysicalBoxStrut borders = AdjustedBorderOutsets(info);
     scrolled_paint_rect.size =
-        physical.ScrollSize() + PhysicalSize(borders.Size());
+        physical.ScrollSize() +
+        PhysicalSize(borders.HorizontalSum(), borders.VerticalSum());
   }
   return scrolled_paint_rect;
 }
 
-LayoutRectOutsets NGBoxFragmentPainter::ComputeBorders() const {
-  if (box_fragment_.GetLayoutObject()->IsTableCellLegacy())
-    return To<LayoutBox>(box_fragment_.GetLayoutObject())->BorderBoxOutsets();
-  return PhysicalFragment().Borders().ToLayoutRectOutsets();
+NGPhysicalBoxStrut NGBoxFragmentPainter::ComputeBorders() const {
+  return PhysicalFragment().Borders();
 }
 
-LayoutRectOutsets NGBoxFragmentPainter::ComputePadding() const {
-  return PhysicalFragment().Padding().ToLayoutRectOutsets();
+NGPhysicalBoxStrut NGBoxFragmentPainter::ComputePadding() const {
+  return PhysicalFragment().Padding();
 }
 
 BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
@@ -2116,7 +2161,6 @@ bool NGBoxFragmentPainter::HitTestTextItem(
       hit_test.inline_root_offset);
 }
 
-// Replicates logic in legacy InlineFlowBox::NodeAtPoint().
 bool NGBoxFragmentPainter::HitTestLineBoxFragment(
     const HitTestContext& hit_test,
     const NGPhysicalLineBoxFragment& fragment,

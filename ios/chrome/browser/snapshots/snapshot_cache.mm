@@ -163,6 +163,8 @@ UIImage* ReadImageForSnapshotIDFromDisk(NSString* snapshot_id,
 void WriteImageToDisk(UIImage* image, const base::FilePath& file_path) {
   if (!image)
     return;
+  // CGImage should exist, otherwise UIImageJPEG(PNG)Representation returns nil.
+  CHECK(image.CGImage);
 
   base::FilePath directory = file_path.DirName();
   if (!base::DirectoryExists(directory)) {
@@ -177,8 +179,14 @@ void WriteImageToDisk(UIImage* image, const base::FilePath& file_path) {
   NSString* path = base::SysUTF8ToNSString(file_path.AsUTF8Unsafe());
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
-  [UIImageJPEGRepresentation(image, kJPEGImageQuality) writeToFile:path
-                                                        atomically:YES];
+  NSData* data = UIImageJPEGRepresentation(image, kJPEGImageQuality);
+  if (!data) {
+    // Use UIImagePNGRepresentation instead when ImageJPEGRepresentation returns
+    // nil. It happens when the underlying CGImageRef contains data in an
+    // unsupported bitmap format.
+    data = UIImagePNGRepresentation(image);
+  }
+  [data writeToFile:path atomically:YES];
 
   // Encrypt the snapshot file (mostly for Incognito, but can't hurt to
   // always do it).
@@ -212,45 +220,6 @@ void ConvertAndSaveGreyImage(NSString* snapshot_id,
                                         image_scale, cache_directory);
   WriteImageToDisk(grey_image, image_path);
   base::mac::SetBackupExclusion(image_path);
-}
-
-void MigrateSnapshotsWithIDs(const base::FilePath& old_cache_directory,
-                             const base::FilePath& new_cache_directory,
-                             NSSet<NSString*>* snapshot_ids,
-                             ImageScale snapshot_scale) {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::WILL_BLOCK);
-
-  if (old_cache_directory.empty() ||
-      old_cache_directory == new_cache_directory ||
-      !base::DirectoryExists(old_cache_directory)) {
-    return;
-  }
-
-  DCHECK(base::DirectoryExists(new_cache_directory));
-  for (NSString* snapshot_id in snapshot_ids) {
-    for (const ImageType image_type : kImageTypes) {
-      const base::FilePath old_image_path = ImagePath(
-          snapshot_id, image_type, snapshot_scale, old_cache_directory);
-      const base::FilePath new_image_path = ImagePath(
-          snapshot_id, image_type, snapshot_scale, new_cache_directory);
-
-      // Only migrate snapshots which are needed.
-      if (!base::PathExists(old_image_path) || base::PathExists(new_image_path))
-        continue;
-
-      if (!base::Move(old_image_path, new_image_path)) {
-        DLOG(ERROR) << "Error migrating file: "
-                    << old_image_path.AsUTF8Unsafe();
-      }
-    }
-  }
-
-  // Remove the old source folder.
-  if (!base::DeletePathRecursively(old_cache_directory)) {
-    DLOG(ERROR) << "Error deleting snapshots folder during migration: "
-                << old_cache_directory.AsUTF8Unsafe();
-  }
 }
 
 void DeleteImageWithSnapshotID(const base::FilePath& cache_directory,
@@ -313,6 +282,38 @@ void PurgeCacheOlderThan(const base::FilePath& cache_directory,
       continue;
 
     base::DeleteFile(current_file);
+  }
+}
+
+void RenameSnapshots(const base::FilePath& cache_directory,
+                     NSArray<NSString*>* old_identifiers,
+                     NSArray<NSString*>* new_identifiers,
+                     ImageScale snapshot_scale) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::WILL_BLOCK);
+
+  DCHECK(base::DirectoryExists(cache_directory));
+  DCHECK_EQ(old_identifiers.count, new_identifiers.count);
+
+  const NSUInteger count = old_identifiers.count;
+  for (NSUInteger index = 0; index < count; ++index) {
+    for (const ImageType image_type : kImageTypes) {
+      const base::FilePath old_image_path = ImagePath(
+          old_identifiers[index], image_type, snapshot_scale, cache_directory);
+      const base::FilePath new_image_path = ImagePath(
+          new_identifiers[index], image_type, snapshot_scale, cache_directory);
+
+      // Only migrate snapshots which are needed.
+      if (!base::PathExists(old_image_path) ||
+          base::PathExists(new_image_path)) {
+        continue;
+      }
+
+      if (!base::Move(old_image_path, new_image_path)) {
+        DLOG(ERROR) << "Error migrating file: " << old_image_path.AsUTF8Unsafe()
+                    << " to: " << new_image_path.AsUTF8Unsafe();
+      }
+    }
   }
 }
 
@@ -523,17 +524,6 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
                    _cacheDirectory);
 }
 
-- (void)migrateSnapshotsWithIDs:(NSSet<NSString*>*)snapshotIDs
-                 fromSourcePath:(const base::FilePath&)sourcePath {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  if (!_taskRunner)
-    return;
-
-  _taskRunner->PostTask(
-      FROM_HERE, base::BindOnce(&MigrateSnapshotsWithIDs, sourcePath,
-                                _cacheDirectory, snapshotIDs, _snapshotsScale));
-}
-
 - (void)purgeCacheOlderThan:(const base::Time&)date
                     keeping:(NSSet*)liveSnapshotIDs {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
@@ -544,6 +534,20 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
   _taskRunner->PostTask(
       FROM_HERE, base::BindOnce(&PurgeCacheOlderThan, _cacheDirectory, date,
                                 liveSnapshotIDs, _snapshotsScale));
+}
+
+- (void)renameSnapshotWithIdentifiers:(NSArray<NSString*>*)oldIdentifiers
+                        toIdentifiers:(NSArray<NSString*>*)newIdentifiers {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  if (!_taskRunner) {
+    return;
+  }
+
+  DCHECK_EQ(oldIdentifiers.count, newIdentifiers.count);
+  _taskRunner->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RenameSnapshots, _cacheDirectory, oldIdentifiers,
+                     newIdentifiers, _snapshotsScale));
 }
 
 - (void)willBeSavedGreyWhenBackgrounding:(NSString*)snapshotID {

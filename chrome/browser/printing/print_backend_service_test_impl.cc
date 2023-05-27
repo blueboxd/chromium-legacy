@@ -12,6 +12,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/printing/print_backend_service_manager.h"
 #include "printing/backend/test_print_backend.h"
 
@@ -71,8 +73,10 @@ PrintBackendServiceTestImpl::PrintBackendServiceTestImpl(
       test_print_backend_(std::move(backend)) {}
 
 PrintBackendServiceTestImpl::~PrintBackendServiceTestImpl() {
-  // Make sure that all persistent contexts have been properly cleaned up.
-  DCHECK(persistent_printing_contexts_.empty());
+  if (!skip_dtor_persistent_contexts_check_) {
+    // Make sure that all persistent contexts have been properly cleaned up.
+    DCHECK(persistent_printing_contexts_.empty());
+  }
 }
 
 void PrintBackendServiceTestImpl::Init(
@@ -111,6 +115,7 @@ void PrintBackendServiceTestImpl::GetDefaultPrinterName(
   PrintBackendServiceImpl::GetDefaultPrinterName(std::move(callback));
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void PrintBackendServiceTestImpl::GetPrinterSemanticCapsAndDefaults(
     const std::string& printer_name,
     mojom::PrintBackendService::GetPrinterSemanticCapsAndDefaultsCallback
@@ -123,6 +128,7 @@ void PrintBackendServiceTestImpl::GetPrinterSemanticCapsAndDefaults(
   PrintBackendServiceImpl::GetPrinterSemanticCapsAndDefaults(
       printer_name, std::move(callback));
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void PrintBackendServiceTestImpl::FetchCapabilities(
     const std::string& printer_name,
@@ -142,6 +148,7 @@ void PrintBackendServiceTestImpl::FetchCapabilities(
 }
 
 void PrintBackendServiceTestImpl::UpdatePrintSettings(
+    uint32_t context_id,
     base::Value::Dict job_settings,
     mojom::PrintBackendService::UpdatePrintSettingsCallback callback) {
   if (terminate_receiver_) {
@@ -149,8 +156,8 @@ void PrintBackendServiceTestImpl::UpdatePrintSettings(
     return;
   }
 
-  PrintBackendServiceImpl::UpdatePrintSettings(std::move(job_settings),
-                                               std::move(callback));
+  PrintBackendServiceImpl::UpdatePrintSettings(
+      context_id, std::move(job_settings), std::move(callback));
 }
 
 #if BUILDFLAG(IS_WIN)

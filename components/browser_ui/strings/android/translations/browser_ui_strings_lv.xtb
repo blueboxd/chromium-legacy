@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Attēlu dekodētājs</translation>
 <translation id="1785415724048343560">Ieteicams labākai pieredzei</translation>
 <translation id="1818308510395330587">Lai atļautu lietotnei <ph name="APP_NAME" /> izmantot papildināto realitāti, ieslēdziet arī kameru <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">No: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Saistīto vietņu īpašnieki var skatīt darbības, ko veicat jebkurā grupas vietnē</translation>
 <translation id="1887786770086287077">Piekļuve šīs ierīces atrašanās vietai ir izslēgta. Ieslēdziet to <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Pārtraukt</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Lejupielāde pabeigta: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Noteiktās vietnēs funkcijas var nedarboties, ja tiek izmantots inkognito režīms</translation>
 <translation id="2442870161001914531">Vienmēr pieprasīt datora vietni</translation>
+<translation id="2479148705183875116">Atvērt iestatījumus</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
 <translation id="2490684707762498678">Pārvalda <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">E-pasta adreses</translation>
 <translation id="2750481671343847896">Vietnēs drīkst rādīt pierakstīšanās uzvednes, ko nodrošina identitātes pakalpojumi.</translation>
 <translation id="2822354292072154809">Vai tiešām vēlaties atiestatīt visas vietņu atļaujas, kas piešķirtas šim objektam: <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Pieprasiet skatu mobilajā ierīcē</translation>
 <translation id="2870560284913253234">Vietne</translation>
 <translation id="2874939134665556319">Iepriekšējais ieraksts</translation>
 <translation id="2891975107962658722">Neļaujiet vietnei saglabāt datus jūsu ierīcē</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Vietnes drīkst izmantot sīkfailus, lai uzlabotu pārlūkošanas pieredzi, piemēram, lai nodrošinātu ilgstošu pierakstīšanos vai saglabātu pirkumu grozā ievietotās preces.</translation>
 <translation id="3165022941318558018">Atļaujiet vietnei izmantot trešo pušu sīkfailus.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> saglabātu datu</translation>
-<translation id="3203366800380907218">No tīmekļa</translation>
 <translation id="321187648315454507">Lai atļautu lietotnei <ph name="APP_NAME" /> sūtīt jums paziņojumus, ieslēdziet paziņojumus arī <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofons</translation>
 <translation id="3248611290851046188">Šī vietne definē intereses, ko citās vietnēs var izmantot, lai rādītu jums reklāmas. Turklāt šī vietne iegūst informāciju par jūsu interesēm no pārlūka Chrome, lai rādītu jums atbilstošākas reklāmas.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Pieprasīt skatu datorā</translation>
 <translation id="5100237604440890931">Sakļauts — noklikšķiniet, lai izvērstu.</translation>
 <translation id="5123685120097942451">Inkognito cilne</translation>
-<translation id="5134599672855298214">Pieprasīt skatu mobilajā ierīcē (ieteicams)</translation>
 <translation id="5186036860380548585">Opcija pieejama ekrāna augšdaļā</translation>
 <translation id="5197729504361054390">Atlasīto kontaktpersonu dati tiks kopīgoti ar vietni <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Pēdējoreiz apmeklēta šodien</translation>

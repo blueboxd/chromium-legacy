@@ -14,6 +14,11 @@
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "url/origin.h"
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/files/file_path.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 class PrefService;
 
 namespace webapps {
@@ -46,6 +51,9 @@ class WebAppUninstallJob {
   static std::unique_ptr<WebAppUninstallJob> CreateAndStart(
       const AppId& app_id,
       const url::Origin& app_origin,
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      const absl::optional<base::FilePath>& app_profile_path,
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
       UninstallCallback callback,
       OsIntegrationManager& os_integration_manager,
       WebAppSyncBridge& sync_bridge,
@@ -53,13 +61,17 @@ class WebAppUninstallJob {
       WebAppRegistrar& registrar,
       WebAppInstallManager& install_manager,
       WebAppTranslationManager& translation_manager,
-      PrefService& profile_prefs);
+      PrefService& profile_prefs,
+      webapps::WebappUninstallSource uninstall_source);
 
   ~WebAppUninstallJob();
 
  private:
   WebAppUninstallJob(const AppId& app_id,
                      const url::Origin& app_origin,
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+                     const absl::optional<base::FilePath>& app_profile_path,
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
                      UninstallCallback callback,
                      OsIntegrationManager& os_integration_manager,
                      WebAppSyncBridge& sync_bridge,
@@ -67,12 +79,16 @@ class WebAppUninstallJob {
                      WebAppRegistrar& registrar,
                      WebAppInstallManager& install_manager,
                      WebAppTranslationManager& translation_manager,
-                     PrefService& profile_prefs);
+                     PrefService& profile_prefs,
+                     webapps::WebappUninstallSource uninstall_source);
 
   // The given `app_id` must correspond to an app in the `registrar`.
   // This modifies the app to set `is_uninstalling()` to true, and delete the
   // app from the registry after uninstallation is complete.
   void Start(const url::Origin& app_origin,
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+             const absl::optional<base::FilePath>& app_profile_path,
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
              OsIntegrationManager& os_integration_manager,
              WebAppIconManager& icon_manager,
              WebAppTranslationManager& translation_manager,
@@ -99,6 +115,7 @@ class WebAppUninstallJob {
   raw_ptr<WebAppSyncBridge> sync_bridge_;
   raw_ptr<WebAppInstallManager> install_manager_;
 
+  webapps::WebappUninstallSource uninstall_source_;
   bool app_data_deleted_ = false;
   bool translation_data_deleted_ = false;
   bool hooks_uninstalled_ = false;

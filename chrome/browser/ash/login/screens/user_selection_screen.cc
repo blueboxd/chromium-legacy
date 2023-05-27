@@ -18,6 +18,7 @@
 #include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -297,7 +298,7 @@ class UserSelectionScreen::DircryptoMigrationChecker {
         needs_migration);
   }
 
-  UserSelectionScreen* const owner_;
+  const raw_ptr<UserSelectionScreen, ExperimentalAsh> owner_;
   AccountId focused_user_ = EmptyAccountId();
 
   // Cached result of NeedsDircryptoMigration cryptohome check. Key is the
@@ -397,7 +398,7 @@ class UserSelectionScreen::TpmLockedChecker {
     wake_lock_->RequestWakeLock();
   }
 
-  UserSelectionScreen* const owner_;
+  const raw_ptr<UserSelectionScreen, ExperimentalAsh> owner_;
 
   base::TimeTicks check_finised_;
   base::TimeDelta dictionary_attack_lockout_time_remaining_;
@@ -805,16 +806,6 @@ void UserSelectionScreen::OnInvalidSyncToken(const AccountId& account_id) {
 void UserSelectionScreen::OnOnlineSigninEnforced(const AccountId& account_id) {
   SetAuthType(account_id, proximity_auth::mojom::AuthType::ONLINE_SIGN_IN,
               std::u16string());
-}
-
-void UserSelectionScreen::HardLockPod(const AccountId& account_id) {
-  view_->SetAuthType(account_id,
-                     proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
-                     std::u16string());
-  EasyUnlockService* service = GetEasyUnlockServiceForUser(account_id);
-  if (!service)
-    return;
-  service->SetHardlockState(SmartLockStateHandler::USER_HARDLOCK);
 }
 
 void UserSelectionScreen::AttemptEasyUnlock(const AccountId& account_id) {

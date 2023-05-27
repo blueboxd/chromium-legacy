@@ -88,9 +88,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   MessagePopupView* GetPopupViewForNotificationID(
       const std::string& notification_id);
 
-  // Called when a new toast appears or toasts are rearranged in the |display|.
+  // Called when a new popup appears or popups are rearranged in the |display|.
   // The subclass may override this method to check the current desktop status
-  // so that the toasts are arranged at the correct place. Return true if
+  // so that the popups are arranged at the correct place. Return true if
   // alignment is actually changed.
   virtual bool RecomputeAlignment(const display::Display& display) = 0;
 
@@ -100,23 +100,21 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
       views::Widget* widget,
       views::Widget::InitParams* init_params) = 0;
 
-  void set_inverse() { inverse_ = true; }
-
  protected:
-  // Returns the x-origin for the given toast bounds in the current work area.
-  virtual int GetToastOriginX(const gfx::Rect& toast_bounds) const = 0;
+  // Returns the x-origin for the given popup bounds in the current work area.
+  virtual int GetPopupOriginX(const gfx::Rect& popup_bounds) const = 0;
 
   // Returns the baseline height of the current work area. That is the starting
-  // point if there are no other toasts.
+  // point if there are no other popups.
   virtual int GetBaseline() const = 0;
 
   // Returns the rect of the current work area.
   virtual gfx::Rect GetWorkArea() const = 0;
 
-  // Returns true if the toast should be aligned top down.
+  // Returns true if the popup should be aligned top down.
   virtual bool IsTopDown() const = 0;
 
-  // Returns true if the toasts are positioned at the left side of the desktop
+  // Returns true if the popups are positioned at the left side of the desktop
   // so that their reveal animation should happen from left side.
   virtual bool IsFromLeft() const = 0;
 
@@ -174,10 +172,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
     // Moving down notifications. Notification collapsing and resizing are also
     // done in MOVE_DOWN.
     MOVE_DOWN,
-
-    // Moving up notifications in order to show new one by FADE_IN. This is only
-    // used when |inverse_| is true.
-    MOVE_UP_FOR_INVERSE
   };
 
   // Stores animation related state of a popup.
@@ -192,11 +186,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
     // The final bounds of the popup.
     gfx::Rect bounds;
-
-    // The popup is waiting for MOVE_UP_FOR_INVERSE animation so that it can
-    // FADE_IN after that. The value is only used when the animation type is
-    // MOVE_UP_FOR_INVERSE.
-    bool will_fade_in = false;
 
     // If the popup is animating.
     bool is_animating = false;
@@ -249,11 +238,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void ClosePopupsOutsideWorkArea();
   void RemoveClosedPopupItems();
 
-  // Returns true if all the animating popups are at the beginning of the
-  // collection or the queue is empty. Returns false only if there is an
-  // animating popup after a non-animating one.
-  bool AreAllAnimatingPopupsFirst() const;
-
   // Stops all the animation and closes all the popups immediately.
   void CloseAllPopupsNow();
 
@@ -272,7 +256,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   bool IsAnyPopupFocused() const;
 
   // Returns the popup which is visually |index_from_top|-th from the top.
-  // When |inverse_| is false, it's same as popup_items_[i].
   PopupItem* GetPopupItem(size_t index_from_top);
 
   // Reset |recently_closed_by_user_| to false. Used by
@@ -300,16 +283,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // If true, popup sizes are resized on the next time Update() is called with
   // IDLE state.
   bool resize_requested_ = false;
-
-  // Invert ordering of notification popups i.e. showing the latest notification
-  // at the top. It changes the state transition like this:
-  // Normal:
-  //   * a new notification comes in: FADE_IN
-  //   * a notification comes out: FADE_OUT -> MOVE_DOWN
-  // Inverted:
-  //   * a new notification comes in: MOVE_UP_FOR_INVERSE -> FADE_IN
-  //   * a notification comes out: FADE_OUT
-  bool inverse_ = false;
 
   base::ScopedObservation<MessageCenter, MessageCenterObserver>
       message_center_observation_{this};

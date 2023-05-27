@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <cstdint>
 
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
@@ -15,6 +16,7 @@
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
@@ -56,7 +58,7 @@ void RazeErrorCallback(Database* db,
   // Nothing here needs extended errors at this time.
   EXPECT_EQ(expected_error, expected_error & 0xff);
   EXPECT_EQ(expected_error, error & 0xff);
-  db->RazeAndClose();
+  db->RazeAndPoison();
 }
 
 #if BUILDFLAG(IS_POSIX)
@@ -1029,7 +1031,7 @@ TEST_P(SQLDatabaseTest, RazeCallbackReopen) {
       base::BindRepeating(&RazeErrorCallback, db_.get(), SQLITE_CORRUPT));
 
   // When the PRAGMA calls in Open() raise SQLITE_CORRUPT, the error
-  // callback will call RazeAndClose().  Open() will then fail and be
+  // callback will call RazeAndPoison().  Open() will then fail and be
   // retried.  The second Open() on the empty database will succeed
   // cleanly.
   ASSERT_TRUE(db_->Open(db_path_));
@@ -1037,174 +1039,171 @@ TEST_P(SQLDatabaseTest, RazeCallbackReopen) {
   EXPECT_EQ(0, SqliteSchemaCount(db_.get()));
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_DeletesData) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_DeletesData) {
   ASSERT_TRUE(
       db_->Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY NOT NULL)"));
   ASSERT_TRUE(db_->Execute("INSERT INTO rows(id) VALUES(12)"));
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
 
-  // RazeAndClose() actually Poison()s. We need to call Close() in order to
-  // re-Open(). crbug.com/1311771 tracks renaming RazeAndClose().
+  // We need to call Close() in order to re-Open().
   db_->Close();
   ASSERT_TRUE(db_->Open(db_path_))
-      << "RazeAndClose() did not produce a healthy database";
+      << "RazeAndPoison() did not produce a healthy database";
   EXPECT_TRUE(
       db_->Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY NOT NULL)"))
-      << "RazeAndClose() did not produce a healthy empty database";
+      << "RazeAndPoison() did not produce a healthy empty database";
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_IsOpen) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_IsOpen) {
   ASSERT_TRUE(
       db_->Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY NOT NULL)"));
   ASSERT_TRUE(db_->Execute("INSERT INTO rows(id) VALUES(12)"));
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
 
   EXPECT_FALSE(db_->is_open())
-      << "RazeAndClose() did not mark the database as closed";
+      << "RazeAndPoison() did not mark the database as closed";
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_Reopen_NoChanges) {
-  ASSERT_TRUE(db_->RazeAndClose());
+TEST_P(SQLDatabaseTest, RazeAndPoison_Reopen_NoChanges) {
+  ASSERT_TRUE(db_->RazeAndPoison());
   EXPECT_FALSE(
       db_->Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY NOT NULL)"))
-      << "Execute() should return false after RazeAndClose()";
+      << "Execute() should return false after RazeAndPoison()";
 
-  // RazeAndClose() actually Poison()s. We need to call Close() in order to
-  // re-Open(). crbug.com/1311771 tracks renaming RazeAndClose().
+  // We need to call Close() in order to re-Open().
   db_->Close();
   ASSERT_TRUE(db_->Open(db_path_))
-      << "RazeAndClose() did not produce a healthy database";
+      << "RazeAndPoison() did not produce a healthy database";
   EXPECT_TRUE(
       db_->Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY NOT NULL)"))
-      << "Execute() returned false but went through after RazeAndClose()";
+      << "Execute() returned false but went through after RazeAndPoison()";
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_OpenTransaction) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_OpenTransaction) {
   ASSERT_TRUE(
       db_->Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY NOT NULL)"));
   ASSERT_TRUE(db_->Execute("INSERT INTO rows(id) VALUES(12)"));
 
   Transaction transaction(db_.get());
   ASSERT_TRUE(transaction.Begin());
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
 
   EXPECT_FALSE(db_->is_open())
-      << "RazeAndClose() did not mark the database as closed";
+      << "RazeAndPoison() did not mark the database as closed";
   EXPECT_FALSE(transaction.Commit())
-      << "RazeAndClose() did not cancel the transaction";
+      << "RazeAndPoison() did not cancel the transaction";
 
-  // RazeAndClose() actually Poison()s. We need to call Close() in order to
-  // re-Open(). crbug.com/1311771 tracks renaming RazeAndClose().
+  // We need to call Close() in order to re-Open().
   db_->Close();
 
   ASSERT_TRUE(db_->Open(db_path_));
   EXPECT_TRUE(
       db_->Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY NOT NULL)"))
-      << "RazeAndClose() did not produce a healthy empty database";
+      << "RazeAndPoison() did not produce a healthy empty database";
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_Preload_NoCrash) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_Preload_NoCrash) {
   db_->Preload();
-  db_->RazeAndClose();
+  db_->RazeAndPoison();
   db_->Preload();
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_DoesTableExist) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_DoesTableExist) {
   ASSERT_TRUE(
       db_->Execute("CREATE TABLE rows(id INTEGER PRIMARY KEY NOT NULL)"));
   ASSERT_TRUE(db_->DoesTableExist("rows")) << "Incorrect test setup";
 
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
   EXPECT_FALSE(db_->DoesTableExist("rows"))
-      << "DoesTableExist() should return false after RazeAndClose()";
+      << "DoesTableExist() should return false after RazeAndPoison()";
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_IsSQLValid) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_IsSQLValid) {
   ASSERT_TRUE(db_->IsSQLValid("SELECT 1")) << "Incorrect test setup";
 
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
   EXPECT_FALSE(db_->IsSQLValid("SELECT 1"))
-      << "IsSQLValid() should return false after RazeAndClose()";
+      << "IsSQLValid() should return false after RazeAndPoison()";
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_Execute) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_Execute) {
   ASSERT_TRUE(db_->Execute("SELECT 1")) << "Incorrect test setup";
 
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
   EXPECT_FALSE(db_->Execute("SELECT 1"))
-      << "Execute() should return false after RazeAndClose()";
+      << "Execute() should return false after RazeAndPoison()";
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_GetUniqueStatement) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_GetUniqueStatement) {
   {
     Statement select(db_->GetUniqueStatement("SELECT 1"));
     ASSERT_TRUE(select.Step()) << "Incorrect test setup";
   }
 
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
   {
     Statement select(db_->GetUniqueStatement("SELECT 1"));
     EXPECT_FALSE(select.Step())
         << "GetUniqueStatement() should return an invalid Statement after "
-        << "RazeAndClose()";
+        << "RazeAndPoison()";
   }
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_GetCachedStatement) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_GetCachedStatement) {
   {
     Statement select(db_->GetCachedStatement(SQL_FROM_HERE, "SELECT 1"));
     ASSERT_TRUE(select.Step()) << "Incorrect test setup";
   }
 
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
   {
     Statement select(db_->GetCachedStatement(SQL_FROM_HERE, "SELECT 1"));
     EXPECT_FALSE(select.Step())
         << "GetCachedStatement() should return an invalid Statement after "
-        << "RazeAndClose()";
+        << "RazeAndPoison()";
   }
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_InvalidatesUniqueStatement) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_InvalidatesUniqueStatement) {
   Statement select(db_->GetUniqueStatement("SELECT 1"));
   ASSERT_TRUE(select.is_valid()) << "Incorrect test setup";
   ASSERT_TRUE(select.Step()) << "Incorrect test setup";
   select.Reset(/*clear_bound_vars=*/true);
 
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
   EXPECT_FALSE(select.is_valid())
-      << "RazeAndClose() should invalidate live Statements";
+      << "RazeAndPoison() should invalidate live Statements";
   EXPECT_FALSE(select.Step())
-      << "RazeAndClose() should invalidate live Statements";
+      << "RazeAndPoison() should invalidate live Statements";
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_InvalidatesCachedStatement) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_InvalidatesCachedStatement) {
   Statement select(db_->GetCachedStatement(SQL_FROM_HERE, "SELECT 1"));
   ASSERT_TRUE(select.is_valid()) << "Incorrect test setup";
   ASSERT_TRUE(select.Step()) << "Incorrect test setup";
   select.Reset(/*clear_bound_vars=*/true);
 
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
   EXPECT_FALSE(select.is_valid())
-      << "RazeAndClose() should invalidate live Statements";
+      << "RazeAndPoison() should invalidate live Statements";
   EXPECT_FALSE(select.Step())
-      << "RazeAndClose() should invalidate live Statements";
+      << "RazeAndPoison() should invalidate live Statements";
 }
 
-TEST_P(SQLDatabaseTest, RazeAndClose_TransactionBegin) {
+TEST_P(SQLDatabaseTest, RazeAndPoison_TransactionBegin) {
   {
     Transaction transaction(db_.get());
     ASSERT_TRUE(transaction.Begin()) << "Incorrect test setup";
     ASSERT_TRUE(transaction.Commit()) << "Incorrect test setup";
   }
 
-  ASSERT_TRUE(db_->RazeAndClose());
+  ASSERT_TRUE(db_->RazeAndPoison());
   {
     Transaction transaction(db_.get());
     EXPECT_FALSE(transaction.Begin())
-        << "Transaction::Begin() should return false after RazeAndClose()";
+        << "Transaction::Begin() should return false after RazeAndPoison()";
     EXPECT_FALSE(transaction.IsActiveForTesting())
-        << "RazeAndClose() should block transactions from starting";
+        << "RazeAndPoison() should block transactions from starting";
   }
 }
 
@@ -1880,8 +1879,6 @@ TEST_P(SQLDatabaseTest, DoubleQuotedStringLiteralsDisabledByDefault) {
 }
 
 TEST_P(SQLDatabaseTest, ForeignKeyEnforcementDisabledByDefault) {
-  EXPECT_FALSE(GetDBOptions().enable_foreign_keys_discouraged);
-
   ASSERT_TRUE(db_->Execute("CREATE TABLE targets(id INTEGER PRIMARY KEY)"));
   // sqlite3_db_config() currently only disables foreign key enforcement. Schema
   // operations on foreign keys are still allowed.
@@ -1895,30 +1892,6 @@ TEST_P(SQLDatabaseTest, ForeignKeyEnforcementDisabledByDefault) {
 
   EXPECT_TRUE(db_->Execute("DELETE FROM targets WHERE id=42"))
       << "Foreign key enforcement is not disabled";
-}
-
-TEST_P(SQLDatabaseTest, ForeignKeyEnforcementEnabled) {
-  DatabaseOptions options = GetDBOptions();
-  options.enable_foreign_keys_discouraged = true;
-  db_ = std::make_unique<Database>(options);
-  ASSERT_TRUE(db_->Open(db_path_));
-
-  ASSERT_TRUE(db_->Execute("CREATE TABLE targets(id INTEGER PRIMARY KEY)"));
-  ASSERT_TRUE(
-      db_->Execute("CREATE TABLE refs("
-                   "id INTEGER PRIMARY KEY,"
-                   "target_id INTEGER REFERENCES targets(id))"));
-
-  ASSERT_TRUE(db_->Execute("INSERT INTO targets(id) VALUES(42)"));
-  ASSERT_TRUE(db_->Execute("INSERT INTO refs(id, target_id) VALUES(42, 42)"));
-
-  {
-    sql::test::ScopedErrorExpecter expecter;
-    expecter.ExpectError(SQLITE_CONSTRAINT_FOREIGNKEY);
-    EXPECT_FALSE(db_->Execute("DELETE FROM targets WHERE id=42"))
-        << "Foreign key enforcement is disabled";
-    EXPECT_TRUE(expecter.SawExpectedErrors());
-  }
 }
 
 TEST_P(SQLDatabaseTest, TriggersDisabledByDefault) {
@@ -1941,6 +1914,77 @@ TEST_P(SQLDatabaseTest, TriggersDisabledByDefault) {
   // operations on triggers are still allowed.
   EXPECT_TRUE(db_->Execute("DROP TRIGGER IF EXISTS trigger"));
 }
+
+#if BUILDFLAG(IS_WIN)
+
+class SQLDatabaseTestExclusiveFileLockMode
+    : public testing::Test,
+      public testing::WithParamInterface<::testing::tuple<bool, bool>> {
+ public:
+  ~SQLDatabaseTestExclusiveFileLockMode() override = default;
+
+  void SetUp() override {
+    db_ = std::make_unique<Database>(GetDBOptions());
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    db_path_ = temp_dir_.GetPath().AppendASCII("maybelocked.sqlite");
+    ASSERT_TRUE(db_->Open(db_path_));
+  }
+
+  DatabaseOptions GetDBOptions() {
+    DatabaseOptions options;
+    options.wal_mode = IsWALEnabled();
+    options.exclusive_locking = true;
+    options.exclusive_database_file_lock = IsExclusivelockEnabled();
+    return options;
+  }
+
+  bool IsWALEnabled() { return std::get<0>(GetParam()); }
+  bool IsExclusivelockEnabled() { return std::get<1>(GetParam()); }
+
+ protected:
+  base::ScopedTempDir temp_dir_;
+  base::FilePath db_path_;
+  std::unique_ptr<Database> db_;
+};
+
+TEST_P(SQLDatabaseTestExclusiveFileLockMode, BasicStatement) {
+  ASSERT_TRUE(db_->Execute("CREATE TABLE data(contents TEXT)"));
+  EXPECT_EQ(SQLITE_OK, db_->GetErrorCode());
+
+  ASSERT_TRUE(base::PathExists(db_path_));
+  base::File open_db(db_path_, base::File::Flags::FLAG_OPEN_ALWAYS |
+                                   base::File::Flags::FLAG_READ);
+
+  // If exclusive lock is enabled, then the test should not be able to re-open
+  // the database file, on Windows only.
+  EXPECT_EQ(IsExclusivelockEnabled(), !open_db.IsValid());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    SQLDatabaseTestExclusiveFileLockMode,
+    ::testing::Combine(::testing::Bool(), ::testing::Bool()),
+    [](const auto& info) {
+      return base::StrCat(
+          {std::get<0>(info.param) ? "WALEnabled" : "WALDisabled",
+           std::get<1>(info.param) ? "ExclusiveLock" : "NoExclusiveLock"});
+    });
+
+#else
+
+TEST(SQLInvalidDatabaseFlagsDeathTest, ExclusiveDatabaseLock) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  auto db_path = temp_dir.GetPath().AppendASCII("database_test_locked.sqlite");
+
+  Database db({.exclusive_database_file_lock = true});
+
+  EXPECT_CHECK_DEATH_WITH(
+      { std::ignore = db.Open(db_path); },
+      "exclusive_database_file_lock is only supported on Windows");
+}
+
+#endif  // BUILDFLAG(IS_WIN)
 
 class SQLDatabaseTestExclusiveMode : public testing::Test,
                                      public testing::WithParamInterface<bool> {

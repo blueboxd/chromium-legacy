@@ -38,6 +38,9 @@ class ApplicationContextImpl : public ApplicationContext {
   // Called before the browser threads are created.
   void PreCreateThreads();
 
+  // Called after the browser threads are created.
+  void PostCreateThreads();
+
   // Called after the threads have been created but before the message loops
   // starts running. Allows the ApplicationContext to do any initialization
   // that requres all threads running.
@@ -76,7 +79,6 @@ class ApplicationContextImpl : public ApplicationContext {
   SafeBrowsingService* GetSafeBrowsingService() override;
   network::NetworkConnectionTracker* GetNetworkConnectionTracker() override;
   BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() override;
-  PromosManager* GetPromosManager() override;
   id<SingleSignOnService> GetSSOService() override;
   SystemIdentityManager* GetSystemIdentityManager() override;
   segmentation_platform::OTRWebStateObserver*
@@ -105,8 +107,14 @@ class ApplicationContextImpl : public ApplicationContext {
   // service, the policy connector must live outside the keyed services.
   std::unique_ptr<BrowserPolicyConnectorIOS> browser_policy_connector_;
 
-  // Promos Manager which coordinates the display of app-wide promos.
-  std::unique_ptr<PromosManager> promos_manager_;
+  // Must be destroyed after `chrome_browser_state_manager_` as some of the
+  // KeyedService register themselves as NetworkConnectionObserver and need
+  // to unregister themselves before NetworkConnectionTracker destruction. Must
+  // also be destroyed after `gcm_driver_` and `metrics_services_manager_` since
+  // these own objects that register themselves as NetworkConnectionObservers.
+  std::unique_ptr<network::NetworkChangeManager> network_change_manager_;
+  std::unique_ptr<network::NetworkConnectionTracker>
+      network_connection_tracker_;
 
   std::unique_ptr<PrefService> local_state_;
   std::unique_ptr<net_log::NetExportFileWriter> net_export_file_writer_;
@@ -116,16 +124,13 @@ class ApplicationContextImpl : public ApplicationContext {
       metrics_services_manager_;
   std::unique_ptr<gcm::GCMDriver> gcm_driver_;
   std::unique_ptr<component_updater::ComponentUpdateService> component_updater_;
+
   std::unique_ptr<ios::ChromeBrowserStateManager> chrome_browser_state_manager_;
   std::string application_locale_;
   std::string application_country_;
 
   // Sequenced task runner for local state related I/O tasks.
   const scoped_refptr<base::SequencedTaskRunner> local_state_task_runner_;
-
-  std::unique_ptr<network::NetworkChangeManager> network_change_manager_;
-  std::unique_ptr<network::NetworkConnectionTracker>
-      network_connection_tracker_;
 
   scoped_refptr<SafeBrowsingService> safe_browsing_service_;
 

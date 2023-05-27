@@ -34,6 +34,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
@@ -153,6 +154,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
+#include "third_party/blink/renderer/core/layout/anchor_scroll_data.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -321,7 +323,8 @@ void LocalFrame::Init(Frame* opener,
                       const DocumentToken& document_token,
                       std::unique_ptr<PolicyContainer> policy_container,
                       const StorageKey& storage_key,
-                      ukm::SourceId document_ukm_source_id) {
+                      ukm::SourceId document_ukm_source_id,
+                      const KURL& creator_base_url) {
   if (!policy_container)
     policy_container = PolicyContainer::CreateEmpty();
 
@@ -334,7 +337,7 @@ void LocalFrame::Init(Frame* opener,
 
   SetOpenerDoNotNotify(opener);
   loader_.Init(document_token, std::move(policy_container), storage_key,
-               document_ukm_source_id);
+               document_ukm_source_id, creator_base_url);
 }
 
 void LocalFrame::SetView(LocalFrameView* view) {
@@ -966,11 +969,10 @@ void LocalFrame::HookBackForwardCacheEviction() {
               frame->EvictFromBackForwardCache(
                   mojom::blink::RendererEvictionReason::kJavaScriptExecution);
               if (base::FeatureList::IsEnabled(
-                      features::
-                          kBackForwardCacheNotReachedOnJavaScriptExecution)) {
-                // Adding |NOTREACHED()| here to make sure this is not happening
-                // in any tests, except for when this is expected.
-                NOTREACHED();
+                      features::kBackForwardCacheDWCOnJavaScriptExecution)) {
+                // Adding |DumpWithoutCrashing()| here to make sure this is not
+                // happening in any tests, except for when this is expected.
+                base::debug::DumpWithoutCrashing();
               }
             }
           });
@@ -1170,7 +1172,7 @@ void LocalFrame::DidChangeThemeColor(bool update_theme_color_cache) {
   GetLocalFrameHostRemote().DidChangeThemeColor(sk_color);
 }
 
-void LocalFrame::DidChangeBackgroundColor(SkColor background_color,
+void LocalFrame::DidChangeBackgroundColor(SkColor4f background_color,
                                           bool color_adjust) {
   DCHECK(!Tree().Parent());
   GetLocalFrameHostRemote().DidChangeBackgroundColor(background_color,
@@ -1213,12 +1215,6 @@ void LocalFrame::SetPrinting(bool printing,
   GetDocument()->SetPrinting(printing ? Document::kPrinting
                                       : Document::kFinishingPrinting);
   View()->AdjustMediaTypeForPrinting(printing);
-
-  if (!printing) {
-    // Don't get stuck with the legacy engine when no longer printing.
-    if (Element* root = GetDocument()->documentElement())
-      root->ResetForceLegacyLayoutForPrinting();
-  }
 
   if (TextAutosizer* text_autosizer = GetDocument()->GetTextAutosizer())
     text_autosizer->UpdatePageInfo();
@@ -2431,7 +2427,7 @@ void LocalFrame::OnTaskCompleted(base::TimeTicks start_time,
 
 void LocalFrame::MainFrameInteractive() {
   if (Page* page = GetPage()) {
-    page->GetV8CompileHints().GenerateData();
+    page->GetV8CrowdsourcedCompileHintsProducer().GenerateData();
   }
 }
 
@@ -2774,6 +2770,11 @@ void LocalFrame::DidFreeze() {
 
   if (GetPage()->GetPageScheduler()->IsInBackForwardCache()) {
     DomWindow()->SetIsInBackForwardCache(true);
+  }
+
+  if (resource_cache_) {
+    resource_cache_->ClearReceivers();
+    resource_cache_.Clear();
   }
 
   LoaderFreezeMode freeze_mode = GetLoaderFreezeMode();
@@ -3490,9 +3491,25 @@ void LocalFrame::ScheduleNextServiceForScrollSnapshotClients() {
   }
 }
 
-void LocalFrame::SetResourceCacheImpl(ResourceCacheImpl* resource_cache) {
-  DCHECK(!resource_cache_);
-  resource_cache_ = resource_cache;
+void LocalFrame::CollectAnchorScrollContainerIds(
+    Vector<cc::ElementId>* ids) const {
+  for (const auto& client : scroll_snapshot_clients_) {
+    if (const AnchorScrollData* data =
+            DynamicTo<AnchorScrollData>(client.Get());
+        data && data->IsActive()) {
+      ids->AppendVector(data->ScrollContainerIds());
+    }
+  }
+}
+
+void LocalFrame::BindResourceCache(
+    mojo::PendingReceiver<mojom::blink::ResourceCache> receiver) {
+  if (resource_cache_) {
+    resource_cache_->AddReceiver(std::move(receiver));
+  } else {
+    resource_cache_ =
+        MakeGarbageCollected<ResourceCacheImpl>(this, std::move(receiver));
+  }
 }
 
 void LocalFrame::SetResourceCacheRemote(

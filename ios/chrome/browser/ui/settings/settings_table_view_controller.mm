@@ -35,6 +35,7 @@
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -46,10 +47,16 @@
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
+#import "ios/chrome/browser/settings/sync/utils/sync_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/buildflags.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_cell.h"
@@ -68,6 +75,7 @@
 #import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
@@ -76,11 +84,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
-#import "ios/chrome/browser/ui/icons/buildflags.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
@@ -97,18 +100,20 @@
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_mediator.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/notifications/notifications_coordinator.h"
+#import "ios/chrome/browser/ui/settings/notifications/notifications_settings_observer.h"
+#import "ios/chrome/browser/ui/settings/notifications/notifications_settings_util.h"
+#import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_utils.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_coordinator.h"
-#import "ios/chrome/browser/ui/settings/price_notifications/price_notifications_coordinator.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_coordinator.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_constants.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_coordinator.h"
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_utils.h"
 #import "ios/chrome/browser/ui/settings/search_engine_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
-#import "ios/chrome/browser/ui/settings/sync/utils/identity_error_util.h"
-#import "ios/chrome/browser/ui/settings/sync/utils/sync_state.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
+#import "ios/chrome/browser/ui/settings/tabs/tabs_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/voice_search_table_view_controller.h"
 #import "ios/chrome/browser/upgrade/upgrade_utils.h"
@@ -127,9 +132,6 @@
 #endif
 
 namespace {
-
-// The size of trailing symbol icons for unsafe state.
-NSInteger kTrailingSymbolImagePointSize = 22;
 
 // Key used for storing NSUserDefault entry to keep track of the last timestamp
 // we've shown the default browser blue dot promo.
@@ -159,11 +161,12 @@ UIImage* GetBrandedGoogleServicesSymbol() {
     GoogleServicesSettingsCoordinatorDelegate,
     IdentityManagerObserverBridgeDelegate,
     ManageSyncSettingsCoordinatorDelegate,
+    NotificationsSettingsObserverDelegate,
     PasswordCheckObserver,
     PasswordsCoordinatorDelegate,
     PopoverLabelViewControllerDelegate,
     PrefObserverDelegate,
-    PriceNotificationsCoordinatorDelegate,
+    NotificationsCoordinatorDelegate,
     PrivacyCoordinatorDelegate,
     SafetyCheckCoordinatorDelegate,
     SettingsControllerProtocol,
@@ -198,6 +201,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   // PrefBackedBoolean that overrides ArticlesForYou switch for supervised
   // users.
   PrefBackedBoolean* _contentSuggestionForSupervisedUsersEnabled;
+  // PrefBackedBoolean for BottomOmnibox switch.
+  PrefBackedBoolean* _bottomOmniboxEnabled;
   // The item related to the switch for the show suggestions setting.
   TableViewSwitchItem* _showMemoryDebugToolsItem;
   // The item related to the safety check.
@@ -209,8 +214,8 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   GoogleServicesSettingsCoordinator* _googleServicesSettingsCoordinator;
   ManageSyncSettingsCoordinator* _manageSyncSettingsCoordinator;
 
-  // Price notifications coordinator.
-  PriceNotificationsCoordinator* _priceNotificationsCoordinator;
+  // notifications coordinator.
+  NotificationsCoordinator* _notificationsCoordinator;
 
   // Privacy coordinator.
   PrivacyCoordinator* _privacyCoordinator;
@@ -242,12 +247,18 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   TableViewDetailIconItem* _passwordsDetailItem;
   TableViewDetailIconItem* _autoFillProfileDetailItem;
   TableViewDetailIconItem* _autoFillCreditCardDetailItem;
+  TableViewDetailIconItem* _notificationsItem;
   TableViewItem* _syncItem;
 
   // Whether Settings have been dismissed.
   BOOL _settingsAreDismissed;
+
+  // Tabs settings coordinator.
+  TabsSettingsCoordinator* _tabsCoordinator;
 }
 
+// The item related to the switch for the bottom omnibox settings.
+@property(nonatomic, strong, readonly) TableViewSwitchItem* bottomOmniboxItem;
 // The item related to the switch for the show feed settings.
 @property(nonatomic, strong, readonly) TableViewSwitchItem* feedSettingsItem;
 // The item related to the enterprise managed show feed settings.
@@ -268,9 +279,15 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 // Account manager service to retrieve Chrome identities.
 @property(nonatomic, assign) ChromeAccountManagerService* accountManagerService;
 
+// An observer that tracks whether push notification permission settings have
+// been modified.
+@property(nonatomic, strong)
+    NotificationsSettingsObserver* notificationsObserver;
+
 @end
 
 @implementation SettingsTableViewController
+@synthesize bottomOmniboxItem = _bottomOmniboxItem;
 @synthesize dispatcher = _dispatcher;
 @synthesize managedFeedSettingsItem = _managedFeedSettingsItem;
 @synthesize feedSettingsItem = _feedSettingsItem;
@@ -335,6 +352,11 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                    prefName:prefs::kArticlesForYouEnabled];
     [_articlesEnabled setObserver:self];
 
+    _bottomOmniboxEnabled =
+        [[PrefBackedBoolean alloc] initWithPrefService:prefService
+                                              prefName:prefs::kBottomOmnibox];
+    [_bottomOmniboxEnabled setObserver:self];
+
     _contentSuggestionPolicyEnabled = [[PrefBackedBoolean alloc]
         initWithPrefService:prefService
                    prefName:prefs::kNTPContentSuggestionsEnabled];
@@ -366,6 +388,9 @@ UIImage* GetBrandedGoogleServicesSymbol() {
         &_prefChangeRegistrar);
     _prefObserverBridge->ObserveChangesForPreference(prefs::kSigninAllowed,
                                                      &_prefChangeRegistrar);
+    _notificationsObserver =
+        [[NotificationsSettingsObserver alloc] initWithPrefService:prefService];
+    _notificationsObserver.delegate = self;
 
     _dispatcher = dispatcher;
 
@@ -395,6 +420,12 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
   self.navigationItem.largeTitleDisplayMode =
       UINavigationItemLargeTitleDisplayModeAlways;
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+  // Update the `_safetyCheckItem` icon when returning to this view controller.
+  [self updateSafetyCheckItemTrailingIcon];
 }
 
 #pragma mark SettingsRootTableViewController
@@ -433,11 +464,17 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [model addSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
   if (base::FeatureList::IsEnabled(kNotificationSettingsMenuItem) &&
       IsPriceNotificationsEnabled()) {
-    [model addItem:[self priceNotificationsItem]
+    _notificationsItem = [self notificationsItem];
+    [self updateNotificationsDetailText];
+    [model addItem:_notificationsItem
         toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
   }
   [model addItem:[self voiceSearchDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+  if (base::FeatureList::IsEnabled(kBottomOmniboxSteadyState)) {
+    [model addItem:[self bottomOmniboxItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+  };
   [model addItem:[self safetyCheckDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
   [model addItem:[self privacyDetailItem]
@@ -459,15 +496,33 @@ UIImage* GetBrandedGoogleServicesSymbol() {
           toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
     }
   }
-  [model addItem:[self languageSettingsDetailItem]
-      toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
-  [model addItem:[self contentSettingsDetailItem]
-      toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
-  [model addItem:[self bandwidthManagementDetailItem]
-      toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
 
-  // Info Section
-  [model addSectionWithIdentifier:SettingsSectionIdentifierInfo];
+  // `IsInactiveTabsEnabled` returns NO if the user explicitly disabled inactive
+  // tabs. As the user should have the choice to enabled it back, the settings
+  // should be displayed even if the feature has been explicitly disabled.
+  if (IsInactiveTabsEnabled() || IsInactiveTabsExplictlyDisabledByUser()) {
+    [model addItem:[self tabsSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+
+    // Info Section
+    [model addSectionWithIdentifier:SettingsSectionIdentifierInfo];
+    [model addItem:[self languageSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierInfo];
+    [model addItem:[self contentSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierInfo];
+    [model addItem:[self bandwidthManagementDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierInfo];
+  } else {
+    [model addItem:[self languageSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+    [model addItem:[self contentSettingsDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+    [model addItem:[self bandwidthManagementDetailItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
+
+    // Info Section
+    [model addSectionWithIdentifier:SettingsSectionIdentifierInfo];
+  }
   [model addItem:[self aboutChromeDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierInfo];
 
@@ -858,6 +913,23 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   return _voiceSearchDetailItem;
 }
 
+- (TableViewItem*)bottomOmniboxItem {
+  DCHECK(base::FeatureList::IsEnabled(kBottomOmniboxSteadyState));
+  if (!_bottomOmniboxItem) {
+    _bottomOmniboxItem =
+        [self switchItemWithType:SettingsItemTypeBottomOmnibox
+                              // TODO(crbug.com/1430093): add title.
+                              title:@"Bottom Omnibox"
+                             // TODO(crbug.com/1430093): add symbol.
+                             symbol:DefaultSettingsRootSymbol(kDiscoverSymbol)
+              // TODO(crbug.com/1430093): change background color.
+              symbolBackgroundColor:[UIColor colorNamed:kGreen500Color]
+            accessibilityIdentifier:kSettingsBottomOmniboxCellId];
+    _bottomOmniboxItem.on = [_bottomOmniboxEnabled value];
+  }
+  return _bottomOmniboxItem;
+}
+
 - (SettingsCheckItem*)safetyCheckDetailItem {
   NSString* safetyCheckTitle =
       l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_SAFETY_CHECK);
@@ -877,24 +949,20 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       kColorfulBackgroundSymbolCornerRadius;
   // Check if an issue state should be shown for updates.
   if (!IsAppUpToDate() && PreviousSafetyCheckIssueFound()) {
-    UIImage* unSafeIconImage = DefaultSymbolTemplateWithPointSize(
-        kWarningFillSymbol, kTrailingSymbolImagePointSize);
-    _safetyCheckItem.trailingImage = unSafeIconImage;
-    _safetyCheckItem.trailingImageTintColor = [UIColor colorNamed:kRedColor];
+    [self updateSafetyCheckItemTrailingIcon];
   }
 
   return _safetyCheckItem;
 }
 
-- (TableViewItem*)priceNotificationsItem {
-  NSString* title = l10n_util::GetNSString(IDS_IOS_PRICE_NOTIFICATIONS_TITLE);
-
-  return [self detailItemWithType:SettingsItemTypePriceNotifications
+- (TableViewDetailIconItem*)notificationsItem {
+  NSString* title = l10n_util::GetNSString(IDS_IOS_NOTIFICATIONS_TITLE);
+  return [self detailItemWithType:SettingsItemTypeNotifications
                              text:title
                        detailText:nil
                            symbol:DefaultSettingsRootSymbol(kBellSymbol)
             symbolBackgroundColor:[UIColor colorNamed:kPink500Color]
-          accessibilityIdentifier:kSettingsPriceNotificationsId];
+          accessibilityIdentifier:kSettingsNotificationsId];
 }
 
 - (TableViewItem*)privacyDetailItem {
@@ -960,6 +1028,16 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                        symbol:DefaultSettingsRootSymbol(kSettingsFilledSymbol)
         symbolBackgroundColor:[UIColor colorNamed:kGrey400Color]
       accessibilityIdentifier:kSettingsContentSettingsCellId];
+}
+
+- (TableViewItem*)tabsSettingsDetailItem {
+  return [self detailItemWithType:SettingsItemTypeTabs
+                             text:l10n_util::GetNSString(
+                                      IDS_IOS_TABS_MANAGEMENT_SETTINGS)
+                       detailText:nil
+                           symbol:DefaultSettingsRootSymbol(kTabsSymbol)
+            symbolBackgroundColor:[UIColor colorNamed:kOrange500Color]
+          accessibilityIdentifier:kSettingsTabsCellId];
 }
 
 - (TableViewItem*)bandwidthManagementDetailItem {
@@ -1121,6 +1199,14 @@ UIImage* GetBrandedGoogleServicesSymbol() {
           base::mac::ObjCCastStrict<TableViewSwitchCell>(cell);
       [switchCell.switchView addTarget:self
                                 action:@selector(articlesForYouSwitchToggled:)
+                      forControlEvents:UIControlEventValueChanged];
+      break;
+    }
+    case SettingsItemTypeBottomOmnibox: {
+      TableViewSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<TableViewSwitchCell>(cell);
+      [switchCell.switchView addTarget:self
+                                action:@selector(bottomOmniboxSwitchToggled:)
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
@@ -1291,9 +1377,9 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       controller =
           [[AutofillProfileTableViewController alloc] initWithBrowser:_browser];
       break;
-    case SettingsItemTypePriceNotifications:
+    case SettingsItemTypeNotifications:
       DCHECK(IsPriceNotificationsEnabled());
-      [self showPriceNotifications];
+      [self showNotifications];
       break;
     case SettingsItemTypeVoiceSearch:
       base::RecordAction(base::UserMetricsAction("Settings.VoiceSearch"));
@@ -1323,6 +1409,10 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       base::RecordAction(base::UserMetricsAction("Settings.ContentSettings"));
       controller =
           [[ContentSettingsTableViewController alloc] initWithBrowser:_browser];
+      break;
+    case SettingsItemTypeTabs:
+      base::RecordAction(base::UserMetricsAction("Settings.Tabs"));
+      [self showTabsSettings];
       break;
     case SettingsItemTypeBandwidth:
       base::RecordAction(base::UserMetricsAction("Settings.Bandwidth"));
@@ -1448,6 +1538,21 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [_articlesEnabled setValue:newSwitchValue];
 }
 
+- (void)bottomOmniboxSwitchToggled:(UISwitch*)sender {
+  DCHECK(base::FeatureList::IsEnabled(kBottomOmniboxSteadyState));
+  NSIndexPath* switchPath = [self.tableViewModel
+      indexPathForItemType:SettingsItemTypeBottomOmnibox
+         sectionIdentifier:SettingsSectionIdentifierAdvanced];
+
+  TableViewSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<TableViewSwitchItem>(
+          [self.tableViewModel itemAtIndexPath:switchPath]);
+
+  BOOL newSwitchValue = sender.isOn;
+  switchItem.on = newSwitchValue;
+  [_bottomOmniboxEnabled setValue:newSwitchValue];
+}
+
 #if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 - (void)viewSourceSwitchToggled:(UISwitch*)sender {
   NSIndexPath* switchPath =
@@ -1480,6 +1585,13 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                                    browser:_browser];
   _googleServicesSettingsCoordinator.delegate = self;
   [_googleServicesSettingsCoordinator start];
+}
+
+- (void)showTabsSettings {
+  _tabsCoordinator = [[TabsSettingsCoordinator alloc]
+      initWithBaseNavigationController:self.navigationController
+                               browser:_browser];
+  [_tabsCoordinator start];
 }
 
 - (void)showGoogleSync {
@@ -1518,30 +1630,47 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   return !_passwordCheckManager->GetInsecureCredentials().empty();
 }
 
-// Displays a red issue state on `_safetyCheckItem` if there is a reamining
-// issue for any of the checks.
-- (void)setSafetyCheckIssueStateUnsafe:(BOOL)isUnsafe {
-  if (isUnsafe && PreviousSafetyCheckIssueFound()) {
-    UIImage* unSafeIconImage = DefaultSymbolTemplateWithPointSize(
-        kWarningFillSymbol, kTrailingSymbolImagePointSize);
-    _safetyCheckItem.trailingImage = unSafeIconImage;
-    _safetyCheckItem.trailingImageTintColor = [UIColor colorNamed:kRedColor];
-  } else {
+// Displays a warning icon in the `_safetyCheckItem` if there is a reamining
+// issue for any of the safety checks.
+- (void)updateSafetyCheckItemTrailingIcon {
+  if (!_safetyCheckItem) {
+    return;
+  }
+
+  if (!PreviousSafetyCheckIssueFound()) {
     _safetyCheckItem.trailingImage = nil;
     _safetyCheckItem.trailingImageTintColor = nil;
+    return;
+  }
+
+  if (!IsAppUpToDate()) {
+    _safetyCheckItem.warningState = WarningState::kSevereWarning;
+  } else if ([self hasPasswordIssuesRemaining]) {
+    password_manager::WarningType warningType = GetWarningOfHighestPriority(
+        _passwordCheckManager->GetInsecureCredentials());
+    if (warningType ==
+        password_manager::WarningType::kCompromisedPasswordsWarning) {
+      _safetyCheckItem.warningState = WarningState::kSevereWarning;
+    } else {
+      // Getting here means that there are reused, weak and/or muted passwords.
+      // In Safety Check, an icon is shown for passwords only when all passwords
+      // are safe or when there are unmuted compromised passwords. When there
+      // are reused, weak and/or muted passwords, no icon is shown.
+      _safetyCheckItem.trailingImage = nil;
+    }
   }
   [self reconfigureCellsForItems:@[ _safetyCheckItem ]];
 }
 
-// Shows Price Notifications screen.
-- (void)showPriceNotifications {
-  DCHECK(!_priceNotificationsCoordinator);
+// Shows Notifications screen.
+- (void)showNotifications {
+  DCHECK(!_notificationsCoordinator);
   DCHECK(self.navigationController);
-  _priceNotificationsCoordinator = [[PriceNotificationsCoordinator alloc]
+  _notificationsCoordinator = [[NotificationsCoordinator alloc]
       initWithBaseNavigationController:self.navigationController
                                browser:_browser];
-  _priceNotificationsCoordinator.delegate = self;
-  [_priceNotificationsCoordinator start];
+  _notificationsCoordinator.delegate = self;
+  [_notificationsCoordinator start];
 }
 
 // Shows Privacy screen.
@@ -1749,6 +1878,34 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   }
 }
 
+// Updates the string indicating the push notification state.
+- (void)updateNotificationsDetailText {
+  if (!_notificationsItem) {
+    return;
+  }
+
+  NSString* detailText = nil;
+  AuthenticationService* authService =
+      AuthenticationServiceFactory::GetForBrowserState(_browserState);
+  id<SystemIdentity> identity =
+      authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+  PrefService* prefService = _browserState->GetPrefs();
+  const std::string& gaiaID = base::SysNSStringToUTF8(identity.gaiaID);
+  notifications_settings::ClientPermissionState permission_state =
+      notifications_settings::GetNotificationPermissionState(gaiaID,
+                                                             prefService);
+  if (permission_state ==
+      notifications_settings::ClientPermissionState::ENABLED) {
+    detailText = l10n_util::GetNSString(IDS_IOS_SETTING_ON);
+  } else if (permission_state ==
+             notifications_settings::ClientPermissionState::DISABLED) {
+    detailText = l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+  }
+
+  _notificationsItem.detailText = detailText;
+  [self reconfigureCellsForItems:@[ _notificationsItem ]];
+}
+
 #pragma mark - SigninPresenter
 
 - (void)showSignin:(ShowSigninCommand*)command {
@@ -1818,14 +1975,17 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   _passwordsCoordinator.delegate = nil;
   _passwordsCoordinator = nil;
 
-  [_priceNotificationsCoordinator stop];
-  _priceNotificationsCoordinator = nil;
+  [_notificationsCoordinator stop];
+  _notificationsCoordinator = nil;
 
   [_privacyCoordinator stop];
   _privacyCoordinator = nil;
 
   [_manageSyncSettingsCoordinator stop];
   _manageSyncSettingsCoordinator = nil;
+
+  [_tabsCoordinator stop];
+  _tabsCoordinator = nil;
 
   // Stop observable prefs.
   [_showMemoryDebugToolsEnabled stop];
@@ -1839,6 +1999,10 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [_allowChromeSigninPreference stop];
   [_allowChromeSigninPreference setObserver:nil];
   _allowChromeSigninPreference = nil;
+
+  [_bottomOmniboxEnabled stop];
+  [_bottomOmniboxEnabled setObserver:nil];
+  _bottomOmniboxEnabled = nil;
 
   [_contentSuggestionPolicyEnabled stop];
   [_contentSuggestionPolicyEnabled setObserver:nil];
@@ -1976,7 +2140,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   // Settings may have been dismissed in the meantime as the callback is
   // asynchronous. There is no UI to update in that case.
   if (!_settingsAreDismissed) {
-    [self setSafetyCheckIssueStateUnsafe:[self hasPasswordIssuesRemaining]];
+    [self updateSafetyCheckItemTrailingIcon];
   }
 }
 
@@ -1984,7 +2148,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   // Settings may have been dismissed in the meantime as the callback is
   // asynchronous. There is no UI to update in that case.
   if (!_settingsAreDismissed) {
-    [self setSafetyCheckIssueStateUnsafe:[self hasPasswordIssuesRemaining]];
+    [self updateSafetyCheckItemTrailingIcon];
   }
 }
 
@@ -2112,13 +2276,13 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   _passwordsCoordinator = nil;
 }
 
-#pragma mark - PriceNotificationsDelegate
+#pragma mark - NotificationsDelegate
 
-- (void)priceNotificationsCoordinatorDidRemove:
-    (PriceNotificationsCoordinator*)coordinator {
-  DCHECK_EQ(_priceNotificationsCoordinator, coordinator);
-  [_priceNotificationsCoordinator stop];
-  _priceNotificationsCoordinator = nil;
+- (void)notificationsCoordinatorDidRemove:
+    (NotificationsCoordinator*)coordinator {
+  DCHECK_EQ(_notificationsCoordinator, coordinator);
+  [_notificationsCoordinator stop];
+  _notificationsCoordinator = nil;
 }
 
 #pragma mark - PrivacyCoordinatorDelegate
@@ -2175,6 +2339,13 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 - (NSString*)manageSyncSettingsCoordinatorTitle {
   return l10n_util::GetNSString(IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE);
+}
+
+#pragma mark - NotificationsSettingsObserverDelegate
+
+- (void)notificationsSettingsDidChangeForClient:
+    (PushNotificationClientId)clientID {
+  [self updateNotificationsDetailText];
 }
 
 @end

@@ -36,10 +36,6 @@
 #include "net/socket/tcp_server_socket.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if !BUILDFLAG(IS_ANDROID)
-#include "content/public/browser/devtools_frontend_host.h"
-#endif
-
 #if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/android/devtools_auth.h"
 #include "net/socket/unix_domain_server_socket_posix.h"
@@ -143,8 +139,18 @@ std::unique_ptr<content::DevToolsSocketFactory> CreateSocketFactory() {
       DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
     }
   }
+  // By default listen to incoming DevTools connections on localhost.
+  std::string address_str = net::IPAddress::IPv4Localhost().ToString();
+  if (command_line.HasSwitch(switches::kRemoteDebuggingAddress)) {
+    net::IPAddress address;
+    address_str =
+        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingAddress);
+    if (!address.AssignFromIPLiteral(address_str)) {
+      DLOG(WARNING) << "Invalid devtools server address: " << address_str;
+    }
+  }
   return std::unique_ptr<content::DevToolsSocketFactory>(
-      new TCPServerSocketFactory("127.0.0.1", port));
+      new TCPServerSocketFactory(address_str, port));
 #endif
 }
 
@@ -209,7 +215,7 @@ scoped_refptr<DevToolsAgentHost> ShellDevToolsManagerDelegate::CreateNewTarget(
 }
 
 std::string ShellDevToolsManagerDelegate::GetDiscoveryPageHTML() {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   return std::string();
 #else
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
@@ -218,7 +224,7 @@ std::string ShellDevToolsManagerDelegate::GetDiscoveryPageHTML() {
 }
 
 bool ShellDevToolsManagerDelegate::HasBundledFrontendResources() {
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   return false;
 #else
   return true;

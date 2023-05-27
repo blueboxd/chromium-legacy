@@ -22,7 +22,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
-#include "chrome/browser/net/cert_verifier_configuration.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/preloading/preloading_features.h"
@@ -52,6 +52,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/autofill/content/browser/content_autofill_client.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -66,6 +67,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/browsing_data/core/features.h"
 #include "components/content_settings/core/common/features.h"
+#include "components/device_reauth/device_authenticator.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -236,12 +238,6 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #endif
 
   html_source->AddBoolean("isChildAccount", profile->IsChild());
-#if BUILDFLAG(IS_LINUX)
-  bool allow_qt_theme = base::FeatureList::IsEnabled(ui::kAllowQt);
-#else
-  bool allow_qt_theme = false;
-#endif
-  html_source->AddBoolean("allowQtTheme", allow_qt_theme);
 }
 
 void AddA11yStrings(content::WebUIDataSource* html_source) {
@@ -309,9 +305,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if BUILDFLAG(IS_MAC)
     {"aboutLearnMoreUpdating", IDS_SETTINGS_ABOUT_PAGE_LEARN_MORE_UPDATING},
 #endif
-    {"getTheMostOutOfProgram", IDS_SETTINGS_GET_THE_MOST_OUT_OF_PROGRAM},
-    {"getTheMostOutOfProgramDescription",
-     IDS_SETTINGS_GET_THE_MOST_OUT_OF_PROGRAM_DESCRIPTION},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -354,10 +347,6 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddLocalizedString("aboutProductTos",
                                   IDS_ABOUT_TERMS_OF_SERVICE);
 #endif
-
-  html_source->AddBoolean(
-      "showGetTheMostOutOfProgramSection",
-      base::FeatureList::IsEnabled(features::kGetTheMostOutOfProgram));
 }
 
 void AddAppearanceStrings(content::WebUIDataSource* html_source,
@@ -523,9 +512,30 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
       {"promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD},
       {"openFileTypesAutomatically",
        IDS_SETTINGS_OPEN_FILE_TYPES_AUTOMATICALLY},
+      {"showDownloadsWhenFinished", IDS_SETTINGS_DOWNLOADS_SHOW_WHEN_FINISHED},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+void AddGetTheMostOutOfChromeStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"getTheMostOutOfChrome", IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME},
+      {"getTheMostOutOfChromeDescription",
+       IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_DESCRIPTION},
+      {"getTheMostOutOfChromeIntro",
+       IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_INTRO},
+      {"getTheMostOutOfChromeMoreThanABrowser",
+       IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_MORE_THAN_A_BROWSER},
+      {"getTheMostOutOfChromeYourDataInChrome",
+       IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_YOUR_DATA_IN_CHROME},
+      {"getTheMostOutOfChromeBeyondCookies",
+       IDS_SETTINGS_GET_THE_MOST_OUT_OF_CHROME_BEYOND_COOKIES},
+  };
+
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
@@ -898,11 +908,22 @@ bool IsFidoAuthenticationAvailable(autofill::PersonalDataManager* personal_data,
   return ::autofill::IsCreditCardFidoAuthenticationEnabled();
 }
 
+bool CheckDeviceAuthAvailability(content::WebContents* web_contents) {
+  // If `client` is not available, then don't show toggle switch.
+  autofill::ContentAutofillClient* client =
+      autofill::ContentAutofillClient::FromWebContents(web_contents);
+  if (!client) {
+    return false;
+  }
+
+  return autofill::IsDeviceAuthAvailable(client->GetDeviceAuthenticator());
+}
+
 void AddAutofillStrings(content::WebUIDataSource* html_source,
                         Profile* profile,
                         content::WebContents* web_contents) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-    {"autofillPageTitle", IDS_SETTINGS_AUTOFILL},
+    {"autofillPageTitle", IDS_SETTINGS_AUTOFILL_AND_PASSWORDS},
     {"passwordsDescription", IDS_SETTINGS_PASSWORD_MANAGER_DESCRIPTION},
     {"passwordsDevice", IDS_SETTINGS_DEVICE_PASSWORDS},
     {"checkPasswords", IDS_SETTINGS_CHECK_PASSWORDS},
@@ -964,13 +985,20 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"enableCreditCardFIDOAuthLabel", IDS_ENABLE_CREDIT_CARD_FIDO_AUTH_LABEL},
     {"enableCreditCardFIDOAuthSublabel",
      IDS_ENABLE_CREDIT_CARD_FIDO_AUTH_SUBLABEL},
+    {"enableMandatoryAuthToggleLabel",
+     IDS_AUTOFILL_SETTINGS_PAGE_ENABLE_PAYMENT_METHOD_MANDATORY_REAUTH_LABEL},
+    {"enableMandatoryAuthToggleSublabel",
+     IDS_AUTOFILL_SETTINGS_PAGE_ENABLE_PAYMENT_METHOD_MANDATORY_REAUTH_SUBLABEL},
     {"addresses", IDS_AUTOFILL_ADDRESSES},
     {"addressesTableAriaLabel", IDS_AUTOFILL_ADDRESSES_TABLE_ARIA_LABEL},
     {"addressesTitle", IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE},
     {"addAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_ADD_TITLE},
     {"editAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_EDIT_TITLE},
+    {"localAddressIconA11yLabel", IDS_AUTOFILL_LOCAL_ADDRESS_ICON_A11Y_LABEL},
+    {"newAccountAddressSourceNotice",
+     IDS_AUTOFILL_ADDRESS_WILL_BE_SAVED_IN_ACCOUNT_SOURCE_NOTICE},
     {"editAccountAddressSourceNotice",
-     IDS_AUTOFILL_EDIT_ACCOUNT_ADDRESS_SOURCE_NOTICE},
+     IDS_AUTOFILL_ADDRESS_ALREADY_SAVED_IN_ACCOUNT_SOURCE_NOTICE},
     {"deleteAccountAddressSourceNotice",
      IDS_AUTOFILL_DELETE_ACCOUNT_ADDRESS_SOURCE_NOTICE},
     {"addressCountry", IDS_SETTINGS_AUTOFILL_ADDRESSES_COUNTRY},
@@ -1238,7 +1266,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"addVirtualCard", IDS_AUTOFILL_ADD_VIRTUAL_CARD},
     {"removeVirtualCard", IDS_AUTOFILL_REMOVE_VIRTUAL_CARD},
     {"editServerCard", IDS_AUTOFILL_EDIT_SERVER_CREDIT_CARD},
-    {"virtualCardAvailable", IDS_AUTOFILL_VIRTUAL_CARD_AVAILABLE_LABEL},
     {"virtualCardEnabled", IDS_AUTOFILL_VIRTUAL_CARD_ENABLED_LABEL},
     {"virtualCardTurnedOn", IDS_AUTOFILL_VIRTUAL_CARD_TURNED_ON_LABEL},
     {"unenrollVirtualCardDialogTitle",
@@ -1354,6 +1381,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                           autofill::ShouldShowIbanOnSettingsPage(
                               personal_data->GetCountryCodeForExperimentGroup(),
                               profile->GetPrefs()));
+
+  html_source->AddBoolean("deviceAuthAvailable",
+                          CheckDeviceAuthAvailability(web_contents));
 
   html_source->AddBoolean(
       "fidoAuthenticationAvailableForAutofill",
@@ -1868,13 +1898,11 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(features::kHttpsOnlyMode));
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
-  html_source->AddBoolean(
-      "showChromeRootStoreCertificates",
+  html_source->AddBoolean("showChromeRootStoreCertificates",
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
-      GetChromeCertVerifierServiceParams(/*local_state=*/nullptr)
-          ->use_chrome_root_store
+                          SystemNetworkContextManager::IsUsingChromeRootStore()
 #else
-      true
+                          true
 #endif
   );
 
@@ -2172,6 +2200,30 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       "firstPartySetsUIEnabled",
       base::FeatureList::IsEnabled(
           privacy_sandbox::kPrivacySandboxFirstPartySetsUI));
+
+  html_source->AddString("bluetoothAdapterOffHelpURL",
+                         google_util::AppendGoogleLocaleParam(
+                             GURL(chrome::kBluetoothAdapterOffHelpURL),
+                             g_browser_process->GetApplicationLocale())
+                             .spec());
+
+  html_source->AddString("chooserHidOverviewUrl",
+                         google_util::AppendGoogleLocaleParam(
+                             GURL(chrome::kChooserHidOverviewUrl),
+                             g_browser_process->GetApplicationLocale())
+                             .spec());
+
+  html_source->AddString("chooserSerialOverviewUrl",
+                         google_util::AppendGoogleLocaleParam(
+                             GURL(chrome::kChooserSerialOverviewUrl),
+                             g_browser_process->GetApplicationLocale())
+                             .spec());
+
+  html_source->AddString("chooserUsbOverviewURL",
+                         google_util::AppendGoogleLocaleParam(
+                             GURL(chrome::kChooserUsbOverviewURL),
+                             g_browser_process->GetApplicationLocale())
+                             .spec());
 }
 
 void AddPrivacyGuideStrings(content::WebUIDataSource* html_source) {
@@ -2511,6 +2563,11 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"noHidDevicesFound", IDS_SETTINGS_NO_HID_DEVICES_FOUND},
     {"noSerialPortsFound", IDS_SETTINGS_NO_SERIAL_PORTS_FOUND},
     {"noUsbDevicesFound", IDS_SETTINGS_NO_USB_DEVICES_FOUND},
+    {"resetBluetoothConfirmation", IDS_SETTINGS_RESET_BLUETOOTH_CONFIRMATION},
+    {"resetHidConfirmation", IDS_SETTINGS_RESET_HID_CONFIRMATION},
+    {"resetSerialPortsConfirmation",
+     IDS_SETTINGS_RESET_SERIAL_PORTS_CONFIRMATION},
+    {"resetUsbConfirmation", IDS_SETTINGS_RESET_USB_CONFIRMATION},
     {"serviceWorkerOrigin", IDS_SETTINGS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
     {"serviceWorkerSize",
      IDS_SETTINGS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
@@ -2644,6 +2701,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_ALL_SITES_SORT_METHOD_NAME},
     {"siteSettingsFileSystemSiteListEditHeader",
      IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_EDIT_HEADER},
+    {"siteSettingsFileSystemSiteListRemoveGrantLabel",
+     IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_REMOVE_GRANT_LABEL},
     {"siteSettingsFileSystemSiteListViewHeader",
      IDS_SETTINGS_SITE_SETTINGS_FILE_SYSTEM_SITE_LIST_VIEW_HEADER},
     {"siteSettingsSiteEntryPartitionedLabel",
@@ -3617,6 +3676,10 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddAboutStrings(html_source, profile);
   AddAutofillStrings(html_source, profile, web_contents);
   AddAppearanceStrings(html_source, profile);
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  AddGetTheMostOutOfChromeStrings(html_source);
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 #if BUILDFLAG(IS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   AddChromeCleanupStrings(html_source);

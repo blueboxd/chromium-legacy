@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_VIEW_H_
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_UI_ACTION_VIEW_H_
 
-#include "ash/wm/desks/persistent_desks_bar/persistent_desks_bar_button.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
@@ -20,7 +19,6 @@
 namespace arc::input_overlay {
 
 class Action;
-class DisplayOverlayController;
 class ActionEditButton;
 
 // Represents the default label index. Default -1 means all the index.
@@ -113,8 +111,6 @@ class ActionView : public views::View {
  protected:
   virtual void MayUpdateLabelPosition(bool moving = true) = 0;
 
-  void UpdateTrashButtonPosition();
-
   void AddTouchPoint(ActionType action_type);
 
   // Reference to the action of this UI.
@@ -148,7 +144,6 @@ class ActionView : public views::View {
   void AddEditButton();
   void RemoveEditButton();
 
-  void AddTrashButton();
   void RemoveTrashButton();
   void OnTrashButtonPressed();
 

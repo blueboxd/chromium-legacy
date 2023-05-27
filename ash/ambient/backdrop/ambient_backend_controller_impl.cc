@@ -26,10 +26,11 @@
 #include "base/base64.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
-#include "base/guid.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "chromeos/assistant/internal/ambient/backdrop_client_config.h"
+#include "chromeos/assistant/internal/ambient/utils.h"
 #include "chromeos/assistant/internal/proto/backdrop/backdrop.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -97,7 +98,7 @@ std::string GetClientId() {
   std::string client_id =
       prefs->GetString(ambient::prefs::kAmbientBackdropClientId);
   if (client_id.empty()) {
-    client_id = base::GenerateGUID();
+    client_id = base::Uuid::GenerateRandomV4().AsLowercaseString();
     prefs->SetString(ambient::prefs::kAmbientBackdropClientId, client_id);
   }
 
@@ -488,6 +489,16 @@ void AmbientBackendControllerImpl::FetchWeather(FetchWeatherCallback callback) {
 const std::array<const char*, 2>&
 AmbientBackendControllerImpl::GetBackupPhotoUrls() const {
   return chromeos::ambient::kBackupPhotoUrls;
+}
+
+std::array<const char*, 2>
+AmbientBackendControllerImpl::GetTimeOfDayVideoPreviewImageUrls(
+    AmbientVideo video) const {
+  return chromeos::ambient::GetTimeOfDayVideoPreviewImageUrls(video);
+}
+
+const char* AmbientBackendControllerImpl::GetPromoBannerUrl() const {
+  return chromeos::ambient::kTimeOfDayBannerImageUrl;
 }
 
 void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(

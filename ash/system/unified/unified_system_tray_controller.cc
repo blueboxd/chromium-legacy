@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/system/unified/unified_system_tray_controller.h"
+
+#include <algorithm>
 #include <memory>
 
 #include "ash/capture_mode/capture_mode_feature_pod_controller.h"
@@ -33,7 +35,7 @@
 #include "ash/system/locale/locale_feature_pod_controller.h"
 #include "ash/system/locale/unified_locale_detailed_view_controller.h"
 #include "ash/system/media/media_tray.h"
-#include "ash/system/media/unified_media_controls_controller.h"
+#include "ash/system/media/quick_settings_media_view_controller.h"
 #include "ash/system/media/unified_media_controls_detailed_view_controller.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/system_tray_model.h"
@@ -67,7 +69,6 @@
 #include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -114,7 +115,10 @@ UnifiedSystemTrayController::UnifiedSystemTrayController(
       animation_(std::make_unique<gfx::SlideAnimation>(this)) {
   LoadIsExpandedPref();
 
-  animation_->Reset(model_->IsExpandedOnOpen() ? 1.0 : 0.0);
+  const float animation_value = features::IsQsRevampEnabled()
+                                    ? 1
+                                    : (model_->IsExpandedOnOpen() ? 1.0 : 0.0);
+  animation_->Reset(animation_value);
   animation_->SetSlideDuration(
       base::Milliseconds(kSystemMenuCollapseExpandAnimationDurationMs));
   animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
@@ -199,23 +203,30 @@ UnifiedSystemTrayController::CreateQuickSettingsView(int max_height) {
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS) &&
       !Shell::Get()->session_controller()->IsScreenLocked() &&
       !MediaTray::IsPinnedToShelf()) {
-    media_controls_controller_ =
-        std::make_unique<UnifiedMediaControlsController>(this);
-    qs_view->AddMediaControlsView(media_controls_controller_->CreateView());
+    if (base::FeatureList::IsEnabled(
+            media::kGlobalMediaControlsCrOSUpdatedUI)) {
+      media_view_controller_ =
+          std::make_unique<QuickSettingsMediaViewController>(this);
+      qs_view->AddMediaView(media_view_controller_->CreateView());
+    } else {
+      media_controls_controller_ =
+          std::make_unique<UnifiedMediaControlsController>(this);
+      qs_view->AddMediaControlsView(media_controls_controller_->CreateView());
+    }
   }
 
   volume_slider_controller_ =
       std::make_unique<UnifiedVolumeSliderController>(this);
-  unified_volume_view_ = volume_slider_controller_->CreateView();
-  qs_view->AddSliderView(unified_volume_view_);
+  unified_volume_view_ =
+      qs_view->AddSliderView(volume_slider_controller_->CreateView());
 
   brightness_slider_controller_ =
       std::make_unique<UnifiedBrightnessSliderController>(
           model_, views::Button::PressedCallback(base::BindRepeating(
                       &UnifiedSystemTrayController::ShowDisplayDetailedView,
                       base::Unretained(this))));
-  unified_brightness_view_ = brightness_slider_controller_->CreateView();
-  qs_view->AddSliderView(unified_brightness_view_);
+  unified_brightness_view_ =
+      qs_view->AddSliderView(brightness_slider_controller_->CreateView());
 
   qs_view->SetMaxHeight(max_height);
 
@@ -307,6 +318,10 @@ void UnifiedSystemTrayController::HandleEnterpriseInfoAction() {
 }
 
 void UnifiedSystemTrayController::ToggleExpanded() {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   if (animation_->is_animating()) {
     return;
   }
@@ -331,6 +346,10 @@ void UnifiedSystemTrayController::ToggleExpanded() {
 }
 
 void UnifiedSystemTrayController::BeginDrag(const gfx::PointF& location) {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   UpdateDragThreshold();
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
   if (detailed_view_controller_) {
@@ -341,6 +360,10 @@ void UnifiedSystemTrayController::BeginDrag(const gfx::PointF& location) {
 }
 
 void UnifiedSystemTrayController::UpdateDrag(const gfx::PointF& location) {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
   if (detailed_view_controller_) {
     return;
@@ -360,13 +383,7 @@ void UnifiedSystemTrayController::UpdateDrag(const gfx::PointF& location) {
 
 void UnifiedSystemTrayController::StartAnimation(bool expand) {
   // UnifiedSystemTrayControllerTest does not add `unified_view_` to a widget.
-  if (features::IsQsRevampEnabled() && quick_settings_view_->GetWidget()) {
-    animation_tracker_.emplace(quick_settings_view_->GetWidget()
-                                   ->GetCompositor()
-                                   ->RequestNewThroughputTracker());
-    animation_tracker_->Start(metrics_util::ForSmoothness(
-        expand ? base::BindRepeating(&ReportExpandAnimationSmoothness)
-               : base::BindRepeating(&ReportCollapseAnimationSmoothness)));
+  if (features::IsQsRevampEnabled()) {
     return;
   }
 
@@ -390,6 +407,10 @@ void UnifiedSystemTrayController::StartAnimation(bool expand) {
 }
 
 void UnifiedSystemTrayController::EndDrag(const gfx::PointF& location) {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
   if (detailed_view_controller_) {
     return;
@@ -416,6 +437,10 @@ void UnifiedSystemTrayController::EndDrag(const gfx::PointF& location) {
 }
 
 void UnifiedSystemTrayController::Fling(int velocity) {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
   if (detailed_view_controller_) {
     return;
@@ -452,7 +477,8 @@ void UnifiedSystemTrayController::ShowNetworkDetailedView(bool force) {
 }
 
 void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
-  if (!IsExpanded()) {
+  // QSRevamp does not allow expand/collapse of the System Tray.
+  if (!IsExpanded() && !features::IsQsRevampEnabled()) {
     return;
   }
 
@@ -575,6 +601,10 @@ bool UnifiedSystemTrayController::FocusOut(bool reverse) {
 }
 
 void UnifiedSystemTrayController::EnsureCollapsed() {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   if (IsExpanded()) {
     animation_->Hide();
   }
@@ -594,6 +624,10 @@ void UnifiedSystemTrayController::EnsureExpanded() {
 
 void UnifiedSystemTrayController::AnimationEnded(
     const gfx::Animation* animation) {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   if (animation_tracker_) {
     animation_tracker_->Stop();
     animation_tracker_.reset();
@@ -604,11 +638,19 @@ void UnifiedSystemTrayController::AnimationEnded(
 
 void UnifiedSystemTrayController::AnimationProgressed(
     const gfx::Animation* animation) {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   UpdateExpandedAmount();
 }
 
 void UnifiedSystemTrayController::AnimationCanceled(
     const gfx::Animation* animation) {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   animation_->Reset(std::round(animation_->GetCurrentValue()));
   UpdateExpandedAmount();
 }
@@ -627,6 +669,10 @@ void UnifiedSystemTrayController::ShowMediaControls() {
 
 void UnifiedSystemTrayController::OnMediaControlsViewClicked() {
   ShowMediaControlsDetailedView();
+}
+
+void UnifiedSystemTrayController::SetShowMediaView(bool show_media_view) {
+  quick_settings_view_->SetShowMediaView(show_media_view);
 }
 
 void UnifiedSystemTrayController::LoadIsExpandedPref() {
@@ -653,9 +699,7 @@ void UnifiedSystemTrayController::InitFeaturePods() {
   AddFeaturePodItem(std::make_unique<VPNFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<IMEFeaturePodController>(this));
   AddFeaturePodItem(std::make_unique<LocaleFeaturePodController>(this));
-  if (features::IsDarkLightModeEnabled()) {
-    AddFeaturePodItem(std::make_unique<DarkModeFeaturePodController>(this));
-  }
+  AddFeaturePodItem(std::make_unique<DarkModeFeaturePodController>(this));
   if (base::FeatureList::IsEnabled(features::kShelfParty)) {
     AddFeaturePodItem(std::make_unique<ShelfPartyFeaturePodController>());
   }
@@ -814,6 +858,10 @@ void UnifiedSystemTrayController::ResetToCollapsedIfRequired() {
 }
 
 void UnifiedSystemTrayController::CollapseWithoutAnimating() {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
+
   unified_view_->SetExpandedAmount(0.0);
   animation_->Reset(0);
 }
@@ -829,6 +877,9 @@ bool UnifiedSystemTrayController::IsDetailedViewShown() const {
 }
 
 void UnifiedSystemTrayController::UpdateDragThreshold() {
+  if (features::IsQsRevampEnabled()) {
+    return;
+  }
   UnifiedSystemTrayView* unified_view = bubble_->unified_view();
   drag_threshold_ = unified_view->GetExpandedSystemTrayHeight() -
                     unified_view->GetCollapsedSystemTrayHeight();
@@ -836,18 +887,22 @@ void UnifiedSystemTrayController::UpdateDragThreshold() {
 
 double UnifiedSystemTrayController::GetDragExpandedAmount(
     const gfx::PointF& location) const {
+  if (features::IsQsRevampEnabled()) {
+    return 1.0;
+  }
+
   double y_diff = (location - drag_init_point_).y();
   // If already expanded, only consider swiping down. Otherwise, only consider
   // swiping up.
   if (was_expanded_) {
-    return base::clamp(1.0 - std::max(0.0, y_diff) / drag_threshold_, 0.0, 1.0);
+    return std::clamp(1.0 - std::max(0.0, y_diff) / drag_threshold_, 0.0, 1.0);
   } else {
-    return base::clamp(std::max(0.0, -y_diff) / drag_threshold_, 0.0, 1.0);
+    return std::clamp(std::max(0.0, -y_diff) / drag_threshold_, 0.0, 1.0);
   }
 }
 
 bool UnifiedSystemTrayController::IsExpanded() const {
-  return animation_->IsShowing();
+  return features::IsQsRevampEnabled() || animation_->IsShowing();
 }
 
 void UnifiedSystemTrayController::UpdateBubble() {

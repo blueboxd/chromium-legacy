@@ -10,14 +10,19 @@
 #import "base/no_destructor.h"
 #import "base/time/time.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/history/core/browser/features.h"
+#import "components/keyed_service/core/service_access_type.h"
 #import "components/keyed_service/ios/browser_state_dependency_manager.h"
 #import "components/network_time/network_time_tracker.h"
 #import "components/sync/base/command_line_switches.h"
 #import "components/sync/base/sync_util.h"
 #import "components/sync/driver/sync_service.h"
 #import "components/sync/driver/sync_service_impl.h"
+#import "components/sync_device_info/device_info.h"
+#import "components/sync_device_info/device_info_sync_service.h"
+#import "components/sync_device_info/device_info_tracker.h"
+#import "components/sync_device_info/local_device_info_provider.h"
 #import "ios/chrome/browser/application_context/application_context.h"
-#import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
@@ -94,7 +99,6 @@ SyncServiceFactory::SyncServiceFactory()
   // The SyncService depends on various SyncableServices being around
   // when it is shut down.  Specify those dependencies here to build the proper
   // destruction order.
-  DependsOn(autofill::PersonalDataManagerFactory::GetInstance());
   DependsOn(ChromeAccountManagerServiceFactory::GetInstance());
   DependsOn(ConsentAuditorFactory::GetInstance());
   DependsOn(DeviceInfoSyncServiceFactory::GetInstance());
@@ -157,10 +161,23 @@ std::unique_ptr<KeyedService> SyncServiceFactory::BuildServiceInstanceFor(
       std::make_unique<syncer::SyncServiceImpl>(std::move(init_params));
   sync_service->Initialize();
 
-  // Hook `sync_service` into PersonalDataManager (a circular dependency).
-  autofill::PersonalDataManager* pdm =
-      autofill::PersonalDataManagerFactory::GetForBrowserState(browser_state);
-  pdm->OnSyncServiceInitialized(sync_service.get());
+  // TODO(crbug.com/1400663): Remove the workaround below once
+  // PrivacySandboxSettingsFactory correctly declares its KeyedServices
+  // dependencies.
+  if (history::IsSyncSegmentsDataEnabled()) {
+    history::HistoryService* history_service =
+        ios::HistoryServiceFactory::GetForBrowserStateIfExists(
+            browser_state, ServiceAccessType::EXPLICIT_ACCESS);
+
+    syncer::DeviceInfoSyncService* device_info_sync_service =
+        DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state);
+
+    if (history_service && device_info_sync_service) {
+      history_service->SetDeviceInfoServices(
+          device_info_sync_service->GetDeviceInfoTracker(),
+          device_info_sync_service->GetLocalDeviceInfoProvider());
+    }
+  }
 
   return sync_service;
 }

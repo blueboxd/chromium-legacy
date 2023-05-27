@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
@@ -25,20 +26,24 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
-#include "components/password_manager/core/browser/move_password_to_account_store_helper.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
@@ -235,6 +240,22 @@ std::u16string GetMessageForBiometricAuthenticationBeforeFillingSetting(
 
 #endif
 
+void MaybeShowProfileSwitchIPH(Profile* profile) {
+#if !BUILDFLAG(IS_CHROMEOS)
+  Browser* launched_app = web_app::AppBrowserController::FindForWebApp(
+      *profile, web_app::kPasswordManagerAppId);
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // Try to show promo only if there is profile menu button and there are
+  // multiple profiles.
+  if (launched_app && launched_app->app_controller() &&
+      launched_app->app_controller()->HasProfileMenuButton() &&
+      profile_manager && profile_manager->GetNumberOfProfiles() > 1) {
+    launched_app->window()->MaybeShowProfileSwitchIPH();
+  }
+#endif
+}
+
 }  // namespace
 
 namespace extensions {
@@ -276,10 +297,16 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
                           weak_ptr_factory_.GetWeakPtr()));
   saved_passwords_presenter_.AddObserver(this);
   saved_passwords_presenter_.Init();
+
+#if !BUILDFLAG(IS_CHROMEOS)
+  auto* provider = web_app::WebAppProvider::GetForWebApps(profile);
+  install_manager_observation_.Observe(&provider->install_manager());
+#endif
 }
 
 PasswordsPrivateDelegateImpl::~PasswordsPrivateDelegateImpl() {
   saved_passwords_presenter_.RemoveObserver(this);
+  install_manager_observation_.Reset();
 }
 
 void PasswordsPrivateDelegateImpl::GetSavedPasswordsList(
@@ -592,28 +619,21 @@ void PasswordsPrivateDelegateImpl::MovePasswordsToAccount(
     return;
   }
 
-  std::vector<password_manager::PasswordForm> forms_to_move;
+  std::vector<CredentialUIEntry> credentials_to_move;
+  credentials_to_move.reserve(ids.size());
   for (int id : ids) {
     const CredentialUIEntry* entry = credential_id_generator_.TryGetKey(id);
     if (!entry) {
       continue;
     }
-
-    std::vector<password_manager::PasswordForm> corresponding_forms =
-        saved_passwords_presenter_.GetCorrespondingPasswordForms(*entry);
-    if (corresponding_forms.empty()) {
-      continue;
-    }
-
-    // password_manager::MovePasswordsToAccountStore() takes care of moving the
-    // entire equivalence class, so passing the first element is fine.
-    forms_to_move.push_back(std::move(corresponding_forms[0]));
+    credentials_to_move.push_back(*entry);
   }
 
-  password_manager::MovePasswordsToAccountStore(
-      forms_to_move, client,
+  // Desktop settings only offer bulk move, not invidual moves.
+  saved_passwords_presenter_.MoveCredentialsToAccount(
+      credentials_to_move,
       password_manager::metrics_util::MoveToAccountStoreTrigger::
-          kExplicitlyTriggeredInSettings);
+          kExplicitlyTriggeredForMultiplePasswordsInSettings);
 }
 
 void PasswordsPrivateDelegateImpl::ImportPasswords(
@@ -639,18 +659,30 @@ void PasswordsPrivateDelegateImpl::ImportPasswords(
 
 void PasswordsPrivateDelegateImpl::ContinueImport(
     const std::vector<int>& selected_ids,
-    ImportResultsCallback results_callback) {
-  // TODO(crbug/1417650): Implement PasswordManagerPorter::ContinueImport
-  // TODO(crbug/1417650): Add re-auth before ContinueImport.
-  extensions::api::passwords_private::ImportResults private_results;
-  private_results.status = extensions::api::passwords_private::
-      ImportResultsStatus::IMPORT_RESULTS_STATUS_UNKNOWN_ERROR;
-  std::move(results_callback).Run(private_results);
+    ImportResultsCallback results_callback,
+    content::WebContents* web_contents) {
+  if (selected_ids.empty()) {
+    password_manager_porter_->ContinueImport(
+        selected_ids, base::BindOnce(&ConvertImportResults)
+                          .Then(std::move(results_callback)));
+    return;
+  }
+  // Save |web_contents| so that it can be used later when OsReauthCall() is
+  // called. Note: This is safe because the |web_contents| is used before
+  // exiting this method.
+  // TODO(crbug.com/495290): Pass the native window directly to the
+  // reauth-handling code.
+  web_contents_ = web_contents;
+
+  password_access_authenticator_.ForceUserReauthentication(
+      password_manager::ReauthPurpose::IMPORT,
+      base::BindOnce(&PasswordsPrivateDelegateImpl::OnImportPasswordsAuthResult,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(results_callback), selected_ids));
 }
 
 void PasswordsPrivateDelegateImpl::ResetImporter(bool delete_file) {
-  // TODO(crbug/1417650): Implement PasswordManagerPorter::ResetImporter.
-  return;
+  password_manager_porter_->ResetImporter(delete_file);
 }
 
 void PasswordsPrivateDelegateImpl::ExportPasswords(
@@ -763,7 +795,11 @@ void PasswordsPrivateDelegateImpl::ShowAddShortcutDialog(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   web_app::CreateWebAppFromCurrentWebContents(
-      browser, web_app::WebAppInstallFlow::kCreateShortcut);
+      browser, web_app::WebAppInstallFlow::kInstallSite);
+  base::UmaHistogramEnumeration(
+      "PasswordManager.ShortcutMetric",
+      password_manager::metrics_util::PasswordManagerShortcutMetric::
+          kAddShortcutClicked);
 }
 
 void PasswordsPrivateDelegateImpl::ShowExportedFileInShell(
@@ -878,6 +914,25 @@ void PasswordsPrivateDelegateImpl::OnExportPasswordsAuthResult(
       .Run(accepted ? std::string() : kExportInProgress);
 }
 
+void PasswordsPrivateDelegateImpl::OnImportPasswordsAuthResult(
+    ImportResultsCallback results_callback,
+    const std::vector<int>& selected_ids,
+    bool authenticated) {
+  if (!authenticated) {
+    password_manager::ImportResults result;
+    // TODO(crbug/1417650): Use specific enum for reauth_failed.
+    // TODO(crbug/1417650): Record metric for reauth failed.
+    result.status = password_manager::ImportResults::DISMISSED;
+    std::move(results_callback).Run(ConvertImportResults(result));
+    return;
+  }
+
+  CHECK(password_manager_porter_);
+  password_manager_porter_->ContinueImport(
+      selected_ids,
+      base::BindOnce(&ConvertImportResults).Then(std::move(results_callback)));
+}
+
 void PasswordsPrivateDelegateImpl::OnAccountStorageOptInStateChanged() {
   PasswordsPrivateEventRouter* router =
       PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
@@ -901,6 +956,26 @@ void PasswordsPrivateDelegateImpl::ExecuteFunction(base::OnceClosure callback) {
 
 void PasswordsPrivateDelegateImpl::OnSavedPasswordsChanged() {
   SetCredentials(saved_passwords_presenter_.GetSavedCredentials());
+}
+
+void PasswordsPrivateDelegateImpl::OnWebAppInstalledWithOsHooks(
+    const web_app::AppId& app_id) {
+  if (app_id != web_app::kPasswordManagerAppId) {
+    return;
+  }
+  // Post task with delay because new browser window for an app isn't created
+  // yet.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&MaybeShowProfileSwitchIPH, profile_),
+      base::Seconds(1));
+  base::UmaHistogramEnumeration(
+      "PasswordManager.ShortcutMetric",
+      password_manager::metrics_util::PasswordManagerShortcutMetric::
+          kShortcutInstalled);
+}
+
+void PasswordsPrivateDelegateImpl::OnWebAppInstallManagerDestroyed() {
+  install_manager_observation_.Reset();
 }
 
 void PasswordsPrivateDelegateImpl::InitializeIfNecessary() {

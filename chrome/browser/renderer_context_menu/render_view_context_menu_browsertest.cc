@@ -71,6 +71,7 @@
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/supervised_user/core/common/buildflags.h"
+#include "components/supervised_user/core/common/pref_names.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -254,7 +255,7 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     return menu;
   }
 
-  // Does not work on ChromeOS.
+  // Does not work on ChromeOS Ash where there's only one profile.
   Profile* CreateSecondaryProfile(int profile_num) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -315,13 +316,16 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     auto callback =
         [](std::vector<uint8_t>* response_image_data,
            gfx::Size* response_original_size,
+           gfx::Size* response_downscaled_size,
            std::string* response_file_extension,
            std::vector<lens::mojom::LatencyLogPtr>* response_log_data,
            base::OnceClosure quit, const std::vector<uint8_t>& image_data,
-           const gfx::Size& original_size, const std::string& file_extension,
+           const gfx::Size& original_size, const gfx::Size& downscaled_size,
+           const std::string& file_extension,
            std::vector<lens::mojom::LatencyLogPtr> log_data) {
           *response_image_data = image_data;
           *response_original_size = original_size;
+          *response_downscaled_size = downscaled_size;
           *response_file_extension = file_extension;
           *response_log_data = std::move(log_data);
           std::move(quit).Run();
@@ -330,17 +334,20 @@ class ContextMenuBrowserTest : public InProcessBrowserTest {
     base::RunLoop run_loop;
     std::vector<uint8_t> response_image_data;
     gfx::Size response_original_size;
+    gfx::Size response_downscaled_size;
     std::string response_file_extension;
     std::vector<lens::mojom::LatencyLogPtr> response_log_data;
     chrome_render_frame->RequestImageForContextNode(
         0, request_size, request_image_format, chrome::mojom::kDefaultQuality,
         base::BindOnce(callback, &response_image_data, &response_original_size,
-                       &response_file_extension, &response_log_data,
-                       run_loop.QuitClosure()));
+                       &response_downscaled_size, &response_file_extension,
+                       &response_log_data, run_loop.QuitClosure()));
     run_loop.Run();
 
     ASSERT_EQ(expected_original_size.width(), response_original_size.width());
     ASSERT_EQ(expected_original_size.height(), response_original_size.height());
+    ASSERT_EQ(expected_size.width(), response_downscaled_size.width());
+    ASSERT_EQ(expected_size.height(), response_downscaled_size.height());
     ASSERT_EQ(expected_extension, response_file_extension);
 
     SkBitmap decoded_bitmap;
@@ -1199,19 +1206,12 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenInNewTabReferrer) {
   // Verify that it's the correct tab.
   ASSERT_EQ(echoheader, tab->GetLastCommittedURL());
   // Verify that the text on the page matches |kCorrectReferrer|.
-  std::string actual_referrer;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      tab,
-      "window.domAutomationController.send(window.document.body.textContent);",
-      &actual_referrer));
-  ASSERT_EQ(kCorrectReferrer, actual_referrer);
+  ASSERT_EQ(kCorrectReferrer,
+            content::EvalJs(tab, "window.document.body.textContent;"));
 
   // Verify that the referrer on the page matches |kCorrectReferrer|.
-  std::string page_referrer;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      tab, "window.domAutomationController.send(window.document.referrer);",
-      &page_referrer));
-  ASSERT_EQ(kCorrectReferrer, page_referrer);
+  ASSERT_EQ(kCorrectReferrer,
+            content::EvalJs(tab, "window.document.referrer;"));
 }
 
 // Verify that "Open Link in Incognito Window " doesn't send referrer URL.
@@ -1227,8 +1227,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
 
   // Set up referrer URL with fragment.
   const GURL kReferrerWithFragment("http://foo.com/test#fragment");
-  const std::string kNoneReferrer("None");
-  const std::string kEmptyReferrer("");
 
   // Set up menu with link URL.
   content::ContextMenuParams context_menu_params;
@@ -1249,20 +1247,11 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenIncognitoNoneReferrer) {
 
   // Verify that it's the correct tab.
   ASSERT_EQ(echoheader, tab->GetLastCommittedURL());
-  // Verify that the text on the page matches |kNoneReferrer|.
-  std::string actual_referrer;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      tab,
-      "window.domAutomationController.send(window.document.body.textContent);",
-      &actual_referrer));
-  ASSERT_EQ(kNoneReferrer, actual_referrer);
+  // Verify that the text on the page is "None".
+  ASSERT_EQ("None", content::EvalJs(tab, "window.document.body.textContent;"));
 
-  // Verify that the referrer on the page matches |kEmptyReferrer|.
-  std::string page_referrer;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      tab, "window.domAutomationController.send(window.document.referrer);",
-      &page_referrer));
-  ASSERT_EQ(kEmptyReferrer, page_referrer);
+  // Verify that the referrer on the page is "".
+  ASSERT_EQ("", content::EvalJs(tab, "window.document.referrer;"));
 }
 
 // Check filename on clicking "Save Link As" via a "real" context menu.
@@ -1466,22 +1455,16 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   ContextMenuWaiter menu_observer;
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  int x;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      tab,
-      "var bounds = document.getElementById('anchor1')"
-      ".getBoundingClientRect();"
-      "domAutomationController.send("
-      "    Math.floor(bounds.left + bounds.width / 2));",
-      &x));
-  int y;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      tab,
-      "var bounds = document.getElementById('anchor1')"
-      ".getBoundingClientRect();"
-      "domAutomationController.send("
-      "    Math.floor(bounds.top + bounds.height / 2));",
-      &y));
+  int x = content::EvalJs(tab,
+                          "var bounds = document.getElementById('anchor1')"
+                          ".getBoundingClientRect();"
+                          "Math.floor(bounds.left + bounds.width / 2);")
+              .ExtractInt();
+  int y = content::EvalJs(tab,
+                          "var bounds = document.getElementById('anchor1')"
+                          ".getBoundingClientRect();"
+                          "Math.floor(bounds.top + bounds.height / 2);")
+              .ExtractInt();
 
   // Focus in the middle of an anchor element.
   content::SimulateMouseClickAt(tab, /*modifiers=*/0,
@@ -1625,13 +1608,7 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
   }
 }
 
-// Test is flaky on Win and Mac dbg: crbug.com/1121731
-#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_MAC) && !defined(NDEBUG))
-#define MAYBE_OpenLinkInProfile DISABLED_OpenLinkInProfile
-#else
-#define MAYBE_OpenLinkInProfile OpenLinkInProfile
-#endif
-IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_OpenLinkInProfile) {
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   signin_util::ScopedForceSigninSetterForTesting force_signin_setter(true);
   // Create |num_profiles| extra profiles for testing.
   const int num_profiles = 8;
@@ -1669,9 +1646,15 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, MAYBE_OpenLinkInProfile) {
                                   profiles_signin_required.end(), i)) {
       entry->LockForceSigninProfile(true);
     } else {
+      // In order for the profile to be counted as active, it needs to have a
+      // created browser window. The profile isn't marked active until the
+      // browser is actually open, which we need.
+      ui_test_utils::BrowserChangeObserver observer(
+          nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
       profiles::FindOrCreateNewWindowForProfile(
           profile, chrome::startup::IsProcessStartup::kNo,
           chrome::startup::IsFirstRun::kNo, false);
+      observer.Wait();
       profiles_in_menu.push_back(profile);
     }
   }
@@ -1764,21 +1747,10 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenProfileNoneReferrer) {
   ASSERT_EQ(echoheader, tab->GetLastCommittedURL());
 
   // Verify that the header text echoed on the page doesn't reveal `kReferrer`.
-  const std::string kNoneReferrer("None");
-  std::string actual_referrer;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      tab,
-      "window.domAutomationController.send(window.document.body.textContent);",
-      &actual_referrer));
-  ASSERT_EQ(kNoneReferrer, actual_referrer);
+  ASSERT_EQ("None", content::EvalJs(tab, "window.document.body.textContent;"));
 
   // Verify that the javascript referrer is empty.
-  std::string page_referrer;
-  const std::string kEmptyReferrer("");
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      tab, "window.domAutomationController.send(window.document.referrer);",
-      &page_referrer));
-  ASSERT_EQ(kEmptyReferrer, page_referrer);
+  ASSERT_EQ("", content::EvalJs(tab, "window.document.referrer;"));
 }
 
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)

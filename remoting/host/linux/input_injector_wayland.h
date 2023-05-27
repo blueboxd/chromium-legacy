@@ -88,20 +88,36 @@ class InputInjectorWayland : public InputInjector {
     void Shutdown();
 
    private:
+    enum class State {
+      // Start up state.
+      UNINITIALIZED = 0,
+      // Session details initialized.
+      SESSION_INITIALIZED = 1,
+      // Capabilities received (Mandated only for slow path input injection).
+      CAPABILITIES_RECEIVED = 2,
+      // Shutdown triggered or completed.
+      STOPPED = 3,
+    };
+
     friend class base::RefCountedThreadSafe<Core>;
     virtual ~Core();
+    void QueueKeyEvent(const protocol::KeyEvent& event);
+    void QueueMouseEvent(const protocol::MouseEvent& event);
+    void ProcessKeyEvent(const protocol::KeyEvent& event);
+    void ProcessMouseEvent(const protocol::MouseEvent& event);
     void SeatAcquiredKeyboardCapability();
     void SeatAcquiredPointerCapability();
+    void InjectKeyEventHelper(const protocol::KeyEvent& event);
+    void InjectMouseEventHelper(const protocol::MouseEvent& event);
     void InjectFakeKeyEvent();
     void InjectFakePointerEvent();
-    bool IsReady();
     void MaybeFlushPendingEvents();
-    void InjectScrollWheelClicks(int button, int count);
     void InjectMouseButton(unsigned int code, bool pressed);
     void InjectMouseScroll(unsigned int axis, int steps);
     void MovePointerTo(int x, int y);
     void MovePointerBy(int delta_x, int delta_y);
     void InjectKeyPress(unsigned int code, bool pressed, bool is_code = true);
+    void InjectPendingEvents(bool libei_scucceeded);
 
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
     std::set<int> pressed_keys_;
@@ -119,12 +135,6 @@ class InputInjectorWayland : public InputInjector {
     std::unique_ptr<ClipboardWayland> clipboard_;
     xdg_portal::RemoteDesktopPortalInjector remotedesktop_portal_;
 
-    // If input is injected before complete initialization then some portal
-    // APIs can crash. This flag is marked to track initialization,
-    // and all inputs before the initialization is complete are added to
-    // |pending_tasks| queue and injected upon initialization.
-    bool remote_desktop_initialized_ = false;
-
     base::queue<base::OnceClosure> pending_remote_desktop_tasks_;
 
     // Similar to remote_desktop_initialized_, we keep the last clipboard event
@@ -139,6 +149,8 @@ class InputInjectorWayland : public InputInjector {
 
     // Keeps track of whether or not the associated seat has pointer capability.
     bool seat_has_pointer_capability_ = false;
+
+    State current_state_ = State::UNINITIALIZED;
   };
   scoped_refptr<Core> core_;
 };

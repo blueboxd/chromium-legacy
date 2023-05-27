@@ -19,15 +19,17 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1278833599417554002">Znova spustiť a aktualizovať Chrome</translation>
 <translation id="1302523850133262269">Počkajte, kým Chrome nainštaluje najnovšie aktualizácie systému.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> vyžaduje, aby ste si pred používaním tohto zariadenia prečítali nasledujúce zmluvné podmienky a vyjadrili s nimi súhlas. Tieto zmluvné podmienky nerozširujú, neupravujú ani neobmedzujú zmluvné podmienky systému Google Chrome OS Flex.</translation>
+<translation id="1341711321000856656">Môžete si zobraziť heslá z iného profilu Chromu</translation>
 <translation id="1363996462118479832">Systému Chrome OS sa nepodarilo synchronizovať vaše údaje, pretože sa pri prihlasovaní vyskytla chyba.</translation>
 <translation id="137466361146087520">Google Chrome beta verzie</translation>
 <translation id="1399397803214730675">Tento počítač už obsahuje novšiu verziu prehliadača Google Chrome. Ak softvér nefunguje, odinštalujte prehliadač Google Chrome a skúste to znova.</translation>
 <translation id="139993653570221430">Svoje rozhodnutie môžete kedykoľvek zmeniť v nastaveniach Chromu. Skúšobné obdobia prebiehajú popri aktuálnemu spôsobu zobrazovania reklám, takže zmeny hneď neuvidíte.</translation>
+<translation id="1425903838053942728">{COUNT,plural, =0{Aktualizácia Chromu bola dokončená. Najnovšiu verziu môžete používať ihneď po opätovnom spustení. Aktuálne karty sa znova otvoria.}=1{Aktualizácia Chromu bola dokončená. Najnovšiu verziu môžete používať ihneď po opätovnom spustení. Aktuálne karty sa znova otvoria. Vaše okno inkognito sa neotvorí.}few{Aktualizácia Chromu bola dokončená. Najnovšiu verziu môžete používať ihneď po opätovnom spustení. Aktuálne karty sa znova otvoria. Vaše # okná inkognito sa neotvoria.}many{Chrome is done updating. You can use the latest version as soon as you relaunch. After, your current tabs will reopen. Your # Incognito windows won't reopen.}other{Aktualizácia Chromu bola dokončená. Najnovšiu verziu môžete používať ihneď po opätovnom spustení. Aktuálne karty sa znova otvoria. Vašich # okien inkognito sa neotvorí.}}</translation>
 <translation id="1434626383986940139">Aplikácie Chrome Canary</translation>
+<translation id="1492280395845991349">Ak chcete dokončiť aktualizáciu Chromu, znova ho spustite</translation>
 <translation id="1507198376417198979">Prispôsobte svoj nový profil Chromu</translation>
 <translation id="1516530951338665275">Prehliadač Google Chrome potrebuje prístup k rozhraniu Bluetooth, aby mohol pokračovať 
  v párovaní. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
-<translation id="1535597783576881392">Tento sprievodca vám pomôže porozumieť, ako si môžete prispôsobiť Chrome tak, aby fungoval podľa vašich predstáv</translation>
 <translation id="1547295885616600893">Chrome OS mohol vzniknúť vďaka ďalšiemu <ph name="BEGIN_LINK_CROS_OSS" />softvéru typu open source<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="1553358976309200471">Aktualizovať Chrome</translation>
 <translation id="1583073672411044740">Používateľ <ph name="EXISTING_USER" /> je už do tohto profilu Chromu prihlásený. Týmto sa vytvorí nový profil Chromu pre <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -68,7 +70,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2131230230468101642">V rámci ochrany vášho súkromia automaticky odstraňujeme záujmy, ktoré sú staršie ako štyri týždne. Pri ďalšom prehliadaní sa v zozname môže znova zobraziť určitý záujem. Prípadne môžete odstrániť záujmy, ktoré nemá Chrome posudzovať.</translation>
 <translation id="2139300032719313227">Reštartovanie systému Chrome OS</translation>
 <translation id="2151406531797534936">Reštartujte Chrome</translation>
-<translation id="2163996651553460171">Využívajte Chrome naplno</translation>
 <translation id="2174917724755363426">Inštalácia nie je dokončená. Naozaj ju chcete zrušiť?</translation>
 <translation id="223889379102603431">Informácie o tom, ako Chrome spravuje koreňové certifikáty</translation>
 <translation id="2258103955319320201">Ak chcete získať prístup k obsahu Chromu vo všetkých svojich zariadeniach, prihláste sa a zapnite synchronizáciu</translation>
@@ -95,6 +96,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="2652691236519827073">Otvoriť odkaz na novej &amp;karte Chromu</translation>
 <translation id="2665296953892887393">Pomôcť zlepšiť prehliadač Google Chrome odosielaním správ o zlyhaní a <ph name="UMA_LINK" /> spoločnosti Google</translation>
 <translation id="2689103672227170538">Toto rozšírenie zmenilo stránku, ktorá sa zobrazí pri spustení prehliadača Chrome.</translation>
+<translation id="2712234843277364121">Aktualizujete opätovným spustením (karty sa znova otvoria)</translation>
 <translation id="2742320827292110288">Upozornenie: Google Chrome nemôže zabrániť rozšíreniam v zaznamenávaní vašej histórie prehliadania. Ak chcete dané rozšírenie v režime inkognito zakázať, zrušte výber tejto možnosti.</translation>
 <translation id="2765403129283291972">Chrome potrebuje povolenie pre tento web na prístup k mikrofónu</translation>
 <translation id="2770231113462710648">Zmeniť predvolený prehliadač na:</translation>
@@ -126,7 +128,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="3140883423282498090">Zmeny sa prejavia pri nasledujúcom reštartovaní prehliadača Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikácie Chrome</translation>
 <translation id="3169523567916669830">Počas týchto skúšobných období si môžete prezrieť témy záujmu, pomocou ktorých vám weby zobrazujú reklamy, a odstrániť ich. Chrome odhaduje záujmy na základe nedávnej histórie prehliadania.</translation>
-<translation id="3211604354460514046">{NUM_DEVICES,plural, =1{Google Chrome je pripojený k zariadeniu HID}few{Google Chrome je pripojený k zariadeniam HID}many{Google Chrome je pripojený k zariadeniam HID}other{Google Chrome je pripojený k zariadeniam HID}}</translation>
 <translation id="3245429137663807393">Ak zdieľate aj prehľady používania Chromu, tieto prehľady zahŕňajú webové adresy, ktoré navštívite</translation>
 <translation id="3282568296779691940">Prihlásiť sa do Chromu</translation>
 <translation id="3286538390144397061">Reštartovať</translation>
@@ -282,6 +283,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="6365489425007284765">{COUNT,plural, =1{Správca dáta prehliadania automaticky odstráni, keď sa prehliadač nebude používať jednu minútu. Môže to zahŕňať históriu, automatické dopĺňanie a stiahnuté súbory. Existujúce karty zostanú otvorené.}few{Správca dáta prehliadania automaticky odstráni, keď sa prehliadač nebude používať # minúty. Môže to zahŕňať históriu, automatické dopĺňanie a stiahnuté súbory. Existujúce karty zostanú otvorené.}many{Správca dáta prehliadania automaticky odstráni, keď sa prehliadač nebude používať # minúty. Môže to zahŕňať históriu, automatické dopĺňanie a stiahnuté súbory. Existujúce karty zostanú otvorené.}other{Správca dáta prehliadania automaticky odstráni, keď sa prehliadač nebude používať # minút. Môže to zahŕňať históriu, automatické dopĺňanie a stiahnuté súbory. Existujúce karty zostanú otvorené.}}</translation>
 <translation id="6412673304250309937">Kontroluje webové adresy podľa zoznamu nebezpečných webov uloženého v Chrome. Ak sa vám určitý web pokúsi ukradnúť heslo alebo stiahnete škodlivý súbor, Chrome môže tiež odoslať webové adresy vrátane častí obsahu stránky Bezpečnému prehliadaniu.</translation>
 <translation id="6418662306461808273">Chcete prepnúť na existujúci profil Chromu?</translation>
+<translation id="648319183876919572">Zlepšené bezpečné prehliadanie vás chráni viac pred nebezpečnými webmi a stiahnutými súbormi</translation>
 <translation id="6493527311031785448">Google Chrome sa pokúša <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">Chrome vyžaduje na vytvorenie 3D mapy vášho okolia povolený prístup ku kamere</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
@@ -412,6 +414,7 @@ Povolenia, ktoré ste už udelili webom a aplikáciám, sa môžu vzťahovať n
 <translation id="8989968390305463310">Vaša história prehliadania ovplyvňuje zobrazované reklamy a záujmy, ktoré sú odhadnuté nižšie. Chrome priebežne automaticky odstraňuje vaše záujmy každý mesiac, aby tak chránil vaše súkromie. Záujmy sa môžu obnoviť, pokiaľ ich neodstránite.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Je k dispozícii aktualizácia Chromu}=1{Je k dispozícii aktualizácia Chromu}few{Aktualizácia Chromu je k dispozícii už # dni}many{Aktualizácia Chromu je k dispozícii už # dňa}other{Aktualizácia Chromu je k dispozícii už # dní}}</translation>
 <translation id="9053892488859122171">Systém Chrome OS Flex</translation>
+<translation id="9054037008353851982">Aktualizujete opätovným spustením (karty sa znova otvoria)</translation>
 <translation id="911206726377975832">Chcete tiež odstrániť svoje údaje prehliadania?</translation>
 <translation id="9138603949443464873">Ak chcete zmeny použiť, spustite Chrome znova</translation>
 <translation id="9195993889682885387">Chrome môže odhadnúť vaše záujmy na základe vašej histórie prehliadania z posledných niekoľkých týždňov. Tieto údaje zostávajú vo vašom zariadení.</translation>

@@ -56,6 +56,17 @@ export class BrailleTranslatorManager {
   }
 
   /**
+   * @param {!ArrayBuffer} cells
+   * @return {!Promise<?string>}
+   */
+  static backTranslate(cells) {
+    return new Promise(resolve => {
+      BrailleTranslatorManager.instance.getDefaultTranslator().backTranslate(
+          cells, resolve);
+    });
+  }
+
+  /**
    * Adds a listener to be called whenever there is a change in the
    * translator(s) returned by other methods of this instance.
    * @param {function()} listener The listener.
@@ -138,14 +149,12 @@ export class BrailleTranslatorManager {
       finishCallback();
     };
 
-    const translator = await new Promise(
-        resolve => this.liblouis_.getTranslator(table.fileNames, resolve));
+    const translator = await this.liblouis_.getTranslator(table.fileNames);
     if (!newUncontractedTableId) {
       finishRefresh(translator, null);
     } else {
-      const uncontractedTranslator = await new Promise(
-          resolve => this.liblouis_.getTranslator(
-              uncontractedTable.fileNames, resolve));
+      const uncontractedTranslator =
+          await this.liblouis_.getTranslator(uncontractedTable.fileNames);
       finishRefresh(translator, uncontractedTranslator);
     }
   }

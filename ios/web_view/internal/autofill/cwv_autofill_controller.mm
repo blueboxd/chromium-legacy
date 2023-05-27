@@ -158,16 +158,18 @@ using UserDecision =
           fieldIdentifier:(NSString*)fieldIdentifier
                   frameID:(NSString*)frameID
         completionHandler:(nullable void (^)(void))completionHandler {
+  autofill::AutofillJavaScriptFeature* feature =
+      autofill::AutofillJavaScriptFeature::GetInstance();
   web::WebFrame* frame =
-      web::GetWebFrameWithId(_webState, base::SysNSStringToUTF8(frameID));
-  autofill::AutofillJavaScriptFeature::GetInstance()
-      ->ClearAutofilledFieldsForForm(frame, _lastFormActivityUniqueFormID,
-                                     _lastFormActivityUniqueFieldID,
-                                     base::BindOnce(^(NSString*) {
-                                       if (completionHandler) {
-                                         completionHandler();
-                                       }
-                                     }));
+      feature->GetWebFramesManager(_webState)->GetFrameWithId(
+          base::SysNSStringToUTF8(frameID));
+  feature->ClearAutofilledFieldsForForm(frame, _lastFormActivityUniqueFormID,
+                                        _lastFormActivityUniqueFieldID,
+                                        base::BindOnce(^(NSString*) {
+                                          if (completionHandler) {
+                                            completionHandler();
+                                          }
+                                        }));
 }
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
@@ -721,6 +723,12 @@ using UserDecision =
     // If not implemented, just reject.
     decisionHandler(/*accept=*/NO);
   }
+}
+
+- (void)attachListenersForBottomSheet:
+            (const std::vector<autofill::FieldRendererId>&)rendererIds
+                              inFrame:(web::WebFrame*)frame {
+  // No op.
 }
 
 - (void)sharedPasswordController:(SharedPasswordController*)controller

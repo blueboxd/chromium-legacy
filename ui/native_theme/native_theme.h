@@ -9,6 +9,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
@@ -212,7 +213,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   };
 
   struct MenuSeparatorExtraParams {
-    const gfx::Rect* paint_rect;
+    // This field is not a raw_ptr<> because it was filtered by the rewriter
+    // for: #union
+    RAW_PTR_EXCLUSION const gfx::Rect* paint_rect;
     MenuSeparatorType type;
   };
 
@@ -497,6 +500,14 @@ class NATIVE_THEME_EXPORT NativeTheme {
   }
   absl::optional<SkColor> user_color() const { return user_color_; }
 
+  void set_scheme_variant(
+      absl::optional<ui::ColorProviderManager::SchemeVariant> scheme_variant) {
+    scheme_variant_ = scheme_variant;
+  }
+  absl::optional<ui::ColorProviderManager::SchemeVariant> scheme_variant() {
+    return scheme_variant_;
+  }
+
   // Updates the state of dark mode, forced colors mode, and the map of system
   // colors. Returns true if NativeTheme was updated as a result, or false if
   // the state of NativeTheme was untouched.
@@ -510,7 +521,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
   virtual SkColor GetSystemButtonPressedColor(SkColor base_color) const;
 
   // Assign the focus-ring-appropriate alpha value to the provided base_color.
-  virtual SkColor FocusRingColorForBaseColor(SkColor base_color) const;
+  virtual SkColor4f FocusRingColorForBaseColor(SkColor4f base_color) const;
 
   float AdjustBorderWidthByZoom(float border_width, float zoom_level) const;
 
@@ -580,8 +591,13 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Observers to notify when the native theme changes.
   base::ObserverList<NativeThemeObserver>::Unchecked native_theme_observers_;
 
-  // User's primary color. Included in the ColorProvider Key.
+  // User's primary color. Included in the `ColorProvider::Key` as the basis of
+  // all generated colors.
   absl::optional<SkColor> user_color_;
+
+  // System color scheme variant. Used in `ColorProvider::Key` to specify the
+  // transforms of `user_color_` which generate colors.
+  absl::optional<ui::ColorProviderManager::SchemeVariant> scheme_variant_;
 
   bool should_use_dark_colors_ = false;
   const ui::SystemTheme system_theme_;

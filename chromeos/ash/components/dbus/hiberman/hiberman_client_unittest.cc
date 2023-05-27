@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "dbus/mock_bus.h"
@@ -36,9 +37,15 @@ class HibermanClientTest : public testing::Test {
     dbus::ObjectPath hibernate_object_path =
         dbus::ObjectPath(::hiberman::kHibernateServicePath);
     proxy_ = new dbus::MockObjectProxy(
-        bus_.get(), ::hiberman::kHibernateServiceName,
-        hibernate_object_path);
+        bus_.get(), ::hiberman::kHibernateServiceName, hibernate_object_path);
 
+    dbus_service_proxy_ = new dbus::MockObjectProxy(
+        bus_.get(), DBUS_SERVICE_DBUS, dbus::ObjectPath(DBUS_PATH_DBUS));
+
+    // Except that we will test alive once after the object comes up.
+    EXPECT_CALL(*bus_.get(), GetObjectProxy(DBUS_SERVICE_DBUS,
+                                            dbus::ObjectPath(DBUS_PATH_DBUS)))
+        .WillOnce(Return(proxy_.get()));
     // Makes sure `GetObjectProxy()` is caled with the correct service name and
     // path.
     EXPECT_CALL(*bus_.get(),
@@ -65,9 +72,10 @@ class HibermanClientTest : public testing::Test {
   // Mock bus and proxy for simulating calls.
   scoped_refptr<dbus::MockBus> bus_;
   scoped_refptr<dbus::MockObjectProxy> proxy_;
+  scoped_refptr<dbus::MockObjectProxy> dbus_service_proxy_;
 
   // Convenience pointer to the global instance.
-  HibermanClient* client_ = nullptr;
+  raw_ptr<HibermanClient, ExperimentalAsh> client_ = nullptr;
 
  private:
   // Handles calls to |proxy_|'s `CallMethod()`.
@@ -91,6 +99,11 @@ class HibermanClientTest : public testing::Test {
       // array.
       EXPECT_TRUE(reader.PopArrayOfBytes(&bytes, &length));
       EXPECT_NE(length, static_cast<size_t>(0));
+    } else if (method_call->GetMember() == "NameHasOwner") {
+      dbus::MessageReader reader(method_call);
+      std::string name;
+      ASSERT_TRUE(reader.PopString(&name));
+      ASSERT_EQ(name, ::hiberman::kHibernateServiceName);
     } else {
       ASSERT_FALSE(true) << "Unrecognized member: " << method_call->GetMember();
     }

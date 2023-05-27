@@ -22,6 +22,7 @@
 #include "ash/ambient/ui/ambient_background_image_view.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/ui/ambient_info_view.h"
+#include "ash/ambient/ui/ambient_slideshow_peripheral_ui.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
 #include "ash/ambient/ui/jitter_calculator.h"
 #include "ash/ambient/ui/media_string_view.h"
@@ -451,6 +452,12 @@ AmbientInfoView* AmbientAshTestBase::GetAmbientInfoView() {
       GetContainerView()->GetViewByID(kAmbientInfoView));
 }
 
+AmbientSlideshowPeripheralUi*
+AmbientAshTestBase::GetAmbientSlideshowPeripheralUi() {
+  return static_cast<AmbientSlideshowPeripheralUi*>(
+      GetContainerView()->GetViewByID(kAmbientSlideshowPeripheralUi));
+}
+
 AmbientAnimationView* AmbientAshTestBase::GetAmbientAnimationView() {
   return static_cast<AmbientAnimationView*>(
       GetContainerView()->GetViewByID(kAmbientAnimationView));
@@ -704,6 +711,14 @@ void AmbientAshTestBase::CreateTestImageJpegFile(base::FilePath path,
   size_t bytes_written = base::WriteFile(
       path, reinterpret_cast<const char*>(data.data()), data.size());
   ASSERT_EQ(data.size(), bytes_written);
+}
+
+void AmbientAshTestBase::SetScreenSaverDuration(int minutes) {
+  ambient_controller()->SetScreenSaverDuration(minutes);
+}
+
+absl::optional<int> AmbientAshTestBase::GetScreenSaverDuration() {
+  return ambient_controller()->GetScreenSaverDuration();
 }
 
 }  // namespace ash

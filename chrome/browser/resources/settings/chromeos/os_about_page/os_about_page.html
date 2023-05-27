@@ -71,6 +71,10 @@
     min-height: unset;
     padding-bottom: 10px;
   }
+
+  eol-offer-section {
+    margin: 6px 3px 16px 3px;
+  }
 </style>
 <iron-media-query query="(prefers-color-scheme: dark)"
     query-matches="{{isDarkModeActive_}}">
@@ -114,6 +118,11 @@
               $i18n{learnMore}
             </a>
           </div>
+          <template is="dom-if" if="[[showEolIncentive_]]">
+            <eol-offer-section id="endOfLifeOfferContainer"
+                should-show-offer-text="[[shouldShowOfferText_]]">
+            </eol-offer-section>
+          </template>
           <localized-link
               id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]"
               localized-string="$i18n{endOfLifeMessage}">
@@ -165,39 +174,46 @@
       </cr-link-row>
       <template is="dom-if" if="[[hasInternetConnection_]]">
         <cr-link-row class="hr" id="releaseNotesOnline"
-            on-click="onReleaseNotesTap_"
-            label="$i18n{aboutShowReleaseNotes}" external
+            on-click="onReleaseNotesClick_"
+            label="$i18n{aboutShowReleaseNotes}"
+            external
             deep-link-focus-id$="[[Setting.kSeeWhatsNew]]">
         </cr-link-row>
       </template>
       <template is="dom-if" if="[[!hasInternetConnection_]]">
         <cr-link-row class="hr" id="releaseNotesOffline"
-            on-click="onReleaseNotesTap_"
+            on-click="onReleaseNotesClick_"
             label="$i18n{aboutShowReleaseNotes}"
-            title="$i18n{aboutReleaseNotesOffline}" external
+            title="$i18n{aboutReleaseNotesOffline}"
+            external
             deep-link-focus-id$="[[Setting.kSeeWhatsNew]]">
         </cr-link-row>
       </template>
       <cr-link-row class="hr" id="help" on-click="onHelpClick_"
-          label="$i18n{aboutGetHelpUsingChromeOs}" external
+          label="$i18n{aboutGetHelpUsingChromeOs}"
+          external
           deep-link-focus-id$="[[Setting.kGetHelpWithChromeOs]]">
       </cr-link-row>
 <if expr="_google_chrome">
       <cr-link-row class="hr" id="reportIssue"
           on-click="onReportIssueClick_"
           hidden="[[!prefs.feedback_allowed.value]]"
-          label="[[getReportIssueLabel_()]]" external
+          label="[[getReportIssueLabel_()]]"
+          external
           deep-link-focus-id$="[[Setting.kReportAnIssue]]">
       </cr-link-row>
 </if>
       <cr-link-row class="hr" id="diagnostics"
           on-click="onDiagnosticsClick_"
-          label="$i18n{aboutDiagnostics}" external
+          label="$i18n{aboutDiagnostics}"
+          external
           deep-link-focus-id$="[[Setting.kDiagnostics]]">
       </cr-link-row>
       <cr-link-row class="hr" id="firmwareUpdates"
           on-click="onFirmwareUpdatesClick_"
-          label="$i18n{aboutFirmwareUpdates}" external using-slotted-label
+          label="$i18n{aboutFirmwareUpdates}"
+          external
+          using-slotted-label
           deep-link-focus-id$="[[Setting.kFirmwareUpdates]]">
         <iron-icon id="firmwareUpdateBadge"
             icon$="[[getFirmwareUpdatesIcon_(firmwareUpdateCount_)]]"
@@ -217,7 +233,8 @@
       </cr-link-row>
       <cr-link-row class="hr" on-click="onManagementPageClick_"
           start-icon="cr:domain" label="$i18n{managementPage}"
-          hidden$="[[!isManaged_]]" external>
+          hidden$="[[!isManaged_]]"
+          external>
       </cr-link-row>
     </div>
     <template is="dom-if" route-path="/help/details">

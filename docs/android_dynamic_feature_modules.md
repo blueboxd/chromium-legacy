@@ -144,12 +144,12 @@ foo_module_desc = {
 ```
 
 Then, add the module descriptor to the appropriate descriptor list in
-//chrome/android/modules/chrome_feature_modules.gni, e.g. the Monochrome list:
+//chrome/android/modules/chrome_feature_modules.gni, e.g. the Chrome list:
 
 ```gn
 import("//chrome/android/modules/foo/foo_module.gni")
 ...
-monochrome_module_descs += [ foo_module_desc ]
+chrome_module_descs += [ foo_module_desc ]
 ```
 
 The next step is to add Foo to the list of feature modules for UMA recording.
@@ -188,7 +188,7 @@ UI. To do this, add a string to
 should go in the module, not here (in the base module).
 ***
 
-Congrats! You added the DFM Foo to Monochrome. That is a big step but not very
+Congrats! You added the DFM Foo to Chrome. That is a big step but not very
 useful so far. In the next sections you'll learn how to add code and resources
 to it.
 
@@ -460,11 +460,7 @@ on all Chrome build variants, including Monochrome (unlike base module JNI).
 extern "C" {
 // This JNI registration method is found and called by module framework code.
 JNI_GENERATOR_EXPORT bool JNI_OnLoad_foo(JNIEnv* env) {
-  if (!base::android::IsSelectiveJniRegistrationEnabled(env) &&
-      !foo::RegisterNonMainDexNatives(env)) {
-    return false;
-  }
-  if (!foo::RegisterMainDexNatives(env)) {
+  if (!foo::RegisterNatives(env)) {
     return false;
   }
   return true;

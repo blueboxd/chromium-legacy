@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.metrics;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 
 import org.junit.After;
@@ -16,12 +16,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.chromium.base.jank_tracker.JankMetricUMARecorder;
-import org.chromium.base.jank_tracker.JankMetricUMARecorderJni;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
@@ -80,9 +77,6 @@ public class StartupLoadingMetricsTest {
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
-    @Mock
-    JankMetricUMARecorder.Natives mJankRecorderNativeMock;
-
     private String mTestPage;
     private String mTestPage2;
     private String mErrorPage;
@@ -99,7 +93,6 @@ public class StartupLoadingMetricsTest {
         mTestPage2 = mTestServer.getURL(TEST_PAGE_2);
         mErrorPage = mTestServer.getURL(ERROR_PAGE);
         mSlowPage = mTestServer.getURL(SLOW_PAGE);
-        mJniMocker.mock(JankMetricUMARecorderJni.TEST_HOOKS, mJankRecorderNativeMock);
     }
 
     @After
@@ -137,6 +130,11 @@ public class StartupLoadingMetricsTest {
     }
 
     private void assertHistogramsRecordedAsExpected(int expectedCount, String histogramSuffix) {
+        assertHistogramsRecordedAsExpectedWithBackgroundInfo(expectedCount, histogramSuffix, false);
+    }
+
+    private void assertHistogramsRecordedAsExpectedWithBackgroundInfo(
+            int expectedCount, String histogramSuffix, boolean inBackground) {
         boolean isTabbedSuffix = histogramSuffix.equals(TABBED_SUFFIX);
 
         // Check that the new first navigation commit is always recorded for the tabbed activity.
@@ -183,6 +181,12 @@ public class StartupLoadingMetricsTest {
             Assert.assertEquals(expectedCount,
                     RecordHistogram.getHistogramTotalCountForTesting(
                             FIRST_VISIBLE_CONTENT_HISTOGRAM2));
+        }
+
+        if (!inBackground) {
+            Assert.assertEquals(1,
+                    RecordHistogram.getHistogramTotalCountForTesting(
+                            "Startup.Android.Cold.TimeToForegroundSessionStart"));
         }
     }
 
@@ -299,7 +303,8 @@ public class StartupLoadingMetricsTest {
             Tab tab = mTabbedActivityTestRule.getActivity().getActivityTab();
             ChromeTabUtils.waitForTabPageLoaded(tab, (String) null);
         });
-        assertHistogramsRecordedAsExpected(0, TABBED_SUFFIX);
+        assertHistogramsRecordedAsExpectedWithBackgroundInfo(0, TABBED_SUFFIX, true);
+
         runAndWaitForPageLoadMetricsRecorded(() -> {
             // Put Chrome in foreground before loading a new page.
             ChromeApplicationTestUtils.launchChrome(InstrumentationRegistry.getTargetContext());

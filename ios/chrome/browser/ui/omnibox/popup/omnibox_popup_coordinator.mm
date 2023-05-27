@@ -12,6 +12,7 @@
 #import "components/omnibox/browser/autocomplete_result.h"
 #import "components/omnibox/common/omnibox_features.h"
 #import "components/search_engines/template_url_service.h"
+#import "ios/chrome/browser/autocomplete/remote_suggestions_service_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
@@ -24,6 +25,8 @@
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
@@ -31,8 +34,6 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/favicon/favicon_attributes_provider.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
-#import "ios/chrome/browser/ui/main/layout_guide_util.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/popup/carousel_item.h"
@@ -98,15 +99,21 @@
 
   BOOL isIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
 
+  RemoteSuggestionsService* remoteSuggestionsService =
+      RemoteSuggestionsServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState(), /*create_if_necessary=*/true);
+
   self.mediator = [[OmniboxPopupMediator alloc]
-             initWithFetcher:std::move(imageFetcher)
-               faviconLoader:IOSChromeFaviconLoaderFactory::GetForBrowserState(
-                                 self.browser->GetBrowserState())
-      autocompleteController:self.autocompleteController
-                    delegate:_popupView.get()
-                     tracker:feature_engagement::TrackerFactory::
-                                 GetForBrowserState(
-                                     self.browser->GetBrowserState())];
+               initWithFetcher:std::move(imageFetcher)
+                 faviconLoader:IOSChromeFaviconLoaderFactory::
+                                   GetForBrowserState(
+                                       self.browser->GetBrowserState())
+        autocompleteController:self.autocompleteController
+      remoteSuggestionsService:remoteSuggestionsService
+                      delegate:_popupView.get()
+                       tracker:feature_engagement::TrackerFactory::
+                                   GetForBrowserState(
+                                       self.browser->GetBrowserState())];
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   self.mediator.dispatcher =

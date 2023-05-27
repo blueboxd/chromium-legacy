@@ -270,10 +270,8 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
               "you and your device from dangerous sites' in Chrome settings "
               "under Privacy. This feature is enabled by default."
             chrome_policy {
-              subProto1 {
-                ClientSidePhishingProtectionAllowed {
-                  ClientSidePhishingProtectionAllowed: false
-                }
+              ClientSidePhishingProtectionAllowed {
+                ClientSidePhishingProtectionAllowed: false
               }
             }
             chrome_policy {
@@ -413,7 +411,9 @@ void ClientSideDetectionService::UpdateCache() {
 }
 
 bool ClientSideDetectionService::OverPhishingReportLimit() {
+  // `delegate_` and prefs can be null in unit tests.
   if (base::FeatureList::IsEnabled(kSafeBrowsingDailyPhishingReportsLimit) &&
+      (delegate_ && delegate_->GetPrefs()) &&
       IsEnhancedProtectionEnabled(*delegate_->GetPrefs())) {
     return GetPhishingNumReports() >
            kSafeBrowsingDailyPhishingReportsLimitESB.Get();
@@ -539,7 +539,7 @@ void ClientSideDetectionService::SetPhishingModel(
   }
 }
 
-const google::protobuf::RepeatedPtrField<TfLiteModelMetadata::Threshold>&
+const base::flat_map<std::string, TfLiteModelMetadata::Threshold>&
 ClientSideDetectionService::GetVisualTfLiteModelThresholds() {
   if (base::FeatureList::IsEnabled(
           kClientSideDetectionModelOptimizationGuide)) {
@@ -552,20 +552,20 @@ ClientSideDetectionService::GetVisualTfLiteModelThresholds() {
 
 void ClientSideDetectionService::ClassifyPhishingThroughThresholds(
     ClientPhishingRequest* verdict) {
-  const google::protobuf::RepeatedPtrField<TfLiteModelMetadata::Threshold>&
-      thresholds = GetVisualTfLiteModelThresholds();
+  const base::flat_map<std::string, TfLiteModelMetadata::Threshold>&
+      label_to_thresholds_map = GetVisualTfLiteModelThresholds();
 
   if (static_cast<int>(verdict->tflite_model_scores().size()) >
-      thresholds.size()) {
+      static_cast<int>(label_to_thresholds_map.size())) {
     // Model is misconfigured, so bail out.
     base::UmaHistogramEnumeration(
         "SBClientPhishing.ClassifyThresholdsResult",
         SBClientDetectionClassifyThresholdsResult::kModelSizeMismatch);
-    DVLOG(0)
+    VLOG(0)
         << "Model is misconfigured. Size is mismatched. Verdict scores size is "
         << static_cast<int>(verdict->tflite_model_scores().size())
         << " and model thresholds size is "
-        << static_cast<int>(thresholds.size());
+        << static_cast<int>(label_to_thresholds_map.size());
     verdict->set_is_phishing(false);
     verdict->set_is_tflite_match(false);
     return;
@@ -574,18 +574,35 @@ void ClientSideDetectionService::ClassifyPhishingThroughThresholds(
   for (int i = 0; i < verdict->tflite_model_scores().size(); i++) {
     // Users can have older models that do not have the esb thresholds in their
     // fields, so ESB subscribed users will use the standard thresholds instead
+    auto result = label_to_thresholds_map.find(
+        verdict->tflite_model_scores().at(i).label());
+
+    if (result == label_to_thresholds_map.end()) {
+      // Model is misconfigured, so bail out.
+      base::UmaHistogramEnumeration(
+          "SBClientPhishing.ClassifyThresholdsResult",
+          SBClientDetectionClassifyThresholdsResult::kModelLabelNotFound);
+      VLOG(0) << "Model is misconfigured. Unable to match label string to "
+                 "threshold map";
+      verdict->set_is_phishing(false);
+      verdict->set_is_tflite_match(false);
+      return;
+    }
+
+    const TfLiteModelMetadata::Threshold& thresholds = result->second;
+
     if (base::FeatureList::IsEnabled(
             kSafeBrowsingPhishingClassificationESBThreshold) &&
-        IsEnhancedProtectionEnabled(*delegate_->GetPrefs()) &&
-        thresholds.at(i).esb_threshold() > 0) {
+        delegate_ && delegate_->GetPrefs() &&
+        IsEnhancedProtectionEnabled(*delegate_->GetPrefs())) {
       if (verdict->tflite_model_scores().at(i).value() >=
-          thresholds.at(i).esb_threshold()) {
+          thresholds.esb_threshold()) {
         verdict->set_is_phishing(true);
         verdict->set_is_tflite_match(true);
       }
     } else {
       if (verdict->tflite_model_scores().at(i).value() >=
-          thresholds.at(i).threshold()) {
+          thresholds.threshold()) {
         verdict->set_is_phishing(true);
         verdict->set_is_tflite_match(true);
       }

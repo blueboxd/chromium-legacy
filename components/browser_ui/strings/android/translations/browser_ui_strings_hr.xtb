@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Dekodiranje slika</translation>
 <translation id="1785415724048343560">Preporučuje se za najbolji doživljaj</translation>
 <translation id="1818308510395330587">Da bi aplikacija <ph name="APP_NAME" /> mogla koristiti proširenu stvarnost, uključite kameru i u <ph name="BEGIN_LINK" />Androidovim postavkama<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Izvor: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Povezane web-lokacije mogu vidjeti vaše aktivnosti u grupi</translation>
 <translation id="1887786770086287077">Pristup lokaciji isključen je za ovaj uređaj. Uključite ga u <ph name="BEGIN_LINK" />postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Prekini vezu</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Preuzimanje je dovršeno: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Značajke na nekim web-lokacijama možda neće funkcionirati u anonimnom načinu rada</translation>
 <translation id="2442870161001914531">Uvijek zahtijevaj web-lokaciju za računalo</translation>
+<translation id="2479148705183875116">Otvori Postavke</translation>
 <translation id="2482878487686419369">Obavijesti</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
 <translation id="2490684707762498678">Upravlja: <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">E-adrese</translation>
 <translation id="2750481671343847896">Web-lokacije mogu prikazivati upite za prijavu usluga za identitet.</translation>
 <translation id="2822354292072154809">Jeste li sigurni da želite poništiti sva dopuštenja za aplikaciju <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Zahtijevaj prikaz na mobilnom uređaju</translation>
 <translation id="2870560284913253234">Web lokacija</translation>
 <translation id="2874939134665556319">Prethodna pjesma</translation>
 <translation id="2891975107962658722">Blokiraj web-lokaciju kako ne bi spremala podatke na uređaju</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Web-lokacije mogu upotrebljavati kolačiće za poboljšanje vašeg doživljaja pregledavanja, primjerice da biste ostali prijavljeni ili da bi stavke u vašoj košarici ostale zapamćene</translation>
 <translation id="3165022941318558018">Dopusti web-lokaciji upotrebu kolačića trećih strana</translation>
 <translation id="3198916472715691905">Pohranjeni podaci: <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3203366800380907218">S weba</translation>
 <translation id="321187648315454507">Da bi vam aplikacija <ph name="APP_NAME" /> slati obavijesti, uključite obavijesti i u <ph name="BEGIN_LINK" />Androidovim postavkama<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3248611290851046188">Ova web-lokacija definira interese koje druge web-lokacije mogu koristiti da bi vam prikazivale oglase. Ova web-lokacija također prima podatke o vašim interesima iz Chromea kako bi vam prikazivala relevantnije oglase.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Zahtijevaj prikaz na računalu</translation>
 <translation id="5100237604440890931">Sažeto – kliknite za proširivanje.</translation>
 <translation id="5123685120097942451">Anonimna kartica</translation>
-<translation id="5134599672855298214">Zahtijevaj prikaz na mobilnom uređaju (preporučeno)</translation>
 <translation id="5186036860380548585">Opcija je dostupna pri vrhu zaslona</translation>
 <translation id="5197729504361054390">Kontakti koje odaberete podijelit će se s web-lokacijom <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Posljednji posjet bio je danas</translation>

@@ -11,12 +11,15 @@
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
+#include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "url/gurl.h"
 
 namespace ui {
 class SimpleMenuModel;
@@ -37,6 +40,16 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // AppListClient, and may be nullptr if no client has been set for the
   // delegate.
   virtual AppListNotifier* GetNotifier() = 0;
+
+  // Creates a `ScopedIphSession` for interacting with LauncherSearchHelpUi
+  // feature. A caller must show an IPH UI after this returns a session. This
+  // returns nullptr if `feature_engagement::Tracker::ShouldTriggerHelpUI`
+  // returns false.
+  virtual std::unique_ptr<ScopedIphSession>
+  CreateLauncherSearchIphSession() = 0;
+
+  // Opens the url in a browser for the search box IPH.
+  virtual void OpenSearchBoxIphUrl() = 0;
 
   // Invoked to start a new Google Assistant session.
   virtual void StartAssistant() = 0;

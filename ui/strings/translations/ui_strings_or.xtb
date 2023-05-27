@@ -6,6 +6,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{1 ଦିନ ପୂର୍ବେ}other{# ଦିନ ପୂର୍ବେ}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{1 ମିନିଟ୍ ପୂର୍ବେ}other{# ମିନିଟ୍ ପୂର୍ବେ}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 ମିନିଟ୍}other{# ମିନିଟ୍}}</translation>
+<translation id="1178017578188974117">{DAYS,plural, =1{1 ଦିନ ପୂର୍ବେ}other{# ଦିନ ପୂର୍ବେ}}</translation>
 <translation id="1181037720776840403">କାଢ଼ି ଦିଅନ୍ତୁ</translation>
 <translation id="1243314992276662751">ଅପ୍‌ଲୋଡ୍ କରନ୍ତୁ</translation>
 <translation id="1266864766717917324"><ph name="CONTENT_TYPE" />ସେୟାର୍ କରିହେଲା ନାହିଁ</translation>
@@ -15,7 +16,9 @@
 <translation id="1368832886055348810">ବାମରୁ ଡାହାଣ</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1398853756734560583">ସର୍ବାଧିକ କରନ୍ତୁ</translation>
+<translation id="1432724887402139994">{SECONDS,plural, =1{1 ମିନିଟ ପୂର୍ବେ}other{# ମିନିଟ ପୂର୍ବେ}}</translation>
 <translation id="1450753235335490080"><ph name="CONTENT_TYPE" /> ସେୟାର୍ କରାଯାଇ ପାରିବ ନାହିଁ</translation>
+<translation id="1523230076022876491">{MONTHS,plural, =1{1 ମାସ ପୂର୍ବେ}other{# ମାସ ପୂର୍ବେ}}</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 ମିନିଟ୍‍ ଏବଂ }other{# ମିନିଟ୍‍ ଏବଂ }}</translation>
 <translation id="1643823602425662293">ବିଜ୍ଞପ୍ତି</translation>
 <translation id="169515659049020177">Shift</translation>
@@ -31,14 +34,12 @@
 <translation id="1860796786778352021">ବିଜ୍ଞପ୍ତି ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="186476001994626254">ୱେବ୍ ସ୍ମାର୍ଟ ପେଷ୍ଟ ବିଷୟବସ୍ତୁ</translation>
 <translation id="1871244248791675517">Ins</translation>
-<translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">&amp;ସମସ୍ତ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="19085484004813472">ଏହା ଏକ ନୂଆ ଫିଚର୍ ଅଟେ</translation>
 <translation id="2006524834898217237">ଏହି ଡିଭାଇସ୍‌ଟି ଇଣ୍ଟର୍ନେଟ୍ ସହ ସଂଯୁକ୍ତ ହୋଇଥିବା ସୁନିଶ୍ଚିତ କରନ୍ତୁ।</translation>
 <translation id="208586643495776849">ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1d}other{#d}}</translation>
 <translation id="2148716181193084225">ଆଜି</translation>
-<translation id="2161656808144014275">ଟେକ୍ସଟ୍</translation>
 <translation id="2168039046890040389">ଉପର ପୃଷ୍ଠା</translation>
 <translation id="2190355936436201913">(ଖାଲି)</translation>
 <translation id="2192232475740621500">କମ୍‌ ସାନ୍ଧ୍ରତା ବ୍ୟବହାର କରନ୍ତୁ</translation>
@@ -90,7 +91,6 @@
 <translation id="3622035490309591977">କ୍ଲିପବୋର୍ଡ ଇତିହାସ</translation>
 <translation id="364720409959344976">ଅପ୍‌ଲୋଡ୍ କରିବାକୁ ଫୋଲ୍ଡର୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="3660179305079774227">Up Arrow</translation>
-<translation id="3670030362669914947">ନମ୍ବର</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
@@ -109,7 +109,9 @@
 <translation id="4491109536499578614">ଛବି</translation>
 <translation id="4565377596337484307">ପାସୱାର୍ଡ୍ ଲୁଚାନ୍ତୁ</translation>
 <translation id="4588090240171750605">ଦକ୍ଷିଣକୁ ସ୍କ୍ରୋଲ୍ କରନ୍ତୁ</translation>
+<translation id="4689010477870442157">{YEARS,plural, =1{1 ବର୍ଷ ପୂର୍ବେ}other{# ବର୍ଷ ପୂର୍ବେ}}</translation>
 <translation id="4724120544754982507">ବିଜ୍ଞପ୍ତି କେନ୍ଦ୍ର, <ph name="UNREAD_NOTIFICATION_COUNT" /> ପଢ଼ାଯାଇନଥିବା ବିଜ୍ଞପ୍ତି</translation>
+<translation id="4729257764711776855">ନମ୍ବର</translation>
 <translation id="4746179598275229723">ଏକ୍ସଟେନସନକୁ ଅନପିନ କରାଯାଇଛି</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 ମାସ ବାକି ଅଛି}other{# ମାସ ବାକି ଅଛି}}</translation>
 <translation id="4888938634149558681">କଲ୍ କରନ୍ତୁ</translation>
@@ -121,6 +123,7 @@
 <translation id="5278860589123563674">ପଠାଇବାରେ ବିଫଳ ହେଲା</translation>
 <translation id="528468243742722775">ସମାପ୍ତ କରନ୍ତୁ</translation>
 <translation id="5329858601952122676">&amp;ବିଲୋପ</translation>
+<translation id="5361107212971249203">ଟେକ୍ସଟ</translation>
 <translation id="5463830097259460683">ଇମୋଜି &amp;&amp; ଚିହ୍ନ</translation>
 <translation id="5528053674512161860">ଡେଭଲପର୍ UI ମଡ୍ୟୁଲ୍ (dev_ui) ଇନଷ୍ଟଲ୍ କରାଯାଇନଥିବା ଯୋଗୁଁ ପୃଷ୍ଠା ଲୋଡ୍ ହେବା ବିଫଳ ହୋଇଛି</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ସିଷ୍ଟମ୍</translation>
@@ -202,6 +205,7 @@
 <translation id="8393700583063109961">ମେସେଜ୍‌ ପଠାନ୍ତୁ</translation>
 <translation id="8394908167088220973">ମିଡିଆ ଚଲାନ୍ତୁ/ବିରତ କରନ୍ତୁ</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1y}other{#y}}</translation>
+<translation id="8598144894266192959"><ph name="NUMBER" />%</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ଫାଇଲ୍ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> ଅଧିକ</translation>
@@ -212,10 +216,12 @@
 <translation id="8867568208303837180">ପଠାଉଛି...</translation>
 <translation id="8876215549894133151">ଫର୍ମାଟ୍:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8927924178504495502">{HOURS,plural, =1{1 ଘଣ୍ଟା ପୂର୍ବେ}other{# ଘଣ୍ଟା ପୂର୍ବେ}}</translation>
 <translation id="8996630695507351249"><ph name="TARGET_DEVICE_NAME" /> ଇଣ୍ଟର୍ନେଟ୍ ସହିତ ସଂଯୁକ୍ତ ଥିବା ସୁନିଶ୍ଚିତ କରନ୍ତୁ।</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 ସେକେଣ୍ଡ}other{# ସେକେଣ୍ଡ}}</translation>
 <translation id="9059834730836941392">ବିଜ୍ଞପ୍ତି ସଙ୍କୁଚିତ କରନ୍ତୁ</translation>
 <translation id="9170848237812810038">&amp;ପୂର୍ବବତ୍</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="944069440740578670">ପଢ଼ାଯାଇନଥିବା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ</translation>
+<translation id="966963601246348639">{SECONDS,plural, =1{1 ସେକେଣ୍ଡ ପୂର୍ବେ}other{# ସେକେଣ୍ଡ ପୂର୍ବେ}}</translation>
 </translationbundle>

@@ -36,7 +36,6 @@ missing,chrome/android/java/src/org/chromium/chrome/browser/offlinepages/measure
 missing,chrome/browser/android/compositor/scene_layer/contextual_search_scene_layer.cc
 missing,chrome/browser/android/feedback/connectivity_checker.cc
 missing,chrome/browser/commerce/subscriptions/android/java/src/org/chromium/chrome/browser/subscriptions/CommerceSubscriptionsServiceProxy.java
-missing,chrome/browser/page_annotations/android/java/src/org/chromium/chrome/browser/page_annotations/PageAnnotationsServiceProxy.java
 missing,chrome/browser/tab/java/src/org/chromium/chrome/browser/tab/state/StorePersistedTabData.java
 missing,net/proxy_resolution/proxy_config_service_android.cc
 
@@ -76,7 +75,6 @@ missing_new_fields,chrome/browser/ash/app_mode/web_app/web_kiosk_app_data.cc
 missing_new_fields,chrome/browser/ash/bruschetta/bruschetta_installer.cc
 missing_new_fields,chrome/browser/ash/customization/customization_document.cc
 missing_new_fields,chrome/browser/ash/customization/customization_wallpaper_downloader.cc
-missing_new_fields,chrome/browser/ash/enhanced_network_tts/enhanced_network_tts_impl.cc
 missing_new_fields,chrome/browser/ash/input_method/ime_service_connector.cc
 missing_new_fields,chrome/browser/ash/login/gaia_reauth_token_fetcher.cc
 missing_new_fields,chrome/browser/ash/login/marketing_backend_connector.cc
@@ -90,7 +88,6 @@ missing_new_fields,chrome/browser/ash/printing/server_printers_fetcher.cc
 missing_new_fields,chrome/browser/ash/remote_apps/remote_apps_manager.cc
 missing_new_fields,chrome/browser/ash/smb_client/discovery/netbios_client.cc
 missing_new_fields,chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc
-missing_new_fields,chrome/browser/ash/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.cc
 missing_new_fields,chrome/browser/autofill/autofill_gstatic_reader.cc
 missing_new_fields,chrome/browser/autofill/autofill_image_fetcher_impl.cc
 missing_new_fields,chrome/browser/bitmap_fetcher/bitmap_fetcher_service.cc
@@ -152,7 +149,6 @@ missing_new_fields,chrome/browser/ssl/sct_reporting_service.cc
 missing_new_fields,chrome/browser/supervised_user/child_accounts/family_info_fetcher.cc
 missing_new_fields,chrome/browser/supervised_user/child_accounts/permission_request_creator_apiary.cc
 missing_new_fields,chrome/browser/supervised_user/chromeos/supervised_user_favicon_request_handler.cc
-missing_new_fields,chrome/browser/supervised_user/kids_chrome_management/kids_external_fetcher.cc
 missing_new_fields,chrome/browser/supervised_user/supervised_user_service.cc
 missing_new_fields,chrome/browser/sync_file_system/drive_backend/sync_engine.cc
 missing_new_fields,chrome/browser/ui/ash/ambient/ambient_client_impl.cc
@@ -184,7 +180,6 @@ missing_new_fields,chromeos/ash/components/fwupd/firmware_update_manager.cc
 missing_new_fields,chromeos/ash/components/login/auth/recovery/cryptohome_recovery_service_client.cc
 missing_new_fields,chromeos/ash/components/timezone/timezone_request.cc
 missing_new_fields,chromeos/components/quick_answers/result_loader.cc
-missing_new_fields,chromeos/components/quick_answers/utils/spell_check_language.cc
 missing_new_fields,components/assist_ranker/ranker_url_fetcher.cc
 missing_new_fields,components/autofill/core/browser/autofill_download_manager.cc
 missing_new_fields,components/autofill/core/browser/payments/payments_client.cc
@@ -206,9 +201,6 @@ missing_new_fields,components/media_router/common/providers/cast/channel/cast_so
 missing_new_fields,components/metrics/net/net_metrics_log_uploader.cc
 missing_new_fields,components/mirroring/service/udp_socket_client.cc
 missing_new_fields,components/network_time/network_time_tracker.cc
-missing_new_fields,components/ntp_snippets/content_suggestions_service.cc
-missing_new_fields,components/ntp_snippets/remote/cached_image_fetcher.cc
-missing_new_fields,components/ntp_snippets/remote/json_request.cc
 missing_new_fields,components/ntp_tiles/icon_cacher_impl.cc
 missing_new_fields,components/ntp_tiles/popular_sites_impl.cc
 missing_new_fields,components/offline_pages/core/prefetch/prefetch_downloader_impl.cc

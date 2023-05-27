@@ -8,17 +8,9 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
-
-@class ReadingListAddCommand;
-
 // Protocol for commands that will generally be handled by the "current tab",
 // which in practice is the BrowserViewController instance displaying the tab.
 @protocol BrowserCommands <NSObject>
-
-// Adds a page to the reading list using data in `command`.
-// TODO(crbug.com/1272540): Remove this command.
-- (void)addToReadingList:(ReadingListAddCommand*)command;
 
 // Prepares the browser to display the overflow menu.
 - (void)prepareForOverflowMenuPresentation;

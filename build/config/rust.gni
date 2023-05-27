@@ -15,10 +15,19 @@ declare_args() {
   # Whether to allow Rust code to be part of the Chromium *build process*.
   # This can be used to create Rust test binaries, even if the flag below
   # is false.
+  # This only applies to Chromium itself, so the build_with_chromium check
+  # should not be removed.
+  # TODO(crbug.com/1386212): Mac
+  # TODO(crbug.com/1271215): Windows
   # TODO(crbug.com/1426472): use_clang_coverage
-  enable_rust = is_linux && !is_official_build && !using_sanitizer &&
-                target_cpu != "x86" && !use_clang_coverage && is_clang &&
-                !is_castos && target_os == host_os
+  # TODO(crbug.com/1427362): using_sanitizer
+  # TODO(crbug.com/1427364): target_cpu != "x86"
+  # There is no specific bug for !is_official_build or other platforms, since
+  # this is just a matter of rolling things out slowly and carefully and there
+  # may be no actual bugs there.
+  enable_rust = (is_linux || is_android) && !is_official_build &&
+                !using_sanitizer && target_cpu != "x86" &&
+                !use_clang_coverage && is_clang && build_with_chromium
 
   # As we incrementally enable Rust on mainstream builders, we want to enable
   # the toolchain (by switching 'enable_rust' to true) while still disabling
@@ -26,13 +35,8 @@ declare_args() {
   # all Rust features enabled.
   enable_all_rust_features = false
 
-  # Use the Rust toolchain built in-tree. See //tools/rust. The toolchain comes
-  # with a prebuilt stdlib for the host platform.
-  #
-  # For now, we don't support cross-compilation at all, but it's in progress. To
-  # allow Rust on Android we have a prebuilt toolchain from the Android team,
-  # which is used when this variable is `false`.
-  use_chromium_rust_toolchain = target_os == host_os
+  # Use the Rust toolchain built in-tree. See //tools/rust.
+  use_chromium_rust_toolchain = true
 
   # Build libstd locally with GN and use that instead of the prebuilts, where
   # applicable. If this is false the prebuilt libstd will always be used. If
@@ -47,6 +51,10 @@ declare_args() {
   # containing a 'bin' directory and others. Commonly
   # <home dir>/.rustup/toolchains/nightly-<something>-<something>
   rust_sysroot_absolute = ""
+
+  # If you're using an external Rust toolchain, set this to a Rust
+  # the output of rustc -V.
+  rustc_version = ""
 
   # If you're using a Rust toolchain as specified by rust_sysroot_absolute,
   # you can specify whether it supports nacl here.
@@ -76,8 +84,17 @@ declare_args() {
 }
 
 declare_args() {
-  # Individual Rust components. A separate declare_args so it can depend
-  # on the previous args.
+  # Use a separate declare_args so these variables' defaults can depend on the
+  # ones above.
+
+  # When true, uses the locally-built std in all Rust targets.
+  #
+  # As an internal implementation detail this can be overridden on specific
+  # targets (e.g. to run build.rs scripts while building std), but this
+  # generally should not be done.
+  use_local_std_by_default = enable_local_libstd && use_chromium_rust_toolchain
+
+  # Individual Rust components.
 
   # Conversions between Rust types and C++ types.
   enable_rust_base_conversions = enable_all_rust_features
@@ -88,17 +105,17 @@ declare_args() {
   # Support for chrome://crash-rust to check crash dump collection works.
   enable_rust_crash = enable_all_rust_features
 
-  # Build the Rust bindgen tool. This requires libclang
-  enable_rust_bindgen = enable_all_rust_features
-
-  # Support for Rust mojo bindings. Needs bindgen.
+  # Support for Rust mojo bindings.
   enable_rust_mojo = enable_all_rust_features
 
-  # Support for the 'gnrt' Rust tool
+  # Support for the 'gnrt' Rust tool.
   enable_rust_gnrt = enable_all_rust_features
 
   # Rust gtest interop
   enable_rust_gtest_interop = enable_all_rust_features
+
+  # Enable Boringssl Rust bindings generation
+  enable_rust_boringssl = enable_all_rust_features
 }
 
 # Platform support for "official" toolchains (Android or Chromium)
@@ -120,12 +137,14 @@ toolchain_has_rust =
 # (so e.g. rust targets are rebuilt, and the standard library is re-copied when
 # the toolchain changes). It is left empty for custom toolchains.
 rustc_revision = ""
-if (toolchain_has_rust && rust_sysroot_absolute == "") {
+if (toolchain_has_rust) {
   if (use_chromium_rust_toolchain) {
     update_rust_args = [ "--print-package-version" ]
     rustc_revision = exec_script("//tools/rust/update_rust.py",
                                  update_rust_args,
                                  "trim string")
+  } else if (rust_sysroot_absolute != "") {
+    rustc_revision = rustc_version
   } else {
     # Android toolchain version.
     rustc_revision = "rustc 1.64.0-dev (Android Rust Toolchain version 9099361)"
@@ -148,12 +167,6 @@ if (enable_rust) {
     rust_sysroot = get_path_info(rust_sysroot_absolute, "abspath")
     use_unverified_rust_toolchain = true
   } else if (use_chromium_rust_toolchain) {
-    if (host_os != target_os) {
-      assert(
-          false,
-          "Attempt to use Chromium Rust toolchain on an unsupported platform")
-    }
-
     rust_sysroot = "//third_party/rust-toolchain"
     use_unverified_rust_toolchain = false
   } else {
@@ -180,7 +193,7 @@ if (enable_rust) {
 # (see '*_toolchain_supports_platform above') to enable experimentation with
 # other toolchains.
 rust_abi_target = ""
-if (is_linux) {
+if (is_linux || is_chromeos) {
   cpu = current_cpu
   if (cpu == "arm64") {
     cpu = "aarch64"
@@ -273,6 +286,10 @@ assert(!use_thin_lto || !enable_rust || use_chromium_rust_toolchain ||
 
 # Determine whether the local libstd can and should be built.
 local_libstd_supported = enable_local_libstd && use_chromium_rust_toolchain
+
+# Determine whether the prebuilt libstd can be used
+prebuilt_libstd_supported = !use_chromium_rust_toolchain ||
+                            (target_os == "linux" && target_cpu == "x64")
 
 # Arguments for Rust invocation.
 # This is common between gcc/clang, Mac and Windows toolchains so specify once,

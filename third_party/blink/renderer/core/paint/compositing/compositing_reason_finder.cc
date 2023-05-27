@@ -30,6 +30,10 @@ namespace blink {
 namespace {
 
 bool ShouldPreferCompositingForLayoutView(const LayoutView& layout_view) {
+  if (layout_view.GetFrame()->IsLocalRoot()) {
+    return true;
+  }
+
   auto has_direct_compositing_reasons = [](const LayoutObject* object) -> bool {
     return object &&
            CompositingReasonFinder::
@@ -152,7 +156,7 @@ CompositingReasons CompositingReasonsFor3DSceneLeaf(
     return CompositingReason::kNone;
   }
 
-  if (layout_object.IsForElement() && !layout_object.StyleRef().Preserves3D()) {
+  if (!layout_object.IsAnonymous() && !layout_object.StyleRef().Preserves3D()) {
     const LayoutObject* parent_object =
         layout_object.NearestAncestorForElement();
     if (parent_object && parent_object->StyleRef().Preserves3D()) {
@@ -315,11 +319,9 @@ CompositingReasonFinder::DirectReasonsForPaintPropertiesExceptScrolling(
       reasons |= CompositingReason::kPreserve3DWith3DDescendants;
   }
 
-  if (layer->IsRootLayer() && object.GetFrame()->IsLocalRoot())
-    reasons |= CompositingReason::kRoot;
-
-  if (RequiresCompositingForRootScroller(*layer))
+  if (RequiresCompositingForRootScroller(object)) {
     reasons |= CompositingReason::kRootScroller;
+  }
 
   reasons |= CompositingReasonsForScrollDependentPosition(
       *layer, container_for_fixed_position);
@@ -458,16 +460,16 @@ CompositingReasons CompositingReasonFinder::CompositingReasonsForAnimation(
 }
 
 bool CompositingReasonFinder::RequiresCompositingForRootScroller(
-    const PaintLayer& layer) {
+    const LayoutObject& object) {
   // The root scroller needs composited scrolling layers even if it doesn't
   // actually have scrolling since CC has these assumptions baked in for the
   // viewport. Because this is only needed for CC, we can skip it if
   // compositing is not enabled.
-  const auto& settings = *layer.GetLayoutObject().GetDocument().GetSettings();
-  if (!settings.GetAcceleratedCompositingEnabled())
+  if (!object.GetFrame()->GetSettings()->GetAcceleratedCompositingEnabled()) {
     return false;
+  }
 
-  return layer.GetLayoutObject().IsGlobalRootScroller();
+  return object.IsGlobalRootScroller();
 }
 
 }  // namespace blink

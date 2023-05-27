@@ -45,9 +45,9 @@
 
 namespace blink {
 
-BASE_FEATURE(kCanvasOverdrawOptimization,
-             "CanvasOverdrawOptimization",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kDisableCanvasOverdrawOptimization,
+             "DisableCanvasOverdrawOptimization",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 const char BaseRenderingContext2D::kDefaultFont[] = "10px sans-serif";
 const char BaseRenderingContext2D::kInheritDirectionString[] = "inherit";
@@ -120,8 +120,9 @@ BaseRenderingContext2D::~BaseRenderingContext2D() {
 }
 
 void BaseRenderingContext2D::save() {
-  if (isContextLost())
+  if (UNLIKELY(isContextLost())) {
     return;
+  }
   if (UNLIKELY(identifiability_study_helper_.ShouldUpdateBuilder())) {
     identifiability_study_helper_.UpdateBuilder(CanvasOps::kSave);
   }
@@ -148,8 +149,9 @@ void BaseRenderingContext2D::save() {
 }
 
 void BaseRenderingContext2D::restore() {
-  if (isContextLost())
+  if (UNLIKELY(isContextLost())) {
     return;
+  }
 
   if (UNLIKELY(identifiability_study_helper_.ShouldUpdateBuilder())) {
     identifiability_study_helper_.UpdateBuilder(CanvasOps::kRestore);
@@ -183,8 +185,9 @@ void BaseRenderingContext2D::pushLayerStack(
 }
 
 void BaseRenderingContext2D::beginLayer() {
-  if (isContextLost())
+  if (UNLIKELY(isContextLost())) {
     return;
+  }
   // TODO(crbug.com/1234113): Instrument new canvas APIs.
   identifiability_study_helper_.set_encountered_skipped_ops();
 
@@ -259,8 +262,9 @@ void BaseRenderingContext2D::beginLayer() {
 }
 
 void BaseRenderingContext2D::endLayer() {
-  if (isContextLost())
+  if (UNLIKELY(isContextLost())) {
     return;
+  }
   // TODO(crbug.com/1234113): Instrument new canvas APIs.
   identifiability_study_helper_.set_encountered_skipped_ops();
 
@@ -479,9 +483,7 @@ void BaseRenderingContext2D::setStrokeStyle(v8::Isolate* isolate,
 
   switch (v8_style.type) {
     case V8CanvasStyleType::kCSSColorValue:
-      // TODO (crbug.com/1399566): v8_style should probably store another format
-      // for color.
-      GetState().SetStrokeColor(Color::FromSkColor(v8_style.css_color_value));
+      GetState().SetStrokeColor(v8_style.css_color_value);
       break;
     case V8CanvasStyleType::kGradient:
       GetState().SetStrokeGradient(v8_style.gradient);
@@ -541,9 +543,7 @@ void BaseRenderingContext2D::setFillStyle(v8::Isolate* isolate,
 
   switch (v8_style.type) {
     case V8CanvasStyleType::kCSSColorValue:
-      // TODO (crbug.com/1399566): v8_style should probably store another format
-      // for color.
-      GetState().SetFillColor(Color::FromSkColor(v8_style.css_color_value));
+      GetState().SetFillColor(v8_style.css_color_value);
       break;
     case V8CanvasStyleType::kGradient:
       GetState().SetFillGradient(v8_style.gradient);
@@ -849,8 +849,9 @@ void BaseRenderingContext2D::scale(double sx, double sy) {
     return;
 
   SetTransform(new_transform);
-  if (!IsTransformInvertible())
+  if (UNLIKELY(!IsTransformInvertible())) {
     return;
+  }
 
   c->scale(fsx, fsy);
   GetModifiablePath().Transform(
@@ -875,8 +876,9 @@ void BaseRenderingContext2D::rotate(double angle_in_radians) {
     return;
 
   SetTransform(new_transform);
-  if (!IsTransformInvertible())
+  if (UNLIKELY(!IsTransformInvertible())) {
     return;
+  }
   c->rotate(ClampTo<float>(angle_in_radians * (180.0 / kPiFloat)));
   GetModifiablePath().Transform(
       AffineTransform().RotateRadians(-angle_in_radians));
@@ -889,8 +891,9 @@ void BaseRenderingContext2D::translate(double tx, double ty) {
   if (!c)
     return;
 
-  if (!IsTransformInvertible())
+  if (UNLIKELY(!IsTransformInvertible())) {
     return;
+  }
 
   if (!std::isfinite(tx) || !std::isfinite(ty))
     return;
@@ -907,8 +910,9 @@ void BaseRenderingContext2D::translate(double tx, double ty) {
     return;
 
   SetTransform(new_transform);
-  if (!IsTransformInvertible())
+  if (UNLIKELY(!IsTransformInvertible())) {
     return;
+  }
 
   c->translate(ftx, fty);
   GetModifiablePath().Transform(AffineTransform().Translate(-ftx, -fty));
@@ -946,8 +950,9 @@ void BaseRenderingContext2D::transform(double m11,
     return;
 
   SetTransform(new_transform);
-  if (!IsTransformInvertible())
+  if (UNLIKELY(!IsTransformInvertible())) {
     return;
+  }
 
   c->concat(AffineTransformToSkM44(transform));
   GetModifiablePath().Transform(transform.Inverse());
@@ -1238,7 +1243,7 @@ void BaseRenderingContext2D::ClipInternal(const Path& path,
   if (!c) {
     return;
   }
-  if (!IsTransformInvertible()) {
+  if (UNLIKELY(!IsTransformInvertible())) {
     return;
   }
 
@@ -1290,8 +1295,9 @@ bool BaseRenderingContext2D::IsPointInPathInternal(
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return false;
-  if (!IsTransformInvertible())
+  if (UNLIKELY(!IsTransformInvertible())) {
     return false;
+  }
 
   if (!std::isfinite(x) || !std::isfinite(y))
     return false;
@@ -1319,8 +1325,9 @@ bool BaseRenderingContext2D::IsPointInStrokeInternal(const Path& path,
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return false;
-  if (!IsTransformInvertible())
+  if (UNLIKELY(!IsTransformInvertible())) {
     return false;
+  }
 
   if (!std::isfinite(x) || !std::isfinite(y))
     return false;
@@ -1350,8 +1357,9 @@ void BaseRenderingContext2D::clearRect(double x,
   cc::PaintCanvas* c = GetOrCreatePaintCanvas();
   if (!c)
     return;
-  if (!IsTransformInvertible())
+  if (UNLIKELY(!IsTransformInvertible())) {
     return;
+  }
 
   SkIRect clip_bounds;
   if (!c->getDeviceClipBounds(&clip_bounds))
@@ -2032,7 +2040,7 @@ ImageData* BaseRenderingContext2D::getImageDataInternal(
   validate_and_create_params.default_color_space =
       GetDefaultImageDataColorSpace();
 
-  if (!CanCreateCanvas2dResourceProvider() || isContextLost()) {
+  if (UNLIKELY(!CanCreateCanvas2dResourceProvider() || isContextLost())) {
     return ImageData::ValidateAndCreate(
         sw, sh, absl::nullopt, image_data_settings, validate_and_create_params,
         exception_state);

@@ -9,12 +9,21 @@
 #include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace ash {
+
+namespace {
+class FakeScopedIphSession : public ScopedIphSession {
+ public:
+  ~FakeScopedIphSession() override = default;
+  void NotifyEvent(const std::string& event) override {}
+};
+}  // namespace
 
 TestAppListClient::TestAppListClient() = default;
 
@@ -81,6 +90,19 @@ void TestAppListClient::GetContextMenuModel(
 
 AppListNotifier* TestAppListClient::GetNotifier() {
   return nullptr;
+}
+
+void TestAppListClient::RecalculateWouldTriggerLauncherSearchIph() {}
+
+std::unique_ptr<ScopedIphSession>
+TestAppListClient::CreateLauncherSearchIphSession() {
+  return std::make_unique<FakeScopedIphSession>();
+}
+
+void TestAppListClient::OpenSearchBoxIphUrl() {}
+
+void TestAppListClient::LoadIcon(int profile_id, const std::string& app_id) {
+  loaded_icon_app_ids_.push_back(app_id);
 }
 
 std::vector<TestAppListClient::SearchResultActionId>

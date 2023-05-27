@@ -5,8 +5,8 @@
 #include "components/autofill/core/browser/webdata/contact_info_sync_bridge.h"
 
 #include "base/check.h"
-#include "base/guid.h"
 #include "base/ranges/algorithm.h"
+#include "base/uuid.h"
 #include "components/autofill/core/browser/contact_info_sync_util.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync/base/features.h"
@@ -74,21 +74,22 @@ ContactInfoSyncBridge::CreateMetadataChangeList() {
                           change_processor()->GetWeakPtr()));
 }
 
-absl::optional<syncer::ModelError> ContactInfoSyncBridge::MergeSyncData(
+absl::optional<syncer::ModelError> ContactInfoSyncBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
   // Since the local storage is cleared when the data type is disabled in
-  // `ApplyStopSyncChanges()`, `MergeSyncData()` simply becomes an
-  // `ApplySyncChanges()` call.
-  if (auto error = ApplySyncChanges(std::move(metadata_change_list),
-                                    std::move(entity_data))) {
+  // `ApplyDisableSyncChanges()`, `MergeFullSyncData()` simply becomes an
+  // `ApplyIncrementalSyncChanges()` call.
+  if (auto error = ApplyIncrementalSyncChanges(std::move(metadata_change_list),
+                                               std::move(entity_data))) {
     return error;
   }
   web_data_backend_->NotifyThatSyncHasStarted(syncer::CONTACT_INFO);
   return absl::nullopt;
 }
 
-absl::optional<syncer::ModelError> ContactInfoSyncBridge::ApplySyncChanges(
+absl::optional<syncer::ModelError>
+ContactInfoSyncBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
@@ -216,14 +217,8 @@ void ContactInfoSyncBridge::AutofillProfileChanged(
   // triggered this notification to the bridge) finishes.
 }
 
-void ContactInfoSyncBridge::ApplyStopSyncChanges(
+void ContactInfoSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  if (!delete_metadata_change_list) {
-    // A null `delete_metadata_change_list` indicates that Sync is stopping.
-    return;
-  }
-  // A non-null `delete_metadata_change_list` indicates that the data type was
-  // disabled.
   if (!GetAutofillTable()->RemoveAllAutofillProfiles(
           AutofillProfile::Source::kAccount)) {
     change_processor()->ReportError(

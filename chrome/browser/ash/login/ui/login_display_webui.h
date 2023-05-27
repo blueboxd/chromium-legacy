@@ -7,12 +7,11 @@
 
 #include "chrome/browser/ash/login/ui/login_display.h"
 #include "components/user_manager/user.h"
-#include "ui/base/user_activity/user_activity_observer.h"
 
 namespace ash {
 
 // WebUI-based login UI implementation.
-class LoginDisplayWebUI : public LoginDisplay, public ui::UserActivityObserver {
+class LoginDisplayWebUI : public LoginDisplay {
  public:
   LoginDisplayWebUI();
 
@@ -22,11 +21,8 @@ class LoginDisplayWebUI : public LoginDisplay, public ui::UserActivityObserver {
   ~LoginDisplayWebUI() override;
 
   // LoginDisplay implementation:
-  void Init(const user_manager::UserList& users, bool show_guest) override;
+  void Init(const user_manager::UserList& users) override;
   void SetUIEnabled(bool is_enabled) override;
-
-  // ui::UserActivityDetector implementation:
-  void OnUserActivity(const ui::Event* event) override;
 };
 
 }  // namespace ash

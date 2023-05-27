@@ -79,7 +79,6 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="2928420929544864228">Instalacja ukończona.</translation>
 <translation id="2977470724722393594">Masz aktualną wersję Chromium</translation>
 <translation id="2977506796191543575">Jeśli strona próbuje wykraść Twoje hasło lub pobierasz szkodliwy plik, Chromium może też wysłać URL wraz z fragmentami zawartości strony do usługi Bezpieczne przeglądanie.</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Przeglądarka Chromium jest połączona z urządzeniem HID}few{Przeglądarka Chromium jest połączona z urządzeniami HID}many{Przeglądarka Chromium jest połączona z urządzeniami HID}other{Przeglądarka Chromium jest połączona z urządzeniami HID}}</translation>
 <translation id="3032706164202344641">Chromium nie może sprawdzić Twoich haseł. Spróbuj później.</translation>
 <translation id="3032787606318309379">Dodawanie do Chromium...</translation>
 <translation id="3038232873781883849">Czekam na instalację…</translation>
@@ -92,7 +91,6 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="3185330573522821672">Dostosuj swój nowy profil Chromium</translation>
 <translation id="3190315855212034486">O kurczę! Chromium uległ awarii. Uruchomić go teraz ponownie?</translation>
 <translation id="3258596308407688501">Chromium nie może odczytać ani zapisać danych w katalogu <ph name="USER_DATA_DIRECTORY" />.</translation>
-<translation id="3259037713047794342">Ten przewodnik pomoże Ci wybrać najlepsze opcje, aby przeglądarka Chromium działała tak, jak chcesz</translation>
 <translation id="3283186697780795848">Zainstalowana jest wersja Chromium <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3286538390144397061">Uruchom ponownie teraz</translation>
 <translation id="328888136576916638">Brakuje kluczy interfejsu Google API. Niektóre funkcje Chromium będą wyłączone.</translation>
@@ -244,8 +242,10 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="6442900851116057561">Uruchom ponownie Chromium OS</translation>
 <translation id="6455857529632101747">Witamy w profilach Chromium</translation>
 <translation id="6475912303565314141">Kontroluje także to, jaka strona wyświetla się po uruchomieniu Chromium.</translation>
+<translation id="648319183876919572">Ulepszone Bezpieczne przeglądanie skuteczniej chroni Cię przed niebezpiecznymi stronami i pobieranymi plikami</translation>
 <translation id="6510925080656968729">Odinstaluj Chromium</translation>
 <translation id="6542839706527980775">Każdy profil zawiera własne dane Chromium, takie jak zakładki, historia, hasła i inne</translation>
+<translation id="656935081669708576">Możesz przełączyć się na wyświetlanie haseł z innego profilu Chromium</translation>
 <translation id="6570579332384693436">Aby naprawić błędy pisowni, Chromium wysyła tekst wpisany w polach tekstowych do Google</translation>
 <translation id="6598877126913850652">Otwórz ustawienia powiadomień Chromium</translation>
 <translation id="6613594504749178791">Zmiany zostaną zastosowane po ponownym uruchomieniu Chromium.</translation>
@@ -380,7 +380,6 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="924957577793602335">Dostosuj Chromium do swoich potrzeb</translation>
 <translation id="93478295209880648">Chromium może działać nieprawidłowo, bo nie jest już zgodny z Windows XP ani Windows Vista</translation>
 <translation id="942598560705308788">Certyfikaty zarządzane przez Chromium</translation>
-<translation id="959579472876010517">Wykorzystaj wszystkie możliwości Chromium</translation>
 <translation id="965162752251293939">Kto używa Chromium?</translation>
 <translation id="967427899662692980">Korzystaj z najlepszych zabezpieczeń Chromium</translation>
 <translation id="9792300276217204">Zawsze usuwaj dane witryn z urządzenia po zamknięciu Chromium</translation>

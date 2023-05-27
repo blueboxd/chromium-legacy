@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.app.Activity;
-import android.support.test.InstrumentationRegistry;
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 
+import android.app.Activity;
+
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
@@ -109,7 +111,7 @@ public class TabbedModeTabPersistencePolicyTest {
                                 return new GURL("https://www.google.com");
                             }
                         };
-                        tab.initialize(null, null, null, null, null, false, null);
+                        tab.initialize(null, null, null, null, null, false, null, false);
                         return tab;
                     }
                 };
@@ -185,7 +187,7 @@ public class TabbedModeTabPersistencePolicyTest {
         final CallbackHelper callbackSignal = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             policy.cleanupInstanceState(id, (result) -> {
-                Assert.assertThat(result,
+                assertThat(result,
                         Matchers.containsInAnyOrder(
                                 TabStateFileManager.getTabStateFilename(4, false),
                                 TabStateFileManager.getTabStateFilename(12, true),

@@ -194,13 +194,12 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     const gpu::GpuDriverBugWorkarounds& workarounds,
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter,
+    std::unique_ptr<MailboxVideoFrameConverter> frame_converter,
     std::vector<Fourcc> renderable_fourccs,
     std::unique_ptr<MediaLog> media_log,
     mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder) {
   DCHECK(client_task_runner);
   DCHECK(frame_pool);
-  DCHECK(frame_converter);
   DCHECK(!renderable_fourccs.empty());
 
   CreateDecoderFunctionCB create_decoder_function_cb;
@@ -225,6 +224,33 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
       std::move(frame_converter), std::move(renderable_fourccs),
       std::move(media_log), std::move(create_decoder_function_cb),
       uses_oop_video_decoder);
+  return std::make_unique<AsyncDestroyVideoDecoder<VideoDecoderPipeline>>(
+      base::WrapUnique(pipeline));
+}
+
+// static
+std::unique_ptr<VideoDecoder> VideoDecoderPipeline::CreateForTesting(
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+    std::unique_ptr<MediaLog> media_log,
+    bool ignore_resolution_changes_to_smaller_for_testing) {
+  CreateDecoderFunctionCB
+#if BUILDFLAG(USE_VAAPI)
+      create_decoder_function_cb = base::BindOnce(&VaapiVideoDecoder::Create);
+#elif BUILDFLAG(USE_V4L2_CODEC)
+      create_decoder_function_cb = base::BindOnce(&V4L2VideoDecoder::Create);
+#endif
+
+  auto* pipeline = new VideoDecoderPipeline(
+      gpu::GpuDriverBugWorkarounds(), std::move(client_task_runner),
+      std::make_unique<PlatformVideoFramePool>(),
+      /*frame_converter=*/nullptr,
+      VideoDecoderPipeline::DefaultPreferredRenderableFourccs(),
+      std::move(media_log), std::move(create_decoder_function_cb),
+      /*uses_oop_video_decoder=*/false);
+
+  if (ignore_resolution_changes_to_smaller_for_testing)
+    pipeline->ignore_resolution_changes_to_smaller_for_testing_ = true;
+
   return std::make_unique<AsyncDestroyVideoDecoder<VideoDecoderPipeline>>(
       base::WrapUnique(pipeline));
 }
@@ -308,7 +334,7 @@ VideoDecoderPipeline::VideoDecoderPipeline(
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
-    std::unique_ptr<VideoFrameConverter> frame_converter,
+    std::unique_ptr<MailboxVideoFrameConverter> frame_converter,
     std::vector<Fourcc> renderable_fourccs,
     std::unique_ptr<MediaLog> media_log,
     CreateDecoderFunctionCB create_decoder_function_cb,
@@ -321,17 +347,19 @@ VideoDecoderPipeline::VideoDecoderPipeline(
       renderable_fourccs_(std::move(renderable_fourccs)),
       media_log_(std::move(media_log)),
       create_decoder_function_cb_(std::move(create_decoder_function_cb)),
+      oop_decoder_can_read_without_stalling_(false),
       uses_oop_video_decoder_(uses_oop_video_decoder) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DETACH_FROM_SEQUENCE(decoder_sequence_checker_);
   DCHECK(main_frame_pool_);
-  DCHECK(frame_converter_);
   DCHECK(client_task_runner_);
   DVLOGF(2);
 
   decoder_weak_this_ = decoder_weak_this_factory_.GetWeakPtr();
 
   main_frame_pool_->set_parent_task_runner(decoder_task_runner_);
+  if (!frame_converter_)
+    return;
   frame_converter_->Initialize(
       decoder_task_runner_,
       base::BindRepeating(&VideoDecoderPipeline::OnFrameConverted,
@@ -412,6 +440,11 @@ bool VideoDecoderPipeline::NeedsBitstreamConversion() const {
 
 bool VideoDecoderPipeline::CanReadWithoutStalling() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  if (uses_oop_video_decoder_) {
+    return oop_decoder_can_read_without_stalling_.load(
+        std::memory_order_seq_cst);
+  }
 
   // TODO(mcasas): also query |decoder_|.
   return main_frame_pool_ && !main_frame_pool_->IsExhausted();
@@ -514,6 +547,14 @@ void VideoDecoderPipeline::InitializeTask(const VideoDecoderConfig& config,
   estimated_num_buffers_for_renderer_ =
       EstimateRequiredRendererPipelineBuffers(low_delay);
 
+#if BUILDFLAG(USE_VAAPI)
+  if (ignore_resolution_changes_to_smaller_for_testing_) {
+    static_cast<VaapiVideoDecoder*>(decoder_.get())
+        ->set_ignore_resolution_changes_to_smaller_vp9_for_testing(  // IN-TEST
+            true);
+  }
+#endif
+
   decoder_->Initialize(
       config, /* low_delay=*/false, cdm_context,
       base::BindOnce(&VideoDecoderPipeline::OnInitializeDone,
@@ -588,7 +629,8 @@ void VideoDecoderPipeline::OnResetDone(base::OnceClosure reset_cb) {
 
   if (image_processor_)
     image_processor_->Reset();
-  frame_converter_->AbortPendingFrames();
+  if (frame_converter_)
+    frame_converter_->AbortPendingFrames();
 
 #if BUILDFLAG(IS_CHROMEOS)
   if (buffer_transcryptor_)
@@ -672,25 +714,34 @@ void VideoDecoderPipeline::OnDecodeDone(bool is_flush,
 
 void VideoDecoderPipeline::OnFrameDecoded(scoped_refptr<VideoFrame> frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(frame_converter_);
   DVLOGF(4);
+
+  if (uses_oop_video_decoder_) {
+    oop_decoder_can_read_without_stalling_.store(
+        decoder_->CanReadWithoutStalling(), std::memory_order_seq_cst);
+  }
 
   if (image_processor_) {
     image_processor_->Process(
         std::move(frame),
         base::BindOnce(&VideoDecoderPipeline::OnFrameProcessed,
                        decoder_weak_this_));
-  } else {
-    frame_converter_->ConvertFrame(std::move(frame));
+    return;
   }
+  if (frame_converter_)
+    frame_converter_->ConvertFrame(std::move(frame));
+  else
+    OnFrameConverted(std::move(frame));
 }
 
 void VideoDecoderPipeline::OnFrameProcessed(scoped_refptr<VideoFrame> frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(frame_converter_);
   DVLOGF(4);
 
-  frame_converter_->ConvertFrame(std::move(frame));
+  if (frame_converter_)
+    frame_converter_->ConvertFrame(std::move(frame));
+  else
+    OnFrameConverted(std::move(frame));
 }
 
 void VideoDecoderPipeline::OnFrameConverted(scoped_refptr<VideoFrame> frame) {
@@ -704,8 +755,6 @@ void VideoDecoderPipeline::OnFrameConverted(scoped_refptr<VideoFrame> frame) {
     return;
   }
 
-  // Flag that the video frame is capable of being put in an overlay.
-  frame->metadata().allow_overlay = true;
   // Flag that the video frame was decoded in a power efficient way.
   frame->metadata().power_efficient = true;
 
@@ -735,7 +784,7 @@ bool VideoDecoderPipeline::HasPendingFrames() const {
   DVLOGF(3);
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
 
-  return frame_converter_->HasPendingFrames() ||
+  return (frame_converter_ && frame_converter_->HasPendingFrames()) ||
          (image_processor_ && image_processor_->HasPendingFrames());
 }
 
@@ -746,10 +795,10 @@ void VideoDecoderPipeline::OnError(const std::string& msg) {
 
   has_error_ = true;
 
-  if (image_processor_) {
+  if (image_processor_)
     image_processor_->Reset();
-  }
-  frame_converter_->AbortPendingFrames();
+  if (frame_converter_)
+    frame_converter_->AbortPendingFrames();
 
 #if BUILDFLAG(IS_CHROMEOS)
   if (buffer_transcryptor_)

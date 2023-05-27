@@ -239,7 +239,8 @@ class NavigationURLLoaderImplTest : public testing::Test {
             blink::mojom::NavigationInitiatorActivationAndAdStatus::
                 kDidNotStartWithTransientActivation,
             false /* is_container_initiated */,
-            false /* is_fullscreen_requested */);
+            false /* is_fullscreen_requested */,
+            false /* has_storage_access */);
 
     auto common_params = blink::CreateCommonNavigationParams();
     common_params->url = url;
@@ -275,6 +276,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
             absl::nullopt /* devtools_accepted_stream_types */,
             false /* is_pdf */,
             content::WeakDocumentPtr() /* initiator_document */,
+            GlobalRenderFrameHostId() /* previous_render_frame_host_id */,
             false /* allow_cookies_from_browser */));
     std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
     most_recent_resource_request_ = absl::nullopt;

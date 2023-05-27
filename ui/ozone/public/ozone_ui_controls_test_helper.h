@@ -23,6 +23,9 @@ class OzoneUIControlsTestHelper {
  public:
   virtual ~OzoneUIControlsTestHelper() = default;
 
+  // Reset the internal state if any.
+  virtual void Reset() = 0;
+
   // Returns true if the underlying platform supports screen coordinates;
   virtual bool SupportsScreenCoordinates() const = 0;
 
@@ -39,7 +42,7 @@ class OzoneUIControlsTestHelper {
   // Sends mouse motion notify event and executes |closure| when done.
   virtual void SendMouseMotionNotifyEvent(gfx::AcceleratedWidget widget,
                                           const gfx::Point& mouse_loc,
-                                          const gfx::Point& mouse_root_loc,
+                                          const gfx::Point& mouse_loc_in_screen,
                                           base::OnceClosure closure) = 0;
 
   // Sends mouse event and executes |closure| when done.
@@ -48,7 +51,7 @@ class OzoneUIControlsTestHelper {
                               int button_state,
                               int accelerator_state,
                               const gfx::Point& mouse_loc,
-                              const gfx::Point& mouse_root_loc,
+                              const gfx::Point& mouse_loc_in_screen,
                               base::OnceClosure closure) = 0;
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

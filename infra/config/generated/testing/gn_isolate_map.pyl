@@ -322,10 +322,6 @@
     "label": "//media/cast:cast_unittests",
     "type": "windowed_test_launcher",
   },
-  "cc_perftests": {
-    "label": "//cc:cc_perftests",
-    "type": "additional_compile_target",
-  },
   "cc_unittests": {
     "label": "//cc:cc_unittests",
     "type": "windowed_test_launcher",
@@ -384,6 +380,10 @@
   "chrome_pkg": {
     "label": "//chrome/app:chrome_pkg",
     "type": "additional_compile_target",
+  },
+  "chrome_private_code_test": {
+    "label": "//chrome:chrome_private_code_test",
+    "type": "generated_script",
   },
   "chrome_public_apk": {
     "label": "//chrome/android:chrome_public_apk",
@@ -753,6 +753,10 @@
     "label": "//testing:empty_main",
     "type": "additional_compile_target",
   },
+  "env_chromium_unittests": {
+    "label": "//third_party/leveldatabase:env_chromium_unittests",
+    "type": "console_test_launcher",
+  },
   "events_unittests": {
     "label": "//ui/events:events_unittests",
     "type": "windowed_test_launcher",
@@ -1063,6 +1067,10 @@
     "label": "//ui/latency:latency_unittests",
     "type": "console_test_launcher",
   },
+  "leveldb_unittests": {
+    "label": "//third_party/leveldatabase:leveldb_unittests",
+    "type": "console_test_launcher",
+  },
   "libcups_unittests": {
     "label": "//chrome/services/cups_proxy:libcups_unittests",
     "type": "console_test_launcher",
@@ -1173,9 +1181,13 @@
     "label": "//mojo/public/rust:mojo_rust",
     "type": "additional_compile_target",
   },
-  "mojo_rust_tests": {
-    "label": "//mojo/public/rust:mojo_rust_tests",
-    "type": "generated_script",
+  "mojo_rust_integration_unittests": {
+    "label": "//mojo/public/rust:mojo_rust_integration_unittests",
+    "type": "console_test_launcher",
+  },
+  "mojo_rust_unittests": {
+    "label": "//mojo/public/rust:mojo_rust_unittests",
+    "type": "console_test_launcher",
   },
   "mojo_test_apk": {
     "label": "//mojo/public/java/system:mojo_test_apk",
@@ -1437,18 +1449,6 @@
   },
   "resource_sizes_lacros_chrome": {
     "label": "//chromeos/lacros:resource_sizes_lacros_chrome",
-    "type": "generated_script",
-  },
-  "resource_sizes_monochrome_public_minimal_apks": {
-    "label": "//chrome/android:resource_sizes_monochrome_public_minimal_apks",
-    "type": "generated_script",
-  },
-  "resource_sizes_trichrome": {
-    "label": "//chrome/android:resource_sizes_trichrome",
-    "type": "generated_script",
-  },
-  "resource_sizes_system_webview_bundle": {
-    "label": "//android_webview:resource_sizes_system_webview_bundle",
     "type": "generated_script",
   },
   "rust_build_tests": {
@@ -1888,6 +1888,10 @@
       "--results-directory",
       "${ISOLATED_OUTDIR}",
     ],
+  },
+  "weblayer_browsertests": {
+    "label": "//weblayer/test:weblayer_browsertests",
+    "type": "windowed_test_launcher",
   },
   "webview_cts_tests": {
     "label": "//android_webview/test:webview_cts_tests",

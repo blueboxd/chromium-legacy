@@ -412,8 +412,8 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
   context.vtt_originating_element = match_request.VTTOriginatingElement();
   context.style_scope_frame =
       &style_scope_frame.GetParentFrameOrThis(context_.GetElement());
-  context.is_initial = !style_recalc_context_.is_ensuring_style &&
-                       !style_recalc_context_.old_style;
+  bool is_initial = !style_recalc_context_.is_ensuring_style &&
+                    !style_recalc_context_.old_style;
 
   CascadeLayerSeeker layer_seeker(
       context.scope, context.vtt_originating_element, style_sheet, rule_set);
@@ -434,7 +434,7 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
       selector_statistics_collector.EndCollectionForCurrentRule();
       selector_statistics_collector.BeginCollectionForRule(&rule_data);
     }
-    if (!context.is_initial && rule_data.IsInitial()) {
+    if (!is_initial && rule_data.IsInitial()) {
       continue;
     }
     if (can_use_fast_reject_ &&
@@ -992,14 +992,14 @@ void ElementRuleCollector::DidMatchRule(
         // When there is no default @namespace, *::selection and *|*::selection
         // are stored without the star, so we are universal if there’s nothing
         // before (e.g. x::selection) and nothing after (e.g. y ::selection).
-        universal = selector.IsLastInTagHistory();
-      } else if (const CSSSelector* next = selector.TagHistory()) {
+        universal = selector.IsLastInComplexSelector();
+      } else if (const CSSSelector* next = selector.NextSimpleSelector()) {
         // When there is a default @namespace, ::selection and *::selection (not
         // universal) are stored as g_null_atom|*::selection, |*::selection (not
         // universal) is stored as g_empty_atom|*::selection, and *|*::selection
         // (the only universal form) is stored as g_star_atom|*::selection.
         universal =
-            next->IsLastInTagHistory() &&
+            next->IsLastInComplexSelector() &&
             CSSSelector::GetPseudoId(next->GetPseudoType()) == dynamic_pseudo &&
             selector.Match() == CSSSelector::kTag &&
             selector.TagQName().LocalName().IsNull() &&

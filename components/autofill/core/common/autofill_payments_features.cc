@@ -48,12 +48,12 @@ BASE_FEATURE(kAutofillEnableCardProductName,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, if the user encounters the yellow path (challenge path) in the
-// VCN retrieval flow and the server denotes that the card is eligible for CVC
-// authentication, CVC authentication will be offered as one of the challenge
-// options.
-BASE_FEATURE(kAutofillEnableCvcForVcnYellowPath,
-             "AutofillEnableCvcForVcnYellowPath",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+// VCN retrieval flow and the server denotes that the card is eligible for email
+// OTP authentication, email OTP authentication will be offered as one of the
+// challenge options.
+BASE_FEATURE(kAutofillEnableEmailOtpForVcnYellowPath,
+             "AutofillEnableEmailOtpForVcnYellowPath",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, user's will see network card art images and network icons which
 // are larger, having a white border, and don't have the standard grey overlay
@@ -103,6 +103,13 @@ BASE_FEATURE(kAutofillEnableOfferNotificationForPromoCodes,
 // downstream.
 BASE_FEATURE(kAutofillEnableOffersInClankKeyboardAccessory,
              "AutofillEnableOffersInClankKeyboardAccessory",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, in use-cases where we would not have triggered any user-visible
+// authentication to autofill payment methods, we will trigger a device
+// authentication.
+BASE_FEATURE(kAutofillEnablePaymentsMandatoryReauth,
+             "AutofillEnablePaymentsMandatoryReauth",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, some extra metrics logging for Autofill Downstream will start.

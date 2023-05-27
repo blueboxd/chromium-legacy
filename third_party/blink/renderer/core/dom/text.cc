@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline_text.h"
@@ -128,7 +127,7 @@ Text* Text::splitText(unsigned offset, ExceptionState& exception_state) {
     return nullptr;
 
   if (GetLayoutObject()) {
-    GetLayoutObject()->SetTextWithOffset(DataImpl(), 0, old_str.length());
+    GetLayoutObject()->SetTextWithOffset(data(), 0, old_str.length());
     if (ContainsOnlyWhitespaceOrEmpty()) {
       // To avoid |LayoutText| has empty text, we rebuild layout tree.
       SetForceReattachLayoutTree();
@@ -256,21 +255,21 @@ static inline bool CanHaveWhitespaceChildren(
     const ComputedStyle& style,
     const Text::AttachContext& context) {
   const LayoutObject& parent = *context.parent;
-  // <button> and <fieldset> should allow whitespace even though
-  // LayoutFlexibleBox doesn't.
-  if (parent.IsButtonIncludingNG() || parent.IsFieldset())
+  // <button> should allow whitespace even though LayoutFlexibleBox doesn't.
+  if (parent.IsButton()) {
     return true;
+  }
 
   if (parent.IsTable() || parent.IsTableRow() || parent.IsTableSection() ||
-      parent.IsLayoutTableCol() || parent.IsFrameSetIncludingNG() ||
-      parent.IsFlexibleBoxIncludingNG() || parent.IsLayoutGridIncludingNG() ||
+      parent.IsLayoutTableCol() || parent.IsFrameSet() ||
+      parent.IsFlexibleBoxIncludingNG() || parent.IsLayoutNGGrid() ||
       parent.IsSVGRoot() || parent.IsSVGContainer() || parent.IsSVGImage() ||
       parent.IsSVGShape()) {
     if (!context.use_previous_in_flow || !context.previous_in_flow ||
         !context.previous_in_flow->IsText())
       return false;
 
-    return style.PreserveNewline() ||
+    return style.ShouldPreserveBreaks() ||
            !EndsWithWhitespace(
                To<LayoutText>(context.previous_in_flow)->GetText());
   }
@@ -299,13 +298,15 @@ bool Text::TextLayoutObjectIsNeeded(const AttachContext& context,
     return false;
 
   // pre-wrap in SVG never makes layoutObject.
-  if (!style.CollapseWhiteSpace() && style.ShouldWrapLine() && parent.IsSVG()) {
+  if (style.ShouldPreserveWhiteSpaces() && style.ShouldWrapLine() &&
+      parent.IsSVG()) {
     return false;
   }
 
   // pre/pre-wrap/pre-line always make layoutObjects.
-  if (style.PreserveNewline())
+  if (style.ShouldPreserveBreaks()) {
     return true;
+  }
 
   if (!context.use_previous_in_flow)
     return false;
@@ -329,15 +330,10 @@ static bool IsSVGText(Text* text) {
          !IsA<SVGForeignObjectElement>(*parent_or_shadow_host_node);
 }
 
-LayoutText* Text::CreateTextLayoutObject(const ComputedStyle& style,
-                                         LegacyLayout legacy) {
+LayoutText* Text::CreateTextLayoutObject() {
   if (IsSVGText(this))
-    return MakeGarbageCollected<LayoutSVGInlineText>(this, DataImpl());
-
-  if (style.HasTextCombine())
-    return LayoutObjectFactory::CreateTextCombine(this, DataImpl(), legacy);
-
-  return LayoutObjectFactory::CreateText(this, DataImpl(), legacy);
+    return MakeGarbageCollected<LayoutSVGInlineText>(this, data());
+  return MakeGarbageCollected<LayoutText>(this, data());
 }
 
 void Text::AttachLayoutTree(AttachContext& context) {
@@ -389,7 +385,7 @@ void Text::ReattachLayoutTreeIfNeeded(AttachContext& context) {
 namespace {
 
 bool NeedsWhitespaceLayoutObject(const ComputedStyle& style) {
-  return style.PreserveNewline();
+  return style.ShouldPreserveBreaks();
 }
 
 }  // namespace
@@ -409,7 +405,7 @@ void Text::RecalcTextStyle(const StyleRecalcChange change) {
     } else {
       layout_text->SetStyle(std::move(new_style));
       if (NeedsStyleRecalc())
-        layout_text->SetTextIfNeeded(DataImpl());
+        layout_text->SetTextIfNeeded(data());
     }
   } else if (new_style && (NeedsStyleRecalc() || change.ReattachLayoutTree() ||
                            GetForceReattachLayoutTree() ||
@@ -486,7 +482,7 @@ void Text::UpdateTextLayoutObject(unsigned offset_of_replaced_data,
     return;
   }
 
-  text_layout_object->SetTextWithOffset(DataImpl(), offset_of_replaced_data,
+  text_layout_object->SetTextWithOffset(data(), offset_of_replaced_data,
                                         length_of_replaced_data);
 }
 

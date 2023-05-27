@@ -57,18 +57,18 @@ function RunTestsInNestedIFrame(sourceURL) {
   }, true);
 }
 
-function RunRequestStorageAccessInDetachedFrame() {
+function CreateDetachedFrame() {
   const frame = document.createElement('iframe');
   document.body.append(frame);
   const inner_doc = frame.contentDocument;
   frame.remove();
-  return inner_doc.requestStorageAccess();
+  return inner_doc;
 }
 
-function RunRequestStorageAccessViaDomParser() {
+function CreateDocumentViaDOMParser() {
   const parser = new DOMParser();
   const doc = parser.parseFromString('<html></html>', 'text/html');
-  return doc.requestStorageAccess();
+  return doc;
 }
 
 function RunCallbackWithGesture(callback) {
@@ -150,6 +150,35 @@ async function CanFrameWriteCookies(frame, keep_after_writing = false) {
   return can_write;
 }
 
+// Tests whether the current frame can read and write cookies via HTTP headers.
+// This deletes, writes, reads, then deletes a cookie named "cookie".
+async function CanAccessCookiesViaHTTP() {
+  await create_cookie(window.location.origin, "cookie", "1", "samesite=None;Secure");
+  const http_cookies = await fetch(`${window.location.origin}/storage-access-api/resources/echo-cookie-header.py`)
+      .then((resp) => resp.text());
+  const can_access = cookieStringHasCookie("cookie", "1", http_cookies);
+
+  erase_cookie_from_js("cookie", "SameSite=None;Secure;Path=/");
+
+  return can_access;
+}
+
+// Tests whether the current frame can read and write cookies via
+// document.cookie. This deletes, writes, reads, then deletes a cookie named
+// "cookie".
+function CanAccessCookiesViaJS() {
+  erase_cookie_from_js("cookie", "SameSite=None;Secure;Path=/");
+  assert_false(cookieStringHasCookie("cookie", "1", document.cookie));
+
+  document.cookie = "cookie=1;SameSite=None;Secure;Path=/";
+  const can_access = cookieStringHasCookie("cookie", "1", document.cookie);
+
+  erase_cookie_from_js("cookie", "SameSite=None;Secure;Path=/");
+  assert_false(cookieStringHasCookie("cookie", "1", document.cookie));
+
+  return can_access;
+}
+
 // Reads cookies via the `httpCookies` variable in the given frame.
 function GetHTTPCookiesFromFrame(frame) {
   return PostMessageAndAwaitReply(
@@ -198,10 +227,17 @@ function FrameInitiatedNavigation(frame, url) {
   return load;
 }
 
-// Makes a subresource request to the provided host in the given frame, and returns the cookies in the response.
-function FetchFromFrame(frame, host) {
+// Makes a subresource request to the provided host in the given frame, and
+// returns the cookies that were included in the request.
+function FetchSubresourceCookiesFromFrame(frame, host) {
+  return FetchFromFrame(frame, `${host}/storage-access-api/resources/echo-cookie-header.py`);
+}
+
+// Makes a subresource request to the provided host in the given frame, and
+// returns the response.
+function FetchFromFrame(frame, url) {
   return PostMessageAndAwaitReply(
-    { command: "subresource cookies", host }, frame.contentWindow);
+    { command: "cors fetch", url }, frame.contentWindow);
 }
 
 // Tries to set storage access policy, ignoring any errors.

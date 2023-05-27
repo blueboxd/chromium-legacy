@@ -8,11 +8,11 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
-import android.support.test.internal.util.AndroidRunnerParams;
 
 import androidx.annotation.CallSuper;
+import androidx.test.InstrumentationRegistry;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
+import androidx.test.internal.util.AndroidRunnerParams;
 
 import org.junit.rules.MethodRule;
 import org.junit.rules.TestRule;
@@ -237,7 +237,7 @@ public class BaseJUnit4ClassRunner extends AndroidJUnit4ClassRunner {
     @CallSuper
     protected List<TestRule> getDefaultTestRules() {
         return Arrays.asList(new BaseJUnit4TestRule(), new MockitoErrorHandler(),
-                new UnitTestLifetimeAssertRule());
+                new UnitTestLifetimeAssertRule(), new ResettersForTestingTestRule());
     }
 
     /**

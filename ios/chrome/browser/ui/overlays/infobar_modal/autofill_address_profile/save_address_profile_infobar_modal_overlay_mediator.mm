@@ -7,6 +7,7 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/autofill/core/browser/data_model/autofill_profile.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/save_address_profile_infobar_modal_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/save_address_profile_infobar_modal_overlay_responses.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -22,8 +23,11 @@
 
 using autofill_address_profile_infobar_overlays::
     SaveAddressProfileModalRequestConfig;
-using save_address_profile_infobar_modal_responses::EditedProfileSaveAction;
 using save_address_profile_infobar_modal_responses::CancelViewAction;
+using save_address_profile_infobar_modal_responses::EditedProfileSaveAction;
+using save_address_profile_infobar_modal_responses::
+    LegacyEditedProfileSaveAction;
+using save_address_profile_infobar_modal_responses::NoThanksViewAction;
 
 @interface SaveAddressProfileInfobarModalOverlayMediator ()
 // The save address profile modal config from the request.
@@ -62,7 +66,14 @@ using save_address_profile_infobar_modal_responses::CancelViewAction;
     kIsUpdateModalPrefKey : @(config->IsUpdateModal()),
     kProfileDataDiffKey : config->profile_diff(),
     kUpdateModalDescriptionKey :
-        base::SysUTF16ToNSString(config->update_modal_description())
+        base::SysUTF16ToNSString(config->update_modal_description()),
+    kIsMigrationToAccountKey : @(config->is_migration_to_account()),
+    kSyncingUserEmailKey : config->syncing_user_email()
+        ? base::SysUTF16ToNSString(config->syncing_user_email().value())
+        : @"",
+    kIsProfileAnAccountProfileKey : @(config->is_profile_an_account_profile()),
+    kProfileDescriptionForMigrationPromptKey : base::SysUTF16ToNSString(
+        config->profile_description_for_migration_prompt())
   };
 
   [_consumer setupModalViewControllerWithPrefs:prefs];
@@ -80,6 +91,8 @@ using save_address_profile_infobar_modal_responses::CancelViewAction;
     return;
 
   [_editAddressConsumer setIsEditForUpdate:config->IsUpdateModal()];
+
+  [_editAddressConsumer setMigrationPrompt:config->is_migration_to_account()];
 
   [_editAddressConsumer
       setupModalViewControllerWithData:config->GetProfileInfo()];
@@ -102,22 +115,44 @@ using save_address_profile_infobar_modal_responses::CancelViewAction;
   [self.saveAddressProfileMediatorDelegate showEditView];
 }
 
+- (void)noThanksButtonWasPressed {
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<NoThanksViewAction>()];
+  [self dismissOverlay];
+}
+
 #pragma mark - InfobarEditAddressProfileModalDelegate
 
 - (void)saveEditedProfileWithData:(NSDictionary*)profileData {
-  [self
-      dispatchResponse:OverlayResponse::CreateWithInfo<EditedProfileSaveAction>(
-                           profileData)];
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<
+                             LegacyEditedProfileSaveAction>(profileData)];
   [self dismissOverlay];
 }
 
 - (void)dismissInfobarModal:(id)infobarModal {
-  [self dispatchResponse:OverlayResponse::CreateWithInfo<CancelViewAction>(
-                             self.currentViewIsEditView)];
   base::RecordAction(base::UserMetricsAction(kInfobarModalCancelButtonTapped));
-  [self dismissOverlay];
+
+  // For migration prompt, the cancel from the edit view would result in removal
+  // of the modal.
+  if (self.config && self.config->is_migration_to_account() &&
+      self.currentViewIsEditView) {
+    [self noThanksButtonWasPressed];
+    self.currentViewIsEditView = NO;
+    return;
+  }
 
   self.currentViewIsEditView = NO;
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<CancelViewAction>(
+                             self.currentViewIsEditView)];
+  [self dismissOverlay];
+}
+
+#pragma mark - Public
+
+- (void)saveEditedProfileWithProfileData:(autofill::AutofillProfile*)profile {
+  [self
+      dispatchResponse:OverlayResponse::CreateWithInfo<EditedProfileSaveAction>(
+                           profile)];
+  [self dismissOverlay];
 }
 
 @end

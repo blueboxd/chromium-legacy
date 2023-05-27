@@ -45,10 +45,14 @@ template("rust_target") {
   }
 
   if (defined(invoker.output_dir) && invoker.output_dir != "") {
-    _out_dir = invoker.output_dir
-  } else {
-    _out_dir = target_out_dir
+    # This is where the build target (.exe, .rlib, etc) goes.
+    _output_dir = invoker.output_dir
   }
+
+  # This is where the OUT_DIR environment variable points to when running a
+  # build script and when compiling the build target, for consuming generated
+  # files.
+  _env_out_dir = "$target_gen_dir/$_target_name"
 
   _allow_unsafe = false
   if (defined(invoker.allow_unsafe)) {
@@ -98,6 +102,11 @@ template("rust_target") {
   }
   if (defined(invoker.visibility)) {
     _visibility = invoker.visibility
+  }
+
+  _use_local_std = use_local_std_by_default
+  if (defined(invoker.use_local_std)) {
+    _use_local_std = invoker.use_local_std
   }
 
   _rustflags = []
@@ -154,6 +163,8 @@ template("rust_target") {
     }
   }
 
+  _is_data_dep = defined(invoker.is_data_dep) && invoker.is_data_dep
+
   _build_unit_tests = false
   if (defined(invoker.build_native_rust_unit_tests)) {
     _build_unit_tests =
@@ -171,7 +182,7 @@ template("rust_target") {
                "outside the Chromium build.")
     _cxx_bindings = invoker.cxx_bindings
   }
-  _rustenv = [ "OUT_DIR=" + rebase_path(_out_dir) ]
+  _rustenv = [ "OUT_DIR=" + rebase_path(_env_out_dir) ]
   if (defined(invoker.rustenv)) {
     _rustenv += invoker.rustenv
   }
@@ -212,14 +223,15 @@ template("rust_target") {
                  "_cxx_bindings",
                  "_deps",
                  "_aliased_deps",
+                 "_is_data_dep",
                  "_metadata",
                  "_out_dir",
                  "_public_deps",
                  "_rustenv",
                  "_rustflags",
                  "_support_use_from_cpp",
-                 "_test_deps",
                  "_testonly",
+                 "_use_local_std",
                  "_visibility",
                ])
   } else {
@@ -233,6 +245,12 @@ template("rust_target") {
       # like direct dependencies, so we expose them both in public_deps.
       public_deps = [ ":${_target_name}${_main_target_suffix}" ]
 
+      # TODO(danakj): This would not be needed if we stopped forwarding through
+      # a group in the common (non-procmacro) case.
+      if (_is_data_dep) {
+        data_deps = [ ":${_target_name}${_main_target_suffix}" ]
+      }
+
       if (_cxx_bindings != []) {
         public_deps += [ ":${_target_name}_cxx_generated" ]
 
@@ -241,11 +259,23 @@ template("rust_target") {
         # target that depends on a rust target directly may need access to Cxx
         # as well, which means it must appear in public_deps.
         public_deps += [ "//build/rust:cxx_cppdeps" ]
+
+        # cxx_cppdeps pulls in the default libstd, so make sure the default was
+        # not overridden.
+        assert(
+            _use_local_std == use_local_std_by_default,
+            "Rust targets with cxx bindings cannot override the default libstd")
       } else if (!defined(invoker.no_std) || !invoker.no_std) {
         # If C++ depends on and links in the library, we need to make sure C++
         # links in the Rust stdlib. This is orthogonal to if the library exports
         # bindings for C++ to use.
-        deps = [ "//build/rust/std" ]
+        if (_use_local_std) {
+          deps = [ "//build/rust/std:link_local_std" ]
+        } else {
+          assert(prebuilt_libstd_supported,
+                 "Prebuilt Rust stdlib is not available for this target")
+          deps = [ "//build/rust/std:link_prebuilt_std" ]
+        }
       }
     }
 
@@ -265,7 +295,13 @@ template("rust_target") {
     }
 
     if (!defined(invoker.no_std) || !invoker.no_std) {
-      _rust_deps += [ "//build/rust/std:prebuilt_std_for_rustc" ]
+      if (_use_local_std) {
+        _rust_deps += [ "//build/rust/std:local_std_for_rustc" ]
+      } else {
+        _rust_deps += [ "//build/rust/std:prebuilt_std_for_rustc" ]
+      }
+    } else {
+      not_needed([ "_use_local_std" ])
     }
 
     # You must go through the groups above to get to these targets.
@@ -283,7 +319,7 @@ template("rust_target") {
                                    "rustflags",
                                    "rustenv",
                                    "configs",
-                                   "output_dir",
+                                   "unit_test_output_dir",
                                    "unit_test_target",
                                    "test_inputs",
                                  ])
@@ -304,7 +340,9 @@ template("rust_target") {
       # The Rust tool() declarations, like C++ ones, use the output_name and
       # output_dir, so that GN targets can override these if needed. Here we
       # give them their default values, or allow them to be overridden.
-      output_dir = _out_dir
+      if (defined(_output_dir)) {
+        output_dir = _output_dir
+      }
       if (!defined(output_name) || output_name == "") {
         output_name = crate_name
       }
@@ -362,7 +400,10 @@ template("rust_target") {
         testonly = true
         crate_root = _crate_root
         rustflags = _rustflags
-        output_dir = _out_dir
+        env_out_dir = _env_out_dir
+        if (defined(invoker.unit_test_output_dir)) {
+          output_dir = invoker.unit_test_output_dir
+        }
         deps = _rust_deps + _public_deps
         aliased_deps = _rust_aliased_deps
         public_deps = [ ":${_target_name}" ]

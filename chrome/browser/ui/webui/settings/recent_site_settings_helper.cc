@@ -56,8 +56,9 @@ std::map<GURL, std::vector<TimestampedSetting>> GetAllSettingsForProfile(
       HostContentSettingsMapFactory::GetForProfile(profile);
   std::map<GURL, std::vector<TimestampedSetting>> results;
   for (auto content_type : content_types) {
-    auto exceptions_for_type = site_settings::GetSiteExceptionsForContentType(
-        content_settings_map, content_type);
+    auto exceptions_for_type =
+        site_settings::GetSingleOriginExceptionsForContentType(
+            content_settings_map, content_type);
     for (const auto& e : exceptions_for_type) {
       auto last_modified = e.metadata.last_modified;
       if (last_modified.is_null()) {
@@ -132,11 +133,11 @@ RecentSitePermissions::RecentSitePermissions(RecentSitePermissions&& other) =
     default;
 RecentSitePermissions::RecentSitePermissions(
     GURL origin,
-    absl::optional<std::string> isolated_web_app_name,
+    const std::string& display_name,
     bool incognito,
     std::vector<TimestampedSetting> settings)
     : origin(origin),
-      isolated_web_app_name(std::move(isolated_web_app_name)),
+      display_name(display_name),
       incognito(incognito),
       settings(settings) {}
 RecentSitePermissions::~RecentSitePermissions() = default;
@@ -203,14 +204,16 @@ std::vector<RecentSitePermissions> GetRecentSitePermissions(
   for (auto& url_settings_pair : regular_settings) {
     all_site_permissions.emplace_back(
         url_settings_pair.first,
-        GetIsolatedWebAppName(profile, url_settings_pair.first),
+        site_settings::GetDisplayNameForGURL(profile, url_settings_pair.first,
+                                             /*hostname_only=*/true),
         /*incognito=*/false, std::move(url_settings_pair.second));
   }
   for (auto& url_settings_pair : incognito_settings) {
-    all_site_permissions.emplace_back(url_settings_pair.first,
-                                      /*isolated_web_app_name=*/absl::nullopt,
-                                      /*incognito=*/true,
-                                      std::move(url_settings_pair.second));
+    all_site_permissions.emplace_back(
+        url_settings_pair.first,
+        site_settings::GetDisplayNameForGURL(profile, url_settings_pair.first,
+                                             /*hostname_only=*/true),
+        /*incognito=*/true, std::move(url_settings_pair.second));
   }
   std::sort(all_site_permissions.begin(), all_site_permissions.end(),
             [](const RecentSitePermissions& x, const RecentSitePermissions& y) {

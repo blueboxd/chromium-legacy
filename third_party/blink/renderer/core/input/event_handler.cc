@@ -188,12 +188,6 @@ static const int kMaximumCursorSize = 128;
 // when intersecting browser native UI.
 static const int kMaximumCursorSizeWithoutFallback = 32;
 
-// It's pretty unlikely that a scale of less than one would ever be used. But
-// all we really need to ensure here is that the scale isn't so small that
-// integer overflow can occur when dividing cursor sizes (limited above) by the
-// scale.
-static const double kMinimumCursorScale = 0.001;
-
 // The minimum amount of time an element stays active after a ShowPress
 // This is roughly 9 frames, which should be long enough to be noticeable.
 constexpr base::TimeDelta kMinimumActiveInterval = base::Seconds(0.15);
@@ -584,22 +578,14 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
                                  kRespectImageOrientation);
 
       Image* image = cached_image->GetImage();
-
-      // If the image is an SVG, then adjust the scale to reflect the device
-      // scale factor so that the SVG can be rasterized in the native
-      // resolution and scaled down to the correct size for the cursor.
-      float device_scale_factor = 1;
       if (image->IsSVGImage()) {
-        // Limit the size of cursors (in DIP) so that they cannot be
-        // used to cover UI elements in chrome. StyleImage::ImageSize does not
-        // take StyleImage::ImageScaleFactor() into account when computing the
-        // size for SVG images.
+        // `StyleImage::ImageSize` does not take `StyleImage::ImageScaleFactor`
+        // into account when computing the size for SVG images.
         size.Scale(1 / scale);
-        device_scale_factor =
-            page->GetChromeClient().GetScreenInfo(*frame_).device_scale_factor;
-        scale *= device_scale_factor;
       }
 
+      // Limit the size of cursors (in DIP) so that they cannot be used to cover
+      // UI elements in chrome.
       if (size.IsEmpty() || size.width() > kMaximumCursorSize ||
           size.height() > kMaximumCursorSize)
         continue;
@@ -630,19 +616,17 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
         }
       }
 
-      // Ensure no overflow possible in calculations above.
-      if (scale < kMinimumCursorScale)
-        continue;
-
-      // Convert from DIP to physical pixels.
-      hot_spot = gfx::ScaleToRoundedPoint(hot_spot, scale);
-
-      // Special case for SVG so that it can be rasterized in the appropriate
-      // resolution for high DPI displays.
+      // If the image is an SVG, then adjust the scale to reflect the device
+      // scale factor so that the SVG can be rasterized in the native
+      // resolution and scaled down to the correct size for the cursor.
       scoped_refptr<Image> svg_image_holder;
       if (auto* svg_image = DynamicTo<SVGImage>(image)) {
+        const float device_scale_factor =
+            page->GetChromeClient().GetScreenInfo(*frame_).device_scale_factor;
+        scale *= device_scale_factor;
         // Re-scale back from DIP to device pixels.
         size.Scale(scale);
+
         // TODO(fs): Should pass proper URL. Use StyleImage::GetImage.
         svg_image_holder = SVGImageForContainer::Create(
             svg_image, size, device_scale_factor, NullURL(),
@@ -651,6 +635,9 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
                 .ResolveColorSchemeForEmbedding(style));
         image = svg_image_holder.get();
       }
+
+      // Convert from DIP to physical pixels.
+      hot_spot = gfx::ScaleToRoundedPoint(hot_spot, scale);
 
       return ui::Cursor::NewCustom(
           image->AsSkBitmapForCurrentFrame(kRespectImageOrientation),
@@ -890,9 +877,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
                                                           source_capabilities);
   }
 
-  if ((!RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled() &&
-       event_result == WebInputEventResult::kNotHandled) ||
-      mev.GetScrollbar()) {
+  if (event_result == WebInputEventResult::kNotHandled || mev.GetScrollbar()) {
     mouse_event_manager_->SetCapturesDragging(true);
     // Outermost main frames don't implicitly capture mouse input on MouseDown,
     // all subframes do (regardless of whether local or remote or fenced).
@@ -1447,28 +1432,6 @@ void EventHandler::SetPointerCapture(PointerId pointer_id,
 
   if (captured && pointer_id == PointerEventFactory::kMouseId) {
     CaptureMouseEventsToWidget(true);
-
-    // TODO(crbug.com/919908) This is a temporary approach to make pointer
-    // capture work across in-process frames while mouse subframe capture
-    // disabled. It's to experiment removing the frame capture logic. This
-    // must be re-write before the flag enabled.
-    if (RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled()) {
-      LocalFrame* frame = frame_;
-      LocalFrame* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent());
-      while (parent) {
-        Element* subframe_element = nullptr;
-        if (frame->OwnerLayoutObject() &&
-            frame->OwnerLayoutObject()->GetNode()) {
-          subframe_element =
-              DynamicTo<Element>(frame->OwnerLayoutObject()->GetNode());
-        }
-
-        parent->GetEventHandler().capturing_subframe_element_ =
-            subframe_element;
-        frame = parent;
-        parent = DynamicTo<LocalFrame>(parent->Tree().Parent());
-      }
-    }
   }
 }
 
@@ -1483,17 +1446,6 @@ void EventHandler::ReleasePointerCapture(PointerId pointer_id,
 
   if (released && pointer_id == PointerEventFactory::kMouseId) {
     CaptureMouseEventsToWidget(false);
-
-    // TODO(crbug/919908) same as SetPointerCapture, this is temporary
-    // approach for removing mouse subframe capture. It must be re-write
-    // before enable the flag.
-    if (RuntimeEnabledFeatures::MouseSubframeNoImplicitCaptureEnabled()) {
-      LocalFrame* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent());
-      while (parent) {
-        parent->GetEventHandler().capturing_subframe_element_ = nullptr;
-        parent = DynamicTo<LocalFrame>(parent->Tree().Parent());
-      }
-    }
   }
 }
 

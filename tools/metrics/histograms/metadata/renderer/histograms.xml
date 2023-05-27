@@ -45,7 +45,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Renderer.BrowserLaunchToRunLoopStart" units="ms"
-    expires_after="2023-08-06">
+    expires_after="2023-10-08">
   <owner>sky@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -301,7 +301,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.PrimaryFont.DomContentLoaded" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-10-08">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>yosin@chromium.org</owner>
@@ -327,7 +327,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.Font.PrimaryFont.FCP" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>kojii@chromium.org</owner>
   <owner>tkent@chromium.org</owner>
   <owner>yosin@chromium.org</owner>
@@ -445,6 +445,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Renderer.Layout.TextWrapBalance" units="ms"
+    expires_after="2023-10-20">
+  <owner>kojii@chromium.org</owner>
+  <owner>layout-dev@chromium.org</owner>
+  <summary>The time spent to balance lines of paragraphs.</summary>
+</histogram>
+
+<histogram name="Renderer.Layout.TextWrapBalance.Fail" units="ms"
+    expires_after="2023-10-20">
+  <owner>kojii@chromium.org</owner>
+  <owner>layout-dev@chromium.org</owner>
+  <summary>
+    The time spent to try balancing lines of paragraphs but failed to balance.
+  </summary>
+</histogram>
+
 <histogram name="Renderer.PaintPreview.Capture.MainFrameBlinkCaptureDuration"
     units="ms" expires_after="2023-09-10">
   <owner>ckitagawa@chromium.org</owner>
@@ -512,7 +528,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Renderer.RenderThreadImpl.Init" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>jam@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <summary>
@@ -573,22 +589,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="RendererScheduler.TaskCPUDurationPerTaskType2.DedicatedWorker"
-    enum="RendererSchedulerTaskType" expires_after="M85">
-  <owner>altimin@chromium.org</owner>
-  <summary>
-    Total duration (reported in full seconds) of dedicated worker tasks (thread
-    time) split by per thread type. Note that partial seconds are rounded
-    up/down so that they average to the correct value when many reports are
-    added. For more details, check base::ScaledLinearHistogram.
-
-    This is reported each time a task is completed.
-
-    Note that this metric discards tasks longer than 30 seconds because they are
-    considered to be a result of measurement glitch.
-  </summary>
-</histogram>
-
 <histogram base="true" name="RendererScheduler.TaskDurationPerFrameOriginType2"
     enum="RendererSchedulerFrameOriginType" expires_after="M85">
   <owner>altimin@chromium.org</owner>
@@ -598,40 +598,6 @@ chromium-metrics-reviews@google.com.
     Note that partial seconds are rounded up/down so that they average to the
     correct value when many reports are added. For more details, check
     base::ScaledLinearHistogram.
-
-    Note that this metric discards tasks longer than 30 seconds because they are
-    considered to be a result of measurement glitch.
-  </summary>
-</histogram>
-
-<histogram name="RendererScheduler.TaskDurationPerTaskType2"
-    enum="RendererSchedulerTaskType" expires_after="2021-12-12">
-  <owner>altimin@chromium.org</owner>
-  <owner>hajimehoshi@chromium.org</owner>
-  <summary>
-    Total duration (reported in full seconds) of renderer per-frame tasks split
-    per task type. Note that partial seconds are rounded up/down so that they
-    average to the correct value when many reports are added. For more details,
-    check base::ScaledLinearHistogram.
-
-    Used to monitor usage of each task type. Reported each time a task is
-    completed.
-
-    This metric is susceptible to problematic outliers and should be analyzed
-    with custom scripts accounting for that rather than from a dashboard.
-  </summary>
-</histogram>
-
-<histogram name="RendererScheduler.TaskDurationPerTaskType2.DedicatedWorker"
-    enum="RendererSchedulerTaskType" expires_after="M77">
-  <owner>altimin@chromium.org</owner>
-  <summary>
-    Total duration (repored in full seconds) of dedicated worker tasks (wall
-    time) split by per thread type. Note that partial seconds are rounded
-    up/down so that they average to the correct value when many reports are
-    added. For more details, check base::ScaledLinearHistogram.
-
-    Reported each time a task is completed.
 
     Note that this metric discards tasks longer than 30 seconds because they are
     considered to be a result of measurement glitch.

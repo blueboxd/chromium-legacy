@@ -68,7 +68,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.FirstPaintOccurredPreForeground"
-    enum="Boolean" expires_after="2023-07-30">
+    enum="Boolean" expires_after="2023-10-01">
   <owner>blundell@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -79,7 +79,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.FirstSafeBrowsingResponseTime.Tabbed"
-    units="ms" expires_after="2023-08-06">
+    units="ms" expires_after="2023-10-08">
   <owner>pasko@chromium.org</owner>
   <owner>xinghuilu@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
@@ -91,7 +91,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstContentfulPaint"
-    units="ms" expires_after="2023-08-06">
+    units="ms" expires_after="2023-10-08">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -104,7 +104,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstNavigationCommit"
-    units="ms" expires_after="2023-08-06">
+    units="ms" expires_after="2023-10-08">
   <owner>pasko@chromium.org</owner>
   <owner>alexilin@chromium.org</owner>
   <summary>
@@ -118,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.Cold.TimeToFirstNavigationCommit2.Tabbed"
-    units="ms" expires_after="2023-08-08">
+    units="ms" expires_after="2023-10-08">
   <owner>pasko@chromium.org</owner>
   <owner>agrieve@chromium.org</owner>
   <summary>
@@ -211,8 +211,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Startup.Android.Cold.TimeToForegroundSessionStart" units="ms"
+    expires_after="2023-09-22">
+  <owner>pasko@chromium.org</owner>
+  <owner>mthiesse@chromium.org</owner>
+  <summary>
+    The time from activity creation till the point when UMA foreground session
+    starts.
+  </summary>
+</histogram>
+
 <histogram name="Startup.Android.Cold.TimeToVisibleContent" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>ckitagawa@chromium.org</owner>
   <summary>
     Android: The time from the activity creation point to the moment the content
@@ -359,7 +369,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.StartSurfaceShownAtStartup" enum="Boolean"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>hanxi@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
   <summary>
@@ -380,7 +390,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.BringToForegroundReason"
-    enum="BooleanBringToForegroundReason" expires_after="2023-08-20">
+    enum="BooleanBringToForegroundReason" expires_after="2023-10-22">
   <owner>peter@chromium.org</owner>
   <summary>
     Records the cause, each time Chrome is brought to the foreground. Currently
@@ -660,18 +670,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram
-    name="Startup.FirstWebContents.RenderProcessHostInit.ToNonEmptyPaint"
-    units="ms" expires_after="M78">
-  <owner>hans@chromium.org</owner>
-  <summary>
-    Time between RenderFrameHostImpl::Init and
-    Startup.FirstWebContents.NonEmptyPaint2.
-  </summary>
-</histogram>
-
 <histogram name="Startup.IncognitoForcedStart" enum="IncognitoForcedStart"
-    expires_after="M111">
+    expires_after="M119">
   <owner>arabm@google.com</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -682,7 +682,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.IOSColdStartType" enum="IOSColdStartType"
-    expires_after="2023-04-01">
+    expires_after="2024-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@chromium.org</owner>
   <summary>
@@ -718,7 +718,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.MobileSessionStartAction"
-    enum="MobileSessionStartAction" expires_after="2023-07-30">
+    enum="MobileSessionStartAction" expires_after="2023-10-01">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -798,7 +798,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.PreMainMessageLoopRunImplLongTime" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>rkaplow@chromium.org</owner>
   <summary>
     The amount of time that elapsed during
@@ -864,7 +864,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.TimeFromProcessCreationToLoad" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2023-09-24">
   <owner>olivierrobin@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -874,7 +874,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.TimeFromProcessCreationToMainCall" units="ms"
-    expires_after="2023-05-14">
+    expires_after="2024-04-02">
   <owner>olivierrobin@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>

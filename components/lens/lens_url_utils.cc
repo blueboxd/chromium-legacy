@@ -38,6 +38,7 @@ constexpr char kRenderingEnvironmentQueryParameter[] = "re";
 constexpr char kOneLensDesktopWebChromeSidePanel[] = "dcsp";
 constexpr char kOneLensDesktopWebFullscreen[] = "df";
 constexpr char kOneLensAmbientVisualSearchWebFullscreen[] = "avsf";
+constexpr char kChromeSearchCompanion[] = "csc";
 
 void AppendQueryParam(std::string* query_string,
                       const char name[],
@@ -92,6 +93,10 @@ std::map<std::string, std::string> GetLensQueryParametersMap(
       query_parameters.insert({kRenderingEnvironmentQueryParameter,
                                kOneLensAmbientVisualSearchWebFullscreen});
       break;
+    case lens::CHROME_SEARCH_COMPANION:
+      query_parameters.insert(
+          {kRenderingEnvironmentQueryParameter, kChromeSearchCompanion});
+      break;
     default:
       // Empty strings are ignored when query parameters are built.
       break;
@@ -106,7 +111,12 @@ std::map<std::string, std::string> GetLensQueryParametersMap(
 
 lens::RenderingEnvironment GetRenderingEnvironment(
     bool is_side_panel_request,
-    bool is_full_screen_region_search_request) {
+    bool is_full_screen_region_search_request,
+    bool is_companion_request) {
+  if (is_companion_request) {
+    return lens::RenderingEnvironment::CHROME_SEARCH_COMPANION;
+  }
+
   if (is_full_screen_region_search_request)
     return lens::RenderingEnvironment::
         ONELENS_AMBIENT_VISUAL_SEARCH_WEB_FULLSCREEN;
@@ -144,9 +154,11 @@ GURL AppendOrReplaceQueryParametersForLensRequest(const GURL& url,
 std::string GetQueryParametersForLensRequest(
     lens::EntryPoint ep,
     bool is_side_panel_request,
-    bool is_full_screen_region_search_request) {
+    bool is_full_screen_region_search_request,
+    bool is_companion_request) {
   auto re = GetRenderingEnvironment(is_side_panel_request,
-                                    is_full_screen_region_search_request);
+                                    is_full_screen_region_search_request,
+                                    is_companion_request);
   std::string query_string;
   for (auto const& param :
        GetLensQueryParametersMap(ep, re, is_side_panel_request))

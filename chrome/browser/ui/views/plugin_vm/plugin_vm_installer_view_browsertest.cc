@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -154,9 +155,10 @@ class PluginVmInstallerViewBrowserTest : public DialogBrowserTest {
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
-  PluginVmInstallerView* view_;
-  ash::FakeConciergeClient* fake_concierge_client_;
-  ash::FakeVmPluginDispatcherClient* fake_vm_plugin_dispatcher_client_;
+  raw_ptr<PluginVmInstallerView, ExperimentalAsh> view_;
+  raw_ptr<ash::FakeConciergeClient, ExperimentalAsh> fake_concierge_client_;
+  raw_ptr<ash::FakeVmPluginDispatcherClient, ExperimentalAsh>
+      fake_vm_plugin_dispatcher_client_;
 
  private:
   void EnterpriseEnrollDevice() {
@@ -242,12 +244,12 @@ IN_PROC_BROWSER_TEST_F(PluginVmInstallerViewBrowserTestWithFeatureEnabled,
   auto* progress_view = view_->GetDownloadProgressMessageViewForTesting();
   EXPECT_NE(nullptr, progress_view);
 
-  // The message and title labels should each have fired an accessibility event
-  // as a result of the introductory/set-up text being displayed. Because the
-  // download has not started, there should be no event from the download
-  // progress label.
-  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged, title_view));
-  EXPECT_EQ(1, counter.GetCount(ax::mojom::Event::kTextChanged, message_view));
+  // Views should only fire property-change events when the property changes;
+  // not when a value is initialized. As a result, there should not be any
+  // text-changed accessibility fired as a result of the introductory/set-up
+  // text being displayed.
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged, title_view));
+  EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged, message_view));
   EXPECT_EQ(0, counter.GetCount(ax::mojom::Event::kTextChanged, progress_view));
 
   counter.ResetAllCounts();

@@ -5,22 +5,29 @@
 
   .key-container {
     align-items: center;
-    border-radius: 5px;
+    border-radius: 12px;
     box-sizing: border-box;
     color: var(--cros-text-color-secondary);
     display: flex;
+    font-family: 'Google Sans', Roboto, sans-serif;
+    font-size: 13px;
     font-weight: 500;
     height: 28px;
     justify-content: center;
+    line-height: 20px;
     margin-inline-end: 8px;
     min-width: 28px;
-    padding-inline: 8px;
+    padding: 6px;
+  }
+
+  #keyLabel {
+    padding-inline: 6px;
   }
 
   :host([key-state='default-remapping']) .key-container {
-    background-color: var(--cros-button-icon-color-secondary-disabled);
+    background-color: var(--cros-bg-color-dropped-elevation-1);
     border: none;
-    box-shadow: 0 1px 1px var(--cros-button-icon-color-secondary-disabled);
+    box-shadow: 0 1px 1px var(--cros-bg-color-dropped-elevation-1);
   }
 
   :host([key-state='modifier-remapped']) .key-container {
@@ -31,6 +38,7 @@
 
   .settings-box {
     justify-content: space-between;
+    padding-inline-start: 0;
   }
 
   iron-icon {
@@ -44,12 +52,12 @@
 <div class="settings-box">
   <div>
     <div id="keyLabelContainer" class="start key-container">
-      <template is="dom-if" if="[[!metaKeyIcon]]" restamp>
+      <template is="dom-if" if="[[!keyIcon]]" restamp>
         <div id="keyLabel"
             aria-hidden="true">[[keyLabel]]</div>
       </template>
-      <template is="dom-if" if="[[metaKeyIcon]]" restamp>
-        <iron-icon icon="[[metaKeyIcon]]"></iron-icon>
+      <template is="dom-if" if="[[keyIcon]]" restamp>
+        <iron-icon icon="[[keyIcon]]"></iron-icon>
       </template>
     </div>
   </div>

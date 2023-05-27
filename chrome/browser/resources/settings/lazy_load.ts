@@ -34,6 +34,8 @@ import './privacy_page/security_keys_phones_list.js';
 import './privacy_page/security_keys_phones_dialog.js';
 import './privacy_page/security_page.js';
 import './site_settings/all_sites.js';
+import './site_settings/file_system_site_entry.js';
+import './site_settings/file_system_site_entry_item.js';
 import './site_settings/file_system_site_list.js';
 import './site_settings_page/site_settings_page.js';
 import './site_settings/category_default_setting.js';
@@ -48,6 +50,7 @@ import './site_settings/site_data.js';
 import './site_settings/site_details.js';
 import './site_settings/zoom_levels.js';
 // <if expr="not is_chromeos">
+import './a11y_page/live_caption_section.js';
 import './people_page/import_data_dialog.js';
 // </if>
 // <if expr="not chromeos_ash">
@@ -63,6 +66,9 @@ import 'chrome://resources/cr_components/certificate_manager/certificate_manager
 // Sections
 import './a11y_page/a11y_page.js';
 import './downloads_page/downloads_page.js';
+// <if expr="_google_chrome">
+import './get_most_chrome_page/get_most_chrome_page.js';
+// </if>
 // <if expr="not chromeos_ash">
 import './languages_page/languages_page.js';
 import './languages_page/spell_check_page.js';
@@ -78,6 +84,11 @@ import './languages_page/edit_dictionary_page.js';
 
 // </if>
 
+// <if expr="not is_chromeos">
+export {CaptionsBrowserProxy, CaptionsBrowserProxyImpl, LiveCaptionLanguageList} from '/shared/settings/a11y_page/captions_browser_proxy.js';
+// </if>
+
+export {FontsBrowserProxy, FontsBrowserProxyImpl, FontsData} from '/shared/settings/appearance_page/fonts_browser_proxy.js';
 export {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 export {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 export {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
@@ -85,10 +96,15 @@ export {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.j
 export {CrSliderElement} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 export {CrTextareaElement} from 'chrome://resources/cr_elements/cr_textarea/cr_textarea.js';
 export {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.js';
+export {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 export {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 export {PaperTooltipElement} from 'chrome://resources/polymer/v3_0/paper-tooltip/paper-tooltip.js';
+// <if expr="not is_chromeos">
+export {SettingsLiveCaptionElement} from './a11y_page/live_caption_section.js';
+export {SettingsLiveTranslateElement} from './a11y_page/live_translate_section.js';
+// </if>
+
 export {SettingsAppearanceFontsPageElement} from './appearance_page/appearance_fonts_page.js';
-export {FontsBrowserProxy, FontsBrowserProxyImpl, FontsData} from './appearance_page/fonts_browser_proxy.js';
 export {CountryDetailManager, CountryDetailManagerImpl, SettingsAddressEditDialogElement} from './autofill_page/address_edit_dialog.js';
 export {SettingsAddressRemoveConfirmationDialogElement} from './autofill_page/address_remove_confirmation_dialog.js';
 export {AutofillManagerImpl, AutofillManagerProxy, PersonalDataChangedListener} from './autofill_page/autofill_manager_proxy.js';
@@ -129,6 +145,9 @@ export {SettingsRadioGroupElement} from './controls/settings_radio_group.js';
 export {SettingsSliderElement} from './controls/settings_slider.js';
 export {DownloadsBrowserProxy, DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.js';
 export {SettingsDownloadsPageElement} from './downloads_page/downloads_page.js';
+// <if expr="_google_chrome">
+export {SettingsGetMostChromePageElement} from './get_most_chrome_page/get_most_chrome_page.js';
+// </if>
 // <if expr="_google_chrome and is_win">
 export {IncompatibleApplicationItemElement} from './incompatible_applications_page/incompatible_application_item.js';
 export {ActionTypes, IncompatibleApplication, IncompatibleApplicationsBrowserProxy, IncompatibleApplicationsBrowserProxyImpl} from './incompatible_applications_page/incompatible_applications_browser_proxy.js';
@@ -206,7 +225,9 @@ export {ChooserExceptionListElement} from './site_settings/chooser_exception_lis
 export {ChooserExceptionListEntryElement} from './site_settings/chooser_exception_list_entry.js';
 export {ChooserType, ContentSetting, ContentSettingsTypes, CookieControlsMode, CookiesExceptionType, NotificationSetting, SITE_EXCEPTION_WILDCARD, SiteSettingSource, SortMethod} from './site_settings/constants.js';
 export {SettingsEditExceptionDialogElement} from './site_settings/edit_exception_dialog.js';
-export {FileSystemSiteListElement, OriginFileSystemGrants} from './site_settings/file_system_site_list.js';
+export {FileSystemSiteEntryElement} from './site_settings/file_system_site_entry.js';
+export {FileSystemSiteEntryItemElement} from './site_settings/file_system_site_entry_item.js';
+export {FileSystemGrant, FileSystemSiteListElement, OriginFileSystemGrants} from './site_settings/file_system_site_list.js';
 export {AppHandlerEntry, AppProtocolEntry, HandlerEntry, ProtocolEntry, ProtocolHandlersElement} from './site_settings/protocol_handlers.js';
 export {SettingsReviewNotificationPermissionsElement} from './site_settings/review_notification_permissions.js';
 export {SettingsCategoryDefaultRadioGroupElement} from './site_settings/settings_category_default_radio_group.js';

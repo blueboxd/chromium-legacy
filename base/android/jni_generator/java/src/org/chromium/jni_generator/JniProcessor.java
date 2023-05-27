@@ -23,7 +23,6 @@ import org.chromium.base.JniStaticTestMocker;
 import org.chromium.base.NativeLibraryLoadedStatus;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.build.annotations.CheckDiscard;
-import org.chromium.build.annotations.MainDex;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +30,10 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -55,10 +56,11 @@ import javax.tools.Diagnostic;
  * containing an interface annotated with NativeMethods.
  *
  */
+@SupportedOptions({JniProcessor.PACKAGE_PREFIX_OPTION})
 @AutoService(Processor.class)
 public class JniProcessor extends AbstractProcessor {
+    static final String PACKAGE_PREFIX_OPTION = "package_prefix";
     private static final Class<NativeMethods> JNI_STATIC_NATIVES_CLASS = NativeMethods.class;
-    private static final Class<MainDex> MAIN_DEX_CLASS = MainDex.class;
     private static final Class<CheckDiscard> CHECK_DISCARD_CLASS = CheckDiscard.class;
 
     private static final String CHECK_DISCARD_CRBUG = "crbug.com/993421";
@@ -94,6 +96,17 @@ public class JniProcessor extends AbstractProcessor {
         return SourceVersion.latestSupported();
     }
 
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+        super.init(processingEnv);
+        if (processingEnv.getOptions().containsKey(PACKAGE_PREFIX_OPTION)) {
+            mGenJniClassName = ClassName.get(
+                    String.format("%s.%s", processingEnv.getOptions().get(PACKAGE_PREFIX_OPTION),
+                            mGenJniClassName.packageName()),
+                    mGenJniClassName.simpleName());
+        }
+    }
+
     /**
      * Processes annotations that match getSupportedAnnotationTypes()
      * Called each 'round' of annotation processing, must fail gracefully if set is empty.
@@ -118,8 +131,8 @@ public class JniProcessor extends AbstractProcessor {
             if (mNativesBuilder == null) {
                 String genJniPrefix = e.getAnnotation(JNI_STATIC_NATIVES_CLASS).value();
                 if (!genJniPrefix.isEmpty()) {
-                    mGenJniClassName =
-                            ClassName.get("org.chromium.base.natives", genJniPrefix + "_GEN_JNI");
+                    mGenJniClassName = ClassName.get(mGenJniClassName.packageName(),
+                            genJniPrefix + "_" + mGenJniClassName.simpleName());
                 }
 
                 FieldSpec.Builder testingFlagBuilder =
@@ -167,13 +180,10 @@ public class JniProcessor extends AbstractProcessor {
             // method overridden will be a wrapper that calls its
             // native counterpart in NativeClass.
             boolean isNativesInterfacePublic = type.getModifiers().contains(Modifier.PUBLIC);
-            // If the outerType needs to be in the main dex, then the generated NativeWrapperClass
-            // should also be added to the main dex.
-            boolean addMainDexAnnotation = outerElement.getAnnotation(MAIN_DEX_CLASS) != null;
 
             TypeSpec nativeWrapperClassSpec =
                     createNativeWrapperClassSpec(getNameOfWrapperClass(outerClassName),
-                            isNativesInterfacePublic, addMainDexAnnotation, type, methodMap);
+                            isNativesInterfacePublic, type, methodMap);
 
             // Queue this file for writing.
             // Can't write right now because the wrapper class depends on NativeClass
@@ -225,7 +235,12 @@ public class JniProcessor extends AbstractProcessor {
     String getNativeMethodName(String packageName, String className, String oldMethodName) {
         // e.g. org.chromium.base.Foo_Class.bar
         // => org_chromium_base_Foo_1Class_bar()
-        return String.format("%s.%s.%s", packageName, className, oldMethodName)
+        final String packagePrefix =
+                processingEnv.getOptions().getOrDefault(PACKAGE_PREFIX_OPTION, "");
+        return (packagePrefix.length() > 0
+                        ? String.format(
+                                "%s.%s.%s.%s", packagePrefix, packageName, className, oldMethodName)
+                        : String.format("%s.%s.%s", packageName, className, oldMethodName))
                 .replaceAll("_", "_1")
                 .replaceAll("\\.", "_");
     }
@@ -294,12 +309,11 @@ public class JniProcessor extends AbstractProcessor {
      *
      * @param name name of the wrapper class.
      * @param isPublic if true, a public modifier will be added to this native wrapper.
-     * @param isMainDex if true, the @MainDex annotation will be added to this native wrapper.
      * @param nativeInterface the {@link NativeMethods} annotated type that this native wrapper
      *                        will implement.
      * @param methodMap a map from the old method name to the new method spec in NativeClass.
      * */
-    TypeSpec createNativeWrapperClassSpec(String name, boolean isPublic, boolean isMainDex,
+    TypeSpec createNativeWrapperClassSpec(String name, boolean isPublic,
             TypeElement nativeInterface, Map<String, MethodSpec> methodMap) {
         // The wrapper class builder.
         TypeName nativeInterfaceType = TypeName.get(nativeInterface.asType());
@@ -307,9 +321,6 @@ public class JniProcessor extends AbstractProcessor {
                 TypeSpec.classBuilder(name).addSuperinterface(nativeInterfaceType);
         if (isPublic) {
             builder.addModifiers(Modifier.PUBLIC);
-        }
-        if (isMainDex) {
-            builder.addAnnotation(MAIN_DEX_CLASS);
         }
         builder.addAnnotation(createAnnotationWithValue(CHECK_DISCARD_CLASS, CHECK_DISCARD_CRBUG));
 
@@ -351,7 +362,7 @@ public class JniProcessor extends AbstractProcessor {
                     throw new UnsupportedOperationException($noMockExceptionString);
                 }
             }
-            NativeLibraryLoadedStatus.checkLoaded($isMainDex)
+            NativeLibraryLoadedStatus.checkLoaded()
             return new {classname}Jni();
         }
          */
@@ -375,7 +386,7 @@ public class JniProcessor extends AbstractProcessor {
                                 noMockExceptionString)
                         .endControlFlow()
                         .endControlFlow()
-                        .addStatement("$T.$N($L)", JNI_STATUS_CLASS_NAME, "checkLoaded", isMainDex)
+                        .addStatement("$T.$N()", JNI_STATUS_CLASS_NAME, "checkLoaded")
                         .addStatement("return new $N()", name)
                         .build();
 

@@ -17,6 +17,7 @@ function generateBid(
   return {
       'ad': ad,
       'bid': 2,
+      'bidCurrency': 'USD',
       'adCost': 3,
       'render': ad.renderUrl,
       'adComponents': [interestGroup.adComponents[0].renderUrl],
@@ -165,7 +166,7 @@ function validateBrowserSignals(browserSignals, isGenerateBid) {
     if (browserSignals.prevWins.length !== 0)
       throw 'Wrong prevWins ' + JSON.stringify(browserSignals.prevWins);
   } else {
-    if (Object.keys(browserSignals).length !== 10) {
+    if (Object.keys(browserSignals).length !== 14) {
       throw 'Wrong number of browser signals fields ' +
           JSON.stringify(browserSignals);
     }
@@ -177,9 +178,15 @@ function validateBrowserSignals(browserSignals, isGenerateBid) {
       throw 'Wrong renderUrl ' + browserSignals.renderUrl;
     if (browserSignals.bid !== 2)
       throw 'Wrong bid ' + browserSignals.bid;
+    if (browserSignals.bidCurrency !== 'USD')
+      throw 'Wrong bidCurrency ' + browserSignals.bidCurrency;
     if (browserSignals.highestScoringOtherBid !== 0) {
       throw 'Wrong highestScoringOtherBid ' +
           browserSignals.highestScoringOtherBid;
+    }
+    if (browserSignals.highestScoringOtherBidCurrency !== 'CAD') {
+      throw 'Wrong highestScoringOtherBidCurrency ' +
+          browserSignals.highestScoringOtherBidCurrency;
     }
     if (browserSignals.adCost !== 3)
       throw 'Wrong adCost ' + browserSignals.adCost;

@@ -204,20 +204,25 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
               existing_window->Show(AppWindow::SHOW_ACTIVE);
           }
 
-          base::Value::Dict result;
-          result.Set("frameId", frame_id);
-          existing_window->GetSerializedState(&result);
-          result.Set("existingWindow", true);
           // We should not return the window until that window is properly
           // initialized. Hence, adding a callback for window first navigation
           // completion.
-          if (existing_window->DidFinishFirstNavigation())
+          if (existing_window->DidFinishFirstNavigation()) {
+            base::Value::Dict result;
+            result.Set("frameId", frame_id);
+            existing_window->GetSerializedState(&result);
+            result.Set("existingWindow", true);
             return RespondNow(WithArguments(std::move(result)));
+          }
 
-          existing_window->AddOnDidFinishFirstNavigationCallback(
-              base::BindOnce(&AppWindowCreateFunction::
-                                 OnAppWindowFinishedFirstNavigationOrClosed,
-                             this, WithArguments(std::move(result))));
+          // The `existing_window` pointer is still going to be valid, because
+          // in case window gets closed before finishing navigation,
+          // OnDidFinishFirstNavigation callback will be called before
+          // destruction.
+          existing_window->AddOnDidFinishFirstNavigationCallback(base::BindOnce(
+              &AppWindowCreateFunction::
+                  OnAppWindowFinishedFirstNavigationOrClosed,
+              this, existing_window, /*is_existing_window*/ true));
           return RespondLater();
         }
       }
@@ -227,7 +232,7 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
     if (!GetBoundsSpec(*options, &create_params, &error))
       return RespondNow(Error(std::move(error)));
 
-    if (options->type == app_window::WINDOW_TYPE_PANEL) {
+    if (options->type == app_window::WindowType::kPanel) {
       WriteToConsole(blink::mojom::ConsoleMessageLevel::kWarning,
                      "Panels are no longer supported.");
     }
@@ -352,24 +357,25 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
     }
 
     switch (options->state) {
-      case app_window::STATE_NONE:
-      case app_window::STATE_NORMAL:
+      case app_window::State::kNone:
+      case app_window::State::kNormal:
         break;
-      case app_window::STATE_FULLSCREEN:
+      case app_window::State::kFullscreen:
         create_params.state = ui::SHOW_STATE_FULLSCREEN;
         break;
-      case app_window::STATE_MAXIMIZED:
+      case app_window::State::kMaximized:
         create_params.state = ui::SHOW_STATE_MAXIMIZED;
         break;
-      case app_window::STATE_MINIMIZED:
+      case app_window::State::kMinimized:
         create_params.state = ui::SHOW_STATE_MINIMIZED;
         break;
     }
   }
 
-  api::app_runtime::ActionType action_type = api::app_runtime::ACTION_TYPE_NONE;
+  api::app_runtime::ActionType action_type =
+      api::app_runtime::ActionType::kNone;
   if (options &&
-      options->lock_screen_action != api::app_runtime::ACTION_TYPE_NONE) {
+      options->lock_screen_action != api::app_runtime::ActionType::kNone) {
     if (source_context_type() != Feature::LOCK_SCREEN_EXTENSION_CONTEXT) {
       return RespondNow(Error(
           app_window_constants::kLockScreenActionRequiresLockScreenContext));
@@ -388,7 +394,7 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
   create_params.creator_process_id = source_process_id();
 
   AppWindow* app_window = nullptr;
-  if (action_type == api::app_runtime::ACTION_TYPE_NONE) {
+  if (action_type == api::app_runtime::ActionType::kNone) {
     app_window =
         AppWindowClient::Get()->CreateAppWindow(browser_context(), extension());
   } else {
@@ -410,48 +416,51 @@ ExtensionFunction::ResponseAction AppWindowCreateFunction::Run() {
     app_window->ForcedFullscreen();
   }
 
-  content::RenderFrameHost* created_frame =
-      app_window->web_contents()->GetPrimaryMainFrame();
-  int frame_id = MSG_ROUTING_NONE;
-  if (create_params.creator_process_id == created_frame->GetProcess()->GetID())
-    frame_id = created_frame->GetRoutingID();
-
-  base::Value::Dict result;
-  result.Set("frameId", frame_id);
-  result.Set("id", app_window->window_key());
-  app_window->GetSerializedState(&result);
-  ResponseValue result_arg = WithArguments(std::move(result));
-
   if (AppWindowRegistry::Get(browser_context())
           ->HadDevToolsAttached(app_window->web_contents())) {
-    AppWindowClient::Get()->OpenDevToolsWindow(
-        app_window->web_contents(),
-        base::BindOnce(&AppWindowCreateFunction::Respond, this,
-                       std::move(result_arg)));
-    // OpenDevToolsWindow might have already responded.
-    return did_respond() ? AlreadyResponded() : RespondLater();
+    AppWindowClient::Get()->OpenDevToolsWindow(app_window->web_contents(),
+                                               base::DoNothing());
   }
 
   // Delay sending the response until the newly created window has finished its
   // navigation or was closed during that process.
   // AddOnDidFinishFirstNavigationCallback() will respond asynchronously.
+  // The `app_window` pointer is still going to be valid, because in
+  // case window gets closed before finishing navigation,
+  // OnDidFinishFirstNavigation callback will be called before destruction.
   app_window->AddOnDidFinishFirstNavigationCallback(base::BindOnce(
       &AppWindowCreateFunction::OnAppWindowFinishedFirstNavigationOrClosed,
-      this, std::move(result_arg)));
+      this, app_window, /*is_existing_window*/ false));
   return RespondLater();
 }
 
 void AppWindowCreateFunction::OnAppWindowFinishedFirstNavigationOrClosed(
-    ResponseValue result_arg,
+    AppWindow* app_window,
+    bool is_existing_window,
     bool did_finish) {
   DCHECK(!did_respond());
-
   if (!did_finish) {
     Respond(Error(app_window_constants::kPrematureWindowClose));
     return;
   }
 
-  Respond(std::move(result_arg));
+  CHECK(app_window);
+  content::RenderFrameHost* app_frame =
+      app_window->web_contents()->GetPrimaryMainFrame();
+  int frame_id = MSG_ROUTING_NONE;
+  if (source_process_id() == app_frame->GetProcess()->GetID()) {
+    frame_id = app_frame->GetRoutingID();
+  }
+  base::Value::Dict result;
+  result.Set("frameId", frame_id);
+  if (is_existing_window) {
+    result.Set("existingWindow", true);
+  } else {
+    result.Set("id", app_window->window_key());
+  }
+  app_window->GetSerializedState(&result);
+
+  Respond(WithArguments(std::move(result)));
 }
 
 bool AppWindowCreateFunction::GetBoundsSpec(

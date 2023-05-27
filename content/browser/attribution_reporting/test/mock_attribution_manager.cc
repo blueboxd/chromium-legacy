@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
@@ -21,6 +22,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
 #include "content/browser/attribution_reporting/os_registration.h"
 #endif
 
@@ -39,6 +41,7 @@ void MockAttributionManager::RemoveObserver(AttributionObserver* observer) {
 }
 
 AttributionDataHostManager* MockAttributionManager::GetDataHostManager() {
+  DCHECK(data_host_manager_);
   return data_host_manager_.get();
 }
 
@@ -106,16 +109,18 @@ void MockAttributionManager::NotifyDebugReportSent(
 #if BUILDFLAG(IS_ANDROID)
 void MockAttributionManager::NotifyOsRegistration(
     const OsRegistration& registration,
-    bool is_debug_key_allowed) {
+    bool is_debug_key_allowed,
+    attribution_reporting::mojom::OsRegistrationResult result) {
   base::Time now = base::Time::Now();
   for (auto& observer : observers_) {
-    observer.OnOsRegistration(now, registration, is_debug_key_allowed);
+    observer.OnOsRegistration(now, registration, is_debug_key_allowed, result);
   }
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
 void MockAttributionManager::SetDataHostManager(
     std::unique_ptr<AttributionDataHostManager> manager) {
+  DCHECK(manager);
   data_host_manager_ = std::move(manager);
 }
 

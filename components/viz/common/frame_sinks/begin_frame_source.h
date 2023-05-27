@@ -13,6 +13,7 @@
 #include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -174,7 +175,9 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
     // time is off.
     uint64_t next_sequence_number_ = BeginFrameArgs::kStartingFrameNumber;
 
-    DynamicBeginFrameDeadlineOffsetSource*
+    // This field is not a raw_ptr<> because it was filtered by the rewriter
+    // for: #constexpr-ctor-field-initializer
+    RAW_PTR_EXCLUSION DynamicBeginFrameDeadlineOffsetSource*
         dynamic_begin_frame_deadline_offset_source_ = nullptr;
   };
 
@@ -241,6 +244,7 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
   // The BeginFrameSource should not send the begin-frame messages to clients if
   // gpu is busy.
   bool is_gpu_busy_ = false;
+  base::TimeTicks gpu_busy_start_time_;
 
   // Keeps track of whether a begin-frame was paused, and whether
   // OnGpuNoLongerBusy() should be invoked when the gpu is no longer busy.

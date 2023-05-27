@@ -10,6 +10,7 @@
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './add_input_methods_dialog.js';
@@ -20,6 +21,7 @@ import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -29,10 +31,9 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';
-import {FocusConfig} from '../../focus_config.js';
-import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {castExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {FocusConfig} from '../focus_config.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
@@ -306,7 +307,6 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
   private hasOptionsPageInSettings_(id: string): boolean {
     return hasOptionsPageInSettings(
         id, loadTimeData.getBoolean('allowPredictiveWriting'),
-        loadTimeData.getBoolean('allowDiacriticsOnPhysicalKeyboardLongpress'),
         loadTimeData.getBoolean('systemJapanesePhysicalTyping'));
   }
 

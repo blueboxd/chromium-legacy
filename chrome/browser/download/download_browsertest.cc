@@ -21,7 +21,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
@@ -37,6 +36,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -4211,7 +4211,7 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
   // Gets the file size.
   int64_t origin_file_size = 0;
   EXPECT_TRUE(base::GetFileSize(origin, &origin_file_size));
-  std::string guid = base::GenerateGUID();
+  std::string guid = base::Uuid::GenerateRandomV4().AsLowercaseString();
 
   // Wait for in-progress download manager to initialize.
   download::SimpleDownloadManagerCoordinator* coordinator =
@@ -4278,7 +4278,7 @@ IN_PROC_BROWSER_TEST_F(InProgressDownloadTest,
       base::FilePath(FILE_PATH_LITERAL("downloads/a_zip_file.zip"))));
   base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_TRUE(base::PathExists(origin));
-  std::string guid = base::GenerateGUID();
+  std::string guid = base::Uuid::GenerateRandomV4().AsLowercaseString();
 
   // Wait for in-progress download manager to initialize.
   download::SimpleDownloadManagerCoordinator* coordinator =
@@ -4943,7 +4943,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest,
 // Verify that we have 1 window, and the download surface is not visible.
 //
 // Regression test for http://crbug.com/44454
-IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
+// TODO(crbug.com/1427917): Flaky on Linux.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_NewWindow DISABLED_NewWindow
+#else
+#define MAYBE_NewWindow NewWindow
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_NewWindow) {
   embedded_test_server()->ServeFilesFromDirectory(GetTestDataDirectory());
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url =

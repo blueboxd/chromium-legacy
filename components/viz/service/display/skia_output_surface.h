@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_SKIA_OUTPUT_SURFACE_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "build/build_config.h"
@@ -106,7 +107,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // paint render pass.
   virtual SkCanvas* BeginPaintRenderPass(const AggregatedRenderPassId& id,
                                          const gfx::Size& size,
-                                         ResourceFormat format,
+                                         SharedImageFormat format,
                                          bool mipmap,
                                          bool scanout_dcomp_surface,
                                          sk_sp<SkColorSpace> color_space,
@@ -147,7 +148,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   virtual sk_sp<SkImage> MakePromiseSkImageFromRenderPass(
       const AggregatedRenderPassId& id,
       const gfx::Size& size,
-      ResourceFormat format,
+      SharedImageFormat format,
       bool mipmap,
       sk_sp<SkColorSpace> color_space,
       const gpu::Mailbox& mailbox) = 0;
@@ -203,10 +204,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // returns the mailbox.
   // Note: |kTopLeft_GrSurfaceOrigin| and |kPremul_SkAlphaType| params are used
   // for all images.
-  virtual gpu::Mailbox CreateSharedImage(ResourceFormat format,
+  virtual gpu::Mailbox CreateSharedImage(SharedImageFormat format,
                                          const gfx::Size& size,
                                          const gfx::ColorSpace& color_space,
                                          uint32_t usage,
+                                         base::StringPiece debug_label,
                                          gpu::SurfaceHandle surface_handle) = 0;
 
   // Enqueue a GPU task to create a 1x1 shared image of the specified color.

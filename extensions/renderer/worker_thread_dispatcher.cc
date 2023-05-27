@@ -200,19 +200,28 @@ void WorkerThreadDispatcher::DispatchEventOnWorkerThread(
 
 bool WorkerThreadDispatcher::OnControlMessageReceived(
     const IPC::Message& message) {
-  if (HandlesMessageOnWorkerThread(message)) {
-    int worker_thread_id = content::WorkerThread::kInvalidWorkerThreadId;
-    // TODO(lazyboy): Route |message| directly to the child thread using routed
-    // IPC. Probably using mojo?
-    bool found = base::PickleIterator(message).ReadInt(&worker_thread_id);
-    CHECK(found);
-    if (worker_thread_id == kMainThreadId)
-      return false;
-    return PostTaskToWorkerThread(
-        worker_thread_id, base::BindOnce(&WorkerThreadDispatcher::ForwardIPC,
-                                         worker_thread_id, message));
+  if (!HandlesMessageOnWorkerThread(message)) {
+    return false;
   }
-  return false;
+
+  int worker_thread_id = content::WorkerThread::kInvalidWorkerThreadId;
+  // TODO(lazyboy): Route |message| directly to the child thread using routed
+  // IPC. Probably using mojo?
+  bool found = base::PickleIterator(message).ReadInt(&worker_thread_id);
+  CHECK(found);
+  if (worker_thread_id == kMainThreadId) {
+    return false;
+  }
+
+  // If posting the task fails, we still have to return true, which effectively
+  // drops the message. Otherwise, the caller will dispatch the message to the
+  // main thread, which is wrong.
+  if (!PostTaskToWorkerThread(
+          worker_thread_id, base::BindOnce(&WorkerThreadDispatcher::ForwardIPC,
+                                           worker_thread_id, message))) {
+    LOG(ERROR) << "Failed to post task for message: " << message.type();
+  }
+  return true;
 }
 
 bool WorkerThreadDispatcher::UpdateBindingsForWorkers(
@@ -425,17 +434,16 @@ void WorkerThreadDispatcher::DispatchEvent(mojom::DispatchEventParamsPtr params,
 }
 void WorkerThreadDispatcher::OnDispatchOnConnect(
     int worker_thread_id,
-    const PortId& target_port_id,
-    const std::string& channel_name,
-    const ExtensionMsg_TabConnectionInfo& source,
-    const ExtensionMsg_ExternalConnectionInfo& info) {
+    const ExtensionMsg_OnConnectData& connect_data) {
   DCHECK_EQ(worker_thread_id, content::WorkerThread::GetCurrentId());
   WorkerThreadDispatcher::GetBindingsSystem()
       ->messaging_service()
-      ->DispatchOnConnect(Dispatcher::GetWorkerScriptContextSet(),
-                          target_port_id, channel_name, source, info,
-                          // Render frames do not matter.
-                          nullptr);
+      ->DispatchOnConnect(
+          Dispatcher::GetWorkerScriptContextSet(), connect_data.target_port_id,
+          connect_data.channel_type, connect_data.channel_name,
+          connect_data.tab_source, connect_data.external_connection_info,
+          // Render frames do not matter.
+          nullptr);
 }
 
 void WorkerThreadDispatcher::OnValidateMessagePort(int worker_thread_id,
@@ -578,6 +586,28 @@ void WorkerThreadDispatcher::DecrementServiceWorkerActivity(
                                              request_uuid);
       },
       service_worker_version_id, request_uuid));
+}
+
+void WorkerThreadDispatcher::RequestWorker(mojom::RequestParamsPtr params) {
+  PostTaskToIOThread(base::BindOnce(
+      [](mojom::RequestParamsPtr params) {
+        auto* dispatcher = WorkerThreadDispatcher::Get();
+        dispatcher->GetServiceWorkerHostOnIO()->RequestWorker(
+            std::move(params));
+      },
+      std::move(params)));
+}
+
+void WorkerThreadDispatcher::WorkerResponseAck(
+    int request_id,
+    int64_t service_worker_version_id) {
+  PostTaskToIOThread(base::BindOnce(
+      [](int request_id, int64_t service_worker_version_id) {
+        WorkerThreadDispatcher::Get()
+            ->GetServiceWorkerHostOnIO()
+            ->WorkerResponseAck(request_id, service_worker_version_id);
+      },
+      request_id, service_worker_version_id));
 }
 
 void WorkerThreadDispatcher::RemoveWorkerData(

@@ -11,6 +11,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screen_manager.h"
 #include "chrome/browser/ash/login/screens/active_directory_login_screen.h"
-#include "chrome/browser/ash/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/ash/login/screens/assistant_optin_flow_screen.h"
 #include "chrome/browser/ash/login/screens/choobe_screen.h"
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
@@ -31,6 +31,8 @@
 #include "chrome/browser/ash/login/screens/cryptohome_recovery_setup_screen.h"
 #include "chrome/browser/ash/login/screens/demo_preferences_screen.h"
 #include "chrome/browser/ash/login/screens/demo_setup_screen.h"
+#include "chrome/browser/ash/login/screens/display_size_screen.h"
+#include "chrome/browser/ash/login/screens/drive_pinning_screen.h"
 #include "chrome/browser/ash/login/screens/edu_coexistence_login_screen.h"
 #include "chrome/browser/ash/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/ash/login/screens/enable_debugging_screen.h"
@@ -298,7 +300,6 @@ class WizardController : public OobeUI::Observer {
   void ShowTermsOfServiceScreen();
   void ShowSyncConsentScreen();
   void ShowFingerprintSetupScreen();
-  void ShowArcTermsOfServiceScreen();
   void ShowRecommendAppsScreen();
   void ShowAppDownloadingScreen();
   void ShowWrongHWIDScreen();
@@ -328,7 +329,9 @@ class WizardController : public OobeUI::Observer {
   void ShowThemeSelectionScreen();
   void ShowChoobeScreen();
   void ShowTouchpadScrollScreen();
+  void ShowDisplaySizeScreen();
   void ShowGaiaPasswordChangedScreen(std::unique_ptr<UserContext> user_context);
+  void ShowDrivePinningScreen();
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -374,7 +377,6 @@ class WizardController : public OobeUI::Observer {
   void OnFingerprintSetupScreenExit(FingerprintSetupScreen::Result result);
   void OnSyncConsentScreenExit(SyncConsentScreen::Result result);
   void OnPinSetupScreenExit(PinSetupScreen::Result result);
-  void OnArcTermsOfServiceScreenExit(ArcTermsOfServiceScreen::Result result);
   void OnRecommendAppsScreenExit(RecommendAppsScreen::Result result);
   void OnAppDownloadingScreenExit();
   void OnAssistantOptInFlowScreenExit(AssistantOptInFlowScreen::Result result);
@@ -416,6 +418,8 @@ class WizardController : public OobeUI::Observer {
   void OnCryptohomeRecoveryScreenExit(CryptohomeRecoveryScreen::Result result);
   void OnChoobeScreenExit(ChoobeScreen::Result result);
   void OnTouchpadScreenExit(TouchpadScrollScreen::Result result);
+  void OnDisplaySizeScreenExit(DisplaySizeScreen::Result result);
+  void OnDrivePinningScreenExit(DrivePinningScreen::Result result);
 
   // Callback invoked once it has been determined whether the device is disabled
   // or not.
@@ -517,12 +521,12 @@ class WizardController : public OobeUI::Observer {
   // So it should be safe to store the pointers.
   base::flat_map<BaseScreen*, BaseScreen*> previous_screens_;
 
-  WizardContext* wizard_context_;
+  raw_ptr<WizardContext, ExperimentalAsh> wizard_context_;
 
   static bool skip_enrollment_prompts_for_testing_;
 
   // Screen that's currently active.
-  BaseScreen* current_screen_ = nullptr;
+  raw_ptr<BaseScreen, ExperimentalAsh> current_screen_ = nullptr;
 
   // True if full OOBE flow should be shown.
   bool is_out_of_box_ = false;

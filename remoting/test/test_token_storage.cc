@@ -130,7 +130,8 @@ std::string TestTokenStorageOnDisk::FetchTokenFromKey(const std::string& key) {
     return std::string();
   }
 
-  const std::string* token = token_data->FindStringPath(user_name_ + '.' + key);
+  const std::string* token =
+      token_data->GetDict().FindStringByDottedPath(user_name_ + '.' + key);
   if (!token) {
     VLOG(1) << "Could not find token for: " << key;
     return std::string();
@@ -168,7 +169,7 @@ bool TestTokenStorageOnDisk::StoreTokenForKey(const std::string& key,
   }
 
   std::string json_string;
-  token_data->SetStringPath(user_name_ + '.' + key, value);
+  token_data->GetDict().SetByDottedPath(user_name_ + '.' + key, value);
   if (!base::JSONWriter::Write(*token_data, &json_string)) {
     LOG(ERROR) << "Couldn't convert JSON data to string";
     return false;

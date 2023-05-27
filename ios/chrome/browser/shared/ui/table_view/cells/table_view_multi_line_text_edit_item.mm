@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_multi_line_text_edit_item.h"
 
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_multi_line_text_edit_item_delegate.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/table_view/table_view_cells_constants.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
@@ -92,7 +92,9 @@ const CGFloat kSymbolSize = 15;
               reuseIdentifier:(NSString*)reuseIdentifier {
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
-    self.isAccessibilityElement = YES;
+    // The cell shouldn't be an a11y element to make the text view accessible to
+    // VoiceOver.
+    self.isAccessibilityElement = NO;
 
     UIView* contentView = self.contentView;
 
@@ -101,6 +103,7 @@ const CGFloat kSymbolSize = 15;
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.font =
         [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+    _textLabel.isAccessibilityElement = NO;
     [contentView addSubview:_textLabel];
 
     _textView = [[UITextView alloc] init];
@@ -110,10 +113,12 @@ const CGFloat kSymbolSize = 15;
     _textView.scrollEnabled = NO;
     _textView.textContainer.lineFragmentPadding = 0;
     _textView.textContainerInset = UIEdgeInsetsZero;
+    _textView.isAccessibilityElement = YES;
     [contentView addSubview:_textView];
 
     _iconView = [[UIImageView alloc] initWithImage:nil];
     _iconView.translatesAutoresizingMaskIntoConstraints = NO;
+    _iconView.isAccessibilityElement = NO;
     [contentView addSubview:_iconView];
 
     [NSLayoutConstraint activateConstraints:@[

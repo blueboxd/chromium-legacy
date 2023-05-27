@@ -27,21 +27,12 @@
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync_preferences/dual_layer_user_pref_store.h"
 #include "components/sync_preferences/pref_model_associator_client.h"
+#include "components/sync_preferences/preferences_merge_helper.h"
 #include "components/sync_preferences/syncable_prefs_database.h"
 
 namespace sync_preferences {
 
 namespace {
-
-uint32_t GetWriteFlags(const std::string& pref_name) {
-  // Note: Just always use the default write flags here. The only other option
-  // that exists is LOSSY, which (a) currently (as of 2023-02) no syncable prefs
-  // use, and (b) even if any did, using regular writes instead of lossy ones
-  // here would only have a very minor performance impact.
-  // TODO(crbug.com/1404937): Plumb the proper write flags through
-  // PrefServiceForAssociator.
-  return WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS;
-}
 
 const sync_pb::PreferenceSpecifics& GetSpecifics(const syncer::SyncData& pref) {
   switch (pref.GetDataType()) {
@@ -71,41 +62,6 @@ absl::optional<base::Value> ReadPreferenceSpecifics(
     return absl::nullopt;
   }
   return std::move(*parsed_json);
-}
-
-base::Value::List MergeListValues(const base::Value::List& from_value,
-                                  const base::Value::List& to_value) {
-  base::Value::List result = to_value.Clone();
-  for (const auto& value : from_value) {
-    if (!base::Contains(result, value)) {
-      result.Append(value.Clone());
-    }
-  }
-
-  return result;
-}
-
-base::Value::Dict MergeDictionaryValues(const base::Value::Dict& from_value,
-                                        const base::Value::Dict& to_value) {
-  base::Value::Dict result = to_value.Clone();
-
-  for (auto it : from_value) {
-    // It's not clear whether using a C++17 structured binding here would cause
-    // a copy of the value or not, so in doubt unpack the old way.
-    const base::Value* from_key_value = &it.second;
-    base::Value* to_key_value = result.Find(it.first);
-    if (to_key_value) {
-      if (from_key_value->is_dict() && to_key_value->is_dict()) {
-        *to_key_value = base::Value(MergeDictionaryValues(
-            from_key_value->GetDict(), to_key_value->GetDict()));
-      }
-      // Note that for all other types we want to preserve the "to"
-      // values so we do nothing here.
-    } else {
-      result.Set(it.first, from_key_value->Clone());
-    }
-  }
-  return result;
 }
 
 }  // namespace
@@ -196,28 +152,42 @@ void PrefModelAssociator::InitPrefAndAssociate(
 
     if (user_pref_value) {
       DVLOG(1) << "Found user pref value for " << pref_name;
-      // We have both server and local values. Merge them.
-      base::Value new_value(
-          MergePreference(pref_name, *user_pref_value, sync_value));
-
-      // Update the local preference based on what we got from the sync server.
-      if (new_value.is_none()) {
-        LOG(WARNING) << "Sync has null value for pref " << pref_name.c_str();
-        user_prefs_->RemoveValue(pref_name, GetWriteFlags(pref_name));
-      } else if (*user_pref_value != new_value) {
-        SetPrefWithTypeCheck(pref_name, new_value);
-      }
-
-      // If the merge resulted in an updated value, inform the syncer.
-      if (sync_value != new_value) {
-        syncer::SyncData sync_data;
-        if (!CreatePrefSyncData(pref_name, new_value, &sync_data)) {
-          LOG(ERROR) << "Failed to update preference.";
-          return;
+      if (base::FeatureList::IsEnabled(
+              syncer::kEnablePreferencesAccountStorage)) {
+        // Overwrite updates to the account store.
+        if (sync_value.is_none()) {
+          LOG(WARNING) << "Sync has null value for pref " << pref_name.c_str();
+          user_prefs_->RemoveValue(pref_name,
+                                   pref_service_->GetWriteFlags(pref_name));
+        } else if (*user_pref_value != sync_value) {
+          SetPrefWithTypeCheck(pref_name, sync_value);
+        }
+      } else {
+        // We have both server and local values. Merge them if account storage
+        // is not supported.
+        base::Value new_value(helper::MergePreference(
+            client_, pref_name, *user_pref_value, sync_value));
+        // Update the local preference based on what we got from the sync
+        // server.
+        if (new_value.is_none()) {
+          LOG(WARNING) << "Sync has null value for pref " << pref_name.c_str();
+          user_prefs_->RemoveValue(pref_name,
+                                   pref_service_->GetWriteFlags(pref_name));
+        } else if (*user_pref_value != new_value) {
+          SetPrefWithTypeCheck(pref_name, new_value);
         }
 
-        sync_changes->push_back(syncer::SyncChange(
-            FROM_HERE, syncer::SyncChange::ACTION_UPDATE, sync_data));
+        // If the merge resulted in an updated value, inform the syncer.
+        if (sync_value != new_value) {
+          syncer::SyncData sync_data;
+          if (!CreatePrefSyncData(pref_name, new_value, &sync_data)) {
+            LOG(ERROR) << "Failed to update preference.";
+            return;
+          }
+
+          sync_changes->push_back(syncer::SyncChange(
+              FROM_HERE, syncer::SyncChange::ACTION_UPDATE, sync_data));
+        }
       }
     } else if (!sync_value.is_none()) {
       // Only a server value exists. Just set the local user value.
@@ -316,59 +286,26 @@ PrefModelAssociator::MergeDataAndStartSyncing(
 
 void PrefModelAssociator::StopSyncing(syncer::ModelType type) {
   DCHECK_EQ(type_, type);
+  Stop(/*is_browser_shutdown=*/false);
+}
+
+void PrefModelAssociator::OnBrowserShutdown(syncer::ModelType type) {
+  DCHECK_EQ(type_, type);
+  Stop(/*is_browser_shutdown=*/true);
+}
+
+void PrefModelAssociator::Stop(bool is_browser_shutdown) {
   models_associated_ = false;
   sync_processor_.reset();
-  if (base::FeatureList::IsEnabled(syncer::kEnablePreferencesAccountStorage)) {
-    // TODO(crbug.com/1416480): StopSyncing() gets called when sync is being
-    // stopped (permanently), but also during browser shutdown, and in that case
-    // it's unnecessary (if mostly harmless) to clear the store. Plumb through
-    // an "is_shutdown" bit and don't clear in that case. Another alternative
-    // would be to just not call StopSyncing in case of browser
-    // shutdown (crbug.com/1400437).
+  if (!is_browser_shutdown &&
+      base::FeatureList::IsEnabled(syncer::kEnablePreferencesAccountStorage)) {
+    // Avoid clearing account store in case of browser shutdown, since it
+    // tries to notify the observers which may or may not exist by this time
+    // during browser shutdown (crbug.com/1434902).
     dual_layer_user_prefs_->DisableTypeAndClearAccountStore(type_);
   }
   synced_preferences_.clear();
   pref_service_->OnIsSyncingChanged();
-}
-
-base::Value PrefModelAssociator::MergePreference(
-    const std::string& name,
-    const base::Value& local_value,
-    const base::Value& server_value) const {
-  // This function special cases preferences individually, so don't attempt
-  // to merge for all migrated values.
-  if (client_) {
-    if (client_->IsMergeableListPreference(name)) {
-      if (!server_value.is_list()) {
-        // Server value is corrupt or missing, keep pref value unchanged.
-        // TODO(crbug.com/1430854): Investigate in which scenarios can the value
-        // be corrupt.
-        return local_value.Clone();
-      }
-      if (local_value.is_none())
-        return server_value.Clone();
-      return base::Value(
-          MergeListValues(local_value.GetList(), server_value.GetList()));
-    }
-    if (client_->IsMergeableDictionaryPreference(name)) {
-      if (!server_value.is_dict()) {
-        // Server value is corrupt or missing, keep pref value unchanged.
-        return local_value.Clone();
-      }
-      if (local_value.is_none())
-        return server_value.Clone();
-      return base::Value(
-          MergeDictionaryValues(local_value.GetDict(), server_value.GetDict()));
-    }
-    base::Value merged_value =
-        client_->MaybeMergePreferenceValues(name, local_value, server_value);
-    if (!merged_value.is_none()) {
-      return merged_value;
-    }
-  }
-
-  // If this is not a specially handled preference, server wins.
-  return server_value.Clone();
 }
 
 bool PrefModelAssociator::CreatePrefSyncData(
@@ -420,7 +357,8 @@ absl::optional<syncer::ModelError> PrefModelAssociator::ProcessSyncChanges(
     }
 
     if (sync_change.change_type() == syncer::SyncChange::ACTION_DELETE) {
-      user_prefs_->RemoveValue(pref_name, GetWriteFlags(pref_name));
+      user_prefs_->RemoveValue(pref_name,
+                               pref_service_->GetWriteFlags(pref_name));
       continue;
     }
 
@@ -600,7 +538,8 @@ bool PrefModelAssociator::SetPrefWithTypeCheck(const std::string& pref_name,
   }
   // Write directly to the user controlled value store, which is ignored if the
   // preference is controlled by a higher-priority layer (e.g. policy).
-  user_prefs_->SetValue(pref_name, new_value.Clone(), GetWriteFlags(pref_name));
+  user_prefs_->SetValue(pref_name, new_value.Clone(),
+                        pref_service_->GetWriteFlags(pref_name));
   return true;
 }
 

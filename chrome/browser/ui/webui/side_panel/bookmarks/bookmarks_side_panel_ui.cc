@@ -37,9 +37,9 @@
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/webui/shopping_list_handler.h"
 #include "components/favicon_base/favicon_url_parser.h"
-#include "components/image_service/features.h"
-#include "components/image_service/image_service.h"
-#include "components/image_service/image_service_handler.h"
+#include "components/page_image_service/features.h"
+#include "components/page_image_service/image_service.h"
+#include "components/page_image_service/image_service_handler.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -67,6 +67,10 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"tooltipDelete", IDS_DELETE},
       {"tooltipMore", IDS_BOOKMARKS_EDIT_MORE},
       {"tooltipMove", IDS_BOOKMARKS_EDIT_MOVE_TO_ANOTHER_FOLDER},
+      {"tooltipOrganize", IDS_BOOKMARK_MANAGER_ORGANIZE_MENU},
+      {"tooltipNewFolder", IDS_BOOKMARKS_NEW_FOLDER_TOOLTIP},
+      {"tooltipEdit", IDS_EDIT},
+      {"tooltipBack", IDS_BOOKMARKS_BACK_BUTTON_TOOLTIP},
       {"shoppingListFolderTitle", IDS_SIDE_PANEL_TRACKED_PRODUCTS},
       {"shoppingListTrackPriceButtonDescription",
        IDS_PRICE_TRACKING_TRACK_PRODUCT_ACCESSIBILITY},
@@ -78,9 +82,13 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"allBookmarks", IDS_BOOKMARKS_ALL_BOOKMARKS},
       {"priceTrackingLabel", IDS_BOOKMARKS_LABEL_TRACKED_PRODUCTS},
       {"sortNewest", IDS_BOOKMARKS_SORT_NEWEST},
+      {"sortNewestLower", IDS_BOOKMARKS_SORT_NEWEST_LOWER},
       {"sortOldest", IDS_BOOKMARKS_SORT_OLDEST},
+      {"sortOldestLower", IDS_BOOKMARKS_SORT_OLDEST_LOWER},
       {"sortAlphabetically", IDS_BOOKMARKS_SORT_ALPHABETICALLY},
       {"sortReverseAlphabetically", IDS_BOOKMARKS_SORT_REVERSE_ALPHABETICALLY},
+      {"sortLastOpened", IDS_BOOKMARKS_SORT_LAST_OPENED},
+      {"sortLastOpenedLower", IDS_BOOKMARKS_SORT_LAST_OPENED_LOWER},
       {"visualView", IDS_BOOKMARKS_VISUAL_VIEW},
       {"compactView", IDS_BOOKMARKS_COMPACT_VIEW},
       {"sortMenuA11yLabel", IDS_BOOKMARKS_SORT_MENU_A11Y_LABEL},
@@ -94,6 +102,8 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"emptyBody", IDS_BOOKMARKS_EMPTY_STATE_BODY},
       {"emptyTitleGuest", IDS_BOOKMARKS_EMPTY_STATE_TITLE_GUEST},
       {"emptyBodyGuest", IDS_BOOKMARKS_EMPTY_STATE_BODY_GUEST},
+      {"emptyTitleSearch", IDS_BOOKMARKS_EMPTY_STATE_TITLE_SEARCH},
+      {"emptyBodySearch", IDS_BOOKMARKS_EMPTY_STATE_BODY_SEARCH},
       {"searchBookmarks", IDS_BOOKMARK_MANAGER_SEARCH_BUTTON},
       {"clearSearch", IDS_BOOKMARK_MANAGER_CLEAR_SEARCH},
       {"selectedBookmarkCount", IDS_BOOKMARK_MANAGER_ITEMS_SELECTED},
@@ -106,6 +116,9 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       {"menuOpenIncognito", IDS_BOOKMARK_MANAGER_MENU_OPEN_INCOGNITO},
       {"menuOpenIncognitoWithCount",
        IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_INCOGNITO_WITH_COUNT},
+      {"menuOpenNewTabGroup", IDS_BOOKMARK_MANAGER_MENU_OPEN_IN_NEW_TAB_GROUP},
+      {"menuOpenNewTabGroupWithCount",
+       IDS_BOOKMARK_MANAGER_MENU_OPEN_ALL_NEW_TAB_GROUP_WITH_COUNT},
       {"menuMoveToBookmarksBar", IDS_BOOKMARKS_MOVE_TO_BOOKMARKS_BAR},
       {"menuMoveToAllBookmarks", IDS_BOOKMARKS_MOVE_TO_ALL_BOOKMARKS},
       {"menuTrackPrice", IDS_SIDE_PANEL_TRACK_BUTTON},
@@ -149,8 +162,9 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
       !prefs->GetList(bookmarks::prefs::kManagedBookmarks).empty());
   source->AddBoolean("shoppingListEnabled",
                      commerce::IsShoppingListAllowedForEnterprise(prefs));
-  source->AddBoolean("urlImagesEnabled", base::FeatureList::IsEnabled(
-                                             image_service::kImageService));
+  source->AddBoolean(
+      "urlImagesEnabled",
+      base::FeatureList::IsEnabled(page_image_service::kImageService));
 
   source->AddBoolean("guestMode", profile->IsGuestSession());
   source->AddBoolean("incognitoMode", profile->IsIncognitoProfile());
@@ -182,9 +196,7 @@ BookmarksSidePanelUI::BookmarksSidePanelUI(content::WebUI* web_ui)
                         ? base::NumberToString(managed->managed_node()->id())
                         : "");
 
-  source->AddString(
-      "chromeRefresh2023Attribute",
-      features::IsChromeRefresh2023() ? "chrome-refresh-2023" : "");
+  webui::SetupChromeRefresh2023(source);
 
   content::URLDataSource::Add(
       profile, std::make_unique<FaviconSource>(
@@ -238,16 +250,17 @@ void BookmarksSidePanelUI::BindInterface(
 }
 
 void BookmarksSidePanelUI::BindInterface(
-    mojo::PendingReceiver<image_service::mojom::ImageServiceHandler>
+    mojo::PendingReceiver<page_image_service::mojom::PageImageServiceHandler>
         pending_image_handler) {
-  base::WeakPtr<image_service::ImageService> image_service_weak;
+  base::WeakPtr<page_image_service::ImageService> image_service_weak;
   if (auto* image_service =
-          image_service::ImageServiceFactory::GetForBrowserContext(
+          page_image_service::ImageServiceFactory::GetForBrowserContext(
               Profile::FromWebUI(web_ui()))) {
     image_service_weak = image_service->GetWeakPtr();
   }
-  image_service_handler_ = std::make_unique<image_service::ImageServiceHandler>(
-      std::move(pending_image_handler), std::move(image_service_weak));
+  image_service_handler_ =
+      std::make_unique<page_image_service::ImageServiceHandler>(
+          std::move(pending_image_handler), std::move(image_service_weak));
 }
 
 commerce::ShoppingListContextMenuController*

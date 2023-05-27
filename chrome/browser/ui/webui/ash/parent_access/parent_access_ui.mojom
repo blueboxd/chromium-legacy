@@ -65,8 +65,35 @@ struct WebApprovalsParams {
   array<uint8> favicon_png_bytes;
 };
 
+// Parameters for the local extension approvals V2 feature.
+struct ExtensionApprovalsParams {
+  // Display name for the extension.
+  mojo_base.mojom.String16 extension_name;
+
+  // Extension icon, stored as an array of bytes.
+  array<uint8> icon_png_bytes;
+
+  // The child's name to be displayed to the parent.
+  mojo_base.mojom.String16 child_display_name;
+
+  // Localized messages indicating the permissions requirements for an
+  // extension.
+  ExtensionPermissions permissions;
+};
+
+struct ExtensionPermissions {
+  // List of permissions for the extension.
+  array<mojo_base.mojom.String16> permissions;
+
+  // Details about each permission. Each permission will have a corresponding
+  // entry at the same index in the details array. If there are no details to
+  // be displayed, it will have an empty value.
+  array<mojo_base.mojom.String16> details;
+};
+
 union FlowTypeParams {
   WebApprovalsParams web_approvals_params;
+  ExtensionApprovalsParams extension_approvals_params;
 };
 
 // The result of the parent access request.
@@ -74,6 +101,7 @@ enum ParentAccessResult {
   kApproved,
   kDeclined,
   kCanceled,
+  kDisabled,
   kError,
 };
 
@@ -97,4 +125,8 @@ interface ParentAccessUIHandler {
   // When called, indicates that that the request has completed with the
   // specified result, which will cause the Parent Access UI to close.
   OnParentAccessDone(ParentAccessResult result) => ();
+
+  // Called when the UI has switched from the before screen to the
+  // ParentAuthentication screen.
+  OnBeforeScreenDone() => ();
 };

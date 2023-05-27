@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Сертификатът за удостоверяване бе отхвърлен локално</translation>
 <translation id="1775381402323441512">Информация за видеофайла</translation>
 <translation id="180035236176489073">Трябва да сте онлайн, за да осъществите достъп до тези файлове.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Неуспешно намиране на разширението с ID}other{Неуспешно намиране на разширенията с ID}}</translation>
 <translation id="1807938677607439181">Всички файлове</translation>
 <translation id="1810764548349082891">Няма налична визуализация</translation>
 <translation id="1812302367230252929">Амхарски (транслитерация)</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Невалиден запис в списъка със съответствия на алтернативното име на субекта</translation>
 <translation id="1838709767668011582">Сайт в Google</translation>
 <translation id="1853795129690976061">Тази папка е споделена с Linux</translation>
-<translation id="1859422890169495746">Този Chromebook</translation>
 <translation id="1864756863218646478">Файлът не можа да бъде намерен.</translation>
 <translation id="1884013283844450420">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, свързване</translation>
 <translation id="1920670151694390848">Малаялам (транслитерация)</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Планета</translation>
 <translation id="2305020378527873881">Изваждането на „<ph name="VOLUME_NAME" />“ завърши.</translation>
 <translation id="2307462900900812319">Конфигуриране на мрежата</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Не може да се намери разширение с идентификатор <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Обърнете се към администратора си.}other{Не могат да се намерят разширения с идентификатори <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Обърнете се към администратора си.}}</translation>
 <translation id="2325650632570794183">Този файлов тип не се поддържа. Моля, посетете уеб магазина на Chrome, за да намерите приложение, което може да отвори съответния тип.</translation>
 <translation id="2326539130272988168">Български</translation>
 <translation id="2337715497728194187">Споделяне с Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">незащитена</translation>
 <translation id="3291218047831493686">Свържете се с тази мрежа, за да промените настройките за заключване на SIM картата</translation>
 <translation id="3293023191599135697">WEP мрежите не се поддържат</translation>
+<translation id="3295006446256079333">Този том</translation>
 <translation id="3295357220137379386">Устройството е заето</translation>
 <translation id="3296763833017966289">грузински</translation>
 <translation id="3307875152560779385">Украински</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Устройствата Chromebase</translation>
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="485316830061041779">немски</translation>
+<translation id="4862885579661885411">Настройки за „Файлове“</translation>
 <translation id="4867079195717347957">Кликнете, за да сортирате колоната в низходящ ред.</translation>
 <translation id="4867297348137739678">Миналата седмица</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> байта</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> елемента се копират...</translation>
 <translation id="7375951387215729722">Списъкът с файлове е сортиран в низходящ ред по <ph name="COLUMN_NAME" />.</translation>
 <translation id="7377161162143020057">Копирането на този файл е блокирано чрез администраторско правило</translation>
-<translation id="7392500733467492920">Обърнете се към администратора си.</translation>
 <translation id="7402503521691663770">Устройства с ChromeOS Flex</translation>
 <translation id="7408870451288633753">Чешки</translation>
 <translation id="7417453074306512035">Етиопска клавиатура</translation>

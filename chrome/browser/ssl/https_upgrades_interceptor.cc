@@ -261,6 +261,19 @@ void HttpsUpgradesInterceptor::MaybeCreateLoader(
   if (net::IsHostnameNonUnique(tentative_resource_request.url.host())) {
     RecordNavigationRequestSecurityLevel(
         NavigationRequestSecurityLevel::kNonUniqueHostname);
+
+    // For HTTPS-Upgrades, skip attempting to upgrade non-unique hostnames
+    // as they can't get publicly-trusted certificates.
+    //
+    // HTTPS-First Mode does not exempt these hosts in order to ensure that
+    // Chrome shows the HTTP interstitial before navigation to them.
+    // Potentially, these could fast-fail instead and skip directly to the
+    // interstitial.
+    if (base::FeatureList::IsEnabled(features::kHttpsUpgrades) &&
+        !http_interstitial_enabled_) {
+      std::move(callback).Run({});
+      return;
+    }
   }
 
   // Check whether this host would be upgraded to HTTPS by HSTS. This requires a
@@ -314,8 +327,8 @@ void HttpsUpgradesInterceptor::MaybeCreateLoaderOnHstsQueryCompleted(
   // Don't upgrade navigation if it is allowlisted.
   // First, check the enterprise policy HTTP allowlist.
   PrefService* prefs = profile->GetPrefs();
-  if (IsHostnameInAllowlist(tentative_resource_request.url,
-                            prefs->GetList(prefs::kHttpAllowlist))) {
+  if (IsHostnameInHttpAllowlist(tentative_resource_request.url,
+                                profile->GetPrefs())) {
     RecordNavigationRequestSecurityLevel(
         NavigationRequestSecurityLevel::kAllowlisted);
     std::move(callback).Run({});

@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/svg/svg_animated_length.h"
 #include "third_party/blink/renderer/core/svg/svg_length.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -126,8 +126,7 @@ void SVGForeignObjectElement::SvgAttributeChanged(
 }
 
 LayoutObject* SVGForeignObjectElement::CreateLayoutObject(
-    const ComputedStyle& style,
-    LegacyLayout legacy) {
+    const ComputedStyle& style) {
   // Suppress foreignObject LayoutObjects in SVG hidden containers.
   // LayoutSVGHiddenContainers does not allow the subtree to be rendered, but
   // allow LayoutObject descendants to be created. That will causes crashes in
@@ -143,7 +142,7 @@ LayoutObject* SVGForeignObjectElement::CreateLayoutObject(
         ancestor->GetLayoutObject()->IsSVGHiddenContainer())
       return nullptr;
   }
-  return LayoutObjectFactory::CreateSVGForeignObject(*this, style, legacy);
+  return MakeGarbageCollected<LayoutNGSVGForeignObject>(this);
 }
 
 bool SVGForeignObjectElement::SelfHasRelativeLengths() const {

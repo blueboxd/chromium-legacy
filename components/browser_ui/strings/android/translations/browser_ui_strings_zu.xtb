@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Isihumushi sokufihlakele sesithombe</translation>
 <translation id="1785415724048343560">Kunconyiwe ukuze ube nokuzizwisa okungcono kakhulu</translation>
 <translation id="1818308510395330587">Ukuze uvumele i-<ph name="APP_NAME" /> isebenzise i-AR, vula nekhamera <ph name="BEGIN_LINK" />Kumasethingi e-Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Kusuka ku-<ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Amasayithi ahlobene angabona umsebenzi wakho eqenjini</translation>
 <translation id="1887786770086287077">Ukufinyelela kwendawo kuvalelwe le divayisi. Kuvule <ph name="BEGIN_LINK" />kuzilungiselelo ze-Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Vala ikholi</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Ukulanda kuqedile <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Izakhi kwamanye amasayithi zingase zingasebenzi kumodi ye-Incognito</translation>
 <translation id="2442870161001914531">Njalo cela isayithi ledeskithophu</translation>
+<translation id="2479148705183875116">Iya kumasethingi</translation>
 <translation id="2482878487686419369">Izaziso</translation>
 <translation id="2485422356828889247">Khipha</translation>
 <translation id="2490684707762498678">Ilawulwa ngu-<ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Amakheli we-imeyili</translation>
 <translation id="2750481671343847896">Amasayithi angabonisa imiyalo yokungena ngemvume kusukela kumasevisi kamazisi.</translation>
 <translation id="2822354292072154809">Ingabe uqinisekile ukuthi ufuna ukusetha kabusha zonke izimvume zesayithi le-<ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Cela ukubuka kweselula</translation>
 <translation id="2870560284913253234">Isayithi</translation>
 <translation id="2874939134665556319">Ithrekhi yangaphambilini</translation>
 <translation id="2891975107962658722">Vimba isayithi ekulondolozeni idatha kudivayisi yakho</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Amasayithi angasebenzisa amakhukhi ukuthuthukisa ukuzizwela kwakho kokuphequlula, ngokwesibonelo, ukukugcina ungene ngemvume noma ukukhumbula izinto ezikukalishi yakho yokuthenga.</translation>
 <translation id="3165022941318558018">Vumela isayithi ukuthi lisebenzise amakhukhi ezinkampani zangaphandle</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> idatha egciniwe</translation>
-<translation id="3203366800380907218">Kusuka kuwebhu</translation>
 <translation id="321187648315454507">Ukuze uvumele i-<ph name="APP_NAME" /> ukuthi ikuthumele izaziso, vula nezaziso <ph name="BEGIN_LINK" />Kumasethingi e-Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Imakrofoni</translation>
 <translation id="3248611290851046188">Leli sayithi lichaza izinto ozishisekelayo amanye amasayithi angazisebenzisela ukukubonisa izikhangiso. Leli sayithi lithola nongaba nentshisekelo kukho ku-Chrome ukuze likubonise izikhangiso ezihambisana kakhulu.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Cela ukubuka kwedeskithophu</translation>
 <translation id="5100237604440890931">Igoqiwe - chofoza ukuze unwebe.</translation>
 <translation id="5123685120097942451">Ithebhu ye-Incognito</translation>
-<translation id="5134599672855298214">Cela ukubuka kweselula (kuyanconywa)</translation>
 <translation id="5186036860380548585">Inketho iyatholakala eduze kwaphezulu kwesikrini</translation>
 <translation id="5197729504361054390">Oxhumana nabo obakhethayo bazokwabiwa no-<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Kugcine ukuvakashelwa namuhla</translation>

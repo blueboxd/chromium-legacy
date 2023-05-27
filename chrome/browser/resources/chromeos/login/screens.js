@@ -9,13 +9,14 @@
 import './screens/common/adb_sideloading.js';
 import './screens/common/app_downloading.js';
 import './screens/common/app_launch_splash.js';
-import './screens/common/arc_terms_of_service.js';
 import './screens/common/assistant_optin.js';
 import './screens/common/autolaunch.js';
 import './screens/common/choobe.js';
 import './screens/common/consolidated_consent.js';
 import './screens/common/cryptohome_recovery_setup.js';
 import './screens/common/device_disabled.js';
+import './screens/common/display_size.js';
+import './screens/common/drive_pinning.js';
 import './screens/common/enable_kiosk.js';
 import './screens/common/error_message.js';
 import './screens/common/family_link_notice.js';
@@ -75,11 +76,6 @@ export const commonScreensList = [
   {tag: 'adb-sideloading-element', id: 'adb-sideloading'},
   {tag: 'app-downloading-element', id: 'app-downloading'},
   {tag: 'app-launch-splash-element', id: 'app-launch-splash'},
-  {
-    tag: 'arc-tos-element',
-    id: 'arc-tos',
-    extra_classes: ['right', 'arc-tos-loading'],
-  },
   {tag: 'assistant-optin-element', id: 'assistant-optin-flow'},
   {tag: 'autolaunch-element', id: 'autolaunch'},
   {
@@ -90,6 +86,17 @@ export const commonScreensList = [
   {tag: 'consolidated-consent-element', id: 'consolidated-consent'},
   {tag: 'cryptohome-recovery-setup-element', id: 'cryptohome-recovery-setup'},
   {tag: 'device-disabled-element', id: 'device-disabled'},
+  {
+    tag: 'display-size-element',
+    id: 'display-size',
+    condition: 'isDisplaySizeEnabled',
+  },
+  {
+
+    tag: 'drive-pinning-element',
+    id: 'drive-pinning',
+    condition: 'isDrivePinningEnabled',
+  },
   {tag: 'enable-kiosk-element', id: 'kiosk-enable'},
   {tag: 'error-message-element', id: 'error-message'},
   {tag: 'family-link-notice-element', id: 'family-link-notice'},

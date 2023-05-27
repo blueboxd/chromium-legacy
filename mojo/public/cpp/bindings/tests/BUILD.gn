@@ -85,7 +85,13 @@ source_set("tests") {
     "//testing/gtest",
   ]
 
-  data = [ "//mojo/public/interfaces/bindings/tests/data/validation/" ]
+  if (is_ios) {
+    deps += [
+      "//mojo/public/interfaces/bindings/tests:validation_unittest_bundle_data",
+    ]
+  } else {
+    data = [ "//mojo/public/interfaces/bindings/tests/data/validation/" ]
+  }
 
   if (!use_blink) {
     assert_no_deps = [ "//third_party/blink/*" ]
@@ -184,6 +190,7 @@ mojom("test_mojom") {
         {
           mojom = "mojo.test.default_construct.mojom.TestStruct"
           cpp = "::mojo::test::default_construct::TestStruct"
+          default_constructible = false
         },
       ]
       traits_headers = [ "default_construct_unittest_mojom_traits.h" ]

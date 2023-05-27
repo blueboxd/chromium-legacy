@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -51,10 +52,9 @@ std::string PickTrialGroupWithoutActivation(base::FieldTrial& trial,
       default_percent = 0;
       break;
     case version_info::Channel::STABLE:
-      // Disabled on stable pending approval. http://launch/4200918
-      enabled_percent = 0;
-      disabled_percent = 0;
-      default_percent = 100;
+      enabled_percent = 1;
+      disabled_percent = 1;
+      default_percent = 98;
       break;
   }
   DCHECK_EQ(kTotalProbability,
@@ -129,8 +129,8 @@ void FirstRunService::SetUpClientSideFieldTrial(
                                   : base::FeatureList::OVERRIDE_DISABLE_FEATURE;
 
   if (measurement_feature_state == base::FeatureList::OVERRIDE_ENABLE_FEATURE) {
-    variations::AssociateVariationParams(
-        kTrialName, group_name, {{kForYouFreStudyGroup.name, group_name}});
+    base::AssociateFieldTrialParams(kTrialName, group_name,
+                                    {{kForYouFreStudyGroup.name, group_name}});
   }
 
   feature_list->RegisterFieldTrialOverride(
@@ -196,6 +196,6 @@ void FirstRunService::RegisterSyntheticFieldTrial(
   DCHECK(!group_name.empty());
 
   ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      "ForYouFreSynthetic", group_name,
+      FirstRunService::kSyntheticTrialName, group_name,
       variations::SyntheticTrialAnnotationMode::kCurrentLog);
 }

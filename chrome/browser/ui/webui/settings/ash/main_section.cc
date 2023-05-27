@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/policy_indicator_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_hats_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/ash/send_search_feedback_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
@@ -145,6 +146,7 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"menuButtonLabel", IDS_SETTINGS_MENU_BUTTON_LABEL},
       {"moreActions", IDS_SETTINGS_MORE_ACTIONS},
       {"ok", IDS_OK},
+      {"opensInNewTab", IDS_OS_SETTINGS_OPENS_IN_NEW_TAB_A11Y_LABEL},
       {"restart", IDS_SETTINGS_RESTART},
       {"save", IDS_SAVE},
       {"searchResultBubbleText", IDS_SEARCH_RESULT_BUBBLE_TEXT},
@@ -212,6 +214,8 @@ void MainSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(CreatePluralStringHandler());
 
   web_ui->AddMessageHandler(std::make_unique<SendSearchFeedbackHandler>());
+
+  web_ui->AddMessageHandler(std::make_unique<OsSettingsHatsHandler>(profile()));
 }
 
 int MainSection::GetSectionNameMessageId() const {

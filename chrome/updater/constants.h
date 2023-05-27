@@ -217,6 +217,8 @@ extern const char kUninstallScript[];
 
 // Developer override keys.
 extern const char kDevOverrideKeyUrl[];
+extern const char kDevOverrideKeyCrashUploadUrl[];
+extern const char kDevOverrideKeyDeviceManagementUrl[];
 extern const char kDevOverrideKeyUseCUP[];
 extern const char kDevOverrideKeyInitialDelay[];
 extern const char kDevOverrideKeyServerKeepAliveSeconds[];
@@ -386,11 +388,18 @@ inline constexpr int kErrorFailedToRemoveSystemdUnit = 41;
 // Running as the wrong user for the provided UpdaterScope.
 inline constexpr int kErrorWrongUser = 42;
 
+// Failed to get the setup files.
+inline constexpr int kErrorFailedToGetSetupFiles = 43;
+
+// Failed to run install list.
+inline constexpr int kErrorFailedToRunInstallList = 44;
+
 inline constexpr int kErrorTagParsing = 50;
 
 // Metainstaller errors.
 inline constexpr int kErrorCreatingTempDir = 60;
 inline constexpr int kErrorUnpackingResource = 61;
+inline constexpr int kErrorInitializingBackupDir = 62;
 
 // Launcher errors.
 constexpr int kErrorGettingUpdaterPath = 71;
@@ -444,6 +453,8 @@ extern const char kSetupMutex[];
 
 inline constexpr int kUninstallPingReasonUninstalled = 0;
 inline constexpr int kUninstallPingReasonUserNotAnOwner = 1;
+inline constexpr int kUninstallPingReasonNoAppsRemain = 2;
+inline constexpr int kUninstallPingReasonNeverHadApps = 3;
 
 // The file downloaded to a temporary location could not be moved.
 inline constexpr int kErrorFailedToMoveDownloadedFile = 5;

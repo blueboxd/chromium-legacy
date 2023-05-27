@@ -10,7 +10,6 @@ import org.chromium.base.FeatureList;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 
 /** Utility class for price tracking. */
 public class PriceTrackingUtilities {
@@ -99,8 +98,7 @@ public class PriceTrackingUtilities {
      *         PriceDropNotificationManager#canPostNotification()}.
      */
     public static boolean isPriceAlertsMessageCardEnabled() {
-        return PriceTrackingFeatures.isPriceDropNotificationEligible()
-                && isImplicitSubscriptionsEnabled()
+        return isImplicitSubscriptionsEnabled()
                 && SHARED_PREFERENCES_MANAGER.readBoolean(
                         PRICE_ALERTS_MESSAGE_CARD, PriceTrackingFeatures.isPriceTrackingEnabled());
     }
@@ -127,15 +125,6 @@ public class PriceTrackingUtilities {
      */
     public static int getPriceAlertsMessageCardShowCount() {
         return SHARED_PREFERENCES_MANAGER.readInt(PRICE_ALERTS_MESSAGE_CARD_SHOW_COUNT, 0);
-    }
-
-    /**
-     * @return if the {@link TabModel} is eligible for price tracking. Not all tab models are - for
-     *         example incognito tabs are not eligible for price tracking.
-     */
-    public static boolean isTabModelPriceTrackingEligible(TabModel tabModel) {
-        // Incognito Tabs are not eligible for price tracking.
-        return !tabModel.getProfile().isOffTheRecord();
     }
 
     private static boolean isImplicitSubscriptionsEnabled() {

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
 namespace blink {
@@ -36,13 +37,10 @@ void ResourceCacheImpl::Bind(
     LocalFrame* frame,
     mojo::PendingReceiver<mojom::blink::ResourceCache> receiver) {
   DCHECK(frame);
-  auto* resource_cache = MakeGarbageCollected<ResourceCacheImpl>(
-      base::PassKey<ResourceCacheImpl>(), frame, std::move(receiver));
-  frame->SetResourceCacheImpl(resource_cache);
+  frame->BindResourceCache(std::move(receiver));
 }
 
 ResourceCacheImpl::ResourceCacheImpl(
-    base::PassKey<ResourceCacheImpl>,
     LocalFrame* frame,
     mojo::PendingReceiver<mojom::blink::ResourceCache> receiver)
     : frame_(frame),
@@ -50,6 +48,16 @@ ResourceCacheImpl::ResourceCacheImpl(
   DCHECK(frame_);
   receivers_.Add(std::move(receiver), frame->GetDocument()->GetTaskRunner(
                                           TaskType::kNetworkingUnfreezable));
+}
+
+void ResourceCacheImpl::AddReceiver(
+    mojo::PendingReceiver<mojom::blink::ResourceCache> receiver) {
+  receivers_.Add(std::move(receiver), frame_->GetDocument()->GetTaskRunner(
+                                          TaskType::kNetworkingUnfreezable));
+}
+
+void ResourceCacheImpl::ClearReceivers() {
+  receivers_.Clear();
 }
 
 void ResourceCacheImpl::Trace(Visitor* visitor) const {
@@ -69,7 +77,7 @@ void ResourceCacheImpl::Contains(const KURL& url, ContainsCallback callback) {
     return;
   }
 
-  result->is_in_cache = document->Fetcher()->CachedResource(url) != nullptr;
+  result->is_in_cache = MemoryCache::Get()->ResourceForURL(url) != nullptr;
   result->is_visible = document->IsPageVisible();
   result->lifecycle_state =
       ConvertFrameLifecycleState(context->ContextPauseState());

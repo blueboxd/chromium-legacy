@@ -15,7 +15,6 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.jank_tracker.DummyJankTracker;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.util.Batch;
@@ -89,7 +88,7 @@ public class TabUmaTest {
                 cta.getModalDialogManagerSupplier(), cta::getSnackbarManager,
                 cta.getBrowserControlsManager(), cta.getActivityTabProvider(),
                 cta.getLifecycleDispatcher(), cta.getWindowAndroid(),
-                cta::getLastUserInteractionTime, cta::hadWarmStart, new DummyJankTracker(),
+                cta::getLastUserInteractionTime, cta::hadWarmStart,
                 rootUiCoordinator.getToolbarManager()::getToolbar);
         // clang-format on
     }
@@ -159,12 +158,7 @@ public class TabUmaTest {
     public void testNoCreationStateNoTabUma() throws Exception {
         String switchFgStatus = "Tab.StatusWhenSwitchedBackToForeground";
 
-        String ageStartup = "Tabs.ForegroundTabAgeAtStartup";
-        String ageRestore = "Tab.AgeUponRestoreFromColdStart";
         int switchFgStatusOffset = getHistogram(switchFgStatus);
-        int ageStartupOffset = getHistogram(ageStartup);
-        int ageRestoreOffset = getHistogram(ageRestore);
-
         // Test a normal tab without an explicit creation state. UMA task doesn't start.
         Tab tab = TestThreadUtils.runOnUiThreadBlocking(() -> {
             return new TabBuilder()
@@ -180,8 +174,6 @@ public class TabUmaTest {
 
         // There should be no histogram changes.
         Assert.assertEquals(switchFgStatusOffset, getHistogram(switchFgStatus));
-        Assert.assertEquals(ageStartupOffset, getHistogram(ageStartup));
-        Assert.assertEquals(ageRestoreOffset, getHistogram(ageRestore));
     }
 
     /**

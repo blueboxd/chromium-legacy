@@ -20,14 +20,17 @@ namespace captions {
 
 // Static
 std::unique_ptr<CaptionBubbleController> CaptionBubbleController::Create(
-    PrefService* profile_prefs) {
-  return std::make_unique<CaptionBubbleControllerViews>(profile_prefs);
+    PrefService* profile_prefs,
+    const std::string& application_locale) {
+  return std::make_unique<CaptionBubbleControllerViews>(profile_prefs,
+                                                        application_locale);
 }
 
 CaptionBubbleControllerViews::CaptionBubbleControllerViews(
-    PrefService* profile_prefs) {
+    PrefService* profile_prefs,
+    const std::string& application_locale) {
   caption_bubble_ = new CaptionBubble(
-      profile_prefs,
+      profile_prefs, application_locale,
       base::BindOnce(&CaptionBubbleControllerViews::OnCaptionBubbleDestroyed,
                      base::Unretained(this)));
   caption_widget_ =
@@ -88,13 +91,18 @@ void CaptionBubbleControllerViews::OnAudioStreamEnd(
   if (!caption_bubble_)
     return;
 
-  CaptionBubbleModel* caption_bubble_model =
-      caption_bubble_models_[caption_bubble_context].get();
-  if (active_model_ == caption_bubble_model) {
+  auto caption_bubble_model_it =
+      caption_bubble_models_.find(caption_bubble_context);
+  if (caption_bubble_model_it == caption_bubble_models_.end()) {
+    return;
+  }
+  if (active_model_ != nullptr &&
+      active_model_->unique_id() ==
+          caption_bubble_model_it->second->unique_id()) {
     active_model_ = nullptr;
     caption_bubble_->SetModel(nullptr);
   }
-  caption_bubble_models_.erase(caption_bubble_context);
+  caption_bubble_models_.erase(caption_bubble_model_it);
 }
 
 void CaptionBubbleControllerViews::UpdateCaptionStyle(
@@ -104,7 +112,9 @@ void CaptionBubbleControllerViews::UpdateCaptionStyle(
 
 void CaptionBubbleControllerViews::SetActiveModel(
     CaptionBubbleContext* caption_bubble_context) {
-  if (!caption_bubble_models_.count(caption_bubble_context)) {
+  auto caption_bubble_model_it =
+      caption_bubble_models_.find(caption_bubble_context);
+  if (caption_bubble_model_it == caption_bubble_models_.end()) {
     auto caption_bubble_model = std::make_unique<CaptionBubbleModel>(
         caption_bubble_context,
         base::BindRepeating(
@@ -118,8 +128,10 @@ void CaptionBubbleControllerViews::SetActiveModel(
       caption_bubble_model->Close();
     }
 
-    caption_bubble_models_.emplace(caption_bubble_context,
-                                   std::move(caption_bubble_model));
+    caption_bubble_model_it =
+        caption_bubble_models_
+            .emplace(caption_bubble_context, std::move(caption_bubble_model))
+            .first;
   }
 
   if (!caption_bubble_session_observers_.count(
@@ -136,10 +148,10 @@ void CaptionBubbleControllerViews::SetActiveModel(
     }
   }
 
-  CaptionBubbleModel* caption_bubble_model =
-      caption_bubble_models_[caption_bubble_context].get();
-  if (active_model_ != caption_bubble_model) {
-    active_model_ = caption_bubble_model;
+  if (active_model_ == nullptr ||
+      active_model_->unique_id() !=
+          caption_bubble_model_it->second->unique_id()) {
+    active_model_ = caption_bubble_model_it->second.get();
     caption_bubble_->SetModel(active_model_);
   }
 }

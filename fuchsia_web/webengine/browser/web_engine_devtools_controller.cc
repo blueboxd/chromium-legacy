@@ -44,7 +44,8 @@ class DevToolsSocketFactory : public content::DevToolsSocketFactory {
     const int kTcpListenBackLog = 5;
     auto socket =
         std::make_unique<net::TCPServerSocket>(nullptr, net::NetLogSource());
-    int error = socket->Listen(ip_end_point_, kTcpListenBackLog);
+    int error = socket->Listen(ip_end_point_, kTcpListenBackLog,
+                               /*ipv6_only=*/absl::nullopt);
     if (error != net::OK) {
       LOG(WARNING) << "Failed to start the HTTP debugger service. "
                    << net::ErrorToString(error);
@@ -216,8 +217,10 @@ class DebugModeController : public WebEngineDevToolsController,
     return !user_debugging;
   }
   void OnFrameLoaded(content::WebContents* contents) override {
-    frame_loaded_ = true;
-    MaybeSendRemoteDebuggingCallbacks();
+    if (!frame_loaded_) {
+      frame_loaded_ = true;
+      MaybeSendRemoteDebuggingCallbacks();
+    }
   }
   void OnFrameDestroyed(content::WebContents* contents) override {}
   content::DevToolsAgentHost::List RemoteDebuggingTargets() override {

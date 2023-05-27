@@ -46,13 +46,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.MathUtils;
-import org.chromium.base.jank_tracker.JankMetricUMARecorder;
-import org.chromium.base.jank_tracker.JankMetricUMARecorderJni;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterAnnotations.UseMethodParameter;
@@ -67,7 +64,6 @@ import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.feed.FeedPlaceholderLayout;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -82,6 +78,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -130,9 +127,6 @@ public class InstantStartTabSwitcherTest {
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
-    @Mock
-    JankMetricUMARecorder.Natives mJankRecorderNativeMock;
-
     /**
      * {@link ParameterProvider} used for parameterized test that provides whether it's single tab
      * switcher or carousel tab switcher and whether last visited tab is a search result page.
@@ -152,7 +146,6 @@ public class InstantStartTabSwitcherTest {
 
     @Before
     public void setUp() {
-        mJniMocker.mock(JankMetricUMARecorderJni.TEST_HOOKS, mJankRecorderNativeMock);
         ReturnToChromeUtil.setSkipInitializationCheckForTesting(true);
     }
 
@@ -179,7 +172,7 @@ public class InstantStartTabSwitcherTest {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Assert.assertFalse(cta.isTablet());
         Assert.assertTrue(ChromeFeatureList.sInstantStart.isEnabled());
-        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+        Assert.assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
         Assert.assertTrue(StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue());
 
         mActivityTestRule.waitForActivityNativeInitializationComplete();
@@ -343,7 +336,7 @@ public class InstantStartTabSwitcherTest {
         StartSurfaceTestUtils.waitForTabModel(cta);
         TabUiTestHelper.verifyTabModelTabCount(cta, 1, 0);
         onView(allOf(withParent(
-                             withId(org.chromium.chrome.test.R.id.carousel_tab_switcher_container)),
+                             withId(org.chromium.chrome.test.R.id.tab_switcher_module_container)),
                        withId(org.chromium.chrome.test.R.id.tab_list_view)))
                 .check(matches(isDisplayed()));
         RecyclerView tabListView =

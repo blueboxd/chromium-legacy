@@ -59,11 +59,10 @@ enum class WebGPUPowerPreference : uint32_t {
 };
 
 enum class GrContextType : uint32_t {
-  kGL = 0,
-  kVulkan = 1,
-  kMetal = 2,
-  kDawn = 3,
-  kLast = kDawn,
+  kGL,      // Ganesh
+  kVulkan,  // Ganesh
+  kGraphiteDawn,
+  kGraphiteMetal,
 };
 
 enum class DawnBackendValidationLevel : uint32_t {
@@ -219,7 +218,7 @@ struct GPU_EXPORT GpuPreferences {
 
   // ===================================
   // Settings from //gpu/command_buffer/service/gpu_switches.h
-  // The type of the GrContext.
+  // The type of the GrContext or Graphite Context.
   GrContextType gr_context_type = GrContextType::kGL;
 
   // Use Vulkan for rasterization and display compositing.
@@ -243,10 +242,6 @@ struct GPU_EXPORT GpuPreferences {
   // synchronize with the CPU in order to free released memory immediately
   // when this limit is reached.
   uint32_t vulkan_sync_cpu_memory_limit = 0u;
-
-  // Use Metal for rasterization and Skia-based display compositing. Note that
-  // this is compatible with GL-based display compositing.
-  bool enable_metal = false;
 
   // ===================================
   // Settings from //cc/base/switches.h

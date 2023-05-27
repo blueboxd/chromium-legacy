@@ -44,6 +44,7 @@ bool VEAEncoder::OutputBuffer::IsValid() {
 }
 
 VEAEncoder::VEAEncoder(
+    scoped_refptr<base::SequencedTaskRunner> encoding_task_runner,
     const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
     const VideoTrackRecorder::OnErrorCB& on_error_cb,
     media::Bitrate::Mode bitrate_mode,
@@ -52,7 +53,8 @@ VEAEncoder::VEAEncoder(
     absl::optional<uint8_t> level,
     const gfx::Size& size,
     bool use_native_input)
-    : Encoder(on_encoded_video_cb,
+    : Encoder(std::move(encoding_task_runner),
+              on_encoded_video_cb,
               bits_per_second > 0
                   ? bits_per_second
                   : size.GetArea() * kVEADefaultBitratePerPixel),
@@ -125,10 +127,13 @@ void VEAEncoder::BitstreamBufferReady(
   UseOutputBitstreamBufferId(bitstream_buffer_id);
 }
 
-void VEAEncoder::NotifyError(media::VideoEncodeAccelerator::Error error) {
+void VEAEncoder::NotifyErrorStatus(const media::EncoderStatus& status) {
   DVLOG(3) << __func__;
-  UMA_HISTOGRAM_ENUMERATION("Media.MediaRecorder.VEAError", error,
-                            media::VideoEncodeAccelerator::kErrorMax + 1);
+  CHECK(!status.is_ok());
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.MediaRecorder.VEAError",
+      media::ConvertStatusToVideoEncodeAcceleratorError(status),
+      media::VideoEncodeAccelerator::kErrorMax + 1);
   on_error_cb_.Run();
   error_notified_ = true;
 }
@@ -228,7 +233,8 @@ void VEAEncoder::EncodeFrame(scoped_refptr<media::VideoFrame> frame,
         input_buffer->mapping.GetMemoryAsSpan<uint8_t>().data(),
         input_buffer->mapping.size(), frame->timestamp());
     if (!video_frame) {
-      NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+      NotifyErrorStatus({media::EncoderStatus::Codes::kEncoderFailedEncode,
+                         "Failed to create VideoFrame"});
       return;
     }
     libyuv::I420Copy(
@@ -246,7 +252,8 @@ void VEAEncoder::EncodeFrame(scoped_refptr<media::VideoFrame> frame,
         video_frame->stride(media::VideoFrame::kVPlane),
         input_visible_size_.width(), input_visible_size_.height());
     video_frame->BackWithSharedMemory(&input_buffer->region);
-    video_frame->AddDestructionObserver(base::BindPostTaskToCurrentDefault(
+    video_frame->AddDestructionObserver(base::BindPostTask(
+        encoding_task_runner_,
         WTF::BindOnce(&VEAEncoder::FrameFinished, weak_factory_.GetWeakPtr(),
                       std::move(input_buffer))));
   }
@@ -307,7 +314,8 @@ void VEAEncoder::ConfigureEncoder(const gfx::Size& size,
   if (!video_encoder_ ||
       !video_encoder_->Initialize(config, this,
                                   std::make_unique<media::NullMediaLog>())) {
-    NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
+    NotifyErrorStatus({media::EncoderStatus::Codes::kEncoderInitializationError,
+                       "Failed to initialize"});
   }
 }
 

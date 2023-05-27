@@ -5,7 +5,10 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
+#include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -27,11 +30,14 @@
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/test/integration_test_commands.h"
 #include "chrome/updater/test/integration_tests_impl.h"
+#include "chrome/updater/test/request_matcher.h"
 #include "chrome/updater/test/server.h"
 #include "chrome/updater/test_scope.h"
 #include "chrome/updater/update_service.h"
+#include "chrome/updater/updater_branding.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util/unittest_util.h"
+#include "chrome/updater/util/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -60,24 +66,22 @@ namespace {
 
 void ExpectNoUpdateSequence(ScopedServer* test_server,
                             const std::string& app_id) {
-  test_server->ExpectOnce(
-      {base::BindRepeating(
-          RequestMatcherRegex,
-          base::StringPrintf(R"(.*"appid":"%s".*)", app_id.c_str()))},
-      base::StringPrintf(")]}'\n"
-                         R"({"response":{)"
-                         R"(  "protocol":"3.1",)"
-                         R"(  "app":[)"
-                         R"(    {)"
-                         R"(      "appid":"%s",)"
-                         R"(      "status":"ok",)"
-                         R"(      "updatecheck":{)"
-                         R"(        "status":"noupdate")"
-                         R"(      })"
-                         R"(    })"
-                         R"(  ])"
-                         R"(}})",
-                         app_id.c_str()));
+  test_server->ExpectOnce({request::GetContentMatcher({base::StringPrintf(
+                              R"(.*"appid":"%s".*)", app_id.c_str())})},
+                          base::StringPrintf(")]}'\n"
+                                             R"({"response":{)"
+                                             R"(  "protocol":"3.1",)"
+                                             R"(  "app":[)"
+                                             R"(    {)"
+                                             R"(      "appid":"%s",)"
+                                             R"(      "status":"ok",)"
+                                             R"(      "updatecheck":{)"
+                                             R"(        "status":"noupdate")"
+                                             R"(      })"
+                                             R"(    })"
+                                             R"(  ])"
+                                             R"(}})",
+                                             app_id.c_str()));
 }
 
 #endif  // BUILDFLAG(IS_WIN) || !defined(COMPONENT_BUILD)
@@ -91,14 +95,19 @@ class IntegrationTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
+#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)
+    GTEST_SKIP() << "Integration tests disabled on Arm64 Win";
+#else
     ASSERT_NO_FATAL_FAILURE(CleanProcesses());
     ASSERT_TRUE(WaitForUpdaterExit());
     ASSERT_NO_FATAL_FAILURE(Clean());
     ASSERT_NO_FATAL_FAILURE(ExpectClean());
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
     // SetUpTestService();
-    ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234")));
-
+    ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234"),
+                                          GURL("http://localhost:1235"),
+                                          GURL("http://localhost:1236")));
+#endif
 #if BUILDFLAG(IS_LINUX)
     // On LUCI the XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS environment
     // variables may not be set. These are required for systemctl to connect to
@@ -118,10 +127,15 @@ class IntegrationTest : public ::testing::Test {
   }
 
   void TearDown() override {
+#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)
+    GTEST_SKIP() << "Integration tests disabled on Arm64 Win";
+#else
     ExitTestMode();
     if (!HasFailure()) {
       ExpectClean();
     }
+    ExpectNoCrashes();
+
     PrintLog();
 
     // TODO(crbug.com/1159189): Use a specific test output directory
@@ -134,7 +148,10 @@ class IntegrationTest : public ::testing::Test {
     // Updater process must not be running for `Clean()` to succeed.
     ASSERT_TRUE(WaitForUpdaterExit());
     Clean();
+#endif
   }
+
+  void ExpectNoCrashes() { test_commands_->ExpectNoCrashes(); }
 
   void CopyLog() { test_commands_->CopyLog(); }
 
@@ -150,6 +167,7 @@ class IntegrationTest : public ::testing::Test {
 
   void Uninstall() {
     ASSERT_TRUE(WaitForUpdaterExit());
+    ExpectNoCrashes();
     PrintLog();
     CopyLog();
     test_commands_->Uninstall();
@@ -164,7 +182,12 @@ class IntegrationTest : public ::testing::Test {
 
   void ExpectClean() { test_commands_->ExpectClean(); }
 
-  void EnterTestMode(const GURL& url) { test_commands_->EnterTestMode(url); }
+  void EnterTestMode(const GURL& update_url,
+                     const GURL& crash_upload_url,
+                     const GURL& device_management_url) {
+    test_commands_->EnterTestMode(update_url, crash_upload_url,
+                                  device_management_url);
+  }
 
   void ExitTestMode() { test_commands_->ExitTestMode(); }
 
@@ -288,6 +311,8 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->RunWakeAll();
   }
 
+  void RunCrashMe() { test_commands_->RunCrashMe(); }
+
   void RunWakeActive(int exit_code) {
     ASSERT_TRUE(WaitForUpdaterExit());
     test_commands_->RunWakeActive(exit_code);
@@ -335,6 +360,10 @@ class IntegrationTest : public ::testing::Test {
                                               from_version, to_version);
   }
 
+  void ExpectUninstallPing(ScopedServer* test_server) {
+    test_commands_->ExpectUninstallPing(test_server);
+  }
+
   void ExpectUpdateSequence(ScopedServer* test_server,
                             const std::string& app_id,
                             const std::string& install_data_index,
@@ -372,6 +401,10 @@ class IntegrationTest : public ::testing::Test {
   }
 
   void SetupFakeLegacyUpdater() { test_commands_->SetupFakeLegacyUpdater(); }
+
+#if BUILDFLAG(IS_WIN)
+  void RunFakeLegacyUpdater() { test_commands_->RunFakeLegacyUpdater(); }
+#endif  // BUILDFLAG(IS_WIN)
 
   void ExpectLegacyUpdaterMigrated() {
     test_commands_->ExpectLegacyUpdaterMigrated();
@@ -420,9 +453,6 @@ TEST_F(IntegrationTest, Install) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-// TODO(crbug.com/1398845) Enable test once version-skewed updater is available
-// for unbranded Linux.
-#if !(BUILDFLAG(IS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING))
 TEST_F(IntegrationTest, OverinstallWorking) {
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   ASSERT_TRUE(WaitForUpdaterExit());
@@ -457,7 +487,6 @@ TEST_F(IntegrationTest, OverinstallBroken) {
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
-#endif  // !(BUILDFLAG(IS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING))
 
 TEST_F(IntegrationTest, SelfUninstallOutdatedUpdater) {
   ASSERT_NO_FATAL_FAILURE(Install());
@@ -503,14 +532,14 @@ TEST_F(IntegrationTest, QualifyUpdater) {
 
   // This instance is now qualified and should activate itself and check itself
   // for updates on the next check.
-  test_server.ExpectOnce(
-      {base::BindRepeating(RequestMatcherRegex,
-                           base::StringPrintf(".*%s.*", kUpdaterAppId))},
-      ")]}'\n");
+  test_server.ExpectOnce({request::GetContentMatcher(
+                             {base::StringPrintf(".*%s.*", kUpdaterAppId)})},
+                         ")]}'\n");
   ASSERT_NO_FATAL_FAILURE(RunWake(0));
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectVersionActive(kUpdaterVersion));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -527,6 +556,7 @@ TEST_F(IntegrationTest, SelfUpdate) {
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectAppVersion(kUpdaterAppId, next_version));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -543,6 +573,7 @@ TEST_F(IntegrationTest, SelfUpdateWithWakeAll) {
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectAppVersion(kUpdaterAppId, next_version));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -568,9 +599,8 @@ TEST_F(IntegrationTest, ReportsActive) {
   ASSERT_NO_FATAL_FAILURE(ExpectActive("test1"));
   ASSERT_NO_FATAL_FAILURE(ExpectNotActive("test2"));
   test_server.ExpectOnce(
-      {base::BindRepeating(
-          RequestMatcherRegex,
-          R"(.*"appid":"test1","enabled":true,"ping":{"a":-2,.*)")},
+      {request::GetContentMatcher(
+          {R"(.*"appid":"test1","enabled":true,"ping":{"a":-2,.*)"})},
       R"()]}')"
       "\n"
       R"({"response":{"protocol":"3.1","daystart":{"elapsed_)"
@@ -583,6 +613,7 @@ TEST_F(IntegrationTest, ReportsActive) {
   ASSERT_NO_FATAL_FAILURE(ExpectNotActive("test1"));
   ASSERT_NO_FATAL_FAILURE(ExpectNotActive("test2"));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -621,6 +652,7 @@ TEST_F(IntegrationTest, CheckForUpdate) {
       base::Version("0.1"), base::Version("1")));
   ASSERT_NO_FATAL_FAILURE(CheckForUpdate(kAppId));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -648,6 +680,7 @@ TEST_F(IntegrationTest, UpdateApp) {
   ASSERT_NO_FATAL_FAILURE(ExpectLastChecked());
   ASSERT_NO_FATAL_FAILURE(ExpectLastStarted());
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -665,6 +698,7 @@ TEST_F(IntegrationTest, InstallUpdaterAndApp) {
 
   ASSERT_NO_FATAL_FAILURE(ExpectAppVersion(kAppId, v1));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -681,6 +715,7 @@ TEST_F(IntegrationTest, Handoff) {
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectAppVersion(kAppId, v1));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -708,6 +743,7 @@ TEST_F(IntegrationTest, ForceInstallApp) {
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectAppVersion(kAppId, v1));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 #endif  // BUILDFLAG(IS_WIN)
@@ -721,6 +757,7 @@ TEST_F(IntegrationTest, MultipleWakesOneNetRequest) {
   ASSERT_NO_FATAL_FAILURE(RunWake(0));
   ASSERT_NO_FATAL_FAILURE(RunWake(0));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -733,6 +770,7 @@ TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
   ASSERT_NO_FATAL_FAILURE(ExpectNoUpdateSequence(&test_server, kUpdaterAppId));
   ASSERT_NO_FATAL_FAILURE(UpdateAll());
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -778,6 +816,7 @@ TEST_F(IntegrationTest, LegacyPolicyStatus) {
 
   ASSERT_NO_FATAL_FAILURE(ExpectLegacyPolicyStatusSucceeds());
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -882,9 +921,6 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if !defined(COMPONENT_BUILD)
-// TODO(crbug.com/1398845) Enable test once version-skewed updater is available
-// for unbranded Linux.
-#if !BUILDFLAG(IS_LINUX) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // TODO(crbug.com/1097297) Enable these tests once the `Brand the updater and
 // qualification app ids` change is available on CIPD.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -911,6 +947,7 @@ TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ASSERT_TRUE(WaitForUpdaterExit());
 
   ASSERT_NO_FATAL_FAILURE(ExpectVersionActive(kUpdaterVersion));
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -938,6 +975,7 @@ TEST_F(IntegrationTest, UninstallIfUnusedSelfAndOldReal) {
 
   ASSERT_NO_FATAL_FAILURE(ExpectVersionActive(kUpdaterVersion));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(SetServerStarts(24));
   ASSERT_NO_FATAL_FAILURE(RunWake(0));
   ASSERT_TRUE(WaitForUpdaterExit());
@@ -967,7 +1005,6 @@ TEST_F(IntegrationTest, InstallLowerVersion) {
 #endif  // IS_WIN
 }
 
-#endif  // !BUILDFLAG(IS_LINUX) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif
 #endif
 
@@ -1002,19 +1039,18 @@ TEST_F(IntegrationTest, SameVersionUpdate) {
       R"(}})",
       app_id.c_str());
   test_server.ExpectOnce(
-      {base::BindRepeating(
-          RequestMatcherRegex,
-          R"(.*"updatecheck":{"sameversionupdate":true},"version":"0.1"}.*)")},
+      {request::GetContentMatcher(
+          {R"("updatecheck":{"sameversionupdate":true},"version":"0.1"}.*)"})},
       response);
   ASSERT_NO_FATAL_FAILURE(CallServiceUpdate(
       app_id, "", UpdateService::PolicySameVersionUpdate::kAllowed));
 
-  test_server.ExpectOnce(
-      {base::BindRepeating(RequestMatcherRegex,
-                           R"(.*"updatecheck":{},"version":"0.1"}.*)")},
-      response);
+  test_server.ExpectOnce({request::GetContentMatcher(
+                             {R"(.*"updatecheck":{},"version":"0.1"}.*)"})},
+                         response);
   ASSERT_NO_FATAL_FAILURE(CallServiceUpdate(
       app_id, "", UpdateService::PolicySameVersionUpdate::kNotAllowed));
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -1045,22 +1081,24 @@ TEST_F(IntegrationTest, InstallDataIndex) {
       app_id.c_str());
 
   test_server.ExpectOnce(
-      {base::BindRepeating(
-          RequestMatcherRegex,
-          base::StringPrintf(
-              R"(.*"data":\[{"index":"%s","name":"install"}],.*)",
-              install_data_index.c_str()))},
+      {request::GetContentMatcher({base::StringPrintf(
+          R"(.*"data":\[{"index":"%s","name":"install"}],.*)",
+          install_data_index.c_str())})},
       response);
 
   ASSERT_NO_FATAL_FAILURE(
       CallServiceUpdate(app_id, install_data_index,
                         UpdateService::PolicySameVersionUpdate::kAllowed));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
 TEST_F(IntegrationTest, MigrateLegacyUpdater) {
   ASSERT_NO_FATAL_FAILURE(SetupFakeLegacyUpdater());
+#if BUILDFLAG(IS_WIN)
+  ASSERT_NO_FATAL_FAILURE(RunFakeLegacyUpdater());
+#endif  // BUILDFLAG(IS_WIN)
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
@@ -1102,6 +1140,60 @@ TEST_F(IntegrationTest, LegacySilentOfflineInstall) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
+TEST_F(IntegrationTest, CrashUsageStatsEnabled) {
+#if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
+  GTEST_SKIP() << "Crash tests disabled for Win ASAN.";
+#else
+  ScopedServer test_server(test_commands_);
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  const std::string response;
+  test_server.ExpectOnce(
+      {
+          request::GetPathMatcher(
+              base::StringPrintf(R"(%s\?product=%s&version=%s&guid=.*)",
+                                 test_server.crash_report_path().c_str(),
+                                 CRASH_PRODUCT_NAME, kUpdaterVersion)),
+          request::GetHeaderMatcher("User-Agent", R"(Crashpad/.*)"),
+          request::GetMultipartContentMatcher({
+              {"LOG_FATAL",  // Verify the last crash stack frame.
+               std::vector<std::string>(
+                   {R"(Check failed: \!command_line->)"
+                    R"(HasSwitch\(kCrashMeSwitch\). --crash-me was used)"})},
+              {"guid", std::vector<std::string>({})},  // Crash guid.
+              {"process_type", std::vector<std::string>({R"(updater)"})},
+              {"prod", std::vector<std::string>({CRASH_PRODUCT_NAME})},
+              {"ver", std::vector<std::string>({kUpdaterVersion})},
+              {"upload_file_minidump",  // Dump file name and its content.
+               std::vector<std::string>(
+                   {R"(filename=".*dmp")",
+                    R"(Content-Type: application/octet-stream)", R"(MDMP)"})},
+          }),
+      },
+      response);
+  ExpectUninstallPing(&test_server);
+  RunCrashMe();
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  // Delete the dmp files generated by this test, so `ExpectNoCrashes` won't
+  // complain at TearDown.
+  absl::optional<base::FilePath> database_path(
+      GetCrashDatabasePath(GetTestScope()));
+  if (database_path || base::PathExists(*database_path)) {
+    base::FileEnumerator it(*database_path, true, base::FileEnumerator::FILES,
+                            FILE_PATH_LITERAL("*.dmp"),
+                            base::FileEnumerator::FolderSearchPolicy::ALL);
+    for (base::FilePath name = it.Next(); !name.empty(); name = it.Next()) {
+      VLOG(0) << "Deleting file at: " << name;
+      EXPECT_TRUE(base::DeleteFile(name));
+    }
+  }
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+#endif
+}
+
 #if BUILDFLAG(IS_WIN)
 class IntegrationTestLegacyUpdate3Web : public IntegrationTest {
  public:
@@ -1118,6 +1210,7 @@ class IntegrationTestLegacyUpdate3Web : public IntegrationTest {
   }
 
   void TearDown() override {
+    ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(test_server_.get()));
     ASSERT_NO_FATAL_FAILURE(Uninstall());
 
     IntegrationTest::TearDown();
@@ -1135,6 +1228,7 @@ TEST_F(IntegrationTestLegacyUpdate3Web, NoUpdate) {
 }
 
 TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicyManual) {
+  ASSERT_TRUE(WaitForUpdaterExit());
   base::Value::Dict group_policies;
   group_policies.Set("Updatetest1", kPolicyAutomaticUpdatesOnly);
   ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
@@ -1144,6 +1238,7 @@ TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicyManual) {
 }
 
 TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicy) {
+  ASSERT_TRUE(WaitForUpdaterExit());
   base::Value::Dict group_policies;
   group_policies.Set("Updatetest1", kPolicyDisabled);
   ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));

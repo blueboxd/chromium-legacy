@@ -17,11 +17,6 @@ TestPersonalDataManager::TestPersonalDataManager()
 
 TestPersonalDataManager::~TestPersonalDataManager() = default;
 
-void TestPersonalDataManager::OnSyncServiceInitialized(
-    syncer::SyncService* sync_service) {
-  sync_service_initialized_ = true;
-}
-
 AutofillSyncSigninState TestPersonalDataManager::GetSyncSigninState() const {
   return sync_and_signin_state_;
 }
@@ -93,6 +88,12 @@ void TestPersonalDataManager::RemoveByGUID(const std::string& guid) {
     profiles.erase(base::ranges::find(profiles, profile,
                                       &std::unique_ptr<AutofillProfile>::get));
   }
+}
+
+bool TestPersonalDataManager::IsEligibleForAddressAccountStorage() const {
+  return eligible_for_account_storage_.has_value()
+             ? *eligible_for_account_storage_
+             : PersonalDataManager::IsEligibleForAddressAccountStorage();
 }
 
 void TestPersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
@@ -289,18 +290,6 @@ std::string TestPersonalDataManager::CountryCodeForCurrentTimezone() const {
 void TestPersonalDataManager::ClearAllLocalData() {
   ClearProfiles();
   local_credit_cards_.clear();
-}
-
-CreditCard* TestPersonalDataManager::GetCreditCardByNumber(
-    const std::string& number) {
-  CreditCard numbered_card;
-  numbered_card.SetNumber(base::UTF8ToUTF16(number));
-  for (CreditCard* credit_card : GetCreditCards()) {
-    DCHECK(credit_card);
-    if (credit_card->HasSameNumberAs(numbered_card))
-      return credit_card;
-  }
-  return nullptr;
 }
 
 bool TestPersonalDataManager::IsDataLoaded() const {

@@ -55,6 +55,9 @@ struct InProgressCluster {
   // The vector of visits that have not been persisted yet. Note that each entry
   // only contains the minimum required to persist a cluster visit.
   std::vector<history::ClusterVisit> unpersisted_visits;
+  // Whether this cluster was meant to be cleaned up but is being held for
+  // persistence.
+  bool cleaned_up = false;
 };
 
 struct CachedEngagementScore {
@@ -121,6 +124,9 @@ class ContextClustererHistoryServiceObserver
   // Gets the site engagement score for `normalized_url`.
   float GetEngagementScore(const GURL& normalized_url);
 
+  // Gets the URL for display for `normalized_url`.
+  std::u16string GetURLForDisplay(const GURL& normalized_url);
+
   // Overrides `clock_` for testing.
   void OverrideClockForTesting(const base::Clock* clock);
 
@@ -163,6 +169,9 @@ class ContextClustererHistoryServiceObserver
   // Should only be null for tests.
   raw_ptr<site_engagement::SiteEngagementScoreProvider>
       engagement_score_provider_;
+
+  // URL to URL for display mapping.
+  base::HashingLRUCache<std::string, std::u16string> url_for_display_cache_;
 
   // Used to schedule the clean up of clusters.
   raw_ptr<const base::Clock> clock_;

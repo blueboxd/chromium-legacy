@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Sertifikat autentikasi ditolak secara lokal</translation>
 <translation id="1775381402323441512">Info video</translation>
 <translation id="180035236176489073">Anda harus online untuk mengakses file ini.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Ekstensi dengan ID}other{Ekstensi dengan ID}}</translation>
 <translation id="1807938677607439181">Semua file</translation>
 <translation id="1810764548349082891">Tidak ada pratinjau yang tersedia</translation>
 <translation id="1812302367230252929">Transliterasi Amhar</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Entri kecocokan nama alternatif subjek tidak valid</translation>
 <translation id="1838709767668011582">Situs Google</translation>
 <translation id="1853795129690976061">Folder ini dibagikan ke Linux</translation>
-<translation id="1859422890169495746">Chromebook ini</translation>
 <translation id="1864756863218646478">File tidak dapat ditemukan.</translation>
 <translation id="1884013283844450420">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Sambungkan</translation>
 <translation id="1920670151694390848">Transliterasi Malayalam</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planet</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> telah dikeluarkan.</translation>
 <translation id="2307462900900812319">Konfigurasi jaringan</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Ekstensi dengan ID <ph name="BEGIN_LIST" /><ph name="END_LIST" /> tidak dapat ditemukan. Hubungi administrator Anda.}other{Ekstensi dengan ID <ph name="BEGIN_LIST" /><ph name="END_LIST" /> tidak dapat ditemukan. Hubungi administrator Anda.}}</translation>
 <translation id="2325650632570794183">Jenis file ini tidak didukung. Kunjungi Chrome Webstore untuk menemukan aplikasi yang dapat membuka jenis file ini.</translation>
 <translation id="2326539130272988168">Bulgaria</translation>
 <translation id="2337715497728194187">Bagikan ke Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Tidak aman</translation>
 <translation id="3291218047831493686">Hubungkan ke jaringan ini untuk mengubah setelan kunci SIM</translation>
 <translation id="3293023191599135697">Jaringan WEP tidak didukung</translation>
+<translation id="3295006446256079333">Volume ini</translation>
 <translation id="3295357220137379386">Perangkat sibuk</translation>
 <translation id="3296763833017966289">Georgian</translation>
 <translation id="3307875152560779385">Ukraina</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="485316830061041779">Jerman</translation>
+<translation id="4862885579661885411">Setelan File</translation>
 <translation id="4867079195717347957">Klik untuk mengurutkan kolom dari atas ke bawah.</translation>
 <translation id="4867297348137739678">Minggu lalu</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byte</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">Menyalin <ph name="NUMBER_OF_ITEMS" /> item...</translation>
 <translation id="7375951387215729722">Daftar file diurutkan berdasarkan <ph name="COLUMN_NAME" /> dari bawah ke atas.</translation>
 <translation id="7377161162143020057">Penyalinan file ini diblokir oleh kebijakan administrator</translation>
-<translation id="7392500733467492920">tidak dapat ditemukan. Hubungi administrator Anda.</translation>
 <translation id="7402503521691663770">Perangkat ChromeOS Flex</translation>
 <translation id="7408870451288633753">Ceko</translation>
 <translation id="7417453074306512035">Keyboard Ethiopia</translation>

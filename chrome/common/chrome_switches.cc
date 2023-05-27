@@ -560,6 +560,11 @@ const char kStartMaximized[] = "start-maximized";
 // Starts the stack sampling profiler in the child process.
 const char kStartStackProfiler[] = "start-stack-profiler";
 
+// Starts the stack sampling profiler in the child process with only periodic
+// profiling enabled, i.e. no startup profiling.
+const char kStartStackProfilerPeriodicOnly[] =
+    "start-stack-profiler-periodic-only";
+
 // Browser test mode for the |kStartStackProfiler| switch. Limits the profile
 // durations to be significantly less than the test timeout. On ChromeOS,
 // forces the stack sampling profiler to run on all processes as well.
@@ -584,6 +589,9 @@ const char kSystemLogUploadFrequency[] = "system-log-upload-frequency";
 // tab. It should only be used for tests.
 const char kThisTabCaptureAutoAccept[] = "auto-accept-this-tab-capture";
 const char kThisTabCaptureAutoReject[] = "auto-reject-this-tab-capture";
+
+// Custom delay for memory log. This should be used only for testing purpose.
+const char kTestMemoryLogDelayInMinutes[] = "test-memory-log-delay-in-minutes";
 
 // Passes the name of the current running automated test to Chrome.
 const char kTestName[] = "test-name";

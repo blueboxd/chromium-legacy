@@ -9,15 +9,17 @@
 
 #include "base/component_export.h"
 #include "base/containers/queue.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "chromeos/ash/components/network/hotspot_capabilities_provider.h"
 #include "chromeos/ash/components/network/hotspot_state_handler.h"
 #include "chromeos/ash/components/network/technology_state_controller.h"
-#include "chromeos/ash/services/hotspot_config/public/cpp/hotspot_enabled_state_provider.h"
 #include "chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom-forward.h"
 
 namespace ash {
+
+class HotspotFeatureUsageMetrics;
 
 // Handles enable or disable hotspot.
 //
@@ -29,15 +31,24 @@ namespace ash {
 // Enable or disable requests are queued and executes one request at a time in
 // order.
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotController
-    : public TechnologyStateController::HotspotOperationDelegate,
-      public hotspot_config::HotspotEnabledStateProvider {
+    : public TechnologyStateController::HotspotOperationDelegate {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    ~Observer() override = default;
+
+    virtual void OnHotspotTurnedOn(bool wifi_turned_off) = 0;
+
+    virtual void OnHotspotTurnedOff(
+        hotspot_config::mojom::DisableReason disable_reason) = 0;
+  };
   HotspotController();
   HotspotController(const HotspotController&) = delete;
   HotspotController& operator=(const HotspotController&) = delete;
-  ~HotspotController() override;
+  virtual ~HotspotController();
 
   void Init(HotspotCapabilitiesProvider* hotspot_capabilities_provider,
+            HotspotFeatureUsageMetrics* hotspot_feature_usage_metrics,
             HotspotStateHandler* hotspot_state_handler,
             TechnologyStateController* technolog_state_controller);
 
@@ -58,8 +69,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotController
   // Set whether Hotspot should be allowed/disallowed by policy.
   void SetPolicyAllowHotspot(bool allow_hotspot);
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+  bool HasObserver(Observer* observer) const;
+
  private:
   friend class HotspotControllerTest;
+  friend class HotspotEnabledStateNotifierTest;
 
   // Represents hotspot enable or disable control request parameters. Requests
   // are queued and processed one at a time.
@@ -104,14 +120,23 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotController
   bool IsCurrentRequestAlreadyFulfilled();
   void CompleteCurrentRequest(
       hotspot_config::mojom::HotspotControlResult result);
+  void NotifyHotspotTurnedOn(bool wifi_turned_off);
+  void NotifyHotspotTurnedOff(
+      hotspot_config::mojom::DisableReason disable_reason);
 
   std::unique_ptr<HotspotControlRequest> current_request_;
   base::queue<std::unique_ptr<HotspotControlRequest>> queued_requests_;
   bool allow_hotspot_ = true;
-  HotspotCapabilitiesProvider* hotspot_capabilities_provider_ = nullptr;
-  HotspotStateHandler* hotspot_state_handler_ = nullptr;
-  TechnologyStateController* technology_state_controller_ = nullptr;
+  raw_ptr<HotspotCapabilitiesProvider, ExperimentalAsh>
+      hotspot_capabilities_provider_ = nullptr;
+  raw_ptr<HotspotFeatureUsageMetrics, ExperimentalAsh>
+      hotspot_feature_usage_metrics_ = nullptr;
+  raw_ptr<HotspotStateHandler, ExperimentalAsh> hotspot_state_handler_ =
+      nullptr;
+  raw_ptr<TechnologyStateController, ExperimentalAsh>
+      technology_state_controller_ = nullptr;
 
+  base::ObserverList<Observer> observer_list_;
   base::WeakPtrFactory<HotspotController> weak_ptr_factory_{this};
 };
 

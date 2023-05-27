@@ -35,7 +35,6 @@
 #include "third_party/blink/renderer/core/editing/ng_flat_tree_shorthands.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
-#include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_rect.h"
@@ -97,34 +96,35 @@ LocalCaretRect LocalCaretRectOfPositionTemplate(
   if (!layout_object)
     return LocalCaretRect();
 
+  // If the `position` is for `LayoutText` or before/after inline boxes, let
+  // `ComputeLocalCaretRect` compute.
   const PositionWithAffinityTemplate<Strategy>& adjusted =
       ComputeInlineAdjustedPosition(position, rule);
-
   if (adjusted.IsNotNull()) {
     if (auto caret_position =
             ComputeNGCaretPosition(AdjustForNGCaretPosition(adjusted)))
       return ComputeLocalCaretRect(caret_position);
+  }
 
-    const InlineBoxPosition& box_position =
-        ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted);
-
-    if (box_position.inline_box) {
-      const LayoutObject* box_layout_object =
-          LineLayoutAPIShim::LayoutObjectFrom(
-              box_position.inline_box->GetLineLayoutItem());
-      return LocalCaretRect(
-          box_layout_object,
-          box_layout_object->PhysicalLocalCaretRect(
-              box_position.inline_box, box_position.offset_in_box,
-              extra_width_to_end_of_line));
+  // If the caret is in an empty `LayoutBlockFlow`, and if it is block-
+  // fragmented, set the first fragment to prevent rendering multiple carets in
+  // following fragments.
+  const NGPhysicalBoxFragment* root_box_fragment = nullptr;
+  if (position.GetPosition().IsOffsetInAnchor() &&
+      !position.GetPosition().OffsetInContainerNode()) {
+    if (const auto* block_flow = DynamicTo<LayoutBlockFlow>(layout_object)) {
+      if (!block_flow->FirstChild() &&
+          block_flow->PhysicalFragmentCount() >= 2) {
+        root_box_fragment = block_flow->GetPhysicalFragment(0);
+      }
     }
   }
 
-  // DeleteSelectionCommandTest.deleteListFromTable goes here.
-  return LocalCaretRect(
-      layout_object, layout_object->PhysicalLocalCaretRect(
-                         nullptr, position.GetPosition().ComputeEditingOffset(),
-                         extra_width_to_end_of_line));
+  return LocalCaretRect(layout_object,
+                        layout_object->PhysicalLocalCaretRect(
+                            position.GetPosition().ComputeEditingOffset(),
+                            extra_width_to_end_of_line),
+                        root_box_fragment);
 }
 
 // This function was added because the caret rect that is calculated by
@@ -147,30 +147,7 @@ LocalCaretRect LocalSelectionRectOfPositionTemplate(
           ComputeNGCaretPosition(AdjustForNGCaretPosition(adjusted)))
     return ComputeLocalSelectionRect(caret_position);
 
-  const InlineBoxPosition& box_position =
-      ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted);
-
-  if (!box_position.inline_box)
-    return LocalCaretRect();
-
-  LayoutObject* const layout_object = LineLayoutAPIShim::LayoutObjectFrom(
-      box_position.inline_box->GetLineLayoutItem());
-
-  LayoutRect rect = layout_object->LocalCaretRect(box_position.inline_box,
-                                                  box_position.offset_in_box);
-
-  if (rect.IsEmpty())
-    return LocalCaretRect();
-
-  const InlineBox* const box = box_position.inline_box;
-  if (layout_object->IsHorizontalWritingMode()) {
-    rect.SetY(box->Root().SelectionTop());
-    rect.SetHeight(box->Root().SelectionHeight());
-  } else {
-    rect.SetX(box->Root().SelectionTop());
-    rect.SetHeight(box->Root().SelectionHeight());
-  }
-  return LocalCaretRect(layout_object, layout_object->FlipForWritingMode(rect));
+  return LocalCaretRect();
 }
 
 }  // namespace

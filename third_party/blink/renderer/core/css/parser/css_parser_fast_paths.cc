@@ -1156,8 +1156,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kUpright;
     case CSSPropertyID::kTextOverflow:
       return value_id == CSSValueID::kClip || value_id == CSSValueID::kEllipsis;
-    case CSSPropertyID::kTopLayer:
-      return value_id == CSSValueID::kNone || value_id == CSSValueID::kBrowser;
+    case CSSPropertyID::kOverlay:
+      return value_id == CSSValueID::kNone || value_id == CSSValueID::kAuto;
     case CSSPropertyID::kTextRendering:
       return value_id == CSSValueID::kAuto ||
              value_id == CSSValueID::kOptimizespeed ||
@@ -1334,7 +1334,12 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kSquare || value_id == CSSValueID::kNone;
     case CSSPropertyID::kTextWrap:
       DCHECK(RuntimeEnabledFeatures::CSSTextWrapEnabled());
-      return value_id == CSSValueID::kWrap || value_id == CSSValueID::kBalance;
+      if (!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()) {
+        return value_id == CSSValueID::kWrap ||
+               value_id == CSSValueID::kBalance;
+      }
+      return value_id == CSSValueID::kWrap || value_id == CSSValueID::kNowrap ||
+             value_id == CSSValueID::kBalance;
     case CSSPropertyID::kTransformBox:
       return value_id == CSSValueID::kFillBox ||
              value_id == CSSValueID::kViewBox;
@@ -1367,10 +1372,17 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kTbRl || value_id == CSSValueID::kLr ||
              value_id == CSSValueID::kRl || value_id == CSSValueID::kTb;
     case CSSPropertyID::kWhiteSpace:
+      DCHECK(!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled());
       return value_id == CSSValueID::kNormal || value_id == CSSValueID::kPre ||
              value_id == CSSValueID::kPreWrap ||
              value_id == CSSValueID::kPreLine ||
              value_id == CSSValueID::kNowrap ||
+             value_id == CSSValueID::kBreakSpaces;
+    case CSSPropertyID::kWhiteSpaceCollapse:
+      DCHECK(RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled());
+      return value_id == CSSValueID::kCollapse ||
+             value_id == CSSValueID::kPreserve ||
+             value_id == CSSValueID::kPreserveBreaks ||
              value_id == CSSValueID::kBreakSpaces;
     case CSSPropertyID::kWordBreak:
       return value_id == CSSValueID::kNormal ||
@@ -1392,9 +1404,8 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kNormal || value_id == CSSValueID::kNone;
     case CSSPropertyID::kTextBoxTrim:
       DCHECK(RuntimeEnabledFeatures::CSSTextBoxTrimEnabled());
-      return value_id == CSSValueID::kNormal ||
-             value_id == CSSValueID::kStart || value_id == CSSValueID::kEnd ||
-             value_id == CSSValueID::kBoth;
+      return value_id == CSSValueID::kNone || value_id == CSSValueID::kStart ||
+             value_id == CSSValueID::kEnd || value_id == CSSValueID::kBoth;
     default:
       NOTREACHED();
       return false;
@@ -1512,13 +1523,14 @@ CSSBitset CSSParserFastPaths::handled_by_keyword_fast_paths_properties_{{
     CSSPropertyID::kWebkitUserModify,
     CSSPropertyID::kUserSelect,
     CSSPropertyID::kWebkitWritingMode,
-    CSSPropertyID::kWhiteSpace,
+    CSSPropertyID::kWhiteSpace,  // TODO(crbug.com/1417543): Remove when done.
+    CSSPropertyID::kWhiteSpaceCollapse,
     CSSPropertyID::kWordBreak,
     CSSPropertyID::kWritingMode,
     CSSPropertyID::kScrollbarWidth,
     CSSPropertyID::kScrollSnapStop,
     CSSPropertyID::kOriginTrialTestProperty,
-    CSSPropertyID::kTopLayer,
+    CSSPropertyID::kOverlay,
     CSSPropertyID::kTextBoxTrim,
 }};
 

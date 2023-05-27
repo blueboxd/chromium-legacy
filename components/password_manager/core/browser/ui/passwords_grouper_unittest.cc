@@ -25,13 +25,14 @@ namespace password_manager {
 
 namespace {
 
-PasswordForm CreateForm(std::string sinon_realm,
+PasswordForm CreateForm(std::string signon_realm,
                         std::u16string username = u"username",
                         std::u16string password = u"password") {
   PasswordForm form;
-  form.signon_realm = sinon_realm;
+  form.signon_realm = signon_realm;
   form.username_value = username;
   form.password_value = password;
+  form.url = GURL(signon_realm);
   return form;
 }
 
@@ -291,13 +292,11 @@ TEST_F(PasswordsGrouperTest, MainDomainComputationUsesPSLExtensions) {
   // a.com is considered eTLD+1 but since a.com is present in PSL Extension List
   // main domains for |forms| would be m.a.com, b.a.com, b.a.com and a.com, thus
   // only forms for b.a.com are grouped.
-  EXPECT_THAT(
-      grouper.GetAffiliatedGroupsWithGroupingInfo(),
-      UnorderedElementsAre(
-          AffiliatedGroup({credential1}, {GetShownOrigin(credential1)}),
-          AffiliatedGroup({credential2, credential3},
-                          {GetShownOrigin(credential2)}),
-          AffiliatedGroup({credential4}, {GetShownOrigin(credential4)})));
+  EXPECT_THAT(grouper.GetAffiliatedGroupsWithGroupingInfo(),
+              UnorderedElementsAre(
+                  AffiliatedGroup({credential1}, {"m.a.com"}),
+                  AffiliatedGroup({credential2, credential3}, {"b.a.com"}),
+                  AffiliatedGroup({credential4}, {"a.com"})));
 }
 
 TEST_F(PasswordsGrouperTest, HttpAndHttpsGroupedTogether) {
@@ -369,8 +368,7 @@ TEST_F(PasswordsGrouperTest, EncodedCharactersInSignonRealm) {
   GroupedFacets group;
   // Group them only by TLD.
   group.facets = {
-      Facet(FacetURI::FromCanonicalSpec(
-          "https://test.com/sign%20in/%-.%3C%3E%60%5E_'%7B%7C%7D")),
+      Facet(FacetURI::FromCanonicalSpec("https://test.com")),
       Facet(FacetURI::FromCanonicalSpec("https://test.org")),
   };
 
@@ -383,6 +381,81 @@ TEST_F(PasswordsGrouperTest, EncodedCharactersInSignonRealm) {
   EXPECT_THAT(grouper().GetAffiliatedGroupsWithGroupingInfo(),
               UnorderedElementsAre(AffiliatedGroup(
                   {credential1, credential2}, {GetShownOrigin(credential1)})));
+}
+
+TEST_F(PasswordsGrouperTest, OrderIsCaseInsensitive) {
+  PasswordForm form1 = CreateForm("https://test1.com");
+  PasswordForm form2 = CreateForm("https://test2.com");
+  PasswordForm form3 = CreateForm("https://test3.com");
+
+  GroupedFacets group1 = GetSingleGroupForForm(form1);
+  group1.branding_info.name = "beta";
+  group1.branding_info.icon_url = GURL("https://test.com/favicon.ico");
+
+  GroupedFacets group2 = GetSingleGroupForForm(form2);
+  group2.branding_info.name = "Gamma";
+  group2.branding_info.icon_url = GURL("https://test.com/favicon.ico");
+
+  GroupedFacets group3 = GetSingleGroupForForm(form3);
+  group3.branding_info.name = "Alpha";
+  group3.branding_info.icon_url = GURL("https://test.com/favicon.ico");
+
+  EXPECT_CALL(affiliation_service(), GetGroupingInfo)
+      .WillRepeatedly(base::test::RunOnceCallback<1>(
+          std::vector<GroupedFacets>{group1, group2, group3}));
+  grouper().GroupPasswords({form1, form2, form3}, base::DoNothing());
+
+  CredentialUIEntry credential1(form1), credential2(form2), credential3(form3);
+  EXPECT_THAT(
+      grouper().GetAffiliatedGroupsWithGroupingInfo(),
+      ElementsAre(AffiliatedGroup({credential3}, group3.branding_info),
+                  AffiliatedGroup({credential1}, group1.branding_info),
+                  AffiliatedGroup({credential2}, group2.branding_info)));
+}
+
+TEST_F(PasswordsGrouperTest, IpAddressesGroupedTogether) {
+  PasswordForm form1 = CreateForm("https://192.168.1.1/tomato", u"admin");
+  PasswordForm form2 =
+      CreateForm("https://192.168.1.1/TP-LINK Wireless AP WA501G", u"admin");
+  PasswordForm form3 = CreateForm("https://192.168.1.1/", u"linkhub");
+  PasswordForm form4 = CreateForm("https://192.168.1.1/", u"root");
+
+  GroupedFacets group;
+  group.facets = {
+      Facet(FacetURI::FromCanonicalSpec("https://192.168.1.1")),
+  };
+
+  EXPECT_CALL(affiliation_service(), GetGroupingInfo)
+      .WillRepeatedly(
+          base::test::RunOnceCallback<1>(std::vector<GroupedFacets>{group}));
+  grouper().GroupPasswords({form1, form2, form3, form4}, base::DoNothing());
+
+  CredentialUIEntry credential1({form1, form2}), credential2(form3),
+      credential3(form4);
+  EXPECT_THAT(
+      grouper().GetAffiliatedGroupsWithGroupingInfo(),
+      UnorderedElementsAre(AffiliatedGroup(
+          {credential1, credential2, credential3}, {"https://192.168.1.1"})));
+}
+
+TEST_F(PasswordsGrouperTest, SchemeOmittedDuringOrdering) {
+  PasswordForm form1 = CreateForm("https://a.com");
+  PasswordForm form2 = CreateForm("https://b.com");
+  PasswordForm ip_form = CreateForm("https://192.168.1.1/");
+
+  EXPECT_CALL(affiliation_service(), GetGroupingInfo)
+      .WillRepeatedly(base::test::RunOnceCallback<1>(std::vector<GroupedFacets>{
+          GetSingleGroupForForm(form1), GetSingleGroupForForm(form2),
+          GetSingleGroupForForm(ip_form)}));
+  grouper().GroupPasswords({form1, form2, ip_form}, base::DoNothing());
+
+  CredentialUIEntry credential1(form1), credential2(form2),
+      credential3(ip_form);
+  EXPECT_THAT(
+      grouper().GetAffiliatedGroupsWithGroupingInfo(),
+      ElementsAre(AffiliatedGroup({credential3}, {"https://192.168.1.1"}),
+                  AffiliatedGroup({credential1}, {"a.com"}),
+                  AffiliatedGroup({credential2}, {"b.com"})));
 }
 
 }  // namespace password_manager

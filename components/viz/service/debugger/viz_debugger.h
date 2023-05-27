@@ -215,7 +215,7 @@ class VIZ_SERVICE_EXPORT VizDebugger {
     std::string value;
   };
 
-  struct FilterBlock {
+  struct VIZ_SERVICE_EXPORT FilterBlock {
     FilterBlock(const std::string file_str,
                 const std::string func_str,
                 const std::string anno_str,
@@ -396,6 +396,13 @@ class VIZ_SERVICE_EXPORT VizDebugger {
     ~BufferInfo();
     BufferInfo(const BufferInfo& a);
     SkBitmap bitmap;
+  };
+
+  struct DrawOption {
+    uint8_t color_r;
+    uint8_t color_g;
+    uint8_t color_b;
+    uint8_t color_a;
   };
 
   inline void CompleteFrame(uint64_t counter,

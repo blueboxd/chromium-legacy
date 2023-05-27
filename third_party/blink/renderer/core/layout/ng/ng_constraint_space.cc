@@ -8,14 +8,11 @@
 #include <memory>
 
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_box_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell_interface.h"
-#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_interface.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
 namespace blink {
@@ -74,14 +71,6 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
     available_size.block_size = block.OverrideLogicalHeight();
     is_fixed_block_size = true;
   }
-  if (block.IsFlexItem() && is_fixed_block_size) {
-    // The flexbox-specific behavior is in addition to regular definite-ness, so
-    // if the flex item would normally have a definite height it should keep it.
-    is_initial_block_size_definite =
-        To<LayoutFlexibleBox>(block.Parent())
-            ->UseOverrideLogicalHeightForPerentageResolution(block) ||
-        block.HasDefiniteLogicalHeight();
-  }
 
   // We cannot enter NG layout at an object that isn't a formatting context
   // root. However, even though we're creating a constraint space for an object
@@ -96,7 +85,7 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
   NGConstraintSpaceBuilder builder(writing_mode, style.GetWritingDirection(),
                                    is_new_fc, adjust_inline_size_if_needed);
 
-  if (!block.IsWritingModeRoot() || block.IsGridItem()) {
+  if (!block.IsWritingModeRoot()) {
     // We don't know if the parent layout will require our baseline, so always
     // request it.
     builder.SetBaselineAlgorithmType(block.IsInline() &&
@@ -105,9 +94,9 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
                                          : NGBaselineAlgorithmType::kDefault);
   }
 
-  if (block.IsAtomicInlineLevel() || block.IsFlexItem() || block.IsGridItem() ||
-      block.IsFloating())
+  if (block.IsAtomicInlineLevel() || block.IsFloating()) {
     builder.SetIsPaintedAtomically(true);
+  }
 
   builder.SetAvailableSize(available_size);
   builder.SetPercentageResolutionSize(percentage_size);

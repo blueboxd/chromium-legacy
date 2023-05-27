@@ -10,7 +10,6 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -20,6 +19,7 @@
 #include "base/task/thread_pool.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "base/uuid.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/client_side_detection_service.h"
 #include "components/safe_browsing/content/browser/client_side_phishing_model.h"
@@ -69,7 +69,7 @@ const char kCsdDebugFeatureDirectoryFlag[] = "csd-debug-feature-directory";
 void WriteFeaturesToDisk(const ClientPhishingRequest& features,
                          const base::FilePath& base_path) {
   base::FilePath path =
-      base_path.AppendASCII(base::GUID::GenerateRandomV4().AsLowercaseString());
+      base_path.AppendASCII(base::Uuid::GenerateRandomV4().AsLowercaseString());
   base::File file(path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   if (!file.IsValid())
     return;
@@ -628,10 +628,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(bool is_from_cache,
                                                        GURL phishing_url,
                                                        bool is_phishing) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (is_from_cache) {
-    base::UmaHistogramBoolean("SBClientPhishing.CacheDetectsPhishing",
-                              is_phishing);
-  } else {
+  if (!is_from_cache) {
     base::UmaHistogramBoolean("SBClientPhishing.ServerModelDetectsPhishing",
                               is_phishing);
   }

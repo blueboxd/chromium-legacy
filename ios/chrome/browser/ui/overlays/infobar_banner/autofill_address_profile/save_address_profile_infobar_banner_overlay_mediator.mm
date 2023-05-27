@@ -8,7 +8,7 @@
 #import "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_overlay_responses.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_address_profile_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator+consumer_support.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator.h"
@@ -66,13 +66,17 @@ using autofill_address_profile_infobar_overlays::
   [self.consumer
       setSubtitleText:base::SysUTF16ToNSString(self.config->description())];
 
-  if (!self.config->is_migration_to_account()) {
+  if (!self.config->is_migration_to_account() &&
+      (!self.config->is_profile_an_account_profile() ||
+       self.config->is_update_banner())) {
     [self.consumer setRestrictSubtitleTextToSingleLine:YES];
   }
 
-  [self.consumer
-      setIconImage:CustomSymbolWithPointSize(kLocationFillSymbol,
-                                             kInfobarSymbolPointSize)];
+  [self.consumer setIconImage:CustomSymbolWithPointSize(
+                                  self.config->is_migration_to_account()
+                                      ? kCloudAndArrowUpSymbol
+                                      : kLocationFillSymbol,
+                                  kInfobarSymbolPointSize)];
   // This is done to hide the settings image from the banner view. The modal
   // would still be presented when the user chooses to pick the Save/Update
   // action.

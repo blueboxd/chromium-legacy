@@ -8,8 +8,10 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_bridge.h"
 #include "components/autofill/ios/browser/autofill_driver_ios_factory.h"
+#import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #include "ios/web/public/browser_state.h"
-#include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -39,7 +41,7 @@ AutofillDriverIOS::AutofillDriverIOS(web::WebState* web_state,
       client_(client),
       browser_autofill_manager_(
           std::make_unique<BrowserAutofillManager>(this, client, app_locale)) {
-    web_frame_id_ = web::GetWebFrameId(web_frame);
+  web_frame_id_ = web_frame ? web_frame->GetFrameId() : "";
 }
 
 AutofillDriverIOS::~AutofillDriverIOS() = default;
@@ -50,8 +52,8 @@ bool AutofillDriverIOS::IsInActiveFrame() const {
 }
 
 bool AutofillDriverIOS::IsInAnyMainFrame() const {
-  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
-  return web_frame ? web_frame->IsMainFrame() : true;
+  web::WebFrame* frame = web_frame();
+  return frame ? frame->IsMainFrame() : true;
 }
 
 bool AutofillDriverIOS::IsPrerendering() const {
@@ -76,9 +78,9 @@ std::vector<FieldGlobalId> AutofillDriverIOS::FillOrPreviewForm(
     const FormData& data,
     const url::Origin& triggered_origin,
     const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {
-  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
-  if (web_frame) {
-    [bridge_ fillFormData:data inFrame:web_frame];
+  web::WebFrame* frame = web_frame();
+  if (frame) {
+    [bridge_ fillFormData:data inFrame:frame];
   }
   std::vector<FieldGlobalId> safe_fields;
   for (const auto& field : data.fields)
@@ -97,21 +99,21 @@ void AutofillDriverIOS::HandleParsedForms(const std::vector<FormData>& forms) {
       form_structures.push_back(it->second.get());
   }
 
-  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
-  if (!web_frame) {
+  web::WebFrame* frame = web_frame();
+  if (!frame) {
     return;
   }
-  [bridge_ handleParsedForms:form_structures inFrame:web_frame];
+  [bridge_ handleParsedForms:form_structures inFrame:frame];
 }
 
 void AutofillDriverIOS::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
-  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
-  if (!web_frame) {
+  web::WebFrame* frame = web_frame();
+  if (!frame) {
     return;
   }
   [bridge_ fillFormDataPredictions:FormStructure::GetFieldTypePredictions(forms)
-                           inFrame:web_frame];
+                           inFrame:frame];
 }
 
 void AutofillDriverIOS::RendererShouldAcceptDataListSuggestion(
@@ -151,25 +153,27 @@ void AutofillDriverIOS::PopupHidden() {
 }
 
 net::IsolationInfo AutofillDriverIOS::IsolationInfo() {
-  std::string main_web_frame_id = web::GetMainWebFrameId(web_state_);
-  web::WebFrame* main_web_frame =
-      web::GetWebFrameWithId(web_state_, main_web_frame_id);
+  web::WebFramesManager* frames_manager =
+      AutofillJavaScriptFeature::GetInstance()->GetWebFramesManager(web_state_);
+  web::WebFrame* main_web_frame = frames_manager->GetMainWebFrame();
   if (!main_web_frame)
     return net::IsolationInfo();
 
-  web::WebFrame* web_frame = web::GetWebFrameWithId(web_state_, web_frame_id_);
-  if (!web_frame)
+  web::WebFrame* frame = web_frame();
+  if (!frame) {
     return net::IsolationInfo();
+  }
 
   return net::IsolationInfo::Create(
       net::IsolationInfo::RequestType::kOther,
       url::Origin::Create(main_web_frame->GetSecurityOrigin()),
-      url::Origin::Create(web_frame->GetSecurityOrigin()),
-      net::SiteForCookies());
+      url::Origin::Create(frame->GetSecurityOrigin()), net::SiteForCookies());
 }
 
-web::WebFrame* AutofillDriverIOS::web_frame() {
-  return web::GetWebFrameWithId(web_state_, web_frame_id_);
+web::WebFrame* AutofillDriverIOS::web_frame() const {
+  web::WebFramesManager* frames_manager =
+      AutofillJavaScriptFeature::GetInstance()->GetWebFramesManager(web_state_);
+  return frames_manager->GetFrameWithId(web_frame_id_);
 }
 
 }  // namespace autofill

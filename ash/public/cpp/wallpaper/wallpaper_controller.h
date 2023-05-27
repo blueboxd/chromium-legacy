@@ -16,6 +16,7 @@
 #include "base/containers/lru_cache.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "components/user_manager/user_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -30,6 +31,7 @@ namespace ash {
 
 class WallpaperControllerObserver;
 class WallpaperControllerClient;
+class WallpaperDragDropDelegate;
 class WallpaperDriveFsDelegate;
 
 // Used by Chrome to set the wallpaper displayed by ash.
@@ -48,6 +50,12 @@ class ASH_PUBLIC_EXPORT WallpaperController {
 
   // Sets the client interface, used to show the wallpaper picker, etc.
   virtual void SetClient(WallpaperControllerClient* client) = 0;
+
+  // Gets/sets the delegate for drag-and-drop events over the wallpaper.
+  // NOTE: May be `nullptr` when drag-and-drop related features are disabled.
+  virtual WallpaperDragDropDelegate* GetDragDropDelegate() = 0;
+  virtual void SetDragDropDelegate(
+      std::unique_ptr<WallpaperDragDropDelegate> delegate) = 0;
 
   virtual void SetDriveFsDelegate(
       std::unique_ptr<WallpaperDriveFsDelegate> drivefs_delegate) = 0;
@@ -231,7 +239,7 @@ class ASH_PUBLIC_EXPORT WallpaperController {
   // wallpaper if necessary. This is intendend for use where users are not
   // yet logged in (i.e. login screen).
   virtual void ShowUserWallpaper(const AccountId& account_id,
-                                 user_manager::UserType user_type) = 0;
+                                 const user_manager::UserType user_type) = 0;
 
   // Used by the gaia-signin UI. Signin wallpaper is considered either as the
   // device policy wallpaper or the default wallpaper.
@@ -243,16 +251,19 @@ class ASH_PUBLIC_EXPORT WallpaperController {
   // when using this method.
   virtual void ShowOneShotWallpaper(const gfx::ImageSkia& image) = 0;
 
-  // Shows a wallpaper that stays on top of everything except for the power off
-  // animation. All other wallpaper requests are ignored when the always-on-top
-  // wallpaper is being shown.
+  // Shows an override wallpaper instead of the wallpaper that would normally be
+  // shown. All other wallpaper requests are ignored when the override wallpaper
+  // is being shown.
   // |image_path|: The file path to read the image data from.
-  virtual void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) = 0;
+  // |always_on_top|: Whether the override wallpaper should be shown on top of
+  //                  everything except for the power off animation.
+  virtual void ShowOverrideWallpaper(const base::FilePath& image_path,
+                                     bool always_on_top) = 0;
 
-  // Removes the always-on-top wallpaper. The wallpaper will revert to the
-  // previous one, or a default one if there was none. No-op if the current
-  // wallpaper is not always-on-top.
-  virtual void RemoveAlwaysOnTopWallpaper() = 0;
+  // Removes the override wallpaper. The wallpaper will revert to the previous
+  // one, or a default one if there was none. No-op if the current wallpaper is
+  // not overridden.
+  virtual void RemoveOverrideWallpaper() = 0;
 
   // Removes all of the user's saved wallpapers and related info.
   // |account_id|: The user's account id.
@@ -290,6 +301,10 @@ class ASH_PUBLIC_EXPORT WallpaperController {
 
   // Returns the wallpaper image currently being shown.
   virtual gfx::ImageSkia GetWallpaperImage() = 0;
+
+  // Returns the preview image of the currently shown wallpaper. Nullable if the
+  // current wallpaper is not available.
+  virtual scoped_refptr<base::RefCountedMemory> GetPreviewImage() = 0;
 
   // Returns whether the current wallpaper is blurred on lock/login screen.
   virtual bool IsWallpaperBlurredForLockState() const = 0;

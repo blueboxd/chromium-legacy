@@ -26,8 +26,10 @@
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/omnibox/chrome_omnibox_client_ios.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_metrics_helper.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_util.h"
 #import "ios/chrome/browser/ui/omnibox/web_omnibox_edit_model_delegate.h"
@@ -524,7 +526,6 @@ void OmniboxViewIOS::OnClear() {
 }
 
 void OmniboxViewIOS::OnCopy() {
-  UIPasteboard* board = [UIPasteboard generalPasteboard];
   NSString* selectedText = nil;
   NSInteger start_location = 0;
   if ([field_ isPreEditing]) {
@@ -564,7 +565,7 @@ void OmniboxViewIOS::OnCopy() {
   if (write_url)
     [item setObject:net::NSURLWithGURL(url) forKey:UTTypeURL.identifier];
 
-  board.items = [NSArray arrayWithObject:item];
+  StoreItemInPasteboard(item);
 }
 
 void OmniboxViewIOS::WillPaste() {
@@ -644,6 +645,10 @@ void OmniboxViewIOS::EndEditing() {
   if (model() && model()->has_focus()) {
     CloseOmniboxPopup();
 
+    RecordSuggestionsListScrolled(model()->GetPageClassification(),
+                                  suggestions_list_scrolled_);
+    suggestions_list_scrolled_ = false;
+
     model()->OnWillKillFocus();
     model()->OnKillFocus();
     if ([field_ isPreEditing])
@@ -685,6 +690,7 @@ void OmniboxViewIOS::OnPopupDidScroll() {
       base::FeatureList::IsEnabled(kEnableSuggestionsScrollingOnIPad)) {
     this->HideKeyboard();
   }
+  suggestions_list_scrolled_ = true;
 }
 
 void OmniboxViewIOS::OnSelectedMatchForAppending(const std::u16string& str) {

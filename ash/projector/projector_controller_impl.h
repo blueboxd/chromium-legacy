@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/projector/model/projector_session_impl.h"
 #include "ash/public/cpp/projector/projector_controller.h"
+#include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
 #include "chromeos/ash/components/audio/cras_audio_handler.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -90,8 +91,9 @@ class ASH_EXPORT ProjectorControllerImpl
       CreateScreencastContainerFolderCallback callback);
 
   // Called by Capture Mode to notify with the state of a video recording.
-  // `current_root` is the window being recorded. `is_in_projector_mode`
-  // indicates whether it's a projector-initiated video recording.
+  // `current_root` is the root window, which is either being captured itself or
+  // a descendant of it. `is_in_projector_mode` indicates whether it's a
+  // projector-initiated video recording.
   void OnRecordingStarted(aura::Window* current_root,
                           bool is_in_projector_mode);
   void OnRecordingEnded(bool is_in_projector_mode);
@@ -205,7 +207,7 @@ class ASH_EXPORT ProjectorControllerImpl
   // from the container folder.
   std::vector<base::FilePath> GetScreencastFilePaths() const;
 
-  ProjectorClient* client_ = nullptr;
+  raw_ptr<ProjectorClient, ExperimentalAsh> client_ = nullptr;
   std::unique_ptr<ProjectorSessionImpl> projector_session_;
   std::unique_ptr<ProjectorUiController> ui_controller_;
   std::unique_ptr<ProjectorMetadataController> metadata_controller_;

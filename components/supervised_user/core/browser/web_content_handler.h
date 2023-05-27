@@ -15,8 +15,10 @@ namespace supervised_user {
 
 class SupervisedUserSettingsService;
 
-// This class contains all the Web Approval Intersitial functionality that
+// This base class contains all the Web Approval Intersitial functionality that
 // requires access to the current web content.
+// It contains implementation of the common methods that can be shared accross
+// platforms and can live in components.
 class WebContentHandler {
  public:
   using ApprovalRequestInitiatedCallback = base::OnceCallback<void(bool)>;
@@ -41,18 +43,36 @@ class WebContentHandler {
   virtual ~WebContentHandler();
 
   // Initiates the OS specific local approval flow for a given `url`.
+  // Not all platforms with supervised users support this operation,
+  // and they must throw an error when implementing this method.
   virtual void RequestLocalApproval(
       const GURL& url,
       const std::u16string& child_display_name,
       ApprovalRequestInitiatedCallback callback) = 0;
+
+  // TODO(b/273692421): Add unit (or browser test) coverage for the moved
+  // methods that currently have no test coverage.
+
+  // Returns true if the given frame is the primary main frame for the active
+  // page.
+  virtual bool IsMainFrame() const = 0;
+
+  // Removes all the infobars which are attached to web contents
+  // and for which ShouldExpire() returns true, if the navigation frame id
+  // is the main frame.
+  virtual void CleanUpInfoBarOnMainFrame() = 0;
+
+  // Shows the feedback page to the user.
+  // TODO(b/276428131): Remove when local approvals is fully launched.
+  virtual void ShowFeedback(GURL url, std::u16string reason) = 0;
 
   static const char* GetLocalApprovalDurationMillisecondsHistogram();
   static const char* GetLocalApprovalResultHistogram();
 
  protected:
   // Processes the outcome of the local approval request.
-  // Shared between the platforms. Should be called by platform specific
-  // completion callback.
+  // Should be called by platform specific completion callback.
+  // TODO(b/278079069): Refactor and convert the class to an interface.
   void OnLocalApprovalRequestCompleted(
       supervised_user::SupervisedUserSettingsService& settings_service,
       const GURL& url,

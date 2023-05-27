@@ -303,13 +303,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionAPITest, TestNoUnnecessaryIO) {
   ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
 
   // The script template to update the browser action.
-  constexpr char kUpdate[] =
+  static constexpr char kUpdate[] =
       R"(chrome.browserAction.setBadgeText(%s);
-         domAutomationController.send('pass');)";
+         chrome.test.sendScriptResult('pass');)";
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   SessionID tab_id = sessions::SessionTabHelper::IdForTab(web_contents);
-  constexpr char kBrowserActionKey[] = "browser_action";
+  static constexpr char kBrowserActionKey[] = "browser_action";
   TestStateStoreObserver test_state_store_observer(profile(), extension->id());
 
   {
@@ -638,11 +638,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest,
       content::WebContents::FromRenderFrameHost(render_frame_host);
   ASSERT_TRUE(popup_contents);
 
-  std::string foo;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      popup_contents, "domAutomationController.send(sessionStorage.foo)",
-      &foo));
-  EXPECT_EQ("1", foo);
+  EXPECT_EQ("1", content::EvalJs(popup_contents, "sessionStorage.foo"));
 
   const std::string session_storage_id1 =
       popup_contents->GetController().GetDefaultSessionStorageNamespace()->id();
@@ -670,11 +666,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest,
   // Verify that sessionStorage did not persist. The reason is that closing the
   // popup ends the session and clears objects in sessionStorage.
   EXPECT_NE(session_storage_id1, session_storage_id2);
-  foo = "";
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      popup_contents, "domAutomationController.send(sessionStorage.foo)",
-      &foo));
-  EXPECT_EQ("1", foo);
+  EXPECT_EQ("1", content::EvalJs(popup_contents, "sessionStorage.foo"));
 }
 
 using ActionAndBrowserActionAPITest = MultiActionAPITest;
@@ -934,11 +926,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithJavascriptHooks) {
       R"(Object.defineProperty(
              Object.prototype, 'imageData',
              { set() { console.warn('intercepted set'); } });
-         domAutomationController.send('done');)";
-  std::string result;
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(web_contents, kScript, &result));
-  ASSERT_EQ("done", result);
+         'done';)";
+  ASSERT_EQ("done", content::EvalJs(web_contents, kScript));
 
   constexpr char kOnePathScript[] =
       "setIcon({tabId: %d, path: 'blue_icon.png'});";
@@ -1000,12 +989,8 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithSelfDefined) {
   EnsureActionIsEnabledOnActiveTab(action);
 
   // Override 'self' in a local variable.
-  constexpr char kOverrideSelfScript[] =
-      "var self = ''; domAutomationController.send('done');";
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, kOverrideSelfScript, &result));
-  ASSERT_EQ("done", result);
+  constexpr char kOverrideSelfScript[] = "var self = ''; 'done';";
+  ASSERT_EQ("done", content::EvalJs(web_contents, kOverrideSelfScript));
 
   // Try setting the icon. This should succeed. Previously, the custom bindings
   // for the setIcon code looked at the 'self' variable, but this could be

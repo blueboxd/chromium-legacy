@@ -210,7 +210,8 @@ ViewTransition::ViewTransition(Document* document,
                                ScriptState* script_state,
                                V8ViewTransitionCallback* update_dom_callback,
                                Delegate* delegate)
-    : ExecutionContextLifecycleObserver(document->GetExecutionContext()),
+    : ActiveScriptWrappable<ViewTransition>({}),
+      ExecutionContextLifecycleObserver(document->GetExecutionContext()),
       creation_type_(CreationType::kScript),
       document_(document),
       delegate_(delegate),
@@ -236,7 +237,8 @@ ViewTransition* ViewTransition::CreateForSnapshotForNavigation(
 ViewTransition::ViewTransition(Document* document,
                                ViewTransitionStateCallback callback,
                                Delegate* delegate)
-    : ExecutionContextLifecycleObserver(document->GetExecutionContext()),
+    : ActiveScriptWrappable<ViewTransition>({}),
+      ExecutionContextLifecycleObserver(document->GetExecutionContext()),
       creation_type_(CreationType::kForSnapshot),
       document_(document),
       delegate_(delegate),
@@ -262,7 +264,8 @@ ViewTransition* ViewTransition::CreateFromSnapshotForNavigation(
 ViewTransition::ViewTransition(Document* document,
                                ViewTransitionState transition_state,
                                Delegate* delegate)
-    : ExecutionContextLifecycleObserver(document->GetExecutionContext()),
+    : ActiveScriptWrappable<ViewTransition>({}),
+      ExecutionContextLifecycleObserver(document->GetExecutionContext()),
       creation_type_(CreationType::kFromSnapshot),
       document_(document),
       delegate_(delegate),
@@ -808,8 +811,9 @@ bool ViewTransition::NeedsViewTransitionEffectNode(
     return !IsTerminalState(state_);
 
   // Otherwise check if the layout object has an active transition element.
-  return style_tracker_ &&
-         style_tracker_->IsTransitionElement(object.GetNode());
+  auto* element = DynamicTo<Element>(object.GetNode());
+  return style_tracker_ && element &&
+         style_tracker_->IsTransitionElement(*element);
 }
 
 bool ViewTransition::NeedsViewTransitionClipNode(
@@ -827,13 +831,26 @@ bool ViewTransition::NeedsViewTransitionClipNode(
 
 bool ViewTransition::IsRepresentedViaPseudoElements(
     const LayoutObject& object) const {
-  if (IsTerminalState(state_))
+  if (IsTerminalState(state_)) {
     return false;
+  }
 
-  if (IsA<LayoutView>(object))
+  if (IsA<LayoutView>(object)) {
     return style_tracker_->IsRootTransitioning();
+  }
 
-  return style_tracker_->IsTransitionElement(object.GetNode());
+  if (auto* element = DynamicTo<Element>(object.GetNode())) {
+    return IsRepresentedViaPseudoElements(*element);
+  }
+  return false;
+}
+
+bool ViewTransition::IsRepresentedViaPseudoElements(
+    const Element& element) const {
+  if (IsTerminalState(state_)) {
+    return false;
+  }
+  return style_tracker_->IsTransitionElement(element);
 }
 
 PaintPropertyChangeType ViewTransition::UpdateEffect(

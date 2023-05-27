@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_fieldset.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
@@ -116,6 +115,18 @@ void HTMLFieldSetElement::DisabledAttributeChanged() {
     focused_element->blur();
 }
 
+void HTMLFieldSetElement::AncestorDisabledStateWasChanged() {
+  if (RuntimeEnabledFeatures::NonReentrantFieldSetDisableEnabled()) {
+    ancestor_disabled_state_ = AncestorDisabledState::kUnknown;
+    // Do not re-enter HTMLFieldSetElement::DisabledAttributeChanged(), so that
+    // we only invalidate this element's own disabled state and do not traverse
+    // the descendants.
+    HTMLFormControlElement::DisabledAttributeChanged();
+  } else {
+    HTMLFormControlElement::AncestorDisabledStateWasChanged();
+  }
+}
+
 void HTMLFieldSetElement::ChildrenChanged(const ChildrenChange& change) {
   HTMLFormControlElement::ChildrenChanged(change);
   Element* focused_element = nullptr;
@@ -141,10 +152,8 @@ const AtomicString& HTMLFieldSetElement::FormControlType() const {
   return fieldset;
 }
 
-LayoutObject* HTMLFieldSetElement::CreateLayoutObject(
-    const ComputedStyle& style,
-    LegacyLayout legacy) {
-  return LayoutObjectFactory::CreateFieldset(*this, style, legacy);
+LayoutObject* HTMLFieldSetElement::CreateLayoutObject(const ComputedStyle&) {
+  return MakeGarbageCollected<LayoutNGFieldset>(this);
 }
 
 LayoutBox* HTMLFieldSetElement::GetLayoutBoxForScrolling() const {
@@ -166,6 +175,16 @@ HTMLLegendElement* HTMLFieldSetElement::Legend() const {
 
 HTMLCollection* HTMLFieldSetElement::elements() {
   return EnsureCachedCollection<HTMLCollection>(kFormControls);
+}
+
+bool HTMLFieldSetElement::IsDisabledFormControl() const {
+  if (RuntimeEnabledFeatures::SendMouseEventsDisabledFormControlsEnabled()) {
+    // The fieldset element itself should never be considered disabled, it is
+    // only supposed to affect its descendants:
+    // https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#concept-fe-disabled
+    return false;
+  }
+  return HTMLFormControlElement::IsDisabledFormControl();
 }
 
 }  // namespace blink

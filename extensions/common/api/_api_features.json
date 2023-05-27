@@ -254,6 +254,15 @@
         "chrome://password-change/*",
         "chrome://lock-reauth/*"
       ]
+    }, {
+      // This feature is used by the Controlled Frame API and is specifically
+      // enabled by //chrome.
+      "internal": true,
+      "channel": "dev",
+      "contexts": ["web_page"],
+      // This feature is only enabled if the embedder's delegated check returns
+      // true.
+      "requires_delegated_availability_check": true
     }
   ],
   "hid": {
@@ -342,7 +351,7 @@
     "channel": "stable",
     "contexts": ["webui"],
     "matches": [
-      "chrome://apps/",
+      "chrome://apps/*",
       "chrome://bookmarks/*",
       "chrome://bookmarks-side-panel.top-chrome/*",
       "chrome://customize-chrome-side-panel.top-chrome/*",
@@ -416,6 +425,7 @@
     "channel": "stable",
     "contexts": ["webui_untrusted"],
     "matches": [
+      "chrome://apps/*",
       "chrome-untrusted://demo-mode-app/*"
     ]
   },
@@ -528,6 +538,7 @@
       "lock_screen_extension",
       "offscreen_extension",
       "unblessed_extension",
+      "user_script",
       "web_page"
     ],
     "matches": ["<all_urls>"]
@@ -542,6 +553,12 @@
   "runtime.connectNative": {
     "dependencies": ["permission:nativeMessaging"],
     "contexts": ["blessed_extension"]
+  },
+  "runtime.getContexts": {
+    "min_manifest_version": 3,
+    "contexts": ["blessed_extension"],
+    "channel": "dev",
+    "feature_flag": "ApiRuntimeGetContexts"
   },
   "runtime.getURL": {
     "contexts": [
@@ -572,6 +589,7 @@
       "lock_screen_extension",
       "offscreen_extension",
       "unblessed_extension",
+      "user_script",
       "content_script"
     ]
   },
@@ -592,6 +610,7 @@
       "lock_screen_extension",
       "offscreen_extension",
       "unblessed_extension",
+      "user_script",
       "content_script"
     ]
   },
@@ -611,6 +630,7 @@
       "lock_screen_extension",
       "offscreen_extension",
       "unblessed_extension",
+      "user_script",
       "web_page"
     ],
     "matches": ["<all_urls>"]
@@ -776,6 +796,15 @@
       "chrome://password-change/*",
       "chrome://lock-reauth/*"
     ]
+  }, {
+    // This feature is used by the Controlled Frame API and is specifically
+    // enabled by //chrome.
+    "internal": true,
+    "channel": "dev",
+    "contexts": ["web_page"],
+    // This feature is only enabled if the embedder's delegated check returns
+    // true.
+    "requires_delegated_availability_check": true
   }],
   "webViewInternal": [{
     "internal": true,
@@ -798,6 +827,15 @@
       "chrome://password-change/*",
       "chrome://lock-reauth/*"
     ]
+  }, {
+    // This feature is used by the Controlled Frame API and is specifically
+    // enabled by //chrome.
+    "internal": true,
+    "channel": "dev",
+    "contexts": ["web_page"],
+    // This feature is only enabled if the embedder's delegated check returns
+    // true.
+    "requires_delegated_availability_check": true
   }],
   "webViewRequest": [{
     "dependencies": ["permission:webview"],

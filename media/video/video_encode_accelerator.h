@@ -15,6 +15,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "media/base/bitrate.h"
+#include "media/base/encoder_status.h"
 #include "media/base/media_export.h"
 #include "media/base/svc_scalability_mode.h"
 #include "media/base/video_bitrate_allocation.h"
@@ -42,14 +43,8 @@ struct MEDIA_EXPORT H264Metadata final {
 
 // Metadata for H265 bitstream buffer.
 //  |temporal_idx|  indicates the temporal index of this frame.
-//  |spatial_idx|   indicates the spatial index of this frame.
-//  |layer_sync|    is true iff this frame has |temporal_idx| > 0 and does NOT
-//                  reference any reference buffer containing a frame with
-//                  temporal_idx > 0.
 struct MEDIA_EXPORT H265Metadata final {
   uint8_t temporal_idx = 0;
-  uint8_t spatial_idx = 0;
-  bool layer_sync = false;
 };
 
 //  Metadata for a VP8 bitstream buffer.
@@ -103,23 +98,8 @@ struct MEDIA_EXPORT Av1Metadata final {
   Av1Metadata();
   ~Av1Metadata();
   Av1Metadata(const Av1Metadata&);
-
-  // True iff this layer frame is dependent on previously coded frame(s).
-  bool inter_pic_predicted = false;
-  // True iff this frame is a switch point between sequences.
-  bool switch_frame = false;
-  // True iff frame is last layer frame of picture.
-  bool end_of_picture = true;
   // The temporal index for this frame.
   uint8_t temporal_idx = 0;
-  // The spatial index for this frame.
-  uint8_t spatial_idx = 0;
-  // The resolutions of active spatial layers, filled if and only if keyframe or
-  // the number of active spatial layers is changed.
-  std::vector<gfx::Size> spatial_layer_resolutions;
-  // The differences between the frame number of this frame and frame number
-  // of referenced frames, only be to filled for non key frames.
-  std::vector<uint8_t> f_diffs;
 };
 
 //  Metadata associated with a bitstream buffer.
@@ -371,7 +351,9 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     // Error notification callback. Note that errors in Initialize() will not be
     // reported here, but will instead be indicated by a false return value
     // there.
-    virtual void NotifyError(Error error) = 0;
+    virtual void NotifyError(Error error);
+
+    virtual void NotifyErrorStatus(const EncoderStatus& status);
 
     // Call VideoEncoderInfo of the VEA is changed.
     virtual void NotifyEncoderInfoChange(const VideoEncoderInfo& info);
@@ -509,6 +491,10 @@ operator&=(VideoEncodeAccelerator::SupportedRateControlMode& lhs,
   return lhs;
 }
 
+// TODO(b/275663480): Remove this function once we replace UMAs in client
+// with UKM.
+MEDIA_EXPORT VideoEncodeAccelerator::Error
+ConvertStatusToVideoEncodeAcceleratorError(const EncoderStatus& status);
 }  // namespace media
 
 namespace std {

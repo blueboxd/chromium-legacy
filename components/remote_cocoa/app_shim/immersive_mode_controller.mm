@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #import "components/remote_cocoa/app_shim/immersive_mode_delegate_mac.h"
@@ -16,16 +17,6 @@
 namespace {
 
 const double kThinControllerHeight = 0.5;
-
-// TODO(https://crbug.com/1373552): use constraints / autoresizingmask instead
-// of manually setting the frame size.
-void PropagateFrameSizeToViewsSubviews(NSView* view) {
-  for (NSView* sub_view in view.subviews) {
-    if ([sub_view isKindOfClass:[BridgedContentView class]]) {
-      [sub_view setFrameSize:view.frame.size];
-    }
-  }
-}
 
 NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
   for (NSView* view in window.contentView.subviews) {
@@ -97,6 +88,7 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
 @interface ImmersiveModeTitlebarViewController
     : NSTitlebarAccessoryViewController {
   base::OnceClosure _view_will_appear_callback;
+  base::scoped_nsobject<NSView> _blank_separator_view;
 }
 @end
 
@@ -106,6 +98,7 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
     (base::OnceClosure)view_will_appear_callback {
   if ((self = [super init])) {
     _view_will_appear_callback = std::move(view_will_appear_callback);
+    _blank_separator_view.reset([[NSView alloc] init]);
   }
   return self;
 }
@@ -116,7 +109,6 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
   // Resize the views and run the callback on the first call to this method. We
   // will most likely be in the fullscreen transition window and we want our
   // views to be displayed.
-  PropagateFrameSizeToViewsSubviews(self.view);
   if (!_view_will_appear_callback.is_null()) {
     // Triggers Views to display top chrome.
     std::move(_view_will_appear_callback).Run();
@@ -135,35 +127,11 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
   }
 }
 
-@end
-
-@interface ClearTitlebarViewController : NSTitlebarAccessoryViewController {
-  CGFloat _height;
-}
-@end
-
-@implementation ClearTitlebarViewController
-
-- (instancetype)initWithHeight:(CGFloat)height {
-  self = [super init];
-  if (self) {
-    _height = height;
-  }
-  return self;
-}
-
-- (void)viewWillAppear {
-  [super viewWillAppear];
-
-  NSSize size = self.view.frame.size;
-  size.height = _height;
-  [self.view setFrameSize:size];
-
-  // Hide the controller before it is appears but after the view's frame is
-  // set. This will extend the NSTitlebarAccessoryViewController mouse
-  // tracking area over the entirety of the window stopping the titlebar from
-  // auto hiding.
-  self.hidden = YES;
+// This is a private API method that will be used on macOS 11+.
+// Remove a small 1px blur between the overlay view and tabbed overlay view by
+// returning a blank NSView.
+- (NSView*)separatorView {
+  return _blank_separator_view;
 }
 
 @end
@@ -197,52 +165,6 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
 
 @end
 
-@interface ImmersiveModeWindowObserver : NSObject {
-  base::WeakPtr<remote_cocoa::ImmersiveModeController> _controller;
-}
-- (instancetype)initWithController:
-    (base::WeakPtr<remote_cocoa::ImmersiveModeController>)controller;
-@end
-
-@implementation ImmersiveModeWindowObserver
-
-- (instancetype)initWithController:
-    (base::WeakPtr<remote_cocoa::ImmersiveModeController>)controller {
-  self = [super init];
-  if (self) {
-    _controller = std::move(controller);
-  }
-  return self;
-}
-
-- (void)observeValueForKeyPath:(NSString*)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary<NSKeyValueChangeKey, id>*)change
-                       context:(void*)context {
-  if (![keyPath isEqualToString:@"visible"]) {
-    return;
-  }
-
-  BOOL visible = [change[NSKeyValueChangeNewKey] boolValue];
-  NSWindow* window = base::mac::ObjCCastStrict<NSWindow>(object);
-  if (visible) {
-    if (_controller) {
-      _controller->TitlebarLock();
-    }
-    return;
-  }
-
-  // Assume not-visible is a terminal state for an overlay child window. Also
-  // assume child windows will become not-visible before self is destroyed.
-  // These assumptions makes adding and removing the visible observer trival.
-  [window removeObserver:self forKeyPath:@"visible"];
-  if (_controller) {
-    _controller->TitlebarUnlock();
-  }
-}
-
-@end
-
 namespace remote_cocoa {
 
 bool IsNSToolbarFullScreenWindow(NSWindow* window) {
@@ -258,9 +180,6 @@ ImmersiveModeController::ImmersiveModeController(NSWindow* browser_window,
     : browser_window_(browser_window),
       overlay_window_(overlay_window),
       weak_ptr_factory_(this) {
-  immersive_mode_window_observer_.reset([[ImmersiveModeWindowObserver alloc]
-      initWithController:weak_ptr_factory_.GetWeakPtr()]);
-
   // A style of NSTitlebarSeparatorStyleAutomatic (default) will show a black
   // line separator when removing the NSWindowStyleMaskFullSizeContentView style
   // bit. We do not want a separator. Pre-macOS 11 there is no titlebar
@@ -329,6 +248,8 @@ ImmersiveModeController::~ImmersiveModeController() {
   // Remove the titlebar observer before moving the view.
   immersive_mode_titlebar_observer_.reset();
 
+  StopObservingChildWindows(overlay_window_);
+
   // Rollback the view shuffling from enablement.
   [thin_titlebar_view_controller_ removeFromParentViewController];
   [overlay_content_view_ removeFromSuperview];
@@ -340,9 +261,6 @@ ImmersiveModeController::~ImmersiveModeController() {
   if (@available(macOS 11.0, *)) {
     browser_window_.titlebarSeparatorStyle = NSTitlebarSeparatorStyleAutomatic;
   }
-
-  // Move sub-widgets back to the browser widget.
-  ReparentChildWindows(overlay_window_, browser_window_);
 }
 
 void ImmersiveModeController::Enable() {
@@ -352,10 +270,20 @@ void ImmersiveModeController::Enable() {
   [browser_window_ addTitlebarAccessoryViewController:
                        immersive_mode_titlebar_view_controller_];
 
-  // Move sub-widgets from the browser widget to the overlay widget so that
-  // they are rendered above the toolbar.
-  ObserveOverlayChildWindows();
-  ReparentChildWindows(browser_window_, overlay_window_);
+  // Keep the overlay content view's size in sync with its parent view.
+  overlay_content_view_.translatesAutoresizingMaskIntoConstraints = NO;
+  [overlay_content_view_.heightAnchor
+      constraintEqualToAnchor:overlay_content_view_.superview.heightAnchor]
+      .active = YES;
+  [overlay_content_view_.widthAnchor
+      constraintEqualToAnchor:overlay_content_view_.superview.widthAnchor]
+      .active = YES;
+  [overlay_content_view_.centerXAnchor
+      constraintEqualToAnchor:overlay_content_view_.superview.centerXAnchor]
+      .active = YES;
+  [overlay_content_view_.centerYAnchor
+      constraintEqualToAnchor:overlay_content_view_.superview.centerYAnchor]
+      .active = YES;
 
   thin_titlebar_view_controller_.get().hidden = YES;
   [browser_window_
@@ -369,6 +297,20 @@ void ImmersiveModeController::Enable() {
 void ImmersiveModeController::FullscreenTransitionCompleted() {
   fullscreen_transition_complete_ = true;
   UpdateToolbarVisibility(last_used_style_);
+
+  //  Establish reveal locks for windows that exist before entering fullscreen,
+  //  such as permission popups and the find bar. Do this after the fullscreen
+  //  transition has ended to avoid graphical flashes during the animation.
+  for (NSWindow* child in overlay_window_.childWindows) {
+    if (!ShouldObserveChildWindow(child)) {
+      continue;
+    }
+    OnChildWindowAdded(child);
+  }
+
+  // Watch for child windows. When they are added the overlay view will be
+  // revealed as appropriate.
+  ObserveChildWindows(overlay_window_);
 }
 
 void ImmersiveModeController::OnTopViewBoundsChanged(const gfx::Rect& bounds) {
@@ -376,9 +318,12 @@ void ImmersiveModeController::OnTopViewBoundsChanged(const gfx::Rect& bounds) {
   // automatically handled by AppKit.
   NSRect frame = NSRectFromCGRect(bounds.ToCGRect());
   NSView* overlay_view = immersive_mode_titlebar_view_controller_.get().view;
-  NSSize size = overlay_view.frame.size;
-  size.height = frame.size.height;
-  [overlay_view setFrameSize:size];
+  NSSize size = overlay_view.window.frame.size;
+  if (frame.size.height != size.height) {
+    size.height = frame.size.height;
+    [overlay_view setFrameSize:size];
+  }
+
   UpdateToolbarVisibility(last_used_style_);
 
   // If the toolbar is always visible, update the fullscreen min height.
@@ -388,7 +333,7 @@ void ImmersiveModeController::OnTopViewBoundsChanged(const gfx::Rect& bounds) {
       (last_used_style_ == mojom::ToolbarVisibilityStyle::kAutohide &&
        reveal_lock_count_ > 0)) {
     immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight =
-        immersive_mode_titlebar_view_controller_.get().view.frame.size.height;
+        frame.size.height;
   }
 }
 
@@ -398,8 +343,7 @@ void ImmersiveModeController::UpdateToolbarVisibility(
   last_used_style_ = style;
 
   // Only make changes if there are no outstanding reveal locks.
-  if (!fullscreen_transition_complete_ || titlebar_lock_count_ > 0 ||
-      reveal_lock_count_ > 0) {
+  if (!fullscreen_transition_complete_ || reveal_lock_count_ > 0) {
     return;
   }
 
@@ -418,104 +362,86 @@ void ImmersiveModeController::UpdateToolbarVisibility(
     case mojom::ToolbarVisibilityStyle::kAutohide:
       immersive_mode_titlebar_view_controller_.get().hidden = NO;
 
+      // TODO(https://crbug.com/1369643): Remove the thin controller.
       // The thin titlebar controller keeps a tiny portion of the AppKit
       // fullscreen NSWindow on screen as a workaround for
-      // https://crbug.com/1369643.
+      // https://crbug.com/1369643. Toggle to clear any artifacts from a
+      // previous state.
+      thin_titlebar_view_controller_.get().hidden = YES;
       thin_titlebar_view_controller_.get().hidden = NO;
 
       immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight = 0;
       browser_window_.styleMask |= NSWindowStyleMaskFullSizeContentView;
       break;
     case mojom::ToolbarVisibilityStyle::kNone:
-      thin_titlebar_view_controller_.get().hidden = YES;
+      // TODO(https://crbug.com/1369643): Remove the thin controller.
+      // Needed when eventually exiting from content fullscreen and returning
+      // to mojom::ToolbarVisibilityStyle::kAlways. This is a workaround for
+      // https://crbug.com/1369643.
+      //
+      // We hit this situation when a window enters browser fullscreen, then
+      // enters content fullscreen. Exiting content fullscreen will drop the
+      // window back into browser fullscreen.
+      //
+      // We don't know what state we will be returning to when exiting content
+      // fullscreen, but `kAlways` is one of the options. Because of this we
+      // need to keep the thin controller visible during content fullscreen,
+      // otherwise we will trip https://crbug.com/1369643.
+      //
+      // Exiting content fullscreen and returning to `kAutohide` does not
+      // trigger https://crbug.com/1369643, but to keep things simple we keep
+      // the mitigation in place for all transitions out of content fullscreen.
+
+      // In short, when transitioning to `kNone` we need to take steps to
+      // mitigate https://crbug.com/1369643 which is triggered when we
+      // eventually transition out of `kNone`.
+      thin_titlebar_view_controller_.get().hidden = NO;
+
       immersive_mode_titlebar_view_controller_.get().hidden = YES;
       break;
   }
-
-  // Unpin the titlebar.
-  SetTitlebarPinned(false);
 }
 
-// This function will pin or unpin the titlebar (holder of the traffic
-// lights). When the titlebar is pinned the titlebar will stay present on
-// screen even if the mouse leaves the titlebar or Toolbar area. This is
-// helpful when displaying sub-widgets. When the titlebar is not pinned it
-// will reveal and auto-hide itself based on mouse movement (controlled by
-// AppKit).
-void ImmersiveModeController::SetTitlebarPinned(bool pinned) {
-  // Remove current, if any, clear controllers from the window. For some reason
-  // -removeFromParentViewController does not always remove the controller.
-  // Attempt to remove the current and any stale controllers.
-  for (NSTitlebarAccessoryViewController* c in browser_window_
-           .titlebarAccessoryViewControllers) {
-    if ([c isKindOfClass:[ClearTitlebarViewController class]]) {
-      [c removeFromParentViewController];
-    }
-  }
-
-  if (!pinned) {
-    clear_titlebar_view_controller_.reset();
-    return;
-  }
-
-  clear_titlebar_view_controller_.reset([[ClearTitlebarViewController alloc]
-      initWithHeight:browser_window_.contentView.frame.size.height -
-                     kThinControllerHeight]);
-  clear_titlebar_view_controller_.get().view =
-      [[[NSView alloc] init] autorelease];
-  clear_titlebar_view_controller_.get().layoutAttribute =
-      NSLayoutAttributeBottom;
-  [browser_window_
-      addTitlebarAccessoryViewController:clear_titlebar_view_controller_];
-}
-
-void ImmersiveModeController::ObserveOverlayChildWindows() {
-  // Watch the overlay Widget for new child Widgets.
-  NativeWidgetMacNSWindow* overlay_window =
-      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(overlay_window_);
-  overlay_window.childWindowAddedHandler = ^(NSWindow* child) {
+void ImmersiveModeController::ObserveChildWindows(NSWindow* window) {
+  // Watch the Widget for addition and removal of child Widgets.
+  NativeWidgetMacNSWindow* widget_window =
+      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(window);
+  widget_window.childWindowAddedHandler = ^(NSWindow* child) {
     OnChildWindowAdded(child);
+  };
+  widget_window.childWindowRemovedHandler = ^(NSWindow* child) {
+    OnChildWindowRemoved(child);
   };
 }
 
+void ImmersiveModeController::StopObservingChildWindows(NSWindow* window) {
+  NativeWidgetMacNSWindow* widget_window =
+      base::mac::ObjCCastStrict<NativeWidgetMacNSWindow>(window);
+  widget_window.childWindowAddedHandler = nil;
+  widget_window.childWindowRemovedHandler = nil;
+}
+
+bool ImmersiveModeController::ShouldObserveChildWindow(NSWindow* child) {
+  return true;
+}
+
 void ImmersiveModeController::OnChildWindowAdded(NSWindow* child) {
-  // Ignore non-visible children.
-  if (!child.visible) {
-    return;
+  // When windows are re-ordered they get removed and re-added triggering
+  // OnChildWindowRemoved and OnChildWindowAdded calls.
+  // Prevent any given window from obtaining more than one lock.
+  if (!base::Contains(window_lock_received_, child)) {
+    window_lock_received_.insert(child);
+    RevealLock();
   }
-  [child addObserver:immersive_mode_window_observer_
-          forKeyPath:@"visible"
-             options:NSKeyValueObservingOptionInitial |
-                     NSKeyValueObservingOptionNew
-             context:nullptr];
+
+  // TODO(https://crbug.com/1350595): Handle a detached find bar.
 }
 
-void ImmersiveModeController::ReparentChildWindows(NSWindow* source,
-                                                   NSWindow* target) {
-  NativeWidgetNSWindowBridge* source_bridge =
-      NativeWidgetNSWindowBridge::GetFromNativeWindow(source);
-  NativeWidgetNSWindowBridge* target_bridge =
-      NativeWidgetNSWindowBridge::GetFromNativeWindow(target);
-
-  // TODO(kerenzhu): DCHECK(source_bridge && target_bridge)
-  // Only in unittests the associated bridges might not exist.
-  if (source_bridge && target_bridge) {
-    source_bridge->MoveChildrenTo(target_bridge, /*anchored_only=*/true);
+void ImmersiveModeController::OnChildWindowRemoved(NSWindow* child) {
+  if (base::Contains(window_lock_received_, child)) {
+    window_lock_received_.erase(child);
+    RevealUnlock();
   }
-}
-
-void ImmersiveModeController::TitlebarLock() {
-  titlebar_lock_count_++;
-  if (titlebar_fully_visible_) {
-    SetTitlebarPinned(true);
-  }
-}
-
-void ImmersiveModeController::TitlebarUnlock() {
-  if (--titlebar_lock_count_ < 1) {
-    SetTitlebarPinned(false);
-  }
-  DCHECK(titlebar_lock_count_ >= 0);
 }
 
 void ImmersiveModeController::RevealLock() {
@@ -532,10 +458,8 @@ void ImmersiveModeController::RevealUnlock() {
     immersive_mode_titlebar_view_controller_.get().fullScreenMinHeight = 0;
   }
 
-  // Account for last_used_style_ changing to kAlways while a reveal lock was
-  // active.
-  if (reveal_lock_count_ < 1 &&
-      last_used_style_ == mojom::ToolbarVisibilityStyle::kAlways) {
+  // Account for last_used_style_ changing while a reveal lock was active.
+  if (reveal_lock_count_ < 1) {
     UpdateToolbarVisibility(last_used_style_);
   }
   DCHECK(reveal_lock_count_ >= 0);
@@ -572,15 +496,12 @@ void ImmersiveModeController::ImmersiveModeViewWillMoveToWindow(
 }
 
 void ImmersiveModeController::OnTitlebarFrameDidChange(NSRect frame) {
-  titlebar_fully_visible_ = frame.origin.y == 0;
-
   // Find the overlay view's point on screen (bottom left).
   NSPoint point_in_window = [overlay_content_view_ convertPoint:NSZeroPoint
                                                          toView:nil];
   NSPoint point_on_screen =
       [overlay_content_view_.window convertPointToScreen:point_in_window];
 
-  BOOL overlay_view_is_clipped = NO;
   // This branch is only useful on macOS 11 and greater. macOS 10.15 and
   // earlier move the window instead of clipping the view within the window.
   // This allows the overlay window to appropriately track the overlay view.
@@ -596,29 +517,6 @@ void ImmersiveModeController::OnTitlebarFrameDidChange(NSRect frame) {
     if (overlay_content_view_.visibleRect.size.height !=
         overlay_content_view_.frame.size.height) {
       point_on_screen.y = -overlay_content_view_.frame.size.height;
-      overlay_view_is_clipped = YES;
-    }
-  }
-
-  if (!overlay_view_is_clipped) {
-    // If there are sub-windows and the titlebar is fully visible (a y origin
-    // of 0), pin the titlebar. This will prevent the titlebar from autohiding
-    // and causing the sub-windows from moving up when the mouse leaves top
-    // chrome.
-    if (!titlebar_frame_change_barrier_ && titlebar_fully_visible_ &&
-        titlebar_lock_count() > 0) {
-      // Add a barrier to prevent re-entry, which is a byproduct of
-      // TitlebarLock() and TitlebarUnlock().
-      base::AutoReset<bool> set_barrier(&titlebar_frame_change_barrier_, YES);
-      // This lock / unlock scheme is to force the titlebar to be pinned in
-      // place, which can only be done when the titlebar is fully visible.
-      // Existing sub-windows hold a lock, however since the titlebar isn't
-      // fully revealed until this point the existing locks don't actually pin
-      // the titlebar. The existing locks are still important for knowing when
-      // to unpin the titlebar. When all outstanding locks are released the
-      // titlebar be unpinned.
-      TitlebarLock();
-      TitlebarUnlock();
     }
   }
 

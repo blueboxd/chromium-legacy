@@ -20,16 +20,15 @@
 
 #include "third_party/blink/renderer/core/svg/svg_text_element.h"
 
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
 
 namespace blink {
 
 SVGTextElement::SVGTextElement(Document& doc)
     : SVGTextPositioningElement(svg_names::kTextTag, doc) {}
 
-LayoutObject* SVGTextElement::CreateLayoutObject(const ComputedStyle& style,
-                                                 LegacyLayout legacy) {
-  return LayoutObjectFactory::CreateSVGText(*this, style, legacy);
+LayoutObject* SVGTextElement::CreateLayoutObject(const ComputedStyle&) {
+  return MakeGarbageCollected<LayoutNGSVGText>(this);
 }
 
 }  // namespace blink

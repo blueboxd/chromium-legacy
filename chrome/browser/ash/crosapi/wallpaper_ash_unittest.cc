@@ -6,11 +6,12 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "chrome/browser/ash/crosapi/wallpaper_ash.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/ash/wallpaper_handlers/test_backdrop_fetcher_delegate.h"
+#include "chrome/browser/ash/wallpaper_handlers/test_wallpaper_fetcher_delegate.h"
 #include "chrome/browser/ui/ash/test_wallpaper_controller.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -54,7 +55,7 @@ class WallpaperAshTest : public testing::Test {
  public:
   WallpaperAshTest()
       : user_manager_(new ash::FakeChromeUserManager()),
-        user_manager_enabler_(base::WrapUnique(user_manager_)),
+        user_manager_enabler_(base::WrapUnique(user_manager_.get())),
         testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   WallpaperAshTest(const WallpaperAshTest&) = delete;
   ~WallpaperAshTest() override = default;
@@ -72,7 +73,7 @@ class WallpaperAshTest : public testing::Test {
     // Create Wallpaper Controller Client.
     wallpaper_controller_client_ = std::make_unique<
         WallpaperControllerClientImpl>(
-        std::make_unique<wallpaper_handlers::TestBackdropFetcherDelegate>());
+        std::make_unique<wallpaper_handlers::TestWallpaperFetcherDelegate>());
     wallpaper_controller_client_->InitForTesting(&test_wallpaper_controller_);
   }
 
@@ -86,9 +87,9 @@ class WallpaperAshTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   WallpaperAsh wallpaper_ash_;
   data_decoder::test::InProcessDataDecoder data_decoder_;
-  ash::FakeChromeUserManager* const user_manager_;
+  const raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
-  TestingProfile* testing_profile_;
+  raw_ptr<TestingProfile, ExperimentalAsh> testing_profile_;
   TestingProfileManager testing_profile_manager_;
   TestWallpaperController test_wallpaper_controller_;
   std::unique_ptr<WallpaperControllerClientImpl> wallpaper_controller_client_;

@@ -30,10 +30,10 @@ struct GPU_EXPORT EnumTraits<gpu::mojom::GrContextType, gpu::GrContextType> {
         return gpu::mojom::GrContextType::kGL;
       case gpu::GrContextType::kVulkan:
         return gpu::mojom::GrContextType::kVulkan;
-      case gpu::GrContextType::kMetal:
-        return gpu::mojom::GrContextType::kMetal;
-      case gpu::GrContextType::kDawn:
-        return gpu::mojom::GrContextType::kDawn;
+      case gpu::GrContextType::kGraphiteDawn:
+        return gpu::mojom::GrContextType::kGraphiteDawn;
+      case gpu::GrContextType::kGraphiteMetal:
+        return gpu::mojom::GrContextType::kGraphiteMetal;
     }
     NOTREACHED();
     return gpu::mojom::GrContextType::kGL;
@@ -47,11 +47,11 @@ struct GPU_EXPORT EnumTraits<gpu::mojom::GrContextType, gpu::GrContextType> {
       case gpu::mojom::GrContextType::kVulkan:
         *out = gpu::GrContextType::kVulkan;
         return true;
-      case gpu::mojom::GrContextType::kMetal:
-        *out = gpu::GrContextType::kMetal;
+      case gpu::mojom::GrContextType::kGraphiteDawn:
+        *out = gpu::GrContextType::kGraphiteDawn;
         return true;
-      case gpu::mojom::GrContextType::kDawn:
-        *out = gpu::GrContextType::kDawn;
+      case gpu::mojom::GrContextType::kGraphiteMetal:
+        *out = gpu::GrContextType::kGraphiteMetal;
         return true;
     }
     return false;
@@ -260,10 +260,12 @@ struct GPU_EXPORT
 
     out->ignore_gpu_blocklist = prefs.ignore_gpu_blocklist();
     out->watchdog_starts_backgrounded = prefs.watchdog_starts_backgrounded();
-    if (!prefs.ReadGrContextType(&out->gr_context_type))
+    if (!prefs.ReadGrContextType(&out->gr_context_type)) {
       return false;
-    if (!prefs.ReadUseVulkan(&out->use_vulkan))
+    }
+    if (!prefs.ReadUseVulkan(&out->use_vulkan)) {
       return false;
+    }
     out->enable_vulkan_protected_memory =
         prefs.enable_vulkan_protected_memory();
     out->disable_vulkan_surface = prefs.disable_vulkan_surface();
@@ -271,7 +273,6 @@ struct GPU_EXPORT
         prefs.disable_vulkan_fallback_to_gl_for_testing();
     out->vulkan_heap_memory_limit = prefs.vulkan_heap_memory_limit();
     out->vulkan_sync_cpu_memory_limit = prefs.vulkan_sync_cpu_memory_limit();
-    out->enable_metal = prefs.enable_metal();
     out->enable_gpu_benchmarking_extension =
         prefs.enable_gpu_benchmarking_extension();
     out->enable_webgpu = prefs.enable_webgpu();
@@ -449,9 +450,6 @@ struct GPU_EXPORT
   static uint32_t vulkan_sync_cpu_memory_limit(
       const gpu::GpuPreferences& prefs) {
     return prefs.vulkan_sync_cpu_memory_limit;
-  }
-  static bool enable_metal(const gpu::GpuPreferences& prefs) {
-    return prefs.enable_metal;
   }
   static bool enable_gpu_benchmarking_extension(
       const gpu::GpuPreferences& prefs) {

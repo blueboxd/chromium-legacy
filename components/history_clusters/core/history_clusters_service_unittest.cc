@@ -136,7 +136,13 @@ class HistoryClustersServiceTestBase : public testing::Test {
  public:
   HistoryClustersServiceTestBase()
       : task_environment_(
-            base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME) {}
+            base::test::SingleThreadTaskEnvironment::TimeSource::MOCK_TIME) {
+    Config config;
+    // TODO(b/276488340): Update this test when non context clusterer code gets
+    //   cleaned up.
+    config.use_navigation_context_clusters = false;
+    SetConfigForTesting(config);
+  }
 
   void SetUp() override {
     CHECK(history_dir_.CreateUniqueTempDir());
@@ -444,6 +450,9 @@ class HistoryClustersServiceTest : public HistoryClustersServiceTestBase,
     scoped_feature_list_.InitAndEnableFeature(internal::kJourneys);
     Config config;
     config.persist_clusters_in_history_db = true;
+    // TODO(b/276488340): Update this test when non context clusterer code gets
+    //   cleaned up.
+    config.use_navigation_context_clusters = false;
     config.include_synced_visits = ExpectSyncedVisits();
     SetConfigForTesting(config);
   }
@@ -1390,280 +1399,6 @@ TEST_P(HistoryClustersServiceTest,
       ExpectSyncedVisits());
 }
 
-TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterWithNoisyURLs) {
-  Config config;
-  config.omnibox_action_on_urls = true;
-  config.omnibox_action_on_noisy_urls = true;
-  SetConfigForTesting(config);
-
-  AddHardcodedTestDataToHistoryService();
-
-  // Verify that initially, the test URL doesn't match anything, but this
-  // query should have kicked off a cache population request. This is the URL
-  // for visit 5.
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  std::vector<history::Cluster> clusters;
-  // This cluster should contribute to keywords.
-  clusters.push_back(history::Cluster(
-      0,
-      {
-          GetHardcodedClusterVisit(5),
-          GetHardcodedClusterVisit(5),
-          GetHardcodedClusterVisit(
-              /*visit_id=*/2, /*score=*/0.0, /*engagement_score=*/20.0),
-      },
-      {{u"apples", history::ClusterKeywordData()},
-       {u"oranges", history::ClusterKeywordData()},
-       {u"z", history::ClusterKeywordData()},
-       {u"apples bananas", history::ClusterKeywordData()}},
-      /*should_show_on_prominent_ui_surfaces=*/true));
-  // This cluster should NOT contribute to keywords because
-  // `should_show_on_prominent_ui_surfaces` is false.
-  clusters.push_back(
-      history::Cluster(0,
-                       {
-                           GetHardcodedClusterVisit(5),
-                           GetHardcodedClusterVisit(2),
-                       },
-                       {{u"sensitive", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/false));
-  // This cluster should NOT contribute to keywords because it only has 1
-  // visible visit.
-  clusters.push_back(
-      history::Cluster(0,
-                       {
-                           GetHardcodedClusterVisit(2),
-                           GetHardcodedClusterVisit(2, /*score=*/0),
-                       },
-                       {{u"singlevisit", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/true));
-
-  // Hardcoded test visits span 3 days (1-day-old, 2-days-old, and 60-day-old).
-  FlushKeywordRequests(clusters, 3);
-
-  // Now the exact query should match the populated cache.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  // Github should be shown since we are including visits from noisy URLs.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://github.com/"))));
-
-  // Deleting a history entry should clear the keyword cache.
-  history_service_->DeleteURLs({GURL{"https://google.com/"}});
-  history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  // Visits now span 2 days (1-day-old and 60-day-old) since we deleted the only
-  // 2-day-old visit.
-  FlushKeywordRequests(clusters, 2);
-
-  // The keyword cache should be repopulated.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-}
-
-TEST_P(HistoryClustersServiceTest, DoesURLMatchAnyClusterNoNoisyURLs) {
-  Config config;
-  config.omnibox_action_on_urls = true;
-  config.omnibox_action_on_noisy_urls = false;
-  SetConfigForTesting(config);
-
-  AddHardcodedTestDataToHistoryService();
-
-  // Verify that initially, the test URL doesn't match anything, but this
-  // query should have kicked off a cache population request. This is the URL
-  // for visit 5.
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  std::vector<history::Cluster> clusters;
-  // This cluster should contribute to keywords.
-  clusters.push_back(history::Cluster(
-      0,
-      {
-          GetHardcodedClusterVisit(5),
-          GetHardcodedClusterVisit(5),
-          GetHardcodedClusterVisit(
-              /*visit_id=*/2, /*score=*/0.0, /*engagement_score=*/20.0),
-      },
-      {{u"apples", history::ClusterKeywordData()},
-       {u"oranges", history::ClusterKeywordData()},
-       {u"z", history::ClusterKeywordData()},
-       {u"apples bananas", history::ClusterKeywordData()}},
-      /*should_show_on_prominent_ui_surfaces=*/true));
-  // This cluster should NOT contribute to keywords because
-  // `should_show_on_prominent_ui_surfaces` is false.
-  clusters.push_back(
-      history::Cluster(0,
-                       {
-                           GetHardcodedClusterVisit(5),
-                           GetHardcodedClusterVisit(2),
-                       },
-                       {{u"sensitive", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/false));
-  // This cluster should NOT contribute to keywords because it only has 1
-  // visible visit.
-  clusters.push_back(
-      history::Cluster(0,
-                       {
-                           GetHardcodedClusterVisit(2),
-                           GetHardcodedClusterVisit(2, /*score=*/0),
-                       },
-                       {{u"singlevisit", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/true));
-
-  // Hardcoded test visits span 3 days (1-day-old, 2-days-old, and 60-day-old).
-  FlushKeywordRequests(clusters, 3);
-
-  // Now the exact query should match the populated cache.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  // Github should never be shown (highly-engaged for cluster 1, sensitive for
-  // cluster 2, single visit cluster for cluster 3).
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://github.com/"))));
-
-  // Deleting a history entry should clear the keyword cache.
-  history_service_->DeleteURLs({GURL{"https://google.com/"}});
-  history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
-  EXPECT_FALSE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-
-  // Visits now span 2 days (1-day-old and 60-day-old) since we deleted the only
-  // 2-day-old visit.
-  FlushKeywordRequests(clusters, 2);
-
-  // The keyword cache should be repopulated.
-  EXPECT_TRUE(history_clusters_service_->DoesURLMatchAnyCluster(
-      ComputeURLKeywordForLookup(GURL("https://second-1-day-old-visit.com/"))));
-}
-
-class HistoryClustersServicePrefPersistenceTest
-    : public HistoryClustersServiceTestBase {
- public:
-  HistoryClustersServicePrefPersistenceTest() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{internal::kJourneys,
-                              internal::kJourneysPersistCachesToPrefs},
-        /*disabled_features=*/{});
-    Config config;
-    config.persist_clusters_in_history_db = true;
-    SetConfigForTesting(config);
-  }
-};
-
-TEST_F(HistoryClustersServicePrefPersistenceTest, LoadCachesFromPrefs) {
-  AddHardcodedTestDataToHistoryService();
-  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("apples"));
-
-  std::vector<history::Cluster> clusters;
-  clusters.push_back(history::Cluster(
-      0,
-      {
-          GetHardcodedClusterVisit(5),
-          GetHardcodedClusterVisit(2),
-      },
-      {{u"apples",
-        history::ClusterKeywordData(history::ClusterKeywordData::kEntity, 5.0f,
-                                    {"fuji", "honeycrisp"})},
-       {u"oranges", history::ClusterKeywordData(
-                        history::ClusterKeywordData::kSearchTerms, 100.0f, {})},
-       {u"z", history::ClusterKeywordData()},
-       {u"apples bananas", history::ClusterKeywordData()}},
-      /*should_show_on_prominent_ui_surfaces=*/true));
-
-  FlushKeywordRequests(clusters, 3);
-
-  const auto keyword_data =
-      history_clusters_service_->DoesQueryMatchAnyCluster("apples");
-  EXPECT_TRUE(keyword_data);
-
-  // Empty the cache artificially to simulate a process restart.
-  history_clusters_service_test_api_->SetAllKeywordsCache({});
-  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("apples"));
-
-  LoadCachesFromPrefs();
-
-  const auto apples_keyword_data =
-      history_clusters_service_->DoesQueryMatchAnyCluster("apples");
-  EXPECT_TRUE(apples_keyword_data);
-  EXPECT_EQ(apples_keyword_data,
-            history::ClusterKeywordData(history::ClusterKeywordData::kEntity,
-                                        5.0f, {"fuji", "honeycrisp"}));
-  const auto oranges_keyword_data =
-      history_clusters_service_->DoesQueryMatchAnyCluster("oranges");
-  EXPECT_TRUE(oranges_keyword_data);
-  EXPECT_EQ(oranges_keyword_data,
-            history::ClusterKeywordData(history::ClusterKeywordData(
-                history::ClusterKeywordData::kSearchTerms, 100.0f, {})));
-  EXPECT_TRUE(
-      history_clusters_service_->DoesQueryMatchAnyCluster("apples bananas"));
-}
-
-TEST_F(HistoryClustersServicePrefPersistenceTest,
-       LoadSecondaryCachesFromPrefs) {
-  AddHardcodedTestDataToHistoryService();
-  auto minutes_ago = [](int minutes) {
-    return base::Time::Now() - base::Minutes(minutes);
-  };
-
-  // Set up the cache timestamps.
-  history_clusters_service_test_api_->SetAllKeywordsCacheTimestamp(
-      minutes_ago(60));
-  history_clusters_service_test_api_->SetShortKeywordCacheTimestamp(
-      minutes_ago(15));
-
-  // Set up the visit timestamps.
-  // Visits newer than both cache timestamps should be reclustered.
-  auto visit = GetHardcodedTestVisits()[0];
-  visit.visit_row.visit_time = minutes_ago(5);
-  AddCompleteVisit(visit);
-  visit = GetHardcodedTestVisits()[1];
-  visit.visit_row.visit_time = minutes_ago(10);
-  AddCompleteVisit(visit);
-
-  // Kick off cluster request and verify the correct visits are sent.
-  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("peach"));
-  test_clustering_backend_->WaitForGetClustersCall();
-
-  // Send the cluster response and verify the keyword was cached.
-  std::vector<history::Cluster> clusters2;
-  clusters2.push_back(history::Cluster(
-      0,
-      {
-          GetHardcodedClusterVisit(1),
-          GetHardcodedClusterVisit(2),
-      },
-      {{u"peach",
-        history::ClusterKeywordData(history::ClusterKeywordData::kEntity, 13.0f,
-                                    {"georgia"})},
-       {u"", history::ClusterKeywordData()}},
-      /*should_show_on_prominent_ui_surfaces=*/true));
-  test_clustering_backend_->FulfillCallback(clusters2);
-  history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
-  EXPECT_TRUE(history_clusters_service_->DoesQueryMatchAnyCluster("peach"));
-
-  // Verify the keyword is in the short cache specifically.
-  history_clusters_service_test_api_->SetAllKeywordsCache({});
-  EXPECT_TRUE(history_clusters_service_->DoesQueryMatchAnyCluster("peach"));
-
-  // Empty the cache artificially to simulate a process restart.
-  history_clusters_service_test_api_->SetShortKeywordCache({});
-  EXPECT_FALSE(history_clusters_service_->DoesQueryMatchAnyCluster("peach"));
-
-  LoadCachesFromPrefs();
-  const auto peach_keyword_data =
-      history_clusters_service_->DoesQueryMatchAnyCluster("peach");
-  EXPECT_EQ(peach_keyword_data,
-            history::ClusterKeywordData(history::ClusterKeywordData(
-                history::ClusterKeywordData::kEntity, 13.0f, {"georgia"})));
-}
-
 class HistoryClustersServiceJourneysDisabledTest
     : public HistoryClustersServiceTestBase {
  public:
@@ -1699,6 +1434,9 @@ class HistoryClustersServiceMaxKeywordsTest
     // Set the max keyword phrases to 5.
     config_.is_journeys_enabled_no_locale_check = true;
     config_.max_keyword_phrases = 5;
+    // TODO(b/276488340): Update this test when non context clusterer code gets
+    //   cleaned up.
+    config_.use_navigation_context_clusters = false;
     SetConfigForTesting(config_);
   }
 
@@ -1782,6 +1520,9 @@ TEST_F(HistoryClustersServiceTestBase, UpdateClusters_Sparse) {
   // `persist_clusters_recluster_window_days`; i.e. no reclustering occurs.
   Config config;
   config.persist_clusters_in_history_db = true;
+  // TODO(b/276488340): Update this test when non context clusterer code gets
+  //   cleaned up.
+  config.use_navigation_context_clusters = false;
   config.max_persisted_clusters_to_fetch = 10;
   config.max_persisted_cluster_visits_to_fetch_soft_cap = 5;
   config.persist_clusters_recluster_window_days = 2;
@@ -1852,6 +1593,9 @@ TEST_F(HistoryClustersServiceTestBase, UpdateClusters_Reclustering) {
   // `persist_clusters_recluster_window_days`; i.e. reclustering occurs.
   Config config;
   config.persist_clusters_in_history_db = true;
+  // TODO(b/276488340): Update this test when non context clusterer code gets
+  //   cleaned up.
+  config.use_navigation_context_clusters = false;
   config.max_persisted_clusters_to_fetch = 10;
   config.max_persisted_cluster_visits_to_fetch_soft_cap = 5;
   config.persist_clusters_recluster_window_days = 1;
@@ -1999,6 +1743,9 @@ TEST_F(HistoryClustersServiceTestBase,
   // batch.
   Config config;
   config.persist_clusters_in_history_db = true;
+  // TODO(b/276488340): Update this test when non context clusterer code gets
+  //   cleaned up.
+  config.use_navigation_context_clusters = false;
   config.max_visits_to_cluster = 5;
   config.max_persisted_clusters_to_fetch = 100;
   config.max_persisted_cluster_visits_to_fetch_soft_cap = 100;
@@ -2064,6 +1811,9 @@ TEST_F(HistoryClustersServiceTestBase, UpdateClusters_PopularDay) {
   // Test the case there are more visits than `max_visits_to_cluster` in a day.
   Config config;
   config.persist_clusters_in_history_db = true;
+  // TODO(b/276488340): Update this test when non context clusterer code gets
+  //   cleaned up.
+  config.use_navigation_context_clusters = false;
   config.max_visits_to_cluster = 3;
   config.persist_clusters_recluster_window_days = 1;
   SetConfigForTesting(config);

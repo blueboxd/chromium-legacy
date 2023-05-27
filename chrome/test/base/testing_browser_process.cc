@@ -29,6 +29,7 @@
 #include "chrome/browser/status_icons/status_tray.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process_platform_part.h"
+#include "components/metrics/metrics_service.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/permissions/permissions_client.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -76,6 +77,9 @@
 #endif  // BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/serial/serial_policy_allowed_ports.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -118,6 +122,20 @@ void TestingBrowserProcess::DeleteInstance() {
   delete browser_process;
 }
 
+// static
+void TestingBrowserProcess::StartTearDown() {
+  TestingBrowserProcess* browser_process = TestingBrowserProcess::GetGlobal();
+  if (browser_process) {
+    browser_process->ShutdownBrowserPolicyConnector();
+  }
+}
+
+// static
+void TestingBrowserProcess::TearDownAndDeleteInstance() {
+  TestingBrowserProcess::StartTearDown();
+  TestingBrowserProcess::DeleteInstance();
+}
+
 TestingBrowserProcess::TestingBrowserProcess()
     : app_locale_("en"),
       platform_part_(std::make_unique<TestingBrowserProcessPlatformPart>()) {
@@ -130,7 +148,6 @@ TestingBrowserProcess::TestingBrowserProcess()
 
 TestingBrowserProcess::~TestingBrowserProcess() {
   EXPECT_FALSE(local_state_);
-  ShutdownBrowserPolicyConnector();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ExtensionsBrowserClient::Set(nullptr);
   extensions::AppWindowClient::Set(nullptr);
@@ -191,7 +208,7 @@ TestingBrowserProcess::GetMetricsServicesManager() {
 }
 
 metrics::MetricsService* TestingBrowserProcess::metrics_service() {
-  return nullptr;
+  return metrics_service_;
 }
 
 device::GeolocationManager* TestingBrowserProcess::geolocation_manager() {
@@ -219,6 +236,11 @@ TestingBrowserProcess::network_quality_tracker() {
 
 ProfileManager* TestingBrowserProcess::profile_manager() {
   return profile_manager_.get();
+}
+
+void TestingBrowserProcess::SetMetricsService(
+    metrics::MetricsService* metrics_service) {
+  metrics_service_ = metrics_service;
 }
 
 void TestingBrowserProcess::SetProfileManager(
@@ -549,8 +571,20 @@ void TestingBrowserProcess::SetLocalState(PrefService* local_state) {
 }
 
 void TestingBrowserProcess::ShutdownBrowserPolicyConnector() {
-  if (browser_policy_connector_)
+  if (browser_policy_connector_) {
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
+    // Initial cleanup for ChromeBrowserCloudManagement, shutdown components
+    // that depend on profile and notification system. For example,
+    // ProfileManager observer and KeyServices observer need to be removed
+    // before profiles.
+    auto* cloud_management_controller =
+        browser_policy_connector_->chrome_browser_cloud_management_controller();
+    if (cloud_management_controller) {
+      cloud_management_controller->ShutDown();
+    }
+#endif
     browser_policy_connector_->Shutdown();
+  }
   browser_policy_connector_.reset();
 }
 
@@ -592,5 +626,5 @@ TestingBrowserProcessInitializer::TestingBrowserProcessInitializer() {
 }
 
 TestingBrowserProcessInitializer::~TestingBrowserProcessInitializer() {
-  TestingBrowserProcess::DeleteInstance();
+  TestingBrowserProcess::TearDownAndDeleteInstance();
 }

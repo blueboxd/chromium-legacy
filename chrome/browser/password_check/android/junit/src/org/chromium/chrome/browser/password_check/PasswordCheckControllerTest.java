@@ -4,11 +4,12 @@
 
 package org.chromium.chrome.browser.password_check;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
@@ -56,7 +57,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.test.BaseRobolectricTestRunner;
-import org.chromium.chrome.browser.device_reauth.ReauthenticatorBridge;
 import org.chromium.chrome.browser.password_check.PasswordCheckProperties.ItemType;
 import org.chromium.chrome.browser.password_check.helper.PasswordCheckChangePasswordHelper;
 import org.chromium.chrome.browser.password_check.helper.PasswordCheckIconHelper;
@@ -109,8 +109,6 @@ public class PasswordCheckControllerTest {
     @Mock
     private PasswordAccessReauthenticationHelper mReauthenticationHelper;
     @Mock
-    private ReauthenticatorBridge mReauthenticatorBridge;
-    @Mock
     private SettingsLauncher mSettingsLauncher;
     @Mock
     private PasswordCheckIconHelper mIconHelper;
@@ -126,8 +124,8 @@ public class PasswordCheckControllerTest {
         UmaRecorderHolder.resetForTesting();
         MockitoAnnotations.initMocks(this);
         mModel = PasswordCheckProperties.createDefaultModel();
-        mMediator = new PasswordCheckMediator(mChangePasswordDelegate, mReauthenticationHelper,
-                mReauthenticatorBridge, mSettingsLauncher, mIconHelper);
+        mMediator = new PasswordCheckMediator(
+                mChangePasswordDelegate, mReauthenticationHelper, mSettingsLauncher, mIconHelper);
         PasswordCheckFactory.setPasswordCheckForTesting(mPasswordCheck);
         mMediator.initialize(mModel, mDelegate, PasswordCheckReferrer.PASSWORD_SETTINGS, () -> {});
         PasswordCheckMediator.setStatusUpdateDelayMillis(0);

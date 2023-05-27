@@ -25,3 +25,33 @@ message AttributionFilterValues {
 message AttributionFilterData {
   map<string, AttributionFilterValues> filter_values = 1;
 }
+
+message AttributionEventLevelMetadata {
+  optional uint64 trigger_data = 1;
+  optional int64 priority = 2;
+}
+
+message AttributionCommonAggregatableMetadata {
+  enum Coordinator {
+    AWS_CLOUD = 0;
+  }
+
+  optional Coordinator coordinator = 1;
+  optional string attestation_token = 2;
+}
+
+message AttributionAggregatableMetadata {
+  optional AttributionCommonAggregatableMetadata common_data = 1;
+
+  message Contribution {
+    optional AttributionAggregationKey key = 1;
+    optional uint32 value = 2;
+  }
+  repeated Contribution contributions = 2;
+}
+
+message AttributionNullAggregatableMetadata {
+  optional AttributionCommonAggregatableMetadata common_data = 1;
+  // Stored as microseconds since the Windows epoch (1601-01-01 00:00:00 UTC).
+  optional int64 fake_source_time = 2;
+}

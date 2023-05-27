@@ -165,17 +165,17 @@
   }
 </style>
 
-<div id="leftBanner" class="banner"></div>
 <div style$="--theme-frame-color:[[profileThemeInfo.themeFrameColor]];
              --theme-text-color:[[profileThemeInfo.themeFrameTextColor]];">
   <template is="dom-if" if="[[hasPreviousRoute_]]">
     <cr-icon-button id="backButton" iron-icon="cr:arrow-back"
-        on-click="onBackClick_" aria-label$="[[getBackButtonAriaLabel_()]]">
+        on-click="onBackClick_" aria-label$="[[getBackButtonAriaLabel_()]]"
+        title$="[[getBackButtonAriaLabel_()]]">
     </cr-icon-button>
   </template>
 </div>
 <div id="accountsContainer">
-  <img id="product-logo" on-click="onProductLogoTap_"
+  <img id="product-logo" on-click="onProductLogoClick_"
       srcset="chrome://theme/current-channel-logo@1x 1x,
               chrome://theme/current-channel-logo@2x 2x"
       role="presentation">
@@ -208,5 +208,4 @@
     </template>
   </div>
 </div>
-<div id="rightBanner" class="banner"></div>
 <div id="footer"></div>

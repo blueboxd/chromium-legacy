@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/buildflag_header.gni")
+import("//build/config/cronet/config.gni")
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
@@ -26,6 +27,8 @@ declare_args() {
   cast_test_extra_flags = ""
   vendor_cast_media_gtest_excludes = []
 }
+
+assert(!is_cronet_build)
 
 # Depends on all non-test targets that should be built by the Chromecast
 # internal build infrastructure.
@@ -579,6 +582,7 @@ if (!is_fuchsia) {
       "$root_gen_dir/components/cast/named_message_port_connector/named_message_port_connector_resources.pak",
       "$root_gen_dir/content/content_resources.pak",
       "$root_gen_dir/content/dev_ui_content_resources.pak",
+      "$root_gen_dir/content/gpu_resources.pak",
       "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
       "$root_gen_dir/net/net_resources.pak",
       "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
@@ -598,6 +602,7 @@ if (!is_fuchsia) {
       "//components/cast/named_message_port_connector:resources",
       "//content:content_resources",
       "//content:dev_ui_content_resources",
+      "//content/browser/resources/gpu:resources",
       "//mojo/public/js:resources",
       "//net:net_resources",
       "//third_party/blink/public:resources",
@@ -665,14 +670,6 @@ buildflag_header("chromecast_buildflags") {
 }
 
 if (is_android) {
-  generate_jni_registration("cast_shell_jni_registration") {
-    targets = [ ":cast_shell_apk" ]
-    if (chromecast_branding != "public") {
-      targets += [ ":cast_browser_generic_bundle_module" ]
-    }
-    manual_jni_registration = true
-  }
-
   android_assets("cast_shell_apk_assets") {
     sources = [ "$root_out_dir/assets/cast_shell.pak" ]
 

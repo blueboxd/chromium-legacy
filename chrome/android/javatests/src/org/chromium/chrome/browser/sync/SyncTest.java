@@ -45,8 +45,6 @@ public class SyncTest {
     @Rule
     public TestRule mProcessorRule = new Features.JUnitProcessor();
 
-    private static final String TAG = "SyncTest";
-
     /**
      * Waits until {@link SyncService#isSyncingUnencryptedUrls} returns desired value.
      */
@@ -105,12 +103,17 @@ public class SyncTest {
     @Feature({"Sync"})
     public void testStopAndStartSync() {
         CoreAccountInfo accountInfo = mSyncTestRule.setUpAccountAndEnableSyncForTesting();
-
-        mSyncTestRule.stopSync();
         Assert.assertEquals(accountInfo, mSyncTestRule.getPrimaryAccount(ConsentLevel.SYNC));
-        Assert.assertFalse(SyncTestUtil.isSyncFeatureEnabled());
 
-        mSyncTestRule.startSyncAndWait();
+        // Signing out should disable sync.
+        mSyncTestRule.signOut();
+        Assert.assertFalse(SyncTestUtil.isSyncFeatureEnabled());
+        Assert.assertNull(mSyncTestRule.getPrimaryAccount(ConsentLevel.SYNC));
+
+        accountInfo = mSyncTestRule.setUpAccountAndEnableSyncForTesting();
+
+        Assert.assertTrue(SyncTestUtil.isSyncFeatureEnabled());
+        Assert.assertEquals(accountInfo, mSyncTestRule.getPrimaryAccount(ConsentLevel.SYNC));
     }
 
     @Test

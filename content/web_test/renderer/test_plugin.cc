@@ -19,6 +19,7 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/resources/cross_thread_shared_bitmap.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "content/web_test/renderer/test_runner.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -254,7 +255,7 @@ void TestPlugin::UpdateGeometry(const gfx::Rect& window_rect,
         viz::SinglePlaneFormat::kRGBA_8888, rect_.size(), gfx::ColorSpace(),
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
         gpu::SHARED_IMAGE_USAGE_GLES2 | gpu::SHARED_IMAGE_USAGE_DISPLAY_READ,
-        gpu::kNullSurfaceHandle);
+        "TestLabel", gpu::kNullSurfaceHandle);
     gl_->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
 
     GLuint color_texture =
@@ -278,8 +279,8 @@ void TestPlugin::UpdateGeometry(const gfx::Rect& window_rect,
   } else {
     viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
     base::MappedReadOnlyRegion shm =
-        viz::bitmap_allocation::AllocateSharedBitmap(gfx::Rect(rect_).size(),
-                                                     viz::RGBA_8888);
+        viz::bitmap_allocation::AllocateSharedBitmap(
+            gfx::Rect(rect_).size(), viz::SinglePlaneFormat::kRGBA_8888);
     shared_bitmap_ = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
         id, std::move(shm), gfx::Rect(rect_).size(),
         viz::SinglePlaneFormat::kRGBA_8888);
@@ -323,8 +324,8 @@ bool TestPlugin::PrepareTransferableResource(
   gfx::Size size(rect_.size());
   if (!mailbox_.IsZero()) {
     *resource = viz::TransferableResource::MakeGpu(
-        mailbox_, GL_LINEAR, GL_TEXTURE_2D, sync_token_, size, viz::RGBA_8888,
-        false /* is_overlay_candidate */);
+        mailbox_, GL_LINEAR, GL_TEXTURE_2D, sync_token_, size,
+        viz::SinglePlaneFormat::kRGBA_8888, false /* is_overlay_candidate */);
     // We pass ownership of the shared image to the callback.
     *release_callback =
         base::BindOnce(&ReleaseSharedImage, context_provider_, mailbox_);
@@ -338,7 +339,8 @@ bool TestPlugin::PrepareTransferableResource(
                                                  shared_bitmap_);
 
     *resource = viz::TransferableResource::MakeSoftware(
-        shared_bitmap_->id(), shared_bitmap_->size(), viz::RGBA_8888);
+        shared_bitmap_->id(), shared_bitmap_->size(),
+        viz::SinglePlaneFormat::kRGBA_8888);
     *release_callback =
         base::BindOnce(&ReleaseSharedMemory, std::move(shared_bitmap_),
                        std::move(registration));

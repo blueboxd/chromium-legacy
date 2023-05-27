@@ -18,6 +18,7 @@ bool MessagePort::HasFrame(content::RenderFrameHost* rfh) const {
 void MessagePort::RevalidatePort() {}
 
 void MessagePort::DispatchOnConnect(
+    ChannelType channel_type,
     const std::string& channel_name,
     absl::optional<base::Value::Dict> source_tab,
     const ExtensionApiFrameIdMap::FrameData& source_frame,
@@ -36,9 +37,9 @@ void MessagePort::ClosePort(int process_id,
                             int routing_id,
                             int worker_thread_id) {}
 
-void MessagePort::IncrementLazyKeepaliveCount() {}
+void MessagePort::IncrementLazyKeepaliveCount(Activity::Type activity_type) {}
 
-void MessagePort::DecrementLazyKeepaliveCount() {}
+void MessagePort::DecrementLazyKeepaliveCount(Activity::Type activity_type) {}
 
 void MessagePort::NotifyResponsePending() {}
 

@@ -5,10 +5,12 @@
 #ifndef ASH_APP_LIST_VIEWS_FOLDER_HEADER_VIEW_H_
 #define ASH_APP_LIST_VIEWS_FOLDER_HEADER_VIEW_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/app_list/model/app_list_item_observer.h"
 #include "ash/ash_export.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -47,6 +49,9 @@ class ASH_EXPORT FolderHeaderView : public views::View,
 
  private:
   class FolderNameView;
+  class FolderNameJellyView;
+  class FolderNameViewController;
+
   friend class FolderHeaderViewTest;
   friend class PopulatedAppListTest;
 
@@ -82,16 +87,21 @@ class ASH_EXPORT FolderHeaderView : public views::View,
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
 
+  // Updates the backing folder item name in response to folder name textfield
+  // change.
+  void UpdateFolderName(const std::u16string& textfield_contents);
+
   // AppListItemObserver overrides:
   void ItemNameChanged() override;
 
-  AppListFolderItem* folder_item_;  // Not owned.
+  raw_ptr<AppListFolderItem, ExperimentalAsh> folder_item_;  // Not owned.
 
-  FolderNameView* folder_name_view_;  // Owned by views hierarchy.
+  raw_ptr<views::Textfield, ExperimentalAsh> folder_name_view_;
+  std::unique_ptr<FolderNameViewController> folder_name_controller_;
 
   const std::u16string folder_name_placeholder_text_;
 
-  FolderHeaderViewDelegate* delegate_;
+  raw_ptr<FolderHeaderViewDelegate, ExperimentalAsh> delegate_;
 
   bool folder_name_visible_;
 

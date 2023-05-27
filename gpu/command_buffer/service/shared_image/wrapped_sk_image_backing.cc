@@ -29,14 +29,27 @@
 
 namespace gpu {
 
+namespace {
+
+// Given a debug label string from the client, construct a string we can pass to
+// debugging tools.
+std::string GetLabel(const std::string& debug_label) {
+  return std::string("WrappedSkImage_" + debug_label);
+}
+
+}  // namespace
+
 class WrappedSkImageBacking::SkiaImageRepresentationImpl
-    : public SkiaImageRepresentation {
+    : public SkiaGaneshImageRepresentation {
  public:
   SkiaImageRepresentationImpl(SharedImageManager* manager,
                               SharedImageBacking* backing,
                               MemoryTypeTracker* tracker,
                               scoped_refptr<SharedContextState> context_state)
-      : SkiaImageRepresentation(manager, backing, tracker),
+      : SkiaGaneshImageRepresentation(context_state->gr_context(),
+                                      manager,
+                                      backing,
+                                      tracker),
         context_state_(std::move(context_state)) {}
 
   ~SkiaImageRepresentationImpl() override { DCHECK(write_surfaces_.empty()); }
@@ -175,7 +188,7 @@ WrappedSkImageBacking::~WrappedSkImageBacking() {
   }
 }
 
-bool WrappedSkImageBacking::Initialize() {
+bool WrappedSkImageBacking::Initialize(const std::string& debug_label) {
   DCHECK(!format().IsCompressed());
 
   // MakeCurrent to avoid destroying another client's state because Skia may
@@ -187,8 +200,6 @@ bool WrappedSkImageBacking::Initialize() {
 
   auto mipmap = usage() & SHARED_IMAGE_USAGE_MIPMAP ? GrMipMapped::kYes
                                                     : GrMipMapped::kNo;
-  const std::string label = "WrappedSkImageBackingFactory_Initialize" +
-                            CreateLabelForSharedImageUsage(usage());
 
   int num_planes = format().NumberOfPlanes();
   textures_.resize(num_planes);
@@ -214,12 +225,12 @@ bool WrappedSkImageBacking::Initialize() {
         context_state_->gr_context()->createBackendTexture(
             plane_size.width(), plane_size.height(), GetSkColorType(plane),
             fallback_color, mipmap, is_renderable, is_protected, nullptr,
-            nullptr, label);
+            nullptr, GetLabel(debug_label));
 #else
     texture.backend_texture =
         context_state_->gr_context()->createBackendTexture(
             plane_size.width(), plane_size.height(), GetSkColorType(plane),
-            mipmap, is_renderable, is_protected, label);
+            mipmap, is_renderable, is_protected, GetLabel(debug_label));
 #endif
 
     if (!texture.backend_texture.isValid()) {
@@ -235,7 +246,8 @@ bool WrappedSkImageBacking::Initialize() {
   return true;
 }
 
-bool WrappedSkImageBacking::InitializeWithData(base::span<const uint8_t> pixels,
+bool WrappedSkImageBacking::InitializeWithData(const std::string& debug_label,
+                                               base::span<const uint8_t> pixels,
                                                size_t stride) {
   DCHECK(format().is_single_plane());
   DCHECK(pixels.data());
@@ -260,13 +272,10 @@ bool WrappedSkImageBacking::InitializeWithData(base::span<const uint8_t> pixels,
       stride = info.minRowBytes();
     }
     SkPixmap pixmap(info, pixels.data(), stride);
-    const std::string label =
-        "WrappedSkImageBackingFactory_InitializeWithData" +
-        CreateLabelForSharedImageUsage(usage());
     textures_[0].backend_texture =
         context_state_->gr_context()->createBackendTexture(
             pixmap, GrRenderable::kYes, GrProtected::kNo, nullptr, nullptr,
-            label);
+            GetLabel(debug_label));
   }
 
   if (!textures_[0].backend_texture.isValid()) {
@@ -382,7 +391,8 @@ std::vector<sk_sp<SkSurface>> WrappedSkImageBacking::GetSkSurfaces(
   return surfaces;
 }
 
-std::unique_ptr<SkiaImageRepresentation> WrappedSkImageBacking::ProduceSkia(
+std::unique_ptr<SkiaGaneshImageRepresentation>
+WrappedSkImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {

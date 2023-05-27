@@ -4,6 +4,7 @@
 
 #include "chromeos/ash/components/network/cellular_policy_handler.h"
 
+#include "base/containers/contains.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/value_iterators.h"
@@ -24,7 +25,8 @@ namespace ash {
 
 namespace {
 
-const int kInstallRetryLimit = 10;
+constexpr int kInstallRetryLimit = 3;
+constexpr base::TimeDelta kInstallRetryDelay = base::Days(1);
 
 constexpr net::BackoffEntry::Policy kRetryBackoffPolicy = {
     0,               // Number of initial errors to ignore.
@@ -77,7 +79,7 @@ void CellularPolicyHandler::Init(
   hermes_observation_.Observe(HermesManagerClient::Get());
   cellular_esim_profile_handler_observation_.Observe(
       cellular_esim_profile_handler);
-  network_state_handler_observer_.Observe(network_state_handler_);
+  network_state_handler_observer_.Observe(network_state_handler_.get());
 }
 
 void CellularPolicyHandler::InstallESim(const std::string& smdp_address,
@@ -216,7 +218,8 @@ void CellularPolicyHandler::SetupESim(const dbus::ObjectPath& euicc_path) {
     NET_LOG(ERROR) << "No non-cellular type Internet connectivity.";
     auto current_request = std::move(remaining_install_requests_.front());
     PopRequest();
-    ScheduleRetry(std::move(current_request));
+    ScheduleRetry(std::move(current_request),
+                  InstallRetryReason::kMissingNonCellularConnectivity);
     ProcessRequests();
     return;
   }
@@ -262,7 +265,7 @@ void CellularPolicyHandler::OnConfigureESimService(
   auto current_request = std::move(remaining_install_requests_.front());
   PopRequest();
   if (!service_path) {
-    ScheduleRetry(std::move(current_request));
+    ScheduleRetry(std::move(current_request), InstallRetryReason::kOther);
     ProcessRequests();
     return;
   }
@@ -285,7 +288,19 @@ void CellularPolicyHandler::OnESimProfileInstallAttemptComplete(
   auto current_request = std::move(remaining_install_requests_.front());
   PopRequest();
   if (hermes_status != HermesResponseStatus::kSuccess) {
-    ScheduleRetry(std::move(current_request));
+    if (!base::Contains(kHermesUserErrorCodes, hermes_status)) {
+      NET_LOG(ERROR)
+          << "Failed to install an eSIM profile due to a non-user error: "
+          << hermes_status << ", scheduling a retry.";
+      ScheduleRetry(std::move(current_request),
+                    base::Contains(kHermesInternalErrorCodes, hermes_status)
+                        ? InstallRetryReason::kInternalError
+                        : InstallRetryReason::kOther);
+    } else {
+      NET_LOG(ERROR)
+          << "Failed to install an eSIM profile due to a user error: "
+          << hermes_status << ", not scheduling a retry.";
+    }
     ProcessRequests();
     return;
   }
@@ -306,8 +321,10 @@ void CellularPolicyHandler::OnESimProfileInstallAttemptComplete(
 }
 
 void CellularPolicyHandler::ScheduleRetry(
-    std::unique_ptr<InstallPolicyESimRequest> request) {
-  if (request->retry_backoff.failure_count() >= kInstallRetryLimit) {
+    std::unique_ptr<InstallPolicyESimRequest> request,
+    InstallRetryReason reason) {
+  if (reason != InstallRetryReason::kInternalError &&
+      request->retry_backoff.failure_count() >= kInstallRetryLimit) {
     NET_LOG(ERROR) << "Install policy eSIM profile with SMDP address: "
                    << request->smdp_address << " failed " << kInstallRetryLimit
                    << " times.";
@@ -316,7 +333,15 @@ void CellularPolicyHandler::ScheduleRetry(
   }
 
   request->retry_backoff.InformOfRequest(/*succeeded=*/false);
-  base::TimeDelta retry_delay = request->retry_backoff.GetTimeUntilRelease();
+
+  if (reason == InstallRetryReason::kOther) {
+    request->retry_backoff.SetCustomReleaseTime(base::TimeTicks::Now() +
+                                                kInstallRetryDelay);
+  }
+
+  const base::TimeDelta retry_delay =
+      request->retry_backoff.GetTimeUntilRelease();
+
   NET_LOG(ERROR) << "Install policy eSIM profile failed. Retrying in "
                  << retry_delay;
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
@@ -367,7 +392,7 @@ void CellularPolicyHandler::OnWaitTimeout() {
                  << ". Timed out waiting for EUICC or profile list.";
   auto current_request = std::move(remaining_install_requests_.front());
   PopRequest();
-  ScheduleRetry(std::move(current_request));
+  ScheduleRetry(std::move(current_request), InstallRetryReason::kInternalError);
   ProcessRequests();
 }
 

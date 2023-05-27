@@ -9,7 +9,6 @@
 #include "extensions/common/extension.h"
 
 namespace content {
-class BrowserContext;
 class WebContents;
 }  // namespace content
 
@@ -34,13 +33,12 @@ class SupervisedUserExtensionsDelegate {
 
   virtual ~SupervisedUserExtensionsDelegate() = default;
 
-  // Returns true if |context| represents a supervised child account.
-  virtual bool IsChild(content::BrowserContext* context) const = 0;
+  // Returns true if the primary account is a supervised child.
+  virtual bool IsChild() const = 0;
 
-  // Returns true if the parent has already approved the |extension|.
+  // Returns true if the parent has already approved the `extension`.
   virtual bool IsExtensionAllowedByParent(
-      const extensions::Extension& extension,
-      content::BrowserContext* context) const = 0;
+      const extensions::Extension& extension) const = 0;
 
   // If the current user is a child, the child user has a custodian/parent, and
   // the parent has enabled the "Permissions for sites, apps and extensions"
@@ -51,7 +49,6 @@ class SupervisedUserExtensionsDelegate {
   // fetched via a network request.
   virtual void RequestToAddExtensionOrShowError(
       const extensions::Extension& extension,
-      content::BrowserContext* browser_context,
       content::WebContents* web_contents,
       const gfx::ImageSkia& icon,
       ExtensionApprovalDoneCallback extension_approval_callback) = 0;
@@ -60,9 +57,23 @@ class SupervisedUserExtensionsDelegate {
   // installed extensions. The icon is fetched from local resources.
   virtual void RequestToEnableExtensionOrShowError(
       const extensions::Extension& extension,
-      content::BrowserContext* browser_context,
       content::WebContents* web_contents,
       ExtensionApprovalDoneCallback extension_approval_callback) = 0;
+
+  // Returns true if the primary account represents a supervised child account
+  // who may install extensions with parent permission.
+  virtual bool CanInstallExtensions() const = 0;
+
+  // Updates the set of approved extensions to add approval for `extension`.
+  virtual void AddExtensionApproval(const extensions::Extension& extension) = 0;
+
+  // Updates the set of approved extensions to remove approval for `extension`.
+  virtual void RemoveExtensionApproval(
+      const extensions::Extension& extension) = 0;
+
+  // Records when an extension has been enabled or disabled by parental
+  // controls.
+  virtual void RecordExtensionEnablementUmaMetrics(bool enabled) const = 0;
 };
 
 }  // namespace extensions

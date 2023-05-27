@@ -39,13 +39,23 @@ using password_manager::features::IsPasswordCheckupEnabled;
 
 namespace {
 
-// Maps CredentialUIEntry to PasswordIssue and sorts them by website and
-// username.
+// Creates PasswordIssues from CredentialUIEntry to display them in the Password
+// Issues list UI for the given `warning_type`. PasswordIssues are sorted by
+// website and username.
 NSArray<PasswordIssue*>* GetSortedPasswordIssues(
+    WarningType warning_type,
     const std::vector<CredentialUIEntry>& insecure_credentials) {
   NSMutableArray<PasswordIssue*>* passwords = [[NSMutableArray alloc] init];
+
+  BOOL enable_compromised_description =
+      IsPasswordCheckupEnabled() &&
+      (warning_type == WarningType::kCompromisedPasswordsWarning ||
+       warning_type == WarningType::kDismissedWarningsWarning);
+
   for (auto credential : insecure_credentials) {
-    [passwords addObject:[[PasswordIssue alloc] initWithCredential:credential]];
+    [passwords addObject:[[PasswordIssue alloc] initWithCredential:credential
+                                      enableCompromisedDescription:
+                                          enable_compromised_description]];
   }
 
   NSSortDescriptor* origin = [[NSSortDescriptor alloc] initWithKey:@"website"
@@ -91,9 +101,11 @@ NSArray<PasswordIssueGroup*>* GroupIssuesByPassword(
   [same_password_issues
       enumerateObjectsUsingBlock:^(NSMutableArray<PasswordIssue*>* issues,
                                    NSUInteger index, BOOL* stop) {
-        // TODO(crbug.com/1406540): Add header for each group.
+        NSString* headerText =
+            l10n_util::GetNSStringF(IDS_IOS_REUSED_PASSWORD_ISSUES_GROUP_HEADER,
+                                    base::NumberToString16(issues.count));
         [password_issue_groups
-            addObject:[[PasswordIssueGroup alloc] initWithHeaderText:nil
+            addObject:[[PasswordIssueGroup alloc] initWithHeaderText:headerText
                                                       passwordIssues:issues]];
       }];
 
@@ -111,7 +123,7 @@ NSArray<PasswordIssueGroup*>* GetPasswordIssueGroups(
 
   // Sort by website and username.
   NSArray<PasswordIssue*>* sorted_issues =
-      GetSortedPasswordIssues(insecure_credentials);
+      GetSortedPasswordIssues(warning_type, insecure_credentials);
 
   // Reused issues are grouped by passwords.
   if (warning_type == WarningType::kReusedPasswordsWarning) {
@@ -121,6 +133,29 @@ NSArray<PasswordIssueGroup*>* GetPasswordIssueGroups(
     return @[ [[PasswordIssueGroup alloc] initWithHeaderText:nil
                                               passwordIssues:sorted_issues] ];
   }
+}
+
+// Builds the text of the Dismissed Warnings button in the consumer.
+NSString* GetDismissedWarningsButtonText(NSInteger dismissed_warnings_count) {
+  return dismissed_warnings_count > 0
+             ? l10n_util::GetNSStringF(
+                   IDS_IOS_COMPROMISED_PASSWORD_ISSUES_DISMISSED_WARNINGS_BUTTON_TITLE,
+                   base::NumberToString16(dismissed_warnings_count))
+             : nil;
+}
+
+// Computes the number of dimissed insecure credentials warnings.
+// Only Compromissed credentials warnings can be dismissed, other warning types
+// always return 0.
+NSInteger GetDismissedWarningsCount(
+    WarningType warning_type,
+    const std::vector<CredentialUIEntry>& all_insecure_credentials) {
+  if (warning_type == WarningType::kCompromisedPasswordsWarning) {
+    return GetPasswordCountForWarningType(
+        WarningType::kDismissedWarningsWarning, all_insecure_credentials);
+  }
+
+  return 0;
 }
 
 }  // namespace
@@ -144,6 +179,10 @@ NSArray<PasswordIssueGroup*>* GetPasswordIssueGroups(
   // yet.
   absl::optional<std::vector<CredentialUIEntry>> _insecureCredentials;
 
+  // Last number of dismissed warnings passed to the consumer.
+  // Used to only update the consumer when the data it displays changed.
+  NSInteger _dismissedWarningsCount;
+
   // Object storing the time of the previous successful re-authentication.
   // This is meant to be used by the `ReauthenticationModule` for keeping
   // re-authentications valid for a certain time interval within the scope
@@ -166,8 +205,9 @@ NSArray<PasswordIssueGroup*>* GetPasswordIssueGroups(
               passwordCheckManager:(IOSChromePasswordCheckManager*)manager
                      faviconLoader:(FaviconLoader*)faviconLoader
                        syncService:(syncer::SyncService*)syncService {
-  DCHECK(manager);
-  DCHECK(syncService);
+  CHECK(manager);
+  CHECK(syncService);
+  CHECK_NE(warningType, WarningType::kNoInsecurePasswordsWarning);
   // `faviconLoader` might be null in tests.
 
   self = [super init];
@@ -205,6 +245,11 @@ NSArray<PasswordIssueGroup*>* GetPasswordIssueGroups(
   [self providePasswordsToConsumer];
 }
 
+- (BOOL)hasOneIssueLeft {
+  return _insecureCredentials.has_value() &&
+         _insecureCredentials->size() == 1 && _dismissedWarningsCount == 0;
+}
+
 #pragma mark - PasswordCheckObserver
 
 - (void)passwordCheckStateDidChange:(PasswordCheckState)state {
@@ -226,58 +271,83 @@ NSArray<PasswordIssueGroup*>* GetPasswordIssueGroups(
 - (void)providePasswordsToConsumer {
   DCHECK(self.consumer);
 
-  std::vector<CredentialUIEntry> insecureCredentials;
-  if (IsPasswordCheckupEnabled()) {
-    insecureCredentials = GetPasswordsForWarningType(
-        _warningType, _manager->GetInsecureCredentials());
-
-    if (_insecureCredentials.has_value() &&
-        _insecureCredentials.value() == insecureCredentials) {
-      // Avoid updating the UI when no changes occurred in the insecure
-      // credentials for the warning type being displayed.
-      return;
-    }
-    _insecureCredentials = insecureCredentials;
-  } else {
-    insecureCredentials = _manager->GetInsecureCredentials();
+  if (!IsPasswordCheckupEnabled()) {
+    [self providePasswordsToLegacyConsumer];
+    return;
   }
 
-  [self.consumer setPasswordIssues:GetPasswordIssueGroups(_warningType,
-                                                          insecureCredentials)];
+  std::vector<CredentialUIEntry> allInsecureCredentials =
+      _manager->GetInsecureCredentials();
+
+  std::vector<CredentialUIEntry> insecureCredentialsForWarningType =
+      GetPasswordsForWarningType(_warningType, allInsecureCredentials);
+
+  NSInteger dismissedWarningsCount =
+      GetDismissedWarningsCount(_warningType, allInsecureCredentials);
+
+  if (![self
+          shouldUpdateConsumerWithInsecureCredentials:
+              &insecureCredentialsForWarningType
+                               dismissedWarningsCount:dismissedWarningsCount]) {
+    return;
+  }
+
+  _insecureCredentials = insecureCredentialsForWarningType;
+  _dismissedWarningsCount = dismissedWarningsCount;
+
+  NSArray<PasswordIssueGroup*>* passwordIssueGroups =
+      GetPasswordIssueGroups(_warningType, insecureCredentialsForWarningType);
+  NSString* dismissedCredentialsButtonText =
+      GetDismissedWarningsButtonText(dismissedWarningsCount);
+  [self.consumer setPasswordIssues:passwordIssueGroups
+       dismissedWarningsButtonText:dismissedCredentialsButtonText];
 
   [self.consumer
-      setNavigationBarTitle:[self navigationBarTitleForNumberOfIssues:
-                                      insecureCredentials.size()]];
+      setNavigationBarTitle:[self
+                                navigationBarTitleForNumberOfIssues:
+                                    insecureCredentialsForWarningType.size()]];
 }
 
-// Computes the navigation bar title based on `_context`, number of issues and
-// feature flags.
+- (void)providePasswordsToLegacyConsumer {
+  CHECK(!IsPasswordCheckupEnabled());
+  CHECK_EQ(_warningType, WarningType::kCompromisedPasswordsWarning);
+
+  [self.consumer
+      setNavigationBarTitle:l10n_util::GetNSString(IDS_IOS_PASSWORDS)];
+
+  std::vector<CredentialUIEntry> insecureCredentials =
+      _manager->GetInsecureCredentials();
+
+  [self.consumer
+                setPasswordIssues:GetPasswordIssueGroups(
+                                      WarningType::kCompromisedPasswordsWarning,
+                                      insecureCredentials)
+      dismissedWarningsButtonText:nil];
+}
+
+// Computes the navigation bar title based on `_warningType` and number of
+// issues.
 - (NSString*)navigationBarTitleForNumberOfIssues:(long)numberOfIssues {
-  if (IsPasswordCheckupEnabled()) {
-    switch (_warningType) {
-      case WarningType::kWeakPasswordsWarning:
-        return base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
-            IDS_IOS_WEAK_PASSWORD_ISSUES_TITLE, numberOfIssues));
+  CHECK(IsPasswordCheckupEnabled());
+  switch (_warningType) {
+    case WarningType::kWeakPasswordsWarning:
+      return base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+          IDS_IOS_WEAK_PASSWORD_ISSUES_TITLE, numberOfIssues));
 
-      case WarningType::kCompromisedPasswordsWarning:
-        return base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
-            IDS_IOS_COMPROMISED_PASSWORD_ISSUES_TITLE, numberOfIssues));
+    case WarningType::kCompromisedPasswordsWarning:
+      return base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
+          IDS_IOS_COMPROMISED_PASSWORD_ISSUES_TITLE, numberOfIssues));
 
-      case WarningType::kDismissedWarningsWarning:
-        return l10n_util::GetNSString(
-            IDS_IOS_DISMISSED_WARNINGS_PASSWORD_ISSUES_TITLE);
+    case WarningType::kDismissedWarningsWarning:
+      return l10n_util::GetNSString(
+          IDS_IOS_DISMISSED_WARNINGS_PASSWORD_ISSUES_TITLE);
 
-      case WarningType::kReusedPasswordsWarning:
-        return l10n_util::GetNSStringF(IDS_IOS_REUSED_PASSWORD_ISSUES_TITLE,
-                                       base::NumberToString16(numberOfIssues));
+    case WarningType::kReusedPasswordsWarning:
+      return l10n_util::GetNSStringF(IDS_IOS_REUSED_PASSWORD_ISSUES_TITLE,
+                                     base::NumberToString16(numberOfIssues));
 
-      case WarningType::kNoInsecurePasswordsWarning:
-        // no-op
-        return nil;
-    }
-
-  } else {
-    return l10n_util::GetNSString(IDS_IOS_PASSWORDS);
+    case WarningType::kNoInsecurePasswordsWarning:
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -325,6 +395,20 @@ NSArray<PasswordIssueGroup*>* GetPasswordIssueGroups(
           : nil;
 
   [self.consumer setHeader:headerText URL:localizedHeaderURL];
+}
+
+// Whether the consumer should be updated after a change in insecure credentials
+// or the number of dismissed compromised warnings.
+- (BOOL)shouldUpdateConsumerWithInsecureCredentials:
+            (std::vector<CredentialUIEntry>*)insecureCredentials
+                             dismissedWarningsCount:
+                                 (NSInteger)dismissedWarningsCount {
+  // There's no need to update the UI when no changes occurred in the insecure
+  // credentials for the warning type being displayed or the number of dismissed
+  // compromised warnings.
+  return dismissedWarningsCount != _dismissedWarningsCount ||
+         !_insecureCredentials.has_value() ||
+         _insecureCredentials.value() != *insecureCredentials;
 }
 
 #pragma mark SuccessfulReauthTimeAccessor

@@ -33,7 +33,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/svg/layout_ng_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_masker.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
@@ -142,50 +141,6 @@ bool LayoutSVGRoot::IsEmbeddedThroughFrameContainingSVGDocument() const {
   return owner_layout_object && owner_layout_object->IsEmbeddedObject();
 }
 
-LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalWidth(
-    ShouldComputePreferred should_compute_preferred) const {
-  NOT_DESTROYED();
-  // When we're embedded through SVGImage
-  // (border-image/background-image/<html:img>/...) we're forced to resize to a
-  // specific size.
-  if (!container_size_.IsEmpty())
-    return container_size_.Width();
-
-  if (IsEmbeddedThroughFrameContainingSVGDocument())
-    return ContainingBlock()->AvailableLogicalWidth();
-
-  LayoutUnit width =
-      LayoutReplaced::ComputeReplacedLogicalWidth(should_compute_preferred);
-  if (StyleRef().LogicalWidth().IsPercentOrCalc())
-    width *= LogicalSizeScaleFactorForPercentageLengths();
-  return width;
-}
-
-LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
-    LayoutUnit estimated_used_width) const {
-  NOT_DESTROYED();
-  // When we're embedded through SVGImage
-  // (border-image/background-image/<html:img>/...) we're forced to resize to a
-  // specific size.
-  if (!container_size_.IsEmpty())
-    return container_size_.Height();
-
-  if (IsEmbeddedThroughFrameContainingSVGDocument())
-    return ContainingBlock()->AvailableLogicalHeight(
-        kIncludeMarginBorderPadding);
-
-  const Length& logical_height = StyleRef().LogicalHeight();
-  if (IsDocumentElement() && logical_height.IsPercentOrCalc()) {
-    LayoutUnit height = ValueForLength(
-        logical_height,
-        GetDocument().GetLayoutView()->ViewLogicalHeightForPercentages());
-    height *= LogicalSizeScaleFactorForPercentageLengths();
-    return height;
-  }
-
-  return LayoutReplaced::ComputeReplacedLogicalHeight(estimated_used_width);
-}
-
 double LayoutSVGRoot::LogicalSizeScaleFactorForPercentageLengths() const {
   NOT_DESTROYED();
   if (!IsDocumentElement() || !GetDocument().IsInOutermostMainFrame())
@@ -205,10 +160,6 @@ void LayoutSVGRoot::UpdateLayout() {
   DCHECK(NeedsLayout());
 
   LayoutSize old_size = Size();
-  if (!RuntimeEnabledFeatures::LayoutNGReplacedNoBoxSettersEnabled()) {
-    UpdateLogicalWidth();
-    UpdateLogicalHeight();
-  }
 
   // Whether we have a self-painting layer depends on whether there are
   // compositing descendants (see: |HasCompositingDescendants()| which is called
@@ -275,8 +226,6 @@ void LayoutSVGRoot::UpdateLayout() {
       Layer()->SetNeedsCompositingInputsUpdate();
   }
 
-  if (!RuntimeEnabledFeatures::LayoutNGUnifyUpdateAfterLayoutEnabled())
-    UpdateAfterLayout();
   ClearNeedsLayout();
 }
 

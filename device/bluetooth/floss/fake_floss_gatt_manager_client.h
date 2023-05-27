@@ -21,9 +21,18 @@ class DEVICE_BLUETOOTH_EXPORT FakeFlossGattManagerClient
 
   void Connect(ResponseCallback<Void> callback,
                const std::string& remote_device,
-               const BluetoothTransport& transport) override;
+               const BluetoothTransport& transport,
+               bool is_direct) override;
+
+  void AddService(ResponseCallback<Void> callback,
+                  GattService service) override;
+
+  void RemoveService(ResponseCallback<Void> callback, int32_t handle) override;
 
  private:
+  // A map of added services, with dbus-assigned instance ids as keys.
+  std::map<int32_t, GattService> services_;
+
   base::WeakPtrFactory<FakeFlossGattManagerClient> weak_ptr_factory_{this};
 };
 

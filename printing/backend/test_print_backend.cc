@@ -52,10 +52,12 @@ mojom::ResultCode ReportErrorNoDevice(const base::Location& from_here) {
   return mojom::ResultCode::kFailed;
 }
 
+#if BUILDFLAG(IS_WIN)
 mojom::ResultCode ReportErrorNotImplemented(const base::Location& from_here) {
   DLOG(ERROR) << from_here.ToString() << " failed, method not implemented";
   return mojom::ResultCode::kFailed;
 }
+#endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace
 
@@ -122,16 +124,27 @@ mojom::ResultCode TestPrintBackend::GetPrinterSemanticCapsAndDefaults(
     return ReportErrorNoData(FROM_HERE);
 
   *printer_caps = *data->caps;
+#if BUILDFLAG(IS_WIN)
+  // The Windows implementation does not load the printable area for all
+  // paper sizes, only for the default size.  Mimic this behavior by
+  // defaulting the printable area to the physical size any other paper
+  // sizes.
+  for (auto& paper : printer_caps->papers) {
+    if (paper != printer_caps->default_paper) {
+      paper.printable_area_um = gfx::Rect(paper.size_um);
+    }
+  }
+#endif
   return mojom::ResultCode::kSuccess;
 }
 
+#if BUILDFLAG(IS_WIN)
 mojom::ResultCode TestPrintBackend::GetPrinterCapsAndDefaults(
     const std::string& printer_name,
     PrinterCapsAndDefaults* printer_caps) {
   return ReportErrorNotImplemented(FROM_HERE);
 }
 
-#if BUILDFLAG(IS_WIN)
 absl::optional<gfx::Rect> TestPrintBackend::GetPaperPrintableArea(
     const std::string& printer_name,
     const std::string& paper_vendor_id,

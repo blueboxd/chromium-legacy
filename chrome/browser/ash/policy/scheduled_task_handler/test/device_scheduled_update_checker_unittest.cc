@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -207,11 +208,11 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
 
   // Sets a daily update check policy and returns true iff it's scheduled
   // correctly. |hours_from_now| must be > 0.
-  bool CheckDailyUpdateCheck(int hours_fom_now) {
-    DCHECK_GT(hours_fom_now, 0);
-    // Calculate time from one hour from now and set the update check policy to
+  bool CheckDailyUpdateCheck(int hours_from_now) {
+    DCHECK_GT(hours_from_now, 0);
+    // Calculate delay using |hours_from_now| and set the update check policy to
     // happen daily at that time.
-    base::TimeDelta delay_from_now = base::Hours(hours_fom_now);
+    base::TimeDelta delay_from_now = base::Hours(hours_from_now);
     auto policy_and_next_update_check_time =
         scheduled_task_test_util::CreatePolicy(
             scheduled_task_executor_->GetTimeZone(),
@@ -349,11 +350,12 @@ class DeviceScheduledUpdateCheckerTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   // Owned by |device_scheduled_update_checker_|
-  FakeScheduledTaskExecutor* scheduled_task_executor_;
+  raw_ptr<FakeScheduledTaskExecutor, ExperimentalAsh> scheduled_task_executor_;
   std::unique_ptr<DeviceScheduledUpdateCheckerForTest>
       device_scheduled_update_checker_;
   ash::ScopedTestingCrosSettings cros_settings_;
-  ash::FakeUpdateEngineClient* fake_update_engine_client_;
+  raw_ptr<ash::FakeUpdateEngineClient, ExperimentalAsh>
+      fake_update_engine_client_;
   std::unique_ptr<ash::NetworkStateTestHelper> network_state_test_helper_;
   device::TestWakeLockProvider wake_lock_provider_;
 

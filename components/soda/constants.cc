@@ -15,6 +15,7 @@
 #include "components/component_updater/component_updater_paths.h"
 #include "components/crx_file/id_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace speech {
 
@@ -183,13 +184,10 @@ LanguageCode GetLanguageCode(const std::string& language_name) {
   return LanguageCode::kNone;
 }
 
-int GetLanguageDisplayName(const std::string& language_name) {
-  absl::optional<SodaLanguagePackComponentConfig> language_config =
-      GetLanguageComponentConfig(language_name);
-  if (language_config.has_value()) {
-    return language_config.value().display_name;
-  }
-  return 0;
+const std::u16string GetLanguageDisplayName(const std::string& language_name,
+                                            const std::string& display_locale) {
+  return l10n_util::GetDisplayNameForLocaleWithoutCountry(language_name,
+                                                          display_locale, true);
 }
 
 const std::string GetInstallationSuccessTimeMetricForLanguagePack(

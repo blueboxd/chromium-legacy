@@ -14,10 +14,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Description;
@@ -36,7 +36,6 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -46,6 +45,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.features.start_surface.StartSurfaceTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.RecentTabsPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;

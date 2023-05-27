@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <iterator>
 
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
@@ -427,6 +428,14 @@ bool AutofillField::IsFieldFillable() const {
   return IsFillableFieldType(field_type);
 }
 
+bool AutofillField::HasExpirationDateType() const {
+  static constexpr std::array kExpirationDateTypes = {
+      CREDIT_CARD_EXP_MONTH, CREDIT_CARD_EXP_2_DIGIT_YEAR,
+      CREDIT_CARD_EXP_4_DIGIT_YEAR, CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR,
+      CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR};
+  return base::Contains(kExpirationDateTypes, Type().GetStorableType());
+}
+
 bool AutofillField::HasPredictionDespiteUnrecognizedAutocompleteAttribute()
     const {
   return html_type_ == HtmlFieldType::kUnrecognized &&
@@ -472,6 +481,24 @@ void AutofillField::AppendLogEventIfNotRepeated(
       field_log_events_.back().index() != log_event.index() ||
       !AreCollapsibleLogEvents(field_log_events_.back(), log_event)) {
     field_log_events_.push_back(log_event);
+  }
+}
+
+FormControlType AutofillField::FormControlType() const {
+  if (form_control_type == "text") {
+    return FormControlType::kText;
+  } else if (form_control_type == "textarea") {
+    return FormControlType::kTextarea;
+  } else if (form_control_type == "checkbox") {
+    return FormControlType::kCheckbox;
+  } else if (form_control_type == "radio") {
+    return FormControlType::kRadio;
+  } else if (form_control_type == "select-one") {
+    return FormControlType::kSelectOne;
+  } else if (form_control_type == "") {
+    return FormControlType::kEmpty;
+  } else {
+    return FormControlType::kOther;
   }
 }
 

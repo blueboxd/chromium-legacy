@@ -19,12 +19,16 @@ import '../settings_vars.css.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {flush, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 
 import {getTemplate} from './address_edit_dialog.html.js';
 import * as uiComponents from './address_edit_dialog_components.js';
+
+const SANCTOINED_COUNTRY_CODES: readonly string[] =
+    Object.freeze(['CU', 'IR', 'KP', 'SD', 'SY']);
 
 export interface SettingsAddressEditDialogElement {
   $: {
@@ -79,7 +83,13 @@ export class SettingsAddressEditDialogElement extends
 
       isAccountAddress_: {
         type: Boolean,
-        computed: 'isAddressStoredInAccount_(address)',
+        computed: 'isAddressStoredInAccount_(address, accountInfo)',
+        value: false,
+      },
+
+      accountAddressSourceNotice_: {
+        type: String,
+        computed: 'getAccountAddressSourceNotice_(address, accountInfo)',
       },
 
       /**
@@ -118,7 +128,17 @@ export class SettingsAddressEditDialogElement extends
   override connectedCallback(): void {
     super.connectedCallback();
 
+    assert(this.address);
+
     this.countryInfo_.getCountryList().then(countryList => {
+      if (this.address.guid && this.address.metadata !== undefined &&
+          this.address.metadata.source === AddressSource.ACCOUNT) {
+        // TODO(crbug.com/1432505): remove temporary sanctioned countries
+        // filtering.
+        countryList = countryList.filter(
+            country => !!country.countryCode &&
+                !SANCTOINED_COUNTRY_CODES.includes(country.countryCode));
+      }
       this.countries_ = countryList;
 
       const isEditingExistingAddress = !!this.address.guid;
@@ -289,9 +309,25 @@ export class SettingsAddressEditDialogElement extends
     return !country.countryCode;
   }
 
-  private isAddressStoredInAccount_(address: AddressEntry): boolean {
-    return address.metadata !== undefined &&
-        address.metadata.source === AddressSource.ACCOUNT;
+  private isAddressStoredInAccount_(): boolean {
+    if (this.address.guid) {
+      return this.address.metadata !== undefined &&
+          this.address.metadata.source === AddressSource.ACCOUNT;
+    }
+
+    return this.accountInfo !== undefined &&
+        this.accountInfo.isEligibleForAddressAccountStorage;
+  }
+
+  private getAccountAddressSourceNotice_(): string|undefined {
+    if (this.accountInfo) {
+      return this.i18n(
+          this.address.guid ? 'editAccountAddressSourceNotice' :
+                              'newAccountAddressSourceNotice',
+          this.accountInfo.email);
+    }
+
+    return undefined;
   }
 
   /**
@@ -328,14 +364,14 @@ export class SettingsAddressEditDialogElement extends
         component => !component.isValid && !component.isValidatable);
   }
 
-  private onCancelTap_(): void {
+  private onCancelClick_(): void {
     this.$.dialog.cancel();
   }
 
   /**
    * Handler for tapping the save button.
    */
-  private onSaveButtonTap_(): void {
+  private onSaveButtonClick_(): void {
     this.notifyValidity_();
 
     this.updateCanSave_();

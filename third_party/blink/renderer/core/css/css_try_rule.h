@@ -11,6 +11,7 @@
 namespace blink {
 
 class CSSPositionFallbackRule;
+class StyleRuleCSSStyleDeclaration;
 
 class StyleRuleTry final : public StyleRuleBase {
  public:
@@ -18,6 +19,7 @@ class StyleRuleTry final : public StyleRuleBase {
   ~StyleRuleTry();
 
   const CSSPropertyValueSet& Properties() const { return *properties_; }
+  MutableCSSPropertyValueSet& MutableProperties();
 
   void TraceAfterDispatch(Visitor*) const;
 
@@ -37,6 +39,7 @@ class CSSTryRule final : public CSSRule {
   CSSTryRule(StyleRuleTry*, CSSPositionFallbackRule* parent);
   ~CSSTryRule() final;
 
+  CSSStyleDeclaration* style() const;
   Type GetType() const final { return kTryRule; }
 
   String cssText() const final;
@@ -46,6 +49,14 @@ class CSSTryRule final : public CSSRule {
 
  private:
   Member<StyleRuleTry> try_rule_;
+  mutable Member<StyleRuleCSSStyleDeclaration> properties_cssom_wrapper_;
+};
+
+template <>
+struct DowncastTraits<CSSTryRule> {
+  static bool AllowFrom(const CSSRule& rule) {
+    return rule.GetType() == CSSRule::kTryRule;
+  }
 };
 
 }  // namespace blink

@@ -21,8 +21,6 @@ PerformanceControlsHatsService::PerformanceControlsHatsService(Profile* profile)
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
     if (base::FeatureList::IsEnabled(
-            performance_manager::features::kHighEfficiencyModeAvailable) &&
-        base::FeatureList::IsEnabled(
             performance_manager::features::
                 kPerformanceControlsHighEfficiencyOptOutSurvey)) {
       performance_manager::user_tuning::UserPerformanceTuningManager::
@@ -32,8 +30,6 @@ PerformanceControlsHatsService::PerformanceControlsHatsService(Profile* profile)
 
     local_pref_registrar_.Init(local_state);
     if (base::FeatureList::IsEnabled(
-            performance_manager::features::kBatterySaverModeAvailable) &&
-        base::FeatureList::IsEnabled(
             performance_manager::features::
                 kPerformanceControlsBatterySaverOptOutSurvey)) {
       local_pref_registrar_.Add(

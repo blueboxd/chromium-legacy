@@ -1,6 +1,6 @@
 <style>
 /* TODO(crbug.com/1350406): update the style after UI design
-   spec is finalized.*/
+  spec is finalized.*/
 
 :host {
   align-items: center;
@@ -50,114 +50,76 @@
   width: 100%;
 }
 
-.dropdown-item-label {
-  flex: 1;
-  padding-inline-end: 30px;
-}
-
 hr {
   border-top: var(--cr-separator-line);
   height: 0;
 }
 
 cr-checkbox::part(label-container) {
-  clip: rect(0,0,0,0);
-  display: block;
-  position: fixed;
+  flex: 1;
 }
 
-cr-action-menu {
-  /* Used to force dark mode */
-  --cr-primary-text-color: var(--google-grey-200);
-  --cr-secondary-text-color: var(--google-grey-500);
-
-  --cr-card-background-color: var(--google-grey-900-white-4-percent);
-  --cr-card-shadow-color-rgb: 0, 0, 0;
-
-  --cr-checked-color: var(--google-blue-300);
-  --cr-focused-item-color: var(--google-grey-800);
-  --cr-form-field-label-color: var(--dark-secondary-color);
-  --cr-hairline-rgb: 255, 255, 255;
-  --cr-iph-anchor-highlight-color: rgba(var(--google-grey-100-rgb), 0.1);
-  --cr-link-color: var(--google-blue-300);
-  --cr-menu-background-color: var(--google-grey-900);
-  --cr-menu-background-focus-color: var(--google-grey-700);
-  --cr-menu-background-sheen: rgba(255, 255, 255, .06);
-  --cr-menu-shadow: rgba(0, 0, 0, .3) 0 1px 2px 0,
-                    rgba(0, 0, 0, .15) 0 3px 6px 2px;
-  --cr-separator-color: rgba(255, 255, 255, .1);
-  --cr-title-text-color: var(--cr-primary-text-color);
-  --cr-toolbar-background-color: var(--google-grey-900-white-4-percent);
-
-  --cr-hover-background-color: rgba(255, 255, 255, .1);
-  --cr-active-background-color: rgba(var(--google-grey-200-rgb), .16);
-  --cr-focus-outline-color: rgba(var(--google-blue-300-rgb), .4);
-}
 </style>
 
 <div title="[[appInfo.name]]" aria-hidden="true">
   <div id="iconContainer">
     <img src="[[getIconUrl_(appInfo)]]" id="iconImage"
-      alt="[[appInfo.name]]" aria-hidden="true" draggable="false"></img>
+        alt="[[appInfo.name]]"
+        aria-hidden="true"
+        draggable="false">
     <img id="deprecatedIcon"
-      src="chrome://resources/images/error_yellow900.svg"
-      hidden$="[[!appInfo.isDeprecatedApp]]"></img>
+        src="chrome://resources/images/error_yellow900.svg"
+        hidden$="[[!appInfo.isDeprecatedApp]]">
   </div>
-  <div id="textContainer" aria-hidden="true">[[appInfo.name]]</div>
+  <div id="textContainer"
+      aria-hidden="true">[[appInfo.name]]</div>
 </div>
 
-<cr-action-menu
-    id="menu" on-mousedown="onMenuMousedown_" on-click="onMenuClick_">
+<cr-action-menu id="menu" on-mousedown="onMenuMousedown_"
+    on-click="onMenuClick_">
   <button id="showStorePage" class="dropdown-item"
-    on-click="openStorePage_" hidden="[[isWebStoreLinkHidden_(appInfo)]]">
+      on-click="openStorePage_"
+      hidden="[[isWebStoreLinkHidden_(appInfo)]]">
     $i18n{viewInWebStore}
   </button>
-  <div id="openInWindow" tabindex="0" class="dropdown-item"
-      on-click="onOpenInWindowItemClick_" role="button"
-      hidden="[[!isOpenInWindowHidden_(appInfo)]]">
-    <div class="dropdown-item-label">
-      $i18n{appWindowOpenLabel}
-    </div>
-    <cr-checkbox checked="{{appInfo.openInWindow}}"
-      on-click="onOpenInWindowItemClick_">
-      $i18n{appWindowOpenCheckboxLabel}
-    </cr-checkbox>
-  </div>
-  <div id="launchOnStartup" tabindex="0" class="dropdown-item"
-      on-click="onLaunchOnStartupItemClick_" role="button"
-      hidden="[[isLaunchOnStartupHidden_(appInfo)]]">
-    <div class="dropdown-item-label">
-      $i18n{appLaunchAtStartupLabel}
-    </div>
-    <cr-checkbox
+  <cr-checkbox id="openInWindow"
+      class="dropdown-item label-first"
+      on-click="onOpenInWindowItemClick_"
+      hidden="[[!isOpenInWindowHidden_(appInfo)]]"
+      checked="{{appInfo.openInWindow}}" noink>
+    $i18n{appWindowOpenLabel}
+  </cr-checkbox>
+  <cr-checkbox
+      id="launchOnStartup"
+      class="dropdown-item label-first"
+      on-click="onLaunchOnStartupItemClick_"
+      hidden="[[isLaunchOnStartupHidden_(appInfo)]]"
       checked="[[isLaunchOnStartUp_(appInfo)]]"
-      disabled=
-      "[[isLaunchOnStartupDisabled_(appInfo)]]"
-      on-click="onLaunchOnStartupItemClick_">
-      $i18n{appLaunchAtStartupCheckboxLabel}
-    </cr-checkbox>
-  </div>
-  <button id="createShortcut" class="dropdown-item"
+      disabled="[[isLaunchOnStartupDisabled_(appInfo)]]" noink>
+    $i18n{appLaunchAtStartupLabel}
+  </cr-checkbox>
+  <button id="createShortcut"
+      class="dropdown-item"
       on-click="onCreateShortcutItemClick_"
       hidden="[[isCreateShortcutHidden_(appInfo)]]">
     $i18n{createShortcutForAppLabel}
   </button>
   <button id="installLocally" class="dropdown-item"
-    on-click="onInstallLocallyItemClick_"
-    hidden="[[isInstallLocallyHidden_(appInfo)]]">
-  $i18n{installLocallyLabel}
+      on-click="onInstallLocallyItemClick_"
+      hidden="[[isInstallLocallyHidden_(appInfo)]]">
+    $i18n{installLocallyLabel}
   </button>
   <hr>
   <button id="uninstall" class="dropdown-item"
-    disabled="[[!appInfo.mayUninstall]]"
-    hidden="[[isUninstallHidden_(appInfo)]]"
-    on-click="onUninstallItemClick_">
+      disabled="[[!appInfo.mayUninstall]]"
+      hidden="[[isUninstallHidden_(appInfo)]]"
+      on-click="onUninstallItemClick_">
     $i18n{uninstallAppLabel}
   </button>
   <button id="removeFromChrome" class="dropdown-item"
-    disabled="[[!appInfo.mayUninstall]]"
-    hidden="[[isRemoveFromChromeHidden_(appInfo)]]"
-    on-click="onUninstallItemClick_">
+      disabled="[[!appInfo.mayUninstall]]"
+      hidden="[[isRemoveFromChromeHidden_(appInfo)]]"
+      on-click="onUninstallItemClick_">
     $i18n{removeAppLabel}
   </button>
   <button id="appSettings" class="dropdown-item"

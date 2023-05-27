@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.permissions;
 
 import android.Manifest;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -42,6 +43,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.permissions.AndroidPermissionDelegate;
 import org.chromium.ui.permissions.PermissionCallback;
+import org.chromium.ui.test.util.DeviceRestriction;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -255,10 +257,11 @@ public class PermissionUpdateMessageTest {
     // handling camera permissions.
     @Test
     @MediumTest
+    @Restriction({DeviceRestriction.RESTRICTION_TYPE_NON_AUTO}) // No camera device on auto.
     public void testMessageForMediaStreamCamera()
             throws IllegalArgumentException, TimeoutException, ExecutionException {
         runTest(MEDIASTREAM_PAGE, Manifest.permission.CAMERA,
-                "getUserMediaAndStop({video: true, audio: false});",
+                "getUserMediaAndStopLegacy({video: true, audio: false});",
                 ContentSettingsType.MEDIASTREAM_CAMERA, false /* switchContent */);
     }
 
@@ -269,7 +272,7 @@ public class PermissionUpdateMessageTest {
     public void testMessageForMediaStreamMicrophone()
             throws IllegalArgumentException, TimeoutException, ExecutionException {
         runTest(MEDIASTREAM_PAGE, Manifest.permission.RECORD_AUDIO,
-                "getUserMediaAndStop({video: false, audio: true});",
+                "getUserMediaAndStopLegacy({video: false, audio: true});",
                 ContentSettingsType.MEDIASTREAM_MIC, false /* switchContent */);
     }
 

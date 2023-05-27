@@ -13,11 +13,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
-#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/trace_constants.h"
+#include "net/base/tracing.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/public/host_resolver_source.h"
 #include "net/http/http_network_session.h"
@@ -472,6 +472,20 @@ void SpdySessionPool::CloseAllSessions() {
   }
 }
 
+void SpdySessionPool::MakeCurrentSessionsGoingAway(Error error) {
+  WeakSessionList current_sessions = GetCurrentSessions();
+  for (base::WeakPtr<SpdySession>& session : current_sessions) {
+    if (!session) {
+      continue;
+    }
+
+    session->MakeUnavailable();
+    session->StartGoingAway(kLastStreamId, error);
+    session->MaybeFinishGoingAway();
+    DCHECK(!IsSessionAvailable(session));
+  }
+}
+
 std::unique_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue()
     const {
   base::Value::List list;
@@ -490,28 +504,26 @@ std::unique_ptr<base::Value> SpdySessionPool::SpdySessionPoolInfoToValue()
 
 void SpdySessionPool::OnIPAddressChanged() {
   DCHECK(cleanup_sessions_on_ip_address_changed_);
-  WeakSessionList current_sessions = GetCurrentSessions();
-  for (WeakSessionList::const_iterator it = current_sessions.begin();
-       it != current_sessions.end(); ++it) {
-    if (!*it)
-      continue;
-
-    if (go_away_on_ip_change_) {
-      (*it)->MakeUnavailable();
-      (*it)->StartGoingAway(kLastStreamId, ERR_NETWORK_CHANGED);
-      (*it)->MaybeFinishGoingAway();
-    } else {
-      (*it)->CloseSessionOnError(ERR_NETWORK_CHANGED,
-                                 "Closing current sessions.");
-      DCHECK((*it)->IsDraining());
-    }
-    DCHECK(!IsSessionAvailable(*it));
+  if (go_away_on_ip_change_) {
+    MakeCurrentSessionsGoingAway(ERR_NETWORK_CHANGED);
+  } else {
+    CloseCurrentSessions(ERR_NETWORK_CHANGED);
   }
 }
 
-void SpdySessionPool::OnSSLConfigChanged(bool is_cert_database_change) {
-  CloseCurrentSessions(is_cert_database_change ? ERR_CERT_DATABASE_CHANGED
-                                               : ERR_NETWORK_CHANGED);
+void SpdySessionPool::OnSSLConfigChanged(
+    SSLClientContext::SSLConfigChangeType change_type) {
+  switch (change_type) {
+    case SSLClientContext::SSLConfigChangeType::kSSLConfigChanged:
+      MakeCurrentSessionsGoingAway(ERR_NETWORK_CHANGED);
+      break;
+    case SSLClientContext::SSLConfigChangeType::kCertDatabaseChanged:
+      MakeCurrentSessionsGoingAway(ERR_CERT_DATABASE_CHANGED);
+      break;
+    case SSLClientContext::SSLConfigChangeType::kCertVerifierChanged:
+      MakeCurrentSessionsGoingAway(ERR_CERT_VERIFIER_CHANGED);
+      break;
+  };
 }
 
 void SpdySessionPool::OnSSLConfigForServerChanged(const HostPortPair& server) {

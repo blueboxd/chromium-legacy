@@ -6,7 +6,6 @@
 
 #include "base/check.h"
 #include "base/dcheck_is_on.h"
-#include "base/feature_list.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/browser/browser_context.h"
@@ -17,7 +16,6 @@
 #include "extensions/browser/offscreen_document_host.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_manager_factory.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -111,13 +109,11 @@ OffscreenDocumentHost* OffscreenDocumentManager::CreateOffscreenDocument(
     const Extension& extension,
     const GURL& url,
     api::offscreen::Reason reason) {
-  DCHECK(base::FeatureList::IsEnabled(
-      extensions_features::kExtensionsOffscreenDocuments));
   DCHECK_EQ(url::Origin::Create(url), extension.origin());
   // Currently only a single offscreen document is supported per extension.
   DCHECK_EQ(nullptr, GetOffscreenDocumentForExtension(extension));
   DCHECK(!base::Contains(offscreen_documents_, extension.id()));
-  DCHECK_NE(api::offscreen::REASON_NONE, reason);
+  DCHECK_NE(api::offscreen::Reason::kNone, reason);
 #if DCHECK_IS_ON()
   // This should only be for an off-the-record context if the extension is both
   // enabled in incognito *and* runs in split mode. For spanning mode

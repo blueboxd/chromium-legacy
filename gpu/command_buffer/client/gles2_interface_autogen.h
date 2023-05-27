@@ -899,6 +899,19 @@ virtual void ReadbackARGBImagePixelsINTERNAL(const GLbyte* mailbox,
                                              GLint src_y,
                                              GLint plane_index,
                                              void* pixels) = 0;
+virtual void WritePixelsINTERNAL(const GLbyte* mailbox,
+                                 const void* src_color_space,
+                                 GLuint src_color_space_size,
+                                 GLuint src_size,
+                                 GLuint src_width,
+                                 GLuint src_height,
+                                 GLuint src_sk_color_type,
+                                 GLuint src_sk_alpha_type,
+                                 GLuint src_row_bytes,
+                                 GLint x_offset,
+                                 GLint y_offset,
+                                 GLint plane_index,
+                                 const void* src_pixels) = 0;
 virtual void EnableiOES(GLenum target, GLuint index) = 0;
 virtual void DisableiOES(GLenum target, GLuint index) = 0;
 virtual void BlendEquationiOES(GLuint buf, GLenum mode) = 0;
@@ -936,6 +949,8 @@ virtual void BeginPixelLocalStorageANGLE(GLsizei count,
 virtual void EndPixelLocalStorageANGLE(GLsizei count,
                                        const GLenum* storeops) = 0;
 virtual void PixelLocalStorageBarrierANGLE() = 0;
+virtual void FramebufferPixelLocalStorageInterruptANGLE() = 0;
+virtual void FramebufferPixelLocalStorageRestoreANGLE() = 0;
 virtual void GetFramebufferPixelLocalStorageParameterfvANGLE(
     GLint plane,
     GLenum pname,

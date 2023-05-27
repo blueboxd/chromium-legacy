@@ -56,7 +56,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -96,12 +96,6 @@ InputType::ValueMode RangeInputType::GetValueMode() const {
 
 void RangeInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeRange);
-  if (const ComputedStyle* style = GetElement().GetComputedStyle()) {
-    if (style->EffectiveAppearance() == kSliderVerticalPart) {
-      UseCounter::Count(GetElement().GetDocument(),
-                        WebFeature::kInputTypeRangeVerticalAppearance);
-    }
-  }
 }
 
 const AtomicString& RangeInputType::FormControlType() const {
@@ -253,11 +247,9 @@ void RangeInputType::CreateShadowSubtree() {
   GetElement().UserAgentShadowRoot()->AppendChild(container);
 }
 
-LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle& style,
-                                                 LegacyLayout legacy) const {
-  // TODO(crbug.com/1131352): input[type=range] should not use
-  // LayoutFlexibleBox.
-  return LayoutObjectFactory::CreateFlexibleBox(GetElement(), style, legacy);
+LayoutObject* RangeInputType::CreateLayoutObject(const ComputedStyle&) const {
+  // TODO(crbug.com/1131352): input[type=range] should not use flexbox.
+  return MakeGarbageCollected<LayoutNGFlexibleBox>(&GetElement());
 }
 
 Decimal RangeInputType::ParseToNumber(const String& src,

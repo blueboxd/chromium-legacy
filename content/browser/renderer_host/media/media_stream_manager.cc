@@ -16,7 +16,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
@@ -28,6 +27,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -2372,7 +2372,7 @@ MediaStreamManager::AddRequest(std::unique_ptr<DeviceRequest> request) {
   // Create a label for this request and verify it is unique.
   std::string unique_label;
   do {
-    unique_label = base::GenerateGUID();
+    unique_label = base::Uuid::GenerateRandomV4().AsLowercaseString();
   } while (FindRequest(unique_label) != nullptr);
 
   SendLogMessage(
@@ -2602,7 +2602,7 @@ void MediaStreamManager::PostRequestToUI(
     request->SetState(video_type, MEDIA_REQUEST_STATE_PENDING_APPROVAL);
   }
 
-  if (ShouldUseFakeUIProxy(request->video_type())) {
+  if (ShouldUseFakeUIProxy(*request)) {
     request->ui_proxy = MakeFakeUIProxy(label, enumeration, request);
   } else if (!request->ui_proxy) {
     request->ui_proxy = MediaStreamUIProxy::Create();
@@ -4479,17 +4479,17 @@ void MediaStreamManager::MaybeUpdateTrackedCaptureHandleConfigs(
 }
 
 bool MediaStreamManager::ShouldUseFakeUIProxy(
-    MediaStreamType stream_type) const {
+    const DeviceRequest& request) const {
   if (!fake_ui_factory_) {
     return false;
   }
 
   if (use_fake_ui_only_for_camera_and_microphone_) {
-    return stream_type == MediaStreamType::DEVICE_AUDIO_CAPTURE ||
-           stream_type == MediaStreamType::DEVICE_VIDEO_CAPTURE;
+    return request.audio_type() == MediaStreamType::DEVICE_AUDIO_CAPTURE ||
+           request.video_type() == MediaStreamType::DEVICE_VIDEO_CAPTURE;
   }
 
-  return stream_type != MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
+  return request.video_type() != MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE ||
          use_fake_ui_for_gum_desktop_capture_;
 }
 

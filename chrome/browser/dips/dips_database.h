@@ -59,13 +59,18 @@ class DIPSDatabase {
   // other database querying methods.
   std::vector<std::string> GetAllSitesForTesting();
 
+  // Returns the subset of sites in |sites| WITH user interaction recorded.
+  std::set<std::string> FilterSitesWithInteraction(
+      const std::set<std::string>& sites);
+
   // Returns all sites which bounced the user and aren't protected from DIPS.
   //
   // A site can be protected in several ways:
   // - it's still in its grace period after the first bounce
   // - it received user interaction before the first bounce
   // - it received user interaction in the grace period after the first bounce
-  std::vector<std::string> GetSitesThatBounced();
+  std::vector<std::string> GetSitesThatBounced(
+      const base::TimeDelta& grace_period);
 
   // Returns all sites which used storage and aren't protected from DIPS.
   //
@@ -73,7 +78,8 @@ class DIPSDatabase {
   // - it's still in its grace period after the first storage
   // - it received user interaction before the first storage
   // - it received user interaction in the grace period after the first storage
-  std::vector<std::string> GetSitesThatUsedStorage();
+  std::vector<std::string> GetSitesThatUsedStorage(
+      const base::TimeDelta& grace_period);
 
   // Returns all sites which statefully bounced the user and aren't protected
   // from DIPS.
@@ -83,7 +89,8 @@ class DIPSDatabase {
   // - it received user interaction before the first stateful bounce
   // - it received user interaction in the grace period after the first stateful
   //   bounce
-  std::vector<std::string> GetSitesThatBouncedWithState();
+  std::vector<std::string> GetSitesThatBouncedWithState(
+      const base::TimeDelta& grace_period);
 
   // Deletes all rows in the database whose interactions have expired out.
   //

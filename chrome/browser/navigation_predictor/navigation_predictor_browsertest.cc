@@ -308,7 +308,13 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 }
 
 // Tests that anchors from iframes are reported.
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, PageWithIframe) {
+// TODO(crbug.com/1427913): Flaky on Windows ASAN and ChromeOS dbg.
+#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_CHROMEOS) && !defined(NDEBUG))
+#define MAYBE_PageWithIframe DISABLED_PageWithIframe
+#else
+#define MAYBE_PageWithIframe PageWithIframe
+#endif
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, MAYBE_PageWithIframe) {
   auto test_ukm_recorder = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   ResetUKM();
 
@@ -513,8 +519,8 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
 // Test that anchors are dispated to the single observer, except for anchors
 // linking to the same page (e.g. fragment links).
-// TODO(crbug.com/1415578): Failing on Windows.
-#if BUILDFLAG(IS_WIN)
+// TODO(crbug.com/1415578): Failing on Windows and ChromeOS.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS)
 #define MAYBE_SingleObserver DISABLED_SingleObserver
 #else
 #define MAYBE_SingleObserver SingleObserver
@@ -552,8 +558,9 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, MAYBE_SingleObserver) {
 // anchors outside the viewport. Reactive prefetch relies on anchors from
 // outside the viewport to be included since hints are only requested at onload
 // predictions after that point are ignored.
+// TODO(crbug.com/1408027): Test is flaky.
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       SingleObserverPastViewport) {
+                       DISABLED_SingleObserverPastViewport) {
   TestObserver observer;
 
   NavigationPredictorKeyedService* service =

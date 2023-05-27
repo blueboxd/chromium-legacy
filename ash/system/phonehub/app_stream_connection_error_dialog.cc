@@ -15,10 +15,12 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/pill_button.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/ash/components/phonehub/url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 #include "ui/compositor/layer.h"
+#include "ui/events/event.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -42,7 +44,9 @@ namespace ash {
 
 namespace {
 
-constexpr int kDialogVerticalMargin = 50;
+// Offset to place dialog in the vertical center of bubble due to
+// PhoneStatusView.
+constexpr int kDialogVerticalOffset = 25;
 
 constexpr int kDialogWidth = 330;
 
@@ -61,7 +65,9 @@ constexpr int kMarginBetweenButtons = 8;
 class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
  public:
   explicit ConnectionErrorDialogDelegateView(
-      StartTetheringCallback start_tethering_callback)
+      StartTetheringCallback start_tethering_callback,
+      bool is_on_different_network,
+      bool is_phone_on_cellular)
       : start_tethering_callback_(std::move(start_tethering_callback)) {
     SetModalType(ui::MODAL_TYPE_WINDOW);
 
@@ -103,14 +109,27 @@ class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
     title_->layer()->SetFillsBoundsOpaquely(false);
 
     // Add dialog body.
-    const std::u16string learn_more_link =
-        l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE);
-    size_t offset;
-    const std::u16string body_text = l10n_util::GetStringFUTF16(
-        IDS_ASH_ECHE_APP_STREAMING_ERROR_DIALOG_MAIN_TEXT, learn_more_link,
-        &offset);
 
     body_ = AddChildView(std::make_unique<views::StyledLabel>());
+
+    std::u16string body_text;
+    const std::u16string learn_more_link =
+        l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE);
+    // To record where "Learn more" text begin in the dialog body.
+    size_t offset;
+    if (is_phone_on_cellular) {
+      body_text = l10n_util::GetStringFUTF16(
+          IDS_ASH_ECHE_APP_STREAMING_ERROR_DIALOG_PHONE_ON_CELLULAR_TEXT,
+          learn_more_link, &offset);
+    } else if (is_on_different_network) {
+      body_text = l10n_util::GetStringFUTF16(
+          IDS_ASH_ECHE_APP_STREAMING_ERROR_DIALOG_DIFFERENT_NETWORK_TEXT,
+          learn_more_link, &offset);
+    } else {
+      body_text = l10n_util::GetStringFUTF16(
+          IDS_ASH_ECHE_APP_STREAMING_ERROR_DIALOG_UNSUPPORTED_NETWORK_TEXT,
+          learn_more_link, &offset);
+    }
     body_->SetText(body_text);
 
     views::StyledLabel::RangeStyleInfo style;
@@ -154,19 +173,33 @@ class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
             kMarginBetweenButtons))
         ->set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
 
-    cancel_button_ = button_row->AddChildView(std::make_unique<ash::PillButton>(
-        views::Button::PressedCallback(base::BindRepeating(
-            &ConnectionErrorDialogDelegateView::OnCancelClicked,
-            base::Unretained(this))),
-        l10n_util::GetStringUTF16(IDS_APP_CANCEL),
-        PillButton::Type::kDefaultWithoutIcon, nullptr));
-    accept_button_ = button_row->AddChildView(std::make_unique<ash::PillButton>(
-        views::Button::PressedCallback(base::BindRepeating(
-            &ConnectionErrorDialogDelegateView::OnStartTetheringClicked,
-            base::Unretained(this))),
-        l10n_util::GetStringUTF16(
-            IDS_ASH_ECHE_APP_STREAMING_ERROR_DIALOG_OK_TEXT),
-        PillButton::Type::kPrimaryWithoutIcon, nullptr));
+    if (!is_on_different_network && !is_phone_on_cellular) {
+      cancel_button_ =
+          button_row->AddChildView(std::make_unique<ash::PillButton>(
+              views::Button::PressedCallback(base::BindRepeating(
+                  &ConnectionErrorDialogDelegateView::OnCancelClicked,
+                  base::Unretained(this))),
+              l10n_util::GetStringUTF16(
+                  IDS_ASH_ECHE_APP_STREAMING_ERROR_DIALOG_DISMISS_TEXT),
+              PillButton::Type::kDefaultWithoutIcon, nullptr));
+      accept_button_ =
+          button_row->AddChildView(std::make_unique<ash::PillButton>(
+              views::Button::PressedCallback(base::BindRepeating(
+                  &ConnectionErrorDialogDelegateView::OnStartTetheringClicked,
+                  base::Unretained(this))),
+              l10n_util::GetStringUTF16(
+                  IDS_ASH_ECHE_APP_STREMING_ERROR_DIALOG_TURN_ON_HOTSPOT),
+              PillButton::Type::kPrimaryWithoutIcon, nullptr));
+    } else {
+      cancel_button_ =
+          button_row->AddChildView(std::make_unique<ash::PillButton>(
+              views::Button::PressedCallback(base::BindRepeating(
+                  &ConnectionErrorDialogDelegateView::OnCancelClicked,
+                  base::Unretained(this))),
+              l10n_util::GetStringUTF16(
+                  IDS_ASH_ECHE_APP_STREAMING_ERROR_DIALOG_DISMISS_TEXT),
+              PillButton::Type::kPrimaryWithoutIcon, nullptr));
+    }
   }
 
   ConnectionErrorDialogDelegateView(const ConnectionErrorDialogDelegateView&) =
@@ -194,15 +227,14 @@ class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
         kDialogRoundedCornerRadius));
     SetBorder(std::make_unique<views::HighlightBorder>(
         kDialogRoundedCornerRadius,
-        views::HighlightBorder::Type::kHighlightBorder1,
-        /*use_light_colors=*/false));
+        views::HighlightBorder::Type::kHighlightBorder1));
     title_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kTextColorPrimary));
   }
 
-  void OnStartTetheringClicked() {
+  void OnStartTetheringClicked(const ui::Event& event) {
     if (start_tethering_callback_) {
-      std::move(start_tethering_callback_).Run();
+      std::move(start_tethering_callback_).Run(event);
     }
 
     GetWidget()->CloseWithReason(
@@ -222,11 +254,11 @@ class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
   StartTetheringCallback start_tethering_callback_;
   std::unique_ptr<ViewShadow> view_shadow_;
 
-  views::ImageView* icon_ = nullptr;
-  views::Label* title_ = nullptr;
-  views::StyledLabel* body_ = nullptr;
-  views::Button* cancel_button_ = nullptr;
-  views::Button* accept_button_ = nullptr;
+  raw_ptr<views::ImageView, ExperimentalAsh> icon_ = nullptr;
+  raw_ptr<views::Label, ExperimentalAsh> title_ = nullptr;
+  raw_ptr<views::StyledLabel, ExperimentalAsh> body_ = nullptr;
+  raw_ptr<views::Button, ExperimentalAsh> cancel_button_ = nullptr;
+  raw_ptr<views::Button, ExperimentalAsh> accept_button_ = nullptr;
 };
 
 }  // namespace
@@ -234,10 +266,12 @@ class ConnectionErrorDialogDelegateView : public views::WidgetDelegateView {
 AppStreamConnectionErrorDialog::AppStreamConnectionErrorDialog(
     views::View* host_view,
     base::OnceClosure on_close_callback,
-    StartTetheringCallback button_callback)
+    StartTetheringCallback button_callback,
+    bool is_different_network,
+    bool is_phone_one_cellular)
     : host_view_(host_view), on_close_callback_(std::move(on_close_callback)) {
   auto dialog = std::make_unique<ConnectionErrorDialogDelegateView>(
-      std::move(button_callback));
+      std::move(button_callback), is_different_network, is_phone_one_cellular);
   views::Widget* const parent = host_view_->GetWidget();
 
   widget_ = new views::Widget();
@@ -251,10 +285,10 @@ AppStreamConnectionErrorDialog::AppStreamConnectionErrorDialog(
   widget_->Init(std::move(params));
 
   // The |dialog| ownership is passed to the window hierarchy.
-  widget_observations_.AddObservation(widget_);
+  widget_observations_.AddObservation(widget_.get());
   widget_observations_.AddObservation(parent);
 
-  view_observations_.AddObservation(host_view_);
+  view_observations_.AddObservation(host_view_.get());
   view_observations_.AddObservation(widget_->GetContentsView());
 }
 
@@ -272,20 +306,16 @@ void AppStreamConnectionErrorDialog::UpdateBounds() {
     return;
   }
 
-  gfx::Point anchor_point_in_screen(host_view_->width() / 2, 0);
+  gfx::Point anchor_point_in_screen(host_view_->width() / 2,
+                                    host_view_->height() / 2);
   views::View::ConvertPointToScreen(host_view_, &anchor_point_in_screen);
 
-  const int offset_for_frame_insets =
-      widget_->non_client_view() && widget_->non_client_view()->frame_view()
-          ? widget_->non_client_view()->frame_view()->GetInsets().top()
-          : 0;
-  const int vertical_offset = kDialogVerticalMargin - offset_for_frame_insets;
-
   gfx::Size dialog_size = widget_->GetContentsView()->GetPreferredSize();
-  widget_->SetBounds(
-      gfx::Rect(gfx::Point(anchor_point_in_screen.x() - dialog_size.width() / 2,
-                           anchor_point_in_screen.y() + vertical_offset),
-                dialog_size));
+  widget_->SetBounds(gfx::Rect(
+      gfx::Point(anchor_point_in_screen.x() - dialog_size.width() / 2,
+                 anchor_point_in_screen.y() - dialog_size.height() / 2 -
+                     kDialogVerticalOffset),
+      dialog_size));
 }
 
 void AppStreamConnectionErrorDialog::OnWidgetDestroying(views::Widget* widget) {

@@ -7,6 +7,7 @@
  * credit cards for use in autofill and payments APIs.
  */
 
+import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
@@ -15,7 +16,6 @@ import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
 import '../settings_shared.css.js';
 import '../controls/settings_toggle_button.js';
-import '../prefs/prefs.js';
 import './credit_card_edit_dialog.js';
 import './iban_edit_dialog.js';
 import '../simple_confirmation_dialog.js';
@@ -58,6 +58,7 @@ export interface SettingsPaymentsSectionElement {
     canMakePaymentToggle: SettingsToggleButtonElement,
     creditCardSharedMenu: CrActionMenuElement,
     ibanSharedActionMenu: CrLazyRenderElement<CrActionMenuElement>,
+    mandatoryAuthToggle: SettingsToggleButtonElement,
     menuClearCreditCard: HTMLElement,
     menuEditCreditCard: HTMLElement,
     menuRemoveCreditCard: HTMLElement,
@@ -159,8 +160,8 @@ export class SettingsPaymentsSectionElement extends
       },
 
       /**
-       * Whether the removal of Expiration and Type titles on settings page is
-       * enabled.
+       * Whether the removal of Expiration and Type titles on settings page
+       * is enabled.
        */
       removeCardExpirationAndTypeTitlesEnabled_: {
         type: Boolean,
@@ -180,6 +181,18 @@ export class SettingsPaymentsSectionElement extends
         },
         readOnly: true,
       },
+
+      /**
+       * Checks if we can use device authentication to authenticate the user.
+       */
+      // <if expr="is_win or is_macosx">
+      deviceAuthAvailable_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('deviceAuthAvailable');
+        },
+      },
+      // </if>
     };
   }
 
@@ -200,6 +213,7 @@ export class SettingsPaymentsSectionElement extends
   private migrationEnabled_: boolean;
   private removeCardExpirationAndTypeTitlesEnabled_: boolean;
   private virtualCardEnrollmentEnabled_: boolean;
+  private deviceAuthAvailable_: boolean;
   private activeDialogAnchor_: HTMLElement|null = null;
   private paymentsManager_: PaymentsManagerProxy =
       PaymentsManagerImpl.getInstance();
@@ -597,6 +611,19 @@ export class SettingsPaymentsSectionElement extends
    */
   private unenrollVirtualCard_(event: CustomEvent<string>) {
     this.paymentsManager_.removeVirtualCard(event.detail);
+  }
+
+  /**
+   * Checks if we can show the Mandatory reauth toggle.
+   * This method checks if pref autofill.credit_card_enabled is true and either
+   * there is support for device authentication or the mandatory auth toggle is
+   * already enabled.
+   */
+  private shouldShowMandatoryAuthToggle_(
+      deviceAuthAvailable: boolean, creditCardEnabled: boolean,
+      mandatoryReauthToggleEnabled: boolean): boolean {
+    return creditCardEnabled &&
+        (deviceAuthAvailable || mandatoryReauthToggleEnabled);
   }
 }
 

@@ -29,9 +29,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "ui/aura/window.h"
-#include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/events/ash/event_rewriter_ash.h"
 #include "ui/events/ozone/device/device_event.h"
 #include "ui/events/ozone/device/device_event_observer.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -62,7 +62,7 @@ class InputDataProvider : public mojom::InputDataProvider,
       std::unique_ptr<EventWatcherFactory> watcher_factory,
       KeyboardInputLog* keyboard_input_log_ptr,
       AcceleratorControllerImpl* accelerator_controller,
-      ui::EventRewriterChromeOS::Delegate* event_rewriter_delegate);
+      ui::EventRewriterAsh::Delegate* event_rewriter_delegate);
   InputDataProvider(const InputDataProvider&) = delete;
   InputDataProvider& operator=(const InputDataProvider&) = delete;
   ~InputDataProvider() override;
@@ -214,7 +214,7 @@ class InputDataProvider : public mojom::InputDataProvider,
   base::Time keyboard_tester_start_timestamp_;
 
   bool logged_not_dispatching_key_events_ = false;
-  views::Widget* widget_ = nullptr;
+  raw_ptr<views::Widget, ExperimentalAsh> widget_ = nullptr;
 
   mojo::RemoteSet<mojom::ConnectedDevicesObserver> connected_devices_observers_;
 
@@ -232,7 +232,7 @@ class InputDataProvider : public mojom::InputDataProvider,
   std::unique_ptr<EventWatcherFactory> watcher_factory_;
 
   raw_ptr<AcceleratorControllerImpl> accelerator_controller_;
-  raw_ptr<ui::EventRewriterChromeOS::Delegate> event_rewriter_delegate_;
+  raw_ptr<ui::EventRewriterAsh::Delegate> event_rewriter_delegate_;
 
   HealthdEventReporter healthd_event_reporter_;
 

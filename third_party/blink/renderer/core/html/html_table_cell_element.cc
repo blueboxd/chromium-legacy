@@ -33,7 +33,7 @@
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/table_constants.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -89,8 +89,16 @@ void HTMLTableCellElement::CollectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
   if (name == html_names::kNowrapAttr) {
-    AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
-                                            CSSValueID::kNowrap);
+    if (!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()) {
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kWhiteSpace,
+                                              CSSValueID::kNowrap);
+    } else {
+      // Longhands of `white-space: nowrap`.
+      AddPropertyToPresentationAttributeStyle(
+          style, CSSPropertyID::kWhiteSpaceCollapse, CSSValueID::kCollapse);
+      AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kTextWrap,
+                                              CSSValueID::kNowrap);
+    }
   } else if (name == html_names::kWidthAttr) {
     if (!value.empty()) {
       AddHTMLLengthToStyle(style, CSSPropertyID::kWidth, value,
@@ -111,9 +119,8 @@ void HTMLTableCellElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kRowspanAttr ||
       params.name == html_names::kColspanAttr) {
-    if (GetLayoutObject() && GetLayoutObject()->IsTableCell()) {
-      ToInterface<LayoutNGTableCellInterface>(GetLayoutObject())
-          ->ColSpanOrRowSpanChanged();
+    if (auto* cell = DynamicTo<LayoutNGTableCell>(GetLayoutObject())) {
+      cell->ColSpanOrRowSpanChanged();
     }
   } else {
     HTMLTablePartElement::ParseAttribute(params);

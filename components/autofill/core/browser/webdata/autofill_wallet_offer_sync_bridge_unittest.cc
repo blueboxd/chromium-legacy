@@ -36,6 +36,7 @@
 #include "components/sync/protocol/entity_data.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+#include "components/sync/test/mock_commit_queue.h"
 #include "components/sync/test/mock_model_type_change_processor.h"
 #include "components/webdata/common/web_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -181,6 +182,11 @@ class AutofillWalletOfferSyncBridgeTest : public testing::Test {
             }));
     loop.Run();
 
+    // ClientTagBasedModelTypeProcessor requires connecting before other
+    // interactions with the worker happen.
+    real_processor_->ConnectSync(
+        std::make_unique<testing::NiceMock<syncer::MockCommitQueue>>());
+
     // Initialize the processor with the initial sync already done.
     sync_pb::ModelTypeState state;
     state.set_initial_sync_state(
@@ -260,7 +266,7 @@ TEST_F(AutofillWalletOfferSyncBridgeTest, VerifyGetStorageKey) {
 
 // Tests that when a new offer data is sent by the server, the client only keeps
 // the new data.
-TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_NewData) {
+TEST_F(AutofillWalletOfferSyncBridgeTest, MergeFullSyncData_NewData) {
   // Create one offer data in the client table.
   AutofillOfferData old_data = test::GetCardLinkedOfferData1();
   table()->SetAutofillOffers({old_data});
@@ -281,7 +287,7 @@ TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_NewData) {
 
 // Tests that when no data is sent by the server, all local data should be
 // deleted.
-TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_NoData) {
+TEST_F(AutofillWalletOfferSyncBridgeTest, MergeFullSyncData_NoData) {
   // Create one offer data in the client table.
   AutofillOfferData client_data = test::GetCardLinkedOfferData1();
   table()->SetAutofillOffers({client_data});
@@ -294,7 +300,7 @@ TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_NoData) {
 }
 
 // Test to ensure whether the data being valid is logged correctly.
-TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_LogDataValidity) {
+TEST_F(AutofillWalletOfferSyncBridgeTest, MergeFullSyncData_LogDataValidity) {
   AutofillOfferSpecifics offer_specifics1;
   SetAutofillOfferSpecificsFromOfferData(test::GetCardLinkedOfferData1(),
                                          &offer_specifics1);
@@ -316,7 +322,7 @@ TEST_F(AutofillWalletOfferSyncBridgeTest, MergeSyncData_LogDataValidity) {
 
 // Tests that when sync is stopped and the data type is disabled, client should
 // remove all client data.
-TEST_F(AutofillWalletOfferSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
+TEST_F(AutofillWalletOfferSyncBridgeTest, ApplyDisableSyncChanges) {
   // Create one offer data in the client table.
   AutofillOfferData client_data = test::GetCardLinkedOfferData1();
   table()->SetAutofillOffers({client_data});
@@ -324,31 +330,11 @@ TEST_F(AutofillWalletOfferSyncBridgeTest, ApplyStopSyncChanges_ClearAllData) {
   EXPECT_CALL(*backend(), CommitChanges());
   EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges());
 
-  // Passing in a non-null metadata change list indicates to the bridge that
-  // sync is stopping but the data type is not disabled.
-  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/
-                                 std::make_unique<
-                                     syncer::InMemoryMetadataChangeList>());
+  bridge()->ApplyDisableSyncChanges(/*delete_metadata_change_list=*/
+                                    std::make_unique<
+                                        syncer::InMemoryMetadataChangeList>());
 
   EXPECT_TRUE(GetAllLocalData().empty());
-}
-
-// Tests that when sync is stopped but the data type is not disabled, client
-// should keep all the data.
-TEST_F(AutofillWalletOfferSyncBridgeTest, ApplyStopSyncChanges_KeepAllData) {
-  // Create one offer data in the client table.
-  AutofillOfferData client_data = test::GetCardLinkedOfferData1();
-  table()->SetAutofillOffers({client_data});
-
-  // We do not write to DB at all, so we should not commit any changes.
-  EXPECT_CALL(*backend(), CommitChanges()).Times(0);
-  EXPECT_CALL(*backend(), NotifyOfMultipleAutofillChanges()).Times(0);
-
-  // Passing in a null metadata change list indicates to the bridge that
-  // sync is stopping and the data type is disabled.
-  bridge()->ApplyStopSyncChanges(/*delete_metadata_change_list=*/nullptr);
-
-  EXPECT_FALSE(GetAllLocalData().empty());
 }
 
 }  // namespace autofill

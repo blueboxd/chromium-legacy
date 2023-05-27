@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator_util.h"
@@ -32,7 +33,8 @@ class ScopedBackMigratorRestartAttemptForTesting {
   ~ScopedBackMigratorRestartAttemptForTesting();
 };
 
-class BrowserDataBackMigrator {
+// The interface is exposed to be inherited by fakes in tests.
+class BrowserDataBackMigratorBase {
  public:
   // Represents a result status.
   enum class Result {
@@ -40,6 +42,21 @@ class BrowserDataBackMigrator {
     kFailed,
   };
 
+  using BackMigrationFinishedCallback = base::OnceCallback<void(Result)>;
+  using BackMigrationProgressCallback = base::RepeatingCallback<void(int)>;
+  using BackMigrationCanceledCallback = base::OnceClosure;
+
+  virtual ~BrowserDataBackMigratorBase() = default;
+
+  virtual void Migrate(BackMigrationProgressCallback progress_callback,
+                       BackMigrationFinishedCallback finished_callback) = 0;
+
+  virtual void CancelMigration(
+      BackMigrationCanceledCallback canceled_callback) = 0;
+};
+
+class BrowserDataBackMigrator : public BrowserDataBackMigratorBase {
+ public:
   // A list of all the possible results of migration, including success and all
   // failure types in each step of the migration.
   //
@@ -80,16 +97,12 @@ class BrowserDataBackMigrator {
     absl::optional<int> posix_errno;
   };
 
-  using BackMigrationFinishedCallback =
-      base::OnceCallback<void(BrowserDataBackMigrator::Result)>;
-  using BackMigrationProgressCallback = base::RepeatingCallback<void(int)>;
-
   explicit BrowserDataBackMigrator(const base::FilePath& ash_profile_dir,
                                    const std::string& user_id_hash,
                                    PrefService* local_state);
   BrowserDataBackMigrator(const BrowserDataBackMigrator&) = delete;
   BrowserDataBackMigrator& operator=(const BrowserDataBackMigrator&) = delete;
-  ~BrowserDataBackMigrator();
+  ~BrowserDataBackMigrator() override;
 
   // Calls `chrome::AttemptRestart()` unless
   // `ScopedBackMigratorRestartAttemptForTesting` is in scope.
@@ -101,7 +114,7 @@ class BrowserDataBackMigrator {
   // an error.
   // Migrate can only be called once.
   void Migrate(BackMigrationProgressCallback progress_callback,
-               BackMigrationFinishedCallback finished_callback);
+               BackMigrationFinishedCallback finished_callback) override;
 
   // IsBackMigrationEnabled determines if the feature is enabled.
   // It checks the following in order:
@@ -122,6 +135,11 @@ class BrowserDataBackMigrator {
       const AccountId& account_id,
       const std::string& user_id_hash,
       crosapi::browser_util::PolicyInitState policy_init_state);
+
+  // CancelMigration is called when the user chooses to cancel the migration
+  // from OOBE and it cleans up the in-progress migration.
+  void CancelMigration(
+      BackMigrationCanceledCallback canceled_callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorTest, PreMigrationCleanUp);
@@ -163,6 +181,7 @@ class BrowserDataBackMigrator {
   bool running_ = false;
   BackMigrationProgressCallback progress_callback_;
   BackMigrationFinishedCallback finished_callback_;
+  BackMigrationCanceledCallback canceled_callback_;
 
   void SetProgress(MigrationStep step);
 
@@ -221,6 +240,14 @@ class BrowserDataBackMigrator {
 
   // Called as a reply to `MarkMigrationComplete()`.
   void OnMarkMigrationComplete();
+
+  // Calls `DeleteLacrosDir()` and `DeleteTmpDir()` to clean up residual Lacros
+  // data upon failed migration that was canceled by the user.
+  static TaskResult FailedMigrationCleanUp(
+      const base::FilePath& ash_profile_dir);
+
+  // Called as a reply to `FailedMigrationCleanUp()`.
+  void OnFailedMigrationCleanUp(TaskResult result);
 
   // For `target_dir` copy subdirectories belonging to extensions that are in
   // both Chromes from `lacros_default_profile_dir` to `tmp_user_dir`.
@@ -322,7 +349,7 @@ class BrowserDataBackMigrator {
   const std::string user_id_hash_;
 
   // Local state prefs, not owned.
-  PrefService* local_state_ = nullptr;
+  raw_ptr<PrefService, ExperimentalAsh> local_state_ = nullptr;
 
   // Used to record how long the migration takes in UMA.
   base::TimeTicks migration_start_time_;

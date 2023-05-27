@@ -435,20 +435,8 @@ void AuthenticatorCommonImpl::StartMakeCredentialRequest(
     bool allow_skipping_pin_touch) {
   InitDiscoveryFactory();
 
-  device::CableRequestType cable_request_type;
-  switch (make_credential_options_->resident_key) {
-    case device::ResidentKeyRequirement::kDiscouraged:
-    case device::ResidentKeyRequirement::kPreferred:
-      cable_request_type = device::CableRequestType::kMakeCredential;
-      break;
-    case device::ResidentKeyRequirement::kRequired:
-      cable_request_type =
-          device::CableRequestType::kDiscoverableMakeCredential;
-      break;
-  }
-
   request_delegate_->ConfigureCable(
-      caller_origin_, cable_request_type,
+      caller_origin_, device::FidoRequestType::kMakeCredential,
       make_credential_options_->resident_key,
       base::span<const device::CableDiscoveryData>(), discovery_factory());
 
@@ -491,7 +479,7 @@ void AuthenticatorCommonImpl::StartGetAssertionRequest(
     cable_pairings = *ctap_get_assertion_request_->cable_extension;
   }
   request_delegate_->ConfigureCable(caller_origin_,
-                                    device::CableRequestType::kGetAssertion,
+                                    device::FidoRequestType::kGetAssertion,
                                     /*resident_key_requirement=*/absl::nullopt,
                                     cable_pairings, discovery_factory());
 #if BUILDFLAG(IS_CHROMEOS)
@@ -592,6 +580,7 @@ void AuthenticatorCommonImpl::MakeCredential(
   }
 
   if (!request_delegate_->IsVirtualEnvironmentEnabled() &&
+      !disable_tls_check_ &&
       !GetWebAuthenticationDelegate()->IsSecurityLevelAcceptableForWebAuthn(
           GetRenderFrameHost(), caller_origin)) {
     CompleteMakeCredentialRequest(
@@ -902,6 +891,7 @@ void AuthenticatorCommonImpl::GetAssertion(
     return;
   }
   if (!request_delegate_->IsVirtualEnvironmentEnabled() &&
+      !disable_tls_check_ &&
       !GetWebAuthenticationDelegate()->IsSecurityLevelAcceptableForWebAuthn(
           GetRenderFrameHost(), caller_origin)) {
     CompleteGetAssertionRequest(
@@ -1336,12 +1326,6 @@ void AuthenticatorCommonImpl::OnRegisterResponse(
       DCHECK(response_data.has_value());
       DCHECK(authenticator);
 
-#if BUILDFLAG(IS_WIN)
-      GetWebAuthenticationDelegate()->OperationSucceeded(
-          GetBrowserContext(),
-          authenticator->GetType() == device::AuthenticatorType::kWinNative);
-#endif
-
       absl::optional<device::FidoTransportProtocol> transport =
           authenticator->AuthenticatorTransport();
       bool is_transport_used_internal = false;
@@ -1485,8 +1469,7 @@ void AuthenticatorCommonImpl::OnRegisterResponseAttestationDecided(
 void AuthenticatorCommonImpl::OnSignResponse(
     device::GetAssertionStatus status_code,
     absl::optional<std::vector<device::AuthenticatorGetAssertionResponse>>
-        response_data,
-    const device::FidoAuthenticator* authenticator) {
+        response_data) {
   DCHECK(!response_data || !response_data->empty());  // empty vector is invalid
   if (!request_handler_) {
     // Either the callback was called immediately and |request_handler_| has not
@@ -1555,13 +1538,6 @@ void AuthenticatorCommonImpl::OnSignResponse(
 
   DCHECK_EQ(status_code, device::GetAssertionStatus::kSuccess);
   DCHECK(response_data.has_value());
-  DCHECK(authenticator);
-
-#if BUILDFLAG(IS_WIN)
-  GetWebAuthenticationDelegate()->OperationSucceeded(
-      GetBrowserContext(),
-      authenticator->GetType() == device::AuthenticatorType::kWinNative);
-#endif
 
   // Show an account picker for discoverable credential requests (empty allow
   // lists). Responses with a single credential are considered pre-selected if
@@ -2020,6 +1996,10 @@ void AuthenticatorCommonImpl::Cleanup() {
 
 void AuthenticatorCommonImpl::DisableUI() {
   disable_ui_ = true;
+}
+
+void AuthenticatorCommonImpl::DisableTLSCheck() {
+  disable_tls_check_ = true;
 }
 
 RenderFrameHost* AuthenticatorCommonImpl::GetRenderFrameHost() const {

@@ -37,6 +37,12 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/feature_list.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chromeos/constants/chromeos_features.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #endif
@@ -83,31 +89,14 @@ const char kDefaultAvatarStrokeColorKey[] = "default_avatar_stroke_color";
 // Low-entropy accounts info, for metrics only.
 const char kFirstAccountNameHash[] = "first_account_name_hash";
 const char kHasMultipleAccountNames[] = "has_multiple_account_names";
-const char kAccountCategories[] = "account_categories";
 
 // Local state pref to keep track of the next available profile bucket.
 const char kNextMetricsBucketIndex[] = "profile.metrics.next_bucket_index";
 
-// Deprecated 2/2021.
-const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
-
-// Deprecated 3/2021.
-const char kAuthCredentialsKey[] = "local_auth_credentials";
-const char kPasswordTokenKey[] = "gaia_password_token";
-
-// Deprecated 6/2021.
-const char kSigninRequiredKey[] = "signin_required";
-const char kIsAuthErrorKey[] = "is_auth_error";
-
-// Deprecated 7/2021.
-const char kProfileIsGuest[] = "is_guest";
+// Deprecated 3/2023.
+const char kAccountCategories[] = "account_categories";
 
 constexpr int kIntegerNotSet = -1;
-
-// Persisted in prefs.
-constexpr int kAccountCategoriesConsumerOnly = 0;
-constexpr int kAccountCategoriesEnterpriseOnly = 1;
-constexpr int kAccountCategoriesBoth = 2;
 
 // Number of distinct low-entropy hash values. Changing this value invalidates
 // existing persisted hashes.
@@ -575,7 +564,7 @@ base::flat_set<std::string> ProfileAttributesEntry::GetGaiaIds() const {
     return base::flat_set<std::string>();
 
   return base::MakeFlatSet<std::string>(
-      accounts->DictItems(), {}, [](const auto& it) { return it.first; });
+      accounts->GetDict(), {}, [](const auto& it) { return it.first; });
 }
 
 void ProfileAttributesEntry::SetGaiaIds(
@@ -687,11 +676,6 @@ void ProfileAttributesEntry::LockForceSigninProfile(bool is_lock) {
   if (SetBool(kForceSigninProfileLockedKey, is_lock)) {
     profile_attributes_storage_->NotifyIsSigninRequiredChanged(GetPath());
   }
-}
-
-void ProfileAttributesEntry::RecordAccountMetrics() const {
-  RecordAccountCategoriesMetric();
-  RecordAccountNamesMetric();
 }
 
 void ProfileAttributesEntry::SetIsEphemeral(bool value) {
@@ -815,28 +799,9 @@ void ProfileAttributesEntry::AddAccountName(const std::string& name) {
   }
 }
 
-void ProfileAttributesEntry::AddAccountCategory(AccountCategory category) {
-  int current_categories = GetInteger(kAccountCategories);
-  if (current_categories == kAccountCategoriesBoth)
-    return;
-
-  int new_category = category == AccountCategory::kConsumer
-                         ? kAccountCategoriesConsumerOnly
-                         : kAccountCategoriesEnterpriseOnly;
-  if (current_categories == kIntegerNotSet) {
-    SetInteger(kAccountCategories, new_category);
-  } else if (current_categories != new_category) {
-    SetInteger(kAccountCategories, kAccountCategoriesBoth);
-  }
-}
-
 void ProfileAttributesEntry::ClearAccountNames() {
   ClearValue(kFirstAccountNameHash);
   ClearValue(kHasMultipleAccountNames);
-}
-
-void ProfileAttributesEntry::ClearAccountCategories() {
-  ClearValue(kAccountCategories);
 }
 
 const gfx::Image* ProfileAttributesEntry::GetHighResAvatar() const {
@@ -867,32 +832,6 @@ gfx::Image ProfileAttributesEntry::GetPlaceholderAvatarIcon(int size) const {
 bool ProfileAttributesEntry::HasMultipleAccountNames() const {
   // If the value is not set, GetBool() returns false.
   return GetBool(kHasMultipleAccountNames);
-}
-
-bool ProfileAttributesEntry::HasBothAccountCategories() const {
-  // If the value is not set, GetInteger returns kIntegerNotSet which does not
-  // equal kAccountTypeBoth.
-  return GetInteger(kAccountCategories) == kAccountCategoriesBoth;
-}
-
-void ProfileAttributesEntry::RecordAccountCategoriesMetric() const {
-  if (HasBothAccountCategories()) {
-    if (IsAuthenticated()) {
-      bool consumer_syncing = GetHostedDomain() == kNoHostedDomainFound;
-      profile_metrics::LogProfileAllAccountsCategories(
-          consumer_syncing ? profile_metrics::AllAccountsCategories::
-                                 kBothConsumerAndEnterpriseSyncingConsumer
-                           : profile_metrics::AllAccountsCategories::
-                                 kBothConsumerAndEnterpriseSyncingEnterprise);
-    } else {
-      profile_metrics::LogProfileAllAccountsCategories(
-          profile_metrics::AllAccountsCategories::
-              kBothConsumerAndEnterpriseNoSync);
-    }
-  } else {
-    profile_metrics::LogProfileAllAccountsCategories(
-        profile_metrics::AllAccountsCategories::kSingleCategory);
-  }
 }
 
 void ProfileAttributesEntry::RecordAccountNamesMetric() const {
@@ -1023,24 +962,21 @@ bool ProfileAttributesEntry::ClearValue(const char* key) {
 
 // This method should be periodically pruned of year+ old migrations.
 void ProfileAttributesEntry::MigrateObsoleteProfileAttributes() {
-  // Added 2/2021.
-  ClearValue(kIsOmittedFromProfileListKey);
-
-  // Added 3/2021.
-  ClearValue(kAuthCredentialsKey);
-  ClearValue(kPasswordTokenKey);
-
-  // Added 6/2021.
-  ClearValue(kSigninRequiredKey);
-  ClearValue(kIsAuthErrorKey);
-
-  // Added 7/2021.
-  ClearValue(kProfileIsGuest);
+  // Added 3/2023.
+  ClearValue(kAccountCategories);
 }
 
 void ProfileAttributesEntry::SetIsOmittedInternal(bool is_omitted) {
   if (is_omitted) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    DCHECK(IsEphemeral() ||
+           (base::FeatureList::IsEnabled(
+                chromeos::features::kExperimentalWebAppProfileIsolation) &&
+            Profile::IsWebAppProfilePath(profile_path_)))
+        << "Only ephemeral or web app profiles can be omitted.";
+#else
     DCHECK(IsEphemeral()) << "Only ephemeral profiles can be omitted.";
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 
   is_omitted_ = is_omitted;

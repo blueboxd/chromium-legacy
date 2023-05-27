@@ -276,6 +276,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossGattServerObserver
   // A Gatt service has been added to the server.
   virtual void GattServerServiceAdded(GattStatus status, GattService service) {}
 
+  // A Gatt service has been removed from the server.
+  virtual void GattServerServiceRemoved(GattStatus status, int32_t handle) {}
+
   // A remote device has requested to read a Gatt server characteristic.
   virtual void GattServerCharacteristicReadRequest(std::string address,
                                                    int32_t request_id,
@@ -369,15 +372,16 @@ class DEVICE_BLUETOOTH_EXPORT FlossGattManagerClient
 
   // Manage observers.
   void AddObserver(FlossGattClientObserver* observer);
-  void AddObserver(FlossGattServerObserver* observer);
+  void AddServerObserver(FlossGattServerObserver* observer);
   void RemoveObserver(FlossGattClientObserver* observer);
-  void RemoveObserver(FlossGattServerObserver* observer);
+  void RemoveServerObserver(FlossGattServerObserver* observer);
 
   // TODO(@sarveshkalwit): Rename client functions, ex. Connect->ClientConnect
   // Create a GATT client connection to a remote device on given transport.
   virtual void Connect(ResponseCallback<Void> callback,
                        const std::string& remote_device,
-                       const BluetoothTransport& transport);
+                       const BluetoothTransport& transport,
+                       bool is_direct);
 
   // Disconnect GATT for given device.
   virtual void Disconnect(ResponseCallback<Void> callback,
@@ -519,6 +523,8 @@ class DEVICE_BLUETOOTH_EXPORT FlossGattManagerClient
                                       int32_t handle,
                                       bool confirm,
                                       std::vector<uint8_t> value);
+  // Get service name.
+  std::string ServiceName() const { return service_name_; }
   // Get whether MSFT extension is supported.
   bool GetMsftSupported() const { return property_msft_supported_.Get(); }
 
@@ -589,6 +595,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossGattManagerClient
                                  bool connected,
                                  std::string address) override;
   void GattServerServiceAdded(GattStatus status, GattService service) override;
+  void GattServerServiceRemoved(GattStatus status, int32_t handle) override;
   void GattServerCharacteristicReadRequest(std::string address,
                                            int32_t request_id,
                                            int32_t offset,

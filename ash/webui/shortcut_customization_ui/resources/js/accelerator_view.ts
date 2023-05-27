@@ -6,15 +6,20 @@ import './input_key.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {AcceleratorResultData} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 
 import {AcceleratorLookupManager} from './accelerator_lookup_manager.js';
 import {getTemplate} from './accelerator_view.html.js';
 import {getShortcutProvider} from './mojo_interface_provider.js';
+import {mojoString16ToString} from './mojo_utils.js';
 import {ModifierKeyCodes} from './shortcut_input.js';
 import {Accelerator, AcceleratorConfigResult, AcceleratorSource, Modifier, ShortcutProviderInterface, StandardAcceleratorInfo} from './shortcut_types.js';
-import {areAcceleratorsEqual, createEmptyAcceleratorInfo, getAccelerator, isCustomizationDisabled} from './shortcut_utils.js';
+import {areAcceleratorsEqual, createEmptyAcceleratorInfo, getAccelerator, getModifiersForAcceleratorInfo, isCustomizationDisabled} from './shortcut_utils.js';
 
 export interface AcceleratorViewElement {
   $: {
@@ -32,25 +37,6 @@ export enum ViewState {
   VIEW,
   ADD,
   EDIT,
-}
-
-/**
- * Returns the converted modifier flag as a readable string.
- * TODO(jimmyxgong): Localize, replace with icon, or update strings.
- */
-function getModifierString(modifier: Modifier): string {
-  switch (modifier) {
-    case Modifier.SHIFT:
-      return 'shift';
-    case Modifier.CONTROL:
-      return 'ctrl';
-    case Modifier.ALT:
-      return 'alt';
-    case Modifier.COMMAND:
-      return 'meta';
-    default:
-      return '';
-  }
 }
 
 /**
@@ -143,19 +129,7 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
       AcceleratorLookupManager.getInstance();
 
   private getModifiers(): string[] {
-    const modifiers: Modifier[] = [
-      Modifier.SHIFT,
-      Modifier.CONTROL,
-      Modifier.ALT,
-      Modifier.COMMAND,
-    ];
-    const modifierStrings: string[] = [];
-    for (const modifier of modifiers) {
-      if ((getAccelerator(this.acceleratorInfo)).modifiers & modifier) {
-        modifierStrings.push(getModifierString(modifier));
-      }
-    }
-    return modifierStrings;
+    return getModifiersForAcceleratorInfo(this.acceleratorInfo);
   }
 
   protected onViewStateChanged(): void {
@@ -184,7 +158,7 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
   }
 
 
-  private startCapture(): void {
+  private async startCapture(): Promise<void> {
     if (this.isCapturing) {
       return;
     }
@@ -196,9 +170,12 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
       bubbles: true,
       composed: true,
     }));
+
+    // Block processing accelerators.
+    await this.shortcutProvider.preventProcessingAccelerators(true);
   }
 
-  private endCapture(): void {
+  private async endCapture(): Promise<void> {
     if (!this.isCapturing) {
       return;
     }
@@ -213,6 +190,8 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
       bubbles: true,
       composed: true,
     }));
+
+    await this.shortcutProvider.preventProcessingAccelerators(false);
   }
 
   private onKeyDown(e: KeyboardEvent): void {
@@ -267,66 +246,59 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
     }
   }
 
-  /**
-   * Checks that |pendingAccelerator| is not a pre-existing shortcut. Sets the
-   * error message if there is a conflict.
-   */
-  private processPendingAccelerator(pendingAccelInfo: StandardAcceleratorInfo):
-      void {
+  private async processPendingAccelerator(
+      pendingAccelInfo: StandardAcceleratorInfo): Promise<void> {
     // Reset status state when processing the new accelerator.
     this.statusMessage = '';
     this.hasError = false;
 
-    // If |acceleratorOnHold| is not empty then the user has attempted to
-    // replace a pre-existing accelerator. Check that the new accelerator
-    // matches the |acceleratorOnHold|, otherwise reset its value.
-    if (this.acceleratorOnHold !== '') {
-      if (this.acceleratorOnHold ===
-          JSON.stringify(getAccelerator(pendingAccelInfo))) {
-        // User re-pressed the shortcut, send a request to replace the
-        // accelerator.
-        this.requestUpdateAccelerator(pendingAccelInfo);
-        return;
-      }
-      this.acceleratorOnHold = '';
+    let result: {result: AcceleratorResultData};
+    assert(this.viewState !== ViewState.VIEW);
+
+    if (this.viewState === ViewState.ADD) {
+      result = await this.shortcutProvider.addAccelerator(
+          this.source, this.action, getAccelerator(pendingAccelInfo));
     }
 
-    const foundId = this.lookupManager.getAcceleratorIdFromReverseLookup(
-        getAccelerator(pendingAccelInfo));
+    if (this.viewState === ViewState.EDIT) {
+      result = await this.shortcutProvider.replaceAccelerator(
+          this.source, this.action, getAccelerator(this.acceleratorInfo),
+          getAccelerator(pendingAccelInfo));
+    }
+    this.handleAcceleratorResultData(result!.result);
+  }
 
-    // Pre-existing shortcut, update the error message.
-    if (foundId !== undefined) {
-      // TODO(jimmyxgong): Fetch name of accelerator with real implementation.
-      const uuidParams = foundId.split('-');
-      const conflictSource: AcceleratorSource = parseInt(uuidParams[0], 10);
-      const conflictAction = parseInt(uuidParams[1], 10);
-      const conflictAccelName =
-          this.lookupManager.getAcceleratorName(conflictSource, conflictAction);
-
-      // Cannot override a locked action.
-      if (!this.shortcutProvider.isMutable(conflictSource) ||
-          this.lookupManager.isAcceleratorLocked(
-              conflictSource, conflictAction,
-              getAccelerator(pendingAccelInfo))) {
-        this.statusMessage =
-            this.i18n('lockedShortcutStatusMessage', conflictAccelName);
+  private handleAcceleratorResultData(result: AcceleratorResultData): void {
+    switch (result.result) {
+      case AcceleratorConfigResult.kConflict:
+      case AcceleratorConfigResult.kActionLocked: {
+        this.statusMessage = this.i18n(
+            'lockedShortcutStatusMessage',
+            mojoString16ToString(result.shortcutName as String16));
         this.hasError = true;
         return;
       }
-
-      this.statusMessage =
-          this.i18n('shortcutWithConflictStatusMessage', conflictAccelName);
-      this.hasError = true;
-
-      // Store the pending accelerator.
-      this.acceleratorOnHold =
-          JSON.stringify(this.pendingAcceleratorInfo.layoutProperties
-                             .standardAccelerator.accelerator);
-      return;
+      case AcceleratorConfigResult.kShiftOnlyNotAllowed:
+      case AcceleratorConfigResult.kMissingModifier: {
+        // TODO(jimmyxgong): Replace and localize this string.
+        this.statusMessage = 'Bad modifiers"';
+        this.hasError = true;
+        return;
+      }
+      case AcceleratorConfigResult.kConflictCanOverride: {
+        this.statusMessage = this.i18n(
+            'shortcutWithConflictStatusMessage',
+            mojoString16ToString(result.shortcutName as String16));
+        this.hasError = true;
+        return;
+      }
+      case AcceleratorConfigResult.kSuccess: {
+        this.pendingAcceleratorInfo = createEmptyAcceleratorInfo();
+        this.fireUpdateEvent();
+        return;
+      }
     }
-
-    // No conflicts, request replacement.
-    this.requestUpdateAccelerator(pendingAccelInfo);
+    assertNotReached();
   }
 
   /**
@@ -442,41 +414,6 @@ export class AcceleratorViewElement extends AcceleratorViewElementBase {
 
   private showEditView(): boolean {
     return this.viewState !== ViewState.VIEW;
-  }
-
-  private requestUpdateAccelerator(newAcceleratorInfo: StandardAcceleratorInfo):
-      void {
-    if (this.viewState === ViewState.EDIT) {
-      this.shortcutProvider
-          .replaceAccelerator(
-              this.source, this.action, (getAccelerator(this.acceleratorInfo)),
-              (getAccelerator(newAcceleratorInfo)))
-          .then((result: AcceleratorConfigResult) => {
-            // TODO(jimmyxgong): Handle other error cases.
-            if (result === AcceleratorConfigResult.kSuccess) {
-              this.lookupManager.replaceAccelerator(
-                  this.source, this.action,
-                  this.acceleratorInfo.layoutProperties.standardAccelerator
-                      .accelerator,
-                  newAcceleratorInfo);
-              this.fireUpdateEvent();
-            }
-          });
-    }
-
-    if (this.viewState === ViewState.ADD) {
-      this.shortcutProvider
-          .addUserAccelerator(
-              this.source, this.action, getAccelerator(newAcceleratorInfo))
-          .then((result: AcceleratorConfigResult) => {
-            // TODO(jimmyxgong): Handle other error cases.
-            if (result === AcceleratorConfigResult.kSuccess) {
-              this.lookupManager.addAccelerator(
-                  this.source, this.action, newAcceleratorInfo);
-              this.fireUpdateEvent();
-            }
-          });
-    }
   }
 
   private fireUpdateEvent(): void {

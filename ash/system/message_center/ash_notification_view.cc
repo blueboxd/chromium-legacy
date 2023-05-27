@@ -20,6 +20,7 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
+#include "ash/style/typography.h"
 #include "ash/system/message_center/ash_notification_control_button_factory.h"
 #include "ash/system/message_center/ash_notification_drag_controller.h"
 #include "ash/system/message_center/ash_notification_expand_button.h"
@@ -38,9 +39,11 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/compositor/animation_throughput_reporter.h"
@@ -85,6 +88,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/drag_utils.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/box_layout_view.h"
 #include "ui/views/layout/flex_layout.h"
@@ -354,6 +358,7 @@ AshNotificationView::NotificationTitleRow::NotificationTitleRow(
   timestamp_in_collapsed_view_->SetProperty(views::kMarginsKey,
                                             kTimeStampInCollapsedStatePadding);
   timestamp_in_collapsed_view_->SetElideBehavior(gfx::ElideBehavior::NO_ELIDE);
+
   title_view_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
@@ -371,6 +376,17 @@ AshNotificationView::NotificationTitleRow::NotificationTitleRow(
   message_center_utils::InitLayerForAnimations(timestamp_in_collapsed_view_);
   ConfigureLabelStyle(title_view_, kTitleLabelSize,
                       /*is_color_primary=*/true, gfx::Font::Weight::MEDIUM);
+
+  if (chromeos::features::IsJellyEnabled()) {
+    ash::TypographyProvider::Get()->StyleLabel(
+        ash::TypographyToken::kCrosButton2, *title_view_);
+    title_view_->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
+
+    timestamp_in_collapsed_view_->SetEnabledColorId(
+        cros_tokens::kCrosSysSecondary);
+    ash::TypographyProvider::Get()->StyleLabel(
+        ash::TypographyToken::kCrosAnnotation1, *timestamp_in_collapsed_view_);
+  }
 }
 
 AshNotificationView::NotificationTitleRow::~NotificationTitleRow() {
@@ -448,6 +464,12 @@ void AshNotificationView::NotificationTitleRow::OnThemeChanged() {
       AshColorProvider::ContentLayerType::kTextColorSecondary);
   title_row_divider_->SetEnabledColor(secondary_text_color);
   timestamp_in_collapsed_view_->SetEnabledColor(secondary_text_color);
+
+  if (chromeos::features::IsJellyEnabled()) {
+    title_view_->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
+    timestamp_in_collapsed_view_->SetEnabledColorId(
+        cros_tokens::kCrosSysSecondary);
+  }
 }
 
 // static
@@ -566,7 +588,15 @@ AshNotificationView::AshNotificationView(
               views::kMarginsKey, kImageContainerPadding));
 
   ConfigureLabelStyle(message_label_in_expanded_state_, kMessageLabelSize,
-                      false);
+                      /*is_color_primary=*/false);
+
+  if (chromeos::features::IsJellyEnabled()) {
+    message_label_in_expanded_state_->SetEnabledColorId(
+        cros_tokens::kCrosSysSecondary);
+    ash::TypographyProvider::Get()->StyleLabel(
+        ash::TypographyToken::kCrosAnnotation1,
+        *message_label_in_expanded_state_);
+  }
 
   AddChildView(
       views::Builder<views::FlexLayoutView>()
@@ -647,6 +677,11 @@ AshNotificationView::AshNotificationView(
     layer()->SetRoundedCornerRadius(
         gfx::RoundedCornersF{kMessagePopupCornerRadius});
     layer()->SetIsFastRoundedCorner(true);
+    SetBorder(std::make_unique<views::HighlightBorder>(
+        kMessagePopupCornerRadius,
+        chromeos::features::IsJellyrollEnabled()
+            ? views::HighlightBorder::Type::kHighlightBorderOnShadow
+            : views::HighlightBorder::Type::kHighlightBorder1));
   }
 
   views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
@@ -1184,13 +1219,21 @@ void AshNotificationView::UpdateWithNotification(
   // Configure views style.
   UpdateIconAndButtonsColor(&notification);
   if (message_label()) {
-    ConfigureLabelStyle(message_label(), kMessageLabelSize, false);
+    ConfigureLabelStyle(message_label(), kMessageLabelSize,
+                        /*is_color_primary=*/false);
+    if (chromeos::features::IsJellyEnabled()) {
+      message_label()->SetEnabledColorId(cros_tokens::kCrosSysSecondary);
+      ash::TypographyProvider::Get()->StyleLabel(
+          ash::TypographyToken::kCrosAnnotation1, *message_label());
+    }
   }
   if (inline_reply()) {
-    SkColor text_color = ash::AshColorProvider::Get()->GetContentLayerColor(
-        ash::AshColorProvider::ContentLayerType::kTextColorSecondary);
-    inline_reply()->textfield()->SetTextColor(text_color);
-    inline_reply()->textfield()->set_placeholder_text_color(text_color);
+    if (!chromeos::features::IsJellyEnabled()) {
+      SkColor text_color = ash::AshColorProvider::Get()->GetContentLayerColor(
+          ash::AshColorProvider::ContentLayerType::kTextColorSecondary);
+      inline_reply()->textfield()->SetTextColor(text_color);
+      inline_reply()->textfield()->set_placeholder_text_color(text_color);
+    }
   }
 }
 
@@ -1218,7 +1261,7 @@ void AshNotificationView::CreateOrUpdateTitleView(
   if (notification.title().empty()) {
     if (title_row_) {
       DCHECK(left_content()->Contains(title_row_));
-      left_content()->RemoveChildViewT(title_row_);
+      left_content()->RemoveChildViewT(title_row_.get());
       title_row_ = nullptr;
     }
     return;
@@ -1306,10 +1349,20 @@ void AshNotificationView::CreateOrUpdateProgressViews(
   // bar. This is the opposite of what is required of the chrome notification.
   CreateOrUpdateProgressStatusView(notification);
   CreateOrUpdateProgressBarView(notification);
+  if (progress_bar_view() && chromeos::features::IsJellyEnabled()) {
+    progress_bar_view()->SetForegroundColorId(cros_tokens::kCrosSysPrimary);
+    progress_bar_view()->SetBackgroundColorId(
+        cros_tokens::kCrosSysHighlightShape);
+  }
 
   if (status_view()) {
     status_view()->SetMultiLine(true);
     status_view()->SetMaxLines(message_center::kMaxLinesForStatusView);
+    if (chromeos::features::IsJellyEnabled()) {
+      status_view()->SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant);
+      TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosAnnotation1,
+                                            *status_view());
+    }
   }
 }
 
@@ -1364,6 +1417,9 @@ void AshNotificationView::OnThemeChanged() {
 
   if (message_label()) {
     message_label()->SetEnabledColor(secondary_text_color);
+    if (chromeos::features::IsJellyEnabled()) {
+      message_label()->SetEnabledColorId(cros_tokens::kCrosSysSecondary);
+    }
   }
 
   if (control_buttons_view_) {
@@ -1374,6 +1430,10 @@ void AshNotificationView::OnThemeChanged() {
 
   if (message_label_in_expanded_state_) {
     message_label_in_expanded_state_->SetEnabledColor(secondary_text_color);
+    if (chromeos::features::IsJellyEnabled()) {
+      message_label_in_expanded_state_->SetEnabledColorId(
+          cros_tokens::kCrosSysSecondary);
+    }
   }
 
   UpdateIconAndButtonsColor(
@@ -1381,10 +1441,17 @@ void AshNotificationView::OnThemeChanged() {
           notification_id()));
 
   if (inline_reply()) {
-    SkColor text_color = ash::AshColorProvider::Get()->GetContentLayerColor(
-        ash::AshColorProvider::ContentLayerType::kTextColorSecondary);
-    inline_reply()->textfield()->SetTextColor(text_color);
-    inline_reply()->textfield()->set_placeholder_text_color(text_color);
+    if (chromeos::features::IsJellyEnabled()) {
+      inline_reply()->textfield()->SetTextColor(
+          GetColorProvider()->GetColor(cros_tokens::kCrosSysOnSurface));
+      inline_reply()->textfield()->set_placeholder_text_color(
+          GetColorProvider()->GetColor(cros_tokens::kCrosSysOnSurfaceVariant));
+    } else {
+      SkColor text_color = ash::AshColorProvider::Get()->GetContentLayerColor(
+          ash::AshColorProvider::ContentLayerType::kTextColorSecondary);
+      inline_reply()->textfield()->SetTextColor(text_color);
+      inline_reply()->textfield()->set_placeholder_text_color(text_color);
+    }
   }
 
   if (icon_view() &&
@@ -1411,10 +1478,12 @@ AshNotificationView::GenerateNotificationLabelButton(
     views::Button::PressedCallback callback,
     const std::u16string& label) {
   std::unique_ptr<views::LabelButton> actions_button =
-      std::make_unique<PillButton>(std::move(callback), label,
-                                   PillButton::Type::kAccentFloatingWithoutIcon,
-                                   /*icon=*/nullptr,
-                                   kNotificationPillButtonHorizontalSpacing);
+      std::make_unique<PillButton>(
+          std::move(callback), label,
+          chromeos::features::IsJellyEnabled()
+              ? PillButton::Type::kFloatingWithoutIcon
+              : PillButton::Type::kAccentFloatingWithoutIcon,
+          /*icon=*/nullptr, kNotificationPillButtonHorizontalSpacing);
   return actions_button;
 }
 
@@ -1533,7 +1602,7 @@ void AshNotificationView::CreateOrUpdateSnoozeButton(
     const message_center::Notification& notification) {
   if (!notification.should_show_snooze_button()) {
     if (action_buttons_row()->Contains(snooze_button_)) {
-      action_buttons_row()->RemoveChildViewT(snooze_button_);
+      action_buttons_row()->RemoveChildViewT(snooze_button_.get());
       snooze_button_ = nullptr;
       DCHECK(action_buttons_row()->Contains(snooze_button_spacer_));
       action_buttons_row()->RemoveChildViewT(snooze_button_spacer_);
@@ -1606,8 +1675,12 @@ void AshNotificationView::UpdateBackground(int top_radius, int bottom_radius) {
     background_color = AshColorProvider::Get()->GetBaseLayerColor(
         AshColorProvider::BaseLayerType::kTransparent80);
   } else {
-    background_color = AshColorProvider::Get()->GetControlsLayerColor(
-        AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive);
+    background_color =
+        chromeos::features::IsJellyEnabled() && GetColorProvider()
+            ? GetColorProvider()->GetColor(cros_tokens::kCrosSysSystemOnBase)
+            : AshColorProvider::Get()->GetControlsLayerColor(
+                  AshColorProvider::ControlsLayerType::
+                      kControlBackgroundColorInactive);
   }
 
   if (background_color == background_color_ && top_radius_ == top_radius &&

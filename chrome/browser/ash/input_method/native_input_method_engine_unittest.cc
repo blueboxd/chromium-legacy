@@ -8,6 +8,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ash/input_method/autocorrect_prefs.h"
 #include "chrome/browser/ash/input_method/input_method_settings.h"
@@ -210,7 +211,7 @@ class FakeConnectionFactory : public ime::mojom::ConnectionFactory {
   }
 
  private:
-  MockInputMethod* mock_input_method_;
+  raw_ptr<MockInputMethod, ExperimentalAsh> mock_input_method_;
   mojo::Receiver<ime::mojom::ConnectionFactory> connection_factory_{this};
 };
 
@@ -231,7 +232,6 @@ class TestInputEngineManager : public ime::mojom::InputEngineManager {
 
   void InitializeConnectionFactory(
       mojo::PendingReceiver<ime::mojom::ConnectionFactory> connection_factory,
-      ime::mojom::ConnectionTarget connection_target,
       InitializeConnectionFactoryCallback callback) override {
     fake_connection_factory_.Bind(std::move(connection_factory));
     std::move(callback).Run(/*bound=*/true);

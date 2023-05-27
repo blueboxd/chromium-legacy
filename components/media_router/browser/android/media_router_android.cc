@@ -11,8 +11,8 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/logging.h"
+#include "base/uuid.h"
 #include "components/media_router/browser/media_router_metrics.h"
 #include "components/media_router/browser/media_routes_observer.h"
 #include "components/media_router/browser/media_sinks_observer.h"
@@ -264,6 +264,21 @@ void MediaRouterAndroid::OnRouteCreated(const MediaRoute::Id& route_id,
   } else {
     MediaRouterMetrics::RecordJoinRouteResultCode(
         result->result_code(), mojom::MediaRouteProviderId::ANDROID_CAF);
+  }
+}
+
+void MediaRouterAndroid::OnRouteMediaSourceUpdated(
+    const MediaRoute::Id& route_id,
+    const MediaSource::Id& source_id) {
+  for (auto& route : active_routes_) {
+    if (route.media_route_id() == route_id) {
+      route.set_media_source(MediaSource(source_id));
+      break;
+    }
+  }
+
+  for (auto& observer : routes_observers_) {
+    observer.OnRoutesUpdated(active_routes_);
   }
 }
 

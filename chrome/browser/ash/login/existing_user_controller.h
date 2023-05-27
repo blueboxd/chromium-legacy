@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -54,11 +56,11 @@ class PinSaltStorage;
 // ExistingUserController is used to handle login when someone has already
 // logged into the machine. ExistingUserController is created and owned by
 // LoginDisplayHost.
-class ExistingUserController : public LoginDisplay::Delegate,
-                               public content::NotificationObserver,
+class ExistingUserController : public content::NotificationObserver,
                                public LoginPerformer::Delegate,
                                public UserSessionManagerDelegate,
-                               public user_manager::UserManager::Observer {
+                               public user_manager::UserManager::Observer,
+                               public ui::UserActivityObserver {
  public:
   // Returns the current existing user controller fetched from the current
   // LoginDisplayHost instance.
@@ -95,11 +97,13 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Returns name of the currently connected network, for error message,
   std::u16string GetConnectedNetworkName() const;
 
-  // LoginDisplay::Delegate: implementation
-  void Login(const UserContext& user_context,
-             const SigninSpecifics& specifics) override;
-  void OnStartKioskEnableScreen() override;
-  void ResetAutoLoginTimer() override;
+  // This is virtual for mocking in the unit tests.
+  virtual void Login(const UserContext& user_context,
+                     const SigninSpecifics& specifics);
+  void OnStartKioskEnableScreen();
+
+  // ui::UserActivityObserver:
+  void OnUserActivity(const ui::Event* event) override;
 
   void CompleteLogin(const UserContext& user_context);
   void OnGaiaScreenReady();
@@ -333,7 +337,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   size_t num_login_attempts_ = 0;
 
   // Interface to the signed settings store.
-  CrosSettings* cros_settings_;
+  raw_ptr<CrosSettings, ExperimentalAsh> cros_settings_;
 
   // URL to append to start Guest mode with.
   GURL guest_mode_url_;

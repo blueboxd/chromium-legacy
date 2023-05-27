@@ -12,6 +12,7 @@
 #include "base/cxx20_to_address.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_utils.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_group_theme.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -38,13 +40,19 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/dialog_model.h"
+#include "ui/base/models/dialog_model_field.h"
 #include "ui/base/models/dialog_model_menu_model_adapter.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -52,15 +60,22 @@
 #include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 
-namespace {
-constexpr float kBorderRadius = 4.5f;
-constexpr float kButtonRadius = 5.0f;
-constexpr float kBorderThickness = 2.0f;
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SavedTabGroupButton,
+                                      kDeleteGroupMenuItem);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SavedTabGroupButton,
+                                      kMoveGroupToNewWindowMenuItem);
 
-// This value comes from tab_group_style.cc (kEmptyChipSize). Since this
-// button and the tab_group_header are rendered on different surfaces, keep
-// the value here in case we want to change one but not the other.
-constexpr float kCircleRadius = 14.0f;
+namespace {
+// The max height of the button and the max width of a button with no title.
+constexpr int kButtonSize = 24;
+// The corner radius for the button.
+constexpr float kButtonRadius = 4.0f;
+// The amount of insets from the buttons border.
+constexpr float kInsets = 5.0f;
+// The width of the outline of the button when open in the Tab Strip.
+constexpr float kBorderThickness = 1.0f;
+// The radius for the circle that is displayed for buttons with no title.
+constexpr float kCircleRadius = 7.0f;
 }  // namespace
 
 SavedTabGroupButton::SavedTabGroupButton(
@@ -84,24 +99,16 @@ SavedTabGroupButton::SavedTabGroupButton(
               &SavedTabGroupButton::CreateDialogModelForContextMenu,
               base::Unretained(this)),
           views::MenuRunner::CONTEXT_MENU | views::MenuRunner::IS_NESTED) {
+  SetAccessibilityProperties(
+      ax::mojom::Role::kPopUpButton, group.title(),
+      /*description*/ absl::nullopt,
+      l10n_util::GetStringUTF16(
+          IDS_ACCNAME_SAVED_TAB_GROUP_BUTTON_ROLE_DESCRIPTION));
   SetText(group.title());
-  SetAccessibleName(group.title());
   SetTooltipText(group.title());
   SetID(VIEW_ID_BOOKMARK_BAR_ELEMENT);
   SetProperty(views::kElementIdentifierKey, kSavedTabGroupButtonElementId);
-
-  // Since the theme provider is not currently available when instantiated the
-  // text color will be set to a placeholder color now. the text color will then
-  // be enabled when a theme provider can provide one onpaint.
-  SetEnabledTextColors(gfx::kPlaceholderColor);
-
-  SetMaxSize(gfx::Size(bookmark_button_util::kMaxButtonWidth, 0));
-
-  ConfigureInkDropForToolbar(this);
-  SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
-      ChromeDistanceMetric::DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
-  views::InstallRoundRectHighlightPathGenerator(this, GetInsets(),
-                                                kBorderRadius);
+  SetMaxSize(gfx::Size(bookmark_button_util::kMaxButtonWidth, kButtonSize));
 
   show_animation_ = std::make_unique<gfx::SlideAnimation>(this);
   if (!animations_enabled) {
@@ -112,15 +119,11 @@ SavedTabGroupButton::SavedTabGroupButton(
     show_animation_->Show();
   }
 
-  int button_height = GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT);
-  if (GetText().empty()) {
-    // When the text is empty force the button to have square dimensions.
-    // Likewise, we already have a constant that denotes the standard button
-    // height for all elements in the bookmarks bar. As such, we will use this
-    // constant for the width of the button to create a square that will
-    // comfortably fit in the bookmarks bar.
-    SetPreferredSize(gfx::Size(button_height, button_height));
-  }
+  ConfigureInkDropForToolbar(this);
+  SetImageLabelSpacing(ChromeLayoutProvider::Get()->GetDistanceMetric(
+      ChromeDistanceMetric::DISTANCE_RELATED_LABEL_HORIZONTAL_LIST));
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(0),
+                                                kButtonRadius);
 
   set_drag_controller(this);
 }
@@ -137,17 +140,7 @@ void SavedTabGroupButton::UpdateButtonData(const SavedTabGroup& group) {
   tabs_.clear();
   tabs_ = group.saved_tabs();
 
-  int button_height = GetLayoutConstant(BOOKMARK_BAR_BUTTON_HEIGHT);
-  if (GetText().empty()) {
-    // When the text is empty force the button to have square dimensions.
-    // Likewise, we already have a constant that denotes the standard button
-    // height for all elements in the bookmarks bar. As such, we will use this
-    // constant for the width of the button to create a square that will
-    // comfortably fit in the bookmarks bar.
-    SetPreferredSize(gfx::Size(button_height, button_height));
-  } else {
-    SetPreferredSize(CalculatePreferredSize());
-  }
+  UpdateButtonLayout();
 }
 
 std::u16string SavedTabGroupButton::GetTooltipText(const gfx::Point& p) const {
@@ -157,59 +150,65 @@ std::u16string SavedTabGroupButton::GetTooltipText(const gfx::Point& p) const {
 }
 
 void SavedTabGroupButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::MenuButton::GetAccessibleNodeData(node_data);
+
+  // TODO(crbug.com/1411342): Under what circumstances would there be no
+  // name? Please read the bug description and update accordingly.
   // If the button would have no name, avoid crashing by setting the name
   // explicitly empty.
   if (GetAccessibleName().empty()) {
     node_data->SetNameExplicitlyEmpty();
   }
-
-  views::MenuButton::GetAccessibleNodeData(node_data);
-  node_data->AddStringAttribute(
-      ax::mojom::StringAttribute::kRoleDescription,
-      l10n_util::GetStringUTF8(
-          IDS_ACCNAME_SAVED_TAB_GROUP_BUTTON_ROLE_DESCRIPTION));
 }
 
-void SavedTabGroupButton::OnPaintBackground(gfx::Canvas* canvas) {
-  const ui::ColorProvider* const cp = GetColorProvider();
-  gfx::PointF center_point_f = gfx::PointF(width() / 2, height() / 2);
-  gfx::RectF rect_f = gfx::RectF(width(), height());
-  rect_f.Inset(1.0f);
+void SavedTabGroupButton::PaintButtonContents(gfx::Canvas* canvas) {
+  if (!GetText().empty()) {
+    return;
+  }
 
-  // Relies on logic in theme_helper.cc to determine dark/light palette.
-  SkColor background_color =
-      cp->GetColor(GetTabGroupBookmarkColorId(tab_group_color_id_));
+  // When the title is empty, we draw a circle similar to the tab group
+  // header when there is no title.
+  const ui::ColorProvider* const cp = GetColorProvider();
   SkColor text_and_outline_color =
       cp->GetColor(GetTabGroupDialogColorId(tab_group_color_id_));
-  SetEnabledTextColors(text_and_outline_color);
 
-  // Draw background.
+  // Draw circle.
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  flags.setColor(background_color);
-  canvas->DrawRoundRect(rect_f, kButtonRadius, flags);
-
-  // At the time this was written, all non-background elements share the same
-  // color. As such, we can set the color once here.
   flags.setColor(text_and_outline_color);
 
+  const gfx::PointF center_point_f = gfx::PointF(width() / 2, height() / 2);
+  canvas->DrawCircle(center_point_f, kCircleRadius, flags);
+}
+
+void SavedTabGroupButton::UpdateButtonLayout() {
   if (GetText().empty()) {
-    // When the title is empty, we draw a circle similar to the tab group header
-    // when there is no title.
-    canvas->DrawCircle(center_point_f, kCircleRadius / 2, flags);
+    // When the text is empty force the button to have square dimensions.
+    SetPreferredSize(gfx::Size(kButtonSize, kButtonSize));
+  } else {
+    SetPreferredSize(CalculatePreferredSize());
   }
 
-  // Draw border.
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setStrokeWidth(kBorderThickness);
-  if (local_group_id_.has_value()) {
-    canvas->DrawRoundRect(rect_f, kBorderRadius, flags);
-  }
+  // Relies on logic in theme_helper.cc to determine dark/light palette.
+  ui::ColorId text_and_outline_color =
+      GetTabGroupDialogColorId(tab_group_color_id_);
+  ui::ColorId background_color =
+      GetTabGroupBookmarkColorId(tab_group_color_id_);
 
-  if (GetState() == STATE_HOVERED) {
-    // TODO: Draw a box shadow on hover.
-    return;
+  SetEnabledTextColorIds(GetTabGroupDialogColorId(tab_group_color_id_));
+  SetBackground(views::CreateThemedRoundedRectBackground(background_color,
+                                                         kButtonRadius));
+
+  // Only draw a border if the group is open in the tab strip.
+  if (!local_group_id_.has_value()) {
+    SetBorder(views::CreateEmptyBorder(gfx::Insets(kInsets)));
+  } else {
+    std::unique_ptr<views::Border> border =
+        views::CreateThemedRoundedRectBorder(kBorderThickness, kButtonRadius,
+                                             text_and_outline_color);
+    SetBorder(
+        views::CreatePaddedBorder(std::move(border), gfx::Insets(kInsets)));
   }
 }
 
@@ -223,18 +222,7 @@ SavedTabGroupButton::CreateDefaultBorder() const {
 
 void SavedTabGroupButton::OnThemeChanged() {
   views::MenuButton::OnThemeChanged();
-
-  // We don't always have a theme provider (ui tests, for example).
-  SkColor text_color = gfx::kPlaceholderColor;
-  const ui::ColorProvider* const cp = GetColorProvider();
-  if (cp) {
-    SkColor background_color =
-        cp->GetColor(GetTabGroupBookmarkColorId(tab_group_color_id_));
-    text_color = cp->GetColor(GetTabGroupDialogColorId(tab_group_color_id_));
-    text_color = color_utils::PickGoogleColor(
-        text_color, background_color,
-        color_utils::kMinimumReadableContrastRatio);
-  }
+  UpdateButtonLayout();
 }
 
 void SavedTabGroupButton::WriteDragDataForView(View* sender,
@@ -279,7 +267,7 @@ void SavedTabGroupButton::TabMenuItemPressed(const GURL& url, int event_flags) {
 void SavedTabGroupButton::MoveGroupToNewWindowPressed(int event_flags) {
   Browser* const browser_with_local_group_id =
       local_group_id_.has_value()
-          ? service_->listener()->GetBrowserWithTabGroupId(
+          ? SavedTabGroupUtils::GetBrowserWithTabGroupId(
                 local_group_id_.value())
           : base::to_address(browser_);
 
@@ -298,7 +286,7 @@ void SavedTabGroupButton::MoveGroupToNewWindowPressed(int event_flags) {
 void SavedTabGroupButton::DeleteGroupPressed(int event_flags) {
   if (local_group_id_.has_value()) {
     const Browser* const browser_with_local_group_id =
-        service_->listener()->GetBrowserWithTabGroupId(local_group_id_.value());
+        SavedTabGroupUtils::GetBrowserWithTabGroupId(local_group_id_.value());
 
     // Keep the opened tab group in the tabstrip but remove the SavedTabGroup
     // data from the model.
@@ -339,19 +327,23 @@ SavedTabGroupButton::CreateDialogModelForContextMenu() {
           ui::ImageModel::FromVectorIcon(kMoveGroupToNewWindowIcon),
           move_or_open_group_text,
           base::BindRepeating(&SavedTabGroupButton::MoveGroupToNewWindowPressed,
-                              base::Unretained(this)))
+                              base::Unretained(this)),
+          ui::DialogModelMenuItem::Params().SetId(
+              kMoveGroupToNewWindowMenuItem))
       .AddMenuItem(
           ui::ImageModel::FromVectorIcon(kCloseGroupIcon),
           l10n_util::GetStringUTF16(IDS_TAB_GROUP_HEADER_CXMENU_DELETE_GROUP),
           base::BindRepeating(&SavedTabGroupButton::DeleteGroupPressed,
-                              base::Unretained(this)))
+                              base::Unretained(this)),
+          ui::DialogModelMenuItem::Params().SetId(kDeleteGroupMenuItem))
       .AddSeparator();
 
   for (const SavedTabGroupTab& tab : tabs_) {
     const ui::ImageModel& image =
         tab.favicon().has_value()
             ? ui::ImageModel::FromImage(tab.favicon().value())
-            : ui::ImageModel::FromImage(favicon::GetDefaultFavicon());
+            : favicon::GetDefaultFaviconModel(
+                  GetTabGroupBookmarkColorId(tab_group_color_id_));
     const std::u16string title =
         tab.title().empty() ? base::UTF8ToUTF16(tab.url().spec()) : tab.title();
     dialog_model.AddMenuItem(

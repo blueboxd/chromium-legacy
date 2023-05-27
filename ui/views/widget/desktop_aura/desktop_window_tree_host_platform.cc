@@ -683,6 +683,9 @@ bool DesktopWindowTreeHostPlatform::ShouldWindowContentsBeTransparent() const {
 }
 
 void DesktopWindowTreeHostPlatform::FrameTypeChanged() {
+  if (!native_widget_delegate_) {
+    return;
+  }
   Widget::FrameType new_type =
       native_widget_delegate_->AsWidget()->frame_type();
   if (new_type == Widget::FrameType::kDefault) {
@@ -728,7 +731,12 @@ void DesktopWindowTreeHostPlatform::SetOpacity(float opacity) {
 }
 
 void DesktopWindowTreeHostPlatform::SetAspectRatio(
-    const gfx::SizeF& aspect_ratio) {
+    const gfx::SizeF& aspect_ratio,
+    const gfx::Size& excluded_margin) {
+  // TODO(crbug.com/1407629): send `excluded_margin`.
+  if (excluded_margin.width() > 0 || excluded_margin.height() > 0) {
+    NOTIMPLEMENTED_LOG_ONCE();
+  }
   platform_window()->SetAspectRatio(aspect_ratio);
 }
 

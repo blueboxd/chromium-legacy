@@ -25,13 +25,13 @@ import node_modules
 # These files are already combined and minified.
 _BASE_EXCLUDES = []
 for excluded_file in [
-    'resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js',
     'resources/mojo/mojo/public/js/bindings.js',
     'resources/mojo/mojo/public/mojom/base/time.mojom-lite.js',
     'resources/polymer/v3_0/polymer/polymer_bundled.min.js',
     'resources/js/cr.js',  # This file relies on globals.
     'resources/js/load_time_data.js',
     'resources/ash/common/load_time_data.m.js',
+    'resources/mwc/lit/index.js',
 ]:
   # Exclude both the chrome://resources form and the scheme-relative form for
   # files used in Polymer 3.

@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Autentifikazio-ziurtagiria lokalki baztertu da</translation>
 <translation id="1775381402323441512">Bideoari buruzko informazioa</translation>
 <translation id="180035236176489073">Konektatuta egon behar zara fitxategiak atzitzeko.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Identifikatzaile hau daukan luzapena:}other{Identifikatzaile hauek dauzkaten luzapenak:}}</translation>
 <translation id="1807938677607439181">Fitxategi guztiak</translation>
 <translation id="1810764548349082891">Ez dago aurrebistarik</translation>
 <translation id="1812302367230252929">Amhareraren transliterazioa</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Gaiaren ordezko izenaren bat-etortzearen sarrera ez da zuzena</translation>
 <translation id="1838709767668011582">Google-ko webgunea</translation>
 <translation id="1853795129690976061">Karpeta hau Linux-ekin partekatuta dago</translation>
-<translation id="1859422890169495746">Chromebook hau</translation>
 <translation id="1864756863218646478">Ezin izan da aurkitu fitxategia.</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" />. Konektatu.</translation>
 <translation id="1920670151694390848">Malabareraren transliterazioa</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planeta</translation>
 <translation id="2305020378527873881">Kanporatu da <ph name="VOLUME_NAME" />.</translation>
 <translation id="2307462900900812319">Konfiguratu sarea</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Ezin da aurkitu <ph name="BEGIN_LIST" /><ph name="END_LIST" /> identifikatzailearekin lotutako luzapenik. Jarri administratzailearekin harremanetan.}other{Ezin da aurkitu <ph name="BEGIN_LIST" /><ph name="END_LIST" /> identifikatzaileekin lotutako luzapenik. Jarri administratzailearekin harremanetan.}}</translation>
 <translation id="2325650632570794183">Ez dira mota horretako fitxategiak onartzen. Horrelako fitxategiak ireki ditzaketen aplikazioak aurkitzeko, zoaz Chrome Web Store dendara.</translation>
 <translation id="2326539130272988168">Bulgariarra</translation>
 <translation id="2337715497728194187">Partekatu Bruschetta-rekin</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Babestu gabe</translation>
 <translation id="3291218047831493686">Konektatu sare honetara SIM txartela blokeatzeko ezarpena aldatu ahal izateko</translation>
 <translation id="3293023191599135697">WEP darabilten sareak ez dira bateragarriak</translation>
+<translation id="3295006446256079333">Bolumen hau</translation>
 <translation id="3295357220137379386">Gailua okupatuta dago</translation>
 <translation id="3296763833017966289">Georgiarra</translation>
 <translation id="3307875152560779385">Ukrainarra</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase-ak</translation>
 <translation id="4850886885716139402">Ikusi</translation>
 <translation id="485316830061041779">Alemana</translation>
+<translation id="4862885579661885411">Fitxategien ezarpenak</translation>
 <translation id="4867079195717347957">Egin klik zutabea beheranzko ordenan ezartzeko.</translation>
 <translation id="4867297348137739678">Aurreko astea</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> byte</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> elementu kopiatzen…</translation>
 <translation id="7375951387215729722">"<ph name="COLUMN_NAME" />" zutabearen arabera ageri da fitxategien zerrenda, beherantz ordenatuta.</translation>
 <translation id="7377161162143020057">Administratzailearen gidalerroek ez dute uzten fitxategia kopiatzen</translation>
-<translation id="7392500733467492920">aurkitzea ezinezkoa da. Jarri administratzailearekin harremanetan.</translation>
 <translation id="7402503521691663770">ChromeOS Flex-eko gailuak</translation>
 <translation id="7408870451288633753">Txekiarra</translation>
 <translation id="7417453074306512035">Teklatu etiopiarra</translation>

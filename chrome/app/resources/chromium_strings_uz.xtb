@@ -79,7 +79,6 @@ Sayt va ilovalarga berilgan ruxsatlar bu hisobga tatbiq etilishi mumkin. Google 
 <translation id="2928420929544864228">Oʻrnatildi.</translation>
 <translation id="2977470724722393594">Siz Chromium brauzerining eng oxirgi versiyasidan foydalanyapsiz.</translation>
 <translation id="2977506796191543575">Agar sayt parolingizni oʻgirlashga urinsa yoki zararli fayl yuklab olsangiz, Chromium ham URL manzillar kabi sahifa elementlarini Saytlarni xavfsiz kezish tizimiga yuborishi mumkin</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium HID qurilmasiga ulangan}other{Chromium HID qurilmalariga ulangan}}</translation>
 <translation id="3032706164202344641">Chromium parollaringizni tekshira olmadi. Keyinroq qayta urining.</translation>
 <translation id="3032787606318309379">Chromium‘ga o‘rnatilmoqda...</translation>
 <translation id="3038232873781883849">Oʻrnatish kutilmoqda…</translation>
@@ -92,7 +91,6 @@ Sayt va ilovalarga berilgan ruxsatlar bu hisobga tatbiq etilishi mumkin. Google 
 <translation id="3185330573522821672">Yangi Chromium profilini moslash</translation>
 <translation id="3190315855212034486">Voy! Chromium ishdan chiqdi. Qaytadan ishga tushirilsinmi?</translation>
 <translation id="3258596308407688501">Chromium o‘z jildidan ma’lumotlarni o‘qib yoki yozib ololmadi: <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Bu qoʻllanma yordamida Chromium qanday ishlatilishi haqidagi maqsadlar haqida axborot olasiz</translation>
 <translation id="3283186697780795848">Chromium <ph name="PRODUCT_VERSION" /> versiyasi oʻrnatildi</translation>
 <translation id="3286538390144397061">Hozir qaytadan ishga tushirish</translation>
 <translation id="328888136576916638">Google API kalitlari yetishmayapti. Chromium’ning ba’zi funksiyalari ishlamasligi mumkin.</translation>
@@ -244,8 +242,10 @@ Sayt va ilovalarga berilgan ruxsatlar bu hisobga tatbiq etilishi mumkin. Google 
 <translation id="6442900851116057561">ChromiumOS tizimini ishga tushirish</translation>
 <translation id="6455857529632101747">Chromium profillariga xush kelibsiz</translation>
 <translation id="6475912303565314141">Bundan tashqari, kengaytma Chromium bosh sahifasini o‘zgarib qo‘ydi.</translation>
+<translation id="648319183876919572">Saytlarni kuchaytirilgan rejimda xavfsiz kezish yordamida zararli saytlar va yuklanmalardan himoyalanish mumkin</translation>
 <translation id="6510925080656968729">Chromium’ni o‘chirib tashlash</translation>
 <translation id="6542839706527980775">Har bir profilda bukmark, tarix va parol kabi Chromium axboroti saqlanadi</translation>
+<translation id="656935081669708576">Profilni almashtirib, boshqa Chromium profili parollarini koʻrish mumkin</translation>
 <translation id="6570579332384693436">Imloni tekshirish uchun Chromium siz kiritgan matnni Google serverlariga yuboradi</translation>
 <translation id="6598877126913850652">Chromium bildirishnomalar sozlamalarini ochish</translation>
 <translation id="6613594504749178791">O‘zgartirishlar Chromium qaytadan ishga tushirilganda kuchga kiradi.</translation>
@@ -381,7 +381,6 @@ Chromium sozlamalaringizni qaytadan tiklay olmadi.</translation>
 <translation id="924957577793602335">Chromium brauzerini oʻzingizga moslashtiring</translation>
 <translation id="93478295209880648">Chromium brauzeri Windows XP yoki Windows Vista tizimlarida ishlamay qolishi mumkin, chunki uning yangi versiyalarida bu tizimlar ta’minoti to‘xtatiladi</translation>
 <translation id="942598560705308788">Chromium boshqaradigan sertifikatlar</translation>
-<translation id="959579472876010517">Chromiumning barcha imkoniyatlaridan foydalaning</translation>
 <translation id="965162752251293939">Chromiumni kim ochdi?</translation>
 <translation id="967427899662692980">Chromium brauzerining kuchli xavfsizligidan foydalaning</translation>
 <translation id="9792300276217204">Chromium yopilganda har doim qurilmadan sayt maʼlumotlarini oʻchirib tashlang</translation>

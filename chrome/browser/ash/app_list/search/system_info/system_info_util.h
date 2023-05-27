@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_APP_LIST_SEARCH_SYSTEM_INFO_SYSTEM_INFO_UTIL_H_
 #define CHROME_BROWSER_ASH_APP_LIST_SEARCH_SYSTEM_INFO_SYSTEM_INFO_UTIL_H_
 
+#include <string>
 #include <vector>
 
 #include "base/time/time.h"
@@ -16,6 +17,22 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 
 namespace app_list {
+
+// The enums below are used in histograms, do not remove/renumber entries. If
+// you're adding to any of these enums, update the corresponding enum listing in
+// tools/metrics/histograms/enums.xml: CrosDiagnosticsDataError.
+enum class BatteryDataError {
+  // Null or nullptr value.
+  kNoData = 0,
+  // For numeric values that are NaN.
+  kNotANumber = 1,
+  // Expectation about data not met. Ex. routing prefix is between zero and
+  // thirty-two.
+  kExpectationNotMet = 2,
+  kMaxValue = kExpectationNotMet,
+};
+
+void EmitBatteryDataError(BatteryDataError error);
 
 // Extracts MemoryInfo from `info`. Logs and returns a nullptr if MemoryInfo
 // in not present.

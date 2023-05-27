@@ -27,16 +27,18 @@
 #import "ios/chrome/app/startup/ios_enable_sandbox_dump_buildflags.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/crash_report/crash_helper.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_provider.h"
+#import "ios/chrome/browser/main/browser_provider_interface.h"
 #import "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/coordinator/scene/connection_information.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/signin/signin_util.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
-#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
-#import "ios/chrome/browser/ui/main/connection_information.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/tabs/inactive_tabs/metrics.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/widget_kit/features.h"
@@ -183,6 +185,24 @@ void DumpEnvironment(id<StartupInformation> startup_information) {
   [data writeToFile:file_path atomically:YES];
 }
 #endif  // BUILDFLAG(IOS_ENABLE_SANDBOX_DUMP)
+
+// Returns the associated setting from inactive tab preference value.
+InactiveTabsThresholdSetting InactiveTabsSettingFromPreference(int preference) {
+  switch (preference) {
+    case -1:
+      return InactiveTabsThresholdSetting::kNeverMove;
+    case 0:
+      return InactiveTabsThresholdSetting::kDefaultValue;
+    case 7:
+      return InactiveTabsThresholdSetting::kOneWeek;
+    case 14:
+      return InactiveTabsThresholdSetting::kTwoWeeks;
+    case 21:
+      return InactiveTabsThresholdSetting::kThreeWeeks;
+    default:
+      return InactiveTabsThresholdSetting::kUnknown;
+  }
+}
 }  // namespace
 
 // A class to log the "load" time in uma.
@@ -290,6 +310,8 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
 // prefs, so as not to trigger upload of various stale data.
 // Mirrors the function in metrics_reporting_state.cc.
 - (void)updateMetricsPrefsOnPermissionChange:(BOOL)enabled;
+// Logs the inactive tabs settings preference.
++ (void)recordInactiveTabsSettingsAtStartup:(int)preference;
 // Logs the number of tabs with UMAHistogramCount100 and allows testing.
 + (void)recordNumTabAtStartup:(int)numTabs;
 // Logs the number of tabs with UMAHistogramCount100 and allows testing.
@@ -389,7 +411,7 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
   std::vector<base::TimeDelta> timesSinceCreation;
 
   for (SceneState* scene in scenes) {
-    if (!scene.interfaceProvider) {
+    if (!scene.browserProviderInterface) {
       // The scene might not yet be initiated.
       // TODO(crbug.com/1064611): This will not be an issue when the tabs are
       // counted in sessions instead of scenes.
@@ -397,7 +419,8 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
     }
 
     const WebStateList* webStateList =
-        scene.interfaceProvider.mainInterface.browser->GetWebStateList();
+        scene.browserProviderInterface.mainBrowserProvider.browser
+            ->GetWebStateList();
     numTabs += webStateList->count();
 
     const base::Time now = base::Time::Now();
@@ -435,6 +458,9 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
   }
 
   if (startupInformation.isColdStart) {
+    [self recordInactiveTabsSettingsAtStartup:
+              GetApplicationContext()->GetLocalState()->GetInteger(
+                  prefs::kInactiveTabsTimeThreshold)];
     [self recordNumTabAtStartup:numTabs];
     [self recordNumNTPTabAtStartup:numNTPTabs];
     [self recordNumOldTabAtStartup:numOldTabs];
@@ -478,7 +504,7 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
 
     if (activeScene) {
       web::WebState* currentWebState =
-          activeScene.interfaceProvider.currentInterface.browser
+          activeScene.browserProviderInterface.currentBrowserProvider.browser
               ->GetWebStateList()
               ->GetActiveWebState();
       if (currentWebState &&
@@ -642,6 +668,11 @@ using metrics_mediator::kAppDidFinishLaunchingConsecutiveCallsKey;
 }
 
 #pragma mark - interfaces methods
+
++ (void)recordInactiveTabsSettingsAtStartup:(int)preference {
+  UMA_HISTOGRAM_ENUMERATION(kInactiveTabsThresholdSettingHistogram,
+                            InactiveTabsSettingFromPreference(preference));
+}
 
 + (void)recordNumTabAtStartup:(int)numTabs {
   base::UmaHistogramCounts100("Tabs.CountAtStartup", numTabs);

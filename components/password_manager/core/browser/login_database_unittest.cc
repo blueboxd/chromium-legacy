@@ -24,6 +24,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "components/os_crypt/sync/os_crypt.h"
 #include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/password_form.h"
@@ -227,8 +228,10 @@ auto HasPrimaryKeyAndEquals(PasswordForm expected_form) {
 }  // namespace
 
 // Serialization routines for vectors implemented in login_database.cc.
-base::Pickle SerializeValueElementPairs(const ValueElementVector& vec);
-ValueElementVector DeserializeValueElementPairs(const base::Pickle& pickle);
+base::Pickle SerializeAlternativeElementVector(
+    const AlternativeElementVector& vector);
+AlternativeElementVector DeserializeAlternativeElementVector(
+    const base::Pickle& pickle);
 base::Pickle SerializeGaiaIdHashVector(const std::vector<GaiaIdHash>& hashes);
 std::vector<GaiaIdHash> DeserializeGaiaIdHashVector(const base::Pickle& p);
 
@@ -1077,19 +1080,38 @@ TEST_F(LoginDatabaseTest, BlocklistedLogins) {
 
 TEST_F(LoginDatabaseTest, VectorSerialization) {
   // Empty vector.
-  ValueElementVector vec;
-  base::Pickle temp = SerializeValueElementPairs(vec);
-  ValueElementVector output = DeserializeValueElementPairs(temp);
+  AlternativeElementVector vec;
+  base::Pickle temp = SerializeAlternativeElementVector(vec);
+  AlternativeElementVector output = DeserializeAlternativeElementVector(temp);
   EXPECT_THAT(output, Eq(vec));
 
   // Normal data.
-  vec.push_back({u"first", u"id1"});
-  vec.push_back({u"second", u"id2"});
-  vec.push_back({u"third", u"id3"});
+  vec.emplace_back(AlternativeElement::Value(u"first"),
+                   autofill::FieldRendererId(1),
+                   AlternativeElement::Name(u"id1"));
+  vec.emplace_back(AlternativeElement::Value(u"second"),
+                   autofill::FieldRendererId(2),
+                   AlternativeElement::Name(u"id2"));
+  vec.emplace_back(AlternativeElement::Value(u"third"),
+                   autofill::FieldRendererId(3),
+                   AlternativeElement::Name(u"id3"));
 
-  temp = SerializeValueElementPairs(vec);
-  output = DeserializeValueElementPairs(temp);
-  EXPECT_THAT(output, Eq(vec));
+  // Field renderer id is a transient field for login database and we
+  // expect it will be erased during serialisation+deserialisation process.
+  AlternativeElementVector expected;
+  expected.emplace_back(AlternativeElement::Value(u"first"),
+                        autofill::FieldRendererId(),
+                        AlternativeElement::Name(u"id1"));
+  expected.emplace_back(AlternativeElement::Value(u"second"),
+                        autofill::FieldRendererId(),
+                        AlternativeElement::Name(u"id2"));
+  expected.emplace_back(AlternativeElement::Value(u"third"),
+                        autofill::FieldRendererId(),
+                        AlternativeElement::Name(u"id3"));
+
+  temp = SerializeAlternativeElementVector(vec);
+  output = DeserializeAlternativeElementVector(temp);
+  EXPECT_THAT(output, Eq(expected));
 }
 
 TEST_F(LoginDatabaseTest, GaiaIdHashVectorSerialization) {
@@ -1359,8 +1381,10 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
 
   form.action = GURL("http://accounts.google.com/login");
   form.password_value = u"my_new_password";
-  form.all_possible_usernames.push_back(
-      ValueElementPair(u"my_new_username", u"new_username_id"));
+  form.all_alternative_usernames.emplace_back(
+      AlternativeElement::Value(u"my_new_username"),
+      autofill::FieldRendererId(),
+      AlternativeElement::Name(u"new_username_id"));
   form.times_used_in_html_form = 20;
   form.submit_element = u"submit_element";
   form.date_created = base::Time::Now() - base::Days(3);
@@ -1402,8 +1426,10 @@ TEST_F(LoginDatabaseTest, UpdateLoginWithoutPassword) {
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
   form.action = GURL("http://accounts.google.com/login");
-  form.all_possible_usernames.push_back(
-      ValueElementPair(u"my_new_username", u"new_username_id"));
+  form.all_alternative_usernames.emplace_back(
+      AlternativeElement::Value(u"my_new_username"),
+      autofill::FieldRendererId(),
+      AlternativeElement::Name(u"new_username_id"));
   form.times_used_in_html_form = 20;
   form.submit_element = u"submit_element";
   form.date_created = base::Time::Now() - base::Days(3);
@@ -2343,10 +2369,12 @@ TEST_F(LoginDatabaseTest, RetrievesInsecureDataWithLogins) {
   std::ignore = db().AddLogin(form);
 
   base::flat_map<InsecureType, InsecurityMetadata> issues;
-  issues[InsecureType::kLeaked] =
-      InsecurityMetadata(base::Time(), IsMuted(false));
-  issues[InsecureType::kPhished] =
-      InsecurityMetadata(base::Time(), IsMuted(false));
+  // Assume that the leaked credential has been found by the proactive
+  // check and a notification still needs to be sent.
+  issues[InsecureType::kLeaked] = InsecurityMetadata(
+      base::Time(), IsMuted(false), TriggerBackendNotification(true));
+  issues[InsecureType::kPhished] = InsecurityMetadata(
+      base::Time(), IsMuted(false), TriggerBackendNotification(false));
   form.password_issues = std::move(issues);
 
   db().insecure_credentials_table().InsertOrReplace(
@@ -2418,18 +2446,21 @@ TEST_F(LoginDatabaseTest, RemovingLoginRemovesInsecureCredentials) {
   PasswordForm form = GenerateExamplePasswordForm();
 
   std::ignore = db().AddLogin(form);
-  InsecureCredential credential1{form.signon_realm, form.username_value,
-                                 base::Time(), InsecureType::kLeaked,
-                                 IsMuted(false)};
+  InsecureCredential credential1{
+      form.signon_realm, form.username_value,
+      base::Time(),      InsecureType::kLeaked,
+      IsMuted(false),    TriggerBackendNotification(false)};
   InsecureCredential credential2 = credential1;
   credential2.insecure_type = InsecureType::kPhished;
 
   db().insecure_credentials_table().InsertOrReplace(
       FormPrimaryKey(1), credential1.insecure_type,
-      InsecurityMetadata(credential1.create_time, credential1.is_muted));
+      InsecurityMetadata(credential1.create_time, credential1.is_muted,
+                         credential1.trigger_notification_from_backend));
   db().insecure_credentials_table().InsertOrReplace(
       FormPrimaryKey(1), credential2.insecure_type,
-      InsecurityMetadata(credential2.create_time, credential2.is_muted));
+      InsecurityMetadata(credential2.create_time, credential2.is_muted,
+                         credential2.trigger_notification_from_backend));
 
   ASSERT_THAT(db().insecure_credentials_table().GetRows(FormPrimaryKey(1)),
               ElementsAre(credential1, credential2));
@@ -2481,12 +2512,16 @@ TEST_F(LoginDatabaseTest, GetLoginsBySignonRealmAndUsername) {
 TEST_F(LoginDatabaseTest, UpdateLoginWithAddedInsecureCredential) {
   PasswordForm form = GenerateExamplePasswordForm();
   std::ignore = db().AddLogin(form);
-  InsecureCredential insecure_credential{form.signon_realm, form.username_value,
-                                         base::Time(), InsecureType::kLeaked,
-                                         IsMuted(false)};
+  // Assume the leaked credential was found outside of Chrome and a notification
+  // trigger was set on it.
+  InsecureCredential insecure_credential{
+      form.signon_realm, form.username_value,
+      base::Time(),      InsecureType::kLeaked,
+      IsMuted(false),    TriggerBackendNotification(true)};
   base::flat_map<InsecureType, InsecurityMetadata> issues;
   issues[InsecureType::kLeaked] = InsecurityMetadata(
-      insecure_credential.create_time, insecure_credential.is_muted);
+      insecure_credential.create_time, insecure_credential.is_muted,
+      insecure_credential.trigger_notification_from_backend);
   form.password_issues = std::move(issues);
 
   EXPECT_EQ(UpdateChangeForForm(form, /*password_changed=*/false,
@@ -2499,12 +2534,13 @@ TEST_F(LoginDatabaseTest, UpdateLoginWithAddedInsecureCredential) {
 TEST_F(LoginDatabaseTest, UpdateLoginWithUpdatedInsecureCredential) {
   PasswordForm form = GenerateExamplePasswordForm();
   std::ignore = db().AddLogin(form);
-  InsecureCredential insecure_credential{form.signon_realm, form.username_value,
-                                         base::Time(), InsecureType::kLeaked,
-                                         IsMuted(false)};
+  InsecureCredential insecure_credential{
+      form.signon_realm, form.username_value,
+      base::Time(),      InsecureType::kLeaked,
+      IsMuted(false),    TriggerBackendNotification(false)};
   base::flat_map<InsecureType, InsecurityMetadata> issues;
-  issues[InsecureType::kLeaked] =
-      InsecurityMetadata(base::Time(), IsMuted(false));
+  issues[InsecureType::kLeaked] = InsecurityMetadata(
+      base::Time(), IsMuted(false), TriggerBackendNotification(false));
   form.password_issues = std::move(issues);
 
   ASSERT_EQ(UpdateChangeForForm(form, /*password_changed=*/false,
@@ -2525,18 +2561,20 @@ TEST_F(LoginDatabaseTest, UpdateLoginWithUpdatedInsecureCredential) {
 TEST_F(LoginDatabaseTest, UpdateLoginWithRemovedInsecureCredentialEntry) {
   PasswordForm form = GenerateExamplePasswordForm();
   std::ignore = db().AddLogin(form);
-  InsecureCredential leaked{form.signon_realm, form.username_value,
-                            base::Time(), InsecureType::kLeaked,
-                            IsMuted(false)};
-  InsecureCredential phished{form.signon_realm, form.username_value,
-                             base::Time(), InsecureType::kPhished,
-                             IsMuted(false)};
+  InsecureCredential leaked{
+      form.signon_realm, form.username_value,
+      base::Time(),      InsecureType::kLeaked,
+      IsMuted(false),    TriggerBackendNotification(false)};
+  InsecureCredential phished{
+      form.signon_realm, form.username_value,
+      base::Time(),      InsecureType::kPhished,
+      IsMuted(false),    TriggerBackendNotification(false)};
   leaked.parent_key = phished.parent_key = FormPrimaryKey(1);
   base::flat_map<InsecureType, InsecurityMetadata> issues;
-  issues[InsecureType::kLeaked] =
-      InsecurityMetadata(base::Time(), IsMuted(false));
-  issues[InsecureType::kPhished] =
-      InsecurityMetadata(base::Time(), IsMuted(false));
+  issues[InsecureType::kLeaked] = InsecurityMetadata(
+      base::Time(), IsMuted(false), TriggerBackendNotification(false));
+  issues[InsecureType::kPhished] = InsecurityMetadata(
+      base::Time(), IsMuted(false), TriggerBackendNotification(false));
   form.password_issues = std::move(issues);
 
   ASSERT_EQ(UpdateChangeForForm(form, /*password_changed=*/false,
@@ -2561,18 +2599,21 @@ TEST_F(LoginDatabaseTest,
   PasswordForm form = GenerateExamplePasswordForm();
 
   std::ignore = db().AddLogin(form);
-  InsecureCredential credential1{form.signon_realm, form.username_value,
-                                 base::Time(), InsecureType::kLeaked,
-                                 IsMuted(false)};
+  InsecureCredential credential1{
+      form.signon_realm, form.username_value,
+      base::Time(),      InsecureType::kLeaked,
+      IsMuted(false),    TriggerBackendNotification(false)};
   InsecureCredential credential2 = credential1;
   credential2.insecure_type = InsecureType::kPhished;
 
   db().insecure_credentials_table().InsertOrReplace(
       FormPrimaryKey(1), InsecureType::kLeaked,
-      InsecurityMetadata(base::Time(), IsMuted(false)));
+      InsecurityMetadata(base::Time(), IsMuted(false),
+                         TriggerBackendNotification(false)));
   db().insecure_credentials_table().InsertOrReplace(
       FormPrimaryKey(1), InsecureType::kPhished,
-      InsecurityMetadata(base::Time(), IsMuted(false)));
+      InsecurityMetadata(base::Time(), IsMuted(false),
+                         TriggerBackendNotification(false)));
 
   EXPECT_THAT(db().insecure_credentials_table().GetRows(FormPrimaryKey(1)),
               testing::UnorderedElementsAre(credential1, credential2));
@@ -2588,19 +2629,23 @@ TEST_F(LoginDatabaseTest,
 
 TEST_F(LoginDatabaseTest, AddLoginWithInsecureCredentialsPersistsThem) {
   PasswordForm form = GenerateExamplePasswordForm();
-  InsecureCredential leaked{form.signon_realm, form.username_value,
-                            base::Time(), InsecureType::kLeaked,
-                            IsMuted(false)};
+  InsecureCredential leaked{
+      form.signon_realm, form.username_value,
+      base::Time(),      InsecureType::kLeaked,
+      IsMuted(false),    TriggerBackendNotification(false)};
   InsecureCredential phished = leaked;
   phished.insecure_type = InsecureType::kPhished;
+  phished.trigger_notification_from_backend = TriggerBackendNotification(false);
 
   form.password_value = u"new_password";
   form.password_issues.insert_or_assign(
       InsecureType::kLeaked,
-      InsecurityMetadata(leaked.create_time, leaked.is_muted));
+      InsecurityMetadata(leaked.create_time, leaked.is_muted,
+                         leaked.trigger_notification_from_backend));
   form.password_issues.insert_or_assign(
       InsecureType::kPhished,
-      InsecurityMetadata(phished.create_time, phished.is_muted));
+      InsecurityMetadata(phished.create_time, phished.is_muted,
+                         phished.trigger_notification_from_backend));
 
   PasswordStoreChangeList list;
   list.push_back(PasswordStoreChange(PasswordStoreChange::ADD, form));
@@ -2613,12 +2658,14 @@ TEST_F(LoginDatabaseTest, RemoveLoginRemovesInsecureCredentials) {
   PasswordForm form = GenerateExamplePasswordForm();
   form.password_issues = {
       {InsecureType::kLeaked,
-       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false))}};
+       InsecurityMetadata(base::Time::FromTimeT(1), IsMuted(false),
+                          TriggerBackendNotification(false))}};
   std::ignore = db().AddLogin(form);
 
-  InsecureCredential leaked{form.signon_realm, form.username_value,
-                            base::Time::FromTimeT(1), InsecureType::kLeaked,
-                            IsMuted(false)};
+  InsecureCredential leaked{
+      form.signon_realm,        form.username_value,
+      base::Time::FromTimeT(1), InsecureType::kLeaked,
+      IsMuted(false),           TriggerBackendNotification(false)};
   ASSERT_THAT(db().insecure_credentials_table().GetRows(FormPrimaryKey(1)),
               ElementsAre(leaked));
 

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import static org.junit.Assert.assertThat;
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
 
 import static org.chromium.components.content_settings.PrefNames.NOTIFICATIONS_VIBRATE_ENABLED;
 
@@ -18,11 +18,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,12 +37,12 @@ import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UserActionTester;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.PermissionTestRule;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.components.browser_ui.notifications.MockNotificationManagerProxy.NotificationEntry;
@@ -175,6 +176,7 @@ public class NotificationPlatformBridgeTest {
     @MediumTest
     @Feature({"Browser", "Notifications"})
     @Test
+    @DisabledTest(message = "https://crbug.com/1435133")
     public void testPermissionGranted() throws Exception {
         // Notifications permission should initially be prompt, and showing should fail.
         Assert.assertEquals("\"default\"", runJavaScript("Notification.permission"));

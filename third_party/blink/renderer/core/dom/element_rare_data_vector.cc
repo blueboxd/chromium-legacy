@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/dom/css_toggle_map.h"
 #include "third_party/blink/renderer/core/dom/dataset_dom_string_map.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
-#include "third_party/blink/renderer/core/dom/element_rare_data_base.h"
 #include "third_party/blink/renderer/core/dom/has_invalidation_flags.h"
 #include "third_party/blink/renderer/core/dom/named_node_map.h"
 #include "third_party/blink/renderer/core/dom/names_map.h"
@@ -37,7 +36,7 @@
 namespace blink {
 
 ElementRareDataVector::ElementRareDataVector(NodeData* node_layout_data)
-    : ElementRareDataBase(node_layout_data) {}
+    : NodeRareData(ClassType::kElementRareData, std::move(*node_layout_data)) {}
 
 ElementRareDataVector::~ElementRareDataVector() {
   DCHECK(!GetField(FieldId::kPseudoElementData));
@@ -340,12 +339,22 @@ CustomElementDefinition* ElementRareDataVector::GetCustomElementDefinition()
       GetField(FieldId::kCustomElementDefinition));
 }
 
-void ElementRareDataVector::SaveLastIntrinsicSize(ResizeObserverSize* size) {
-  SetField(FieldId::kLastIntrinsicSize, size);
+void ElementRareDataVector::SetLastRememberedBlockSize(
+    absl::optional<LayoutUnit> size) {
+  SetOptionalField(FieldId::kLastRememberedBlockSize, size);
 }
-const ResizeObserverSize* ElementRareDataVector::LastIntrinsicSize() const {
-  return static_cast<ResizeObserverSize*>(
-      GetField(FieldId::kLastIntrinsicSize));
+void ElementRareDataVector::SetLastRememberedInlineSize(
+    absl::optional<LayoutUnit> size) {
+  SetOptionalField(FieldId::kLastRememberedInlineSize, size);
+}
+
+absl::optional<LayoutUnit> ElementRareDataVector::LastRememberedBlockSize()
+    const {
+  return GetOptionalField<LayoutUnit>(FieldId::kLastRememberedBlockSize);
+}
+absl::optional<LayoutUnit> ElementRareDataVector::LastRememberedInlineSize()
+    const {
+  return GetOptionalField<LayoutUnit>(FieldId::kLastRememberedInlineSize);
 }
 
 PopoverData* ElementRareDataVector::GetPopoverData() const {
@@ -411,7 +420,6 @@ bool ElementRareDataVector::HasImplicitlyAnchoredElement() const {
 void ElementRareDataVector::Trace(blink::Visitor* visitor) const {
   visitor->Trace(fields_);
   NodeRareData::Trace(visitor);
-  ElementRareDataBase::Trace(visitor);
 }
 
 }  // namespace blink

@@ -13,10 +13,12 @@
 #include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/renderer_host/page_impl.h"
@@ -275,15 +277,38 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // those events are depends on the cache limit policy.
   void EnforceCacheSizeLimit();
 
+  enum GetEntryFailureCase {
+    // No matched BFCache entry is found.
+    kEntryNotFound,
+    // BFCache entry is found, but it was evicted before the `GetOrEvictEntry()`
+    // call.
+    kEntryEvictedBefore,
+    // BFCache entry is found and not evicted, but it's no longer eligible for
+    // BFCache, and gets evicted in the `GetOrEvictEntry()` call.
+    kEntryIneligibleAndEvicted,
+  };
+
   // Returns a pointer to a cached BackForwardCache entry matching
-  // |navigation_entry_id| if it exists in the BackForwardCache. Returns nullptr
-  // if no matching entry is found.
-  //
+  // `navigation_entry_id`.
+  // Returns nullptr if no matching entry is found or if the entry is evicted.
+  // If the returned entry is null, this method will also return a
+  // `BackForwardCacheImpl::GetEntryResult`, which contains information about
+  // whether it's because a matching entry was found or the entry was evicted.
+
   // Note: The returned pointer should be used temporarily only within the
   // execution of a single task on the event loop. Beyond that, there is no
   // guarantee the pointer will be valid, because the document may be
   // removed/evicted from the cache.
-  Entry* GetEntry(int navigation_entry_id);
+
+  // WARNING: Calling this method may result in the eviction of the BFCache
+  // entry if it is no longer eligible for the BFCache but has not been evicted
+  // yet. If the eviction is triggered while there is an ongoing BFCache
+  // restore, the caller must discard the NavigationRequest that is about to
+  // commit the restore, otherwise the NavigationRequest may try to access the
+  // RenderFrameHost after it has been deleted.
+  base::expected<BackForwardCacheImpl::Entry*,
+                 BackForwardCacheImpl::GetEntryFailureCase>
+  GetOrEvictEntry(int navigation_entry_id);
 
   // During a history navigation, moves an entry out of the BackForwardCache
   // knowing its |navigation_entry_id|. |page_restore_params| includes
@@ -355,6 +380,8 @@ class CONTENT_EXPORT BackForwardCacheImpl
   }
 
   const std::list<std::unique_ptr<Entry>>& GetEntries();
+  std::list<Entry*> GetEntriesForRenderViewHostImpl(
+      const RenderViewHostImpl* rvhi) const;
 
   // BackForwardCache overrides:
   void Flush() override;
@@ -489,24 +516,24 @@ class CONTENT_EXPORT BackForwardCacheImpl
   // the field trial parameter "allowed_websites". This is represented here by a
   // set of host and path prefix. When |allowed_urls_| is empty, it means there
   // are no restrictions on URLs.
-  const std::map<std::string,              // URL's host,
-                 std::vector<std::string>  // URL's path prefix
-                 >
+  const base::flat_map<std::string,              // URL's host,
+                       std::vector<std::string>  // URL's path prefix
+                       >
       allowed_urls_;
 
   // This is an emergency kill switch per url to stop BFCache. The data will be
   // provided via the field trial parameter "blocked_websites".
   // "blocked_websites" have priority over "allowed_websites". This is
   // represented here by a set of host and path prefix.
-  const std::map<std::string,              // URL's host,
-                 std::vector<std::string>  // URL's path prefix
-                 >
+  const base::flat_map<std::string,              // URL's host,
+                       std::vector<std::string>  // URL's path prefix
+                       >
       blocked_urls_;
 
   // Data provided from the "blocked_cgi_params" feature param. If any of these
   // occur in the query of the URL then the page is not eligible for caching.
   // See |IsQueryAllowed|.
-  const std::unordered_set<std::string> blocked_cgi_params_;
+  const base::flat_set<std::string> blocked_cgi_params_;
 
   // Helper class to iterate through the frame tree in the page and populate the
   // NotRestoredReasons.
@@ -526,8 +553,12 @@ class CONTENT_EXPORT BackForwardCacheImpl
       EvictionInfo(RenderFrameHostImpl& rfh,
                    BackForwardCacheCanStoreDocumentResult* reasons)
           : rfh_to_be_evicted(&rfh), reasons(reasons) {}
-      RenderFrameHostImpl* const rfh_to_be_evicted;
-      const BackForwardCacheCanStoreDocumentResult* reasons;
+      // This field is not a raw_ptr<> because it was filtered by the rewriter
+      // for: #union
+      RAW_PTR_EXCLUSION RenderFrameHostImpl* const rfh_to_be_evicted;
+      // This field is not a raw_ptr<> because it was filtered by the rewriter
+      // for: #union
+      RAW_PTR_EXCLUSION const BackForwardCacheCanStoreDocumentResult* reasons;
     };
 
     NotRestoredReasonBuilder(RenderFrameHostImpl* root_rfh,

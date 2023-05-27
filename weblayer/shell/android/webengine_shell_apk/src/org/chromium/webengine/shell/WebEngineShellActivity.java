@@ -7,10 +7,16 @@ package org.chromium.webengine.shell;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Patterns;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -31,6 +37,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.chromium.base.Log;
 import org.chromium.webengine.CookieManager;
 import org.chromium.webengine.FullscreenCallback;
+import org.chromium.webengine.FullscreenClient;
 import org.chromium.webengine.Navigation;
 import org.chromium.webengine.NavigationObserver;
 import org.chromium.webengine.Tab;
@@ -39,8 +46,9 @@ import org.chromium.webengine.TabManager;
 import org.chromium.webengine.WebEngine;
 import org.chromium.webengine.WebFragment;
 import org.chromium.webengine.WebSandbox;
-import org.chromium.webengine.shell.topbar.TopBarImpl;
-import org.chromium.webengine.shell.topbar.TopBarObservers;
+import org.chromium.webengine.shell.topbar.CustomSpinner;
+import org.chromium.webengine.shell.topbar.TabEventsDelegate;
+import org.chromium.webengine.shell.topbar.TabEventsObserver;
 
 import java.util.Arrays;
 
@@ -53,31 +61,99 @@ import java.util.Arrays;
  *  - Move cookie test to manual-test activity
  *  - Move registerWebMessageCallback to manual-test activity
  */
-public class WebEngineShellActivity extends AppCompatActivity implements FullscreenCallback {
+public class WebEngineShellActivity
+        extends AppCompatActivity implements FullscreenCallback, TabEventsObserver {
     private static final String TAG = "WebEngineShell";
 
     private static final String WEB_FRAGMENT_TAG = "WEB_FRAGMENT_TAG";
 
+    private WebEngineShellApplication mApplication;
     private Context mContext;
 
-    private WebSandbox mWebSandbox;
     private TabManager mTabManager;
+    private TabEventsDelegate mTabEventsDelegate;
 
-    private DefaultObservers mDefaultTabListObserver;
+    private ProgressBar mProgressBar;
+    private EditText mUrlBar;
+    private Button mTabCountButton;
+    private CustomSpinner mTabListSpinner;
+    private ArrayAdapter<TabWrapper> mTabListAdapter;
+
+    private ImageButton mReloadButton;
+    private Drawable mRefreshDrawable;
+    private Drawable mStopDrawable;
+
+    private DefaultObservers mDefaultObservers;
 
     private int mSystemVisibilityToRestore;
+    private boolean mIsTabListOpen;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            mIsTabListOpen = savedInstanceState.getBoolean("isTabListOpen");
+        }
         setContentView(R.layout.main);
+
+        mApplication = (WebEngineShellApplication) getApplication();
         mContext = getApplicationContext();
-        mDefaultTabListObserver = new DefaultObservers();
+        mDefaultObservers = new DefaultObservers();
 
         setupActivitySpinner((Spinner) findViewById(R.id.activity_nav), this, 0);
+        mProgressBar = findViewById(R.id.progress_bar);
+        mUrlBar = findViewById(R.id.url_bar);
+        mTabCountButton = findViewById(R.id.tab_count);
+        mTabListSpinner = findViewById(R.id.tab_list);
+
+        mReloadButton = findViewById(R.id.reload_button);
+        mRefreshDrawable = getDrawable(R.drawable.ic_refresh);
+        mStopDrawable = getDrawable(R.drawable.ic_stop);
+        setProgress(1.0);
+
+        mUrlBar.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                Uri query = Uri.parse(v.getText().toString());
+                if (query.isAbsolute()) {
+                    mTabManager.getActiveTab().getNavigationController().navigate(
+                            query.normalizeScheme().toString());
+                } else if (Patterns.DOMAIN_NAME.matcher(query.toString()).matches()) {
+                    mTabManager.getActiveTab().getNavigationController().navigate(
+                            "https://" + query);
+                } else {
+                    mTabManager.getActiveTab().getNavigationController().navigate(
+                            "https://www.google.com/search?q="
+                            + Uri.encode(v.getText().toString()));
+                }
+                // Hides keyboard on Enter key pressed
+                InputMethodManager imm = (InputMethodManager) mContext.getSystemService(
+                        Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                return true;
+            }
+        });
+
+        mReloadButton.setOnClickListener(v -> {
+            if (mReloadButton.getDrawable().equals(mRefreshDrawable)) {
+                mTabManager.getActiveTab().getNavigationController().reload();
+            } else if (mReloadButton.getDrawable().equals(mStopDrawable)) {
+                mTabManager.getActiveTab().getNavigationController().stop();
+            }
+        });
+
+        mTabCountButton.setOnClickListener(v -> mTabListSpinner.performClick());
+
+        mTabListSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                mTabListAdapter.getItem(pos).getTab().setActive();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         ListenableFuture<String> sandboxVersionFuture = WebSandbox.getVersion(mContext);
-
         Futures.addCallback(sandboxVersionFuture, new FutureCallback<String>() {
             @Override
             public void onSuccess(String version) {
@@ -88,138 +164,35 @@ public class WebEngineShellActivity extends AppCompatActivity implements Fullscr
             public void onFailure(Throwable thrown) {}
         }, ContextCompat.getMainExecutor(mContext));
 
-        ListenableFuture<WebSandbox> webSandboxFuture = WebSandbox.create(mContext);
-        Futures.addCallback(webSandboxFuture, new FutureCallback<WebSandbox>() {
-            @Override
-            public void onSuccess(WebSandbox webSandbox) {
-                onWebSandboxReady(webSandbox);
-            }
-
-            @Override
-            public void onFailure(Throwable thrown) {
-                Toast.makeText(mContext, "Failed to start WebSandbox. WebView update needed.",
-                             Toast.LENGTH_LONG)
-                        .show();
-            }
-        }, ContextCompat.getMainExecutor(mContext));
-    }
-
-    @Override
-    public void startActivity(Intent intent) {
-        if (mWebSandbox != null) {
-            // Shutdown sandbox before another activity is opened.
-            mWebSandbox.shutdown();
-            mWebSandbox = null;
-        }
-        super.startActivity(intent);
-    }
-
-    private void onWebSandboxReady(WebSandbox webSandbox) {
-        mWebSandbox = webSandbox;
-        webSandbox.setRemoteDebuggingEnabled(true);
-
-        WebEngine webEngine = webSandbox.getWebEngine("shell-engine");
-        if (webEngine != null) {
-            assert webSandbox.getWebEngines().size() == 1;
-
-            mTabManager = webEngine.getTabManager();
-
-            for (Tab tab : mTabManager.getAllTabs()) {
-                tab.setFullscreenCallback(this);
-            }
-            return;
-        }
-
-        ListenableFuture<WebEngine> webEngineFuture = webSandbox.createWebEngine("shell-engine");
-        Futures.addCallback(webEngineFuture, new FutureCallback<WebEngine>() {
+        Futures.addCallback(mApplication.getWebEngine(), new FutureCallback<WebEngine>() {
             @Override
             public void onSuccess(WebEngine webEngine) {
                 onWebEngineReady(webEngine);
             }
 
             @Override
-            public void onFailure(Throwable thrown) {}
+            public void onFailure(Throwable thrown) {
+                Toast.makeText(mContext, "Failed to start WebEngine.", Toast.LENGTH_LONG).show();
+            }
         }, ContextCompat.getMainExecutor(mContext));
-    }
 
-    private void onWebEngineReady(WebEngine webEngine) {
-        mTabManager = webEngine.getTabManager();
-        CookieManager cookieManager = webEngine.getCookieManager();
-
-        Tab activeTab = mTabManager.getActiveTab();
-        ProgressBar progressBar = findViewById(R.id.progress_bar);
-        EditText urlBar = findViewById(R.id.url_bar);
-        ImageButton reloadButton = findViewById(R.id.reload_button);
-        Button tabCountButton = findViewById(R.id.tab_count);
-        Spinner tabListSpinner = findViewById(R.id.tab_list);
-        new TopBarObservers(new TopBarImpl(this, mTabManager, urlBar, progressBar, reloadButton,
-                                    tabCountButton, tabListSpinner),
-                mTabManager);
-
-        activeTab.setFullscreenCallback(this);
-        mTabManager.registerTabListObserver(new TabListObserver() {
-            @Override
-            public void onTabAdded(@NonNull WebEngine webEngine, @NonNull Tab tab) {
-                tab.setFullscreenCallback(WebEngineShellActivity.this);
-            }
-        });
-        activeTab.registerTabObserver(mDefaultTabListObserver);
-        activeTab.getNavigationController().registerNavigationObserver(mDefaultTabListObserver);
-        mTabManager.registerTabListObserver(mDefaultTabListObserver);
-
-        activeTab.getNavigationController().registerNavigationObserver(new NavigationObserver() {
-            @Override
-            public void onNavigationCompleted(@NonNull Tab tab, @NonNull Navigation navigation) {
-                ListenableFuture<String> scriptResultFuture = activeTab.executeScript("1+1", true);
-                Futures.addCallback(
-                        scriptResultFuture, new FutureCallback<String>() {
-                            @Override
-                            public void onSuccess(String result) {
-                                Log.w(TAG, "executeScript result: " + result);
-                            }
-                            @Override
-                            public void onFailure(Throwable thrown) {
-                                Log.w(TAG, "executeScript failed: " + thrown);
-                            }
-                        }, ContextCompat.getMainExecutor(mContext));
-            }
-        });
-        activeTab.getNavigationController().navigate("https://google.com");
-
-        activeTab.addMessageEventListener((Tab source, String message) -> {
-            Log.w(TAG, "Received post message from web content: " + message);
-        }, Arrays.asList("*"));
-        activeTab.postMessage("Hello!", "*");
-
-        ListenableFuture<Void> setCookieFuture =
-                cookieManager.setCookie("https://sadchonks.com", "foo=bar123");
-        Futures.addCallback(setCookieFuture, new FutureCallback<Void>() {
-            @Override
-            public void onSuccess(Void v) {
-                ListenableFuture<String> cookieFuture =
-                        cookieManager.getCookie("https://sadchonks.com");
-                Futures.addCallback(cookieFuture, new FutureCallback<String>() {
+        Futures.addCallback(
+                mApplication.getTabEventsDelegate(), new FutureCallback<TabEventsDelegate>() {
                     @Override
-                    public void onSuccess(String value) {
-                        Log.w(TAG, "cookie: " + value);
+                    public void onSuccess(TabEventsDelegate tabEventsDelegate) {
+                        mTabEventsDelegate = tabEventsDelegate;
+                        tabEventsDelegate.registerObserver(WebEngineShellActivity.this);
                     }
 
                     @Override
                     public void onFailure(Throwable thrown) {}
                 }, ContextCompat.getMainExecutor(mContext));
-            }
+    }
 
-            @Override
-            public void onFailure(Throwable thrown) {
-                Log.w(TAG, "setCookie failed: " + thrown);
-            }
-        }, ContextCompat.getMainExecutor(mContext));
-
-        getSupportFragmentManager()
-                .beginTransaction()
-                .setReorderingAllowed(true)
-                .add(R.id.fragment_container_view, webEngine.getFragment(), WEB_FRAGMENT_TAG)
-                .commit();
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean("isTabListOpen", mTabListSpinner.isOpen());
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -229,6 +202,7 @@ public class WebEngineShellActivity extends AppCompatActivity implements Fullscr
         for (Tab tab : mTabManager.getAllTabs()) {
             tab.setFullscreenCallback(null);
         }
+        if (mTabEventsDelegate != null) mTabEventsDelegate.unregisterObserver();
     }
 
     @Override
@@ -249,9 +223,6 @@ public class WebEngineShellActivity extends AppCompatActivity implements Fullscr
             }
             @Override
             public void onFailure(Throwable thrown) {
-                if (mWebSandbox != null) {
-                    mWebSandbox.shutdown();
-                }
                 WebEngineShellActivity.super.onBackPressed();
             }
         }, ContextCompat.getMainExecutor(mContext));
@@ -290,7 +261,7 @@ public class WebEngineShellActivity extends AppCompatActivity implements Fullscr
     }
 
     @Override
-    public void onEnterFullscreen(WebEngine webEngine, Tab tab) {
+    public void onEnterFullscreen(WebEngine webEngine, Tab tab, FullscreenClient fullscreenClient) {
         final WindowManager.LayoutParams attrs = getWindow().getAttributes();
         attrs.flags |= WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
         getWindow().setAttributes(attrs);
@@ -324,6 +295,178 @@ public class WebEngineShellActivity extends AppCompatActivity implements Fullscr
         if ((attrs.flags & WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS) != 0) {
             attrs.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
             getWindow().setAttributes(attrs);
+        }
+    }
+
+    private void onWebEngineReady(WebEngine webEngine) {
+        mTabManager = webEngine.getTabManager();
+
+        CookieManager cookieManager = webEngine.getCookieManager();
+        Tab activeTab = mTabManager.getActiveTab();
+
+        mTabCountButton.setText(String.valueOf(getTabsCount()));
+        mTabListAdapter = new ArrayAdapter<TabWrapper>(
+                mContext, android.R.layout.simple_spinner_dropdown_item);
+        mTabListSpinner.setAdapter(mTabListAdapter);
+
+        for (Tab t : mTabManager.getAllTabs()) {
+            TabWrapper tabWrapper = new TabWrapper(t);
+            mTabListAdapter.add(tabWrapper);
+            if (t.equals(mTabManager.getActiveTab())) {
+                mTabListSpinner.setSelection(mTabListAdapter.getPosition(tabWrapper));
+            }
+        }
+
+        if (mIsTabListOpen) {
+            mTabListSpinner.performClick();
+        }
+
+        for (Tab tab : mTabManager.getAllTabs()) {
+            tab.setFullscreenCallback(WebEngineShellActivity.this);
+        }
+
+        if (activeTab.getDisplayUri().toString().equals("")) {
+            mTabManager.registerTabListObserver(new TabListObserver() {
+                @Override
+                public void onTabAdded(@NonNull WebEngine webEngine, @NonNull Tab tab) {
+                    tab.setFullscreenCallback(WebEngineShellActivity.this);
+                }
+            });
+            activeTab.registerTabObserver(mDefaultObservers);
+            activeTab.getNavigationController().registerNavigationObserver(mDefaultObservers);
+
+            activeTab.getNavigationController().registerNavigationObserver(
+                    new NavigationObserver() {
+                        @Override
+                        public void onNavigationCompleted(
+                                @NonNull Tab tab, @NonNull Navigation navigation) {
+                            ListenableFuture<String> scriptResultFuture =
+                                    activeTab.executeScript("1+1", true);
+                            Futures.addCallback(scriptResultFuture, new FutureCallback<String>() {
+                                @Override
+                                public void onSuccess(String result) {
+                                    Log.w(TAG, "executeScript result: " + result);
+                                }
+                                @Override
+                                public void onFailure(Throwable thrown) {
+                                    Log.w(TAG, "executeScript failed: " + thrown);
+                                }
+                            }, ContextCompat.getMainExecutor(mContext));
+                        }
+                    });
+            activeTab.getNavigationController().navigate("https://google.com");
+
+            activeTab.addMessageEventListener((Tab source, String message) -> {
+                Log.w(TAG, "Received post message from web content: " + message);
+            }, Arrays.asList("*"));
+            activeTab.postMessage("Hello!", "*");
+
+            ListenableFuture<Void> setCookieFuture =
+                    cookieManager.setCookie("https://sadchonks.com", "foo=bar123");
+            Futures.addCallback(setCookieFuture, new FutureCallback<Void>() {
+                @Override
+                public void onSuccess(Void v) {
+                    ListenableFuture<String> cookieFuture =
+                            cookieManager.getCookie("https://sadchonks.com");
+                    Futures.addCallback(cookieFuture, new FutureCallback<String>() {
+                        @Override
+                        public void onSuccess(String value) {
+                            Log.w(TAG, "cookie: " + value);
+                        }
+
+                        @Override
+                        public void onFailure(Throwable thrown) {}
+                    }, ContextCompat.getMainExecutor(mContext));
+                }
+
+                @Override
+                public void onFailure(Throwable thrown) {
+                    Log.w(TAG, "setCookie failed: " + thrown);
+                }
+            }, ContextCompat.getMainExecutor(mContext));
+        }
+        if (getSupportFragmentManager().findFragmentByTag(WEB_FRAGMENT_TAG) == null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .setReorderingAllowed(true)
+                    .add(R.id.fragment_container_view, webEngine.getFragment(), WEB_FRAGMENT_TAG)
+                    .commit();
+        }
+    }
+
+    int getTabsCount() {
+        if (mTabManager == null) {
+            return 0;
+        }
+        return mTabManager.getAllTabs().size();
+    }
+
+    void setProgress(double progress) {
+        int progressValue = (int) Math.rint(progress * 100);
+        if (progressValue != mProgressBar.getMax()) {
+            mReloadButton.setImageDrawable(mStopDrawable);
+            mProgressBar.setVisibility(View.VISIBLE);
+        } else {
+            mReloadButton.setImageDrawable(mRefreshDrawable);
+            mProgressBar.setVisibility(View.INVISIBLE);
+        }
+        mProgressBar.setProgress(progressValue);
+    }
+
+    @Override
+    public void onVisibleUriChanged(String uri) {
+        mUrlBar.setText(uri);
+    }
+
+    @Override
+    public void onActiveTabChanged(Tab activeTab) {
+        mUrlBar.setText(activeTab.getDisplayUri().toString());
+        for (int position = 0; position < mTabListAdapter.getCount(); ++position) {
+            TabWrapper tabWrapper = mTabListAdapter.getItem(position);
+            if (tabWrapper.getTab().equals(activeTab)) {
+                mTabListSpinner.setSelection(position);
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void onTabAdded(Tab tab) {
+        mTabCountButton.setText(String.valueOf(getTabsCount()));
+        mTabListAdapter.add(new TabWrapper(tab));
+    }
+
+    @Override
+    public void onTabRemoved(Tab tab) {
+        mTabCountButton.setText(String.valueOf(getTabsCount()));
+        for (int position = 0; position < mTabListAdapter.getCount(); ++position) {
+            TabWrapper tabAdapter = mTabListAdapter.getItem(position);
+            if (tabAdapter.getTab().equals(tab)) {
+                mTabListAdapter.remove(tabAdapter);
+                return;
+            }
+        }
+    }
+
+    @Override
+    public void onLoadProgressChanged(double progress) {
+        setProgress(progress);
+    }
+
+    static class TabWrapper {
+        final Tab mTab;
+        public TabWrapper(Tab tab) {
+            mTab = tab;
+        }
+
+        public Tab getTab() {
+            return mTab;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return mTab.getDisplayUri().getAuthority() + mTab.getDisplayUri().getPath();
         }
     }
 }

@@ -21,17 +21,29 @@ class Frame;
 class Page;
 class ScriptState;
 
-class V8CompileHints : public GarbageCollected<V8CompileHints> {
+/*
+V8CrowdsourcedCompileHintsProducer gathers data about which JavaScript functions
+are compiled and uploads it to UKM. On the server side, we construct a model
+from this data and deliver it back to the users via OptimizationGuide (not yet
+implemented).
+*/
+class V8CrowdsourcedCompileHintsProducer
+    : public GarbageCollected<V8CrowdsourcedCompileHintsProducer> {
  public:
-  explicit V8CompileHints(Page* page);
-  // Notifies V8CompileHints of the existence of `script`
+  explicit V8CrowdsourcedCompileHintsProducer(Page* page);
+
+  V8CrowdsourcedCompileHintsProducer(
+      const V8CrowdsourcedCompileHintsProducer&) = delete;
+  V8CrowdsourcedCompileHintsProducer& operator=(
+      const V8CrowdsourcedCompileHintsProducer&) = delete;
+
+  // Notifies V8CrowdsourcedCompileHintsProducer of the existence of `script`
   void RecordScript(Frame* frame,
                     ExecutionContext* execution_context,
                     const v8::Local<v8::Script> script,
                     ScriptState* script_state);
 
   void GenerateData();
-  void DisableDataCollection() { state_ = State::kDisabled; }
 
   void Trace(Visitor* visitor) const;
 
@@ -50,9 +62,6 @@ class V8CompileHints : public GarbageCollected<V8CompileHints> {
     // it successfully; e.g., because of throttling or because we didn't have
     // enough data).
     kDataGenerationFinished,
-
-    // This V8CompileHints shouldn't even try to generate data.
-    kDisabled
   };
   State state_ = State::kInitial;
 
@@ -75,15 +84,17 @@ namespace blink {
 class Page;
 
 // A minimal implementation for platforms which don't enable compile hints.
-class V8CompileHints : public GarbageCollected<V8CompileHints> {
+class V8CrowdsourcedCompileHintsProducer
+    : public GarbageCollected<V8CrowdsourcedCompileHintsProducer> {
  public:
-  explicit V8CompileHints(Page* page) {}
+  explicit V8CrowdsourcedCompileHintsProducer(Page* page) {}
 
-  V8CompileHints(const V8CompileHints&) = delete;
-  V8CompileHints& operator=(const V8CompileHints&) = delete;
+  V8CrowdsourcedCompileHintsProducer(
+      const V8CrowdsourcedCompileHintsProducer&) = delete;
+  V8CrowdsourcedCompileHintsProducer& operator=(
+      const V8CrowdsourcedCompileHintsProducer&) = delete;
 
   void GenerateData() {}
-  void DisableDataCollection() {}
 
   void Trace(Visitor* visitor) const {}
 };

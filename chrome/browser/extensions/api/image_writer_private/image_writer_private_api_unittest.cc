@@ -10,7 +10,6 @@
 #include "chrome/browser/extensions/api/image_writer_private/removable_storage_provider.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/common/extensions/api/image_writer_private.h"
 #include "chromeos/components/disks/disks_prefs.h"
 #include "components/prefs/pref_service.h"
@@ -48,9 +47,9 @@ TEST_F(ImageWriterPrivateApiUnittest,
   prefs->SetBoolean(disks::prefs::kExternalStorageDisabled, true);
   auto function = base::MakeRefCounted<
       ImageWriterPrivateListRemovableStorageDevicesFunction>();
-  std::unique_ptr<base::Value> devices =
+  absl::optional<base::Value::List> devices =
       RunFunctionAndReturnList(function.get(), "[]");
-  ASSERT_TRUE(devices.get() && devices.get()->GetList().empty())
+  ASSERT_TRUE(devices && devices->empty())
       << "Under policy ListDevices should return an empty list.";
 }
 

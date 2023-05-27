@@ -103,9 +103,9 @@ void RecoveryComponentActionHandler::UnpackComplete(
 
 void RecoveryComponentActionHandler::RunCommand(
     const base::CommandLine& cmdline) {
+  PrepareFiles(unpack_path_);
   VLOG(1) << "run command: " << cmdline.GetCommandLineString();
-  base::expected<base::Process, int> process_or_error =
-      [&cmdline]() -> base::expected<base::Process, int> {
+  auto process_or_error = [&cmdline]() -> base::expected<base::Process, int> {
     base::LaunchOptions options;
 #if BUILDFLAG(IS_WIN)
     options.start_hidden = true;
@@ -120,7 +120,7 @@ void RecoveryComponentActionHandler::RunCommand(
       return base::unexpected(0);
 #endif
     }
-    return base::ok(std::move(process));
+    return std::move(process);
   }();
   base::ThreadPool::PostTask(
       FROM_HERE, kThreadPoolTaskTraitsRunCommand,

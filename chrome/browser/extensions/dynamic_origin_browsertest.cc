@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(DynamicOriginBrowserTest,
     EXPECT_EQ(status, nav_observer.last_net_error_code());
   };
 
-  auto random_guid = base::GUID::GenerateRandomV4().AsLowercaseString();
+  auto random_guid = base::Uuid::GenerateRandomV4().AsLowercaseString();
   GURL random_url =
       Extension::GetBaseURLFromExtensionId(random_guid).Resolve("ok.html");
   GURL dynamic_url = extension->dynamic_url().Resolve("ok.html");
@@ -134,20 +134,17 @@ IN_PROC_BROWSER_TEST_F(DynamicOriginBrowserTest, FetchGuidFromFrame) {
     EXPECT_EQ(expected_frame_url,
               web_contents->GetPrimaryMainFrame()->GetLastCommittedURL());
 
-    std::string result;
     constexpr char kFetchScriptTemplate[] =
         R"(
         fetch($1).then(result => {
           return result.text();
-        }).then(text => {
-          domAutomationController.send(text);
         }).catch(err => {
-          domAutomationController.send(String(err));
+          return String(err);
         });)";
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        web_contents,
-        content::JsReplace(kFetchScriptTemplate, fetch_url.spec()), &result));
-    EXPECT_EQ(expected_fetch_url_contents, result);
+    EXPECT_EQ(
+        expected_fetch_url_contents,
+        content::EvalJs(web_contents, content::JsReplace(kFetchScriptTemplate,
+                                                         fetch_url.spec())));
   };
 
   // clang-format off

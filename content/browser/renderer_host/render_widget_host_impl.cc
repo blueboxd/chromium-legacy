@@ -1452,12 +1452,14 @@ void RenderWidgetHostImpl::DidNavigate() {
   if (view_)
     view_->DidNavigate();
 
-  if (!new_content_rendering_timeout_)
-    return;
-
-  new_content_rendering_timeout_->Start(new_content_rendering_delay_);
-
   ClearPendingUserActivation();
+}
+
+void RenderWidgetHostImpl::StartNewContentRenderingTimeout() {
+  if (!new_content_rendering_timeout_) {
+    return;
+  }
+  new_content_rendering_timeout_->Start(new_content_rendering_delay_);
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
@@ -1497,7 +1499,9 @@ void RenderWidgetHostImpl::ForwardMouseEventWithLatencyInfo(
   }
 
   MouseEventWithLatencyInfo mouse_with_latency(mouse_event, latency);
-  DispatchInputEventWithLatencyInfo(mouse_event, &mouse_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(
+      mouse_with_latency.event, &mouse_with_latency.latency,
+      &mouse_with_latency.event.GetModifiableEventLatencyMetadata());
   input_router_->SendMouseEvent(
       mouse_with_latency, base::BindOnce(&RenderWidgetHostImpl::OnMouseEventAck,
                                          weak_factory_.GetWeakPtr()));
@@ -1523,7 +1527,9 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
     return;
 
   MouseWheelEventWithLatencyInfo wheel_with_latency(wheel_event, latency);
-  DispatchInputEventWithLatencyInfo(wheel_event, &wheel_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(
+      wheel_with_latency.event, &wheel_with_latency.latency,
+      &wheel_with_latency.event.GetModifiableEventLatencyMetadata());
   input_router_->SendWheelEvent(wheel_with_latency);
 }
 
@@ -1643,8 +1649,9 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     return;
 
   GestureEventWithLatencyInfo gesture_with_latency(gesture_event, latency);
-  DispatchInputEventWithLatencyInfo(gesture_event,
-                                    &gesture_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(
+      gesture_with_latency.event, &gesture_with_latency.latency,
+      &gesture_with_latency.event.GetModifiableEventLatencyMetadata());
   input_router_->SendGestureEvent(gesture_with_latency);
 }
 
@@ -1662,7 +1669,9 @@ void RenderWidgetHostImpl::ForwardTouchEventWithLatencyInfo(
   // ignored if appropriate in FilterInputEvent().
 
   TouchEventWithLatencyInfo touch_with_latency(touch_event, latency);
-  DispatchInputEventWithLatencyInfo(touch_event, &touch_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(
+      touch_with_latency.event, &touch_with_latency.latency,
+      &touch_with_latency.event.GetModifiableEventLatencyMetadata());
   input_router_->SendTouchEvent(touch_with_latency);
 }
 
@@ -1771,7 +1780,9 @@ void RenderWidgetHostImpl::ForwardKeyboardEventWithCommands(
   NativeWebKeyboardEventWithLatencyInfo key_event_with_latency(key_event,
                                                                latency);
   key_event_with_latency.event.is_browser_shortcut = is_shortcut;
-  DispatchInputEventWithLatencyInfo(key_event, &key_event_with_latency.latency);
+  DispatchInputEventWithLatencyInfo(
+      key_event_with_latency.event, &key_event_with_latency.latency,
+      &key_event_with_latency.event.GetModifiableEventLatencyMetadata());
   // TODO(foolip): |InputRouter::SendKeyboardEvent()| may filter events, in
   // which the commands will be treated as belonging to the next key event.
   // WidgetInputHandler::SetEditCommandsForNextKeyEvent should only be sent if
@@ -2016,17 +2027,26 @@ void RenderWidgetHostImpl::DragSourceEndedAt(const gfx::PointF& client_point,
                                              ui::mojom::DragOperation operation,
                                              base::OnceClosure callback) {
   // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
-  if (blink_frame_widget_) {
-    blink_frame_widget_->DragSourceEndedAt(
-        ConvertWindowPointToViewport(client_point), screen_point, operation,
-        std::move(callback));
+  if (!blink_frame_widget_) {
+    return;
+  }
+  blink_frame_widget_->DragSourceEndedAt(
+      ConvertWindowPointToViewport(client_point), screen_point, operation,
+      std::move(callback));
+  if (frame_tree_) {
+    devtools_instrumentation::DragEnded(*frame_tree_->root());
   }
 }
 
 void RenderWidgetHostImpl::DragSourceSystemDragEnded() {
   // TODO(https://crbug.com/1102769): Replace with a for_frame() check.
-  if (blink_frame_widget_)
-    blink_frame_widget_->DragSourceSystemDragEnded();
+  if (!blink_frame_widget_) {
+    return;
+  }
+  blink_frame_widget_->DragSourceSystemDragEnded();
+  if (frame_tree_) {
+    devtools_instrumentation::DragEnded(*frame_tree_->root());
+  }
 }
 
 void RenderWidgetHostImpl::FilterDropData(DropData* drop_data) {
@@ -2320,14 +2340,6 @@ bool RenderWidgetHostImpl::IsKeyboardLocked() const {
 bool RenderWidgetHostImpl::IsContentRenderingTimeoutRunning() const {
   return new_content_rendering_timeout_ &&
          new_content_rendering_timeout_->IsRunning();
-}
-
-void RenderWidgetHostImpl::GetContentRenderingTimeoutFrom(
-    RenderWidgetHostImpl* other) {
-  if (other->IsContentRenderingTimeoutRunning()) {
-    new_content_rendering_timeout_->Start(
-        other->new_content_rendering_timeout_->GetCurrentDelay());
-  }
 }
 
 void RenderWidgetHostImpl::OnMouseEventAck(
@@ -3236,8 +3248,9 @@ RenderWidgetHostImpl::BindAndGenerateCreateFrameWidgetParamsForNewWindow() {
 
 void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
     const blink::WebInputEvent& event,
-    ui::LatencyInfo* latency) {
-  latency_tracker_.OnInputEvent(event, latency);
+    ui::LatencyInfo* latency,
+    ui::EventLatencyMetadata* event_latency_metadata) {
+  latency_tracker_.OnInputEvent(event, latency, event_latency_metadata);
   AddPendingUserActivation(event);
   for (auto& observer : input_event_observers_)
     observer.OnInputEvent(event);

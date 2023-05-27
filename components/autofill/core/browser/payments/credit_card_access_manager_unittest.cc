@@ -60,6 +60,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/device_reauth/mock_device_authenticator.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -186,6 +187,7 @@ class CreditCardAccessManagerTest : public testing::Test {
                          /*local_state=*/autofill_client_.GetPrefs(),
                          /*identity_manager=*/nullptr,
                          /*history_service=*/nullptr,
+                         /*sync_service=*/nullptr,
                          /*strike_database=*/nullptr,
                          /*image_fetcher=*/nullptr,
                          /*is_off_the_record=*/false);
@@ -514,13 +516,7 @@ class CreditCardAccessManagerTest : public testing::Test {
         break;
       }
       case CardUnmaskChallengeOptionType::kSmsOtp:
-        DCHECK(otp_authenticator_);
-        EXPECT_TRUE(otp_authenticator_->on_challenge_option_selected_invoked());
-        EXPECT_EQ(otp_authenticator_->card().number(),
-                  base::UTF8ToUTF16(std::string(kTestNumber)));
-        EXPECT_EQ(otp_authenticator_->card().record_type(),
-                  CreditCard::VIRTUAL_CARD);
-        EXPECT_EQ(otp_authenticator_->context_token(), "fake_context_token");
+        VerifyOnSelectChallengeOptionInvoked();
         EXPECT_EQ(otp_authenticator_->selected_challenge_option().id.value(),
                   "123");
         EXPECT_EQ(otp_authenticator_->selected_challenge_option().type,
@@ -529,10 +525,30 @@ class CreditCardAccessManagerTest : public testing::Test {
             otp_authenticator_->selected_challenge_option().challenge_info,
             u"xxx-xxx-3547");
         break;
+      case CardUnmaskChallengeOptionType::kEmailOtp:
+        VerifyOnSelectChallengeOptionInvoked();
+        EXPECT_EQ(otp_authenticator_->selected_challenge_option().id.value(),
+                  "345");
+        EXPECT_EQ(otp_authenticator_->selected_challenge_option().type,
+                  CardUnmaskChallengeOptionType::kEmailOtp);
+        EXPECT_EQ(
+            otp_authenticator_->selected_challenge_option().challenge_info,
+            u"a******b@google.com");
+        break;
       case CardUnmaskChallengeOptionType::kUnknownType:
         NOTREACHED();
         break;
     }
+  }
+
+  void VerifyOnSelectChallengeOptionInvoked() {
+    DCHECK(otp_authenticator_);
+    EXPECT_TRUE(otp_authenticator_->on_challenge_option_selected_invoked());
+    EXPECT_EQ(otp_authenticator_->card().number(),
+              base::UTF8ToUTF16(std::string(kTestNumber)));
+    EXPECT_EQ(otp_authenticator_->card().record_type(),
+              CreditCard::VIRTUAL_CARD);
+    EXPECT_EQ(otp_authenticator_->context_token(), "fake_context_token");
   }
 
  protected:
@@ -613,6 +629,100 @@ TEST_F(CreditCardAccessManagerTest, ServerCardGetDeletionConfirmationText) {
   EXPECT_EQ(title, std::u16string());
   EXPECT_EQ(body, std::u16string());
 }
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+// Parameters of the CreditCardAccessManagerMandatoryReauthTest:
+// - bool feature_flag_is_on: Whether the mandatory re-auth feature flag is
+// turned on or off.
+// - bool pref_is_enabled: Whether the mandatory re-auth pref is turned on or
+// off.
+// - bool mandatory_reauth_response_is_success: Whether the response from the
+// mandatory re-auth is a success or failure.
+class CreditCardAccessManagerMandatoryReauthTest
+    : public CreditCardAccessManagerTest,
+      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+ public:
+  CreditCardAccessManagerMandatoryReauthTest() = default;
+  ~CreditCardAccessManagerMandatoryReauthTest() override = default;
+
+  void SetUp() override {
+    CreditCardAccessManagerTest::SetUp();
+    feature_list_.InitWithFeatureState(
+        features::kAutofillEnablePaymentsMandatoryReauth, FeatureFlagIsOn());
+  }
+
+  bool FeatureFlagIsOn() const { return std::get<0>(GetParam()); }
+
+  bool PrefIsEnabled() const { return std::get<1>(GetParam()); }
+
+  bool MandatoryReauthResponseIsSuccess() const {
+    return std::get<2>(GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests that retrieving local cards works correctly in the context of the
+// Mandatory Re-Auth feature.
+TEST_P(CreditCardAccessManagerMandatoryReauthTest,
+       MandatoryReauth_FetchLocalCard) {
+  autofill_client_.GetPrefs()->SetBoolean(
+      prefs::kAutofillPaymentMethodsMandatoryReauth, /*value=*/PrefIsEnabled());
+  CreateLocalCard(kTestGUID, kTestNumber);
+  CreditCard* card = personal_data().GetCreditCardByGUID(kTestGUID);
+
+  credit_card_access_manager_->PrepareToFetchCreditCard();
+  WaitForCallbacks();
+
+  // We should only expect an AuthenticateWithMessage() call if the feature flag
+  // is on and the pref is enabled.
+  if (FeatureFlagIsOn() && PrefIsEnabled()) {
+    ON_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
+                autofill_client_.GetDeviceAuthenticator().get()),
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+            AuthenticateWithMessage)
+#elif BUILDFLAG(IS_ANDROID)
+            Authenticate)
+#endif
+        .WillByDefault(testing::WithArg<1>(
+            testing::Invoke([mandatory_reauth_response_is_success =
+                                 MandatoryReauthResponseIsSuccess()](
+                                base::OnceCallback<void(bool)> callback) {
+              std::move(callback).Run(mandatory_reauth_response_is_success);
+            })));
+  } else {
+    EXPECT_CALL(*static_cast<device_reauth::MockDeviceAuthenticator*>(
+                    autofill_client_.GetDeviceAuthenticator().get()),
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+                AuthenticateWithMessage)
+#elif BUILDFLAG(IS_ANDROID)
+                Authenticate)
+#endif
+        .Times(0);
+  }
+
+  credit_card_access_manager_->FetchCreditCard(card, accessor_->GetWeakPtr());
+
+  // The only time we should expect an error is if the feature flag is on, the
+  // pref is enabled, but the mandatory re-auth authentication was not
+  // successful.
+  if (FeatureFlagIsOn() && PrefIsEnabled() &&
+      !MandatoryReauthResponseIsSuccess()) {
+    EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kTransientError);
+    EXPECT_TRUE(accessor_->number().empty());
+  } else {
+    EXPECT_EQ(accessor_->result(), CreditCardFetchResult::kSuccess);
+    EXPECT_EQ(kTestNumber16, accessor_->number());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         CreditCardAccessManagerMandatoryReauthTest,
+                         testing::Combine(testing::Bool(),
+                                          testing::Bool(),
+                                          testing::Bool()));
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 
 // Tests retrieving local cards.
 TEST_F(CreditCardAccessManagerTest, FetchLocalCardSuccess) {
@@ -1837,10 +1947,11 @@ TEST_F(CreditCardAccessManagerTest, SettingsPage_OptOut) {
 // -- bool card_authorization_token_present;
 // -- bool max_strikes_limit_reached;
 // -- bool has_opted_in_from_android_settings;
+// -- bool is_opted_in_for_fido;
 class CreditCardAccessManagerBetterAuthOptInLogTest
     : public CreditCardAccessManagerTest,
       public testing::WithParamInterface<
-          std::tuple<bool, bool, bool, bool, bool>> {
+          std::tuple<bool, bool, bool, bool, bool, bool>> {
  public:
   CreditCardAccessManagerBetterAuthOptInLogTest() = default;
   ~CreditCardAccessManagerBetterAuthOptInLogTest() override = default;
@@ -1867,6 +1978,13 @@ class CreditCardAccessManagerBetterAuthOptInLogTest
     if (IsVirtualCard()) {
       card_->set_record_type(CreditCard::VIRTUAL_CARD);
     }
+    if (IsOptedIntoFido()) {
+      // If user and device are already opted into FIDO, then add an eligible
+      // card to ensure that the `unmask_details_` contains fido request
+      // options.
+      payments_client_->AddFidoEligibleCard("random_id", kCredentialId,
+                                            kGooglePaymentsRpid);
+    }
 
     credit_card_access_manager_->PrepareToFetchCreditCard();
     credit_card_access_manager_->FetchCreditCard(card_,
@@ -1878,14 +1996,17 @@ class CreditCardAccessManagerBetterAuthOptInLogTest
   bool CardAuthorizationTokenPresent() { return std::get<2>(GetParam()); }
   bool MaxStrikesLimitReached() { return std::get<3>(GetParam()); }
   bool HasOptedInFromAndroidSettings() { return std::get<4>(GetParam()); }
+  bool IsOptedIntoFido() { return std::get<5>(GetParam()); }
+
   bool ShouldOfferFidoOptIn() {
-    return !IsVirtualCard() && UnmaskDetailsOfferFidoOptIn() &&
-           CardAuthorizationTokenPresent() && !MaxStrikesLimitReached();
+    return !IsOptedIntoFido() && !IsVirtualCard() &&
+           UnmaskDetailsOfferFidoOptIn() && CardAuthorizationTokenPresent() &&
+           !MaxStrikesLimitReached();
   }
 
   bool ShouldOfferFidoOptInAndroid() {
-    return !IsVirtualCard() && UnmaskDetailsOfferFidoOptIn() &&
-           !HasOptedInFromAndroidSettings();
+    return !IsOptedIntoFido() && !IsVirtualCard() &&
+           UnmaskDetailsOfferFidoOptIn() && !HasOptedInFromAndroidSettings();
   }
 
   const std::string GetFidoOptInNotOfferedHistogram() {
@@ -1897,7 +2018,7 @@ class CreditCardAccessManagerBetterAuthOptInLogTest
  private:
   const std::string fido_opt_in_not_offered_histogram =
       "Autofill.BetterAuth.OptInPromoNotOfferedReason";
-  CreditCard* card_;
+  raw_ptr<CreditCard> card_;
 };
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -1918,7 +2039,13 @@ TEST_P(CreditCardAccessManagerBetterAuthOptInLogTest,
               .with_cvc(u"123")),
       ShouldOfferFidoOptIn());
 
-  if (!UnmaskDetailsOfferFidoOptIn()) {
+  if (IsOptedIntoFido()) {
+    histogram_tester.ExpectUniqueSample(
+        GetFidoOptInNotOfferedHistogram(),
+        /*sample=*/
+        autofill_metrics::WebauthnOptInPromoNotOfferedReason::kAlreadyOptedIn,
+        /*expected_bucket_count=*/1);
+  } else if (!UnmaskDetailsOfferFidoOptIn()) {
     histogram_tester.ExpectUniqueSample(
         GetFidoOptInNotOfferedHistogram(),
         /*sample=*/
@@ -1962,7 +2089,13 @@ TEST_P(CreditCardAccessManagerBetterAuthOptInLogTest,
   EXPECT_EQ(credit_card_access_manager_->ShouldOfferFidoAuthForTesting(),
             ShouldOfferFidoOptInAndroid());
 
-  if (!UnmaskDetailsOfferFidoOptIn()) {
+  if (IsOptedIntoFido()) {
+    histogram_tester.ExpectUniqueSample(
+        GetFidoOptInNotOfferedHistogram(),
+        /*sample=*/
+        autofill_metrics::WebauthnOptInPromoNotOfferedReason::kAlreadyOptedIn,
+        /*expected_bucket_count=*/1);
+  } else if (!UnmaskDetailsOfferFidoOptIn()) {
     histogram_tester.ExpectUniqueSample(
         GetFidoOptInNotOfferedHistogram(),
         /*sample=*/
@@ -1991,6 +2124,7 @@ TEST_P(CreditCardAccessManagerBetterAuthOptInLogTest,
 INSTANTIATE_TEST_SUITE_P(,
                          CreditCardAccessManagerBetterAuthOptInLogTest,
                          testing::Combine(testing::Bool(),
+                                          testing::Bool(),
                                           testing::Bool(),
                                           testing::Bool(),
                                           testing::Bool(),
@@ -2362,7 +2496,8 @@ TEST_F(CreditCardAccessManagerTest,
   base::HistogramTester histogram_tester;
   std::vector<CardUnmaskChallengeOption> challenge_options =
       test::GetCardUnmaskChallengeOptions(
-          {CardUnmaskChallengeOptionType::kSmsOtp});
+          {CardUnmaskChallengeOptionType::kSmsOtp,
+           CardUnmaskChallengeOptionType::kEmailOtp});
   MockCardUnmaskFlowUpToAuthenticationSelectionDialogAccepted(
       /*fido_authenticator_is_user_opted_in=*/false,
       /*is_user_verifiable=*/false, challenge_options, /*selected_index=*/0);
@@ -2446,6 +2581,7 @@ TEST_F(CreditCardAccessManagerTest,
                 .with_cvc(u"123"));
         break;
       }
+      case CardUnmaskChallengeOptionType::kEmailOtp:
       case CardUnmaskChallengeOptionType::kUnknownType:
         NOTREACHED();
         break;
@@ -2875,6 +3011,72 @@ TEST_F(CreditCardAccessManagerTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.ServerCardUnmask.VirtualCard.Result.UnspecifiedFlowType",
       autofill_metrics::ServerCardUnmaskResult::kFlowCancelled, 1);
+}
+
+// Params of the CreditCardAccessManagerCardMetadataTest:
+// -- bool card_name_available;
+// -- bool card_art_available;
+// -- bool metadata_enabled;
+class CreditCardAccessManagerCardMetadataTest
+    : public CreditCardAccessManagerTest,
+      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+ public:
+  CreditCardAccessManagerCardMetadataTest() = default;
+  ~CreditCardAccessManagerCardMetadataTest() override = default;
+
+  bool CardNameAvailable() { return std::get<0>(GetParam()); }
+  bool CardArtAvailable() { return std::get<1>(GetParam()); }
+  bool MetadataEnabled() { return std::get<2>(GetParam()); }
+};
+
+INSTANTIATE_TEST_SUITE_P(,
+                         CreditCardAccessManagerCardMetadataTest,
+                         testing::Combine(testing::Bool(),
+                                          testing::Bool(),
+                                          testing::Bool()));
+
+TEST_P(CreditCardAccessManagerCardMetadataTest, MetadataSignal) {
+  base::test::ScopedFeatureList metadata_feature_list;
+  CreateServerCard(kTestGUID, kTestNumber, /*masked=*/false, kTestServerId);
+  CreditCard* virtual_card = personal_data().GetCreditCardByGUID(kTestGUID);
+  virtual_card->set_record_type(CreditCard::VIRTUAL_CARD);
+  if (MetadataEnabled()) {
+    metadata_feature_list.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillEnableCardProductName,
+                              features::kAutofillEnableCardArtImage},
+        /*disabled_features=*/{});
+  } else {
+    metadata_feature_list.InitWithFeaturesAndParameters(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kAutofillEnableCardProductName,
+                               features::kAutofillEnableCardArtImage});
+  }
+  if (CardNameAvailable()) {
+    virtual_card->set_product_description(u"Fake card product name");
+  }
+  if (CardArtAvailable()) {
+    virtual_card->set_card_art_url(GURL("https://www.example.com"));
+  }
+
+  credit_card_access_manager_->FetchCreditCard(virtual_card,
+                                               accessor_->GetWeakPtr());
+
+  // Ensures the UnmaskRequestDetails is populated with correct contents.
+  EXPECT_TRUE(payments_client_->unmask_request()->context_token.empty());
+  EXPECT_FALSE(payments_client_->unmask_request()->risk_data.empty());
+  EXPECT_TRUE(payments_client_->unmask_request()
+                  ->last_committed_primary_main_frame_origin.has_value());
+  std::vector<ClientBehaviorConstants> signals =
+      payments_client_->unmask_request()->client_behavior_signals;
+  if (MetadataEnabled() && CardNameAvailable() && CardArtAvailable()) {
+    EXPECT_NE(
+        signals.end(),
+        base::ranges::find(
+            signals,
+            ClientBehaviorConstants::kShowingCardArtImageAndCardProductName));
+  } else {
+    EXPECT_TRUE(signals.empty());
+  }
 }
 
 }  // namespace autofill

@@ -93,7 +93,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Notifications.Actions" enum="NotificationActionType"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -155,41 +155,6 @@ chromium-metrics-reviews@google.com.
     Notification. Recorded when a persistent Web Notification is being shown by
     the developer.
   </summary>
-</histogram>
-
-<histogram name="Notifications.Blocker.ScreenCapture.Action.{Action}"
-    units="notifications" expires_after="M96">
-  <owner>knollr@chromium.org</owner>
-  <owner>peter@chromium.org</owner>
-  <summary>
-    Records the number of times the 'Notifications muted' notification got shown
-    before the user took an action. Clicking on 'Show' and 'Snooze' can only be
-    recorded once per session while 'Body' and 'Close' may be recorded multiple
-    times. Logged each time the user interacts with the notification. {Action}
-  </summary>
-  <token key="Action">
-    <variant name="Body"/>
-    <variant name="Close"/>
-    <variant name="Show"/>
-    <variant name="Snooze"/>
-  </token>
-</histogram>
-
-<histogram name="Notifications.Blocker.ScreenCapture.ActionTiming.{Action}"
-    units="ms" expires_after="M96">
-  <owner>knollr@chromium.org</owner>
-  <owner>peter@chromium.org</owner>
-  <summary>
-    Records the time between showing the 'Notifications muted' notification and
-    the user taking an action on it. Logged each time the user interacts with
-    the notification. {Action}
-  </summary>
-  <token key="Action">
-    <variant name="Body"/>
-    <variant name="Close"/>
-    <variant name="Show"/>
-    <variant name="Snooze"/>
-  </token>
 </histogram>
 
 <histogram name="Notifications.Blocker.ScreenCapture.ClosedCount"
@@ -405,7 +370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.Database.ExpiredNotificationCount"
-    units="notifications" expires_after="2023-08-20">
+    units="notifications" expires_after="2023-10-22">
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -540,6 +505,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Notifications.macOS.Delivered.{Style}" enum="BooleanSuccess"
     expires_after="M96">
+  <obsolete>
+    Obsoleted April 2023. Histogram was removed after expiration.
+  </obsolete>
   <owner>knollr@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -707,7 +675,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PerNotificationActions"
-    enum="NotificationActionType" expires_after="2023-08-08">
+    enum="NotificationActionType" expires_after="2023-10-22">
   <owner>dewittj@chromium.org</owner>
   <owner>leandre@chromium.org</owner>
   <owner>cros-status-area-eng@google.com</owner>
@@ -720,7 +688,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Notifications.PersistentNotificationActionCount"
-    units="buttons" expires_after="2023-08-08">
+    units="buttons" expires_after="2023-10-08">
   <owner>peter@chromium.org</owner>
   <summary>
     The number of action buttons the developer provided for a persistent Web

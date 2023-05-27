@@ -14,6 +14,7 @@
 #include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
@@ -31,16 +32,6 @@ namespace ash {
 
 namespace {
 
-const char kReleaseChannelCanary[] = "canary-channel";
-const char kReleaseChannelDev[] = "dev-channel";
-const char kReleaseChannelBeta[] = "beta-channel";
-const char kReleaseChannelStable[] = "stable-channel";
-
-// List of release channels ordered by stability.
-const char* kReleaseChannelsList[] = {kReleaseChannelCanary, kReleaseChannelDev,
-                                      kReleaseChannelBeta,
-                                      kReleaseChannelStable};
-
 // Delay between successive state transitions during AU.
 const int kStateTransitionDefaultDelayMs = 3000;
 
@@ -56,12 +47,6 @@ const int64_t kDownloadSizeDelta = 1 << 19;
 const char kStubVersion[] = "1234.0.0.0";
 
 UpdateEngineClient* g_instance = nullptr;
-
-bool IsValidChannel(const std::string& channel) {
-  // lts and ltc can only be selected using policies.
-  return channel == kReleaseChannelDev || channel == kReleaseChannelBeta ||
-         channel == kReleaseChannelStable;
-}
 
 // The UpdateEngineClient implementation used in production.
 class UpdateEngineClientImpl : public UpdateEngineClient {
@@ -147,12 +132,6 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 
   void SetChannel(const std::string& target_channel,
                   bool is_powerwash_allowed) override {
-    // TODO(b/273431629): Remove channel validation.
-    if (!IsValidChannel(target_channel)) {
-      LOG(ERROR) << "Invalid channel name: " << target_channel;
-      return;
-    }
-
     dbus::MethodCall method_call(update_engine::kUpdateEngineInterface,
                                  update_engine::kSetChannel);
     dbus::MessageWriter writer(&method_call);
@@ -593,7 +572,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     LOG_IF(WARNING, !success) << "Failed to connect to status updated signal.";
   }
 
-  dbus::ObjectProxy* update_engine_proxy_;
+  raw_ptr<dbus::ObjectProxy, ExperimentalAsh> update_engine_proxy_;
   base::ObserverList<Observer>::Unchecked observers_;
   update_engine::StatusResult last_status_;
 
@@ -614,8 +593,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 class UpdateEngineClientDesktopFake : public UpdateEngineClient {
  public:
   UpdateEngineClientDesktopFake()
-      : current_channel_(kReleaseChannelBeta),
-        target_channel_(kReleaseChannelBeta) {}
+      : current_channel_("beta-channel"), target_channel_("beta-channel") {}
 
   UpdateEngineClientDesktopFake(const UpdateEngineClientDesktopFake&) = delete;
   UpdateEngineClientDesktopFake& operator=(
@@ -822,15 +800,6 @@ FakeUpdateEngineClient* UpdateEngineClient::InitializeFakeForTest() {
 void UpdateEngineClient::Shutdown() {
   CHECK(g_instance);
   delete g_instance;
-}
-
-// static
-bool UpdateEngineClient::IsTargetChannelMoreStable(
-    const std::string& current_channel,
-    const std::string& target_channel) {
-  const char** cix = base::ranges::find(kReleaseChannelsList, current_channel);
-  const char** tix = base::ranges::find(kReleaseChannelsList, target_channel);
-  return tix > cix;
 }
 
 UpdateEngineClient::UpdateEngineClient() {

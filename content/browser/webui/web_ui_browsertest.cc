@@ -420,10 +420,10 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest, DISABLED_NavigateWhileWebUISend) {
   web_contents->GetWebUI()->AddMessageHandler(base::WrapUnique(test_handler));
 
   auto* webui = static_cast<WebUIImpl*>(web_contents->GetWebUI());
-  EXPECT_EQ(web_contents->GetPrimaryMainFrame(), webui->frame_host());
+  EXPECT_EQ(web_contents->GetPrimaryMainFrame(), webui->GetRenderFrameHost());
 
   test_handler->set_finish_closure(base::BindLambdaForTesting([&]() {
-    EXPECT_NE(web_contents->GetPrimaryMainFrame(), webui->frame_host());
+    EXPECT_NE(web_contents->GetPrimaryMainFrame(), webui->GetRenderFrameHost());
   }));
 
   bool received_send_message = false;
@@ -478,7 +478,8 @@ IN_PROC_BROWSER_TEST_F(WebUIImplBrowserTest,
    public:
     Config() : WebUIConfig(kChromeUIUntrustedScheme, "test-host") {}
     std::unique_ptr<WebUIController> CreateWebUIController(
-        WebUI* web_ui) final {
+        WebUI* web_ui,
+        const GURL& url) final {
       class Controller : public WebUIController {
        public:
         explicit Controller(WebUI* web_ui) : WebUIController(web_ui) {

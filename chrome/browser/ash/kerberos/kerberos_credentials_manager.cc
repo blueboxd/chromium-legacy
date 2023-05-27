@@ -8,6 +8,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/escape.h"
 #include "base/strings/string_split.h"
@@ -276,7 +277,7 @@ class KerberosAddAccountRunner {
   }
 
   // Pointer to the owning manager, not owned.
-  KerberosCredentialsManager* const manager_ = nullptr;
+  const raw_ptr<KerberosCredentialsManager, ExperimentalAsh> manager_ = nullptr;
   std::string normalized_principal_;
   bool is_managed_ = false;
   absl::optional<std::string> password_;
@@ -478,15 +479,16 @@ void KerberosCredentialsManager::OnAddAccountRunnerDone(
   LogError("AddAccountAndAuthenticate", error);
 
   if (Succeeded(error)) {
-    // Set active account. Be sure not to wipe user selection if the
-    // account was added automatically by policy.
-    // TODO(https://crbug.com/948121): Wait until the files have been saved.
-    // This is important when this code is triggered directly through a page
-    // that requires Kerberos auth.
-    if (!is_managed || GetActivePrincipalName().empty())
+    // Set active account. Be sure not to wipe user selection if the account was
+    // added automatically by policy.
+    // TODO(b/259178114): Wait until the files have been saved. This is
+    // important when this code is triggered directly through a page that
+    // requires Kerberos auth.
+    if (!is_managed || GetActivePrincipalName().empty()) {
       SetActivePrincipalName(updated_principal);
-    else if (GetActivePrincipalName() == updated_principal)
+    } else if (GetActivePrincipalName() == updated_principal) {
       GetKerberosFiles();
+    }
   }
 
   // Bring the merry news to the observers, but only if there is no outstanding
@@ -844,10 +846,11 @@ void KerberosCredentialsManager::UpdateAccountsFromPref(bool is_retry) {
   bool requires_login_password = false;
   std::vector<std::string> managed_accounts_added;
   for (const auto& account : accounts) {
+    const base::Value::Dict& account_dict = account.GetDict();
     // Get the principal. Should always be set.
-    const base::Value* principal_value = account.FindPath(kPrincipal);
-    DCHECK(principal_value);
-    std::string principal = principal_value->GetString();
+    const std::string* principal_string = account_dict.FindString(kPrincipal);
+    DCHECK(principal_string);
+    std::string principal = *principal_string;
     if (!principal_expander_->ExpandString(&principal)) {
       VLOG(1) << "Failed to expand principal '" << principal << "'";
       continue;
@@ -858,7 +861,7 @@ void KerberosCredentialsManager::UpdateAccountsFromPref(bool is_retry) {
     }
 
     // Get the password, default to not set.
-    const std::string* password_str = account.FindStringKey(kPassword);
+    const std::string* password_str = account_dict.FindString(kPassword);
     absl::optional<std::string> password;
     if (password_str)
       password = std::move(*password_str);
@@ -869,12 +872,12 @@ void KerberosCredentialsManager::UpdateAccountsFromPref(bool is_retry) {
 
     // Get the remember password flag, default to false.
     bool remember_password =
-        account.FindBoolKey(kRememberPassword).value_or(false);
+        account.GetDict().FindBool(kRememberPassword).value_or(false);
 
     // Get Kerberos configuration if given. Otherwise, use default to make sure
     // it overwrites an existing unmanaged account.
     std::string krb5_conf;
-    const base::Value* krb5_conf_value = account.FindPath(kKrb5Conf);
+    const base::Value* krb5_conf_value = account_dict.Find(kKrb5Conf);
     if (krb5_conf_value) {
       // Note: The config is encoded as a list of lines.
       for (const auto& config_line : krb5_conf_value->GetList()) {
@@ -923,8 +926,6 @@ void KerberosCredentialsManager::NotifyRequiresLoginPassword(
 
 void KerberosCredentialsManager::OnTicketExpiryNotificationClick(
     const std::string& principal_name) {
-  // TODO(https://crbug.com/952245): Right now, the reauth dialog is tied to the
-  // settings. Consider creating a standalone reauth dialog.
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       primary_profile_,
       chromeos::settings::mojom::kKerberosAccountsV2SubpagePath +

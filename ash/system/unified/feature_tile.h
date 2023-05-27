@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/style/icon_button.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
@@ -24,7 +25,8 @@ namespace ash {
 // 1. Launch surface        (e.g. Screen Capture)
 // 2. Toggle                (e.g. Toggle Dark Theme)
 // 3. Drill-in              (e.g. Go to Accessibility detailed view)
-// 4. Toggle with drill-in  (e.g. Toggle Wi-Fi | go to Network detailed view)
+// 4. Toggle with drill-in  (e.g. Toggle Wi-Fi | Go to Network detailed view)
+// 5. Togglable tile with decorative drill-in (e.g. Selecting a VPN network)
 
 // The compact tile has an icon and a single title, which may be
 // multi-line. They are always placed in pairs side by side to take up the
@@ -33,6 +35,7 @@ namespace ash {
 // of the following behaviors:
 // 1. Launch surface        (e.g. Screen Capture)
 // 2. Toggle                (e.g. Toggle Auto-rotate)
+// 3. Drill-in              (e.g. Go to Cast detailed view)
 class ASH_EXPORT FeatureTile : public views::Button {
  public:
   METADATA_HEADER(FeatureTile);
@@ -60,11 +63,17 @@ class ASH_EXPORT FeatureTile : public views::Button {
   // depending on the button's `type_`.
   void CreateChildViews();
 
-  // Creates the `drill_container_` which holds the `drill_in_button_`.
-  // `callback` is called when interacting with the right side of the button
-  // where the drill-in button exists.
+  // Creates `drill_in_button_` which holds `the drill_in_arrow_` icon button,
+  // and is positioned in the right area of the feature tile.
+  // `callback` is triggered when interacting with the drill-in button, but
+  // focus is set on its child `drill_in_arrow_`.
   void CreateDrillInButton(base::RepeatingCallback<void()> callback,
                            const std::u16string& tooltip_text);
+
+  // Creates a `drill_in_button_` that is not clickable but exists to indicate
+  // the button shows a detailed view when pressed. Events will be processed by
+  // its parent `FeatureTile`.
+  void CreateDecorativeDrillInButton(const std::u16string& tooltip_text);
 
   TileType tile_type() { return type_; }
 
@@ -101,6 +110,7 @@ class ASH_EXPORT FeatureTile : public views::Button {
   views::Label* label() { return label_; }
   views::Label* sub_label() { return sub_label_; }
   views::LabelButton* drill_in_button() { return drill_in_button_; }
+  IconButton* drill_in_arrow() { return drill_in_arrow_; }
 
  private:
   friend class BluetoothFeaturePodControllerTest;
@@ -110,15 +120,20 @@ class ASH_EXPORT FeatureTile : public views::Button {
   // the tile is toggled to provide contrast with the background color.
   void UpdateDrillInButtonFocusRingColor();
 
+  // Creates the drill-in button related views. Will style the button as
+  // decorative if an empty callback is provided.
+  void CreateDrillInButtonView(base::RepeatingClosure callback,
+                               const std::u16string& tooltip_text);
+
   // The vector icon for the tile, if one is set.
-  const gfx::VectorIcon* vector_icon_ = nullptr;
+  raw_ptr<const gfx::VectorIcon, ExperimentalAsh> vector_icon_ = nullptr;
 
   // Owned by views hierarchy.
-  views::ImageView* icon_ = nullptr;
-  views::Label* label_ = nullptr;
-  views::Label* sub_label_ = nullptr;
-  views::LabelButton* drill_in_button_ = nullptr;
-  IconButton* drill_in_arrow_ = nullptr;
+  raw_ptr<views::ImageView, ExperimentalAsh> icon_ = nullptr;
+  raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
+  raw_ptr<views::Label, ExperimentalAsh> sub_label_ = nullptr;
+  raw_ptr<views::LabelButton, ExperimentalAsh> drill_in_button_ = nullptr;
+  raw_ptr<IconButton, ExperimentalAsh> drill_in_arrow_ = nullptr;
 
   // Whether this button is togglable.
   bool is_togglable_ = false;

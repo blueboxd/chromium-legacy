@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_caption.h"
 
-#include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -13,13 +12,15 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 
 namespace blink {
 
 LayoutNGTableCaption::LayoutNGTableCaption(Element* element)
-    : LayoutNGBlockFlowMixin<LayoutTableCaption>(element) {}
+    : LayoutNGBlockFlow(element) {}
 
 // Legacy method.
+// TODO(1229581): Remove.
 void LayoutNGTableCaption::CalculateAndSetMargins(
     const NGConstraintSpace& constraint_space,
     const NGPhysicalFragment& physical_fragment) {
@@ -51,26 +52,7 @@ void LayoutNGTableCaption::CalculateAndSetMargins(
       containing_block_style.GetWritingDirection()));
 }
 
-void LayoutNGTableCaption::InsertedIntoTree() {
-  NOT_DESTROYED();
-  LayoutBlockFlow::InsertedIntoTree();
-
-  LayoutNGTableInterface* table_interface = TableInterface();
-  if (!table_interface->ToLayoutObject()->IsLayoutNGObject())
-    To<LayoutTable>(table_interface->ToMutableLayoutObject())->AddCaption(this);
-}
-
-void LayoutNGTableCaption::WillBeRemovedFromTree() {
-  NOT_DESTROYED();
-  LayoutBlockFlow::WillBeRemovedFromTree();
-
-  LayoutNGTableInterface* table_interface = TableInterface();
-  if (!table_interface->ToLayoutObject()->IsLayoutNGObject()) {
-    To<LayoutTable>(table_interface->ToMutableLayoutObject())
-        ->RemoveCaption(this);
-  }
-}
-
+// TODO(1229581): Remove.
 void LayoutNGTableCaption::UpdateBlockLayout(bool relayout_children) {
   NOT_DESTROYED();
 
@@ -79,11 +61,6 @@ void LayoutNGTableCaption::UpdateBlockLayout(bool relayout_children) {
   const NGLayoutResult* result = UpdateInFlowBlockLayout();
   CalculateAndSetMargins(result->GetConstraintSpaceForCaching(),
                          result->PhysicalFragment());
-}
-
-LayoutNGTableInterface* LayoutNGTableCaption::TableInterface() const {
-  NOT_DESTROYED();
-  return ToInterface<LayoutNGTableInterface>(Parent());
 }
 
 }  // namespace blink

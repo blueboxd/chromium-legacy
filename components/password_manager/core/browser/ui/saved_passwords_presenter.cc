@@ -13,6 +13,7 @@
 #include "base/barrier_closure.h"
 #include "base/check.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -357,6 +358,39 @@ SavedPasswordsPresenter::EditSavedCredentials(
   return EditResult::kSuccess;
 }
 
+void SavedPasswordsPresenter::MoveCredentialsToAccount(
+    const std::vector<CredentialUIEntry>& credentials,
+    metrics_util::MoveToAccountStoreTrigger trigger) {
+  for (const auto& credential : credentials) {
+    std::vector<PasswordForm> move_form_candidates =
+        GetCorrespondingPasswordForms(credential);
+    // signon_realms of PasswordForms which are saved in account.
+    auto account_credentials_signon_realms = base::MakeFlatSet<std::string>(
+        move_form_candidates, {}, [](const auto& form) {
+          return form.IsUsingAccountStore() ? form.signon_realm : "";
+        });
+
+    for (const auto& form : move_form_candidates) {
+      if (form.IsUsingAccountStore()) {
+        continue;
+      }
+      CHECK(form.IsUsingProfileStore());
+
+      // Don't call AddLogin() if the credential already exists in the account
+      // store, 1) to avoid unnecessary sync cycles, 2) to avoid potential
+      // last_used_date update.
+      if (!account_credentials_signon_realms.contains(form.signon_realm)) {
+        account_store_->AddLogin(form);
+      }
+      profile_store_->RemoveLogin(form);
+    }
+  }
+
+  base::UmaHistogramEnumeration(
+      "PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted2",
+      trigger);
+}
+
 std::vector<CredentialUIEntry> SavedPasswordsPresenter::GetSavedCredentials()
     const {
   if (base::FeatureList::IsEnabled(features::kPasswordsGrouping)) {
@@ -550,8 +584,10 @@ void SavedPasswordsPresenter::AddForms(const std::vector<PasswordForm>& forms) {
   // Notify observers after grouping is complete.
   passwords_grouper_->GroupPasswords(
       std::move(all_forms),
-      base::BindOnce(&SavedPasswordsPresenter::NotifySavedPasswordsChanged,
-                     weak_ptr_factory_.GetWeakPtr()));
+      metrics_util::TimeCallback(
+          base::BindOnce(&SavedPasswordsPresenter::NotifySavedPasswordsChanged,
+                         weak_ptr_factory_.GetWeakPtr()),
+          "PasswordManager.PasswordsGrouping.Time"));
 }
 
 }  // namespace password_manager

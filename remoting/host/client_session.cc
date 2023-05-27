@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase_map.h"
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -38,6 +37,8 @@
 #include "remoting/host/remote_open_url/remote_open_url_message_handler.h"
 #include "remoting/host/remote_open_url/url_forwarder_configurator.h"
 #include "remoting/host/remote_open_url/url_forwarder_control_message_handler.h"
+#include "remoting/host/security_key/security_key_extension.h"
+#include "remoting/host/security_key/security_key_extension_session.h"
 #include "remoting/host/webauthn/remote_webauthn_constants.h"
 #include "remoting/host/webauthn/remote_webauthn_message_handler.h"
 #include "remoting/host/webauthn/remote_webauthn_state_change_notifier.h"
@@ -190,13 +191,13 @@ void ClientSession::ControlVideo(const protocol::VideoControl& video_control) {
     } else {
       base::TimeDelta capture_interval =
           framerate_boost.has_capture_interval_ms()
-              ? base::clamp(
+              ? std::clamp(
                     base::Milliseconds(framerate_boost.capture_interval_ms()),
                     base::Milliseconds(1), base::Milliseconds(1000))
               : kDefaultBoostCaptureInterval;
       base::TimeDelta boost_duration =
           framerate_boost.has_boost_duration_ms()
-              ? base::clamp(
+              ? std::clamp(
                     base::Milliseconds(framerate_boost.boost_duration_ms()),
                     base::Milliseconds(1), base::Milliseconds(1000))
               : kDefaultBoostDuration;
@@ -848,6 +849,23 @@ void ClientSession::BindRemoteUrlOpener(
   }
   remote_open_url_message_handler_->AddReceiver(std::move(receiver));
 }
+
+#if BUILDFLAG(IS_WIN)
+void ClientSession::BindSecurityKeyForwarder(
+    mojo::PendingReceiver<mojom::SecurityKeyForwarder> receiver) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  auto* extension_session = reinterpret_cast<SecurityKeyExtensionSession*>(
+      extension_manager_->FindExtensionSession(
+          SecurityKeyExtension::kCapability));
+  if (!extension_session) {
+    LOG(WARNING) << "Security key extension not found. "
+                 << "Binding request rejected.";
+    return;
+  }
+  extension_session->BindSecurityKeyForwarder(std::move(receiver));
+}
+#endif
 
 void ClientSession::RegisterCreateHandlerCallbackForTesting(
     const std::string& prefix,

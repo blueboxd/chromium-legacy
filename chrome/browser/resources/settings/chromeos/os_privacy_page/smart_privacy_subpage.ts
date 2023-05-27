@@ -10,18 +10,18 @@
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
-import '../../controls/extension_controlled_indicator.js';
+import '/shared/settings/controls/extension_controlled_indicator.js';
 import '../../controls/settings_slider.js';
 import '../../settings_shared.css.js';
 import '../../settings_vars.css.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_settings_page/os_settings_subpage.js';
 
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {SliderTick} from 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {routes} from '../os_settings_routes.js';
@@ -51,7 +51,8 @@ const secondsFormatter = new Intl.NumberFormat(
 const SettingsSmartPrivacySubpageBase =
     DeepLinkingMixin(PrefsMixin(RouteObserverMixin(PolymerElement)));
 
-class SettingsSmartPrivacySubpage extends SettingsSmartPrivacySubpageBase {
+export class SettingsSmartPrivacySubpage extends
+    SettingsSmartPrivacySubpageBase {
   static get is() {
     return 'settings-smart-privacy-subpage' as const;
   }

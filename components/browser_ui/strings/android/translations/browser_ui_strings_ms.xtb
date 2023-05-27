@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Penyahkod imej</translation>
 <translation id="1785415724048343560">Disyorkan untuk pengalaman terbaik</translation>
 <translation id="1818308510395330587">Untuk membolehkan <ph name="APP_NAME" /> menggunakan AR, hidupkan juga kamera dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Daripada <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Laman berkaitan boleh melihat aktiviti anda dalam kumpulan</translation>
 <translation id="1887786770086287077">Akses lokasi dimatikan untuk peranti ini. Hidupkannya dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Tamatkan panggilan</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Muat turun selesai: <ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Ciri pada sesetengah laman mungkin tidak berfungsi dalam mod Inkognito</translation>
 <translation id="2442870161001914531">Sentiasa minta laman desktop</translation>
+<translation id="2479148705183875116">Pergi ke Tetapan</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
 <translation id="2490684707762498678">Diurus oleh <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Alamat e-mel</translation>
 <translation id="2750481671343847896">Laman boleh menunjukkan gesaan log masuk daripada perkhidmatan identiti.</translation>
 <translation id="2822354292072154809">Adakah anda pasti mahu menetapkan semula semua kebenaran tapak untuk <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Minta paparan mudah alih</translation>
 <translation id="2870560284913253234">Tapak</translation>
 <translation id="2874939134665556319">Lagu sebelumnya</translation>
 <translation id="2891975107962658722">Sekat laman daripada menyimpan data pada peranti anda</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Tapak boleh menggunakan kuki untuk memperbaik pengalaman penyemakan imbas anda, contohnya, untuk mengekalkan log masuk anda atau untuk mengingat item dalam troli beli-belah anda</translation>
 <translation id="3165022941318558018">Benarkan laman menggunakan kuki pihak ketiga</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> data disimpan</translation>
-<translation id="3203366800380907218">Daripada web</translation>
 <translation id="321187648315454507">Untuk membolehkan <ph name="APP_NAME" /> menghantar pemberitahuan kepada anda, hidupkan juga pemberitahuan dalam <ph name="BEGIN_LINK" />Tetapan Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3248611290851046188">Laman ini mentakrifkan minat yang boleh digunakan oleh laman lain untuk memaparkan iklan kepada anda. Laman ini juga mendapat minat anda daripada Chrome untuk memaparkan iklan yang lebih berkaitan kepada anda.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Minta paparan desktop</translation>
 <translation id="5100237604440890931">Diruntuhkan - klik untuk mengembangkan.</translation>
 <translation id="5123685120097942451">Tab Inkognito</translation>
-<translation id="5134599672855298214">Minta paparan mudah alih (disyorkan)</translation>
 <translation id="5186036860380548585">Pilihan tersedia berhampiran bahagian atas skrin</translation>
 <translation id="5197729504361054390">Kenalan yang anda pilih akan dikongsi dengan <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Terakhir dilawati hari ini</translation>

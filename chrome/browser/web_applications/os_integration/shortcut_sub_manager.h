@@ -34,8 +34,6 @@ class ShortcutSubManager : public OsIntegrationSubManager {
                      WebAppIconManager& icon_manager,
                      WebAppRegistrar& registrar);
   ~ShortcutSubManager() override;
-  void Start() override;
-  void Shutdown() override;
   void Configure(const AppId& app_id,
                  proto::WebAppOsIntegrationState& desired_state,
                  base::OnceClosure configure_done) override;
@@ -44,6 +42,8 @@ class ShortcutSubManager : public OsIntegrationSubManager {
                const proto::WebAppOsIntegrationState& desired_state,
                const proto::WebAppOsIntegrationState& current_state,
                base::OnceClosure callback) override;
+  void ForceUnregister(const AppId& app_id,
+                       base::OnceClosure callback) override;
 
  private:
   void CreateShortcut(const AppId& app_id,

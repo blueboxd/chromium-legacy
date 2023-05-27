@@ -26,7 +26,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/hash/hash.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
@@ -43,6 +42,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
@@ -525,25 +525,24 @@ BrowserAutofillManager::BrowserAutofillManager(AutofillDriver* driver,
       external_delegate_(
           std::make_unique<AutofillExternalDelegate>(this, driver)),
       app_locale_(app_locale),
-      personal_data_(client->GetPersonalDataManager()),
       field_filler_(app_locale, client->GetAddressNormalizer()),
       single_field_form_fill_router_(client->CreateSingleFieldFormFillRouter()),
-      suggestion_generator_(
-          std::make_unique<AutofillSuggestionGenerator>(client,
-                                                        personal_data_)) {
+      suggestion_generator_(std::make_unique<AutofillSuggestionGenerator>(
+          client,
+          client->GetPersonalDataManager())) {
   address_form_event_logger_ =
       std::make_unique<autofill_metrics::AddressFormEventLogger>(
           driver->IsInAnyMainFrame(), form_interactions_ukm_logger(), client);
   credit_card_form_event_logger_ =
       std::make_unique<autofill_metrics::CreditCardFormEventLogger>(
           driver->IsInAnyMainFrame(), form_interactions_ukm_logger(),
-          personal_data_, client);
+          client->GetPersonalDataManager(), client);
 
   credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
-      driver, client, personal_data_, credit_card_form_event_logger_.get());
+      driver, client, client->GetPersonalDataManager(),
+      credit_card_form_event_logger_.get());
 
   CountryNames::SetLocaleString(app_locale_);
-  offer_manager_ = client->GetAutofillOfferManager();
 }
 
 BrowserAutofillManager::~BrowserAutofillManager() {
@@ -577,10 +576,6 @@ BrowserAutofillManager::~BrowserAutofillManager() {
 
 base::WeakPtr<AutofillManager> BrowserAutofillManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-AutofillOfferManager* BrowserAutofillManager::GetOfferManager() {
-  return offer_manager_;
 }
 
 CreditCardAccessManager* BrowserAutofillManager::GetCreditCardAccessManager() {
@@ -678,11 +673,11 @@ bool BrowserAutofillManager::ShouldShowCardsFromAccountOption(
   if (IsFormNonSecure(form))
     return false;
 
-  return personal_data_->ShouldShowCardsFromAccountOption();
+  return client()->GetPersonalDataManager()->ShouldShowCardsFromAccountOption();
 }
 
 void BrowserAutofillManager::OnUserAcceptedCardsFromAccountOption() {
-  personal_data_->OnUserAcceptedCardsFromAccountOption();
+  client()->GetPersonalDataManager()->OnUserAcceptedCardsFromAccountOption();
 }
 
 void BrowserAutofillManager::RefetchCardsAndUpdatePopup(
@@ -705,7 +700,7 @@ void BrowserAutofillManager::RefetchCardsAndUpdatePopup(
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 void BrowserAutofillManager::FetchVirtualCardCandidates() {
   const std::vector<CreditCard*>& candidates =
-      GetVirtualCardCandidates(personal_data_);
+      GetVirtualCardCandidates(client()->GetPersonalDataManager());
   // Make sure the |candidates| is not empty, otherwise the check in
   // ShouldShowVirtualCardOption() should fail.
   DCHECK(!candidates.empty());
@@ -731,8 +726,9 @@ bool BrowserAutofillManager::ShouldParseForms() {
   // need to parse the forms and query the server as the password manager
   // depends on server classifications.
   bool password_manager_enabled = client()->IsPasswordManagerEnabled();
-  sync_state_ = personal_data_ ? personal_data_->GetSyncSigninState()
-                               : AutofillSyncSigninState::kNumSyncStates;
+  sync_state_ = client()->GetPersonalDataManager()
+                    ? client()->GetPersonalDataManager()->GetSyncSigninState()
+                    : AutofillSyncSigninState::kNumSyncStates;
   if (!has_logged_autofill_enabled_) {
     AutofillMetrics::LogIsAutofillEnabledAtPageLoad(autofill_enabled,
                                                     sync_state_);
@@ -896,21 +892,23 @@ void BrowserAutofillManager::OnFormSubmittedImpl(const FormData& form,
 bool BrowserAutofillManager::MaybeStartVoteUploadProcess(
     std::unique_ptr<FormStructure> form_structure,
     bool observed_submission) {
-  // It is possible for |personal_data_| to be null, such as when used in the
-  // Android webview.
-  if (!personal_data_)
+  // It is possible for |client()->GetPersonalDataManager()| to be null, such as
+  // when used in the Android webview.
+  if (!client()->GetPersonalDataManager()) {
     return false;
+  }
 
   // Only upload server statistics and UMA metrics if at least some local data
   // is available to use as a baseline.
-  std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
+  std::vector<AutofillProfile*> profiles =
+      client()->GetPersonalDataManager()->GetProfiles();
   if (observed_submission && form_structure->IsAutofillable()) {
     AutofillMetrics::LogNumberOfProfilesAtAutofillableFormSubmission(
-        personal_data_->GetProfiles().size());
+        client()->GetPersonalDataManager()->GetProfiles().size());
   }
 
   const std::vector<CreditCard*>& credit_cards =
-      personal_data_->GetCreditCards();
+      client()->GetPersonalDataManager()->GetCreditCards();
 
   if (profiles.empty() && credit_cards.empty())
     return false;
@@ -1209,9 +1207,11 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
   };
 
   auto ShouldShowSuggestion = [&] {
-    if (client()->IsShowingFastCheckoutUI() ||
-        (form_element_was_clicked &&
-         client()->TryToShowFastCheckout(form, field, GetWeakPtr()))) {
+    if (fast_checkout_delegate_ &&
+        (fast_checkout_delegate_->IsShowingFastCheckoutUI() ||
+         (form_element_was_clicked &&
+          fast_checkout_delegate_->TryToShowFastCheckout(form, field,
+                                                         GetWeakPtr())))) {
       // The Fast Checkout surface is shown, so abort showing regular Autofill
       // UI. Now the flow is controlled by the `FastCheckoutClient` instead of
       // `external_delegate_`.
@@ -1417,7 +1417,8 @@ void BrowserAutofillManager::FillOrPreviewVirtualCardInformation(
     return;
   }
 
-  const CreditCard* credit_card = personal_data_->GetCreditCardByGUID(guid);
+  const CreditCard* credit_card =
+      client()->GetPersonalDataManager()->GetCreditCardByGUID(guid);
   if (credit_card) {
     CreditCard copy = *credit_card;
     copy.set_record_type(CreditCard::VIRTUAL_CARD);
@@ -1567,7 +1568,9 @@ void BrowserAutofillManager::OnHidePopupImpl() {
 
   single_field_form_fill_router_->CancelPendingQueries(this);
   client()->HideAutofillPopup(PopupHidingReason::kRendererEvent);
-  client()->HideFastCheckout(/*allow_further_runs=*/false);
+  if (fast_checkout_delegate_) {
+    fast_checkout_delegate_->HideFastCheckout(/*allow_further_runs=*/false);
+  }
   if (touch_to_fill_delegate_) {
     touch_to_fill_delegate_->HideTouchToFill();
   }
@@ -1632,7 +1635,7 @@ bool BrowserAutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
   if (profile) {
     bool is_local = profile->record_type() == AutofillProfile::LOCAL_PROFILE;
     if (is_local)
-      personal_data_->RemoveByGUID(profile->guid());
+      client()->GetPersonalDataManager()->RemoveByGUID(profile->guid());
 
     return is_local;
   }
@@ -2016,7 +2019,7 @@ void BrowserAutofillManager::UploadVotesAndLogQuality(
                                        submitted_form->FormSignatureAsStr());
 
   ServerFieldTypeSet non_empty_types;
-  personal_data_->GetNonEmptyTypes(&non_empty_types);
+  client()->GetPersonalDataManager()->GetNonEmptyTypes(&non_empty_types);
   // As CVC is not stored, treat it separately.
   if (!last_unlocked_credit_card_cvc_.empty() ||
       non_empty_types.contains(CREDIT_CARD_NUMBER)) {
@@ -2030,9 +2033,10 @@ void BrowserAutofillManager::UploadVotesAndLogQuality(
 }
 
 const gfx::Image& BrowserAutofillManager::GetCardImage(
-    const CreditCard& credit_card) const {
+    const CreditCard& credit_card) {
   gfx::Image* card_art_image =
-      personal_data_->GetCreditCardArtImageForUrl(credit_card.card_art_url());
+      client()->GetPersonalDataManager()->GetCreditCardArtImageForUrl(
+          credit_card.card_art_url());
   return card_art_image
              ? *card_art_image
              : ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -2070,9 +2074,9 @@ void BrowserAutofillManager::Reset() {
   credit_card_form_event_logger_ =
       std::make_unique<autofill_metrics::CreditCardFormEventLogger>(
           driver()->IsInAnyMainFrame(), form_interactions_ukm_logger(),
-          personal_data_, unsafe_client());
+          unsafe_client()->GetPersonalDataManager(), unsafe_client());
   credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
-      driver(), unsafe_client(), personal_data_,
+      driver(), unsafe_client(), unsafe_client()->GetPersonalDataManager(),
       credit_card_form_event_logger_.get());
 
   has_logged_autofill_enabled_ = false;
@@ -2116,7 +2120,8 @@ bool BrowserAutofillManager::RefreshDataModels() {
     return false;
 
   // No autofill data to return if the profiles are empty.
-  const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
+  const std::vector<AutofillProfile*>& profiles =
+      client()->GetPersonalDataManager()->GetProfiles();
   credit_card_access_manager_->UpdateCreditCardFormEventLogger();
 
   // Updating the FormEventLogger for addresses.
@@ -2135,13 +2140,15 @@ bool BrowserAutofillManager::RefreshDataModels() {
         local_record_type_count);
   }
 
-  return !profiles.empty() || !personal_data_->GetCreditCards().empty();
+  return !profiles.empty() ||
+         !client()->GetPersonalDataManager()->GetCreditCards().empty();
 }
 
 CreditCard* BrowserAutofillManager::GetCreditCard(int unique_id) {
   Suggestion::BackendId credit_card_id =
       suggestion_generator_->GetBackendIdFromFrontendId(unique_id);
-  return personal_data_->GetCreditCardByGUID(credit_card_id.value());
+  return client()->GetPersonalDataManager()->GetCreditCardByGUID(
+      credit_card_id.value());
 }
 
 AutofillProfile* BrowserAutofillManager::GetProfile(int unique_id) {
@@ -2149,8 +2156,9 @@ AutofillProfile* BrowserAutofillManager::GetProfile(int unique_id) {
       suggestion_generator_->GetBackendIdFromFrontendId(unique_id);
 
   std::string guid = profile_id.value();
-  if (base::IsValidGUID(guid))
-    return personal_data_->GetProfileByGUID(guid);
+  if (base::Uuid::ParseCaseInsensitive(guid).is_valid()) {
+    return client()->GetPersonalDataManager()->GetProfileByGUID(guid);
+  }
   return nullptr;
 }
 
@@ -2300,7 +2308,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
         !features::kAutofillFillAutocompleteUnrecognized.Get()) {
       LOG_AF(buffer)
           << Tr{}
-          << "Skipped: kAutofillFillAutoccompleteUnrecognized not enabled";
+          << "Skipped: kAutofillFillAutocompleteUnrecognized not enabled";
       continue;
     }
 
@@ -2530,7 +2538,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
 
   // Note that this may invalidate |profile_or_credit_card|.
   if (action == mojom::RendererFormDataAction::kFill && !is_refill)
-    personal_data_->RecordUseOf(profile_or_credit_card);
+    client()->GetPersonalDataManager()->RecordUseOf(profile_or_credit_card);
 
   if (filling_context) {
     // When a new preview/fill starts, previously forced_fill_values should be
@@ -2566,7 +2574,7 @@ bool BrowserAutofillManager::ShouldPreventAutofillFromOverridingPrefilledField(
   std::u16string sanitized_field_value =
       RemoveWhiteSpaceAndConjugatingCharacters(to_be_filled_field.value);
 
-  if (to_be_filled_field.form_control_type != "select-one" &&
+  if (!to_be_filled_field.IsSelectOrSelectMenuElement() &&
       !sanitized_field_value.empty() &&
       !FormFieldData::DeepEqual(to_be_filled_field, initiating_field)) {
     std::string unused_failure_to_fill;
@@ -2617,8 +2625,9 @@ std::unique_ptr<FormStructure> BrowserAutofillManager::ValidateSubmittedForm(
 AutofillField* BrowserAutofillManager::GetAutofillField(
     const FormData& form,
     const FormFieldData& field) {
-  if (!personal_data_)
+  if (!client()->GetPersonalDataManager()) {
     return nullptr;
+  }
 
   FormStructure* form_structure = nullptr;
   AutofillField* autofill_field = nullptr;
@@ -2680,7 +2689,7 @@ void BrowserAutofillManager::OnBeforeProcessParsedForms() {
   has_parsed_forms_ = true;
 
   // Record the current sync state to be used for metrics on this page.
-  sync_state_ = personal_data_->GetSyncSigninState();
+  sync_state_ = client()->GetPersonalDataManager()->GetSyncSigninState();
 
   // Setup the url for metrics that we will collect for this form.
   form_interactions_ukm_logger()->OnFormsParsed(client()->GetUkmSourceId());
@@ -2721,8 +2730,9 @@ void BrowserAutofillManager::OnFormProcessed(
           client()->GetAutofillOptimizationGuide()) {
     // Initiate necessary pre-processing based on the forms and fields that are
     // parsed, as well as the information that the user has saved in the web
-    // database based on `personal_data_`.
-    autofill_optimization_guide->OnDidParseForm(form_structure, personal_data_);
+    // database based on `client()->GetPersonalDataManager()`.
+    autofill_optimization_guide->OnDidParseForm(
+        form_structure, client()->GetPersonalDataManager());
   }
 
   // If a form with the same name was previously filled, and there has not
@@ -3008,11 +3018,16 @@ bool BrowserAutofillManager::FillFieldWithValue(
       *autofill_field, profile_or_credit_card, forced_fill_values, field_data,
       cvc, action, failure_to_fill);
   if (filled_field) {
-    if (failure_to_fill)
+    if (failure_to_fill) {
       *failure_to_fill = "Decided to fill";
-    // Mark the cached field as autofilled, so that we can detect when a
-    // user edits an autofilled field (for metrics).
-    autofill_field->is_autofilled = true;
+    }
+    if (action == mojom::RendererFormDataAction::kFill ||
+        !base::FeatureList::IsEnabled(
+            features::kAutofillOnlyCacheIsAutofilledOnFill)) {
+      // Mark the cached field as autofilled, so that we can detect when a
+      // user edits an autofilled field (for metrics).
+      autofill_field->is_autofilled = true;
+    }
     if (const AutofillProfile** profile =
             absl::get_if<const AutofillProfile*>(&profile_or_credit_card)) {
       autofill_field->set_autofill_source_profile_guid((*profile)->guid());
@@ -3346,8 +3361,9 @@ bool BrowserAutofillManager::ShouldShowVirtualCardOption(
 
   // If no credit card candidate has related cloud token data available,
   // return false.
-  if (GetVirtualCardCandidates(personal_data_).empty())
+  if (GetVirtualCardCandidates(client()->GetPersonalDataManager()).empty()) {
     return false;
+  }
 
   // If not all of card number field, expiration date field and CVC field are
   // detected, return false.
@@ -3497,12 +3513,19 @@ bool BrowserAutofillManager::ShouldUploadUkm(
     return false;
   }
 
-  auto is_text_field = [](const std::unique_ptr<AutofillField>& field) {
-    return field->IsTextInputElement();
-  };
+  // Return true if the field is a visible text input field which has predicted
+  // types from heuristics or the server.
+  auto is_focusable_predicted_text_field =
+      [](const std::unique_ptr<AutofillField>& field) {
+        return field->IsTextInputElement() && field->IsFocusable() &&
+               ((field->server_type() != NO_SERVER_DATA &&
+                 field->server_type() != UNKNOWN_TYPE) ||
+                field->heuristic_type() != UNKNOWN_TYPE ||
+                field->html_type() != HtmlFieldType::kUnspecified);
+      };
 
-  size_t num_text_fields =
-      base::ranges::count_if(form_structure.fields(), is_text_field);
+  size_t num_text_fields = base::ranges::count_if(
+      form_structure.fields(), is_focusable_predicted_text_field);
   if (num_text_fields == 0) {
     return false;
   }
@@ -3511,7 +3534,8 @@ bool BrowserAutofillManager::ShouldUploadUkm(
   // "search" in its name/id/placeholder, the function return false and the form
   // is not recorded into UKM. The form is considered a search box.
   if (num_text_fields == 1) {
-    auto it = base::ranges::find_if(form_structure.fields(), is_text_field);
+    auto it = base::ranges::find_if(form_structure.fields(),
+                                    is_focusable_predicted_text_field);
     if (base::ToLowerASCII((*it)->placeholder).find(u"search") !=
             std::string::npos ||
         base::ToLowerASCII((*it)->name).find(u"search") != std::string::npos ||

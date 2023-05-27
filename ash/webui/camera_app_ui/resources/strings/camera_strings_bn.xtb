@@ -27,9 +27,7 @@
 <translation id="199526504800285197">রেকর্ডিং বন্ধ করা হয়েছে</translation>
 <translation id="1995951722691075581">ডিভাইস স্টোরেজ কম থাকার কারণে আপনার রেকর্ডিং বন্ধ হয়ে গেছে। আরও ভিডিও রেকর্ড করতে, আপনার ডিভাইসে জায়গা খালি করতে হবে।</translation>
 <translation id="2036868001356139588">টাইমারের সময়কাল</translation>
-<translation id="2050339315714019657">পোর্ট্রেট</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> চালু আছে</translation>
-<translation id="2128052519899549250">টাইম ল্যাপ্স ভিডিও রেকর্ড করুন</translation>
 <translation id="2134029355740465625">ভিডিও সেটিংস</translation>
 <translation id="2144806332417375165">কাস্টম ভিডিও প্যারামিটার</translation>
 <translation id="2175927920773552910">QR কোড</translation>
@@ -82,6 +80,7 @@
 <translation id="4864143361253542638">স্ক্যান করা পাতার তালিকা</translation>
 <translation id="4890010094662541459">৩ x ৩</translation>
 <translation id="491895758387112773">মাল্টি-স্ট্রিম ভিডিও রেকর্ডিং</translation>
+<translation id="495170559598752135">ক্রিয়াসমূহ</translation>
 <translation id="4984613436295737187">কোয়াড HD (1440p)</translation>
 <translation id="5034763830503483128">ফটো আকৃতির অনুপাত</translation>
 <translation id="5057360777601936059">আপনার ক্যামেরা বর্তমানে উপলভ্য নেই।
@@ -92,7 +91,6 @@
 <translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5320594929574852403">বাঁদিকে সরানো হচ্ছে</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
-<translation id="5577251651370645658">টাইম ল্যাপ্স</translation>
 <translation id="5662366948659129155"><ph name="COUNT" /> নম্বর পৃষ্ঠা স্ক্যান করা হচ্ছে</translation>
 <translation id="5671277269877808209">চৌকো</translation>
 <translation id="5746169159649715125">পিডিএফ হিসেবে সেভ করুন</translation>
@@ -122,6 +120,7 @@
 <translation id="6888362557094394345">নিচের দিকে সরানো হচ্ছে</translation>
 <translation id="695140971690006676">সব রিসেট করুন</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
+<translation id="6965830616442491568">পোর্ট্রেট</translation>
 <translation id="698156982839284926">৩ সেকেন্ড</translation>
 <translation id="7134221860976209830">১০ সেকেন্ডের টাইমার</translation>
 <translation id="7191890674911603392">রেকর্ডের ধরন</translation>
@@ -137,6 +136,7 @@
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="7670511624014457267">৬০ FPS</translation>
 <translation id="7671804233658741790">নিচে-ডানদিকের কোণার ডকুমেন্ট</translation>
+<translation id="7684446460490665873">টাইম ল্যাপ্স ভিডিও রেকর্ড করুন</translation>
 <translation id="7692090236657809299">'প্যান টিল্ট জুম' চালু করুন</translation>
 <translation id="7726641833034062494">নর্মাল ভিডিও রেকর্ড করুন</translation>
 <translation id="7748344063862150053">উপরে-ডানদিকের কোণার ডকুমেন্ট</translation>
@@ -162,6 +162,7 @@
 <translation id="9045010116236796332">ডকুমেন্টের সমস্ত প্রান্ত ফ্রেমের মধ্যে রাখুন</translation>
 <translation id="9045155556724273246">১০ সেকেন্ড</translation>
 <translation id="906331135292332864">ছবি প্রসেস করা হচ্ছে...</translation>
+<translation id="9161584225258678723">টাইম ল্যাপ্স</translation>
 <translation id="922762992951083513">মিরর করার ফিচার চালু করুন</translation>
 <translation id="945522503751344254">মতামত জানান</translation>
 </translationbundle>

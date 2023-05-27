@@ -102,7 +102,8 @@ PerformanceObserver::PerformanceObserver(
     ExecutionContext* execution_context,
     Performance* performance,
     V8PerformanceObserverCallback* callback)
-    : ExecutionContextLifecycleStateObserver(execution_context),
+    : ActiveScriptWrappable<PerformanceObserver>({}),
+      ExecutionContextLifecycleStateObserver(execution_context),
       callback_(callback),
       performance_(performance),
       filter_options_(PerformanceEntry::kInvalid),
@@ -240,6 +241,11 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
   if (filter_options_ & PerformanceEntry::kLongTask) {
     UseCounter::Count(GetExecutionContext(), WebFeature::kLongTaskObserver);
   }
+  if (filter_options_ & PerformanceEntry::kVisibilityState) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kVisibilityStateObserver);
+  }
+
   requires_dropped_entries_ = true;
   if (is_registered_)
     performance_->UpdatePerformanceObserverFilterOptions();

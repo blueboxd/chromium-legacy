@@ -12,7 +12,6 @@
 #include "ash/public/cpp/image_util.h"
 #include "ash/public/cpp/rounded_image_view.h"
 #include "ash/public/cpp/style/color_provider.h"
-#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/color_util.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
@@ -39,7 +38,6 @@
 #include "storage/browser/file_system/file_system_url.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_styles.h"
@@ -101,7 +99,6 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
  public:
   METADATA_HEADER(SharesheetImagePreview);
   explicit SharesheetImagePreview(size_t file_count) {
-    ScopedLightModeAsDefault scoped_light_mode_as_default;
     auto* color_provider = AshColorProvider::Get();
     const bool is_dark_mode_enabled =
         DarkLightModeControllerImpl::Get()->IsDarkModeEnabled();
@@ -200,7 +197,6 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
 
   void OnThemeChanged() override {
     View::OnThemeChanged();
-    ScopedLightModeAsDefault scoped_light_mode_as_default;
     SetBorder(views::CreateRoundedRectBorder(
         /*thickness=*/1,
         views::LayoutProvider::Get()->GetCornerRadiusMetric(
@@ -275,6 +271,11 @@ SharesheetHeaderView::SharesheetHeaderView(apps::IntentPtr intent,
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
+  SetAccessibilityProperties(ax::mojom::Role::kGenericContainer,
+                             /*name=*/std::u16string(),
+                             /*description=*/absl::nullopt,
+                             /*role_description=*/absl::nullopt,
+                             ax::mojom::NameFrom::kAttributeExplicitlyEmpty);
 
   const bool has_files = !intent_->files.empty();
   // The image view is initialised first to ensure its left most placement.
@@ -290,7 +291,6 @@ SharesheetHeaderView::SharesheetHeaderView(apps::IntentPtr intent,
       views::BoxLayout::Orientation::kVertical,
       /* inside_border_insets */ gfx::Insets(),
       /* between_child_spacing */ 0, /* collapse_margins_spacing */ true));
-  ScopedLightModeAsDefault scoped_light_mode_as_default;
   text_view_->AddChildView(CreateShareLabel(
       l10n_util::GetStringUTF16(IDS_SHARESHEET_TITLE_LABEL),
       CONTEXT_SHARESHEET_BUBBLE_TITLE, kTitleTextLineHeight,
@@ -316,11 +316,6 @@ SharesheetHeaderView::SharesheetHeaderView(apps::IntentPtr intent,
 }
 
 SharesheetHeaderView::~SharesheetHeaderView() = default;
-
-void SharesheetHeaderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kGenericContainer;
-  node_data->SetNameExplicitlyEmpty();
-}
 
 void SharesheetHeaderView::ShowTextPreview() {
   std::vector<std::unique_ptr<views::Label>> preview_labels =
@@ -432,7 +427,6 @@ SharesheetHeaderView::ExtractShareText() {
 
 std::unique_ptr<views::Label> SharesheetHeaderView::CreatePreviewLabel(
     const std::u16string& text) {
-  ScopedLightModeAsDefault scoped_light_mode_as_default;
   auto label = CreateShareLabel(
       text, CONTEXT_SHARESHEET_BUBBLE_BODY, kPrimaryTextLineHeight,
       AshColorProvider::Get()->GetContentLayerColor(
@@ -468,7 +462,6 @@ void SharesheetHeaderView::ResolveImage(size_t index) {
       HoldingSpaceImage::CreateDefaultPlaceholderImageSkiaResolver(
           /*use_light_mode_as_default=*/true));
   DCHECK_GT(image_preview_->GetImageViewCount(), index);
-  ScopedLightModeAsDefault scoped_light_mode_as_default;
   const bool is_dark_mode_enabled =
       DarkLightModeControllerImpl::Get()->IsDarkModeEnabled();
   image_preview_->GetImageViewAt(index)->SetImage(
@@ -496,7 +489,6 @@ void SharesheetHeaderView::LoadImage(
 
 void SharesheetHeaderView::OnImageLoaded(const gfx::Size& size, size_t index) {
   DCHECK_GT(image_preview_->GetImageViewCount(), index);
-  ScopedLightModeAsDefault scoped_light_mode_as_default;
   image_preview_->GetImageViewAt(index)->SetImage(images_[index]->GetImageSkia(
       size, DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()));
   // TODO(crbug.com/1293668): Investigate why this SchedulePaint is needed.

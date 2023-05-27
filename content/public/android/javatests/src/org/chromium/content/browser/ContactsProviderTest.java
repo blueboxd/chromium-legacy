@@ -4,8 +4,7 @@
 
 package org.chromium.content.browser;
 
-import android.support.test.InstrumentationRegistry;
-
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
@@ -170,7 +169,8 @@ public class ContactsProviderTest {
      */
     @Test
     @SmallTest
-    @CommandLineFlags.Add({"enable-features=FencedFrames<Study,PrivacySandboxAdsAPIsOverride",
+    @CommandLineFlags.
+    Add({"enable-features=FencedFrames<Study,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges",
             "force-fieldtrials=Study/Group",
             "force-fieldtrial-params=Study.Group:implementation_type/mparch"})
     public void

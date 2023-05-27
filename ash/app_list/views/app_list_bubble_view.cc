@@ -206,7 +206,6 @@ AppListBubbleView::AppListBubbleView(
       kBubbleCornerRadius,
       is_jelly_enabled ? views::HighlightBorder::Type::kHighlightBorderOnShadow
                        : views::HighlightBorder::Type::kHighlightBorder1,
-      /*use_light_colors=*/false,
       /*insets_type=*/views::HighlightBorder::InsetsType::kHalfInsets));
 
   views::FillLayout* layout =
@@ -493,6 +492,9 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
       }
       a11y_announcer_->AnnounceAppListShown();
       MaybeFocusAndActivateSearchBox();
+      // As `current_page_` is reset to `kNone` in `OnHideAnimationEnded`, we
+      // can expect that this gets called every time a launcher gets shown.
+      search_box_view_->SetIsIphAllowed(true);
       break;
     case AppListBubblePage::kSearch:
       if (previous_page == AppListBubblePage::kApps) {
@@ -503,6 +505,7 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
         search_page_->SetVisible(true);
       }
       MaybeFocusAndActivateSearchBox();
+      search_box_view_->SetIsIphAllowed(false);
       break;
     case AppListBubblePage::kAssistant:
       if (showing_folder_)
@@ -517,6 +520,7 @@ void AppListBubbleView::ShowPage(AppListBubblePage page) {
       search_box_view_->SetSearchBoxActive(false,
                                            /*event_type=*/ui::ET_UNKNOWN);
       assistant_page_->RequestFocus();
+      search_box_view_->SetIsIphAllowed(false);
       break;
   }
 }
@@ -754,6 +758,7 @@ void AppListBubbleView::OnHideAnimationEnded(const gfx::Rect& layer_bounds) {
   apps_page_->SetVisible(true);
   search_page_->SetVisible(false);
   assistant_page_->SetVisible(false);
+  search_box_view_->SetIsIphAllowed(false);
 
   is_hiding_ = false;
   if (on_hide_animation_ended_)

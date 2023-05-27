@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/strcat.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -40,7 +41,9 @@ namespace {
 std::string GetHistogramNameForId(SidePanelEntry::Id id) {
   static constexpr auto id_to_histogram_name_map =
       // Note: once provided the histogram name should not be changed since it
-      // is persisted to logs.
+      // is persisted to logs. When adding a new Id please add actions to
+      // tools/metrics/actions/actions.xml for "SidePanel.[new id name].Shown"
+      // since we cannot autogenerate this in actions.xml.
       base::MakeFixedFlatMap<SidePanelEntry::Id, const char*>(
           {{SidePanelEntry::Id::kReadingList, "ReadingList"},
            {SidePanelEntry::Id::kBookmarks, "Bookmarks"},
@@ -54,7 +57,7 @@ std::string GetHistogramNameForId(SidePanelEntry::Id id) {
            {SidePanelEntry::Id::kAboutThisSite, "AboutThisSite"},
            {SidePanelEntry::Id::kCustomizeChrome, "CustomizeChrome"},
            {SidePanelEntry::Id::kWebView, "WebView"},
-           {SidePanelEntry::Id::kSearchCompanion, "SearchCompanion"},
+           {SidePanelEntry::Id::kSearchCompanion, "Companion"},
            {SidePanelEntry::Id::kExtension, "Extension"}});
   auto* i = id_to_histogram_name_map.find(id);
   DCHECK(i != id_to_histogram_name_map.cend());
@@ -92,11 +95,10 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
   }
 
   // Create Search Companion coordinator.
-  if (base::FeatureList::IsEnabled(features::kSidePanelCompanion) &&
-      SearchCompanionSidePanelCoordinator::IsSupported(browser->profile())) {
-    SearchCompanionSidePanelCoordinator::GetOrCreateForBrowser(browser)
-        ->CreateAndRegisterEntriesForExistingWebContents(
-            browser->tab_strip_model());
+  if (base::FeatureList::IsEnabled(companion::features::kSidePanelCompanion) &&
+      SearchCompanionSidePanelCoordinator::IsSupported(
+          browser->profile(), /*include_dsp_check=*/false)) {
+    SearchCompanionSidePanelCoordinator::GetOrCreateForBrowser(browser);
   }
 
   // Add user notes.
@@ -119,8 +121,7 @@ void SidePanelUtil::PopulateGlobalEntries(Browser* browser,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (base::FeatureList::IsEnabled(
           extensions_features::kExtensionSidePanelIntegration)) {
-    extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(browser)
-        ->RegisterExtensionEntries();
+    extensions::ExtensionSidePanelManager::GetOrCreateForBrowser(browser);
   }
 #endif
 

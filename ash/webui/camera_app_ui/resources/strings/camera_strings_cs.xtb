@@ -27,9 +27,7 @@
 <translation id="199526504800285197">Nahrávání bylo ukončeno</translation>
 <translation id="1995951722691075581">Nahrávání bylo ukončeno kvůli nedostatku místa v úložišti. Pokud chcete nahrát další videa, je třeba v zařízení uvolnit místo.</translation>
 <translation id="2036868001356139588">Trvání časovače</translation>
-<translation id="2050339315714019657">Portrét</translation>
 <translation id="2064538373111010176">Aktivní: <ph name="CAMERA" /></translation>
-<translation id="2128052519899549250">Nahrát časosběrné video</translation>
 <translation id="2134029355740465625">Nastavení videa</translation>
 <translation id="2144806332417375165">Vlastní parametry videa</translation>
 <translation id="2175927920773552910">QR kód</translation>
@@ -82,6 +80,7 @@
 <translation id="4864143361253542638">Seznam naskenovaných stránek</translation>
 <translation id="4890010094662541459">3 × 3</translation>
 <translation id="491895758387112773">Nahrávání videa z více streamů</translation>
+<translation id="495170559598752135">Akce</translation>
 <translation id="4984613436295737187">Quad HD (1440p)</translation>
 <translation id="5034763830503483128">Poměr stran fotografie</translation>
 <translation id="5057360777601936059">Fotoaparát momentálně není dostupný.
@@ -92,7 +91,6 @@
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5320594929574852403">Pohyb doleva</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
-<translation id="5577251651370645658">Časosběr</translation>
 <translation id="5662366948659129155">Skenování stránky <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">Čtverec</translation>
 <translation id="5746169159649715125">Uložit jako PDF</translation>
@@ -122,6 +120,7 @@ Pokud se zpětná vazba týká kvality fotek nebo videí, připojte ukázkovou f
 <translation id="6888362557094394345">Pohyb dolů</translation>
 <translation id="695140971690006676">Resetovat vše</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965830616442491568">Portrét</translation>
 <translation id="698156982839284926">3 sekundy</translation>
 <translation id="7134221860976209830">10sekundový časovač</translation>
 <translation id="7191890674911603392">Typ záznamu</translation>
@@ -137,6 +136,7 @@ Pokud se zpětná vazba týká kvality fotek nebo videí, připojte ukázkovou f
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7670511624014457267">60 snímků/s</translation>
 <translation id="7671804233658741790">Pravý dolní roh dokumentu</translation>
+<translation id="7684446460490665873">Natočit časosběrné video</translation>
 <translation id="7692090236657809299">Povolit posunutí, náklon a přiblížení</translation>
 <translation id="7726641833034062494">Nahrát běžné video</translation>
 <translation id="7748344063862150053">Pravý horní roh dokumentu</translation>
@@ -162,6 +162,7 @@ Pokud se zpětná vazba týká kvality fotek nebo videí, připojte ukázkovou f
 <translation id="9045010116236796332">Umístěte všechny okraje dokumentu do rámečku.</translation>
 <translation id="9045155556724273246">10 sekund</translation>
 <translation id="906331135292332864">Zpracování obrázku…</translation>
+<translation id="9161584225258678723">Časosběr</translation>
 <translation id="922762992951083513">Zrcadlení je zapnuto</translation>
 <translation id="945522503751344254">Odeslat zpětnou vazbu</translation>
 </translationbundle>

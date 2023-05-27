@@ -221,7 +221,7 @@ void QuotaManagerProxy::CreateBucketForTesting(
       storage_key, bucket_name, storage_type, std::move(respond));
 }
 
-void QuotaManagerProxy::GetBucketForTesting(
+void QuotaManagerProxy::GetBucketByNameUnsafe(
     const StorageKey& storage_key,
     const std::string& bucket_name,
     blink::mojom::StorageType type,
@@ -233,7 +233,7 @@ void QuotaManagerProxy::GetBucketForTesting(
   if (!quota_manager_impl_task_runner_->RunsTasksInCurrentSequence()) {
     quota_manager_impl_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&QuotaManagerProxy::GetBucketForTesting, this,
+        base::BindOnce(&QuotaManagerProxy::GetBucketByNameUnsafe, this,
                        storage_key, bucket_name, type,
                        std::move(callback_task_runner), std::move(callback)));
     return;
@@ -248,7 +248,7 @@ void QuotaManagerProxy::GetBucketForTesting(
     return;
   }
 
-  quota_manager_impl_->GetBucketForTesting(  // IN-TEST
+  quota_manager_impl_->GetBucketByNameUnsafe(  // IN-TEST
       storage_key, bucket_name, type, std::move(respond));
 }
 
@@ -447,17 +447,17 @@ void QuotaManagerProxy::NotifyBucketModified(
       client_id, bucket, delta, modification_time, std::move(manager_callback));
 }
 
-void QuotaManagerProxy::NotifyWriteFailed(const StorageKey& storage_key) {
+void QuotaManagerProxy::OnClientWriteFailed(const StorageKey& storage_key) {
   if (!quota_manager_impl_task_runner_->RunsTasksInCurrentSequence()) {
     quota_manager_impl_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&QuotaManagerProxy::NotifyWriteFailed, this,
+        FROM_HERE, base::BindOnce(&QuotaManagerProxy::OnClientWriteFailed, this,
                                   storage_key));
     return;
   }
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(quota_manager_impl_sequence_checker_);
   if (quota_manager_impl_) {
-    quota_manager_impl_->NotifyWriteFailed(storage_key);
+    quota_manager_impl_->OnClientWriteFailed(storage_key);
   }
 }
 

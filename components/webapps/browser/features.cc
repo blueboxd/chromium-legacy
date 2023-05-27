@@ -61,7 +61,7 @@ BASE_FEATURE(kWebApkInstallFailureRetry,
 // Enables PWA Unique IDs for WebAPKs.
 BASE_FEATURE(kWebApkUniqueId,
              "WebApkUniqueId",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // When the user clicks "Create Shortcut" in the dot menu, the current page is
@@ -89,12 +89,7 @@ BASE_FEATURE(kDesktopPWAsDetailedInstallDialog,
 // Enables sending the beforeinstallprompt without a service worker check.
 BASE_FEATURE(kSkipServiceWorkerForInstallPrompt,
              "SkipServiceWorkerForInstallPromot",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool SkipInstallServiceWorkerCheck() {
   return base::FeatureList::IsEnabled(kSkipServiceWorkerCheckInstallOnly);

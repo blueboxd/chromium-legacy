@@ -39,12 +39,13 @@ class CSSStyleGenerator(BaseGenerator):
             'typefaces': self.model.typefaces,
             'font_families': self.model.font_families,
             'untyped_css': self.model.untyped_css,
+            'legacy_mappings': self.model.legacy_mappings,
         }
 
     def GetFilters(self):
         return {
             'to_css_var_name': self.ToCSSVarName,
-            'css_color': self._CSSColor,
+            'to_css_var_name_unscoped': self.ToCSSVarNameUnscoped,
             'css_opacity': self._CSSOpacity,
             'css_color_rgb': self.CSSColorRGB,
             'process_simple_ref': self.ProcessSimpleRef,
@@ -54,6 +55,8 @@ class CSSStyleGenerator(BaseGenerator):
         return {
             'css_color_var':
             self.CSSColorVar,
+            'needs_rgb_variant':
+            self.NeedsRGBVariant,
             'in_files':
             self.GetInputFiles(),
             'dark_mode_selector':
@@ -63,6 +66,9 @@ class CSSStyleGenerator(BaseGenerator):
             'Modes':
             Modes,
         }
+
+    def DefaultPreblend(self):
+        return False
 
     def AddGeneratedVars(self, var_names, variable):
         def AddVarNames(name, variations):
@@ -89,6 +95,9 @@ class CSSStyleGenerator(BaseGenerator):
                 '$css_name-font-weight',
                 '$css_name-line-height',
             ])
+        elif variable_type == VariableType.LEGACY_MAPPING:
+            # No Clients should be directly using any of the legacy mappings.
+            pass
         else:
             raise ValueError("GetGeneratedVars() for '%s' not implemented")
 
@@ -123,30 +132,14 @@ class CSSStyleGenerator(BaseGenerator):
 
         return '--%s%s' % (self._GetCSSVarPrefix(name), var_name)
 
+    def ToCSSVarNameUnscoped(self, name):
+        return f'--{name}'
+
     def _CSSOpacity(self, opacity):
         if opacity.var:
             return 'var(%s)' % self.ToCSSVarName(opacity.var)
 
         return ('%f' % opacity.a).rstrip('0').rstrip('.')
-
-    def _CSSColor(self, c):
-        '''Returns the CSS color representation of |c|'''
-        assert (isinstance(c, Color))
-        if c.var:
-            return 'var(%s)' % self.ToCSSVarName(c.var)
-
-        if c.rgb_var:
-            if c.opacity.a != 1:
-                return 'rgba(var(%s-rgb), %g)' % (self.ToCSSVarName(
-                    c.RGBVarToVar()), self._CSSOpacity(c.opacity))
-            else:
-                return 'rgb(var(%s-rgb))' % self.ToCSSVarName(c.RGBVarToVar())
-
-        elif c.a != 1:
-            return 'rgba(%d, %d, %d, %g)' % (c.r, c.g, c.b,
-                                             self._CSSOpacity(c.opacity))
-        else:
-            return 'rgb(%d, %d, %d)' % (c.r, c.g, c.b)
 
     def CSSColorRGB(self, c):
         '''Returns the CSS rgb representation of |c|'''
@@ -158,12 +151,35 @@ class CSSStyleGenerator(BaseGenerator):
 
         return '%d, %d, %d' % (c.r, c.g, c.b)
 
-    def CSSColorVar(self, name, color):
+    def CSSBlendInputColor(self, c):
+        '''Resolves a color for use in a color-mix call.'''
+        return 'rgb(%s)' % self.CSSColorRGB(c)
+
+    def ExtractOpacity(self, c, mode):
+        if c.var:
+            return self.ExtractOpacity(self.model.colors.Resolve(c.var, mode),
+                                       mode)
+        if c.opacity:
+            return self.model.opacities.ResolveOpacity(c.opacity, mode).a * 100
+
+        # If we don't have opacity information assume we want to blend 100%.
+        return 100
+
+    def CSSColorVar(self, name, color, mode):
         '''Returns the CSS color representation given a color name and color'''
         if color.var:
             return 'var(%s)' % self.ToCSSVarName(color.var)
+
         if color.opacity and color.opacity.a != 1:
             return 'rgba(var(%s-rgb), %s)' % (self.ToCSSVarName(name),
                                               self._CSSOpacity(color.opacity))
-        else:
-            return 'rgb(var(%s-rgb))' % self.ToCSSVarName(name)
+        if color.blended_colors:
+            return 'color-mix(in srgb, %s %s%%, %s)' % (
+                self.CSSBlendInputColor(color.blended_colors[0]),
+                self.ExtractOpacity(color.blended_colors[0], mode),
+                self.CSSBlendInputColor(color.blended_colors[1]))
+
+        return 'rgb(var(%s-rgb))' % self.ToCSSVarName(name)
+
+    def NeedsRGBVariant(self, color):
+        return not color.blended_colors

@@ -97,8 +97,10 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/cursor_shape_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"  // nogncheck
 #include "ui/events/base_event_utils.h"
@@ -619,13 +621,7 @@ class DetachToBrowserTabDragControllerTest
     aura::Window* dragged_window =
         test::GetWindowForTabStrip(attached_tabstrip);
     attached_tabstrip->GetWidget()->GetNativeWindow();
-    aura::Window* source_window =
-        (source_tabstrip && source_tabstrip != attached_tabstrip)
-            ? test::GetWindowForTabStrip(source_tabstrip)
-            : nullptr;
-    return dragged_window->GetProperty(ash::kIsDraggingTabsKey) &&
-           dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey) ==
-               source_window;
+    return dragged_window->GetProperty(ash::kIsDraggingTabsKey);
 #else
     return true;
 #endif
@@ -638,8 +634,7 @@ class DetachToBrowserTabDragControllerTest
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     aura::Window* dragged_window =
         test::GetWindowForTabStrip(attached_tabstrip);
-    return !dragged_window->GetProperty(ash::kIsDraggingTabsKey) &&
-           !dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey);
+    return !dragged_window->GetProperty(ash::kIsDraggingTabsKey);
 #else
     return true;
 #endif
@@ -689,7 +684,7 @@ class DetachToBrowserTabDragControllerTest
  private:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // The root window for the event generator.
-  aura::Window* root_ = nullptr;
+  raw_ptr<aura::Window, DanglingUntriaged | ExperimentalAsh> root_ = nullptr;
 #endif
   base::test::ScopedFeatureList scoped_feature_list_;
   absl::optional<web_app::AppId> tabbed_app_id_;
@@ -2150,15 +2145,8 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest, DragInSameWindow) {
   EXPECT_FALSE(tab_strip->GetWidget()->HasCapture());
 }
 
-// TODO(crbug.com/1341444) Flaky on lacros.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#define MAYBE_TabDragContextOwnsDraggedTabs \
-  DISABLED_TabDragContextOwnsDraggedTabs
-#else
-#define MAYBE_TabDragContextOwnsDraggedTabs TabDragContextOwnsDraggedTabs
-#endif
 IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
-                       MAYBE_TabDragContextOwnsDraggedTabs) {
+                       TabDragContextOwnsDraggedTabs) {
   AddTabsAndResetBrowser(browser(), 1);
 
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
@@ -2782,21 +2770,23 @@ IN_PROC_BROWSER_TEST_P(
 
   AddTabsAndResetBrowser(browser(), 1);
 
+  const TabStyle* tab_style = TabStyle::Get();
   // We must ensure that we set the bounds of the browser window such that it is
   // wide enough to allow the tab strip to expand to accommodate this tab.
   browser()->window()->SetBounds(
-      gfx::Rect(0, 0, TabStyle::GetStandardWidth() * 5, 400));
+      gfx::Rect(0, 0, tab_style->GetStandardWidth() * 5, 400));
 
   const int tab_strip_width = tab_strip->width();
   const gfx::Point tab_1_center =
       GetCenterInScreenCoordinates(tab_strip->tab_at(1));
   ASSERT_TRUE(PressInput(tab_1_center));
   ASSERT_TRUE(DragInputTo(tab_1_center +
-                          gfx::Vector2d(TabStyle::GetStandardWidth(), 0)));
+                          gfx::Vector2d(tab_style->GetStandardWidth(), 0)));
   BrowserView::GetBrowserViewForBrowser(browser())
       ->GetWidget()
       ->LayoutRootViewIfNecessary();
-  EXPECT_EQ(tab_strip_width + TabStyle::GetStandardWidth(), tab_strip->width());
+  EXPECT_EQ(tab_strip_width + tab_style->GetStandardWidth(),
+            tab_strip->width());
   ASSERT_TRUE(ReleaseInput());
 }
 
@@ -3350,9 +3340,9 @@ class DraggedWindowObserver : public aura::WindowObserver {
   }
 
  private:
-  DetachToBrowserTabDragControllerTest* test_;
+  raw_ptr<DetachToBrowserTabDragControllerTest, ExperimentalAsh> test_;
   // The dragged window.
-  aura::Window* window_ = nullptr;
+  raw_ptr<aura::Window, ExperimentalAsh> window_ = nullptr;
   // The bounds that |window_| will change to when the drag ends.
   gfx::Rect end_bounds_;
   // The position that the mouse/touch event will move to when the drag ends.
@@ -4007,10 +3997,11 @@ class DifferentDeviceScaleFactorDisplayTabDragControllerTest
   }
 
   float GetCursorDeviceScaleFactor() const {
-    return aura::client::GetCursorClient(
-               browser()->window()->GetNativeWindow()->GetRootWindow())
-        ->GetCursor()
-        .image_scale_factor();
+    auto* cursor_client = aura::client::GetCursorClient(
+        browser()->window()->GetNativeWindow()->GetRootWindow());
+    const auto& cursor_shape_client = aura::client::GetCursorShapeClient();
+    return cursor_shape_client.GetCursorData(cursor_client->GetCursor())
+        ->scale_factor;
   }
 };
 

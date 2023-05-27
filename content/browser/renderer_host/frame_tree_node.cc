@@ -225,11 +225,11 @@ FrameTreeNode::~FrameTreeNode() {
     DCHECK(!opener());  // Prerendered frame trees can't have openers.
 
     // Activation is not allowed during ongoing navigations.
-    DCHECK(!navigation_request_);
+    CHECK(!navigation_request_);
 
     // TODO(https://crbug.com/1199693): Need to determine how to handle pending
     // deletions, as observers will be notified.
-    DCHECK(!render_manager()->speculative_frame_host());
+    CHECK(!render_manager()->speculative_frame_host());
   }
 
   // If the removed frame was created by a script, then its history entry will
@@ -1001,10 +1001,6 @@ FrameTreeNode::GetDeprecatedFencedFrameMode() {
 
 bool FrameTreeNode::IsErrorPageIsolationEnabled() const {
   // Error page isolation is enabled for main frames only (crbug.com/1092524).
-  // Note that this will also enable error page isolation for fenced frames in
-  // MPArch mode, but not ShadowDOM mode.
-  // See the issue in crbug.com/1264224#c7 for why it can't be enabled for
-  // ShadowDOM mode.
   return SiteIsolationPolicy::IsErrorPageIsolationEnabled(IsMainFrame());
 }
 

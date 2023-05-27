@@ -81,7 +81,6 @@ Odobrenja koja ste već dali web lokacijama i aplikacijama se mogu primjenjivati
 <translation id="2928420929544864228">Instalacija je završena.</translation>
 <translation id="2977470724722393594">Chromium je ažuriran</translation>
 <translation id="2977506796191543575">Ako web lokacija pokuša ukrasti vašu lozinku ili kada preuzimate štetan fajl, Chromium može slati i URL-ove, uključujući dijelove sadržaja stranice, u Sigurno pregledanje</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium je povezan s HID uređajem}one{Chromium je povezan s HID uređajima}few{Chromium je povezan s HID uređajima}other{Chromium je povezan s HID uređajima}}</translation>
 <translation id="3032706164202344641">Chromium ne može provjeravati vaše lozinke. Pokušajte ponovo kasnije.</translation>
 <translation id="3032787606318309379">Dodavanje u Chromium…</translation>
 <translation id="3038232873781883849">Čekanje na instalaciju...</translation>
@@ -96,7 +95,6 @@ Odobrenja koja ste već dali web lokacijama i aplikacijama se mogu primjenjivati
 <translation id="3258596308407688501">Chromium ne može čitati iz svog direktorija podataka niti u njega pisati:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Ovaj vodič vam pojašnjava vaše izbore kako bi Chromium funkcionirao onako kako želite</translation>
 <translation id="3283186697780795848">Verzija Chromiuma <ph name="PRODUCT_VERSION" /> je instalirana</translation>
 <translation id="3286538390144397061">Ponovo pokreni sada</translation>
 <translation id="328888136576916638">Nedostaju ključevi za Google API. Neke funkcionalnosti Google Chromea će se onemogućiti.</translation>
@@ -241,6 +239,7 @@ Odobrenja koja ste već dali web lokacijama i aplikacijama se mogu primjenjivati
 <translation id="6327105987658262776">Ažuriranje nije dostupno.</translation>
 <translation id="6333502561965082103">U toku je druga radnja u Chromiumu. Pokušajte ponovo kasnije.</translation>
 <translation id="6334986366598267305">Sada je lakše koristiti Chromium s vašim Google računom i na dijeljenim računarima.</translation>
+<translation id="6335615313501343197">{NUM_DEVICES,plural, =0{Chromium je pristupao HID uređaju}=1{Chromium pristupa HID uređaju}one{Chromium pristupa HID uređajima}few{Chromium pristupa HID uređajima}other{Chromium pristupa HID uređajima}}</translation>
 <translation id="6365489425007284765">{COUNT,plural, =1{Administrator automatski briše podatke o pregledanju kada se Chromium ne koristi 1 minutu. Ovo može uključivati historiju, automatsko popunjavanje i preuzimanja. Postojeće kartice će ostati otvorene.}one{Administrator automatski briše podatke o pregledanju kada se Chromium ne koristi # minutu. Ovo može uključivati historiju, automatsko popunjavanje i preuzimanja. Postojeće kartice će ostati otvorene.}few{Administrator automatski briše podatke o pregledanju kada se Chromium ne koristi # minute. Ovo može uključivati historiju, automatsko popunjavanje i preuzimanja. Postojeće kartice će ostati otvorene.}other{Administrator automatski briše podatke o pregledanju kada se Chromium ne koristi # minuta. Ovo može uključivati historiju, automatsko popunjavanje i preuzimanja. Postojeće kartice će ostati otvorene.}}</translation>
 <translation id="6373523479360886564">Jeste li sigurni da želite deinstalirati Chromium?</translation>
 <translation id="6384011394608460044"><ph name="BEGIN_BOLD" />Kako koristimo ove podatke:<ph name="END_BOLD" /> Chromium može procijeniti vaša interesovanja. Kasnije, web lokacija koju ste posjetili može zatražiti od Chromiuma da pogleda vaša interesovanja radi personalizacije oglasa koje vidite.</translation>
@@ -248,8 +247,10 @@ Odobrenja koja ste već dali web lokacijama i aplikacijama se mogu primjenjivati
 <translation id="6442900851116057561">Ponovo pokrenite ChromiumOS</translation>
 <translation id="6455857529632101747">Dobro došli u Chromium profile</translation>
 <translation id="6475912303565314141">Također kontrolira koja stranica se prikazuje kada pokrenete Chromium.</translation>
+<translation id="648319183876919572">Poboljšano Sigurno pregledanje vas bolje štiti od opasnih web lokacija i preuzimanja</translation>
 <translation id="6510925080656968729">Deinstaliraj Chromium</translation>
 <translation id="6542839706527980775">Svaki profil sadrži svoje Chromium informacije, poput oznaka, historije, lozinki i još mnogo toga</translation>
+<translation id="656935081669708576">Možete se prebaciti da vidite lozinke s drugog Chromium profila</translation>
 <translation id="6570579332384693436">Zbog ispravke pravopisnih grešaka, Chromium šalje Googleu tekst koji napišete u polja.</translation>
 <translation id="6598877126913850652">Idi u postavke obavještenja Chromiuma</translation>
 <translation id="6613594504749178791">Vaše promjene će stupiti na snagu kada sljedeći put budete ponovo pokrenuli Chromium.</translation>
@@ -385,7 +386,6 @@ Chromium ne može vratiti vaše postavke.</translation>
 <translation id="924957577793602335">Prilagodite Chromium sebi</translation>
 <translation id="93478295209880648">Chromium možda neće ispravno raditi jer više nije podržan na sistemima Windows XP ili Windows Vista</translation>
 <translation id="942598560705308788">Certifikati kojima upravlja Chromium</translation>
-<translation id="959579472876010517">Iskoristite sve prednosti Chromiuma</translation>
 <translation id="965162752251293939">Ko koristi Chromium?</translation>
 <translation id="967427899662692980">Odaberite maksimalnu sigurnost koju nudi Chromium</translation>
 <translation id="9792300276217204">Uvijek obrišite podatke web lokacije s uređaja kada zatvorite Chromium</translation>

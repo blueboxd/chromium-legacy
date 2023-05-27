@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/app_list/arc/arc_app_test.h"
 
 #include "ash/components/arc/arc_util.h"
+#include "ash/components/arc/mojom/app.mojom-shared.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/session/arc_session_runner.h"
@@ -12,6 +13,7 @@
 #include "ash/components/arc/test/connection_holder_util.h"
 #include "ash/components/arc/test/fake_app_instance.h"
 #include "ash/components/arc/test/fake_arc_session.h"
+#include "ash/components/arc/test/fake_compatibility_mode_instance.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
@@ -161,6 +163,17 @@ void ArcAppTest::SetUp(Profile* profile) {
     // expect waiting in ArcAppTest setup.
     if (wait_default_apps_)
       WaitForInstanceReady(arc_service_manager_->arc_bridge_service()->app());
+
+    // Some test doesn't need to wait for compatibility_mode connection.
+    if (wait_compatibility_mode_) {
+      compatibility_mode_instance_ =
+          std::make_unique<arc::FakeCompatibilityModeInstance>();
+      arc_service_manager_->arc_bridge_service()
+          ->compatibility_mode()
+          ->SetInstance(compatibility_mode_instance_.get());
+      WaitForInstanceReady(
+          arc_service_manager_->arc_bridge_service()->compatibility_mode());
+    }
   }
 
   if (start_app_service_publisher_) {
@@ -189,17 +202,21 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
   arc::mojom::AppInfo app;
   // Make sure we have enough data for test.
   for (int i = 0; i < 3; ++i) {
-    fake_apps_.emplace_back(arc::mojom::AppInfo::New(
+    arc::mojom::AppInfoPtr app_info = arc::mojom::AppInfo::New(
         base::StringPrintf("Fake App %d", i),
         base::StringPrintf("fake.app.%d", i),
-        base::StringPrintf("fake.app.%d.activity", i), false /* sticky */));
+        base::StringPrintf("fake.app.%d.activity", i), false /* sticky */);
+    app_info->app_category = arc::mojom::AppCategory::kUndefined;
+    fake_apps_.emplace_back(std::move(app_info));
   }
   fake_apps_[0]->sticky = true;
 
   for (int i = 1; i <= 3; ++i) {
-    fake_default_apps_.emplace_back(arc::mojom::AppInfo::New(
+    arc::mojom::AppInfoPtr app_info = arc::mojom::AppInfo::New(
         base::StringPrintf("TestApp%d", i), base::StringPrintf("test.app%d", i),
-        base::StringPrintf("test.app%d.activity", i), true /* sticky */));
+        base::StringPrintf("test.app%d.activity", i), true /* sticky */);
+    app_info->app_category = arc::mojom::AppCategory::kUndefined;
+    fake_default_apps_.emplace_back(std::move(app_info));
   }
 
   base::flat_map<arc::mojom::AppPermission, arc::mojom::PermissionStatePtr>
@@ -282,6 +299,9 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
 void ArcAppTest::TearDown() {
   if (start_app_service_publisher_)
     apps::ArcAppsFactory::GetInstance()->ShutDownForTesting(profile_);
+  if (compatibility_mode_instance_) {
+    compatibility_mode_instance_.reset();
+  }
   if (intent_helper_instance_) {
     arc_service_manager_->arc_bridge_service()->intent_helper()->CloseInstance(
         intent_helper_instance_.get());

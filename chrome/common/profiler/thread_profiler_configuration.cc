@@ -69,7 +69,8 @@ ThreadProfilerConfiguration::GetSamplingParams() const {
 bool ThreadProfilerConfiguration::IsProfilerEnabledForCurrentProcess() const {
   if (const ChildProcessConfiguration* child_process_configuration =
           absl::get_if<ChildProcessConfiguration>(&configuration_)) {
-    return *child_process_configuration == kChildProcessProfileEnabled;
+    return *child_process_configuration == kChildProcessProfileEnabled ||
+           *child_process_configuration == kChildProcessPeriodicOnly;
   }
 
   const absl::optional<VariationGroup>& variation_group =
@@ -84,6 +85,19 @@ bool ThreadProfilerConfiguration::IsProfilerEnabledForCurrentProcessAndThread(
          platform_configuration_->IsEnabledForThread(
              GetProfileParamsProcess(*base::CommandLine::ForCurrentProcess()),
              thread);
+}
+
+bool ThreadProfilerConfiguration::IsStartupProfilingEnabled() const {
+  if (const ChildProcessConfiguration* child_process_configuration =
+          absl::get_if<ChildProcessConfiguration>(&configuration_)) {
+    return *child_process_configuration == kChildProcessProfileEnabled;
+  }
+
+  const absl::optional<VariationGroup>& variation_group =
+      absl::get<BrowserProcessConfiguration>(configuration_);
+
+  return variation_group.has_value() && (*variation_group == kProfileEnabled ||
+                                         *variation_group == kProfileControl);
 }
 
 bool ThreadProfilerConfiguration::GetSyntheticFieldTrial(
@@ -114,6 +128,9 @@ bool ThreadProfilerConfiguration::GetSyntheticFieldTrial(
     case kProfileEnabled:
       *group_name = "Enabled";
       break;
+
+    case kProfilePeriodicOnly:
+      *group_name = "PeriodicOnly";
   }
 
   return true;
@@ -141,7 +158,12 @@ void ThreadProfilerConfiguration::AppendCommandLineSwitchForChildProcess(
         switches::kStartStackProfiler,
         switches::kStartStackProfilerBrowserTest);
   } else {
-    child_process_command_line->AppendSwitch(switches::kStartStackProfiler);
+    if (*variation_group == kProfilePeriodicOnly) {
+      child_process_command_line->AppendSwitch(
+          switches::kStartStackProfilerPeriodicOnly);
+    } else {
+      child_process_command_line->AppendSwitch(switches::kStartStackProfiler);
+    }
   }
 }
 
@@ -157,8 +179,10 @@ bool ThreadProfilerConfiguration::EnableForVariationGroup(
     absl::optional<VariationGroup> variation_group) {
   // Enable if assigned to a variation group, and the group is one of the groups
   // that are to be enabled.
-  return variation_group.has_value() && (*variation_group == kProfileEnabled ||
-                                         *variation_group == kProfileControl);
+  return variation_group.has_value() &&
+         (*variation_group == kProfileEnabled ||
+          *variation_group == kProfileControl ||
+          *variation_group == kProfilePeriodicOnly);
 }
 
 // static
@@ -210,12 +234,22 @@ ThreadProfilerConfiguration::GenerateBrowserProcessConfiguration(
       relative_populations =
           platform_configuration.GetEnableRates(release_channel);
 
-  CHECK_EQ(0, relative_populations.experiment % 2);
-  return ChooseVariationGroup({
-      {kProfileEnabled, relative_populations.enabled},
-      {kProfileControl, relative_populations.experiment / 2},
-      {kProfileDisabled, relative_populations.experiment / 2},
-  });
+  if (relative_populations.add_periodic_only_group) {
+    CHECK_EQ(0, relative_populations.experiment % 3);
+    return ChooseVariationGroup({
+        {kProfileEnabled, relative_populations.enabled},
+        {kProfileControl, relative_populations.experiment / 3},
+        {kProfileDisabled, relative_populations.experiment / 3},
+        {kProfilePeriodicOnly, relative_populations.experiment / 3},
+    });
+  } else {
+    CHECK_EQ(0, relative_populations.experiment % 2);
+    return ChooseVariationGroup({
+        {kProfileEnabled, relative_populations.enabled},
+        {kProfileControl, relative_populations.experiment / 2},
+        {kProfileDisabled, relative_populations.experiment / 2},
+    });
+  }
 }
 
 // static
@@ -225,9 +259,13 @@ ThreadProfilerConfiguration::GenerateChildProcessConfiguration(
   // In a child process the |kStartStackProfiler| switch passed by the
   // browser process determines whether the profiler is enabled for the
   // process.
-  return command_line.HasSwitch(switches::kStartStackProfiler)
-             ? kChildProcessProfileEnabled
-             : kChildProcessProfileDisabled;
+  if (command_line.HasSwitch(switches::kStartStackProfilerPeriodicOnly)) {
+    return kChildProcessPeriodicOnly;
+  } else if (command_line.HasSwitch(switches::kStartStackProfiler)) {
+    return kChildProcessProfileEnabled;
+  } else {
+    return kChildProcessProfileDisabled;
+  }
 }
 
 // static

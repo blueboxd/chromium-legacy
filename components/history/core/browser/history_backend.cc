@@ -445,8 +445,8 @@ SegmentID HistoryBackend::GetLastSegmentID(VisitID from_visit) {
     visit_id = row.referring_visit;
 
     if (visit_set.find(visit_id) != visit_set.end()) {
-      NOTREACHED() << "Loop in referer chain, giving up";
-      break;
+      DLOG(WARNING) << "Loop in referer chain, possible db corruption";
+      return 0;
     }
     visit_set.insert(visit_id);
   }
@@ -898,7 +898,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
     last_visit_id =
         AddPageVisit(request.url, request.time, last_visit_id, t,
                      request.hidden, request.visit_source, IsTypedIncrement(t),
-                     opener_visit, request.title)
+                     opener_visit, request.consider_for_ntp_most_visited,
+                     request.title)
             .second;
 
     // Update the segment for this visit. KEYWORD_GENERATED visits should not
@@ -1023,7 +1024,8 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
           AddPageVisit(redirects[redirect_index], request.time, last_visit_id,
                        t, request.hidden, request.visit_source,
                        should_increment_typed_count,
-                       redirect_index == 0 ? opener_visit : 0, request.title)
+                       redirect_index == 0 ? opener_visit : 0,
+                       request.consider_for_ntp_most_visited, request.title)
               .second;
 
       if (t & ui::PAGE_TRANSITION_CHAIN_START) {
@@ -1090,8 +1092,6 @@ void HistoryBackend::InitImpl(
   // the blocks the caller, yet allows other messages through. For this reason
   // we only set db_ to the created database if creation is successful. That
   // way other methods won't do anything as db_ is still null.
-
-  TimeTicks beginning_time = TimeTicks::Now();
 
   // Compute the file names.
   history_dir_ = history_database_params.history_dir;
@@ -1188,8 +1188,6 @@ void HistoryBackend::InitImpl(
 
   // Start expiring old stuff.
   expirer_.StartExpiringOldStuff(base::Days(kExpireDaysThreshold));
-
-  LOCAL_HISTOGRAM_TIMES("History.InitTime", TimeTicks::Now() - beginning_time);
 }
 
 void HistoryBackend::OnMemoryPressure(
@@ -1225,6 +1223,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     VisitSource visit_source,
     bool should_increment_typed_count,
     VisitID opener_visit,
+    bool consider_for_ntp_most_visited,
     absl::optional<std::u16string> title,
     absl::optional<base::TimeDelta> visit_duration,
     absl::optional<std::string> originator_cache_guid,
@@ -1282,8 +1281,9 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     visit_info.originator_referring_visit = *originator_referring_visit;
   if (originator_opener_visit.has_value())
     visit_info.originator_opener_visit = *originator_opener_visit;
-  visit_info.is_known_to_sync = is_known_to_sync;
 
+  visit_info.is_known_to_sync = is_known_to_sync;
+  visit_info.consider_for_ntp_most_visited = consider_for_ntp_most_visited;
   visit_info.visit_id = db_->AddVisit(&visit_info, visit_source);
 
   if (visit_info.visit_time < first_recorded_time_)
@@ -1514,7 +1514,8 @@ bool HistoryBackend::AddVisits(const GURL& url,
       if (!AddPageVisit(url, visit.first, /*referring_visit=*/0, visit.second,
                         /*hidden=*/!ui::PageTransitionIsMainFrame(visit.second),
                         visit_source, IsTypedIncrement(visit.second),
-                        /*opener_visit=*/0)
+                        /*opener_visit=*/0,
+                        /*consider_for_ntp_most_visited=*/true)
                .first) {
         return false;
       }
@@ -1556,13 +1557,13 @@ VisitID HistoryBackend::AddSyncedVisit(
     return kInvalidVisitID;
   }
 
-  auto [url_id, visit_id] =
-      AddPageVisit(url, visit.visit_time, visit.referring_visit,
-                   visit.transition, hidden, VisitSource::SOURCE_SYNCED,
-                   IsTypedIncrement(visit.transition), visit.opener_visit,
-                   title, visit.visit_duration, visit.originator_cache_guid,
-                   visit.originator_visit_id, visit.originator_referring_visit,
-                   visit.originator_opener_visit, visit.is_known_to_sync);
+  auto [url_id, visit_id] = AddPageVisit(
+      url, visit.visit_time, visit.referring_visit, visit.transition, hidden,
+      VisitSource::SOURCE_SYNCED, IsTypedIncrement(visit.transition),
+      visit.opener_visit, visit.consider_for_ntp_most_visited, title,
+      visit.visit_duration, visit.originator_cache_guid,
+      visit.originator_visit_id, visit.originator_referring_visit,
+      visit.originator_opener_visit, visit.is_known_to_sync);
 
   if (visit_id == kInvalidVisitID) {
     // Adding the page visit failed, do not continue.
@@ -2196,11 +2197,19 @@ void HistoryBackend::ReplaceClusters(
   ScheduleCommit();
 }
 
-int64_t HistoryBackend::ReserveNextClusterId() {
-  TRACE_EVENT0("browser", "HistoryBackend::ReserveNextClusterId");
-  return db_ ? db_->ReserveNextClusterId(/*originator_cache_guid=*/"",
-                                         /*originator_cluster_id=*/0)
-             : 0;
+int64_t HistoryBackend::ReserveNextClusterIdWithVisit(
+    const ClusterVisit& cluster_visit) {
+  TRACE_EVENT0("browser", "HistoryBackend::ReserveNextClusterIdWithVisit");
+  int64_t cluster_id =
+      db_ ? db_->ReserveNextClusterId(/*originator_cache_guid=*/"",
+                                      /*originator_cluster_id=*/0)
+          : 0;
+  if (cluster_id == 0) {
+    // DB write was not successful, just return.
+    return 0;
+  }
+  AddVisitsToCluster(cluster_id, {cluster_visit});
+  return cluster_id;
 }
 
 void HistoryBackend::AddVisitsToCluster(
@@ -2347,7 +2356,7 @@ VisitVector HistoryBackend::GetRedirectChain(VisitRow visit) {
       if (!db_->GetRowForVisit(visit.referring_visit, &referring_visit))
         return {};
       if (visit_set.count(referring_visit.visit_id)) {
-        NOTREACHED() << "Loop in visit redirect chain, giving up";
+        DLOG(WARNING) << "Loop in visit redirect chain, possible db corruption";
         break;
       }
       result.push_back(referring_visit);
@@ -2690,14 +2699,10 @@ void HistoryBackend::DeleteFTSIndexDatabases() {
   base::FilePath::StringType filepattern = FILE_PATH_LITERAL("History Index *");
   base::FileEnumerator enumerator(history_dir_, false,
                                   base::FileEnumerator::FILES, filepattern);
-  int num_databases_deleted = 0;
   base::FilePath current_file;
   while (!(current_file = enumerator.Next()).empty()) {
-    if (sql::Database::Delete(current_file))
-      num_databases_deleted++;
+    sql::Database::Delete(current_file);
   }
-  UMA_HISTOGRAM_COUNTS_1M("History.DeleteFTSIndexDatabases",
-                          num_databases_deleted);
 }
 
 std::vector<favicon_base::FaviconRawBitmapResult> HistoryBackend::GetFavicon(
@@ -3317,6 +3322,16 @@ void HistoryBackend::KillHistoryDatabase() {
   expirer_.SetDatabases(nullptr, nullptr);
 
   CloseAllDatabases();
+}
+
+void HistoryBackend::SetSyncDeviceInfo(SyncDeviceInfoMap sync_device_info) {
+  sync_device_info_ = std::move(sync_device_info);
+}
+
+void HistoryBackend::SetLocalDeviceOriginatorCacheGuid(
+    std::string local_device_originator_cache_guid) {
+  local_device_originator_cache_guid_ =
+      std::move(local_device_originator_cache_guid);
 }
 
 void HistoryBackend::ProcessDBTask(

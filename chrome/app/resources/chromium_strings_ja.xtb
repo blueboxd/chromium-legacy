@@ -79,7 +79,6 @@
 <translation id="2928420929544864228">インストールが完了しました。</translation>
 <translation id="2977470724722393594">Chromium は最新版です</translation>
 <translation id="2977506796191543575">サイトがパスワードを不正に取得しようとしている場合や、ユーザーが安全でないファイルをダウンロードしようとした場合は、URL とページ コンテンツの一部をセーフ ブラウジングに送信することがあります</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium は HID デバイスに接続されています}other{Chromium は HID デバイスに接続されています}}</translation>
 <translation id="3032706164202344641">Chromium でパスワードを確認できません。しばらくしてからもう一度お試しください。</translation>
 <translation id="3032787606318309379">Chromium に追加...</translation>
 <translation id="3038232873781883849">インストールの待機中...</translation>
@@ -94,7 +93,6 @@
 <translation id="3258596308407688501">Chromium はこのデータ ディレクトリへの読み書きを実行できません:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">このガイドでは、Chromium をカスタマイズして使用するのに役立つさまざまな設定について説明します</translation>
 <translation id="3283186697780795848">Chromium のバージョン <ph name="PRODUCT_VERSION" /> がインストールされています</translation>
 <translation id="3286538390144397061">今すぐ再起動</translation>
 <translation id="328888136576916638">Google API キーが欠落しています。Chromium の一部の機能は無効になります。</translation>
@@ -246,8 +244,10 @@
 <translation id="6442900851116057561">Chromium OS を再起動してください</translation>
 <translation id="6455857529632101747">Chromium プロフィールへようこそ</translation>
 <translation id="6475912303565314141">この拡張機能では、Chromium の起動時に表示されるページも制御されます。</translation>
+<translation id="648319183876919572">セーフ ブラウジング保護強化機能では、危険なウェブサイトやダウンロードから高いセキュリティ強度で保護されます</translation>
 <translation id="6510925080656968729">Chromium をアンインストール</translation>
 <translation id="6542839706527980775">Chromium の情報（ブックマーク、履歴、パスワードなど）はプロフィールごとに分けて保持されます</translation>
+<translation id="656935081669708576">別の Chromium プロフィールに切り替えて、そのプロフィールのパスワードを表示できます</translation>
 <translation id="6570579332384693436">スペルミスを修正するために、テキスト欄に入力したテキストが Chromium から Google に送信されます</translation>
 <translation id="6598877126913850652">Chromium の通知設定に移動</translation>
 <translation id="6613594504749178791">変更内容は次に Chromium を再起動したときに有効になります。</translation>
@@ -382,7 +382,6 @@
 <translation id="924957577793602335">Chromium を独自にカスタマイズ</translation>
 <translation id="93478295209880648">Windows XP と Windows Vista はサポートされなくなったため、Chromium は正常に機能しない可能性があります</translation>
 <translation id="942598560705308788">Chromium で管理されている証明書</translation>
-<translation id="959579472876010517">Chromium を最大限に活用しましょう</translation>
 <translation id="965162752251293939">Chromium はどなたが使用しますか？</translation>
 <translation id="967427899662692980">Chromium の最高のセキュリティ強度で保護</translation>
 <translation id="9792300276217204">Chromium を閉じるとき、常にデバイスからサイトデータを削除する</translation>

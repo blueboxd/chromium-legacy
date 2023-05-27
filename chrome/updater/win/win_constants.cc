@@ -22,8 +22,11 @@ const wchar_t kRegValueAutoRunOnOSUpgrade[] = L"AutoRunOnOSUpgrade";
 const wchar_t kRegValuePV[] = L"pv";
 const wchar_t kRegValueBrandCode[] = L"brand";
 const wchar_t kRegValueAP[] = L"ap";
+const wchar_t kRegValueDateOfLastActivity[] = L"DayOfLastActivity";
+const wchar_t kRegValueDateOfLastRollcall[] = L"DayOfLastRollCall";
 const wchar_t kRegValueName[] = L"name";
 const wchar_t kRegValueUninstallCmdLine[] = L"UninstallCmdLine";
+const wchar_t kRegValueVersion[] = L"version";
 
 const wchar_t kRegValueInstallerError[] = L"InstallerError";
 const wchar_t kRegValueInstallerExtraCode1[] = L"InstallerExtraCode1";

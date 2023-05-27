@@ -14,16 +14,17 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ash/file_manager/file_manager_test_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -37,7 +38,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -136,7 +136,7 @@ class MockSelectFileDialogListener : public ui::SelectFileDialog::Listener {
   bool file_selected_;
   bool canceled_;
   base::FilePath path_;
-  void* params_;
+  raw_ptr<void, ExperimentalAsh> params_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 };
 
@@ -227,23 +227,17 @@ class BaseSelectFileDialogExtensionBrowserTest
     auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
     CHECK(web_contents);
 
-    int x;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-        web_contents,
-        "var bounds = document.querySelector('" + selector +
-            "').getBoundingClientRect();"
-            "domAutomationController.send("
-            "    Math.floor(bounds.left + bounds.width / 2));",
-        &x));
+    int x = content::EvalJs(web_contents,
+                            "var bounds = document.querySelector('" + selector +
+                                "').getBoundingClientRect();"
+                                "Math.floor(bounds.left + bounds.width / 2);")
+                .ExtractInt();
 
-    int y;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-        web_contents,
-        "var bounds = document.querySelector('" + selector +
-            "').getBoundingClientRect();"
-            "domAutomationController.send("
-            "    Math.floor(bounds.top + bounds.height / 2));",
-        &y));
+    int y = content::EvalJs(web_contents,
+                            "var bounds = document.querySelector('" + selector +
+                                "').getBoundingClientRect();"
+                                "Math.floor(bounds.top + bounds.height / 2);")
+                .ExtractInt();
 
     LOG(INFO) << "ClickElement " << selector << " (" << x << "," << y << ")";
     constexpr auto kButton = blink::WebMouseEvent::Button::kLeft;
@@ -354,8 +348,6 @@ class BaseSelectFileDialogExtensionBrowserTest
   scoped_refptr<SelectFileDialogExtension> second_dialog_;
 
   bool use_file_type_filter_;
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests FileDialog with and without file filter.
@@ -631,7 +623,7 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionBrowserTest,
 
   // Check that the caller field is set correctly.
   ASSERT_TRUE(dialog_->owner_.dialog_caller.has_value());
-  ASSERT_EQ(dialog_->owner_.dialog_caller->url_or_path.value(), url);
+  ASSERT_EQ(dialog_->owner_.dialog_caller->url_or_path().value(), url);
 
   // Click the "Cancel" button.
   CloseDialog(DIALOG_BTN_CANCEL, owning_window);
@@ -703,13 +695,8 @@ INSTANTIATE_TEST_SUITE_P(SystemWebApp,
                          SelectFileDialogExtensionFlagTest,
                          TestMode::SystemWebAppValues());
 
-class SelectFileDialogExtensionDarkLightModeEnabledTest
-    : public BaseSelectFileDialogExtensionBrowserTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    feature_list_.InitWithFeatures({chromeos::features::kDarkLightMode}, {});
-    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-  }
-};
+using SelectFileDialogExtensionDarkLightModeEnabledTest =
+    BaseSelectFileDialogExtensionBrowserTest;
 
 IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionDarkLightModeEnabledTest,
                        ColorModeChange) {
@@ -763,14 +750,14 @@ class SelectFileDialogExtensionPolicyTest
 
     MOCK_METHOD(void,
                 CheckIfDownloadAllowed,
-                (const DlpFileDestination&,
+                (const policy::DlpFileDestination&,
                  const base::FilePath&,
                  base::OnceCallback<void(bool)>),
                 (override));
     MOCK_METHOD(void,
                 FilterDisallowedUploads,
                 (std::vector<ui::SelectedFileInfo>,
-                 const DlpFileDestination&,
+                 const policy::DlpFileDestination&,
                  base::OnceCallback<void(std::vector<ui::SelectedFileInfo>)>),
                 (override));
   };
@@ -798,9 +785,11 @@ class SelectFileDialogExtensionPolicyTest
         .WillByDefault(testing::Return(mock_files_controller_.get()));
   }
 
-  policy::MockDlpRulesManager* rules_manager_ = nullptr;
+  raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> rules_manager_ =
+      nullptr;
   std::unique_ptr<MockFilesController> mock_files_controller_ = nullptr;
-  storage::ExternalMountPoints* mount_points_ = nullptr;
+  raw_ptr<storage::ExternalMountPoints, ExperimentalAsh> mount_points_ =
+      nullptr;
 };
 
 IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionPolicyTest, DlpDownloadAllow) {
@@ -822,9 +811,8 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionPolicyTest, DlpDownloadAllow) {
                                      &caller));
 
   EXPECT_CALL(*mock_files_controller_.get(),
-              CheckIfDownloadAllowed(
-                  policy::DlpFilesController::DlpFileDestination(url),
-                  test_file, base::test::IsNotNullCallback()))
+              CheckIfDownloadAllowed(policy::DlpFileDestination(url), test_file,
+                                     base::test::IsNotNullCallback()))
       .WillOnce(base::test::RunOnceCallback<2>(true));
 
   // Click the "Save" button.
@@ -855,9 +843,8 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionPolicyTest, DlpDownloadBlock) {
                                      &caller));
 
   EXPECT_CALL(*mock_files_controller_.get(),
-              CheckIfDownloadAllowed(
-                  policy::DlpFilesController::DlpFileDestination(url),
-                  test_file, base::test::IsNotNullCallback()))
+              CheckIfDownloadAllowed(policy::DlpFileDestination(url), test_file,
+                                     base::test::IsNotNullCallback()))
       .WillOnce(base::test::RunOnceCallback<2>(false));
 
   // Click the "Save" button.
@@ -904,9 +891,8 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionPolicyTest, DlpUploadAllow) {
   selected_files.push_back(std::move(selected_file));
   EXPECT_CALL(
       *mock_files_controller_.get(),
-      FilterDisallowedUploads(
-          selected_files, policy::DlpFilesController::DlpFileDestination(url),
-          base::test::IsNotNullCallback()))
+      FilterDisallowedUploads(selected_files, policy::DlpFileDestination(url),
+                              base::test::IsNotNullCallback()))
       .WillOnce(base::test::RunOnceCallback<2>(selected_files));
 
   // Click the "Save" button.
@@ -952,10 +938,9 @@ IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionPolicyTest, DlpUploadBlock) {
   selected_file.virtual_path = test_file_virtual_path;
   selected_files.push_back(std::move(selected_file));
   EXPECT_CALL(*mock_files_controller_.get(),
-              FilterDisallowedUploads(
-                  std::move(selected_files),
-                  policy::DlpFilesController::DlpFileDestination(url),
-                  base::test::IsNotNullCallback()))
+              FilterDisallowedUploads(std::move(selected_files),
+                                      policy::DlpFileDestination(url),
+                                      base::test::IsNotNullCallback()))
       .WillOnce(
           base::test::RunOnceCallback<2>(std::vector<ui::SelectedFileInfo>()));
 

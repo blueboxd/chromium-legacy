@@ -8,6 +8,7 @@
     <meta charset="utf-8">
     <!-- main.css contains all :root styles require to be loaded first. -->
     <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/menu.css">
     <link rel="stylesheet" href="/css/button.css">
     <link rel="stylesheet" href="/css/custom_toast.css">
     <link rel="stylesheet" href="/css/flash.css">
@@ -20,7 +21,7 @@
     <link rel="stylesheet" href="/css/views/settings.css">
     <script type="module" src="/js/init.js"></script>
   </head>
-  <body class="sound mirror mic view-splash">
+  <body class="sound mirror view-splash">
     <div id="spoken_msg" class="centered-overlay" tabindex="-1"
          aria-live="polite"></div>
     <div id="view-camera">
@@ -96,11 +97,13 @@
         <div id="barcode-chip-url-container"
              class="invisible barcode-chip-container">
           <div class="barcode-chip-url">
+            <svg-wrapper name="barcode_url.svg"></svg-wrapper>
             <a href="#barcode-chip-url-container"></a>
           </div>
           <div class="circle">
             <button class="barcode-copy-button" tabindex="0"
-              i18n-label="barcode_copy_link_button"></button>
+              i18n-label="barcode_copy_link_button"
+              data-svg="barcode_copy.svg"></button>
           </div>
         </div>
         <div id="barcode-chip-text-container"
@@ -110,35 +113,65 @@
           <div class="barcode-chip-text">
             <div id="barcode-chip-text-content"></div>
             <button id="barcode-chip-text-expand"
-                    aria-expanded="false"></button>
+                    aria-expanded="false">
+              <svg-wrapper name="barcode_chevron_up.svg" class="up-icon">
+              </svg-wrapper>
+              <svg-wrapper name="barcode_chevron_down.svg" class="down-icon">
+              </svg-wrapper>
+            </button>
           </div>
           <div class="circle">
             <button class="barcode-copy-button" tabindex="0"
-              i18n-label="barcode_copy_text_button"></button>
+              i18n-label="barcode_copy_text_button"
+              data-svg="barcode_copy.svg"></button>
           </div>
         </div>
       </div>
       <div class="top-stripe left-stripe buttons circle">
         <button id="open-settings" tabindex="0"
-                i18n-label="settings_button" aria-haspopup="true"></button>
+                i18n-label="settings_button" aria-haspopup="true"
+                data-svg="camera_button_settings.svg"></button>
       </div>
       <div class="top-stripe left-stripe buttons circle">
         <button id="back-to-review-document" tabindex="0"
-                i18n-aria="back_button"></button>
+                i18n-label="back_button"></button>
       </div>
       <div class="top-stripe right-stripe circle buttons">
-        <input id="toggle-mic" type="checkbox" tabindex="0"
-               i18n-label="toggle_mic_button" data-state="mic"
-               i18n-aria="aria_mute_off" data-key="toggleMic" checked>
+        <button id="toggle-mic" role="checkbox" tabindex="0"
+               i18n-label="toggle_mic_button" i18n-aria="aria_mute_off">
+          <svg-wrapper name="camera_button_mic_off.svg"
+                       class="off-icon"></svg-wrapper>
+          <svg-wrapper name="camera_button_mic_on.svg"
+                       class="on-icon"></svg-wrapper>
+        </button>
       </div>
       <div id="options-group" class="left-stripe buttons circle">
+        <!--
+          TODO(pihsun): These should be icon-button when jellybean is ready.
+        -->
         <button id="open-mirror-panel" tabindex="0" aria-haspopup="true">
+          <svg-wrapper name="camera_button_mirror_off.svg"
+                       class="off-icon"></svg-wrapper>
+          <svg-wrapper name="camera_button_mirror_on.svg"
+                       class="on-icon"></svg-wrapper>
         </button>
-        <button id="open-grid-panel" tabindex="0" aria-haspopup="true"></button>
+        <button id="open-grid-panel" tabindex="0" aria-haspopup="true">
+          <svg-wrapper name="camera_button_grid_off.svg"
+                       class="off-icon"></svg-wrapper>
+          <svg-wrapper name="camera_button_grid_on.svg"
+                       class="on-icon"></svg-wrapper>
+        </button>
         <button id="open-timer-panel" tabindex="0" aria-haspopup="true">
-        <button id="open-ptz-panel" tabindex="0" aria-haspopup="true"
-                i18n-label="open_ptz_panel_button"></button>
+          <svg-wrapper name="camera_button_timer_off.svg"
+                       class="off-icon"></svg-wrapper>
+          <svg-wrapper name="camera_button_timer_on_3s.svg"
+                       class="on-3s-icon"></svg-wrapper>
+          <svg-wrapper name="camera_button_timer_on_10s.svg"
+                       class="on-10s-icon"></svg-wrapper>
         </button>
+        <button id="open-ptz-panel" tabindex="0" aria-haspopup="true"
+                i18n-label="open_ptz_panel_button"
+                data-svg="camera_button_ptz_panel.svg"></button>
       </div>
       <div id="scan-modes-group" class="mode-subgroup" role="radiogroup"
            i18n-aria="aria_scan_type_group">
@@ -208,7 +241,8 @@
       </div>
       <div class="bottom-stripe left-stripe buttons circle">
         <button id="switch-device" tabindex="0"
-                i18n-label="switch_camera_button"></button>
+                i18n-label="switch_camera_button"
+                data-svg="camera_button_switch_device.svg"></button>
       </div>
       <div id="mode-selector" class="bottom-stripe">
         <div id="modes-group" class="buttons" role="radiogroup"
@@ -247,7 +281,7 @@
       <div class="bottom-stripe right-stripe buttons circle">
         <button id="gallery-enter" tabindex="0"
                 i18n-label="gallery_button" hidden>
-          <img>
+          <img alt="">
         </button>
       </div>
       <div id="record-time" class="top-stripe horizontal-center-stripe" hidden>
@@ -452,7 +486,7 @@
     </div>
     <div id="view-review" class="review-views">
       <div class="review-frame">
-        <img class="review-image" hidden>
+        <img class="review-image" hidden alt="">
         <video class="review-video" hidden controls autoplay></video>
       </div>
     </div>
@@ -575,7 +609,7 @@
     <template id="indicator-toast-template">
       <div id="indicator-toast" class="custom-toast" tabindex="0">
         <div>
-          <img id="indicator-icon" alt>
+          <img id="indicator-icon" alt="">
         </div>
         <span class="custom-toast-text" aria-hidden="true"></span>
       </div>
@@ -606,19 +640,21 @@
     <template id="document-preview-mode">
       <div class="document-preview-mode">
         <div class="preview-area">
-          <img class="image">
+          <img class="image" alt="">
         </div>
         <div class="buttons-container">
           <div class="button-group left">
             <button class="text-button pill dark inkdrop secondary"
               i18n-text="cancel_review_button" tabindex="0"></button>
             <div class="separator"></div>
+            <button class="icon-button dark inkdrop" id="doc-scan-menu-button"
+              tabindex="0" i18n-label="doc_scan_menu_button"></button>
             <button class="icon-button dark inkdrop"
-              i18n-aria="add_new_page_button" tabindex="0"></button>
+              i18n-label="add_new_page_button" tabindex="0"></button>
             <button class="icon-button dark inkdrop"
-              i18n-aria="label_share" tabindex="0"></button>
+              i18n-label="label_share" tabindex="0"></button>
             <button class="icon-button dark inkdrop"
-              i18n-aria="fix_page_button" tabindex="0"></button>
+              i18n-label="fix_page_button" tabindex="0"></button>
           </div>
           <div class="button-group right">
             <button class="text-button pill dark inkdrop secondary"
@@ -635,7 +671,7 @@
              i18n-text="document_corner_move_desc" hidden></div>
         <div class="preview-area">
           <div class="image-container">
-            <img class="image">
+            <img class="image" alt="">
             <svg class="crop-area-container">
               <polygon class="crop-area"></polygon>
             </svg>
@@ -644,9 +680,9 @@
         <div class="buttons-container">
           <div class="review-crop-rotation-button-group button-group">
             <button class="icon-button dark inkdrop"
-              i18n-aria="rotate_clockwise_button" tabindex="0"></button>
+              i18n-label="rotate_clockwise_button" tabindex="0"></button>
             <button class="icon-button dark inkdrop"
-              i18n-aria="rotate_counterclockwise_button" tabindex="0"></button>
+              i18n-label="rotate_counterclockwise_button" tabindex="0"></button>
           </div>
           <div class="button-group right">
             <button class="text-button pill dark inkdrop primary"
@@ -659,12 +695,26 @@
       <div class="page" tabindex="-1" aria-selected="false" role="tab"
         i18n-aria="select_page_button">
         <div class="delete-container">
-          <button class="delete" i18n-aria="delete_page_button"
-                  tabindex="0"></button>
+          <button class="delete icon-button dark inkdrop"
+                  i18n-label="delete_page_button" tabindex="0"></button>
         </div>
         <div class="thumbnail-container">
-          <img class="thumbnail">
+          <img class="thumbnail" alt="">
         </div>
+      </div>
+    </template>
+    <!-- Use `menu-root` and `item` as class name instead of existing `menu` and
+         `menu-item. -->
+    <template id="menu">
+      <ul class="menu-root" role="menu"></ul>
+    </template>
+    <template id="menu-item">
+      <li class="item" role="menuitem"></li>
+    </template>
+    <template id="doc-scan-menu-item-content">
+      <div class="menu-item-content">
+        <img alt="" class="menu-item-icon">
+        <div class="menu-item-label"></div>
       </div>
     </template>
   </body>

@@ -58,6 +58,7 @@
 #include "cc/base/switches.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/browser_context_impl.h"
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
@@ -68,6 +69,8 @@
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_entry_restore_context_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
+#include "content/browser/renderer_host/navigation_transitions/navigation_entry_screenshot_cache.h"
+#include "content/browser/renderer_host/navigation_transitions/navigation_entry_screenshot_manager.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_frame_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -1880,7 +1883,6 @@ void NavigationControllerImpl::CreateInitialEntry() {
                            : ui::PAGE_TRANSITION_LINK;
   params->referrer = blink::mojom::Referrer::New();
 
-  // Create and insert the initial NavigationEntry.
   auto new_entry = std::make_unique<NavigationEntryImpl>(
       rfh->GetSiteInstance(), params->url, Referrer(*params->referrer),
       rfh->GetLastCommittedOrigin(), rfh->GetInheritedBaseUrl(),
@@ -1908,8 +1910,10 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
   std::unique_ptr<NavigationEntryImpl> new_entry;
   const absl::optional<url::Origin>& initiator_origin =
       request->common_params().initiator_origin;
-  const absl::optional<GURL>& initiator_base_url =
-      request->common_params().initiator_base_url;
+  absl::optional<GURL> initiator_base_url;
+  if (params.url.IsAboutBlank() || params.url.IsAboutSrcdoc()) {
+    initiator_base_url = request->common_params().initiator_base_url;
+  }
 
   // First check if this is an in-page navigation.  If so, clone the current
   // entry instead of looking at the pending entry, because the pending entry
@@ -2231,8 +2235,10 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
   // CloneAndReplace() call below, if a spot can't be found for it in the tree.
   const absl::optional<url::Origin>& initiator_origin =
       request->common_params().initiator_origin;
-  const absl::optional<GURL>& initiator_base_url =
-      request->common_params().initiator_base_url;
+  absl::optional<GURL> initiator_base_url;
+  if (params.url.IsAboutBlank() || params.url.IsAboutSrcdoc()) {
+    initiator_base_url = request->common_params().initiator_base_url;
+  }
   std::unique_ptr<PolicyContainerPolicies> policy_container_policies =
       ComputePolicyContainerPoliciesForFrameEntry(rfh, is_same_document,
                                                   request->GetURL());
@@ -2522,6 +2528,20 @@ bool NavigationControllerImpl::IsEntryMarkedToBeSkipped(int index) {
 
 BackForwardCacheImpl& NavigationControllerImpl::GetBackForwardCache() {
   return back_forward_cache_;
+}
+
+NavigationEntryScreenshotCache*
+NavigationControllerImpl::GetNavigationEntryScreenshotCache() {
+  CHECK_EQ(frame_tree_->type(), FrameTree::Type::kPrimary);
+  if (!nav_entry_screenshot_cache_ && AreBackForwardTransitionsEnabled()) {
+    nav_entry_screenshot_cache_ =
+        std::make_unique<NavigationEntryScreenshotCache>(
+            BrowserContextImpl::From(browser_context_)
+                ->GetNavigationEntryScreenshotManager()
+                ->GetSafeRef(),
+            this);
+  }
+  return nav_entry_screenshot_cache_.get();
 }
 
 void NavigationControllerImpl::DiscardPendingEntry(bool was_failure) {
@@ -3185,7 +3205,7 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
 
   // BackForwardCache:
   // Navigate immediately if the document is in the BackForwardCache.
-  if (back_forward_cache_.GetEntry(nav_entry_id)) {
+  if (back_forward_cache_.GetOrEvictEntry(nav_entry_id).has_value()) {
     TRACE_EVENT0("navigation", "BackForwardCache_CreateNavigationRequest");
     DCHECK_EQ(reload_type, ReloadType::NONE);
     auto navigation_request = CreateNavigationRequestFromEntry(
@@ -3865,8 +3885,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           network::mojom::CSPDisposition::CHECK, std::vector<int>(),
           params.href_translate,
           false /* is_history_navigation_in_new_child_frame */,
-          params.input_start, network::mojom::RequestDestination::kEmpty,
-          /*has_storage_access=*/false);
+          params.input_start, network::mojom::RequestDestination::kEmpty);
 
   blink::mojom::CommitNavigationParamsPtr commit_params =
       blink::mojom::CommitNavigationParams::New(
@@ -3918,7 +3937,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           /*modified_runtime_features=*/
           base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
-          /*not_restored_reasons=*/nullptr);
+          /*not_restored_reasons=*/nullptr,
+          /*load_with_storage_access=*/false);
 #if BUILDFLAG(IS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();
@@ -4626,8 +4646,6 @@ NavigationControllerImpl::ShouldNavigateToEntryForNavigationApiKey(
     FrameNavigationEntry* target_entry,
     const std::string& navigation_api_key) {
   if (!target_entry || !target_entry->committed_origin())
-    return HistoryNavigationAction::kStopLooking;
-  if (current_entry->site_instance() != target_entry->site_instance())
     return HistoryNavigationAction::kStopLooking;
   if (!current_entry->committed_origin()->IsSameOriginWith(
           *target_entry->committed_origin())) {

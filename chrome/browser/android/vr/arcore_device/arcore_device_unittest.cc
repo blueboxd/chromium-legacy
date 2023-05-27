@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/viz/public/mojom/compositing/layer_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -126,6 +127,16 @@ class StubXrJavaCoordinator : public XrJavaCoordinator {
         .Run(nullptr, gpu::kNullSurfaceHandle, nullptr,
              display::Display::Rotation::ROTATE_0, {1024, 512});
   }
+
+  void RequestVrSession(
+      int render_process_id,
+      int render_frame_id,
+      const CompositorDelegateProvider& compositor_delegate_provider,
+      SurfaceReadyCallback ready_callback,
+      SurfaceTouchCallback touch_callback,
+      SurfaceDestroyedCallback destroyed_callback) override {
+    NOTREACHED();
+  }
   void EndSession() override {}
 
   bool EnsureARCoreLoaded() override { return true; }
@@ -199,10 +210,13 @@ class StubCompositorFrameSink
   void SetSwapCompletionCallbackEnabled(bool enable) override {}
   void SetStandaloneBeginFrameObserver(
       mojo::PendingRemote<viz::mojom::BeginFrameObserver> observer) override {}
+  void SetMaxVrrInterval(
+      absl::optional<base::TimeDelta> max_vrr_interval) override {}
 
   // mojom::CompositorFrameSink:
   void SetNeedsBeginFrame(bool needs_begin_frame) override {}
   void SetWantsAnimateOnlyBeginFrames() override {}
+  void SetWantsBeginFrameAcks() override {}
   void SubmitCompositorFrame(
       const viz::LocalSurfaceId& local_surface_id,
       viz::CompositorFrame frame,
@@ -220,6 +234,7 @@ class StubCompositorFrameSink
       SubmitCompositorFrameSyncCallback callback) override {}
   void InitializeCompositorFrameSinkType(
       viz::mojom::CompositorFrameSinkType type) override {}
+  void BindLayerContext(viz::mojom::PendingLayerContextPtr context) override {}
   void SetThreadIds(const std::vector<int32_t>& thread_ids) override {}
 
   // mojom::ExternalBeginFrameController implementation.

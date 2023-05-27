@@ -43,6 +43,7 @@
 #include "media/base/media_log.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_fetch_handler_bypass_option.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -50,6 +51,7 @@
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/graphics/parkable_image_manager.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
@@ -194,6 +196,9 @@ void Platform::InitializeBlink() {
   DCHECK(!did_initialize_blink_);
   WTF::Partitions::Initialize();
   WTF::Initialize();
+  Length::Initialize();
+  ProcessHeap::Init();
+  ThreadState::AttachMainThread();
   did_initialize_blink_ = true;
 }
 
@@ -221,9 +226,8 @@ void Platform::InitializeMainThreadCommon(
   DCHECK(did_initialize_blink_);
   MainThread::SetMainThread(std::move(main_thread));
 
-  ProcessHeap::Init();
-
-  ThreadState* thread_state = ThreadState::AttachMainThread();
+  ThreadState* thread_state = ThreadState::Current();
+  CHECK(thread_state->IsMainThread());
   new BlinkGCMemoryDumpProvider(
       thread_state, base::SingleThreadTaskRunner::GetCurrentDefault(),
       BlinkGCMemoryDumpProvider::HeapType::kBlinkMainThread);
@@ -306,6 +310,8 @@ void Platform::CreateServiceWorkerSubresourceLoaderFactory(
     CrossVariantMojoRemote<mojom::ServiceWorkerContainerHostInterfaceBase>
         service_worker_container_host,
     const WebString& client_id,
+    mojom::blink::ServiceWorkerFetchHandlerBypassOption
+        fetch_handler_bypass_option,
     std::unique_ptr<network::PendingSharedURLLoaderFactory> fallback_factory,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {}

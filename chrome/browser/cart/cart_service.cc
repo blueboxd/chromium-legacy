@@ -142,8 +142,6 @@ CartService::CartService(Profile* profile)
       domain_cart_url_mapping_(
           JSONToDictionary(IDR_CART_DOMAIN_CART_URL_MAPPING_JSON)),
       discount_link_fetcher_(std::make_unique<CartDiscountLinkFetcher>()),
-      metrics_tracker_(std::make_unique<CartMetricsTracker>(
-          chrome::FindTabbedBrowser(profile, false))),
       coupon_service_(CouponServiceFactory::GetForProfile(profile)),
       shopping_service_(
           commerce::ShoppingServiceFactory::GetForBrowserContext(profile)) {
@@ -505,7 +503,7 @@ void CartService::ShouldShowDiscountConsentCallback(
       should_show &=
           (last_dismissed_time == base::Time() ||
            reshow_time_delta.is_negative()) &&
-          last_dismissed_count <
+          last_dismissed_count <=
               commerce::kNtpChromeCartModuleDiscountConsentMaxDismissalCount
                   .Get();
     }
@@ -607,6 +605,10 @@ void CartService::OnDiscountURLFetched(
 
 void CartService::PrepareForNavigation(const GURL& cart_url,
                                        bool is_navigating) {
+  if (!metrics_tracker_) {
+    metrics_tracker_ = std::make_unique<CartMetricsTracker>(
+        chrome::FindTabbedBrowser(profile_, false));
+  }
   metrics_tracker_->PrepareToRecordUKM(cart_url);
   if (is_navigating || !commerce::IsRuleDiscountPartnerMerchant(cart_url) ||
       !IsCartDiscountEnabled()) {
@@ -645,7 +647,9 @@ void CartService::Shutdown() {
   // Delete content of all carts that are removed.
   cart_db_->LoadAllCarts(base::BindOnce(&CartService::DeleteRemovedCartsContent,
                                         weak_ptr_factory_.GetWeakPtr()));
-  metrics_tracker_->ShutDown();
+  if (metrics_tracker_) {
+    metrics_tracker_->ShutDown();
+  }
   if (discount_url_loader_) {
     discount_url_loader_->ShutDown();
   }
@@ -1171,7 +1175,7 @@ void CartService::StartGettingDiscount() {
       profile_->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess(),
       std::make_unique<CartDiscountFetcherFactory>(),
-      std::make_unique<CartServiceDelegate>(this),
+      std::make_unique<CartDiscountServiceDelegate>(this),
       IdentityManagerFactory::GetForProfile(profile_),
       profile_->GetVariationsClient());
 

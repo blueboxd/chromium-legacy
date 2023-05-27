@@ -35,16 +35,24 @@ void MirroringMediaControllerHost::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-// TODO(b/271442872): Update these two method once freeze and unfreeze are
-// implemented in MediaController.
-void MirroringMediaControllerHost::Freeze() {}
+void MirroringMediaControllerHost::Freeze() {
+  if (mirroring_controller_) {
+    mirroring_controller_->Pause();
+  }
+}
 
-void MirroringMediaControllerHost::Unfreeze() {}
+void MirroringMediaControllerHost::Unfreeze() {
+  if (mirroring_controller_) {
+    mirroring_controller_->Play();
+  }
+}
 
 void MirroringMediaControllerHost::OnMediaStatusUpdated(
     media_router::mojom::MediaStatusPtr status) {
-  // TODO(b/271442872): Once freeze info is implemented in MediaStatus, set
-  // can_freeze_ and is_frozen_ and update observers.
+  can_freeze_ = status->can_play_pause;
+  is_frozen_ = can_freeze_ &&
+               (status->play_state == mojom::MediaStatus::PlayState::PAUSED);
+
   for (MirroringMediaControllerHost::Observer& observer : observers_) {
     observer.OnFreezeInfoChanged();
   }

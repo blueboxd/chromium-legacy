@@ -175,11 +175,12 @@ int QuicHttpStream::DoHandlePromiseComplete(int rv) {
   stream_ = quic_session()->ReleasePromisedStream();
 
   uint8_t urgency = ConvertRequestPriorityToQuicPriority(priority_);
-  bool incremental = quic::QuicStreamPriority::kDefaultIncremental;
+  bool incremental = quic::HttpStreamPriority::kDefaultIncremental;
   if (base::FeatureList::IsEnabled(features::kPriorityIncremental)) {
     incremental = request_info_->priority_incremental;
   }
-  stream_->SetPriority(quic::QuicStreamPriority{urgency, incremental});
+  stream_->SetPriority(
+      quic::QuicStreamPriority(quic::HttpStreamPriority{urgency, incremental}));
 
   next_state_ = STATE_OPEN;
   NetLogQuicPushStream(stream_net_log_, quic_session()->net_log(),
@@ -432,6 +433,21 @@ base::StringPiece QuicHttpStream::GetAcceptChViaAlps() const {
   return session()->GetAcceptChViaAlps(url::SchemeHostPort(request_info_->url));
 }
 
+absl::optional<quic::QuicErrorCode> QuicHttpStream::GetQuicErrorCode() const {
+  if (stream_) {
+    return stream_->connection_error();
+  }
+  return connection_error_;
+}
+
+absl::optional<quic::QuicRstStreamErrorCode>
+QuicHttpStream::GetQuicRstStreamErrorCode() const {
+  if (stream_) {
+    return stream_->stream_error();
+  }
+  return stream_error_;
+}
+
 void QuicHttpStream::ReadTrailingHeaders() {
   int rv = stream_->ReadTrailingHeaders(
       &trailing_header_block_,
@@ -581,22 +597,24 @@ int QuicHttpStream::DoSetRequestPriority() {
   DCHECK(request_info_);
 
   uint8_t urgency = ConvertRequestPriorityToQuicPriority(priority_);
-  bool incremental = quic::QuicStreamPriority::kDefaultIncremental;
+  bool incremental = quic::HttpStreamPriority::kDefaultIncremental;
   if (base::FeatureList::IsEnabled(features::kPriorityIncremental)) {
     incremental = request_info_->priority_incremental;
   }
-  stream_->SetPriority(quic::QuicStreamPriority{urgency, incremental});
+  stream_->SetPriority(
+      quic::QuicStreamPriority(quic::HttpStreamPriority{urgency, incremental}));
   next_state_ = STATE_SEND_HEADERS;
   return OK;
 }
 
 int QuicHttpStream::DoSendHeaders() {
   uint8_t urgency = ConvertRequestPriorityToQuicPriority(priority_);
-  bool incremental = quic::QuicStreamPriority::kDefaultIncremental;
+  bool incremental = quic::HttpStreamPriority::kDefaultIncremental;
   if (base::FeatureList::IsEnabled(features::kPriorityIncremental)) {
     incremental = request_info_->priority_incremental;
   }
-  quic::QuicStreamPriority priority{urgency, incremental};
+  quic::QuicStreamPriority priority(
+      quic::HttpStreamPriority{urgency, incremental});
   // Log the actual request with the URL Request's net log.
   stream_net_log_.AddEvent(
       NetLogEventType::HTTP_TRANSACTION_QUIC_SEND_REQUEST_HEADERS,
@@ -759,6 +777,8 @@ void QuicHttpStream::ResetStream() {
   closed_stream_received_bytes_ = stream_->NumBytesConsumed();
   closed_stream_sent_bytes_ = stream_->stream_bytes_written();
   closed_is_first_stream_ = stream_->IsFirstStream();
+  connection_error_ = stream_->connection_error();
+  stream_error_ = stream_->stream_error();
 }
 
 int QuicHttpStream::MapStreamError(int rv) {

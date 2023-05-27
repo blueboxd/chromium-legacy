@@ -13,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -25,6 +24,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/browser_url_handler_impl.h"
@@ -763,10 +763,12 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, PostUploadIllegalFilePath) {
   // Use EvalJs and respond back to the browser process before doing the actual
   // submission. This will ensure that the process termination is guaranteed to
   // arrive after the response from the executed JavaScript.
-  EXPECT_EQ(true, EvalJs(shell(),
-                         "window.domAutomationController.send(true);"
-                         "document.getElementById('file-form').submit();",
-                         EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+  EXPECT_EQ(
+      true,
+      EvalJs(
+          shell(),
+          "setTimeout(() => document.getElementById('file-form').submit(), 0);"
+          "true;"));
   EXPECT_EQ(bad_message::ILLEGAL_UPLOAD_PARAMS, process_kill_waiter.Wait());
 }
 
@@ -4643,7 +4645,8 @@ class SubresourceLoadingTest : public NavigationBrowserTest {
                                         const std::string& target_document) {
     // Use a random, GUID-based hostname, to avoid hitting the network cache.
     GURL image_url = embedded_test_server()->GetURL(
-        base::GenerateGUID() + ".com", "/blank.jpg");
+        base::Uuid::GenerateRandomV4().AsLowercaseString() + ".com",
+        "/blank.jpg");
     const char kScriptTemplate[] = R"(
         new Promise(resolve => {
             let img = document.createElement('img');
@@ -6100,6 +6103,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
   SiteInstanceImpl* site_instance = current_frame_host()->GetSiteInstance();
   EXPECT_FALSE(site_instance->HasSite());
 
+  // The process should be considered unused at this point.
+  EXPECT_TRUE(site_instance->GetProcess()->IsUnused());
+
   // Inject a srcdoc iframe into the blank document.  This shouldn't really be
   // possible on the open web, since an about:blank page with an unassigned
   // SiteInstance shouldn't be scriptable by other pages, but it could still
@@ -6136,6 +6142,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
     // an opaque ID).
     EXPECT_EQ("about:", site_instance->GetSiteInfo().site_url());
   }
+
+  // Ensure that the process was marked as used as part of setting the site.
+  EXPECT_FALSE(site_instance->GetProcess()->IsUnused());
 }
 
 class CacheTransparencyNavigationBrowserTest : public ContentBrowserTest {

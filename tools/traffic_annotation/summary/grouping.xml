@@ -75,7 +75,6 @@ after discussions on the right group.
       <annotation id="remote_apps_image_downloader"/>
       <annotation id="remote_command_screenshot"/>
       <annotation id="smb_netbios_name_query"/>
-      <annotation id="supervised_users_denylist"/>
       <annotation id="tachyon_ice_config_fetcher"/>
       <annotation id="terms_of_service_fetch"/>
       <annotation id="timezone_lookup"/>
@@ -229,14 +228,12 @@ after discussions on the right group.
       <annotation id="device_trust_key_rotation"/>
     </sender>
     <sender name="Recently Added">
-      <annotation id="share_preview_image_fetch"/>
       <annotation id="fast_pair_image_decoder"/>
       <annotation id="drivefs_http_client"/>
       <annotation id="pending_beacon_api"/>
       <annotation id="download_bubble_retry_download"/>
       <annotation id="quick_answers_loader"/>
       <annotation id="chrome_search_suggest_service"/>
-      <annotation id="coupon_persisted_tab_data"/>
       <annotation id="chrome_commerce_subscriptions_create"/>
       <annotation id="chrome_commerce_subscriptions_delete"/>
       <annotation id="chrome_commerce_subscriptions_get"/>
@@ -255,6 +252,8 @@ after discussions on the right group.
       <annotation id="nearby_share_update_device"/>
       <annotation id="nearby_share_contacts"/>
       <annotation id="nearby_share_list_public_certificates"/>
+      <annotation id="nearby_presence_update_device"/>
+      <annotation id="nearby_presence_list_public_certificates"/>
       <annotation id="managed_acccount_signin_restrictions_secure_connect_chromeos"/>
       <annotation id="fenced_frame_reporting_beacon"/>
       <annotation id="ntp_custom_background"/>
@@ -287,6 +286,11 @@ after discussions on the right group.
       <annotation id="chrome_support_tool_file_upload"/>
       <annotation id="service_worker_race_network_request"/>
       <annotation id="glanceables_tasks_integration"/>
+      <annotation id="bookmarks_image_fetcher"/>
+      <annotation id="screensaver_image_downloader"/>
+      <annotation id="back_navigation_cache_query"/>
+      <annotation id="cws_info_service"/>
+      <annotation id="promise_app_service"/>
     </sender>
   </group>
   <group name="Admin Features" hidden="true">
@@ -502,17 +506,11 @@ after discussions on the right group.
       <annotation id="signed_in_profile_avatar"/>
     </sender>
     <sender name="Favicon">
-      <annotation id="content_suggestion_get_favicon"/>
       <annotation id="icon_catcher_get_large_icon"/>
       <annotation id="favicon_fetcher_get_favicon"/>
     </sender>
     <sender name="Images">
       <annotation id="image_annotation"/>
-    </sender>
-    <sender name="Prefetch">
-      <annotation id="offline_prefetch"/>
-      <annotation id="prefetch_download"/>
-      <annotation id="prefetch_visuals"/>
     </sender>
     <sender name="Early Hints">
       <annotation id="early_hints_preload"/>
@@ -523,11 +521,9 @@ after discussions on the right group.
       <annotation id="backdrop_collection_names_download"/>
       <annotation id="backdrop_next_image_download"/>
       <annotation id="drive_service"/>
-      <annotation id="ntp_snippets_fetch"/>
       <annotation id="nux_ntp_background_preview"/>
       <annotation id="photos_service"/>
       <annotation id="popular_sites_fetch"/>
-      <annotation id="remote_suggestions_provider"/>
       <annotation id="promo_service"/>
       <annotation id="recipes_service"/>
       <annotation id="chrome_cart_discounts_lookup"/>

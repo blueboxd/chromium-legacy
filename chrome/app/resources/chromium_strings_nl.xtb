@@ -81,7 +81,6 @@ Rechten die je al hebt gegeven aan websites en apps, kunnen van toepassing zijn 
 <translation id="2928420929544864228">Installatie afgerond.</translation>
 <translation id="2977470724722393594">Chromium is up-to-date</translation>
 <translation id="2977506796191543575">Als een site je wachtwoord probeert te stelen of als je een schadelijk bestand downloadt, kan Chromium ook URL's, inclusief delen van de paginacontent, naar Safe Browsing sturen</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium is verbonden met een HID-apparaat}other{Chromium is verbonden met HID-apparaten}}</translation>
 <translation id="3032706164202344641">Chromium kan je wachtwoorden niet checken. Probeer het later opnieuw.</translation>
 <translation id="3032787606318309379">Toevoegen aan Chromium...</translation>
 <translation id="3038232873781883849">Wachten op installatie...</translation>
@@ -96,7 +95,6 @@ Rechten die je al hebt gegeven aan websites en apps, kunnen van toepassing zijn 
 <translation id="3258596308407688501">Chrome kan niet lezen van en schrijven naar de eigen gegevensdirectory :
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Met deze gids krijg je meer inzicht in je keuzes, zodat Chromium werkt zoals jij dat wilt.</translation>
 <translation id="3283186697780795848">Chromium-versie <ph name="PRODUCT_VERSION" /> is geïnstalleerd</translation>
 <translation id="3286538390144397061">Nu herstarten</translation>
 <translation id="328888136576916638">Google API-sleutels ontbreken. Sommige functies van Chromium worden uitgezet.</translation>
@@ -248,8 +246,10 @@ Rechten die je al hebt gegeven aan websites en apps, kunnen van toepassing zijn 
 <translation id="6442900851116057561">Chromium OS opnieuw opstarten</translation>
 <translation id="6455857529632101747">Welkom bij Chromium-profielen</translation>
 <translation id="6475912303565314141">Hiermee wordt ook gecontroleerd welke pagina wordt getoond wanneer je Chromium start.</translation>
+<translation id="648319183876919572">De uitgebreide versie van Safe Browsing doet meer om je te beschermen tegen gevaarlijke websites en downloads</translation>
 <translation id="6510925080656968729">Chromium verwijderen</translation>
 <translation id="6542839706527980775">Elk profiel heeft eigen Chromium-informatie, zoals bookmarks, geschiedenis en wachtwoorden</translation>
+<translation id="656935081669708576">Je kunt schakelen om wachtwoorden van een ander Chromium-profiel te bekijken</translation>
 <translation id="6570579332384693436">Chromium verzendt de tekst die je in tekstvelden typt naar Google om spelfouten te corrigeren</translation>
 <translation id="6598877126913850652">Ga naar instellingen voor Chromium-meldingen</translation>
 <translation id="6613594504749178791">Je wijzigingen worden toegepast wanneer je Chromium opnieuw start.</translation>
@@ -384,7 +384,6 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="924957577793602335">Personaliseer Chromium</translation>
 <translation id="93478295209880648">Chromium werkt mogelijk niet naar behoren omdat dit niet langer wordt ondersteund op Windows XP en Windows Vista</translation>
 <translation id="942598560705308788">Certificaten beheerd door Chromium</translation>
-<translation id="959579472876010517">Haal het maximale uit Chromium</translation>
 <translation id="965162752251293939">Wie gebruikt Chromium?</translation>
 <translation id="967427899662692980">Gebruik het hoogste beveiligingsniveau van Chromium</translation>
 <translation id="9792300276217204">Sitegegevens altijd wissen van je apparaat als je Chromium sluit</translation>

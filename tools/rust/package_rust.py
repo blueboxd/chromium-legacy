@@ -15,11 +15,11 @@ sys.path.append(
     os.path.join(os.path.dirname(THIS_DIR), '..', 'clang', 'scripts'))
 
 from build_rust import (RUST_TOOLCHAIN_OUT_DIR, THIRD_PARTY_DIR)
-from update_rust import (GetPackageVersionForBuild)
+from update_rust import (GetLatestRevision)
 from package import (MaybeUpload, TeeCmd)
 from update import (CHROMIUM_DIR)
 
-PACKAGE_VERSION = GetPackageVersionForBuild()
+PACKAGE_VERSION = GetLatestRevision()
 BUILDLOG_NAME = f'rust-buildlog-{PACKAGE_VERSION}.txt'
 RUST_TOOLCHAIN_PACKAGE_NAME = f'rust-toolchain-{PACKAGE_VERSION}.tgz'
 
@@ -73,7 +73,17 @@ def main():
         shutil.rmtree(RUST_TOOLCHAIN_OUT_DIR)
 
     with open(os.path.join(THIRD_PARTY_DIR, BUILDLOG_NAME), 'w') as log:
+        # Build the Rust toolchain.
         build_cmd = [sys.executable, os.path.join(THIS_DIR, 'build_rust.py')]
+        if args.build_mac_arm:
+            build_cmd.append('--build-mac-arm')
+        TeeCmd(build_cmd, log)
+
+        # Build bindgen.
+        build_cmd = [
+            sys.executable,
+            os.path.join(THIS_DIR, 'build_bindgen.py')
+        ]
         if args.build_mac_arm:
             build_cmd.append('--build-mac-arm')
         TeeCmd(build_cmd, log)

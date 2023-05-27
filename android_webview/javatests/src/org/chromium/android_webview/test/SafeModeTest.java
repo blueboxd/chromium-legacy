@@ -4,6 +4,13 @@
 
 package org.chromium.android_webview.test;
 
+import static org.hamcrest.Matchers.greaterThan;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.app.job.JobWorkItem;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -25,8 +32,11 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.BrowserSafeModeActionList;
 import org.chromium.android_webview.common.SafeModeAction;
 import org.chromium.android_webview.common.SafeModeController;
+import org.chromium.android_webview.common.VariationsFastFetchModeUtils;
 import org.chromium.android_webview.common.services.ISafeModeService;
 import org.chromium.android_webview.common.variations.VariationsUtils;
+import org.chromium.android_webview.services.AwVariationsSeedFetcher;
+import org.chromium.android_webview.services.NonEmbeddedFastVariationsSeedSafeModeAction;
 import org.chromium.android_webview.services.NonEmbeddedSafeModeAction;
 import org.chromium.android_webview.services.NonEmbeddedSafeModeActionsSetupCleanup;
 import org.chromium.android_webview.services.SafeModeService;
@@ -35,17 +45,25 @@ import org.chromium.android_webview.test.VariationsSeedLoaderTest.TestLoader;
 import org.chromium.android_webview.test.VariationsSeedLoaderTest.TestLoaderResult;
 import org.chromium.android_webview.test.services.ServiceConnectionHelper;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
+import org.chromium.android_webview.variations.FastVariationsSeedSafeModeAction;
 import org.chromium.android_webview.variations.VariationsSeedSafeModeAction;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.FileUtils;
+import org.chromium.base.PathUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
 import org.chromium.build.BuildConfig;
+import org.chromium.components.background_task_scheduler.TaskIds;
+import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -80,12 +98,134 @@ public class SafeModeTest {
 
     private AtomicInteger mTestSafeModeActionExecutionCounter;
 
+    private TestJobScheduler mScheduler = new TestJobScheduler();
+    private TestVariationsSeedFetcher mDownloader = new TestVariationsSeedFetcher();
+    private static final int HTTP_NOT_FOUND = 404;
+    private static final int HTTP_NOT_MODIFIED = 304;
+    private static final int JOB_ID = TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID;
+
+    // A test JobScheduler which only holds one job, and never does anything with it.
+    private class TestJobScheduler extends JobScheduler {
+        public JobInfo mJob;
+        public QueueContainer mQueueContainer = new QueueContainer();
+
+        public void clear() {
+            mJob = null;
+        }
+
+        public void assertScheduled() {
+            Assert.assertNotNull("No job scheduled", mJob);
+        }
+
+        public void assertNotScheduled() {
+            Assert.assertNull("Job should not have been scheduled", mJob);
+        }
+
+        public void assertScheduled(int jobId) {
+            Assert.assertEquals("No job scheduled", mJob.getId(), jobId);
+        }
+
+        @Override
+        public void cancel(int jobId) {
+            if (mJob == null) return;
+            if (mJob.getId() == jobId) mJob = null;
+        }
+
+        @Override
+        public void cancelAll() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int enqueue(JobInfo job, JobWorkItem work) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<JobInfo> getAllPendingJobs() {
+            ArrayList<JobInfo> list = new ArrayList<>();
+            if (mJob != null) list.add(mJob);
+            return list;
+        }
+
+        @Override
+        public JobInfo getPendingJob(int jobId) {
+            if (mJob != null && mJob.getId() == jobId) return mJob;
+            return null;
+        }
+
+        @Override
+        public int schedule(JobInfo job) {
+            Assert.assertTrue("Job scheduled with wrong ID", JOB_ID == job.getId());
+            mJob = job;
+            mQueueContainer.notifyCalled(job);
+            return JobScheduler.RESULT_SUCCESS;
+        }
+
+        public JobInfo waitForMessageCallback() throws Exception {
+            return mQueueContainer.waitForMessageCallback();
+        }
+    }
+
+    private static class QueueContainer {
+        private LinkedBlockingQueue<JobInfo> mQueue = new LinkedBlockingQueue<>();
+
+        public void notifyCalled(JobInfo job) {
+            try {
+                mQueue.add(job);
+            } catch (IllegalStateException e) {
+                // We expect this add operation will always succeed since the default capacity of
+                // the queue is Integer.MAX_VALUE.
+            }
+        }
+
+        public JobInfo waitForMessageCallback() throws Exception {
+            return AwActivityTestRule.waitForNextQueueElement(mQueue);
+        }
+
+        public boolean isQueueEmpty() {
+            return mQueue.isEmpty();
+        }
+    }
+
+    // A test VariationsSeedFetcher which doesn't actually download seeds, but verifies the request
+    // parameters.
+    private class TestVariationsSeedFetcher extends VariationsSeedFetcher {
+        private static final String SAVED_VARIATIONS_SEED_SERIAL_NUMBER = "savedSerialNumber";
+
+        public int fetchResult;
+
+        @Override
+        public SeedFetchInfo downloadContent(
+                VariationsSeedFetcher.SeedFetchParameters params, SeedInfo currInfo) {
+            Assert.assertEquals(
+                    VariationsSeedFetcher.VariationsPlatform.ANDROID_WEBVIEW, params.getPlatform());
+            Assert.assertThat(Integer.parseInt(params.getMilestone()), greaterThan(0));
+
+            SeedFetchInfo fetchInfo = new SeedFetchInfo();
+            // Pretend the servers-side |serialNumber| equals |SAVED_VARIATIONS_SEED_SERIAL_NUMBER|
+            // and return |HTTP_NOT_MODIFIED|
+            if (currInfo != null
+                    && currInfo.getParsedVariationsSeed().getSerialNumber().equals(
+                            SAVED_VARIATIONS_SEED_SERIAL_NUMBER)) {
+                fetchInfo.seedInfo = currInfo;
+                fetchInfo.seedInfo.date = getDateTime().newDate().getTime();
+                fetchInfo.seedFetchResult = HTTP_NOT_MODIFIED;
+            } else {
+                fetchInfo.seedFetchResult = fetchResult;
+            }
+            return fetchInfo;
+        }
+    }
+
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
 
     @Before
     public void setUp() throws Throwable {
         mTestSafeModeActionExecutionCounter = new AtomicInteger(0);
+        AwVariationsSeedFetcher.setMocks(mScheduler, mDownloader);
+        VariationsTestUtils.deleteSeeds();
     }
 
     @After
@@ -100,6 +240,7 @@ public class SafeModeTest {
         SafeModeController.getInstance().unregisterActionsForTesting();
 
         SafeModeService.clearSharedPrefsForTesting();
+        mScheduler.cancel(JOB_ID);
     }
 
     @Test
@@ -151,12 +292,7 @@ public class SafeModeTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testSafeModeState_enableWithService() throws Throwable {
-        Intent intent = new Intent(ContextUtils.getApplicationContext(), SafeModeService.class);
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(SAFEMODE_ACTION_NAME));
-        }
+        setSafeMode(Arrays.asList(SAFEMODE_ACTION_NAME));
 
         Assert.assertTrue("SafeMode should be enabled",
                 SafeModeController.getInstance().isSafeModeEnabled(TEST_WEBVIEW_PACKAGE_NAME));
@@ -166,21 +302,12 @@ public class SafeModeTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testSafeModeState_disableWithService() throws Throwable {
-        Intent intent = new Intent(ContextUtils.getApplicationContext(), SafeModeService.class);
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(SAFEMODE_ACTION_NAME));
-        }
+        setSafeMode(Arrays.asList(SAFEMODE_ACTION_NAME));
 
         Assert.assertTrue("SafeMode should be enabled",
                 SafeModeController.getInstance().isSafeModeEnabled(TEST_WEBVIEW_PACKAGE_NAME));
 
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList());
-        }
+        setSafeMode(Arrays.asList());
 
         Assert.assertFalse("SafeMode should be re-disabled",
                 SafeModeController.getInstance().isSafeModeEnabled(TEST_WEBVIEW_PACKAGE_NAME));
@@ -199,13 +326,8 @@ public class SafeModeTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testQueryActions_singleAction() throws Throwable {
-        Intent intent = new Intent(ContextUtils.getApplicationContext(), SafeModeService.class);
         final String variationsActionId = new VariationsSeedSafeModeAction().getId();
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(variationsActionId));
-        }
+        setSafeMode(Arrays.asList(variationsActionId));
 
         Assert.assertTrue("SafeMode should be enabled",
                 SafeModeController.getInstance().isSafeModeEnabled(TEST_WEBVIEW_PACKAGE_NAME));
@@ -218,13 +340,8 @@ public class SafeModeTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testQueryActions_multipleActions() throws Throwable {
-        Intent intent = new Intent(ContextUtils.getApplicationContext(), SafeModeService.class);
         final String variationsActionId = new VariationsSeedSafeModeAction().getId();
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(SAFEMODE_ACTION_NAME, variationsActionId));
-        }
+        setSafeMode(Arrays.asList(SAFEMODE_ACTION_NAME, variationsActionId));
 
         Assert.assertTrue("SafeMode should be enabled",
                 SafeModeController.getInstance().isSafeModeEnabled(TEST_WEBVIEW_PACKAGE_NAME));
@@ -237,15 +354,10 @@ public class SafeModeTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testQueryActions_autoDisableAfter30Days() throws Throwable {
-        Intent intent = new Intent(ContextUtils.getApplicationContext(), SafeModeService.class);
         final String variationsActionId = new VariationsSeedSafeModeAction().getId();
         final long initialStartTimeMs = 12345L;
         SafeModeService.setClockForTesting(() -> { return initialStartTimeMs; });
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(variationsActionId));
-        }
+        setSafeMode(Arrays.asList(variationsActionId));
 
         final long beforeTimeLimitMs =
                 initialStartTimeMs + SafeModeService.SAFE_MODE_ENABLED_TIME_LIMIT_MS - 1L;
@@ -273,15 +385,10 @@ public class SafeModeTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testQueryActions_autoDisableIfTimestampInFuture() throws Throwable {
-        Intent intent = new Intent(ContextUtils.getApplicationContext(), SafeModeService.class);
         final String variationsActionId = new VariationsSeedSafeModeAction().getId();
         final long initialStartTimeMs = 12345L;
         SafeModeService.setClockForTesting(() -> { return initialStartTimeMs; });
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(variationsActionId));
-        }
+        setSafeMode(Arrays.asList(variationsActionId));
 
         // If the user manually sets their clock backward in time, then the time delta will be
         // negative. This case should also be treated as expired.
@@ -300,24 +407,15 @@ public class SafeModeTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testQueryActions_extendTimeoutWithDuplicateConfig() throws Throwable {
-        Intent intent = new Intent(ContextUtils.getApplicationContext(), SafeModeService.class);
         final String variationsActionId = new VariationsSeedSafeModeAction().getId();
         final long initialStartTimeMs = 12345L;
         SafeModeService.setClockForTesting(() -> { return initialStartTimeMs; });
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(variationsActionId));
-        }
+        setSafeMode(Arrays.asList(variationsActionId));
 
         // Send a duplicate config after 1 day to extend the SafeMode timeout for another 30 days.
         final long duplicateConfigTimeMs = initialStartTimeMs + TimeUnit.DAYS.toMillis(1);
         SafeModeService.setClockForTesting(() -> { return duplicateConfigTimeMs; });
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(variationsActionId));
-        }
+        setSafeMode(Arrays.asList(variationsActionId));
 
         // 30 days after the original timeout
         final long firstTimeLimitMs =
@@ -341,13 +439,8 @@ public class SafeModeTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testQueryActions_autoDisableIfMissingTimestamp() throws Throwable {
-        Intent intent = new Intent(ContextUtils.getApplicationContext(), SafeModeService.class);
         final String variationsActionId = new VariationsSeedSafeModeAction().getId();
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(variationsActionId));
-        }
+        setSafeMode(Arrays.asList(variationsActionId));
 
         // If for some reason LAST_MODIFIED_TIME_KEY is unexpectedly missing, SafeMode should
         // disable itself.
@@ -365,13 +458,8 @@ public class SafeModeTest {
     @MediumTest
     @Feature({"AndroidWebView"})
     public void testQueryActions_autoDisableIfMissingActions() throws Throwable {
-        Intent intent = new Intent(ContextUtils.getApplicationContext(), SafeModeService.class);
         final String variationsActionId = new VariationsSeedSafeModeAction().getId();
-        try (ServiceConnectionHelper helper =
-                        new ServiceConnectionHelper(intent, Context.BIND_AUTO_CREATE)) {
-            ISafeModeService service = ISafeModeService.Stub.asInterface(helper.getBinder());
-            service.setSafeMode(Arrays.asList(variationsActionId));
-        }
+        setSafeMode(Arrays.asList(variationsActionId));
 
         // If for some reason SAFEMODE_ACTIONS_KEY is unexpectedly missing (or the empty set),
         // SafeMode should disable itself.
@@ -689,6 +777,166 @@ public class SafeModeTest {
         // this finishes without throwing, assume the list is in good shape (e.g., no duplicate
         // SafeModeAction IDs).
         SafeModeController.getInstance().registerActions(BrowserSafeModeActionList.sList);
+    }
+
+    @Test
+    @MediumTest
+    public void testFastVariations_executesSuccessWithLocalSeed() throws Exception {
+        try {
+            File oldFile = VariationsUtils.getSeedFile();
+            File newFile = VariationsUtils.getNewSeedFile();
+            Assert.assertTrue("Seed file already exists", oldFile.createNewFile());
+            Assert.assertTrue("New seed file already exists", newFile.createNewFile());
+            VariationsTestUtils.writeMockSeed(oldFile);
+            VariationsTestUtils.writeMockSeed(newFile);
+            // Create time stamp file so the mitigation will use the local app directory instead
+            // of waiting for the ContentProvider to provide a seed for it.
+            VariationsUtils.updateStampTime();
+            FastVariationsSeedSafeModeAction action =
+                    new FastVariationsSeedSafeModeAction(TEST_WEBVIEW_PACKAGE_NAME);
+            boolean success = action.execute();
+            Assert.assertTrue("VariationsSeedSafeModeAction should indicate success", success);
+
+            TestLoader loader = new TestLoader(new TestLoaderResult());
+            loader.startVariationsInit();
+            boolean loadedSeed = loader.finishVariationsInit();
+            Assert.assertTrue(
+                    "Did not load a variations seed even though it should have been available",
+                    loadedSeed);
+        } finally {
+            VariationsTestUtils.deleteSeeds();
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testFastVariations_executesFailureWithLocalSeedExpiredAndNoSeedFromContentProvider()
+            throws Exception {
+        long startingTime = 54000L;
+        AwVariationsSeedFetcher.setMocks(mScheduler, mDownloader);
+        AwVariationsSeedFetcher.setUseZeroJitterForTesting(true);
+        FastVariationsSeedSafeModeAction action =
+                new FastVariationsSeedSafeModeAction(TEST_WEBVIEW_PACKAGE_NAME);
+
+        // Mimic embedded data directory that lives separately from nonembedded data directory for
+        // testing
+        File seedFileDirectory = new File(
+                PathUtils.getDataDirectory() + File.separator, "embedded-data-directory-for-test");
+        Assert.assertTrue("Seed file directory already exists", seedFileDirectory.mkdir());
+        File embeddedSeedFile =
+                new File(seedFileDirectory.getPath() + File.separator, "variations_seed");
+        Assert.assertTrue("Seed file already exists", embeddedSeedFile.createNewFile());
+        // mark the embedded seed file as expired
+        embeddedSeedFile.setLastModified(
+                startingTime + VariationsFastFetchModeUtils.MAX_ALLOWABLE_SEED_AGE_MS + 1L);
+        FastVariationsSeedSafeModeAction.setAlternateSeedFilePath(embeddedSeedFile);
+
+        try {
+            boolean success = action.execute();
+            Assert.assertFalse("FastVariationsSeedSafeModeAction should indicate"
+                            + " failure with no variations seed",
+                    success);
+        } finally {
+            VariationsTestUtils.deleteSeeds();
+            FileUtils.recursivelyDeleteFile(seedFileDirectory, FileUtils.DELETE_ALL);
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testFastVariations_executesSuccessWithLocalSeedExpiredAndSeedFromContentProvider()
+            throws Exception {
+        long startingTime = 54000L;
+        AwVariationsSeedFetcher.setMocks(mScheduler, mDownloader);
+        AwVariationsSeedFetcher.setUseZeroJitterForTesting(true);
+        FastVariationsSeedSafeModeAction action =
+                new FastVariationsSeedSafeModeAction(TEST_WEBVIEW_PACKAGE_NAME);
+
+        File nonEmbeddedSeedFile = VariationsUtils.getSeedFile();
+        Assert.assertTrue("Seed file already exists", nonEmbeddedSeedFile.createNewFile());
+        VariationsTestUtils.writeMockSeed(nonEmbeddedSeedFile);
+        // Mark the nonembedded seed file as unexpired
+        final Date date = mock(Date.class);
+        when(date.getTime()).thenReturn(startingTime + 1L);
+        AwVariationsSeedFetcher.setDateForTesting(date);
+        nonEmbeddedSeedFile.setLastModified(startingTime);
+
+        // Mimic embedded data directory that lives separately from nonembedded data directory for
+        // testing
+        File seedFileDirectory = new File(
+                PathUtils.getDataDirectory() + File.separator, "embedded-data-directory-for-test");
+        Assert.assertTrue("Seed file directory already exists", seedFileDirectory.mkdir());
+        File embeddedSeedFile =
+                new File(seedFileDirectory.getPath() + File.separator, "variations_seed");
+        Assert.assertTrue("Seed file already exists", embeddedSeedFile.createNewFile());
+        // mark the embedded seed file as expired
+        embeddedSeedFile.setLastModified(
+                startingTime + VariationsFastFetchModeUtils.MAX_ALLOWABLE_SEED_AGE_MS + 1L);
+        FastVariationsSeedSafeModeAction.setAlternateSeedFilePath(embeddedSeedFile);
+
+        try {
+            setSafeMode(Arrays.asList(action.getId()));
+
+            boolean success = action.execute();
+            Assert.assertTrue("FastVariationsSeedSafeModeAction should not indicate"
+                            + " failure with variations seed in ContentProvider's data directory",
+                    success);
+        } finally {
+            VariationsTestUtils.deleteSeeds();
+            FileUtils.recursivelyDeleteFile(seedFileDirectory, FileUtils.DELETE_ALL);
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testFastVariations_executesSuccessWithLocalSeedAlmostExpired() throws Exception {
+        try {
+            File oldFile = VariationsUtils.getSeedFile();
+            File newFile = VariationsUtils.getNewSeedFile();
+            Assert.assertTrue("Seed file already exists", oldFile.createNewFile());
+            Assert.assertTrue("New seed file already exists", newFile.createNewFile());
+            VariationsTestUtils.writeMockSeed(oldFile);
+            VariationsTestUtils.writeMockSeed(newFile);
+            // Create an almost expired time stamp file so the mitigation will not request a new
+            // seed from the ContentProvider
+            long now = new Date().getTime();
+            VariationsUtils.updateStampTime(
+                    now + VariationsFastFetchModeUtils.MAX_ALLOWABLE_SEED_AGE_MS - 1);
+            FastVariationsSeedSafeModeAction action =
+                    new FastVariationsSeedSafeModeAction(TEST_WEBVIEW_PACKAGE_NAME);
+            boolean success = action.execute();
+            Assert.assertTrue("VariationsSeedSafeModeAction should indicate success", success);
+
+            TestLoader loader = new TestLoader(new TestLoaderResult());
+            loader.startVariationsInit();
+            boolean loadedSeed = loader.finishVariationsInit();
+            Assert.assertTrue(
+                    "Did not load a variations seed even though it should have been available",
+                    loadedSeed);
+        } finally {
+            VariationsTestUtils.deleteSeeds();
+        }
+    }
+
+    @Test
+    @MediumTest
+    public void testFastVariations_failsWithoutVariationsSeed() throws Exception {
+        VariationsTestUtils.deleteSeeds(); // ensure no seed files exist
+        FastVariationsSeedSafeModeAction action =
+                new FastVariationsSeedSafeModeAction(TEST_WEBVIEW_PACKAGE_NAME);
+        long now = System.currentTimeMillis();
+        // Since no seed file exists in the embedding app directory, and the ContentProvider
+        // does not have a valid seed to return to the FastVariationsSeedSafeModeAction,
+        // it fails with no valid seed to load.
+        boolean success = action.execute();
+        Assert.assertFalse("FastVariationsSeedSafeModeAction should indicate"
+                        + " failure with no variations seed",
+                success);
+        TestLoader loader = new TestLoader(new TestLoaderResult());
+        loader.startVariationsInit();
+        boolean loadedSeed = loader.finishVariationsInit();
+        Assert.assertFalse(
+                "Loaded a variations seed even though it should not have one to load.", loadedSeed);
     }
 
     @Test
@@ -1048,6 +1296,28 @@ public class SafeModeTest {
                 "Test action 3 should be activated once", 1, testAction3.getActivatedCallCount());
         Assert.assertEquals("Test action 3 should be deactivated once", 1,
                 testAction3.getDeactivatedCallCount());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeModeActionList_turnOffSafeModeSeedFetch() throws Throwable {
+        AwVariationsSeedFetcher.setUseZeroJitterForTesting(true);
+        NonEmbeddedFastVariationsSeedSafeModeAction testAction =
+                new NonEmbeddedFastVariationsSeedSafeModeAction();
+        AwVariationsSeedFetcher.setMocks(mScheduler, mDownloader);
+
+        SafeModeController.getInstance().registerActions(new SafeModeAction[] {testAction});
+        SafeModeAction[] actions = SafeModeController.getInstance().getRegisteredActions();
+        Assert.assertThat("Actions list should not be empty", actions.length, greaterThan(0));
+
+        mScheduler.assertNotScheduled();
+        setSafeMode(Arrays.asList(testAction.getId()));
+        mScheduler.waitForMessageCallback();
+        mScheduler.assertScheduled(JOB_ID);
+
+        setSafeMode(Arrays.asList());
+        mScheduler.assertNotScheduled();
     }
 
     private void setSafeMode(List<String> actions) throws RemoteException {

@@ -4,15 +4,23 @@
 
 #include "chrome/browser/ui/ash/global_media_controls/media_notification_provider_impl.h"
 
+#include "ash/system/media/media_color_theme.h"
 #include "ash/system/media/media_notification_provider.h"
 #include "ash/system/media/media_notification_provider_observer.h"
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/media_ui_ash.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_item.h"
+#include "chrome/browser/ui/views/global_media_controls/media_item_ui_device_selector_view.h"
+#include "chrome/browser/ui/views/global_media_controls/media_item_ui_helper.h"
 #include "chrome/browser/ui/views/global_media_controls/media_item_ui_legacy_cast_footer_view.h"
+#include "components/global_media_controls/public/constants.h"
 #include "components/global_media_controls/public/media_item_manager.h"
 #include "components/global_media_controls/public/media_session_item_producer.h"
+#include "components/global_media_controls/public/mojom/device_service.mojom.h"
 #include "components/global_media_controls/public/views/media_item_ui_list_view.h"
 #include "components/global_media_controls/public/views/media_item_ui_view.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -105,7 +113,8 @@ bool MediaNotificationProviderImpl::HasFrozenNotifications() {
 std::unique_ptr<views::View>
 MediaNotificationProviderImpl::GetMediaNotificationListView(
     int separator_thickness,
-    bool should_clip_height) {
+    bool should_clip_height,
+    const std::string& item_id) {
   DCHECK(item_manager_);
   DCHECK(color_theme_);
   auto notification_list_view =
@@ -114,7 +123,11 @@ MediaNotificationProviderImpl::GetMediaNotificationListView(
               color_theme_->separator_color, separator_thickness),
           should_clip_height);
   active_session_view_ = notification_list_view->GetWeakPtr();
-  item_manager_->SetDialogDelegate(this);
+  if (item_id.empty()) {
+    item_manager_->SetDialogDelegate(this);
+  } else {
+    item_manager_->SetDialogDelegateForId(this, item_id);
+  }
   base::UmaHistogramEnumeration(
       "Media.GlobalMediaControls.EntryPoint",
       global_media_controls::GlobalMediaControlsEntryPoint::kSystemTray);
@@ -152,7 +165,11 @@ MediaNotificationProviderImpl::ShowMediaItem(
                          : ProfileManager::GetActiveUserProfile();
   auto item_ui = std::make_unique<global_media_controls::MediaItemUIView>(
       id, item, BuildFooterView(item, profile),
-      /*device_selector_view=*/nullptr, color_theme_);
+      BuildDeviceSelector(
+          id, item, GetDeviceService(item), &device_selector_delegate_, profile,
+          global_media_controls::GlobalMediaControlsEntryPoint::kSystemTray),
+      color_theme_, GetCrosMediaColorTheme(),
+      media_message_center::MediaDisplayPage::kQuickSettingsMediaDetailedView);
   auto* item_ui_ptr = item_ui.get();
   item_ui_observer_set_.Observe(id, item_ui_ptr);
 
@@ -188,6 +205,21 @@ void MediaNotificationProviderImpl::OnMediaItemUISizeChanged() {
 void MediaNotificationProviderImpl::OnMediaItemUIDestroyed(
     const std::string& id) {
   item_ui_observer_set_.StopObserving(id);
+}
+
+global_media_controls::mojom::DeviceService*
+MediaNotificationProviderImpl::GetDeviceService(
+    base::WeakPtr<media_message_center::MediaNotificationItem> item) const {
+  if (!item || !item->GetSourceId()) {
+    return nullptr;
+  }
+  if (device_service_for_testing_) {
+    return device_service_for_testing_;
+  }
+  return crosapi::CrosapiManager::Get()
+      ->crosapi_ash()
+      ->media_ui_ash()
+      ->GetDeviceService(*item->GetSourceId());
 }
 
 }  // namespace ash

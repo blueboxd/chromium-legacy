@@ -28,6 +28,15 @@ extern const char kEnableChromeCart[];
 }
 
 BASE_DECLARE_FEATURE(kCommercePriceTracking);
+BASE_DECLARE_FEATURE(kCommercePriceTrackingRegionLaunched);
+
+// Feature flag for Price Tracking chip experiment
+BASE_DECLARE_FEATURE(kCommercePriceTrackingChipExperiment);
+// This indicates the Price Tracking chip experiment variation.
+enum class PriceTrackingChipExperimentVariation {
+  kDefault = 0,
+  kDelayChip = 1
+};
 
 // Price tracking variations for Android.
 constexpr flags_ui::FeatureEntry::FeatureParam
@@ -70,8 +79,8 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
 
 BASE_DECLARE_FEATURE(kCommerceAllowLocalImages);
 BASE_DECLARE_FEATURE(kCommerceAllowOnDemandBookmarkUpdates);
+BASE_DECLARE_FEATURE(kCommerceAllowOnDemandBookmarkBatchUpdates);
 BASE_DECLARE_FEATURE(kCommerceAllowServerImages);
-BASE_DECLARE_FEATURE(kCommerceCoupons);
 BASE_DECLARE_FEATURE(kCommerceMerchantViewer);
 BASE_DECLARE_FEATURE(kCommerceMerchantViewerRegionLaunched);
 extern const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory;
@@ -105,6 +114,13 @@ constexpr base::FeatureParam<base::TimeDelta>
         &kShoppingList,
         "shopping-list-bookmark-update-interval",
         base::Hours(6));
+
+// The maximum number of products to update per update cycle for the shopping
+// list.
+constexpr base::FeatureParam<int> kShoppingListBookmarkpdateBatchMaxParam(
+    &kCommerceAllowOnDemandBookmarkBatchUpdates,
+    "shopping-list-bookmark-update-batch-max",
+    150);
 
 // Shopping list revert page action icon on failure.
 extern const char kRevertIconOnFailureParam[];
@@ -331,6 +347,11 @@ extern const base::FeatureParam<bool> kCodeBasedRuleDiscount;
 extern const char kCodeBasedRuleDiscountCouponDeletionTimeParam[];
 extern const base::FeatureParam<base::TimeDelta>
     kCodeBasedRuleDiscountCouponDeletionTime;
+
+// CommercePriceTrackingChipExperiment params.
+extern const char kCommercePriceTrackingChipExperimentVariationParam[];
+extern const base::FeatureParam<int>
+    kCommercePriceTrackingChipExperimentVariation;
 
 // Check if a URL belongs to a partner merchant of any type of discount.
 bool IsPartnerMerchant(const GURL& url);

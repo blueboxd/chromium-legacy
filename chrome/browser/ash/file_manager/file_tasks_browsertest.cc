@@ -6,13 +6,13 @@
 #include <memory>
 #include <unordered_map>
 
-#include "ash/constants/ash_features.h"
 #include "ash/webui/file_manager/url_constants.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/ranges/algorithm.h"
@@ -50,7 +50,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_process.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/browser/ui/webui/ash/office_fallback/office_fallback_ui.h"
@@ -61,11 +61,13 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/ash/components/drivefs/fake_drivefs.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/drive/file_errors.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/network_service_instance.h"
@@ -516,7 +518,7 @@ IN_PROC_BROWSER_TEST_P(FileTasksBrowserTest, ExecuteWebApp) {
   }
 
   base::RunLoop run_loop;
-  web_app::WebAppLaunchManager::SetOpenApplicationCallbackForTesting(
+  web_app::WebAppLaunchProcess::SetOpenApplicationCallbackForTesting(
       base::BindLambdaForTesting(
           [&run_loop](apps::AppLaunchParams&& params) -> content::WebContents* {
             if (GetParam().crosapi_state ==
@@ -704,7 +706,8 @@ class FileTasksPolicyBrowserTest : public FileTasksBrowserTest {
   }
 
  protected:
-  policy::MockDlpRulesManager* rules_manager_ = nullptr;
+  raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> rules_manager_ =
+      nullptr;
 };
 
 IN_PROC_BROWSER_TEST_P(FileTasksPolicyBrowserTest, TasksMarkedAsBlocked) {
@@ -781,7 +784,8 @@ class NonManagedAccount : public TestAccountBrowserTest {
  public:
   NonManagedAccount()
       : TestAccountBrowserTest(kNonManaged, /*is_google_account=*/false) {
-    feature_list_.InitAndEnableFeature(ash::features::kUploadOfficeToCloud);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
   }
 
   void SetUpOnMainThread() override {
@@ -853,7 +857,8 @@ class EnterpriseAccount : public TestAccountBrowserTest {
  public:
   EnterpriseAccount()
       : TestAccountBrowserTest(kEnterprise, /*is_google_account=*/false) {
-    feature_list_.InitAndEnableFeature(ash::features::kUploadOfficeToCloud);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
   }
 
  private:
@@ -870,7 +875,8 @@ IN_PROC_BROWSER_TEST_F(EnterpriseAccount,
 class ChildAccount : public TestAccountBrowserTest {
  public:
   ChildAccount() : TestAccountBrowserTest(kChild, /*is_google_account=*/false) {
-    feature_list_.InitAndEnableFeature(ash::features::kUploadOfficeToCloud);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
   }
 
  private:
@@ -888,7 +894,8 @@ class GoogleAccount : public TestAccountBrowserTest {
   GoogleAccount()
       : TestAccountBrowserTest(kTestAccountTypeNotSet,
                                /*is_google_account=*/true) {
-    feature_list_.InitAndEnableFeature(ash::features::kUploadOfficeToCloud);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
   }
 
  private:
@@ -985,7 +992,8 @@ class DriveTest : public TestAccountBrowserTest {
  public:
   DriveTest()
       : TestAccountBrowserTest(kNonManaged, /*is_google_account=*/false) {
-    feature_list_.InitAndEnableFeature(ash::features::kUploadOfficeToCloud);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     drive_mount_point_ = temp_dir_.GetPath();
     test_file_name_ = "text.docx";
@@ -1383,13 +1391,17 @@ class OneDriveTest : public TestAccountBrowserTest {
  public:
   OneDriveTest()
       : TestAccountBrowserTest(kNonManaged, /*is_google_account=*/false) {
-    feature_list_.InitAndEnableFeature(ash::features::kUploadOfficeToCloud);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
     test_file_name_ = "text.docx";
     // Relative path for a file on ODFS and Android OneDrive.
     relative_test_path_ = base::FilePath(test_file_name_);
     // The path in ODFS is the relative path with "/" prefixed.
     test_path_within_odfs_ = base::FilePath("/").Append(relative_test_path_);
     file_system_id_ = "odfs";
+
+    network_connection_tracker_ =
+        network::TestNetworkConnectionTracker::CreateInstance();
   }
 
   OneDriveTest(const OneDriveTest&) = delete;
@@ -1413,9 +1425,10 @@ class OneDriveTest : public TestAccountBrowserTest {
     // `FakeProvidedFileSystemOneDrive`. The use of `base::Unretained()` is safe
     // because the class will exist for the duration of the test.
     service_->RegisterProvider(FakeExtensionProviderOneDrive::Create(
-        kODFSExtensionId, test_path_within_odfs_, test_file_name_));
+        extension_misc::kODFSExtensionId, test_path_within_odfs_,
+        test_file_name_));
     provider_id_ = ash::file_system_provider::ProviderId::CreateFromExtensionId(
-        kODFSExtensionId);
+        extension_misc::kODFSExtensionId);
     ash::file_system_provider::MountOptions options(file_system_id_, "ODFS");
     EXPECT_EQ(base::File::FILE_OK,
               service_->MountFileSystem(provider_id_, options));
@@ -1427,6 +1440,8 @@ class OneDriveTest : public TestAccountBrowserTest {
         AbsoluteOdfsTestPath());
 
     web_app_publisher_ = std::make_unique<FakeWebAppPublisher>(profile());
+
+    SetConnectionOffline();
   }
 
   Profile* profile() { return browser()->profile(); }
@@ -1464,9 +1479,15 @@ class OneDriveTest : public TestAccountBrowserTest {
         "pivots%2F" + user_email);
   }
 
+  void SetConnectionOffline() {
+    content::SetNetworkConnectionTrackerForTesting(nullptr);
+    content::SetNetworkConnectionTrackerForTesting(
+        network_connection_tracker_.get());
+    network::TestNetworkConnectionTracker::GetInstance()->SetConnectionType(
+        network::mojom::ConnectionType::CONNECTION_NONE);
+  }
+
   void SetConnectionOnline() {
-    network_connection_tracker_ =
-        network::TestNetworkConnectionTracker::CreateInstance();
     content::SetNetworkConnectionTrackerForTesting(nullptr);
     content::SetNetworkConnectionTrackerForTesting(
         network_connection_tracker_.get());
@@ -1488,7 +1509,7 @@ class OneDriveTest : public TestAccountBrowserTest {
   std::string file_system_id_;
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
-  ash::file_system_provider::Service* service_;
+  raw_ptr<ash::file_system_provider::Service, ExperimentalAsh> service_;
   std::string test_file_name_;
 };
 

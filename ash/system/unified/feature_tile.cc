@@ -8,6 +8,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
+#include "ash/style/typography.h"
 #include "ash/system/tray/tray_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/vector_icons/vector_icons.h"
@@ -133,58 +134,27 @@ void FeatureTile::CreateChildViews() {
     sub_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
         -1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
     sub_label_->SetLineHeight(kPrimarySubtitleLineHeight);
+    if (chromeos::features::IsJellyEnabled()) {
+      TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosAnnotation1,
+                                            *sub_label_);
+    }
+  }
+  if (chromeos::features::IsJellyEnabled()) {
+    TypographyProvider::Get()->StyleLabel(
+        is_compact ? TypographyToken::kCrosAnnotation2
+                   : TypographyToken::kCrosButton2,
+        *label_);
   }
 }
 
-void FeatureTile::CreateDrillInButton(base::RepeatingCallback<void()> callback,
+void FeatureTile::CreateDrillInButton(base::RepeatingClosure callback,
                                       const std::u16string& tooltip_text) {
-  DCHECK_EQ(type_, TileType::kPrimary);
+  CreateDrillInButtonView(callback, tooltip_text);
+}
 
-  auto drill_in_button = std::make_unique<views::LabelButton>(callback);
-  drill_in_button->SetLayoutManager(std::make_unique<FlexLayout>())
-      ->SetMainAxisAlignment(views::LayoutAlignment::kCenter)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
-  drill_in_button->SetPreferredSize(kDrillContainerSize);
-  drill_in_button->SetFocusBehavior(FocusBehavior::NEVER);
-  drill_in_button->SetTooltipText(tooltip_text);
-
-  auto drill_in_arrow = std::make_unique<IconButton>(
-      callback,
-      is_togglable_ ? IconButton::Type::kXSmall
-                    : IconButton::Type::kXSmallFloating,
-      &kQuickSettingsRightArrowIcon, tooltip_text,
-      /*togglable=*/is_togglable_,
-      /*has_border=*/true);
-
-  // Focus behavior is set on this view, but we let its parent view
-  // `drill_in_button_` handle the button events.
-  drill_in_arrow->SetCanProcessEventsWithinSubtree(false);
-
-  // Only buttons with Toggle + Drill-in behavior can focus the drill-in arrow
-  // and process drill-in button events.
-  if (!is_togglable_) {
-    drill_in_button->SetCanProcessEventsWithinSubtree(false);
-    drill_in_arrow->SetFocusBehavior(FocusBehavior::NEVER);
-  }
-
-  drill_in_button_ = AddChildView(std::move(drill_in_button));
-  drill_in_arrow_ = drill_in_button_->AddChildView(std::move(drill_in_arrow));
-
-  drill_in_arrow_->SetIconColorId(cros_tokens::kCrosSysSecondary);
-  drill_in_arrow_->SetIconToggledColorId(
-      cros_tokens::kCrosSysSystemOnPrimaryContainer);
-
-  // TODO(b/262615213): Delete when Jelly launches.
-  if (!chromeos::features::IsJellyEnabled()) {
-    drill_in_arrow_->SetBackgroundColorId(
-        kColorAshControlBackgroundColorInactive);
-    drill_in_arrow_->SetBackgroundToggledColorId(
-        static_cast<ui::ColorId>(kColorAshTileSmallCircle));
-    return;
-  }
-  drill_in_arrow_->SetBackgroundColorId(cros_tokens::kCrosSysHoverOnSubtle);
-  drill_in_arrow_->SetBackgroundToggledColorId(
-      cros_tokens::kCrosSysHighlightShape);
+void FeatureTile::CreateDecorativeDrillInButton(
+    const std::u16string& tooltip_text) {
+  CreateDrillInButtonView(base::RepeatingClosure(), tooltip_text);
 }
 
 void FeatureTile::UpdateColors() {
@@ -199,7 +169,7 @@ void FeatureTile::UpdateColors() {
                                 : cros_tokens::kCrosSysOnSurface;
     foreground_optional_color =
         toggled_ ? cros_tokens::kCrosSysSystemOnPrimaryContainer
-                 : cros_tokens::kCrosSysSecondary;
+                 : cros_tokens::kCrosSysOnSurfaceVariant;
   } else {
     background_color = cros_tokens::kCrosSysDisabledContainer;
     foreground_color = cros_tokens::kCrosSysDisabled;
@@ -282,6 +252,62 @@ void FeatureTile::UpdateDrillInButtonFocusRingColor() {
   views::FocusRing::Get(drill_in_arrow_)
       ->SetColorId(toggled_ ? cros_tokens::kCrosSysFocusRingOnPrimaryContainer
                             : cros_tokens::kCrosSysFocusRing);
+}
+
+void FeatureTile::CreateDrillInButtonView(
+    base::RepeatingCallback<void()> callback,
+    const std::u16string& tooltip_text) {
+  DCHECK_EQ(type_, TileType::kPrimary);
+
+  const bool has_callback = callback != base::RepeatingClosure();
+
+  auto drill_in_button = std::make_unique<views::LabelButton>(callback);
+  drill_in_button->SetLayoutManager(std::make_unique<FlexLayout>())
+      ->SetMainAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
+  drill_in_button->SetPreferredSize(kDrillContainerSize);
+  drill_in_button->SetFocusBehavior(FocusBehavior::NEVER);
+  drill_in_button->SetTooltipText(tooltip_text);
+
+  auto drill_in_arrow = std::make_unique<IconButton>(
+      callback,
+      has_callback ? IconButton::Type::kXSmall
+                   : IconButton::Type::kXSmallFloating,
+      &kQuickSettingsRightArrowIcon, tooltip_text,
+      /*togglable=*/is_togglable_,
+      /*has_border=*/true);
+
+  // Focus behavior is set on this view, but we let its parent view
+  // `drill_in_button_` handle the button events.
+  drill_in_arrow->SetCanProcessEventsWithinSubtree(false);
+
+  drill_in_arrow->SetIconColorId(cros_tokens::kCrosSysSecondary);
+  drill_in_arrow->SetIconToggledColorId(
+      cros_tokens::kCrosSysSystemOnPrimaryContainer);
+
+  if (has_callback) {
+    // Buttons with a drill-in callback set a background color for the icon
+    // button.
+    drill_in_arrow->SetBackgroundColorId(cros_tokens::kCrosSysHoverOnSubtle);
+    drill_in_arrow->SetBackgroundToggledColorId(
+        cros_tokens::kCrosSysHighlightShape);
+
+    // TODO(b/262615213): Delete when Jelly launches.
+    if (!chromeos::features::IsJellyEnabled()) {
+      drill_in_arrow->SetBackgroundColorId(
+          kColorAshControlBackgroundColorInactive);
+      drill_in_arrow->SetBackgroundToggledColorId(
+          static_cast<ui::ColorId>(kColorAshTileSmallCircle));
+    }
+  } else {
+    // Decorative drill-in buttons do not focus the drill-in arrow nor process
+    // drill-in button events.
+    drill_in_button->SetCanProcessEventsWithinSubtree(false);
+    drill_in_arrow->SetFocusBehavior(FocusBehavior::NEVER);
+  }
+
+  drill_in_button_ = AddChildView(std::move(drill_in_button));
+  drill_in_arrow_ = drill_in_button_->AddChildView(std::move(drill_in_arrow));
 }
 
 BEGIN_METADATA(FeatureTile, views::Button)

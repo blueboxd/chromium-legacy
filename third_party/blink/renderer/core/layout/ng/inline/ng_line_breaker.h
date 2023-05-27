@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_line_layout_opportunity.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_text_index.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
@@ -19,7 +20,6 @@
 namespace blink {
 
 class Hyphenation;
-class NGBlockBreakToken;
 class NGColumnSpannerPath;
 class NGInlineBreakToken;
 class NGInlineItem;
@@ -58,12 +58,7 @@ class CORE_EXPORT NGLineBreaker {
   // the line.
   void NextLine(NGLineInfo*);
 
-  bool IsFinished() const { return item_index_ >= Items().size(); }
-
-  void PropagateBreakToken(const NGBlockBreakToken*);
-  HeapVector<Member<const NGBlockBreakToken>>& PropagatedBreakTokens() {
-    return propagated_break_tokens_;
-  }
+  bool IsFinished() const { return current_.item_index >= Items().size(); }
 
   // Computing |NGLineBreakerMode::kMinContent| with |MaxSizeCache| caches
   // information that can help computing |kMaxContent|. It is recommended to set
@@ -246,8 +241,7 @@ class CORE_EXPORT NGLineBreaker {
 
   // Represents the current offset of the input.
   LineBreakState state_;
-  unsigned item_index_ = 0;
-  unsigned offset_ = 0;
+  NGInlineItemTextIndex current_;
   unsigned svg_addressable_offset_ = 0;
 
   // |WhitespaceState| of the current end. When a line is broken, this indicates
@@ -367,8 +361,6 @@ class CORE_EXPORT NGLineBreaker {
   // This is copied from NGInlineNode, then updated after each forced line break
   // if 'unicode-bidi: plaintext'.
   TextDirection base_direction_;
-
-  HeapVector<Member<const NGBlockBreakToken>> propagated_break_tokens_;
 
   // Fields for `box-decoration-break: clone`.
   unsigned cloned_box_decorations_count_ = 0;

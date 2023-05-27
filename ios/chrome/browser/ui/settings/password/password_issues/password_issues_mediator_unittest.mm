@@ -8,6 +8,7 @@
 #import "base/test/scoped_feature_list.h"
 #import "components/google/core/common/google_util.h"
 #import "components/keyed_service/core/service_access_type.h"
+#import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
@@ -91,12 +92,16 @@ GURL GetLocalizedURL(const GURL& original) {
 
 @property(nonatomic, copy) CrURL* headerURL;
 
+@property(nonatomic, copy) NSString* dismissedWarningsButtonText;
+
 @end
 
 @implementation FakePasswordIssuesConsumer
 
-- (void)setPasswordIssues:(NSArray<PasswordIssueGroup*>*)passwordIssueGroups {
+- (void)setPasswordIssues:(NSArray<PasswordIssueGroup*>*)passwordIssueGroups
+    dismissedWarningsButtonText:(NSString*)buttonText {
   _passwordIssueGroups = passwordIssueGroups;
+  _dismissedWarningsButtonText = buttonText;
   _passwordIssuesListChangedWasCalled = YES;
 }
 
@@ -170,7 +175,8 @@ class PasswordIssuesMediatorTest : public BlockCleanupTest {
     form.password_issues = {
         {insecure_type,
          password_manager::InsecurityMetadata(
-             base::Time::Now(), password_manager::IsMuted(muted))}};
+             base::Time::Now(), password_manager::IsMuted(muted),
+             password_manager::TriggerBackendNotification(false))}};
     form.in_store = PasswordForm::Store::kProfileStore;
     store()->AddLogin(form);
   }
@@ -248,8 +254,6 @@ TEST_F(PasswordIssuesMediatorTest, TestPasswordIssuesChangedNotCalled) {
   MakeTestPasswordIssue(kExampleCom, kUsername, kPassword, InsecureType::kWeak);
   MakeTestPasswordIssue(kExampleCom2, kUsername, kPassword,
                         InsecureType::kReused);
-  MakeTestPasswordIssue(kExampleCom3, kUsername, kPassword,
-                        InsecureType::kLeaked, /*muted=*/true);
   RunUntilIdle();
 
   EXPECT_FALSE([consumer() passwordIssuesListChangedWasCalled]);
@@ -279,6 +283,8 @@ TEST_F(PasswordIssuesMediatorTest, TestPasswordIssuesFilteredByWarningType) {
   // Reused.
   MakeTestPasswordIssue(kExampleCom2, kUsername, kPassword,
                         InsecureType::kReused);
+  MakeTestPasswordIssue(kExampleCom3, kUsername2, kPassword,
+                        InsecureType::kReused);
   // Dismissed Compromised
   MakeTestPasswordIssue(kExampleCom3, kUsername, kPassword,
                         InsecureType::kLeaked, /*muted=*/true);
@@ -293,20 +299,31 @@ TEST_F(PasswordIssuesMediatorTest, TestPasswordIssuesFilteredByWarningType) {
   CheckIssue(/*group=*/0, /*index=*/0, /*expected_website=*/kExampleString,
              /*expected_username=*/GetUsername2());
 
+  EXPECT_NSEQ(consumer().dismissedWarningsButtonText,
+              @"Dismissed Warnings (1)");
+
   // Send only weak passwords to consumer.
   CreateMediator(WarningType::kWeakPasswordsWarning);
 
   CheckIssue();
 
+  EXPECT_FALSE(consumer().dismissedWarningsButtonText);
+
   // Send only reused passwords to consumer.
   CreateMediator(WarningType::kReusedPasswordsWarning);
 
   CheckIssue(/*group=*/0, /*index=*/0, /*expected_website=*/kExample2String);
+  CheckIssue(/*group=*/0, /*index=*/1, /*expected_website=*/kExample3String,
+             /*expected_username=*/GetUsername2());
+
+  EXPECT_FALSE(consumer().dismissedWarningsButtonText);
 
   // Send only dismissed passwords to consumer.
   CreateMediator(WarningType::kDismissedWarningsWarning);
 
   CheckIssue(/*group=*/0, /*index=*/0, /*expected_website=*/kExample3String);
+
+  EXPECT_FALSE(consumer().dismissedWarningsButtonText);
 }
 
 /// Tests the mediator sets the consumer title for compromised passwords.
@@ -492,6 +509,9 @@ TEST_F(PasswordIssuesMediatorTest, TestPasswordSorting) {
 
 // Tests that reused password issues are grouped by password.
 TEST_F(PasswordIssuesMediatorTest, TestReusedPasswordsGrouping) {
+  base::test::ScopedFeatureList feature_list(
+      password_manager::features::kIOSPasswordCheckup);
+
   CreateMediator(WarningType::kReusedPasswordsWarning);
   CheckGroupsCount(0);
 

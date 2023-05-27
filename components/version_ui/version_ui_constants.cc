@@ -65,6 +65,7 @@ const char kOSType[] = "os_type";
 #endif
 #if BUILDFLAG(IS_ANDROID)
 const char kOSVersion[] = "os_version";
+const char kVersionCode[] = "version_code";
 const char kTargetSdkVersionName[] = "target_sdk_version_name";
 const char kTargetSdkVersion[] = "target_sdk_version";
 const char kTargetsUName[] = "targets_u_name";
@@ -92,6 +93,8 @@ const char kUserAgent[] = "useragent";
 const char kUserAgentName[] = "user_agent_name";
 const char kVariationsCmdName[] = "variations_cmd_name";
 const char kVariationsName[] = "variations_name";
+const char kVariationsSeed[] = "variations_seed";
+const char kVariationsSeedName[] = "variations_seed_name";
 const char kVersion[] = "version";
 const char kVersionModifier[] = "version_modifier";
 const char kVersionProcessorVariation[] = "version_processor_variation";

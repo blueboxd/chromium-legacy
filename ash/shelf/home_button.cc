@@ -8,10 +8,16 @@
 #include <memory>
 
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/app_list/app_list_model_provider.h"
+#include "ash/app_list/model/app_list_item.h"
+#include "ash/app_list/model/app_list_model.h"
+#include "ash/app_list/quick_app_access_model.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_control_button.h"
 #include "ash/shelf/shelf_focus_cycler.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
@@ -19,10 +25,14 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/user_education/user_education_class_properties.h"
+#include "ash/user_education/user_education_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/check_op.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/time/time.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -33,14 +43,20 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/button_controller.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 namespace {
+
+// The space between the home button and quick app.
+constexpr int kQuickAppStartMargin = 8;
 
 constexpr uint8_t kAssistantVisibleAlpha = 255;    // 100% alpha
 constexpr uint8_t kAssistantInvisibleAlpha = 138;  // 54% alpha
@@ -76,6 +92,21 @@ constexpr base::TimeDelta kNudgeLabelShowingDuration = base::Seconds(6);
 // app in hotseat. Used to determine if `nudge_label_` should be shown.
 constexpr int kMinSpaceBetweenNudgeLabelAndHotseat = 24;
 
+// The durations and delay used for animating in the `quick_app_button_` and
+// `expandable_container_`.
+constexpr base::TimeDelta kQuickAppSlideSlideInDuration =
+    base::Milliseconds(200);
+constexpr base::TimeDelta kQuickAppButtonFadeInDelay = base::Milliseconds(50);
+constexpr base::TimeDelta kQuickAppButtonFadeInDuration =
+    base::Milliseconds(50);
+constexpr base::TimeDelta kQuickAppContainerFadeInDuration =
+    base::Milliseconds(100);
+
+// The durations used for animating out the `quick_app_button_` and
+// `expandable_container_`.
+constexpr base::TimeDelta kQuickAppSlideOutDuration = base::Milliseconds(200);
+constexpr base::TimeDelta kQuickAppFadeOutDuration = base::Milliseconds(100);
+
 }  // namespace
 
 // static
@@ -110,21 +141,38 @@ HomeButton::HomeButton(Shelf* shelf)
   SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
   layer()->SetName("shelf/Homebutton");
 
-  if (features::IsHomeButtonWithTextEnabled()) {
+  if (features::IsHomeButtonWithTextEnabled() &&
+      !features::IsHomeButtonQuickAppAccessEnabled()) {
     // Directly shows the nudge label if the text-in-shelf feature is enabled.
     CreateNudgeLabel();
-    label_container_->SetVisible(true);
+    expandable_container_->SetVisible(true);
     shelf_->shelf_layout_manager()->LayoutShelf(false);
+  }
+
+  if (features::IsHomeButtonQuickAppAccessEnabled()) {
+    shell_observation_.Observe(Shell::Get());
+    app_list_model_observation_.Observe(AppListModelProvider::Get());
+    quick_app_model_observation_.Observe(
+        AppListModelProvider::Get()->quick_app_access_model());
+  }
+
+  if (features::IsUserEducationEnabled()) {
+    // NOTE: Set `kHelpBubbleContextKey` before `views::kElementIdentifierKey`
+    // in case registration causes a help bubble to be created synchronously.
+    SetProperty(kHelpBubbleContextKey, HelpBubbleContext::kAsh);
+    SetProperty(views::kElementIdentifierKey, kHomeButtonElementId);
   }
 }
 
 HomeButton::~HomeButton() = default;
 
 gfx::Size HomeButton::CalculatePreferredSize() const {
-  // Take the preferred size of the nudge label into consideration when it is
-  // visible. Note that the button width is already included in the label width.
-  if (label_container_ && label_container_->GetVisible())
-    return label_container_->GetPreferredSize();
+  // Take the preferred size of the expandable container into consideration when
+  // it is visible. Note that the button width is already included in the label
+  // width.
+  if (expandable_container_ && expandable_container_->GetVisible()) {
+    return expandable_container_->GetPreferredSize();
+  }
 
   return ShelfControlButton::CalculatePreferredSize();
 }
@@ -132,9 +180,33 @@ gfx::Size HomeButton::CalculatePreferredSize() const {
 void HomeButton::Layout() {
   ShelfControlButton::Layout();
 
-  if (label_container_) {
-    label_container_->SetSize(
-        gfx::Size(label_container_->GetPreferredSize().width(), height()));
+  if (expandable_container_) {
+    if (shelf_->IsHorizontalAlignment()) {
+      expandable_container_->SetSize(gfx::Size(
+          expandable_container_->GetPreferredSize().width(), height()));
+    } else {
+      expandable_container_->SetSize(gfx::Size(
+          width(), expandable_container_->GetPreferredSize().height()));
+    }
+
+    if (quick_app_button_) {
+      if (shelf_->IsHorizontalAlignment()) {
+        expandable_container_->SetBorder(
+            views::CreateEmptyBorder(gfx::Insets::TLBR(
+                0,
+                ShelfControlButton::CalculatePreferredSize().width() +
+                    kQuickAppStartMargin,
+                0, 0)));
+      } else {
+        expandable_container_->SetBorder(
+            views::CreateEmptyBorder(gfx::Insets::TLBR(
+                ShelfControlButton::CalculatePreferredSize().height() +
+                    kQuickAppStartMargin,
+                0, 0, 0)));
+      }
+      expandable_container_->layer()->SetClipRect(
+          gfx::Rect(expandable_container_->size()));
+    }
   }
 }
 
@@ -156,12 +228,19 @@ void HomeButton::OnShelfButtonAboutToRequestFocusFromTabTraversal(
     ShelfButton* button,
     bool reverse) {
   DCHECK_EQ(button, this);
+  const bool quick_app_focused =
+      quick_app_button_ &&
+      (GetFocusManager()->GetFocusedView() == quick_app_button_);
+
   // Focus out if:
-  // *   The currently focused view is already this button, which implies that
-  //     this is the only button in this widget.
+  // *   The currently focused view is already this button, so focus out to
+  //     ensure traversal to a different button.
+  // *   Going forward with the quick app button currently focused, implies that
+  //     the widget is trying to traverse forward to the next widget.
   // *   Going in reverse when the shelf has a back button, which implies that
   //     the widget is trying to loop back from the back button.
   if (GetFocusManager()->GetFocusedView() == this ||
+      (quick_app_focused && !reverse) ||
       (reverse && shelf()->navigation_widget()->GetBackButton())) {
     shelf()->shelf_focus_cycler()->FocusOut(reverse,
                                             SourceView::kShelfNavigationView);
@@ -183,12 +262,12 @@ void HomeButton::ButtonPressed(views::Button* sender,
       GetDisplayId(), AppListShowSource::kShelfButton, event.time_stamp());
 
   // If the home button is pressed, fade out the nudge label if it is showing.
-  if (label_container_) {
+  if (expandable_container_ && !quick_app_button_) {
     // The label shouldn't be removed if the text-in-shelf feature is enabled.
     if (features::IsHomeButtonWithTextEnabled())
       return;
 
-    if (!label_container_->GetVisible()) {
+    if (!expandable_container_->GetVisible()) {
       // If the nudge label is not visible and will not be animating, directly
       // remove them as the nudge won't be showing anymore.
       RemoveNudgeLabel();
@@ -234,6 +313,11 @@ bool HomeButton::CanShowNudgeLabel() const {
   if (!shelf_->IsHorizontalAlignment())
     return false;
 
+  // Avoid showing the text nudge label when a quick app button is shown.
+  if (quick_app_button_) {
+    return false;
+  }
+
   // If there's no pinned app in shelf, shows the nudge label for the launcher
   // nudge.
   ShelfView* shelf_view = shelf_->hotseat_widget()->GetShelfView();
@@ -256,7 +340,7 @@ bool HomeButton::CanShowNudgeLabel() const {
                                     &first_app_bounds);
 
   gfx::Rect label_rect =
-      ConvertRectToWidget(label_container_->GetMirroredBounds());
+      ConvertRectToWidget(expandable_container_->GetMirroredBounds());
   aura::Window* native_window = GetWidget()->GetNativeWindow();
   DCHECK_EQ(shelf_native_window->GetRootWindow(),
             native_window->GetRootWindow());
@@ -284,8 +368,9 @@ void HomeButton::StartNudgeAnimation() {
   nudge_ripple_layer_.ReleaseLayer();
   if (nudge_label_)
     nudge_label_->layer()->GetAnimator()->AbortAllAnimations();
-  if (label_container_)
-    label_container_->layer()->GetAnimator()->AbortAllAnimations();
+  if (expandable_container_) {
+    expandable_container_->layer()->GetAnimator()->AbortAllAnimations();
+  }
 
   // Create the nudge label first to check if there is enough space to show it.
   if (!nudge_label_)
@@ -379,40 +464,49 @@ void HomeButton::OnThemeChanged() {
     ripple_layer_delegate_->set_color(
         GetColorProvider()->GetColor(kColorAshInkDropOpaqueColor));
   }
-  if (label_container_) {
-    label_container_->layer()->SetColor(
+  if (expandable_container_) {
+    expandable_container_->layer()->SetColor(
         AshColorProvider::Get()->GetControlsLayerColor(
             AshColorProvider::ControlsLayerType::
                 kControlBackgroundColorInactive));
-    nudge_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
+    if (nudge_label_) {
+      nudge_label_->SetEnabledColor(
+          AshColorProvider::Get()->GetContentLayerColor(
+              AshColorProvider::ContentLayerType::kTextColorPrimary));
+    }
   }
   SchedulePaint();
 }
 
-void HomeButton::CreateNudgeLabel() {
-  DCHECK(!label_container_);
+void HomeButton::CreateExpandableContainer() {
   const int home_button_width =
       ShelfControlButton::CalculatePreferredSize().width();
 
-  label_container_ = AddChildView(std::make_unique<views::View>());
-  label_container_->SetLayoutManager(std::make_unique<views::FillLayout>());
-  label_container_->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets::TLBR(0, home_button_width, 0, 16)));
-  label_container_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-  label_container_->layer()->SetMasksToBounds(true);
-  label_container_->layer()->SetColor(
+  expandable_container_ = AddChildView(std::make_unique<views::View>());
+  expandable_container_->SetLayoutManager(
+      std::make_unique<views::FillLayout>());
+  expandable_container_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  expandable_container_->layer()->SetMasksToBounds(true);
+  expandable_container_->layer()->SetColor(
       AshColorProvider::Get()->GetControlsLayerColor(
           AshColorProvider::ControlsLayerType::
               kControlBackgroundColorInactive));
-  label_container_->layer()->SetRoundedCornerRadius(
+  expandable_container_->layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF(home_button_width / 2.f));
-  label_container_->layer()->SetName("NudgeLabelContainer");
+  expandable_container_->layer()->SetName("NudgeLabelContainer");
+}
+
+void HomeButton::CreateNudgeLabel() {
+  DCHECK(!expandable_container_);
+
+  CreateExpandableContainer();
+  expandable_container_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+      0, ShelfControlButton::CalculatePreferredSize().width(), 0, 16)));
 
   // Create a view to clip the `nudge_label_` to the area right of the home
   // button during nudge label animation.
   auto* label_mask =
-      label_container_->AddChildView(std::make_unique<views::View>());
+      expandable_container_->AddChildView(std::make_unique<views::View>());
   label_mask->SetLayoutManager(std::make_unique<views::FillLayout>());
   label_mask->SetBorder(
       views::CreateEmptyBorder(gfx::Insets::TLBR(0, 12, 0, 0)));
@@ -430,8 +524,51 @@ void HomeButton::CreateNudgeLabel() {
   nudge_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextColorPrimary));
 
+  expandable_container_->SetVisible(false);
   Layout();
-  label_container_->SetVisible(false);
+}
+
+void HomeButton::CreateQuickAppButton() {
+  CreateExpandableContainer();
+  if (shelf_->IsHorizontalAlignment()) {
+    expandable_container_->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets::TLBR(0,
+                          ShelfControlButton::CalculatePreferredSize().width() +
+                              kQuickAppStartMargin,
+                          0, 0)));
+  } else {
+    expandable_container_->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
+        ShelfControlButton::CalculatePreferredSize().height() +
+            kQuickAppStartMargin,
+        0, 0, 0)));
+  }
+
+  quick_app_button_ = expandable_container_->AddChildView(
+      std::make_unique<views::ImageButton>(base::BindRepeating(
+          &HomeButton::QuickAppButtonPressed, base::Unretained(this))));
+  // TODO(b/266734005): Replace with localized string once finalized.
+  quick_app_button_->SetAccessibleName(u"QuickApp");
+
+  const int control_size = ShelfControlButton::CalculatePreferredSize().width();
+
+  const gfx::Size preferred_size = gfx::Size(control_size, control_size);
+
+  quick_app_button_->SetPaintToLayer();
+  quick_app_button_->layer()->SetFillsBoundsOpaquely(false);
+  quick_app_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      AppListModelProvider::Get()->quick_app_access_model()->GetAppIcon(
+          preferred_size));
+  quick_app_button_->SetSize(preferred_size);
+
+  shelf_->shelf_layout_manager()->LayoutShelf(false);
+}
+
+void HomeButton::QuickAppButtonPressed() {
+  ash::Shell::Get()->app_list_controller()->ActivateItem(
+      AppListModelProvider::Get()->quick_app_access_model()->quick_app_id(),
+      /*event_flags=*/0, ash::AppListLaunchedFrom::kLaunchedFromQuickAppAccess);
+  AppListModelProvider::Get()->quick_app_access_model()->SetQuickAppActivated();
 }
 
 void HomeButton::AnimateNudgeRipple(views::AnimationBuilder& builder) {
@@ -528,68 +665,43 @@ void HomeButton::AnimateNudgeBounce(views::AnimationBuilder& builder) {
 
 void HomeButton::AnimateNudgeLabelSlideIn(views::AnimationBuilder& builder) {
   // Make sure the label is created.
-  DCHECK(label_container_ && nudge_label_);
+  DCHECK(expandable_container_ && nudge_label_);
 
   // Update the shelf layout to provide space for the navigation widget.
-  label_container_->SetVisible(true);
+  expandable_container_->SetVisible(true);
   shelf_->shelf_layout_manager()->LayoutShelf(false);
 
-  const int home_button_width =
-      ShelfControlButton::CalculatePreferredSize().width();
-  const int label_visible_width = label_container_->width() - home_button_width;
+  const gfx::Rect initial_container_clip_rect =
+      GetExpandableContainerClipRectToHomeButton();
+  const gfx::Transform initial_transform =
+      GetTransformForContainerChildBehindHomeButton();
 
-  gfx::Rect initial_container_clip_rect;
-  gfx::Transform initial_transform;
-
-  // Set up the initial label transform and label container clip rect.
-  if (base::i18n::IsRTL()) {
-    initial_transform.Translate(label_visible_width, 0);
-    initial_container_clip_rect = gfx::Rect(
-        label_visible_width, 0, home_button_width, label_container_->height());
-  } else {
-    initial_transform.Translate(-label_visible_width, 0);
-    initial_container_clip_rect =
-        gfx::Rect(0, 0, home_button_width, label_container_->height());
-  }
-
-  // Calculate the target clip rect on `label_container_`.
-  gfx::Rect container_target_clip_rect = gfx::Rect(label_container_->size());
+  // Calculate the target clip rect on `expandable_container_`.
+  const gfx::Rect container_target_clip_rect =
+      gfx::Rect(expandable_container_->size());
 
   // Set up the animation of the `nudge_label_`
   builder.GetCurrentSequence()
       .At(base::TimeDelta())
       .SetDuration(base::TimeDelta())
       .SetTransform(nudge_label_->layer(), initial_transform)
-      .SetClipRect(label_container_->layer(), initial_container_clip_rect)
-      .SetOpacity(label_container_->layer(), 0)
+      .SetClipRect(expandable_container_->layer(), initial_container_clip_rect)
+      .SetOpacity(expandable_container_->layer(), 0)
       .Then()
       .SetDuration(kNudgeLabelTransitionOnDuration)
       .SetTransform(nudge_label_->layer(), gfx::Transform(),
                     gfx::Tween::ACCEL_5_70_DECEL_90)
-      .SetClipRect(label_container_->layer(), container_target_clip_rect,
+      .SetClipRect(expandable_container_->layer(), container_target_clip_rect,
                    gfx::Tween::ACCEL_5_70_DECEL_90)
-      .SetOpacity(label_container_->layer(), 1,
+      .SetOpacity(expandable_container_->layer(), 1,
                   gfx::Tween::ACCEL_5_70_DECEL_90);
 }
 
 void HomeButton::AnimateNudgeLabelSlideOut() {
-  const int home_button_width =
-      ShelfControlButton::CalculatePreferredSize().width();
-  const int label_visible_width = label_container_->width() - home_button_width;
-
-  gfx::Transform target_transform;
-  gfx::Rect container_target_clip_rect;
-
-  // Calculate the target transform and clip rect.
-  if (base::i18n::IsRTL()) {
-    target_transform.Translate(label_visible_width, 0);
-    container_target_clip_rect = gfx::Rect(
-        label_visible_width, 0, home_button_width, label_container_->height());
-  } else {
-    target_transform.Translate(-label_visible_width, 0);
-    container_target_clip_rect =
-        gfx::Rect(0, 0, home_button_width, label_container_->height());
-  }
+  const gfx::Transform target_transform =
+      GetTransformForContainerChildBehindHomeButton();
+  const gfx::Rect container_target_clip_rect =
+      GetExpandableContainerClipRectToHomeButton();
 
   views::AnimationBuilder()
       .SetPreemptionStrategy(
@@ -602,9 +714,9 @@ void HomeButton::AnimateNudgeLabelSlideOut() {
       .SetDuration(kNudgeLabelTransitionOffDuration)
       .SetTransform(nudge_label_->layer(), target_transform,
                     gfx::Tween::ACCEL_40_DECEL_100_3)
-      .SetClipRect(label_container_->layer(), container_target_clip_rect,
+      .SetClipRect(expandable_container_->layer(), container_target_clip_rect,
                    gfx::Tween::ACCEL_40_DECEL_100_3)
-      .SetOpacity(label_container_->layer(), 0,
+      .SetOpacity(expandable_container_->layer(), 0,
                   gfx::Tween::ACCEL_40_DECEL_100_3);
 }
 
@@ -618,7 +730,7 @@ void HomeButton::AnimateNudgeLabelFadeOut() {
                                 weak_ptr_factory_.GetWeakPtr()))
       .Once()
       .SetDuration(kNudgeLabelFadeOutDuration)
-      .SetOpacity(label_container_->layer(), 0, gfx::Tween::LINEAR);
+      .SetOpacity(expandable_container_->layer(), 0, gfx::Tween::LINEAR);
 }
 
 void HomeButton::OnNudgeAnimationStarted() {
@@ -632,8 +744,8 @@ void HomeButton::OnNudgeAnimationEnded() {
   nudge_ripple_layer_.ReleaseLayer();
   ripple_layer_delegate_.reset();
 
-  if (label_container_) {
-    label_container_->SetVisible(false);
+  if (expandable_container_) {
+    expandable_container_->SetVisible(false);
     shelf_->shelf_layout_manager()->LayoutShelf(false);
   }
 
@@ -665,9 +777,15 @@ void HomeButton::OnLabelFadeOutAnimationEnded() {
 }
 
 void HomeButton::RemoveNudgeLabel() {
-  RemoveChildViewT(label_container_);
-  label_container_ = nullptr;
+  RemoveChildViewT(expandable_container_.get());
+  expandable_container_ = nullptr;
   nudge_label_ = nullptr;
+}
+
+void HomeButton::RemoveQuickAppButton() {
+  RemoveChildViewT(expandable_container_.get());
+  expandable_container_ = nullptr;
+  quick_app_button_ = nullptr;
 }
 
 bool HomeButton::DoesIntersectRect(const views::View* target,
@@ -675,10 +793,11 @@ bool HomeButton::DoesIntersectRect(const views::View* target,
   DCHECK_EQ(target, this);
   gfx::Rect button_bounds = target->GetLocalBounds();
 
-  // If the `label_container_` is visible, set all the area within the label
-  // bounds clickable.
-  if (label_container_ && label_container_->GetVisible())
-    button_bounds = label_container_->layer()->bounds();
+  // If the `expandable_container_` is visible, set all the area within the
+  // label bounds clickable.
+  if (expandable_container_ && expandable_container_->GetVisible()) {
+    button_bounds = expandable_container_->layer()->bounds();
+  }
 
   // Increase clickable area for the button to account for clicks around the
   // spacing. This will not intercept events outside of the parent widget.
@@ -688,6 +807,144 @@ bool HomeButton::DoesIntersectRect(const views::View* target,
                       -ShelfConfig::Get()->control_button_edge_spacing(
                           shelf()->IsHorizontalAlignment())));
   return button_bounds.Intersects(rect);
+}
+
+void HomeButton::OnShellDestroying() {
+  shell_observation_.Reset();
+  app_list_model_observation_.Reset();
+  quick_app_model_observation_.Reset();
+}
+
+void HomeButton::OnActiveAppListModelsChanged(AppListModel* model,
+                                              SearchModel* search_model) {
+  QuickAppAccessModel* quick_model =
+      AppListModelProvider::Get()->quick_app_access_model();
+  quick_app_model_observation_.Reset();
+  quick_app_model_observation_.Observe(quick_model);
+
+  OnQuickAppShouldShowChanged(quick_model->quick_app_should_show_state());
+}
+
+void HomeButton::OnQuickAppShouldShowChanged(bool show_quick_app) {
+  if (!show_quick_app && quick_app_button_) {
+    AnimateQuickAppButtonOut();
+  } else if (show_quick_app && !quick_app_button_) {
+    if (nudge_label_) {
+      RemoveNudgeLabel();
+    }
+    AnimateQuickAppButtonIn();
+  }
+}
+
+void HomeButton::OnQuickAppIconChanged() {
+  if (!quick_app_button_) {
+    return;
+  }
+
+  const int control_size = ShelfControlButton::CalculatePreferredSize().width();
+  quick_app_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      AppListModelProvider::Get()->quick_app_access_model()->GetAppIcon(
+          gfx::Size(control_size, control_size)));
+}
+
+void HomeButton::AnimateQuickAppButtonIn() {
+  CreateQuickAppButton();
+
+  CHECK(quick_app_button_ && expandable_container_ && !nudge_label_);
+
+  const gfx::Rect initial_container_clip_rect =
+      GetExpandableContainerClipRectToHomeButton();
+  const gfx::Transform initial_transform =
+      GetTransformForContainerChildBehindHomeButton();
+
+  // Calculate the target clip rect on `expandable_container_`.
+  const gfx::Rect container_target_clip_rect =
+      gfx::Rect(expandable_container_->size());
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(base::TimeDelta())
+      .SetTransform(quick_app_button_->layer(), initial_transform)
+      .SetClipRect(expandable_container_->layer(), initial_container_clip_rect)
+      .SetOpacity(quick_app_button_->layer(), 0)
+      .SetOpacity(expandable_container_->layer(), 0)
+      .Then()
+      .SetDuration(kQuickAppSlideSlideInDuration)
+      .SetClipRect(expandable_container_->layer(), container_target_clip_rect,
+                   gfx::Tween::ACCEL_20_DECEL_100)
+      .SetTransform(quick_app_button_->layer(), gfx::Transform(),
+                    gfx::Tween::ACCEL_20_DECEL_100)
+      .At(kQuickAppButtonFadeInDelay)
+      .SetDuration(kQuickAppButtonFadeInDuration)
+      .SetOpacity(quick_app_button_->layer(), 1)
+      .At(base::TimeDelta())
+      .SetDuration(kQuickAppContainerFadeInDuration)
+      .SetOpacity(expandable_container_->layer(), 1);
+}
+
+void HomeButton::AnimateQuickAppButtonOut() {
+  const gfx::Transform target_transform =
+      GetTransformForContainerChildBehindHomeButton();
+  const gfx::Rect container_target_clip_rect =
+      GetExpandableContainerClipRectToHomeButton();
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .OnEnded(base::BindOnce(&HomeButton::OnQuickAppButtonSlideOutDone,
+                              weak_ptr_factory_.GetWeakPtr()))
+      .OnAborted(base::BindOnce(&HomeButton::OnQuickAppButtonSlideOutDone,
+                                weak_ptr_factory_.GetWeakPtr()))
+      .Once()
+      .SetDuration(kQuickAppSlideOutDuration)
+      .SetTransform(quick_app_button_->layer(), target_transform,
+                    gfx::Tween::ACCEL_20_DECEL_100)
+      .SetClipRect(expandable_container_->layer(), container_target_clip_rect,
+                   gfx::Tween::ACCEL_20_DECEL_100)
+      .At(base::TimeDelta())
+      .SetDuration(kQuickAppFadeOutDuration)
+      .SetOpacity(expandable_container_->layer(), 0)
+      .SetOpacity(quick_app_button_->layer(), 0);
+}
+
+void HomeButton::OnQuickAppButtonSlideOutDone() {
+  RemoveQuickAppButton();
+  shelf_->shelf_layout_manager()->LayoutShelf(true);
+}
+
+gfx::Transform HomeButton::GetTransformForContainerChildBehindHomeButton() {
+  const int home_button_width =
+      ShelfControlButton::CalculatePreferredSize().width();
+
+  const int container_visible_width =
+      expandable_container_->width() - home_button_width;
+
+  gfx::Transform target_transform;
+  if (shelf_->IsHorizontalAlignment()) {
+    target_transform.Translate(base::i18n::IsRTL() ? container_visible_width
+                                                   : -container_visible_width,
+                               0);
+  } else {
+    target_transform.Translate(
+        0, home_button_width - expandable_container_->height());
+  }
+  return target_transform;
+}
+
+gfx::Rect HomeButton::GetExpandableContainerClipRectToHomeButton() {
+  const int home_button_width =
+      ShelfControlButton::CalculatePreferredSize().width();
+  const int container_visible_width =
+      expandable_container_->width() - home_button_width;
+
+  gfx::Rect clip_rect =
+      gfx::Rect(base::i18n::IsRTL() ? container_visible_width : 0, 0,
+                home_button_width, home_button_width);
+
+  return clip_rect;
 }
 
 }  // namespace ash

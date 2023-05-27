@@ -79,7 +79,6 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="2928420929544864228">Pemasangan selesai.</translation>
 <translation id="2977470724722393594">Chromium telah dikemas kini</translation>
 <translation id="2977506796191543575">Jika laman cuba mencuri kata laluan anda atau apabila anda memuat turun fail yang berbahaya, Chromium juga mungkin menghantar URL, termasuk sedikit kandungan halaman, kepada Penyemakan Imbas Selamat</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium disambungkan kepada peranti HID}other{Chromium disambungkan kepada peranti HID}}</translation>
 <translation id="3032706164202344641">Chromium tidak dapat menyemak kata laluan anda. Cuba lagi nanti.</translation>
 <translation id="3032787606318309379">Menambah ke Chromium...</translation>
 <translation id="3038232873781883849">Menunggu untuk memasang...</translation>
@@ -94,7 +93,6 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="3258596308407688501">Chromium tidak dapat membaca atau menulis pada direktori datanya:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Panduan ini membantu anda memahami pilihan anda supaya Chromium berfungsi dengan cara yang anda mahukan</translation>
 <translation id="3283186697780795848">Chromium versi <ph name="PRODUCT_VERSION" /> dipasang</translation>
 <translation id="3286538390144397061">Mulakan Semula Sekarang</translation>
 <translation id="328888136576916638">Kunci API Google tiada. Sesetengah fungsi Chromium akan dilumpuhkan.</translation>
@@ -239,6 +237,7 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="6327105987658262776">Kemas kini tidak tersedia.</translation>
 <translation id="6333502561965082103">Terdapat operasi lain sedang dijalankan pada Chromium. Sila cuba sebentar lagi.</translation>
 <translation id="6334986366598267305">Kini lebih mudah menggunakan Chromium dengan Akaun Google anda dan pada komputer yang dikongsi.</translation>
+<translation id="6335615313501343197">{NUM_DEVICES,plural, =0{Chromium telah mengakses peranti HID}=1{Chromium mengakses peranti HID}other{Chromium mengakses peranti HID}}</translation>
 <translation id="6365489425007284765">{COUNT,plural, =1{Pentadbir anda akan memadamkan data semakan imbas secara automatik apabila ciri ini tidak digunakan selama 1 minit. Pemadaman ini termasuk sejarah, autolengkap dan muat turun. Tab anda yang sedia ada akan kekal terbuka.}other{Pentadbir anda akan memadamkan data semakan imbas secara automatik apabila ciri ini tidak digunakan selama # minit. Pemadaman ini termasuk sejarah, autolengkap dan muat turun. Tab anda yang sedia ada akan kekal terbuka.}}</translation>
 <translation id="6373523479360886564">Adakah anda pasti mahu menyahpasang Chromium?</translation>
 <translation id="6384011394608460044"><ph name="BEGIN_BOLD" />Cara kami menggunakan data ini:<ph name="END_BOLD" /> Chromium dapat menganggarkan minat anda. Kemudian, laman yang anda lawati boleh meminta Chromium melihat minat anda untuk memeribadikan iklan yang anda lihat.</translation>
@@ -246,8 +245,10 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="6442900851116057561">Mulakan semula Chromium OS</translation>
 <translation id="6455857529632101747">Selamat datang ke profil Chromium</translation>
 <translation id="6475912303565314141">Sambungan turut mengawal halaman yang ditunjukkan apabila anda memulakan Chromium.</translation>
+<translation id="648319183876919572">Penyemakan Imbas Selamat Dipertingkatkan melakukan lebih banyak lagi untuk melindungi anda daripada laman web dan muat turun berbahaya</translation>
 <translation id="6510925080656968729">Nyahpasang Chromium</translation>
 <translation id="6542839706527980775">Setiap profil menyimpan maklumat Chromium profil itu sendiri seperti penanda halaman, sejarah, kata laluan dan pelbagai lagi</translation>
+<translation id="656935081669708576">Anda boleh menukar profil untuk melihat kata laluan daripada profil Chromium yang lain</translation>
 <translation id="6570579332384693436">Untuk membetulkan kesilapan ejaan, Chromium menghantar teks yang anda taip dalam medan teks kepada Google</translation>
 <translation id="6598877126913850652">Pergi ke tetapan pemberitahuan Chromium</translation>
 <translation id="6613594504749178791">Perubahan anda akan dilaksanakan apabila anda melancarkan semula Chromium pada masa hadapan.</translation>
@@ -383,7 +384,6 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="924957577793602335">Peribadikan Chromium anda</translation>
 <translation id="93478295209880648">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak lagi disokong pada Windows XP atau Windows Vista</translation>
 <translation id="942598560705308788">Sijil diurus oleh Chromium</translation>
-<translation id="959579472876010517">Manfaatkan sepenuhnya Chromium</translation>
 <translation id="965162752251293939">Siapakah yang sedang menggunakan Chromium?</translation>
 <translation id="967427899662692980">Dapatkan keselamatan Chromium yang paling kukuh</translation>
 <translation id="9792300276217204">Sentiasa kosongkan data laman daripada peranti anda apabila anda menutup Chromium</translation>

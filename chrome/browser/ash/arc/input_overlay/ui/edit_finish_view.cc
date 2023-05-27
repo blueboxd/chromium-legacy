@@ -21,11 +21,12 @@
 #include "ui/color/color_id.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/box_layout.h"
@@ -218,7 +219,12 @@ EditFinishView* EditFinishView::BuildView(
 
 EditFinishView::EditFinishView(
     DisplayOverlayController* display_overlay_controller)
-    : display_overlay_controller_(display_overlay_controller) {}
+    : display_overlay_controller_(display_overlay_controller) {
+  SetAccessibilityProperties(
+      ax::mojom::Role::kGroup,
+      l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_LAYOUT_ACCTIONS_MENU),
+      l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDIT_MENU_FOCUS));
+}
 
 EditFinishView::~EditFinishView() {}
 
@@ -277,11 +283,6 @@ void EditFinishView::Init(const gfx::Size& parent_size) {
 
 void EditFinishView::SetFocusRing() {
   SetFocusBehavior(FocusBehavior::ALWAYS);
-  GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
-  GetViewAccessibility().OverrideName(
-      l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_LAYOUT_ACCTIONS_MENU));
-  GetViewAccessibility().OverrideDescription(
-      l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_EDIT_MENU_FOCUS));
   views::FocusRing::Install(this);
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
                                                 kButtonCornerRadius);

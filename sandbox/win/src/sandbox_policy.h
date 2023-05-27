@@ -42,8 +42,8 @@ enum class SubSystem {
 enum class Semantics {
   kFilesAllowAny,       // Allows open or create for any kind of access that
                         // the file system supports.
-  kFilesAllowReadonly,  // Allows open or create with read access only.
-  kFilesAllowQuery,     // Allows access to query the attributes of a file.
+  kFilesAllowReadonly,  // Allows open or create with read access only
+                        // (includes access to query the attributes of a file).
   kNamedPipesAllowAny,  // Allows creation of a named pipe.
   kFakeGdiInit,         // Fakes user32 and gdi32 initialization. This can
                         // be used to allow the DLLs to load and initialize
@@ -220,13 +220,6 @@ class [[clang::lto_visibility_public]] TargetConfig {
 
   // Get the configured AppContainer.
   virtual scoped_refptr<AppContainer> GetAppContainer() = 0;
-
-  // Allows the launch of the the target process to proceed even if no job can
-  // be created.
-  virtual void SetAllowNoSandboxJob() = 0;
-
-  // Returns true if target process launch should proceed if job creation fails.
-  virtual bool GetAllowNoSandboxJob() = 0;
 
   // Adds a handle that will be closed in the target process after lockdown.
   // A nullptr value for handle_name indicates all handles of the specified

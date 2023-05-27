@@ -8,7 +8,7 @@ import {AcceleratorConfigurationProvider, AcceleratorConfigurationProviderRemote
 
 import {fakeAcceleratorConfig, fakeLayoutInfo} from './fake_data.js';
 import {FakeShortcutProvider} from './fake_shortcut_provider.js';
-import {Accelerator, AcceleratorConfigResult, AcceleratorSource, MojoAcceleratorConfig, MojoLayoutInfo, ShortcutProviderInterface} from './shortcut_types.js';
+import {Accelerator, AcceleratorSource, MojoAcceleratorConfig, MojoLayoutInfo, ShortcutProviderInterface} from './shortcut_types.js';
 
 
 
@@ -86,6 +86,12 @@ export class ShortcutProviderWrapper implements ShortcutProviderInterface {
     return this.remote.hasLauncherButton();
   }
 
+  addAccelerator(
+      source: AcceleratorSource, action: number,
+      accelerator: Accelerator): Promise<{result: AcceleratorResultData}> {
+    return this.remote.addAccelerator(source, action, accelerator);
+  }
+
   removeAccelerator(
       source: AcceleratorSource, action: number,
       accelerator: Accelerator): Promise<{result: AcceleratorResultData}> {
@@ -94,17 +100,9 @@ export class ShortcutProviderWrapper implements ShortcutProviderInterface {
 
   replaceAccelerator(
       source: AcceleratorSource, action: number, oldAccelerator: Accelerator,
-      newAccelerator: Accelerator): Promise<AcceleratorConfigResult> {
-    // TODO(cambickel) Replace with real mojo method.
-    return this.fakeProvider.replaceAccelerator(
+      newAccelerator: Accelerator): Promise<{result: AcceleratorResultData}> {
+    return this.remote.replaceAccelerator(
         source, action, oldAccelerator, newAccelerator);
-  }
-
-  addUserAccelerator(
-      source: AcceleratorSource, action: number,
-      accelerator: Accelerator): Promise<AcceleratorConfigResult> {
-    // TODO(cambickel) Replace with real mojo method.
-    return this.fakeProvider.addUserAccelerator(source, action, accelerator);
   }
 
   addObserver(observer: AcceleratorsUpdatedObserverRemote): void {
@@ -118,6 +116,12 @@ export class ShortcutProviderWrapper implements ShortcutProviderInterface {
 
   restoreAllDefaults(): Promise<{result: AcceleratorResultData}> {
     return this.remote.restoreAllDefaults();
+  }
+
+  preventProcessingAccelerators(preventProcessingAccelerators: boolean):
+      Promise<void> {
+    return this.remote.preventProcessingAccelerators(
+        preventProcessingAccelerators);
   }
 }
 

@@ -100,42 +100,34 @@ bool IsHardwareH264EncodingEnabled(
 }  // namespace
 
 bool IsSoftwareEnabled(Codec codec) {
-// As written, iOS only supports the VideoToolbox H264 encoder.
-//
-// TODO(https://crbug.com/1383572): media/cast should more clearly delineate
-// intended behavior for iOS.
-#if BUILDFLAG(IS_IOS)
-  return false;
-#else
   switch (codec) {
-    case CODEC_VIDEO_VP8:
+    case Codec::kVideoVp8:
       return true;
 
-    case CODEC_VIDEO_VP9:
+    case Codec::kVideoVp9:
       return base::FeatureList::IsEnabled(kCastStreamingVp9);
 
-    case CODEC_VIDEO_AV1:
+    case Codec::kVideoAv1:
       return IsCastStreamingAv1Enabled();
 
     // The test infrastructure is responsible for ensuring the fake codec is
     // used properly.
-    case CODEC_VIDEO_FAKE:
+    case Codec::kVideoFake:
       return true;
 
     default:
       return false;
   }
-#endif
 }
 
 bool IsHardwareEnabled(
     Codec codec,
     const std::vector<VideoEncodeAccelerator::SupportedProfile>& profiles) {
   switch (codec) {
-    case CODEC_VIDEO_VP8:
+    case Codec::kVideoVp8:
       return IsHardwareVP8EncodingEnabled(profiles);
 
-    case CODEC_VIDEO_H264:
+    case Codec::kVideoH264:
       return IsHardwareH264EncodingEnabled(profiles);
 
     default:

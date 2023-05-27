@@ -30,9 +30,11 @@ generate_jni("jni_headers") {
 
 android_library("unit_device_javatests") {
   testonly = true
+  resources_package = "org.chromium.chrome.browser.keyboard_accessory"
 
   sources = [ "javatests/src/org/chromium/chrome/browser/keyboard_accessory/tab_layout_component/KeyboardAccessoryTabLayoutViewTest.java" ]
   deps = [
+    ":test_resources",
     "internal:internal_java",
     "public:public_java",
     "//base:base_java",
@@ -82,6 +84,7 @@ android_library("test_java") {
     "public:public_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:base_java_test_support_uncommon",
     "//chrome/android:chrome_java",
     "//chrome/android:chrome_test_java",
     "//chrome/android:chrome_test_util_java",
@@ -112,10 +115,10 @@ android_library("test_java") {
     "//net/android:net_java_test_support",
     "//third_party/android_deps:espresso_java",
     "//third_party/android_deps:material_design_java",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",
+    "//third_party/androidx:androidx_test_monitor_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit",
@@ -174,6 +177,7 @@ robolectric_binary("keyboard_accessory_junit_tests") {
     "//components/feature_engagement/public:public_java",
     "//components/module_installer/android:module_installer_java",
     "//content/public/android:content_java",
+    "//third_party/android_deps:espresso_java",
     "//third_party/android_deps:material_design_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_recyclerview_recyclerview_java",

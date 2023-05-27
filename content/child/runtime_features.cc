@@ -82,7 +82,7 @@ void SetRuntimeFeatureDefaultsForPlatform(
   WebRuntimeFeatures::EnableCanvas2dImageChromium(
       enable_canvas_2d_image_chromium);
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   const bool enable_web_gl_image_chromium =
       command_line.HasSwitch(
           blink::switches::kEnableGpuMemoryBufferCompositorResources) &&
@@ -221,6 +221,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableDocumentPolicyNegotiation,
      raw_ref(features::kDocumentPolicyNegotiation)},
     {wf::EnableFedCm, raw_ref(features::kFedCm), kSetOnlyIfOverridden},
+    {wf::EnableFedCmAuthz, raw_ref(features::kFedCmAuthz), kDefault},
     {wf::EnableFedCmAutoReauthn, raw_ref(features::kFedCmAutoReauthn),
      kSetOnlyIfOverridden},
     {wf::EnableFedCmIdPRegistration, raw_ref(features::kFedCmIdPRegistration),
@@ -229,6 +230,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      kSetOnlyIfOverridden},
     {wf::EnableFedCmLoginHint, raw_ref(features::kFedCmLoginHint),
      kSetOnlyIfOverridden},
+    {wf::EnableGamepadMultitouch, raw_ref(features::kEnableGamepadMultitouch)},
+    {wf::EnableSharedStorageAPI,
+     raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
     {wf::EnableFedCmMultipleIdentityProviders,
      raw_ref(features::kFedCmMultipleIdentityProviders), kDefault},
     {wf::EnableFedCmRpContext, raw_ref(features::kFedCmRpContext), kDefault},
@@ -260,8 +264,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableMediaCastOverlayButton, raw_ref(media::kMediaCastOverlayButton)},
     {wf::EnableMediaEngagementBypassAutoplayPolicies,
      raw_ref(media::kMediaEngagementBypassAutoplayPolicies)},
-    {wf::EnableMouseSubframeNoImplicitCapture,
-     raw_ref(features::kMouseSubframeNoImplicitCapture)},
     {wf::EnableNotificationContentImage,
      raw_ref(features::kNotificationContentImage), kSetOnlyIfOverridden},
     {wf::EnablePaymentApp, raw_ref(features::kServiceWorkerPaymentApps)},
@@ -270,7 +272,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(features::kWindowsScrollingPersonality)},
     {wf::EnablePeriodicBackgroundSync,
      raw_ref(features::kPeriodicBackgroundSync)},
-    {wf::EnablePointerLockOptions, raw_ref(features::kPointerLockOptions)},
     {wf::EnablePushMessagingSubscriptionChange,
      raw_ref(features::kPushSubscriptionChangeEvent)},
     {wf::EnableRestrictGamepadAccess,
@@ -317,6 +318,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(device::features::kWebXrIncubations)},
     {wf::EnableWebXRLayers, raw_ref(device::features::kWebXrLayers)},
     {wf::EnableWebXRPlaneDetection,
+     raw_ref(device::features::kWebXrIncubations)},
+    {wf::EnableWebXRPoseMotionData,
      raw_ref(device::features::kWebXrIncubations)},
 #endif
     {wf::EnableRemoveMobileViewportDoubleTap,

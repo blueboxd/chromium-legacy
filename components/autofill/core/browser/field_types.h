@@ -159,6 +159,10 @@ enum ServerFieldType {
   ADDRESS_HOME_CITY = 33,
   ADDRESS_HOME_STATE = 34,
   ADDRESS_HOME_ZIP = 35,
+  // TODO(crbug.com/1434216): Autofill stores country codes. When
+  // ADDRESS_HOME_COUNTRY is accessed through `AutofillProfile::GetRawInfo()`, a
+  // country code is returned. When retrieved using
+  // `AutofillProfile::GetInfo()`, the country name is returned.
   ADDRESS_HOME_COUNTRY = 36,
 
   // ADDRESS_BILLING values [37, 43] are deprecated.
@@ -356,7 +360,7 @@ enum ServerFieldType {
   // One-time code used for verifying user identity.
   ONE_TIME_CODE = 129,
 
-  // Reserved for a server-side-only use: 130-137
+  // Reserved for a server-side-only use: 130-153
 
   // No new types can be added without a corresponding change to the Autofill
   // server.
@@ -365,7 +369,7 @@ enum ServerFieldType {
   // - `AutofillServerFieldType`
   // - `AutofilledFieldUserEditingStatusByFieldType` (16 * type + x)
   // - `AutofillPredictionsComparisonResult` (6 * type + x)
-  MAX_VALID_FIELD_TYPE = 137,
+  MAX_VALID_FIELD_TYPE = 153,
 };
 
 enum class FieldTypeGroup {

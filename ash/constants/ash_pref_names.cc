@@ -760,15 +760,6 @@ const char kDynamicColorColorScheme[] = "ash.dynamic_color.color_scheme";
 // color palette. It is an ARGB 32-bit unsigned integer stored as a uint64.
 const char kDynamicColorSeedColor[] = "ash.dynamic_color.seed_color";
 
-// An integer pref storing the number of times that dark/light mode educational
-// can still be shown. It will be initialized to the maximum number of times
-// that the nudge can be shown. And will be set to 0 if the user toggled the
-// entry points of dark/light mode ("Dark theme" inside quick settings or
-// personalization hub), which means the user already knows how to change the
-// color mode of the system.
-const char kDarkLightModeNudgeLeftToShowCount[] =
-    "ash.dark_light_mode.educational_nudge";
-
 // An integer pref storing the type of automatic scheduling of turning on and
 // off the dark mode feature similar to `kNightLightScheduleType`, but
 // custom scheduling (2) is the same as sunset to sunrise scheduling (1)
@@ -1012,8 +1003,21 @@ const char kUserCameraAllowed[] = "ash.user.camera_allowed";
 // A boolean pref indicating whether the microphone is allowed to be used.
 const char kUserMicrophoneAllowed[] = "ash.user.microphone_allowed";
 
-// A boolean pref indicating whether the geolocation is allowed to be used.
+// A boolean pref indicating whether the geolocation is allowed for the user.
 const char kUserGeolocationAllowed[] = "ash.user.geolocation_allowed";
+// An enum pref indicating whether the geolocation is allowed outside user
+// session. Values are from PrivacyHubController::AccessLevel.
+const char kDeviceGeolocationAllowed[] = "ash.device.geolocation_allowed";
+
+// Double prefs storing the most recent valid geoposition, which is only used
+// when the device lacks connectivity and we're unable to retrieve a valid
+// geoposition to calculate the sunset / sunrise times.
+//
+// Note the night light feature will be migrated to use `GeolocationController`
+// eventually, at which time `kNightLightCachedLatitude|Longitude` will be
+// superseded by these prefs.
+const char kDeviceGeolocationCachedLatitude[] = "ash.device.cached_latitude";
+const char kDeviceGeolocationCachedLongitude[] = "ash.device.cached_longitude";
 
 // A boolean pref which determines whether tap-dragging is enabled.
 const char kTapDraggingEnabled[] = "settings.touchpad.enable_tap_dragging";
@@ -1153,6 +1157,10 @@ const char kLauncherFilesPrivacyNotice[] =
 // Controlled by user policy.
 const char kLockScreenMediaControlsEnabled[] =
     "ash.lock_screen_media_controls_enabled";
+
+// Boolean pref which indicates if long press diacritics is in use
+const char kLongPressDiacriticsEnabled[] =
+    "settings.language.physical_keyboard_enable_diacritics_on_longpress";
 
 // Boolean pref which determines whether key repeat is enabled.
 const char kXkbAutoRepeatEnabled[] =
@@ -1431,6 +1439,16 @@ const char kPointingStickAcceleration[] =
 // A syncable time pref that stores the time of last session activation.
 const char kTimeOfLastSessionActivation[] =
     "ash.session.time_of_last_activation";
+
+// Copy of owner swap mouse buttons option to use on login screen.
+const char kOwnerPrimaryMouseButtonRight[] = "owner.mouse.primary_right";
+
+// Copy of the primary pointing stick buttons option to use on login screen.
+const char kOwnerPrimaryPointingStickButtonRight[] =
+    "owner.pointing_stick.primary_right";
+
+// Copy of owner tap-to-click option to use on login screen.
+const char kOwnerTapToClickEnabled[] = "owner.touchpad.enable_tap_to_click";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

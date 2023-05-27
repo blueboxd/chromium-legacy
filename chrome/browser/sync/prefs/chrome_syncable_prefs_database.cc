@@ -21,10 +21,9 @@
 #include "chrome/browser/ash/app_restore/full_restore_prefs.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
-#include "chromeos/ash/components/proximity_auth/proximity_auth_pref_names.h"
 #include "chromeos/ash/components/tether/pref_names.h"
 #include "components/metrics/demographics/user_demographics.h"
-#include "ui/chromeos/events/pref_names.h"
+#include "ui/events/ash/pref_names.h"
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/pref_names.h"
@@ -35,7 +34,9 @@ namespace {
 // Not an enum class to ease cast to int.
 namespace syncable_prefs_ids {
 // These values are persisted to logs. Entries should not be renumbered and
-// numeric values should never be reused.
+// numeric values should never be reused. When adding a new entry, append the
+// enumerator to the end. When removing an unused enumerator, comment it out,
+// making it clear the value was previously used.
 // Please also add new entries to `SyncablePref` enum in
 // tools/metrics/histograms/enums.xml.
 enum {
@@ -178,7 +179,8 @@ enum {
   kTextToSpeechVolume = 100133,
   kUse24HourClock = 100134,
   kUserPrintersAllowed = 100135,
-  kProximityAuthIsChromeOSLoginEnabled = 100136,
+  // kProximityAuthIsChromeOSLoginEnabled = 100136, // deprecated with removal
+  // of Sign in with Smart Lock
   kUserImageInfo = 100137,
   kGdataDisabled = 100138,
   kGdataCellularDisabled = 100139,
@@ -241,6 +243,8 @@ enum {
   kWebauthnCablev2Pairings = 100195,
   kDynamicColorColorScheme = 100196,
   kDynamicColorSeedColor = 100197,
+  kLongPressDiacritics = 100198,
+  kSidePanelCompanionEntryPinnedToToolbar = 100199,
   kAccessibilityColorFiltering = 100200,
   kAccessibilityColorVisionCorrectionAmount = 100201,
   kAccessibilityColorVisionDeficiencyType = 100202,
@@ -309,6 +313,9 @@ const auto& SyncablePreferences() {
           syncer::PREFERENCES}},
         {prefs::kShowHomeButton,
          {syncable_prefs_ids::kShowHomeButton, syncer::PREFERENCES}},
+        {prefs::kSidePanelCompanionEntryPinnedToToolbar,
+         {syncable_prefs_ids::kSidePanelCompanionEntryPinnedToToolbar,
+          syncer::PREFERENCES}},
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
         {extensions::pref_names::kPinnedExtensions,
@@ -568,6 +575,8 @@ const auto& SyncablePreferences() {
         {ash::prefs::kTouchpadSensitivity,
          {syncable_prefs_ids::kTouchpadSensitivity,
           syncer::OS_PRIORITY_PREFERENCES}},
+        {ash::prefs::kLongPressDiacriticsEnabled,
+         {syncable_prefs_ids::kLongPressDiacritics, syncer::OS_PREFERENCES}},
         {ash::prefs::kXkbAutoRepeatDelay,
          {syncable_prefs_ids::kXkbAutoRepeatDelay, syncer::OS_PREFERENCES}},
         {ash::prefs::kXkbAutoRepeatEnabled,
@@ -657,9 +666,6 @@ const auto& SyncablePreferences() {
          {syncable_prefs_ids::kUse24HourClock, syncer::OS_PREFERENCES}},
         {prefs::kUserPrintersAllowed,
          {syncable_prefs_ids::kUserPrintersAllowed, syncer::OS_PREFERENCES}},
-        {proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
-         {syncable_prefs_ids::kProximityAuthIsChromeOSLoginEnabled,
-          syncer::OS_PREFERENCES}},
         // This is not exposed in a header.
         // TODO(crbug.com/1420978): Declare this in the corresponding header.
         {"user_image_info",

@@ -1,11 +1,32 @@
 <style include="shortcut-customization-shared">
   :host {
+    --cr-toolbar-field-width: 620px;
+
     font-family: var(--shortcuts-font-family-default);
     font-size: var(--shortcuts-font-size-default);
     font-weight: var(--shortcuts-font-weight-regular);
+    height: 100%;
+  }
+
+  /** 
+   * This breakpoint is when the NavigationViewPanel side nav shrinks to a
+   * smaller width.
+   */
+  @media (max-width: 960px) {
+    :host {
+      --cr-toolbar-field-width: 480px;
+    }
+  }
+
+  /* This breakpoint is when the NavigationViewPanel side nav collapses. */
+  @media (max-width: 768px) {
+    :host {
+      --cr-toolbar-field-width: 80vw;
+    }
   }
 
   #navigationPanel::part(title) {
+    color: var(--cros-text-color-secondary);
     padding-inline-start: 8px;
   }
 
@@ -15,6 +36,14 @@
 
   #navigationPanel::part(nav-spacer) {
     height: 20px;
+  }
+
+  #navigationPanel::part(side-nav) {
+    min-width: 216px;
+  }
+
+  #navigationPanel::part(top-nav) {
+    height: 72px;
   }
 
   #restoreAllButton {
@@ -43,17 +72,15 @@
   }
 
   #searchBoxWrapper {
+    display: flex;
     font-size: var(--shortcuts-font-size-default);
+    justify-content: center;
     padding-inline: var(--container-padding-nav);
     padding-top: 8px;
   }
-
-  :host search-box {
-    --cr-toolbar-field-width: 680px;
-  }
 </style>
 <navigation-view-panel id="navigationPanel" title="[[i18n('appTitle')]]"
-    show-tool-bar>
+    show-tool-bar has-search="[[!shouldHideSearchBox()]]">
   <div slot="toolbar-main" id="searchBoxWrapper">
     <search-box hidden="[[shouldHideSearchBox()]]"></search-box>
   </div>

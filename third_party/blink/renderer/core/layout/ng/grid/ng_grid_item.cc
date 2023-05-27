@@ -175,25 +175,33 @@ GridItemData::GridItemData(
       /* is_parallel_context */ true,
       /* is_last_baseline */ block_axis_alignment == AxisEdge::kLastBaseline);
 
-  if (node.IsGrid()) {
-    // TODO(ethavar): Don't consider subgrids with size containment.
-    has_subgridded_columns = style.GridTemplateColumns().IsSubgriddedAxis();
-    has_subgridded_rows = style.GridTemplateRows().IsSubgriddedAxis();
+  // From https://drafts.csswg.org/css-grid-2/#subgrid-listing:
+  //   "...if the grid container is otherwise forced to establish an independent
+  //   formatting context... the grid container is not a subgrid."
+  //
+  // Only layout and paint containment establish an independent formatting
+  // context as specified in:
+  //   https://drafts.csswg.org/css-contain-2/#containment-layout
+  //   https://drafts.csswg.org/css-contain-2/#containment-paint
+  if (node.IsGrid() && !node.ShouldApplyLayoutContainment() &&
+      !node.ShouldApplyPaintContainment()) {
+    has_subgridded_columns =
+        is_parallel_with_root_grid
+            ? style.GridTemplateColumns().IsSubgriddedAxis()
+            : style.GridTemplateRows().IsSubgriddedAxis();
+    has_subgridded_rows = is_parallel_with_root_grid
+                              ? style.GridTemplateRows().IsSubgriddedAxis()
+                              : style.GridTemplateColumns().IsSubgriddedAxis();
   }
 
   if (parent_must_consider_grid_items_for_column_sizing) {
-    is_considered_for_column_sizing = is_parallel_with_root_grid
-                                          ? !has_subgridded_columns
-                                          : !has_subgridded_rows;
-    must_consider_grid_items_for_column_sizing =
-        !is_considered_for_column_sizing;
+    must_consider_grid_items_for_column_sizing = has_subgridded_columns;
+    is_considered_for_column_sizing = !has_subgridded_columns;
   }
 
   if (parent_must_consider_grid_items_for_row_sizing) {
-    is_considered_for_row_sizing = is_parallel_with_root_grid
-                                       ? !has_subgridded_rows
-                                       : !has_subgridded_columns;
-    must_consider_grid_items_for_row_sizing = !is_considered_for_row_sizing;
+    must_consider_grid_items_for_row_sizing = has_subgridded_rows;
+    is_considered_for_row_sizing = !has_subgridded_rows;
   }
 }
 

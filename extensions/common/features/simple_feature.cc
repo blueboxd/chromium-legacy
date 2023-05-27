@@ -125,6 +125,8 @@ std::string GetDisplayName(Feature::Context context) {
       return "lock screen app";
     case Feature::OFFSCREEN_EXTENSION_CONTEXT:
       return "offscreen document";
+    case Feature::USER_SCRIPT_CONTEXT:
+      return "user script";
   }
   NOTREACHED();
   return "";
@@ -249,9 +251,10 @@ Feature::Availability SimpleFeature::IsAvailableToContextForBind(
     int context_id,
     const ContextData* context_data,
     const Feature* feature) {
-  return feature->IsAvailableToContextImpl(
-      extension, context, url, platform, context_id, true,
-      context_data ? context_data->Clone() : nullptr);
+  CHECK(feature);
+  CHECK(context_data);
+  return feature->IsAvailableToContextImpl(extension, context, url, platform,
+                                           context_id, true, *context_data);
 }
 
 Feature::Availability SimpleFeature::IsAvailableToContextImpl(
@@ -261,18 +264,29 @@ Feature::Availability SimpleFeature::IsAvailableToContextImpl(
     Platform platform,
     int context_id,
     bool check_developer_mode,
-    std::unique_ptr<ContextData> context_data) const {
-  if (RequiresDelegatedAvailabilityCheck()) {
-    return RunDelegatedAvailabilityCheck(extension, context, url, platform,
-                                         context_id, check_developer_mode,
-                                         std::move(context_data));
-  }
-
+    const ContextData& context_data) const {
+  // Check the environment availability first. This is because, for features
+  // that use delegated availability checks, those checks should also include
+  // environment availability checks. By checking the environment first, if the
+  // feature isn't intended for the current environment, it will fail the
+  // availability check here first. If it passes the environment check, then the
+  // delegated availability check will run and we can return that result, either
+  // pass or fail. This also allows features that don't require delegated
+  // availability checks to proceed through their normal checks from environment
+  // on to manifest and then context availability.
   Availability environment_availability = GetEnvironmentAvailability(
       platform, GetCurrentChannel(), GetCurrentFeatureSessionType(), context_id,
       check_developer_mode);
   if (!environment_availability.is_available())
     return environment_availability;
+
+  if (RequiresDelegatedAvailabilityCheck()) {
+    return HasDelegatedAvailabilityCheckHandler()
+               ? RunDelegatedAvailabilityCheck(
+                     extension, context, url, platform, context_id,
+                     check_developer_mode, std::move(context_data))
+               : CreateAvailability(MISSING_DELEGATED_AVAILABILITY_CHECK);
+  }
 
   if (extension) {
     Availability manifest_availability = GetManifestAvailability(
@@ -300,15 +314,9 @@ Feature::Availability SimpleFeature::IsAvailableToContextImpl(
   // TODO(kalman): Assert that if the context was a webpage or WebUI context
   // then at some point a "matches" restriction was checked.
 
-  // NOTE: The current function (IsAvailableToContextImpl) owns |context_data|
-  // until it completes running. Each call to the bound thunk that
-  // CheckDependencies() makes will access the object and dereference its
-  // pointer. |context_data| must remain alive while it's bound to the thunk
-  // and the thunk lifespan should not run beyond the lifespan of
-  // IsAvailableToContextImpl().
   return CheckDependencies(base::BindRepeating(
       &IsAvailableToContextForBind, base::RetainedRef(extension), context, url,
-      platform, context_id, base::Unretained(context_data.get())));
+      platform, context_id, base::Unretained(&context_data)));
 }
 
 Feature::Availability SimpleFeature::IsAvailableToEnvironment(
@@ -404,6 +412,9 @@ std::string SimpleFeature::GetAvailabilityMessage(
       return base::StringPrintf(
           "'%s' requires the user to have developer mode enabled.",
           name().c_str());
+    case MISSING_DELEGATED_AVAILABILITY_CHECK:
+      return base::StringPrintf(
+          "'%s' is missing its delegated availability check", name().c_str());
     case FAILED_DELEGATED_AVAILABILITY_CHECK:
       return base::StringPrintf("'%s' failed its delegated availability check.",
                                 name().c_str());
@@ -753,12 +764,12 @@ Feature::Availability SimpleFeature::RunDelegatedAvailabilityCheck(
     Platform platform,
     int context_id,
     bool check_developer_mode,
-    std::unique_ptr<ContextData> context_data) const {
+    const ContextData& context_data) const {
   DCHECK(RequiresDelegatedAvailabilityCheck());
   DCHECK(HasDelegatedAvailabilityCheckHandler());
   if (!delegated_availability_check_handler_.Run(
           name_, extension, context, url, platform, context_id,
-          check_developer_mode, std::move(context_data))) {
+          check_developer_mode, context_data)) {
     return CreateAvailability(FAILED_DELEGATED_AVAILABILITY_CHECK);
   }
   return CreateAvailability(IS_AVAILABLE);

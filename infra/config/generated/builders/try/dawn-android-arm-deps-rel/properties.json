@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Dawn Android arm DEPS Release (Pixel 4)",
-              "project": "chromium-m113"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-dawn-archive",
@@ -35,7 +35,7 @@
         {
           "bucket": "ci",
           "builder": "Dawn Android arm DEPS Release (Pixel 4)",
-          "project": "chromium-m113"
+          "project": "chromium"
         }
       ]
     }
@@ -54,5 +54,6 @@
     ]
   },
   "builder_group": "tryserver.chromium.dawn",
+  "cq": "path-based",
   "recipe": "chromium_trybot"
 }

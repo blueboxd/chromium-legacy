@@ -223,13 +223,17 @@ void FrameLoader::Trace(Visitor* visitor) const {
 void FrameLoader::Init(const DocumentToken& document_token,
                        std::unique_ptr<PolicyContainer> policy_container,
                        const StorageKey& storage_key,
-                       ukm::SourceId document_ukm_source_id) {
+                       ukm::SourceId document_ukm_source_id,
+                       const KURL& creator_base_url) {
   DCHECK(policy_container);
   ScriptForbiddenScope forbid_scripts;
 
   // Load the initial empty document:
   auto navigation_params = std::make_unique<WebNavigationParams>();
   navigation_params->url = KURL(g_empty_string);
+  if (!creator_base_url.IsEmpty()) {
+    navigation_params->fallback_base_url = creator_base_url;
+  }
   navigation_params->storage_key = storage_key;
   navigation_params->document_token = document_token;
   navigation_params->frame_policy =
@@ -1653,16 +1657,13 @@ void FrameLoader::CancelClientNavigation(CancelNavigationReason reason) {
 void FrameLoader::DispatchDocumentElementAvailable() {
   ScriptForbiddenScope forbid_scripts;
 
-  // Notify the browser about non-blank documents loading in the top frame.
-  KURL url = frame_->GetDocument()->Url();
-  if (url.IsValid() && !url.IsAboutBlankURL()) {
-    if (frame_->IsMainFrame()) {
-      // For now, don't remember plugin zoom values.  We don't want to mix them
-      // with normal web content (i.e. a fixed layout plugin would usually want
-      // them different).
-      frame_->GetLocalFrameHostRemote().MainDocumentElementAvailable(
-          frame_->GetDocument()->IsPluginDocument());
-    }
+  // Notify the browser about documents loading in the top frame.
+  if (frame_->GetDocument()->Url().IsValid() && frame_->IsMainFrame()) {
+    // For now, don't remember plugin zoom values.  We don't want to mix them
+    // with normal web content (i.e. a fixed layout plugin would usually want
+    // them different).
+    frame_->GetLocalFrameHostRemote().MainDocumentElementAvailable(
+        frame_->GetDocument()->IsPluginDocument());
   }
 
   Client()->DocumentElementAvailable();

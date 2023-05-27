@@ -13,7 +13,6 @@
 #include <string>
 
 #include "base/check_op.h"
-#include "base/guid.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/metrics/histogram_macros.h"
@@ -23,6 +22,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -185,7 +185,9 @@ CreditCard::CreditCard(RecordType type, int64_t instrument_id) : CreditCard() {
   instrument_id_ = instrument_id;
 }
 
-CreditCard::CreditCard() : CreditCard(base::GenerateGUID(), std::string()) {}
+CreditCard::CreditCard()
+    : CreditCard(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                 std::string()) {}
 
 CreditCard::CreditCard(const CreditCard& credit_card) = default;
 CreditCard::CreditCard(CreditCard&& credit_card) = default;
@@ -774,7 +776,7 @@ int CreditCard::Compare(const CreditCard& credit_card) const {
       return comparison;
   }
 
-  if (!HasSameNumberAs(credit_card)) {
+  if (!MatchingCardDetails(credit_card)) {
     return number().compare(credit_card.number());
   }
 
@@ -857,10 +859,10 @@ bool CreditCard::IsLocalDuplicateOfServerCard(const CreditCard& other) const {
   if (number_.empty())
     return true;
 
-  return HasSameNumberAs(other);
+  return MatchingCardDetails(other);
 }
 
-bool CreditCard::HasSameNumberAs(const CreditCard& other) const {
+bool CreditCard::MatchingCardDetails(const CreditCard& other) const {
   // Masked cards are considered to have the same number if their last four
   // digits match and if any expiration date information available for both
   // cards matches.

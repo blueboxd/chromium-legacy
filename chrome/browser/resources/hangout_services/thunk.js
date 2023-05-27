@@ -73,14 +73,6 @@ chrome.runtime.onMessageExternal.addListener(function(
     } else if (method === 'logging.stop') {
       chrome.webrtcLoggingPrivate.stop(requestInfo, origin, doSendResponse);
       return true;
-    } else if (method === 'logging.upload') {
-      chrome.webrtcLoggingPrivate.upload(requestInfo, origin, doSendResponse);
-      return true;
-    } else if (method === 'logging.uploadStored') {
-      const logId = message['logId'];
-      chrome.webrtcLoggingPrivate.uploadStored(
-          requestInfo, origin, logId, doSendResponse);
-      return true;
     } else if (method === 'logging.stopAndUpload') {
       // Stop everything and upload. This is allowed to be called even if
       // logs have already been stopped or not started. Therefore, ignore
@@ -124,11 +116,6 @@ chrome.runtime.onMessageExternal.addListener(function(
     } else if (method === 'logging.discard') {
       chrome.webrtcLoggingPrivate.discard(requestInfo, origin, doSendResponse);
       return true;
-    } else if (method === 'getNaclArchitecture') {
-      chrome.runtime.getPlatformInfo(function(obj) {
-        doSendResponse(obj.nacl_arch);
-      });
-      return true;
     } else if (method === 'logging.startRtpDump') {
       const incoming = message['incoming'] || false;
       const outgoing = message['outgoing'] || false;
@@ -140,15 +127,6 @@ chrome.runtime.onMessageExternal.addListener(function(
       const outgoing = message['outgoing'] || false;
       chrome.webrtcLoggingPrivate.stopRtpDump(
           requestInfo, origin, incoming, outgoing, doSendResponse);
-      return true;
-    } else if (method === 'logging.startAudioDebugRecordings') {
-      const seconds = message['seconds'] || 0;
-      chrome.webrtcLoggingPrivate.startAudioDebugRecordings(
-          requestInfo, origin, seconds, doSendResponse);
-      return true;
-    } else if (method === 'logging.stopAudioDebugRecordings') {
-      chrome.webrtcLoggingPrivate.stopAudioDebugRecordings(
-          requestInfo, origin, doSendResponse);
       return true;
     } else if (method === 'logging.startEventLogging') {
       const sessionId = message['sessionId'] || '';
@@ -268,8 +246,6 @@ function onProcessCpu(port) {
       'browserCpuUsage': browserProcessCpu || 0,
       'gpuCpuUsage': gpuProcessCpu || 0,
       'tabCpuUsage': tabProcess.cpu,
-      'tabNetworkUsage': tabProcess.network,
-      'tabPrivateMemory': tabProcess.privateMemory,
       'tabJsMemoryAllocated': tabProcess.jsMemoryAllocated,
       'tabJsMemoryUsed': tabProcess.jsMemoryUsed,
     });

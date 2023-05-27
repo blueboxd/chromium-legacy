@@ -2709,7 +2709,8 @@
     "os": [
       "linux",
       "chromeos_ash",
-      "chromeos_lacros"
+      "chromeos_lacros",
+      "android"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -7824,37 +7825,7 @@
     "reason_for_missing_test": "Policy was removed"
   },
   "CECPQ2Enabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "android",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "note": "Default value (no policies set).",
-        "prefs": {
-          "ssl.cecpq2_enabled": {
-            "default_value": true,
-            "location": "local_state"
-          }
-        }
-      },
-      {
-        "policies": {
-          "CECPQ2Enabled": false
-        },
-        "prefs": {
-          "ssl.cecpq2_enabled": {
-            "value": false,
-            "location": "local_state"
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "EncryptedClientHelloEnabled": {
     "os": [
@@ -13613,6 +13584,9 @@
   "ReportDeviceSignalStrengthEventDrivenTelemetry": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
+  "DeviceReportNetworkEvents": {
+    "reason_for_missing_test": "Maps into CrosSettings"
+  },
   "DeviceReportXDREvents": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
@@ -16322,45 +16296,7 @@
     ]
   },
   "DeviceArcDataSnapshotHours": {
-    "os": [
-      "chromeos_ash"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {
-          "DeviceArcDataSnapshotHours": {
-            "intervals": [
-              {
-                "start": {
-                  "day_of_week": 1,
-                  "time": 1284000
-                },
-                "end": {
-                  "day_of_week": 1,
-                  "time": 21720000
-                }
-              },
-              {
-                "start": {
-                  "day_of_week": 2,
-                  "time": 1284000
-                },
-                "end": {
-                  "day_of_week": 2,
-                  "time": 21720000
-                }
-              }
-            ],
-            "timezone": "GMT"
-          }
-        },
-        "prefs": {
-          "arc.snapshot_hours": {
-            "location": "local_state"
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "DeviceBorealisAllowed": {
     "reason_for_missing_test": "Policy was removed"
@@ -19681,33 +19617,7 @@
     ]
   },
   "ChromeAppsEnabled": {
-    "os": ["win", "linux", "mac", "fuchsia"],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": { "ChromeAppsEnabled": false },
-        "prefs": {
-          "extensions.chrome_apps_enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": { "ChromeAppsEnabled": true },
-        "prefs": {
-          "extensions.chrome_apps_enabled": {
-            "value": true
-          }
-        }
-      },
-      {
-        "policies": {},
-        "prefs": {
-          "extensions.chrome_apps_enabled": {
-            "default_value": false
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was deprecated in M114"
   },
   "ChromeAppsWebViewPermissiveBehaviorAllowed": {
     "os": ["win", "linux", "mac", "chromeos_ash", "chromeos_lacros", "fuchsia"],
@@ -22697,9 +22607,6 @@
   },
   "RealTimeDownloadProtectionRequestAllowed": {
     "os": [
-      "win",
-      "linux",
-      "mac",
       "chromeos_ash",
       "chromeos_lacros"
     ],
@@ -22810,13 +22717,8 @@
   },
   "ClientSidePhishingProtectionAllowed": {
     "os": [
-      "win",
-      "linux",
-      "mac",
       "chromeos_ash",
-      "chromeos_lacros",
-      "android",
-      "fuchsia"
+      "chromeos_lacros"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -22963,6 +22865,161 @@
               "google.com",
               "[*.]example.edu"
             ]
+          }
+        }
+      }
+    ]
+  },
+  "InsecureHashesInTLSHandshakesEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Default value (no policies set).",
+        "prefs": {
+          "ssl.insecure_hash_enabled": {
+            "default_value": false,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+          "InsecureHashesInTLSHandshakesEnabled": true
+        },
+        "prefs": {
+          "ssl.insecure_hash_enabled": {
+            "value": true,
+            "location": "local_state"
+          }
+        }
+      },
+      {
+        "policies": {
+            "InsecureHashesInTLSHandshakesEnabled": false
+        },
+        "prefs": {
+          "ssl.insecure_hash_enabled": {
+            "value": false,
+            "location": "local_state"
+          }
+        }
+      }
+    ]
+  },
+  "DeviceLoginScreenGeolocationAccessLevel": {
+    "os": [
+      "chromeos_ash"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default value (no policies set)",
+        "policies": {},
+        "prefs": {
+          "ash.device.geolocation_allowed": {
+            "location": "local_state",
+            "default_value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceLoginScreenGeolocationAccessLevel": 0
+        },
+        "prefs": {
+          "ash.device.geolocation_allowed": {
+            "location": "local_state",
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "DeviceLoginScreenGeolocationAccessLevel": 1
+        },
+        "prefs": {
+          "ash.device.geolocation_allowed": {
+            "location": "local_state",
+            "value": 1
+          }
+        }
+      },
+      {
+        "note": "future values should be handled as kDisallowed",
+        "policies": {
+          "DeviceLoginScreenGeolocationAccessLevel": 2
+        },
+        "prefs": {
+          "ash.device.geolocation_allowed": {
+            "location": "local_state",
+            "value": 0
+          }
+        }
+      },
+      {
+        "note": "future values should be handled as kDisallowed",
+        "policies": {
+          "DeviceLoginScreenGeolocationAccessLevel": -1
+        },
+        "prefs": {
+          "ash.device.geolocation_allowed": {
+            "location": "local_state",
+            "value": 0
+          }
+        }
+      },
+      {
+        "note": "future values should be handled as kDisallowed",
+        "policies": {
+          "DeviceLoginScreenGeolocationAccessLevel": 123456
+        },
+        "prefs": {
+          "ash.device.geolocation_allowed": {
+            "location": "local_state",
+            "value": 0
+          }
+        }
+      }
+    ]
+  },
+  "SafeBrowsingExtensionProtectionAllowed": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "safebrowsing.extension_protection_allowed_by_policy": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "SafeBrowsingExtensionProtectionAllowed": true
+        },
+        "prefs": {
+          "safebrowsing.extension_protection_allowed_by_policy": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "SafeBrowsingExtensionProtectionAllowed": false
+        },
+        "prefs": {
+          "safebrowsing.extension_protection_allowed_by_policy": {
+            "value": false
           }
         }
       }

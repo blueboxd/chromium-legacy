@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/ash/components/multidevice/logging/logging.h"
 #include "chromeos/ash/components/phonehub/app_stream_manager.h"
+#include "chromeos/ash/components/phonehub/cros_state_message_recorder.h"
 #include "chromeos/ash/components/phonehub/do_not_disturb_controller.h"
 #include "chromeos/ash/components/phonehub/find_my_device_controller.h"
 #include "chromeos/ash/components/phonehub/icon_decoder.h"
@@ -228,7 +229,8 @@ PhoneStatusProcessor::PhoneStatusProcessor(
     PrefService* pref_service,
     AppStreamManager* app_stream_manager,
     AppStreamLauncherDataModel* app_stream_launcher_data_model,
-    IconDecoder* icon_decoder)
+    IconDecoder* icon_decoder,
+    CrosStateMessageRecorder* cros_state_message_recorder)
     : do_not_disturb_controller_(do_not_disturb_controller),
       feature_status_provider_(feature_status_provider),
       message_receiver_(message_receiver),
@@ -242,7 +244,8 @@ PhoneStatusProcessor::PhoneStatusProcessor(
       pref_service_(pref_service),
       app_stream_manager_(app_stream_manager),
       app_stream_launcher_data_model_(app_stream_launcher_data_model),
-      icon_decoder_(icon_decoder) {
+      icon_decoder_(icon_decoder),
+      cros_state_message_recorder_(cros_state_message_recorder) {
   DCHECK(do_not_disturb_controller_);
   DCHECK(feature_status_provider_);
   DCHECK(message_receiver_);
@@ -254,6 +257,7 @@ PhoneStatusProcessor::PhoneStatusProcessor(
   DCHECK(pref_service_);
   DCHECK(app_stream_manager_);
   DCHECK(icon_decoder_);
+  DCHECK(cros_state_message_recorder_);
 
   message_receiver_->AddObserver(this);
   feature_status_provider_->AddObserver(this);
@@ -408,6 +412,7 @@ void PhoneStatusProcessor::OnPhoneStatusSnapshotReceived(
   }
   multidevice_feature_access_manager_
       ->UpdatedFeatureSetupConnectionStatusIfNeeded();
+  cros_state_message_recorder_->RecordPhoneStatusSnapShotReceived();
 }
 
 void PhoneStatusProcessor::OnPhoneStatusUpdateReceived(
@@ -498,9 +503,12 @@ void PhoneStatusProcessor::GenerateAppListWithIcons(
     // TODO(nayebi): AppMetadata is no longer limited to Notification class,
     // let's move it outside of the Notification class.s2
     apps_list.emplace_back(Notification::AppMetadata(
-        base::UTF8ToUTF16(app.visible_name()), app.package_name(), image,
-        /* icon_color = */ absl::nullopt, /* icon_is_monochrome = */ false,
-        app.user_id(), app.app_streamability_status()));
+        base::UTF8ToUTF16(app.visible_name()), app.package_name(),
+        /* color_icon= */ image,
+        /* monochrome_icon_mask= */ absl::nullopt,
+        /* icon_color = */ absl::nullopt,
+        /* icon_is_monochrome = */ false, app.user_id(),
+        app.app_streamability_status()));
     std::string key = app.package_name() + base::NumberToString(app.user_id());
     decoding_data_list->emplace_back(
         IconDecoder::DecodingData(str_hash(key), app.icon()));
@@ -526,7 +534,7 @@ void PhoneStatusProcessor::IconsDecoded(
       std::string key = app_metadata.package_name +
                         base::NumberToString(app_metadata.user_id);
       if (decoding_data.id == str_hash(key)) {
-        app_metadata.icon = decoding_data.result;
+        app_metadata.color_icon = decoding_data.result;
         continue;
       }
     }

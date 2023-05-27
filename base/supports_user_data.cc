@@ -41,6 +41,25 @@ SupportsUserData::Data* SupportsUserData::GetUserData(const void* key) const {
       user_data_);
 }
 
+std::unique_ptr<SupportsUserData::Data> SupportsUserData::TakeUserData(
+    const void* key) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Null keys are too vulnerable to collision.
+  CHECK(key);
+  return absl::visit(
+      [key](auto& map) -> std::unique_ptr<SupportsUserData::Data> {
+        auto found = map.find(key);
+        if (found != map.end()) {
+          std::unique_ptr<SupportsUserData::Data> deowned;
+          deowned.swap(found->second);
+          map.erase(key);
+          return deowned;
+        }
+        return nullptr;
+      },
+      user_data_);
+}
+
 void SupportsUserData::SetUserData(const void* key,
                                    std::unique_ptr<Data> data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -56,7 +75,26 @@ void SupportsUserData::SetUserData(const void* key,
 
 void SupportsUserData::RemoveUserData(const void* key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  absl::visit([key](auto& map) { map.erase(key); }, user_data_);
+  absl::visit(
+      [key](auto& map) {
+        auto it = map.find(key);
+        if (it != map.end()) {
+          // Remove the entry from the map before deleting `owned_data` to avoid
+          // reentrancy issues when `owned_data` owns `this`. Otherwise:
+          //
+          // 1. `RemoveUserData()` calls `erase()`.
+          // 2. `erase()` deletes `owned_data`.
+          // 3. `owned_data` deletes `this`.
+          //
+          // At this point, `erase()` is still on the stack even though the
+          // backing map (owned by `this`) has already been destroyed, and it
+          // may simply crash, cause a use-after-free, or any other number of
+          // interesting things.
+          auto owned_data = std::move(it->second);
+          map.erase(it);
+        }
+      },
+      user_data_);
 }
 
 void SupportsUserData::DetachFromSequence() {

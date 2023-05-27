@@ -81,7 +81,8 @@ class ExtensionMessagePort : public MessagePort {
   bool HasFrame(content::RenderFrameHost* rfh) const override;
   bool IsValidPort() override;
   void RevalidatePort() override;
-  void DispatchOnConnect(const std::string& channel_name,
+  void DispatchOnConnect(ChannelType channel_type,
+                         const std::string& channel_name,
                          absl::optional<base::Value::Dict> source_tab,
                          const ExtensionApiFrameIdMap::FrameData& source_frame,
                          int guest_process_id,
@@ -92,8 +93,8 @@ class ExtensionMessagePort : public MessagePort {
                          absl::optional<url::Origin> source_origin) override;
   void DispatchOnDisconnect(const std::string& error_message) override;
   void DispatchOnMessage(const Message& message) override;
-  void IncrementLazyKeepaliveCount() override;
-  void DecrementLazyKeepaliveCount() override;
+  void IncrementLazyKeepaliveCount(Activity::Type activity_type) override;
+  void DecrementLazyKeepaliveCount(Activity::Type activity_type) override;
   void OpenPort(int process_id, const PortContext& port_context) override;
   void ClosePort(int process_id, int routing_id, int worker_thread_id) override;
   void NotifyResponsePending() override;
@@ -132,6 +133,7 @@ class ExtensionMessagePort : public MessagePort {
 
   // Builds specific IPCs for a port, with correct frame or worker identifiers.
   std::unique_ptr<IPC::Message> BuildDispatchOnConnectIPC(
+      ChannelType channel_type,
       const std::string& channel_name,
       const base::Value::Dict* source_tab,
       const ExtensionApiFrameIdMap::FrameData& source_frame,
@@ -147,6 +149,10 @@ class ExtensionMessagePort : public MessagePort {
       const IPCTarget& target);
   std::unique_ptr<IPC::Message> BuildDeliverMessageIPC(const Message& message,
                                                        const IPCTarget& target);
+
+  // Check if this activity of this type on this port would keep servicer worker
+  // alive.
+  bool IsServiceWorkerActivity(Activity::Type activity_type);
 
   base::WeakPtr<ChannelDelegate> weak_channel_delegate_;
 

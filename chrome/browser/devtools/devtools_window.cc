@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -80,6 +81,11 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/version_info/channel.h"
+#include "third_party/cros_system_api/switches/chrome_switches.h"
+#endif
 
 // This should be after all other #includes.
 #if defined(_WINDOWS_)  // Detect whether windows.h was included.
@@ -284,10 +290,10 @@ void DevToolsEventForwarder::SetWhitelistedShortcuts(
   for (const auto& list_item : parsed_message->GetList()) {
     if (!list_item.is_dict())
       continue;
-    int key_code = list_item.FindIntKey("keyCode").value_or(0);
+    int key_code = list_item.GetDict().FindInt("keyCode").value_or(0);
     if (key_code == 0)
       continue;
-    int modifiers = list_item.FindIntKey("modifiers").value_or(0);
+    int modifiers = list_item.GetDict().FindInt("modifiers").value_or(0);
     if (!KeyWhitelistingAllowed(key_code, modifiers)) {
       LOG(WARNING) << "Key whitelisting forbidden: "
                    << "(" << key_code << "," << modifiers << ")";
@@ -321,17 +327,16 @@ bool DevToolsEventForwarder::ForwardEvent(
   if (whitelisted_keys_.find(key) == whitelisted_keys_.end())
     return false;
 
-  base::Value event_data(base::Value::Type::DICT);
-  event_data.SetStringKey("type", event_type);
-  event_data.SetStringKey("key", ui::KeycodeConverter::DomKeyToKeyString(
-                                     static_cast<ui::DomKey>(event.dom_key)));
-  event_data.SetStringKey("code",
-                          ui::KeycodeConverter::DomCodeToCodeString(
-                              static_cast<ui::DomCode>(event.dom_code)));
-  event_data.SetIntKey("keyCode", key_code);
-  event_data.SetIntKey("modifiers", modifiers);
+  base::Value::Dict event_data;
+  event_data.Set("type", event_type);
+  event_data.Set("key", ui::KeycodeConverter::DomKeyToKeyString(
+                            static_cast<ui::DomKey>(event.dom_key)));
+  event_data.Set("code", ui::KeycodeConverter::DomCodeToCodeString(
+                             static_cast<ui::DomCode>(event.dom_code)));
+  event_data.Set("keyCode", key_code);
+  event_data.Set("modifiers", modifiers);
   devtools_window_->bindings_->CallClientMethod(
-      "DevToolsAPI", "keyEventUnhandled", std::move(event_data));
+      "DevToolsAPI", "keyEventUnhandled", base::Value(std::move(event_data)));
   return true;
 }
 
@@ -1148,8 +1153,9 @@ DevToolsWindow* DevToolsWindow::Create(
   }
 
   // Create WebContents with devtools.
-  GURL url(GetDevToolsURL(profile, frontend_type, frontend_url, can_dock, panel,
-                          has_other_clients, browser_connection));
+  GURL url(GetDevToolsURL(profile, frontend_type, chrome::GetChannel(),
+                          frontend_url, can_dock, panel, has_other_clients,
+                          browser_connection));
   std::unique_ptr<WebContents> main_web_contents =
       WebContents::Create(WebContents::CreateParams(profile));
   main_web_contents->GetController().LoadURL(
@@ -1170,6 +1176,7 @@ DevToolsWindow* DevToolsWindow::Create(
 // static
 GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     FrontendType frontend_type,
+                                    version_info::Channel channel,
                                     const std::string& frontend_url,
                                     bool can_dock,
                                     const std::string& panel,
@@ -1198,6 +1205,13 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
       if (base::FeatureList::IsEnabled(::features::kDevToolsTabTarget)) {
         url += "&targetType=tab";
       }
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      if (channel >= version_info::Channel::DEV &&
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              chromeos::switches::kSystemInDevMode)) {
+        url += "&consolePaste=blockwebui";
+      }
+#endif
       break;
     case kFrontendWorker:
       url = kWorkerFrontendURL + remote_base;

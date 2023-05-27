@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Værktøj til afkodning af billeder</translation>
 <translation id="1785415724048343560">Anbefales for at få den bedste oplevelse</translation>
 <translation id="1818308510395330587">Aktivér også kameraet i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give <ph name="APP_NAME" /> tilladelse til at bruge AR.</translation>
-<translation id="1864927262126810325">Fra <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Relaterede websites kan se din aktivitet i gruppen</translation>
 <translation id="1887786770086287077">Lokationsadgang er deaktiveret for denne enhed. Aktivér det under <ph name="BEGIN_LINK" />indstillinger for Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Læg på</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Downloaden er fuldført <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Funktioner på visse websites fungerer muligvis ikke i inkognitotilstand</translation>
 <translation id="2442870161001914531">Anmod altid om computerversion</translation>
+<translation id="2479148705183875116">Gå til Indstillinger</translation>
 <translation id="2482878487686419369">Notifikationer</translation>
 <translation id="2485422356828889247">Afinstaller</translation>
 <translation id="2490684707762498678">Administreret af <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Mailadresser</translation>
 <translation id="2750481671343847896">Websites kan vise loginmeddelelser fra identitetstjenester.</translation>
 <translation id="2822354292072154809">Er du sikker på, at du vil nulstille alle websitetilladelser for <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Anmod om mobilvenlig visning</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2874939134665556319">Forrige nummer</translation>
 <translation id="2891975107962658722">Bloker et website på en måde, hvor det ikke kan gemme data på din enhed</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Websites kan bruge cookies til at forbedre din browseroplevelse ved f.eks. at sørge for, at du forbliver logget ind, eller ved at huske varerne i din kurv</translation>
 <translation id="3165022941318558018">Tillad, at et website bruger tredjepartscookies</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> gemte data</translation>
-<translation id="3203366800380907218">Fra nettet</translation>
 <translation id="321187648315454507">Aktivér også notifikationer i <ph name="BEGIN_LINK" />Android-indstillingerne<ph name="END_LINK" /> for at give <ph name="APP_NAME" /> tilladelse til at sende dig notifikationer.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3248611290851046188">Dette website definerer interesser, som andre websites kan bruge til at vise dig annoncer. Dette website henter også dine interesser fra Chrome og bruger dem til at vise dig mere relevante annoncer.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Anmod om computervenlig visning</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
-<translation id="5134599672855298214">Anmod om mobilvenlig visning (anbefales)</translation>
 <translation id="5186036860380548585">Se valgmuligheden øverst på skærmen</translation>
 <translation id="5197729504361054390">De kontakter, du vælger, deles med <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Senest besøgt i dag</translation>

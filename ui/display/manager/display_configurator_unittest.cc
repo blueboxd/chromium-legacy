@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
@@ -109,7 +110,7 @@ class TestObserver : public DisplayConfigurator::Observer {
   }
 
  private:
-  DisplayConfigurator* configurator_;  // Not owned.
+  raw_ptr<DisplayConfigurator, ExperimentalAsh> configurator_;  // Not owned.
 
   // Number of times that OnDisplayMode*() has been called.
   int num_changes_;
@@ -217,7 +218,8 @@ class ConfigurationWaiter {
     callback_result_ = status ? CALLBACK_SUCCESS : CALLBACK_FAILURE;
   }
 
-  DisplayConfigurator::TestApi* test_api_;  // Not owned.
+  raw_ptr<DisplayConfigurator::TestApi, ExperimentalAsh>
+      test_api_;  // Not owned.
 
   // The status of the display configuration.
   CallbackResult callback_result_;
@@ -258,7 +260,7 @@ class DisplayConfiguratorTest : public testing::Test {
                       .SetBaseConnectorId(kEdpConnectorId)
                       .SetIsAspectPreservingScaling(true)
                       .SetVariableRefreshRateState(kVrrDisabled)
-                      .SetVerticalDisplayRangeLimits(gfx::Range())
+                      .SetVsyncRateMin(40)
                       .Build();
 
     outputs_[1] = FakeDisplaySnapshot::Builder()
@@ -361,7 +363,8 @@ class DisplayConfiguratorTest : public testing::Test {
   DisplayConfigurator configurator_;
   TestObserver observer_{&configurator_};
   std::unique_ptr<ActionLogger> log_;
-  TestNativeDisplayDelegate* native_display_delegate_;  // not owned
+  raw_ptr<TestNativeDisplayDelegate, ExperimentalAsh>
+      native_display_delegate_;  // not owned
   DisplayConfigurator::TestApi test_api_{&configurator_};
   ConfigurationWaiter config_waiter_{&test_api_};
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2235,7 +2238,7 @@ TEST_F(DisplayConfiguratorTest, RefreshRateThrottle_VrrEnabled) {
                     .SetBaseConnectorId(kEdpConnectorId)
                     .SetIsAspectPreservingScaling(true)
                     .SetVariableRefreshRateState(kVrrDisabled)
-                    .SetVerticalDisplayRangeLimits(gfx::Range())
+                    .SetVsyncRateMin(40)
                     .Build();
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_SINGLE);
   UpdateOutputs(1, true);
@@ -2313,7 +2316,7 @@ TEST_F(DisplayConfiguratorTest,
                     .SetBaseConnectorId(kSecondConnectorId)
                     .SetIsAspectPreservingScaling(true)
                     .SetVariableRefreshRateState(kVrrDisabled)
-                    .SetVerticalDisplayRangeLimits(gfx::Range())
+                    .SetVsyncRateMin(40)
                     .Build();
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED);
   UpdateOutputs(2, true);

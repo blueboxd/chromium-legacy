@@ -165,7 +165,6 @@ direction
 display
 dominantBaseline
 emptyCells
-end
 fallback
 fill
 fillOpacity
@@ -315,6 +314,7 @@ overflowInline
 overflowWrap
 overflowX
 overflowY
+overlay
 overrideColors
 overscrollBehavior
 overscrollBehaviorBlock
@@ -388,6 +388,7 @@ scrollSnapAlign
 scrollSnapStop
 scrollSnapType
 scrollTimeline
+scrollTimelineAttachment
 scrollTimelineAxis
 scrollTimelineName
 scrollbarGutter
@@ -399,11 +400,9 @@ shapeOutside
 shapeRendering
 size
 sizeAdjust
-source
 speak
 speakAs
 src
-start
 stopColor
 stopOpacity
 stroke
@@ -451,7 +450,6 @@ toggleRoot
 toggleTrigger
 toggleVisibility
 top
-topLayer
 touchAction
 transform
 transformBox
@@ -469,6 +467,7 @@ userSelect
 vectorEffect
 verticalAlign
 viewTimeline
+viewTimelineAttachment
 viewTimelineAxis
 viewTimelineInset
 viewTimelineName
@@ -629,6 +628,7 @@ webkitUserModify
 webkitUserSelect
 webkitWritingMode
 whiteSpace
+whiteSpaceCollapse
 widows
 width
 willChange

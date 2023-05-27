@@ -17,6 +17,7 @@
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
@@ -24,7 +25,6 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -41,46 +41,52 @@ const int64_t kLastUsedFolderNone = -1;
 
 }  // namespace
 
-@interface BookmarkMediator () {
-  // Bookmark model for this mediator.
-  bookmarks::BookmarkModel* _bookmarkModel;
+@implementation BookmarkMediator {
+  // Profile bookmark model for this mediator.
+  base::WeakPtr<bookmarks::BookmarkModel> _profileBookmarkModel;
+  // Account bookmark model for this mediator.
+  base::WeakPtr<bookmarks::BookmarkModel> _accountBookmarkModel;
 
   // Prefs model for this mediator.
   PrefService* _prefs;
 
   // Authentication service for this mediator.
-  AuthenticationService* _authenticationService;
+  base::WeakPtr<AuthenticationService> _authenticationService;
 
   // The setup service for this mediator.
   SyncSetupService* _syncSetupService;
 }
-
-@end
-
-@implementation BookmarkMediator
 
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   registry->RegisterInt64Pref(prefs::kIosBookmarkFolderDefault,
                               kLastUsedFolderNone);
 }
 
-- (instancetype)
-    initWithWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-                        prefs:(PrefService*)prefs
-        authenticationService:(AuthenticationService*)authenticationService
-             syncSetupService:(SyncSetupService*)syncSetupService {
+- (instancetype)initWithWithProfileBookmarkModel:
+                    (bookmarks::BookmarkModel*)profileBookmarkModel
+                            accountBookmarkModel:
+                                (bookmarks::BookmarkModel*)accountBookmarkModel
+                                           prefs:(PrefService*)prefs
+                           authenticationService:
+                               (AuthenticationService*)authenticationService
+                                syncSetupService:
+                                    (SyncSetupService*)syncSetupService {
   self = [super init];
   if (self) {
-    _bookmarkModel = bookmarkModel;
+    _profileBookmarkModel = profileBookmarkModel->AsWeakPtr();
+    if (accountBookmarkModel) {
+      _accountBookmarkModel = accountBookmarkModel->AsWeakPtr();
+    }
     _prefs = prefs;
-    _authenticationService = authenticationService;
+    _authenticationService = authenticationService->GetWeakPtr();
     _syncSetupService = syncSetupService;
   }
   return self;
 }
 
 - (void)disconnect {
-  _bookmarkModel = nullptr;
+  _profileBookmarkModel = nullptr;
+  _accountBookmarkModel = nullptr;
   _prefs = nullptr;
   _authenticationService = nullptr;
   _syncSetupService = nullptr;
@@ -93,8 +99,9 @@ const int64_t kLastUsedFolderNone = -1;
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
 
   const BookmarkNode* defaultFolder = [self folderForNewBookmarks];
-  _bookmarkModel->AddNewURL(defaultFolder, defaultFolder->children().size(),
-                            base::SysNSStringToUTF16(title), URL);
+  _profileBookmarkModel->AddNewURL(defaultFolder,
+                                   defaultFolder->children().size(),
+                                   base::SysNSStringToUTF16(title), URL);
 
   MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
   action.handler = editAction;
@@ -122,9 +129,9 @@ const int64_t kLastUsedFolderNone = -1;
 
   for (URLWithTitle* urlWithTitle in URLs) {
     base::RecordAction(base::UserMetricsAction("BookmarkAdded"));
-    _bookmarkModel->AddNewURL(folder, folder->children().size(),
-                              base::SysNSStringToUTF16(urlWithTitle.title),
-                              urlWithTitle.URL);
+    _profileBookmarkModel->AddNewURL(
+        folder, folder->children().size(),
+        base::SysNSStringToUTF16(urlWithTitle.title), urlWithTitle.URL);
   }
 
   NSString* folderTitle = bookmark_utils_ios::TitleForBookmarkNode(folder);
@@ -140,13 +147,13 @@ const int64_t kLastUsedFolderNone = -1;
 #pragma mark - Private
 
 - (const BookmarkNode*)folderForNewBookmarks {
-  const BookmarkNode* defaultFolder = _bookmarkModel->mobile_node();
+  const BookmarkNode* defaultFolder = _profileBookmarkModel->mobile_node();
   int64_t node_id = _prefs->GetInt64(prefs::kIosBookmarkFolderDefault);
   if (node_id == kLastUsedFolderNone) {
     node_id = defaultFolder->id();
   }
   const BookmarkNode* result =
-      bookmarks::GetBookmarkNodeByID(_bookmarkModel, node_id);
+      bookmarks::GetBookmarkNodeByID(_profileBookmarkModel.get(), node_id);
 
   if (result) {
     return result;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/file_manager/mount_test_util.h"
+#include "base/memory/raw_ptr.h"
 
 #include "base/run_loop.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
@@ -37,7 +38,7 @@ class DriveMountPointWaiter : public drive::DriveIntegrationServiceObserver {
   void Wait() { run_loop_.Run(); }
 
  private:
-  drive::DriveIntegrationService* integration_service_;
+  raw_ptr<drive::DriveIntegrationService, ExperimentalAsh> integration_service_;
   base::RunLoop run_loop_;
 };
 
@@ -58,8 +59,9 @@ void WaitUntilDriveMountPointIsAdded(Profile* profile) {
   DCHECK(integration_service);
   DCHECK(integration_service->is_enabled());
 
-  if (integration_service->IsMounted())
+  if (integration_service->IsMounted()) {
     return;
+  }
 
   DriveMountPointWaiter mount_point_waiter(integration_service);
   VLOG(1) << "Waiting for drive mount point to get mounted.";

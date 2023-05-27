@@ -153,6 +153,11 @@ class WebViewInteractiveTest : public extensions::PlatformAppBrowserTest {
     command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   }
 
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    extensions::PlatformAppBrowserTest::SetUpOnMainThread();
+  }
+
   TestGuestViewManager* GetGuestViewManager() {
     TestGuestViewManager* manager = static_cast<TestGuestViewManager*>(
         TestGuestViewManager::FromBrowserContext(browser()->profile()));
@@ -642,7 +647,8 @@ IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest, MAYBE_PointerLock) {
 }
 
 // flaky http://crbug.com/412086
-#if defined(SUPPORTS_SYNC_MOUSE_UTILS) && !BUILDFLAG(IS_CHROMEOS)
+#if defined(SUPPORTS_SYNC_MOUSE_UTILS) && !BUILDFLAG(IS_CHROMEOS) && \
+    !BUILDFLAG(IS_MAC) && defined(NDEBUG)
 #define MAYBE_PointerLockFocus PointerLockFocus
 #else
 #define MAYBE_PointerLockFocus DISABLED_PointerLockFocus
@@ -686,13 +692,12 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_FocusTakeFocus) {
   ASSERT_TRUE(GetGuestRenderFrameHost());
 
   // Compute where to click in the window to focus the guest input box.
-  int clickX, clickY;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      embedder_web_contents(),
-      "domAutomationController.send(Math.floor(window.clickX));", &clickX));
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      embedder_web_contents(),
-      "domAutomationController.send(Math.floor(window.clickY));", &clickY));
+  int clickX =
+      content::EvalJs(embedder_web_contents(), "Math.floor(window.clickX);")
+          .ExtractInt();
+  int clickY =
+      content::EvalJs(embedder_web_contents(), "Math.floor(window.clickY);")
+          .ExtractInt();
 
   ExtensionTestMessageListener next_step_listener("TEST_STEP_PASSED");
   next_step_listener.set_failure_message("TEST_STEP_FAILED");
@@ -976,17 +981,8 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Navigation_BackForwardKeys) {
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
 
-// Trips over a DCHECK in content::MouseLockDispatcher::OnLockMouseACK; see
-// https://crbug.com/761783.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_PointerLock_PointerLockLostWithFocus \
-  PointerLock_PointerLockLostWithFocus
-#else
-#define MAYBE_PointerLock_PointerLockLostWithFocus \
-  DISABLED_PointerLock_PointerLockLostWithFocus
-#endif
 IN_PROC_BROWSER_TEST_F(WebViewPointerLockInteractiveTest,
-                       MAYBE_PointerLock_PointerLockLostWithFocus) {
+                       PointerLock_PointerLockLostWithFocus) {
   TestHelper("testPointerLockLostWithFocus", "web_view/pointerlock",
              NO_TEST_SERVER);
 }
@@ -1531,13 +1527,9 @@ IN_PROC_BROWSER_TEST_F(WebViewImeInteractiveTest,
   EXPECT_TRUE(focus_listener.WaitUntilSatisfied());
 
   // Verify the text inside the <input> is "A B X D".
-  std::string value;
-  ASSERT_TRUE(ExecuteScriptAndExtractString(guest_rfh,
-                                            "window.domAutomationController."
-                                            "send(document.querySelector('"
-                                            "input').value)",
-                                            &value));
-  EXPECT_EQ("A B X D", value);
+  EXPECT_EQ("A B X D", content::EvalJs(guest_rfh,
+                                       "document.querySelector('"
+                                       "input').value"));
 
   // Now commit "C" to to replace the range (4, 5).
   // For OOPIF guests, the target for IME is the RWH for the guest's main frame.
@@ -1549,13 +1541,9 @@ IN_PROC_BROWSER_TEST_F(WebViewImeInteractiveTest,
   EXPECT_TRUE(input_listener.WaitUntilSatisfied());
 
   // Get the input value from the guest.
-  value.clear();
-  ASSERT_TRUE(ExecuteScriptAndExtractString(guest_rfh,
-                                            "window.domAutomationController."
-                                            "send(document.querySelector('"
-                                            "input').value)",
-                                            &value));
-  EXPECT_EQ("A B C D", value);
+  EXPECT_EQ("A B C D", content::EvalJs(guest_rfh,
+                                       "document.querySelector('"
+                                       "input').value"));
 }
 #endif  // BUILDFLAG(IS_MAC)
 
@@ -1591,15 +1579,10 @@ IN_PROC_BROWSER_TEST_F(WebViewImeInteractiveTest, CompositionRangeUpdates) {
 
   // Clear the string as it already contains some text. Then verify the text in
   // the <input> is empty.
-  std::string value;
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      guest_view->GetGuestMainFrame(),
-      "var input = document.querySelector('input');"
-      "input.value = '';"
-      "window.domAutomationController.send("
-      "    document.querySelector('input').value)",
-      &value));
-  EXPECT_EQ("", value);
+  EXPECT_EQ("", content::EvalJs(guest_view->GetGuestMainFrame(),
+                                "var input = document.querySelector('input');"
+                                "input.value = '';"
+                                "document.querySelector('input').value"));
 
   // Now set some composition text which should lead to an update in composition
   // range information.
@@ -1658,34 +1641,9 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest,
 }
 #endif
 
-// Base class for interactive tests that enable site isolation in <webview>
-// guests.
-class SitePerProcessWebViewInteractiveTest : public WebViewInteractiveTest {
- public:
-  SitePerProcessWebViewInteractiveTest() = default;
-  ~SitePerProcessWebViewInteractiveTest() override = default;
-  SitePerProcessWebViewInteractiveTest(
-      const SitePerProcessWebViewInteractiveTest&) = delete;
-  SitePerProcessWebViewInteractiveTest& operator=(
-      const SitePerProcessWebViewInteractiveTest&) = delete;
-
-  void SetUp() override {
-    feature_list_.InitAndEnableFeature(features::kSiteIsolationForGuests);
-    WebViewInteractiveTest::SetUp();
-  }
-
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-    WebViewInteractiveTest::SetUpOnMainThread();
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Check that when a focused <webview> navigates cross-process, the focus
 // is preserved in the new page. See https://crbug.com/1358210.
-IN_PROC_BROWSER_TEST_F(SitePerProcessWebViewInteractiveTest,
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
                        FocusPreservedAfterCrossProcessNavigation) {
   // Load and show a platform app with a <webview> on a data: URL.
   ASSERT_TRUE(StartEmbeddedTestServer());

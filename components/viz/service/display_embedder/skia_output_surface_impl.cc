@@ -5,6 +5,7 @@
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -46,8 +47,10 @@
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
 #include "skia/ext/legacy_display_globals.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
+#include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -109,8 +112,8 @@ OutputSurface::Type GetOutputSurfaceType(SkiaOutputSurfaceDependency* deps) {
 }  // namespace
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
-    SkDeferredDisplayListRecorder* root_recorder)
-    : recorder_(root_recorder) {}
+    SkDeferredDisplayListRecorder* root_ddl_recorder)
+    : ddl_recorder_(root_ddl_recorder) {}
 
 SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
     SkSurfaceCharacterization characterization)
@@ -120,8 +123,8 @@ SkiaOutputSurfaceImpl::ScopedPaint::ScopedPaint(
     SkSurfaceCharacterization characterization,
     gpu::Mailbox mailbox)
     : mailbox_(mailbox) {
-  recorder_storage_.emplace(characterization);
-  recorder_ = &recorder_storage_.value();
+  ddl_recorder_storage_.emplace(characterization);
+  ddl_recorder_ = &ddl_recorder_storage_.value();
 }
 
 SkiaOutputSurfaceImpl::ScopedPaint::~ScopedPaint() = default;
@@ -231,7 +234,7 @@ SkiaOutputSurfaceImpl::~SkiaOutputSurfaceImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("viz", __PRETTY_FUNCTION__);
   current_paint_.reset();
-  root_recorder_.reset();
+  root_ddl_recorder_.reset();
 
   if (!render_pass_image_cache_.empty()) {
     std::vector<AggregatedRenderPassId> render_pass_ids;
@@ -309,12 +312,15 @@ void SkiaOutputSurfaceImpl::DiscardBackbuffer() {
   gpu_task_scheduler_->ScheduleOrRetainGpuTask(std::move(callback), {});
 }
 
-void SkiaOutputSurfaceImpl::RecreateRootRecorder() {
-  DCHECK(characterization_.isValid());
-  root_recorder_.emplace(characterization_);
+void SkiaOutputSurfaceImpl::RecreateRootDDLRecorder() {
+  SkSurfaceCharacterization characterization =
+      CreateSkSurfaceCharacterizationCurrentFrame(
+          size_, color_type_, alpha_type_, /*mipmap=*/false, sk_color_space_);
+  CHECK(characterization.isValid());
+  root_ddl_recorder_.emplace(characterization);
   // This will trigger the lazy initialization of the recorder
-  std::ignore = root_recorder_->getCanvas();
-  reset_recorder_on_swap_ = false;
+  std::ignore = root_ddl_recorder_->getCanvas();
+  reset_ddl_recorder_on_swap_ = false;
 }
 
 void SkiaOutputSurfaceImpl::Reshape(const ReshapeParams& params) {
@@ -323,13 +329,24 @@ void SkiaOutputSurfaceImpl::Reshape(const ReshapeParams& params) {
   DCHECK(params.alpha_type == kPremul_SkAlphaType ||
          params.alpha_type == kOpaque_SkAlphaType);
 
+  size_ = params.size;
+  format_ = params.format;
+  alpha_type_ = params.alpha_type;
+
+  const auto format_index = static_cast<int>(params.format);
+  color_type_ = capabilities_.sk_color_types[format_index];
+  DCHECK(color_type_ != kUnknown_SkColorType)
+      << "SkColorType is invalid for buffer format_index: " << format_index;
+
+  sk_color_space_ = params.color_space.ToSkColorSpace();
+
   // SetDrawRectangle() will need to be called at the new size.
   has_set_draw_rectangle_for_frame_ = false;
 
   if (use_damage_area_from_skia_output_device_) {
-    damage_of_current_buffer_ = gfx::Rect(params.size);
+    damage_of_current_buffer_ = gfx::Rect(size_);
   } else if (frame_buffer_damage_tracker_) {
-    frame_buffer_damage_tracker_->FrameBuffersChanged(params.size);
+    frame_buffer_damage_tracker_->FrameBuffersChanged(size_);
   }
 
   if (is_using_raw_draw_ && is_raw_draw_using_msaa_) {
@@ -343,30 +360,19 @@ void SkiaOutputSurfaceImpl::Reshape(const ReshapeParams& params) {
     sample_count_ = 1;
   }
 
-  const auto format_index = static_cast<int>(params.format);
-  const auto& color_type = capabilities_.sk_color_types[format_index];
-  DCHECK(color_type != kUnknown_SkColorType)
-      << "SkColorType is invalid for buffer format_index: " << format_index;
-
-  auto sk_color_space =
-      params.color_space.ToSkColorSpace(params.sdr_white_level);
-  characterization_ = CreateSkSurfaceCharacterizationCurrentFrame(
-      params.size, color_type, params.alpha_type, /*mipmap=*/false,
-      std::move(sk_color_space));
-
+  SkImageInfo image_info = SkImageInfo::Make(
+      size_.width(), size_.height(), color_type_, alpha_type_, sk_color_space_);
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
-                             base::Unretained(impl_on_gpu_.get()),
-                             characterization_, params.color_space,
+                             base::Unretained(impl_on_gpu_.get()), image_info,
+                             params.color_space, sample_count_,
                              params.device_scale_factor, GetDisplayTransform());
   EnqueueGpuTask(std::move(task), {}, /*make_current=*/true,
                  /*need_framebuffer=*/!dependency_->IsOffscreen());
   FlushGpuTasks(SyncMode::kNoWait);
 
-  size_ = params.size;
-  format_ = params.format;
-  RecreateRootRecorder();
+  RecreateRootDDLRecorder();
 }
 
 void SkiaOutputSurfaceImpl::SetUpdateVSyncParametersCallback(
@@ -408,10 +414,10 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
   DCHECK(!current_paint_);
-  DCHECK(root_recorder_);
-  reset_recorder_on_swap_ = true;
-  current_paint_.emplace(&root_recorder_.value());
-  return current_paint_->recorder()->getCanvas();
+  DCHECK(root_ddl_recorder_);
+  reset_ddl_recorder_on_swap_ = true;
+  current_paint_.emplace(&root_ddl_recorder_.value());
+  return current_paint_->ddl_recorder()->getCanvas();
 }
 
 void SkiaOutputSurfaceImpl::MakePromiseSkImage(
@@ -454,7 +460,7 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImage(
         image_context->mailbox_holder().texture_target,
         image_context->ycbcr_info());
     FulfillForPlane* fulfill = new FulfillForPlane(impl);
-    auto image = SkImage::MakePromiseTexture(
+    auto image = SkImages::PromiseTextureFrom(
         gr_context_thread_safe_, backend_format,
         gfx::SizeToSkISize(image_context->size()), GrMipMapped::kNo,
         image_context->origin(), color_type, image_context->alpha_type(),
@@ -483,7 +489,7 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImage(
 
     GrYUVABackendTextureInfo yuva_backend_info(
         yuva_info, formats.data(), GrMipmapped::kNo, kTopLeft_GrSurfaceOrigin);
-    auto image = SkImage::MakePromiseYUVATexture(
+    auto image = SkImages::PromiseTextureFromYUVA(
         gr_context_thread_safe_, yuva_backend_info,
         image_context->color_space(), Fulfill, CleanUp, fulfills);
     DCHECK(image);
@@ -538,7 +544,7 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
 
   GrYUVABackendTextureInfo yuva_backend_info(
       yuva_info, formats, GrMipmapped::kNo, kTopLeft_GrSurfaceOrigin);
-  auto image = SkImage::MakePromiseYUVATexture(
+  auto image = SkImages::PromiseTextureFromYUVA(
       gr_context_thread_safe_, yuva_backend_info, std::move(image_color_space),
       Fulfill, CleanUp, fulfills);
   DCHECK(image);
@@ -605,11 +611,11 @@ void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
                  /*make_current=*/true,
                  /*need_framebuffer=*/!dependency_->IsOffscreen());
 
-  // Recreate |root_recorder_| after SwapBuffers has been scheduled on GPU
+  // Recreate |root_ddl_recorder_| after SwapBuffers has been scheduled on GPU
   // thread to save some time in BeginPaintCurrentFrame
   // Recreating recorder is expensive. Avoid recreation if there was no paint.
-  if (reset_recorder_on_swap_) {
-    RecreateRootRecorder();
+  if (reset_ddl_recorder_on_swap_) {
+    RecreateRootDDLRecorder();
   }
 }
 
@@ -634,8 +640,8 @@ void SkiaOutputSurfaceImpl::SwapBuffersSkipped(
                  /*make_current=*/true, /*need_framebuffer=*/false);
 
   // Recreating recorder is expensive. Avoid recreation if there was no paint.
-  if (reset_recorder_on_swap_) {
-    RecreateRootRecorder();
+  if (reset_ddl_recorder_on_swap_) {
+    RecreateRootDDLRecorder();
   }
 }
 
@@ -654,7 +660,7 @@ void SkiaOutputSurfaceImpl::ScheduleOutputSurfaceAsOverlay(
 SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
     const AggregatedRenderPassId& id,
     const gfx::Size& surface_size,
-    ResourceFormat format,
+    SharedImageFormat format,
     bool mipmap,
     bool scanout_dcomp_surface,
     sk_sp<SkColorSpace> color_space,
@@ -666,7 +672,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
   DCHECK(resource_sync_tokens_.empty());
 
   SkColorType color_type =
-      ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true, format);
+      ToClosestSkColorType(/*gpu_compositing=*/true, format);
   SkSurfaceCharacterization characterization =
       CreateSkSurfaceCharacterizationRenderPass(
           surface_size, color_type, kPremul_SkAlphaType, mipmap,
@@ -685,7 +691,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
   }
 
   current_paint_.emplace(characterization, mailbox);
-  return current_paint_->recorder()->getCanvas();
+  return current_paint_->ddl_recorder()->getCanvas();
 }
 
 SkCanvas* SkiaOutputSurfaceImpl::RecordOverdrawForCurrentPaint() {
@@ -693,10 +699,10 @@ SkCanvas* SkiaOutputSurfaceImpl::RecordOverdrawForCurrentPaint() {
 
   DCHECK(debug_settings_->show_overdraw_feedback);
   DCHECK(current_paint_);
-  DCHECK(!overdraw_surface_recorder_);
+  DCHECK(!overdraw_surface_ddl_recorder_);
 
-  nway_canvas_.emplace(characterization_.width(), characterization_.height());
-  nway_canvas_->addCanvas(current_paint_->recorder()->getCanvas());
+  nway_canvas_.emplace(size_.width(), size_.height());
+  nway_canvas_->addCanvas(current_paint_->ddl_recorder()->getCanvas());
 
   // Overdraw feedback uses |SkOverdrawCanvas|, which relies on a buffer with an
   // 8-bit unorm alpha channel to work. RGBA8 is always supported, so we use it.
@@ -704,13 +710,12 @@ SkCanvas* SkiaOutputSurfaceImpl::RecordOverdrawForCurrentPaint() {
 
   SkSurfaceCharacterization characterization =
       CreateSkSurfaceCharacterizationRenderPass(
-          gfx::Size(characterization_.width(), characterization_.height()),
-          color_type_with_alpha, characterization_.imageInfo().alphaType(),
-          /*mipmap=*/false, characterization_.refColorSpace(),
-          /*is_overlay=*/false, /*scanout_dcomp_surface=*/false);
+          size_, color_type_with_alpha, alpha_type_, /*mipmap=*/false,
+          sk_color_space_, /*is_overlay=*/false,
+          /*scanout_dcomp_surface=*/false);
   if (characterization.isValid()) {
-    overdraw_surface_recorder_.emplace(characterization);
-    overdraw_canvas_.emplace((overdraw_surface_recorder_->getCanvas()));
+    overdraw_surface_ddl_recorder_.emplace(characterization);
+    overdraw_canvas_.emplace((overdraw_surface_ddl_recorder_->getCanvas()));
     nway_canvas_->addCanvas(&overdraw_canvas_.value());
   }
 
@@ -724,14 +729,14 @@ void SkiaOutputSurfaceImpl::EndPaint(
     bool is_overlay) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(current_paint_);
-  auto ddl = current_paint_->recorder()->detach();
+  auto ddl = current_paint_->ddl_recorder()->detach();
 
   sk_sp<SkDeferredDisplayList> overdraw_ddl;
-  if (overdraw_surface_recorder_) {
-    overdraw_ddl = overdraw_surface_recorder_->detach();
+  if (overdraw_surface_ddl_recorder_) {
+    overdraw_ddl = overdraw_surface_ddl_recorder_->detach();
     DCHECK(overdraw_ddl);
     overdraw_canvas_.reset();
-    overdraw_surface_recorder_.reset();
+    overdraw_surface_ddl_recorder_.reset();
     nway_canvas_.reset();
   }
 
@@ -770,7 +775,7 @@ void SkiaOutputSurfaceImpl::EndPaint(
 sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
     const AggregatedRenderPassId& id,
     const gfx::Size& size,
-    ResourceFormat format,
+    SharedImageFormat format,
     bool mipmap,
     sk_sp<SkColorSpace> color_space,
     const gpu::Mailbox& mailbox) {
@@ -778,22 +783,21 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
   DCHECK(current_paint_);
 
   auto& image_context = render_pass_image_cache_[id];
-  auto si_format = SharedImageFormat::SinglePlane(format);
   if (!image_context) {
     gpu::MailboxHolder mailbox_holder(mailbox, gpu::SyncToken(), 0);
     image_context = std::make_unique<ImageContextImpl>(
-        mailbox_holder, size, si_format, /*maybe_concurrent_reads=*/false,
+        mailbox_holder, size, format, /*maybe_concurrent_reads=*/false,
         /*ycbcr_info=*/absl::nullopt, std::move(color_space),
         /*is_for_render_pass=*/true);
   }
   if (!image_context->has_image()) {
     SkColorType color_type =
-        ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
-    GrBackendFormat backend_format = GetGrBackendFormatForTexture(
-        si_format, /*plane_index=*/0, GL_TEXTURE_2D,
-        /*ycbcr_info=*/absl::nullopt);
+        ToClosestSkColorType(true /* gpu_compositing */, format);
+    GrBackendFormat backend_format =
+        GetGrBackendFormatForTexture(format, /*plane_index=*/0, GL_TEXTURE_2D,
+                                     /*ycbcr_info=*/absl::nullopt);
     FulfillForPlane* fulfill = new FulfillForPlane(image_context.get());
-    auto image = SkImage::MakePromiseTexture(
+    auto image = SkImages::PromiseTextureFrom(
         gr_context_thread_safe_, backend_format,
         gfx::SizeToSkISize(image_context->size()),
         mipmap ? GrMipMapped::kYes : GrMipMapped::kNo, image_context->origin(),
@@ -966,12 +970,18 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(
       std::move(add_child_window_to_browser_callback));
   if (!impl_on_gpu_) {
     *result = false;
-  } else {
-    capabilities_ = impl_on_gpu_->capabilities();
-    is_displayed_as_overlay_ = impl_on_gpu_->IsDisplayedAsOverlay();
-    gr_context_thread_safe_ = impl_on_gpu_->GetGrContextThreadSafeProxy();
-    *result = true;
+    return;
   }
+  capabilities_ = impl_on_gpu_->capabilities();
+  is_displayed_as_overlay_ = impl_on_gpu_->IsDisplayedAsOverlay();
+
+  if (auto* gr_context = dependency_->GetSharedContextState()->gr_context()) {
+    gr_context_thread_safe_ = gr_context->threadSafeProxy();
+  }
+  graphite_recorder_ =
+      dependency_->GetSharedContextState()->viz_compositor_graphite_recorder();
+
+  *result = true;
 }
 
 SkSurfaceCharacterization
@@ -1267,8 +1277,8 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     int plane_index,
     uint32_t gl_texture_target,
     const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
-  if (dependency_->IsUsingVulkan()) {
 #if BUILDFLAG(ENABLE_VULKAN)
+  if (dependency_->gr_context_type() == gpu::GrContextType::kVulkan) {
     if (!ycbcr_info) {
       return GrBackendFormat::MakeVk(gpu::ToVkFormat(si_format, plane_index));
     }
@@ -1287,25 +1297,11 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
 #else
     return GrBackendFormat::MakeVk(gr_ycbcr_info);
 #endif  // BUILDFLAG(IS_LINUX)
-#endif  // BUILDFLAG(ENABLE_VULKAN)
-  } else if (dependency_->IsUsingDawn()) {
-#if BUILDFLAG(SKIA_USE_DAWN)
-    // TODO(hitawala): Add multiplanar support for Skia-Dawn.
-    wgpu::TextureFormat wgpu_format = gpu::ToDawnFormat(si_format);
-    // Return an invalid backend format if we can't find an appropriate Dawn
-    // format, otherwise Skia will end up calling Dawn CreateTexture with the
-    // wgou::TextureFormat::Undefined which can cause security issues.
-    if (wgpu_format == wgpu::TextureFormat::Undefined) {
-      return GrBackendFormat();
-    }
-    return GrBackendFormat::MakeDawn(wgpu_format);
-#endif
-  } else if (dependency_->IsUsingMetal()) {
-#if BUILDFLAG(IS_APPLE)
-    return GrBackendFormat::MakeMtl(
-        gpu::ToMTLPixelFormat(si_format, plane_index));
-#endif
   } else {
+#else
+  {
+#endif  // BUILDFLAG(ENABLE_VULKAN)
+    CHECK_EQ(dependency_->gr_context_type(), gpu::GrContextType::kGL);
     // Convert internal format from GLES2 to platform GL.
     bool use_angle_rgbx_format = impl_on_gpu_->GetFeatureInfo()
                                      ->feature_flags()
@@ -1321,8 +1317,6 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
 
     return GrBackendFormat::MakeGL(texture_storage_format, gl_texture_target);
   }
-  NOTREACHED();
-  return GrBackendFormat();
 }
 
 bool SkiaOutputSurfaceImpl::IsDisplayedAsOverlayPlane() const {
@@ -1445,16 +1439,18 @@ void SkiaOutputSurfaceImpl::InitDelegatedInkPointRendererReceiver(
 }
 
 gpu::Mailbox SkiaOutputSurfaceImpl::CreateSharedImage(
-    ResourceFormat format,
+    SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
+    base::StringPiece debug_label,
     gpu::SurfaceHandle surface_handle) {
   gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
 
   auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CreateSharedImage,
                              base::Unretained(impl_on_gpu_.get()), mailbox,
-                             format, size, color_space, usage, surface_handle);
+                             format, size, color_space, usage,
+                             std::string(debug_label), surface_handle);
   EnqueueGpuTask(std::move(task), {}, /*make_current=*/true,
                  /*need_framebuffer=*/false);
 

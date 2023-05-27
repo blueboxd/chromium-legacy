@@ -8,13 +8,16 @@
 
 #include "ash/shell.h"
 #include "ash/wm/desks/cros_next_desk_icon_button.h"
+#include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
-#include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
+#include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/containers/contains.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -174,7 +177,7 @@ void UpdateAccessibilityFocusInOverview() {
 class RemovedMiniViewAnimation : public ui::ImplicitAnimationObserver {
  public:
   RemovedMiniViewAnimation(DeskMiniView* removed_mini_view,
-                           DesksBarView* bar_view,
+                           LegacyDeskBarView* bar_view,
                            const bool to_zero_state)
       : removed_mini_view_(removed_mini_view), bar_view_(bar_view) {
     removed_mini_view_->set_is_animating_to_remove(true);
@@ -198,7 +201,7 @@ class RemovedMiniViewAnimation : public ui::ImplicitAnimationObserver {
 
   ~RemovedMiniViewAnimation() override {
     DCHECK(removed_mini_view_->parent());
-    removed_mini_view_->parent()->RemoveChildViewT(removed_mini_view_);
+    removed_mini_view_->parent()->RemoveChildViewT(removed_mini_view_.get());
 
     if (Shell::Get()->overview_controller()->InOverviewSession()) {
       DCHECK(bar_view_);
@@ -211,8 +214,8 @@ class RemovedMiniViewAnimation : public ui::ImplicitAnimationObserver {
   void OnImplicitAnimationsCompleted() override { delete this; }
 
  private:
-  DeskMiniView* removed_mini_view_;
-  DesksBarView* const bar_view_;
+  raw_ptr<DeskMiniView, ExperimentalAsh> removed_mini_view_;
+  const raw_ptr<LegacyDeskBarView, ExperimentalAsh> bar_view_;
 };
 
 // A self-deleting object that performs bounds changes animation for the desks
@@ -223,7 +226,7 @@ class RemovedMiniViewAnimation : public ui::ImplicitAnimationObserver {
 // will be deleted when the animation is complete.
 class DesksBarBoundsAnimation : public ui::ImplicitAnimationObserver {
  public:
-  DesksBarBoundsAnimation(DesksBarView* bar_view, bool to_zero_state)
+  DesksBarBoundsAnimation(LegacyDeskBarView* bar_view, bool to_zero_state)
       : bar_view_(bar_view) {
     auto* desks_widget = bar_view_->GetWidget();
     const gfx::Rect current_widget_bounds =
@@ -232,7 +235,7 @@ class DesksBarBoundsAnimation : public ui::ImplicitAnimationObserver {
     // When `to_zero_state` is false, desks bar is switching from zero to
     // expanded state.
     if (to_zero_state) {
-      target_widget_bounds.set_height(DesksBarView::kZeroStateBarHeight);
+      target_widget_bounds.set_height(kDeskBarZeroStateHeight);
 
       if (chromeos::features::IsJellyrollEnabled()) {
         // When `Jellyroll` is enabled, setting desks bar's bounds to its bounds
@@ -259,8 +262,9 @@ class DesksBarBoundsAnimation : public ui::ImplicitAnimationObserver {
       // Then set the bounds of the desks bar back to its bounds at zero state
       // to start the bounds change animation. See more details at
       // `is_bounds_animation_on_going_`.
-      target_widget_bounds.set_height(bar_view_->GetExpandedBarHeight(
-          desks_widget->GetNativeWindow()->GetRootWindow()));
+      target_widget_bounds.set_height(DeskBarViewBase::GetPreferredBarHeight(
+          desks_widget->GetNativeWindow()->GetRootWindow(),
+          DeskBarViewBase::Type::kOverview, DeskBarViewBase::State::kExpanded));
       desks_widget->SetBounds(target_widget_bounds);
       bar_view_->set_is_bounds_animation_on_going(true);
       desks_widget->SetBounds(current_widget_bounds);
@@ -298,7 +302,7 @@ class DesksBarBoundsAnimation : public ui::ImplicitAnimationObserver {
   void OnImplicitAnimationsCompleted() override { delete this; }
 
  private:
-  DesksBarView* const bar_view_;
+  const raw_ptr<LegacyDeskBarView, ExperimentalAsh> bar_view_;
 };
 
 // A self-deleting class that performs the scale up / down animation for the
@@ -375,13 +379,13 @@ class DeskIconButtonScaleAnimation {
   // `desk_icon_button_` is valid through the lifetime of `this `. Since when
   // the `desk_icon_button_` is destroyed, `OnAborted` will be triggered and
   // then the destructor of `this` will be triggered.
-  CrOSNextDeskIconButton* const desk_icon_button_;
+  const raw_ptr<CrOSNextDeskIconButton, ExperimentalAsh> desk_icon_button_;
 };
 
 }  // namespace
 
 void PerformNewDeskMiniViewAnimation(
-    DesksBarView* bar_view,
+    LegacyDeskBarView* bar_view,
     std::vector<DeskMiniView*> new_mini_views,
     std::vector<DeskMiniView*> mini_views_left,
     std::vector<DeskMiniView*> mini_views_right,
@@ -447,7 +451,7 @@ void PerformNewDeskMiniViewAnimation(
 }
 
 void PerformRemoveDeskMiniViewAnimation(
-    DesksBarView* bar_view,
+    LegacyDeskBarView* bar_view,
     DeskMiniView* removed_mini_view,
     std::vector<DeskMiniView*> mini_views_left,
     std::vector<DeskMiniView*> mini_views_right,
@@ -486,7 +490,8 @@ void PerformRemoveDeskMiniViewAnimation(
   }
 }
 
-void PerformZeroStateToExpandedStateMiniViewAnimation(DesksBarView* bar_view) {
+void PerformZeroStateToExpandedStateMiniViewAnimation(
+    LegacyDeskBarView* bar_view) {
   new DesksBarBoundsAnimation(bar_view, /*to_zero_state=*/false);
   const int bar_x_center = bar_view->bounds().CenterPoint().x();
   for (auto* mini_view : bar_view->mini_views())
@@ -502,7 +507,7 @@ void PerformZeroStateToExpandedStateMiniViewAnimation(DesksBarView* bar_view) {
 }
 
 void PerformZeroStateToExpandedStateMiniViewAnimationCrOSNext(
-    DesksBarView* bar_view) {
+    LegacyDeskBarView* bar_view) {
   bar_view->new_desk_button()->UpdateState(
       CrOSNextDeskIconButton::State::kExpanded);
   auto* library_button = bar_view->library_button();
@@ -541,7 +546,7 @@ void PerformZeroStateToExpandedStateMiniViewAnimationCrOSNext(
 }
 
 void PerformExpandedStateToZeroStateMiniViewAnimation(
-    DesksBarView* bar_view,
+    LegacyDeskBarView* bar_view,
     std::vector<DeskMiniView*> removed_mini_views) {
   for (auto* mini_view : removed_mini_views)
     new RemovedMiniViewAnimation(mini_view, bar_view, /*to_zero_state=*/true);
@@ -624,7 +629,7 @@ void PerformLibraryButtonVisibilityAnimation(
 
 void PerformDeskIconButtonScaleAnimationCrOSNext(
     CrOSNextDeskIconButton* button,
-    DesksBarView* bar_view,
+    LegacyDeskBarView* bar_view,
     const gfx::Transform& new_desk_button_rects_transform,
     int shift_x) {
   new DeskIconButtonScaleAnimation(button, new_desk_button_rects_transform);

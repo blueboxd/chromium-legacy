@@ -252,6 +252,7 @@ void NativeWidgetMac::InitNativeWidget(Widget::InitParams params) {
     SetZOrderLevel(params.EffectiveZOrderLevel());
 
   GetNSWindowMojo()->SetIgnoresMouseEvents(!params.accept_events);
+  GetNSWindowMojo()->SetVisibleOnAllSpaces(params.visible_on_all_workspaces);
 
   delegate_->OnNativeWidgetCreated();
 
@@ -723,10 +724,11 @@ void NativeWidgetMac::SetOpacity(float opacity) {
   GetNSWindowMojo()->SetOpacity(opacity);
 }
 
-void NativeWidgetMac::SetAspectRatio(const gfx::SizeF& aspect_ratio) {
+void NativeWidgetMac::SetAspectRatio(const gfx::SizeF& aspect_ratio,
+                                     const gfx::Size& excluded_margin) {
   if (!GetNSWindowMojo())
     return;
-  GetNSWindowMojo()->SetAspectRatio(aspect_ratio);
+  GetNSWindowMojo()->SetAspectRatio(aspect_ratio, excluded_margin);
 }
 
 void NativeWidgetMac::FlashFrame(bool flash_frame) {

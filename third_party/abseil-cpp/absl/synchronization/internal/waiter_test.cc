@@ -14,19 +14,44 @@
 
 #include "absl/synchronization/internal/waiter.h"
 
+#include <ctime>
 #include <iostream>
 #include <ostream>
 
+#include "absl/base/config.h"
+#include "absl/random/random.h"
 #include "absl/synchronization/internal/create_thread_identity.h"
 #include "absl/synchronization/internal/futex_waiter.h"
 #include "absl/synchronization/internal/kernel_timeout.h"
 #include "absl/synchronization/internal/pthread_waiter.h"
 #include "absl/synchronization/internal/sem_waiter.h"
+#include "absl/synchronization/internal/stdcpp_waiter.h"
 #include "absl/synchronization/internal/thread_pool.h"
 #include "absl/synchronization/internal/win32_waiter.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "gtest/gtest.h"
+
+// Test go/btm support by randomizing the value of clock_gettime() for
+// CLOCK_MONOTONIC. This works by overriding a weak symbol in glibc.
+// We should be resistant to this randomization when !SupportsSteadyClock().
+#if defined(__GOOGLE_GRTE_VERSION__) &&      \
+    !defined(ABSL_HAVE_ADDRESS_SANITIZER) && \
+    !defined(ABSL_HAVE_MEMORY_SANITIZER) &&  \
+    !defined(ABSL_HAVE_THREAD_SANITIZER)
+extern "C" int __clock_gettime(clockid_t c, struct timespec* ts);
+
+extern "C" int clock_gettime(clockid_t c, struct timespec* ts) {
+  if (c == CLOCK_MONOTONIC &&
+      !absl::synchronization_internal::KernelTimeout::SupportsSteadyClock()) {
+    absl::SharedBitGen gen;
+    ts->tv_sec = absl::Uniform(gen, 0, 1'000'000'000);
+    ts->tv_nsec = absl::Uniform(gen, 0, 1'000'000'000);
+    return 0;
+  }
+  return __clock_gettime(c, ts);
+}
+#endif
 
 namespace {
 
@@ -47,7 +72,7 @@ class WaiterTest : public ::testing::Test {
 
 TYPED_TEST_SUITE_P(WaiterTest);
 
-constexpr absl::Duration slop = absl::Milliseconds(2);
+constexpr absl::Duration slop = absl::Milliseconds(10);
 
 TYPED_TEST_P(WaiterTest, WaitNoTimeout) {
   absl::synchronization_internal::ThreadPool tp(1);
@@ -83,7 +108,7 @@ TYPED_TEST_P(WaiterTest, WaitDurationWoken) {
       absl::synchronization_internal::KernelTimeout(absl::Seconds(10))));
   absl::Duration waited = absl::Now() - start;
   EXPECT_GE(waited, absl::Milliseconds(500) - slop);
-  EXPECT_LT(waited, absl::Seconds(1));
+  EXPECT_LT(waited, absl::Seconds(2));
 }
 
 TYPED_TEST_P(WaiterTest, WaitTimeWoken) {
@@ -101,7 +126,7 @@ TYPED_TEST_P(WaiterTest, WaitTimeWoken) {
       start + absl::Seconds(10))));
   absl::Duration waited = absl::Now() - start;
   EXPECT_GE(waited, absl::Milliseconds(500) - slop);
-  EXPECT_LT(waited, absl::Seconds(1));
+  EXPECT_LT(waited, absl::Seconds(2));
 }
 
 TYPED_TEST_P(WaiterTest, WaitDurationReached) {
@@ -146,6 +171,10 @@ INSTANTIATE_TYPED_TEST_SUITE_P(Sem, WaiterTest,
 #ifdef ABSL_INTERNAL_HAVE_WIN32_WAITER
 INSTANTIATE_TYPED_TEST_SUITE_P(Win32, WaiterTest,
                                absl::synchronization_internal::Win32Waiter);
+#endif
+#ifdef ABSL_INTERNAL_HAVE_STDCPP_WAITER
+INSTANTIATE_TYPED_TEST_SUITE_P(Stdcpp, WaiterTest,
+                               absl::synchronization_internal::StdcppWaiter);
 #endif
 
 }  // namespace

@@ -154,6 +154,12 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   ~PageInfoTest() override = default;
 
   void SetUp() override {
+#if !BUILDFLAG(IS_ANDROID)
+    // TODO(crbug.com/1344787): Fix tests and enable the feature.
+    scoped_feature_list_.InitAndDisableFeature(
+        page_info::kPageInfoCookiesSubpage);
+#endif
+
     ChromeRenderViewHostTestHarness::SetUp();
 
     // Setup stub security info.
@@ -329,6 +335,7 @@ class PageInfoTest : public ChromeRenderViewHostTestHarness {
   std::vector<std::unique_ptr<PageInfoUI::ChosenObjectInfo>>
       last_chosen_object_info_;
   PermissionInfoList last_permission_info_list_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 bool PermissionInfoListContainsPermission(const PermissionInfoList& permissions,
@@ -535,8 +542,8 @@ TEST_F(PageInfoTest, OnPermissionsChanged) {
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
 
-// SetPermissionInfo() is called once initially, and then again every time
-// OnSitePermissionChanged() is called.
+  // SetPermissionInfo() is called once initially, and then again every time
+  // OnSitePermissionChanged() is called.
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub()).Times(6);
 
   // Execute code under tests.
@@ -1521,15 +1528,12 @@ TEST_F(PageInfoTest, AdPersonalization) {
 TEST_F(PageInfoTest, MAYBE_SafetyTipMetrics) {
   struct TestCase {
     const security_state::SafetyTipInfo safety_tip_info;
-    const std::string histogram_name;
   };
   const char kGenericHistogram[] = "WebsiteSettings.Action";
 
   const TestCase kTestCases[] = {
-      {{security_state::SafetyTipStatus::kNone, GURL()},
-       "Security.SafetyTips.PageInfo.Action.SafetyTip_None"},
-      {{security_state::SafetyTipStatus::kLookalike, GURL()},
-       "Security.SafetyTips.PageInfo.Action.SafetyTip_Lookalike"},
+      {{security_state::SafetyTipStatus::kNone, GURL()}},
+      {{security_state::SafetyTipStatus::kLookalike, GURL()}},
   };
 
   for (const auto& test : kTestCases) {
@@ -1541,7 +1545,6 @@ TEST_F(PageInfoTest, MAYBE_SafetyTipMetrics) {
     SetDefaultUIExpectations(mock_ui());
 
     histograms.ExpectTotalCount(kGenericHistogram, 0);
-    histograms.ExpectTotalCount(test.histogram_name, 0);
 
     page_info()->RecordPageInfoAction(PageInfo::PAGE_INFO_OPENED);
 
@@ -1551,10 +1554,6 @@ TEST_F(PageInfoTest, MAYBE_SafetyTipMetrics) {
     histograms.ExpectTotalCount(kGenericHistogram, 2);
     histograms.ExpectBucketCount(kGenericHistogram, PageInfo::PAGE_INFO_OPENED,
                                  2);
-
-    histograms.ExpectTotalCount(test.histogram_name, 2);
-    histograms.ExpectBucketCount(test.histogram_name,
-                                 PageInfo::PAGE_INFO_OPENED, 2);
   }
 }
 
@@ -1825,7 +1824,7 @@ class PageInfoToggleStatesUnitTest : public ::testing::Test {
  public:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
-        permissions::features::kOneTimeGeolocationPermission);
+        permissions::features::kOneTimePermission);
     ::testing::Test::SetUp();
   }
 

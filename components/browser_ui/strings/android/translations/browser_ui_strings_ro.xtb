@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Decodor de imagini</translation>
 <translation id="1785415724048343560">Se recomandă pentru o experiență optimă</translation>
 <translation id="1818308510395330587">Pentru a permite aplicației <ph name="APP_NAME" /> să folosească RA, activează camera foto și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">De la <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Site-urile conexe îți pot vedea activitatea în grup</translation>
 <translation id="1887786770086287077">Accesul la locație este dezactivat pentru acest dispozitiv. Activează-l în <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Încheie apelul</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Descărcare finalizată <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Este posibil ca funcțiile de pe anumite site-uri să nu ruleze în modul incognito</translation>
 <translation id="2442870161001914531">Solicită întotdeauna site-ul pentru computer</translation>
+<translation id="2479148705183875116">Accesează Setările</translation>
 <translation id="2482878487686419369">Notificări</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
 <translation id="2490684707762498678">Gestionate de <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Adrese de e-mail</translation>
 <translation id="2750481671343847896">Site-urile pot afișa solicitări de conectare de la servicii de identitate.</translation>
 <translation id="2822354292072154809">Sigur dorești să resetezi toate permisiunile la nivel de site pentru <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Solicită afișarea pe mobil</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Melodia anterioară</translation>
 <translation id="2891975107962658722">Nu permite unui site să salveze date pe dispozitiv</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Site-urile pot folosi cookie-uri pentru a-ți îmbunătăți experiența de navigare, de exemplu, pentru a te menține conectat(ă) sau pentru a reține articolele din coșul de cumpărături</translation>
 <translation id="3165022941318558018">Permite ca un site să folosească cookie-uri terță parte</translation>
 <translation id="3198916472715691905">Date stocate: <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3203366800380907218">De pe web</translation>
 <translation id="321187648315454507">Pentru a permite aplicației <ph name="APP_NAME" /> să îți trimită notificări, activează notificările și în <ph name="BEGIN_LINK" />Setările Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microfon</translation>
 <translation id="3248611290851046188">Acest site definește categorii de interese pe care le pot folosi alte site-uri pentru a-ți afișa anunțuri. În plus, site-ul preia interesele tale din Chrome ca să-ți afișeze anunțuri mai relevante.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Solicită afișarea pe desktop</translation>
 <translation id="5100237604440890931">Afișare restrânsă – dă clic pentru a extinde.</translation>
 <translation id="5123685120097942451">Filă incognito</translation>
-<translation id="5134599672855298214">Solicită afișarea pe mobil (recomandat)</translation>
 <translation id="5186036860380548585">Opțiunea este disponibilă în partea de sus a ecranului</translation>
 <translation id="5197729504361054390">Persoanele de contact pe care le selectezi vor fi trimise site-ului <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Accesat ultima dată azi</translation>

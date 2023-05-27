@@ -68,7 +68,6 @@
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_verifier.h"
 #include "chrome/browser/ash/login/saml/password_sync_token_verifier_factory.h"
-#include "chrome/browser/ash/login/screens/arc_terms_of_service_screen.h"
 #include "chrome/browser/ash/login/screens/sync_consent_screen.h"
 #include "chrome/browser/ash/login/security_token_session_controller_factory.h"
 #include "chrome/browser/ash/login/session/user_session_initializer.h"
@@ -494,19 +493,25 @@ bool MaybeShowNewTermsAfterUpdateToFlex(Profile* profile) {
     network_portal_detector::GetInstance()->Enable();
     return false;
   }
-  if (!IsRevenUpdatedToFlex())
+  if (!IsRevenUpdatedToFlex()) {
     return false;
+  }
   const bool should_show_new_terms =
       (user_manager->IsCurrentUserOwner() &&
        !IsHwDataUsageDeviceSettingSet()) ||
-      (features::IsOobeConsolidatedConsentEnabled() &&
-       !profile->GetPrefs()->GetBoolean(
-           prefs::kRevenOobeConsolidatedConsentAccepted));
-  if (should_show_new_terms) {
-    LoginDisplayHost::default_host()->GetSigninUI()->ShowNewTermsForFlexUsers();
-    return true;
+      !profile->GetPrefs()->GetBoolean(
+          prefs::kRevenOobeConsolidatedConsentAccepted);
+  if (!should_show_new_terms) {
+    return false;
   }
-  return false;
+  if (LoginDisplayHost::default_host() &&
+      LoginDisplayHost::default_host()->GetSigninUI()) {
+    LoginDisplayHost::default_host()->GetSigninUI()->ShowNewTermsForFlexUsers();
+  } else {
+    LOG(WARNING) << "Can't show additional terms of services for flex users as "
+                    "LoginDisplayHost has been already destroyed!";
+  }
+  return true;
 }
 
 void RecordKnownUser(const AccountId& account_id) {
@@ -1035,18 +1040,15 @@ void UserSessionManager::OnSessionRestoreStateChanged(
       IdentityManagerFactory::GetForProfile(user_profile);
   switch (state) {
     case OAuth2LoginManager::SESSION_RESTORE_DONE:
-      // Session restore done does not always mean valid token because the
-      // merge session operation could be skipped when the first account in
-      // Gaia cookies matches the primary account in TokenService. However
-      // the token could still be invalid in some edge cases. See
-      // http://crbug.com/760610
-      user_status =
-          (identity_manager &&
-           identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
-               identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSignin)
-                   .account_id))
-              ? user_manager::User::OAUTH2_TOKEN_STATUS_INVALID
-              : user_manager::User::OAUTH2_TOKEN_STATUS_VALID;
+      if (identity_manager) {
+        // SESSION_RESTORE_DONE state means that primary account has a valid
+        // token.
+        DCHECK(
+            !identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
+                identity_manager->GetPrimaryAccountInfo(ConsentLevel::kSignin)
+                    .account_id));
+      }
+      user_status = user_manager::User::OAUTH2_TOKEN_STATUS_VALID;
       break;
     case OAuth2LoginManager::SESSION_RESTORE_FAILED:
       user_status = user_manager::User::OAUTH2_TOKEN_STATUS_INVALID;
@@ -1792,7 +1794,13 @@ bool UserSessionManager::MaybeStartNewUserOnboarding(Profile* profile) {
   if (!StartupUtils::IsDeviceRegistered())
     StartupUtils::MarkDeviceRegistered(base::OnceClosure());
 
-  LoginDisplayHost::default_host()->GetSigninUI()->StartUserOnboarding();
+  if (LoginDisplayHost::default_host() &&
+      LoginDisplayHost::default_host()->GetSigninUI()) {
+    LoginDisplayHost::default_host()->GetSigninUI()->StartUserOnboarding();
+  } else {
+    LOG(WARNING) << "Can't start user onboarding as LoginDisplayHost has been "
+                    "already  destroyed!";
+  }
 
   OnboardingUserActivityCounter::MaybeMarkForStart(profile);
 
@@ -1806,35 +1814,56 @@ bool MaybeResumeUserOnboardingFlow(Profile* profile) {
   std::string pending_screen =
       known_user.GetPendingOnboardingScreen(account_id);
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (!user_manager->IsCurrentUserNew() && !pending_screen.empty()) {
+  if (user_manager->IsCurrentUserNew() || pending_screen.empty()) {
+    return false;
+  }
+
+  if (LoginDisplayHost::default_host() &&
+      LoginDisplayHost::default_host()->GetSigninUI()) {
     LoginDisplayHost::default_host()->GetSigninUI()->ResumeUserOnboarding(
         *profile->GetPrefs(), OobeScreenId(pending_screen));
-    return true;
+  } else {
+    LOG(WARNING) << "Can't resume onboarding as LoginDisplayHost has been "
+                    "already destroyed!";
   }
-  return false;
+  return true;
 }
 
 bool MaybeStartManagementTransition(Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (!user_manager->IsCurrentUserNew() &&
-      arc::GetManagementTransition(profile) !=
+  if (user_manager->IsCurrentUserNew() ||
+      arc::GetManagementTransition(profile) ==
           arc::ArcManagementTransition::NO_TRANSITION) {
+    return false;
+  }
+
+  if (LoginDisplayHost::default_host() &&
+      LoginDisplayHost::default_host()->GetSigninUI()) {
     LoginDisplayHost::default_host()
         ->GetSigninUI()
         ->StartManagementTransition();
-    return true;
+  } else {
+    LOG(WARNING) << "Can't start management transition as LoginDisplayHost has "
+                    "been already destroyed!";
   }
-  return false;
+  return true;
 }
 
 bool MaybeShowManagedTermsOfService(Profile* profile) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (!user_manager->IsCurrentUserNew() &&
-      profile->GetPrefs()->IsManagedPreference(::prefs::kTermsOfServiceURL)) {
-    LoginDisplayHost::default_host()->GetSigninUI()->ShowTosForExistingUser();
-    return true;
+  if (user_manager->IsCurrentUserNew() ||
+      !profile->GetPrefs()->IsManagedPreference(::prefs::kTermsOfServiceURL)) {
+    return false;
   }
-  return false;
+
+  if (LoginDisplayHost::default_host() &&
+      LoginDisplayHost::default_host()->GetSigninUI()) {
+    LoginDisplayHost::default_host()->GetSigninUI()->ShowTosForExistingUser();
+  } else {
+    LOG(WARNING) << "Can't show additional terms of service as "
+                    "LoginDisplayHost has been already destroyed!";
+  }
+  return true;
 }
 
 bool UserSessionManager::InitializeUserSession(Profile* profile) {
@@ -1878,9 +1907,15 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
         !onboarding_completed_version.has_value()) {
       known_user.SetOnboardingCompletedVersion(
           account_id, base::Version(kOnboardingBackfillVersion));
-      LoginDisplayHost::default_host()
-          ->GetSigninUI()
-          ->ClearOnboardingAuthSession();
+      if (LoginDisplayHost::default_host() &&
+          LoginDisplayHost::default_host()->GetSigninUI()) {
+        LoginDisplayHost::default_host()
+            ->GetSigninUI()
+            ->ClearOnboardingAuthSession();
+      } else {
+        LOG(WARNING) << "Can't clear onboarding auth session as "
+                        "LoginDisplayHost has been already destroyed!";
+      }
     }
 
     if (MaybeStartNewUserOnboarding(profile)) {
@@ -2008,7 +2043,6 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
 }
 
 void UserSessionManager::MaybeLaunchSettings(Profile* profile) {
-  ArcTermsOfServiceScreen::MaybeLaunchArcSettings(profile);
   SyncConsentScreen::MaybeLaunchSyncConsentSettings(profile);
 }
 
@@ -2154,7 +2188,11 @@ void UserSessionManager::CheckEolInfo(Profile* profile) {
   std::map<Profile*, std::unique_ptr<EolNotification>, ProfileCompare>::iterator
       iter = eol_notification_handler_.find(profile);
   if (iter == eol_notification_handler_.end()) {
-    auto eol_notification = std::make_unique<EolNotification>(profile);
+    auto eol_notification =
+        eol_notification_handler_test_factory_.is_null()
+            ? std::make_unique<EolNotification>(profile)
+            : eol_notification_handler_test_factory_.Run(profile);
+
     iter = eol_notification_handler_
                .insert(std::make_pair(profile, std::move(eol_notification)))
                .first;
@@ -2244,6 +2282,10 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
                  profile, kHatsPerformanceSurvey)) {
     hats_notification_controller_ =
         new HatsNotificationController(profile, kHatsPerformanceSurvey);
+  } else if (HatsNotificationController::ShouldShowSurveyToProfile(
+                 profile, kHatsBatteryLifeSurvey)) {
+    hats_notification_controller_ =
+        new HatsNotificationController(profile, kHatsBatteryLifeSurvey);
   }
 
   base::OnceClosure login_host_finalized_callback = base::BindOnce(
@@ -2414,6 +2456,12 @@ void UserSessionManager::MaybeShowHelpAppReleaseNotesNotification(
     return;
   GetHelpAppNotificationController(profile)
       ->MaybeShowReleaseNotesNotification();
+}
+
+void UserSessionManager::SetEolNotificationHandlerFactoryForTesting(
+    const EolNotificationHandlerFactoryCallback&
+        eol_notification_handler_factory) {
+  eol_notification_handler_test_factory_ = eol_notification_handler_factory;
 }
 
 base::WeakPtr<UserSessionManager>

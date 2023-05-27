@@ -279,7 +279,13 @@ AXObject* BlinkAXTreeSource::GetFocusedObject() const {
 }
 
 AXObject* BlinkAXTreeSource::GetFromId(int32_t id) const {
-  return ax_object_cache_->ObjectFromAXID(id);
+  AXObject* result = ax_object_cache_->ObjectFromAXID(id);
+  if (result && !result->AccessibilityIsIncludedInTree()) {
+    DCHECK(false) << "Should not serialize an unincluded object:"
+                  << "\nChild: " << result->ToString(true).Utf8();
+    return nullptr;
+  }
+  return result;
 }
 
 int32_t BlinkAXTreeSource::GetId(AXObject* node) const {
@@ -287,6 +293,10 @@ int32_t BlinkAXTreeSource::GetId(AXObject* node) const {
 }
 
 size_t BlinkAXTreeSource::GetChildCount(AXObject* node) const {
+  // TODO(aleventhal) This is work that should have done earlier. The call
+  // to load inline textboxes can just ClearChildren and mark the inline text
+  // box parent dirty. That would allow removal of a lot of specialized inline
+  // textbox methods.
   if (ui::CanHaveInlineTextBoxChildren(node->RoleValue()) &&
       ShouldLoadInlineTextBoxes(node)) {
     node->LoadInlineTextBoxes();
@@ -299,7 +309,8 @@ AXObject* BlinkAXTreeSource::ChildAt(AXObject* node, size_t index) const {
   auto* child = node->ChildAtIncludingIgnored(static_cast<int>(index));
 
   // The child may be invalid due to issues in blink accessibility code.
-  if (!child || child->IsDetached()) {
+  CHECK(child);
+  if (child->IsDetached()) {
     DCHECK(false) << "Should not try to serialize an invalid child:"
                   << "\nParent: " << node->ToString(true).Utf8()
                   << "\nChild: " << child->ToString(true).Utf8();
@@ -323,10 +334,6 @@ AXObject* BlinkAXTreeSource::ChildAt(AXObject* node, size_t index) const {
   CheckParentUnignoredOf(node, child);
 #endif
 
-  if (exclude_offscreen_ && child->IsOffScreen()) {
-    return nullptr;
-  }
-
   return child;
 }
 
@@ -348,10 +355,6 @@ bool BlinkAXTreeSource::IsIgnored(AXObject* node) const {
   if (!node || node->IsDetached())
     return false;
   return node->AccessibilityIsIgnored();
-}
-
-bool BlinkAXTreeSource::IsValid(AXObject* node) const {
-  return node && !node->IsDetached();
 }
 
 bool BlinkAXTreeSource::IsEqual(AXObject* node1, AXObject* node2) const {

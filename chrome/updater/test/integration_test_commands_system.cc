@@ -54,6 +54,10 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
  public:
   IntegrationTestCommandsSystem() = default;
 
+  void ExpectNoCrashes() const override {
+    updater::test::ExpectNoCrashes(updater_scope_);
+  }
+
   void PrintLog() const override { RunCommand("print_log"); }
 
   void CopyLog() const override {
@@ -82,8 +86,13 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("expect_candidate_uninstalled");
   }
 
-  void EnterTestMode(const GURL& url) const override {
-    RunCommand("enter_test_mode", {Param("url", url.spec())});
+  void EnterTestMode(const GURL& update_url,
+                     const GURL& crash_upload_url,
+                     const GURL& device_management_url) const override {
+    RunCommand("enter_test_mode",
+               {Param("update_url", update_url.spec()),
+                Param("crash_upload_url", crash_upload_url.spec()),
+                Param("device_management_url", device_management_url.spec())});
   }
 
   void ExitTestMode() const override { RunCommand("exit_test_mode"); }
@@ -95,6 +104,10 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void ExpectSelfUpdateSequence(ScopedServer* test_server) const override {
     updater::test::ExpectSelfUpdateSequence(updater_scope_, test_server);
+  }
+
+  void ExpectUninstallPing(ScopedServer* test_server) const override {
+    updater::test::ExpectUninstallPing(updater_scope_, test_server);
   }
 
   void ExpectUpdateCheckSequence(
@@ -202,6 +215,8 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("run_wake_active",
                {Param("exit_code", base::NumberToString(expected_exit_code))});
   }
+
+  void RunCrashMe() const override { RunCommand("run_crash_me", {}); }
 
   void CheckForUpdate(const std::string& app_id) const override {
     RunCommand("check_for_update", {Param("app_id", app_id)});
@@ -321,6 +336,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void SetupFakeLegacyUpdater() const override {
     RunCommand("setup_fake_legacy_updater");
   }
+
+#if BUILDFLAG(IS_WIN)
+  void RunFakeLegacyUpdater() const override {
+    RunCommand("run_fake_legacy_updater");
+  }
+#endif  // BUILDFLAG(IS_WIN)
 
   void ExpectLegacyUpdaterMigrated() const override {
     RunCommand("expect_legacy_updater_migrated");

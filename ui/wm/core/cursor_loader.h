@@ -36,13 +36,12 @@ class COMPONENT_EXPORT(UI_WM) CursorLoader
   // ui::CursorFactoryObserver:
   void OnThemeLoaded() override;
 
-  // Returns the rotation and scale of the currently loaded cursor.
+  // Returns the rotation of the currently loaded cursor.
   display::Display::Rotation rotation() const { return rotation_; }
-  float scale() const { return scale_; }
 
   // Sets the rotation and scale the cursors are loaded for.
-  // Returns true if the cursor image was reloaded.
-  bool SetDisplayData(display::Display::Rotation rotation, float scale);
+  // Returns true if the cursor needs to be reset.
+  bool SetDisplay(const display::Display& display);
 
   // Returns the size of the currently loaded cursor.
   ui::CursorSize size() const { return size_; }
@@ -73,8 +72,12 @@ class COMPONENT_EXPORT(UI_WM) CursorLoader
       image_cursors_;
   raw_ptr<ui::CursorFactory> factory_ = nullptr;
 
-  // The current scale of the mouse cursor icon.
+  // The scale of the current display, used for system cursors. The selection
+  // of the particular cursor is platform-dependent.
   float scale_ = 1.0f;
+  // The scale used for cursor resources provided by Chromium. It will be set
+  // to the closest value to `scale_` for which there are resources available.
+  float resource_scale_ = 1.0f;
 
   // The current rotation of the mouse cursor icon.
   display::Display::Rotation rotation_ = display::Display::ROTATE_0;

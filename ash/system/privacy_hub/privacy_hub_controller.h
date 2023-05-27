@@ -12,6 +12,7 @@
 #include "ash/system/privacy_hub/microphone_privacy_switch_controller.h"
 #include "base/memory/raw_ptr.h"
 #include "base/values.h"
+#include "geolocation_privacy_switch_controller.h"
 
 class PrefRegistrySimple;
 
@@ -19,6 +20,18 @@ namespace ash {
 
 class ASH_EXPORT PrivacyHubController {
  public:
+  // This enum defines the access levels of the signals of the Privacy Hub
+  // features (namely microphone, camera and geolocation) for the entire
+  // ChromeOS ecosystem.
+  // Don't modify or reorder the enum elements. New values can be added at the
+  // end. These values shall be in sync with the
+  // DeviceLoginScreenGeolocationAccessLevelProto::GeolocationAccessLevel.
+  enum class AccessLevel {
+    kDisallowed = 0,
+    kAllowed = 1,
+    kMaxValue = kAllowed,
+  };
+
   PrivacyHubController();
 
   PrivacyHubController(const PrivacyHubController&) = delete;
@@ -32,7 +45,11 @@ class ASH_EXPORT PrivacyHubController {
   MicrophonePrivacySwitchController& microphone_controller() {
     return microphone_controller_;
   }
+  GeolocationPrivacySwitchController& geolocation_controller() {
+    return geolocation_switch_controller_;
+  }
 
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Sets the frontend adapter (to be used from webui)

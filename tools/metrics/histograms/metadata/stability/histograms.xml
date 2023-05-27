@@ -33,7 +33,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Stability.Android.MinidumpUploadingTime" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>shaktisahu@chromium.org</owner>
   <owner>src/components/minidump_uploader/OWNERS</owner>
   <summary>
@@ -73,19 +73,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Stability.Android.OomKillReverseRankSuccess"
-    enum="BooleanSuccess" expires_after="2020-04-10">
-  <obsolete>
-    Expired in 2020-04-10. Removed in M111.
-  </obsolete>
-  <owner>boliu@chromium.org</owner>
-  <owner>ssid@chromium.org</owner>
-  <summary>
-    Getting value for OomKillReverseRank may fail. Recorded when an applicable
-    child process is killed by android.
-  </summary>
-</histogram>
-
 <histogram name="Stability.Android.ProcessedCrashCounts"
     enum="AndroidProcessedCrashCounts" expires_after="never">
 <!-- expires-never: Critical stability metric that includes OOM rate. -->
@@ -105,7 +92,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Android.ProcessedRealMinidumps"
-    enum="AndroidProcessedMinidumps" expires_after="2023-07-23">
+    enum="AndroidProcessedMinidumps" expires_after="2023-09-24">
   <owner>wnwen@chromium.org</owner>
   <owner>src/components/minidump_uploader/OWNERS</owner>
   <summary>
@@ -126,7 +113,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Stability.Android.SystemExitReason"
-    enum="AndroidProcessExitReason" expires_after="2023-08-08">
+    enum="AndroidProcessExitReason" expires_after="2023-10-08">
   <owner>boliu@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <owner>wnwen@chromium.org</owner>
@@ -258,7 +245,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.ChildFrameCrash.TabMarkedForReload"
-    enum="BooleanMarkedForReload" expires_after="2023-08-09">
+    enum="BooleanMarkedForReload" expires_after="2023-10-08">
   <owner>alexmos@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <summary>
@@ -490,7 +477,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.HasPossibleExplanation"
-    enum="BooleanHasPossibleExplanation" expires_after="2023-07-16">
+    enum="BooleanHasPossibleExplanation" expires_after="2023-09-24">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -525,7 +512,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.MobileSessionOOMShutdownHint"
-    enum="OOMShutdownHint" expires_after="2023-04-27">
+    enum="OOMShutdownHint" expires_after="2024-04-24">
   <owner>olivierrobin@chromium.org</owner>
   <owner>sdefresne@chromium.org</owner>
   <summary>
@@ -548,7 +535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.OSVersion" enum="VersionComparison"
-    expires_after="2023-04-27">
+    expires_after="2023-10-04">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>

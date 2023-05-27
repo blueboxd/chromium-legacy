@@ -68,7 +68,8 @@ std::unique_ptr<PreloadRequest> PreloadRequest::CreateIfNeeded(
     const network::mojom::ReferrerPolicy referrer_policy,
     ResourceFetcher::IsImageSet is_image_set,
     const ExclusionInfo* exclusion_info,
-    const FetchParameters::ResourceWidth& resource_width,
+    absl::optional<float> resource_width,
+    absl::optional<float> resource_height,
     RequestType request_type) {
   // Never preload data URLs. We also disallow relative ref URLs which become
   // data URLs if the document's URL is a data URL. We don't want to create
@@ -84,13 +85,15 @@ std::unique_ptr<PreloadRequest> PreloadRequest::CreateIfNeeded(
 
   return base::WrapUnique(new PreloadRequest(
       initiator_name, initiator_position, resource_url, base_url, resource_type,
-      resource_width, request_type, referrer_policy, is_image_set));
+      resource_width, resource_height, request_type, referrer_policy,
+      is_image_set));
 }
 
 Resource* PreloadRequest::Start(Document* document) {
   DCHECK(document->domWindow());
+  base::TimeTicks discovery_timestamp = base::TimeTicks::Now();
   base::UmaHistogramTimes("Blink.PreloadRequestWaitTime",
-                          base::TimeTicks::Now() - creation_time_);
+                          discovery_timestamp - creation_time_);
 
   FetchInitiatorInfo initiator_info;
   initiator_info.name = AtomicString(initiator_name_);
@@ -125,6 +128,10 @@ Resource* PreloadRequest::Start(Document* document) {
   options.initiator_info = initiator_info;
   FetchParameters params(std::move(resource_request), options);
 
+  if (resource_type_ == ResourceType::kImage) {
+    params.SetDiscoveryTime(discovery_timestamp);
+  }
+
   auto* origin = document->domWindow()->GetSecurityOrigin();
   if (script_type_ == mojom::blink::ScriptType::kModule) {
     DCHECK_EQ(resource_type_, ResourceType::kScript);
@@ -137,6 +144,7 @@ Resource* PreloadRequest::Start(Document* document) {
 
   params.SetDefer(defer_);
   params.SetResourceWidth(resource_width_);
+  params.SetResourceHeight(resource_height_);
   params.SetIntegrityMetadata(integrity_metadata_);
   params.SetContentSecurityPolicyNonce(nonce_);
   params.SetParserDisposition(kParserInserted);

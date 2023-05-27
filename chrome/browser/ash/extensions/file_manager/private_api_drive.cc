@@ -17,6 +17,7 @@
 #include "base/functional/bind.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -47,8 +48,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/ash/manage_mirrorsync/manage_mirrorsync_dialog.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
 #include "chromeos/ash/components/drivefs/drivefs_util.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
@@ -330,7 +333,7 @@ class SingleEntryPropertiesGetterForDocumentsProvider {
   // Given parameters.
   ResultCallback callback_;
   const storage::FileSystemURL file_system_url_;
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
 
   // Values used in the process.
   std::unique_ptr<EntryProperties> properties_;
@@ -603,7 +606,7 @@ void FileManagerPrivateInternalPinDriveFileFunction::OnPinStateSet(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error == drive::FILE_ERROR_OK) {
-    Respond(WithArguments());
+    Respond(NoArguments());
   } else {
     Respond(Error(drive::FileErrorToString(error)));
   }
@@ -983,7 +986,7 @@ FileManagerPrivateNotifyDriveDialogResultFunction::Run() {
   } else {
     return RespondNow(Error("Could not find event router"));
   }
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction
@@ -994,7 +997,26 @@ FileManagerPrivatePollDriveHostedFilePinStatesFunction::Run() {
   if (integration_service) {
     integration_service->PollHostedFilePinStates();
   }
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateGetBulkPinProgressFunction::Run() {
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  drive::DriveIntegrationService* integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  if (!integration_service) {
+    return RespondNow(Error("Drive not available"));
+  }
+
+  if (!integration_service->GetPinManager()) {
+    return RespondNow(Error("Pin Manager not available"));
+  }
+
+  return RespondNow(ArgumentList(
+      api::file_manager_private::GetBulkPinProgress::Results::Create(
+          file_manager::util::BulkPinProgressToJs(
+              integration_service->GetPinManager()->GetProgress()))));
 }
 
 ExtensionFunction::ResponseAction
@@ -1003,7 +1025,7 @@ FileManagerPrivateOpenManageSyncSettingsFunction::Run() {
     ash::ManageMirrorSyncDialog::Show(
         Profile::FromBrowserContext(browser_context()));
   }
-  return RespondNow(WithArguments());
+  return RespondNow(NoArguments());
 }
 
 }  // namespace extensions

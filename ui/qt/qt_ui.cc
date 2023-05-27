@@ -9,10 +9,11 @@
 
 #include <dlfcn.h>
 
+#include <algorithm>
+
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
@@ -56,7 +57,7 @@ int QtWeightToCssWeight(int weight) {
       {63, 600}, {75, 700}, {81, 800}, {87, 900}, {99, 1000},
   };
 
-  weight = base::clamp(weight, 0, 99);
+  weight = std::clamp(weight, 0, 99);
   for (size_t i = 0; i < std::size(kMapping) - 1; i++) {
     const auto& lo = kMapping[i];
     const auto& hi = kMapping[i + 1];
@@ -97,6 +98,13 @@ class QtNativeTheme : public ui::NativeThemeAura {
   QtNativeTheme(const QtNativeTheme&) = delete;
   QtNativeTheme& operator=(const QtNativeTheme&) = delete;
   ~QtNativeTheme() override = default;
+
+  void ThemeChanged(bool prefer_dark_theme) {
+    set_use_dark_colors(IsForcedDarkMode() || prefer_dark_theme);
+    set_preferred_color_scheme(CalculatePreferredColorScheme());
+
+    NotifyOnNativeThemeUpdated();
+  }
 
   // ui::NativeTheme:
   DISABLE_CFI_VCALL
@@ -387,7 +395,7 @@ void QtUi::FontChanged() {
 }
 
 void QtUi::ThemeChanged() {
-  native_theme_->NotifyOnNativeThemeUpdated();
+  native_theme_->ThemeChanged(PreferDarkTheme());
 }
 
 DISABLE_CFI_VCALL

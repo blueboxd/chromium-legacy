@@ -1130,4 +1130,29 @@ bool SupportsToggle(const ax::mojom::Role role) {
   }
 }
 
+bool IsPlainContentElement(ax::mojom::Role role) {
+  switch (role) {
+    case ax::mojom::Role::kInlineTextBox:
+    case ax::mojom::Role::kLineBreak:
+    case ax::mojom::Role::kStaticText:
+    case ax::mojom::Role::kCanvas:
+    case ax::mojom::Role::kDocCover:
+    case ax::mojom::Role::kGraphicsSymbol:
+    case ax::mojom::Role::kImage:
+    case ax::mojom::Role::kSvgRoot:
+    case ax::mojom::Role::kGenericContainer:
+    case ax::mojom::Role::kNone:
+    case ax::mojom::Role::kGroup:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool SupportsArrowKeysForExpandCollapse(const ax::mojom::Role role) {
+  // TODO(accessibility): Investigate if other roles should implement this
+  // pattern.
+  return role == ax::mojom::Role::kTreeItem;
+}
+
 }  // namespace ui

@@ -59,7 +59,7 @@ blink_core_sources_css = [
   "counter_style.h",
   "counter_style_map.cc",
   "counter_style_map.h",
-  "css_anchor_query_type.h",
+  "css_anchor_query_enums.h",
   "css_axis_value.cc",
   "css_axis_value.h",
   "css_basic_shape_values.cc",
@@ -835,4 +835,5 @@ blink_core_tests_css = [
   "threaded/filter_operation_resolver_threaded_test.cc",
   "threaded/font_object_threaded_test.cc",
   "threaded/text_renderer_threaded_test.cc",
+  "white_space_test.cc",
 ]

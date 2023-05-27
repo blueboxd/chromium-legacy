@@ -12,7 +12,7 @@ import {setParentAccessUIHandlerForTest} from 'chrome://parent-access/parent_acc
 import {assertEquals, assertNotEquals} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
-import {buildExtensionApprovalsParams, buildWebApprovalsParams} from './parent_access_test_utils.js';
+import {buildExtensionApprovalsParamsWithPermissions, buildWebApprovalsParams} from './parent_access_test_utils.js';
 import {TestParentAccessUIHandler} from './test_parent_access_ui_handler.js';
 
 window.parent_access_app_tests = {};
@@ -74,7 +74,7 @@ suite(parent_access_app_tests.suiteName, function() {
         // Set up the TestParentAccessUIHandler
         const handler = new TestParentAccessUIHandler();
         handler.setParentAccessParams(
-            buildExtensionApprovalsParams(/*is_disabled=*/ false));
+            buildExtensionApprovalsParamsWithPermissions());
         handler.setOAuthTokenStatus('token', GetOAuthTokenStatus.kSuccess);
         setParentAccessUIHandlerForTest(handler);
 
@@ -83,15 +83,38 @@ suite(parent_access_app_tests.suiteName, function() {
         document.body.appendChild(parentAccessApp);
         await flushTasks();
 
-        // Verify online flow is showing and switch to the after screen.
+        // Verify before flow is showing and switch to the authentication
+        // screen.
         assertEquals(parentAccessApp.currentScreen_, Screens.BEFORE_FLOW);
-        parentAccessApp.dispatchEvent(
-            new CustomEvent('show-authentication-flow'));
+        // Verify the extension approvals before screen is showing.
+        const parentAccessBefore =
+            parentAccessApp.shadowRoot.querySelector('parent-access-before');
+        const extensionApprovalsBefore =
+            parentAccessBefore.shadowRoot.querySelector(
+                'extension-approvals-before');
+        assertNotEquals(null, extensionApprovalsBefore);
+
+        const askParentButton =
+            parentAccessBefore.shadowRoot.querySelector('.action-button');
+        askParentButton.click();
+        assertEquals(handler.getCallCount('onBeforeScreenDone'), 1);
         await flushTasks();
 
         // Verify online flow is showing and switch to the after screen.
         assertEquals(
             parentAccessApp.currentScreen_, Screens.AUTHENTICATION_FLOW);
+        parentAccessApp.dispatchEvent(new CustomEvent('show-after'));
+        await flushTasks();
+
+        // Verify after flow is showing.
+        assertEquals(parentAccessApp.currentScreen_, Screens.AFTER_FLOW);
+        // Verify the extension approvals after screen is showing.
+        const parentAccessAfter =
+            parentAccessApp.shadowRoot.querySelector('parent-access-after');
+        const extensionApprovalsAfter =
+            parentAccessAfter.shadowRoot.querySelector(
+                'extension-approvals-after');
+        assertNotEquals(null, extensionApprovalsAfter);
       });
 
   test(
@@ -101,7 +124,8 @@ suite(parent_access_app_tests.suiteName, function() {
         // Set up the TestParentAccessUIHandler
         const handler = new TestParentAccessUIHandler();
         handler.setParentAccessParams(
-            buildExtensionApprovalsParams(/*is_disabled=*/ true));
+            buildExtensionApprovalsParamsWithPermissions(
+                /*is_disabled=*/ true));
         handler.setOAuthTokenStatus('token', GetOAuthTokenStatus.kSuccess);
         setParentAccessUIHandlerForTest(handler);
 

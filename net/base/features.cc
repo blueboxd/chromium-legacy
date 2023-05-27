@@ -134,15 +134,6 @@ BASE_FEATURE(kPostQuantumKyber,
              "PostQuantumKyber",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kPostQuantumCECPQ2,
-             "PostQuantumCECPQ2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-BASE_FEATURE(kPostQuantumCECPQ2SomeDomains,
-             "PostQuantumCECPQ2SomeDomains",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<std::string>
-    kPostQuantumCECPQ2Prefix(&kPostQuantumCECPQ2SomeDomains, "prefix", "a");
-
 BASE_FEATURE(kNetUnusedIdleSocketTimeout,
              "NetUnusedIdleSocketTimeout",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -237,7 +228,7 @@ BASE_FEATURE(kSamePartyAttributeEnabled,
 
 BASE_FEATURE(kPartitionedCookies,
              "PartitionedCookies",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNoncedPartitionedCookies,
              "NoncedPartitionedCookies",
@@ -342,5 +333,25 @@ const base::FeatureParam<std::string> kIpPrivacyProxyServer{
 const base::FeatureParam<std::string> kIpPrivacyProxyAllowlist{
     &kEnableIpProtectionProxy, /*name=*/"IpPrivacyProxyAllowlist",
     /*default_value=*/""};
+
+// Network-change migration requires NetworkHandle support, which are currently
+// only supported on Android (see
+// NetworkChangeNotifier::AreNetworkHandlesSupported).
+#if BUILDFLAG(IS_ANDROID)
+inline constexpr auto kMigrateSessionsOnNetworkChangeV2Default =
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#else   // !BUILDFLAG(IS_ANDROID)
+inline constexpr auto kMigrateSessionsOnNetworkChangeV2Default =
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#endif  // BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kMigrateSessionsOnNetworkChangeV2,
+             "MigrateSessionsOnNetworkChangeV2",
+             kMigrateSessionsOnNetworkChangeV2Default);
+
+#if BUILDFLAG(IS_LINUX)
+BASE_FEATURE(kAddressTrackerLinuxIsProxied,
+             "AddressTrackerLinuxIsProxied",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_LINUX)
 
 }  // namespace net::features

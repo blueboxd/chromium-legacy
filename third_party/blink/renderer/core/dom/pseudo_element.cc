@@ -29,7 +29,7 @@
 #include <utility>
 
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
-#include "third_party/blink/renderer/core/dom/element_rare_data.h"
+#include "third_party/blink/renderer/core/dom/element_rare_data_vector.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -302,10 +302,8 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
   DCHECK(!style.ContentPreventsBoxGeneration());
   for (const ContentData* content = style.GetContentData(); content;
        content = content->Next()) {
-    LegacyLayout legacy = context.force_legacy_layout ? LegacyLayout::kForce
-                                                      : LegacyLayout::kAuto;
     if (!content->IsAltText()) {
-      LayoutObject* child = content->CreateLayoutObject(*this, style, legacy);
+      LayoutObject* child = content->CreateLayoutObject(*this, style);
       if (layout_object->IsChildAllowed(child, style)) {
         layout_object->AddChild(child);
         if (child->IsQuote())

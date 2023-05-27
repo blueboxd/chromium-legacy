@@ -10,10 +10,10 @@
 #include "base/json/json_reader.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
 #include "net/base/trace_constants.h"
+#include "net/base/tracing.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/mem.h"
 
@@ -296,15 +296,6 @@ bool CRLSet::Parse(base::StringPiece data, scoped_refptr<CRLSet>* out_crl_set) {
   return true;
 }
 
-// static
-bool CRLSet::ParseAndStoreUnparsedData(std::string data,
-                                       scoped_refptr<CRLSet>* out_crl_set) {
-  if (!Parse(data, out_crl_set))
-    return false;
-  (*out_crl_set)->unparsed_crl_set_ = std::move(data);
-  return true;
-}
-
 CRLSet::Result CRLSet::CheckSPKI(base::StringPiece spki_hash) const {
   if (std::binary_search(blocked_spkis_.begin(), blocked_spkis_.end(),
                          spki_hash))
@@ -370,10 +361,6 @@ bool CRLSet::IsExpired() const {
 
 uint32_t CRLSet::sequence() const {
   return sequence_;
-}
-
-const std::string& CRLSet::unparsed_crl_set() const {
-  return unparsed_crl_set_;
 }
 
 const CRLSet::CRLList& CRLSet::CrlsForTesting() const {

@@ -440,8 +440,6 @@ bool IsAppContainerEnabled() {
 }
 
 void SetJobMemoryLimit(Sandbox sandbox_type, TargetConfig* config) {
-  DCHECK_NE(config->GetJobLevel(), JobLevel::kNone);
-
 #ifdef _WIN64
   size_t memory_limit = static_cast<size_t>(kDataSizeLimit);
 
@@ -597,11 +595,6 @@ ResultCode GenerateConfigForSandboxedProcess(const base::CommandLine& cmd_line,
                                              SandboxDelegate* delegate,
                                              TargetConfig* config) {
   DCHECK(!config->IsConfigured());
-  // Allow no sandbox job if the --allow-no-sandbox-job switch is present.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowNoSandboxJob)) {
-    config->SetAllowNoSandboxJob();
-  }
 
   // Pre-startup mitigations.
   MitigationFlags mitigations =

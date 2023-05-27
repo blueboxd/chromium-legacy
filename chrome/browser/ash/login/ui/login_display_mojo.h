@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_MOJO_H_
 #define CHROME_BROWSER_ASH_LOGIN_UI_LOGIN_DISPLAY_MOJO_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/login/ui/login_display.h"
 #include "components/user_manager/user_manager.h"
@@ -30,21 +31,19 @@ class LoginDisplayMojo : public LoginDisplay,
   void UpdateChallengeResponseAuthAvailability(const AccountId& account_id);
 
   // LoginDisplay:
-  void Init(const user_manager::UserList& filtered_users,
-            bool show_guest) override;
+  void Init(const user_manager::UserList& filtered_users) override;
   void SetUIEnabled(bool is_enabled) override;
 
   // user_manager::UserManager::Observer:
   void OnUserImageChanged(const user_manager::User& user) override;
-
-  void ShowOwnerPod(const AccountId& owner);
 
  private:
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
 
   bool initialized_ = false;
 
-  LoginDisplayHostMojo* const host_ = nullptr;  // Unowned.
+  const raw_ptr<LoginDisplayHostMojo, ExperimentalAsh> host_ =
+      nullptr;  // Unowned.
 
   base::WeakPtrFactory<LoginDisplayMojo> weak_factory_{this};
 };

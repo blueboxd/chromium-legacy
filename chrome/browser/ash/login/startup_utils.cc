@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/onboarding_user_activity_counter.h"
+#include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -110,6 +111,10 @@ void StartupUtils::RegisterPrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterStringPref(prefs::kUrlParameterToAutofillSAMLUsername,
                                std::string());
+  registry->RegisterBooleanPref(
+      ash::quick_start::prefs::kShouldResumeQuickStartAfterReboot, false);
+  registry->RegisterDictionaryPref(
+      ash::quick_start::prefs::kResumeQuickStartAfterRebootInfo);
 }
 
 // static
@@ -128,8 +133,7 @@ void StartupUtils::RegisterOobeProfilePrefs(PrefRegistrySimple* registry) {
   // initialized along with `kOobeOnboardingTime`.
   registry->RegisterBooleanPref(
       arc::prefs::kArcPlayStoreLaunchMetricCanBeRecorded, false);
-  if (switches::IsRevenBranding() &&
-      features::IsOobeConsolidatedConsentEnabled()) {
+  if (switches::IsRevenBranding()) {
     registry->RegisterBooleanPref(prefs::kRevenOobeConsolidatedConsentAccepted,
                                   false);
   }
@@ -138,6 +142,12 @@ void StartupUtils::RegisterOobeProfilePrefs(PrefRegistrySimple* registry) {
     registry->RegisterListPref(prefs::kChoobeSelectedScreens);
     registry->RegisterListPref(prefs::kChoobeCompletedScreens);
   }
+
+  if (features::IsOobeDrivePinningEnabled()) {
+    registry->RegisterBooleanPref(prefs::kOobeDrivePinningEnabledDeferred,
+                                  false);
+  }
+
   OnboardingUserActivityCounter::RegisterProfilePrefs(registry);
 }
 

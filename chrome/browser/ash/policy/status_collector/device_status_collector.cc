@@ -43,6 +43,7 @@
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crostini/crostini_pref_names.h"
 #include "chrome/browser/ash/crostini/crostini_reporting_util.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
@@ -1686,7 +1687,7 @@ DeviceStatusCollector::DeviceStatusCollector(
   stats_reporting_pref_subscription_ =
       cros_settings_->AddSettingsObserver(ash::kStatsReportingPref, callback);
 
-  power_manager_observation_.Observe(power_manager_);
+  power_manager_observation_.Observe(power_manager_.get());
 
   // Fetch the current values of the policies.
   UpdateReportingSettings();
@@ -2261,6 +2262,8 @@ bool DeviceStatusCollector::GetVersionInfo(
     em::DeviceStatusReportRequest* status) {
   status->set_os_version(os_version_);
   status->set_browser_version(version_info::GetVersionNumber());
+  status->set_is_lacros_primary_browser(
+      crosapi::browser_util::IsLacrosPrimaryBrowser());
   status->set_channel(ConvertToProtoChannel(chrome::GetChannel()));
 
   // TODO(b/144081278): Remove when resolved.

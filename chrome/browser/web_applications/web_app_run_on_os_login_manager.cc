@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/browser/web_applications/locks/full_system_lock.h"
+#include "chrome/browser/web_applications/locks/all_apps_lock.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/web_contents.h"
@@ -46,14 +46,14 @@ void WebAppRunOnOsLoginManager::Start() {
     return;
   }
 
-  scheduler_->ScheduleCallbackWithLock<FullSystemLock>(
+  scheduler_->ScheduleCallbackWithLock<AllAppsLock>(
       "WebAppRunOnOsLoginManager::RunAppsOnOsLogin",
-      std::make_unique<FullSystemLockDescription>(),
+      std::make_unique<AllAppsLockDescription>(),
       base::BindOnce(&WebAppRunOnOsLoginManager::RunAppsOnOsLogin,
                      GetWeakPtr()));
 }
 
-void WebAppRunOnOsLoginManager::RunAppsOnOsLogin(FullSystemLock& lock) {
+void WebAppRunOnOsLoginManager::RunAppsOnOsLogin(AllAppsLock& lock) {
   // With a full system lock acquired, getting all apps is safe and no filtering
   // of uninstalling apps etc. is required
   for (const AppId& app_id : lock.registrar().GetAppIds()) {
@@ -87,8 +87,8 @@ void WebAppRunOnOsLoginManager::RunAppsOnOsLogin(FullSystemLock& lock) {
 void WebAppRunOnOsLoginManager::OnAppLaunchedOnOsLogin(
     AppId app_id,
     std::string app_name,
-    Browser* browser,
-    content::WebContents* web_contents,
+    base::WeakPtr<Browser> browser,
+    base::WeakPtr<content::WebContents> web_contents,
     apps::LaunchContainer container) {
 // TODO(crbug.com/1341247): Implement notification for lacros
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -121,9 +121,9 @@ void WebAppRunOnOsLoginManager::SetSkipStartupForTesting(bool skip_startup) {
 }
 
 void WebAppRunOnOsLoginManager::RunAppsOnOsLoginForTesting() {
-  scheduler_->ScheduleCallbackWithLock<FullSystemLock>(
+  scheduler_->ScheduleCallbackWithLock<AllAppsLock>(
       "WebAppRunOnOsLoginManager::RunAppsOnOsLogin",
-      std::make_unique<FullSystemLockDescription>(),
+      std::make_unique<AllAppsLockDescription>(),
       base::BindOnce(&WebAppRunOnOsLoginManager::RunAppsOnOsLogin,
                      GetWeakPtr()));
 }

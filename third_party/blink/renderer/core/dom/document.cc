@@ -48,9 +48,11 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/mojom/base/text_direction.mojom-blink.h"
+#include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
@@ -185,6 +187,7 @@
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/core/frame/dom_visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
+#include "third_party/blink/renderer/core/frame/font_matching_metrics.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/history.h"
 #include "third_party/blink/renderer/core/frame/intervention.h"
@@ -253,8 +256,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
-#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_view.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
 #include "third_party/blink/renderer/core/loader/anchor_element_interaction_tracker.h"
 #include "third_party/blink/renderer/core/loader/cookie_jar.h"
@@ -278,7 +280,6 @@
 #include "third_party/blink/renderer/core/page/event_with_hit_test_results.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
-#include "third_party/blink/renderer/core/page/named_pages_mapper.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
@@ -329,7 +330,6 @@
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
-#include "third_party/blink/renderer/platform/fonts/font_matching_metrics.h"
 #include "third_party/blink/renderer/platform/fonts/font_performance.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -403,6 +403,8 @@ void FireRequestStorageAccessForHistogram(RequestStorageResult result) {
 class IntrinsicSizeResizeObserverDelegate : public ResizeObserver::Delegate {
  public:
   void OnResize(const HeapVector<Member<ResizeObserverEntry>>& entries) final;
+  ResizeObserver::DeliveryTime Delivery() const final;
+  bool SkipNonAtomicInlineObservations() const final;
 };
 
 // Returns true if any of <object> ancestors don't start loading or are loading
@@ -616,8 +618,18 @@ void IntrinsicSizeResizeObserverDelegate::OnResize(
     const HeapVector<Member<ResizeObserverEntry>>& entries) {
   for (const auto& entry : entries) {
     DCHECK_GT(entry->contentBoxSize().size(), 0u);
-    entry->target()->SaveIntrinsicSize(entry->contentBoxSize().at(0));
+    entry->target()->LastRememberedSizeChanged(entry->contentBoxSize().at(0));
   }
+}
+
+ResizeObserver::DeliveryTime IntrinsicSizeResizeObserverDelegate::Delivery()
+    const {
+  return ResizeObserver::DeliveryTime::kBeforeOthers;
+}
+
+bool IntrinsicSizeResizeObserverDelegate::SkipNonAtomicInlineObservations()
+    const {
+  return true;
 }
 
 void Document::UnassociatedListedElementsList::MarkDirty() {
@@ -719,7 +731,7 @@ Document::Document(const DocumentInit& initializer,
       context_features_(ContextFeatures::DefaultSwitch()),
       http_refresh_scheduler_(MakeGarbageCollected<HttpRefreshScheduler>(this)),
       well_formed_(false),
-      fallback_base_url_for_srcdoc_(initializer.FallbackSrcdocBaseURL()),
+      fallback_base_url_(initializer.FallbackBaseURL()),
       cookie_url_(dom_window_ ? initializer.GetCookieUrl()
                               : KURL(g_empty_string)),
       printing_(kNotPrinting),
@@ -907,6 +919,9 @@ Document::~Document() {
   DCHECK(!ax_object_cache_);
 
   InstanceCounters::DecrementCounter(InstanceCounters::kDocumentCounter);
+  if (WebTestSupport::IsRunningWebTest() && ukm_recorder_) {
+    ukm::DelegatingUkmRecorder::Get()->RemoveDelegate(ukm_recorder_.get());
+  }
 }
 
 Range* Document::CreateRangeAdjustedToTreeScope(const TreeScope& tree_scope,
@@ -2819,7 +2834,7 @@ void Document::Initialize() {
   UpdateForcedColors();
   scoped_refptr<const ComputedStyle> style =
       GetStyleResolver().StyleForViewport();
-  layout_view_ = LayoutObjectFactory::CreateView(*this, *style);
+  layout_view_ = MakeGarbageCollected<LayoutNGView>(this);
   SetLayoutObject(layout_view_);
 
   layout_view_->SetStyle(style);
@@ -3291,7 +3306,7 @@ void Document::open(LocalDOMWindow* entered_window,
   // for this document with the entered window's url.
   if (dom_window_ && entered_window) {
     KURL new_url = entered_window->Url();
-    if (new_url.IsAboutSrcdocURL() &&
+    if ((new_url.IsAboutSrcdocURL() || new_url.IsAboutBlankURL()) &&
         blink::features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
       // When updating the URL to about:srcdoc due to a document.open() call,
       // the opened document should also end up with the same base URL as the
@@ -3299,7 +3314,7 @@ void Document::open(LocalDOMWindow* entered_window,
       // so that SetURL() below will take it into account.
       // TODO(https://crbug.com/751329): about:blank should also be handled
       // here once it supports the new base url inheritance behavior.
-      fallback_base_url_for_srcdoc_ = entered_window->BaseURL();
+      fallback_base_url_ = entered_window->BaseURL();
       is_srcdoc_document_ = new_url.IsAboutSrcdocURL();
     }
     // Clear the hash fragment from the inherited URL to prevent a
@@ -3311,11 +3326,16 @@ void Document::open(LocalDOMWindow* entered_window,
       Loader()->DidOpenDocumentInputStream(new_url);
 
     if (dom_window_ != entered_window) {
+      // 2023-03-28: Page use is 0.1%. Too much for a removal.
+      // https://chromestatus.com/metrics/feature/timeline/popularity/4374
       CountUse(WebFeature::kDocumentOpenDifferentWindow);
 
       if ((dom_window_->GetSecurityContext().GetSandboxFlags() |
            entered_window->GetSandboxFlags()) !=
           dom_window_->GetSecurityContext().GetSandboxFlags()) {
+        // 2023-03-28. Page use is 0.000005%. Most of the days, it is not even
+        //             recorded. Ready for removal!
+        // https://chromestatus.com/metrics/feature/timeline/popularity/4375
         CountUse(WebFeature::kDocumentOpenMutateSandbox);
       }
 
@@ -3349,6 +3369,11 @@ void Document::open(LocalDOMWindow* entered_window,
 
         dom_window_->GetSecurityContext().SetSecurityOrigin(
             entered_window->GetMutableSecurityOrigin());
+
+        // The SecurityOrigin is now shared in between two different window. It
+        // means mutating one can have side effect on the other.
+        entered_window->GetMutableSecurityOrigin()
+            ->set_aliased_by_document_open();
       }
 
       // Question: Should we remove the inheritance of the CookieURL via
@@ -3758,6 +3783,10 @@ void Document::ImplicitClose() {
 
   if (SvgExtensions())
     AccessSVGExtensions().StartAnimations();
+
+  if (lazy_load_image_observer_) {
+    lazy_load_image_observer_->DocumentOnLoadFinished(this);
+  }
 }
 
 static bool AllDescendantsAreComplete(Document* document) {
@@ -3928,11 +3957,11 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   if (!before_unload_event.defaultPrevented())
     DefaultEventHandler(before_unload_event);
 
-  if (before_unload_event.returnValue().IsNull()) {
+  if (before_unload_event.returnValue().empty()) {
     RecordBeforeUnloadUse(BeforeUnloadUse::kNoDialogNoText);
   }
   bool cancelled_by_script =
-      !before_unload_event.returnValue().IsNull() ||
+      !before_unload_event.returnValue().empty() ||
       (RuntimeEnabledFeatures::
            BeforeunloadEventCancelByPreventDefaultEnabled() &&
        before_unload_event.defaultPrevented());
@@ -4351,14 +4380,19 @@ KURL Document::FallbackBaseURL() const {
   const Document* same_origin_parent =
       is_parent_cross_origin ? nullptr : ParentDocument();
 
+  // TODO(https://github.com/whatwg/html/issues/9025): Don't let a sandboxed
+  // iframe (without 'allow-same-origin') inherit a fallback base url.
+  // https://chromium-review.googlesource.com/c/chromium/src/+/4324738
+
   // [spec] 1. If document is an iframe srcdoc document, then return the
   //           document base URL of document's browsing context's container
   //           document.
   if (IsSrcdocDocument()) {
     // Return the base_url value that was sent from the initiator along with the
     // srcdoc attribute's value.
-    if (fallback_base_url_for_srcdoc_.IsValid())
-      return fallback_base_url_for_srcdoc_;
+    if (fallback_base_url_.IsValid()) {
+      return fallback_base_url_;
+    }
     // We only use the parent document's base URL in legacy behavior. There are
     // cases where fallback_base_url_for_srcdoc_ may not be set in the new base
     // URL inheritance mode (e.g., browser-initiated navigations as in
@@ -4385,7 +4419,18 @@ KURL Document::FallbackBaseURL() const {
       return execution_context_->BaseURL();
     }
 
-    if (same_origin_parent) {
+    if (!fallback_base_url_.IsEmpty() &&
+        blink::features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
+      // Note: if we get here, it's not worth worrying if
+      // same_origin_parent->BaseURL() exists and matches fallback_base_url_,
+      // since if the latter exists it's based on the initiator, which won't
+      // always be the parent.
+      return fallback_base_url_;
+    }
+
+    if (same_origin_parent &&
+        !blink::features::IsNewBaseUrlInheritanceBehaviorEnabled()) {
+      // Only allow access to the parent in legacy mode.
       return same_origin_parent->BaseURL();
     }
   }
@@ -4468,6 +4513,7 @@ void Document::ProcessBaseElement() {
     UpdateBaseURL();
   }
 
+  AtomicString old_base_target = base_target_;
   if (target) {
     if (target->Contains('\n') || target->Contains('\r'))
       UseCounter::Count(*this, WebFeature::kBaseWithNewlinesInTarget);
@@ -4476,6 +4522,11 @@ void Document::ProcessBaseElement() {
     base_target_ = *target;
   } else {
     base_target_ = g_null_atom;
+  }
+  if (old_base_target != base_target_) {
+    if (auto* document_rules = DocumentSpeculationRules::FromIfExists(*this)) {
+      document_rules->DocumentBaseTargetChanged();
+    }
   }
 }
 
@@ -4820,10 +4871,13 @@ void Document::UnobserveForIntrinsicSize(Element* element) {
 }
 
 Document* Document::CloneDocumentWithoutChildren() const {
-  DocumentInit init = DocumentInit::Create()
-                          .WithExecutionContext(execution_context_.Get())
-                          .WithAgent(GetAgent())
-                          .WithURL(Url());
+  DocumentInit init =
+      DocumentInit::Create()
+          .WithExecutionContext(execution_context_.Get())
+          .WithAgent(GetAgent())
+          .WithURL(Url())
+          .WithFallbackBaseURL(Url().IsAboutBlankURL() ? fallback_base_url_
+                                                       : KURL());
   if (IsA<XMLDocument>(this)) {
     if (IsXHTMLDocument())
       return XMLDocument::CreateXHTML(init);
@@ -5170,6 +5224,7 @@ void Document::SendFocusNotification(Element* new_focused_element,
     return;
 
   bool is_editable = false;
+  bool is_richly_editable = false;
   gfx::Rect element_bounds_in_dips;
   if (new_focused_element) {
     auto* text_control = ToTextControlOrNull(new_focused_element);
@@ -5179,6 +5234,7 @@ void Document::SendFocusNotification(Element* new_focused_element,
         EqualIgnoringASCIICase(
             new_focused_element->FastGetAttribute(html_names::kRoleAttr),
             "textbox");
+    is_richly_editable = IsRichlyEditable(*new_focused_element);
     gfx::Rect bounds_in_viewport;
 
     if (new_focused_element->IsSVGElement()) {
@@ -5202,7 +5258,7 @@ void Document::SendFocusNotification(Element* new_focused_element,
   }
 
   GetFrame()->GetLocalFrameHostRemote().FocusedElementChanged(
-      is_editable, element_bounds_in_dips, focus_type);
+      is_editable, is_richly_editable, element_bounds_in_dips, focus_type);
 }
 
 void Document::NotifyFocusedElementChanged(Element* old_focused_element,
@@ -5965,7 +6021,13 @@ void Document::setDomain(const String& raw_domain,
         GetFrame()->IsCrossOriginToNearestMainFrame();
     bool was_cross_origin_to_parent_frame =
         GetFrame()->IsCrossOriginToParentOrOuterDocument();
-    dom_window_->GetMutableSecurityOrigin()->SetDomainFromDOM(new_domain);
+    SecurityOrigin* security_origin = dom_window_->GetMutableSecurityOrigin();
+    security_origin->SetDomainFromDOM(new_domain);
+    if (security_origin->aliased_by_document_open()) {
+      UseCounter::Count(*this,
+                        WebFeature::kDocumentOpenAliasedOriginDocumentDomain);
+    }
+
     bool is_cross_origin_to_nearest_main_frame =
         GetFrame()->IsCrossOriginToNearestMainFrame();
     if (FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler()) {
@@ -6551,7 +6613,6 @@ FragmentDirective& Document::fragmentDirective() const {
 
 ScriptPromise Document::hasPrivateToken(ScriptState* script_state,
                                         const String& issuer,
-                                        const String& type,
                                         ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
@@ -6569,14 +6630,6 @@ ScriptPromise Document::hasPrivateToken(ScriptState* script_state,
     exception_state.ThrowTypeError(
         "hasPrivateToken: Private Token issuer origins must be both HTTP(S) "
         "and secure (\"potentially trustworthy\").");
-    resolver->Reject(exception_state);
-    return promise;
-  }
-
-  if (type != "private-state-token") {
-    exception_state.ThrowTypeError(
-        "hasPrivateToken: Private Token types other than "
-        "private-state-token are unsupported.");
     resolver->Reject(exception_state);
     return promise;
   }
@@ -6675,7 +6728,6 @@ ScriptPromise Document::hasPrivateToken(ScriptState* script_state,
 
 ScriptPromise Document::hasRedemptionRecord(ScriptState* script_state,
                                             const String& issuer,
-                                            const String& type,
                                             ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
@@ -6693,14 +6745,6 @@ ScriptPromise Document::hasRedemptionRecord(ScriptState* script_state,
     exception_state.ThrowTypeError(
         "hasRedemptionRecord: Private Token issuer origins must be both "
         "HTTP(S) and secure (\"potentially trustworthy\").");
-    resolver->Reject(exception_state);
-    return promise;
-  }
-
-  if (type != "private-state-token") {
-    exception_state.ThrowTypeError(
-        "hasRedemptionRecord: Private Token types other than "
-        "private-state-token are unsupported.");
     resolver->Reject(exception_state);
     return promise;
   }
@@ -7693,15 +7737,23 @@ bool Document::AllowedToUseDynamicMarkUpInsertion(
 }
 
 ukm::UkmRecorder* Document::UkmRecorder() {
-  if (ukm_recorder_)
+  if (!ukm_recorder_) {
+    mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;
+    Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
+        factory.BindNewPipeAndPassReceiver());
+    auto mojo_recorder = ukm::MojoUkmRecorder::Create(*factory);
+    if (WebTestSupport::IsRunningWebTest()) {
+      ukm::DelegatingUkmRecorder::Get()->AddDelegate(
+          mojo_recorder->GetWeakPtr());
+    }
+    ukm_recorder_ = std::move(mojo_recorder);
+  }
+
+  if (WebTestSupport::IsRunningWebTest()) {
+    return ukm::DelegatingUkmRecorder::Get();
+  } else {
     return ukm_recorder_.get();
-
-  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
-  Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-      recorder.InitWithNewPipeAndPassReceiver());
-  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
-
-  return ukm_recorder_.get();
+  }
 }
 
 ukm::SourceId Document::UkmSourceID() const {
@@ -7712,8 +7764,7 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
   if (font_matching_metrics_)
     return font_matching_metrics_.get();
   font_matching_metrics_ = std::make_unique<FontMatchingMetrics>(
-      IsInOutermostMainFrame(), UkmRecorder(), UkmSourceID(),
-      GetTaskRunner(TaskType::kInternalDefault));
+      dom_window_, GetTaskRunner(TaskType::kInternalDefault));
   return font_matching_metrics_.get();
 }
 
@@ -7907,7 +7958,7 @@ void Document::RemoveFinishedTopLayerElements() {
   HeapVector<Member<Element>> to_remove;
   for (Element* element : top_layer_elements_pending_removal_) {
     const ComputedStyle* style = element->GetComputedStyle();
-    if (!style || style->TopLayer() == ETopLayer::kNone) {
+    if (!style || style->Overlay() == EOverlay::kNone) {
       to_remove.push_back(element);
     }
   }
@@ -9053,16 +9104,7 @@ void Document::ActivateForPrerendering(
 
   // https://wicg.github.io/nav-speculation/prerendering.html#prerendering-browsing-context-activate
   // Step 8.3.4 "Fire an event named prerenderingchange at doc."
-  if (RuntimeEnabledFeatures::Prerender2RelatedFeaturesEnabled(
-          GetExecutionContext())) {
-    DispatchEvent(*Event::Create(event_type_names::kPrerenderingchange));
-  } else {
-    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kJavaScript,
-        mojom::blink::ConsoleMessageLevel::kWarning,
-        "Failed to dispatch 'prerenderingchange' event: Prerender2 feature is "
-        "not enabled on the document."));
-  }
+  DispatchEvent(*Event::Create(event_type_names::kPrerenderingchange));
 
   // Step 8.3.5 "For each steps in doc’s post-prerendering activation steps
   // list:"

@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
@@ -18,7 +17,9 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
+#include "content/browser/webid/mdocs/mdoc_provider.h"
 #include "content/public/browser/anchor_element_preconnect_delegate.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -74,10 +75,6 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "content/public/browser/tts_environment_android.h"
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS)
-#include "content/public/browser/firewall_hole_proxy.h"
 #endif
 
 namespace content {
@@ -506,6 +503,10 @@ bool ContentBrowserClient::IsInterestGroupAPIAllowed(
   return false;
 }
 
+void ContentBrowserClient::OnAuctionComplete(
+    RenderFrameHost* render_frame_host,
+    InterestGroupManager::InterestGroupDataKey data_key) {}
+
 bool ContentBrowserClient::IsAttributionReportingOperationAllowed(
     content::BrowserContext* browser_context,
     AttributionReportingOperation operation,
@@ -515,6 +516,12 @@ bool ContentBrowserClient::IsAttributionReportingOperationAllowed(
     const url::Origin* reporting_origin) {
   return true;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+bool ContentBrowserClient::IsWebAttributionReportingAllowed() {
+  return true;
+}
+#endif
 
 bool ContentBrowserClient::IsSharedStorageAllowed(
     content::BrowserContext* browser_context,
@@ -547,11 +554,6 @@ GeneratedCodeCacheSettings ContentBrowserClient::GetGeneratedCodeCacheSettings(
     BrowserContext* context) {
   // By default, code cache is disabled, embedders should override.
   return GeneratedCodeCacheSettings(false, 0, base::FilePath());
-}
-
-cert_verifier::mojom::CertVerifierServiceParamsPtr
-ContentBrowserClient::GetCertVerifierServiceParams() {
-  return nullptr;
 }
 
 void ContentBrowserClient::AllowCertificateError(
@@ -1352,6 +1354,10 @@ ContentBrowserClient::CreateIdentityRequestDialogController() {
   return std::make_unique<IdentityRequestDialogController>();
 }
 
+std::unique_ptr<MDocProvider> ContentBrowserClient::CreateMDocProvider() {
+  return nullptr;
+}
+
 bool ContentBrowserClient::SuppressDifferentOriginSubframeJSDialogs(
     BrowserContext* browser_context) {
   return base::FeatureList::IsEnabled(
@@ -1428,11 +1434,9 @@ bool ContentBrowserClient::IsFileSystemURLNavigationAllowed(
 }
 
 #if BUILDFLAG(IS_MAC)
-base::FilePath ContentBrowserClient::GetChildProcessPath(
-    int child_flags,
-    const base::FilePath& helpers_path) {
+std::string ContentBrowserClient::GetChildProcessSuffix(int child_flags) {
   NOTIMPLEMENTED();
-  return base::FilePath();
+  return std::string();
 }
 #endif
 

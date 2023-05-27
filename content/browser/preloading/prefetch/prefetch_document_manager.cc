@@ -57,13 +57,20 @@ void PrefetchDocumentManager::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   // Ignore navigations for a different RenderFrameHost.
   if (render_frame_host().GetGlobalId() !=
-      navigation_handle->GetPreviousRenderFrameHostId())
+      navigation_handle->GetPreviousRenderFrameHostId()) {
+    DVLOG(1) << "PrefetchDocumentManager::DidStartNavigation() for "
+             << navigation_handle->GetURL()
+             << ": skipped (different RenderFrameHost)";
     return;
+  }
 
   // Ignores any same document navigations since we can't use prefetches to
   // speed them up.
-  if (navigation_handle->IsSameDocument())
+  if (navigation_handle->IsSameDocument()) {
+    DVLOG(1) << "PrefetchDocumentManager::DidStartNavigation() for "
+             << navigation_handle->GetURL() << ": skipped (same document)";
     return;
+  }
 
   // Create |PrefetchServingPageMetricsContainer| for potential navigation that
   // might use a prefetch, and update it with metrics from the page load
@@ -82,27 +89,32 @@ void PrefetchDocumentManager::DidStartNavigation(
   // No-Vary-Search equivalence. If there is not then stop.
   auto prefetch_iter = all_prefetches_.find(navigation_handle->GetURL());
   if (prefetch_iter == all_prefetches_.end() || !prefetch_iter->second) {
-    if (!no_vary_search_support_enabled_ ||
-        !base::FeatureList::IsEnabled(
+    if (no_vary_search_support_enabled_ &&
+        base::FeatureList::IsEnabled(
             network::features::kPrefetchNoVarySearch)) {
-      return;
+      const auto no_vary_search_match_url =
+          GetNoVarySearchHelper().MatchUrl(navigation_handle->GetURL());
+      if (no_vary_search_match_url.has_value()) {
+        // Find the prefetched url matching |navigation_handle->GetURL()| based
+        // on No-Vary-Search in |all_prefetches_|.
+        prefetch_iter = all_prefetches_.find(no_vary_search_match_url.value());
+      }
     }
-    const auto no_vary_search_match_url =
-        GetNoVarySearchHelper().MatchUrl(navigation_handle->GetURL());
-    if (!no_vary_search_match_url.has_value()) {
-      return;
-    }
-    // Find the prefetched url matching |navigation_handle->GetURL()| based on
-    // No-Vary-Search in |all_prefetches_|.
-    prefetch_iter = all_prefetches_.find(no_vary_search_match_url.value());
-    if (prefetch_iter == all_prefetches_.end() || !prefetch_iter->second) {
-      return;
-    }
+  }
+  if (prefetch_iter == all_prefetches_.end() || !prefetch_iter->second) {
+    DVLOG(1) << "PrefetchDocumentManager::DidStartNavigation() for "
+             << navigation_handle->GetURL()
+             << ": skipped (PrefetchContainer not found)";
+    return;
   }
 
   // If this prefetch has already been used with another navigation then stop.
-  if (prefetch_iter->second->HasPrefetchBeenConsideredToServe())
+  if (prefetch_iter->second->HasPrefetchBeenConsideredToServe()) {
+    DVLOG(1) << "PrefetchDocumentManager::DidStartNavigation() for "
+             << *prefetch_iter->second
+             << ": skipped (already used for another navigation)";
     return;
+  }
 
   prefetch_iter->second->SetServingPageMetrics(
       serving_page_metrics_container->GetWeakPtr());
@@ -141,7 +153,8 @@ void PrefetchDocumentManager::ProcessCandidates(
              *initiator_devtools_navigation_token);
   }
 
-  std::vector<std::tuple<GURL, PrefetchType, blink::mojom::Referrer>>
+  std::vector<std::tuple<GURL, PrefetchType, blink::mojom::Referrer,
+                         network::mojom::NoVarySearchPtr>>
       prefetches;
 
   auto should_process_entry =
@@ -164,7 +177,7 @@ void PrefetchDocumentManager::ProcessCandidates(
               candidate->url,
               PrefetchType(use_isolated_network_context, use_prefetch_proxy,
                            candidate->eagerness),
-              *candidate->referrer);
+              *candidate->referrer, candidate->no_vary_search_expected.Clone());
           return true;
         }
         return false;
@@ -173,15 +186,18 @@ void PrefetchDocumentManager::ProcessCandidates(
   base::EraseIf(candidates, should_process_entry);
 
   if (const auto& host_to_bypass = PrefetchBypassProxyForHost()) {
-    for (auto& [prefetch_url, prefetch_type, referrer] : prefetches) {
+    for (auto& [prefetch_url, prefetch_type, referrer,
+                no_vary_search_expected] : prefetches) {
       if (prefetch_type.IsProxyRequired() &&
           prefetch_url.host() == *host_to_bypass)
         prefetch_type.SetProxyBypassedForTest();
     }
   }
 
-  for (const auto& [prefetch_url, prefetch_type, referrer] : prefetches) {
-    PrefetchUrl(prefetch_url, prefetch_type, referrer, devtools_observer);
+  for (auto& [prefetch_url, prefetch_type, referrer, no_vary_search_expected] :
+       prefetches) {
+    PrefetchUrl(prefetch_url, prefetch_type, referrer, no_vary_search_expected,
+                devtools_observer);
   }
 }
 
@@ -189,6 +205,7 @@ void PrefetchDocumentManager::PrefetchUrl(
     const GURL& url,
     const PrefetchType& prefetch_type,
     const blink::mojom::Referrer& referrer,
+    const network::mojom::NoVarySearchPtr& mojo_no_vary_search_expected,
     base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer) {
   // Skip any prefetches that have already been requested.
   auto prefetch_container_iter = all_prefetches_.find(url);
@@ -202,14 +219,21 @@ void PrefetchDocumentManager::PrefetchUrl(
     return;
   }
 
+  absl::optional<net::HttpNoVarySearchData> no_vary_search_expected;
+  if (mojo_no_vary_search_expected) {
+    no_vary_search_expected =
+        NoVarySearchHelper::ParseHttpNoVarySearchDataFromMojom(
+            mojo_no_vary_search_expected);
+  }
   // Create a new |PrefetchContainer| and take ownership of it
   auto container = std::make_unique<PrefetchContainer>(
       render_frame_host().GetGlobalId(), url, prefetch_type, referrer,
-      weak_method_factory_.GetWeakPtr());
+      std::move(no_vary_search_expected), weak_method_factory_.GetWeakPtr());
   container->SetDevToolsObserver(std::move(devtools_observer));
   if (base::FeatureList::IsEnabled(network::features::kPrefetchNoVarySearch)) {
     container->SetNoVarySearchHelper(no_vary_search_helper_);
   }
+  DVLOG(1) << *container << ": created";
   base::WeakPtr<PrefetchContainer> weak_container = container->GetWeakPtr();
   owned_prefetches_[url] = std::move(container);
   all_prefetches_[url] = weak_container;

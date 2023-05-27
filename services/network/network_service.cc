@@ -4,6 +4,7 @@
 
 #include "services/network/network_service.h"
 
+#include <algorithm>
 #include <map>
 #include <utility>
 #include <vector>
@@ -11,7 +12,6 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
@@ -40,7 +40,7 @@
 #include "net/base/features.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/network_change_notifier.h"
-#include "net/base/network_change_notifier_posix.h"
+#include "net/base/network_change_notifier_passive.h"
 #include "net/base/port_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/ct_log_response_parser.h"
@@ -65,7 +65,6 @@
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/ssl/ssl_key_logger_impl.h"
 #include "net/url_request/url_request_context.h"
-#include "services/network/crl_set_distributor.h"
 #include "services/network/dns_config_change_manager.h"
 #include "services/network/first_party_sets/first_party_sets_manager.h"
 #include "services/network/http_auth_cache_copier.h"
@@ -93,6 +92,10 @@
     BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #include "components/os_crypt/sync/key_storage_config_linux.h"
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+#include "services/network/network_change_notifier_passive_factory.h"
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -329,10 +332,17 @@ NetworkService::NetworkService(
   DCHECK(!g_network_service);
   g_network_service = this;
 
-  // |registry_| is nullptr when an in-process NetworkService is
-  // created directly, like in most unit tests.
-  if (registry_)
+  // |registry_| is nullptr when a NetworkService is out-of-process.
+  if (registry_) {
     mojo::SetDefaultProcessErrorHandler(base::BindRepeating(&HandleBadMessage));
+#if BUILDFLAG(IS_LINUX)
+    if (base::FeatureList::IsEnabled(
+            net::features::kAddressTrackerLinuxIsProxied)) {
+      net::NetworkChangeNotifier::SetFactory(
+          new network::NetworkChangeNotifierPassiveFactory());
+    }
+#endif
+  }
 
   if (receiver.is_valid())
     Bind(std::move(receiver));
@@ -372,13 +382,35 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   if (params->system_dns_resolver)
     SetSystemDnsResolver(std::move(params->system_dns_resolver));
 
-  network_change_manager_ = std::make_unique<NetworkChangeManager>(
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier =
       CreateNetworkChangeNotifierIfNeeded(
           net::NetworkChangeNotifier::ConnectionType(
               params->initial_connection_type),
           net::NetworkChangeNotifier::ConnectionSubtype(
               params->initial_connection_subtype),
-          mock_network_change_notifier));
+          mock_network_change_notifier);
+
+#if BUILDFLAG(IS_LINUX)
+  if (params->initial_address_map) {
+    // The NetworkChangeNotifierPassive should only be included if it's
+    // necessary to instantiate an AddressMapCacheLinux rather than an
+    // AddressTrackerLinux.
+    DCHECK(base::FeatureList::IsEnabled(
+        net::features::kAddressTrackerLinuxIsProxied));
+    // There should be a factory that creates NetworkChangeNotifierPassives.
+    DCHECK(net::NetworkChangeNotifier::GetFactory());
+    // Network service should be out of process or it's unsandboxed and can just
+    // use AddressTrackerLinux.
+    DCHECK(registry_);
+    network_change_notifier->GetAddressMapOwner()
+        ->GetAddressMapCacheLinux()
+        ->SetCachedInfo(std::move(params->initial_address_map->address_map),
+                        std::move(params->initial_address_map->online_links));
+  }
+#endif  // BUILDFLAG(IS_LINUX)
+
+  network_change_manager_ = std::make_unique<NetworkChangeManager>(
+      std::move(network_change_notifier));
 
   trace_net_log_observer_.WatchForTraceStart(net_log_);
 
@@ -399,8 +431,6 @@ void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
   host_resolver_factory_ = std::make_unique<net::HostResolver::Factory>();
 
   http_auth_cache_copier_ = std::make_unique<HttpAuthCacheCopier>();
-
-  crl_set_distributor_ = std::make_unique<CRLSetDistributor>();
 
 #if BUILDFLAG(IS_CT_SUPPORTED)
   ct_log_list_distributor_ = std::make_unique<CtLogListDistributor>();
@@ -494,8 +524,8 @@ std::unique_ptr<NetworkService> NetworkService::Create(
 
 // static
 std::unique_ptr<NetworkService> NetworkService::CreateForTesting() {
-  auto network_service = std::make_unique<NetworkService>(
-      std::make_unique<service_manager::BinderRegistry>());
+  auto network_service =
+      std::make_unique<NetworkService>(nullptr /* binder_registry */);
   network_service->InitMockNetworkChangeNotifierForTesting();  // IN-TEST
   return network_service;
 }
@@ -668,7 +698,7 @@ void NetworkService::SetMaxConnectionsPerProxy(int32_t max_connections) {
   int max_limit = 99;
   int min_limit = net::ClientSocketPoolManager::max_sockets_per_group(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL);
-  new_limit = base::clamp(new_limit, min_limit, max_limit);
+  new_limit = std::clamp(new_limit, min_limit, max_limit);
 
   // Assign the global limit.
   net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
@@ -716,12 +746,6 @@ void NetworkService::GetNetworkList(
       base::BindOnce(&net::GetNetworkList, raw_networks, policy),
       base::BindOnce(&OnGetNetworkList, std::move(networks),
                      std::move(callback)));
-}
-
-void NetworkService::UpdateCRLSet(
-    base::span<const uint8_t> crl_set,
-    mojom::NetworkService::UpdateCRLSetCallback callback) {
-  crl_set_distributor_->OnNewCRLSet(crl_set, std::move(callback));
 }
 
 void NetworkService::OnCertDBChanged() {

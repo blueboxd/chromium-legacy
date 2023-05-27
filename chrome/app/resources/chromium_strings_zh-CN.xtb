@@ -79,7 +79,6 @@
 <translation id="2928420929544864228">安装完毕。</translation>
 <translation id="2977470724722393594">Chromium 已是最新版本</translation>
 <translation id="2977506796191543575">如果某个网站企图窃取您的密码，或者您下载了有害的文件，Chromium 可能还会将相应网址连同少量网页内容发送给“安全浏览”功能</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium 已连接到 HID 设备}other{Chromium 已连接到 HID 设备}}</translation>
 <translation id="3032706164202344641">Chromium 无法检查您的密码。请稍后重试。</translation>
 <translation id="3032787606318309379">正在添加到 Chromium...</translation>
 <translation id="3038232873781883849">正在等待安装…</translation>
@@ -94,7 +93,6 @@
 <translation id="3258596308407688501">Chromium 无法读写其数据目录：
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">您可以通过本指南了解您的选择，以便让 Chromium 以您期望的方式运行</translation>
 <translation id="3283186697780795848">已安装 Chromium 版本 <ph name="PRODUCT_VERSION" /></translation>
 <translation id="3286538390144397061">立即重新启动</translation>
 <translation id="328888136576916638">缺少 Google API 密钥，因此 Chromium 的部分功能将无法使用。</translation>
@@ -246,8 +244,10 @@
 <translation id="6442900851116057561">重启 Chromium 操作系统</translation>
 <translation id="6455857529632101747">欢迎使用 Chromium 个人资料</translation>
 <translation id="6475912303565314141">它还能够控制Chromium启动后显示的页面。</translation>
+<translation id="648319183876919572">“增强型安全浏览”功能有助于保护您免受危险的网站及下载内容的侵害</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>
 <translation id="6542839706527980775">每份个人资料均包含自己的 Chromium 信息，例如书签、历史记录、密码等等</translation>
+<translation id="656935081669708576">您可切换到另一份 Chromium 个人资料以查看其中的密码</translation>
 <translation id="6570579332384693436">为了修正拼写错误，Chromium 会将您在文本字段中输入的文字发送给 Google</translation>
 <translation id="6598877126913850652">转到 Chromium 通知设置部分</translation>
 <translation id="6613594504749178791">您所做的更改会在下次重新启动 Chromium 时生效。</translation>
@@ -382,7 +382,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="924957577793602335">定制您的专属 Chromium</translation>
 <translation id="93478295209880648">Chromium 可能无法正常运行，因为它不再支持 Windows XP 和 Windows Vista</translation>
 <translation id="942598560705308788">由 Chromium 管理的证书</translation>
-<translation id="959579472876010517">充分利用 Chromium</translation>
 <translation id="965162752251293939">谁在使用 Chromium？</translation>
 <translation id="967427899662692980">获享 Chromium 的最强安全保护</translation>
 <translation id="9792300276217204">始终在关闭 Chromium 时清除设备上的网站数据</translation>

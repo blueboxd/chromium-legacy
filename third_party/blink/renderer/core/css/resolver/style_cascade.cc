@@ -540,16 +540,18 @@ void StyleCascade::ApplyWideOverlapping(CascadeResolver& resolver) {
     }
   }
 
-  // TODO(crbug.com/1417543): `white-space` will become a shorthand in the
-  // future - in order to mitigate the forward compat risk, skip the `text-wrap`
-  // longhand.
-  const CSSProperty& white_space = GetCSSPropertyWhiteSpace();
-  DCHECK(white_space.IsLonghand());
-  if (!resolver.filter_.Rejects(white_space)) {
-    if (const CascadePriority* priority =
-            map_.Find(white_space.GetCSSPropertyName())) {
-      LookupAndApply(white_space, resolver);
-      maybe_skip(GetCSSPropertyTextWrap(), *priority);
+  if (!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()) {
+    // TODO(crbug.com/1417543): `white-space` will become a shorthand in the
+    // future - in order to mitigate the forward compat risk, skip the
+    // `text-wrap` longhand.
+    const CSSProperty& white_space = GetCSSPropertyWhiteSpace();
+    DCHECK(white_space.IsLonghand());
+    if (!resolver.filter_.Rejects(white_space)) {
+      if (const CascadePriority* priority =
+              map_.Find(white_space.GetCSSPropertyName())) {
+        LookupAndApply(white_space, resolver);
+        maybe_skip(GetCSSPropertyTextWrap(), *priority);
+      }
     }
   }
 }
@@ -1138,8 +1140,7 @@ scoped_refptr<CSSVariableData> StyleCascade::ResolveVariableData(
   return sequence.BuildVariableData();
 }
 
-template <class ParserTokenStream>
-bool StyleCascade::ResolveTokensInto(ParserTokenStream& stream,
+bool StyleCascade::ResolveTokensInto(CSSParserTokenStream& stream,
                                      CascadeResolver& resolver,
                                      CSSTokenizer* parent_tokenizer,
                                      TokenSequence& out) {
@@ -1150,10 +1151,10 @@ bool StyleCascade::ResolveTokensInto(ParserTokenStream& stream,
     if (token.IsEOF()) {
       break;
     } else if (token.FunctionId() == CSSValueID::kVar) {
-      typename ParserTokenStream::BlockGuard guard(stream);
+      CSSParserTokenStream::BlockGuard guard(stream);
       success &= ResolveVarInto(stream, resolver, parent_tokenizer, out);
     } else if (token.FunctionId() == CSSValueID::kEnv) {
-      typename ParserTokenStream::BlockGuard guard(stream);
+      CSSParserTokenStream::BlockGuard guard(stream);
       success &= ResolveEnvInto(stream, resolver, parent_tokenizer, out);
     } else {
       if (token.GetBlockType() == CSSParserToken::kBlockStart) {

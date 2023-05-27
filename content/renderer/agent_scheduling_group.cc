@@ -19,7 +19,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "content/services/shared_storage_worklet/shared_storage_worklet_service_impl.h"
 #include "ipc/ipc_channel_mojo.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sync_channel.h"
@@ -96,50 +95,6 @@ class SelfOwnedWebViewClient : public blink::WebViewClient {
   void OnDestruct() override { delete this; }
 };
 
-// A thread for running shared storage worklet operations. It hosts a worklet
-// environment belonging to one Document. The object owns itself, cleaning up
-// when the worklet has shut down.
-class LegacySelfOwnedSharedStorageWorkletThread {
- public:
-  LegacySelfOwnedSharedStorageWorkletThread(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-      mojo::PendingReceiver<blink::mojom::SharedStorageWorkletService> receiver)
-      : main_thread_runner_(std::move(main_thread_runner)) {
-    DCHECK(main_thread_runner_->BelongsToCurrentThread());
-
-    auto disconnect_handler = base::BindPostTask(
-        main_thread_runner_,
-        base::BindOnce(&LegacySelfOwnedSharedStorageWorkletThread::
-                           OnSharedStorageWorkletServiceDestroyed,
-                       weak_factory_.GetWeakPtr()));
-
-    auto task_runner = base::ThreadPool::CreateSingleThreadTaskRunner(
-        {base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-
-    // Initialize the worklet service in a new thread.
-    worklet_thread_ = base::SequenceBound<
-        shared_storage_worklet::SharedStorageWorkletServiceImpl>(
-        task_runner, std::move(receiver), std::move(disconnect_handler));
-  }
-
- private:
-  void OnSharedStorageWorkletServiceDestroyed() {
-    DCHECK(main_thread_runner_->BelongsToCurrentThread());
-    worklet_thread_.Reset();
-    delete this;
-  }
-
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner_;
-
-  base::SequenceBound<shared_storage_worklet::SharedStorageWorkletServiceImpl>
-      worklet_thread_;
-
-  base::WeakPtrFactory<LegacySelfOwnedSharedStorageWorkletThread> weak_factory_{
-      this};
-};
-
 }  // namespace
 
 AgentSchedulingGroup::ReceiverData::ReceiverData(
@@ -159,7 +114,7 @@ AgentSchedulingGroup::AgentSchedulingGroup(
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker_remote)
     : agent_group_scheduler_(
           blink::scheduler::WebThreadScheduler::MainThreadScheduler()
-              ->CreateWebAgentGroupScheduler()),
+              .CreateWebAgentGroupScheduler()),
       render_thread_(render_thread),
       // `receiver_` will be bound by `OnAssociatedInterfaceRequest()`.
       receiver_(this) {
@@ -193,7 +148,7 @@ AgentSchedulingGroup::AgentSchedulingGroup(
     mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker> broker_remote)
     : agent_group_scheduler_(
           blink::scheduler::WebThreadScheduler::MainThreadScheduler()
-              ->CreateWebAgentGroupScheduler()),
+              .CreateWebAgentGroupScheduler()),
       render_thread_(render_thread),
       receiver_(this,
                 std::move(receiver),
@@ -293,12 +248,14 @@ void AgentSchedulingGroup::CreateView(mojom::CreateViewParamsPtr params) {
       params->web_preferences.enable_scroll_animator, PassKey());
 
   CreateWebView(std::move(params),
-                /*was_created_by_renderer=*/false);
+                /*was_created_by_renderer=*/false,
+                /*base_url=*/blink::WebURL());
 }
 
 blink::WebView* AgentSchedulingGroup::CreateWebView(
     mojom::CreateViewParamsPtr params,
-    bool was_created_by_renderer) {
+    bool was_created_by_renderer,
+    const blink::WebURL& base_url) {
   DCHECK(RenderThread::IsMainThread());
 
   blink::WebFrame* opener_frame = nullptr;
@@ -345,7 +302,7 @@ blink::WebView* AgentSchedulingGroup::CreateWebView(
           /*is_for_scalable_page=*/params->type !=
               mojom::ViewWidgetType::kFencedFrame,
           std::move(params->replication_state),
-          params->devtools_main_frame_token, std::move(local_params));
+          params->devtools_main_frame_token, std::move(local_params), base_url);
     } else {
       // Create a local provisional main frame and a placeholder RemoteFrame as
       // a placeholder main frame for the new WebView. This can only happen for
@@ -449,16 +406,8 @@ void AgentSchedulingGroup::CreateFrame(mojom::CreateFrameParamsPtr params) {
 
 void AgentSchedulingGroup::CreateSharedStorageWorkletService(
     mojo::PendingReceiver<blink::mojom::SharedStorageWorkletService> receiver) {
-  switch (blink::features::kSharedStorageWorkletImplementationType.Get()) {
-    case blink::features::SharedStorageWorkletImplementationType::kLegacy:
-      new LegacySelfOwnedSharedStorageWorkletThread(
-          agent_group_scheduler_->DefaultTaskRunner(), std::move(receiver));
-      break;
-    case blink::features::SharedStorageWorkletImplementationType::kBlinkStyle:
-      blink::WebSharedStorageWorkletThread::Start(
-          agent_group_scheduler_->DefaultTaskRunner(), std::move(receiver));
-      break;
-  }
+  blink::WebSharedStorageWorkletThread::Start(
+      agent_group_scheduler_->DefaultTaskRunner(), std::move(receiver));
 }
 
 void AgentSchedulingGroup::BindAssociatedInterfaces(

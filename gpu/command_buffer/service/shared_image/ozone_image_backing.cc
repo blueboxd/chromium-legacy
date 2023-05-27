@@ -173,7 +173,8 @@ OzoneImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
       need_cache ? &cached_texture_holders_ : nullptr);
 }
 
-std::unique_ptr<SkiaImageRepresentation> OzoneImageBacking::ProduceSkia(
+std::unique_ptr<SkiaGaneshImageRepresentation>
+OzoneImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
@@ -185,7 +186,7 @@ std::unique_ptr<SkiaImageRepresentation> OzoneImageBacking::ProduceSkia(
       gl_representation = ProduceGLTexture(manager, tracker);
     }
     if (!gl_representation) {
-      LOG(ERROR) << "OzoneImageBacking::ProduceSkia failed to create GL "
+      LOG(ERROR) << "OzoneImageBacking::ProduceSkiaGanesh failed to create GL "
                     "representation";
       return nullptr;
     }
@@ -193,7 +194,7 @@ std::unique_ptr<SkiaImageRepresentation> OzoneImageBacking::ProduceSkia(
         std::move(gl_representation), std::move(context_state), manager, this,
         tracker);
     if (!skia_representation) {
-      LOG(ERROR) << "OzoneImageBacking::ProduceSkia failed to create "
+      LOG(ERROR) << "OzoneImageBacking::ProduceSkiaGanesh failed to create "
                     "Skia representation";
       return nullptr;
     }
@@ -325,7 +326,7 @@ bool OzoneImageBacking::UploadFromMemory(const std::vector<SkPixmap>& pixmaps) {
 
   DCHECK(context_state_->IsCurrent(nullptr));
 
-  auto representation = ProduceSkia(
+  auto representation = ProduceSkiaGanesh(
       nullptr, context_state_->memory_type_tracker(), context_state_);
   DCHECK_EQ(pixmaps.size(), representation->NumPlanesExpected());
 
@@ -357,14 +358,7 @@ bool OzoneImageBacking::UploadFromMemory(const std::vector<SkPixmap>& pixmaps) {
     }
   }
 
-  if (auto end_state = dest_scoped_access->TakeEndState()) {
-    for (int plane = 0; plane < format().NumberOfPlanes(); ++plane) {
-      context_state_->gr_context()->setBackendTextureState(
-          dest_scoped_access->promise_image_texture(plane)->backendTexture(),
-          *end_state);
-    }
-  }
-
+  dest_scoped_access->ApplyBackendSurfaceEndState();
   FlushAndSubmitIfNecessary(std::move(end_semaphores), context_state_.get());
   if (written && !IsCleared()) {
     SetCleared();

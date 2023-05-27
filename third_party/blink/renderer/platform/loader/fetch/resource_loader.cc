@@ -53,6 +53,7 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
@@ -461,6 +462,7 @@ void ResourceLoader::CodeCacheRequest::MaybeSendCachedCode(
 ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
                                ResourceLoadScheduler* scheduler,
                                Resource* resource,
+                               ContextLifecycleNotifier* context,
                                ResourceRequestBody request_body,
                                uint32_t inflight_keepalive_bytes)
     : scheduler_client_id_(ResourceLoadScheduler::kInvalidClientId),
@@ -470,6 +472,7 @@ ResourceLoader::ResourceLoader(ResourceFetcher* fetcher,
       request_body_(std::move(request_body)),
       inflight_keepalive_bytes_(inflight_keepalive_bytes),
       is_cache_aware_loading_activated_(false),
+      progress_receiver_(this, context),
       cancel_timer_(fetcher_->GetTaskRunner(),
                     this,
                     &ResourceLoader::CancelTimerFired) {
@@ -514,6 +517,7 @@ void ResourceLoader::Trace(Visitor* visitor) const {
   visitor->Trace(response_body_loader_);
   visitor->Trace(data_pipe_completion_notifier_);
   visitor->Trace(cancel_timer_);
+  visitor->Trace(progress_receiver_);
   ResourceLoadSchedulerClient::Trace(visitor);
 }
 

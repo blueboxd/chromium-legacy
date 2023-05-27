@@ -13,6 +13,7 @@
 
 class TabGroupViews;
 
+// Default styling of tab groups.
 class TabGroupStyle {
  public:
   explicit TabGroupStyle(const TabGroupViews& tab_group_views);
@@ -46,6 +47,10 @@ class TabGroupStyle {
   // Returns the sync icon width.
   virtual float GetSyncIconWidth() const;
 
+  // Returns the selected opacity value, This value should match the
+  // corresponding value for the matching TabStyle.
+  virtual float GetSelectedTabOpacity() const;
+
   // The radius of the tab group header chip
   static int GetChipCornerRadius();
 
@@ -53,6 +58,7 @@ class TabGroupStyle {
   const raw_ref<const TabGroupViews> tab_group_views_;
 };
 
+// Styling of tab groups when the #chrome-refresh-2023 flag is on.
 class ChromeRefresh2023TabGroupStyle : public TabGroupStyle {
  public:
   explicit ChromeRefresh2023TabGroupStyle(const TabGroupViews& tab_group_views);

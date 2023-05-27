@@ -89,9 +89,16 @@ void RecursivelyGenerateFrameEntries(
 
   if (!entry) {
     absl::optional<GURL> initiator_base_url;
-    if (state.initiator_base_url_string) {
-      initiator_base_url =
+    if (blink::features::IsNewBaseUrlInheritanceBehaviorEnabled() &&
+        state.initiator_base_url_string) {
+      GURL initiator_base_url_from_state =
           GURL(UTF16ToUTF8(state.initiator_base_url_string.value()));
+      if (!initiator_base_url_from_state.is_empty()) {
+        // TODO(crbug.com/1356658): refactor the uses of
+        // `state.initiator_base_url_string` so they store nullopt instead of
+        // empty strings.
+        initiator_base_url = initiator_base_url_from_state;
+      }
     }
     entry = base::MakeRefCounted<FrameNavigationEntry>(
         UTF16ToUTF8(state.target.value_or(std::u16string())),
@@ -573,10 +580,13 @@ const std::u16string& NavigationEntryImpl::GetTitleForDisplay() {
 
   // Use the virtual URL first if any, and fall back on using the real URL.
   std::u16string title;
-  if (!virtual_url_.is_empty()) {
-    title = url_formatter::FormatUrl(virtual_url_);
-  } else if (!GetURL().is_empty()) {
-    title = url_formatter::FormatUrl(GetURL());
+  if (!virtual_url_.is_empty() || !GetURL().is_empty()) {
+    title = url_formatter::FormatUrl(
+        virtual_url_.is_empty() ? GetURL() : virtual_url_,
+        url_formatter::kFormatUrlOmitDefaults |
+            url_formatter::kFormatUrlOmitTrivialSubdomains |
+            url_formatter::kFormatUrlOmitHTTPS,
+        base::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
   }
 
   // For file:// URLs use the filename as the title, not the full path.
@@ -846,10 +856,20 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
   // by main frames, because loadData* navigations can only happen on the main
   // frame.
   bool is_for_main_frame = (root_node()->frame_entry == &frame_entry);
+  // Even if the frame_entry was originally about:blank or about:srcdoc and had
+  // an initiator_base_url, there's no guarantee here that `dest_url` will be
+  // either about:blank or about:srcdoc. In that case make sure we don't
+  // propagate initiator_base_url.
+  // TODO(creis): Look into how this case can be avoided so that dest_url
+  // doesn't diverge from other parameters in frame_entry.
+  const absl::optional<GURL> initiator_base_url =
+      (dest_url.IsAboutBlank() || dest_url.IsAboutSrcdoc())
+          ? frame_entry.initiator_base_url()
+          : absl::nullopt;
   return blink::mojom::CommonNavigationParams::New(
-      dest_url, frame_entry.initiator_origin(),
-      frame_entry.initiator_base_url(), std::move(dest_referrer),
-      GetTransitionType(), navigation_type, blink::NavigationDownloadPolicy(),
+      dest_url, frame_entry.initiator_origin(), initiator_base_url,
+      std::move(dest_referrer), GetTransitionType(), navigation_type,
+      blink::NavigationDownloadPolicy(),
       // It's okay to pass false for `should_replace_entry` because we never
       // replace an entry on session history / reload / restore navigation. New
       // navigation that may use replacement create their CommonNavigationParams
@@ -861,8 +881,7 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
       has_user_gesture(), false /* has_text_fragment_token */,
       network::mojom::CSPDisposition::CHECK, std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, input_start,
-      network::mojom::RequestDestination::kEmpty,
-      false /* has_storage_access */);
+      network::mojom::RequestDestination::kEmpty);
 }
 
 blink::mojom::CommitNavigationParamsPtr
@@ -945,7 +964,8 @@ NavigationEntryImpl::ConstructCommitNavigationParams(
           /*modified_runtime_features=*/
           base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
-          /*not_restored_reasons=*/nullptr);
+          /*not_restored_reasons=*/nullptr,
+          /*load_with_storage_access=*/false);
 #if BUILDFLAG(IS_ANDROID)
   // `data_url_as_string` is saved in NavigationEntry but should only be used by
   // main frames, because loadData* navigations can only happen on the main

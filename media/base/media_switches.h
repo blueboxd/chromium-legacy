@@ -58,7 +58,6 @@ MEDIA_EXPORT extern const char kWaveOutBuffers[];
 MEDIA_EXPORT extern const char kEnableProtectedVideoBuffers[];
 MEDIA_EXPORT extern const char kForceProtectedVideoOutputBuffers[];
 MEDIA_EXPORT extern const char kDisableAudioInput[];
-MEDIA_EXPORT extern const char kUseOverlaysForVideo[];
 MEDIA_EXPORT extern const char kMinVideoDecoderOutputBufferSize[];
 MEDIA_EXPORT extern const char kAudioCapturerWithEchoCancellation[];
 #endif
@@ -245,6 +244,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaOptimizer);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMediaPowerExperiment);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMemoryPressureBasedSourceBufferGC);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForHardwareVideo);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMultiPlaneFormatForSoftwareVideo);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneSoftwareVideoSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kMultiPlaneVideoCaptureSharedImages);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kOpenscreenCastStreamingSession);
@@ -290,6 +290,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiEnforceVideoMinMaxResolution);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiVideoMinResolutionForPerformance);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiVP8Encoder);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiVP9Encoder);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiAV1Encoder);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kGlobalVaapiLock);
 #if defined(ARCH_CPU_X86_FAMILY) && BUILDFLAG(IS_CHROMEOS)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kVaapiH264TemporalLayerHWEncoding);
@@ -396,9 +397,16 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(
     kAllowClearDolbyVisionInMseWhenPlatformEncryptedDvEnabled);
 #endif
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kExposeOutOfProcessVideoDecodingToLacros);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
+// Note: please use IsOutOfProcessVideoDecodingEnabled() to determine if OOP-VD
+// is enabled instead of directly checking this feature flag. The reason is that
+// that function may perform checks beyond the feature flag.
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseOutOfProcessVideoDecoding);
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseOutOfProcessVideoEncoding);
@@ -407,7 +415,7 @@ MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseOutOfProcessVideoEncoding);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseMojoVideoDecoderForPepper);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseSequencedTaskRunnerForMediaService);
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseSequencedTaskRunnerForMojoVEAProvider);
-MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseSequencedTaskRunnerForMojoVEAService);
+MEDIA_EXPORT BASE_DECLARE_FEATURE(kUseTaskRunnerForMojoVEAService);
 
 #if BUILDFLAG(IS_FUCHSIA)
 MEDIA_EXPORT BASE_DECLARE_FEATURE(kFuchsiaMediacodecVideoEncoder);
@@ -425,10 +433,15 @@ MEDIA_EXPORT bool IsChromeWideEchoCancellationEnabled();
 MEDIA_EXPORT int GetProcessingAudioFifoSize();
 MEDIA_EXPORT bool IsHardwareSecureDecryptionEnabled();
 MEDIA_EXPORT bool IsVideoCaptureAcceleratedJpegDecodingEnabled();
+MEDIA_EXPORT bool IsMultiPlaneFormatForHardwareVideoEnabled();
 
 #if BUILDFLAG(IS_WIN)
 MEDIA_EXPORT bool IsMediaFoundationD3D11VideoCaptureEnabled();
 #endif
+
+#if BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
+MEDIA_EXPORT bool IsOutOfProcessVideoDecodingEnabled();
+#endif  // BUILDFLAG(ALLOW_OOP_VIDEO_DECODER)
 
 enum class kCrosGlobalMediaControlsPinOptions {
   kPin,

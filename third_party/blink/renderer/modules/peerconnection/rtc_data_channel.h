@@ -25,8 +25,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DATA_CHANNEL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DATA_CHANNEL_H_
 
-#include <memory>
-
 #include "base/gtest_prod_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -57,7 +55,7 @@ class MODULES_EXPORT RTCDataChannel final
 
  public:
   RTCDataChannel(ExecutionContext*,
-                 scoped_refptr<webrtc::DataChannelInterface> channel,
+                 rtc::scoped_refptr<webrtc::DataChannelInterface> channel,
                  RTCPeerConnectionHandler* peer_connection_handler);
   ~RTCDataChannel() override;
 
@@ -126,13 +124,13 @@ class MODULES_EXPORT RTCDataChannel final
    public:
     Observer(scoped_refptr<base::SingleThreadTaskRunner> main_thread,
              RTCDataChannel* blink_channel,
-             scoped_refptr<webrtc::DataChannelInterface> channel);
+             rtc::scoped_refptr<webrtc::DataChannelInterface> channel);
     ~Observer() override;
 
     // Returns a reference to |webrtc_channel_|. Typically called from the main
     // thread except for on observer registration, done in a synchronous call to
     // the signaling thread (safe because the call is synchronous).
-    const scoped_refptr<webrtc::DataChannelInterface>& channel() const;
+    const rtc::scoped_refptr<webrtc::DataChannelInterface>& channel() const;
 
     // Clears the |blink_channel_| reference, disassociates this observer from
     // the |webrtc_channel_| and releases the |webrtc_channel_| pointer. Must be
@@ -143,28 +141,29 @@ class MODULES_EXPORT RTCDataChannel final
     void OnStateChange() override;
     void OnBufferedAmountChange(uint64_t sent_data_size) override;
     void OnMessage(const webrtc::DataBuffer& buffer) override;
+    bool IsOkToCallOnTheNetworkThread() override;
 
    private:
     // webrtc::DataChannelObserver implementation on the main thread.
     void OnStateChangeImpl(webrtc::DataChannelInterface::DataState state);
     void OnBufferedAmountChangeImpl(unsigned sent_data_size);
-    void OnMessageImpl(std::unique_ptr<webrtc::DataBuffer> buffer);
+    void OnMessageImpl(webrtc::DataBuffer buffer);
 
     const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
     WeakPersistent<RTCDataChannel> blink_channel_;
-    scoped_refptr<webrtc::DataChannelInterface> webrtc_channel_;
+    rtc::scoped_refptr<webrtc::DataChannelInterface> webrtc_channel_;
   };
 
   void OnStateChange(webrtc::DataChannelInterface::DataState state);
   void OnBufferedAmountChange(unsigned previous_amount);
-  void OnMessage(std::unique_ptr<webrtc::DataBuffer> buffer);
+  void OnMessage(webrtc::DataBuffer buffer);
 
   void Dispose();
 
   void ScheduleDispatchEvent(Event*);
   void ScheduledEventTimerFired(TimerBase*);
 
-  const scoped_refptr<webrtc::DataChannelInterface>& channel() const;
+  const rtc::scoped_refptr<webrtc::DataChannelInterface>& channel() const;
   bool ValidateSendLength(size_t length, ExceptionState& exception_state);
   void SendRawData(const char* data, size_t length);
   void SendDataBuffer(webrtc::DataBuffer data_buffer);
@@ -173,10 +172,11 @@ class MODULES_EXPORT RTCDataChannel final
   // initialized.
   void CreateFeatureHandleForScheduler();
 
-  webrtc::DataChannelInterface::DataState state_;
+  webrtc::DataChannelInterface::DataState state_ =
+      webrtc::DataChannelInterface::kConnecting;
 
   enum BinaryType { kBinaryTypeBlob, kBinaryTypeArrayBuffer };
-  BinaryType binary_type_;
+  BinaryType binary_type_ = kBinaryTypeArrayBuffer;
 
   HeapTaskRunnerTimer<RTCDataChannel> scheduled_event_timer_;
   HeapVector<Member<Event>> scheduled_events_;
@@ -191,10 +191,14 @@ class MODULES_EXPORT RTCDataChannel final
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
 
-  unsigned buffered_amount_low_threshold_;
-  unsigned buffered_amount_;
-  bool stopped_;
-  bool closed_from_owner_;
+  // Once an id has been assigned, we'll set this value and use it instead
+  // of querying the channel (which requires thread hop). This is a cached
+  // value to optimize a const getter, and therefore `mutable`.
+  mutable absl::optional<uint16_t> id_;
+  unsigned buffered_amount_low_threshold_ = 0u;
+  unsigned buffered_amount_ = 0u;
+  bool stopped_ = false;
+  bool closed_from_owner_ = false;
   scoped_refptr<Observer> observer_;
   scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   THREAD_CHECKER(thread_checker_);

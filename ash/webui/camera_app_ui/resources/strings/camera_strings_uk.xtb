@@ -27,9 +27,7 @@
 <translation id="199526504800285197">Запис зупинено</translation>
 <translation id="1995951722691075581">На пристрої недостатньо пам’яті. Щоб записувати більше відео, звільніть місце.</translation>
 <translation id="2036868001356139588">Тривалість таймера</translation>
-<translation id="2050339315714019657">Портретна орієнтація</translation>
 <translation id="2064538373111010176">Опція "<ph name="CAMERA" />" активна</translation>
-<translation id="2128052519899549250">Почати інтервальну зйомку</translation>
 <translation id="2134029355740465625">Налаштування відео</translation>
 <translation id="2144806332417375165">Спеціальні параметри відео</translation>
 <translation id="2175927920773552910">QR-код</translation>
@@ -82,6 +80,7 @@
 <translation id="4864143361253542638">Список сканованих сторінок</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="491895758387112773">Багатопотоковий відеозапис</translation>
+<translation id="495170559598752135">Дії</translation>
 <translation id="4984613436295737187">Quad HD (1440p)</translation>
 <translation id="5034763830503483128">Формат фотографії</translation>
 <translation id="5057360777601936059">Камера зараз недоступна.
@@ -92,7 +91,6 @@
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5320594929574852403">Переміщення вліво</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
-<translation id="5577251651370645658">Інтервальна зйомка</translation>
 <translation id="5662366948659129155">Сканування сторінки <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">Квадрат</translation>
 <translation id="5746169159649715125">Зберегти у форматі PDF</translation>
@@ -122,6 +120,7 @@
 <translation id="6888362557094394345">Переміщення вниз</translation>
 <translation id="695140971690006676">Скинути все</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6965830616442491568">Портрет</translation>
 <translation id="698156982839284926">3 секунди</translation>
 <translation id="7134221860976209830">Таймер на 10 секунд</translation>
 <translation id="7191890674911603392">Тип запису</translation>
@@ -137,6 +136,7 @@
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7670511624014457267">60 кадрів/с</translation>
 <translation id="7671804233658741790">Нижній правий кут документа</translation>
+<translation id="7684446460490665873">Почати інтервальну зйомку</translation>
 <translation id="7692090236657809299">Увімкнути панорамування, нахил і масштаб</translation>
 <translation id="7726641833034062494">Записати звичайне відео</translation>
 <translation id="7748344063862150053">Верхній правий кут документа</translation>
@@ -162,6 +162,7 @@
 <translation id="9045010116236796332">Розмістіть усі краї документа всередині рамки</translation>
 <translation id="9045155556724273246">10 секунд</translation>
 <translation id="906331135292332864">Обробка зображення…</translation>
+<translation id="9161584225258678723">Інтервальна зйомка</translation>
 <translation id="922762992951083513">Режим віддзеркалення ввімкнено</translation>
 <translation id="945522503751344254">Надіслати відгук</translation>
 </translationbundle>

@@ -42,15 +42,18 @@
 #import "components/password_manager/core/browser/password_manager_features_util.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/password_sync_util.h"
+#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/password_controller_driver_helper.h"
 #import "components/password_manager/ios/password_form_helper.h"
 #import "components/password_manager/ios/password_suggestion_helper.h"
 #import "components/password_manager/ios/shared_password_controller.h"
+#import "components/safe_browsing/core/browser/password_protection/password_reuse_detection_manager_client.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/driver/sync_service.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
+#import "ios/chrome/browser/autofill/bottom_sheet/bottom_sheet_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_handler.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
@@ -73,7 +76,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/url_scheme_util.h"
 #import "ios/web/public/js_messaging/web_frame.h"
-#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/web_state.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
@@ -106,7 +108,7 @@ using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::metrics_util::LogPasswordDropdownShown;
 using password_manager::metrics_util::PasswordDropdownState;
-using web::WebFrame;
+using safe_browsing::PasswordReuseDetectionManagerClient;
 using web::WebState;
 
 namespace {
@@ -145,6 +147,8 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 @implementation PasswordController {
   std::unique_ptr<PasswordManager> _passwordManager;
   std::unique_ptr<PasswordManagerClient> _passwordManagerClient;
+  std::unique_ptr<PasswordReuseDetectionManagerClient>
+      _passwordReuseDetectionManagerClient;
 
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
@@ -162,13 +166,18 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 }
 
 - (instancetype)initWithWebState:(WebState*)webState {
-  self = [self initWithWebState:webState client:nullptr];
+  self = [self initWithWebState:webState
+                         client:nullptr
+           reuseDetectionClient:nullptr];
   return self;
 }
 
 - (instancetype)initWithWebState:(WebState*)webState
                           client:(std::unique_ptr<PasswordManagerClient>)
-                                     passwordManagerClient {
+                                     passwordManagerClient
+            reuseDetectionClient:
+                (std::unique_ptr<PasswordReuseDetectionManagerClient>)
+                    passwordReuseDetectionManagerClient {
   self = [super init];
   if (self) {
     DCHECK(webState);
@@ -180,6 +189,13 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
       _passwordManagerClient = std::move(passwordManagerClient);
     } else {
       _passwordManagerClient.reset(new IOSChromePasswordManagerClient(self));
+    }
+    if (passwordReuseDetectionManagerClient) {
+      _passwordReuseDetectionManagerClient =
+          std::move(passwordReuseDetectionManagerClient);
+    } else {
+      _passwordReuseDetectionManagerClient.reset(
+          new IOSChromePasswordReuseDetectionManagerClient(self));
     }
     _passwordManager.reset(new PasswordManager(_passwordManagerClient.get()));
 
@@ -217,6 +233,10 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   return _passwordManagerClient.get();
 }
 
+- (PasswordReuseDetectionManagerClient*)passwordReuseDetectionManagerClient {
+  return _passwordReuseDetectionManagerClient.get();
+}
+
 #pragma mark - CRWWebStateObserver
 
 // If Tab was shown, and there is a pending PasswordForm, display autosign-in
@@ -244,6 +264,7 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   }
   _passwordManager.reset();
   _passwordManagerClient.reset();
+  _passwordReuseDetectionManagerClient.reset();
 }
 
 #pragma mark - FormSuggestionProvider
@@ -545,6 +566,13 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
     // Navigate to the settings list.
     [self.delegate displaySavedPasswordList];
   }
+}
+
+- (void)attachListenersForBottomSheet:
+            (const std::vector<autofill::FieldRendererId>&)rendererIds
+                              inFrame:(web::WebFrame*)frame {
+  BottomSheetTabHelper::FromWebState(_webState)->AttachListeners(rendererIds,
+                                                                 frame);
 }
 
 - (BOOL)shouldShowAccountStorageNotice {

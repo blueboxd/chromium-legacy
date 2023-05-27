@@ -254,10 +254,12 @@ ScrollResult ScrollableArea::UserScroll(ui::ScrollGranularity granularity,
   ScrollOffset scrollable_axis_delta(
       UserInputScrollable(kHorizontalScrollbar) ? pixel_delta.x() : 0,
       UserInputScrollable(kVerticalScrollbar) ? pixel_delta.y() : 0);
+  ScrollOffset delta_to_consume =
+      GetScrollAnimator().ComputeDeltaToConsume(scrollable_axis_delta);
 
-  if (scrollable_axis_delta.IsZero()) {
+  if (delta_to_consume.IsZero()) {
     std::move(run_scroll_complete_callbacks)
-        .Run(ScrollCompletionMode::kFinished);
+        .Run(ScrollCompletionMode::kZeroDelta);
     return ScrollResult(false, false, pixel_delta.x(), pixel_delta.y());
   }
 
@@ -315,7 +317,7 @@ void ScrollableArea::SetScrollOffset(const ScrollOffset& offset,
   if (clamped_offset == previous_offset &&
       scroll_type != mojom::blink::ScrollType::kProgrammatic) {
     std::move(run_scroll_complete_callbacks)
-        .Run(ScrollCompletionMode::kFinished);
+        .Run(ScrollCompletionMode::kZeroDelta);
     return;
   }
 
@@ -397,7 +399,7 @@ void ScrollableArea::ProgrammaticScrollHelper(
   if (offset == GetScrollOffset()) {
     CancelProgrammaticScrollAnimation();
     if (on_finish)
-      std::move(on_finish).Run(ScrollCompletionMode::kFinished);
+      std::move(on_finish).Run(ScrollCompletionMode::kZeroDelta);
     return;
   }
 
@@ -660,7 +662,7 @@ void ScrollableArea::RecalculateScrollbarOverlayColorTheme() {
 
   // Start with a scrollbar overlay theme based on the used color scheme.
   ScrollbarOverlayColorTheme overlay_theme =
-      UsedColorScheme() == mojom::blink::ColorScheme::kDark
+      UsedColorSchemeScrollbars() == mojom::blink::ColorScheme::kDark
           ? kScrollbarOverlayColorThemeLight
           : kScrollbarOverlayColorThemeDark;
 
@@ -688,14 +690,25 @@ void ScrollableArea::SetScrollbarNeedsPaintInvalidation(
   else
     vertical_scrollbar_needs_paint_invalidation_ = true;
 
+  // Invalidate the scrollbar directly if it's already composited.
   // GetLayoutBox() may be null in some unit tests.
   if (auto* box = GetLayoutBox()) {
     auto* frame_view = GetLayoutBox()->GetFrameView();
     if (auto* compositor = frame_view->GetPaintArtifactCompositor()) {
-      compositor->SetScrollbarNeedsDisplay(GetScrollbarElementId(orientation));
+      if (compositor->SetScrollbarNeedsDisplay(
+              GetScrollbarElementId(orientation))) {
+        if (auto* scrollbar = GetScrollbar(orientation)) {
+          scrollbar->ClearNeedsUpdateDisplay();
+        }
+      }
     }
   }
 
+  // TODO(crbug.com/1414885): we don't need to invalidate paint of scrollbar
+  // for changes inside of the scrollbar. We'll invalidate raster if needed
+  // after paint. We can remove some of paint invalidation code in this class,
+  // and move remaining paint invalidation code into
+  // PaintLayerScrollableArea and Scrollbar.
   ScrollControlWasSetNeedsPaintInvalidation();
 }
 
@@ -866,8 +879,9 @@ ScrollableArea::GetCompositorTaskRunner() {
 Node* ScrollableArea::EventTargetNode() const {
   const LayoutBox* box = GetLayoutBox();
   Node* node = box->GetNode();
-  if (!node && box->Parent() && box->Parent()->IsLayoutNGFieldset())
+  if (!node && box->Parent() && box->Parent()->IsFieldset()) {
     node = box->Parent()->GetNode();
+  }
   if (node && IsA<Element>(node)) {
     const LayoutBox* layout_box_for_scrolling =
         To<Element>(node)->GetLayoutBoxForScrolling();

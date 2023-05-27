@@ -30,6 +30,7 @@ COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kCoopRestrictProperties);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kSplitAuthCacheByNetworkIsolationKey);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kDnsOverHttpsUpgrade);
+COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kMaskedDomainList);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kMdnsResponderGeneratedNameListing);
 COMPONENT_EXPORT(NETWORK_CPP)
@@ -38,6 +39,9 @@ COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kOpaqueResponseBlockingV02);
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kAttributionReportingTriggerAttestation);
+
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kAttributionReportingCrossAppWeb);
 
 // Both flags need to be checked for required PST components as they are being
 // used in different experiments.
@@ -126,12 +130,6 @@ BASE_DECLARE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant);
 //   https://github.com/WICG/nav-speculation/blob/main/no-vary-search.md
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kPrefetchNoVarySearch);
-
-// Enables the `inline-speculation-rules` source support in the
-// Content-Security-Policy for Prerender2.
-// https://crbug.com/1382361
-COMPONENT_EXPORT(NETWORK_CPP)
-BASE_DECLARE_FEATURE(kPrerender2ContentSecurityPolicyExtensions);
 
 // Enables UMA to track received GetCookiesString IPCs. This feature is enabled
 // by default, it is just here to allow some tests to disable it. These tests

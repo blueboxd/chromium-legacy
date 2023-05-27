@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/files/file_path.h"
-#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -145,8 +144,14 @@ class ChromeBrowsingDataLifetimeManagerScheduledRemovalTest
   }
 };
 
+#if BUILDFLAG(IS_ANDROID)
+// See https://crbug.com/1432023 for tracking bug.
+#define MAYBE_PrefChange DISABLED_PrefChange
+#else
+#define MAYBE_PrefChange PrefChange
+#endif
 IN_PROC_BROWSER_TEST_P(ChromeBrowsingDataLifetimeManagerScheduledRemovalTest,
-                       PrefChange) {
+                       MAYBE_PrefChange) {
   static constexpr char kCookiesPref[] =
       R"([{"time_to_live_in_hours": 1, "data_types":
       ["cookies_and_other_site_data"]}])";

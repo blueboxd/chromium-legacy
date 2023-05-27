@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">វិញ្ញាបនប័ត្រសម្គាល់អត្តសញ្ញាណបានបដិសេធជាមូលដ្ឋាន</translation>
 <translation id="1775381402323441512">ព័ត៌មានអំពី​​វីដេអូ</translation>
 <translation id="180035236176489073">អ្នកត្រូវតែមានអ៊ីនធឺណិតដើម្បីចូលប្រើឯកសារទាំងនេះ។</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{កម្មវិធីបន្ថែម​ដែលមានលេខសម្គាល់}other{កម្មវិធីបន្ថែម​ដែលមានលេខសម្គាល់}}</translation>
 <translation id="1807938677607439181">ឯកសារទាំងអស់</translation>
 <translation id="1810764548349082891">ការមើលជាមុនមិនអាចប្រើបានទេ</translation>
 <translation id="1812302367230252929">ការសរសេរ​តាមសូរសព្ទ​ជាភាសា​អំហារិក</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">ការបញ្ចូល​ភាពត្រូវគ្នា​នៃឈ្មោះជំនួស​នៃប្រធានបទ​មិនត្រឹមត្រូវ</translation>
 <translation id="1838709767668011582">គេហទំព័រ Google</translation>
 <translation id="1853795129690976061">ថតនេះ​ត្រូវបានចែករំលែក​ជាមួយ Linux</translation>
-<translation id="1859422890169495746">Chromebook នេះ</translation>
 <translation id="1864756863218646478">ឯកសារមិនត្រូវបានរកឃើញទេ។</translation>
 <translation id="1884013283844450420">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ភ្ជាប់</translation>
 <translation id="1920670151694390848">ការសរសេរ​តាមសូរសព្ទជា​ភាសាម៉ាឡាយ៉ាឡាម</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">ភព</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> ត្រូវបាន​ដកចេញ។</translation>
 <translation id="2307462900900812319">តំឡើងបណ្តាញ</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{មិន​អាច​កំណត់​ទីតាំង​កម្មវិធី​ដែលមាន​លេខម្គាល់ <ph name="BEGIN_LIST" /><ph name="END_LIST" /> បាន​ទេ។ សូមទាក់ទងទៅ​អ្នកគ្រប់គ្រង​របស់អ្នក។}other{មិន​អាច​កំណត់​ទីតាំង​កម្មវិធី​ដែលមាន​លេខម្គាល់ <ph name="BEGIN_LIST" /><ph name="END_LIST" /> បាន​ទេ។ សូមទាក់ទងទៅ​អ្នកគ្រប់គ្រង​របស់អ្នក។}}</translation>
 <translation id="2325650632570794183">ប្រភេទឯកសារនេះមិនត្រូវបានគាំទ្រទេ។ សូមទៅកាន់ Chrome Web Store ដើម្បិស្វែងរកកម្មវិធីដែលអាចបើកប្រភេទឯកសារនេះបាន។</translation>
 <translation id="2326539130272988168">ភាសា​ប៊ុលហ្ការី</translation>
 <translation id="2337715497728194187">ចែករំលែក​ជា​មួយ Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">គ្មាន​សុវត្ថិភាព</translation>
 <translation id="3291218047831493686">ភ្ជាប់ជាមួយបណ្ដាញនេះ ដើម្បីប្ដូរការកំណត់​ការចាក់សោ​ស៊ីម</translation>
 <translation id="3293023191599135697">មិនអាច​ប្រើ​បណ្ដាញ WEP បាន​ទេ</translation>
+<translation id="3295006446256079333">ឧបករណ៍ផ្ទុកនេះ</translation>
 <translation id="3295357220137379386">ឧបករណ៍​កំពុង​ជាប់រវល់</translation>
 <translation id="3296763833017966289">ភាសាចរជៀ</translation>
 <translation id="3307875152560779385">ភាសា​អ៊ុយក្រែន</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase</translation>
 <translation id="4850886885716139402">មើល</translation>
 <translation id="485316830061041779">ភាសាអាល្លឺម៉ង់</translation>
+<translation id="4862885579661885411">ការកំណត់ Files</translation>
 <translation id="4867079195717347957">ចុចដើម្បី​តម្រៀបជួរឈរ​តាមលំដាប់ចុះ។</translation>
 <translation id="4867297348137739678">សប្ដាហ៍​មុន</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> បៃ</translation>
@@ -800,7 +801,6 @@
 <translation id="7359359531237882347">កំពុង​ចម្លងធាតុ <ph name="NUMBER_OF_ITEMS" /> ...</translation>
 <translation id="7375951387215729722">បញ្ជី​ឯកសារ​ដែលតម្រៀប​តាមលំដាប់​ចុះនៃ <ph name="COLUMN_NAME" /> ។</translation>
 <translation id="7377161162143020057">ការចម្លងឯកសារ​នេះ​​ត្រូវបាន​ទប់ស្កាត់​ដោយ​គោលការណ៍​របស់​អ្នក​គ្រប់គ្រង</translation>
-<translation id="7392500733467492920">មិនអាចកំណត់ទីតាំងបានទេ។ សូមទាក់ទងទៅ​អ្នកគ្រប់គ្រង​របស់អ្នក។</translation>
 <translation id="7402503521691663770">ឧបករណ៍ ChromeOS Flex</translation>
 <translation id="7408870451288633753">ភាសា​ឆែក</translation>
 <translation id="7417453074306512035">ក្តារចុចអេត្យូពី</translation>

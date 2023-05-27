@@ -68,6 +68,7 @@ extern const char kOSType[];
 #endif
 #if BUILDFLAG(IS_ANDROID)
 extern const char kOSVersion[];
+extern const char kVersionCode[];
 extern const char kTargetSdkVersionName[];
 extern const char kTargetSdkVersion[];
 extern const char kTargetsUName[];
@@ -95,6 +96,8 @@ extern const char kUserAgent[];
 extern const char kUserAgentName[];
 extern const char kVariationsCmdName[];
 extern const char kVariationsName[];
+extern const char kVariationsSeed[];
+extern const char kVariationsSeedName[];
 extern const char kVersion[];
 extern const char kVersionModifier[];
 extern const char kVersionProcessorVariation[];

@@ -29,6 +29,11 @@ BASE_FEATURE(kAndroidDownloadableFontsMatching,
              "AndroidDownloadableFontsMatching",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables FLEDGE and Attribution Reporting API integration.
+BASE_FEATURE(kAttributionFencedFrameReportingBeacon,
+             "AttributionFencedFrameReportingBeacon",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Launches the audio service on the browser startup.
 BASE_FEATURE(kAudioServiceLaunchOnStartup,
              "AudioServiceLaunchOnStartup",
@@ -390,6 +395,9 @@ BASE_FEATURE(kFedCm, "FedCm", base::FEATURE_ENABLED_BY_DEFAULT);
 // is enabled.
 const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 
+// Enables usage of the FedCM Authz API.
+BASE_FEATURE(kFedCmAuthz, "FedCmAuthz", base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables usage of the FedCM API with auto re-authentication. Note that actual
 // exposure of FedCM's auto re-authentication feature to web content is
 // controlled by the flag in RuntimeEnabledFeatures on the blink side. See also
@@ -567,7 +575,7 @@ BASE_FEATURE(kInMemoryCodeCache,
 // cases, e.g. PDF tiles are ignored. See https://crbug.com/1360351 for details.
 BASE_FEATURE(kInnerFrameCompositorSurfaceEviction,
              "InnerFrameCompositorSurfaceEviction",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Kill switch for the GetInstalledRelatedApps API.
 BASE_FEATURE(kInstalledApp, "InstalledApp", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -743,11 +751,6 @@ BASE_FEATURE(kMojoVideoCaptureSecondary,
              "MojoVideoCaptureSecondary",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// When enable, iframe does not implicit capture mouse event.
-BASE_FEATURE(kMouseSubframeNoImplicitCapture,
-             "MouseSubframeNoImplicitCapture",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When NavigationNetworkResponseQueue is enabled, the browser will schedule
 // some tasks related to navigation network responses in a kHighest priority
 // queue.
@@ -867,6 +870,13 @@ BASE_FEATURE(kPrerender2Holdback,
 // Preloading holdback feature disables preloading (e.g., preconnect, prefetch,
 // and prerender) on all predictors. This is useful in comparing the impact of
 // blink::features::kPrerender2 experiment with and without them.
+
+// This Feature allows configuring preloading features via a parameter string.
+// See content/browser/preloading/preloading_config.cc to see how to use this
+// feature.
+BASE_FEATURE(kPreloadingConfig,
+             "PreloadingConfig",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Please note this feature is only used for experimental purposes, please don't
 // enable this feature by default.
@@ -1064,12 +1074,23 @@ constexpr base::FeatureParam<bool> kStartServiceWorkerForEmptyFetchHandler{
 // This feature param controls if the service worker is started for an
 // empty service worker fetch handler while `kSkipEmptyFetchHandler` is on.
 // Unlike the feature param `kStartServiceWorkerForEmptyFetchHandler`,
-// this starts service worker in `TaskRunner::PostTask`.
+// this starts service worker in `TaskRunner::PostDelayTask`.
 constexpr base::FeatureParam<bool> kAsyncStartServiceWorkerForEmptyFetchHandler{
     &kServiceWorkerSkipIgnorableFetchHandler,
     "AsyncStartServiceWorkerForEmptyFetchHandler",
     false,
 };
+
+// This feature param controls duration to start fetch handler
+// if `kAsyncStartServiceWorkerForEmptyFetchHandler` is used.
+// Negative values and the value larger than a threshold is ignored, and
+// treated as 0.
+constexpr base::FeatureParam<int>
+    kAsyncStartServiceWorkerForEmptyFetchHandlerDurationInMs{
+        &kServiceWorkerSkipIgnorableFetchHandler,
+        "AsyncStartServiceWorkerForEmptyFetchHandlerDurationInMs",
+        0,
+    };
 
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
@@ -1096,13 +1117,6 @@ BASE_FEATURE(kSecurePaymentConfirmation,
 BASE_FEATURE(kSecurePaymentConfirmationDebug,
              "SecurePaymentConfirmationDebug",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Remove the 'rp' field from the output SPC
-// CollectedClientAdditionalPaymentData dictionary. See
-// https://crbug.com/1356224 .
-BASE_FEATURE(kSecurePaymentConfirmationRemoveRpField,
-             "SecurePaymentConfirmationRemoveRpField",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Make sendBeacon throw for a Blob with a non simple type.
 BASE_FEATURE(kSendBeaconThrowForBlobWithNonSimpleType,
@@ -1215,11 +1229,6 @@ const base::FeatureParam<base::TimeDelta>
     kSiteIsolationForCrossOriginOpenerPolicyExpirationTimeoutParam{
         &kSiteIsolationForCrossOriginOpenerPolicy, "expiration_timeout",
         base::Days(7)};
-
-// This feature turns on site isolation support in <webview> guests.
-BASE_FEATURE(kSiteIsolationForGuests,
-             "SiteIsolationForGuests",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, OOPIFs will not try to reuse compatible processes from
 // unrelated tabs.
@@ -1375,7 +1384,7 @@ BASE_FEATURE(kWebAssemblyLazyCompilation,
 // Enable the use of WebAssembly Relaxed SIMD operations
 BASE_FEATURE(kWebAssemblyRelaxedSimd,
              "WebAssemblyRelaxedSimd",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable support for the WebAssembly Stringref proposal:
 // https://github.com/WebAssembly/stringref.
@@ -1514,6 +1523,12 @@ BASE_FEATURE(kRequestDesktopSiteExceptions,
 // when desktop user agent is used.
 BASE_FEATURE(kRequestDesktopSiteZoom,
              "RequestDesktopSiteZoom",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Text autosizing uses heuristics to inflate text sizes on devices with
+// small screens. This feature is for disabling these heuristics.
+BASE_FEATURE(kForceOffTextAutosizing,
+             "ForceOffTextAutosizing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Screen Capture API support for Android

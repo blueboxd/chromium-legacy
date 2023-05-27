@@ -13,14 +13,23 @@
 #include "ash/shutdown_reason.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/unified/user_chooser_detailed_view_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "components/user_manager/user_type.h"
 #include "quick_settings_metrics_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
+#include "ui/base/models/menu_separator_types.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
@@ -94,8 +103,40 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   }
 
   // Owned by views hierarchy.
-  PowerButton* const power_button_;
+  const raw_ptr<PowerButton, ExperimentalAsh> power_button_;
 };
+
+// Returns whether the user's email address should be shown in the power menu.
+bool ShouldShowEmailMenuItem() {
+  const UserSession* user_session =
+      Shell::Get()->session_controller()->GetPrimaryUserSession();
+  // Don't show if no user is signed in.
+  if (!user_session) {
+    return false;
+  }
+  switch (user_session->user_info.type) {
+    case user_manager::USER_TYPE_REGULAR:
+    case user_manager::USER_TYPE_CHILD:
+      return true;
+    case user_manager::USER_TYPE_GUEST:
+    case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
+    case user_manager::USER_TYPE_KIOSK_APP:
+    case user_manager::USER_TYPE_ARC_KIOSK_APP:
+    case user_manager::USER_TYPE_WEB_KIOSK_APP:
+    case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
+    case user_manager::NUM_USER_TYPES:
+      return false;
+  }
+}
+
+// Returns the text for the email address item in the power menu.
+std::u16string GetEmailMenuItemText() {
+  // The 0th user session is the current one.
+  const UserSession* user_session =
+      Shell::Get()->session_controller()->GetUserSession(/*index=*/0);
+  CHECK(user_session);
+  return base::UTF8ToUTF16(user_session->user_info.display_email);
+}
 
 }  // namespace
 
@@ -108,8 +149,21 @@ class PowerButton::MenuController : public ui::SimpleMenuModel::Delegate,
   ~MenuController() override = default;
 
   // ui::SimpleMenuModel::Delegate:
+  bool IsCommandIdEnabled(int command_id) const override {
+    if (command_id == VIEW_ID_QS_POWER_EMAIL_MENU_BUTTON) {
+      // Enable the email item if OS multi-profile is available.
+      return UserChooserDetailedViewController::IsUserChooserEnabled();
+    }
+    return true;
+  }
+
   void ExecuteCommand(int command_id, int event_flags) override {
     switch (command_id) {
+      case VIEW_ID_QS_POWER_EMAIL_MENU_BUTTON:
+        quick_settings_metrics_util::RecordQsButtonActivated(
+            QsButtonCatalogName::kPowerEmailMenuButton);
+        power_button_->tray_controller_->ShowUserChooserView();
+        break;
       case VIEW_ID_QS_POWER_OFF_MENU_BUTTON:
         quick_settings_metrics_util::RecordQsButtonActivated(
             QsButtonCatalogName::kPowerOffMenuButton);
@@ -179,6 +233,17 @@ class PowerButton::MenuController : public ui::SimpleMenuModel::Delegate,
     bool const can_show_settings = TrayPopupUtils::CanOpenWebUISettings();
     bool const can_lock_screen = session_controller->CanLockScreen();
 
+    // Add the user's email address (which is also the entry point for OS-level
+    // multi-profile).
+    if (ShouldShowEmailMenuItem()) {
+      context_menu_model_->AddItemWithIcon(
+          VIEW_ID_QS_POWER_EMAIL_MENU_BUTTON, GetEmailMenuItemText(),
+          ui::ImageModel::FromVectorIcon(kSystemMenuNewUserIcon,
+                                         ui::kColorAshSystemUIMenuIcon,
+                                         kTrayTopShortcutButtonIconSize));
+      context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
+    }
+
     context_menu_model_->AddItemWithIcon(
         VIEW_ID_QS_POWER_OFF_MENU_BUTTON,
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_POWER_OFF),
@@ -227,13 +292,13 @@ class PowerButton::MenuController : public ui::SimpleMenuModel::Delegate,
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   // The root menu item view of `context_menu_model_`. Cached for testing.
-  views::MenuItemView* root_menu_item_view_ = nullptr;
+  raw_ptr<views::MenuItemView, ExperimentalAsh> root_menu_item_view_ = nullptr;
 
   // Owned by views hierarchy.
-  PowerButton* power_button_ = nullptr;
+  raw_ptr<PowerButton, ExperimentalAsh> power_button_ = nullptr;
 };
 
-PowerButton::PowerButton()
+PowerButton::PowerButton(UnifiedSystemTrayController* tray_controller)
     : background_view_(AddChildView(std::make_unique<View>())),
       button_content_(AddChildView(std::make_unique<IconButton>(
           base::BindRepeating(&PowerButton::OnButtonActivated,
@@ -243,7 +308,10 @@ PowerButton::PowerButton()
           IDS_ASH_STATUS_TRAY_POWER_MENU,
           /*is_togglable=*/true,
           /*has_border=*/false))),
-      context_menu_(std::make_unique<MenuController>(/*button=*/this)) {
+      context_menu_(std::make_unique<MenuController>(/*button=*/this)),
+      tray_controller_(tray_controller) {
+  CHECK(tray_controller_);
+
   SetID(VIEW_ID_QS_POWER_BUTTON);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 

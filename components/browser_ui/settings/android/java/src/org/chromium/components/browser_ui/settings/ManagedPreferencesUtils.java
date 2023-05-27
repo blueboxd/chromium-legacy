@@ -133,8 +133,9 @@ public class ManagedPreferencesUtils {
         if (delegate == null) return;
 
         // Embedders may define its own default layout for preferences, which can only be applied
-        // if the preference doesn't use a custom layout.
-        if (!hasCustomLayout) {
+        // if the preference doesn't use a custom layout and if the preference is controlled by
+        // policy.
+        if (!hasCustomLayout && delegate.isPreferenceControlledByPolicy(preference)) {
             @LayoutRes
             int layoutResource = delegate.defaultPreferenceLayoutResource();
             if (layoutResource != 0) {
@@ -171,42 +172,6 @@ public class ManagedPreferencesUtils {
      */
     public static void onBindViewToPreference(
             @Nullable ManagedPreferenceDelegate delegate, Preference preference, View view) {
-        if (delegate == null) return;
-
-        // If disclaimer highlighting is enabled, perform binding taking into account that a
-        // disclaimer view may be available.
-        if (SettingsFeatureList.isEnabled(
-                    SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID)) {
-            ManagedPreferencesUtils.onBindViewToChromeManagedPreference(delegate, preference, view);
-            return;
-        }
-
-        if (delegate.isPreferenceClickDisabled(preference)) {
-            ViewUtils.setEnabledRecursive(view, false);
-        }
-
-        // Append managed information to summary if necessary.
-        TextView summaryView = view.findViewById(android.R.id.summary);
-        CharSequence descriptionText =
-                summaryView.getVisibility() == View.VISIBLE ? summaryView.getText() : null;
-        CharSequence managedDisclaimerText = getManagedDisclaimerText(delegate, preference);
-        setSummaryWithManagedInfo(descriptionText, managedDisclaimerText, view);
-    }
-
-    /**
-     * Disables the Preference's views if the preference is not clickable and adds a disclaimer
-     * indicating that the preference is managed.
-     *
-     * @param delegate The delegate that controls whether the preference is managed. May be null,
-     *                 then this method does nothing.
-     * @param preference The ChromeBasePreference that owns the view.
-     * @param view The View that was bound to the ChromeBasePreference.
-     */
-    private static void onBindViewToChromeManagedPreference(
-            @Nullable ManagedPreferenceDelegate delegate, Preference preference, View view) {
-        assert SettingsFeatureList.isEnabled(
-                SettingsFeatureList.HIGHLIGHT_MANAGED_PREF_DISCLAIMER_ANDROID);
-        assert delegate != null;
         if (delegate == null) return;
 
         if (delegate.isPreferenceClickDisabled(preference)) {

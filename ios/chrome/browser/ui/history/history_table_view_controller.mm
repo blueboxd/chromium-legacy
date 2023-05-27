@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -34,7 +35,6 @@
 #import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #import "ios/chrome/browser/ui/history/history_entry_inserter.h"
@@ -211,6 +211,12 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   // Place the search bar in the navigation bar.
   [self updateNavigationBar];
   self.navigationItem.hidesSearchBarWhenScrolling = NO;
+}
+
+- (void)detachFromBrowser {
+  // Clear C++ ivars.
+  _browser = nullptr;
+  _historyService = nullptr;
 }
 
 #pragma mark - TableViewModel
@@ -1003,6 +1009,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 // Displays a context menu on the cell pressed with gestureRecognizer.
 - (void)displayContextMenuInvokedByGestureRecognizer:
     (UILongPressGestureRecognizer*)gestureRecognizer {
+  if (!self.browser) {
+    return;
+  }
   if (gestureRecognizer.numberOfTouches != 1 || self.editing ||
       gestureRecognizer.state != UIGestureRecognizerStateBegan) {
     return;
@@ -1099,6 +1108,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 // Opens URL in a new non-incognito tab in a new window and dismisses the
 // history view.
 - (void)openURLInNewWindow:(const GURL&)URL {
+  if (!self.browser) {
+    return;
+  }
   id<ApplicationCommands> windowOpener = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
   [windowOpener
@@ -1182,6 +1194,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Opens URL in the current tab and dismisses the history view.
 - (void)openURL:(const GURL&)URL {
+  if (!self.browser) {
+    return;
+  }
   new_tab_page_uma::RecordAction(
       self.browser->GetBrowserState()->IsOffTheRecord(),
       self.browser->GetWebStateList()->GetActiveWebState(),

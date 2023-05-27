@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.feed.FeedContentFirstLoadWatcher;
 import org.chromium.chrome.browser.feed.FeedListContentManager;
 import org.chromium.chrome.browser.feed.FeedListContentManager.FeedContent;
 import org.chromium.chrome.browser.feed.FeedStream;
-import org.chromium.chrome.browser.feed.FeedSurfaceScopeDependencyProvider;
+import org.chromium.chrome.browser.feed.FeedSurfaceScopeDependencyProviderImpl;
 import org.chromium.chrome.browser.feed.FeedSurfaceTracker;
 import org.chromium.chrome.browser.feed.NativeViewListRenderer;
 import org.chromium.chrome.browser.feed.SingleWebFeedEntryPoint;
@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
-import org.chromium.chrome.browser.xsurface.FeedLaunchReliabilityLogger;
 import org.chromium.chrome.browser.xsurface.HybridListRenderer;
 import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
@@ -92,7 +91,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
     private ViewGroup mLayoutView;
     private HybridListRenderer mHybridListRenderer;
     private SurfaceScope mSurfaceScope;
-    private FeedSurfaceScopeDependencyProvider mDependencyProvider;
+    private FeedSurfaceScopeDependencyProviderImpl mDependencyProvider;
     private PropertyModel mCreatorModel;
     private PropertyModelChangeProcessor<PropertyModel, CreatorProfileView, PropertyKey>
             mCreatorProfileModelChangeProcessor;
@@ -254,7 +253,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         }
 
         mStream.bind(mRecyclerView, mContentManager, /*FeedScrollState*/ null, mSurfaceScope,
-                mHybridListRenderer, new FeedLaunchReliabilityLogger() {}, mHeaderCount);
+                mHybridListRenderer, null, mHeaderCount);
     }
 
     private class StreamsMediatorImpl implements Stream.StreamsMediator {
@@ -288,7 +287,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         ProcessScope processScope = FeedSurfaceTracker.getInstance().getXSurfaceProcessScope();
 
         if (processScope != null) {
-            mDependencyProvider = new FeedSurfaceScopeDependencyProvider(
+            mDependencyProvider = new FeedSurfaceScopeDependencyProviderImpl(
                     mActivity, mActivity, ColorUtils.inNightMode(mActivity));
             mSurfaceScope = processScope.obtainSurfaceScope(mDependencyProvider);
         } else {
@@ -374,6 +373,7 @@ public class CreatorCoordinator implements FeedAutoplaySettingsDelegate,
         }, mCreatorViewGroup, mActivity.getResources().getColor(R.color.default_scrim_color));
 
         mBottomSheetContainer = new FrameLayout(mActivity);
+        mBottomSheetContainer.setId(R.id.creator_content_preview_bottom_sheet);
         mBottomSheetContainer.setLayoutParams(
                 new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mCreatorViewGroup.addView(mBottomSheetContainer);

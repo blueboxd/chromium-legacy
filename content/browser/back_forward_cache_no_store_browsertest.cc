@@ -112,7 +112,6 @@ class BackForwardCacheBrowserTestAllowCacheControlNoStore
 
 // Test that a page with cache-control:no-store enters bfcache with the flag on,
 // but does not get restored and gets evicted.
-// Turned off on cast for https://crbug.com/1281665 , along with others.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestAllowCacheControlNoStore,
                        PagesWithCacheControlNoStoreEnterBfcacheAndEvicted) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
@@ -151,17 +150,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestAllowCacheControlNoStore,
 // Test that a page with cache-control:no-store enters bfcache with the flag on,
 // and if a cookie is modified while it is in bfcache via JavaScript, gets
 // evicted with cookie modified marked.
-// Turned off on cast for https://crbug.com/1281665 .
-#if BUILDFLAG(IS_CASTOS)
-#define MAYBE_PagesWithCacheControlNoStoreCookieModifiedThroughJavaScript \
-        DISABLED_PagesWithCacheControlNoStoreCookieModifiedThroughJavaScript
-#else
-#define MAYBE_PagesWithCacheControlNoStoreCookieModifiedThroughJavaScript \
-        PagesWithCacheControlNoStoreCookieModifiedThroughJavaScript
-#endif  // BUILDFLAG(IS_CASTOS)
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTestAllowCacheControlNoStore,
-    MAYBE_PagesWithCacheControlNoStoreCookieModifiedThroughJavaScript) {
+    PagesWithCacheControlNoStoreCookieModifiedThroughJavaScript) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/title1.html");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -280,21 +271,9 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestAllowCacheControlNoStore,
 // Test that a page with cache-control:no-store enters bfcache with the flag on,
 // and even if a cookie is modified on a different domain than the entry, the
 // entry is not marked as cookie modified.
-// Turned off on cast for https://crbug.com/1281665 .
-//
-// TODO(crbug.com/1336055): It may be possible to re-enable this test now that
-// crbug.com/1229182 has been resolved. This was originally disabled due to
-// flakiness on Cast Audio Linux.
-#if BUILDFLAG(IS_CASTOS)
-#define MAYBE_PagesWithCacheControlNoStoreCookieModifiedThroughJavaScriptOnDifferentDomain \
-        DISABLED_PagesWithCacheControlNoStoreCookieModifiedThroughJavaScriptOnDifferentDomain
-#else
-#define MAYBE_PagesWithCacheControlNoStoreCookieModifiedThroughJavaScriptOnDifferentDomain \
-        PagesWithCacheControlNoStoreCookieModifiedThroughJavaScriptOnDifferentDomain
-#endif  // BUILDFLAG(IS_CASTOS)
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTestAllowCacheControlNoStore,
-    MAYBE_PagesWithCacheControlNoStoreCookieModifiedThroughJavaScriptOnDifferentDomain) {
+    PagesWithCacheControlNoStoreCookieModifiedThroughJavaScriptOnDifferentDomain) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/title1.html");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -483,26 +462,11 @@ const char kResponseWithNoCacheWithRedirectionWithHTTPOnlyCookie[] =
     "\r\n";
 }  // namespace
 
-// TODO(crbug.com/1336055): It may be possible to re-enable this test now that
-// crbug.com/1229182 has been resolved. This was originally disabled due to
-// flakiness on Cast Audio Linux.
-#if BUILDFLAG(IS_CASTOS)
-#define MAYBE_PagesWithCacheControlNoStoreSetFromResponseHeader \
-  DISABLED_PagesWithCacheControlNoStoreSetFromResponseHeader
-#elif BUILDFLAG(IS_LINUX)
-// Flaky: https://crbug.com/1353858
-#define MAYBE_PagesWithCacheControlNoStoreSetFromResponseHeader \
-  DISABLED_PagesWithCacheControlNoStoreSetFromResponseHeader
-#else
-#define MAYBE_PagesWithCacheControlNoStoreSetFromResponseHeader \
-  PagesWithCacheControlNoStoreSetFromResponseHeader
-#endif
 // Test that a page with cache-control:no-store enters bfcache with the flag on,
 // and if a cookie is modified while it is in bfcache via response header, gets
 // evicted with cookie modified marked.
-IN_PROC_BROWSER_TEST_F(
-    BackForwardCacheBrowserTestAllowCacheControlNoStore,
-    MAYBE_PagesWithCacheControlNoStoreSetFromResponseHeader) {
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestAllowCacheControlNoStore,
+                       PagesWithCacheControlNoStoreSetFromResponseHeader) {
   net::test_server::ControllableHttpResponse response(embedded_test_server(),
                                                       "/title1.html");
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -548,22 +512,12 @@ IN_PROC_BROWSER_TEST_F(
                   BlockListedFeatures()));
 }
 
-// TODO(crbug.com/1336055): It may be possible to re-enable this test now that
-// crbug.com/1229182 has been resolved. This was originally disabled due to
-// flakiness on Cast Audio Linux.
-#if BUILDFLAG(IS_CASTOS)
-#define MAYBE_PagesWithCacheControlNoStoreSetFromResponseHeaderHTTPOnlyCookie \
-  DISABLED_PagesWithCacheControlNoStoreSetFromResponseHeaderHTTPOnlyCookie
-#else
-#define MAYBE_PagesWithCacheControlNoStoreSetFromResponseHeaderHTTPOnlyCookie \
-  PagesWithCacheControlNoStoreSetFromResponseHeaderHTTPOnlyCookie
-#endif  // BUILDFLAG(IS_CASTOS)
 // Test that a page with cache-control:no-store enters bfcache with the flag on,
 // and if HTTPOnly cookie is modified while it is in bfcache, gets evicted with
 // HTTPOnly cookie modified marked.
 IN_PROC_BROWSER_TEST_F(
     BackForwardCacheBrowserTestAllowCacheControlNoStore,
-    MAYBE_PagesWithCacheControlNoStoreSetFromResponseHeaderHTTPOnlyCookie) {
+    PagesWithCacheControlNoStoreSetFromResponseHeaderHTTPOnlyCookie) {
   // HTTPOnly cookie can be only set over HTTPS.
   CreateHttpsServer();
   net::test_server::ControllableHttpResponse response(https_server(),
@@ -1412,6 +1366,51 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
   // 4) Go back. |rfh_a| should be evicted upon restoration.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectNotRestored({NotRestoredReason::kCacheControlNoStoreCookieModified}, {},
+                    {}, {}, {}, FROM_HERE);
+  EXPECT_THAT(GetTreeResult()->GetDocumentResult(),
+              MatchesDocumentResult(
+                  NotRestoredReasons(
+                      NotRestoredReason::kCacheControlNoStoreCookieModified),
+                  BlockListedFeatures()));
+}
+
+// Test that a page with `Cache-control: no-store` header gets evicted without
+// crashes if some cookie is modified immediately before the back navigation.
+// TODO: this test could be potentially flaky if the notification to
+// CookieChangeListener is only received after the entire back navigation
+// completes. If any flaky case is reported in the future, we should fix that by
+// ensuring the eviction to happen after the NavigationRequest starts to process
+// response but before it finishes committing the navigation.
+// See discussion from https://crrev.com/c/4408607.
+IN_PROC_BROWSER_TEST_F(
+    BackForwardCacheBrowserTestRestoreCacheControlNoStoreUnlessCookieChange,
+    PagesWithCacheControlNoStoreNotBFCachedWithCookieSetImmediatelyBeforeNavigateBack) {
+  CreateHttpsServer();
+  net::test_server::ControllableHttpResponse response(https_server(),
+                                                      "/title1.html");
+  ASSERT_TRUE(https_server()->Start());
+
+  GURL url_a(https_server()->GetURL("a.com", "/title1.html"));
+  GURL url_a_2(https_server()->GetURL("a.com", "/title2.html"));
+  GURL url_b(https_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Load the document and specify no-store for the main resource.
+  TestNavigationObserver observer(web_contents());
+  shell()->LoadURL(url_a);
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  response.WaitForRequest();
+  response.Send(kResponseWithNoCache);
+  response.Done();
+  observer.Wait();
+  rfh_a->GetBackForwardCacheMetrics()->SetObserverForTesting(this);
+
+  // 2) Navigate away, and set a cookie from the new page.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a_2));
+  EXPECT_TRUE(ExecJs(shell(), "document.cookie='foo=bar'"));
+
+  // 3) Go back. |rfh_a| should be evicted upon restoration.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
   ExpectNotRestored({NotRestoredReason::kCacheControlNoStoreCookieModified}, {},
                     {}, {}, {}, FROM_HERE);

@@ -16,6 +16,8 @@
 
 namespace ash {
 
+class UserEducationDelegate;
+
 class TestShellDelegate : public ShellDelegate {
  public:
   TestShellDelegate();
@@ -33,9 +35,19 @@ class TestShellDelegate : public ShellDelegate {
     multidevice_setup_binder_ = std::move(binder);
   }
 
+  // Allows tests to override the `UserEducationDelegate` creation behavior for
+  // this `TestShellDelegate`.
+  using UserEducationDelegateFactory =
+      base::RepeatingCallback<std::unique_ptr<UserEducationDelegate>()>;
+  void SetUserEducationDelegateFactory(UserEducationDelegateFactory factory) {
+    user_education_delegate_factory_ = std::move(factory);
+  }
+
   // Overridden from ShellDelegate:
   bool CanShowWindowForUser(const aura::Window* window) const override;
   std::unique_ptr<CaptureModeDelegate> CreateCaptureModeDelegate()
+      const override;
+  std::unique_ptr<GameDashboardDelegate> CreateGameDashboardDelegate()
       const override;
   std::unique_ptr<GlanceablesDelegate> CreateGlanceablesDelegate(
       GlanceablesController* controller) const override;
@@ -111,6 +123,7 @@ class TestShellDelegate : public ShellDelegate {
   bool session_restore_in_progress_ = false;
 
   MultiDeviceSetupBinder multidevice_setup_binder_;
+  UserEducationDelegateFactory user_education_delegate_factory_;
 
   GURL last_committed_url_ = GURL::EmptyGURL();
 

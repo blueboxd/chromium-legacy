@@ -6,12 +6,9 @@ package org.chromium.chrome.browser.ntp;
 
 import android.content.Intent;
 import android.os.SystemClock;
-import android.view.View;
-import android.view.ViewTreeObserver;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.TimeUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
@@ -27,7 +24,6 @@ import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
 import java.lang.annotation.Retention;
@@ -235,14 +231,6 @@ public class NewTabPageUma {
     }
 
     /**
-     * Records the network status of the user.
-     */
-    public void recordIsUserOnline() {
-        RecordHistogram.recordBooleanHistogram(
-                "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());
-    }
-
-    /**
      * Records how much time elapsed from start until the search box became available to the user.
      */
     public void recordSearchAvailableLoadTime() {
@@ -271,16 +259,6 @@ public class NewTabPageUma {
                 "NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible."
                         + "Articles.Prefetched.Offline2",
                 count, MAX_SUGGESTIONS_PER_SECTION);
-    }
-
-    /**
-     * Records position of a prefetched article suggestion, which was seen by the user on the
-     * suggestions surface when there was no network connection.
-     */
-    public void recordPrefetchedArticleSuggestionImpressionPosition(int positionInSection) {
-        RecordHistogram.recordEnumeratedHistogram("NewTabPage.ContentSuggestions.Shown.Articles."
-                        + "Prefetched.Offline2",
-                positionInSection, MAX_SUGGESTIONS_PER_SECTION);
     }
 
     /**
@@ -313,30 +291,6 @@ public class NewTabPageUma {
             if (!UrlUtilities.isNTPUrl(tab.getUrl())) return;
             RecordUserAction.record("MobileNTPOpenedInNewTab");
         }
-    }
-
-    /**
-     * Setups up an onPreDraw listener for the given view to emit a metric exactly once. The view
-     * should be guaranteed to be shown on the page/screen on every load, otherwise the metric
-     * may not be emitted, or worse not emitted promptly.
-     * @param view The UI element to track.
-     * @param constructedTimeNs The timestamp at which the new tab page's construction started.
-     */
-    public void trackTimeToFirstDraw(View view, long constructedTimeNs) {
-        // Use preDraw instead of draw because api level 25 and earlier doesn't seem to call the
-        // onDraw listener. Also, the onDraw version cannot be removed inside of the
-        // notification, which complicates this.
-        view.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-            @Override
-            public boolean onPreDraw() {
-                long timeToFirstDrawMs = (System.nanoTime() - constructedTimeNs)
-                        / TimeUtils.NANOSECONDS_PER_MILLISECOND;
-                RecordHistogram.recordTimesHistogram(
-                        "NewTabPage.TimeToFirstDraw2", timeToFirstDrawMs);
-                view.getViewTreeObserver().removeOnPreDrawListener(this);
-                return true;
-            }
-        });
     }
 
     /** Destroy and unhook objects at destruction. */

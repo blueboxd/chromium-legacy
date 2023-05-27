@@ -4,7 +4,10 @@
 
 #include "chrome/browser/web_applications/locks/shared_web_contents_lock.h"
 
+#include <memory>
+
 #include "chrome/browser/web_applications/locks/lock.h"
+#include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
 
 namespace web_app {
 
@@ -12,15 +15,12 @@ SharedWebContentsLockDescription::SharedWebContentsLockDescription()
     : LockDescription({}, LockDescription::Type::kBackgroundWebContents) {}
 SharedWebContentsLockDescription::~SharedWebContentsLockDescription() = default;
 
-WithSharedWebContentsResources::WithSharedWebContentsResources(
-    content::WebContents& shared_web_contents)
-    : shared_web_contents_(shared_web_contents) {}
-WithSharedWebContentsResources::~WithSharedWebContentsResources() = default;
-
 SharedWebContentsLock::SharedWebContentsLock(
+    base::WeakPtr<WebAppLockManager> lock_manager,
     std::unique_ptr<content::PartitionedLockHolder> holder,
     content::WebContents& shared_web_contents)
     : Lock(std::move(holder)),
-      WithSharedWebContentsResources(shared_web_contents) {}
+      WithSharedWebContentsResources(std::move(lock_manager),
+                                     shared_web_contents) {}
 SharedWebContentsLock::~SharedWebContentsLock() = default;
 }  // namespace web_app

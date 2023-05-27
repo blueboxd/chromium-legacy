@@ -9,6 +9,7 @@ DatabaseMaintenanceImplTest.*
 DefaultModelManagerTest.*
 DeviceSwitcherModelTest.*
 DeviceSwitcherResultDispatcherTest.*
+DeviceTierSegmentTest.*
 DummyModelProviderFactoryImplTest.*
 DummySegmentationPlatformServiceTest.*
 FailedUkmDatabaseTest.*
@@ -60,6 +61,7 @@ SignalStorageConfigTest.*
 SqlFeatureProcessorTest.*
 StatsTest.*
 SyncDeviceInfoObserverTest.*
+TabletProductivityUserModelTest.*
 TrainingDataCacheTest.*
 TrainingDataCollectorImplTest.*
 UkmConfigTest.*

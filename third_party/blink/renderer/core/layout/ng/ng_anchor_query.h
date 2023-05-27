@@ -10,10 +10,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_anchor_query_enums.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/style/scoped_css_name.h"
-#include "third_party/blink/renderer/platform/geometry/anchor_query_enums.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
@@ -167,6 +167,11 @@ class CORE_EXPORT NGPhysicalAnchorQuery
  public:
   using Base = NGAnchorQueryBase<NGPhysicalAnchorReference>;
 
+  // Returns NGPhysicalAnchorQuery on the containing block of the element.
+  // TODO(crbug.com/1309178): This doesn't work if the containing block is
+  // fragmented or inline. Fix it.
+  static const NGPhysicalAnchorQuery* GetFromLayoutResult(const LayoutObject&);
+
   const NGPhysicalAnchorReference* AnchorReference(
       const NGAnchorKey&,
       bool can_use_invalid_anchors) const;
@@ -233,7 +238,7 @@ class CORE_EXPORT NGLogicalAnchorQuery
   // the query is invalid (due to wrong axis).
   absl::optional<LayoutUnit> EvaluateAnchor(
       const NGLogicalAnchorReference& reference,
-      AnchorValue anchor_value,
+      CSSAnchorValue anchor_value,
       float percentage,
       LayoutUnit available_size,
       const WritingModeConverter& container_converter,
@@ -242,7 +247,7 @@ class CORE_EXPORT NGLogicalAnchorQuery
       bool is_y_axis,
       bool is_right_or_bottom) const;
   LayoutUnit EvaluateSize(const NGLogicalAnchorReference& reference,
-                          AnchorSizeValue anchor_size_value,
+                          CSSAnchorSizeValue anchor_size_value,
                           WritingMode container_writing_mode,
                           WritingMode self_writing_mode) const;
 };
@@ -251,6 +256,12 @@ class CORE_EXPORT NGAnchorEvaluatorImpl : public Length::AnchorEvaluator {
   STACK_ALLOCATED();
 
  public:
+  // Builds an evaluator for the passed element after layout. Allows
+  // `getComputedStyle()` to resolve anchor functions.
+  // TODO(crbug.com/1309178): This doesn't work if the containing block is
+  // fragmented or inline. Fix it.
+  static NGAnchorEvaluatorImpl BuildFromLayoutResult(const LayoutObject&);
+
   // An empty evaluator that always return `nullopt`. This instance can still
   // compute `HasAnchorFunctions()`.
   NGAnchorEvaluatorImpl() = default;
@@ -319,11 +330,11 @@ class CORE_EXPORT NGAnchorEvaluatorImpl : public Length::AnchorEvaluator {
 
   absl::optional<LayoutUnit> EvaluateAnchor(
       const AnchorSpecifierValue& anchor_specifier,
-      AnchorValue anchor_value,
+      CSSAnchorValue anchor_value,
       float percentage) const;
   absl::optional<LayoutUnit> EvaluateAnchorSize(
       const AnchorSpecifierValue& anchor_specifier,
-      AnchorSizeValue anchor_size_value) const;
+      CSSAnchorSizeValue anchor_size_value) const;
 
   mutable const NGLogicalAnchorQuery* anchor_query_ = nullptr;
   const NGLogicalAnchorQueryMap* anchor_queries_ = nullptr;

@@ -204,9 +204,6 @@ BuildAttributionReportingIssueType(AttributionReportingIssueType type) {
     case AttributionReportingIssueType::kInvalidEligibleHeader:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           InvalidEligibleHeader;
-    case AttributionReportingIssueType::kTooManyConcurrentRequests:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          TooManyConcurrentRequests;
     case AttributionReportingIssueType::kSourceAndTriggerHeaders:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           SourceAndTriggerHeaders;
@@ -230,6 +227,9 @@ BuildAttributionReportingIssueType(AttributionReportingIssueType type) {
     case AttributionReportingIssueType::kWebAndOsHeaders:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           WebAndOsHeaders;
+    case AttributionReportingIssueType::kNoWebOrOsSupport:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::
+          NoWebOrOsSupport;
   }
 }
 
@@ -635,6 +635,30 @@ void AuditsIssue::ReportGenericIssue(
       protocol::Audits::GenericIssueDetails::create()
           .setErrorType(GenericIssueErrorTypeToProtocol(error_type))
           .setViolatingNodeId(violating_node_id)
+          .build();
+
+  auto issue =
+      protocol::Audits::InspectorIssue::create()
+          .setCode(protocol::Audits::InspectorIssueCodeEnum::GenericIssue)
+          .setDetails(
+              protocol::Audits::InspectorIssueDetails::create()
+                  .setGenericIssueDetails(std::move(audits_issue_details))
+                  .build())
+          .build();
+
+  frame->DomWindow()->AddInspectorIssue(AuditsIssue(std::move(issue)));
+}
+
+void AuditsIssue::ReportGenericIssue(
+    LocalFrame* frame,
+    mojom::blink::GenericIssueErrorType error_type,
+    int violating_node_id,
+    const String& violating_node_attribute) {
+  auto audits_issue_details =
+      protocol::Audits::GenericIssueDetails::create()
+          .setErrorType(GenericIssueErrorTypeToProtocol(error_type))
+          .setViolatingNodeId(violating_node_id)
+          .setViolatingNodeAttribute(violating_node_attribute)
           .build();
 
   auto issue =

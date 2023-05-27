@@ -10,15 +10,11 @@ namespace page_info {
 
 // Returns true if kPageInfoAboutThisSiteMoreInfo and dependent features are
 // enabled.
-bool IsMoreAboutThisSiteFeatureEnabled();
+bool IsAboutThisSiteFeatureEnabled();
 
 // Returns true if `kPageInfoAboutThisSiteNewIcon` and dependent features are
 // enabled.
 bool IsAboutThisSiteNewIconFeatureEnabled();
-
-// Returns true if `kPageInfoAboutThisSiteNonMsbb` and dependent features are
-// enabled.
-bool IsAboutThisSiteForNonMsbbFeatureEnabled();
 
 #if !BUILDFLAG(IS_ANDROID)
 // Returns true if kAboutThisSitePersistentSidePanelEntry and dependent

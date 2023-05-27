@@ -8,10 +8,9 @@
 
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/test/ash_test_helper.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/color/color_provider_manager.h"
@@ -58,8 +57,7 @@ class AshColorProviderBase
     : public testing::TestWithParam<ColorsTestCase<LayerType>> {
  public:
   AshColorProviderBase()
-      : scoped_feature_list_({chromeos::features::kDarkLightMode}),
-        task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ash_test_helper_.SetUp();
@@ -72,10 +70,9 @@ class AshColorProviderBase
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::TaskEnvironment task_environment_;
   AshTestHelper ash_test_helper_;
-  AshColorProvider* color_provider_;
+  raw_ptr<AshColorProvider, ExperimentalAsh> color_provider_;
 };
 
 using AshColorProviderBaseLayerTest =
@@ -173,18 +170,6 @@ INSTANTIATE_TEST_SUITE_P(
           SkColorSetARGB(0x3D, 0x8A, 0xB4, 0xF8)},
          {ColorMode::kDark, ColorProvider::ControlsLayerType::kFocusRingColor,
           SkColorSetRGB(0x8A, 0xB4, 0xF8)},
-         {ColorMode::kDark, ColorProvider::ControlsLayerType::kHighlightColor1,
-          SkColorSetARGB(0x14, 0xFF, 0xFF, 0xFF)},
-         {ColorMode::kDark, ColorProvider::ControlsLayerType::kHighlightColor2,
-          SkColorSetARGB(0x0F, 0xFF, 0xFF, 0xFF)},
-         {ColorMode::kDark, ColorProvider::ControlsLayerType::kHighlightColor3,
-          SkColorSetARGB(0x14, 0xFF, 0xFF, 0xFF)},
-         {ColorMode::kDark, ColorProvider::ControlsLayerType::kBorderColor1,
-          SkColorSetARGB(0xCC, 0x20, 0x21, 0x24)},
-         {ColorMode::kDark, ColorProvider::ControlsLayerType::kBorderColor2,
-          SkColorSetARGB(0x99, 0x20, 0x21, 0x24)},
-         {ColorMode::kDark, ColorProvider::ControlsLayerType::kBorderColor3,
-          SkColorSetARGB(0x0F, 0x0, 0x0, 0x0)},
 
          // Light mode
          {ColorMode::kLight,
@@ -208,19 +193,7 @@ INSTANTIATE_TEST_SUITE_P(
          {ColorMode::kLight, ColorProvider::ControlsLayerType::kFocusAuraColor,
           SkColorSetARGB(0x3D, 0x1A, 0x73, 0xE8)},
          {ColorMode::kLight, ColorProvider::ControlsLayerType::kFocusRingColor,
-          SkColorSetRGB(0x1A, 0x73, 0xE8)},
-         {ColorMode::kLight, ColorProvider::ControlsLayerType::kHighlightColor1,
-          SkColorSetARGB(0x4C, 0xFF, 0xFF, 0xFF)},
-         {ColorMode::kLight, ColorProvider::ControlsLayerType::kHighlightColor2,
-          SkColorSetARGB(0x33, 0xFF, 0xFF, 0xFF)},
-         {ColorMode::kLight, ColorProvider::ControlsLayerType::kHighlightColor3,
-          SkColorSetARGB(0x4C, 0xFF, 0xFF, 0xFF)},
-         {ColorMode::kLight, ColorProvider::ControlsLayerType::kBorderColor1,
-          SkColorSetARGB(0x0F, 0x0, 0x0, 0x0)},
-         {ColorMode::kLight, ColorProvider::ControlsLayerType::kBorderColor2,
-          SkColorSetARGB(0x0F, 0x0, 0x0, 0x0)},
-         {ColorMode::kLight, ColorProvider::ControlsLayerType::kBorderColor3,
-          SkColorSetARGB(0x0F, 0x0, 0x0, 0x0)}}));
+          SkColorSetRGB(0x1A, 0x73, 0xE8)}}));
 
 class AshColorProviderContentTest
     : public AshColorProviderBase<ColorProvider::ContentLayerType> {};

@@ -15,6 +15,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_stop_metadata_fate.h"
 #include "components/sync/model/sync_error.h"
 
 namespace syncer {
@@ -26,16 +27,18 @@ ModelLoadManager::ModelLoadManager(
 
 ModelLoadManager::~ModelLoadManager() = default;
 
-void ModelLoadManager::Initialize(ModelTypeSet preferred_types_without_errors,
-                                  ModelTypeSet preferred_types,
-                                  const ConfigureContext& context) {
+void ModelLoadManager::Configure(ModelTypeSet preferred_types_without_errors,
+                                 ModelTypeSet preferred_types,
+                                 const ConfigureContext& context) {
   // |preferred_types_without_errors| must be a subset of |preferred_types|.
   DCHECK(preferred_types.HasAll(preferred_types_without_errors))
       << " desired: "
       << ModelTypeSetToDebugString(preferred_types_without_errors)
       << ", preferred: " << ModelTypeSetToDebugString(preferred_types);
 
-  bool sync_mode_changed = configure_context_.sync_mode != context.sync_mode;
+  const bool sync_mode_changed =
+      configure_context_.has_value() &&
+      configure_context_->sync_mode != context.sync_mode;
 
   configure_context_ = context;
 
@@ -57,28 +60,38 @@ void ModelLoadManager::Initialize(ModelTypeSet preferred_types_without_errors,
 
   notified_about_ready_for_configure_ = false;
 
-  DVLOG(1) << "ModelLoadManager: Stopping disabled types.";
-  for (const auto& [type, dtc] : *controllers_) {
-    // We generally stop all data types which are not desired. When the storage
-    // option changes, we need to restart all data types so that they can
-    // re-wire to the correct storage.
-    bool should_stop =
-        !preferred_types_without_errors_.Has(dtc->type()) || sync_mode_changed;
-    if (should_stop && dtc->state() != DataTypeController::NOT_RUNNING) {
-      ShutdownReason reason = preferred_types.Has(dtc->type())
-                                  ? ShutdownReason::STOP_SYNC_AND_KEEP_DATA
-                                  : ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA;
-      // If we're switching to transport-only mode, don't clear any old data.
-      // The reason is that if a user temporarily disables Sync, we don't want
-      // to wipe (and later redownload) all their data, just because Sync
-      // restarted in transport-only mode.
-      if (sync_mode_changed &&
-          configure_context_.sync_mode == SyncMode::kTransportOnly) {
-        reason = ShutdownReason::STOP_SYNC_AND_KEEP_DATA;
+  if (sync_mode_changed) {
+    // When the sync mode changes (between full-sync and transport mode),
+    // restart all data types so that they can re-wire to the correct storage.
+    DVLOG(1) << "ModelLoadManager: Stopping all types because the sync mode "
+                "changed.";
+
+    for (const auto& [type, dtc] : *controllers_) {
+      // Use CLEAR_METADATA in this case to avoid that two independent model
+      // instances maintain their own copy of sync metadata.
+      if (dtc->state() != DataTypeController::NOT_RUNNING ||
+          base::FeatureList::IsEnabled(
+              kSyncAllowClearingMetadataWhenDataTypeIsStopped)) {
+        StopDatatypeImpl(SyncError(), SyncStopMetadataFate::CLEAR_METADATA,
+                         dtc.get(), base::DoNothing());
       }
-      DVLOG(1) << "ModelLoadManager: stop " << dtc->name() << " due to "
-               << ShutdownReasonToString(reason);
-      StopDatatypeImpl(SyncError(), reason, dtc.get(), base::DoNothing());
+    }
+  } else {
+    // If the sync mode hasn't changed, stop only the types that are not
+    // preferred anymore.
+    DVLOG(1) << "ModelLoadManager: Stopping disabled types.";
+    for (const auto& [type, dtc] : *controllers_) {
+      if (!preferred_types_without_errors_.Has(dtc->type()) &&
+          dtc->state() != DataTypeController::NOT_RUNNING) {
+        SyncStopMetadataFate metadata_fate =
+            preferred_types.Has(dtc->type())
+                ? SyncStopMetadataFate::KEEP_METADATA
+                : SyncStopMetadataFate::CLEAR_METADATA;
+        DVLOG(1) << "ModelLoadManager: stop " << dtc->name()
+                 << " with metadata fate " << static_cast<int>(metadata_fate);
+        StopDatatypeImpl(SyncError(), metadata_fate, dtc.get(),
+                         base::DoNothing());
+      }
     }
   }
 
@@ -90,7 +103,7 @@ void ModelLoadManager::Initialize(ModelTypeSet preferred_types_without_errors,
 }
 
 void ModelLoadManager::StopDatatype(ModelType type,
-                                    ShutdownReason shutdown_reason,
+                                    SyncStopMetadataFate metadata_fate,
                                     SyncError error) {
   DCHECK(error.IsSet());
   preferred_types_without_errors_.Remove(type);
@@ -102,7 +115,7 @@ void ModelLoadManager::StopDatatype(ModelType type,
           kSyncAllowClearingMetadataWhenDataTypeIsStopped) ||
       (dtc->state() != DataTypeController::NOT_RUNNING &&
        dtc->state() != DataTypeController::STOPPING)) {
-    StopDatatypeImpl(error, shutdown_reason, dtc, base::DoNothing());
+    StopDatatypeImpl(error, metadata_fate, dtc, base::DoNothing());
   }
 
   // Removing a desired type may mean all models are now loaded.
@@ -111,7 +124,7 @@ void ModelLoadManager::StopDatatype(ModelType type,
 
 void ModelLoadManager::StopDatatypeImpl(
     const SyncError& error,
-    ShutdownReason shutdown_reason,
+    SyncStopMetadataFate metadata_fate,
     DataTypeController* dtc,
     DataTypeController::StopCallback callback) {
   loaded_types_.Remove(dtc->type());
@@ -122,9 +135,9 @@ void ModelLoadManager::StopDatatypeImpl(
 
   delegate_->OnSingleDataTypeWillStop(dtc->type(), error);
 
-  // Note: Depending on |shutdown_reason|, USS types might clear their metadata
+  // Note: Depending on |metadata_fate|, data types will clear their metadata
   // in response to Stop().
-  dtc->Stop(shutdown_reason, std::move(callback));
+  dtc->Stop(metadata_fate, std::move(callback));
 }
 
 void ModelLoadManager::LoadDesiredTypes() {
@@ -143,7 +156,7 @@ void ModelLoadManager::LoadDesiredTypes() {
         &ModelLoadManager::ModelLoadCallback, weak_ptr_factory_.GetWeakPtr());
     if (dtc->state() == DataTypeController::NOT_RUNNING) {
       DCHECK(!loaded_types_.Has(dtc->type()));
-      dtc->LoadModels(configure_context_, std::move(model_load_callback));
+      dtc->LoadModels(*configure_context_, std::move(model_load_callback));
     } else if (dtc->state() == DataTypeController::STOPPING) {
       // If the datatype is already STOPPING, we wait for it to stop before
       // starting it up again.
@@ -151,11 +164,10 @@ void ModelLoadManager::LoadDesiredTypes() {
           base::BindRepeating(&DataTypeController::LoadModels,
                               // This should be safe since the stop callback is
                               // called from the DataTypeController.
-                              base::Unretained(dtc), configure_context_,
+                              base::Unretained(dtc), *configure_context_,
                               std::move(model_load_callback));
       DCHECK(!loaded_types_.Has(dtc->type()));
-      dtc->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA,
-                std::move(stop_callback));
+      dtc->Stop(SyncStopMetadataFate::KEEP_METADATA, std::move(stop_callback));
     }
   }
 
@@ -169,7 +181,7 @@ void ModelLoadManager::LoadDesiredTypes() {
   NotifyDelegateIfReadyForConfigure();
 }
 
-void ModelLoadManager::Stop(ShutdownReason shutdown_reason) {
+void ModelLoadManager::Stop(SyncStopMetadataFate metadata_fate) {
   // Ignore callbacks from controllers.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
@@ -182,8 +194,8 @@ void ModelLoadManager::Stop(ShutdownReason shutdown_reason) {
         (dtc->state() != DataTypeController::NOT_RUNNING &&
          dtc->state() != DataTypeController::STOPPING)) {
       // We don't really wait until all datatypes have been fully stopped, which
-      // is only required (and in fact waited for) when Initialize() is called.
-      StopDatatypeImpl(SyncError(), shutdown_reason, dtc.get(),
+      // is only required (and in fact waited for) when Configure() is called.
+      StopDatatypeImpl(SyncError(), metadata_fate, dtc.get(),
                        base::DoNothing());
       DVLOG(1) << "ModelLoadManager: Stopped " << dtc->name();
     }
@@ -202,7 +214,7 @@ void ModelLoadManager::ModelLoadCallback(ModelType type,
     DVLOG(1) << "ModelLoadManager: Type encountered an error.";
     preferred_types_without_errors_.Remove(type);
     DataTypeController* dtc = controllers_->find(type)->second.get();
-    StopDatatypeImpl(error, ShutdownReason::STOP_SYNC_AND_KEEP_DATA, dtc,
+    StopDatatypeImpl(error, SyncStopMetadataFate::KEEP_METADATA, dtc,
                      base::DoNothing());
     NotifyDelegateIfReadyForConfigure();
     return;
@@ -228,8 +240,8 @@ void ModelLoadManager::NotifyDelegateIfReadyForConfigure() {
     return;
   }
 
-  // It may be possible that `load_models_elapsed_timer_` was never set. For eg.
-  // if StopDatatype() was called before Initialize().
+  // It may be possible that `load_models_elapsed_timer_` was never set, e.g.
+  // if StopDatatype() was called before Configure().
   if (load_models_elapsed_timer_) {
     base::UmaHistogramMediumTimes("Sync.ModelLoadManager.LoadModelsElapsedTime",
                                   load_models_elapsed_timer_->Elapsed());

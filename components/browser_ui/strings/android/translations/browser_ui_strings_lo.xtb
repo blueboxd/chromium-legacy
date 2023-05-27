@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">ຕົວຖອດລະຫັດຮູບ</translation>
 <translation id="1785415724048343560">ແນະນຳສຳລັບປະສົບການການນຳໃຊ້ທີ່ດີທີ່ສຸດ</translation>
 <translation id="1818308510395330587">ເພື່ອອະນຸຍາດໃຫ້ <ph name="APP_NAME" /> ໃຊ້ AR, ກະລຸນາເປີດກ້ອງໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" /> ນຳ.</translation>
-<translation id="1864927262126810325">ຈາກ <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">ເວັບໄຊທີ່ກ່ຽວຂ້ອງຈະສາມາດເບິ່ງເຫັນການເຄື່ອນໄຫວຂອງທ່ານໄດ້ໃນກຸ່ມ</translation>
 <translation id="1887786770086287077">ການເຂົ້າເຖິງສະຖານທີ່ປິດຢູ່ສຳລັບອຸປະກອນນີ້. ກະລຸນາເປີດມັນໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">ວາງສາຍ</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">ການດາວໂຫຼດສຳເລັດແລ້ວ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">ຄຸນສົມບັດຢູ່ບາງເວັບໄຊອາດບໍ່ເຮັດວຽກໃນໂໝດບໍ່ເປີດເຜີຍຕົວຕົນ</translation>
 <translation id="2442870161001914531">ຮ້ອງຂໍເວັບໄຊເດັສທັອບທຸກເທື່ອ</translation>
+<translation id="2479148705183875116">ໄປທີ່ການຕັ້ງຄ່າ</translation>
 <translation id="2482878487686419369">ການແຈ້ງເຕືອນ</translation>
 <translation id="2485422356828889247">ຖອນ​ຕິດ​ຕັ້ງ</translation>
 <translation id="2490684707762498678">ຈັດການໂດຍ <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">ທີ່ຢູ່ອີເມວ</translation>
 <translation id="2750481671343847896">ເວັບໄຊສາມາດສະແດງຂໍ້ຄວາມການເຂົ້າສູ່ລະບົບຈາກບໍລິການຕົວຕົນຕ່າງໆໄດ້.</translation>
 <translation id="2822354292072154809">ທ່ານແນ່ໃຈບໍ່ວ່າທ່ານຕ້ອງການຣີເຊັດການອະນຸຍາດເວັບໄຊທັງໝົດສຳລັບ <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">ຮ້ອງຂໍມຸມມອງມືຖື</translation>
 <translation id="2870560284913253234">ເວັບ​ໄຊທ໌</translation>
 <translation id="2874939134665556319">ເພງກ່ອນນີ້</translation>
 <translation id="2891975107962658722">ບລັອກບໍ່ໃຫ້ເວັບໄຊບັນທຶກຂໍ້ມູນຢູ່ໃນອຸປະກອນຂອງທ່ານ</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">ເວັບໄຊສາມາດໃຊ້ຄຸກກີ້ເພື່ອປັບປຸງປະສົບການທ່ອງເວັບຂອງທ່ານ, ຕົວຢ່າງ: ເພື່ອໃຫ້ທ່ານສືບຕໍ່ຢູ່ໃນລະບົບ ຫຼື ຈື່ລາຍການຕ່າງໆໃນກະຕ່າຊື້ເຄື່ອງຂອງທ່ານ</translation>
 <translation id="3165022941318558018">ອະນຸຍາດໃຫ້ເວັບໄຊໃຊ້ຄຸກກີ້ພາກສ່ວນທີສາມ</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> ຂໍ້​ມູນ​ເກັບ​ຮັກ​ສາ​ໄວ້</translation>
-<translation id="3203366800380907218">​ຈາກ​ເວັບ​ໄຊ</translation>
 <translation id="321187648315454507">ເພື່ອອະນຸຍາດໃຫ້ <ph name="APP_NAME" /> ສົ່ງການແຈ້ງເຕືອນໃຫ້ທ່ານ, ກະລຸນາເປີດການແຈ້ງເຕືອນໃນ <ph name="BEGIN_LINK" />ການຕັ້ງຄ່າ Android<ph name="END_LINK" /> ນຳ.</translation>
 <translation id="3227137524299004712">ໄມໂຄຣໂຟນ</translation>
 <translation id="3248611290851046188">ເວັບໄຊນີ້ກຳນົດຄວາມສົນໃຈຂອງເວັບໄຊອື່ນທີ່ສາມາດໃຊ້ເພື່ອສະແດງໂຄສະນາໃຫ້ທ່ານເຫັນ. ນອກຈາກນັ້ນ, ເວັບໄຊນີ້ຍັງໄດ້ຮັບຄວາມສົນໃຈຂອງທ່ານຈາກ Chrome ເພື່ອສະແດງໂຄສະນາທີ່ກ່ຽວຂ້ອງຫຼາຍຂຶ້ນໃຫ້ທ່ານເຫັນນຳ.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">ຮ້ອງຂໍມຸມມອງເດັສທັອບ</translation>
 <translation id="5100237604440890931">ຫຍໍ້ລົງແລ້ວ - ຄລິກ​ເພື່ອ​ຂະ​ຫຍາຍ.</translation>
 <translation id="5123685120097942451">ແຖບທີ່ບໍ່ເຜີຍຕົວຕົນ</translation>
-<translation id="5134599672855298214">ຮ້ອງຂໍມຸມມອງມືຖື (ແນະນຳ)</translation>
 <translation id="5186036860380548585">ຕົວເລືອກມີໃຫ້ນຳໃຊ້ຢູ່ໃກ້ສ່ວນເທິງສຸດຂອງໜ້າຈໍ</translation>
 <translation id="5197729504361054390">ລາຍຊື່ຜູ້ຕິດຕໍ່ທີ່ທ່ານເລືອກຈະຖືກແບ່ງປັນກັບ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">ເຂົ້າເບິ່ງມື້ນີ້</translation>

@@ -157,11 +157,38 @@ struct TraitsToImpl;
 
 }  // namespace raw_ptr_traits
 
+template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
+class raw_ptr;
+
+#if BUILDFLAG(ENABLE_RAW_PTR_EXPERIMENTAL)
+template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
+using raw_ptr_experimental = raw_ptr<T, Traits>;
+#else
+template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
+using raw_ptr_experimental = T*;
+#endif  // BUILDFLAG(ENABLE_RAW_PTR_EXPERIMENTAL)
+
+}  // namespace base
+
+// This type is to be used internally, or in callbacks arguments when it is
+// known that they might receive dangling pointers. In any other cases, please
+// use one of:
+// - raw_ptr<T, DanglingUntriaged>
+// - raw_ptr<T, DisableDanglingPtrDetection>
+template <typename T, base::RawPtrTraits Traits = base::RawPtrTraits::kEmpty>
+using MayBeDangling = base::raw_ptr<T, Traits | base::RawPtrTraits::kMayDangle>;
+
+namespace base {
+
 namespace internal {
 // These classes/structures are part of the raw_ptr implementation.
 // DO NOT USE THESE CLASSES DIRECTLY YOURSELF.
 
 struct RawPtrNoOpImpl {
+  static constexpr bool kMustZeroOnInit = false;
+  static constexpr bool kMustZeroOnMove = false;
+  static constexpr bool kMustZeroOnDestruct = false;
+
   // Wraps a pointer.
   template <typename T>
   PA_ALWAYS_INLINE static constexpr T* WrapRawPtr(T* ptr) {
@@ -273,6 +300,10 @@ struct RawPtrCountingImplWrapperForTest
                                 RawPtrTraits::kUseCountingWrapperForTest));
 
   using SuperImpl = typename raw_ptr_traits::TraitsToImpl<Traits>::Impl;
+
+  static constexpr bool kMustZeroOnInit = SuperImpl::kMustZeroOnInit;
+  static constexpr bool kMustZeroOnMove = SuperImpl::kMustZeroOnMove;
+  static constexpr bool kMustZeroOnDestruct = SuperImpl::kMustZeroOnDestruct;
 
   template <typename T>
   PA_ALWAYS_INLINE static constexpr T* WrapRawPtr(T* ptr) {
@@ -503,12 +534,8 @@ struct TraitsToImpl {
 // non-default move constructor/assignment. Thus, it's possible to get an error
 // where the pointer is not actually dangling, and have to work around the
 // compiler. We have not managed to construct such an example in Chromium yet.
-template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
+template <typename T, RawPtrTraits Traits>
 class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
-  // Type to return from ExtractAsDangling(), which is identical except
-  // kMayDangle trait is added (if one isn't there already).
-  using DanglingRawPtrType = raw_ptr<T, Traits | RawPtrTraits::kMayDangle>;
-
  public:
   using Impl = typename raw_ptr_traits::TraitsToImpl<Traits>::Impl;
 
@@ -520,17 +547,37 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
   static_assert(raw_ptr_traits::IsSupportedType<T>::value,
                 "raw_ptr<T> doesn't work with this kind of pointee type T");
 
+  // TODO(bartekn): Turn on zeroing as much as possible, to reduce
+  // pointer-related UBs. In the current implementation we do it only when the
+  // underlying implementation needs it for correctness, for performance
+  // reasons. There are two secnarios where it's important:
+  // 1. When rewriting renderer, we don't want extra overhead get in the way of
+  //    our perf evaluation.
+  // 2. The same applies to rewriting 3rd party libraries, but also we want
+  //    RawPtrNoOpImpl to be a true no-op, in case the library is linked with
+  //    a product other than Chromium (this can be mitigated using
+  //    `build_with_chromium` GN variable).
+  static constexpr bool kZeroOnInit = Impl::kMustZeroOnInit;
+  static constexpr bool kZeroOnMove = Impl::kMustZeroOnMove;
+  static constexpr bool kZeroOnDestruct = Impl::kMustZeroOnDestruct;
+
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) || \
     BUILDFLAG(USE_ASAN_UNOWNED_PTR) || BUILDFLAG(USE_HOOKABLE_RAW_PTR)
   // BackupRefPtr requires a non-trivial default constructor, destructor, etc.
-  PA_ALWAYS_INLINE constexpr raw_ptr() noexcept : wrapped_ptr_(nullptr) {}
+  PA_ALWAYS_INLINE constexpr raw_ptr() noexcept {
+    if constexpr (kZeroOnInit) {
+      wrapped_ptr_ = nullptr;
+    }
+  }
 
   PA_ALWAYS_INLINE constexpr raw_ptr(const raw_ptr& p) noexcept
       : wrapped_ptr_(Impl::Duplicate(p.wrapped_ptr_)) {}
 
   PA_ALWAYS_INLINE constexpr raw_ptr(raw_ptr&& p) noexcept {
     wrapped_ptr_ = p.wrapped_ptr_;
-    p.wrapped_ptr_ = nullptr;
+    if constexpr (kZeroOnMove) {
+      p.wrapped_ptr_ = nullptr;
+    }
   }
 
   PA_ALWAYS_INLINE constexpr raw_ptr& operator=(const raw_ptr& p) noexcept {
@@ -553,7 +600,9 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
     if (PA_LIKELY(this != &p)) {
       Impl::ReleaseWrappedPtr(wrapped_ptr_);
       wrapped_ptr_ = p.wrapped_ptr_;
-      p.wrapped_ptr_ = nullptr;
+      if constexpr (kZeroOnMove) {
+        p.wrapped_ptr_ = nullptr;
+      }
     }
     return *this;
   }
@@ -567,17 +616,16 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
 #endif
     Impl::ReleaseWrappedPtr(wrapped_ptr_);
     // Work around external issues where raw_ptr is used after destruction.
-    wrapped_ptr_ = nullptr;
+    if constexpr (kZeroOnDestruct) {
+      wrapped_ptr_ = nullptr;
+    }
   }
 
 #else  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||
        // BUILDFLAG(USE_ASAN_UNOWNED_PTR) || BUILDFLAG(USE_HOOKABLE_RAW_PTR)
 
   // raw_ptr can be trivially default constructed (leaving |wrapped_ptr_|
-  // uninitialized).  This is needed for compatibility with raw pointers.
-  //
-  // TODO(lukasza): Always initialize |wrapped_ptr_|.  Fix resulting build
-  // errors.  Analyze performance impact.
+  // uninitialized).
   PA_ALWAYS_INLINE constexpr raw_ptr() noexcept = default;
 
   // In addition to nullptr_t ctor above, raw_ptr needs to have these
@@ -592,6 +640,11 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
 
   PA_ALWAYS_INLINE ~raw_ptr() noexcept = default;
 
+  // With default constructor, destructor and move operations, we don't have an
+  // opportunity to zero the underlying pointer, so ensure this isn't expected.
+  static_assert(!kZeroOnInit);
+  static_assert(!kZeroOnMove);
+  static_assert(!kZeroOnDestruct);
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) ||
         // BUILDFLAG(USE_ASAN_UNOWNED_PTR)
 
@@ -635,7 +688,8 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
   }
 
   // Deliberately implicit, because raw_ptr is supposed to resemble raw ptr.
-  // NOLINTNEXTLINE(google-explicit-constructor)
+  // Ignore kZeroOnInit, because here the caller explicitly wishes to initialize
+  // with nullptr. NOLINTNEXTLINE(google-explicit-constructor)
   PA_ALWAYS_INLINE constexpr raw_ptr(std::nullptr_t) noexcept
       : wrapped_ptr_(nullptr) {}
 
@@ -661,9 +715,9 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
   // NOLINTNEXTLINE(google-explicit-constructor)
   PA_ALWAYS_INLINE constexpr raw_ptr(raw_ptr<U, Traits>&& ptr) noexcept
       : wrapped_ptr_(Impl::template Upcast<T, U>(ptr.wrapped_ptr_)) {
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-    ptr.wrapped_ptr_ = nullptr;
-#endif
+    if constexpr (kZeroOnMove) {
+      ptr.wrapped_ptr_ = nullptr;
+    }
   }
 
   PA_ALWAYS_INLINE constexpr raw_ptr& operator=(std::nullptr_t) noexcept {
@@ -713,9 +767,9 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
 #endif
     Impl::ReleaseWrappedPtr(wrapped_ptr_);
     wrapped_ptr_ = Impl::template Upcast<T, U>(ptr.wrapped_ptr_);
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-    ptr.wrapped_ptr_ = nullptr;
-#endif
+    if constexpr (kZeroOnMove) {
+      ptr.wrapped_ptr_ = nullptr;
+    }
     return *this;
   }
 
@@ -847,21 +901,15 @@ class PA_TRIVIAL_ABI PA_GSL_POINTER raw_ptr {
   // variable (or worse, a field)! It's meant to be used as a temporary, to be
   // passed into a cleanup & freeing function, and destructed at the end of the
   // statement.
-  PA_ALWAYS_INLINE constexpr DanglingRawPtrType ExtractAsDangling() noexcept {
-    if constexpr (std::is_same_v<
-                      typename std::remove_reference<decltype(*this)>::type,
-                      DanglingRawPtrType>) {
-      DanglingRawPtrType res(std::move(*this));
-      // Not all implementation clear the source pointer on move, so do it
-      // here just in case. Should be cheap.
-      operator=(nullptr);
-      return res;
-    } else {
-      T* ptr = GetForExtraction();
-      DanglingRawPtrType res(ptr);
-      operator=(nullptr);
-      return res;
-    }
+  PA_ALWAYS_INLINE constexpr MayBeDangling<T, Traits>
+  ExtractAsDangling() noexcept {
+    MayBeDangling<T, Traits> res(std::move(*this));
+    // Not all implementation clear the source pointer on move. Furthermore,
+    // even for implemtantions that do, cross-kind conversions (that add
+    // kMayDangle) fall back to a copy, instead of move. So do it here just in
+    // case. Should be cheap.
+    operator=(nullptr);
+    return res;
   }
 
   // Comparison operators between raw_ptr and raw_ptr<U>/U*/std::nullptr_t.
@@ -1087,6 +1135,7 @@ using RemovePointerT = typename RemovePointer<T>::type;
 }  // namespace base
 
 using base::raw_ptr;
+using base::raw_ptr_experimental;
 
 // DisableDanglingPtrDetection option for raw_ptr annotates
 // "intentional-and-safe" dangling pointers. It is meant to be used at the
@@ -1104,17 +1153,21 @@ constexpr auto DisableDanglingPtrDetection = base::RawPtrTraits::kMayDangle;
 // occurrences are meant to be removed. See https://crbug.com/1291138.
 constexpr auto DanglingUntriaged = base::RawPtrTraits::kMayDangle;
 
-// This type is to be used in callbacks arguments when it is known that they
-// might receive dangling pointers. In any other cases, please use one of:
-// - raw_ptr<T, DanglingUntriaged>
-// - raw_ptr<T, DisableDanglingPtrDetection>
-template <typename T, base::RawPtrTraits Traits = base::RawPtrTraits::kEmpty>
-using MayBeDangling = base::raw_ptr<T, Traits | base::RawPtrTraits::kMayDangle>;
-
 // The use of pointer arithmetic with raw_ptr is strongly discouraged and
 // disabled by default. Usually a container like span<> should be used
 // instead of the raw_ptr.
 constexpr auto AllowPtrArithmetic = base::RawPtrTraits::kAllowPtrArithmetic;
+
+// Temporary flag for `raw_ptr` / `raw_ref`. This is used by finch experiments
+// to differentiate pointers added recently for the ChromeOS ash rewrite.
+//
+// See launch plan:
+// https://docs.google.com/document/d/105OVhNl-2lrfWElQSk5BXYv-nLynfxUrbC4l8cZ0CoU/edit#
+//
+// This is not meant to be added manually. You can ignore this flag.
+//
+// TODO(https://crbug.com/1435441) Implement the ExperimentalAsh Trait.
+constexpr auto ExperimentalAsh = base::RawPtrTraits::kMayDangle;
 
 namespace std {
 

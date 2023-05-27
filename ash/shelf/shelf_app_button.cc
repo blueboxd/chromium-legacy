@@ -14,8 +14,6 @@
 #include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/default_color_constants.h"
-#include "ash/style/default_colors.h"
 #include "ash/style/dot_indicator.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -366,8 +364,8 @@ ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
   indicator_->SetPaintToLayer();
   indicator_->layer()->SetFillsBoundsOpaquely(false);
 
-  AddChildView(indicator_);
-  AddChildView(icon_view_);
+  AddChildView(indicator_.get());
+  AddChildView(icon_view_.get());
   notification_indicator_ =
       AddChildView(std::make_unique<DotIndicator>(kDefaultIndicatorColor));
 

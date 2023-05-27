@@ -29,10 +29,10 @@
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -330,7 +330,7 @@ class TabletModeController::DestroyObserver : public aura::WindowObserver {
   aura::Window* window() { return window_; }
 
  private:
-  aura::Window* window_;
+  raw_ptr<aura::Window, ExperimentalAsh> window_;
   base::OnceCallback<void(void)> callback_;
 };
 
@@ -373,7 +373,7 @@ class TabletModeController::ScopedContainerHider {
   }
 
  private:
-  aura::Window* const root_window_;
+  const raw_ptr<aura::Window, ExperimentalAsh> root_window_;
 
   // The layer that holds the clone of shelf and float layers while the
   // originals are hidden.
@@ -950,7 +950,7 @@ void TabletModeController::HandleHingeRotation(
   // accuracy.
   float largest_hinge_acceleration =
       std::max(std::abs(base_reading.x()), std::abs(lid_reading.x()));
-  float smoothing_ratio = base::clamp(
+  float smoothing_ratio = std::clamp(
       (largest_hinge_acceleration - kHingeVerticalSmoothingStart) /
           (kHingeVerticalSmoothingMaximum - kHingeVerticalSmoothingStart),
       0.0f, 1.0f);

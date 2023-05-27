@@ -44,6 +44,7 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -203,7 +204,7 @@ sk_sp<SkImage> WrapGLTexture(
   texture_info.fFormat = GL_RGBA8_OES;
   GrBackendTexture backend_texture(size.width(), size.height(),
                                    GrMipMapped::kNo, texture_info);
-  return SkImage::MakeFromAdoptedTexture(
+  return SkImages::AdoptTextureFrom(
       raster_context_provider->GrContext(), backend_texture,
       texture_origin_is_top_left ? kTopLeft_GrSurfaceOrigin
                                  : kBottomLeft_GrSurfaceOrigin,
@@ -911,8 +912,8 @@ class VideoTextureBacking : public cc::TextureBacking {
       DLOG(ERROR) << "VideoTextureBacking::GetSkImageViaReadback failed.";
       return nullptr;
     }
-    return SkImage::MakeRasterData(sk_image_info_, std::move(image_pixels),
-                                   sk_image_info_.minRowBytes());
+    return SkImages::RasterFromData(sk_image_info_, std::move(image_pixels),
+                                    sk_image_info_.minRowBytes());
   }
 
   bool readPixels(const SkImageInfo& dst_info,
@@ -924,8 +925,14 @@ class VideoTextureBacking : public cc::TextureBacking {
         raster_context_provider_->RasterInterface();
     if (sk_image_) {
       GrGLTextureInfo texture_info;
-      if (!sk_image_->getBackendTexture(/*flushPendingGrContextIO=*/true)
-               .getGLTextureInfo(&texture_info)) {
+      GrBackendTexture texture;
+      if (!SkImages::GetBackendTextureFromImage(
+              sk_image_, &texture,
+              /*flushPendingGrContextIO=*/true)) {
+        DLOG(ERROR) << "Failed to get backend texture for VideoTextureBacking.";
+        return false;
+      }
+      if (!texture.getGLTextureInfo(&texture_info)) {
         DLOG(ERROR) << "Failed to getGLTextureInfo for VideoTextureBacking.";
         return false;
       }
@@ -938,9 +945,14 @@ class VideoTextureBacking : public cc::TextureBacking {
   }
 
   void FlushPendingSkiaOps() override {
-    if (!raster_context_provider_ || !sk_image_)
+    if (!raster_context_provider_ || !sk_image_) {
       return;
-    sk_image_->flushAndSubmit(raster_context_provider_->GrContext());
+    }
+    GrDirectContext* ctx = raster_context_provider_->GrContext();
+    if (!ctx) {
+      return;
+    }
+    ctx->flushAndSubmit(sk_image_);
   }
 
  private:
@@ -1758,7 +1770,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
         SHARED_IMAGE_FORMAT, video_frame->coded_size(),
         GetVideoFrameRGBColorSpacePreferringSRGB(video_frame.get()),
         kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
-        gpu::kNullSurfaceHandle);
+        "PaintCanvasVideoRenderer", gpu::kNullSurfaceHandle);
     token = sii->GenUnverifiedSyncToken();
   }
 
@@ -1971,7 +1983,7 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
             SHARED_IMAGE_FORMAT, video_frame->coded_size(),
             GetVideoFrameRGBColorSpacePreferringSRGB(video_frame.get()),
             kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, flags,
-            gpu::kNullSurfaceHandle);
+            "PaintCanvasVideoRenderer", gpu::kNullSurfaceHandle);
         ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
       }
 

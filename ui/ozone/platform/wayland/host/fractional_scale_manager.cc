@@ -8,6 +8,7 @@
 
 #include "base/check_op.h"
 #include "base/logging.h"
+#include "ui/ozone/common/features.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 
@@ -25,6 +26,10 @@ void FractionalScaleManager::Instantiate(WaylandConnection* connection,
                                          uint32_t name,
                                          const std::string& interface,
                                          uint32_t version) {
+  if (!IsWaylandFractionalScaleV1Enabled()) {
+    return;
+  }
+
   CHECK_EQ(interface, kInterfaceName) << "Expected \"" << kInterfaceName
                                       << "\" but got \"" << interface << "\"";
 
@@ -40,9 +45,14 @@ void FractionalScaleManager::Instantiate(WaylandConnection* connection,
   }
   connection->fractional_scale_manager_v1_ = std::move(instance);
 
-  // fractional-scale-v1 requires clients to report a scale of 1 for all
-  // surfaces.
-  connection->set_surface_submission_in_pixel_coordinates(true);
+  connection->set_supports_viewporter_surface_scaling(true);
+
+  // Since using fractional_scale_v1 requires using viewport to rescale the
+  // window to Wayland logical coordinates, using overlays in conjunction with
+  // fractional_scale_v1 would require support for subpixel viewport
+  // destination sizes and subpixel subsurface positions, which currently
+  // isn't present on any non-exo Wayland compositors.
+  connection->set_overlay_delegation_disabled(true);
 }
 
 }  // namespace ui

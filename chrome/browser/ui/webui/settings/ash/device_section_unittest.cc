@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/settings/ash/device_section.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_identifier.h"
@@ -21,6 +22,7 @@ namespace ash::settings {
 
 namespace mojom {
 
+using ::chromeos::settings::mojom::Setting;
 using ::chromeos::settings::mojom::Subpage;
 
 }  // namespace mojom
@@ -33,6 +35,8 @@ constexpr OsSettingsIdentifier kKeyboardOsSettingsId = {
     .subpage = mojom::Subpage::kKeyboard};
 constexpr OsSettingsIdentifier kPerDeviceKeyboardOsSettingsId = {
     .subpage = mojom::Subpage::kPerDeviceKeyboard};
+constexpr OsSettingsIdentifier kKeyboardBlockMetaFkeyRewritesOsSettingsId = {
+    .setting = mojom::Setting::kKeyboardBlockMetaFkeyRewrites};
 
 // Provides a correctly formatted result_id based on `SearchConcept`
 // configuration in `device_section.cc`. Based on private static function in
@@ -40,6 +44,12 @@ constexpr OsSettingsIdentifier kPerDeviceKeyboardOsSettingsId = {
 std::string GetSubpageSearchResultId(OsSettingsIdentifier id, int message_id) {
   std::stringstream ss;
   ss << id.subpage << "," << message_id;
+  return ss.str();
+}
+
+std::string GetSettingsSearchResultId(OsSettingsIdentifier id, int message_id) {
+  std::stringstream ss;
+  ss << id.setting << "," << message_id;
   return ss.str();
 }
 
@@ -85,29 +95,18 @@ class DeviceSectionTest : public testing::Test {
   ash::settings::SearchTagRegistry search_tag_registry_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile, ExperimentalAsh> profile_;
 };
 
-// Verify registry updated with Audio search tags when flag is enabled.
-TEST_F(DeviceSectionTest, SearchResultIncludeAudioWithFlagEnabled) {
-  feature_list_.InitAndEnableFeature(ash::features::kAudioSettingsPage);
-  device_section_ = std::make_unique<DeviceSection>(
-      profile(), search_tag_registry(), pref_service());
-
-  std::string result_id = GetSubpageSearchResultId(
-      kAudioPageOsSettingsId, IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS);
-  EXPECT_TRUE(search_tag_registry()->GetTagMetadata(result_id));
-}
-
-// Verify registry not updated with Audio search tags when flag is disabled.
-TEST_F(DeviceSectionTest, SearchResultExcludeAudioWithoutFlag) {
+// Verify registry updated with Audio search tags.
+TEST_F(DeviceSectionTest, SearchResultIncludeAudio) {
   feature_list_.Reset();
   device_section_ = std::make_unique<DeviceSection>(
       profile(), search_tag_registry(), pref_service());
 
   std::string result_id = GetSubpageSearchResultId(
       kAudioPageOsSettingsId, IDS_OS_SETTINGS_TAG_AUDIO_SETTINGS);
-  EXPECT_FALSE(search_tag_registry()->GetTagMetadata(result_id));
+  EXPECT_TRUE(search_tag_registry()->GetTagMetadata(result_id));
 }
 
 // Verify registry updated with per device settings search tags when flag is
@@ -119,7 +118,11 @@ TEST_F(DeviceSectionTest, SearchResultChangeToSettingsSplitWithFlag) {
 
   std::string result_id = GetSubpageSearchResultId(
       kPerDeviceKeyboardOsSettingsId, IDS_OS_SETTINGS_TAG_KEYBOARD);
+  std::string switch_top_row_key_id = GetSettingsSearchResultId(
+      kKeyboardBlockMetaFkeyRewritesOsSettingsId,
+      IDS_OS_SETTINGS_TAG_KEYBOARD_BLOCK_META_FKEY_COMBO_REWRITES);
   EXPECT_TRUE(search_tag_registry()->GetTagMetadata(result_id));
+  EXPECT_TRUE(search_tag_registry()->GetTagMetadata(switch_top_row_key_id));
 }
 
 // Verify registry updated with regular settings search tags when flag is
@@ -131,7 +134,11 @@ TEST_F(DeviceSectionTest, SearchResultChangeBackWithoutFlag) {
 
   std::string result_id = GetSubpageSearchResultId(
       kKeyboardOsSettingsId, IDS_OS_SETTINGS_TAG_KEYBOARD);
+  std::string switch_top_row_key_id = GetSettingsSearchResultId(
+      kKeyboardBlockMetaFkeyRewritesOsSettingsId,
+      IDS_OS_SETTINGS_TAG_KEYBOARD_BLOCK_META_FKEY_COMBO_REWRITES);
   EXPECT_TRUE(search_tag_registry()->GetTagMetadata(result_id));
+  EXPECT_FALSE(search_tag_registry()->GetTagMetadata(switch_top_row_key_id));
 }
 
 }  // namespace ash::settings

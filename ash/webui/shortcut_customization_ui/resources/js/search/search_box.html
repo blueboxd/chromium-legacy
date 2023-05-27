@@ -1,7 +1,9 @@
-<style>
+<style include="cros-color-overrides">
   :host {
     --cr-toolbar-search-field-background:
         var(--cros-toolbar-search-bg-color);
+    --cr-toolbar-icon-container-size: 32px;
+    --cr-toolbar-icon-margin: 8px 16px;
 
     --separator-height: 8px;
     -webkit-tap-highlight-color: transparent;
@@ -11,20 +13,6 @@
     width: var(--cr-toolbar-field-width);
   }
 
-  cr-toolbar-search-field {
-    --cr-toolbar-search-field-border-radius: 20px;
-    --cr-toolbar-search-field-paper-spinner-margin: 0 12px;
-    --cr-toolbar-search-field-input-icon-color:
-        var(--cros-icon-color-primary);
-    --cr-toolbar-search-field-input-text-color:
-        var(--cros-text-color-primary);
-    --cr-toolbar-search-field-input-caret-color: currentColor;
-    --cr-toolbar-search-field-prompt-color:
-        var(--cros-text-color-secondary);
-    --cr-toolbar-icon-button-focus-outline-color:
-        var(--cros-focus-ring-color);
-  }
-
   :host(:focus-within) cr-toolbar-search-field {
     --cr-toolbar-search-field-background: var(--cros-bg-color-elevation-3);
     box-shadow: var(--cr-elevation-1);
@@ -32,7 +20,7 @@
   }
 
   :host(:not(:focus-within)) cr-toolbar-search-field {
-    --cr-toolbar-search-field-cursor: pointer;
+    --cr-toolbar-search-field-cursor: text;
   }
 
   :host([has-search-query]) cr-toolbar-search-field {
@@ -47,6 +35,18 @@
     padding-bottom: var(--separator-height);
   }
 
+  :host-context(body:not(.jelly-enabled)) cr-toolbar-search-field {
+    --cr-toolbar-search-field-input-icon-color:
+        var(--cros-icon-color-primary);
+    --cr-toolbar-search-field-input-text-color:
+        var(--cros-text-color-primary);
+    --cr-toolbar-search-field-input-caret-color: var(--cros-text-color-primary);
+    --cr-toolbar-search-field-prompt-color:
+        var(--cros-text-color-secondary);
+    --cr-toolbar-icon-button-focus-outline-color:
+        var(--cros-focus-ring-color);
+  }
+
   iron-dropdown {
     margin-top: 72px;
   }
@@ -56,15 +56,25 @@
     border-radius: 0 0 20px 20px;
     box-shadow: var(--cr-elevation-3);
     display: table;
-    padding-bottom: 8px;
+    padding-bottom: 16px;
     width: var(--cr-toolbar-field-width);
   }
 
   iron-list {
     max-height: 50vh;
+    /* Explicitly set the min-height here so that iron-list can render correctly
+     * in browser tests. */
+    min-height: 1px;
+    user-select: none;
+  }
+
+  cr-toolbar-search-field {
+    --cr-toolbar-search-field-border-radius: 20px;
+    --cr-toolbar-search-field-paper-spinner-margin: 0 12px;
   }
 
   #noSearchResultsContainer {
+    color: var(--cros-text-color-secondary);
     height: 32px;
     line-height: 32px;
     margin-inline-start: 24px;
@@ -86,10 +96,10 @@
   }
 </style>
 
-<!-- TODO(longbowei): Localize string -->
-<cr-toolbar-search-field id="search"
-        label="Search for keyboard shortcuts"
-        on-keydown="onKeyDown">
+<cr-toolbar-search-field id="search" label="[[i18n('searchPlaceholderLabel')]]"
+    clear-label="[[i18n('searchClearQueryLabel')]]"
+    on-search-icon-clicked="onSearchIconClicked"
+    spinner-active="[[spinnerActive]]">
 </cr-toolbar-search-field>
 <iron-dropdown id="searchResults" opened="[[shouldShowDropdown]]"
     allow-outside-scroll no-cancel-on-outside-click>
@@ -98,15 +108,31 @@
         iron-dropdown's open() is called on the JS side. -->
   <div slot="dropdown-content">
     <div class="separator"></div>
-    <iron-list id="searchResultList" selection-enabled
-        items="[[searchResults]]">
+    <iron-list id="searchResultList" selection-enabled items="[[searchResults]]"
+        selected-item="{{selectedItem}}">
       <template>
-        <search-result-row search-result="[[item]]"></search-result-row>
+        <search-result-row
+            selected="[[isItemSelected(item, selectedItem)]]"
+            search-result="[[item]]"
+            search-query="[[getCurrentQuery(searchResults)]]"
+            last-focused="{{lastFocused}}"
+            list-blurred="{{listBlurred}}"
+            list-length="[[getListLength(searchResults)]]"
+            focus-row-index="[[index]]"
+            on-navigated-to-result-route="onNavigatedToResultRowRoute"
+            tabindex$="[[getRowTabIndex(item, selectedItem,
+                shouldShowDropdown)]]"
+            iron-list-tab-index$="[[getRowTabIndex(item, selectedItem,
+                shouldShowDropdown)]]">
+        </search-result-row>
       </template>
     </iron-list>
-    <div id="noSearchResultsContainer" hidden="[[searchResultsExist]]">
-      <!-- TODO(cambickel) localize this string -->
-      No search results!
+    <!-- noSearchResultsContainer is aria-hidden because the aria-label of this
+    specific container gets announced as soon as search results have changed
+    (onSearchResultsChanged) and no search results exist. -->
+    <div id="noSearchResultsContainer" hidden="[[searchResultsExist]]"
+        aria-hidden="true">
+      [[i18n('searchNoResults')]]
     </div>
   </div>
 </iron-dropdown>

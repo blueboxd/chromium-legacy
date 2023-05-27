@@ -79,7 +79,6 @@
 <translation id="2928420929544864228">ההתקנה הושלמה.</translation>
 <translation id="2977470724722393594">‏Chromium‏ מעודכן</translation>
 <translation id="2977506796191543575">‏אם באתר כלשהו מתבצע ניסיון לגנוב את הסיסמה שלך, או אם המערכת מזהה הורדה של קובץ מזיק, Chromium עשוי גם לשלוח כתובות URL לבדיקה באמצעות 'גלישה בטוחה'. הנתונים שנשלחים לבדיקה כוללים ביטים מתוכן של דפים</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{‏Chromium מחובר להתקן HID}one{‏Chromium מחובר להתקני HID}two{‏Chromium מחובר להתקני HID}other{‏Chromium מחובר להתקני HID}}</translation>
 <translation id="3032706164202344641">‏Chromium לא יכול לבדוק את הסיסמאות שלך. כדאי לנסות שוב מאוחר יותר.</translation>
 <translation id="3032787606318309379">‏מתבצעת הוספה ל-Chromium...</translation>
 <translation id="3038232873781883849">בהמתנה להתקנה…</translation>
@@ -92,7 +91,6 @@
 <translation id="3185330573522821672">‏התאמה אישית של פרופיל Chromium החדש</translation>
 <translation id="3190315855212034486">‏וואו! Chromium קרס. להפעיל מחדש עכשיו?</translation>
 <translation id="3258596308407688501">‏Chromium אינו יכול לקרוא ולכתוב בספריית הנתונים שלו: <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">‏המדריך הזה יעזור לך להבין את הבחירות שלך, כדי ש-Chromium יפעל באופן הרצוי לך</translation>
 <translation id="3283186697780795848">‏מותקנת גרסה <ph name="PRODUCT_VERSION" /> של Chromium</translation>
 <translation id="3286538390144397061">הפעל מחדש כעת</translation>
 <translation id="328888136576916638">‏המפתחות של Google API חסרים. פונקציונליות מסוימת של Chromium תהיה מושבתת.</translation>
@@ -244,8 +242,10 @@
 <translation id="6442900851116057561">‏הפעלה מחדש של ChromiumOS</translation>
 <translation id="6455857529632101747">‏ברוך בואך לפרופילים של Chromium</translation>
 <translation id="6475912303565314141">‏הגדרה זו גם קובעת איזה דף מוצג כשמפעילים את Chromium.</translation>
+<translation id="648319183876919572">הגרסה המשופרת של הגלישה הבטוחה מגנה עליך טוב יותר מפני הורדות ואתרים מסוכנים</translation>
 <translation id="6510925080656968729">‏הסרה של התקנת Chromium</translation>
 <translation id="6542839706527980775">‏בכל פרופיל מאוחסנים נתוני Chromium משלו כמו סימניות, היסטוריה, סיסמאות ועוד</translation>
+<translation id="656935081669708576">‏אפשר לעבור לפרופיל Chromium אחר כדי לראות סיסמאות</translation>
 <translation id="6570579332384693436">‏Chromium שולח את הטקסט שמוקלד בשדות טקסט ל-Google כדי לתקן שגיאות כתיב</translation>
 <translation id="6598877126913850652">‏מעבר אל הגדרות ההודעות של Chromium</translation>
 <translation id="6613594504749178791">‏השינויים שביצעת ייכנסו לתוקף בפעם הבאה שתפעיל מחדש את Chromium‏.</translation>
@@ -381,7 +381,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="924957577793602335">‏אפשר להתאים אישית את Chromium בדרך שנוחה לך</translation>
 <translation id="93478295209880648">‏ייתכן ש-Chromium לא יפעל כראוי כי הוא כבר לא נתמך ב-Windows XP וב-Windows Vista</translation>
 <translation id="942598560705308788">‏אישורים שמנוהלים על ידי Chromium</translation>
-<translation id="959579472876010517">‏רוצה להפיק את המירב מ-Chromium?</translation>
 <translation id="965162752251293939">‏מי משתמש/ת ב-Chromium?</translation>
 <translation id="967427899662692980">‏רוצה להשיג את רמת האבטחה הגבוהה ביותר של Chromium?</translation>
 <translation id="9792300276217204">‏ניקוי נתונים מאתרים מהמכשיר בכל פעם שסוגרים את Chromium</translation>

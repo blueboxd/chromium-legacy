@@ -21,6 +21,8 @@
 #import "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_controller.h"
 #import "ios/chrome/browser/shared/public/commands/show_signin_command.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -30,7 +32,6 @@
 #import "ios/chrome/browser/signin/fake_system_identity_manager.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_identity_cell.h"
-#import "ios/chrome/browser/ui/main/scene_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/testing/earl_grey/earl_grey_app.h"
 #import "net/base/mac/url_conversions.h"
@@ -47,6 +48,11 @@
       FakeSystemIdentityManager::FromSystemIdentityManager(
           GetApplicationContext()->GetSystemIdentityManager());
   systemIdentityManager->AddIdentity(fakeIdentity);
+}
+
++ (void)addFakeIdentityForSSOAuthAddAccountFlow:
+    (FakeSystemIdentity*)fakeIdentity {
+  FakeSystemIdentityInteractionManager.identity = fakeIdentity;
 }
 
 + (void)setCapabilities:(ios::CapabilitiesDict*)capabilities
@@ -144,6 +150,16 @@
       chrome_test_util::GetForegroundActiveSceneController();
   [sceneController showWebSigninPromoFromViewController:baseViewController
                                                     URL:gURL];
+}
+
++ (void)clearLastSignedInAccounts {
+  PrefService* prefService =
+      chrome_test_util::GetOriginalBrowserState()->GetPrefs();
+  prefService->ClearPref(prefs::kSigninLastAccounts);
+}
+
++ (void)presentSignInAccountsViewControllerIfNecessary {
+  chrome_test_util::PresentSignInAccountsViewControllerIfNecessary();
 }
 
 @end

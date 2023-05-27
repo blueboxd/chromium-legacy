@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/path_service.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -114,7 +115,7 @@ class SavedPasswordsPresenterWaiter
 
   void OnSavedPasswordsChanged() override { CheckExitCondition(); }
 
-  password_manager::SavedPasswordsPresenter* const presenter_;
+  const raw_ptr<password_manager::SavedPasswordsPresenter> presenter_;
   const size_t n_passwords_;
 };
 
@@ -1037,7 +1038,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTestWithPolicy,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTestWithPolicy,
-                       SyncTypesListDisabled) {
+                       // TODO(crbug.com/1431264): Re-enable this test
+                       DISABLED_SyncTypesListDisabled) {
   // Disable passwords via the kSyncTypesListDisabled policy. The PRE_ test is
   // required because the policy is only applied on startup.
   base::Value::List disabled_types;

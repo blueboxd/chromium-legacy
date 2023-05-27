@@ -6,6 +6,7 @@
 #define ASH_STYLE_PILL_BUTTON_H_
 
 #include "ash/ash_export.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/color/color_id.h"
 #include "ui/views/controls/button/label_button.h"
@@ -159,19 +160,12 @@ class ASH_EXPORT PillButton : public views::LabelButton {
     kAccentFloatingWithoutIcon = kAccent | kFloating,
   };
 
-  // Keeps the button in light mode if `use_light_colors` is true.
-  // InstallRoundRectHighlightPathGenerator for the button only if
-  // `rounded_highlight_path` is true. This is special handlings for buttons
-  // inside the old notifications UI, might can be removed once
-  // `kNotificationsRefresh` is fully launched.
   explicit PillButton(
       PressedCallback callback = PressedCallback(),
       const std::u16string& text = std::u16string(),
       Type type = Type::kDefaultWithoutIcon,
       const gfx::VectorIcon* icon = nullptr,
       int horizontal_spacing = kPillButtonHorizontalSpacing,
-      bool use_light_colors = false,
-      bool rounded_highlight_path = true,
       int padding_reduction_for_icon = kPaddingReductionForIcon);
   PillButton(const PillButton&) = delete;
   PillButton& operator=(const PillButton&) = delete;
@@ -213,18 +207,11 @@ class ASH_EXPORT PillButton : public views::LabelButton {
   int GetHorizontalSpacingWithIcon() const;
 
   Type type_;
-  const gfx::VectorIcon* const icon_;
-
-  // True if the button wants to use light colors when the D/L mode feature is
-  // not enabled. Note, can be removed when D/L mode feature is fully launched.
-  bool use_light_colors_;
+  const raw_ptr<const gfx::VectorIcon, ExperimentalAsh> icon_;
 
   // Horizontal spacing of this button. `kPillButtonHorizontalSpacing` will be
   // set as the default value.
   int horizontal_spacing_;
-
-  // The flag that indicates if highlight path is used for focus ring.
-  const bool rounded_highlight_path_;
 
   // The padding reduced by icon.
   int padding_reduction_for_icon_;

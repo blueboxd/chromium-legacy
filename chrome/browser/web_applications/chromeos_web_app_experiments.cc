@@ -7,7 +7,7 @@
 #include "base/containers/contains.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
-#include "chrome/common/chrome_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 
 namespace web_app {
@@ -26,6 +26,8 @@ constexpr const char* kMicrosoftOfficeWebAppExperimentScopeExtensions[] = {
     // Microsoft 365 still link to the old www.office.com origin.
     "https://www.office.com/",
 };
+
+const char kOneDriveBusinessDomain[] = "sharepoint.com";
 
 struct FallbackPageThemeColor {
   const char* page_url_piece;
@@ -64,8 +66,7 @@ GetScopeExtensionsOverrideForTesting() {
 
 base::span<const char* const> ChromeOsWebAppExperiments::GetScopeExtensions(
     const AppId& app_id) {
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kMicrosoftOfficeWebAppExperiment));
+  DCHECK(chromeos::features::IsUploadOfficeToCloudEnabled());
 
   if (!IsExperimentEnabled(app_id))
     return {};
@@ -79,8 +80,7 @@ base::span<const char* const> ChromeOsWebAppExperiments::GetScopeExtensions(
 size_t ChromeOsWebAppExperiments::GetExtendedScopeScore(
     const AppId& app_id,
     base::StringPiece url_spec) {
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kMicrosoftOfficeWebAppExperiment));
+  DCHECK(chromeos::features::IsUploadOfficeToCloudEnabled());
 
   size_t best_score = 0;
   for (const char* scope : GetScopeExtensions(app_id)) {
@@ -90,14 +90,20 @@ size_t ChromeOsWebAppExperiments::GetExtendedScopeScore(
             : 0;
     best_score = std::max(best_score, score);
   }
+
+  // Check the OneDrive Business domain separately as this has a different URL
+  // format.
+  GURL url = GURL(url_spec);
+  if (url.DomainIs(kOneDriveBusinessDomain)) {
+    best_score = std::max(best_score, strlen(kOneDriveBusinessDomain));
+  }
   return best_score;
 }
 
 absl::optional<SkColor> ChromeOsWebAppExperiments::GetFallbackPageThemeColor(
     const AppId& app_id,
     content::WebContents* web_contents) {
-  DCHECK(
-      base::FeatureList::IsEnabled(features::kMicrosoftOfficeWebAppExperiment));
+  DCHECK(chromeos::features::IsUploadOfficeToCloudEnabled());
 
   if (!IsExperimentEnabled(app_id))
     return absl::nullopt;

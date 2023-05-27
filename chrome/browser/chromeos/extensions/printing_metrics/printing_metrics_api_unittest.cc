@@ -117,8 +117,7 @@ TEST_F(PrintingMetricsApiUnittest, GetPrintJobs_NoPrintJobs) {
   SetUpMockPrintJobHistoryService(ReturnNoPrintJobs);
 
   auto function = base::MakeRefCounted<PrintingMetricsGetPrintJobsFunction>();
-  std::unique_ptr<base::Value> result =
-      RunFunctionAndReturnValue(function.get(), "[]");
+  auto result = RunFunctionAndReturnValue(function.get(), "[]");
 
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->is_list());
@@ -131,14 +130,14 @@ TEST_F(PrintingMetricsApiUnittest, GetPrintJobs_OnePrintJob) {
   SetUpMockPrintJobHistoryService(ReturnOnePrintJob);
 
   auto function = base::MakeRefCounted<PrintingMetricsGetPrintJobsFunction>();
-  std::unique_ptr<base::Value> result =
-      RunFunctionAndReturnValue(function.get(), "[]");
+  auto result = RunFunctionAndReturnValue(function.get(), "[]");
 
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->is_list());
   ASSERT_EQ(1u, result->GetList().size());
   std::unique_ptr<api::printing_metrics::PrintJobInfo> print_job_info =
-      api::printing_metrics::PrintJobInfo::FromValue(result->GetList()[0]);
+      api::printing_metrics::PrintJobInfo::FromValueDeprecated(
+          result->GetList()[0]);
 
   EXPECT_THAT(
       print_job_info,
@@ -160,18 +159,19 @@ TEST_F(PrintingMetricsApiUnittest, GetPrintJobs_TwoPrintJobs) {
   SetUpMockPrintJobHistoryService(ReturnTwoPrintJobs);
 
   auto function = base::MakeRefCounted<PrintingMetricsGetPrintJobsFunction>();
-  std::unique_ptr<base::Value> result =
-      RunFunctionAndReturnValue(function.get(), "[]");
+  auto result = RunFunctionAndReturnValue(function.get(), "[]");
 
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->is_list());
   ASSERT_EQ(2u, result->GetList().size());
   std::unique_ptr<api::printing_metrics::PrintJobInfo> print_job_info1 =
-      api::printing_metrics::PrintJobInfo::FromValue(result->GetList()[0]);
+      api::printing_metrics::PrintJobInfo::FromValueDeprecated(
+          result->GetList()[0]);
   EXPECT_TRUE(print_job_info1);
   EXPECT_EQ(kTitle1, print_job_info1->title);
   std::unique_ptr<api::printing_metrics::PrintJobInfo> print_job_info2 =
-      api::printing_metrics::PrintJobInfo::FromValue(result->GetList()[1]);
+      api::printing_metrics::PrintJobInfo::FromValueDeprecated(
+          result->GetList()[1]);
   EXPECT_TRUE(print_job_info2);
   EXPECT_EQ(kTitle2, print_job_info2->title);
 }

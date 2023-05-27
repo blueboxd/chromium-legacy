@@ -124,8 +124,7 @@ suite('PasswordManagerAppTest', function() {
   test('Search navigates to Passwords and updates URL parameters', function() {
     const query = new URLSearchParams();
     query.set(UrlParam.START_CHECK, 'true');
-    Router.getInstance().navigateTo(Page.CHECKUP);
-    Router.getInstance().updateRouterParams(query);
+    Router.getInstance().navigateTo(Page.CHECKUP, null, query);
 
     app.$.toolbar.$.mainToolbar.getSearchField().setValue('hello');
 
@@ -178,5 +177,34 @@ suite('PasswordManagerAppTest', function() {
     undoButton.click();
 
     await passwordManager.whenCalled('undoRemoveSavedPasswordOrException');
+  });
+
+  test('import can be triggered from empty state', async function() {
+    // This is done to avoid flakiness.
+    Router.getInstance().navigateTo(Page.PASSWORDS);
+    await flushTasks();
+
+    assertEquals(Page.PASSWORDS, Router.getInstance().currentRoute.page);
+
+    const passwordsSection = app.shadowRoot!.querySelector('passwords-section');
+    assertTrue(!!passwordsSection);
+    const importLink = passwordsSection.$.importPasswords.querySelector('a');
+    assertTrue(!!importLink);
+
+    // Should redirect ot Settings page.
+    importLink.click();
+    await flushTasks();
+
+    assertEquals(Page.SETTINGS, Router.getInstance().currentRoute.page);
+    const settingsSection = app.shadowRoot!.querySelector('settings-section');
+    assertTrue(!!settingsSection);
+
+    const importer =
+        settingsSection.shadowRoot!.querySelector('passwords-importer');
+    assertTrue(!!importer);
+
+    const spinner = importer.shadowRoot!.querySelector('paper-spinner-lite');
+    assertTrue(!!spinner);
+    assertTrue(spinner.active);
   });
 });

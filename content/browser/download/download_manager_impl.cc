@@ -54,7 +54,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/disallow_activation_reason.h"
@@ -469,8 +469,7 @@ void DownloadManagerImpl::OnHistoryNextIdRetrived(uint32_t next_id) {
 
 StoragePartitionConfig DownloadManagerImpl::GetStoragePartitionConfigForSiteUrl(
     const GURL& site_url) {
-  return SiteInfo::GetStoragePartitionConfigForUrl(browser_context_, site_url,
-                                                   /*is_site_url=*/true);
+  return SiteInfo::GetStoragePartitionConfigForUrl(browser_context_, site_url);
 }
 
 void DownloadManagerImpl::DetermineDownloadTarget(
@@ -1048,6 +1047,8 @@ download::DownloadItem* DownloadManagerImpl::CreateDownloadItem(
     base::Time last_access_time,
     bool transient,
     const std::vector<download::DownloadItem::ReceivedSlice>& received_slices) {
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Download.DownloadManagerImpl.CreateDownloadItemTime");
   // Retrieve the in-progress download if it exists. Notice that this also
   // removes it from |in_progress_downloads_|.
   auto in_progress_download = RetrieveInProgressDownload(id);
@@ -1130,6 +1131,8 @@ void DownloadManagerImpl::PostInitialization(
   if (initialized_)
     return;
 
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Download.DownloadManagerImpl.PostInitializationTime");
   switch (dependency) {
     case DOWNLOAD_INITIALIZATION_DEPENDENCY_HISTORY_DB:
       history_db_initialized_ = true;
@@ -1191,11 +1194,6 @@ void DownloadManagerImpl::OnDownloadManagerInitialized() {
   in_progress_manager_->OnAllInprogressDownloadsLoaded();
   for (auto& observer : observers_)
     observer.OnManagerInitialized();
-  size_t size = 0;
-  for (const auto& it : downloads_by_guid_)
-    size += it.second->GetApproximateMemoryUsage();
-  if (!IsOffTheRecord() && size > 0)
-    download::RecordDownloadManagerMemoryUsage(size);
 }
 
 bool DownloadManagerImpl::IsManagerInitialized() {
@@ -1270,16 +1268,6 @@ void DownloadManagerImpl::GetUninitializedActiveDownloadsIfAny(
 }
 
 void DownloadManagerImpl::OpenDownload(download::DownloadItemImpl* download) {
-  int num_unopened = 0;
-  for (const auto& it : downloads_by_guid_) {
-    download::DownloadItemImpl* item = it.second;
-    if (item != nullptr &&
-        (item->GetState() == download::DownloadItem::COMPLETE) &&
-        !item->GetOpened())
-      ++num_unopened;
-  }
-  download::RecordOpensOutstanding(num_unopened);
-
   if (delegate_)
     delegate_->OpenDownload(download);
 }

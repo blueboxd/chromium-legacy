@@ -11,7 +11,6 @@
 #include <xmmintrin.h>
 #endif
 
-#include "base/cxx17_backports.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
 #include "ui/gfx/geometry/angle_conversions.h"
@@ -566,14 +565,14 @@ bool MathUtil::MapClippedQuad3d(const gfx::Transform& transform,
       for (int i = 0; i < *num_vertices_in_clipped_quad; ++i) {
         gfx::Point3F& point = clipped_quad[i];
         point.set_x(
-            base::clamp(point.x(), -HomogeneousCoordinate::kInfiniteCoordinate,
-                        float{HomogeneousCoordinate::kInfiniteCoordinate}));
+            std::clamp(point.x(), -HomogeneousCoordinate::kInfiniteCoordinate,
+                       float{HomogeneousCoordinate::kInfiniteCoordinate}));
         point.set_y(
-            base::clamp(point.y(), -HomogeneousCoordinate::kInfiniteCoordinate,
-                        float{HomogeneousCoordinate::kInfiniteCoordinate}));
+            std::clamp(point.y(), -HomogeneousCoordinate::kInfiniteCoordinate,
+                       float{HomogeneousCoordinate::kInfiniteCoordinate}));
         point.set_z(
-            base::clamp(point.z(), -HomogeneousCoordinate::kInfiniteCoordinate,
-                        float{HomogeneousCoordinate::kInfiniteCoordinate}));
+            std::clamp(point.z(), -HomogeneousCoordinate::kInfiniteCoordinate,
+                       float{HomogeneousCoordinate::kInfiniteCoordinate}));
       }
     }
   }
@@ -766,7 +765,7 @@ float MathUtil::SmallestAngleBetweenVectors(const gfx::Vector2dF& v1,
                                             const gfx::Vector2dF& v2) {
   double dot_product = gfx::DotProduct(v1, v2) / v1.Length() / v2.Length();
   // Clamp to compensate for rounding errors.
-  dot_product = base::clamp(dot_product, -1.0, 1.0);
+  dot_product = std::clamp(dot_product, -1.0, 1.0);
   return static_cast<float>(gfx::RadToDeg(std::acos(dot_product)));
 }
 
@@ -984,11 +983,18 @@ float MathUtil::AsFloatSafely(float value) {
 }
 
 gfx::Vector3dF MathUtil::GetXAxis(const gfx::Transform& transform) {
+  if (transform.IsScaleOrTranslation()) {
+    return gfx::Vector3dF(transform.To2dScale().x(), 0, 0);
+  }
+
   return gfx::Vector3dF(transform.rc(0, 0), transform.rc(1, 0),
                         transform.rc(2, 0));
 }
 
 gfx::Vector3dF MathUtil::GetYAxis(const gfx::Transform& transform) {
+  if (transform.IsScaleOrTranslation()) {
+    return gfx::Vector3dF(0, transform.To2dScale().y(), 0);
+  }
   return gfx::Vector3dF(transform.rc(0, 1), transform.rc(1, 1),
                         transform.rc(2, 1));
 }

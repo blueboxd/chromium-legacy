@@ -26,6 +26,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
@@ -35,7 +36,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/clock.h"
 #include "base/trace_event/common/trace_event_common.h"
-#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -45,6 +45,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/trace_constants.h"
+#include "net/base/tracing.h"
 #include "net/base/transport_info.h"
 #include "net/base/upload_data_stream.h"
 #include "net/cert/cert_status_flags.h"
@@ -2640,7 +2641,9 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
   // can stop iterating kSpecialHeaders.
   //
   static const struct {
-    const HeaderNameAndValue* search;
+    // This field is not a raw_ptr<> because it was filtered by the rewriter
+    // for: #global-scope
+    RAW_PTR_EXCLUSION const HeaderNameAndValue* search;
     int load_flag;
   } kSpecialHeaders[] = {
     { kPassThroughHeaders, LOAD_DISABLE_CACHE },

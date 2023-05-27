@@ -45,15 +45,18 @@
     },
     {
         name: "DiffNeedsReshapeAndFullLayoutAndPaintInvalidation",
-        fields_to_diff: ["font"],
+        fields_to_diff: [
+            "font",
+            "white-space-collapse",
+        ],
         methods_to_diff: [
           {
             method: "TextTransform()",
             field_dependencies: ["text-transform"]
           },
           {
-            method: "WhiteSpace()",
-            field_dependencies: ["white-space"]
+            method: "ShouldWrapLine()",
+            field_dependencies: ["text-wrap"]
           },
           {
             method: "Direction()",
@@ -185,6 +188,10 @@
             field_dependencies: ["IsStackingContextWithoutContainment",
                                  "opacity"]
           },
+          {
+            predicate: "a.AnchorDefaultDataEquivalent(b)",
+            field_dependencies: ["anchor-default"]
+          },
         ]
     },
     {
@@ -231,6 +238,7 @@
                 "justify-self", "contain", "contain-intrinsic-width",
                 "contain-intrinsic-height", "container-type",
                 "content-visibility", "aspect-ratio", "overflow-clip-margin",
+                "-internal-align-content-block",
                 "-internal-align-self-block", "orphans", "widows",
                 "scrollbar-gutter", "break-after", "break-before",
                 "break-inside", "baseline-source", "text-wrap"],

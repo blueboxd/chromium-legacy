@@ -14,6 +14,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -407,8 +408,7 @@ class CommandBufferSetup {
         share_group_, surface_, std::move(shared_context),
         config_.workarounds.use_virtualized_gl_contexts, base::DoNothing(),
         gpu_preferences_.gr_context_type);
-    context_state_->InitializeGrContext(gpu_preferences_, config_.workarounds,
-                                        nullptr);
+    context_state_->InitializeSkia(gpu_preferences_, config_.workarounds);
     context_state_->InitializeGL(gpu_preferences_, feature_info);
 
     shared_image_manager_ = std::make_unique<SharedImageManager>();
@@ -436,7 +436,7 @@ class CommandBufferSetup {
       shared_image_factory_->CreateSharedImage(
           mailbox, si_format, gfx::Size(256, 256),
           gfx::ColorSpace::CreateSRGB(), kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, gfx::kNullAcceleratedWidget, usage);
+          kPremul_SkAlphaType, gfx::kNullAcceleratedWidget, usage, "TestLabel");
     }
 
 #if defined(GPU_FUZZER_USE_RASTER_DECODER)
@@ -647,7 +647,7 @@ class CommandBufferSetup {
   std::unique_ptr<SharedImageFactory> shared_image_factory_;
 
   bool recreate_context_ = false;
-  gl::GLDisplay* display_ = nullptr;
+  raw_ptr<gl::GLDisplay> display_ = nullptr;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<SharedContextState> context_state_;

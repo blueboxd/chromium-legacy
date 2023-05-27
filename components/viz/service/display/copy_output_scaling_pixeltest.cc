@@ -216,7 +216,7 @@ class CopyOutputScalingPixelTest
       gfx::Rect rect = smaller_pass_rects[i] - copy_rect.OffsetFromOrigin();
       rect = copy_output::ComputeResultRect(rect, scale_from_, scale_to_);
       expected_bitmap.erase(
-          smaller_pass_colors[i], nullptr /* SkColorSpace* colorSpace */,
+          smaller_pass_colors[i],
           SkIRect{rect.x(), rect.y(), rect.right(), rect.bottom()});
     }
 
@@ -300,7 +300,7 @@ class CopyOutputScalingPixelTest
 // Parameters common to all test instantiations. These are tuples consisting of
 // {scale_from, scale_to, i420_format}.
 const auto kParameters =
-    testing::Combine(testing::ValuesIn(GetRendererTypesNoDawn()),
+    testing::Combine(testing::ValuesIn(GetRendererTypes()),
                      testing::Values(gfx::Vector2d(1, 1),
                                      gfx::Vector2d(2, 1),
                                      gfx::Vector2d(1, 2),

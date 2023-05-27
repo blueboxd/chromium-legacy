@@ -81,7 +81,6 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="2928420929544864228">Uppsetningu lokið.</translation>
 <translation id="2977470724722393594">Chromium er uppfært</translation>
 <translation id="2977506796191543575">Ef vefsvæði reynir að stela aðgangsorðinu þínu, eða ef þú sækir skaðlega skrá, gæti Chromium einnig sent vefslóðir í örugga vefskoðun, þar á meðal hluta af innihaldi síðna</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium er tengt við HID-tæki}one{Chromium er tengt við HID-tæki}other{Chromium er tengt við HID-tæki}}</translation>
 <translation id="3032706164202344641">Chromium getur ekki athugað aðgangsorðin þín. Reyndu aftur síðar.</translation>
 <translation id="3032787606318309379">Bætir við Chromium...</translation>
 <translation id="3038232873781883849">Bíður eftir uppsetningu...</translation>
@@ -96,7 +95,6 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="3258596308407688501">Chromium getur ekki lesið og skrifað í gagnamöppuna sína:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Þessar leiðbeiningar auðvelda þér að skilja það sem þú velur svo Chromium virki eins og þér hentar best</translation>
 <translation id="3283186697780795848">Chromium útgáfa <ph name="PRODUCT_VERSION" /> er uppsett</translation>
 <translation id="3286538390144397061">Endurræsa núna</translation>
 <translation id="328888136576916638">Lykla vantar fyrir forritaskil Google. Sumir eiginleikar Chromium verða óvirkir.</translation>
@@ -248,8 +246,10 @@ Heimildir sem þú hefur þegar veitt vefsvæðum og forritum kunna að gilda á
 <translation id="6442900851116057561">Endurræsa ChromiumOS</translation>
 <translation id="6455857529632101747">Velkomin(n) í Chromium prófíla</translation>
 <translation id="6475912303565314141">Stýrir því einnig hvaða síða birtist þegar þú ræsir Chromium.</translation>
+<translation id="648319183876919572">Enn öruggari vefskoðun gerir viðbótarráðstafanir til að vernda þig gegn skaðlegum vefsvæðum og niðurhali</translation>
 <translation id="6510925080656968729">Fjarlægja Chromium</translation>
 <translation id="6542839706527980775">Á hverjum prófíl eru geymdar Chromium upplýsingar á borð við bókamerki, feril, aðgangsorð og fleira</translation>
+<translation id="656935081669708576">Þú getur skipt um prófíl til að sjá aðgangsorð frá öðrum Chromium-prófíl</translation>
 <translation id="6570579332384693436">Til að lagfæra stafsetningarvillur sendir Chromium textann sem þú skrifar í textareiti til Google</translation>
 <translation id="6598877126913850652">Fara í tilkynningastillingar Chromium</translation>
 <translation id="6613594504749178791">Breytingar þínar munu taka gildi næst þegar þú endurræsir Chromium.</translation>
@@ -385,7 +385,6 @@ Chromium getur ekki endurheimt stillingarnar þínar.</translation>
 <translation id="924957577793602335">Lagaðu Chromium að þínum þörfum</translation>
 <translation id="93478295209880648">Vera kann að Chromium virki ekki sem skyldi vegna þess að vafrinn er ekki lengur studdur á Windows XP eða Windows Vista</translation>
 <translation id="942598560705308788">Vottorð sem Chromium stjórnar</translation>
-<translation id="959579472876010517">Nýttu Chromium sem best</translation>
 <translation id="965162752251293939">Hver er að nota Chromium?</translation>
 <translation id="967427899662692980">Njóttu hámarksöryggis Chromium</translation>
 <translation id="9792300276217204">Ávallt hreinsa vefsvæðagögn úr tækinu þegar þú lokar Chromium</translation>

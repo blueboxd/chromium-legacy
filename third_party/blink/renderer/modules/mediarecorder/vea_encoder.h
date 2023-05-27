@@ -33,7 +33,8 @@ namespace blink {
 class VEAEncoder final : public VideoTrackRecorder::Encoder,
                          public media::VideoEncodeAccelerator::Client {
  public:
-  VEAEncoder(const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
+  VEAEncoder(scoped_refptr<base::SequencedTaskRunner> encoding_task_runner,
+             const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
              const VideoTrackRecorder::OnErrorCB& on_error_cb,
              media::Bitrate::Mode bitrate_mode,
              uint32_t bits_per_second,
@@ -50,7 +51,7 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
   void BitstreamBufferReady(
       int32_t bitstream_buffer_id,
       const media::BitstreamBufferMetadata& metadata) override;
-  void NotifyError(media::VideoEncodeAccelerator::Error error) override;
+  void NotifyErrorStatus(const media::EncoderStatus& status) override;
 
   base::WeakPtr<Encoder> GetWeakPtr() { return weak_factory_.GetWeakPtr(); }
 

@@ -50,6 +50,9 @@ BASE_DECLARE_FEATURE(kEnableFeedAblation);
 // Feature flag to enable feed experiment tagging.
 BASE_DECLARE_FEATURE(kEnableFeedExperimentTagging);
 
+// Feature flag to enable the Set Up List.
+BASE_DECLARE_FEATURE(kIOSSetUpList);
+
 // Feature flag to disable Discover-controlled foregrounding refreshes.
 BASE_DECLARE_FEATURE(kFeedDisableHotStartRefresh);
 
@@ -231,6 +234,9 @@ bool IsFeedAblationEnabled();
 
 // Whether the feed experiment tagging is enabled.
 bool IsFeedExperimentTaggingEnabled();
+
+// Whether the Set Up List feature is enabled.
+bool IsIOSSetUpListEnabled();
 
 // Whether Discover-controlled foregrounding refreshes are disabled.
 bool IsFeedHotStartRefreshDisabled();

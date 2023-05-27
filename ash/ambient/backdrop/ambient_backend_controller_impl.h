@@ -35,14 +35,8 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
       OnScreenUpdateInfoFetchedCallback callback) override;
   void FetchPreviewImages(const gfx::Size& preview_size,
                           OnPreviewImagesFetchedCallback callback) override;
-  void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(const AmbientSettings& settings,
                       UpdateSettingsCallback callback) override;
-  void FetchPersonalAlbums(int banner_width,
-                           int banner_height,
-                           int num_albums,
-                           const std::string& resume_token,
-                           OnPersonalAlbumsFetchedCallback callback) override;
   void FetchSettingsAndAlbums(
       int banner_width,
       int banner_height,
@@ -50,9 +44,17 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
       OnSettingsAndAlbumsFetchedCallback callback) override;
   void FetchWeather(FetchWeatherCallback callback) override;
   const std::array<const char*, 2>& GetBackupPhotoUrls() const override;
+  std::array<const char*, 2> GetTimeOfDayVideoPreviewImageUrls(
+      AmbientVideo video) const override;
+  const char* GetPromoBannerUrl() const override;
 
  private:
   using BackdropClientConfig = chromeos::ambient::BackdropClientConfig;
+  using GetSettingsCallback =
+      base::OnceCallback<void(const absl::optional<AmbientSettings>& settings)>;
+  using OnPersonalAlbumsFetchedCallback =
+      base::OnceCallback<void(PersonalAlbums)>;
+
   void RequestAccessToken(AmbientClient::GetAccessTokenCallback callback);
 
   void FetchScreenUpdateInfoInternal(int num_topics,
@@ -67,6 +69,7 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
       std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
       std::unique_ptr<std::string> response);
 
+  void GetSettings(GetSettingsCallback callback);
   void StartToGetSettings(GetSettingsCallback callback,
                           const std::string& gaia_id,
                           const std::string& access_token);
@@ -84,6 +87,12 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
                         const AmbientSettings& settings,
                         std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
                         std::unique_ptr<std::string> response);
+
+  void FetchPersonalAlbums(int banner_width,
+                           int banner_height,
+                           int num_albums,
+                           const std::string& resume_token,
+                           OnPersonalAlbumsFetchedCallback callback);
 
   void FetchPersonalAlbumsInternal(int banner_width,
                                    int banner_height,

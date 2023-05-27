@@ -105,6 +105,7 @@
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "components/viz/common/quads/compositor_render_pass_draw_quad.h"
 #include "components/viz/common/quads/frame_deadline.h"
+#include "components/viz/common/quads/shared_element_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
@@ -122,6 +123,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_latency_info.pbzero.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -370,6 +372,10 @@ void LayerTreeHostImpl::UpdateBrowserControlsState(
     bool animate) {
   browser_controls_offset_manager_->UpdateBrowserControlsState(
       constraints, current, animate);
+}
+
+bool LayerTreeHostImpl::HasScrollLinkedAnimation(ElementId for_scroller) const {
+  return mutator_host_->HasScrollLinkedAnimation(for_scroller);
 }
 
 bool LayerTreeHostImpl::IsInHighLatencyMode() const {
@@ -1325,6 +1331,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     }
   }
 
+  frame->has_view_transition_save_directive =
+      active_tree_->HasViewTransitionSaveRequest();
+
   // Damage rects for non-root passes aren't meaningful, so set them to be
   // equal to the output rect.
   for (size_t i = 0; i + 1 < frame->render_passes.size(); ++i) {
@@ -1665,6 +1674,9 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
   // A set of viz::RenderPassDrawQuads that we have seen (stored by the
   // RenderPasses they refer to).
   base::flat_map<viz::CompositorRenderPassId, int> pass_references;
+  // A set of viz::SharedElementDrawQuad references that we have seen.
+  base::flat_set<viz::ViewTransitionElementResourceId>
+      view_transition_quad_references;
 
   // Iterate RenderPasses in draw order, removing empty render passes (except
   // the root RenderPass).
@@ -1673,6 +1685,13 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
 
     // Remove orphan viz::RenderPassDrawQuads.
     for (auto it = pass->quad_list.begin(); it != pass->quad_list.end();) {
+      if (it->material == viz::DrawQuad::Material::kSharedElement) {
+        view_transition_quad_references.insert(
+            viz::SharedElementDrawQuad::MaterialCast(*it)->resource_id);
+        ++it;
+        continue;
+      }
+
       if (it->material != viz::DrawQuad::Material::kCompositorRenderPass) {
         ++it;
         continue;
@@ -1719,12 +1738,24 @@ void LayerTreeHostImpl::RemoveRenderPasses(FrameData* frame) {
     // drop references to earlier RenderPasses allowing them to be removed to.
     viz::CompositorRenderPass* pass =
         frame->render_passes[frame->render_passes.size() - 2 - i].get();
-    if (!pass->copy_requests.empty() ||
-        pass->view_transition_element_resource_id.IsValid()) {
+
+    if (!pass->copy_requests.empty()) {
       continue;
     }
+
     if (pass_references[pass->id])
       continue;
+
+    // Retain render passes generating ViewTransition snapshots if they are
+    // referenced by a quad or this frame will process a save directive. We need
+    // to render and screenshot offscreen content as well, which won't be
+    // referenced by a quad.
+    if (pass->view_transition_element_resource_id.IsValid() &&
+        (frame->has_view_transition_save_directive ||
+         view_transition_quad_references.contains(
+             pass->view_transition_element_resource_id))) {
+      continue;
+    }
 
     for (auto it = pass->quad_list.begin(); it != pass->quad_list.end(); ++it) {
       if (const viz::CompositorRenderPassDrawQuad* quad =
@@ -4639,8 +4670,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
           caps);
     }
   } else {
-    shm = viz::bitmap_allocation::AllocateSharedBitmap(
-        upload_size, format.resource_format());
+    shm = viz::bitmap_allocation::AllocateSharedBitmap(upload_size, format);
     shared_bitmap_id = viz::SharedBitmap::GenerateId();
   }
 
@@ -4653,7 +4683,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       auto* sii = context_provider->SharedImageInterface();
       mailbox = sii->CreateSharedImage(
           format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, shared_image_usage,
+          kPremul_SkAlphaType, shared_image_usage, "LayerTreeHostUIResource",
           base::span<const uint8_t>(bitmap.GetPixels(), bitmap.SizeInBytes()));
     } else {
       DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
@@ -4718,7 +4748,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       auto* sii = context_provider->SharedImageInterface();
       mailbox = sii->CreateSharedImage(
           format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, shared_image_usage,
+          kPremul_SkAlphaType, shared_image_usage, "LayerTreeHostUIResource",
           base::span<const uint8_t>(
               reinterpret_cast<const uint8_t*>(pixmap.addr()),
               pixmap.computeByteSize()));
@@ -4739,7 +4769,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
                                     ->GenUnverifiedSyncToken();
 
     transferable = viz::TransferableResource::MakeGpu(
-        mailbox, GL_LINEAR, texture_target, sync_token, upload_size, format,
+        mailbox, texture_target, sync_token, upload_size, format,
         overlay_candidate);
   } else {
     layer_tree_frame_sink_->DidAllocateSharedBitmap(std::move(shm.region),
@@ -5248,10 +5278,19 @@ void LayerTreeHostImpl::ApplyFirstScrollTracking(const ui::LatencyInfo& latency,
 
 std::string LayerTreeHostImpl::GetHungCommitDebugInfo() const {
   return base::StringPrintf(
-      "ptfp%d pwpd%d tmrta%d ", static_cast<int>(pending_tree_fully_painted_),
-      static_cast<int>(paint_worklet_painter_ &&
-                       paint_worklet_painter_->HasOngoingDispatch()),
-      static_cast<int>(tile_manager_.IsReadyToActivate()));
+             "ptfp%d pwpd%d tmrta%d as%d gpur%d%d ltfs%d%d zc%d ",
+             static_cast<int>(pending_tree_fully_painted_),
+             static_cast<int>(paint_worklet_painter_ &&
+                              paint_worklet_painter_->HasOngoingDispatch()),
+             static_cast<int>(tile_manager_.IsReadyToActivate()),
+             static_cast<int>(GetActivelyScrollingType()),
+             static_cast<int>(use_gpu_rasterization_),
+             static_cast<int>(gpu_rasterization_status_),
+             static_cast<int>(has_valid_layer_tree_frame_sink_),
+             static_cast<int>(layer_tree_frame_sink_ &&
+                              layer_tree_frame_sink_->context_provider()),
+             static_cast<int>(settings_.use_zero_copy)) +
+         tile_manager_.GetHungCommitDebugInfo();
 }
 
 }  // namespace cc

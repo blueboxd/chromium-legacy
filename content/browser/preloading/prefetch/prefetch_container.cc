@@ -273,11 +273,13 @@ PrefetchContainer::PrefetchContainer(
     const GURL& url,
     const PrefetchType& prefetch_type,
     const blink::mojom::Referrer& referrer,
+    absl::optional<net::HttpNoVarySearchData> no_vary_search_expected,
     base::WeakPtr<PrefetchDocumentManager> prefetch_document_manager)
     : referring_render_frame_host_id_(referring_render_frame_host_id),
       prefetch_url_(url),
       prefetch_type_(prefetch_type),
       referrer_(referrer),
+      no_vary_search_expected_(std::move(no_vary_search_expected)),
       prefetch_document_manager_(prefetch_document_manager),
       ukm_source_id_(prefetch_document_manager_
                          ? prefetch_document_manager_->render_frame_host()
@@ -441,6 +443,14 @@ void PrefetchContainer::SetOnEligibilityCheckCompleteCallback(
 
   this_prefetch->on_eligibility_check_complete_callback_ =
       std::move(on_eligibility_check_complete_callback);
+}
+
+bool PrefetchContainer::IsOnEligibilityCheckCompleteCallbackRegistered(
+    const GURL& url) const {
+  SinglePrefetch* this_prefetch = GetSinglePrefetch(url);
+  DCHECK(this_prefetch);
+
+  return !this_prefetch->on_eligibility_check_complete_callback_.is_null();
 }
 
 void PrefetchContainer::RegisterCookieListener(
@@ -609,6 +619,9 @@ void PrefetchContainer::OnPrefetchedResponseHeadReceived() {
 }
 
 void PrefetchContainer::OnPrefetchComplete() {
+  UMA_HISTOGRAM_COUNTS_100("PrefetchProxy.Prefetch.RedirectChainSize",
+                           redirect_chain_.size());
+
   if (!streaming_loader_) {
     return;
   }
@@ -743,6 +756,8 @@ void PrefetchContainer::OnGetPrefetchToServe(bool blocked_until_head) {
 
 void PrefetchContainer::OnReturnPrefetchToServe(bool served) {
   if (served) {
+    UMA_HISTOGRAM_COUNTS_100("PrefetchProxy.AfterClick.RedirectChainSize",
+                             redirect_chain_.size());
     navigated_to_ = true;
   }
 
@@ -752,6 +767,12 @@ void PrefetchContainer::OnReturnPrefetchToServe(bool served) {
         base::TimeTicks::Now() - blocked_until_head_start_time_.value(),
         served);
   }
+}
+
+std::ostream& operator<<(std::ostream& ostream,
+                         const PrefetchContainer& prefetch_container) {
+  return ostream << "PrefetchContainer[" << &prefetch_container
+                 << ", URL=" << prefetch_container.GetURL() << "]";
 }
 
 PrefetchContainer::SinglePrefetch::SinglePrefetch(const GURL& url)

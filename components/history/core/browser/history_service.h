@@ -21,9 +21,12 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observation.h"
 #include "base/sequence_checker.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/task/sequenced_task_runner.h"
@@ -36,6 +39,9 @@
 #include "components/history/core/browser/url_row.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync_device_info/device_info.h"
+#include "components/sync_device_info/device_info_tracker.h"
+#include "components/sync_device_info/local_device_info_provider.h"
 #include "sql/init_status.h"
 #include "ui/base/page_transition_types.h"
 
@@ -85,7 +91,8 @@ class WebHistoryService;
 
 // The history service records page titles, visit times, and favicons, as well
 // as information about downloads.
-class HistoryService : public KeyedService {
+class HistoryService : public KeyedService,
+                       public syncer::DeviceInfoTracker::Observer {
  public:
   // Must call Init after construction. The empty constructor provided only for
   // unit tests. When using the full constructor, `history_client` may only be
@@ -591,14 +598,15 @@ class HistoryService : public KeyedService {
       base::OnceClosure callback,
       base::CancelableTaskTracker* tracker);
 
-  // Implemented and called by `ReserveNextClusterId()` below with the last
-  // cluster ID that was added to the database.
+  // Implemented and called by `ReserveNextClusterIdWithVisit()` below with the
+  // last cluster ID that was added to the database.
   using ClusterIdCallback = base::OnceCallback<void(int64_t)>;
 
-  // Adds a cluster with no visits and invokes `callback` with the ID of the
-  // new cluster. It is expected for this to only be called for local visits.
-  // Virtual for testing.
-  virtual base::CancelableTaskTracker::TaskId ReserveNextClusterId(
+  // Adds a cluster with `cluster_visit` and invokes `callback` with the ID of
+  // the new cluster. It is expected for this to only be called for local
+  // visits. Virtual for testing.
+  virtual base::CancelableTaskTracker::TaskId ReserveNextClusterIdWithVisit(
+      const ClusterVisit& cluster_visit,
       base::OnceCallback<void(int64_t)> callback,
       base::CancelableTaskTracker* tracker);
 
@@ -650,6 +658,17 @@ class HistoryService : public KeyedService {
   void RemoveObserver(HistoryServiceObserver* observer);
 
   // Generic Stuff -------------------------------------------------------------
+
+  // Sets the history service's device info tracker and local device info
+  // provider.
+  void SetDeviceInfoServices(
+      syncer::DeviceInfoTracker* device_info_tracker,
+      syncer::LocalDeviceInfoProvider* local_device_info_provider);
+
+  // syncer::DeviceInfoTracker::Observer overrides.
+  void OnDeviceInfoChange() override;
+
+  void OnDeviceInfoShutdown() override;
 
   // Schedules a HistoryDBTask for running on the history backend. See
   // HistoryDBTask for details on what this does. Takes ownership of `task`.
@@ -710,6 +729,8 @@ class HistoryService : public KeyedService {
 
   // The same as AddPageWithDetails() but takes a vector.
   void AddPagesWithDetails(const URLRows& info, VisitSource visit_source);
+
+  base::SafeRef<HistoryService> AsSafeRef();
 
   base::WeakPtr<HistoryService> AsWeakPtr();
 
@@ -792,6 +813,11 @@ class HistoryService : public KeyedService {
   // Notification from the backend that it has finished loading. Sends
   // notification (NOTIFY_HISTORY_LOADED) and sets backend_loaded_ to true.
   void OnDBLoaded();
+
+  // Generic Stuff -------------------------------------------------------------
+
+  // Sets the history backend's local device Originator Cache GUID.
+  void SendLocalDeviceOriginatorCacheGuidToBackend();
 
   // Observers ----------------------------------------------------------------
 
@@ -1033,6 +1059,10 @@ class HistoryService : public KeyedService {
   // HistoryClient::GetCanAddURLCallback().
   bool CanAddURL(const GURL& url);
 
+  // A helper function that records UMA metrics on the PageTransition type of
+  // each visit added to the VisitedLinks hashtable.
+  void LogTransitionMetricsForVisit(ui::PageTransition transition);
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   // The TaskRunner to which HistoryBackend tasks are posted. Nullptr once
@@ -1069,6 +1099,19 @@ class HistoryService : public KeyedService {
   std::unique_ptr<DeleteDirectiveHandler> delete_directive_handler_;
 
   base::OnceClosure origin_queried_closure_for_testing_;
+
+  raw_ptr<syncer::DeviceInfoTracker> device_info_tracker_ = nullptr;
+
+  base::ScopedObservation<syncer::DeviceInfoTracker,
+                          syncer::DeviceInfoTracker::Observer>
+      device_info_tracker_observation_{this};
+
+  // Subscription for change notifications to local device information; notifies
+  // when local device information becomes available.
+  base::CallbackListSubscription local_device_info_available_subscription_;
+
+  raw_ptr<syncer::LocalDeviceInfoProvider> local_device_info_provider_ =
+      nullptr;
 
   // All vended weak pointers are invalidated in Cleanup().
   base::WeakPtrFactory<HistoryService> weak_ptr_factory_{this};

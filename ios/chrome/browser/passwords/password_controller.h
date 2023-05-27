@@ -11,11 +11,14 @@
 
 #import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/password_manager/ios/ios_password_manager_driver.h"
+#import "components/password_manager/ios/password_account_storage_notice_handler.h"
 #import "components/password_manager/ios/password_form_helper.h"
 #import "components/password_manager/ios/password_generation_provider.h"
 #import "components/password_manager/ios/password_manager_client_bridge.h"
 #import "components/password_manager/ios/password_manager_driver_bridge.h"
+#import "components/password_manager/ios/password_reuse_detection_manager_client_bridge.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_client.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_reuse_detection_manager_client.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 
 @class CommandDispatcher;
@@ -29,11 +32,18 @@ namespace password_manager {
 class PasswordManagerClient;
 }  // namespace password_manager
 
+namespace safe_browsing {
+class PasswordReuseDetectionManagerClient;
+}  // namespace safe_browsing
+
 // Per-tab password controller. Handles password autofill and saving.
 // TODO(crbug.com/1272487): Refactor this into an appropriately-scoped object,
 // such as a browser agent.
 @interface PasswordController
-    : NSObject <CRWWebStateObserver, IOSChromePasswordManagerClientBridge>
+    : NSObject <CRWWebStateObserver,
+                PasswordsAccountStorageNoticeHandler,
+                IOSChromePasswordManagerClientBridge,
+                IOSChromePasswordReuseDetectionManagerClientBridge>
 
 // An object that can provide suggestions from this PasswordController.
 @property(nonatomic, readonly) id<FormSuggestionProvider> suggestionProvider;
@@ -45,6 +55,11 @@ class PasswordManagerClient;
 // The PasswordManagerClient owned by this PasswordController.
 @property(nonatomic, readonly)
     password_manager::PasswordManagerClient* passwordManagerClient;
+
+// The PasswordReuseDetectionManagerClient owned by this PasswordController.
+@property(nonatomic, readonly)
+    safe_browsing::PasswordReuseDetectionManagerClient*
+        passwordReuseDetectionManagerClient;
 
 // The PasswordManagerDriver owned by this PasswordController.
 @property(nonatomic, readonly)
@@ -69,9 +84,13 @@ class PasswordManagerClient;
 
 // This is just for testing.
 - (instancetype)
-   initWithWebState:(web::WebState*)webState
-             client:(std::unique_ptr<password_manager::PasswordManagerClient>)
-                        passwordManagerClient NS_DESIGNATED_INITIALIZER;
+        initWithWebState:(web::WebState*)webState
+                  client:
+                      (std::unique_ptr<password_manager::PasswordManagerClient>)
+                          passwordManagerClient
+    reuseDetectionClient:
+        (std::unique_ptr<safe_browsing::PasswordReuseDetectionManagerClient>)
+            passwordReuseDetectionManagerClient NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 

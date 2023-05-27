@@ -150,7 +150,7 @@ class ViewTransitionStyleTracker
 
   int CapturedTagCount() const { return captured_name_count_; }
 
-  bool IsTransitionElement(const Node* node) const;
+  bool IsTransitionElement(const Element& node) const;
   bool NeedsCaptureClipNode(const Element& node) const;
 
   // This function represents whether root itself is participating in the
@@ -204,6 +204,8 @@ class ViewTransitionStyleTracker
     // Returns the intrinsic size for the element's snapshot.
     gfx::RectF GetInkOverflowRect(bool use_cached_data) const;
     gfx::RectF GetCapturedSubrect(bool use_cached_data) const;
+    gfx::RectF GetBorderBoxRect(bool use_cached_data,
+                                float device_scale_factor) const;
 
     // Caches the current geometry state for the old snapshot.
     void CacheGeometryState();

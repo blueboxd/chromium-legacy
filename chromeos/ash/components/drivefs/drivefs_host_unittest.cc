@@ -14,6 +14,7 @@
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
@@ -22,7 +23,6 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gmock_move_support.h"
-#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
@@ -203,7 +203,7 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
 
   void PersistMachineRootID(const std::string& id) override {}
 
-  signin::IdentityManager* const identity_manager_;
+  const raw_ptr<signin::IdentityManager, ExperimentalAsh> identity_manager_;
   const AccountId account_id_;
   mojo::PendingRemote<mojom::DriveFsBootstrap> pending_bootstrap_;
   bool verbose_logging_enabled_ = false;
@@ -382,7 +382,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
-  base::MockOneShotTimer* timer_;
+  raw_ptr<base::MockOneShotTimer, ExperimentalAsh> timer_;
   absl::optional<bool> verbose_logging_enabled_;
 
   mojo::Receiver<mojom::DriveFsBootstrap> bootstrap_receiver_{this};
@@ -666,31 +666,6 @@ TEST_F(DriveFsHostTest, DisplayConfirmDialogImpl_IgnoreUnknownReasonTypes) {
       }));
   delegate_.FlushForTesting();
   EXPECT_TRUE(called);
-}
-
-TEST_F(DriveFsHostTest, DisplayConfirmDialog_AlwaysEnableIfTrue) {
-  ASSERT_NO_FATAL_FAILURE(DoMount());
-  auto reason = mojom::DialogReason::New(
-      mojom::DialogReason::Type::kEnableDocsOffline, base::FilePath());
-
-  // Set the dialog handler to always dismiss the dialog, this should get
-  // ignored if the "always enable" option is toggled.
-  host_->set_dialog_handler(base::BindLambdaForTesting(
-      [](const mojom::DialogReason& reason,
-         base::OnceCallback<void(mojom::DialogResult)> callback) {
-        std::move(callback).Run(mojom::DialogResult::kDismiss);
-      }));
-
-  host_->SetAlwaysEnableDocsOffline(true);
-  base::RunLoop run_loop;
-  base::MockCallback<DriveFsSession::DisplayConfirmDialogCallback>
-      mock_callback;
-  EXPECT_CALL(mock_callback, Run(mojom::DialogResult::kAccept))
-      .Times(1)
-      .WillOnce(RunOnceClosure(run_loop.QuitClosure()));
-
-  delegate_->DisplayConfirmDialog(std::move(reason), mock_callback.Get());
-  delegate_.FlushForTesting();
 }
 
 TEST_F(DriveFsHostTest, TeamDriveTracking) {

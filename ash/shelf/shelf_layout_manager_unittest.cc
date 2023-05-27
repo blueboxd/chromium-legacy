@@ -76,6 +76,7 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -1021,7 +1022,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   // The shelf's auto hide state won't be changed until the timer fires, so
   // force it to update now.
-  GetShelfLayoutManager()->UpdateVisibilityState();
+  GetShelfLayoutManager()->UpdateVisibilityState(/*force_layout=*/false);
   GetAppListTestHelper()->CheckVisibility(true);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
@@ -1709,7 +1710,7 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
   views::Widget* dummy = CreateTestWidget();
 
   // Window visible => auto hide behaves normally.
-  layout_manager->UpdateVisibilityState();
+  layout_manager->UpdateVisibilityState(/*force_layout=*/false);
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // Window minimized => auto hide disabled.
@@ -2939,7 +2940,7 @@ class ShelfLayoutManagerDragDropTest
   }
 
  private:
-  ui::test::EventGenerator* generator_;
+  raw_ptr<ui::test::EventGenerator, ExperimentalAsh> generator_;
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -3116,7 +3117,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   const struct TestCase {
     // The shelf widget whose bounds are used as the base for gesture start and
     // end locations.
-    const views::Widget* widget;
+    raw_ptr<const views::Widget, ExperimentalAsh> widget;
     // Whether the widget bounds are completely in the left part of the split
     // view.
     const bool left_in_split_view;
@@ -5057,7 +5058,7 @@ TEST_F(ShelfLayoutManagerWithEcheTest, AutoHideShelfWithEcheHidden) {
   // Set the shelf to auto-hide.
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
-  GetShelfLayoutManager()->UpdateVisibilityState();
+  GetShelfLayoutManager()->UpdateVisibilityState(/*force_layout=*/false);
 
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());

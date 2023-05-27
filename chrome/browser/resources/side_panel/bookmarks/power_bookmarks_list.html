@@ -19,7 +19,10 @@
 
   cr-toast {
     justify-content: space-between;
-    margin: 58px 8px;
+    left: 50%;
+    margin: 58px 0;
+    transform: translate(-50%, 0);
+    width: calc(100% - 16px);
   }
 
   cr-toolbar-search-field {
@@ -91,7 +94,7 @@
   }
 
   :host-context([chrome-refresh-2023]) sp-heading {
-    margin: 8px 16px;
+    margin: var(--sp-card-block-padding) var(--sp-card-inline-padding);
   }
 
   .icon-button-row {
@@ -138,12 +141,39 @@
       background: var(--google-grey-900-white-4-percent);
     }
   }
+
+  :host-context([chrome-refresh-2023]) cr-toolbar-selection-overlay {
+    --cr-toolbar-selection-overlay-slot-gap: 8px;
+    background: transparent;
+    font-weight: 500;
+  }
+
+  :host-context([chrome-refresh-2023])
+      cr-toolbar-selection-overlay::part(clearIcon),
+  :host-context([chrome-refresh-2023])
+      cr-toolbar-selection-overlay cr-icon-button {
+    --cr-icon-button-icon-size: 20px;
+    height: 28px;
+    width: 28px;
+  }
+
+  :host-context([chrome-refresh-2023])
+      cr-toolbar-selection-overlay::part(clearIcon) {
+    margin-inline-end: 0;
+    margin-inline-start: -4px;
+  }
+
+  :host-context([chrome-refresh-2023]):host(:not([has-scrollbars_]))
+      sp-footer:has(cr-toolbar-selection-overlay[show]) {
+    border-top: solid 1px var(--color-side-panel-edit-footer-border);
+  }
 </style>
 
 <div class="column" id="powerBookmarksContainer">
   <cr-toolbar-search-field id="searchField" label="$i18n{searchBookmarks}"
       clear-label="$i18n{clearSearch}" on-search-changed="onSearchChanged_"
-      disabled="[[editing_]]" hidden="[[guestMode_]]">
+      disabled="[[editing_]]" hidden="[[guestMode_]]"
+      on-blur="onSearchBlurred_">
   </cr-toolbar-search-field>
   <div class="label-row" hidden="[[guestMode_]]"
       header-hidden$="[[shouldHideHeader_(
@@ -163,7 +193,8 @@
     <sp-heading
         hidden$="[[shouldHideHeader_(
             labels_.*, searchQuery_, shownBookmarks_)]]"
-        back-button-label="[[getBackButtonLabel_(activeFolderPath_.*)]]"
+        back-button-title="$i18n{tooltipBack}"
+        back-button-aria-label="[[getBackButtonLabel_(activeFolderPath_.*)]]"
         on-back-button-click="onBackClicked_"
         hide-back-button="[[!activeFolderPath_.length]]"
         disable-back-button="[[disableBackButton_(
@@ -175,16 +206,19 @@
       </div>
       <cr-icon-button slot="buttons" class="sort-menu-button"
           iron-icon="sp:filter-list"
+          title="$i18n{tooltipOrganize}"
           aria-label="$i18n{sortMenuA11yLabel}"
           aria-description="[[getSortLabel_(activeSortIndex_)]]"
           on-click="onShowSortMenuClicked_">
       </cr-icon-button>
       <cr-icon-button slot="buttons" iron-icon="bookmarks:create-new-folder"
           disabled="[[editing_]]"
+          title="$i18n{tooltipNewFolder}"
           aria-label="$i18n{createNewFolderA11yLabel}"
           on-click="onAddNewFolderClicked_"></cr-icon-button>
       <cr-icon-button slot="buttons" class="icon-edit"
           disabled="[[!shownBookmarks_.length]]"
+          title="$i18n{tooltipEdit}"
           aria-label="$i18n{editBookmarkListA11yLabel}"
           aria-pressed="[[editing_]]"
           aria-disabled="[[!shownBookmarks_.length]]"
@@ -192,8 +226,7 @@
     </sp-heading>
 
     <div id="bookmarks" class="bookmarks sp-scroller"
-        hidden="[[hasNoBookmarksInActiveFolder_(shownBookmarks_,
-                                                activeFolderPath_.*)]]"
+        hidden="[[!shownBookmarks_.length]]"
         role="[[getBookmarksListRole_(editing_)]]"
         aria-multiselectable="[[editing_]]" scrollable>
       <iron-list id="shownBookmarksIronList"
@@ -205,6 +238,7 @@
                               compact_)]]"
               compact="[[compact_]]" trailing-icon="cr:more-vert"
               trailing-icon-aria-label="$i18n{bookmarkOptionsA11yLabel}"
+              trailing-icon-tooltip="$i18n{tooltipMore}"
               has-checkbox="[[editing_]]"
               checkbox-disabled="[[!canEdit_(item)]]"
               has-input="[[renamingItem_(item.id, renamingId_)]]"
@@ -217,7 +251,9 @@
               row-aria-description="[[getBookmarkA11yDescription_(item)]]"
               tabindex$="[[tabIndex]]"
               image-urls="[[getBookmarkImageUrls_(
-                            item, item.*, imageUrls_.*)]]">
+                            item, item.*, imageUrls_.*)]]"
+              force-hover="[[getBookmarkForceHover_(
+                            item, contextMenuBookmark_)]]">
             <template is="dom-if" restamp
                 if="[[isPriceTracked(item, trackedProductInfos_.*)]]">
               <sp-list-item-badge slot="badges"
@@ -241,17 +277,16 @@
   </div>
 
   <sp-empty-state
-      hidden="[[!hasNoBookmarksInActiveFolder_(shownBookmarks_,
-                                               activeFolderPath_.*)]]"
+      hidden="[[shownBookmarks_.length]]"
       guest$="[[guestMode_]]"
-      image-path="./images/bookmarks_empty.svg"
-      dark-image-path="./images/bookmarks_empty_dark.svg"
-      heading="[[getEmptyTitle_()]]"
-      body="[[getEmptyBody_()]]">
+      image-path="[[getEmptyImagePath_(labels_.*, searchQuery_)]]"
+      dark-image-path="[[getEmptyImagePathDark_(labels_.*, searchQuery_)]]"
+      heading="[[getEmptyTitle_(labels_.*, searchQuery_)]]"
+      body="[[getEmptyBody_(labels_.*, searchQuery_)]]">
   </sp-empty-state>
   <sp-footer
-      pinned="[[!hasNoBookmarksInActiveFolder_(shownBookmarks_,
-                                               activeFolderPath_.*)]]">
+      hidden="[[shouldShowEmptySearchState_(labels_.*, searchQuery_)]]"
+      pinned="[[shownBookmarks_.length]]">
     <cr-button class="floating-button"
         hidden="[[hideAddTabButton_(editing_)]]"
         on-click="onAddTabClicked_"
@@ -290,7 +325,7 @@
       <iron-icon icon="cr:check"
           invisible$="[[!sortMenuItemIsSelected_(item, activeSortIndex_)]]">
       </iron-icon>
-      [[getSortMenuItemLabel_(item)]]
+      [[getSortMenuItemLowerLabel_(item)]]
     </button>
   </template>
   <hr>
@@ -322,7 +357,8 @@
     on-delete-clicked="onContextMenuDeleteClicked_"
     on-disabled-feature="showDisabledFeatureDialog_"
     on-edit-clicked="onContextMenuEditClicked_"
-    on-rename-clicked="setRenamingId_">
+    on-rename-clicked="setRenamingId_"
+    on-close="onContextMenuClosed_">
 </power-bookmarks-context-menu>
 
 <cr-lazy-render id="deletionToast">

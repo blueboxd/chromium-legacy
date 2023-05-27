@@ -11,11 +11,11 @@
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_view_controller.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_string_util.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 
@@ -108,40 +108,22 @@
 
 - (void)confirmationAlertSecondaryAction {
   LogUserInteractionWithFullscreenPromo();
-  if (IsInRemindMeLaterGroup()) {
-    if (self.defaultBrowerPromoViewController.tertiaryActionString) {
-      // When the "Remind Me Later" button is visible, it is the secondary
-      // button, while the "No Thanks" button is the tertiary button.
-      [self logDefaultBrowserFullscreenPromoRemindMeHistogramForAction:
-                IOSDefaultBrowserFullscreenPromoAction::kRemindMeLater];
-      base::RecordAction(base::UserMetricsAction(
-          "IOS.DefaultBrowserFullscreenPromo.RemindMeTapped"));
-      LogRemindMeLaterPromoActionInteraction();
-      [self NotifyFETRemindMeLater];
-    } else {
-      [self logDefaultBrowserFullscreenRemindMeSecondPromoHistogramForAction:
-                IOSDefaultBrowserFullscreenPromoAction::kCancel];
-      base::RecordAction(base::UserMetricsAction(
-          "IOS.DefaultBrowserFullscreenPromo.Dismissed"));
-      [self recordDefaultBrowserPromoShown];
-    }
-  } else {
-    [self logDefaultBrowserFullscreenPromoHistogramForAction:
-              IOSDefaultBrowserFullscreenPromoAction::kCancel];
-    base::RecordAction(
-        base::UserMetricsAction("IOS.DefaultBrowserFullscreenPromo.Dismissed"));
-    [self recordDefaultBrowserPromoShown];
-  }
+  [self logDefaultBrowserFullscreenPromoHistogramForAction:
+            IOSDefaultBrowserFullscreenPromoAction::kCancel];
+  base::RecordAction(
+      base::UserMetricsAction("IOS.DefaultBrowserFullscreenPromo.Dismissed"));
+  [self recordDefaultBrowserPromoShown];
   [self.handler hidePromo];
 }
 
 - (void)confirmationAlertTertiaryAction {
   DCHECK(IsInRemindMeLaterGroup());
   [self logDefaultBrowserFullscreenPromoRemindMeHistogramForAction:
-            IOSDefaultBrowserFullscreenPromoAction::kCancel];
-  base::RecordAction(
-      base::UserMetricsAction("IOS.DefaultBrowserFullscreenPromo.Dismissed"));
-  LogUserInteractionWithFullscreenPromo();
+            IOSDefaultBrowserFullscreenPromoAction::kRemindMeLater];
+  base::RecordAction(base::UserMetricsAction(
+      "IOS.DefaultBrowserFullscreenPromo.RemindMeTapped"));
+  LogRemindMeLaterPromoActionInteraction();
+  [self NotifyFETRemindMeLater];
   [self recordDefaultBrowserPromoShown];
   [self.handler hidePromo];
 }

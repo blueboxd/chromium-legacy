@@ -14,6 +14,7 @@
 #include "base/functional/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/notreached.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
@@ -31,11 +32,11 @@
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/ozone/common/bitmap_cursor.h"
-#include "ui/ozone/common/features.h"
 #include "ui/ozone/platform/wayland/common/wayland_overlay_config.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
@@ -72,8 +73,8 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
     : delegate_(delegate),
       connection_(connection),
       frame_manager_(std::make_unique<WaylandFrameManager>(this, connection)),
-      wayland_overlay_delegation_enabled_(connection->viewporter() &&
-                                          IsWaylandOverlayDelegationEnabled()),
+      wayland_overlay_delegation_enabled_(
+          connection->viewporter() && connection->ShouldUseOverlayDelegation()),
       accelerated_widget_(
           connection->window_manager()->AllocateAcceleratedWidget()),
       ui_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()) {
@@ -290,6 +291,9 @@ void WaylandWindow::CancelDrag() {
 }
 
 void WaylandWindow::Show(bool inactive) {
+  // Initially send the window geometry. After this, we only update window
+  // geometry when the value in latched_state_ updates.
+  SetWindowGeometry(latched_state_.bounds_dip.size());
   frame_manager_->MaybeProcessPendingFrame();
 }
 
@@ -323,6 +327,10 @@ void WaylandWindow::OnChannelDestroyed() {
   frame_manager_->RecordFrame(
       std::make_unique<WaylandFrame>(root_surface(), wl::WaylandOverlayConfig(),
                                      std::move(subsurfaces_to_overlays)));
+}
+
+bool WaylandWindow::SupportsConfigureMinimizedState() const {
+  return false;
 }
 
 void WaylandWindow::SetAuraSurface(zaura_surface* aura_surface) {
@@ -461,11 +469,11 @@ void WaylandWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
 void WaylandWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {
-  restored_size_dip_ = bounds.size();
+  restored_bounds_dip_ = bounds;
 }
 
 gfx::Rect WaylandWindow::GetRestoredBoundsInDIP() const {
-  return gfx::Rect(restored_size_dip_);
+  return restored_bounds_dip_;
 }
 
 bool WaylandWindow::ShouldWindowContentsBeTransparent() const {
@@ -715,6 +723,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
   std::vector<gfx::Rect> region{gfx::Rect{latched_state().size_px}};
   root_surface_->set_opaque_region(&region);
   root_surface_->ApplyPendingState();
+
   connection_->Flush();
 
   return true;
@@ -942,7 +951,8 @@ bool WaylandWindow::CommitOverlays(
             gfx::RectF(visual_size), gfx::RectF(),
             root_surface()->use_blending(), gfx::Rect(),
             root_surface()->opacity(), gfx::OverlayPriorityHint::kNone,
-            rounded_clip_bounds, gfx::ColorSpace::CreateSRGB(), absl::nullopt),
+            rounded_clip_bounds.value_or(gfx::RRectF()),
+            gfx::ColorSpace::CreateSRGB(), absl::nullopt),
         nullptr, root_surface()->buffer_id(), buffer_scale);
   }
 
@@ -955,6 +965,11 @@ bool WaylandWindow::CommitOverlays(
 
 void WaylandWindow::UpdateCursorShape(scoped_refptr<BitmapCursor> cursor) {
   DCHECK(cursor);
+  CHECK(connection_->surface_submission_in_pixel_coordinates() ||
+        cursor->type() == CursorType::kNone ||
+        base::IsValueInRangeForNumericType<int>(
+            cursor->cursor_image_scale_factor()));
+
   absl::optional<int32_t> shape =
       WaylandZcrCursorShapes::ShapeFromType(cursor->type());
 
@@ -978,8 +993,8 @@ void WaylandWindow::UpdateCursorShape(scoped_refptr<BitmapCursor> cursor) {
     connection_->zcr_cursor_shapes()->SetCursorShape(shape.value());
   } else {  // Use client-side bitmap cursors as fallback.
     // Translate physical pixels to DIPs.
-    gfx::Point hotspot_in_dips =
-        gfx::ScaleToRoundedPoint(cursor->hotspot(), 1.0f / ui_scale_);
+    gfx::Point hotspot_in_dips = gfx::ScaleToRoundedPoint(
+        cursor->hotspot(), 1.0f / cursor->cursor_image_scale_factor());
     connection_->SetCursorBitmap(
         cursor->bitmaps(), hotspot_in_dips,
         std::ceil(cursor->cursor_image_scale_factor()));
@@ -1055,21 +1070,6 @@ void WaylandWindow::RequestState(PlatformWindowDelegate::State state,
   state.size_px =
       gfx::ScaleToEnclosingRect(state.bounds_dip, state.window_scale).size();
 
-  if (in_flight_requests_.empty() && state == latched_state_) {
-    // If the requested state is latched, and no buffers will change the latched
-    // state until after this request, then ack it immediately. This is relied
-    // upon during window initialization, where we can receive a buffer before
-    // the corresponding configure. We need to ack on receiving the configure,
-    // rather than latching the buffer. This also handles the case of updating
-    // the window geometry when decorations are updated.
-    StateRequest req;
-    req.state = state;
-    req.serial = serial;
-    // Make sure wayland messages are delivered during window initialisation.
-    LatchStateRequest(req, /*force=*/true);
-    return;
-  }
-
   if (!in_flight_requests_.empty() &&
       in_flight_requests_.back().state == state) {
     // If we already asked for this configure state, we can send back a higher
@@ -1128,7 +1128,7 @@ void WaylandWindow::ProcessSequencePoint(int64_t viz_seq) {
   }
 
   // Latch the latest state which was actually applied.
-  LatchStateRequest(*iter, /*force=*/false);
+  LatchStateRequest(*iter);
 
   in_flight_requests_.erase(in_flight_requests_.begin(), ++iter);
 
@@ -1193,12 +1193,12 @@ gfx::Rect WaylandWindow::AdjustBoundsToConstraintsDIP(
   return adjusted_bounds_dip;
 }
 
-void WaylandWindow::LatchStateRequest(const StateRequest& req, bool force) {
+void WaylandWindow::LatchStateRequest(const StateRequest& req) {
   // Latch the most up to date state we have a frame back for.
   auto old_state = latched_state_;
   latched_state_ = req.state;
 
-  if (force || req.state.bounds_dip.size() != old_state.bounds_dip.size()) {
+  if (req.state.bounds_dip.size() != old_state.bounds_dip.size()) {
     SetWindowGeometry(req.state.bounds_dip.size());
   }
   UpdateWindowMask();
@@ -1235,7 +1235,19 @@ void WaylandWindow::MaybeApplyLatestStateRequest(bool force) {
   auto old = applied_state_;
   applied_state_ = latest.state;
 
+  // OnStateUpdate may return -1 if the state update does not require a new
+  // frame to be considered synchronized. For example, this can happen if the
+  // old and new states are the same, or it only changes the origin of the
+  // bounds.
   latest.viz_seq = delegate()->OnStateUpdate(old, latest.state);
+
+  // If we have state requests which don't require synchronization to latch, or
+  // if no frames will be produced, ack them immediately. Using -2 (or any
+  // negative number that isn't -1) will cause all requests with viz_seq==-1 to
+  // be latched. We don't use -1 because ProcessSequencePoint has a special case
+  // to re-map -1 to a large number to handle GPU process crashes.
+  constexpr int64_t kLatchAllWithoutVizSeq = -2;
+  ProcessSequencePoint(kLatchAllWithoutVizSeq);
 
   // Latch in tests immediately if the test config is set.
   // Otherwise, such tests as interactive_ui_tests fail.

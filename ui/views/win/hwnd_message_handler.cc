@@ -1073,6 +1073,17 @@ void HWNDMessageHandler::FrameTypeChanged() {
     PerformDwmTransition();
 }
 
+void HWNDMessageHandler::PaintAsActiveChanged() {
+  if (!delegate_->HasNonClientView() || !delegate_->CanActivate() ||
+      !delegate_->HasFrame() ||
+      (delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN)) {
+    return;
+  }
+
+  DefWindowProcWithRedrawLock(WM_NCACTIVATE, delegate_->ShouldPaintAsActive(),
+                              0);
+}
+
 void HWNDMessageHandler::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                         const gfx::ImageSkia& app_icon) {
   if (!window_icon.isNull()) {
@@ -1122,11 +1133,16 @@ void HWNDMessageHandler::SetFullscreen(bool fullscreen,
     PerformDwmTransition();
 }
 
-void HWNDMessageHandler::SetAspectRatio(float aspect_ratio) {
+void HWNDMessageHandler::SetAspectRatio(float aspect_ratio,
+                                        const gfx::Size& excluded_margin) {
   // If the aspect ratio is not in the valid range, do nothing.
   DCHECK_GT(aspect_ratio, 0.0f);
 
   aspect_ratio_ = aspect_ratio;
+
+  // Convert to pixels.
+  excluded_margin_ =
+      display::win::ScreenWin::DIPToScreenSize(hwnd(), excluded_margin);
 
   // When the aspect ratio is set, size the window to adhere to it. This keeps
   // the same origin point as the original window.
@@ -3496,21 +3512,10 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouchOrNonClient(
   return 0;
 }
 
-LRESULT HWNDMessageHandler::HandlePointerEventTypePenClient(UINT message,
-                                                            WPARAM w_param,
-                                                            LPARAM l_param) {
-  UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
-  using GetPointerPenInfoFn = BOOL(WINAPI*)(UINT32, POINTER_PEN_INFO*);
-  POINTER_PEN_INFO pointer_pen_info;
-  static const auto get_pointer_pen_info =
-      reinterpret_cast<GetPointerPenInfoFn>(
-          base::win::GetUser32FunctionPointer("GetPointerPenInfo"));
-  if (!get_pointer_pen_info ||
-      !get_pointer_pen_info(pointer_id, &pointer_pen_info)) {
-    SetMsgHandled(FALSE);
-    return -1;
-  }
-
+LRESULT HWNDMessageHandler::HandlePointerEventTypePen(
+    UINT message,
+    UINT32 pointer_id,
+    POINTER_PEN_INFO pointer_pen_info) {
   POINT client_point = pointer_pen_info.pointerInfo.ptPixelLocationRaw;
   ScreenToClient(hwnd(), &client_point);
   gfx::Point point = gfx::Point(client_point.x, client_point.y);
@@ -3538,6 +3543,19 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePenClient(UINT message,
   if (ref)
     SetMsgHandled(TRUE);
   return 0;
+}
+
+LRESULT HWNDMessageHandler::HandlePointerEventTypePenClient(UINT message,
+                                                            WPARAM w_param,
+                                                            LPARAM l_param) {
+  UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
+  POINTER_PEN_INFO pointer_pen_info;
+  if (!GetPointerPenInfo(pointer_id, &pointer_pen_info)) {
+    SetMsgHandled(FALSE);
+    return -1;
+  }
+
+  return HandlePointerEventTypePen(message, pointer_id, pointer_pen_info);
 }
 
 bool HWNDMessageHandler::IsSynthesizedMouseMessage(unsigned int message,
@@ -3784,8 +3802,9 @@ void HWNDMessageHandler::SizeWindowToAspectRatio(UINT param,
   if (!max_window_size.IsEmpty())
     max_size_param = max_window_size;
 
-  gfx::SizeRectToAspectRatio(GetWindowResizeEdge(param), aspect_ratio_.value(),
-                             min_window_size, max_size_param, window_rect);
+  gfx::SizeRectToAspectRatioWithExcludedMargin(
+      GetWindowResizeEdge(param), aspect_ratio_.value(), min_window_size,
+      max_size_param, excluded_margin_, *window_rect);
 }
 
 POINT HWNDMessageHandler::GetCursorPos() const {

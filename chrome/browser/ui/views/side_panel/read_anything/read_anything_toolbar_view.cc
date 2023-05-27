@@ -51,6 +51,7 @@ ReadAnythingToolbarView::ReadAnythingToolbarView(
   combobox->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum));
+  combobox->SetGroup(kToolbarGroupId);
 
   // Create the decrease/increase text size buttons.
   auto decrease_size_button = std::make_unique<ReadAnythingButtonView>(
@@ -59,6 +60,9 @@ ReadAnythingToolbarView::ReadAnythingToolbarView(
       kTextDecreaseIcon, kIconSize, gfx::kPlaceholderColor,
       l10n_util::GetStringUTF16(
           IDS_READING_MODE_DECREASE_FONT_SIZE_BUTTON_LABEL));
+  decrease_size_button->SetProperty(views::kCrossAxisAlignmentKey,
+                                    views::LayoutAlignment::kCenter);
+  decrease_size_button->SetGroup(kToolbarGroupId);
 
   auto increase_size_button = std::make_unique<ReadAnythingButtonView>(
       base::BindRepeating(&ReadAnythingToolbarView::IncreaseFontSizeCallback,
@@ -66,6 +70,9 @@ ReadAnythingToolbarView::ReadAnythingToolbarView(
       kTextIncreaseIcon, kIconSize, gfx::kPlaceholderColor,
       l10n_util::GetStringUTF16(
           IDS_READING_MODE_INCREASE_FONT_SIZE_BUTTON_LABEL));
+  increase_size_button->SetProperty(views::kCrossAxisAlignmentKey,
+                                    views::LayoutAlignment::kCenter);
+  increase_size_button->SetGroup(kToolbarGroupId);
 
   // Create theme selection menubutton.
   auto colors_button = std::make_unique<ReadAnythingMenuButton>(
@@ -74,22 +81,25 @@ ReadAnythingToolbarView::ReadAnythingToolbarView(
       kPaletteIcon,
       l10n_util::GetStringUTF16(IDS_READING_MODE_COLORS_COMBOBOX_LABEL),
       delegate_->GetColorsModel());
+  colors_button->SetGroup(kToolbarGroupId);
 
   // Create line spacing menubutton.
   auto line_spacing_button = std::make_unique<ReadAnythingMenuButton>(
       base::BindRepeating(&ReadAnythingToolbarView::ChangeLineSpacingCallback,
                           weak_pointer_factory_.GetWeakPtr()),
-      kLineSpacingIcon,
+      kReadAnythingLineSpacingIcon,
       l10n_util::GetStringUTF16(IDS_READING_MODE_LINE_SPACING_COMBOBOX_LABEL),
       delegate_->GetLineSpacingModel());
+  line_spacing_button->SetGroup(kToolbarGroupId);
 
   // Create letter spacing menubutton.
   auto letter_spacing_button = std::make_unique<ReadAnythingMenuButton>(
       base::BindRepeating(&ReadAnythingToolbarView::ChangeLetterSpacingCallback,
                           weak_pointer_factory_.GetWeakPtr()),
-      kLetterSpacingIcon,
+      kReadAnythingLetterSpacingIcon,
       l10n_util::GetStringUTF16(IDS_READING_MODE_LETTER_SPACING_COMBOBOX_LABEL),
       delegate_->GetLetterSpacingModel());
+  letter_spacing_button->SetGroup(kToolbarGroupId);
 
   // Add all views as children.
   font_combobox_ = AddChildView(std::move(combobox));
@@ -162,6 +172,7 @@ void ReadAnythingToolbarView::OnReadAnythingThemeChanged(
     ui::ColorId background_color_id,
     ui::ColorId separator_color_id,
     ui::ColorId dropdown_color_id,
+    ui::ColorId selected_dropdown_color_id,
     read_anything::mojom::LineSpacing line_spacing,
     read_anything::mojom::LetterSpacing letter_spacing) {
   if (font_scale > kReadAnythingMinimumFontScale) {
@@ -195,18 +206,25 @@ void ReadAnythingToolbarView::OnReadAnythingThemeChanged(
 
   colors_button_->SetIcon(kPaletteIcon, kIconSize, foreground_color_id);
 
-  line_spacing_button_->SetIcon(kLineSpacingIcon, kIconSize,
+  line_spacing_button_->SetIcon(kReadAnythingLineSpacingIcon, kIconSize,
                                 foreground_color_id);
-  letter_spacing_button_->SetIcon(kLetterSpacingIcon, kIconSize,
+  letter_spacing_button_->SetIcon(kReadAnythingLetterSpacingIcon, kIconSize,
                                   foreground_color_id);
 
+  // Update fonts.
+  colors_button_->SetFont(font_name);
+  line_spacing_button_->SetFont(font_name);
+  letter_spacing_button_->SetFont(font_name);
+
   // Update the background colors for the dropdowns.
-  colors_button_->SetDropdownColors(dropdown_color_id, foreground_color_id);
-  letter_spacing_button_->SetDropdownColors(dropdown_color_id,
-                                            foreground_color_id);
-  line_spacing_button_->SetDropdownColors(dropdown_color_id,
-                                          foreground_color_id);
-  font_combobox_->SetDropdownColors(dropdown_color_id, foreground_color_id);
+  colors_button_->SetDropdownColorIds(dropdown_color_id, foreground_color_id,
+                                      selected_dropdown_color_id);
+  letter_spacing_button_->SetDropdownColorIds(
+      dropdown_color_id, foreground_color_id, selected_dropdown_color_id);
+  line_spacing_button_->SetDropdownColorIds(
+      dropdown_color_id, foreground_color_id, selected_dropdown_color_id);
+  font_combobox_->SetDropdownColorIds(dropdown_color_id, foreground_color_id,
+                                      selected_dropdown_color_id);
 
   for (views::Separator* separator : separators_) {
     separator->SetColorId(separator_color_id);

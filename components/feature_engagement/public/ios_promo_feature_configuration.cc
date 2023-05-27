@@ -4,6 +4,7 @@
 
 #include "components/feature_engagement/public/ios_promo_feature_configuration.h"
 
+#include "base/feature_list.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "components/feature_engagement/public/configuration.h"
@@ -20,7 +21,9 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
-    config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    if (base::FeatureList::IsEnabled(kIPHGroups)) {
+      config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    }
     config->used =
         EventConfig("app_store_promo_used", Comparator(EQUAL, 0), 365, 365);
     config->trigger =
@@ -35,7 +38,9 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
-    config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    if (base::FeatureList::IsEnabled(kIPHGroups)) {
+      config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    }
     config->used =
         EventConfig("whats_new_promo_used", Comparator(EQUAL, 0), 365, 365);
     // What's New promo should only ever trigger once.
@@ -46,6 +51,24 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     return config;
   }
 
+  if (kIPHiOSPromoDefaultBrowserFeature.name == feature->name) {
+    // Should trigger once only, and only after Chrome has been opened 7 or more
+    // times.
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    config->used = EventConfig("default_browser_promo_used",
+                               Comparator(EQUAL, 0), 365, 365);
+    // Default Browser promo should only ever trigger once.
+    config->trigger = EventConfig("default_browser_promo_trigger",
+                                  Comparator(EQUAL, 0), 1000, 1000);
+    config->event_configs.insert(EventConfig(
+        "chrome_opened", Comparator(GREATER_THAN_OR_EQUAL, 7), 365, 365));
+    return config;
+  }
+
   if (kIPHiOSPromoPostRestoreFeature.name == feature->name) {
     // Should always trigger when asked, as it helps users recover from being
     // signed-out after restoring their device.
@@ -53,7 +76,9 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
-    config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    if (base::FeatureList::IsEnabled(kIPHGroups)) {
+      config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    }
     config->used =
         EventConfig("post_restore_promo_used", Comparator(EQUAL, 0), 365, 365);
     // Post Restore promo should always show when requested.
@@ -70,7 +95,9 @@ absl::optional<FeatureConfig> GetClientSideiOSPromoFeatureConfig(
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
-    config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    if (base::FeatureList::IsEnabled(kIPHGroups)) {
+      config->groups.push_back(kiOSFullscreenPromosGroup.name);
+    }
     config->used = EventConfig("credential_provider_extension_promo_used",
                                Comparator(EQUAL, 0), 365, 365);
     config->trigger = EventConfig("credential_provider_extension_promo_trigger",

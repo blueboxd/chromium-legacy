@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/dom/element_rare_data.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data_vector.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
@@ -339,11 +338,7 @@ Node::~Node() {
 
 NodeRareData& Node::CreateRareData() {
   if (IsElementNode()) {
-    if (RuntimeEnabledFeatures::ElementSuperRareDataEnabled()) {
-      data_ = MakeGarbageCollected<ElementRareDataVector>(data_);
-    } else {
-      data_ = MakeGarbageCollected<ElementRareData>(data_);
-    }
+    data_ = MakeGarbageCollected<ElementRareDataVector>(data_);
   } else {
     data_ = MakeGarbageCollected<NodeRareData>(std::move(*data_));
   }
@@ -2584,11 +2579,7 @@ ExecutionContext* Node::GetExecutionContext() const {
 
 void Node::WillMoveToNewDocument(Document& old_document,
                                  Document& new_document) {
-#if DCHECK_IS_ON()
-  if (RuntimeEnabledFeatures::UseSeparateTraversalForWillMoveEnabled()) {
-    DCHECK_NE(&GetDocument(), &new_document);
-  }
-#endif  // DCHECK_IS_ON()
+  DCHECK_NE(&GetDocument(), &new_document);
 
   // In rare situations, this node may be the focused element of the old
   // document. In this case, we need to clear the focused element of the old

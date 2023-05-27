@@ -12,8 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_features.h"
@@ -25,6 +23,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/skia_conversions.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/cascading_property.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -173,6 +172,13 @@ void FocusRing::SetHaloInset(float halo_inset) {
   OnPropertyChanged(&halo_inset_, PropertyEffects::kPropertyEffectsPaint);
 }
 
+void FocusRing::SetOutsetFocusRingDisabled(bool disable) {
+  outset_focus_ring_disabled_ = disable;
+}
+bool FocusRing::GetOutsetFocusRingDisabled() const {
+  return outset_focus_ring_disabled_;
+}
+
 bool FocusRing::ShouldPaintForTesting() {
   return ShouldPaint();
 }
@@ -245,10 +251,7 @@ void FocusRing::OnPaint(gfx::Canvas* canvas) {
   cc::PaintFlags paint;
   paint.setAntiAlias(true);
   paint.setStyle(cc::PaintFlags::kStroke_Style);
-  if (ShouldSetOutsetFocusRing()) {
-    float focus_ring_adjustment = halo_thickness_ / 2 + kFocusRingOutset;
-    ring_rect.outset(focus_ring_adjustment, focus_ring_adjustment);
-  } else {
+  if (!ShouldSetOutsetFocusRing()) {
     // TODO(crbug.com/1417057): kDrawFocusRingBackgroundOutline should be
     // removed when ChromeRefresh is fully rolled out.
     if (parent()->GetProperty(kDrawFocusRingBackgroundOutline)) {
@@ -273,28 +276,21 @@ SkRRect FocusRing::GetRingRoundRect() const {
 
   SkRect bounds;
   SkRRect rbounds;
-  if (path.isRect(&bounds))
+  if (path.isRect(&bounds)) {
+    AdjustBounds(bounds);
     return RingRectFromPathRect(bounds);
+  }
 
   if (path.isOval(&bounds)) {
+    AdjustBounds(bounds);
     gfx::RectF rect = gfx::SkRectToRectF(bounds);
     View::ConvertRectToTarget(parent(), this, &rect);
     return SkRRect::MakeOval(gfx::RectFToSkRect(rect));
   }
 
   CHECK(path.isRRect(&rbounds));
+  AdjustBounds(rbounds);
   return RingRectFromPathRect(rbounds);
-}
-
-void FocusRing::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  // Mark the focus ring in the accessibility tree as ignored.
-  // Marking it as invisible keeps it in the accessibility tree with a "hidden"
-  // attribute where assistive technologies can still find it. Marking it as
-  // ignored causes it to be removed from the accessibility tree. This also
-  // ensures that when a non-used control, such as the minimize button in a
-  // JavaScript alert, is marked as ignored, that control's parent will not
-  // have any "invisible" FocusRing children.
-  node_data->AddState(ax::mojom::State::kIgnored);
 }
 
 void FocusRing::OnThemeChanged() {
@@ -314,6 +310,23 @@ void FocusRing::OnViewBlurred(View* view) {
 FocusRing::FocusRing() {
   // Don't allow the view to process events.
   SetCanProcessEventsWithinSubtree(false);
+
+  // This should never be included in the accessibility tree.
+  GetViewAccessibility().OverrideIsIgnored(true);
+}
+
+void FocusRing::AdjustBounds(SkRect& rect) const {
+  if (ShouldSetOutsetFocusRing()) {
+    float focus_ring_adjustment = halo_thickness_ / 2 + kFocusRingOutset;
+    rect.outset(focus_ring_adjustment, focus_ring_adjustment);
+  }
+}
+
+void FocusRing::AdjustBounds(SkRRect& rect) const {
+  if (ShouldSetOutsetFocusRing()) {
+    float focus_ring_adjustment = halo_thickness_ / 2 + kFocusRingOutset;
+    rect.outset(focus_ring_adjustment, focus_ring_adjustment);
+  }
 }
 
 SkPath FocusRing::GetPath() const {
@@ -403,6 +416,7 @@ BEGIN_METADATA(FocusRing, View)
 ADD_PROPERTY_METADATA(absl::optional<ui::ColorId>, ColorId)
 ADD_PROPERTY_METADATA(float, HaloInset)
 ADD_PROPERTY_METADATA(float, HaloThickness)
+ADD_PROPERTY_METADATA(bool, OutsetFocusRingDisabled)
 END_METADATA
 
 }  // namespace views

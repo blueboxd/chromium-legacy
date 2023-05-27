@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -28,90 +27,38 @@
 #include "ui/gl/scoped_make_current.h"
 
 namespace gpu {
-namespace {
-
-viz::ResourceFormat GetPlaneFormat(viz::SharedImageFormat format,
-                                   int plane_index) {
-  DCHECK(format.IsValidPlaneIndex(plane_index));
-  if (format.is_single_plane()) {
-    return format.resource_format();
-  }
-
-  if (format == viz::MultiPlaneFormat::kYUV_420_BIPLANAR) {
-    return plane_index == 0 ? viz::ResourceFormat::RED_8
-                            : viz::ResourceFormat::RG_88;
-  } else if (format == viz::MultiPlaneFormat::kYVU_420) {
-    return viz::ResourceFormat::RED_8;
-  }
-
-  NOTREACHED();
-  return viz::ResourceFormat::RGBA_8888;
-}
-
-}  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLTextureImageBacking
 
 bool GLTextureImageBacking::SupportsPixelReadbackWithFormat(
     viz::SharedImageFormat format) {
-  if (format.is_multi_plane()) {
-    if (format == viz::MultiPlaneFormat::kYUV_420_BIPLANAR ||
-        format == viz::MultiPlaneFormat::kYVU_420) {
-      return true;
-    }
-    return false;
-  }
-
-  switch (format.resource_format()) {
-    case viz::ResourceFormat::RGBA_8888:
-    case viz::ResourceFormat::BGRA_8888:
-    case viz::ResourceFormat::RED_8:
-    case viz::ResourceFormat::RG_88:
-    case viz::ResourceFormat::RGBX_8888:
-    case viz::ResourceFormat::BGRX_8888:
-      return true;
-    default:
-      return false;
-  }
+  return (format == viz::MultiPlaneFormat::kNV12 ||
+          format == viz::MultiPlaneFormat::kYV12 ||
+          format == viz::SinglePlaneFormat::kRGBA_8888 ||
+          format == viz::SinglePlaneFormat::kBGRA_8888 ||
+          format == viz::SinglePlaneFormat::kR_8 ||
+          format == viz::SinglePlaneFormat::kRG_88 ||
+          format == viz::SinglePlaneFormat::kRGBX_8888 ||
+          format == viz::SinglePlaneFormat::kBGRX_8888);
 }
 
 bool GLTextureImageBacking::SupportsPixelUploadWithFormat(
     viz::SharedImageFormat format) {
-  if (format.is_multi_plane()) {
-    if (format == viz::MultiPlaneFormat::kYUV_420_BIPLANAR ||
-        format == viz::MultiPlaneFormat::kYVU_420) {
-      return true;
-    }
-    return false;
-  }
-
-  switch (format.resource_format()) {
-    case viz::ResourceFormat::RGBA_8888:
-    case viz::ResourceFormat::RGBA_4444:
-    case viz::ResourceFormat::BGRA_8888:
-    case viz::ResourceFormat::RED_8:
-    case viz::ResourceFormat::RG_88:
-    case viz::ResourceFormat::RGBA_F16:
-    case viz::ResourceFormat::R16_EXT:
-    case viz::ResourceFormat::RG16_EXT:
-    case viz::ResourceFormat::RGBX_8888:
-    case viz::ResourceFormat::BGRX_8888:
-    case viz::ResourceFormat::RGBA_1010102:
-    case viz::ResourceFormat::BGRA_1010102:
-      return true;
-    case viz::ResourceFormat::ALPHA_8:
-    case viz::ResourceFormat::LUMINANCE_8:
-    case viz::ResourceFormat::RGB_565:
-    case viz::ResourceFormat::BGR_565:
-    case viz::ResourceFormat::ETC1:
-    case viz::ResourceFormat::LUMINANCE_F16:
-    case viz::ResourceFormat::YVU_420:
-    case viz::ResourceFormat::YUV_420_BIPLANAR:
-    case viz::ResourceFormat::YUVA_420_TRIPLANAR:
-    case viz::ResourceFormat::P010:
-      return false;
-  }
+  return (format == viz::MultiPlaneFormat::kNV12 ||
+          format == viz::MultiPlaneFormat::kYV12 ||
+          format == viz::SinglePlaneFormat::kRGBA_8888 ||
+          format == viz::SinglePlaneFormat::kRGBA_4444 ||
+          format == viz::SinglePlaneFormat::kBGRA_8888 ||
+          format == viz::SinglePlaneFormat::kR_8 ||
+          format == viz::SinglePlaneFormat::kRG_88 ||
+          format == viz::SinglePlaneFormat::kRGBA_F16 ||
+          format == viz::SinglePlaneFormat::kR_16 ||
+          format == viz::SinglePlaneFormat::kRG_1616 ||
+          format == viz::SinglePlaneFormat::kRGBX_8888 ||
+          format == viz::SinglePlaneFormat::kBGRX_8888 ||
+          format == viz::SinglePlaneFormat::kRGBA_1010102 ||
+          format == viz::SinglePlaneFormat::kBGRA_1010102);
 }
 
 GLTextureImageBacking::GLTextureImageBacking(const Mailbox& mailbox,
@@ -248,7 +195,8 @@ std::unique_ptr<DawnImageRepresentation> GLTextureImageBacking::ProduceDawn(
       std::move(view_formats), this, IsPassthrough());
 }
 
-std::unique_ptr<SkiaImageRepresentation> GLTextureImageBacking::ProduceSkia(
+std::unique_ptr<SkiaGaneshImageRepresentation>
+GLTextureImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
@@ -268,18 +216,20 @@ void GLTextureImageBacking::InitializeGLTexture(
     const std::vector<GLCommonImageBackingFactory::FormatInfo>& format_info,
     base::span<const uint8_t> pixel_data,
     gl::ProgressReporter* progress_reporter,
-    bool framebuffer_attachment_angle) {
+    bool framebuffer_attachment_angle,
+    std::string debug_label_from_client) {
+  // If the extension does not exist, pass an empty debug label to avoid
+  // subsequent crashes.
   std::string debug_label;
   if (gl::g_current_gl_driver->ext.b_GL_KHR_debug) {
-    debug_label =
-        "SharedImage_GLTexture" + CreateLabelForSharedImageUsage(usage());
+    debug_label = "GLSharedImage_" + debug_label_from_client;
   }
 
   int num_planes = format().NumberOfPlanes();
   textures_.reserve(num_planes);
   for (int plane = 0; plane < num_planes; ++plane) {
-    textures_.emplace_back(GetPlaneFormat(format(), plane),
-                           format().GetPlaneSize(plane, size()),
+    auto plane_format = GLTextureHolder::GetPlaneFormat(format(), plane);
+    textures_.emplace_back(plane_format, format().GetPlaneSize(plane, size()),
                            is_passthrough_, progress_reporter);
     textures_[plane].Initialize(format_info[plane],
                                 framebuffer_attachment_angle, pixel_data,

@@ -44,9 +44,6 @@ BASE_FEATURE(kIPHFocusHelpBubbleScreenReaderPromoFeature,
 BASE_FEATURE(kIPHGMCCastStartStopFeature,
              "IPH_GMCCastStartStop",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHHighEfficiencyInfoModeFeature,
-             "IPH_HighEfficiencyInfoMode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHHighEfficiencyModeFeature,
              "IPH_HighEfficiencyMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -113,9 +110,6 @@ BASE_FEATURE(kIPHDesktopPwaInstallFeature,
 BASE_FEATURE(kIPHProfileSwitchFeature,
              "IPH_ProfileSwitch",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHIntentChipFeature,
-             "IPH_IntentChip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHWebUiHelpBubbleTestFeature,
              "IPH_WebUiHelpBubbleTest",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -469,10 +463,16 @@ BASE_FEATURE(kIPHiOSPromoPostRestoreFeature,
 BASE_FEATURE(kIPHiOSPromoCredentialProviderExtensionFeature,
              "IPH_iOSPromoCredentialProviderExtension",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHiOSPromoDefaultBrowserFeature,
+             "IPH_iOSPromoDefaultBrowser",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_IOS)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+BASE_FEATURE(kIPHAutofillExternalAccountProfileSuggestionFeature,
+             "IPH_AutofillExternalAccountProfileSuggestion",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHAutofillVirtualCardSuggestionFeature,
              "IPH_AutofillVirtualCardSuggestion",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -483,6 +483,9 @@ BASE_FEATURE(kIPHAutofillVirtualCardSuggestionFeature,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kIPHGoogleOneOfferNotificationFeature,
              "IPH_GoogleOneOfferNotification",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kIPHLauncherSearchHelpUiFeature,
+             "IPH_LauncherSearchHelpUi",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

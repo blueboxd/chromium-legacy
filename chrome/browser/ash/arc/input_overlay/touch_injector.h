@@ -27,9 +27,9 @@ class EventSource;
 }  // namespace ui
 
 namespace arc::input_overlay {
-class ArcInputOverlayManagerTest;
-class DisplayOverlayController;
+
 class Action;
+class ArcInputOverlayManagerTest;
 
 // If the following touch move sent immediately, the touch move event is not
 // processed correctly by apps. This is a delayed time to send touch move

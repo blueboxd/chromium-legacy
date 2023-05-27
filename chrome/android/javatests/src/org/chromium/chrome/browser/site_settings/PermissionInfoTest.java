@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.site_settings;
 
 import androidx.test.filters.SmallTest;
 
-import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,9 +17,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RequiresRestart;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
@@ -45,7 +44,6 @@ import java.util.concurrent.TimeoutException;
 @Batch(SiteSettingsTest.SITE_SETTINGS_BATCH_NAME)
 public class PermissionInfoTest {
     private static final String DSE_ORIGIN = "https://www.google.com";
-    private static final String OTHER_ORIGIN = "https://www.other.com";
 
     @ClassRule
     public static ChromeTabbedActivityTestRule sActivityTestRule =
@@ -55,8 +53,17 @@ public class PermissionInfoTest {
     public BlankCTATabInitialStateRule mBlankCTATabInitialStateRule =
             new BlankCTATabInitialStateRule(sActivityTestRule, false);
 
-    @After
-    public void tearDown() throws TimeoutException {
+    @Before
+    public void setUp() throws TimeoutException {
+        clearPermissions();
+    }
+
+    @AfterClass
+    public static void tearDown() throws TimeoutException {
+        clearPermissions();
+    }
+
+    private static void clearPermissions() throws TimeoutException {
         // Clean up cookies and permissions.
         CallbackHelper helper = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -107,7 +114,6 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisabledTest(message = "https://crbug.com/1342630")
     public void testResetDSEGeolocation_InPrimaryOTRProfile_DefaultsToAskFromBlock()
             throws Throwable {
         Profile primaryOTRProfile = getPrimaryOTRProfile();
@@ -120,7 +126,6 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisabledTest(message = "https://crbug.com/1342630")
     public void testResetDSEGeolocation_InNonPrimaryOTRProfile_DefaultsToAskFromBlock()
             throws Throwable {
         Profile nonPrimaryOTRProfile = getNonPrimaryOTRProfile();
@@ -133,8 +138,6 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @RequiresRestart
-    @DisabledTest(message = "https://crbug.com/1342630")
     public void testResetDSEGeolocation_RegularProfile_DefaultsToAskFromBlock() throws Throwable {
         Profile regularProfile = getRegularProfile();
         setSettingAndExpectValue(ContentSettingsType.GEOLOCATION, DSE_ORIGIN, null,
@@ -146,7 +149,6 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisabledTest(message = "https://crbug.com/1342630")
     public void testResetDSENotification_InPrimaryOTRProfile_DefaultsToAskFromBlock()
             throws Throwable {
         Profile primaryOTRProfile = getPrimaryOTRProfile();
@@ -162,7 +164,6 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @DisabledTest(message = "https://crbug.com/1342630")
     public void testResetDSENotification_InNonPrimaryOTRProfile_DefaultsToAskFromBlock()
             throws Throwable {
         Profile nonPrimaryOTRProfile = getNonPrimaryOTRProfile();
@@ -178,7 +179,6 @@ public class PermissionInfoTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    @RequiresRestart
     public void testResetDSENotification_RegularProfile_DefaultsToAskFromBlock() throws Throwable {
         Profile regularProfile = getRegularProfile();
         resetNotificationsSettingsForTest();

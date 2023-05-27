@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/run_loop.h"
+#include "base/uuid.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/public/test/browser_task_environment.h"
@@ -57,6 +57,7 @@ class DOMStorageContextWrapperTest : public testing::Test {
     auto* security_policy = ChildProcessSecurityPolicyImpl::GetInstance();
     security_policy->Remove(kTestProcessIdOrigin1);
     security_policy->Remove(kTestProcessIdOrigin2);
+    security_policy->ClearIsolatedOriginsForTesting();
   }
 
  protected:
@@ -76,7 +77,8 @@ class DOMStorageContextWrapperTest : public testing::Test {
         process_id);
   }
 
-  const std::string test_namespace_id_{base::GenerateGUID()};
+  const std::string test_namespace_id_{
+      base::Uuid::GenerateRandomV4().AsLowercaseString()};
   const blink::StorageKey test_storage_key1_{
       blink::StorageKey::CreateFromStringForTesting("https://host1.com/")};
   const blink::StorageKey test_storage_key2_{

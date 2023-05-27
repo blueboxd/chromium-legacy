@@ -740,7 +740,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method createShaderModule
 [Worker]     method createTexture
 [Worker]     method destroy
-[Worker]     method experimentalImportTexture
 [Worker]     method importExternalTexture
 [Worker]     method popErrorScope
 [Worker]     method pushErrorScope
@@ -1154,7 +1153,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] interface MLContext
 [Worker]     attribute @@toStringTag
-[Worker]     method compute
 [Worker]     method computeSync
 [Worker]     method constructor
 [Worker] interface MLGraph
@@ -1164,14 +1162,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method add
 [Worker]     method averagePool2d
-[Worker]     method build
 [Worker]     method buildSync
 [Worker]     method clamp
 [Worker]     method concat
 [Worker]     method constant
 [Worker]     method constructor
 [Worker]     method conv2d
+[Worker]     method convTranspose2d
 [Worker]     method div
+[Worker]     method elu
 [Worker]     method gemm
 [Worker]     method hardSwish
 [Worker]     method input
@@ -1180,6 +1179,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method maxPool2d
 [Worker]     method min
 [Worker]     method mul
+[Worker]     method pad
+[Worker]     method prelu
 [Worker]     method relu
 [Worker]     method resample2d
 [Worker]     method reshape
@@ -1596,7 +1597,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method unobserve
 [Worker] interface PressureRecord
 [Worker]     attribute @@toStringTag
-[Worker]     getter factors
 [Worker]     getter source
 [Worker]     getter state
 [Worker]     getter time
@@ -1859,6 +1859,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter caches
 [Worker]     getter indexedDB
 [Worker]     getter locks
+[Worker]     getter name
 [Worker]     method constructor
 [Worker]     method durability
 [Worker]     method estimate

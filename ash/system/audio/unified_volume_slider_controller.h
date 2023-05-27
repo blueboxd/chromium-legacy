@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/constants/quick_settings_catalogs.h"
 #include "ash/system/unified/unified_slider_view.h"
+#include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
 
 namespace ash {
@@ -52,7 +53,7 @@ class ASH_EXPORT UnifiedVolumeSliderController : public UnifiedSliderListener {
       MapDeviceSliderCallback* test_slider_device_callback);
 
   // UnifiedSliderListener:
-  views::View* CreateView() override;
+  std::unique_ptr<UnifiedSliderView> CreateView() override;
   QsSliderCatalogName GetCatalogName() override;
   void SliderValueChanged(views::Slider* sender,
                           float value,
@@ -62,7 +63,7 @@ class ASH_EXPORT UnifiedVolumeSliderController : public UnifiedSliderListener {
   void SliderButtonPressed();
 
  private:
-  Delegate* const delegate_;
+  const raw_ptr<Delegate, ExperimentalAsh> delegate_;
 
   // Records when the user changes the output volume via slider to metrics.
   void RecordVolumeSourceMetric();

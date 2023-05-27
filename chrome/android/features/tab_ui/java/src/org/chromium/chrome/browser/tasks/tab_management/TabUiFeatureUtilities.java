@@ -9,8 +9,6 @@ import static org.chromium.chrome.browser.device.DeviceClassManager.GTS_LOW_END_
 
 import android.content.Context;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -55,8 +53,8 @@ public class TabUiFeatureUtilities {
     private static final String TAB_GROUP_AUTO_CREATION_PARAM = "enable_tab_group_auto_creation";
 
     public static final BooleanCachedFieldTrialParameter ENABLE_TAB_GROUP_AUTO_CREATION =
-            new BooleanCachedFieldTrialParameter(
-                    ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, TAB_GROUP_AUTO_CREATION_PARAM, true);
+            new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                    TAB_GROUP_AUTO_CREATION_PARAM, false);
 
     // Field trial parameter for configuring the "Open in new tab" and "Open in new tab in group"
     // item order in the context menu.
@@ -65,34 +63,7 @@ public class TabUiFeatureUtilities {
 
     public static final BooleanCachedFieldTrialParameter SHOW_OPEN_IN_TAB_GROUP_MENU_ITEM_FIRST =
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-                    SHOW_OPEN_IN_TAB_GROUP_MENU_ITEM_FIRST_PARAM, false);
-
-    // Field trial parameter for defining tab width for tab strip improvements.
-    private static final String TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM = "min_tab_width";
-    public static final DoubleCachedFieldTrialParameter TAB_STRIP_TAB_WIDTH =
-            new DoubleCachedFieldTrialParameter(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS,
-                    TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM, 108.f);
-
-    // Field trial parameter for controlling share tabs in TabSelectionEditorV2.
-    private static final String TAB_SELECTION_EDITOR_V2_SHARE_PARAM = "enable_share";
-    public static final BooleanCachedFieldTrialParameter ENABLE_TAB_SELECTION_EDITOR_V2_SHARE =
-            new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_SELECTION_EDITOR_V2,
-                    TAB_SELECTION_EDITOR_V2_SHARE_PARAM, true);
-
-    // Field trial parameter for controlling longpress entry into TabSelectionEditorV2 from
-    // TabGridDialog and TabSwitcher.
-    private static final String TAB_SELECTION_EDITOR_V2_LONGPRESS_ENTRY_PARAM =
-            "enable_longpress_entrypoint";
-    public static final BooleanCachedFieldTrialParameter
-            ENABLE_TAB_SELECTION_EDITOR_V2_LONGPRESS_ENTRY =
-                    new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_SELECTION_EDITOR_V2,
-                            TAB_SELECTION_EDITOR_V2_LONGPRESS_ENTRY_PARAM, false);
-
-    // Field trial parameter for controlling bookmark tabs in TabSelectionEditorV2.
-    private static final String TAB_SELECTION_EDITOR_V2_BOOKMARKS_PARAM = "enable_bookmarks";
-    public static final BooleanCachedFieldTrialParameter ENABLE_TAB_SELECTION_EDITOR_V2_BOOKMARKS =
-            new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_SELECTION_EDITOR_V2,
-                    TAB_SELECTION_EDITOR_V2_BOOKMARKS_PARAM, true);
+                    SHOW_OPEN_IN_TAB_GROUP_MENU_ITEM_FIRST_PARAM, true);
 
     // Field trial parameter for disabling new tab button anchor for tab strip redesign.
     private static final String TAB_STRIP_REDESIGN_DISABLE_NTB_ANCHOR_PARAM = "disable_ntb_anchor";
@@ -100,13 +71,13 @@ public class TabUiFeatureUtilities {
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.TAB_STRIP_REDESIGN,
                     TAB_STRIP_REDESIGN_DISABLE_NTB_ANCHOR_PARAM, false);
 
-    private static Boolean sTabManagementModuleSupportedForTesting;
+    private static boolean sTabSelectionEditorLongPressEntryEnabled;
 
     /**
-     * Set whether the tab management module is supported for testing.
+     * Set whether the longpress entry for TabSelectionEditor is enabled. Currently only in tests.
      */
-    public static void setTabManagementModuleSupportedForTesting(@Nullable Boolean enabled) {
-        sTabManagementModuleSupportedForTesting = enabled;
+    public static void setTabSelectionEditorLongPressEntryEnabledForTesting(boolean enabled) {
+        sTabSelectionEditorLongPressEntryEnabled = enabled;
     }
 
     /**
@@ -117,14 +88,10 @@ public class TabUiFeatureUtilities {
     }
 
     /**
-     * @return Whether the tab management module is supported.
+     * Whether the longpress entry for TabSelectionEditor is enabled. Currently only in tests.
      */
-    private static boolean isTabManagementModuleSupported() {
-        if (sTabManagementModuleSupportedForTesting != null) {
-            return sTabManagementModuleSupportedForTesting;
-        }
-
-        return TabManagementModuleProvider.isTabManagementModuleSupported();
+    public static boolean isTabSelectionEditorLongPressEntryEnabled() {
+        return sTabSelectionEditorLongPressEntryEnabled;
     }
 
     /**
@@ -137,7 +104,7 @@ public class TabUiFeatureUtilities {
         }
 
         // Having Tab Groups or Start implies Grid Tab Switcher.
-        return isTabManagementModuleSupported() || isTabGroupsAndroidEnabled(context)
+        return isTabGroupsAndroidEnabled(context)
                 || ReturnToChromeUtil.isStartSurfaceEnabled(context);
     }
 
@@ -161,21 +128,11 @@ public class TabUiFeatureUtilities {
     }
 
     /**
-     * @return Whether the tab strip improvements are enabled.
-     * @param context The activity context.
-     */
-    public static boolean isTabStripImprovementsEnabled(Context context) {
-        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
-                && ChromeFeatureList.sTabStripImprovements.isEnabled();
-    }
-
-    /**
      * @return Whether tab groups are enabled for tablet.
      * @param context The activity context.
      */
     public static boolean isTabletTabGroupsEnabled(Context context) {
         return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
-                && ChromeFeatureList.sTabStripImprovements.isEnabled()
                 && ChromeFeatureList.sTabGroupsForTablets.isEnabled()
                 && !DeviceClassManager.enableAccessibilityLayout(context);
     }
@@ -191,8 +148,7 @@ public class TabUiFeatureUtilities {
         }
 
         return !DeviceClassManager.enableAccessibilityLayout(context)
-                && ChromeFeatureList.sTabGroupsAndroid.isEnabled()
-                && isTabManagementModuleSupported();
+                && ChromeFeatureList.sTabGroupsAndroid.isEnabled();
     }
 
     /**
@@ -202,15 +158,6 @@ public class TabUiFeatureUtilities {
     public static boolean isTabGroupsAndroidContinuationEnabled(Context context) {
         return isTabGroupsAndroidEnabled(context)
                 && ChromeFeatureList.sTabGroupsContinuationAndroid.isEnabled();
-    }
-
-    /**
-     * @return Whether the tab selection editor v2 is enabled and available for use.
-     * @param context The activity context.
-     */
-    public static boolean isTabSelectionEditorV2Enabled(Context context) {
-        return isTabGroupsAndroidEnabled(context)
-                && ChromeFeatureList.sTabSelectionEditorV2.isEnabled();
     }
 
     /**
@@ -239,25 +186,7 @@ public class TabUiFeatureUtilities {
                 && !SysUtils.isLowEndDevice();
     }
 
-    private static Float sTabMinWidthForTesting;
-
-    /**
-     * Set the min tab width for testing.
-     */
-    public static void setTabMinWidthForTesting(@Nullable Float minWidth) {
-        sTabMinWidthForTesting = minWidth;
-    }
-
-    /**
-     * @return The min tab width.
-     */
-    public static float getTabMinWidth() {
-        if (sTabMinWidthForTesting != null) {
-            return sTabMinWidthForTesting;
-        }
-
-        return (float) TAB_STRIP_TAB_WIDTH.getValue();
-    }
+    public static Float sTabMinWidthForTesting;
 
     /**
      * @return Whether the "Open in new tab in group" context menu item should show before the

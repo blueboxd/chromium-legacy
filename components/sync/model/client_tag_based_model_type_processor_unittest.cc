@@ -165,11 +165,16 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     sync_started_ = true;
   }
 
-  void ApplyStopSyncChanges(std::unique_ptr<MetadataChangeList>
-                                delete_metadata_change_list) override {
+  void ApplyDisableSyncChanges(std::unique_ptr<MetadataChangeList>
+                                   delete_metadata_change_list) override {
     sync_started_ = false;
-    FakeModelTypeSyncBridge::ApplyStopSyncChanges(
+    FakeModelTypeSyncBridge::ApplyDisableSyncChanges(
         std::move(delete_metadata_change_list));
+  }
+
+  void OnSyncPaused() override {
+    sync_started_ = false;
+    FakeModelTypeSyncBridge::OnSyncPaused();
   }
 
   std::string GetStorageKey(const EntityData& entity_data) override {
@@ -226,23 +231,23 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     return supports_incremental_updates_;
   }
 
-  absl::optional<ModelError> MergeSyncData(
+  absl::optional<ModelError> MergeFullSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_data) override {
     merge_call_count_++;
     if (!SupportsIncrementalUpdates()) {
       // If the bridge does not support incremental updates, it should clear
-      // local data in MergeSyncData.
+      // local data in MergeFullSyncData.
       db_->ClearAllData();
     }
-    return FakeModelTypeSyncBridge::MergeSyncData(
+    return FakeModelTypeSyncBridge::MergeFullSyncData(
         std::move(metadata_change_list), std::move(entity_data));
   }
-  absl::optional<ModelError> ApplySyncChanges(
+  absl::optional<ModelError> ApplyIncrementalSyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override {
     apply_call_count_++;
-    return FakeModelTypeSyncBridge::ApplySyncChanges(
+    return FakeModelTypeSyncBridge::ApplyIncrementalSyncChanges(
         std::move(metadata_change_list), std::move(entity_changes));
   }
 
@@ -291,7 +296,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 
   bool sync_started_ = false;
 
-  // The number of times MergeSyncData has been called.
+  // The number of times MergeFullSyncData has been called.
   int merge_call_count_ = 0;
   int apply_call_count_ = 0;
   int get_storage_key_call_count_ = 0;
@@ -368,7 +373,8 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
         &ClientTagBasedModelTypeProcessorTest::ErrorReceived,
         base::Unretained(this));
     request.cache_guid = cache_guid;
-    request.authenticated_account_id = CoreAccountId(authenticated_account_id);
+    request.authenticated_account_id =
+        CoreAccountId::FromString(authenticated_account_id);
     request.sync_mode = sync_mode;
     request.configuration_start_time = base::Time::Now();
 
@@ -474,7 +480,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   FakeModelTypeSyncBridge::Store* db() const { return bridge()->mutable_db(); }
 
-  MockModelTypeWorker* worker() const { return worker_; }
+  MockModelTypeWorker* worker() const { return worker_.get(); }
 
   ClientTagBasedModelTypeProcessor* type_processor() const {
     return static_cast<ClientTagBasedModelTypeProcessor*>(
@@ -495,15 +501,12 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   void OnReadyToConnect(std::unique_ptr<DataTypeActivationResponse> context) {
     model_type_state_ = context->model_type_state;
-    std::unique_ptr<MockModelTypeWorker> worker =
-        std::make_unique<MockModelTypeWorker>(model_type_state_,
-                                              type_processor());
-    // Keep an unsafe pointer to the commit queue the processor will use.
-    worker_ = worker.get();
+    worker_ = std::make_unique<MockModelTypeWorker>(model_type_state_,
+                                                    type_processor());
     // The context contains a proxy to the processor, but this call is
     // side-stepping that completely and connecting directly to the real
     // processor, since these tests are single-threaded and don't need proxies.
-    type_processor()->ConnectSync(std::move(worker));
+    type_processor()->ConnectSync(worker_->MakeForwardingCommitQueue());
     ASSERT_TRUE(run_loop_);
     run_loop_->Quit();
   }
@@ -544,8 +547,8 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   // This run loop is used to wait for OnReadyToConnect is called.
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  // The current mock queue, which is owned by |type_processor()|.
-  raw_ptr<MockModelTypeWorker> worker_;
+  // The current mock queue.
+  std::unique_ptr<MockModelTypeWorker> worker_;
 
   // Whether to expect an error from the processor (and from which site).
   absl::optional<ClientTagBasedModelTypeProcessor::ErrorSite> expect_error_;
@@ -726,7 +729,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldFilterOutInitialTombstones) {
 
   EXPECT_EQ(0, bridge()->merge_call_count());
   // Initial sync with a tombstone. The fake bridge checks that it doesn't get
-  // any tombstones in its MergeSyncData function.
+  // any tombstones in its MergeFullSyncData function.
   worker()->TombstoneFromServer(GetPrefHash(kKey1));
   EXPECT_EQ(1, bridge()->merge_call_count());
 
@@ -751,7 +754,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldFilterOutInitialRootNodes) {
   EXPECT_EQ(0U, ProcessorEntityCount());
 }
 
-// Test that subsequent starts don't call MergeSyncData.
+// Test that subsequent starts don't call MergeFullSyncData.
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldApplyIncrementalUpdates) {
   // This sets initial_sync_done to true.
   InitializeToMetadataLoaded();
@@ -1535,14 +1538,21 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 // Tests that GetLocalChanges honors max_entries parameter.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldTruncateLocalChangesToMaxSize) {
-  InitializeToMetadataLoaded();
+  InitializeToReadyState();
+
+  // Avoid that the worker immediately invokes GetLocalChanges() as soon as it
+  // gets nudged, otherwise the test body cannot invoke GetLocalChanges()
+  // manually.
+  worker()->DisableGetLocalChangesUponNudge();
+
   WritePrefItem(bridge(), kKey1, kValue1);
   WritePrefItem(bridge(), kKey2, kValue2);
 
-  // Reqeust at most one intity per batch, ensure that only one was returned.
+  // Request at most one entity per batch, ensure that only one was returned.
   CommitRequestDataList commit_request;
   type_processor()->GetLocalChanges(
-      1, base::BindOnce(&CaptureCommitRequest, &commit_request));
+      /*max_entries=*/1,
+      base::BindOnce(&CaptureCommitRequest, &commit_request));
   EXPECT_EQ(1U, commit_request.size());
 }
 
@@ -1867,7 +1877,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldStopAndClearMetadata) {
 
 // Test proper handling of disable-sync before initial sync done.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldNotClearBridgeMetadataPriorToMergeSyncData) {
+       ShouldNotClearBridgeMetadataPriorToMergeFullSyncData) {
   // Populate the bridge's metadata with some non-empty values for us to later
   // check that it hasn't been cleared.
   const std::string kTestEncryptionKeyName = "TestEncryptionKey";
@@ -2116,7 +2126,7 @@ class FullUpdateClientTagBasedModelTypeProcessorTest
 // Tests that ClientTagBasedModelTypeProcessor can do garbage collection by
 // version.
 // Garbage collection by version is used by the server to replace all data on
-// the client, and is implemented by calling MergeSyncData on the bridge.
+// the client, and is implemented by calling MergeFullSyncData on the bridge.
 TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
        ShouldApplyGarbageCollectionByVersionFullUpdate) {
   InitializeToReadyState();
@@ -2298,7 +2308,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUpdateStorageKey) {
   ModelReadyToSync();
   OnSyncStarting();
 
-  // Initial update from server should be handled by MergeSyncData.
+  // Initial update from server should be handled by MergeFullSyncData.
   UpdateResponseDataList updates;
   updates.push_back(worker()->GenerateUpdateData(
       GetPrefHash(kKey1), GeneratePrefSpecifics(kKey1, kValue1)));
@@ -2323,8 +2333,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUpdateStorageKey) {
   EXPECT_EQ(1U, ProcessorEntityCount());
   EXPECT_EQ(1U, db()->metadata_count());
 
-  // Second update from server should be handled by ApplySyncChanges. Similarly
-  // It should call UpdateStorageKey, not GetStorageKey.
+  // Second update from server should be handled by ApplyIncrementalSyncChanges.
+  // Similarly It should call UpdateStorageKey, not GetStorageKey.
   worker()->UpdateFromServer(GetPrefHash(kKey2),
                              GeneratePrefSpecifics(kKey2, kValue2));
   EXPECT_EQ(1, bridge()->apply_call_count());
@@ -2364,7 +2374,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUntrackEntity) {
   ModelReadyToSync();
   OnSyncStarting();
 
-  // Initial update from server should be handled by MergeSyncData.
+  // Initial update from server should be handled by MergeFullSyncData.
   worker()->UpdateFromServer(GetPrefHash(kKey1),
                              GeneratePrefSpecifics(kKey1, kValue1));
   EXPECT_EQ(1, bridge()->merge_call_count());
@@ -2857,14 +2867,14 @@ TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
   // Even prior to starting sync, the account ID should already be tracked.
   ASSERT_EQ("PersistedAccountId", type_processor()->TrackedAccountId());
 
-  // When sync gets started, MergeSyncData() should not be called.
+  // When sync gets started, MergeFullSyncData() should not be called.
   OnSyncStarting("PersistedAccountId");
   ASSERT_EQ(0, bridge()->merge_call_count());
 }
 
 // Test that commit only types are deleted after commit response.
 TEST_F(CommitOnlyClientTagBasedModelTypeProcessorTest,
-       DISABLED_ShouldCommitAndDeleteWhenAcked) {
+       ShouldCommitAndDeleteWhenAcked) {
   InitializeToReadyState();
   EXPECT_EQ(db()->model_type_state().initial_sync_state(),
             sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
@@ -3106,8 +3116,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldNotInvokeBridgeOnSyncStartingFromOnSyncStopping) {
   InitializeToReadyState();
   ASSERT_TRUE(bridge()->sync_started());
-  // OnSyncStopping() calls bridge's ApplyStopSyncChanges(), which should reset
-  // `sync_started_` flag.
+  // OnSyncStopping() calls bridge's ApplyDisableSyncChanges(), which should
+  // reset `sync_started_` flag.
   type_processor()->OnSyncStopping(CLEAR_METADATA);
   // OnSyncStopping() should clear the activation request, hence avoiding call
   // to bridge's OnSyncStarting().

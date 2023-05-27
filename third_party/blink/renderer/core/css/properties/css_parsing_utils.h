@@ -7,7 +7,7 @@
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/css/css_anchor_query_type.h"
+#include "third_party/blink/renderer/core/css/css_anchor_query_enums.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -68,7 +68,7 @@ using ConsumeAnimationItemValue = CSSValue* (*)(CSSPropertyID,
                                                 bool use_legacy_parsing);
 using IsPositionKeyword = bool (*)(CSSValueID);
 
-constexpr size_t kMaxNumAnimationLonghands = 10;
+constexpr size_t kMaxNumAnimationLonghands = 12;
 
 void Complete4Sides(CSSValue* side[4]);
 
@@ -142,7 +142,8 @@ CSSPrimitiveValue* ConsumeHue(CSSParserTokenRange&,
 CSSPrimitiveValue* ConsumeTime(CSSParserTokenRange&,
                                const CSSParserContext&,
                                CSSPrimitiveValue::ValueRange);
-CSSNumericLiteralValue* ConsumeResolution(CSSParserTokenRange&);
+CSSPrimitiveValue* ConsumeResolution(CSSParserTokenRange&,
+                                     const CSSParserContext&);
 CSSValue* ConsumeRatio(CSSParserTokenRange&, const CSSParserContext&);
 CSSIdentifierValue* ConsumeIdent(CSSParserTokenRange&);
 CSSIdentifierValue* ConsumeIdentRange(CSSParserTokenRange&,
@@ -161,8 +162,6 @@ CSSStringValue* ConsumeString(CSSParserTokenRange&);
 StringView ConsumeStringAsStringView(CSSParserTokenRange&);
 StringView ConsumeUrlAsStringView(CSSParserTokenRange&,
                                   const CSSParserContext&);
-StringView ConsumeUrlOrStringAsStringView(CSSParserTokenRange&,
-                                          const CSSParserContext&);
 cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange&,
                                   const CSSParserContext&);
 
@@ -327,7 +326,9 @@ CSSValue* ConsumeTimelineRangeName(CSSParserTokenRange&);
 CSSValue* ConsumeTimelineRangeNameAndPercent(CSSParserTokenRange&,
                                              const CSSParserContext&);
 CSSValue* ConsumeAnimationDelay(CSSParserTokenRange&, const CSSParserContext&);
-CSSValue* ConsumeAnimationRange(CSSParserTokenRange&, const CSSParserContext&);
+CSSValue* ConsumeAnimationRange(CSSParserTokenRange&,
+                                const CSSParserContext&,
+                                double default_offset_percent);
 
 bool ConsumeAnimationShorthand(
     const StylePropertyShorthand&,
@@ -337,6 +338,7 @@ bool ConsumeAnimationShorthand(
     const CSSParserContext&,
     bool use_legacy_parsing);
 
+CSSValue* ConsumeSingleTimelineAttachment(CSSParserTokenRange&);
 CSSValue* ConsumeSingleTimelineAxis(CSSParserTokenRange&);
 CSSValue* ConsumeSingleTimelineName(CSSParserTokenRange&,
                                     const CSSParserContext&);

@@ -256,7 +256,7 @@ class PLATFORM_EXPORT InputHandlerProxy : public cc::InputHandlerClient,
 
   void DispatchSingleInputEvent(std::unique_ptr<EventWithCallback>,
                                 const base::TimeTicks);
-  void DispatchQueuedInputEvents();
+  void DispatchQueuedInputEvents(bool frame_aligned);
   void UpdateElasticOverscroll();
 
   // Helper functions for handling more complicated input events.
@@ -320,12 +320,12 @@ class PLATFORM_EXPORT InputHandlerProxy : public cc::InputHandlerClient,
     event_attribution_enabled_ = enabled;
   }
 
-  void RecordMainThreadScrollingReasons(blink::WebGestureDevice device,
-                                        uint32_t reasons_from_scroll_begin,
-                                        bool was_main_thread_hit_tested,
-                                        uint32_t main_thread_repaint_reasons);
+  void RecordScrollBegin(blink::WebGestureDevice device,
+                         uint32_t reasons_from_scroll_begin,
+                         uint32_t main_thread_hit_tested_reasons,
+                         uint32_t main_thread_repaint_reasons);
 
-  bool HasQueuedEventsReadyForDispatch();
+  bool HasQueuedEventsReadyForDispatch(bool frame_aligned);
 
   InputHandlerProxyClient* client_;
 
@@ -401,13 +401,14 @@ class PLATFORM_EXPORT InputHandlerProxy : public cc::InputHandlerClient,
   bool skip_touch_filter_discrete_ = false;
   bool skip_touch_filter_all_ = false;
 
-  // This bit is set when the input handler proxy has requested that the client
+  // This is set when the input handler proxy has requested that the client
   // perform a hit test for a scroll begin on the main thread. During that
   // time, scroll updates need to be queued. The reply from the main thread
   // will come by calling ContinueScrollBeginAfterMainThreadHitTest where the
   // queue will be flushed and this bit cleared. Used only in scroll
   // unification.
-  bool hit_testing_scroll_begin_on_main_thread_ = false;
+  uint32_t scroll_begin_main_thread_hit_test_reasons_ =
+      cc::MainThreadScrollingReason::kNotScrollingOnMain;
 
   // This bit can be used to disable event attribution in cases where the
   // hit test information is unnecessary (e.g. tests).

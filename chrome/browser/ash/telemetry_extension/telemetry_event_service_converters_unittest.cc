@@ -39,6 +39,34 @@ TEST(TelemetryEventServiceConvertersTest,
 }
 
 TEST(TelemetryEventServiceConvertersTest,
+     ConvertTelemetryAudioJackEventInfo_DeviceType) {
+  EXPECT_EQ(Convert(cros_healthd::mojom::AudioJackEventInfo::DeviceType::
+                        kUnmappedEnumField),
+            crosapi::mojom::TelemetryAudioJackEventInfo::DeviceType::
+                kUnmappedEnumField);
+
+  EXPECT_EQ(
+      Convert(cros_healthd::mojom::AudioJackEventInfo::DeviceType::kHeadphone),
+      crosapi::mojom::TelemetryAudioJackEventInfo::DeviceType::kHeadphone);
+
+  EXPECT_EQ(
+      Convert(cros_healthd::mojom::AudioJackEventInfo::DeviceType::kMicrophone),
+      crosapi::mojom::TelemetryAudioJackEventInfo::DeviceType::kMicrophone);
+}
+
+TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryLidEventInfo_State) {
+  EXPECT_EQ(
+      Convert(cros_healthd::mojom::LidEventInfo::State::kUnmappedEnumField),
+      crosapi::mojom::TelemetryLidEventInfo::State::kUnmappedEnumField);
+
+  EXPECT_EQ(Convert(cros_healthd::mojom::LidEventInfo::State::kClosed),
+            crosapi::mojom::TelemetryLidEventInfo::State::kClosed);
+
+  EXPECT_EQ(Convert(cros_healthd::mojom::LidEventInfo::State::kOpened),
+            crosapi::mojom::TelemetryLidEventInfo::State::kOpened);
+}
+
+TEST(TelemetryEventServiceConvertersTest,
      ConvertTelemetryExtensionExceptionReason) {
   EXPECT_EQ(
       Convert(cros_healthd::mojom::Exception_Reason::kUnmappedEnumField),
@@ -64,6 +92,9 @@ TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryEventCategoryEnum) {
 
   EXPECT_EQ(Convert(crosapi::mojom::TelemetryEventCategoryEnum::kAudioJack),
             cros_healthd::mojom::EventCategoryEnum::kAudioJack);
+
+  EXPECT_EQ(Convert(crosapi::mojom::TelemetryEventCategoryEnum::kLid),
+            cros_healthd::mojom::EventCategoryEnum::kLid);
 }
 
 TEST(TelemetryEventServiceConvertersTest,
@@ -74,6 +105,15 @@ TEST(TelemetryEventServiceConvertersTest,
   EXPECT_EQ(ConvertEventPtr(std::move(input)),
             crosapi::mojom::TelemetryAudioJackEventInfo::New(
                 crosapi::mojom::TelemetryAudioJackEventInfo::State::kAdd));
+}
+
+TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryLidEventInfoPtr) {
+  auto input = cros_healthd::mojom::LidEventInfo::New();
+  input->state = cros_healthd::mojom::LidEventInfo::State::kClosed;
+
+  EXPECT_EQ(ConvertEventPtr(std::move(input)),
+            crosapi::mojom::TelemetryLidEventInfo::New(
+                crosapi::mojom::TelemetryLidEventInfo::State::kClosed));
 }
 
 TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryExtensionException) {

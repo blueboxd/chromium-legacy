@@ -10,7 +10,11 @@
 #include "base/command_line.h"
 #include "base/test/bind.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fake_target_device_connection_broker.h"
+#include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
 #include "chrome/browser/nearby_sharing/fake_nearby_connections_manager.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,6 +29,8 @@ using Observer = TargetDeviceBootstrapController::Observer;
 using Status = TargetDeviceBootstrapController::Status;
 using Step = TargetDeviceBootstrapController::Step;
 using ErrorCode = TargetDeviceBootstrapController::ErrorCode;
+using ConnectionClosedReason =
+    TargetDeviceConnectionBroker::ConnectionClosedReason;
 
 class FakeObserver : public Observer {
  public:
@@ -47,7 +53,9 @@ class TargetDeviceBootstrapControllerTest : public testing::Test {
  public:
   static constexpr char kSourceDeviceId[] = "fake-source-device-id";
 
-  TargetDeviceBootstrapControllerTest() = default;
+  TargetDeviceBootstrapControllerTest()
+      : local_state_(TestingBrowserProcess::GetGlobal()) {}
+
   TargetDeviceBootstrapControllerTest(TargetDeviceBootstrapControllerTest&) =
       delete;
   TargetDeviceBootstrapControllerTest& operator=(
@@ -75,12 +83,15 @@ class TargetDeviceBootstrapControllerTest : public testing::Test {
     return connection_broker_factory_.instances().back();
   }
 
+  PrefService* GetLocalState() { return local_state_.Get(); }
+
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   FakeTargetDeviceConnectionBroker::Factory connection_broker_factory_;
   FakeNearbyConnectionsManager fake_nearby_connections_manager_;
   std::unique_ptr<FakeObserver> fake_observer_;
   std::unique_ptr<TargetDeviceBootstrapController> bootstrap_controller_;
+  ScopedTestingLocalState local_state_;
 };
 
 TEST_F(TargetDeviceBootstrapControllerTest, StartAdvertising) {
@@ -118,7 +129,7 @@ TEST_F(TargetDeviceBootstrapControllerTest, StopAdvertising) {
   EXPECT_EQ(fake_observer_->last_status.step, Step::NONE);
 }
 
-TEST_F(TargetDeviceBootstrapControllerTest, InitiateConnection) {
+TEST_F(TargetDeviceBootstrapControllerTest, InitiateConnection_QRCode) {
   bootstrap_controller_->StartAdvertising();
   connection_broker()->on_start_advertising_callback().Run(/*success=*/true);
   ASSERT_EQ(fake_observer_->last_status.step, Step::ADVERTISING);
@@ -128,6 +139,20 @@ TEST_F(TargetDeviceBootstrapControllerTest, InitiateConnection) {
   EXPECT_EQ(fake_observer_->last_status.step, Step::QR_CODE_VERIFICATION);
   using QRCodePixelData = TargetDeviceBootstrapController::QRCodePixelData;
   EXPECT_TRUE(absl::holds_alternative<QRCodePixelData>(
+      fake_observer_->last_status.payload));
+}
+
+TEST_F(TargetDeviceBootstrapControllerTest, InitiateConnection_Pin) {
+  connection_broker()->set_use_pin_authentication(true);
+  bootstrap_controller_->StartAdvertising();
+  connection_broker()->on_start_advertising_callback().Run(/*success=*/true);
+  ASSERT_EQ(fake_observer_->last_status.step, Step::ADVERTISING);
+
+  connection_broker()->InitiateConnection(kSourceDeviceId);
+
+  EXPECT_EQ(fake_observer_->last_status.step, Step::PIN_VERIFICATION);
+  // TODO: Test PIN payload
+  EXPECT_TRUE(absl::holds_alternative<absl::monostate>(
       fake_observer_->last_status.payload));
 }
 
@@ -169,7 +194,7 @@ TEST_F(TargetDeviceBootstrapControllerTest, RejectConnection) {
   connection_broker()->on_start_advertising_callback().Run(/*success=*/true);
   connection_broker()->InitiateConnection(kSourceDeviceId);
 
-  connection_broker()->RejectConnection(kSourceDeviceId);
+  connection_broker()->RejectConnection();
 
   EXPECT_EQ(fake_observer_->last_status.step, Step::ERROR);
   ASSERT_TRUE(
@@ -183,7 +208,7 @@ TEST_F(TargetDeviceBootstrapControllerTest, CloseConnection) {
   connection_broker()->on_start_advertising_callback().Run(/*success=*/true);
   connection_broker()->InitiateConnection(kSourceDeviceId);
 
-  connection_broker()->CloseConnection(kSourceDeviceId);
+  connection_broker()->CloseConnection(ConnectionClosedReason::kConnectionLost);
 
   EXPECT_EQ(fake_observer_->last_status.step, Step::ERROR);
   ASSERT_TRUE(
@@ -196,6 +221,57 @@ TEST_F(TargetDeviceBootstrapControllerTest, GetPhoneInstanceId) {
   // TODO(b/234655072): Build out this unittest once phone instance ID is
   // retrieved from Gaia credentials exchange.
   ASSERT_TRUE(bootstrap_controller_->GetPhoneInstanceId().empty());
+}
+
+TEST_F(TargetDeviceBootstrapControllerTest, PrepareForUpdate_NotConnected) {
+  ASSERT_FALSE(
+      GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
+  ASSERT_TRUE(GetLocalState()
+                  ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                  .empty());
+
+  // PrepareForUpdate() shouldn't do anything if the connection is not
+  // established.
+  bootstrap_controller_->StartAdvertising();
+  connection_broker()->on_start_advertising_callback().Run(/*success=*/true);
+  ASSERT_NE(fake_observer_->last_status.step, Step::CONNECTED);
+
+  bootstrap_controller_->PrepareForUpdate();
+  EXPECT_FALSE(
+      GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
+  EXPECT_TRUE(GetLocalState()
+                  ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                  .empty());
+}
+
+TEST_F(TargetDeviceBootstrapControllerTest, PrepareForUpdate) {
+  ASSERT_FALSE(
+      GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
+  ASSERT_TRUE(GetLocalState()
+                  ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                  .empty());
+
+  bootstrap_controller_->StartAdvertising();
+  connection_broker()->on_start_advertising_callback().Run(/*success=*/true);
+  connection_broker()->InitiateConnection(kSourceDeviceId);
+  connection_broker()->AuthenticateConnection(kSourceDeviceId);
+  ASSERT_EQ(fake_observer_->last_status.step, Step::CONNECTED);
+
+  bootstrap_controller_->PrepareForUpdate();
+  // Pref shouldn't change until the connection is closed.
+  EXPECT_FALSE(
+      GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
+  EXPECT_TRUE(GetLocalState()
+                  ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                  .empty());
+  connection_broker()->CloseConnection(ConnectionClosedReason::kConnectionLost);
+  EXPECT_TRUE(
+      GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
+  EXPECT_FALSE(GetLocalState()
+                   ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                   .empty());
+  GetLocalState()->ClearPref(prefs::kShouldResumeQuickStartAfterReboot);
+  GetLocalState()->ClearPref(prefs::kResumeQuickStartAfterRebootInfo);
 }
 
 }  // namespace ash::quick_start

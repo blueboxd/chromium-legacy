@@ -21,8 +21,6 @@ EasyUnlockIconState GetEasyUnlockIconStateFromUserPodCustomIconId(
   switch (icon) {
     case proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE:
       return EasyUnlockIconState::NONE;
-    case proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED:
-      return EasyUnlockIconState::HARDLOCKED;
     case proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED:
       return EasyUnlockIconState::LOCKED;
     case proximity_auth::ScreenlockBridge::
@@ -55,9 +53,6 @@ EasyUnlockIconInfo ToEasyUnlockIconInfo(
 
   if (!user_pod_icon_info.aria_label().empty())
     easy_unlock_icon_info.aria_label = user_pod_icon_info.aria_label();
-
-  if (user_pod_icon_info.hardlock_on_click())
-    easy_unlock_icon_info.hardlock_on_click = true;
 
   return easy_unlock_icon_info;
 }

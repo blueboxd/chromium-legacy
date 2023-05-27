@@ -41,8 +41,9 @@ class PrintJobWorkerOop : public PrintJobWorker {
       std::unique_ptr<PrintingContext::Delegate> printing_context_delegate,
       std::unique_ptr<PrintingContext> printing_context,
       absl::optional<PrintBackendServiceManager::ClientId> client_id,
+      absl::optional<PrintBackendServiceManager::ContextId> context_id,
       PrintJob* print_job,
-      mojom::PrintTargetType print_target_type);
+      bool print_from_system_dialog);
   PrintJobWorkerOop(const PrintJobWorkerOop&) = delete;
   PrintJobWorkerOop& operator=(const PrintJobWorkerOop&) = delete;
   ~PrintJobWorkerOop() override;
@@ -56,8 +57,9 @@ class PrintJobWorkerOop : public PrintJobWorker {
       std::unique_ptr<PrintingContext::Delegate> printing_context_delegate,
       std::unique_ptr<PrintingContext> printing_context,
       absl::optional<PrintBackendServiceManager::ClientId> client_id,
+      absl::optional<PrintBackendServiceManager::ContextId> context_id,
       PrintJob* print_job,
-      mojom::PrintTargetType print_target_type,
+      bool print_from_system_dialog,
       bool simulate_spooling_memory_errors);
 
   // Local callback wrappers for Print Backend Service mojom call.  Virtual to
@@ -91,6 +93,8 @@ class PrintJobWorkerOop : public PrintJobWorker {
   // Initiate failure handling, including notification to the user.
   void NotifyFailure(mojom::ResultCode result);
 
+  // Mojo support to send messages from UI thread.
+  void SendEstablishPrintingContext();
   void SendStartPrinting(const std::string& device_name,
                          const std::u16string& document_name);
 #if BUILDFLAG(IS_WIN)
@@ -113,6 +117,10 @@ class PrintJobWorkerOop : public PrintJobWorker {
   absl::optional<PrintBackendServiceManager::ClientId>
       service_manager_client_id_;
 
+  // The printing context identifier related to this print job.
+  // Used only from UI thread.
+  absl::optional<PrintBackendServiceManager::ContextId> printing_context_id_;
+
   // The device name used when printing via a service.  Used only from the UI
   // thread.
   std::string device_name_;
@@ -129,9 +137,8 @@ class PrintJobWorkerOop : public PrintJobWorker {
   // to avoid any potential confusion between them.
   scoped_refptr<PrintedDocument> document_oop_;
 
-  // The type of target to print to.  Used only from the UI thread.
-  mojom::PrintTargetType print_target_type_ =
-      mojom::PrintTargetType::kDirectToDevice;
+  // Indicates if the print job was initiated from the print system dialog.
+  const bool print_from_system_dialog_;
 
 #if BUILDFLAG(IS_WIN)
   // Number of pages that have completed printing.

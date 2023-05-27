@@ -173,11 +173,16 @@
                 selected-animation-theme="[[animationTheme_]]">
             </animation-theme-list>
             <topic-source-list selected-topic-source="[[topicSource_]]"
+                selected-animation-theme="[[animationTheme_]]"
                 has-google-photos-albums="[[hasGooglePhotosAlbums_(albums_)]]">
             </topic-source-list>
             <ambient-weather-unit
                 selected-temperature-unit="[[temperatureUnitToString_(temperatureUnit_)]]">
             </ambient-weather-unit>
+            <template is="dom-if" if="[[isScreenSaverDurationEnabled_]]">
+              <duration-list duration="[[duration_]]">
+              </duration-list>
+            </template>
           </template>
         </template>
       </div>
@@ -254,6 +259,7 @@
                 selected-animation-theme="[[animationTheme_]]">
             </animation-theme-list>
             <topic-source-list selected-topic-source="[[topicSource_]]"
+                selected-animation-theme="[[animationTheme_]]"
                 has-google-photos-albums="[[hasGooglePhotosAlbums_(albums_)]]">
             </topic-source-list>
             <ambient-weather-unit

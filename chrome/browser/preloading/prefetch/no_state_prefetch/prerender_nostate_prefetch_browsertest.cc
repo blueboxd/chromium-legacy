@@ -23,6 +23,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -285,7 +285,9 @@ class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
 class NoStatePrefetchBrowserTest
     : public test_utils::PrerenderInProcessBrowserTest {
  public:
-  NoStatePrefetchBrowserTest() {}
+  NoStatePrefetchBrowserTest() {
+    feature_list_.InitAndDisableFeature(features::kPreloadingConfig);
+  }
 
   NoStatePrefetchBrowserTest(const NoStatePrefetchBrowserTest&) = delete;
   NoStatePrefetchBrowserTest& operator=(const NoStatePrefetchBrowserTest&) =
@@ -967,10 +969,11 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(
       current_browser()->tab_strip_model()->GetActiveWebContents()));
 
-  std::string html_content;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      current_browser()->tab_strip_model()->GetActiveWebContents(),
-      "domAutomationController.send(document.body.innerHTML)", &html_content));
+  std::string html_content =
+      content::EvalJs(
+          current_browser()->tab_strip_model()->GetActiveWebContents(),
+          "document.body.innerHTML")
+          .ExtractString();
 
   // For any cross origin navigation (including prerender), SameSite Strict
   // cookies should not be sent, but Lax should.
@@ -996,10 +999,11 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest,
   EXPECT_TRUE(WaitForLoadStop(
       current_browser()->tab_strip_model()->GetActiveWebContents()));
 
-  std::string html_content;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      current_browser()->tab_strip_model()->GetActiveWebContents(),
-      "domAutomationController.send(document.body.innerHTML)", &html_content));
+  std::string html_content =
+      content::EvalJs(
+          current_browser()->tab_strip_model()->GetActiveWebContents(),
+          "document.body.innerHTML")
+          .ExtractString();
 
   // For any same origin navigation (including prerender), SameSite Strict
   // cookies should not be sent, but Lax should.

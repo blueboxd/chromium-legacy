@@ -8,7 +8,9 @@
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "ash/components/arc/mojom/app.mojom.h"
+#include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/connection_holder.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -26,6 +28,7 @@
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -98,7 +101,7 @@ class ArcInputOverlayManager::InputMethodObserver
   }
 
  private:
-  ArcInputOverlayManager* const owner_;
+  raw_ptr<ArcInputOverlayManager> const owner_;
 };
 
 // static
@@ -145,6 +148,189 @@ ArcInputOverlayManager::ArcInputOverlayManager(
 ArcInputOverlayManager::~ArcInputOverlayManager() = default;
 
 // static
+void ArcInputOverlayManager::EnsureFactoryBuilt() {
+  ArcInputOverlayManagerFactory::GetInstance();
+}
+
+void ArcInputOverlayManager::OnWindowInitialized(aura::Window* new_window) {
+  // |aura::client::kAppType| property is set in
+  // |AppServiceAppWindowShelfController::OnWindowInitialized()|.
+  // |AppServiceAppWindowShelfController::OnWindowInitialized()| is called
+  // before |ArcInputOverlayManager::OnWindowInitialized()|, so we can filter
+  // non-ARC apps here.
+  if (!new_window || !ash::IsArcWindow(new_window) ||
+      new_window != new_window->GetToplevelWindow() ||
+      window_observations_.IsObservingSource(new_window)) {
+    return;
+  }
+
+  window_observations_.AddObservation(new_window);
+}
+
+void ArcInputOverlayManager::OnWindowPropertyChanged(aura::Window* window,
+                                                     const void* key,
+                                                     intptr_t old) {
+  // There are two cases when launching an app.
+  // 1) Launch from Launcher: Receive {ash::kArcPackageNameKey, package_name}.
+  // 2) Restore the app: Receive {ash::kArcPackageNameKey, package_name} and
+  // {app_restore::kRealArcTaskWindow, true}. When |ash::kArcPackageNameKey| is
+  // changed, the ghost window overlay is not destroyed. The ghost window
+  // overlay is destroyed right before property
+  // {app_restore::kRealArcTaskWindow} is set.
+  if (!window || (key != ash::kArcPackageNameKey &&
+                  key != app_restore::kRealArcTaskWindow)) {
+    return;
+  }
+
+  DCHECK_EQ(window, window->GetToplevelWindow());
+  if (input_overlay_enabled_windows_.contains(window) ||
+      IsGhostWindowLoading(window) || loading_data_windows_.contains(window)) {
+    return;
+  }
+  std::string* package_name = window->GetProperty(ash::kArcPackageNameKey);
+  if (!package_name || package_name->empty()) {
+    return;
+  }
+
+  // Start to read data.
+  auto touch_injector = std::make_unique<TouchInjector>(
+      window, *package_name,
+      base::BindRepeating(&ArcInputOverlayManager::OnSaveProtoFile,
+                          weak_ptr_factory_.GetWeakPtr()));
+  loading_data_windows_.insert(window);
+  task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&ArcInputOverlayManager::ReadDefaultData,
+                     std::move(touch_injector)),
+      base::BindOnce(&ArcInputOverlayManager::OnFinishReadDefaultData,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcInputOverlayManager::OnWindowDestroying(aura::Window* window) {
+  UnregisterAndRemoveObservation(window);
+}
+
+void ArcInputOverlayManager::OnWindowAddedToRootWindow(aura::Window* window) {
+  if (!window ||
+      ash::window_util::GetFocusedWindow()->GetToplevelWindow() != window) {
+    return;
+  }
+  RegisterWindow(window);
+}
+
+void ArcInputOverlayManager::OnWindowRemovingFromRootWindow(
+    aura::Window* window,
+    aura::Window* new_root) {
+  if (!window) {
+    return;
+  }
+  // There might be child window surface removing, we don't unregister window
+  // until the top_level_window is removed from the root.
+  UnRegisterWindow(window);
+}
+
+void ArcInputOverlayManager::OnWindowParentChanged(aura::Window* window,
+                                                   aura::Window* parent) {
+  // Ignore if |parent| is a container.
+  if (!parent || parent != parent->GetToplevelWindow()) {
+    return;
+  }
+  UnregisterAndRemoveObservation(window);
+}
+
+void ArcInputOverlayManager::Shutdown() {
+  UnRegisterWindow(registered_top_level_window_);
+  window_observations_.RemoveAllObservations();
+  if (ash::Shell::HasInstance()) {
+    if (ash::Shell::GetPrimaryRootWindow()) {
+      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
+          ->RemoveObserver(this);
+    }
+
+    if (ash::Shell::Get()->tablet_mode_controller()) {
+      ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+    }
+
+    if (ash::Shell::Get()->display_manager()) {
+      ash::Shell::Get()->display_manager()->RemoveObserver(this);
+    }
+  }
+  if (aura::Env::HasInstance()) {
+    env_observation_.Reset();
+  }
+}
+
+void ArcInputOverlayManager::OnWindowFocused(aura::Window* gained_focus,
+                                             aura::Window* lost_focus) {
+  if (ash::Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    return;
+  }
+
+  aura::Window* lost_focus_top_level_window = nullptr;
+  aura::Window* gained_focus_top_level_window = nullptr;
+
+  if (lost_focus) {
+    lost_focus_top_level_window = lost_focus->GetToplevelWindow();
+  }
+
+  if (gained_focus) {
+    gained_focus_top_level_window = gained_focus->GetToplevelWindow();
+  }
+
+  if (lost_focus_top_level_window == gained_focus_top_level_window) {
+    return;
+  }
+
+  UnRegisterWindow(lost_focus_top_level_window);
+  RegisterWindow(gained_focus_top_level_window);
+}
+
+void ArcInputOverlayManager::OnTabletModeStarting() {
+  UnRegisterWindow(registered_top_level_window_);
+}
+
+void ArcInputOverlayManager::OnTabletModeEnded() {
+  RegisterFocusedWindow();
+}
+
+void ArcInputOverlayManager::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t metrics) {
+  if (!registered_top_level_window_) {
+    return;
+  }
+
+  auto it = input_overlay_enabled_windows_.find(registered_top_level_window_);
+  if (it == input_overlay_enabled_windows_.end()) {
+    return;
+  }
+
+  it->second->UpdatePositionsForRegister();
+}
+
+void ArcInputOverlayManager::ResetForPendingTouchInjector(
+    std::unique_ptr<TouchInjector> touch_injector) {
+  auto* window = touch_injector->window();
+  loading_data_windows_.erase(window);
+  touch_injector.reset();
+  RemoveWindowObservation(window);
+}
+
+void ArcInputOverlayManager::RemoveWindowObservation(aura::Window* window) {
+  if (window_observations_.IsObservingSource(window)) {
+    window_observations_.RemoveObservation(window);
+  }
+}
+
+void ArcInputOverlayManager::UnregisterAndRemoveObservation(
+    aura::Window* window) {
+  UnRegisterWindow(window);
+  input_overlay_enabled_windows_.erase(window);
+  loading_data_windows_.erase(window);
+  RemoveWindowObservation(window);
+}
+
+// static
 std::unique_ptr<TouchInjector> ArcInputOverlayManager::ReadDefaultData(
     std::unique_ptr<TouchInjector> touch_injector) {
   DCHECK(touch_injector);
@@ -186,25 +372,32 @@ void ArcInputOverlayManager::OnFinishReadDefaultData(
       return;
     }
 
-    // ARC is only allowed for the primary user.
-    auto* profile = ProfileManager::GetPrimaryUserProfile();
-    DCHECK(arc::IsArcAllowedForProfile(profile));
-    connection_ = ArcAppListPrefs::Get(profile)->app_connection_holder();
-    if (!connection_) {
-      LOG(ERROR) << "Unable to get access to GetAppCategory for nullptr "
-                    "|connection_|.";
+    // Check if GIO is applicable from mojom instance.
+    auto* arc_service_manager = arc::ArcServiceManager::Get();
+    if (!arc_service_manager) {
+      LOG(ERROR) << "Failed to get ArcServiceManager";
+      ResetForPendingTouchInjector(std::move(touch_injector));
       return;
     }
-    auto* app_instance =
-        ARC_GET_INSTANCE_FOR_METHOD(connection_, GetAppCategory);
-    if (!app_instance) {
+    auto* compatibility_mode =
+        arc_service_manager->arc_bridge_service()->compatibility_mode();
+    if (!compatibility_mode || !compatibility_mode->IsConnected()) {
+      LOG(ERROR) << "No supported Android connection.";
+      ResetForPendingTouchInjector(std::move(touch_injector));
+      return;
+    }
+    auto* instance =
+        ARC_GET_INSTANCE_FOR_METHOD(compatibility_mode, IsGioApplicable);
+    if (!instance) {
+      LOG(ERROR) << "IsGioApplicable method for ARC is not available";
+      ResetForPendingTouchInjector(std::move(touch_injector));
       return;
     }
 
-    VLOG(2) << "Fetch app category of package: " << package_name;
-    app_instance->GetAppCategory(
+    VLOG(2) << "Check if GIO applicable on package: " << package_name;
+    instance->IsGioApplicable(
         package_name,
-        base::BindOnce(&ArcInputOverlayManager::OnReceiveAppCategory,
+        base::BindOnce(&ArcInputOverlayManager::OnDidCheckGioApplicable,
                        Unretained(this), std::move(touch_injector)));
   } else {
     if (!data_controller_) {
@@ -222,11 +415,10 @@ void ArcInputOverlayManager::OnFinishReadDefaultData(
   }
 }
 
-void ArcInputOverlayManager::OnReceiveAppCategory(
+void ArcInputOverlayManager::OnDidCheckGioApplicable(
     std::unique_ptr<TouchInjector> touch_injector,
-    arc::mojom::AppCategory category) {
-  VLOG(2) << "ARC app category is: " << category;
-  if (category != arc::mojom::AppCategory::kGame) {
+    bool is_gio_applicable) {
+  if (!is_gio_applicable) {
     ResetForPendingTouchInjector(std::move(touch_injector));
     return;
   }
@@ -386,165 +578,6 @@ void ArcInputOverlayManager::RemoveDisplayOverlayController() {
   }
   DCHECK(display_overlay_controller_);
   display_overlay_controller_.reset();
-}
-
-void ArcInputOverlayManager::OnWindowInitialized(aura::Window* new_window) {
-  if (window_observations_.IsObservingSource(new_window)) {
-    return;
-  }
-
-  window_observations_.AddObservation(new_window);
-}
-
-void ArcInputOverlayManager::OnWindowPropertyChanged(aura::Window* window,
-                                                     const void* key,
-                                                     intptr_t old) {
-  // There are two cases when launching an app.
-  // 1) Launch from Launcher: Receive {ash::kArcPackageNameKey, package_name}.
-  // 2) Restore the app: Receive {ash::kArcPackageNameKey, package_name} and
-  // {app_restore::kRealArcTaskWindow, true}. When |ash::kArcPackageNameKey| is
-  // changed, the ghost window overlay is not destroyed. The ghost window
-  // overlay is destroyed right before property
-  // {app_restore::kRealArcTaskWindow} is set.
-  if (!window || (key != ash::kArcPackageNameKey &&
-                  key != app_restore::kRealArcTaskWindow)) {
-    return;
-  }
-
-  auto* top_level_window = window->GetToplevelWindow();
-  if (!top_level_window ||
-      input_overlay_enabled_windows_.contains(top_level_window) ||
-      IsGhostWindowLoading(top_level_window) ||
-      loading_data_windows_.contains(top_level_window)) {
-    return;
-  }
-  std::string* package_name =
-      top_level_window->GetProperty(ash::kArcPackageNameKey);
-  if (!package_name || package_name->empty()) {
-    return;
-  }
-
-  // Start to read data.
-  auto touch_injector = std::make_unique<TouchInjector>(
-      top_level_window, *package_name,
-      base::BindRepeating(&ArcInputOverlayManager::OnSaveProtoFile,
-                          weak_ptr_factory_.GetWeakPtr()));
-  loading_data_windows_.insert(top_level_window);
-  task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(&ArcInputOverlayManager::ReadDefaultData,
-                     std::move(touch_injector)),
-      base::BindOnce(&ArcInputOverlayManager::OnFinishReadDefaultData,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-void ArcInputOverlayManager::OnWindowDestroying(aura::Window* window) {
-  if (window_observations_.IsObservingSource(window)) {
-    window_observations_.RemoveObservation(window);
-  }
-  UnRegisterWindow(window);
-  input_overlay_enabled_windows_.erase(window);
-  loading_data_windows_.erase(window);
-}
-
-void ArcInputOverlayManager::OnWindowAddedToRootWindow(aura::Window* window) {
-  if (!window ||
-      ash::window_util::GetFocusedWindow()->GetToplevelWindow() != window) {
-    return;
-  }
-  RegisterWindow(window);
-}
-
-void ArcInputOverlayManager::OnWindowRemovingFromRootWindow(
-    aura::Window* window,
-    aura::Window* new_root) {
-  if (!window) {
-    return;
-  }
-  // There might be child window surface removing, we don't unregister window
-  // until the top_level_window is removed from the root.
-  UnRegisterWindow(window);
-}
-
-void ArcInputOverlayManager::Shutdown() {
-  UnRegisterWindow(registered_top_level_window_);
-  window_observations_.RemoveAllObservations();
-  if (ash::Shell::HasInstance()) {
-    if (ash::Shell::GetPrimaryRootWindow()) {
-      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow())
-          ->RemoveObserver(this);
-    }
-
-    if (ash::Shell::Get()->tablet_mode_controller()) {
-      ash::Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
-    }
-
-    if (ash::Shell::Get()->display_manager()) {
-      ash::Shell::Get()->display_manager()->RemoveObserver(this);
-    }
-  }
-  if (aura::Env::HasInstance()) {
-    env_observation_.Reset();
-  }
-}
-
-void ArcInputOverlayManager::OnWindowFocused(aura::Window* gained_focus,
-                                             aura::Window* lost_focus) {
-  if (ash::Shell::Get()->tablet_mode_controller()->InTabletMode()) {
-    return;
-  }
-
-  aura::Window* lost_focus_top_level_window = nullptr;
-  aura::Window* gained_focus_top_level_window = nullptr;
-
-  if (lost_focus) {
-    lost_focus_top_level_window = lost_focus->GetToplevelWindow();
-  }
-
-  if (gained_focus) {
-    gained_focus_top_level_window = gained_focus->GetToplevelWindow();
-  }
-
-  if (lost_focus_top_level_window == gained_focus_top_level_window) {
-    return;
-  }
-
-  UnRegisterWindow(lost_focus_top_level_window);
-  RegisterWindow(gained_focus_top_level_window);
-}
-
-void ArcInputOverlayManager::OnTabletModeStarting() {
-  UnRegisterWindow(registered_top_level_window_);
-}
-
-void ArcInputOverlayManager::OnTabletModeEnded() {
-  RegisterFocusedWindow();
-}
-
-void ArcInputOverlayManager::OnDisplayMetricsChanged(
-    const display::Display& display,
-    uint32_t metrics) {
-  if (!registered_top_level_window_) {
-    return;
-  }
-
-  auto it = input_overlay_enabled_windows_.find(registered_top_level_window_);
-  if (it == input_overlay_enabled_windows_.end()) {
-    return;
-  }
-
-  it->second->UpdatePositionsForRegister();
-}
-
-void ArcInputOverlayManager::ResetForPendingTouchInjector(
-    std::unique_ptr<TouchInjector> touch_injector) {
-  loading_data_windows_.erase(touch_injector->window());
-  touch_injector.reset();
-}
-
-// static
-void ArcInputOverlayManager::EnsureFactoryBuilt() {
-  ArcInputOverlayManagerFactory::GetInstance();
 }
 
 }  // namespace arc::input_overlay

@@ -180,7 +180,7 @@ void LoggedInSpokenFeedbackTest::DisableEarcons() {
 
 void LoggedInSpokenFeedbackTest::ImportJSModuleForChromeVox(std::string name,
                                                             std::string path) {
-  extensions::browsertest_util::ExecuteScriptInBackgroundPage(
+  extensions::browsertest_util::ExecuteScriptInBackgroundPageDeprecated(
       browser()->profile(), extension_misc::kChromeVoxExtensionId,
       "import('" + path +
           "').then(mod => {"
@@ -663,8 +663,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSpeechMenu) {
   sm_.Replay();
 }
 
-// TODO(crbug.com/262699576): Re-enable this test. Flaky since 2022-12-14.
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_OpenContextMenu) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenContextMenu) {
   EnableChromeVox();
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_M); });
   sm_.ExpectSpeech("menu opened");
@@ -970,19 +969,15 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
     sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
     sm_.ExpectSpeech("Battery");
 
-    // Avatar button. Disabled for guest account.
-    if (GetParam() != kTestAsGuestUser) {
+    // Guest mode sign out button.
+    if (GetParam() == kTestAsGuestUser) {
       sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
-      sm_.ExpectSpeech("Button");
+      sm_.ExpectSpeech("Exit guest");
     }
 
     // Shutdown button.
     sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
-    if (base::FeatureList::IsEnabled(features::kQsRevamp)) {
-      sm_.ExpectSpeech("Power menu");
-    } else {
-      sm_.ExpectSpeech("Shut down");
-    }
+    sm_.ExpectSpeech("Power menu");
     sm_.ExpectSpeech("Button");
 
     sm_.Replay();
@@ -1001,11 +996,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
 
   // Shutdown button.
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_B); });
-  if (base::FeatureList::IsEnabled(features::kQsRevamp)) {
-    sm_.ExpectSpeech("Power menu");
-  } else {
-    sm_.ExpectSpeech("Shut down");
-  }
+  sm_.ExpectSpeech("Shut down");
   sm_.ExpectSpeech("Button");
 
   sm_.Replay();
@@ -1448,9 +1439,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   widget->Init(std::move(params));
 
   views::View* view = new views::View();
-  // A valid role must be set prior to setting the name.
-  view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kButton);
-  view->GetViewAccessibility().OverrideName("hello");
+  view->SetAccessibleRole(ax::mojom::Role::kButton);
+  view->SetAccessibleName(u"hello");
   view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view);
 
@@ -1526,9 +1516,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, TouchExploreSecondaryDisplay) {
   widget->Init(std::move(params));
 
   views::View* view = new views::View();
-  // A valid role must be set prior to setting the name.
-  view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kButton);
-  view->GetViewAccessibility().OverrideName("hello");
+  view->SetAccessibleRole(ax::mojom::Role::kButton);
+  view->SetAccessibleName(u"hello");
   view->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   widget->GetRootView()->AddChildView(view);
 
@@ -1671,9 +1660,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest,
   sm_.Replay();
 }
 
-// TODO(https://crbug.com/1064947): Flaky on ASAN. (Note MAYBE_ doesn't work
-// well with parameterized tests).
-#if !defined(ADDRESS_SANITIZER)
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {
   EnableChromeVox();
   sm_.Call([this]() {
@@ -1706,7 +1692,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ResetTtsSettings) {
   sm_.ExpectSpeech("Pitch 50 percent");
   sm_.Replay();
 }
-#endif  // !defined(ADDRESS_SANITIZER)
 
 // Tests the keyboard shortcut to cycle the punctuation echo setting,
 // Search+A then P.
@@ -2244,7 +2229,7 @@ IN_PROC_BROWSER_TEST_F(DeskTemplatesSpokenFeedbackTest, DeskTemplatesBasic) {
 
   // TODO(crbug.com/1360638): Remove the conditional here when the Save & Recall
   // flag flip has landed since it will always be true.
-  if (saved_desk_util::IsDeskSaveAndRecallEnabled()) {
+  if (saved_desk_util::IsSavedDesksEnabled()) {
     sm_.Call([this]() { SendKeyPressWithShift(ui::VKEY_TAB); });
     sm_.ExpectSpeechPattern("Save desk for later");
     sm_.ExpectSpeech("Button");

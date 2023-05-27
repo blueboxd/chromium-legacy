@@ -308,11 +308,15 @@ class WaylandSurface {
     bool contains_video = false;
   };
 
-  // The wayland scale refers to the scale factor used for calls to wayland
-  // apis such as wl_region_add. When SurfaceSubmissionInPixelCoordinates is
-  // true, this is always 1. Otherwise this is buffer_scale_float casted to an
-  // integer.
-  int GetWaylandScale(const State& state);
+  // The wayland scale refers to the scale factor between the buffer coordinates
+  // and Wayland surface coordinates. When SurfaceSubmissionInPixelCoordinates
+  // is true, this is always 1. Otherwise, this is buffer_scale_float unless the
+  // value is less than 1. In that case 1 is returned. Additionally, if
+  // viewporter surface scaling is disabled, the value will be rounded up to the
+  // next integer.
+  float GetWaylandScale(const State& state);
+
+  bool IsViewportScaled(const State& state);
 
   // Tracks the last sent src and dst values across wayland protocol s.t. we
   // skip resending them when possible.
@@ -326,7 +330,7 @@ class WaylandSurface {
 
   wl::Object<wl_region> CreateAndAddRegion(
       const std::vector<gfx::Rect>& region_px,
-      int32_t buffer_scale);
+      float buffer_scale);
 
   // wl_surface states that are stored in Wayland client. It moves to |state_|
   // on ApplyPendingState().
@@ -364,6 +368,10 @@ class WaylandSurface {
   // it is technically possible to handle this value as mutable, in practice
   // it's constant.
   const bool surface_submission_in_pixel_coordinates_;
+
+  // Same as above except it caches
+  // connection->UseViewporterSurfaceScaling().
+  const bool use_viewporter_surface_scaling_;
 
   // For top level window, stores outputs that the window is currently rendered
   // at.

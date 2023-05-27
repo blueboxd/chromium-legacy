@@ -347,6 +347,45 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
   return Invalid();
 }
 
+bool MediaQueryExpValue::IsResolution() const {
+  switch (type_) {
+    case Type::kNumeric:
+      return CSSPrimitiveValue::IsResolution(Unit());
+    case Type::kCSSValue:
+      if (const auto* math_function =
+              DynamicTo<CSSMathFunctionValue>(css_value_.Get())) {
+        return math_function->IsResolution();
+      }
+      return false;
+    default:
+      return false;
+  }
+}
+
+double MediaQueryExpValue::Value() const {
+  if (const auto* math_function =
+          DynamicTo<CSSMathFunctionValue>(css_value_.Get())) {
+    if (math_function->IsResolution()) {
+      return math_function->ComputeDotsPerPixel();
+    }
+  }
+
+  DCHECK(IsNumeric());
+  return numeric_.value;
+}
+
+CSSPrimitiveValue::UnitType MediaQueryExpValue::Unit() const {
+  if (const auto* math_function =
+          DynamicTo<CSSMathFunctionValue>(css_value_.Get())) {
+    if (math_function->IsResolution()) {
+      return CSSPrimitiveValue::UnitType::kDotsPerPixel;
+    }
+  }
+
+  DCHECK(IsNumeric());
+  return numeric_.unit;
+}
+
 absl::optional<MediaQueryExpValue> MediaQueryExpValue::Consume(
     const String& media_feature,
     CSSParserTokenRange& range,
@@ -386,7 +425,7 @@ absl::optional<MediaQueryExpValue> MediaQueryExpValue::Consume(
         range, context, CSSPrimitiveValue::ValueRange::kAll);
   }
   if (!value) {
-    value = css_parsing_utils::ConsumeResolution(range);
+    value = css_parsing_utils::ConsumeResolution(range, context);
   }
 
   if (!value) {
@@ -422,8 +461,12 @@ absl::optional<MediaQueryExpValue> MediaQueryExpValue::Consume(
   }
 
   if (FeatureWithValidDensity(media_feature, value)) {
-    // TODO(crbug.com/983613): Support resolution in math functions.
-    DCHECK(value->IsNumericLiteralValue());
+    DCHECK(value->IsResolution());
+
+    if (const auto* math_function = DynamicTo<CSSMathFunctionValue>(value)) {
+      return MediaQueryExpValue(*math_function);
+    }
+
     const auto* numeric_literal = To<CSSNumericLiteralValue>(value);
     return MediaQueryExpValue(numeric_literal->DoubleValue(),
                               numeric_literal->GetType());

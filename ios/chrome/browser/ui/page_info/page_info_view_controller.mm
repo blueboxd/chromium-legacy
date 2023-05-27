@@ -11,6 +11,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_attributed_string_header_footer_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
@@ -21,7 +22,6 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/permissions/permission_info.h"
@@ -130,6 +130,7 @@ float kTitleLabelMinimumScaleFactor = 0.7f;
   securityHeader.text = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_SITE_SECURITY);
   securityHeader.detailText = self.pageInfoSecurityDescription.status;
   securityHeader.iconImage = self.pageInfoSecurityDescription.iconImage;
+  securityHeader.iconTintColor = UIColor.whiteColor;
   securityHeader.iconBackgroundColor =
       self.pageInfoSecurityDescription.iconBackgroundColor;
   securityHeader.iconCornerRadius = kColorfulBackgroundSymbolCornerRadius;

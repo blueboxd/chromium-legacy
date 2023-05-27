@@ -7,7 +7,9 @@
 
 #include "content/browser/renderer_host/render_process_host_impl.h"
 
+#include <algorithm>
 #include <limits>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
@@ -20,7 +22,6 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
@@ -38,7 +39,6 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_base.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -65,7 +65,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
-#include "components/attribution_reporting/os_support.mojom.h"
 #include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/metrics/single_sample_metrics.h"
@@ -183,7 +182,8 @@
 #include "services/device/public/mojom/time_zone_monitor.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
-#include "services/metrics/ukm_recorder_interface.h"
+#include "services/metrics/ukm_recorder_factory_impl.h"
+#include "services/network/public/mojom/attribution.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -318,9 +318,11 @@ base::IDMap<RenderProcessHost*>& GetAllHosts() {
   return *s_all_hosts;
 }
 
-// Returns the global list of RenderProcessHostCreationObserver objects.
-std::vector<RenderProcessHostCreationObserver*>& GetAllCreationObservers() {
-  static base::NoDestructor<std::vector<RenderProcessHostCreationObserver*>>
+// Returns the global list of RenderProcessHostCreationObserver objects. Uses
+// std::list to ensure iterators remain valid if observers are created or
+// removed during iteration.
+std::list<RenderProcessHostCreationObserver*>& GetAllCreationObservers() {
+  static base::NoDestructor<std::list<RenderProcessHostCreationObserver*>>
       s_all_creation_observers;
   return *s_all_creation_observers;
 }
@@ -825,18 +827,27 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
   // from being reused if it has pending navigations to such URLs.
   bool ContainsNonReusableSiteForHost(RenderProcessHost* host) {
     for (auto iter : map_) {
-      // If SiteInstance doesn't assign a site URL for the current entry (and it
-      // isn't about:blank, which is allowed anywhere), check whether |host| is
-      // on the list of processes the entry is associated with.
+      // If SiteInstance doesn't assign a site URL for the current entry, check
+      // whether |host| is on the list of processes the entry is associated
+      // with.  Skip entries for about:blank, which is allowed anywhere.  Note
+      // that about:blank could have an initiator origin, and a process with
+      // such a pending navigation wouldn't be safe to reuse, but in that case
+      // the site URL would reflect the initiator origin and wouldn't match
+      // about:blank.
       //
       // TODO(alexmos): ShouldAssignSiteForURL() expects a full URL, whereas we
       // only have a site URL here.  For now, this mismatch is ok since
       // ShouldAssignSiteForURL() only cares about schemes in practice, but
       // this should be cleaned up.
-      if (!SiteInstanceImpl::ShouldAssignSiteForURL(iter.first.site_url()) &&
+      //
+      // TODO(alexmos): Additionally, site URLs will never match the full
+      // "about:blank" URL which has no host; a site URL could only be
+      // "about:" in that case.  This looks like a bug that needs to be fixed!
+      if (!SiteInstance::ShouldAssignSiteForURL(iter.first.site_url()) &&
           !iter.first.site_url().IsAboutBlank() &&
-          base::Contains(iter.second, host->GetID()))
+          base::Contains(iter.second, host->GetID())) {
         return true;
+      }
     }
     return false;
   }
@@ -1289,9 +1300,9 @@ class RenderProcessHostImpl::IOThreadHostImpl : public mojom::ChildProcessHost {
       return;
     }
 
-    if (auto r = receiver.As<ukm::mojom::UkmRecorderInterface>()) {
-      metrics::UkmRecorderInterface::Create(ukm::UkmRecorder::Get(),
-                                            std::move(r));
+    if (auto r = receiver.As<ukm::mojom::UkmRecorderFactory>()) {
+      metrics::UkmRecorderFactoryImpl::Create(ukm::UkmRecorder::Get(),
+                                              std::move(r));
       return;
     }
 
@@ -1417,8 +1428,8 @@ size_t RenderProcessHost::GetMaxRendererProcessCount() {
         RenderProcessHostImpl::GetPlatformMaxRendererProcessCount();
     DCHECK_LE(kMinRendererProcessCount, kMaxRendererProcessCount);
 
-    max_count = base::clamp(max_count, kMinRendererProcessCount,
-                            kMaxRendererProcessCount);
+    max_count = std::clamp(max_count, kMinRendererProcessCount,
+                           kMaxRendererProcessCount);
     MAYBEVLOG(1) << __func__ << ": Calculated max " << max_count;
   }
   return max_count;
@@ -1648,10 +1659,6 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   // "Browser.RenderProcessHostImpl"
   TRACE_EVENT_END("shutdown", perfetto::Track::FromPointer(this),
                   ChromeTrackEvent::kRenderProcessHost, *this);
-
-  base::UmaHistogramPercentage(
-      "BrowserRenderProcessHost.RoutingIDSpaceUsed",
-      100. * GetNextRoutingID() / std::numeric_limits<int32_t>::max());
 }
 
 bool RenderProcessHostImpl::Init() {
@@ -1744,7 +1751,7 @@ bool RenderProcessHostImpl::Init() {
       GetContentClient()->browser()->GetReducedUserAgent(),
       GetContentClient()->browser()->GetUserAgentMetadata(),
       storage_partition_impl_->cors_exempt_header_list(),
-      AttributionManager::GetOsSupport());
+      AttributionManager::GetSupport());
 
   if (run_renderer_in_process()) {
     DCHECK(g_renderer_main_thread_factory);
@@ -2228,8 +2235,11 @@ RenderProcessHostImpl::GetInfoForBrowserContextDestructionCrashReporting() {
   if (delayed_cleanup_needed_)
     ret += " dcn";
 
-  if (keep_alive_ref_count_ != 0)
+  if (keep_alive_ref_count_ != 0) {
+    CHECK(!base::FeatureList::IsEnabled(
+        blink::features::kKeepAliveInBrowserMigration));
     ret += " karc=" + base::NumberToString(keep_alive_ref_count_);
+  }
 
   if (shutdown_delay_ref_count_ != 0)
     ret += " sdrc=" + base::NumberToString(shutdown_delay_ref_count_);
@@ -2664,12 +2674,18 @@ void RenderProcessHostImpl::IncrementKeepAliveRefCount(uint64_t handle_id) {
   if (base::FeatureList::IsEnabled(kCheckNoNewRefCountsWhenRphDeletingSoon)) {
     CHECK(!deleting_soon_);
   }
+  CHECK(!base::FeatureList::IsEnabled(
+      blink::features::kKeepAliveInBrowserMigration));
   ++keep_alive_ref_count_;
   DCHECK(!keep_alive_start_times_.contains(handle_id));
   keep_alive_start_times_[handle_id] = base::Time::Now();
 }
 
 bool RenderProcessHostImpl::AreAllRefCountsZero() {
+  if (base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
+    CHECK_EQ(keep_alive_ref_count_, 0);
+  }
   return keep_alive_ref_count_ == 0 && worker_ref_count_ == 0 &&
          shutdown_delay_ref_count_ == 0 && pending_reuse_ref_count_ == 0;
 }
@@ -2677,6 +2693,8 @@ bool RenderProcessHostImpl::AreAllRefCountsZero() {
 void RenderProcessHostImpl::DecrementKeepAliveRefCount(uint64_t handle_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CHECK(!are_ref_counts_disabled_);
+  CHECK(!base::FeatureList::IsEnabled(
+      blink::features::kKeepAliveInBrowserMigration));
   CHECK_GT(keep_alive_ref_count_, 0);
   --keep_alive_ref_count_;
   DCHECK(keep_alive_start_times_.contains(handle_id));
@@ -2947,10 +2965,6 @@ void RenderProcessHostImpl::ShutdownForBadMessage(
     // Report a crash, since none will be generated by the killed renderer.
     base::debug::DumpWithoutCrashing();
   }
-
-  // Log the renderer kill to the histogram tracking all kills.
-  BrowserChildProcessHostImpl::HistogramBadMessageTerminated(
-      PROCESS_TYPE_RENDERER);
 }
 
 void RenderProcessHostImpl::UpdateClientPriority(
@@ -3121,10 +3135,9 @@ bool RenderProcessHostImpl::IsSpareProcessKeptAtAllTimes() {
   // Spare renderer actually hurts performance on low-memory devices.  See
   // https://crbug.com/843775 for more details.
   //
-  // The comparison below is using 1077 rather than 1024 because 1) this helps
+  // The comparison below is using 1077 rather than 1024 because this helps
   // ensure that devices with exactly 1GB of RAM won't get included because of
-  // inaccuracies or off-by-one errors and 2) this is the bucket boundary in
-  // Memory.Stats.Win.TotalPhys2.
+  // inaccuracies or off-by-one errors.
   if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 1077)
     return false;
 
@@ -3208,7 +3221,7 @@ StoragePartitionImpl* RenderProcessHostImpl::GetStoragePartition() {
 
 static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
   command_line->AppendSwitchASCII(
-      blink::switches::kNumRasterThreads,
+      cc::switches::kNumRasterThreads,
       base::NumberToString(NumberOfRendererRasterThreads()));
 
   int msaa_sample_count = GpuRasterizationMSAASampleCount();
@@ -3445,6 +3458,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     blink::switches::kDefaultTileHeight,
     blink::switches::kDisableImageAnimationResync,
     blink::switches::kDisableLowResTiling,
+    blink::switches::kDisableNewBaseUrlInheritanceBehavior,
     blink::switches::kDisablePreferCompositingToLCDText,
     blink::switches::kDisableRGBA4444Textures,
     blink::switches::kDisableThreadedScrolling,
@@ -3646,8 +3660,12 @@ bool RenderProcessHostImpl::FastShutdownIfPossible(size_t page_count,
   if (!skip_unload_handlers && !SuddenTerminationAllowed())
     return false;
 
-  if (keep_alive_ref_count_ != 0)
+  // TODO(crbug.com/1356128): Remove this block once the migration is launched.
+  if (keep_alive_ref_count_ != 0) {
+    CHECK(!base::FeatureList::IsEnabled(
+        blink::features::kKeepAliveInBrowserMigration));
     return false;
+  }
 
   if (worker_ref_count_ != 0)
     return false;
@@ -3925,6 +3943,8 @@ void RenderProcessHostImpl::Cleanup() {
         });
     return;
   } else if (keep_alive_ref_count_ != 0) {
+    CHECK(!base::FeatureList::IsEnabled(
+        blink::features::kKeepAliveInBrowserMigration));
     TRACE_EVENT(
         "shutdown", "RenderProcessHostImpl::Cleanup : Have keep_alive_ref.",
         ChromeTrackEvent::kRenderProcessHost, *this,
@@ -4367,7 +4387,7 @@ bool RenderProcessHostImpl::IsSuitableHost(
   // URLs, since in that case the latter navigation could lock this process
   // before the commit for the siteless URL arrives, resulting in a renderer
   // kill. See https://crbug.com/970046.
-  if (SiteInstanceImpl::ShouldAssignSiteForURL(site_info.site_url()) &&
+  if (SiteInstance::ShouldAssignSiteForURL(site_info.site_url()) &&
       site_info.RequiresDedicatedProcess(isolation_context)) {
     SiteProcessCountTracker* pending_tracker =
         static_cast<SiteProcessCountTracker*>(
@@ -5463,9 +5483,9 @@ void RenderProcessHostImpl::NotifyMemoryPressureToRenderer(
   child_process_->OnMemoryPressure(level);
 }
 
-void RenderProcessHostImpl::SetOsSupportForAttributionReporting(
-    attribution_reporting::mojom::OsSupport os_support) {
-  GetRendererInterface()->SetOsSupportForAttributionReporting(os_support);
+void RenderProcessHostImpl::SetAttributionReportingSupport(
+    network::mojom::AttributionSupport attribution_support) {
+  GetRendererInterface()->SetAttributionReportingSupport(attribution_support);
 }
 
 #endif

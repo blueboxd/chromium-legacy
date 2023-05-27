@@ -98,6 +98,22 @@ bool IsFormInteresting(const FormData& form, size_t num_editable_elements) {
                               &FormFieldData::autocomplete_attribute);
 }
 
+void ClearSelectOrSelectMenuElement(
+    WebFormControlElement& element,
+    const std::map<FieldRendererId, std::u16string>& initial_values) {
+  auto initial_value_iter = initial_values.find(
+      FieldRendererId(element.UniqueRendererFormControlId()));
+  if (initial_value_iter != initial_values.end() &&
+      element.Value().Utf16() != initial_value_iter->second) {
+    element.SetAutofillValue(
+        blink::WebString::FromUTF16(initial_value_iter->second),
+        blink::WebAutofillState::kNotFilled);
+    element.SetUserHasEditedTheField(false);
+  } else {
+    element.SetAutofillState(WebAutofillState::kNotFilled);
+  }
+}
+
 }  // namespace
 
 FormCache::UpdateFormCacheResult::UpdateFormCacheResult() = default;
@@ -114,6 +130,7 @@ FormCache::UpdateFormCacheResult FormCache::UpdateFormCache(
     const FieldDataManager* field_data_manager) {
   initial_checked_state_.clear();
   initial_select_values_.clear();
+  initial_selectmenu_values_.clear();
 
   std::set<FieldRendererId> observed_unique_renderer_ids;
 
@@ -200,16 +217,15 @@ FormCache::UpdateFormCacheResult FormCache::UpdateFormCache(
 
   // Look for more parseable fields outside of forms. Create a synthetic form
   // from them.
-  std::vector<WebElement> fieldsets;
   std::vector<WebFormControlElement> control_elements =
-      form_util::GetUnownedAutofillableFormFieldElements(document, &fieldsets);
+      form_util::GetUnownedAutofillableFormFieldElements(document);
   std::vector<WebElement> iframe_elements =
       form_util::GetUnownedIframeElements(document);
 
   FormData synthetic_form;
-  if (!UnownedFormElementsAndFieldSetsToFormData(
-          fieldsets, control_elements, iframe_elements, nullptr, document,
-          field_data_manager, extract_mask, &synthetic_form, nullptr)) {
+  if (!UnownedFormElementsToFormData(control_elements, iframe_elements, nullptr,
+                                     document, field_data_manager, extract_mask,
+                                     &synthetic_form, nullptr)) {
     PruneInitialValueCaches(observed_unique_renderer_ids);
     return r;
   }
@@ -226,6 +242,7 @@ void FormCache::Reset() {
   synthetic_form_ = FormData();
   parsed_forms_.clear();
   initial_select_values_.clear();
+  initial_selectmenu_values_.clear();
   initial_checked_state_.clear();
   fields_eligible_for_manual_filling_.clear();
 }
@@ -244,7 +261,8 @@ void FormCache::ClearElement(WebFormControlElement& control_element,
     return;
 
   if (!form_util::IsAutofillableElement(control_element)) {
-    NOTREACHED();
+    // TODO(crbug.com/1336051): Handle selectmenu case and make this NOTREACHED.
+    CHECK(form_util::IsSelectMenuElement(control_element));
     return;
   }
 
@@ -265,18 +283,9 @@ void FormCache::ClearElement(WebFormControlElement& control_element,
     control_element.SetAutofillValue(blink::WebString(),
                                      WebAutofillState::kNotFilled);
   } else if (form_util::IsSelectElement(control_element)) {
-    WebSelectElement select_element = control_element.To<WebSelectElement>();
-    auto initial_value_iter = initial_select_values_.find(
-        FieldRendererId(select_element.UniqueRendererFormControlId()));
-    if (initial_value_iter != initial_select_values_.end() &&
-        select_element.Value().Utf16() != initial_value_iter->second) {
-      select_element.SetAutofillValue(
-          blink::WebString::FromUTF16(initial_value_iter->second),
-          blink::WebAutofillState::kNotFilled);
-      select_element.SetUserHasEditedTheField(false);
-    } else {
-      select_element.SetAutofillState(WebAutofillState::kNotFilled);
-    }
+    ClearSelectOrSelectMenuElement(control_element, initial_select_values_);
+  } else if (form_util::IsSelectMenuElement(control_element)) {
+    ClearSelectOrSelectMenuElement(control_element, initial_selectmenu_values_);
   } else if (form_util::IsCheckableElement(web_input_element)) {
     WebInputElement input_element = control_element.To<WebInputElement>();
     auto checkable_element_it = initial_checked_state_.find(
@@ -301,7 +310,7 @@ bool FormCache::ClearSectionWithElement(const WebFormControlElement& element) {
   std::vector<WebFormControlElement> control_elements =
       form_element.IsNull()
           ? form_util::GetUnownedAutofillableFormFieldElements(
-                element.GetDocument(), nullptr)
+                element.GetDocument())
           : form_util::ExtractAutofillableElementsInForm(form_element);
 
   if (control_elements.empty())
@@ -349,7 +358,7 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
   if (form.data.unique_renderer_id.is_null()) {  // Form is synthetic.
     WebDocument document = frame_->GetDocument();
     control_elements =
-        form_util::GetUnownedAutofillableFormFieldElements(document, nullptr);
+        form_util::GetUnownedAutofillableFormFieldElements(document);
   } else {
     for (const WebFormElement& form_element : frame_->GetDocument().Forms()) {
       FormRendererId form_id(form_element.UniqueRendererFormId());
@@ -479,11 +488,11 @@ size_t FormCache::ScanFormControlElements(
     if (form_util::IsSelectElement(element) ||
         form_util::IsTextAreaElement(element)) {
       ++num_editable_elements;
-    } else {
-      const WebInputElement input_element = element.To<WebInputElement>();
-      if (!form_util::IsCheckableElement(input_element))
-        ++num_editable_elements;
+    } else if (!form_util::IsSelectMenuElement(element) &&
+               !form_util::IsCheckableElement(element)) {
+      ++num_editable_elements;
     }
+    // TODO(crbug.com/1336051): Handle selectmenu case.
   }
   return num_editable_elements;
 }
@@ -492,18 +501,18 @@ void FormCache::SaveInitialValues(
     const std::vector<WebFormControlElement>& control_elements) {
   for (const WebFormControlElement& element : control_elements) {
     if (form_util::IsSelectElement(element)) {
-      const WebSelectElement select_element = element.To<WebSelectElement>();
       initial_select_values_.insert(
-          {FieldRendererId(select_element.UniqueRendererFormControlId()),
-           select_element.Value().Utf16()});
-    } else {
-      const WebInputElement input_element =
-          element.DynamicTo<WebInputElement>();
-      if (form_util::IsCheckableElement(input_element)) {
-        initial_checked_state_.insert(
-            {FieldRendererId(input_element.UniqueRendererFormControlId()),
-             input_element.IsChecked()});
-      }
+          {FieldRendererId(element.UniqueRendererFormControlId()),
+           element.Value().Utf16()});
+    } else if (form_util::IsSelectMenuElement(element)) {
+      initial_selectmenu_values_.insert(
+          {FieldRendererId(element.UniqueRendererFormControlId()),
+           element.Value().Utf16()});
+    } else if (form_util::IsCheckableElement(element)) {
+      const WebInputElement input_element = element.To<WebInputElement>();
+      initial_checked_state_.insert(
+          {FieldRendererId(input_element.UniqueRendererFormControlId()),
+           input_element.IsChecked()});
     }
   }
 }
@@ -514,6 +523,7 @@ void FormCache::PruneInitialValueCaches(
     return !base::Contains(ids_to_retain, p.first);
   };
   base::EraseIf(initial_select_values_, should_not_retain);
+  base::EraseIf(initial_selectmenu_values_, should_not_retain);
   base::EraseIf(initial_checked_state_, should_not_retain);
 }
 

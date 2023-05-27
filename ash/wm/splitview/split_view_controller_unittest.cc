@@ -32,10 +32,12 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_util.h"
 #include "ash/test/test_window_builder.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/drag_window_resizer.h"
+#include "ash/wm/float/float_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -56,11 +58,13 @@
 #include "ash/wm/wm_event.h"
 #include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
+#include "chromeos/ui/wm/features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -118,7 +122,7 @@ class OverviewStatesObserver : public OverviewObserver {
 
  private:
   bool overview_animate_when_exiting_ = true;
-  aura::Window* root_window_;
+  raw_ptr<aura::Window, ExperimentalAsh> root_window_;
 };
 
 // The test BubbleDialogDelegateView for bubbles.
@@ -181,7 +185,7 @@ class TestTextInputClient : public ui::DummyTextInputClient {
 
  private:
   // The window to which the text client attaches to.
-  aura::Window* window_;
+  raw_ptr<aura::Window, ExperimentalAsh> window_;
   // The bounds of the caret.
   gfx::Rect caret_bounds_;
 };
@@ -803,13 +807,19 @@ TEST_F(SplitViewControllerTest, SplitDividerBasicTest) {
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
   EXPECT_TRUE(split_view_divider());
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
   split_view_controller()->SnapWindow(
       window2.get(), SplitViewController::SnapPosition::kSecondary);
   EXPECT_TRUE(split_view_divider());
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
+  EXPECT_TRUE(IsStackedBelow(
+      window1.get(),
+      split_view_divider()->divider_widget()->GetNativeWindow()));
+  EXPECT_TRUE(IsStackedBelow(
+      window2.get(),
+      split_view_divider()->divider_widget()->GetNativeWindow()));
 
   // Test that activating an non-snappable window ends the split view mode.
   std::unique_ptr<aura::Window> window3(CreateNonSnappableWindow(bounds));
@@ -817,20 +827,18 @@ TEST_F(SplitViewControllerTest, SplitDividerBasicTest) {
   EXPECT_FALSE(split_view_divider());
 }
 
-// Tests that the split divider has correct state after a window is destroyed
-// while being dragged from overview.
-TEST_F(SplitViewControllerTest,
-       DividerSetAsAlwaysOnTopAfterWindowDestroyedDuringDraggingFromOverview) {
+// Tests that the split divider has the correct state when the dragged overview
+// item is destroyed.
+TEST_F(SplitViewControllerTest, DividerStateWhenDraggedOverviewItemDestroyed) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
   std::unique_ptr<aura::Window> window3 = CreateTestWindow();
   ToggleOverview();
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
-  // The divider should start always on top.
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
-  // The divider should not be always on top while a window is being dragged.
+
   OverviewSession* overview_session =
       Shell::Get()->overview_controller()->overview_session();
   OverviewItem* overview_item =
@@ -842,40 +850,34 @@ TEST_F(SplitViewControllerTest,
   overview_session->Drag(overview_item, drag_point);
   EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
-  // If the dragged window is destroyed, the divider should be back to always on
-  // top, consistent with if the drag ends gracefully.
+
   window2.reset();
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
-  // |SplitViewDivider::is_dragging_window_| should be false, but instead of
-  // checking its value directly, we test for what may go wrong if it is true.
-  // If |SplitViewDivider::is_dragging_window_| is true, then the following call
-  // to |SplitViewController::SnapWindow| will set the divider to always on top,
-  // which is fine, but then the call to |wm::ActivateWindow| will change it
-  // back to not always on top (see |SplitViewDivider::OnWindowActivated|).
+
+  // The split view divider should always be on top of the two snapped windows.
   split_view_controller()->SnapWindow(
       window3.get(), SplitViewController::SnapPosition::kSecondary);
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
-  wm::ActivateWindow(window3.get());
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
-            split_view_divider()->divider_widget()->GetZOrderLevel());
+  EXPECT_TRUE(IsStackedBelow(window1.get(), window3.get()));
+  EXPECT_TRUE(IsStackedBelow(
+      window3.get(),
+      split_view_divider()->divider_widget()->GetNativeWindow()));
 }
 
-// Tests that the split divider has correct state after a window drag from
-// overview is canceled.
-TEST_F(SplitViewControllerTest,
-       DividerSetAsAlwaysOnTopAfterWindowDragFromOverviewReset) {
+// Tests that the split divider has the correct state when the drag of the
+// overview item is cancelled.
+TEST_F(SplitViewControllerTest, DividerStateWhenOverviewItemDragCancelled) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
   std::unique_ptr<aura::Window> window3 = CreateTestWindow();
   ToggleOverview();
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
-  // The divider should start always on top.
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
-  // The divider should not be always on top while a window is being dragged.
+
   OverviewSession* overview_session =
       Shell::Get()->overview_controller()->overview_session();
   OverviewItem* overview_item =
@@ -887,24 +889,26 @@ TEST_F(SplitViewControllerTest,
   overview_session->Drag(overview_item, drag_point);
   EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
-  // If the drag is canceled, the divider should be back to always on top,
-  // consistent with if the drag ends gracefully.
+
+  // If the drag is canceled, the divider should be placed on top of the snapped
+  // window.
   overview_session->ResetDraggedWindowGesture();
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
-  // |SplitViewDivider::is_dragging_window_| should be false, but instead of
-  // checking its value directly, we test for what may go wrong if it is true.
-  // If |SplitViewDivider::is_dragging_window_| is true, then the following call
-  // to |SplitViewController::SnapWindow| will set the divider to always on top,
-  // which is fine, but then the call to |wm::ActivateWindow| will change it
-  // back to not always on top (see |SplitViewDivider::OnWindowActivated|).
+
   split_view_controller()->SnapWindow(
       window3.get(), SplitViewController::SnapPosition::kSecondary);
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
   wm::ActivateWindow(window3.get());
-  EXPECT_NE(ui::ZOrderLevel::kNormal,
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
             split_view_divider()->divider_widget()->GetZOrderLevel());
+  EXPECT_TRUE(IsStackedBelow(
+      window1.get(),
+      split_view_divider()->divider_widget()->GetNativeWindow()));
+  EXPECT_TRUE(IsStackedBelow(
+      window3.get(),
+      split_view_divider()->divider_widget()->GetNativeWindow()));
 }
 
 // Verifys that the bounds of the two windows in splitview are as expected.
@@ -1346,7 +1350,8 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
 
   // Verify that after swapping windows, the windows and their bounds have been
   // swapped.
-  split_view_controller()->SwapWindows();
+  split_view_controller()->SwapWindows(
+      SplitViewController::SwapWindowsSource::kDoubleTap);
   EXPECT_EQ(split_view_controller()->primary_window(), window2.get());
   EXPECT_EQ(split_view_controller()->secondary_window(), window1.get());
   EXPECT_EQ(left_bounds, window2->GetBoundsInScreen());
@@ -1365,7 +1370,8 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
   left_bounds = window2->GetBoundsInScreen();
   right_bounds = window1->GetBoundsInScreen();
 
-  split_view_controller()->SwapWindows();
+  split_view_controller()->SwapWindows(
+      SplitViewController::SwapWindowsSource::kDoubleTap);
   EXPECT_EQ(split_view_controller()->primary_window(), window1.get());
   EXPECT_EQ(split_view_controller()->secondary_window(), window2.get());
   EXPECT_EQ(left_bounds, window1->GetBoundsInScreen());
@@ -1483,8 +1489,55 @@ TEST_F(SplitViewControllerTest, OverviewNotStealFocusOnSwapWindows) {
   split_view_controller()->SnapWindow(
       window2.get(), SplitViewController::SnapPosition::kPrimary);
   wm::ActivateWindow(window2.get());
-  split_view_controller()->SwapWindows();
+  split_view_controller()->SwapWindows(
+      SplitViewController::SwapWindowsSource::kDoubleTap);
   EXPECT_TRUE(wm::IsActiveWindow(window2.get()));
+}
+
+// Tests that the floated window is not auto-snapped if it's on top of two
+// snapped windows. It should only get snapped if it's activated from overview.
+TEST_F(SplitViewControllerTest, DontAutosnapFloatedWindow) {
+  base::test::ScopedFeatureList scoped_feature_list(
+      chromeos::wm::features::kWindowLayoutMenu);
+
+  // Create 2 normal windows and 1 floated window.
+  std::unique_ptr<aura::Window> window1(CreateAppWindow());
+  std::unique_ptr<aura::Window> window2(CreateAppWindow());
+  std::unique_ptr<aura::Window> floated_window(CreateAppWindow());
+  Shell::Get()->float_controller()->ToggleFloat(floated_window.get());
+  ASSERT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
+
+  // Snap `window1` so that Overview is open.
+  split_view_controller()->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  auto* overview_session = overview_controller->overview_session();
+  ASSERT_TRUE(overview_session->IsWindowInOverview(window2.get()));
+  ASSERT_TRUE(overview_session->IsWindowInOverview(floated_window.get()));
+
+  // Activate `window2` from Overview. Test that it gets snapped in splitview,
+  // and `floated_window` remains floated.
+  wm::ActivateWindow(window2.get());
+  EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window2.get()));
+  wm::ActivateWindow(floated_window.get());
+  EXPECT_FALSE(
+      split_view_controller()->IsWindowInSplitView(floated_window.get()));
+  EXPECT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
+
+  // Snap `window1` again, then activate `floated_window` from Overview. Test
+  // that it gets snapped in splitview.
+  EndSplitView();
+  EXPECT_TRUE(WindowState::Get(floated_window.get())->IsFloated());
+  split_view_controller()->SnapWindow(
+      window1.get(), SplitViewController::SnapPosition::kPrimary);
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  overview_session = overview_controller->overview_session();
+  EXPECT_TRUE(overview_session->IsWindowInOverview(floated_window.get()));
+  wm::ActivateWindow(floated_window.get());
+  EXPECT_TRUE(
+      split_view_controller()->IsWindowInSplitView(floated_window.get()));
+  EXPECT_FALSE(WindowState::Get(floated_window.get())->IsFloated());
 }
 
 // Verify that you cannot start dragging the divider during its snap animation.
@@ -2692,37 +2745,6 @@ TEST_F(SplitViewControllerTest,
   EXPECT_EQ(divider_closest_ratio(), chromeos::kOneThirdSnapRatio);
 }
 
-// Test that if we snap an always on top window in splitscreen, there should be
-// no crash and the window should stay always on top.
-TEST_F(SplitViewControllerTest, AlwaysOnTopWindow) {
-  const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> always_on_top_window(CreateWindow(bounds));
-  always_on_top_window->SetProperty(aura::client::kZOrderingKey,
-                                    ui::ZOrderLevel::kFloatingWindow);
-  std::unique_ptr<aura::Window> normal_window(CreateWindow(bounds));
-
-  split_view_controller()->SnapWindow(
-      always_on_top_window.get(), SplitViewController::SnapPosition::kPrimary);
-  split_view_controller()->SnapWindow(
-      normal_window.get(), SplitViewController::SnapPosition::kSecondary);
-  EXPECT_EQ(split_view_controller()->state(),
-            SplitViewController::State::kBothSnapped);
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window->GetProperty(aura::client::kZOrderingKey));
-
-  wm::ActivateWindow(always_on_top_window.get());
-  EXPECT_EQ(split_view_controller()->state(),
-            SplitViewController::State::kBothSnapped);
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window->GetProperty(aura::client::kZOrderingKey));
-
-  wm::ActivateWindow(normal_window.get());
-  EXPECT_EQ(split_view_controller()->state(),
-            SplitViewController::State::kBothSnapped);
-  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
-            always_on_top_window->GetProperty(aura::client::kZOrderingKey));
-}
-
 // Test that pinning a window ends split view mode.
 TEST_F(SplitViewControllerTest, PinningWindowEndsSplitView) {
   const gfx::Rect bounds(0, 0, 400, 400);
@@ -3210,16 +3232,18 @@ TEST_F(SplitViewControllerTest, SplitViewDividerObserveSnappedWindow) {
   split_view_controller()->SnapWindow(
       right_window.get(), SplitViewController::SnapPosition::kSecondary);
 
-  // Entering tablet mode will start tablet mode split view and create the split
-  // view divider.
+  // Entering tablet mode will start tablet mode split view and the split view
+  // divider will be created.
   tablet_mode_controller->SetEnabledForTest(true);
   EXPECT_TRUE(tablet_mode_controller->InTabletMode());
   EXPECT_TRUE(split_view_controller()->InTabletSplitViewMode());
   EXPECT_TRUE(split_view_divider());
 
   // The left and right windows are observed by split view divider.
-  EXPECT_TRUE(split_view_divider()->IsWindowObserved(left_window.get()));
-  EXPECT_TRUE(split_view_divider()->IsWindowObserved(right_window.get()));
+  aura::Window::Windows observed_windows =
+      split_view_divider()->observed_windows_for_testing();
+  EXPECT_TRUE(base::Contains(observed_windows, left_window.get()));
+  EXPECT_TRUE(base::Contains(observed_windows, right_window.get()));
 }
 
 // Tests that snap between different ratios in the same position works as
@@ -3304,7 +3328,8 @@ TEST_F(SplitViewControllerTest, SwapPartialWindows) {
 
   // Verify that after swapping windows, the window widths remain the same, and
   // the divider is now at 1/3 of the work area.
-  split_view_controller()->SwapWindows();
+  split_view_controller()->SwapWindows(
+      SplitViewController::SwapWindowsSource::kDoubleTap);
   EXPECT_EQ(WindowState::Get(window1.get())->GetStateType(),
             chromeos::WindowStateType::kSecondarySnapped);
   EXPECT_EQ(WindowState::Get(window2.get())->GetStateType(),
@@ -3428,6 +3453,93 @@ TEST_F(SplitViewControllerTest, AutoSnapPartialWindows) {
             window1->bounds().width() + divider_delta);
   EXPECT_EQ(work_area_bounds.width() * chromeos::kDefaultSnapRatio,
             window2->bounds().width() + divider_delta);
+}
+
+// Tests that the split view divider will be stacked above the two observed
+// windows in split view. On window drag started, the divider will be placed
+// below the dragged window. On window drag ended, the divider will be placed
+// back on top of the two observed windows.
+TEST_F(SplitViewControllerTest, StackingOrderWithDivider) {
+  std::unique_ptr<aura::Window> w1(CreateTestWindow());
+  std::unique_ptr<aura::Window> w2(CreateTestWindow());
+  SplitViewController* controller = split_view_controller();
+  controller->SnapWindow(w1.get(), SplitViewController::SnapPosition::kPrimary);
+  EXPECT_EQ(split_view_controller()->primary_window(), w1.get());
+  split_view_controller()->SnapWindow(
+      w2.get(), SplitViewController::SnapPosition::kSecondary);
+
+  EXPECT_EQ(controller->state(), SplitViewController::State::kBothSnapped);
+  SplitViewDivider* divider = split_view_divider();
+  ASSERT_TRUE(divider);
+  aura::Window* divider_widget_native_window =
+      divider->divider_widget()->GetNativeWindow();
+  EXPECT_TRUE(IsStackedBelow(w1.get(), divider_widget_native_window));
+  EXPECT_TRUE(IsStackedBelow(w2.get(), divider_widget_native_window));
+
+  controller->OnWindowDragStarted(w1.get());
+  EXPECT_TRUE(IsStackedBelow(divider_widget_native_window, w1.get()));
+
+  controller->OnWindowDragCanceled();
+  EXPECT_TRUE(IsStackedBelow(w1.get(), divider_widget_native_window));
+  EXPECT_TRUE(IsStackedBelow(w2.get(), divider_widget_native_window));
+}
+
+// Tests that windows with different containers can be snapped properly with no
+// crash. The stacking order and parent of the split view divider will be
+// updated correctly with window activation and dragging operations.
+TEST_F(SplitViewControllerTest, SnapWindowsWithDifferentParentContainers) {
+  std::unique_ptr<aura::Window> always_on_top_window(CreateTestWindow());
+  always_on_top_window->SetProperty(aura::client::kZOrderingKey,
+                                    ui::ZOrderLevel::kFloatingWindow);
+  std::unique_ptr<aura::Window> normal_window(CreateTestWindow());
+  SplitViewController* controller = split_view_controller();
+  controller->SnapWindow(always_on_top_window.get(),
+                         SplitViewController::SnapPosition::kPrimary);
+  controller->SnapWindow(normal_window.get(),
+                         SplitViewController::SnapPosition::kSecondary);
+  EXPECT_EQ(controller->state(), SplitViewController::State::kBothSnapped);
+
+  SplitViewDivider* divider = split_view_divider();
+  ASSERT_TRUE(divider);
+  aura::Window* divider_widget_native_window =
+      divider->divider_widget()->GetNativeWindow();
+  EXPECT_EQ(divider_widget_native_window->parent(),
+            always_on_top_window->parent());
+  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
+            always_on_top_window->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_EQ(ui::ZOrderLevel::kNormal,
+            normal_window->GetProperty(aura::client::kZOrderingKey));
+
+  wm::ActivateWindow(always_on_top_window.get());
+  EXPECT_EQ(controller->state(), SplitViewController::State::kBothSnapped);
+  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
+            always_on_top_window->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_TRUE(
+      IsStackedBelow(always_on_top_window.get(), divider_widget_native_window));
+
+  wm::ActivateWindow(normal_window.get());
+  EXPECT_EQ(controller->state(), SplitViewController::State::kBothSnapped);
+  EXPECT_EQ(ui::ZOrderLevel::kFloatingWindow,
+            always_on_top_window->GetProperty(aura::client::kZOrderingKey));
+  EXPECT_TRUE(
+      IsStackedBelow(always_on_top_window.get(), divider_widget_native_window));
+
+  // The split view divider will be stacked below the dragged window i.e.
+  // `normal_window` temporarily during dragging. The divider will also be
+  // reparented to be sibling of `normal_window` while dragging.
+  controller->OnWindowDragStarted(normal_window.get());
+  EXPECT_EQ(divider_widget_native_window->parent(), normal_window->parent());
+  EXPECT_TRUE(
+      IsStackedBelow(divider_widget_native_window, normal_window.get()));
+
+  // On drag ended, the split view divider will be stacked back on top of the
+  // above window i.e. the `always_on_top_window`. The divider will also be
+  // reparented to be sibling of `always_on_top_window`.
+  controller->OnWindowDragCanceled();
+  EXPECT_EQ(divider_widget_native_window->parent(),
+            always_on_top_window->parent());
+  EXPECT_TRUE(
+      IsStackedBelow(always_on_top_window.get(), divider_widget_native_window));
 }
 
 TEST_F(SplitViewControllerTest, WMSnapEventDeviceOrientationMetricsInTablet) {

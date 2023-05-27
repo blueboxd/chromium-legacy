@@ -50,6 +50,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "chrome/browser/supervised_user/supervised_user_extensions_delegate_impl.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_test_util.h"
@@ -124,7 +125,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestWithInstall {
 
   // Returns the initialization parameters for the extension service.
   virtual ExtensionServiceInitParams GetExtensionServiceInitParams() {
-    return CreateDefaultInitParams();
+    return {};
   }
 
   void OnInfoGenerated(std::unique_ptr<developer::ExtensionInfo>* info_out,
@@ -964,12 +965,14 @@ class ExtensionInfoGeneratorUnitTestSupervised
     return SupervisedUserServiceFactory::GetForProfile(profile());
   }
 
+  SupervisedUserExtensionsDelegate* GetSupervisedUserExtensionsDelegate() {
+    return supervised_user_extensions_delegate_.get();
+  }
+
   // ExtensionInfoGeneratorUnitTest:
   ExtensionServiceInitParams GetExtensionServiceInitParams() override {
     ExtensionServiceInitParams params =
         ExtensionInfoGeneratorUnitTest::GetExtensionServiceInitParams();
-    // Force a TestingPrefServiceSyncable to be created.
-    params.pref_file.clear();
     params.profile_is_supervised = true;
     return params;
   }
@@ -984,7 +987,19 @@ class ExtensionInfoGeneratorUnitTestSupervised
     // Set the pref to allow the child to request extension install.
     supervised_user_test_util::
         SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), true);
+
+    supervised_user_extensions_delegate_ =
+        std::make_unique<SupervisedUserExtensionsDelegateImpl>(profile());
   }
+
+  void TearDown() override {
+    supervised_user_extensions_delegate_.reset();
+    ExtensionInfoGeneratorUnitTest::TearDown();
+  }
+
+ private:
+  std::unique_ptr<SupervisedUserExtensionsDelegate>
+      supervised_user_extensions_delegate_;
 };
 
 // Tests that when an extension is disabled pending permission updates, and the
@@ -1023,7 +1038,7 @@ TEST_P(ExtensionInfoGeneratorUnitTestSupervised,
       extension_id, disable_reason::DISABLE_CUSTODIAN_APPROVAL_REQUIRED));
 
   // Simulate parent approval for the extension installation.
-  GetSupervisedUserService()->AddExtensionApproval(*extension);
+  GetSupervisedUserExtensionsDelegate()->AddExtensionApproval(*extension);
   // The extension should be enabled now.
   EXPECT_TRUE(registry()->enabled_extensions().Contains(extension_id));
 

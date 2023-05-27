@@ -79,6 +79,13 @@ BASE_DECLARE_FEATURE(kHistoryClustersNavigationContextClustering);
 // of persisted clusters.
 BASE_DECLARE_FEATURE(kHideVisits);
 
+// Enables use of cache to store the URL for display to avoid calls to url
+// formatter.
+BASE_DECLARE_FEATURE(kUseUrlForDisplayCache);
+
+// Enables filtering of the zero-state Journeys WebUI.
+BASE_DECLARE_FEATURE(kJourneysZeroStateFiltering);
+
 // Order consistently with config.h.
 
 }  // namespace internal

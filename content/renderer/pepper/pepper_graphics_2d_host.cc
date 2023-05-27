@@ -690,7 +690,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
         usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
       gpu_mailbox = sii->CreateSharedImage(
           format, size, gfx::ColorSpace(), kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, usage, gpu::kNullSurfaceHandle);
+          kPremul_SkAlphaType, usage, "PepperGraphics2DHost",
+          gpu::kNullSurfaceHandle);
       in_sync_token = sii->GenUnverifiedSyncToken();
     }
 
@@ -711,8 +712,9 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
         size.width(), size.height(), viz::ToClosestSkColorType(true, format),
         kUnknown_SkAlphaType);
     ri->WaitSyncTokenCHROMIUM(in_sync_token.GetConstData());
-    ri->WritePixels(gpu_mailbox, 0, 0, texture_target, src_info.minRowBytes(),
-                    src_info, src);
+    ri->WritePixels(gpu_mailbox, /*dst_x_offset=*/0, /*dst_y_offset=*/0,
+                    /*dst_plane_index=*/0, texture_target,
+                    SkPixmap(src_info, src, src_info.minRowBytes()));
 
     gpu::SyncToken out_sync_token;
     ri->GenUnverifiedSyncTokenCHROMIUM(out_sync_token.GetData());
@@ -745,8 +747,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   if (!shared_bitmap) {
     viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
     base::MappedReadOnlyRegion shm =
-        viz::bitmap_allocation::AllocateSharedBitmap(pixel_image_size,
-                                                     viz::RGBA_8888);
+        viz::bitmap_allocation::AllocateSharedBitmap(
+            pixel_image_size, viz::SinglePlaneFormat::kRGBA_8888);
     shared_bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
         id, std::move(shm), pixel_image_size,
         viz::SinglePlaneFormat::kRGBA_8888);
@@ -759,7 +761,8 @@ bool PepperGraphics2DHost::PrepareTransferableResource(
   image_data_->Unmap();
 
   *transferable_resource = viz::TransferableResource::MakeSoftware(
-      shared_bitmap->id(), pixel_image_size, viz::RGBA_8888);
+      shared_bitmap->id(), pixel_image_size,
+      viz::SinglePlaneFormat::kRGBA_8888);
   *release_callback = base::BindOnce(
       &PepperGraphics2DHost::ReleaseSoftwareCallback, this->AsWeakPtr(),
       std::move(shared_bitmap), std::move(registration));

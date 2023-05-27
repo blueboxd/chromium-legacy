@@ -5,7 +5,6 @@
 #include "components/desks_storage/core/desk_template_conversion.h"
 
 #include "base/containers/fixed_flat_set.h"
-#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/values_util.h"
 #include "base/notreached.h"
@@ -13,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
@@ -467,26 +467,24 @@ std::unique_ptr<app_restore::AppLaunchInfo> ConvertJsonToAppLaunchInfo(
       app_launch_info->first_non_pinned_tab_index = first_non_pinned_tab_index;
 
     // Fill in the URL list
-    app_launch_info->urls.emplace();
     const base::Value::List* tabs = app.FindList(kTabs);
     if (tabs) {
       for (auto& tab : *tabs) {
         std::string url;
         if (GetString(tab.GetDict(), kTabUrl, &url)) {
-          app_launch_info->urls.value().emplace_back(url);
+          app_launch_info->urls.emplace_back(url);
         }
       }
     }
 
     // Fill the tab groups
-    app_launch_info->tab_group_infos.emplace();
     const base::Value::List* tab_groups = app.FindList(kTabGroups);
     if (tab_groups) {
       for (auto& tab : *tab_groups) {
         absl::optional<tab_groups::TabGroupInfo> tab_group =
             MakeTabGroupInfoFromDict(tab.GetDict());
         if (tab_group.has_value()) {
-          app_launch_info->tab_group_infos->push_back(
+          app_launch_info->tab_group_infos.push_back(
               std::move(tab_group.value()));
         }
       }
@@ -889,13 +887,14 @@ base::Value ConvertWindowToDeskApp(const std::string& app_id,
 
   app_data.Set(kAppType, app_type);
 
-  if (app->urls.has_value())
-    app_data.Set(kTabs, ConvertURLsToBrowserAppTabValues(app->urls.value()));
+  if (!app->urls.empty()) {
+    app_data.Set(kTabs, ConvertURLsToBrowserAppTabValues(app->urls));
+  }
 
-  if (app->tab_group_infos.has_value()) {
+  if (!app->tab_group_infos.empty()) {
     base::Value::List tab_groups_value;
 
-    for (const auto& tab_group : app->tab_group_infos.value()) {
+    for (const auto& tab_group : app->tab_group_infos) {
       tab_groups_value.Append(ConvertTabGroupInfoToDict(tab_group));
     }
 
@@ -1236,14 +1235,11 @@ std::unique_ptr<app_restore::AppLaunchInfo> ConvertToAppLaunchInfo(
             app.app().browser_app_window().active_tab_index();
       }
 
-      app_launch_info->urls.emplace();
-      FillUrlList(app.app().browser_app_window(),
-                  &app_launch_info->urls.value());
+      FillUrlList(app.app().browser_app_window(), &app_launch_info->urls);
 
       if (app.app().browser_app_window().tab_groups_size() > 0) {
-        app_launch_info->tab_group_infos.emplace();
         FillTabGroupInfosFromProto(app.app().browser_app_window(),
-                                   &app_launch_info->tab_group_infos.value());
+                                   &app_launch_info->tab_group_infos);
       }
 
       if (app.app().browser_app_window().has_show_as_app()) {
@@ -1469,8 +1465,9 @@ void FillBrowserAppTabs(const std::vector<GURL>& gurls,
 // `app_restore_data`.
 void FillBrowserAppWindow(const app_restore::AppRestoreData* app_restore_data,
                           BrowserAppWindow* out_browser_app_window) {
-  if (app_restore_data->urls.has_value())
-    FillBrowserAppTabs(app_restore_data->urls.value(), out_browser_app_window);
+  if (!app_restore_data->urls.empty()) {
+    FillBrowserAppTabs(app_restore_data->urls, out_browser_app_window);
+  }
 
   if (app_restore_data->active_tab_index.has_value()) {
     out_browser_app_window->set_active_tab_index(
@@ -1482,8 +1479,8 @@ void FillBrowserAppWindow(const app_restore::AppRestoreData* app_restore_data,
         app_restore_data->app_type_browser.value());
   }
 
-  if (app_restore_data->tab_group_infos.has_value()) {
-    FillBrowserAppTabGroupInfos(app_restore_data->tab_group_infos.value(),
+  if (!app_restore_data->tab_group_infos.empty()) {
+    FillBrowserAppTabGroupInfos(app_restore_data->tab_group_infos,
                                 out_browser_app_window);
   }
 
@@ -1954,7 +1951,7 @@ std::unique_ptr<ash::DeskTemplate> ParseDeskTemplateFromSource(
     return nullptr;
   }
 
-  base::GUID uuid = base::GUID::ParseCaseInsensitive(uuid_str);
+  base::Uuid uuid = base::Uuid::ParseCaseInsensitive(uuid_str);
   if (!uuid.is_valid())
     return nullptr;
 
@@ -1998,7 +1995,7 @@ base::Value SerializeDeskTemplateAsPolicy(const ash::DeskTemplate* desk,
 
 std::unique_ptr<DeskTemplate> FromSyncProto(
     const sync_pb::WorkspaceDeskSpecifics& pb_entry) {
-  base::GUID uuid = base::GUID::ParseCaseInsensitive(pb_entry.uuid());
+  base::Uuid uuid = base::Uuid::ParseCaseInsensitive(pb_entry.uuid());
   if (!uuid.is_valid())
     return nullptr;
 

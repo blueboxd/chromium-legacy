@@ -3358,7 +3358,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
           pipeline_metadata_.has_audio, has_video, false, false,
           GetDemuxerType() == media::DemuxerType::kChunkDemuxer, is_encrypted_,
           embedded_media_experience_enabled_,
-          media::mojom::MediaStreamType::kNone),
+          media::mojom::MediaStreamType::kNone, renderer_type_),
       pipeline_metadata_.natural_size,
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                           base::Unretained(this)),
@@ -3761,7 +3761,7 @@ void WebMediaPlayerImpl::WriteSplitHistogram(
 void WebMediaPlayerImpl::RecordUnderflowDuration(base::TimeDelta duration) {
   DCHECK(demuxer_manager_->HasDataSource() ||
          GetDemuxerType() == media::DemuxerType::kChunkDemuxer ||
-         GetDemuxerType() == media::DemuxerType::kHlsDemuxer);
+         GetDemuxerType() == media::DemuxerType::kManifestDemuxer);
   WriteSplitHistogram<kPlaybackType | kEncrypted>(
       &base::UmaHistogramTimes, "Media.UnderflowDuration2", duration);
 }

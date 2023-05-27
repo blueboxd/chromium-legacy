@@ -30,7 +30,6 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/input_method/input_method_persistence.h"
 #include "chrome/browser/ash/input_method/input_method_syncer.h"
-#include "chrome/browser/ash/login/consolidated_consent_field_trial.h"
 #include "chrome/browser/ash/login/hid_detection_revamp_field_trial.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -76,8 +75,8 @@
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/ime_keyboard.h"
 #include "ui/base/ime/ash/input_method_manager.h"
-#include "ui/chromeos/events/mojom/modifier_key.mojom.h"
-#include "ui/chromeos/events/pref_names.h"
+#include "ui/events/ash/mojom/modifier_key.mojom.h"
+#include "ui/events/ash/pref_names.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
 #include "url/gurl.h"
@@ -129,10 +128,10 @@ Preferences::~Preferences() {
 
 // static
 void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(::prefs::kOwnerPrimaryMouseButtonRight, false);
-  registry->RegisterBooleanPref(::prefs::kOwnerPrimaryPointingStickButtonRight,
+  registry->RegisterBooleanPref(prefs::kOwnerPrimaryMouseButtonRight, false);
+  registry->RegisterBooleanPref(prefs::kOwnerPrimaryPointingStickButtonRight,
                                 false);
-  registry->RegisterBooleanPref(::prefs::kOwnerTapToClickEnabled, true);
+  registry->RegisterBooleanPref(prefs::kOwnerTapToClickEnabled, true);
   // TODO(jamescook): Move ownership and registration into ash.
   registry->RegisterStringPref(::prefs::kLogoutStartedLast, std::string());
   registry->RegisterStringPref(::prefs::kSigninScreenTimezone, std::string());
@@ -165,7 +164,6 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
                                 false);
 
   RegisterLocalStatePrefs(registry);
-  ash::consolidated_consent_field_trial::RegisterLocalStatePrefs(registry);
   ash::hid_detection_revamp_field_trial::RegisterLocalStatePrefs(registry);
 }
 
@@ -465,6 +463,10 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kHatsBluetoothRevampIsSelected, false);
 
+  registry->RegisterInt64Pref(::prefs::kHatsBatteryLifeCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsBatteryLifeIsSelected, false);
+
   registry->RegisterBooleanPref(::prefs::kHatsPrivacyHubBaselineIsSelected,
                                 false);
 
@@ -569,6 +571,12 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kUsbDetectorNotificationEnabled, true);
 
   registry->RegisterBooleanPref(prefs::kShowTouchpadScrollScreenEnabled, true);
+
+  // Settings HaTS survey prefs for Settings and Settings Search features.
+  registry->RegisterInt64Pref(::prefs::kHatsOsSettingsSearchSurveyCycleEndTs,
+                              0);
+  registry->RegisterBooleanPref(::prefs::kHatsOsSettingsSearchSurveyIsSelected,
+                                false);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
@@ -630,6 +638,8 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   if (ime_menu_activated_.GetValue())
     input_method::InputMethodManager::Get()->ImeMenuActivationChanged(true);
 
+  long_press_diacritics_enabled_.Init(prefs::kLongPressDiacriticsEnabled, prefs,
+                                      callback);
   xkb_auto_repeat_enabled_.Init(prefs::kXkbAutoRepeatEnabled, prefs, callback);
   xkb_auto_repeat_delay_pref_.Init(prefs::kXkbAutoRepeatDelay, prefs, callback);
   xkb_auto_repeat_interval_pref_.Init(prefs::kXkbAutoRepeatInterval, prefs,
@@ -643,6 +653,7 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
                                          callback);
 
   pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(ash::prefs::kUserGeolocationAllowed, callback);
   pref_change_registrar_.Add(::prefs::kUserTimezone, callback);
   pref_change_registrar_.Add(::prefs::kResolveTimezoneByGeolocationMethod,
                              callback);
@@ -812,8 +823,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     // Save owner preference in local state to use on login screen.
     if (user_is_owner) {
       PrefService* prefs = g_browser_process->local_state();
-      if (prefs->GetBoolean(::prefs::kOwnerTapToClickEnabled) != enabled)
-        prefs->SetBoolean(::prefs::kOwnerTapToClickEnabled, enabled);
+      if (prefs->GetBoolean(prefs::kOwnerTapToClickEnabled) != enabled) {
+        prefs->SetBoolean(prefs::kOwnerTapToClickEnabled, enabled);
+      }
     }
   }
   if (reason != REASON_PREF_CHANGED ||
@@ -923,8 +935,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     // Save owner preference in local state to use on login screen.
     if (user_is_owner) {
       PrefService* prefs = g_browser_process->local_state();
-      if (prefs->GetBoolean(::prefs::kOwnerPrimaryMouseButtonRight) != right)
-        prefs->SetBoolean(::prefs::kOwnerPrimaryMouseButtonRight, right);
+      if (prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight) != right) {
+        prefs->SetBoolean(prefs::kOwnerPrimaryMouseButtonRight, right);
+      }
     }
   }
   if (reason != REASON_PREF_CHANGED ||
@@ -935,10 +948,9 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     // Save owner preference in local state to use on login screen.
     if (user_is_owner) {
       PrefService* prefs = g_browser_process->local_state();
-      if (prefs->GetBoolean(::prefs::kOwnerPrimaryPointingStickButtonRight) !=
+      if (prefs->GetBoolean(prefs::kOwnerPrimaryPointingStickButtonRight) !=
           right) {
-        prefs->SetBoolean(::prefs::kOwnerPrimaryPointingStickButtonRight,
-                          right);
+        prefs->SetBoolean(prefs::kOwnerPrimaryPointingStickButtonRight, right);
       }
     }
   }
@@ -1088,6 +1100,35 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     system::InputDeviceSettings::Get()->UpdateMouseSettings(mouse_settings);
     system::InputDeviceSettings::Get()->UpdatePointingStickSettings(
         pointing_stick_settings);
+  }
+
+  // TODO(b/277061508): Move this logic inside
+  // GeolocationPrivacySwitchController.
+  if (pref_name == ash::prefs::kUserGeolocationAllowed &&
+      reason != REASON_ACTIVE_USER_CHANGED) {
+    const bool user_disabled_geolocation =
+        !prefs_->GetBoolean(ash::prefs::kUserGeolocationAllowed);
+    const system::TimeZoneResolverManager::TimeZoneResolveMethod
+        automatic_timezone_setting =
+            system::TimeZoneResolverManager::TimeZoneResolveMethodFromInt(
+                prefs_->GetInteger(
+                    ::prefs::kResolveTimezoneByGeolocationMethod));
+    const bool precise_timezone_resolution_selected =
+        automatic_timezone_setting ==
+            system::TimeZoneResolverManager::TimeZoneResolveMethod::
+                SEND_WIFI_ACCESS_POINTS ||
+        automatic_timezone_setting ==
+            system::TimeZoneResolverManager::TimeZoneResolveMethod::
+                SEND_ALL_LOCATION_INFO;
+    // `kUserGeolocationAllowed` pref controls the precise location access. If
+    // the user had Wi-Fi based timezone resolving active, we silently fall it
+    // back to the IP-based resolution.
+    if (user_disabled_geolocation && precise_timezone_resolution_selected) {
+      prefs_->SetInteger(
+          ::prefs::kResolveTimezoneByGeolocationMethod,
+          static_cast<int>(
+              system::TimeZoneResolverManager::TimeZoneResolveMethod::IP_ONLY));
+    }
   }
 
   if (pref_name == ::prefs::kUserTimezone &&

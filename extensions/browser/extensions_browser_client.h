@@ -19,6 +19,7 @@
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extensions_browser_api_provider.h"
+#include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/mojom/view_type.mojom.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
@@ -435,6 +436,13 @@ class ExtensionsBrowserClient {
       const ExtensionId& extension_id,
       const std::string& code) const;
 
+  // Notifies the extension telemetry service when declarativeNetRequest API
+  // rules are added.
+  virtual void NotifyExtensionApiDeclarativeNetRequest(
+      content::BrowserContext* context,
+      const ExtensionId& extension_id,
+      const std::vector<api::declarative_net_request::Rule>& rules) const;
+
   // TODO(zackhan): This is a temporary implementation of notifying the
   // extension telemetry service when there are web requests initiated from
   // chrome extensions. Its usefulness will be evaluated.
@@ -502,6 +510,11 @@ class ExtensionsBrowserClient {
       content::SiteInstance* owner_site_instance,
       const std::string& partition_name,
       bool in_memory);
+
+  // Creates password reuse detection manager when new extension web contents
+  // are created.
+  virtual void CreatePasswordReuseDetectionManager(
+      content::WebContents* web_contents) const;
 
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;

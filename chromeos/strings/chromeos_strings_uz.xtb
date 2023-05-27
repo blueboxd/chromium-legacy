@@ -123,6 +123,7 @@
 <translation id="1904932688895783618">Quyidagi manbalar foydali boʻlishi mumkin:</translation>
 <translation id="1905710495812624430">Urinishlar soni cheklovdan oshib ketdi.</translation>
 <translation id="1908234395526491708">Bajarilmagan UDP soʻrovlari</translation>
+<translation id="1923388006036088459">Aksent ranglari</translation>
 <translation id="1947737735496445907">Chop etildi</translation>
 <translation id="1951012854035635156">Assistent</translation>
 <translation id="1962550982027027473">Standart APN talab qilinadi</translation>
@@ -140,6 +141,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Kengaytirilgan sozlamalar</translation>
 <translation id="2085089206770112532">Displey yorlinligini pasaytirish</translation>
+<translation id="209751264101900360">Tongdan kechgacha - Bulut</translation>
 <translation id="2102231663024125441">Matn tahrirlash</translation>
 <translation id="2105810540595158374">Qurilma — geympad</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versiya: <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +333,7 @@
 <translation id="3967822245660637423">Yuklab olindi</translation>
 <translation id="3969602104473960991">ChromeOS paroli yangilandi</translation>
 <translation id="397105322502079400">Hisoblanmoqda...</translation>
+<translation id="3974175076798940554">Chromebook Plus ekskluziv resurslari chiqdi</translation>
 <translation id="39823212440917567"><ph name="NUMBER_OF_DAYS" /> kundan eski chop etish vazifalari avtomatik tozalanadi</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> hozir yangi</translation>
 <translation id="4003384961948020559">Bajarilmadi - Boʻsh joy qolmadi</translation>
@@ -370,6 +373,7 @@
 <translation id="4275663329226226506">Kamera va mikrofon</translation>
 <translation id="4289540628985791613">Umumiy</translation>
 <translation id="4289849978083912975">Slayd-shou</translation>
+<translation id="4293621540182258188">Tongdan kechgacha - Yer</translation>
 <translation id="4297501883039923494">Toʻxtatildi – Notanish xato</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> ta rasm</translation>
 <translation id="4311195029067684288">Toʻliq</translation>
@@ -513,6 +517,7 @@
 <translation id="5423849171846380976">Faol</translation>
 <translation id="5430931332414098647">Tezkor modem rejimi</translation>
 <translation id="5431318178759467895">Rang</translation>
+<translation id="5456936324019847994">Yoqilgan maxsus APN nuqtasiga ulana olmadi Batafsil axborot olish uchun mobil aloqa operatoriga bogʻlaning.</translation>
 <translation id="5457599981699367932">Mehmon sifatida kezish</translation>
 <translation id="54609108002486618">Boshqariladigan</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} ta urinish qoldi}other{{0} ta urinish qoldi}}</translation>
@@ -544,6 +549,7 @@
 <translation id="576835345334454681">Displey yorqinligini oshirish</translation>
 <translation id="57838592816432529">Ovozni o‘chirib qo‘yish</translation>
 <translation id="5784136236926853061">HTTP kechikishi yuqori</translation>
+<translation id="5809090008577139505">Avrora</translation>
 <translation id="5826644637650799838">Asar haqida</translation>
 <translation id="5832805196449965646">Foydalanuvchi qo‘shish</translation>
 <translation id="583281660410589416">Noma’lum</translation>
@@ -562,10 +568,12 @@
 <translation id="5907649332524363701">tugma rangi</translation>
 <translation id="5916084858004523819">Taqiqlangan</translation>
 <translation id="5916664084637901428">Yoniq</translation>
+<translation id="5918201491776799918">Chromebook Plus ekskluziv afishasini tanlang</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Fayl skanerlandi va <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> jildiga saqlandi.}other{Fayllar skanerlandi va <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" /> jildiga saqlandi.}}</translation>
 <translation id="5931523347251946569">Fayl topilmadi</translation>
 <translation id="5939518447894949180">Asliga qaytarish</translation>
 <translation id="594552776027197022">Tasodifiy kalitlar juftligini yaratish</translation>
+<translation id="5946538341867151940">Hali ulanmadi. Agar mobil aloqa operatoringiz boshqa APNni tavsiya qilsa, “+ Yangi APN” bandini tanlash orqali APN maʼlumotlarini kiriting.</translation>
 <translation id="5972388717451707488">Tizimni yangilash</translation>
 <translation id="5984145644188835034">Standart fon rasmi</translation>
 <translation id="6017514345406065928">Yashil</translation>
@@ -721,6 +729,7 @@
 <translation id="7281657306185710294">Qadab ilinadigan</translation>
 <translation id="7287310195820267359">Fon rasmlari termasi</translation>
 <translation id="7297226631177386107">HTTPS saytlarga himoya devori orqali ulanish imkonsiz</translation>
+<translation id="7297726121602187087">Toʻq yashil</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Chromebook yordam forumi ekspertlari yordamini olish</translation>
@@ -755,12 +764,14 @@
 <translation id="7570674786725311828">USB sensorli ekran</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> qoldi</translation>
 <translation id="7613724632293948900">Sichqoncha yoki strelka tugmalari bilan joylashuvni oʻzgartiring</translation>
+<translation id="7618774594543487847">Neytral</translation>
 <translation id="7620771111601174153">Yordam markazi orqali batafsil</translation>
 <translation id="763165478673169849">Oxirgi tiklangan vaqti</translation>
 <translation id="7648838807254605802">HTTPS kechikishi yuqori</translation>
 <translation id="7656388927906093505">Qurilma — sichqoncha.</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>
 <translation id="7665800271478495366">Avatarni almashtirish</translation>
+<translation id="7675241868020048622">Aurora (Plus exclusive)</translation>
 <translation id="7690294790491645610">Yangi parolni tasdiqlang.</translation>
 <translation id="7701040980221191251">Hech qanday</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +828,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Tanlash: <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Dasturchi vositalari</translation>
+<translation id="8153923300383192510">Chromebook Plus ekskluzivi</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Biriktirish</translation>
 <translation id="8206859287963243715">Uyali</translation>
@@ -839,6 +851,7 @@
 <translation id="8352772353338965963">Bir nechta hisobga kirish tizimiga hisob qo‘shish. Kirish bajarilgan hisoblarni ko‘rish uchun parol so‘ralmaydi, shuning uchun bu funksiyadan faqat ishonchli hisoblarda foydalanish kerak.</translation>
 <translation id="8364946094152050673">Nom serverlari kiritilmagan</translation>
 <translation id="8372477600026034341">Qoʻshimcha hostlar</translation>
+<translation id="8373046809163484087">Fonga mos ranglar majmuasidan foydalaning</translation>
 <translation id="8380114448424469341">Oynani yarim ekran <ph name="DIRECTION" /> mahkamlash</translation>
 <translation id="8395584934117017006">Bu <ph name="DEVICE_TYPE" /> korporativ domen boshqaruvida</translation>
 <translation id="8398927464629426868">Qurilmaning quvvat olish yoki sarflash darajasi</translation>
@@ -858,6 +871,7 @@
 <translation id="8503813439785031346">Foydalanuvchi nomi</translation>
 <translation id="8503836310948963452">Yana bir necha daqiqa kuting…</translation>
 <translation id="8508640263392900755">APN tafsiloti</translation>
+<translation id="8522687886059337719">Endi yangi <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />fon rasmlari<ph name="END_LINK_WALLPAPER_SUBPAGE" /> va <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />ekran lavhasini<ph name="END_LINK_SCREENSAVER_SUBPAGE" /> ishlatish mumkin</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Aloqa operatoringiz oʻz tarmogʻiga ulanishi uchun bu parametrni talab qilishi mumkin. Tafsilotlar uchun aloqa operatoringizga murojaat qiling.</translation>

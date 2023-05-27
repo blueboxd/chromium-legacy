@@ -83,7 +83,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.AddressResolutionResult" enum="BooleanSuccess"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>bmgordon@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -105,7 +105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.IppAttributesSuccess" enum="BooleanSuccess"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>bmgordon@chromium.org</owner>
   <owner>cros-printing-dev@chromium.org</owner>
   <summary>
@@ -138,7 +138,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.JobDuration.JobDone" units="ms"
-    expires_after="2023-07-30">
+    expires_after="2023-10-01">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>
@@ -169,6 +169,28 @@ chromium-metrics-reviews@google.com.
     Records when a synced printer's outdated separate make and model strings
     have been migrated to the new merged form. Recorded during initial sync
     across PrintersSyncBridge.
+  </summary>
+</histogram>
+
+<histogram name="Printing.CUPS.NearbyNetworkAutomaticPrintersCount"
+    units="printers" expires_after="2023-12-11">
+  <owner>bmgordon@chromium.org</owner>
+  <owner>project-bolton@google.com</owner>
+  <summary>
+    The number of detected network printers classified as Automatic, excluding
+    Saved printers. Recorded when the user navigates to the OS Settings Printing
+    page to set up printers. Only recorded on Chrome OS.
+  </summary>
+</histogram>
+
+<histogram name="Printing.CUPS.NearbyNetworkDiscoveredPrintersCount"
+    units="printers" expires_after="2023-12-11">
+  <owner>bmgordon@chromium.org</owner>
+  <owner>project-bolton@google.com</owner>
+  <summary>
+    The number of detected network printers classified as Discovered, excluding
+    Saved printers. Recorded when the user navigates to the OS Settings Printing
+    page to set up printers. Only recorded on Chrome OS.
   </summary>
 </histogram>
 
@@ -286,7 +308,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Printing.CUPS.PrinterStatusReasons"
-    enum="PrinterStatusReasons" expires_after="2023-08-20">
+    enum="PrinterStatusReasons" expires_after="2023-10-22">
   <owner>gavinwill@chromium.org</owner>
   <owner>cros-peripherals@google.com</owner>
   <summary>

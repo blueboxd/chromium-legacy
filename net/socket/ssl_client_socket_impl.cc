@@ -29,7 +29,6 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "crypto/ec_private_key.h"
@@ -40,6 +39,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/trace_constants.h"
+#include "net/base/tracing.h"
 #include "net/base/url_util.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
@@ -236,18 +236,6 @@ RSAKeyUsage CheckRSAKeyUsage(const X509Certificate* cert,
   }
   return have_digital_signature ? RSAKeyUsage::kOKHaveDigitalSignature
                                 : RSAKeyUsage::kMissingDigitalSignature;
-}
-
-// IsCECPQ2Host returns true if the given host is eligible for CECPQ2. This is
-// used to implement a gradual rollout as the larger TLS messages may cause
-// middlebox issues.
-bool IsCECPQ2Host(const std::string& host) {
-  // Currently only eTLD+1s that start with "aa" are included, for example
-  // aardvark.com or aaron.com.
-  return registry_controlled_domains::GetDomainAndRegistry(
-             host, registry_controlled_domains::PrivateRegistryFilter::
-                       EXCLUDE_PRIVATE_REGISTRIES)
-             .find(features::kPostQuantumCECPQ2Prefix.Get()) == 0;
 }
 
 bool HostIsIPAddressNoBrackets(base::StringPiece host) {
@@ -641,8 +629,16 @@ void SSLClientSocketImpl::GetSSLCertRequestInfo(
   size_t num_client_cert_types =
       SSL_get0_certificate_types(ssl_.get(), &client_cert_types);
   for (size_t i = 0; i < num_client_cert_types; i++) {
-    cert_request_info->cert_key_types.push_back(
-        static_cast<SSLClientCertType>(client_cert_types[i]));
+    switch (client_cert_types[i]) {
+      case static_cast<uint8_t>(SSLClientCertType::kRsaSign):
+      case static_cast<uint8_t>(SSLClientCertType::kEcdsaSign):
+        cert_request_info->cert_key_types.push_back(
+            static_cast<SSLClientCertType>(client_cert_types[i]));
+        break;
+      default:
+        // Unknown client certificate types are ignored.
+        break;
+    }
   }
 }
 
@@ -758,20 +754,10 @@ int SSLClientSocketImpl::Init() {
     return ERR_UNEXPECTED;
   }
 
-  if (base::FeatureList::IsEnabled(features::kPostQuantumKyber)) {
+  if (context_->config().post_quantum_enabled &&
+      base::FeatureList::IsEnabled(features::kPostQuantumKyber)) {
     static const int kCurves[] = {NID_X25519Kyber768, NID_X25519,
-                                  NID_P256Kyber768, NID_X9_62_prime256v1,
-                                  NID_secp384r1};
-    if (!SSL_set1_curves(ssl_.get(), kCurves, std::size(kCurves))) {
-      return ERR_UNEXPECTED;
-    }
-  } else if (context_->config().cecpq2_enabled &&
-      (base::FeatureList::IsEnabled(features::kPostQuantumCECPQ2) ||
-       (!host_is_ip_address &&
-        base::FeatureList::IsEnabled(features::kPostQuantumCECPQ2SomeDomains) &&
-        IsCECPQ2Host(host_and_port_.host())))) {
-    static const int kCurves[] = {NID_CECPQ2, NID_X25519, NID_X9_62_prime256v1,
-                                  NID_secp384r1};
+                                  NID_X9_62_prime256v1, NID_secp384r1};
     if (!SSL_set1_curves(ssl_.get(), kCurves, std::size(kCurves))) {
       return ERR_UNEXPECTED;
     }
@@ -1744,8 +1730,7 @@ SSLClientSessionCache::Key SSLClientSocketImpl::GetSessionCacheKey(
   SSLClientSessionCache::Key key;
   key.server = host_and_port_;
   key.dest_ip_addr = dest_ip_addr;
-  if (base::FeatureList::IsEnabled(
-          features::kPartitionSSLSessionsByNetworkIsolationKey)) {
+  if (NetworkAnonymizationKey::IsPartitioningEnabled()) {
     key.network_anonymization_key = ssl_config_.network_anonymization_key;
   }
   key.privacy_mode = ssl_config_.privacy_mode;

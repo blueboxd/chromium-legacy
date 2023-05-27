@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Descodificador d'imatges</translation>
 <translation id="1785415724048343560">Opció recomanada per gaudir de la millor experiència</translation>
 <translation id="1818308510395330587">Per permetre que <ph name="APP_NAME" /> utilitzi RA, activa també la càmera a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">De: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Els llocs web relacionats poden veure la teva activitat al grup</translation>
 <translation id="1887786770086287077">L'accés a la ubicació està desactivat en aquest dispositiu. Activa'l a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Penja</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">S'ha completat la baixada <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">És possible que les funcions d'alguns llocs web no funcionin en mode d'incògnit</translation>
 <translation id="2442870161001914531">Sol·licita sempre el lloc web per a ordinadors</translation>
+<translation id="2479148705183875116">Ves a Configuració</translation>
 <translation id="2482878487686419369">Notificacions</translation>
 <translation id="2485422356828889247">Desinstal·la</translation>
 <translation id="2490684707762498678">Gestionades per <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Adreces electròniques</translation>
 <translation id="2750481671343847896">Els llocs web poden mostrar sol·licituds d'inici de sessió procedents de serveis d'identitat.</translation>
 <translation id="2822354292072154809">Confirmes que vols restablir tots els permisos del lloc web concedits a <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Sol·licita la visualització per a mòbils</translation>
 <translation id="2870560284913253234">Lloc web</translation>
 <translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2891975107962658722">Impedeix que un lloc web desi dades al dispositiu</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Els llocs web poden fer servir galetes per millorar la teva experiència de navegació, per exemple, per mantenir la teva sessió iniciada o per recordar els elements que tens al carretó electrònic</translation>
 <translation id="3165022941318558018">Permet que un lloc web utilitzi galetes de tercers</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dades desades</translation>
-<translation id="3203366800380907218">Del web</translation>
 <translation id="321187648315454507">Perquè <ph name="APP_NAME" /> et pugui enviar notificacions, també has d'activar-les a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Micròfon</translation>
 <translation id="3248611290851046188">Aquest lloc web defineix interessos que altres llocs web poden utilitzar per mostrar-te anuncis. També obté els teus interessos de Chrome per mostrar-te anuncis més rellevants.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Sol·licita la visualització per a ordinadors</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="5123685120097942451">Pestanya d'incògnit</translation>
-<translation id="5134599672855298214">Sol·licita la visualització per a mòbils (opció recomanada)</translation>
 <translation id="5186036860380548585">L'opció està disponible a prop de la part superior de la pantalla.</translation>
 <translation id="5197729504361054390">Els contactes que seleccionis es compartiran amb <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Darrera visita: avui</translation>

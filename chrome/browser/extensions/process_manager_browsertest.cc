@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/extensions/extension_action_test_helper.h"
+#include "chrome/browser/ui/javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -44,6 +46,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
@@ -54,6 +57,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/features.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_switches.h"
@@ -66,13 +70,12 @@ namespace {
 
 GURL CreateBlobURL(content::RenderFrameHost* frame,
                    const std::string& content) {
-  std::string blob_url_string;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      frame,
-      "var blob = new Blob(['<html><body>" + content + "</body></html>'],\n"
-      "                    {type: 'text/html'});\n"
-      "domAutomationController.send(URL.createObjectURL(blob));\n",
-      &blob_url_string));
+  std::string blob_url_string =
+      EvalJs(frame, "var blob = new Blob(['<html><body>" + content +
+                        "   </body></html>'],\n"
+                        "   {type: 'text/html'});\n"
+                        "URL.createObjectURL(blob);\n")
+          .ExtractString();
   GURL blob_url(blob_url_string);
   EXPECT_TRUE(blob_url.is_valid());
   EXPECT_TRUE(blob_url.SchemeIsBlob());
@@ -81,22 +84,25 @@ GURL CreateBlobURL(content::RenderFrameHost* frame,
 
 GURL CreateFileSystemURL(content::RenderFrameHost* frame,
                          const std::string& content) {
-  std::string filesystem_url_string;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      frame,
-      "var blob = new Blob(['<html><body>" + content + "</body></html>'],\n"
-      "                    {type: 'text/html'});\n"
-      "window.webkitRequestFileSystem(TEMPORARY, blob.size, fs => {\n"
-      "  fs.root.getFile('foo.html', {create: true}, file => {\n"
-      "    file.createWriter(writer => {\n"
-      "      writer.write(blob);\n"
-      "      writer.onwriteend = () => {\n"
-      "        domAutomationController.send(file.toURL());\n"
-      "      }\n"
-      "    });\n"
-      "  });\n"
-      "});\n",
-      &filesystem_url_string));
+  std::string filesystem_url_string =
+      EvalJs(
+          frame,
+          "var blob = new Blob(['<html><body>" + content +
+              "</body></html>'],\n"
+              "                    {type: 'text/html'});\n"
+              "new Promise(resolve => {\n"
+              "  window.webkitRequestFileSystem(TEMPORARY, blob.size, fs => {\n"
+              "    fs.root.getFile('foo.html', {create: true}, file => {\n"
+              "      file.createWriter(writer => {\n"
+              "        writer.write(blob);\n"
+              "        writer.onwriteend = () => {\n"
+              "          resolve(file.toURL());\n"
+              "        }\n"
+              "      });\n"
+              "    });\n"
+              "  });\n"
+              "});\n")
+          .ExtractString();
   GURL filesystem_url(filesystem_url_string);
   EXPECT_TRUE(filesystem_url.is_valid());
   EXPECT_TRUE(filesystem_url.SchemeIsFileSystem());
@@ -104,10 +110,7 @@ GURL CreateFileSystemURL(content::RenderFrameHost* frame,
 }
 
 std::string GetTextContent(content::RenderFrameHost* frame) {
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      frame, "domAutomationController.send(document.body.innerText)", &result));
-  return result;
+  return EvalJs(frame, "document.body.innerText").ExtractString();
 }
 
 // Helper to send a postMessage from |sender| to |opener| via window.opener,
@@ -115,22 +118,19 @@ std::string GetTextContent(content::RenderFrameHost* frame) {
 // handlers.
 void VerifyPostMessageToOpener(content::RenderFrameHost* sender,
                                content::RenderFrameHost* opener) {
-  EXPECT_TRUE(
-      ExecuteScript(opener,
-                    "window.addEventListener('message', function(event) {\n"
-                    "  event.source.postMessage(event.data, '*');\n"
-                    "});"));
+  EXPECT_TRUE(ExecJs(opener,
+                     "window.addEventListener('message', function(event) {\n"
+                     "  event.source.postMessage(event.data, '*');\n"
+                     "});"));
 
-  EXPECT_TRUE(
-      ExecuteScript(sender,
-                    "window.addEventListener('message', function(event) {\n"
-                    "  window.domAutomationController.send(event.data);\n"
-                    "});"));
-
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      sender, "opener.postMessage('foo', '*');", &result));
-  EXPECT_EQ("foo", result);
+  EXPECT_EQ("foo",
+            EvalJs(sender,
+                   "new Promise(resolve => {\n"
+                   "  window.addEventListener('message', function(event) {\n"
+                   "    resolve(event.data);\n"
+                   "  });\n"
+                   "  opener.postMessage('foo', '*');"
+                   "});"));
 }
 
 // Takes a snapshot of all frames upon construction. When Wait() is called, a
@@ -210,7 +210,7 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
   // page.
   const Extension* CreateExtension(const std::string& name,
                                    bool has_background_process) {
-    std::unique_ptr<TestExtensionDir> dir(new TestExtensionDir());
+    TestExtensionDir dir;
 
     DictionaryBuilder manifest;
     manifest.Set("name", name)
@@ -229,27 +229,27 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
     if (has_background_process) {
       manifest.Set("background",
                    DictionaryBuilder().Set("page", "bg.html").Build());
-      dir->WriteFile(FILE_PATH_LITERAL("bg.html"),
-                     "<iframe id='bgframe' src='empty.html'></iframe>");
+      dir.WriteFile(FILE_PATH_LITERAL("bg.html"),
+                    "<iframe id='bgframe' src='empty.html'></iframe>");
     }
 
-    dir->WriteFile(FILE_PATH_LITERAL("blank_iframe.html"),
-                   "<iframe id='frame0' src='about:blank'></iframe>");
+    dir.WriteFile(FILE_PATH_LITERAL("blank_iframe.html"),
+                  "<iframe id='frame0' src='about:blank'></iframe>");
 
-    dir->WriteFile(FILE_PATH_LITERAL("srcdoc_iframe.html"),
-                   "<iframe id='frame0' srcdoc='Hello world'></iframe>");
+    dir.WriteFile(FILE_PATH_LITERAL("srcdoc_iframe.html"),
+                  "<iframe id='frame0' srcdoc='Hello world'></iframe>");
 
-    dir->WriteFile(FILE_PATH_LITERAL("two_iframes.html"),
-                   "<iframe id='frame1' src='empty.html'></iframe>"
-                   "<iframe id='frame2' src='empty.html'></iframe>");
+    dir.WriteFile(FILE_PATH_LITERAL("two_iframes.html"),
+                  "<iframe id='frame1' src='empty.html'></iframe>"
+                  "<iframe id='frame2' src='empty.html'></iframe>");
 
-    dir->WriteFile(FILE_PATH_LITERAL("sandboxed.html"), "Some sandboxed page");
+    dir.WriteFile(FILE_PATH_LITERAL("sandboxed.html"), "Some sandboxed page");
 
-    dir->WriteFile(FILE_PATH_LITERAL("empty.html"), "");
+    dir.WriteFile(FILE_PATH_LITERAL("empty.html"), "");
 
-    dir->WriteManifest(manifest.ToJSON());
+    dir.WriteManifest(manifest.ToJSON());
 
-    const Extension* extension = LoadExtension(dir->UnpackedPath());
+    const Extension* extension = LoadExtension(dir.UnpackedPath());
     EXPECT_TRUE(extension);
     temp_dirs_.push_back(std::move(dir));
     return extension;
@@ -299,7 +299,7 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
 
  private:
   guest_view::TestGuestViewManagerFactory factory_;
-  std::vector<std::unique_ptr<TestExtensionDir>> temp_dirs_;
+  std::vector<TestExtensionDir> temp_dirs_;
   base::test::ScopedFeatureList disabled_feature_list_;
 };
 
@@ -1787,12 +1787,16 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HostedAppAlerts) {
   EXPECT_EQ(hosted_app_url, tab->GetLastCommittedURL());
   ProcessManager* pm = ProcessManager::Get(profile());
   EXPECT_EQ(extension, pm->GetExtensionForWebContents(tab));
+  SetChromeAppModalDialogManagerDelegate();
   javascript_dialogs::AppModalDialogManager* js_dialog_manager =
       javascript_dialogs::AppModalDialogManager::GetInstance();
-  std::u16string hosted_app_title = u"hosted_app";
-  EXPECT_EQ(hosted_app_title,
-            js_dialog_manager->GetTitle(
-                tab, tab->GetPrimaryMainFrame()->GetLastCommittedOrigin()));
+
+  EXPECT_EQ(
+      base::StrCat({u"localhost:",
+                    base::NumberToString16(embedded_test_server()->port()),
+                    u" says"}),
+      js_dialog_manager->GetTitle(
+          tab, tab->GetPrimaryMainFrame()->GetLastCommittedOrigin()));
 
   GURL web_url = embedded_test_server()->GetURL("/title1.html");
   ASSERT_TRUE(content::ExecuteScript(
@@ -1804,9 +1808,61 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HostedAppAlerts) {
   EXPECT_EQ(web_url, new_tab->GetLastCommittedURL());
   EXPECT_EQ(nullptr, pm->GetExtensionForWebContents(new_tab));
   EXPECT_NE(
-      hosted_app_title,
+      base::StrCat({u"localhost:",
+                    base::NumberToString16(embedded_test_server()->port()),
+                    u" says"}),
       js_dialog_manager->GetTitle(
           new_tab, new_tab->GetPrimaryMainFrame()->GetLastCommittedOrigin()));
+}
+
+// Tests retrieving a context ID for a given extension's service worker.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, GetWorkerContextId) {
+  // Load up a basic extension.
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Worker Extension",
+           "manifest_version": 3,
+           "version": "0.1",
+           "background": {"service_worker": "background.js"}
+         })";
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     "// Intentionally blank");
+
+  const Extension* extension = LoadExtension(
+      test_dir.UnpackedPath(), {.wait_for_registration_stored = true});
+
+  ProcessManager* process_manager = ProcessManager::Get(profile());
+  ASSERT_TRUE(process_manager);
+
+  WorkerId first_worker_id;
+  {
+    // There should be exactly one service worker running.
+    std::vector<WorkerId> workers =
+        process_manager->GetServiceWorkersForExtension(extension->id());
+    ASSERT_EQ(1u, workers.size());
+    first_worker_id = workers[0];
+    // Verify we can retrieve a valid context ID for the worker.
+    base::Uuid context_id =
+        process_manager->GetContextIdForWorker(first_worker_id);
+    EXPECT_TRUE(context_id.is_valid());
+  }
+
+  // Stop the service worker.
+  browsertest_util::StopServiceWorkerForExtensionGlobalScope(profile(),
+                                                             extension->id());
+
+  {
+    // There should no longer be a worker running.
+    std::vector<WorkerId> workers =
+        process_manager->GetServiceWorkersForExtension(extension->id());
+    EXPECT_EQ(0u, workers.size());
+    // The context ID should be cleared out (returning an empty / invalid one).
+    base::Uuid context_id =
+        process_manager->GetContextIdForWorker(first_worker_id);
+    EXPECT_FALSE(context_id.is_valid());
+  }
 }
 
 }  // namespace extensions

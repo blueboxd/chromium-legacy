@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -50,9 +51,14 @@ const ComputedStyle* ComputedStyleForLengthResolving(
     current_context = current_context->parentNode();
   } while (current_context);
 
+  Document& document = context.GetDocument();
+  // Detached documents does not have initial style.
+  if (document.IsDetached()) {
+    return nullptr;
+  }
   // We can end up here if trying to resolve values for elements in an
   // inactive document.
-  return nullptr;
+  return &document.GetStyleResolver().InitialStyle();
 }
 
 const ComputedStyle* ComputedStyleForLengthResolving(

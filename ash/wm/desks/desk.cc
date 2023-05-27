@@ -27,6 +27,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
@@ -236,8 +237,8 @@ class DeskContainerObserver : public aura::WindowObserver {
   }
 
  private:
-  Desk* const owner_;
-  aura::Window* const container_;
+  const raw_ptr<Desk, ExperimentalAsh> owner_;
+  const raw_ptr<aura::Window, ExperimentalAsh> container_;
 };
 
 // -----------------------------------------------------------------------------
@@ -279,7 +280,7 @@ Desk::ScopedContentUpdateNotificationDisabler::
 // Desk:
 
 Desk::Desk(int associated_container_id, bool desk_being_restored)
-    : uuid_(base::GUID::GenerateRandomV4()),
+    : uuid_(base::Uuid::GenerateRandomV4()),
       container_id_(associated_container_id),
       creation_time_(base::Time::Now()) {
   // For the very first default desk added during initialization, there won't be
@@ -395,8 +396,21 @@ void Desk::AddWindowToDesk(aura::Window* window) {
   auto* desks_controller = DesksController::Get();
   if (!is_desk_being_removed_ &&
       !desks_util::IsWindowVisibleOnAllWorkspaces(window)) {
-    window->SetProperty(aura::client::kWindowWorkspaceKey,
-                        desks_controller->GetDeskIndex(this));
+    // Setting the property for `kWindowWorkspaceKey` or
+    // `kDeskGuidKey` will trigger a save for the window state. To
+    // avoid doing this twice, we tell the window state to hold off on saving
+    // until we save the `kDeskGuidKey` value.
+    // TODO(b/265490703): We should eventually clean up this and
+    // `GetScopedIgnorePropertyChange` when unit tests no longer need this
+    // scoping to prevent double saves.
+    {
+      auto scoped_ignore_property_changes =
+          WindowState::Get(window)->GetScopedIgnorePropertyChange();
+      window->SetProperty(aura::client::kWindowWorkspaceKey,
+                          desks_controller->GetDeskIndex(this));
+    }
+
+    window->SetProperty(kDeskGuidKey, uuid_.AsLowercaseString());
   }
 
   MaybeIncrementWeeklyActiveDesks();
@@ -467,7 +481,7 @@ void Desk::SetName(std::u16string new_name, bool set_by_user) {
   DesksController::Get()->NotifyDeskNameChanged(this, name_);
 }
 
-void Desk::SetGuid(base::GUID new_guid) {
+void Desk::SetGuid(base::Uuid new_guid) {
   if (new_guid.is_valid()) {
     uuid_ = std::move(new_guid);
   }

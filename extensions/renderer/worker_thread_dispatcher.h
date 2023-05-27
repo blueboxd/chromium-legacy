@@ -32,8 +32,7 @@ class RenderThread;
 }
 
 class GURL;
-struct ExtensionMsg_TabConnectionInfo;
-struct ExtensionMsg_ExternalConnectionInfo;
+struct ExtensionMsg_OnConnectData;
 
 namespace extensions {
 class NativeExtensionBindingsSystem;
@@ -95,6 +94,9 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
                                       const std::string& request_uuid);
   void DecrementServiceWorkerActivity(int64_t service_worker_version_id,
                                       const std::string& request_uuid);
+
+  void RequestWorker(mojom::RequestParamsPtr params);
+  void WorkerResponseAck(int request_id, int64_t service_worker_version_id);
 
   // content::RenderThreadObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
@@ -186,10 +188,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
                         const std::string& error);
   void OnValidateMessagePort(int worker_thread_id, const PortId& id);
   void OnDispatchOnConnect(int worker_thread_id,
-                           const PortId& target_port_id,
-                           const std::string& channel_name,
-                           const ExtensionMsg_TabConnectionInfo& source,
-                           const ExtensionMsg_ExternalConnectionInfo& info);
+                           const ExtensionMsg_OnConnectData& connect_data);
   void OnDeliverMessage(int worker_thread_id,
                         const PortId& target_port_id,
                         const Message& message);

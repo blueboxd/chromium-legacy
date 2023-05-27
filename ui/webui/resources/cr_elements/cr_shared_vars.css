@@ -26,8 +26,10 @@ html {
   --google-blue-600: rgb(var(--google-blue-600-rgb));
   --google-blue-700-rgb: 25, 103, 210;  /* #1967d2 */
   --google-blue-700: rgb(var(--google-blue-700-rgb));
-  --google-blue-800-rgb: 24, 90, 188;  /* ##185abc */
+  --google-blue-800-rgb: 24, 90, 188;  /* #185abc */
   --google-blue-800: rgb(var(--google-blue-800-rgb));
+  --google-blue-900-rgb: 23, 78, 166;  /* #174ea6 */
+  --google-blue-900: rgb(var(--google-blue-900-rgb));
 
   --google-green-50-rgb: 230, 244, 234;  /* #e6f4ea */
   --google-green-50: rgb(var(--google-green-50-rgb));
@@ -71,8 +73,8 @@ html {
   /* --google-grey-900 + 4% white blended together. */
   --google-grey-900-white-4-percent: #292a2d;
 
-  --google-purple-100-rgb: 233, 210, 253;  /* #e9d2fd */
-  --google-purple-100: rgb(var(--google-purple-100-rgb));
+  --google-purple-200-rgb: 215, 174, 251;  /* #d7aefb */
+  --google-purple-200: rgb(var(--google-purple-200-rgb));
   --google-purple-900-rgb: 104, 29, 168;  /* #681da8 */
   --google-purple-900: rgb(var(--google-purple-900-rgb));
 
@@ -85,6 +87,8 @@ html {
 
   --google-yellow-50-rgb: 254, 247, 224;  /* #fef7e0 */
   --google-yellow-50: rgb(var(--google-yellow-50-rgb));
+  --google-yellow-200-rgb: 253, 226, 147;  /* #fde293 */
+  --google-yellow-200: rgb(var(--google-yellow-200-rgb));
   --google-yellow-300-rgb: 253, 214, 51;  /* #fdd633 */
   --google-yellow-300: rgb(var(--google-yellow-300-rgb));
   --google-yellow-400-rgb: 252, 201, 52;  /* #fcc934 */

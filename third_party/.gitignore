@@ -160,7 +160,9 @@
 /libavif/src
 /libc++-static/libc++.a
 /libdrm/src
-/libei/src
+/libei/bin
+/libei/include
+/libei/lib64
 /libgav1/src
 /libgifcodec
 /libipp/libipp
@@ -242,12 +244,16 @@
 /robolectric/lib/
 /robolectric/robolectric
 /rust-toolchain
+/rust-toolchain-intermediate
 /rust_src/src
 /ruy/src
 /scan-build/src
 /scons-2.0.1
 /securemessage/src
 /shaka-player/dist/
+/siso/siso
+/siso/siso.exe
+/siso/.versions
 /skia
 /smhasher/src
 /snappy/src

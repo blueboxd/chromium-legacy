@@ -55,8 +55,8 @@ class AmbientAshTestBase : public AshTestBase {
   // Enables/disables ambient mode for the currently active user session.
   void SetAmbientModeEnabled(bool enabled);
 
-  // Enables/disabled the managed ambient mode for the currently active user
-  // session.
+  // Enables/disables the managed ambient mode pref in the currently active pref
+  // service.
   void SetAmbientModeManagedScreensaverEnabled(bool enabled);
 
   // Sets the |AmbientUiSettings| to use when ShowAmbientScreen() is called.
@@ -182,6 +182,7 @@ class AmbientAshTestBase : public AshTestBase {
   PhotoView* GetPhotoView();
   AmbientAnimationView* GetAmbientAnimationView();
   AmbientInfoView* GetAmbientInfoView();
+  AmbientSlideshowPeripheralUi* GetAmbientSlideshowPeripheralUi();
 
   const std::map<int, ::ambient::PhotoCacheEntry>& GetCachedFiles();
   const std::map<int, ::ambient::PhotoCacheEntry>& GetBackupCachedFiles();
@@ -228,6 +229,10 @@ class AmbientAshTestBase : public AshTestBase {
                                size_t height,
                                SkColor color);
   void DisableBackupCacheDownloads();
+
+  void SetScreenSaverDuration(int minutes);
+
+  absl::optional<int> GetScreenSaverDuration();
 
  private:
   void SpinWaitForAmbientViewAvailable(

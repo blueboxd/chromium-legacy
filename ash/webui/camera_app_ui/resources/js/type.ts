@@ -236,6 +236,7 @@ export enum PerfEvent {
   PHOTO_TAKING = 'photo-taking',
   PORTRAIT_MODE_CAPTURE_POST_PROCESSING =
       'portrait-mode-capture-post-processing',
+  TIME_LAPSE_CAPTURE_POST_PROCESSING = 'time-lapse-capture-post-processing',
   VIDEO_CAPTURE_POST_PROCESSING = 'video-capture-post-processing',
 }
 
@@ -439,10 +440,10 @@ export class NoChunkError extends Error {
 }
 
 /**
- * Throws when the GIF recording is ended with no frame captured.
+ * Throws when the GIF or time lapse recording is ended with no frame captured.
  */
 export class NoFrameError extends Error {
-  constructor(message = 'No frames captured during GIF recording') {
+  constructor(message = 'No frames captured during the recording') {
     super(message);
     this.name = this.constructor.name;
   }

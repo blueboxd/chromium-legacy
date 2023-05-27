@@ -19,6 +19,7 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkYUVAPixmaps.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 
 namespace media {
@@ -138,7 +139,8 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
           PlaneSharedImageFormat(num_channels, caps.texture_rg);
       holders_[plane].mailbox = sii->CreateSharedImage(
           format, tex_size, video_frame->ColorSpace(), kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, mailbox_usage, gpu::kNullSurfaceHandle);
+          kPremul_SkAlphaType, mailbox_usage, "VideoFrameYUV",
+          gpu::kNullSurfaceHandle);
       holders_[plane].texture_target = GL_TEXTURE_2D;
     }
 
@@ -161,8 +163,10 @@ void VideoFrameYUVMailboxesHolder::VideoFrameToMailboxes(
         SkYUVAPixmaps::DataType::kUnorm8, num_channels);
     SkImageInfo info = SkImageInfo::Make(plane_sizes_[plane], color_type,
                                          kUnknown_SkAlphaType);
-    ri->WritePixels(holders_[plane].mailbox, 0, 0, GL_TEXTURE_2D,
-                    video_frame->stride(plane), info, video_frame->data(plane));
+    ri->WritePixels(
+        holders_[plane].mailbox, /*dst_x_offset=*/0,
+        /*dst_y_offset=*/0, /*dst_plane_index=*/0, GL_TEXTURE_2D,
+        SkPixmap(info, video_frame->data(plane), video_frame->stride(plane)));
     mailboxes[plane] = holders_[plane].mailbox;
   }
 }
@@ -199,8 +203,8 @@ sk_sp<SkImage> VideoFrameYUVMailboxesHolder::VideoFrameToSkImage(
           : video_frame->ColorSpace().GetAsFullRangeRGB().ToSkColorSpace();
 
   DCHECK(yuva_backend_textures.isValid());
-  auto result = SkImage::MakeFromYUVATextures(gr_context, yuva_backend_textures,
-                                              rgb_color_space);
+  auto result = SkImages::TextureFromYUVATextures(
+      gr_context, yuva_backend_textures, rgb_color_space);
   DCHECK(result);
   return result;
 }

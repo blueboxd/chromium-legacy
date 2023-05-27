@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_ASH_EMOJI_EMOJI_PAGE_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_ASH_EMOJI_EMOJI_PAGE_HANDLER_H_
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/ash/emoji/emoji_picker.mojom.h"
 #include "chrome/browser/ui/webui/ash/emoji/gif_tenor_api_fetcher.h"
@@ -43,14 +44,14 @@ class EmojiPageHandler : public emoji_picker::mojom::PageHandler {
                   SearchGifsCallback callback) override;
   void GetGifsByIds(const std::vector<std::string>& ids,
                     GetGifsByIdsCallback callback) override;
-  void CopyGifToClipboard(const GURL& gif) override;
+  void InsertGif(const GURL& gif) override;
   void OnUiFullyLoaded() override;
 
  private:
   mojo::Receiver<emoji_picker::mojom::PageHandler> receiver_;
 
   base::TimeTicks shown_time_;
-  EmojiUI* const webui_controller_;
+  const raw_ptr<EmojiUI, ExperimentalAsh> webui_controller_;
   bool incognito_mode_;
   bool no_text_field_;
   GifTenorApiFetcher gif_tenor_api_fetcher_;

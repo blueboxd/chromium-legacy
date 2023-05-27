@@ -5,6 +5,9 @@
 #ifndef ASH_SHELF_SHELF_FOCUS_CYCLER_H_
 #define ASH_SHELF_SHELF_FOCUS_CYCLER_H_
 
+#include "ash/ash_export.h"
+#include "base/memory/raw_ptr.h"
+
 namespace ash {
 class Shelf;
 
@@ -18,7 +21,7 @@ enum class SourceView {
 
 // ShelfFocusCycler handles the special focus transitions from the Login UI,
 // Shelf, and Status Tray.
-class ShelfFocusCycler {
+class ASH_EXPORT ShelfFocusCycler {
  public:
   explicit ShelfFocusCycler(Shelf* shelf);
 
@@ -43,7 +46,7 @@ class ShelfFocusCycler {
 
  private:
   // Owned by RootWindowController.
-  Shelf* shelf_;
+  raw_ptr<Shelf, ExperimentalAsh> shelf_;
 };
 
 }  // namespace ash

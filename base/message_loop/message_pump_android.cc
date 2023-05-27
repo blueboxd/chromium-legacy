@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <jni.h>
 #include <sys/eventfd.h>
-#include <sys/syscall.h>
+#include <sys/timerfd.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <utility>
@@ -17,43 +17,14 @@
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/check_op.h"
-#include "base/functional/callback_helpers.h"
-#include "base/lazy_instance.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
 
-// Android stripped sys/timerfd.h out of their platform headers, so we have to
-// use syscall to make use of timerfd. Once the min API level is 20, we can
-// directly use timerfd.h.
-#ifndef __NR_timerfd_create
-#error "Unable to find syscall for __NR_timerfd_create"
-#endif
-
-#ifndef TFD_TIMER_ABSTIME
-#define TFD_TIMER_ABSTIME (1 << 0)
-#endif
-
-using base::android::JavaParamRef;
-using base::android::ScopedJavaLocalRef;
-
 namespace base {
 
 namespace {
-
-// See sys/timerfd.h
-long timerfd_create(int clockid, int flags) {
-  return syscall(__NR_timerfd_create, clockid, flags);
-}
-
-// See sys/timerfd.h
-long timerfd_settime(int ufc,
-                     int flags,
-                     const struct itimerspec* utmr,
-                     struct itimerspec* otmr) {
-  return syscall(__NR_timerfd_settime, ufc, flags, utmr, otmr);
-}
 
 // https://crbug.com/873588. The stack may not be aligned when the ALooper calls
 // into our code due to the inconsistent ABI on older Android OS versions.
@@ -98,12 +69,8 @@ MessagePumpForUI::MessagePumpForUI()
   CHECK_NE(non_delayed_fd_, -1);
   DCHECK_EQ(TimeTicks::GetClock(), TimeTicks::Clock::LINUX_CLOCK_MONOTONIC);
 
-  // We can't create the timerfd with TFD_NONBLOCK | TFD_CLOEXEC as we can't
-  // include timerfd.h. See comments above on __NR_timerfd_create. It looks like
-  // they're just aliases to O_NONBLOCK and O_CLOEXEC anyways, so this should be
-  // fine.
   delayed_fd_ = checked_cast<int>(
-      timerfd_create(CLOCK_MONOTONIC, O_NONBLOCK | O_CLOEXEC));
+      timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC));
   CHECK_NE(delayed_fd_, -1);
 
   looper_ = ALooper_prepare(0);

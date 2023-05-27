@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '//resources/cr_elements/cr_checkbox/cr_checkbox.js';
+
 import {CrActionMenuElement} from '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -178,7 +180,6 @@ export class AppItemElement extends PolymerElement {
           this.appInfo.id, UserDisplayMode.kStandalone);
       recordUserAction(AppHomeUserAction.OPEN_IN_WINDOW_CHECKED);
     }
-    this.closeContextMenu();
   }
 
   // Changing the app's launch mode.
@@ -196,7 +197,6 @@ export class AppItemElement extends PolymerElement {
           this.appInfo.id, RunOnOsLoginMode.kWindowed);
       recordUserAction(AppHomeUserAction.LAUNCH_AT_STARTUP_CHECKED);
     }
-    this.closeContextMenu();
   }
 
   private onCreateShortcutItemClick_() {

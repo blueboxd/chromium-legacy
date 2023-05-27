@@ -11,7 +11,6 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/scoped_multi_source_observation.h"
-#import "components/favicon/ios/web_favicon_driver.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -20,13 +19,10 @@
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/features.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_tabs_constants.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/pinned_web_state_tab_switcher_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
-#import "ios/chrome/browser/url/url_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
@@ -44,17 +40,19 @@ using PinnedState = WebStateSearchCriteria::PinnedState;
 namespace {
 
 // Constructs an array of TabSwitcherItems from a `web_state_list`.
-NSArray* CreatePinnedTabConsumerItems(WebStateList* web_state_list) {
-  NSMutableArray* items = [[NSMutableArray alloc] init];
+NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
+    WebStateList* web_state_list) {
+  NSMutableArray<TabSwitcherItem*>* items = [[NSMutableArray alloc] init];
   int pinnedWebStatesCount = web_state_list->GetIndexOfFirstNonPinnedWebState();
 
   for (int i = 0; i < pinnedWebStatesCount; i++) {
     DCHECK(web_state_list->IsWebStatePinnedAt(i));
 
     web::WebState* web_state = web_state_list->GetWebStateAt(i);
-    [items addObject:GetTabSwitcherItem(web_state)];
+    [items
+        addObject:[[WebStateTabSwitcherItem alloc] initWithWebState:web_state]];
   }
-  return [items copy];
+  return items;
 }
 
 }  // namespace
@@ -147,8 +145,10 @@ NSArray* CreatePinnedTabConsumerItems(WebStateList* web_state_list) {
     return;
   }
 
+  TabSwitcherItem* item =
+      [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
   [self.consumer
-          insertItem:GetTabSwitcherItem(webState)
+          insertItem:item
              atIndex:index
       selectedItemID:GetActiveWebStateIdentifier(
                          webStateList, WebStateSearchCriteria{
@@ -190,8 +190,10 @@ NSArray* CreatePinnedTabConsumerItems(WebStateList* web_state_list) {
     return;
   }
 
+  TabSwitcherItem* newItem =
+      [[WebStateTabSwitcherItem alloc] initWithWebState:newWebState];
   [self.consumer replaceItemID:oldWebState->GetStableIdentifier()
-                      withItem:GetTabSwitcherItem(newWebState)];
+                      withItem:newItem];
 
   _scopedWebStateObservation->RemoveObservation(oldWebState);
   _scopedWebStateObservation->AddObservation(newWebState);
@@ -266,7 +268,9 @@ NSArray* CreatePinnedTabConsumerItems(WebStateList* web_state_list) {
   }
 
   if (webStateList->IsWebStatePinnedAt(index)) {
-    [self.consumer insertItem:GetTabSwitcherItem(webState)
+    TabSwitcherItem* item =
+        [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
+    [self.consumer insertItem:item
                       atIndex:index
                selectedItemID:GetActiveWebStateIdentifier(
                                   webStateList,
@@ -316,65 +320,9 @@ NSArray* CreatePinnedTabConsumerItems(WebStateList* web_state_list) {
 }
 
 - (void)updateConsumerItemForWebState:(web::WebState*)webState {
-  [self.consumer replaceItemID:webState->GetStableIdentifier()
-                      withItem:GetTabSwitcherItem(webState)];
-}
-
-#pragma mark - GridImageDataSource
-
-- (void)snapshotForIdentifier:(NSString*)identifier
-                   completion:(void (^)(UIImage*))completion {
-  web::WebState* webState =
-      GetWebState(self.webStateList, WebStateSearchCriteria{
-                                         .identifier = identifier,
-                                         .pinned_state = PinnedState::kPinned,
-                                     });
-  if (webState) {
-    SnapshotTabHelper::FromWebState(webState)->RetrieveColorSnapshot(
-        ^(UIImage* image) {
-          completion(image);
-        });
-  }
-}
-
-- (void)faviconForIdentifier:(NSString*)identifier
-                  completion:(void (^)(UIImage*))completion {
-  web::WebState* webState =
-      GetWebState(self.webStateList, WebStateSearchCriteria{
-                                         .identifier = identifier,
-                                         .pinned_state = PinnedState::kPinned,
-                                     });
-
-  if (!webState) {
-    return;
-  }
-
-  // NTP tabs get the Chrome product favicon.
-  if (IsURLNtp(webState->GetVisibleURL())) {
-    UIImage* chromeProductIcon = CustomSymbolWithPointSize(
-        kChromeProductSymbol, kPinnedCellFaviconSymbolPointSize);
-    completion(chromeProductIcon);
-    return;
-  }
-
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(webState);
-
-  if (faviconDriver) {
-    gfx::Image favicon = faviconDriver->GetFavicon();
-    if (!favicon.IsEmpty()) {
-      completion(favicon.ToUIImage());
-    }
-  }
-}
-
-- (void)preloadSnapshotsForVisibleGridItems:
-    (NSSet<NSString*>*)visibleGridItems {
-  // TODO (crbug.com/1406524): Implement or remove.
-}
-
-- (void)clearPreloadedSnapshots {
-  // TODO (crbug.com/1406524): Implement or remove.
+  TabSwitcherItem* item =
+      [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
+  [self.consumer replaceItemID:webState->GetStableIdentifier() withItem:item];
 }
 
 #pragma mark - TabCollectionCommands

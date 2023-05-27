@@ -13,9 +13,11 @@
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/home_launcher_animation_info.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/quick_app_access_model.h"
 #include "ash/ash_export.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/app_list/app_list_client.h"
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/app_list/app_list_model_delegate.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
@@ -31,6 +33,7 @@
 #include "ash/wm/overview/overview_types.h"
 #include "ash/wm/splitview/split_view_observer.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -97,7 +100,8 @@ class ASH_EXPORT AppListControllerImpl
   void RemoveObserver(AppListControllerObserver* obsever) override;
   void SetActiveModel(int profile_id,
                       AppListModel* model,
-                      SearchModel* search_model) override;
+                      SearchModel* search_model,
+                      QuickAppAccessModel* quick_app_access_model) override;
   void ClearActiveModel() override;
   void DismissAppList() override;
   void ShowAppList(AppListShowSource source) override;
@@ -144,6 +148,9 @@ class ASH_EXPORT AppListControllerImpl
 
   // AppListViewDelegate:
   AppListNotifier* GetNotifier() override;
+  std::unique_ptr<ash::ScopedIphSession> CreateLauncherSearchIphSession()
+      override;
+  void OpenSearchBoxIphUrl() override;
   void StartAssistant() override;
   void StartSearch(const std::u16string& raw_query) override;
   void StartZeroStateSearch(base::OnceClosure callback,
@@ -340,6 +347,13 @@ class ASH_EXPORT AppListControllerImpl
   // Returns the preferred width for the bubble launcher for the |root_window|.
   int GetPreferredBubbleWidth(aura::Window* root_window) const;
 
+  // Set the launchable quick app button shown next to the home button. This app
+  // icon is shown next to the home button until the app is launched or the
+  // launcher is opened.
+  // Returns true when the quick app was changed to a valid `app_id` or reset
+  // using an empty `app_id`.
+  bool SetHomeButtonQuickApp(const std::string& app_id);
+
  private:
   // Convenience methods for getting models from `model_provider_`.
   AppListModel* GetModel();
@@ -347,8 +361,9 @@ class ASH_EXPORT AppListControllerImpl
 
   std::unique_ptr<AppListItem> CreateAppListItem(
       std::unique_ptr<AppListItemMetadata> metadata);
-  // Update the visibility of Assistant functionality.
-  void UpdateAssistantVisibility();
+
+  // Update the visibility of UIs controlled by `SearchBoxModel`.
+  void UpdateSearchBoxUiVisibilities();
 
   int64_t GetDisplayIdToShowAppListOn();
 
@@ -403,7 +418,7 @@ class ASH_EXPORT AppListControllerImpl
   // gesture is reversed).
   HomeLauncherTransitionState home_launcher_transition_state_ = kFinished;
 
-  AppListClient* client_ = nullptr;
+  raw_ptr<AppListClient, ExperimentalAsh> client_ = nullptr;
 
   // Tracks the most recent show source for the app list.
   absl::optional<AppListShowSource> last_open_source_;
@@ -459,7 +474,7 @@ class ASH_EXPORT AppListControllerImpl
   // last calculated.
   // This window changing it's visibility to false is used as a signal that the
   // home launcher visibility should be recalculated.
-  aura::Window* tracked_app_window_ = nullptr;
+  raw_ptr<aura::Window, ExperimentalAsh> tracked_app_window_ = nullptr;
 
   // A callback that can be registered by a test to wait for the app list state
   // transition animation to finish.

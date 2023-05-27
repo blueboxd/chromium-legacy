@@ -24,6 +24,7 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/work_area_insets.h"
 #include "ash/wm/workspace_controller_test_api.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "cc/paint/display_item_list.h"
 #include "chromeos/ui/base/window_pin_type.h"
@@ -31,11 +32,11 @@
 #include "chromeos/ui/frame/caption_buttons/caption_button_model.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "chromeos/ui/frame/header_view.h"
+#include "chromeos/ui/wm/window_util.h"
 #include "components/app_restore/window_properties.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/permission.h"
-#include "components/exo/shell_surface_util.h"
 #include "components/exo/sub_surface.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
@@ -62,6 +63,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/paint_info.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/window/caption_button_types.h"
 #include "ui/wm/core/shadow_controller.h"
 #include "ui/wm/core/shadow_types.h"
 
@@ -1110,7 +1112,7 @@ class ShellSurfaceWindowObserver : public aura::WindowObserver {
   }
 
  private:
-  aura::Window* window_;
+  raw_ptr<aura::Window, ExperimentalAsh> window_;
   bool has_delegate_;
 };
 
@@ -1352,13 +1354,15 @@ TEST_P(ClientControlledShellSurfaceTest, CaptionButtonModel) {
       views::CAPTION_BUTTON_ICON_CLOSE,
       views::CAPTION_BUTTON_ICON_BACK,
       views::CAPTION_BUTTON_ICON_MENU,
+      views::CAPTION_BUTTON_ICON_FLOAT,
   };
   constexpr uint32_t kAllButtonMask =
       1 << views::CAPTION_BUTTON_ICON_MINIMIZE |
       1 << views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE |
       1 << views::CAPTION_BUTTON_ICON_CLOSE |
       1 << views::CAPTION_BUTTON_ICON_BACK |
-      1 << views::CAPTION_BUTTON_ICON_MENU;
+      1 << views::CAPTION_BUTTON_ICON_MENU |
+      1 << views::CAPTION_BUTTON_ICON_FLOAT;
 
   ash::NonClientFrameViewAsh* frame_view =
       static_cast<ash::NonClientFrameViewAsh*>(
@@ -1373,12 +1377,22 @@ TEST_P(ClientControlledShellSurfaceTest, CaptionButtonModel) {
     shell_surface->SetFrameButtons(visible_buttons, 0);
     const chromeos::CaptionButtonModel* model = container->model();
     for (auto not_visible : kAllButtons) {
-      if (not_visible != visible) {
+      if (not_visible == views::CAPTION_BUTTON_ICON_FLOAT) {
+        // Float is dependent only on maximize/restore.
+        EXPECT_EQ(
+            !model->IsVisible(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE),
+            model->IsVisible(views::CAPTION_BUTTON_ICON_FLOAT));
+      } else if (not_visible != visible) {
         EXPECT_FALSE(model->IsVisible(not_visible));
       }
     }
     EXPECT_TRUE(model->IsVisible(visible));
-    EXPECT_FALSE(model->IsEnabled(visible));
+    if (visible == views::CAPTION_BUTTON_ICON_FLOAT) {
+      EXPECT_EQ(!model->IsEnabled(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE),
+                model->IsEnabled(views::CAPTION_BUTTON_ICON_FLOAT));
+    } else {
+      EXPECT_FALSE(model->IsEnabled(visible));
+    }
   }
 
   // Enable
@@ -1387,12 +1401,22 @@ TEST_P(ClientControlledShellSurfaceTest, CaptionButtonModel) {
     shell_surface->SetFrameButtons(kAllButtonMask, enabled_buttons);
     const chromeos::CaptionButtonModel* model = container->model();
     for (auto not_enabled : kAllButtons) {
-      if (not_enabled != enabled) {
+      if (not_enabled == views::CAPTION_BUTTON_ICON_FLOAT) {
+        // Float is dependent only on maximize/restore.
+        EXPECT_EQ(
+            !model->IsEnabled(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE),
+            model->IsEnabled(views::CAPTION_BUTTON_ICON_FLOAT));
+      } else if (not_enabled != enabled) {
         EXPECT_FALSE(model->IsEnabled(not_enabled));
       }
     }
     EXPECT_TRUE(model->IsEnabled(enabled));
-    EXPECT_TRUE(model->IsVisible(enabled));
+    if (enabled == views::CAPTION_BUTTON_ICON_FLOAT) {
+      EXPECT_EQ(!model->IsVisible(views::CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE),
+                model->IsVisible(views::CAPTION_BUTTON_ICON_FLOAT));
+    } else {
+      EXPECT_TRUE(model->IsVisible(enabled));
+    }
   }
 
   // Zoom mode
@@ -1815,24 +1839,6 @@ TEST_P(ClientControlledShellSurfaceTest, SetOrientationLock) {
   EXPECT_FALSE(controller->rotation_locked());
 
   EnableTabletMode(false);
-}
-
-TEST_P(ClientControlledShellSurfaceTest, SetClientAccessibilityId) {
-  auto shell_surface = exo::test::ShellSurfaceBuilder({64, 64})
-                           .SetNoCommit()
-                           .BuildClientControlledShellSurface();
-  auto* surface = shell_surface->root_surface();
-
-  EXPECT_FALSE(shell_surface->GetWidget());
-  shell_surface->SetClientAccessibilityId(0);
-  surface->Commit();
-  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
-  EXPECT_EQ(0, *GetShellClientAccessibilityId(window));
-  shell_surface->SetClientAccessibilityId(1);
-  EXPECT_EQ(1, *GetShellClientAccessibilityId(window));
-
-  shell_surface->SetClientAccessibilityId(-1);
-  EXPECT_FALSE(GetShellClientAccessibilityId(window));
 }
 
 // Tests adjust bounds locally should also request remote client bounds update.
@@ -2480,6 +2486,19 @@ TEST_P(ClientControlledShellSurfaceTest,
   surface->Commit();
   EXPECT_FALSE(shell_surface->CanResize());
 
+  // Test that the float caption button is visible on unresizable apps.
+  EXPECT_TRUE(chromeos::wm::CanFloatWindow(
+      shell_surface->GetWidget()->GetNativeWindow()));
+  ash::NonClientFrameViewAsh* frame_view =
+      static_cast<ash::NonClientFrameViewAsh*>(
+          shell_surface->GetWidget()->non_client_view()->frame_view());
+  const chromeos::CaptionButtonModel* model =
+      static_cast<chromeos::HeaderView*>(frame_view->GetHeaderView())
+          ->caption_button_container()
+          ->model();
+  EXPECT_TRUE(model->IsVisible(views::CAPTION_BUTTON_ICON_FLOAT));
+  EXPECT_TRUE(model->IsEnabled(views::CAPTION_BUTTON_ICON_FLOAT));
+
   shell_surface->SetResizeLockType(
       ash::ArcResizeLockType::RESIZE_ENABLED_TOGGLABLE);
   surface->Commit();
@@ -2563,6 +2582,24 @@ TEST_P(ClientControlledShellSurfaceTest,
   auto* permission = window->GetProperty(kPermissionKey);
 
   EXPECT_TRUE(permission->Check(Permission::Capability::kActivate));
+}
+
+TEST_P(ClientControlledShellSurfaceTest, SupportsFloatedState) {
+  // Test disabling support.
+  {
+    auto shell_surface = exo::test::ShellSurfaceBuilder()
+                             .DisableSupportsFloatedState()
+                             .BuildClientControlledShellSurface();
+    auto* const window = shell_surface->GetWidget()->GetNativeWindow();
+    EXPECT_FALSE(chromeos::wm::CanFloatWindow(window));
+  }
+  // Test enabling (default) support.
+  {
+    auto shell_surface =
+        exo::test::ShellSurfaceBuilder().BuildClientControlledShellSurface();
+    auto* const window = shell_surface->GetWidget()->GetNativeWindow();
+    EXPECT_TRUE(chromeos::wm::CanFloatWindow(window));
+  }
 }
 
 }  // namespace exo

@@ -4,6 +4,7 @@
 
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -12,7 +13,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
@@ -654,7 +654,7 @@ jint WebContentsAccessibilityAndroid::GetRootId(JNIEnv* env) {
 
 jboolean WebContentsAccessibilityAndroid::IsNodeValid(JNIEnv* env,
                                                       jint unique_id) {
-  return GetAXFromUniqueID(unique_id) != NULL;
+  return GetAXFromUniqueID(unique_id) != nullptr;
 }
 
 void WebContentsAccessibilityAndroid::HitTest(JNIEnv* env, jint x, jint y) {
@@ -1077,7 +1077,7 @@ jboolean WebContentsAccessibilityAndroid::AdjustSlider(JNIEnv* env,
   // Add/Subtract based on |increment| boolean, then clamp to range.
   float original_value = value;
   value += (increment ? delta : -delta);
-  value = base::clamp(value, min, max);
+  value = std::clamp(value, min, max);
   if (value != original_value) {
     node->manager()->SetValue(*node, base::NumberToString(value));
     return true;
@@ -1376,7 +1376,7 @@ bool WebContentsAccessibilityAndroid::SetRangeValue(JNIEnv* env,
   if (max <= min)
     return false;
 
-  value = base::clamp(value, min, max);
+  value = std::clamp(value, min, max);
   node->manager()->SetValue(*node, base::NumberToString(value));
   return true;
 }
@@ -1553,8 +1553,7 @@ void JNI_WebContentsAccessibilityImpl_SetBrowserAXMode(
 
   // The AXMode flags will be set according to enabled feature flags and what is
   // needed by the current system as indicated by the parameters.
-  if (!features::IsComputeAXModeEnabled() &&
-      !features::IsAccessibilityFormControlsAXModeEnabled()) {
+  if (!features::IsAccessibilityAXModesEnabled()) {
     // When the browser is not yet accessible, then set the AXMode to
     // |ui::kAXModeComplete| for all web contents.
     if (!accessibility_state->IsAccessibleBrowser()) {
@@ -1563,94 +1562,41 @@ void JNI_WebContentsAccessibilityImpl_SetBrowserAXMode(
     return;
   }
 
-  // If the ComputeAXMode flag has been enabled by itself, |ui::kAXModeComplete|
-  // will be set if a screen reader is present, and |ui::kAXModeBasic|
-  // otherwise.
-  if (features::IsComputeAXModeEnabled() &&
-      !features::IsAccessibilityFormControlsAXModeEnabled()) {
-    if (is_screen_reader_enabled) {
-      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeComplete);
-    } else {
-      // Remove the mode flags present in kAXModeComplete but not in
-      // kAXModeBasic, thereby reverting the mode to kAXModeBasic while
-      // not touching any other flags.
-      ui::AXMode flags_to_remove(ui::kAXModeComplete.flags() &
-                                 ~ui::kAXModeBasic.flags());
-      accessibility_state->RemoveAccessibilityModeFlags(flags_to_remove);
-
-      // Add basic mode
-      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeBasic);
-    }
-    return;
-  }
-
-  // If the AccessibilityFormControlsAXMode flag has been enabled by itself,
-  // |ui::kAXModeFormControls| will be set if form controls mode is enabled, and
-  // |ui::kAXModeComplete| otherwise.
-  if (!features::IsComputeAXModeEnabled() &&
-      features::IsAccessibilityFormControlsAXModeEnabled()) {
-    if (form_controls_mode) {
-      // TODO (aldietz): Add a SetAccessibilityModeFlags method to
-      // BrowserAccessibilityState to add and remove flags atomically in one
-      // operation.
-      // Remove the mode flags present in kAXModeComplete but not in
-      // kAXModeFormControls, thereby reverting the mode to kAXModeFormControls
-      // while not touching any other flags.
-      ui::AXMode flags_to_remove(ui::kAXModeComplete.flags() &
-                                 ~ui::kAXModeFormControls.flags());
-      accessibility_state->RemoveAccessibilityModeFlags(flags_to_remove);
-
-      // Add form controls experimental mode.
-      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeFormControls);
-    } else {
-      // Remove form controls experimental mode to preserve screen reader mode.
-      ui::AXMode flags_to_remove(ui::AXMode::kNone,
-                                 ui::AXMode::kExperimentalFormControls);
-      accessibility_state->RemoveAccessibilityModeFlags(flags_to_remove);
-
-      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeComplete);
-    }
-    return;
-  }
-
-  // If both ComputeAXMode and AccessibilityFormControlsAXMode flags have been
-  // enabled, |ui::kAXModeComplete| will be set if a screen reader is present,
+  // If the AccessibilityAXModes feature flag has been enabled, then set
+  // |ui::kAXModeComplete| if a screen reader is present,
   // |ui::kAXModeFormControls| if form controls mode is enabled, and
   // |ui::kAXModeBasic| otherwise.
-  if (features::IsComputeAXModeEnabled() &&
-      features::IsAccessibilityFormControlsAXModeEnabled()) {
-    if (is_screen_reader_enabled) {
-      // Remove form controls experimental mode to preserve screen reader mode.
-      ui::AXMode flags_to_remove(ui::AXMode::kNone,
-                                 ui::AXMode::kExperimentalFormControls);
-      accessibility_state->RemoveAccessibilityModeFlags(flags_to_remove);
+  if (is_screen_reader_enabled) {
+    // Remove form controls experimental mode to preserve screen reader mode.
+    ui::AXMode flags_to_remove(ui::AXMode::kNone,
+                               ui::AXMode::kExperimentalFormControls);
+    accessibility_state->RemoveAccessibilityModeFlags(flags_to_remove);
 
-      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeComplete);
-    } else if (form_controls_mode) {
-      // TODO (aldietz): Add a SetAccessibilityModeFlags method to
-      // BrowserAccessibilityState to add and remove flags atomically in one
-      // operation.
-      // Remove the mode flags present in kAXModeComplete but not in
-      // kAXModeFormControls, thereby reverting the mode to kAXModeFormControls
-      // while not touching any other flags.
-      ui::AXMode flags_to_remove(ui::kAXModeComplete.flags() &
-                                 ~ui::kAXModeFormControls.flags());
-      accessibility_state->RemoveAccessibilityModeFlags(flags_to_remove);
+    accessibility_state->AddAccessibilityModeFlags(ui::kAXModeComplete);
+  } else if (form_controls_mode) {
+    // TODO (aldietz): Add a SetAccessibilityModeFlags method to
+    // BrowserAccessibilityState to add and remove flags atomically in one
+    // operation.
+    // Remove the mode flags present in kAXModeComplete but not in
+    // kAXModeFormControls, thereby reverting the mode to kAXModeFormControls
+    // while not touching any other flags.
+    ui::AXMode flags_to_remove(ui::kAXModeComplete.flags() &
+                               ~ui::kAXModeFormControls.flags());
+    accessibility_state->RemoveAccessibilityModeFlags(flags_to_remove);
 
-      // Add form controls experimental mode.
-      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeFormControls);
-    } else {
-      // Remove the mode flags present in kAXModeComplete and
-      // kExperimentalFormControls but not in kAXModeBasic, thereby reverting
-      // the mode to kAXModeBasic while not touching any other flags.
-      ui::AXMode flags_to_remove(
-          ui::kAXModeComplete.flags() & ~ui::kAXModeBasic.flags(),
-          ui::AXMode::kExperimentalFormControls);
-      accessibility_state->RemoveAccessibilityModeFlags(flags_to_remove);
+    // Add form controls experimental mode.
+    accessibility_state->AddAccessibilityModeFlags(ui::kAXModeFormControls);
+  } else {
+    // Remove the mode flags present in kAXModeComplete and
+    // kExperimentalFormControls but not in kAXModeBasic, thereby reverting
+    // the mode to kAXModeBasic while not touching any other flags.
+    ui::AXMode flags_to_remove(
+        ui::kAXModeComplete.flags() & ~ui::kAXModeBasic.flags(),
+        ui::AXMode::kExperimentalFormControls);
+    accessibility_state->RemoveAccessibilityModeFlags(flags_to_remove);
 
-      // Add basic mode
-      accessibility_state->AddAccessibilityModeFlags(ui::kAXModeBasic);
-    }
+    // Add basic mode
+    accessibility_state->AddAccessibilityModeFlags(ui::kAXModeBasic);
   }
 }
 

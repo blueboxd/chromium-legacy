@@ -101,9 +101,16 @@ size_t LogMarkToLogLevelNameIndex(char mark) {
 
 template <typename T>
 std::string ToString(const T x) {
-  std::ostringstream oss;
-  oss << x;
-  return std::move(oss).str();
+  return (std::ostringstream() << drivefs::pinning::NiceNum << x).str();
+}
+
+template <typename T>
+std::string ToPercent(const T num, const T total) {
+  if (num >= 0 && total > 0) {
+    return (std::ostringstream() << (100 * num / total) << "%").str();
+  }
+
+  return "🤔";
 }
 
 // Gets metadata of all files and directories in |root_path|
@@ -637,18 +644,32 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler,
     using drivefs::pinning::HumanReadableSize;
 
     base::Value::Dict d;
-    d.Set("stage", ToString(progress.stage));
+    d.Set("stage", drivefs::pinning::ToString(progress.stage));
     d.Set("free_space", ToString(HumanReadableSize(progress.free_space)));
     d.Set("required_space",
           ToString(HumanReadableSize(progress.required_space)));
     d.Set("bytes_to_pin", ToString(HumanReadableSize(progress.bytes_to_pin)));
     d.Set("pinned_bytes", ToString(HumanReadableSize(progress.pinned_bytes)));
+    d.Set("pinned_bytes_percent",
+          ToPercent(progress.pinned_bytes, progress.bytes_to_pin));
     d.Set("files_to_pin", ToString(progress.files_to_pin));
     d.Set("pinned_files", ToString(progress.pinned_files));
+    d.Set("pinned_files_percent",
+          ToPercent(progress.pinned_files, progress.files_to_pin));
     d.Set("failed_files", ToString(progress.failed_files));
     d.Set("syncing_files", ToString(progress.syncing_files));
     d.Set("skipped_items", ToString(progress.skipped_items));
     d.Set("listed_items", ToString(progress.listed_items));
+    d.Set("listed_dirs", ToString(progress.listed_dirs));
+    d.Set("listed_files", ToString(progress.listed_files));
+    d.Set("listed_docs", ToString(progress.listed_docs));
+    d.Set("listed_shortcuts", ToString(progress.listed_shortcuts));
+    d.Set("active_queries", ToString(progress.active_queries));
+    d.Set("max_active_queries", ToString(progress.max_active_queries));
+    d.Set("time_spent_listing_items",
+          drivefs::pinning::ToString(progress.time_spent_listing_items));
+    d.Set("time_spent_pinning_files",
+          drivefs::pinning::ToString(progress.time_spent_pinning_files));
     MaybeCallJavascript("onBulkPinningProgress", base::Value(std::move(d)));
   }
 
@@ -1081,7 +1102,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
     base::SequencedTaskRunner::GetCurrentDefault()->DeleteSoon(FROM_HERE, this);
   }
 
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
   const base::FilePath logs_directory_;
   const base::FilePath zip_path_;
 

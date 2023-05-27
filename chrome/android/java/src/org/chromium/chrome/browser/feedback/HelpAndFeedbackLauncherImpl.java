@@ -14,20 +14,16 @@ import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKeyedMap;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 
 import java.util.Map;
-
-import javax.annotation.Nonnull;
 
 /**
  * Launches an activity that displays a relevant support page and has an option to provide feedback.
@@ -38,8 +34,8 @@ public class HelpAndFeedbackLauncherImpl implements HelpAndFeedbackLauncher {
     private static final String TAG = "HelpAndFeedback";
 
     private static ProfileKeyedMap<HelpAndFeedbackLauncher> sProfileToLauncherMap;
-
-    private Profile mProfile;
+    private final HelpAndFeedbackLauncherDelegate mDelegate;
+    private final Profile mProfile;
 
     /**
      * @return The HelpAndFeedbackLauncher for a given profile, creating it if needed.
@@ -51,41 +47,13 @@ public class HelpAndFeedbackLauncherImpl implements HelpAndFeedbackLauncher {
             sProfileToLauncherMap =
                     new ProfileKeyedMap<>(ProfileKeyedMap.NO_REQUIRED_CLEANUP_ACTION);
         }
-        return sProfileToLauncherMap.getForProfile(profile, () -> {
-            HelpAndFeedbackLauncherImpl launcher =
-                    (HelpAndFeedbackLauncherImpl) AppHooks.get().createHelpAndFeedbackLauncher();
-            // TODO(tedchoc): De-app-hook-ify HelpAndFeedbackLauncher and pass in the profile into
-            //                the constructor.
-            launcher.mProfile = profile;
-            return launcher;
-        });
+        return sProfileToLauncherMap.getForProfile(
+                profile, () -> new HelpAndFeedbackLauncherImpl(profile));
     }
 
-    /**
-     * Starts an activity showing a help page for the specified context ID.
-     *
-     * @param activity The activity to use for starting the help activity and to take a
-     *                 screenshot of.
-     * @param helpContext One of the CONTEXT_* constants. This should describe the user's current
-     *                    context and will be used to show a more relevant help page.
-     * @param collector the {@link FeedbackCollector} to use for extra data. Must not be null.
-     */
-    protected void show(
-            Activity activity, String helpContext, @Nonnull FeedbackCollector collector) {
-        Log.d(TAG, "Feedback data: " + collector.getBundle());
-        launchFallbackSupportUri(activity);
-    }
-
-    /**
-     * Starts an activity prompting the user to enter feedback.
-     *
-     * @param activity The activity to use for starting the feedback activity and to take a
-     *                 screenshot of.
-     * @param collector the {@link FeedbackCollector} to use for extra data. Must not be null.
-     */
-    protected void showFeedback(Activity activity, @Nonnull FeedbackCollector collector) {
-        Log.d(TAG, "Feedback data: " + collector.getBundle());
-        launchFallbackSupportUri(activity);
+    private HelpAndFeedbackLauncherImpl(Profile profile) {
+        mProfile = profile;
+        mDelegate = new HelpAndFeedbackLauncherDelegateImpl();
     }
 
     /**
@@ -103,7 +71,7 @@ public class HelpAndFeedbackLauncherImpl implements HelpAndFeedbackLauncher {
         new ChromeFeedbackCollector(activity, null /* categoryTag */, null /* description */,
                 new ScreenshotTask(activity),
                 new ChromeFeedbackCollector.InitParams(mProfile, url, helpContext),
-                collector -> show(activity, helpContext, collector), mProfile);
+                collector -> mDelegate.show(activity, helpContext, collector), mProfile);
     }
 
     /**
@@ -128,7 +96,7 @@ public class HelpAndFeedbackLauncherImpl implements HelpAndFeedbackLauncher {
                         -> {
                     RecordHistogram.recordLongTimesHistogram("Feedback.Duration.FormOpenToSubmit",
                             SystemClock.elapsedRealtime() - startTime);
-                    showFeedback(activity, collector);
+                    mDelegate.showFeedback(activity, collector);
                 },
                 mProfile);
     }
@@ -161,7 +129,7 @@ public class HelpAndFeedbackLauncherImpl implements HelpAndFeedbackLauncher {
         new FeedFeedbackCollector(activity, categoryTag, null /* description */,
                 new ScreenshotTask(activity),
                 new FeedFeedbackCollector.InitParams(mProfile, url, feedContext),
-                collector -> showFeedback(activity, collector), mProfile);
+                collector -> mDelegate.showFeedback(activity, collector), mProfile);
     }
 
     /**

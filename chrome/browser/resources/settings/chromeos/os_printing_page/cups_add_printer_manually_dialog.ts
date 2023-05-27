@@ -25,6 +25,7 @@ import {AddPrinterDialogElement} from './cups_add_printer_dialog.js';
 import {getTemplate} from './cups_add_printer_manually_dialog.html.js';
 import {getErrorText, isNameAndAddressValid} from './cups_printer_dialog_util.js';
 import {CupsPrinterInfo, CupsPrintersBrowserProxy, CupsPrintersBrowserProxyImpl, PrinterMakeModel, PrinterSetupResult} from './cups_printers_browser_proxy.js';
+import {PrinterOnlineState} from './printer_status.js';
 
 function getEmptyPrinter(): object {
   return {
@@ -35,6 +36,7 @@ function getEmptyPrinter(): object {
     printerId: '',
     printerMakeAndModel: '',
     printerName: '',
+    printerOnlineState: PrinterOnlineState.UNKNOWN,
     printerPPDPath: '',
     printerPpdReference: {
       userSuppliedPpdUrl: '',
@@ -43,7 +45,6 @@ function getEmptyPrinter(): object {
     },
     printerProtocol: 'ipp',
     printerQueue: 'ipp/print',
-    printerStatus: '',
     printServerUri: '',
   };
 }
@@ -105,7 +106,7 @@ class AddPrinterManuallyDialogElement extends PolymerElement {
   private getAddPrinterDialog_(): AddPrinterDialogElement {
     return castExists(this.shadowRoot!.querySelector('add-printer-dialog'));
   }
-  private onCancelTap_(): void {
+  private onCancelClick_(): void {
     this.getAddPrinterDialog_().close();
   }
 
@@ -182,7 +183,7 @@ class AddPrinterManuallyDialogElement extends PolymerElement {
     }
   }
 
-  private onPrintServerTap_(): void {
+  private onPrintServerClick_(): void {
     this.getAddPrinterDialog_()!.close();
 
     const openAddPrintServerDialogEvent =

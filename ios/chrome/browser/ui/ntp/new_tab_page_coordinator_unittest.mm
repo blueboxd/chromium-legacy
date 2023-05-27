@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/main/test_browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
@@ -19,17 +21,16 @@
 #import "ios/chrome/browser/signin/fake_authentication_service_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
-#import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/incognito/incognito_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/metrics/new_tab_page_metrics_recorder.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_component_factory.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator+private.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_header_view_controller.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_metrics_delegate.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
 #import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
@@ -97,6 +98,9 @@ class NewTabPageCoordinatorTest : public PlatformTest {
     coordinator_.baseViewController = base_view_controller_;
     coordinator_.toolbarDelegate = toolbar_delegate_;
 
+    NTPMetricsRecorder_ = [[NewTabPageMetricsRecorder alloc] init];
+    coordinator_.NTPMetricsRecorder = NTPMetricsRecorder_;
+
     InsertWebState(CreateWebStateWithURL(GURL("chrome://newtab")));
   }
 
@@ -123,6 +127,17 @@ class NewTabPageCoordinatorTest : public PlatformTest {
     web_state->OnNavigationStarted(&navigation_context);
     web_state->OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
     return std::move(web_state);
+  }
+
+  // Simulates loading the NTP in `web_state_`.
+  void SetNTPAsCurrentURL() {
+    web::FakeNavigationContext navigation_context;
+    navigation_context.SetUrl(GURL("chrome://newtab"));
+    web::FakeWebState* fake_web_state =
+        static_cast<web::FakeWebState*>(web_state_);
+    fake_web_state->SetVisibleURL(GURL("chrome://newtab"));
+    fake_web_state->OnNavigationStarted(&navigation_context);
+    fake_web_state->OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   }
 
   void SetupCommandHandlerMocks() {
@@ -183,6 +198,7 @@ class NewTabPageCoordinatorTest : public PlatformTest {
   std::unique_ptr<Browser> browser_;
   id scene_state_;
   NewTabPageCoordinator* coordinator_;
+  NewTabPageMetricsRecorder* NTPMetricsRecorder_;
   UIViewController* base_view_controller_;
   id omnibox_commands_handler_mock;
   id snackbar_commands_handler_mock;
@@ -211,7 +227,7 @@ TEST_F(NewTabPageCoordinatorTest, StartOffTheRecord) {
 }
 
 // Tests that if the NTPCoordinator properly configures
-// ContentSuggestionsHeaderViewController and NewTabPageTabHelper correctly for
+// NewTabPageHeaderViewController and NewTabPageTabHelper correctly for
 // Start depending on public lifecycle API calls.
 TEST_F(NewTabPageCoordinatorTest, StartIsStartShowing) {
   CreateCoordinator(/*off_the_record=*/false);
@@ -285,6 +301,7 @@ TEST_F(NewTabPageCoordinatorTest, StartIsStartShowing) {
   // `-ShouldShowStartSurface` is false.
   NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(false);
   [[coordinator_mock reject] configureStartSurfaceIfNeeded];
+  SetNTPAsCurrentURL();
   [coordinator_ start];
   EXPECT_OCMOCK_VERIFY(coordinator_mock);
   [coordinator_ stop];
@@ -300,13 +317,11 @@ TEST_F(NewTabPageCoordinatorTest, FakeboxTappedMetricLogging) {
   // SetShowStartSurface.
   NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(true);
   [coordinator_ start];
-  histogram_tester_->ExpectUniqueSample(
-      "IOS.ContentSuggestions.ActionOnStartSurface",
-      IOSContentSuggestionsActionType::kFakebox, 0);
+  histogram_tester_->ExpectUniqueSample("IOS.Home.ActionOnStartSurface",
+                                        IOSHomeActionType::kFakebox, 0);
   [coordinator_ fakeboxTapped];
-  histogram_tester_->ExpectUniqueSample(
-      "IOS.ContentSuggestions.ActionOnStartSurface",
-      IOSContentSuggestionsActionType::kFakebox, 1);
+  histogram_tester_->ExpectUniqueSample("IOS.Home.ActionOnStartSurface",
+                                        IOSHomeActionType::kFakebox, 1);
 
   // Simulate navigate away and then back to non-Start NTP.
   web::FakeNavigationContext navigation_context;
@@ -315,20 +330,17 @@ TEST_F(NewTabPageCoordinatorTest, FakeboxTappedMetricLogging) {
       ->OnNavigationStarted(&navigation_context);
   [coordinator_ didNavigateAwayFromNTP];
   ASSERT_FALSE(coordinator_.started);
+  SetNTPAsCurrentURL();
   [coordinator_ start];
-  histogram_tester_->ExpectUniqueSample(
-      "IOS.ContentSuggestions.ActionOnStartSurface",
-      IOSContentSuggestionsActionType::kFakebox, 1);
-  histogram_tester_->ExpectUniqueSample(
-      "IOS.ContentSuggestions.ActionOnNTP",
-      IOSContentSuggestionsActionType::kFakebox, 0);
+  histogram_tester_->ExpectUniqueSample("IOS.Home.ActionOnStartSurface",
+                                        IOSHomeActionType::kFakebox, 1);
+  histogram_tester_->ExpectUniqueSample("IOS.Home.ActionOnNTP",
+                                        IOSHomeActionType::kFakebox, 0);
   [coordinator_ fakeboxTapped];
-  histogram_tester_->ExpectUniqueSample(
-      "IOS.ContentSuggestions.ActionOnStartSurface",
-      IOSContentSuggestionsActionType::kFakebox, 1);
-  histogram_tester_->ExpectUniqueSample(
-      "IOS.ContentSuggestions.ActionOnNTP",
-      IOSContentSuggestionsActionType::kFakebox, 1);
+  histogram_tester_->ExpectUniqueSample("IOS.Home.ActionOnStartSurface",
+                                        IOSHomeActionType::kFakebox, 1);
+  histogram_tester_->ExpectUniqueSample("IOS.Home.ActionOnNTP",
+                                        IOSHomeActionType::kFakebox, 1);
   [coordinator_ stop];
 }
 
@@ -344,9 +356,8 @@ TEST_F(NewTabPageCoordinatorTest, MVTStartMetricLogging) {
   NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(true);
   [coordinator_ start];
 
-  histogram_tester_->ExpectUniqueSample(
-      "IOS.ContentSuggestions.ActionOnStartSurface",
-      IOSContentSuggestionsActionType::kMostVisitedTile, 0);
+  histogram_tester_->ExpectUniqueSample("IOS.Home.ActionOnStartSurface",
+                                        IOSHomeActionType::kMostVisitedTile, 0);
 
   ContentSuggestionsMostVisitedItem* item =
       [[ContentSuggestionsMostVisitedItem alloc] init];
@@ -366,12 +377,11 @@ TEST_F(NewTabPageCoordinatorTest, MVTStartMetricLogging) {
   [coordinator_ didNavigateAwayFromNTP];
 
   // Verify that ActionOnStartSurface metric was logged, meaning that
-  // NTPHomeMetrics logged the metric before NewTabPageTabHelper received the
-  // DidStartNavigation() WebStateObserver callback to reset
+  // NewTabPageMetricsRecorder logged the metric before NewTabPageTabHelper
+  // received the DidStartNavigation() WebStateObserver callback to reset
   // ShouldShowStartSurface() to false.
-  histogram_tester_->ExpectUniqueSample(
-      "IOS.ContentSuggestions.ActionOnStartSurface",
-      IOSContentSuggestionsActionType::kMostVisitedTile, 1);
+  histogram_tester_->ExpectUniqueSample("IOS.Home.ActionOnStartSurface",
+                                        IOSHomeActionType::kMostVisitedTile, 1);
   EXPECT_FALSE(
       NewTabPageTabHelper::FromWebState(web_state_)->ShouldShowStartSurface());
   [coordinator_ stop];

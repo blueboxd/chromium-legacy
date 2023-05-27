@@ -97,6 +97,10 @@
 // This macro unconditionally calls visitor.Visit().
 #define VISIT_REP(field) visitor.Visit(proto, #field, proto.field());
 
+// Repeated fields are always present, so there are no 'has_<field>' methods.
+// This macro unconditionally calls visitor.VisitBytes().
+#define VISIT_REP_BYTES(field) visitor.VisitBytes(proto, #field, proto.field());
+
 // Values that are secrets do not have their contents reported in debugging
 // output, only their lengths, but are still counted for things like memory
 // estimation.
@@ -591,6 +595,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(user_event);
   VISIT(wallet_metadata);
   VISIT(web_app);
+  VISIT(webauthn_credential);
   VISIT(wifi_configuration);
   VISIT(workspace_desk);
   VISIT(webauthn_credential);
@@ -775,7 +780,7 @@ VISIT_PROTO_FIELDS(const sync_pb::WebauthnCredentialSpecifics& proto) {
   VISIT_BYTES(credential_id);
   VISIT(rp_id);
   VISIT_BYTES(user_id);
-  VISIT_REP(newly_shadowed_credential_ids);
+  VISIT_REP_BYTES(newly_shadowed_credential_ids);
   VISIT(creation_time);
   VISIT(user_name);
   VISIT(user_display_name);
@@ -870,17 +875,17 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData& proto) {
   VISIT(notes);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData_PasswordIssues& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PasswordIssues& proto) {
   VISIT(leaked_password_issue);
   VISIT(reused_password_issue);
   VISIT(weak_password_issue);
   VISIT(phished_password_issue);
 }
 
-VISIT_PROTO_FIELDS(
-    const sync_pb::PasswordSpecificsData_PasswordIssues_PasswordIssue& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::PasswordIssues_PasswordIssue& proto) {
   VISIT(date_first_detection_windows_epoch_micros);
   VISIT(is_muted);
+  VISIT(trigger_notification_from_backend_on_detection);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsData_Notes& proto) {
@@ -898,6 +903,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecificsMetadata& proto) {
   VISIT(url);
   VISIT(blacklisted);
   VISIT(date_last_used_windows_epoch_micros);
+  VISIT(password_issues);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PowerBookmarkSpecifics& proto) {

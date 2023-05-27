@@ -4,8 +4,7 @@
 
 package org.chromium.content.browser;
 
-import android.support.test.InstrumentationRegistry;
-
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 
 import org.hamcrest.Matchers;
@@ -17,6 +16,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -99,6 +99,7 @@ public class GestureDetectorResetTest {
     @Test
     @LargeTest
     @Feature({"Browser"})
+    @DisabledTest(message = "https://crbug.com/1233309")
     public void testSeparateClicksAreRegisteredOnReload()
             throws InterruptedException, Exception, Throwable {
         // Load the test page.

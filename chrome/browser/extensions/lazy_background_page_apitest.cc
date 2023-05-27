@@ -17,12 +17,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -46,6 +46,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_host_test_helper.h"
@@ -171,13 +172,14 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
       scoped_refptr<const Extension> extension) {
     auto dev_tools_function =
         base::MakeRefCounted<api::DeveloperPrivateOpenDevToolsFunction>();
-    extension_function_test_utils::RunFunction(dev_tools_function.get(),
-                                               base::StringPrintf(
-                                                   R"([{"renderViewId": -1,
+    api_test_utils::RunFunction(dev_tools_function.get(),
+                                base::StringPrintf(
+                                    R"([{"renderViewId": -1,
                                                         "renderProcessId": -1,
                                                         "extensionId": "%s"}])",
-                                                   extension->id().c_str()),
-                                               browser(), api_test_utils::NONE);
+                                    extension->id().c_str()),
+                                browser()->profile(),
+                                api_test_utils::FunctionMode::kNone);
   }
 };
 
@@ -348,17 +350,24 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest,
   // Verify that dev tools opened.
   content::DevToolsAgentHost::List targets =
       content::DevToolsAgentHost::GetOrCreateAll();
-  scoped_refptr<content::DevToolsAgentHost> service_worker_host;
+  scoped_refptr<content::DevToolsAgentHost> background_host;
   for (const scoped_refptr<content::DevToolsAgentHost>& host : targets) {
-    if (host->GetType() != ChromeDevToolsManagerDelegate::kTypeBackgroundPage)
+    if (host->GetURL() != BackgroundInfo::GetBackgroundURL(extension.get())) {
       continue;
-    if (host->GetURL() == BackgroundInfo::GetBackgroundURL(extension.get())) {
-      EXPECT_FALSE(service_worker_host);
-      service_worker_host = host;
+    }
+    // There isn't really a tab corresponding to the extension background page,
+    // but this is how DevTools refers to a top-level web contents.
+    std::string expected_type =
+        base::FeatureList::IsEnabled(::features::kDevToolsTabTarget)
+            ? content::DevToolsAgentHost::kTypeTab
+            : ChromeDevToolsManagerDelegate::kTypeBackgroundPage;
+    if (host->GetType() == expected_type) {
+      EXPECT_FALSE(background_host);
+      background_host = host;
     }
   }
-  ASSERT_TRUE(service_worker_host);
-  EXPECT_TRUE(DevToolsWindow::FindDevToolsWindow(service_worker_host.get()));
+  ASSERT_TRUE(background_host);
+  EXPECT_TRUE(DevToolsWindow::FindDevToolsWindow(background_host.get()));
 }
 
 // Tests that the lazy background page stays alive until all visible views are

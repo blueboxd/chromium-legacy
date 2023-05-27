@@ -92,7 +92,6 @@ _NEGATIVE_FILTER = [
     # Flaky https://bugs.chromium.org/p/chromium/issues/detail?id=1306504
     'ChromeSwitchesCapabilityTest.*',
     'ChromeExtensionsCapabilityTest.*',
-    'MobileEmulationCapabilityTest.*',
     # crbug.com/chromedriver/4379
     'ChromeDriverTest.testClickElementInAnotherFrame',
     # crbug.com/chromedriver/4362
@@ -829,7 +828,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual(arr, [1, 2, 3])
 
   def testExecuteScriptCallsToJson(self):
-    """Tests that own toJSON method of an object is called by the serialization process"""
+    """Tests that own toJSON method of an object
+       is called by the serialization process"""
     script = """
       const obj = {
         toJSON() {
@@ -843,7 +843,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual(result, [1, 2, 3])
 
   def testExecuteScriptToJsonDataProperty(self):
-    """Tests that own toJSON method of an object is called by the serialization process"""
+    """Tests that own toJSON method of an object
+       is called by the serialization process"""
     script = """
       let obj = {};
       obj.toJSON = 'text';
@@ -2779,18 +2780,22 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testElementReference(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/element_ref.html'))
     element = self._driver.FindElement('css selector', '#link')
-    self.assertRegex(element._id, '\\w+_element_\\w+', msg='Element id format is incorrect')
+    self.assertRegex(element._id, '\\w+_element_\\w+',
+                     msg='Element id format is incorrect')
 
   def testElementReferenceViaScript(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/element_ref.html'))
-    element = self._driver.ExecuteScript('return document.getElementById("link")')
-    self.assertRegex(element._id, '\\w+_element_\\w+', msg='Element id format is incorrect')
+    element = self._driver.ExecuteScript(
+        'return document.getElementById("link")')
+    self.assertRegex(element._id, '\\w+_element_\\w+',
+                     msg='Element id format is incorrect')
 
   def testElementReferenceNoNavigation(self):
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'return document.getElementsByTagName("div")[0];')
-    self.assertRegex(div._id, '\\w+_element_\\w', msg='Element id format is incorrect')
+    self.assertRegex(div._id, '\\w+_element_\\w',
+                     msg='Element id format is incorrect')
 
   def testElementReferenceInNewWindow(self):
     # We need to run this test in a new tab so that it is isolated from previous
@@ -2802,7 +2807,8 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'return document.getElementsByTagName("div")[0];')
-    self.assertRegex(div._id, '\\w+_element_\\w', msg='Element id format is incorrect')
+    self.assertRegex(div._id, '\\w+_element_\\w',
+                     msg='Element id format is incorrect')
 
   def testFindElementWhenElementIsOverridden(self):
     self._driver.Load('about:blank')
@@ -3124,7 +3130,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                                 })
     decoded_pdf = base64.b64decode(pdf)
     self.assertTrue(decoded_pdf.startswith(b'%PDF'))
-    self.assertTrue(decoded_pdf.endswith(b'%%EOF'))
+    self.assertTrue(decoded_pdf.endswith(b'%%EOF\n'))
 
   def testPrintInvalidArgument(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -4299,7 +4305,12 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
       <!DOCTYPE html>
         <html>
           <body>
-            <fencedframe src="/fencedframe.html"></fencedframe>
+            <fencedframe></fencedframe>
+            <script>
+              const url = new URL("fencedframe.html", location.href);
+              document.querySelector("fencedframe").config =
+                  new FencedFrameConfig(url);
+            </script>
           </body>
         </html>
       """, 'utf-8'))
@@ -4338,7 +4349,8 @@ class ChromeDriverFencedFrame(ChromeDriverBaseTestWithWebServer):
     self._driver = self.CreateDriver(
         accept_insecure_certs = True,
         chrome_switches=['--site-per-process',
-            '--enable-features=FencedFrames,PrivacySandboxAdsAPIsOverride'])
+          '--enable-features=FencedFrames,PrivacySandboxAdsAPIsOverride,'
+          'FencedFramesAPIChanges'])
 
   def testCanSwitchToFencedFrame(self):
     self._initDriver()
@@ -5505,7 +5517,7 @@ class HeadlessChromeDriverTest(ChromeDriverBaseTestWithWebServer):
                                 })
     decoded_pdf = base64.b64decode(pdf)
     self.assertTrue(decoded_pdf.startswith(b"%PDF"))
-    self.assertTrue(decoded_pdf.endswith(b"%%EOF"))
+    self.assertTrue(decoded_pdf.endswith(b"%%EOF\n"))
 
   def testPrintInvalidArgumentHeadless(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
@@ -5907,13 +5919,15 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/element_ref.html'))
     element = self._driver.FindElement('css selector', '#link')
     self._driver.FindElements('tag name', 'br')
-    self.assertRegex(element._id, '\\w+_element_\\w+', msg='Element id format is incorrect')
+    self.assertRegex(element._id, '\\w+_element_\\w+',
+                     msg='Element id format is incorrect')
 
   def testElementReferenceNoNavigation(self):
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'return document.getElementsByTagName("div")[0];')
-    self.assertRegex(div._id, '\\w+_element_\\w', msg='Element id format is incorrect')
+    self.assertRegex(div._id, '\\w+_element_\\w',
+                     msg='Element id format is incorrect')
 
   def testCompareClassicAndBidiIds(self):
     conn = self.createWebSocketConnection()
@@ -5922,7 +5936,8 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
         'document.body.innerHTML = "<div>old</div>";'
         'return document.getElementsByTagName("div")[0];')
     node_id = div._id
-    self.assertRegex(node_id, '\\w+_element_\\w', msg='Element id format is incorrect')
+    self.assertRegex(node_id, '\\w+_element_\\w',
+                     msg='Element id format is incorrect')
     pos = node_id.rfind('_')
     self.assertGreaterEqual(pos, 0, "Element Id format is incorrect")
     classic_backend_node_id = node_id[pos+1:]
@@ -5940,11 +5955,13 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
     })
     resp = conn.WaitForResponse(cmd_id)
     shared_id = resp['result']['result']['value']['sharedId']
-    self.assertRegex(shared_id, '\\w+_element_\\w', msg='Shared id format is incorrect')
+    self.assertRegex(shared_id, '\\w+_element_\\w',
+                     msg='Shared id format is incorrect')
     pos = shared_id.rfind('_')
     bidi_backend_node_id = shared_id[pos+1:]
 
-    self.assertEqual(classic_backend_node_id, bidi_backend_node_id, "Classic and BiDi id mismatch")
+    self.assertEqual(classic_backend_node_id, bidi_backend_node_id,
+                     "Classic and BiDi id mismatch")
 
   def testClassicIdInBidi(self):
     conn = self.createWebSocketConnection()
@@ -6029,8 +6046,10 @@ class BidiTest(ChromeDriverBaseTestWithWebServer):
   def testOpenMultipleTabsInJavaScript(self):
     """Regression test for crbug.com/chromedriver/4362"""
     self._http_server.SetDataForPath('/iframes.html',
-       bytes('<title>iframes</title><iframe src="about:blank"/> </body>', 'utf-8'))
-    script = 'for (let i=0; i<10; ++i){ window.open("%s"); }' % self.GetHttpUrlForFile('/iframes.html')
+       bytes('<title>iframes</title><iframe src="about:blank"/> </body>',
+             'utf-8'))
+    url = self.GetHttpUrlForFile('/iframes.html')
+    script = 'for (let i=0; i<10; ++i){ window.open("%s"); }' % url
     self._driver.ExecuteScript(script)
     handles = self._driver.GetWindowHandles()
     titles = []
@@ -6268,9 +6287,12 @@ if __name__ == '__main__':
     if platform == 'linux':
       chrome_path = os.path.join(driver_path, 'chrome')
     elif platform == 'mac':
-      if os.path.exists(os.path.join(driver_path, 'Google Chrome for Testing.app')):
-          chrome_path = os.path.join(driver_path, 'Google Chrome for Testing.app',
-                                     'Contents', 'MacOS', 'Google Chrome for Testing')
+      if os.path.exists(os.path.join(driver_path,
+                                     'Google Chrome for Testing.app')):
+          chrome_path = os.path.join(driver_path,
+                                     'Google Chrome for Testing.app',
+                                     'Contents', 'MacOS',
+                                     'Google Chrome for Testing')
       elif os.path.exists(os.path.join(driver_path, 'Google Chrome.app')):
         chrome_path = os.path.join(driver_path, 'Google Chrome.app',
                                    'Contents', 'MacOS', 'Google Chrome')

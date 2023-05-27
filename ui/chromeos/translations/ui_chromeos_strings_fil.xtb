@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Lokal na tinanggihan ang certificate ng pagpapatunay</translation>
 <translation id="1775381402323441512">Impormasyon ng video</translation>
 <translation id="180035236176489073">Kailangan kang mag-online upang ma-access ang mga file na ito.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Ang extension na may ID na}one{Ang mga extension na may mga ID na}other{Ang mga extension na may mga ID na}}</translation>
 <translation id="1807938677607439181">Lahat ng file</translation>
 <translation id="1810764548349082891">Walang available na preview</translation>
 <translation id="1812302367230252929">Amharic Transliteration</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Invalid na entry ng pagtugma ng alternatibong pangalan</translation>
 <translation id="1838709767668011582">Site ng Google</translation>
 <translation id="1853795129690976061">Nakabahagi ang folder na ito sa Linux</translation>
-<translation id="1859422890169495746">Sa Chromebook na ito</translation>
 <translation id="1864756863218646478">Hindi mahanap ang file.</translation>
 <translation id="1884013283844450420">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Kumonekta</translation>
 <translation id="1920670151694390848">Malayalam Transliteration</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planeta</translation>
 <translation id="2305020378527873881">Na-eject ang <ph name="VOLUME_NAME" />.</translation>
 <translation id="2307462900900812319">I-configure ang network</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Ang extension na may ID na <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ay hindi mahanap. Makipag-ugnayan sa iyong administrator.}one{Ang mga extension na may mga ID na <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ay hindi mahanap. Makipag-ugnayan sa iyong administrator.}other{Ang mga extension na may mga ID na <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ay hindi mahanap. Makipag-ugnayan sa iyong administrator.}}</translation>
 <translation id="2325650632570794183">Hindi sinusuportahan ang uri ng file na ito. Pakibisita ang Chrome Web Store upang makahanap ng app na makakapagbukas ng ganitong uri ng file.</translation>
 <translation id="2326539130272988168">Bulgarian</translation>
 <translation id="2337715497728194187">I-share sa Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Hindi secure</translation>
 <translation id="3291218047831493686">Kumonekta sa network na ito para baguhin ang setting ng lock ng SIM</translation>
 <translation id="3293023191599135697">Hindi sinusuportahan ang mga WEP network</translation>
+<translation id="3295006446256079333">Volume na ito</translation>
 <translation id="3295357220137379386">Busy ang device</translation>
 <translation id="3296763833017966289">Georgian</translation>
 <translation id="3307875152560779385">Ukrainian</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Mga Chromebase</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="485316830061041779">German</translation>
+<translation id="4862885579661885411">Mga setting ng Mga File</translation>
 <translation id="4867079195717347957">I-click para pagbukud-bukurin ang column sa pababang pagkakasunud-sunod.</translation>
 <translation id="4867297348137739678">Nakaraang linggo</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">Kinokopya ang <ph name="NUMBER_OF_ITEMS" /> (na) item...</translation>
 <translation id="7375951387215729722">Nakabukud-bukod ang listahan ng file ayon sa <ph name="COLUMN_NAME" /> sa pababang pagkakasunud-sunod.</translation>
 <translation id="7377161162143020057">Na-block ng patakaran ng administrator ang pagkopya ng file na ito</translation>
-<translation id="7392500733467492920">ay hindi mahanap. Makipag-ugnayan sa iyong administrator.</translation>
 <translation id="7402503521691663770">Mga ChromeOS Flex device</translation>
 <translation id="7408870451288633753">Czech</translation>
 <translation id="7417453074306512035">Ethiopic keyboard</translation>

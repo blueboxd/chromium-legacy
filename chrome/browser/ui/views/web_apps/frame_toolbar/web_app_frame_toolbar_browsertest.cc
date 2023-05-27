@@ -5,6 +5,7 @@
 #include <cmath>
 #include <tuple>
 
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
@@ -56,7 +57,6 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -439,10 +439,8 @@ class BorderlessIsolatedWebAppBrowserTest
     : public web_app::IsolatedWebAppBrowserTestHarness {
  public:
   BorderlessIsolatedWebAppBrowserTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode,
-         blink::features::kWebAppBorderless},
-        {});
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kWebAppBorderless);
   }
 
   void InstallAndLaunchIsolatedWebApp(bool uses_borderless) {
@@ -580,9 +578,9 @@ class BorderlessIsolatedWebAppBrowserTest
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> isolated_web_app_dev_server_;
-  Browser* browser_;
-  BrowserView* browser_view_;
-  BrowserNonClientFrameView* frame_view_;
+  raw_ptr<Browser, DanglingUntriaged> browser_;
+  raw_ptr<BrowserView, DanglingUntriaged> browser_view_;
+  raw_ptr<BrowserNonClientFrameView, DanglingUntriaged> frame_view_;
 };
 
 IN_PROC_BROWSER_TEST_F(BorderlessIsolatedWebAppBrowserTest,

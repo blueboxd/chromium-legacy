@@ -17,7 +17,7 @@ try_.defaults.set(
     cores = 8,
     os = os.LINUX_DEFAULT,
     compilator_cores = 8,
-    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    compilator_reclient_jobs = reclient.jobs.MID_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
@@ -80,7 +80,6 @@ try_.builder(
     mirrors = [
         "ci/Cast Linux ARM64",
     ],
-    os = os.LINUX_BIONIC,
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -129,6 +128,7 @@ try_.builder(
     mirrors = [
         "ci/linux-gcc-rel",
     ],
+    # Focal is needed for better C++20 support. See crbug.com/1284275.
     os = os.LINUX_FOCAL,
 )
 
@@ -237,6 +237,8 @@ try_.orchestrator_builder(
     coverage_test_types = ["unit", "overall"],
     experiments = {
         "chromium_rts.inverted_rts": 100,
+        # go/nplus1shardsproposal
+        "chromium.add_one_test_shard": 5,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -301,6 +303,8 @@ try_.builder(
     mirrors = [
         "ci/WebKit Linux MSAN",
     ],
+    # At this time, MSan is only compatibly with Focal. See
+    # //docs/linux/instrumented_libraries.md.
     os = os.LINUX_FOCAL,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
@@ -442,6 +446,8 @@ try_.builder(
         "ci/Linux ChromiumOS MSan Tests",
     ],
     cores = 16,
+    # At this time, MSan is only compatibly with Focal. See
+    # //docs/linux/instrumented_libraries.md.
     os = os.LINUX_FOCAL,
     ssd = True,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
@@ -526,6 +532,8 @@ try_.builder(
         "ci/Linux MSan Builder",
         "ci/Linux MSan Tests",
     ],
+    # At this time, MSan is only compatibly with Focal. See
+    # //docs/linux/instrumented_libraries.md.
     os = os.LINUX_FOCAL,
     execution_timeout = 6 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
@@ -580,10 +588,23 @@ try_.builder(
 
 try_.builder(
     name = "linux_upload_clang",
-    executable = "recipe:chromium_upload_clang",
+    executable = "recipe:chromium_toolchain/package_clang",
     builderless = True,
     cores = 32,
     # This builder produces the clang binaries used on all builders. Since it
+    # uses the system's sysroot when compiling, the builder needs to run on the
+    # OS version that's the oldest used on any bot.
+    os = os.LINUX_BIONIC,
+    execution_timeout = 5 * time.hour,
+    notifies = ["chrome-rust-toolchain"],
+)
+
+try_.builder(
+    name = "linux_upload_rust",
+    executable = "recipe:chromium_toolchain/package_rust",
+    builderless = True,
+    cores = 32,
+    # This builder produces the rustc binaries used on all builders. Since it
     # uses the system's sysroot when compiling, the builder needs to run on the
     # OS version that's the oldest used on any bot.
     os = os.LINUX_BIONIC,
@@ -703,6 +724,12 @@ try_.builder(
 try_.builder(
     name = "linux-js-code-coverage",
     mirrors = ["ci/linux-js-code-coverage"],
+    execution_timeout = 20 * time.hour,
+)
+
+try_.builder(
+    name = "chromeos-js-code-coverage",
+    mirrors = ["ci/chromeos-js-code-coverage"],
     execution_timeout = 20 * time.hour,
 )
 

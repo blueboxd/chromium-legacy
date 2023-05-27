@@ -16,6 +16,7 @@ Neither has a leading slash.
 
 import json
 import logging
+from typing import Optional
 
 from blinkpy.common.memoized import memoized
 from blinkpy.common.path_finder import PathFinder
@@ -87,7 +88,7 @@ class WPTManifest(object):
         [[reference_url1, "=="], [reference_url2, "!="], ...]
     """
 
-    def __init__(self, host, manifest_path):
+    def __init__(self, host, manifest_path, exclude_jsshell: bool = True):
         self.host = host
         self.port = self.host.port_factory.get()
         self.raw_dict = json.loads(
@@ -103,6 +104,7 @@ class WPTManifest(object):
         self.test_types = ('manual', 'reftest', 'print-reftest', 'testharness',
                            'crashtest')
         self.test_name_to_file = {}
+        self._exclude_jsshell = exclude_jsshell
 
     @property
     def wpt_dir(self):
@@ -168,7 +170,9 @@ class WPTManifest(object):
             if test_type not in items:
                 continue
             for filename, records in items[test_type].items():
-                for item in filter(self._is_not_jsshell, records):
+                if self._exclude_jsshell:
+                    records = filter(self._is_not_jsshell, records)
+                for item in records:
                     url_for_item = self._get_url_from_item(item)
                     url_items[url_for_item] = item
                     self.test_name_to_file[url_for_item] = filename
@@ -184,17 +188,14 @@ class WPTManifest(object):
         assert not path_in_wpt.startswith('/')
         return self._items_for_file_path(path_in_wpt) is not None
 
-    def get_test_type(self, url):
+    def get_test_type(self, test_path: str) -> Optional[str]:
         """Returns the test type of the given test url."""
-        assert not url.startswith('/')
+        assert not test_path.startswith('/')
         items = self.raw_dict.get('items', {})
-
         for test_type in self.test_types:
             type_items = items.get(test_type, {})
-
-            if url in type_items:
+            if test_path in type_items:
                 return test_type
-
         return None
 
     def is_test_url(self, url):

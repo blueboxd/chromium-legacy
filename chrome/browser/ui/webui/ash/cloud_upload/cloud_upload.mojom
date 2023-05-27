@@ -7,7 +7,6 @@ module ash.cloud_upload.mojom;
 // The selected action when the user closes the dialog.
 enum UserAction {
   kCancel,
-  kSetUpGoogleDrive,
   kSetUpOneDrive,
   kUploadToGoogleDrive,
   kUploadToOneDrive,
@@ -21,8 +20,6 @@ enum DialogPage {
   kFileHandlerDialog,
   // Set up OneDrive (multi-page).
   kOneDriveSetup,
-  // Set up Google Drive (one-page confirmation screen).
-  kGoogleDriveSetup,
   // Confirm that the user wants to move the file to OneDrive.
   kMoveConfirmationOneDrive,
   // Confirm that the user wants to move the file to Google Drive.
@@ -50,7 +47,7 @@ struct DialogArgs {
 
   // The local file tasks the user can pick from to open the files. Displayed in
   // the `kFileHandlerDialog` dialog.
-  array<DialogTask> tasks;
+  array<DialogTask> local_tasks;
 
   // True if the setup flow is running for the first time. False if running
   // fixup flow.
@@ -94,15 +91,27 @@ interface PageHandler {
   // setup as complete so that it does not need to be started again.
   SetOfficeAsDefaultHandler();
 
-  // Set the preference for whether we should always move office files without
-  // asking the user first.
-  SetAlwaysMoveOfficeFiles(bool always_move);
+  // Set the preference for whether we should always move office files to
+  // Google Drive without asking the user first.
+  SetAlwaysMoveOfficeFilesToDrive(bool always_move);
 
-  // Set the preference for whether the move confirmation dialog has been
-  // shown before to true.
-  SetOfficeMoveConfirmationShownTrue();
+  // Set the preference for whether we should always move office files to
+  // OneDrive without asking the user first.
+  SetAlwaysMoveOfficeFilesToOneDrive(bool always_move);
 
-  // Get the preference for whether the move confirmation dialog has been
-  // shown before.
-  OfficeMoveConfirmationShown() => (bool move_confirmation_shown);
+  // Set the preference for whether the move to Google Drive confirmation
+  // dialog has been shown before.
+  SetOfficeMoveConfirmationShownForDriveTrue();
+
+  // Get the preference for whether the move to Drive confirmation dialog has
+  // been shown before.
+  GetOfficeMoveConfirmationShownForDrive() => (bool move_confirmation_shown);
+
+  // Set the preference for whether the move to OneDrive confirmation dialog
+  // has been shown before.
+  SetOfficeMoveConfirmationShownForOneDriveTrue();
+
+  // Get the preference for whether the move to OneDrive confirmation dialog
+  // has been shown before.
+  GetOfficeMoveConfirmationShownForOneDrive() => (bool move_confirmation_shown);
 };

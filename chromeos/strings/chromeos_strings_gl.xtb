@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">Gravando vídeo</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Presenza do solucionador de DNS</translation>
+<translation id="1708602061922134366">Azul Google</translation>
 <translation id="1710499924611012470">Navegación de accesibilidade</translation>
 <translation id="1715359911173058521">Produciuse un erro ao establecer comunicación co escáner. Comproba a conexión USB ou de rede e téntao de novo.</translation>
 <translation id="1717874160321062422">Dispositivo xestionado por <ph name="FIRST_MANAGER" /> e por <ph name="SECOND_MANAGER" /></translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">Tipo de autenticación</translation>
+<translation id="1776228893584526149">Ton do fondo de pantalla</translation>
 <translation id="1782199038061388045">tradución</translation>
 <translation id="1790209694022261219">Ventás e escritorios</translation>
 <translation id="1792647875738159689">Cancelando escaneo</translation>
@@ -123,6 +125,7 @@
 <translation id="1904932688895783618">Aquí tes outros recursos útiles:</translation>
 <translation id="1905710495812624430">Superouse o número máximo de intentos.</translation>
 <translation id="1908234395526491708">Erros nas solicitudes de UDP</translation>
+<translation id="1923388006036088459">Cores para destacar</translation>
 <translation id="1947737735496445907">Impreso</translation>
 <translation id="1951012854035635156">Asistente</translation>
 <translation id="1962550982027027473">Requírese un APN predeterminado</translation>
@@ -140,6 +143,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Máis opcións de configuración</translation>
 <translation id="2085089206770112532">Reducir brillo da pantalla</translation>
+<translation id="209751264101900360">Do amencer ao solpor. Fluxo de nubes</translation>
 <translation id="2102231663024125441">Edición de texto</translation>
 <translation id="2105810540595158374">O dispositivo é un mando de xogos.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versión <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +335,7 @@
 <translation id="3967822245660637423">Descarga completa</translation>
 <translation id="3969602104473960991">Modificouse o contrasinal de Chrome OS</translation>
 <translation id="397105322502079400">Calculando...</translation>
+<translation id="3974175076798940554">Os recursos exclusivos de Chromebook Plus xa están dispoñibles</translation>
 <translation id="39823212440917567">Quitaranse os traballos de impresión de máis de <ph name="NUMBER_OF_DAYS" /> días</translation>
 <translation id="3993704782688964914">O dispositivo (<ph name="DEVICE_NAME" />) xa está actualizado</translation>
 <translation id="4003384961948020559">Produciuse un erro: a saída da impresora está chea</translation>
@@ -370,6 +375,7 @@
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4289540628985791613">Visión xeral</translation>
 <translation id="4289849978083912975">Presentación</translation>
+<translation id="4293621540182258188">Do amencer ao solpor. Fluxo da Terra</translation>
 <translation id="4297501883039923494">Detívose (produciuse un erro descoñecido)</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> imaxes</translation>
 <translation id="4311195029067684288">Completa</translation>
@@ -479,6 +485,7 @@
 <translation id="5166918508782100047">Configuración de Respostas rápidas</translation>
 <translation id="5168185087976003268">Estado da batería</translation>
 <translation id="5170568018924773124">Mostrar no cartafol</translation>
+<translation id="5180712487038406644">Expresivo</translation>
 <translation id="5190187232518914472">Revive os teus recordos favoritos. Para engadir ou editar álbums, vai a <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="5212593641110061691">Tabloide</translation>
 <translation id="5222676887888702881">Pechar sesión</translation>
@@ -513,6 +520,7 @@
 <translation id="5423849171846380976">Activado</translation>
 <translation id="5430931332414098647">Conexión compartida instantánea</translation>
 <translation id="5431318178759467895">Cor</translation>
+<translation id="5456936324019847994">Non se puido establecer a conexión con ningún APN personalizado que estea activado. Se necesitas máis información, ponte en contacto co teu operador móbil.</translation>
 <translation id="5457599981699367932">Navegar como invitado</translation>
 <translation id="54609108002486618">Dispositivo xestionado</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Queda {0} intento}other{Quedan {0} intentos}}</translation>
@@ -544,6 +552,7 @@
 <translation id="576835345334454681">Aumentar brillo da pantalla</translation>
 <translation id="57838592816432529">Silenciar</translation>
 <translation id="5784136236926853061">Latencia de HTTP alta</translation>
+<translation id="5809090008577139505">Aurora</translation>
 <translation id="5826644637650799838">Acerca da imaxe</translation>
 <translation id="5832805196449965646">Engadir unha persoa</translation>
 <translation id="583281660410589416">Descoñecido</translation>
@@ -562,10 +571,12 @@
 <translation id="5907649332524363701">cor das teclas</translation>
 <translation id="5916084858004523819">Prohibida</translation>
 <translation id="5916664084637901428">Si</translation>
+<translation id="5918201491776799918">Seleccionar material gráfico exclusivo de Chromebook Plus</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{O teu ficheiro escaneouse e gardouse correctamente en <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Os teus ficheiros escaneáronse e gardáronse correctamente en <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Non se encontrou o ficheiro</translation>
 <translation id="5939518447894949180">Restablecer</translation>
 <translation id="594552776027197022">Xerar par de claves aleatorio</translation>
+<translation id="5946538341867151940">De momento, non tes conexión. Se o teu operador móbil recomenda usar un APN personalizado, selecciona a opción + Novo APN para engadir a información do APN</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Fondo de pantalla predeterminado</translation>
 <translation id="6017514345406065928">Verde</translation>
@@ -640,6 +651,7 @@
 <translation id="6527081081771465939">Descoñécese o protocolo de seguranza da wifi</translation>
 <translation id="6535178685492749208">Estás sen conexión. Os comentarios enviaranse máis tarde.</translation>
 <translation id="65587193855025101">Superficie plana</translation>
+<translation id="6560196641871357166">Intenso</translation>
 <translation id="6564646048574748301">Produciuse un erro: non se puido acceder á impresora</translation>
 <translation id="6566314079205407217">Escaneo de varias páxinas</translation>
 <translation id="6574762126505704998">Completar</translation>
@@ -721,6 +733,7 @@
 <translation id="7281657306185710294">Brisa</translation>
 <translation id="7287310195820267359">Colección de fondos de pantalla</translation>
 <translation id="7297226631177386107">Non se puido establecer conexión con sitios web HTTPS a través do firewall</translation>
+<translation id="7297726121602187087">Verde escuro</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Pregúntalles ás persoas expertas do foro de axuda de Chromebook</translation>
@@ -755,12 +768,14 @@
 <translation id="7570674786725311828">Pantalla táctil con conexión por USB</translation>
 <translation id="7595982850646262331">Tempo restante: <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Cambia a posición co rato ou as teclas de frecha.</translation>
+<translation id="7618774594543487847">Neutra</translation>
 <translation id="7620771111601174153">Máis información no Centro de axuda</translation>
 <translation id="763165478673169849">Última hora de restablecemento</translation>
 <translation id="7648838807254605802">Latencia de HTTPS alta</translation>
 <translation id="7656388927906093505">O dispositivo é un rato.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7665800271478495366">Cambiar avatar</translation>
+<translation id="7675241868020048622">Aurora (exclusivo para Plus)</translation>
 <translation id="7690294790491645610">Confirmar contrasinal novo</translation>
 <translation id="7701040980221191251">Ningunha</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +832,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Seleccionar <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Ferramentas para programadores</translation>
+<translation id="8153923300383192510">Chromebook Plus exclusivo</translation>
 <translation id="8179976553408161302">Intro</translation>
 <translation id="8183974620058026102">Anexar</translation>
 <translation id="8206859287963243715">Móbil</translation>
@@ -839,6 +855,7 @@
 <translation id="8352772353338965963">Engade unha conta ao inicio de sesión múltiple. É posible acceder a todas as contas en que iniciaches sesión sen necesidade de inserir un contrasinal, polo que esta función só se debe utilizar coas contas de confianza.</translation>
 <translation id="8364946094152050673">Os servidores de nomes están baleiros</translation>
 <translation id="8372477600026034341">Hosts extra</translation>
+<translation id="8373046809163484087">Usa conxuntos de cores que combinen co teu fondo de pantalla</translation>
 <translation id="8380114448424469341">Fixar ventá na seguinte metade da pantalla: <ph name="DIRECTION" /></translation>
 <translation id="8395584934117017006">Este dispositivo (<ph name="DEVICE_TYPE" />) está xestionado por unha empresa</translation>
 <translation id="8398927464629426868">O ritmo actual de carga ou descarga da batería do dispositivo</translation>
@@ -858,11 +875,13 @@
 <translation id="8503813439785031346">Nome de usuario</translation>
 <translation id="8503836310948963452">Só faltan uns minutos…</translation>
 <translation id="8508640263392900755">Detalles do APN</translation>
+<translation id="8522687886059337719">Xa podes acceder a novos <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />fondos<ph name="END_LINK_WALLPAPER_SUBPAGE" /> e <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />protectores de pantalla<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">É posible que sexa obrigatorio activar esta opción para conectarte á rede do teu operador. Para obter máis detalles, ponte en contacto con el.</translation>
 <translation id="8576249514688522074">Non iniciada</translation>
 <translation id="8620617069779373398">Estado de itinerancia</translation>
+<translation id="86356131183441916">Lila</translation>
 <translation id="8655295600908251630">Canle</translation>
 <translation id="8655828773034788261">Compartir URL:</translation>
 <translation id="8660881923941176839">libras</translation>
@@ -947,6 +966,7 @@
 <translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="952992212772159698">Non activado</translation>
 <translation id="960719561871045870">Código do operador</translation>
+<translation id="979450713603643090">Rosa claro</translation>
 <translation id="982713511914535780">Realizar proba de descarga</translation>
 <translation id="987264212798334818">Xeral</translation>
 </translationbundle>

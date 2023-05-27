@@ -18,6 +18,7 @@
 #include "extensions/browser/content_script_tracker.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/common/api/messaging/channel_type.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/trace_util.h"
@@ -88,18 +89,30 @@ bool IsValidMessagingSource(RenderProcessHost& process,
       }
       return true;
 
-    case MessagingEndpoint::Type::kTab:
-      if (source_endpoint.extension_id.has_value()) {
-        const std::string& extension_id = source_endpoint.extension_id.value();
-        bool is_content_script_expected =
-            ContentScriptTracker::DidProcessRunContentScriptFromExtension(
-                process, extension_id);
-        if (!is_content_script_expected) {
-          bad_message::ReceivedBadMessage(
-              &process,
-              bad_message::EMF_INVALID_EXTENSION_ID_FOR_CONTENT_SCRIPT);
-          return false;
-        }
+    case MessagingEndpoint::Type::kContentScript: {
+      if (!source_endpoint.extension_id) {
+        bad_message::ReceivedBadMessage(
+            &process, bad_message::EMF_INVALID_EXTENSION_ID_FOR_CONTENT_SCRIPT);
+        return false;
+      }
+      bool is_content_script_expected =
+          ContentScriptTracker::DidProcessRunContentScriptFromExtension(
+              process, *source_endpoint.extension_id);
+      if (!is_content_script_expected) {
+        bad_message::ReceivedBadMessage(
+            &process, bad_message::EMF_INVALID_EXTENSION_ID_FOR_CONTENT_SCRIPT);
+        return false;
+      }
+      return true;
+    }
+
+    case MessagingEndpoint::Type::kWebPage:
+      // NOTE: We classify hosted apps as kWebPage, but we don't include
+      // the extension ID in the source for those messages.
+      if (source_endpoint.extension_id) {
+        bad_message::ReceivedBadMessage(
+            &process, bad_message::EMF_INVALID_EXTENSION_ID_FOR_WEB_PAGE);
+        return false;
       }
       return true;
   }
@@ -396,6 +409,7 @@ bool MessagingAPIMessageFilter::OnMessageReceived(const IPC::Message& message) {
 void MessagingAPIMessageFilter::OnOpenChannelToExtension(
     const PortContext& source_context,
     const ExtensionMsg_ExternalConnectionInfo& info,
+    ChannelType channel_type,
     const std::string& channel_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -420,7 +434,7 @@ void MessagingAPIMessageFilter::OnOpenChannelToExtension(
   MessageService::Get(browser_context_)
       ->OpenChannelToExtension(source_endpoint, port_id, info.source_endpoint,
                                nullptr /* opener_port */, info.target_id,
-                               info.source_url, channel_name);
+                               info.source_url, channel_type, channel_name);
 }
 
 void MessagingAPIMessageFilter::OnOpenChannelToNativeApp(
@@ -450,6 +464,7 @@ void MessagingAPIMessageFilter::OnOpenChannelToNativeApp(
 void MessagingAPIMessageFilter::OnOpenChannelToTab(
     const PortContext& source_context,
     const ExtensionMsg_TabTargetConnectionInfo& info,
+    ChannelType channel_type,
     const std::string& channel_name,
     const PortId& port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -471,7 +486,8 @@ void MessagingAPIMessageFilter::OnOpenChannelToTab(
                                   source_context);
   MessageService::Get(browser_context_)
       ->OpenChannelToTab(source_endpoint, port_id, info.tab_id, info.frame_id,
-                         info.document_id, *extension_id, channel_name);
+                         info.document_id, *extension_id, channel_type,
+                         channel_name);
 }
 
 void MessagingAPIMessageFilter::OnOpenMessagePort(const PortContext& source,

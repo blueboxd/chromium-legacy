@@ -721,6 +721,13 @@ TEST_F(LabelTest, Accessibility) {
   label()->GetAccessibleNodeData(&node_data);
   EXPECT_EQ(label()->GetText(),
             node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
+
+  // If the displayed text is the source of the accessible name, and that text
+  // is cleared, the accessible name should also be cleared.
+  label()->SetText(u"");
+  label()->GetAccessibleNodeData(&node_data);
+  EXPECT_EQ(label()->GetText(),
+            node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
 }
 
 TEST_F(LabelTest, SetTextNotifiesAccessibilityEvent) {
@@ -756,6 +763,39 @@ TEST_F(LabelTest, TextChangeWithoutLayout) {
   label()->OnPaint(&canvas);
   EXPECT_TRUE(label()->display_text_);
   EXPECT_EQ(u"Altered", label()->display_text_->GetDisplayText());
+}
+
+TEST_F(LabelTest, AccessibleNameAndRole) {
+  label()->SetText(u"Text");
+  EXPECT_EQ(label()->GetAccessibleName(), u"Text");
+  EXPECT_EQ(label()->GetAccessibleRole(), ax::mojom::Role::kStaticText);
+
+  ui::AXNodeData data;
+  label()->GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
+            u"Text");
+  EXPECT_EQ(data.role, ax::mojom::Role::kStaticText);
+
+  label()->SetTextContext(style::CONTEXT_DIALOG_TITLE);
+  EXPECT_EQ(label()->GetAccessibleName(), u"Text");
+  EXPECT_EQ(label()->GetAccessibleRole(), ax::mojom::Role::kTitleBar);
+
+  data = ui::AXNodeData();
+  label()->GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
+            u"Text");
+  EXPECT_EQ(data.role, ax::mojom::Role::kTitleBar);
+
+  label()->SetText(u"New Text");
+  label()->SetAccessibleRole(ax::mojom::Role::kLink);
+  EXPECT_EQ(label()->GetAccessibleName(), u"New Text");
+  EXPECT_EQ(label()->GetAccessibleRole(), ax::mojom::Role::kLink);
+
+  data = ui::AXNodeData();
+  label()->GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
+            u"New Text");
+  EXPECT_EQ(data.role, ax::mojom::Role::kLink);
 }
 
 TEST_F(LabelTest, EmptyLabelSizing) {

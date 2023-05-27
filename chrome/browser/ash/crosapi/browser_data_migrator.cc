@@ -49,15 +49,14 @@ uint64_t DiskCheck(const base::FilePath& profile_data_dir) {
   using browser_data_migrator_util::TargetItems;
   TargetItems lacros_items =
       GetTargetItems(profile_data_dir, ItemType::kLacros);
-  TargetItems need_copy_items =
-      GetTargetItems(profile_data_dir, ItemType::kNeedCopyForMove);
   TargetItems deletable_items =
       GetTargetItems(profile_data_dir, ItemType::kDeletable);
 
-  int64_t required_size = need_copy_items.total_size;
+  int64_t required_size =
+      browser_data_migrator_util::EstimatedExtraBytesCreated(profile_data_dir) -
+      deletable_items.total_size;
   if (!base::FeatureList::IsEnabled(ash::features::kLacrosMoveProfileMigration))
     required_size += lacros_items.total_size;
-  required_size -= deletable_items.total_size;
 
   return browser_data_migrator_util::ExtraBytesRequiredToBeFreed(
       required_size, profile_data_dir);
@@ -218,20 +217,26 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
   // Check if user exists i.e. not a guest session.
   if (!user)
     return false;
-  // Check if lacros is enabled. If not immediately return.
-  if (!crosapi::browser_util::IsLacrosEnabledForMigration(user,
-                                                          policy_init_state)) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+  // Check if profile migration is enabled. If not immediately return.
+  if (!crosapi::browser_util::
+          IsProfileMigrationEnabledWithUserAndPolicyInitState(
+              user, policy_init_state)) {
+    if (crosapi::browser_util::IsLacrosEnabledForMigration(user,
+                                                           policy_init_state) ||
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kSafeMode)) {
-      // Skip clearing of flags if in safe mode to make sure
-      // that the migrator does not wipe Lacros user data dir due to unexpected
-      // Ash crashes. Specifically this avoids the following scenario: Ash
-      // experiences a crash loop due to some experimental flag -> experimental
-      // flags get dropped including ones to enable Lacros -> Lacros is
-      // disabled and migration completion flags gets cleared -> on next login
-      // migration is run and wipes existing user data.
-      LOG(WARNING) << "Lacros is disabled but safe mode is enabled so skipping "
-                      "clearing of prefs.";
+      // Skip clearing prefs if Lacros is enabled or Lacros is disabled due to
+      // safe mode. Profile migration can be disabled even if Lacros is enabled
+      // by enabling LacrosProfileMigrationForceOff flag. There's another case
+      // where Lacros is disabled due to "safe mode" being enabled after Ash
+      // crashes. By not clearing prefs in safe mode, we avoid the following
+      // scenario: Ash experiences a crash loop due to some experimental flag ->
+      // experimental flags get dropped including ones to enable Lacros ->
+      // Lacros is disabled and migration completion flags gets cleared -> on
+      // next login migration is run and wipes existing user data.
+      LOG(WARNING)
+          << "Profile migration is disabled but either Lacros is enabled or "
+             "safe mode is enabled so skipping clearing prefs.";
       return false;
     }
 
@@ -239,7 +244,7 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
     // this log message.
     LOG(WARNING)
         << "Lacros is disabled. Call ClearMigrationAttemptCountForUser() so "
-           "that the migration can be attempted again after once lacros is "
+           "that the migration can be attempted again once migration is "
            "enabled again.";
 
     // If lacros is not enabled other than reaching the maximum retry count of
@@ -251,14 +256,6 @@ bool BrowserDataMigratorImpl::MaybeRestartToMigrateInternal(
                                                                  user_id_hash);
     MoveMigrator::ClearResumeStepForUser(local_state, user_id_hash);
     MoveMigrator::ClearResumeAttemptCountForUser(local_state, user_id_hash);
-    return false;
-  }
-
-  if (base::FeatureList::IsEnabled(
-          ash::features::kLacrosProfileMigrationForceOff)) {
-    // TODO(crbug.com/1277848): Once `BrowserDataMigrator` stabilises, remove
-    // this log message.
-    LOG(WARNING) << "Profile migration is disabled by a flag.";
     return false;
   }
 

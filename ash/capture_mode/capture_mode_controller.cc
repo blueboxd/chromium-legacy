@@ -8,9 +8,10 @@
 #include <vector>
 
 #include "ash/capture_mode/capture_mode_ash_notification_view.h"
+#include "ash/capture_mode/capture_mode_behavior.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
-#include "ash/capture_mode/capture_mode_notification_view.h"
+#include "ash/capture_mode/capture_mode_observer.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
@@ -20,6 +21,7 @@
 #include "ash/public/cpp/capture_mode/recording_overlay_view.h"
 #include "ash/public/cpp/holding_space/holding_space_client.h"
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
+#include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
@@ -34,6 +36,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
@@ -446,6 +449,8 @@ int GetFileSizeInKB(const base::FilePath& file_path) {
   return size_in_bytes / 1024;
 }
 
+constexpr char kShareToYouTubeURL[] = "https://studio.youtube.com";
+
 }  // namespace
 
 CaptureModeController::CaptureModeController(
@@ -486,21 +491,12 @@ CaptureModeController::CaptureModeController(
   DCHECK(!MessageViewFactory::HasCustomNotificationViewFactory(
       kScreenRecordingNotificationType));
 
-  if (features::IsNotificationsRefreshEnabled()) {
-    MessageViewFactory::SetCustomNotificationViewFactory(
-        kScreenShotNotificationType,
-        base::BindRepeating(&CaptureModeAshNotificationView::CreateForImage));
-    MessageViewFactory::SetCustomNotificationViewFactory(
-        kScreenRecordingNotificationType,
-        base::BindRepeating(&CaptureModeAshNotificationView::CreateForVideo));
-  } else {
-    MessageViewFactory::SetCustomNotificationViewFactory(
-        kScreenShotNotificationType,
-        base::BindRepeating(&CaptureModeNotificationView::CreateForImage));
-    MessageViewFactory::SetCustomNotificationViewFactory(
-        kScreenRecordingNotificationType,
-        base::BindRepeating(&CaptureModeNotificationView::CreateForVideo));
-  }
+  MessageViewFactory::SetCustomNotificationViewFactory(
+      kScreenShotNotificationType,
+      base::BindRepeating(&CaptureModeAshNotificationView::CreateForImage));
+  MessageViewFactory::SetCustomNotificationViewFactory(
+      kScreenRecordingNotificationType,
+      base::BindRepeating(&CaptureModeAshNotificationView::CreateForVideo));
 
   Shell::Get()->session_controller()->AddObserver(this);
   chromeos::PowerManagerClient::Get()->AddObserver(this);
@@ -721,19 +717,18 @@ CaptureModeController::GetCurrentCaptureFolder() const {
 }
 
 void CaptureModeController::CaptureScreenshotsOfAllDisplays() {
-  if (pending_dlp_check_)
-    return;
+  CaptureInstantScreenshot(
+      CaptureModeEntryType::kCaptureAllDisplays, CaptureModeSource::kFullscreen,
+      base::BindOnce(&CaptureModeController::PerformScreenshotsOfAllDisplays,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
-  if (!delegate_->IsCaptureAllowedByPolicy()) {
-    ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);
-    return;
-  }
-
-  pending_dlp_check_ = true;
-  delegate_->CheckCaptureModeInitRestrictionByDlp(base::BindOnce(
-      &CaptureModeController::
-          OnDlpRestrictionCheckedAtCaptureScreenshotsOfAllDisplays,
-      weak_ptr_factory_.GetWeakPtr()));
+void CaptureModeController::CaptureScreenshotOfGivenWindow(
+    aura::Window* given_window) {
+  CaptureInstantScreenshot(
+      CaptureModeEntryType::kCaptureGivenWindow, CaptureModeSource::kWindow,
+      base::BindOnce(&CaptureModeController::PerformScreenshotOfGivenWindow,
+                     weak_ptr_factory_.GetWeakPtr(), given_window));
 }
 
 void CaptureModeController::PerformCapture() {
@@ -952,6 +947,14 @@ void CaptureModeController::MaybeRestoreCachedCaptureConfigurations() {
   enable_audio_recording_ = cached_normal_session_configs_->audio_on;
   enable_demo_tools_ = cached_normal_session_configs_->demo_tools_enabled;
   cached_normal_session_configs_.reset();
+}
+
+void CaptureModeController::AddObserver(CaptureModeObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void CaptureModeController::RemoveObserver(CaptureModeObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void CaptureModeController::PushNewRootSizeToRecordingService(
@@ -1349,8 +1352,7 @@ void CaptureModeController::OnImageFileSaved(
     RecordSaveToLocation(GetSaveToOption(file_saved_path));
   // NOTE: Holding space `client` may be `nullptr` in tests.
   if (auto* client = HoldingSpaceController::Get()->client()) {
-    client->AddScreenCapture(HoldingSpaceItem::Type::kScreenshot,
-                             file_saved_path);
+    client->AddItemOfType(HoldingSpaceItem::Type::kScreenshot, file_saved_path);
   }
 }
 
@@ -1371,10 +1373,10 @@ void CaptureModeController::OnVideoFileSaved(
                               CaptureModeType::kVideo);
       // NOTE: Holding space `client` may be `nullptr` in tests.
       if (auto* client = HoldingSpaceController::Get()->client()) {
-        client->AddScreenCapture(
-            is_gif ? HoldingSpaceItem::Type::kScreenRecordingGif
-                   : HoldingSpaceItem::Type::kScreenRecording,
-            saved_video_file_path);
+        client->AddItemOfType(is_gif
+                                  ? HoldingSpaceItem::Type::kScreenRecordingGif
+                                  : HoldingSpaceItem::Type::kScreenRecording,
+                              saved_video_file_path);
       }
 
       // We only record the file size histogram if it's not a projector-
@@ -1609,6 +1611,11 @@ void CaptureModeController::BeginVideoRecording(
   // DLP or user cancellation.
   capture_mode_session_->set_is_stopping_to_start_video_recording(true);
 
+  // Cache the active behavior of the capture session to be passed to video
+  // recording watcher after stopping the capture mode session.
+  CaptureModeBehavior* active_behavior =
+      capture_mode_session_->active_behavior();
+
   // Stop the capture session now, so the bar doesn't show up in the captured
   // video.
   Stop();
@@ -1620,8 +1627,8 @@ void CaptureModeController::BeginVideoRecording(
   auto cursor_overlay_receiver =
       cursor_capture_overlay.InitWithNewPipeAndPassReceiver();
   video_recording_watcher_ = std::make_unique<VideoRecordingWatcher>(
-      this, capture_params.window, std::move(cursor_capture_overlay),
-      for_projector, should_record_audio);
+      this, active_behavior, capture_params.window,
+      std::move(cursor_capture_overlay), for_projector, should_record_audio);
 
   // We only paint the recorded area highlight for window and region captures.
   if (source_ != CaptureModeSource::kFullscreen)
@@ -1811,6 +1818,8 @@ void CaptureModeController::OnDlpRestrictionCheckedAtSessionInit(
   // where only video recording is allowed, with audio recording enabled.
   bool for_projector = false;
 
+  BehaviorType behavior_type = BehaviorType::kDefault;
+
   // Before we start the session, if video recording is in progress, we need to
   // set the current type to image, as we can't have more than one recording at
   // a time. The video toggle button in the capture mode bar will be disabled.
@@ -1823,6 +1832,7 @@ void CaptureModeController::OnDlpRestrictionCheckedAtSessionInit(
            "capture is disabled by policy.";
 
     for_projector = true;
+    behavior_type = BehaviorType::kProjector;
 
     // Cache the normal capture mode configurations that will be used for
     // restoration when switching to the normal capture mode session if needed.
@@ -1849,8 +1859,8 @@ void CaptureModeController::OnDlpRestrictionCheckedAtSessionInit(
 
   delegate_->OnSessionStateChanged(/*started=*/true);
 
-  capture_mode_session_ =
-      std::make_unique<CaptureModeSession>(this, for_projector);
+  capture_mode_session_ = std::make_unique<CaptureModeSession>(
+      this, GetBehavior(behavior_type), for_projector);
   capture_mode_session_->Initialize();
 
   camera_controller_->OnCaptureSessionStarted();
@@ -1888,19 +1898,55 @@ void CaptureModeController::OnDlpRestrictionCheckedAtVideoEnd(
   recording_start_time_ = base::TimeTicks();
 }
 
-void CaptureModeController::
-    OnDlpRestrictionCheckedAtCaptureScreenshotsOfAllDisplays(bool proceed) {
-  pending_dlp_check_ = false;
-  if (!proceed)
+void CaptureModeController::CaptureInstantScreenshot(
+    CaptureModeEntryType entry_type,
+    CaptureModeSource source,
+    base::OnceClosure instant_screenshot_callback) {
+  if (pending_dlp_check_) {
     return;
+  }
 
-  // Due to fact that the DLP warning dialog may take a while, check policy
-  // again even though we checked in CaptureScreenshotsOfAllDisplays().
   if (!delegate_->IsCaptureAllowedByPolicy()) {
     ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);
     return;
   }
 
+  pending_dlp_check_ = true;
+  delegate_->CheckCaptureModeInitRestrictionByDlp(base::BindOnce(
+      &CaptureModeController::OnDlpRestrictionCheckedAtCaptureScreenshot,
+      weak_ptr_factory_.GetWeakPtr(), entry_type, source,
+      std::move(instant_screenshot_callback)));
+}
+
+void CaptureModeController::OnDlpRestrictionCheckedAtCaptureScreenshot(
+    CaptureModeEntryType entry_type,
+    CaptureModeSource source,
+    base::OnceClosure instant_screenshot_callback,
+    bool proceed) {
+  pending_dlp_check_ = false;
+  if (!proceed) {
+    return;
+  }
+
+  // Due to fact that the DLP warning dialog may take a while, check the
+  // enterprise policy again even though we checked in
+  // `CaptureInstantScreenshot()`.
+  if (!delegate_->IsCaptureAllowedByPolicy()) {
+    ShowDisabledNotification(CaptureAllowance::kDisallowedByPolicy);
+    return;
+  }
+
+  std::move(instant_screenshot_callback).Run();
+
+  // Since this doesn't create a capture mode session, log metrics here.
+  RecordCaptureModeEntryType(entry_type);
+  RecordCaptureModeConfiguration(
+      CaptureModeType::kImage, source,
+      recording_type_,  // This parameter will be ignored.
+      /*audio_on=*/false, /*is_in_projector_mode=*/false);
+}
+
+void CaptureModeController::PerformScreenshotsOfAllDisplays() {
   // Get a vector of RootWindowControllers with primary root window at first.
   const std::vector<RootWindowController*> controllers =
       RootWindowController::root_window_controllers();
@@ -1917,13 +1963,13 @@ void CaptureModeController::
                                      : BuildImagePathForDisplay(display_index));
     ++display_index;
   }
+}
 
-  // Since this doesn't create a capture mode session, log metrics here.
-  RecordCaptureModeEntryType(CaptureModeEntryType::kCaptureAllDisplays);
-  RecordCaptureModeConfiguration(
-      CaptureModeType::kImage, CaptureModeSource::kFullscreen,
-      recording_type_,  // This parameter will be ignored.
-      /*audio_on=*/false, /*is_in_projector_mode=*/false);
+void CaptureModeController::PerformScreenshotOfGivenWindow(
+    aura::Window* given_window) {
+  const CaptureParams capture_params{given_window,
+                                     gfx::Rect(given_window->bounds().size())};
+  CaptureImage(capture_params, BuildImagePath());
 }
 
 CaptureModeSaveToLocation CaptureModeController::GetSaveToOption(
@@ -1942,6 +1988,23 @@ CaptureModeSaveToLocation CaptureModeController::GetSaveToOption(
       return CaptureModeSaveToLocation::kDriveFolder;
   }
   return CaptureModeSaveToLocation::kCustomizedFolder;
+}
+
+void CaptureModeController::OnShareToYouTubeButtonPressed() {
+  NewWindowDelegate::GetPrimary()->OpenUrl(
+      GURL(kShareToYouTubeURL),
+      NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      NewWindowDelegate::Disposition::kNewForegroundTab);
+}
+
+CaptureModeBehavior* CaptureModeController::GetBehavior(
+    BehaviorType behavior_type) {
+  auto& behavior = behaviors_map_[behavior_type];
+  if (!behavior) {
+    behavior = CaptureModeBehavior::Create(behavior_type);
+  }
+
+  return behavior.get();
 }
 
 }  // namespace ash

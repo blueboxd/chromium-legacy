@@ -6,6 +6,7 @@
 <translation id="1127811143501539442">{DAYS,plural, =1{Prije 1 dan}one{Prije # dan}few{Prije # dana}other{Prije # dana}}</translation>
 <translation id="1156623771253174079">{SECONDS,plural, =1{Prije 1 minutu}one{Prije # minutu}few{Prije # minute}other{Prije # minuta}}</translation>
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 m}one{# m}few{# m}other{# m}}</translation>
+<translation id="1178017578188974117">{DAYS,plural, =1{Prije 1 dan}one{Prije # dan}few{Prije # dana}other{Prije # dana}}</translation>
 <translation id="1181037720776840403">Ukloni</translation>
 <translation id="1243314992276662751">Otpremi</translation>
 <translation id="1266864766717917324">Nije moguće podijeliti <ph name="CONTENT_TYPE" /></translation>
@@ -15,7 +16,9 @@
 <translation id="1368832886055348810">S lijeva na desno</translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1398853756734560583">Povećaj maksimalno</translation>
+<translation id="1432724887402139994">{SECONDS,plural, =1{Prije 1 min}one{Prije # min}few{Prije # min}other{Prije # min}}</translation>
 <translation id="1450753235335490080">Nije moguće podijeliti sadržaj <ph name="CONTENT_TYPE" /></translation>
+<translation id="1523230076022876491">{MONTHS,plural, =1{Prije 1 mjesec}one{Prije # mjesec}few{Prije # mjeseca}other{Prije # mjeseci}}</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuta i }one{# minuta i }few{# minute i }other{# minuta i }}</translation>
 <translation id="1643823602425662293">Obavještenje</translation>
 <translation id="169515659049020177">Gornji red</translation>
@@ -31,14 +34,12 @@
 <translation id="1860796786778352021">Zatvaranje obavještenja</translation>
 <translation id="186476001994626254">Web sadržaj za pametno lijepljenje</translation>
 <translation id="1871244248791675517">Umet</translation>
-<translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">Odaberi &amp;sve</translation>
 <translation id="19085484004813472">Ovo je nova funkcija</translation>
 <translation id="2006524834898217237">Provjerite je li ovaj uređaj povezan na internet.</translation>
 <translation id="208586643495776849">Pokušajte ponovo</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}one{# d}few{# d}other{# d}}</translation>
 <translation id="2148716181193084225">Danas</translation>
-<translation id="2161656808144014275">Tekst</translation>
 <translation id="2168039046890040389">Tipka Page Up</translation>
 <translation id="2190355936436201913">(prazno)</translation>
 <translation id="2192232475740621500">Koristite nisku gustinu</translation>
@@ -90,7 +91,6 @@
 <translation id="3622035490309591977">Historija međumemorije</translation>
 <translation id="364720409959344976">Odaberite folder za otpremanje</translation>
 <translation id="3660179305079774227">Strelica nagore</translation>
-<translation id="3670030362669914947">Broj</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
@@ -109,7 +109,9 @@
 <translation id="4491109536499578614">Slika</translation>
 <translation id="4565377596337484307">Sakrij lozinku</translation>
 <translation id="4588090240171750605">Kliznite udesno</translation>
+<translation id="4689010477870442157">{YEARS,plural, =1{Prije 1 godinu}one{Prije # godinu}few{Prije # godine}other{Prije # godina}}</translation>
 <translation id="4724120544754982507">Centar za obavještenja, broj nepročitanih obavještenja: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
+<translation id="4729257764711776855">broj</translation>
 <translation id="4746179598275229723">Ekstenzija je otkačena</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Preostao je 1 mjesec}one{Preostao je # mjesec}few{Preostala su # mjeseca}other{Preostalo je # mjeseci}}</translation>
 <translation id="4888938634149558681">Uputi poziv</translation>
@@ -121,6 +123,7 @@
 <translation id="5278860589123563674">Slanje nije uspjelo</translation>
 <translation id="528468243742722775">Prekid</translation>
 <translation id="5329858601952122676">&amp;Obriši</translation>
+<translation id="5361107212971249203">tekst</translation>
 <translation id="5463830097259460683">Emoji sličice i simboli</translation>
 <translation id="5528053674512161860">Učitavanje stranice nije uspjelo jer programerski UI modul (dev_ui) nije instaliran</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistem</translation>
@@ -202,6 +205,7 @@
 <translation id="8393700583063109961">Pošalji poruku</translation>
 <translation id="8394908167088220973">Reproduciraj/pauziraj medij</translation>
 <translation id="8458811141851741261">{YEARS,plural, =1{1 g}one{# g}few{# g}other{# g}}</translation>
+<translation id="8598144894266192959"><ph name="NUMBER" />%</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Fajl (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
 <translation id="8725488761726303204">Još <ph name="NUMBER" /></translation>
@@ -212,10 +216,12 @@
 <translation id="8867568208303837180">Slanje...</translation>
 <translation id="8876215549894133151">Format:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
+<translation id="8927924178504495502">{HOURS,plural, =1{Prije 1 sat}one{Prije # sat}few{Prije # sata}other{Prije # sati}}</translation>
 <translation id="8996630695507351249">Provjerite je li uređaj <ph name="TARGET_DEVICE_NAME" /> povezan na internet.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}one{# s}few{# s}other{# s}}</translation>
 <translation id="9059834730836941392">Suzi obavještenje</translation>
 <translation id="9170848237812810038">&amp;Poništi</translation>
 <translation id="932327136139879170">Dom</translation>
 <translation id="944069440740578670">Nepročitana obavještenja</translation>
+<translation id="966963601246348639">{SECONDS,plural, =1{Prije 1 sekundu}one{Prije # sekundu}few{Prije # sekunde}other{Prije # sekundi}}</translation>
 </translationbundle>

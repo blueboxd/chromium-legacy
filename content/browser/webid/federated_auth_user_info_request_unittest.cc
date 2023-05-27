@@ -162,10 +162,10 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
 
     std::vector<IdentityRequestAccount> accounts;
     for (const AccountConfig& account_config : config_.accounts) {
-      accounts.emplace_back(account_config.id,
-                            GenerateEmailForUserId(account_config.id),
-                            kAccountName, kAccountGivenName,
-                            GURL(kAccountPicture), account_config.login_state);
+      accounts.emplace_back(
+          account_config.id, GenerateEmailForUserId(account_config.id),
+          kAccountName, kAccountGivenName, GURL(kAccountPicture),
+          std::vector<std::string>(), account_config.login_state);
     }
 
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
@@ -266,8 +266,10 @@ class FederatedAuthUserInfoRequestTest : public RenderViewHostImplTestHarness {
         std::make_unique<TestIdpNetworkRequestManager>(config);
 
     blink::mojom::IdentityProviderConfigPtr idp_ptr =
-        blink::mojom::IdentityProviderConfig::New(
-            GURL(kProviderUrl), kClientId, kNonce, /*login_hit=*/nullptr);
+        blink::mojom::IdentityProviderConfig::New();
+    idp_ptr->config_url = GURL(kProviderUrl);
+    idp_ptr->client_id = kClientId;
+    idp_ptr->nonce = kNonce;
 
     UserInfoCallbackHelper callback_helper;
     std::unique_ptr<FederatedAuthUserInfoRequest> request =

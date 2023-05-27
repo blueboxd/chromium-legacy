@@ -11,6 +11,7 @@
 
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/app_list/app_list_model_updater_observer.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ash/app_list/chrome_app_list_item.h"
@@ -36,7 +37,7 @@ class AppListModelUpdater {
     }
 
    private:
-    AppListModelUpdater* const model_updater_;
+    const raw_ptr<AppListModelUpdater, ExperimentalAsh> model_updater_;
   };
 
   virtual ~AppListModelUpdater();
@@ -120,6 +121,7 @@ class AppListModelUpdater {
   virtual size_t BadgedItemCount() = 0;
   // For SearchModel:
   virtual bool SearchEngineIsGoogle() = 0;
+  virtual void RecalculateWouldTriggerLauncherSearchIph() = 0;
 
   // Notifies when the app list gets hidden.
   virtual void OnAppListHidden() = 0;

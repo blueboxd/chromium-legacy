@@ -9,6 +9,7 @@
 
 #include "base/functional/callback_forward.h"
 #include "base/scoped_observation_traits.h"
+#include "components/user_manager/include_exclude_account_id_filter.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager_export.h"
 #include "components/user_manager/user_type.h"
@@ -19,7 +20,6 @@ class PrefService;
 namespace user_manager {
 
 class ScopedUserManager;
-class RemoveUserDelegate;
 
 // A list pref of the the regular users known on this device, arranged in LRU
 // order, stored in local state.
@@ -42,6 +42,8 @@ enum class UserRemovalReason : int32_t {
 // * Find/modify users, store user meta-data such as display name/email.
 class USER_MANAGER_EXPORT UserManager {
  public:
+  using EphemeralModeConfig = IncludeExcludeAccountIdFilter;
+
   // Interface that observers of UserManager must implement in order
   // to receive notification when local state preferences is changed
   class Observer {
@@ -69,6 +71,9 @@ class USER_MANAGER_EXPORT UserManager {
     // Called when any of the device cros settings which are responsible for
     // user sign in are changed.
     virtual void OnUsersSignInConstraintsChanged();
+
+    // Called when the user affiliation is updated.
+    virtual void OnUserAffiliationUpdated(const User& user);
 
     // Called just before a user of the device will be removed.
     virtual void OnUserToBeRemoved(const AccountId& account_id);
@@ -202,11 +207,14 @@ class USER_MANAGER_EXPORT UserManager {
 
   // Removes the user from the device while providing a reason for enterprise
   // reporting. Note, it will verify that the given user isn't the owner, so
-  // calling this method for the owner will take no effect. Note, |delegate|
-  // can be NULL.
+  // calling this method for the owner will take no effect.
+  // This removes the user from the list synchronously, so the following
+  // function calls should have updated users. However, actual deletion of
+  // a user from a device has more tasks to complete, such as deletion of
+  // cryptohome data, which are asynchronous operations. Currently, there's
+  // no support to observe the completion of such tasks.
   virtual void RemoveUser(const AccountId& account_id,
-                          UserRemovalReason reason,
-                          RemoveUserDelegate* delegate) = 0;
+                          UserRemovalReason reason) = 0;
 
   // Removes the user from the persistent list only. Also removes the user's
   // picture.
@@ -375,6 +383,7 @@ class USER_MANAGER_EXPORT UserManager {
       const User& user,
       const gfx::ImageSkia& profile_image) = 0;
   virtual void NotifyUsersSignInConstraintsChanged() = 0;
+  virtual void NotifyUserAffiliationUpdated(const User& user) = 0;
   virtual void NotifyUserToBeRemoved(const AccountId& account_id) = 0;
   virtual void NotifyUserRemoved(const AccountId& account_id,
                                  UserRemovalReason reason) = 0;
@@ -392,8 +401,14 @@ class USER_MANAGER_EXPORT UserManager {
   virtual bool IsUserAllowed(const User& user) const = 0;
 
   // Returns true if trusted device policies have successfully been retrieved
-  // and ephemeral users are enabled.
-  virtual bool AreEphemeralUsersEnabled() const = 0;
+  // and `account_id` is ephemeral by policies.
+  //
+  // NOTE: this function does not handle neither device owner account nor
+  // explicitly-ephemeral accounts like MGS separately. This function gives an
+  // answer whether `account_id` is ephemeral by policies.
+  //
+  // TODO(b:275059758): Add logic to handle owner ID separately.
+  virtual bool IsEphemeralAccountId(const AccountId& account_id) const = 0;
 
   // Returns "Local State" PrefService instance.
   virtual PrefService* GetLocalState() const = 0;

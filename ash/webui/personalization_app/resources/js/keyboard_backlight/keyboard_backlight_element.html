@@ -41,12 +41,17 @@
     grid-area: options;
   }
 
-  #zoneCustomizationButton:not([aria-pressed='true']) iron-icon {
-    display: none;
+  #zoneCustomizationButton[aria-pressed='true'] {
+    background-color: var(--cros-sys-primary, var(--cros-button-background-color-primary));
+    color: var(--cros-sys-on_primary, var(--cros-button-label-color-primary));
   }
 
   #zoneCustomizationButton[aria-pressed='true'] .text {
     margin-inline-start: 8px;
+  }
+
+  #zoneCustomizationButton:not([aria-pressed='true']) iron-icon {
+    display: none;
   }
 </style>
 <div id="container" class="preview-container">
@@ -62,14 +67,12 @@
       <cr-button id="zoneCustomizationButton" on-click="showZoneCustomizationDialog_"
           class="secondary"
           aria-pressed$="[[getZoneCustomizationButtonAriaPressed_(currentBacklightState_)]]">
-        <iron-icon icon="personalization:circle_checkmark"></iron-icon>
+        <iron-icon class="customized-checkmark" icon="personalization:circle_checkmark"></iron-icon>
         <div class="text">$i18n{zoneCustomize}</div>
       </cr-button>
     </div>
   </color-selector>
-  <cr-lazy-render id="zoneCustomizationRender">
-    <template>
-      <zone-customization></zone-customization>
-    </template>
-  </cr-lazy-render>
+  <template is="dom-if" if="[[isZoneCustomizationDialogOpen_]]" restamp>
+    <zone-customization on-cancel="closeZoneCustomizationDialog_"></zone-customization>
+  </template>
 </div>

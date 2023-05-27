@@ -142,7 +142,6 @@ void SystemInfoProvider::SetTabletModeChanged(bool enabled) {
   if (!observer_remote_.is_bound()) {
     return;
   }
-
   PA_LOG(VERBOSE) << "OnReceivedTabletModeChanged:" << enabled;
   observer_remote_->OnReceivedTabletModeChanged(enabled);
 }
@@ -157,6 +156,10 @@ void SystemInfoProvider::SetAndroidDeviceNetworkInfoChanged(
       << "echeapi SystemInfoProvider "
          "SetAndroidDeviceNetworkInfoChanged android_device_on_cellular:"
       << android_device_on_cellular;
+
+  is_different_network_ = is_different_network;
+  android_device_on_cellular_ = android_device_on_cellular;
+
   if (!observer_remote_.is_bound()) {
     return;
   }
@@ -176,8 +179,8 @@ void SystemInfoProvider::OnTabletModeEnded() {
 }
 
 // network_config::mojom::CrosNetworkConfigObserver implementation:
-void SystemInfoProvider::OnNetworkStateChanged(
-    network_config::mojom::NetworkStatePropertiesPtr network) {
+void SystemInfoProvider::OnActiveNetworksChanged(
+    std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
   FetchWifiNetworkList();
 }
 
@@ -185,47 +188,37 @@ void SystemInfoProvider::FetchWifiNetworkSsidHash() {
   PA_LOG(INFO) << "echeapi SystemInfoProvider FetchWifiNetworkSsidHash";
   cros_network_config_->GetNetworkStateList(
       network_config::mojom::NetworkFilter::New(
-          network_config::mojom::FilterType::kVisible,
+          network_config::mojom::FilterType::kActive,
           network_config::mojom::NetworkType::kWiFi,
           network_config::mojom::kNoLimit),
-      base::BindOnce(&SystemInfoProvider::OnWifiNetworkListSsidFetch,
+      base::BindOnce(&SystemInfoProvider::OnActiveWifiNetworkListFetched,
                      base::Unretained(this)));
-}
-
-void SystemInfoProvider::OnWifiNetworkListSsidFetch(
-    std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
-  PA_LOG(INFO) << "echeapi SystemInfoProvider OnWifiNetworkListSsidFetch";
-  for (const auto& network : networks) {
-    if (network->type == chromeos::network_config::mojom::NetworkType::kWiFi) {
-      std::string wifi_ssid = network->type_state->get_wifi()->ssid;
-      std::string hashed_wifi_ssid = crypto::SHA256HashString(wifi_ssid);
-      hashed_wifi_ssid_ = hashed_wifi_ssid;
-      return;
-    }
-  }
-  hashed_wifi_ssid_ = std::string();
 }
 
 void SystemInfoProvider::FetchWifiNetworkList() {
   cros_network_config_->GetNetworkStateList(
       network_config::mojom::NetworkFilter::New(
-          network_config::mojom::FilterType::kVisible,
+          network_config::mojom::FilterType::kActive,
           network_config::mojom::NetworkType::kWiFi,
           network_config::mojom::kNoLimit),
-      base::BindOnce(&SystemInfoProvider::OnWifiNetworkList,
+      base::BindOnce(&SystemInfoProvider::OnActiveWifiNetworkListFetched,
                      base::Unretained(this)));
 }
 
-void SystemInfoProvider::OnWifiNetworkList(
+void SystemInfoProvider::OnActiveWifiNetworkListFetched(
     std::vector<network_config::mojom::NetworkStatePropertiesPtr> networks) {
-  using network_config::mojom::NetworkType;
-
   for (const auto& network : networks) {
-    if (network->type == NetworkType::kWiFi) {
+    if (network->type == chromeos::network_config::mojom::NetworkType::kWiFi) {
+      hashed_wifi_ssid_ =
+          crypto::SHA256HashString(network->type_state->get_wifi()->ssid);
       wifi_connection_state_ = network->connection_state;
       return;
     }
   }
+
+  // Reset connection state and SSID hash if there is no active WiFi network.
+  wifi_connection_state_ = ConnectionStateType::kNotConnected;
+  hashed_wifi_ssid_ = std::string();
 }
 
 }  // namespace eche_app

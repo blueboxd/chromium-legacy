@@ -121,8 +121,12 @@ bool CanReuseFromListOfAvailableImages(
 
 class ImageLoader::Task {
  public:
-  Task(ImageLoader* loader, UpdateFromElementBehavior update_behavior)
-      : loader_(loader), update_behavior_(update_behavior) {
+  Task(ImageLoader* loader,
+       UpdateFromElementBehavior update_behavior,
+       base::TimeTicks discovery_time)
+      : loader_(loader),
+        update_behavior_(update_behavior),
+        discovery_time_(discovery_time) {
     ExecutionContext* context = loader_->GetElement()->GetExecutionContext();
     async_task_context_.Schedule(context, "Image");
     world_ = context->GetCurrentWorld();
@@ -133,7 +137,7 @@ class ImageLoader::Task {
       return;
     ExecutionContext* context = loader_->GetElement()->GetExecutionContext();
     probe::AsyncTask async_task(context, &async_task_context_);
-    loader_->DoUpdateFromElement(world_, update_behavior_);
+    loader_->DoUpdateFromElement(world_, update_behavior_, discovery_time_);
   }
 
   void ClearLoader() {
@@ -149,6 +153,7 @@ class ImageLoader::Task {
   scoped_refptr<const DOMWrapperWorld> world_;
 
   probe::AsyncTaskContext async_task_context_;
+  base::TimeTicks discovery_time_;
   base::WeakPtrFactory<Task> weak_factory_{this};
 };
 
@@ -366,6 +371,12 @@ static void ConfigureRequest(
 }
 
 inline void ImageLoader::DispatchErrorEvent() {
+  // The error event should not fire if the image data update is a result of
+  // environment change.
+  // https://html.spec.whatwg.org/C/#the-img-element:the-img-element-55
+  if (suppress_error_events_) {
+    return;
+  }
   // There can be cases where DispatchErrorEvent() is called when there is
   // already a scheduled error event for the previous load attempt.
   // In such cases we cancel the previous event (by overwriting
@@ -390,8 +401,9 @@ inline void ImageLoader::ClearFailedLoadURL() {
 }
 
 inline void ImageLoader::EnqueueImageLoadingMicroTask(
-    UpdateFromElementBehavior update_behavior) {
-  auto task = std::make_unique<Task>(this, update_behavior);
+    UpdateFromElementBehavior update_behavior,
+    base::TimeTicks discovery_time) {
+  auto task = std::make_unique<Task>(this, update_behavior, discovery_time);
   pending_task_ = task->GetWeakPtr();
   element_->GetDocument().GetAgent().event_loop()->EnqueueMicrotask(
       WTF::BindOnce(&Task::Run, std::move(task)));
@@ -419,6 +431,7 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
 void ImageLoader::DoUpdateFromElement(
     scoped_refptr<const DOMWrapperWorld> world,
     UpdateFromElementBehavior update_behavior,
+    base::TimeTicks discovery_time,
     UpdateType update_type,
     bool force_blocking) {
   // FIXME: According to
@@ -435,8 +448,15 @@ void ImageLoader::DoUpdateFromElement(
   load_delay_counter.swap(delay_until_do_update_from_element_);
 
   Document& document = element_->GetDocument();
-  if (!document.IsActive())
+  if (!document.IsActive()) {
+    // Clear if the loader was moved into a not fully active document - or the
+    // document was detached - after the microtask was queued. If moved into a
+    // not fully active document, ElementDidMoveToNewDocument() will have
+    // called ClearImage() already, but in the case of a detached document it
+    // won't have.
+    ClearImage();
     return;
+  }
 
   AtomicString image_source_url = element_->ImageSourceURL();
   const KURL url = ImageSourceToKURL(image_source_url);
@@ -516,6 +536,9 @@ void ImageLoader::DoUpdateFromElement(
 
     FetchParameters params(std::move(resource_request),
                            resource_loader_options);
+
+    params.SetDiscoveryTime(discovery_time);
+
     ConfigureRequest(params, *element_, frame->GetClientHintsPreferences());
 
     if (update_behavior != kUpdateForcedReload &&
@@ -616,6 +639,8 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
     return;
   }
 
+  base::TimeTicks discovery_time = base::TimeTicks::Now();
+
   AtomicString image_source_url = element_->ImageSourceURL();
   suppress_error_events_ = (update_behavior == kUpdateSizeChanged);
 
@@ -651,7 +676,8 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
   if (ShouldLoadImmediately(ImageSourceToKURL(image_source_url)) &&
       update_behavior != kUpdateFromMicrotask) {
     DoUpdateFromElement(element_->GetExecutionContext()->GetCurrentWorld(),
-                        update_behavior, UpdateType::kSync, force_blocking);
+                        update_behavior, discovery_time, UpdateType::kSync,
+                        force_blocking);
     return;
   }
   // Allow the idiom "img.src=''; img.src='.." to clear down the image before an
@@ -677,7 +703,7 @@ void ImageLoader::UpdateFromElement(UpdateFromElementBehavior update_behavior,
   // context. We don't want to slow down the raw HTML parsing case by loading
   // images we don't intend to display.
   if (element_->GetDocument().IsActive())
-    EnqueueImageLoadingMicroTask(update_behavior);
+    EnqueueImageLoadingMicroTask(update_behavior, discovery_time);
 }
 
 KURL ImageLoader::ImageSourceToKURL(AtomicString image_source_url) const {
@@ -804,11 +830,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* content) {
     if (error && error->IsAccessCheck())
       CrossSiteOrCSPViolationOccurred(AtomicString(error->FailingURL()));
 
-    // The error event should not fire if the image data update is a result of
-    // environment change.
-    // https://html.spec.whatwg.org/C/#the-img-element:the-img-element-55
-    if (!suppress_error_events_)
-      DispatchErrorEvent();
+    DispatchErrorEvent();
     return;
   }
 

@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
@@ -22,8 +23,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabStripFaviconCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
-import android.support.test.InstrumentationRegistry;
-
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
 
@@ -39,9 +39,9 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.test.util.UiRestriction;
@@ -176,7 +176,7 @@ public class TabSwitcherMultiWindowTest {
 
         // Move 3 incognito tabs in this group to cta2.
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(), cta1,
-                org.chromium.chrome.R.id.move_to_other_window_menu_id);
+                R.id.move_to_other_window_menu_id);
         final ChromeTabbedActivity cta2 = waitForSecondChromeTabbedActivity();
         moveActivityToFront(cta1);
         moveTabsToOtherWindow(cta1, 2);
@@ -249,7 +249,7 @@ public class TabSwitcherMultiWindowTest {
         // Move the incognito tab to cta2.
         assertTrue(cta1.getTabModelSelector().getCurrentModel().isIncognito());
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(), cta1,
-                org.chromium.chrome.R.id.move_to_other_window_menu_id);
+                R.id.move_to_other_window_menu_id);
         final ChromeTabbedActivity cta2 = waitForSecondChromeTabbedActivity();
 
         assertThat(cta1.getTabModelSelector()

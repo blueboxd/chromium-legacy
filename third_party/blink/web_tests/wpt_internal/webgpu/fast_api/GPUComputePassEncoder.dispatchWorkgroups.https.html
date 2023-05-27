@@ -15,7 +15,9 @@ function test(t, hotLoop, computePassEncoder, workgroupCountX, workgroupCountY, 
     hotLoop(1, computePassEncoder, workgroupCountX, workgroupCountY, workgroupCountZ);
   } catch(e) {
     assert_true(e instanceof TypeError);
+    return;
   }
+  assert_unreached("A TypeError should be thrown.");
 }
 
 promise_test(async t => {

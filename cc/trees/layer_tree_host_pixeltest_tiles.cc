@@ -227,9 +227,9 @@ std::vector<RasterTestConfig> const kTestCases = {
 #if BUILDFLAG(ENABLE_VULKAN_BACKEND_TESTS)
     {viz::RendererType::kSkiaVk, TestRasterType::kGpu},
 #endif  // BUILDFLAG(ENABLE_VULKAN_BACKEND_TESTS)
-#if BUILDFLAG(ENABLE_DAWN_BACKEND_TESTS)
-    {viz::RendererType::kSkiaDawn, TestRasterType::kGpu},
-#endif  // BUILDFLAG(ENABLE_DAWN_BACKEND_TESTS)
+#if BUILDFLAG(ENABLE_SKIA_GRAPHITE_TESTS)
+    {viz::RendererType::kSkiaGraphite, TestRasterType::kGpu},
+#endif  // BUILDFLAG(ENABLE_SKIA_GRAPHITE_TESTS)
 };
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -238,7 +238,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::PrintToStringParamName());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || defined(MEMORY_SANITIZER) || \
-    defined(ADDRESS_SANITIZER) || BUILDFLAG(IS_FUCHSIA)
+    defined(ADDRESS_SANITIZER)
 // TODO(crbug.com/1045521): Flakes on all slower bots.
 #define MAYBE_PartialRaster DISABLED_PartialRaster
 #else
@@ -267,9 +267,9 @@ std::vector<RasterTestConfig> const kTestCasesMultiThread = {
     // Vulkan in these tests.
     {viz::RendererType::kSkiaVk, TestRasterType::kGpu},
 #endif  // BUILDFLAG(ENABLE_VULKAN_BACKEND_TESTS)
-#if BUILDFLAG(ENABLE_DAWN_BACKEND_TESTS)
-    {viz::RendererType::kSkiaDawn, TestRasterType::kGpu},
-#endif  // BUILDFLAG(ENABLE_DAWN_BACKEND_TESTS)
+#if BUILDFLAG(ENABLE_SKIA_GRAPHITE_TESTS)
+    {viz::RendererType::kSkiaGraphite, TestRasterType::kGpu},
+#endif  // BUILDFLAG(ENABLE_SKIA_GRAPHITE_TESTS)
 };
 
 using LayerTreeHostTilesTestPartialInvalidationMultiThread =
@@ -288,7 +288,7 @@ GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
 // Flaky on Linux TSAN. https://crbug.com/707711
 #define MAYBE_PartialRaster DISABLED_PartialRaster
 #elif BUILDFLAG(IS_CHROMEOS_ASH) || defined(MEMORY_SANITIZER) || \
-    defined(ADDRESS_SANITIZER) || BUILDFLAG(IS_FUCHSIA)
+    defined(ADDRESS_SANITIZER)
 // TODO(crbug.com/1045521): Flakes on all slower bots.
 #define MAYBE_PartialRaster DISABLED_PartialRaster
 #else

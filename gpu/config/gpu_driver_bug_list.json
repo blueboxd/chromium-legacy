@@ -3406,12 +3406,12 @@
     {
       "id": 354,
       "cr_bugs": [1126834],
-      "description": "AMD devices 98e4 and 15d8 with specific drivers can't use d3d11 video decoder",
+      "description": "AMD device 98e4 with specific drivers can't use d3d11 video decoder",
       "os": {
         "type": "win"
       },
       "vendor_id": "0x1002",
-      "device_id": ["0x98e4", "0x15dd"],
+      "device_id": ["0x98e4"],
       "features": [
         "disable_d3d11_video_decoder"
       ],
@@ -4196,6 +4196,22 @@
       "driver_version": {
         "op": "<",
         "value": "30.0.100.9667"
+      },
+      "features": [
+        "disable_accelerated_vp9_encode"
+      ]
+    },
+    {
+      "id": 412,
+      "cr_bugs": [1217298, 1107331],
+      "description": "Disable VP9 HW encode on Intel GPUs preceding Ice Lake",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_generation": {
+        "op": "<",
+        "value": "11"
       },
       "features": [
         "disable_accelerated_vp9_encode"

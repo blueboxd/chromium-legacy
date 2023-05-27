@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/location_bar/cookie_controls_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -22,6 +23,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/view.h"
 #include "url/gurl.h"
@@ -49,7 +51,7 @@ class CookieControlsBubbleViewTest : public DialogBrowserTest {
     content::CookieChangeObserver observer(
         browser()->tab_strip_model()->GetActiveWebContents());
     NavigateToUrlWithThirdPartyCookies();
-    if (name == "NotWorkingClicked") {
+    if (name == "NotWorkingClicked" || name == "CookiesBlocked") {
       observer.Wait();
     }
     ASSERT_TRUE(cookie_controls_icon()->GetVisible());
@@ -111,13 +113,7 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, NoCookiesBlocked) {
 
 // Test opening cookie controls bubble and clicking on "not working" link.
 // Check that accepting the bubble unblocks 3p cookies for this origin.
-// TODO(https://crbug.com/1309497): Flaky on win and mac.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#define MAYBE_NotWorkingClicked DISABLED_NotWorkingClicked
-#else
-#define MAYBE_NotWorkingClicked NotWorkingClicked
-#endif
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, MAYBE_NotWorkingClicked) {
+IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, NotWorkingClicked) {
   // Block 3p cookies.
   SetThirdPartyCookieBlocking(true);
   GURL origin = embedded_test_server()->GetURL("a.com", "/");
@@ -152,16 +148,27 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, BlockingDisabled) {
 // ==================== Pixel tests ====================
 
 // Test opening cookie controls bubble.
-// TODO(https://crbug.com/1309905):  Flakily fails on multiple platforms
-IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, DISABLED_InvokeUi_CookiesBlocked) {
+// TODO(crbug.com/1432008): Failing on Linux ChromeOS debug build.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_InvokeUi_CookiesBlocked DISABLED_InvokeUi_CookiesBlocked
+#else
+#define MAYBE_InvokeUi_CookiesBlocked InvokeUi_CookiesBlocked
+#endif
+IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
+                       MAYBE_InvokeUi_CookiesBlocked) {
   SetThirdPartyCookieBlocking(true);
   ShowAndVerifyUi();
 }
 
 // Test opening cookie controls bubble and clicking on "not working" link.
-// TODO(https://crbug.com/1332525): Flaky on all platforms.
+// TODO(crbug.com/1332525): Failing on Linux ChromeOS debug build.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_InvokeUi_NotWorkingClicked DISABLED_InvokeUi_NotWorkingClicked
+#else
+#define MAYBE_InvokeUi_NotWorkingClicked InvokeUi_NotWorkingClicked
+#endif
 IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
-                       DISABLED_InvokeUi_NotWorkingClicked) {
+                       MAYBE_InvokeUi_NotWorkingClicked) {
   // Block 3p cookies.
   SetThirdPartyCookieBlocking(true);
 
@@ -171,8 +178,14 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
 
 // Test opening cookie controls bubble while 3p cookies are allowed for this
 // page.
+// TODO(crbug.com/1332525): Failing on Linux ChromeOS debug build.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_InvokeUi_BlockingDisabled DISABLED_InvokeUi_BlockingDisabled
+#else
+#define MAYBE_InvokeUi_BlockingDisabled InvokeUi_BlockingDisabled
+#endif
 IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
-                       InvokeUi_BlockingDisabled) {
+                       MAYBE_InvokeUi_BlockingDisabled) {
   // Block 3p cookies in general but allow them for this site.
   SetThirdPartyCookieBlocking(true);
   GURL origin = embedded_test_server()->GetURL("a.com", "/");
@@ -181,4 +194,12 @@ IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest,
 
   // Show bubble.
   ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(CookieControlsBubbleViewTest, IconViewAccessibleName) {
+  EXPECT_FALSE(cookie_controls_icon()->GetVisible());
+  EXPECT_EQ(cookie_controls_icon()->GetAccessibleName(),
+            l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TOOLTIP));
+  EXPECT_EQ(cookie_controls_icon()->GetTextForTooltipAndAccessibleName(),
+            l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TOOLTIP));
 }

@@ -33,9 +33,17 @@ std::string TranslateEapMethod(arc::mojom::EapMethod method);
 // Translates a mojo EapPhase2Method into a shill EAP phase 2 auth type.
 std::string TranslateEapPhase2Method(arc::mojom::EapPhase2Method method);
 
+// Translates a mojo EapMethod into a ONC EAP method.
+std::string TranslateEapMethodToOnc(arc::mojom::EapMethod method);
+
+// Translates a mojo EapPhase2Method into a ONC EAP phase 2 auth type.
+std::string TranslateEapPhase2MethodToOnc(arc::mojom::EapPhase2Method method);
+
 // Translates a mojo KeyManagement into a shill kEapKeyMgmtProperty value.
 std::string TranslateKeyManagement(mojom::KeyManagement management);
 
+// Translates a mojo KeyManagement into a ONC value.
+std::string TranslateKeyManagementToOnc(mojom::KeyManagement management);
 // Translates a shill security class into a mojom SecurityType.
 arc::mojom::SecurityType TranslateWiFiSecurity(
     const std::string& security_class);
@@ -58,6 +66,11 @@ std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
     const std::map<std::string, base::Value::Dict>& shill_network_properties,
     const std::vector<patchpanel::NetworkDevice>& devices);
 
+// Convert a vector of subject name match list that containing ":" separated
+// string in "Type:Value" format (like DNS:example.com, EMAIL:test@domain.com)
+// to a base::Value::List format that is accepted by ONC.
+base::Value::List TranslateSubjectNameMatchListToValue(
+    const std::vector<std::string>& string_list);
 }  // namespace arc::net_utils
 
 #endif  // ASH_COMPONENTS_ARC_NET_ARC_NET_UTILS_H_

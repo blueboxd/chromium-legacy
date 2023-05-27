@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/functional/callback_helpers.h"
@@ -15,7 +16,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/resources/resource_sizes.h"
@@ -159,6 +159,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       bool is_thread_safe) override {
     size_t estimated_size = format.EstimatedSizeInBytes(size);
     auto result = std::make_unique<gpu::TestImageBacking>(
@@ -175,6 +176,7 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
       uint32_t usage,
+      std::string debug_label,
       base::span<const uint8_t> pixel_data) override {
     auto result = std::make_unique<gpu::TestImageBacking>(
         mailbox, format, size, color_space, surface_origin, alpha_type, usage,
@@ -191,7 +193,8 @@ class TestImageBackingFactory : public gpu::SharedImageBackingFactory {
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,
       SkAlphaType alpha_type,
-      uint32_t usage) override {
+      uint32_t usage,
+      std::string debug_label) override {
     NOTREACHED();
     return nullptr;
   }
@@ -434,24 +437,9 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
 
   void PageFlipComplete() { presenter_->SwapComplete(); }
 
-  SkSurfaceCharacterization CreateSkSurfaceCharacterization(
-      const gfx::Size size = kScreenSize) {
-    auto* gr_context = dependency_->GetSharedContextState()->gr_context();
-    auto gr_context_thread_safe_proxy = gr_context->threadSafeProxy();
-
-    auto image_info =
-        SkImageInfo::Make(size.width(), size.height(), kDefaultColorType,
-                          kPremul_SkAlphaType, nullptr);
-    const auto backend_format =
-        gr_context_thread_safe_proxy->defaultBackendFormat(kDefaultColorType,
-                                                           GrRenderable::kYes);
-    SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
-    auto cache_max_resource_bytes = gr_context->getResourceCacheLimit();
-    return gr_context_thread_safe_proxy->createCharacterization(
-        cache_max_resource_bytes, image_info, backend_format,
-        /*sampleCount=*/1, kTopLeft_GrSurfaceOrigin, surface_props,
-        /*isMipMapped=*/false,
-        /*willUseGLFBO0=*/false, /*isTextureable=*/true);
+  SkImageInfo CreateSkImageInfo(const gfx::Size size = kScreenSize) {
+    return SkImageInfo::Make(size.width(), size.height(), kDefaultColorType,
+                             kPremul_SkAlphaType, nullptr);
   }
 
   void FirstReshape() {
@@ -463,20 +451,19 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
       output_device_->EnsureMinNumberOfBuffers(
           output_device_->capabilities().number_of_buffers);
     }
-    output_device_->Reshape(CreateSkSurfaceCharacterization(), {}, 1.0f,
+    output_device_->Reshape(CreateSkImageInfo(), gfx::ColorSpace(),
+                            /*sample_count=*/1, /*device_scale_factor=*/1.0f,
                             gfx::OVERLAY_TRANSFORM_NONE);
   }
 
   gpu::Mailbox MakeOverlayMailbox() {
     gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
-    SharedImageFormat si_format =
-        SharedImageFormat::SinglePlane(ResourceFormat::RGBA_8888);
     bool success = shared_image_factory_->CreateSharedImage(
-        mailbox, si_format, gfx::Size(1000, 1000),
+        mailbox, SinglePlaneFormat::kRGBA_8888, gfx::Size(1000, 1000),
         gfx::ColorSpace::CreateSRGB(),
         GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin,
         SkAlphaType::kPremul_SkAlphaType, gpu::kNullSurfaceHandle,
-        gpu::SHARED_IMAGE_USAGE_SCANOUT);
+        gpu::SHARED_IMAGE_USAGE_SCANOUT, "TestLabel");
     CHECK(success);
 
     shared_image_representation_factory_->ProduceOverlay(mailbox)->SetCleared();
@@ -492,16 +479,6 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
   std::unique_ptr<gpu::SharedImageRepresentationFactory>
       shared_image_representation_factory_;
   std::unique_ptr<SkiaOutputDeviceBufferQueue> output_device_;
-};
-
-class SkiaOutputDeviceBufferQueuePurgeableTest
-    : public SkiaOutputDeviceBufferQueueTest {
- public:
-  SkiaOutputDeviceBufferQueuePurgeableTest() {
-    feature_list_.InitAndEnableFeature(features::kBufferQueueImageSetPurgeable);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 namespace {
@@ -771,9 +748,10 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, ReshapeWithInFlightSurfaces) {
   Present();
 
   output_device_->Reshape(
-      CreateSkSurfaceCharacterization(
+      CreateSkImageInfo(
           gfx::Size(kScreenSize.width() - 1, kScreenSize.height() - 1)),
-      {}, 1.0f, gfx::OVERLAY_TRANSFORM_NONE);
+      gfx::ColorSpace(), /*sample_count=*/1, /*device_scale_factor=*/1.0f,
+      gfx::OVERLAY_TRANSFORM_NONE);
 
   // swap completion callbacks should not be cleared.
   EXPECT_EQ(1u, swap_completion_callbacks().size());
@@ -933,7 +911,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, ScheduleOverlaysNoPrimaryPlane) {
   }
 }
 
-TEST_F_GPU(SkiaOutputDeviceBufferQueuePurgeableTest, ToggleNoPrimaryPlane) {
+TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, ToggleNoPrimaryPlane) {
   test_backing_factory_.enable_purge_mocks_ = true;
   if (output_device_->capabilities().renderer_allocates_images) {
     GTEST_SKIP_(

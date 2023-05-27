@@ -976,7 +976,7 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
   QuicTestPacketMaker client_maker_;
   QuicTestPacketMaker server_maker_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
-  std::unique_ptr<CertVerifier> cert_verifier_;
+  std::unique_ptr<MockCertVerifier> cert_verifier_;
   TransportSecurityState transport_security_state_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   std::unique_ptr<ScopedMockNetworkChangeNotifier>
@@ -2778,6 +2778,9 @@ TEST_P(QuicStreamFactoryTest,
 // will not crash if sessions are closed after FinishCreateSession runs.
 TEST_P(QuicStreamFactoryTest, CloseSessionDuringCreation) {
   quic_params_->close_sessions_on_ip_change = true;
+  // close_sessions_on_ip_change == true requires
+  // migrate_sessions_on_network_change_v2 == false.
+  quic_params_->migrate_sessions_on_network_change_v2 = false;
   auto factory = MockQuicStreamFactory(
       net_log_.net_log(), host_resolver_.get(), &ssl_config_service_,
       socket_factory_.get(), http_server_properties_.get(),
@@ -2972,6 +2975,9 @@ TEST_P(QuicStreamFactoryTest, OnIdleNetworkDetectedAsyncQuicSession) {
 
 TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
   quic_params_->close_sessions_on_ip_change = true;
+  // close_sessions_on_ip_change == true requires
+  // migrate_sessions_on_network_change_v2 == false.
+  quic_params_->migrate_sessions_on_network_change_v2 = false;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -3060,6 +3066,9 @@ TEST_P(QuicStreamFactoryTest, CloseSessionsOnIPAddressChanged) {
 // go to a new connection.
 TEST_P(QuicStreamFactoryTest, GoAwaySessionsOnIPAddressChanged) {
   quic_params_->goaway_sessions_on_ip_change = true;
+  // close_sessions_on_ip_change == true requires
+  // migrate_sessions_on_network_change_v2 == false.
+  quic_params_->migrate_sessions_on_network_change_v2 = false;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
   crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
@@ -5082,7 +5091,7 @@ TEST_P(QuicStreamFactoryTest,
   EXPECT_TRUE(quic_data2.AllWriteDataConsumed());
 }
 
-TEST_P(QuicStreamFactoryTest, MultiPortSession) {
+TEST_P(QuicStreamFactoryTest, MultiPortSessionWithMigration) {
   SetIetfConnectionMigrationFlagsAndConnectionOptions();
   // Turning on MPQC will implicitly turn on port migration.
   quic_params_->client_connection_options.push_back(quic::kMPQC);
@@ -5097,27 +5106,12 @@ TEST_P(QuicStreamFactoryTest, MultiPortSession) {
   QuicStreamFactoryPeer::SetTaskRunner(factory_.get(), task_runner.get());
 
   MockQuicData quic_data1(version_);
+  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   quic_data1.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket(1));
   quic_data1.AddWrite(
       SYNCHRONOUS,
       ConstructGetRequestPacket(
           3, GetNthClientInitiatedBidirectionalStreamId(0), true, true));
-  quic_data1.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
-  quic_data1.AddRead(
-      ASYNC,
-      ConstructOkResponsePacket(
-          2, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
-  quic_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  quic_data1.AddWrite(
-      SYNCHRONOUS,
-      client_maker_.MakeAckAndDataPacket(
-          4, /*include_version=*/false, GetQpackDecoderStreamId(),
-          /*largest_received=*/2, /*smallest_received=*/1, /*fin=*/false,
-          StreamCancellationQpackDecoderInstruction(0)));
-  quic_data1.AddWrite(
-      SYNCHRONOUS, client_maker_.MakeRstPacket(
-                       5, false, GetNthClientInitiatedBidirectionalStreamId(0),
-                       quic::QUIC_STREAM_CANCELLED));
   quic_data1.AddSocketDataToFactory(socket_factory_.get());
 
   // Set up the second socket data provider that is used for multi-port
@@ -5133,8 +5127,29 @@ TEST_P(QuicStreamFactoryTest, MultiPortSession) {
   // Connectivity probe to receive from the server.
   quic_data2.AddRead(ASYNC,
                      server_maker_.MakeConnectivityProbingPacket(1, false));
+  quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  quic_data2.AddRead(
+      ASYNC,
+      ConstructOkResponsePacket(
+          2, GetNthClientInitiatedBidirectionalStreamId(0), false, false));
+  quic_data2.AddRead(ASYNC, ERR_IO_PENDING);  // Pause
+  quic_data2.AddWrite(
+      ASYNC, client_maker_.MakeAckAndPingPacket(4, /*include_version=*/false,
+                                                /*largest_received=*/2,
+                                                /*smallest_received=*/1));
+  quic_data2.AddWrite(
+      SYNCHRONOUS, client_maker_.MakeRetireConnectionIdPacket(
+                       5, /*include_version=*/false, /*sequence_number=*/0u));
+  quic_data2.AddRead(ASYNC, server_maker_.MakeAckPacket(3, 5, 1));
+  quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+  quic_data2.AddWrite(ASYNC, client_maker_.MakeDataPacket(
+                                 6, GetQpackDecoderStreamId(), true, false,
+                                 StreamCancellationQpackDecoderInstruction(0)));
+  quic_data2.AddWrite(
+      ASYNC, client_maker_.MakeRstPacket(
+                 7, false, GetNthClientInitiatedBidirectionalStreamId(0),
+                 quic::QUIC_STREAM_CANCELLED));
 
-  quic_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   quic_data2.AddSocketDataToFactory(socket_factory_.get());
 
   // Create request and QuicHttpStream.
@@ -5180,27 +5195,49 @@ TEST_P(QuicStreamFactoryTest, MultiPortSession) {
   HttpRequestHeaders request_headers;
   EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
                                     callback_.callback()));
+  // Disable connection migration on the request streams.
+  // This should have no effect for port migration.
+  QuicChromiumClientStream* chrome_stream =
+      static_cast<QuicChromiumClientStream*>(
+          quic::test::QuicSessionPeer::GetStream(
+              session, GetNthClientInitiatedBidirectionalStreamId(0)));
+  EXPECT_TRUE(chrome_stream);
+  chrome_stream->DisableConnectionMigrationToCellularNetwork();
 
   // Resume quic data and a connectivity probe response will be read on the new
-  // socket.
+  // socket. This makes the multi-port path ready to migrate.
   quic_data2.Resume();
 
-  // The response is received on the default path.
-  quic_data1.Resume();
-  // Response headers are received over the new port.
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
+
+  // Cause the connection to report path degrading to the session.
+  // Session will start migrate to multi-port path immediately.
+  session->connection()->OnPathDegradingDetected();
+  base::RunLoop().RunUntilIdle();
+  // The connection should still be degrading because no new packets are
+  // received from the new path.
+  EXPECT_EQ(1u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
+
+  // The response is received on the new path.
+  quic_data2.Resume();
   EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_EQ(200, response.headers->response_code());
+  task_runner->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
   EXPECT_TRUE(HasActiveSession(scheme_host_port_));
   EXPECT_EQ(1u, session->GetNumActiveStreams());
 
-  // The periodic probing is handled and tested in quiche.
-  EXPECT_TRUE(quic::test::QuicConnectionPeer::GetMultiPortProbingAlarm(
-                  session->connection())
-                  ->IsSet());
+  // Receives an ack from the server, this will be considered forward progress.
+  quic_data2.Resume();
+  task_runner->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, QuicStreamFactoryPeer::GetNumDegradingSessions(factory_.get()));
 
   stream.reset();
+  task_runner->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(quic_data1.AllReadDataConsumed());
   EXPECT_TRUE(quic_data1.AllWriteDataConsumed());
   EXPECT_TRUE(quic_data2.AllReadDataConsumed());
@@ -11998,8 +12035,80 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
   EXPECT_TRUE(stream);
   QuicChromiumClientSession* session = GetActiveSession(scheme_host_port_);
 
-  // Change the CA cert and verify that stream saw the event.
-  factory_->OnCertDBChanged();
+  // Synthesize a CertDatabase change notification and verify that stream saw
+  // the event.
+  CertDatabase::GetInstance()->NotifyObserversCertDBChanged();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(factory_->is_quic_known_to_work_on_current_network());
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(scheme_host_port_));
+
+  // Now attempting to request a stream to the same origin should create
+  // a new session.
+
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(
+                scheme_host_port_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                SocketTag(), NetworkAnonymizationKey(), SecureDnsPolicy::kAllow,
+                /*use_dns_aliases=*/true, /*require_dns_https_alpn=*/false,
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream2 = CreateStream(&request2);
+  EXPECT_TRUE(stream2);
+  QuicChromiumClientSession* session2 = GetActiveSession(scheme_host_port_);
+  EXPECT_TRUE(HasActiveSession(scheme_host_port_));
+  EXPECT_NE(session, session2);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session2));
+
+  stream2.reset();
+  stream.reset();
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, OnCertVerifierChanged) {
+  Initialize();
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockQuicData socket_data(version_);
+  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data.AddSocketDataToFactory(socket_factory_.get());
+
+  client_maker_.Reset();
+  MockQuicData socket_data2(version_);
+  socket_data2.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  socket_data2.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
+  socket_data2.AddSocketDataToFactory(socket_factory_.get());
+
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(
+                scheme_host_port_, version_, privacy_mode_, DEFAULT_PRIORITY,
+                SocketTag(), NetworkAnonymizationKey(), SecureDnsPolicy::kAllow,
+                /*use_dns_aliases=*/true, /*require_dns_https_alpn=*/false,
+                /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                failed_on_default_network_callback_, callback_.callback()));
+
+  EXPECT_THAT(callback_.WaitForResult(), IsOk());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream);
+  QuicChromiumClientSession* session = GetActiveSession(scheme_host_port_);
+
+  // Synthesize a CertVerifier change notification and verify that stream saw
+  // the event.
+  cert_verifier_->SimulateOnCertVerifierChanged();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(factory_->is_quic_known_to_work_on_current_network());
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
@@ -12288,11 +12397,8 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigCache) {
   const char kUserAgentId[] = "spoon";
 
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      // enabled_features
-      {features::kPartitionConnectionsByNetworkIsolationKey},
-      // disabled_features
-      {features::kPartitionHttpServerPropertiesByNetworkIsolationKey});
+  feature_list.InitAndDisableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
 
   const SchemefulSite kSite1(GURL("https://foo.test/"));
   const auto kNetworkAnonymizationKey1 =

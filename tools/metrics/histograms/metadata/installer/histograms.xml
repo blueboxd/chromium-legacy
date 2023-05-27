@@ -149,8 +149,23 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Installer.Postinstall.RevenPartitionMigration"
+    enum="ChromeOSRevenPartitionMigration" expires_after="2023-08-28">
+  <owner>nicholasbishop@google.com</owner>
+  <owner>chromeos-flex-eng@google.com</owner>
+  <summary>
+    Result of running the Reven (ChromeOS Flex) partition migration.
+
+    This is reported at the end of the partition migration, which is run during
+    postinstall. The migration is only run with USE=reven_partition_migration.
+
+    Note that some metrics may be lost during postinstall, see:
+    https://source.chromium.org/chromiumos/chromiumos/codesearch/+/main:src/platform2/installer/docs/postinst_metrics.md
+  </summary>
+</histogram>
+
 <histogram name="Installer.PowerwashCount" units="powerwashes"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>kimjae@chromium.org</owner>
   <owner>chromeos-core-services@chromium.org</owner>
   <summary>
@@ -161,7 +176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Installer.PowerwashDays" units="powerwashdays"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>qianwan@google.com</owner>
   <owner>chromeos-data@google.com</owner>
   <summary>
@@ -178,7 +193,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Installer.Recovery.Reason" enum="ChromeOSRecoveryReason"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>kimjae@chromium.org</owner>
   <owner>chromeos-core-services@google.com</owner>
   <summary>

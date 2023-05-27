@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_bidi_paragraph.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_initial_letter_utils.h"
@@ -31,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_info.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inline_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
@@ -259,6 +259,7 @@ void CollectInlinesInternal(ItemsBuilder* builder,
 
   const LayoutObject* symbol =
       LayoutNGListItem::FindSymbolMarkerLayoutText(block);
+  const LayoutObject* inline_list_item_marker = nullptr;
   while (node) {
     if (auto* counter = DynamicTo<LayoutCounter>(node)) {
       // According to
@@ -296,8 +297,9 @@ void CollectInlinesInternal(ItemsBuilder* builder,
     } else if (auto* layout_text = DynamicTo<LayoutText>(node)) {
       builder->AppendText(layout_text, previous_data);
 
-      if (symbol == layout_text)
+      if (symbol == layout_text || inline_list_item_marker == layout_text) {
         builder->SetIsSymbolMarker();
+      }
 
       builder->ClearNeedsLayout(layout_text);
     } else if (node->IsFloating()) {
@@ -330,6 +332,11 @@ void CollectInlinesInternal(ItemsBuilder* builder,
       }
       builder->ClearInlineFragment(node);
     } else if (auto* layout_inline = DynamicTo<LayoutInline>(node)) {
+      if (auto* inline_list_item = DynamicTo<LayoutNGInlineListItem>(node)) {
+        inline_list_item->UpdateMarkerTextIfNeeded();
+        inline_list_item_marker =
+            LayoutNGListItem::FindSymbolMarkerLayoutText(inline_list_item);
+      }
       builder->UpdateShouldCreateBoxFragment(layout_inline);
 
       builder->EnterInline(layout_inline);
@@ -798,8 +805,8 @@ class NGInlineNodeDataEditor final {
 
   static unsigned Mismatch(const NGInlineItemsData& old_data,
                            const NGInlineItemsData& new_data) {
-    const StringImpl& old_text = *old_data.text_content.Impl();
-    const StringImpl& new_text = *new_data.text_content.Impl();
+    const String& old_text = old_data.text_content;
+    const String& new_text = new_data.text_content;
     if (old_text.Is8Bit()) {
       const auto old_span8 = old_text.Span8();
       if (new_text.Is8Bit())
@@ -822,8 +829,8 @@ class NGInlineNodeDataEditor final {
   static unsigned MismatchFromEnd(const NGInlineItemsData& old_data,
                                   const NGInlineItemsData& new_data,
                                   unsigned max_length) {
-    const StringImpl& old_text = *old_data.text_content.Impl();
-    const StringImpl& new_text = *new_data.text_content.Impl();
+    const String& old_text = old_data.text_content;
+    const String& new_text = new_data.text_content;
     const unsigned old_length = old_text.length();
     const unsigned new_length = new_text.length();
     DCHECK_LE(max_length, old_length);
@@ -886,7 +893,7 @@ class NGInlineNodeDataEditor final {
 
 // static
 bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
-                                     scoped_refptr<StringImpl> new_text_in,
+                                     String new_text_in,
                                      unsigned offset,
                                      unsigned length) {
   if (!layout_text->HasValidInlineItems() ||
@@ -911,7 +918,7 @@ bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
   String new_text(std::move(new_text_in));
   layout_text->StyleRef().ApplyTextTransform(&new_text,
                                              layout_text->PreviousCharacter());
-  layout_text->SetTextInternal(new_text.Impl());
+  layout_text->SetTextInternal(new_text);
 
   NGInlineNode node(editor.GetLayoutBlockFlow());
   NGInlineNodeData* data = node.MutableData();
@@ -1002,22 +1009,9 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
     return nullptr;
   }
 
-  // If |layout_block_flow| is LayoutNG, compute from |NGInlineNode|.
-  if (layout_block_flow->IsLayoutNGObject()) {
-    NGInlineNode node(layout_block_flow);
-    CHECK(node.IsPrepareLayoutFinished());
-    return node.ComputeOffsetMappingIfNeeded();
-  }
-
-  // If this is not LayoutNG, compute the offset mapping and store into
-  // |LayoutBlockFlowRareData|.
-  if (const NGOffsetMapping* mapping = layout_block_flow->GetOffsetMapping())
-    return mapping;
-  NGInlineNodeData* data = MakeGarbageCollected<NGInlineNodeData>();
-  ComputeOffsetMapping(layout_block_flow, data);
-  NGOffsetMapping* const mapping = data->offset_mapping.Release();
-  layout_block_flow->SetOffsetMapping(mapping);
-  return mapping;
+  NGInlineNode node(layout_block_flow);
+  CHECK(node.IsPrepareLayoutFinished());
+  return node.ComputeOffsetMappingIfNeeded();
 }
 
 // Depth-first-scan of all LayoutInline and LayoutText nodes that make up this
@@ -1539,7 +1533,8 @@ void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) const {
   WTF::wtf_size_t size = items.size();
   for (WTF::wtf_size_t i = 0; i != size;) {
     LayoutObject* object = items[i].GetLayoutObject();
-    if (auto* layout_text = DynamicTo<LayoutNGText>(object)) {
+    auto* layout_text = DynamicTo<LayoutText>(object);
+    if (layout_text && !layout_text->IsBR()) {
 #if DCHECK_IS_ON()
       // Items split from a LayoutObject should be consecutive.
       DCHECK(associated_objects.insert(object).is_new_entry);
@@ -1579,7 +1574,7 @@ const NGLayoutResult* NGInlineNode::Layout(
 namespace {
 
 template <typename CharType>
-scoped_refptr<StringImpl> CreateTextContentForStickyImagesQuirk(
+String CreateTextContentForStickyImagesQuirk(
     const CharType* text,
     unsigned length,
     base::span<const NGInlineItem> items) {
@@ -1825,8 +1820,8 @@ static LayoutUnit ComputeContentSize(
 
   if (UNLIKELY(node.IsInitialLetterBox())) {
     LayoutUnit inline_size = LayoutUnit();
+    NGLineInfo line_info;
     do {
-      NGLineInfo line_info;
       line_breaker.NextLine(&line_info);
       if (line_info.Results().empty())
         break;
@@ -1841,8 +1836,8 @@ static LayoutUnit ComputeContentSize(
   MaxSizeFromMinSize max_size_from_min_size(items_data, *max_size_cache,
                                             &floats_max_size);
 
+  NGLineInfo line_info;
   do {
-    NGLineInfo line_info;
     line_breaker.NextLine(&line_info);
     if (line_info.Results().empty())
       break;

@@ -7,10 +7,14 @@
 #include <memory>
 #include <string>
 
+#include "ash/components/arc/mojom/app.mojom.h"
 #include "ash/components/arc/mojom/compatibility_mode.mojom.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ash/arc/idle_manager/arc_throttle_test_observer.h"
+#include "chrome/browser/ash/arc/util/arc_window_watcher.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -30,7 +34,8 @@ ArcAppListPrefs::AppInfo CreateAppInfoForPackage(
       ArcAppListPrefs::WindowLayout(), true /* ready */, true /* suspended */,
       true /* show_in_launcher */, true /* shortcut */, true /* launchable */,
       false /* need_fixup */, absl::nullopt /* app_size_in_bytes */,
-      absl::nullopt /* data_size_in_bytes */);
+      absl::nullopt /* data_size_in_bytes */,
+      arc::mojom::AppCategory::kUndefined);
 }
 
 class ArcAppLaunchThrottleObserverTest : public testing::Test {
@@ -46,6 +51,7 @@ class ArcAppLaunchThrottleObserverTest : public testing::Test {
   ArcAppLaunchThrottleObserver* observer() { return &app_launch_observer_; }
 
   content::BrowserTaskEnvironment* environment() { return &task_environment_; }
+  ash::ArcWindowWatcher* watcher() { return ash::ArcWindowWatcher::instance(); }
 
  private:
   content::BrowserTaskEnvironment task_environment_{
@@ -76,9 +82,19 @@ TEST_F(ArcAppLaunchThrottleObserverTest, TestOnAppLaunchRequested) {
   // App3 finishes launch but observer is not waiting for app3, so it is still
   // active.
   observer()->OnTaskCreated(0, app3.package_name, "", "", /*session_id=*/0);
+  EXPECT_TRUE(observer()->active());
 
   // App1 finishes launch, observer is inactive.
   observer()->OnTaskCreated(0, app1.package_name, "", "", /*session_id=*/0);
+  EXPECT_FALSE(observer()->active());
+
+  // Re-launch App1, observer is active
+  observer()->OnAppLaunchRequested(app1);
+  EXPECT_TRUE(observer()->active());
+
+  // App1 finishes launch, observer is inactive.
+  observer()->OnArcWindowDisplayed(app1.package_name);
+  EXPECT_FALSE(observer()->active());
 }
 
 // Check that a launch request expires.
@@ -93,6 +109,43 @@ TEST_F(ArcAppLaunchThrottleObserverTest, TestLaunchRequestExpires) {
   environment()->FastForwardUntilNoTasksRemain();
 
   EXPECT_FALSE(observer()->active());
+}
+
+TEST_F(ArcAppLaunchThrottleObserverTest, TestWindowWatcherEffectOnInit) {
+  std::unique_ptr<TestingProfile> testing_profile;
+
+  testing_profile = std::make_unique<TestingProfile>();
+
+  {  // ArcWindowWatcher available.
+    std::unique_ptr<ash::ArcWindowWatcher> arc_window_watcher;
+    arc_window_watcher = std::make_unique<ash::ArcWindowWatcher>();
+
+    unittest::ThrottleTestObserver test_observer;
+
+    EXPECT_EQ(0, test_observer.count());
+    EXPECT_FALSE(watcher()->HasDisplayObserver(observer()));
+    observer()->StartObserving(
+        testing_profile.get(),
+        base::BindRepeating(&unittest::ThrottleTestObserver::Monitor,
+                            base::Unretained(&test_observer)));
+    EXPECT_TRUE(watcher()->HasDisplayObserver(observer()));
+
+    observer()->StopObserving();
+    EXPECT_FALSE(watcher()->HasDisplayObserver(observer()));
+  }
+
+  {  // ArcWindowWatcher unavailable.
+    unittest::ThrottleTestObserver test_observer;
+
+    EXPECT_EQ(0, test_observer.count());
+    observer()->StartObserving(
+        testing_profile.get(),
+        base::BindRepeating(&unittest::ThrottleTestObserver::Monitor,
+                            base::Unretained(&test_observer)));
+    // No need to check: not crashing is enough to prove correctness.
+
+    observer()->StopObserving();
+  }
 }
 
 }  // namespace

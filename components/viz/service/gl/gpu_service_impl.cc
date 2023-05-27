@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/viz/common/features.h"
-#include "components/viz/common/gpu/metal_context_provider.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/scheduler.h"
@@ -120,6 +119,10 @@
 #include "components/viz/common/gpu/dawn_context_provider.h"
 #endif
 
+#if BUILDFLAG(SKIA_USE_METAL)
+#include "components/viz/common/gpu/metal_context_provider.h"
+#endif
+
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
 #include "base/test/clang_profiling.h"
 #endif
@@ -132,6 +135,12 @@
 namespace viz {
 
 namespace {
+
+// Whether to crash the GPU service on context loss when running in-process with
+// ANGLE.
+BASE_FEATURE(kCrashOnInProcessANGLEContextLoss,
+             "CrashOnInProcessANGLEContextLoss",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // The names emitted for GPU initialization trace events.
 // This code may be removed after the following investigation:
@@ -336,13 +345,6 @@ GpuServiceImpl::GpuServiceImpl(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) &&
         // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
-  GrContextOptions context_options =
-      GetDefaultGrContextOptions(gpu_preferences_.gr_context_type);
-  if (gpu_preferences_.force_max_texture_size) {
-    context_options.fMaxTextureSizeOverride =
-        gpu_preferences_.force_max_texture_size;
-  }
-
 #if BUILDFLAG(ENABLE_VULKAN)
   if (vulkan_implementation_) {
     bool is_native_vulkan =
@@ -368,26 +370,29 @@ GpuServiceImpl::GpuServiceImpl(
   }
 #endif
 
+#if BUILDFLAG(ENABLE_SKIA_GRAPHITE)
+  if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGraphiteDawn) {
 #if BUILDFLAG(SKIA_USE_DAWN)
-  if (gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn) {
     dawn_context_provider_ = DawnContextProvider::Create();
     if (!dawn_context_provider_) {
-      DLOG(ERROR) << "Failed to create Dawn context provider.";
+      DLOG(ERROR) << "Failed to create Dawn context provider for Graphite.";
     }
+#endif  // BUILDFLAG(SKIA_USE_DAWN)
+  } else if (gpu_preferences_.gr_context_type ==
+             gpu::GrContextType::kGraphiteMetal) {
+#if BUILDFLAG(SKIA_USE_METAL)
+    metal_context_provider_ = MetalContextProvider::Create();
+    if (!metal_context_provider_) {
+      DLOG(ERROR) << "Failed to create Metal context provider for Graphite.";
+    }
+#endif  // BUILDFLAG(SKIA_USE_METAL)
   }
-#endif
+#endif  // BUILDFLAG(ENABLE_SKIA_GRAPHITE)
 
 #if BUILDFLAG(USE_VAAPI_IMAGE_CODECS)
   image_decode_accelerator_worker_ =
       media::VaapiImageDecodeAcceleratorWorker::Create();
 #endif  // BUILDFLAG(USE_VAAPI_IMAGE_CODECS)
-
-#if BUILDFLAG(IS_APPLE)
-  if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_METAL] ==
-      gpu::kGpuFeatureStatusEnabled) {
-    metal_context_provider_ = MetalContextProvider::Create(context_options);
-  }
-#endif
 
 #if BUILDFLAG(IS_WIN)
   if (media::SupportMediaFoundationClearPlayback()) {
@@ -599,7 +604,7 @@ void GpuServiceImpl::InitializeWithHost(
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
       std::move(activity_flags), std::move(default_offscreen_surface),
       image_decode_accelerator_worker_.get(), vulkan_context_provider(),
-      metal_context_provider_.get(), dawn_context_provider());
+      metal_context_provider(), dawn_context_provider());
 
   media_gpu_channel_manager_ = std::make_unique<media::MediaGpuChannelManager>(
       gpu_channel_manager_.get());
@@ -824,6 +829,9 @@ void GpuServiceImpl::CreateVideoEncodeAcceleratorProvider(
     CHECK(vea_thread_->StartWithOptions(std::move(thread_options)));
   }
   runner = vea_thread_->task_runner();
+#elif BUILDFLAG(IS_WIN)
+  // Windows hardware encoder requires a COM STA thread.
+  runner = base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()});
 #else
   // MayBlock() because MF VEA can take long time running GetSupportedProfiles()
   if (base::FeatureList::IsEnabled(
@@ -973,12 +981,28 @@ void GpuServiceImpl::GetIsolationKey(
   gpu_host_->GetIsolationKey(client_id, token, std::move(cb));
 }
 
-void GpuServiceImpl::MaybeExitOnContextLost() {
+void GpuServiceImpl::MaybeExitOnContextLost(bool synthetic_loss) {
   DCHECK(main_runner_->BelongsToCurrentThread());
 
-  // We can't restart the GPU process when running in the host process.
-  if (in_host_process())
+  if (in_host_process()) {
+    // When running with ANGLE, crash on a backend context loss if
+    // `kCrashOnInProcessANGLEContextLoss` is enabled. This enables evaluation
+    // of the hypothesis that as ANGLE is currently unable to recover from
+    // context loss when running within Chrome, it is better to crash in this
+    // case than enter into a loop of context loss events leading to undefined
+    // behavior. Note that it *is* possible to recover from a so-called
+    // synthetic loss, i.e., a context loss event that was generated by Chrome
+    // rather than being due to an actual backend context loss.
+    if (gpu_channel_manager_->use_passthrough_cmd_decoder() &&
+        !synthetic_loss &&
+        base::FeatureList::IsEnabled(kCrashOnInProcessANGLEContextLoss)) {
+      CHECK(false);
+    }
+
+    // We can't restart the GPU process when running in the host process;
+    // instead, just hope for recovery from the context loss.
     return;
+  }
 
   if (IsExiting() || !exit_callback_)
     return;

@@ -11,12 +11,13 @@
 #include "ash/constants/ash_switches.h"
 #include "base/check.h"
 #include "base/functional/callback_forward.h"
-#include "base/guid.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
+#include "base/uuid.h"
 #include "base/values.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/enrollment/auto_enrollment_client.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/ash/policy/enrollment/psm/rlwe_dmserver_client.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_device_state.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
+#include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/common/pref_names.h"
@@ -70,11 +72,12 @@ struct DeterminationContext {
 
   // Allows retrieving system values from multiple sources.
   // Must be set before sequence starts.
-  ash::system::StatisticsProvider* statistics_provider;
+  raw_ptr<ash::system::StatisticsProvider, ExperimentalAsh> statistics_provider;
 
   // Interface for talking to DMServer.
   // Must be set before sequence starts.
-  DeviceManagementService* device_management_service = nullptr;
+  raw_ptr<DeviceManagementService, ExperimentalAsh> device_management_service =
+      nullptr;
 
   // This will be used to configure `job`s for the `device_management_service`.
   // Must be set before sequence starts.
@@ -82,7 +85,15 @@ struct DeterminationContext {
 
   // Interface for retrieving synchronized clock time.
   // Must be set before sequence starts.
-  ash::SystemClockClient* system_clock_client;
+  raw_ptr<ash::SystemClockClient, ExperimentalAsh> system_clock_client;
+
+  // Used to retrieve device state keys.
+  // Must be set before sequence starts.
+  raw_ptr<ServerBackedStateKeysBroker, ExperimentalAsh> state_key_broker;
+
+  // Interface for checking ownership.
+  // Must be set before sequence starts.
+  raw_ptr<ash::DeviceSettingsService, ExperimentalAsh> device_settings_service;
 
   // RLZ brand code and serial numbers retrieved using `statistics_provider`.
   // Used for state availability determination (PSM) and state retrieval
@@ -110,11 +121,17 @@ void StorePsmError(PrefService* local_state) {
 }
 
 // Class to synchronize the system clock.
+//
+// This is a step in enrollment state fetch (see Sequence class below).
 class SystemClock {
   static constexpr base::TimeDelta kSystemClockSyncWaitTimeout =
       base::Seconds(45);
 
  public:
+  SystemClock() = default;
+  SystemClock(const SystemClock&) = delete;
+  SystemClock& operator=(const SystemClock&) = delete;
+
   // This will attempt to synchronize the system clock within up to
   // `kSystemClockSyncWaitTimeout`.
   // It will report success (`true`) or failure (`false`) via the
@@ -132,11 +149,37 @@ class SystemClock {
       system_clock_sync_observation_;
 };
 
+// Class to check device ownership.
+//
+// This is a step in enrollment state fetch (see Sequence class below).
+class Ownership {
+ public:
+  Ownership() = default;
+  Ownership(const Ownership&) = delete;
+  Ownership& operator=(const Ownership&) = delete;
+
+  // This will attempt to check device ownership. It will report the result via
+  // the `completion_callback`.
+  void Check(
+      ash::DeviceSettingsService* device_settings_service,
+      base::OnceCallback<void(ash::DeviceSettingsService::OwnershipStatus)>
+          completion_callback) {
+    // TODO(b/278056625): Skip state fetch when install attributes are locked.
+    device_settings_service->GetOwnershipStatusAsync(
+        std::move(completion_callback));
+  }
+};
+
 // Class to check whether embargo date has passed.
 //
 // Must be used only after system clock has been synchronized.
+// This is a step in enrollment state fetch (see Sequence class below).
 class EmbargoDate {
  public:
+  EmbargoDate() = default;
+  EmbargoDate(const EmbargoDate&) = delete;
+  EmbargoDate& operator=(const EmbargoDate&) = delete;
+
   bool Passed(DeterminationContext& context) {
     const ash::system::FactoryPingEmbargoState embargo_state =
         ash::system::GetEnterpriseManagementPingEmbargoState(
@@ -152,8 +195,14 @@ class EmbargoDate {
 };
 
 // Class to obtain brand code and serial number.
+//
+// This is a step in enrollment state fetch (see Sequence class below).
 class DeviceIdentifiers {
  public:
+  DeviceIdentifiers() = default;
+  DeviceIdentifiers(const DeviceIdentifiers&) = delete;
+  DeviceIdentifiers& operator=(const DeviceIdentifiers&) = delete;
+
   // Retrieves brand code and serial numbers.
   //
   // On success, stores retrieved identifiers in `rlz_brand_code` and
@@ -171,10 +220,16 @@ class DeviceIdentifiers {
 };
 
 // Class to obtain state keys.
+//
+// This is a step in enrollment state fetch (see Sequence class below).
 class StateKeys {
   static constexpr int kMaxAttempts = 10;
 
  public:
+  StateKeys() = default;
+  StateKeys(const StateKeys&) = delete;
+  StateKeys& operator=(const StateKeys&) = delete;
+
   using CompletionCallback =
       base::OnceCallback<void(absl::optional<std::string>)>;
 
@@ -182,24 +237,23 @@ class StateKeys {
   // successful, it will return the current state key by calling the completion
   // callback.
   // Otherwise, it will return `absl::nullopt`.
-  void Retrieve(CompletionCallback completion_callback) {
+  void Retrieve(ServerBackedStateKeysBroker* state_key_broker,
+                CompletionCallback completion_callback) {
     ++attempts_;
-    g_browser_process->platform_part()
-        ->browser_policy_connector_ash()
-        ->GetStateKeysBroker()
-        ->RequestStateKeys(base::BindOnce(&StateKeys::OnStateKeysRetrieved,
-                                          weak_factory_.GetWeakPtr(),
-                                          std::move(completion_callback)));
+    state_key_broker->RequestStateKeys(base::BindOnce(
+        &StateKeys::OnStateKeysRetrieved, weak_factory_.GetWeakPtr(),
+        state_key_broker, std::move(completion_callback)));
   }
 
  private:
-  void OnStateKeysRetrieved(CompletionCallback completion_callback,
+  void OnStateKeysRetrieved(ServerBackedStateKeysBroker* state_key_broker,
+                            CompletionCallback completion_callback,
                             const std::vector<std::string>& state_keys) {
     if (state_keys.empty() || state_keys[0].empty()) {
       if (attempts_ >= kMaxAttempts) {
         return std::move(completion_callback).Run(absl::nullopt);
       }
-      return Retrieve(std::move(completion_callback));
+      return Retrieve(state_key_broker, std::move(completion_callback));
     }
     return std::move(completion_callback).Run(state_keys[0]);
   }
@@ -208,18 +262,26 @@ class StateKeys {
   base::WeakPtrFactory<StateKeys> weak_factory_{this};
 };
 
+// Class to send RLWE OPRF request as part of PSM protocol.
+//
+// This is a step in enrollment state fetch (see Sequence class below).
 class RlweOprf {
  public:
   using Response = private_membership::rlwe::PrivateMembershipRlweOprfResponse;
   using Result = base::expected<Response, AutoEnrollmentState>;
   using CompletionCallback = base::OnceCallback<void(Result)>;
 
+  RlweOprf() = default;
+  RlweOprf(const RlweOprf&) = delete;
+  RlweOprf& operator=(const RlweOprf&) = delete;
+
   void Request(DeterminationContext& context,
                CompletionCallback completion_callback) {
     DCHECK(completion_callback);
     const auto oprf_request = context.psm_rlwe_client->CreateOprfRequest();
     if (!oprf_request.ok()) {
-      LOG(ERROR) << "Failed to create PSM RLWE OPRF request";
+      LOG(ERROR) << "Failed to create PSM RLWE OPRF request: "
+                 << oprf_request.status();
       return std::move(completion_callback)
           .Run(base::unexpected(AutoEnrollmentState::kNoEnrollment));
     }
@@ -229,7 +291,7 @@ class RlweOprf {
         context.device_management_service,
         DeviceManagementService::JobConfiguration::
             TYPE_PSM_HAS_DEVICE_STATE_REQUEST,
-        base::GUID::GenerateRandomV4().AsLowercaseString(),
+        base::Uuid::GenerateRandomV4().AsLowercaseString(),
         /*critical=*/true, DMAuth::NoAuth(),
         /*oauth_token=*/absl::nullopt, context.url_loader_factory,
         base::BindOnce(&RlweOprf::OnRequestDone, weak_factory_.GetWeakPtr(),
@@ -269,7 +331,7 @@ class RlweOprf {
             .Run(base::unexpected(AutoEnrollmentState::kConnectionError));
       }
       default: {
-        LOG(ERROR) << "PSM RLWE OPRF server error";
+        LOG(ERROR) << "PSM RLWE OPRF server error: " << result.dm_status;
         return std::move(completion_callback)
             .Run(base::unexpected(AutoEnrollmentState::kServerError));
       }
@@ -288,8 +350,15 @@ class RlweOprf {
   base::WeakPtrFactory<RlweOprf> weak_factory_{this};
 };
 
+// Class to send RLWE Query request as part of PSM protocol.
+//
+// This is a step in enrollment state fetch (see Sequence class below).
 class RlweQuery {
  public:
+  RlweQuery() = default;
+  RlweQuery(const RlweQuery&) = delete;
+  RlweQuery& operator=(const RlweQuery&) = delete;
+
   using Result = base::expected<bool, AutoEnrollmentState>;
   using CompletionCallback =
       base::OnceCallback<void(base::expected<bool, AutoEnrollmentState>)>;
@@ -304,7 +373,8 @@ class RlweQuery {
         context.psm_rlwe_client->CreateQueryRequest(oprf_response);
 
     if (!query_request.ok()) {
-      LOG(ERROR) << "Failed to create PSM RLWE query request";
+      LOG(ERROR) << "Failed to create PSM RLWE query request: "
+                 << query_request.status();
       return std::move(completion_callback)
           .Run(base::unexpected(AutoEnrollmentState::kNoEnrollment));
     }
@@ -314,7 +384,7 @@ class RlweQuery {
         context.device_management_service,
         DeviceManagementService::JobConfiguration::
             TYPE_PSM_HAS_DEVICE_STATE_REQUEST,
-        base::GUID::GenerateRandomV4().AsLowercaseString(),
+        base::Uuid::GenerateRandomV4().AsLowercaseString(),
         /*critical=*/true, DMAuth::NoAuth(),
         /*oauth_token=*/absl::nullopt, context.url_loader_factory,
         base::BindOnce(&RlweQuery::OnRequestDone, weak_factory_.GetWeakPtr(),
@@ -358,7 +428,7 @@ class RlweQuery {
             .Run(base::unexpected(AutoEnrollmentState::kConnectionError));
       }
       default: {
-        LOG(ERROR) << "PSM RLWE query server error";
+        LOG(ERROR) << "PSM RLWE query server error: " << result.dm_status;
         return std::move(completion_callback)
             .Run(base::unexpected(AutoEnrollmentState::kServerError));
       }
@@ -403,6 +473,9 @@ class RlweQuery {
   base::WeakPtrFactory<RlweQuery> weak_factory_{this};
 };
 
+// Class to send state request to DMServer.
+//
+// This is a step in enrollment state fetch (see Sequence class below).
 class EnrollmentState {
  public:
   struct Response {
@@ -412,13 +485,17 @@ class EnrollmentState {
   using Result = base::expected<Response, AutoEnrollmentState>;
   using CompletionCallback = base::OnceCallback<void(Result)>;
 
+  EnrollmentState() = default;
+  EnrollmentState(const EnrollmentState&) = delete;
+  EnrollmentState& operator=(const EnrollmentState&) = delete;
+
   void Request(DeterminationContext& context,
                CompletionCallback completion_callback) {
     // TODO(b/265923216): Replace this with unified request type.
     auto config = std::make_unique<DMServerJobConfiguration>(
         context.device_management_service,
         DeviceManagementService::JobConfiguration::TYPE_DEVICE_STATE_RETRIEVAL,
-        base::GUID::GenerateRandomV4().AsLowercaseString(),
+        base::Uuid::GenerateRandomV4().AsLowercaseString(),
         /*critical=*/true, DMAuth::NoAuth(),
         /*oauth_token=*/absl::nullopt, context.url_loader_factory,
         base::BindOnce(&EnrollmentState::OnRequestDone,
@@ -666,20 +743,25 @@ class EnrollmentStateFetcherImpl : public EnrollmentStateFetcher {
       RlweClientFactory rlwe_client_factory,
       DeviceManagementService* device_management_service,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      ash::SystemClockClient* system_clock_client) {
+      ash::SystemClockClient* system_clock_client,
+      ServerBackedStateKeysBroker* state_key_broker,
+      ash::DeviceSettingsService* device_settings_service) {
     DCHECK(report_result);
     DCHECK(local_state);
     DCHECK(rlwe_client_factory);
     DCHECK(device_management_service);
     DCHECK(url_loader_factory);
     DCHECK(system_clock_client);
+    DCHECK(state_key_broker);
+    DCHECK(device_settings_service);
 
     call_sequence_ = std::make_unique<Sequence>(
         std::move(report_result), local_state,
         DeterminationContext{std::move(rlwe_client_factory),
                              ash::system::StatisticsProvider::GetInstance(),
                              device_management_service, url_loader_factory,
-                             system_clock_client});
+                             system_clock_client, state_key_broker,
+                             device_settings_service});
   }
 
   void Start() override;
@@ -709,8 +791,8 @@ class EnrollmentStateFetcherImpl::Sequence {
         context_(std::move(context)) {}
 
   void Start() {
-    if (!AutoEnrollmentTypeChecker::IsEnabled()) {
-      VLOG(1) << "Enrollment disabled via flags";
+    if (!AutoEnrollmentTypeChecker::IsUnifiedStateDeterminationEnabled()) {
+      VLOG(1) << "Unified state determination is disabled";
       return std::move(report_result_).Run(AutoEnrollmentState::kNoEnrollment);
     }
 
@@ -745,7 +827,24 @@ class EnrollmentStateFetcherImpl::Sequence {
       return std::move(report_result_).Run(AutoEnrollmentState::kNoEnrollment);
     }
 
-    state_keys_.Retrieve(base::BindOnce(&Sequence::OnStateKeysRetrieved,
+    ownership_.Check(context_.device_settings_service,
+                     base::BindOnce(&Sequence::OnOwnershipChecked,
+                                    weak_factory_.GetWeakPtr()));
+  }
+
+  void OnOwnershipChecked(ash::DeviceSettingsService::OwnershipStatus status) {
+    if (status == ash::DeviceSettingsService::OWNERSHIP_UNKNOWN) {
+      LOG(ERROR) << "Device ownership is unknown. Skipping enrollment";
+      return std::move(report_result_).Run(AutoEnrollmentState::kNoEnrollment);
+    }
+
+    if (status == ash::DeviceSettingsService::OWNERSHIP_TAKEN) {
+      VLOG(1) << "Device ownership is already taken. Skipping enrollment";
+      return std::move(report_result_).Run(AutoEnrollmentState::kNoEnrollment);
+    }
+
+    state_keys_.Retrieve(context_.state_key_broker,
+                         base::BindOnce(&Sequence::OnStateKeysRetrieved,
                                         weak_factory_.GetWeakPtr()));
   }
 
@@ -807,10 +906,11 @@ class EnrollmentStateFetcherImpl::Sequence {
   // Used to store the initial enrollment state (if available) in a dict at
   // `prefs::kServerBackedDeviceState`.
   // Must not be nullptr for initial enrollment state determination.
-  PrefService* local_state_ = nullptr;
+  raw_ptr<PrefService, ExperimentalAsh> local_state_ = nullptr;
 
   DeviceIdentifiers device_identifiers_;
   SystemClock system_clock_;
+  Ownership ownership_;
   EmbargoDate embargo_date_;
   StateKeys state_keys_;
   RlweOprf oprf_;
@@ -834,10 +934,13 @@ std::unique_ptr<EnrollmentStateFetcher> EnrollmentStateFetcher::Create(
     RlweClientFactory rlwe_client_factory,
     DeviceManagementService* device_management_service,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    ash::SystemClockClient* system_clock_client) {
+    ash::SystemClockClient* system_clock_client,
+    ServerBackedStateKeysBroker* state_key_broker,
+    ash::DeviceSettingsService* device_settings_service) {
   return std::make_unique<EnrollmentStateFetcherImpl>(
       std::move(report_result), local_state, rlwe_client_factory,
-      device_management_service, url_loader_factory, system_clock_client);
+      device_management_service, url_loader_factory, system_clock_client,
+      state_key_broker, device_settings_service);
 }
 
 // static

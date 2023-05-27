@@ -21,6 +21,7 @@
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -288,7 +289,8 @@ struct ShowLoginWizardSwitchLanguageCallbackData {
       : first_screen(first_screen), startup_manifest(startup_manifest) {}
 
   const OobeScreenId first_screen;
-  const StartupCustomizationDocument* const startup_manifest;
+  const raw_ptr<const StartupCustomizationDocument, ExperimentalAsh>
+      startup_manifest;
 
   // lock UI while resource bundle is being reloaded.
   InputEventsBlocker events_blocker;
@@ -930,7 +932,6 @@ void LoginDisplayHostWebUI::OnLoginPromptVisible() {
 
 void LoginDisplayHostWebUI::CreateExistingUserController() {
   existing_user_controller_ = std::make_unique<ExistingUserController>();
-  login_display_->set_delegate(existing_user_controller_.get());
 }
 
 void LoginDisplayHostWebUI::ShowGaiaDialog(const AccountId& prefilled_account) {
@@ -1008,11 +1009,6 @@ void LoginDisplayHostWebUI::AddObserver(LoginDisplayHost::Observer* observer) {
 void LoginDisplayHostWebUI::RemoveObserver(
     LoginDisplayHost::Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-void LoginDisplayHostWebUI::OnNetworkErrorScreenShown() {
-  VLOG(1) << "Login WebUI >> WEBUI_VISIBLE(ERROR_SCREEN)";
-  ShowWebUI();
 }
 
 void LoginDisplayHostWebUI::OnLoginOrLockScreenVisible() {

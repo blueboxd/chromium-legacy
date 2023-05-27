@@ -5,6 +5,7 @@
 #include "chromeos/ash/components/audio/cros_audio_config_impl.h"
 
 #include "ash/constants/ash_features.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -308,7 +309,9 @@ class CrosAudioConfigImplTest : public testing::Test {
   }
 
   void SetNoiseCancellationState(bool noise_cancellation_on) {
-    cras_audio_handler_->SetNoiseCancellationState(noise_cancellation_on);
+    cras_audio_handler_->SetNoiseCancellationState(
+        noise_cancellation_on,
+        CrasAudioHandler::AudioSettingsChangeSource::kOsSettings);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -342,11 +345,12 @@ class CrosAudioConfigImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  CrasAudioHandler* cras_audio_handler_ = nullptr;  // Not owned.
+  raw_ptr<CrasAudioHandler, ExperimentalAsh> cras_audio_handler_ =
+      nullptr;  // Not owned.
   std::unique_ptr<CrosAudioConfigImpl> cros_audio_config_;
   mojo::Remote<mojom::CrosAudioConfig> remote_;
   scoped_refptr<AudioDevicesPrefHandlerStub> audio_pref_handler_;
-  FakeCrasAudioClient* fake_cras_audio_client_;
+  raw_ptr<FakeCrasAudioClient, ExperimentalAsh> fake_cras_audio_client_;
 };
 
 TEST_F(CrosAudioConfigImplTest, HandleExternalInputGainUpdate) {
@@ -558,6 +562,9 @@ TEST_F(CrosAudioConfigImplTest, SetNoiseCancellationState) {
   bool expect_noise_cancellation_enabled = true;
   histogram_tester_.ExpectBucketCount(kNoiseCancellationEnabledHistogramName,
                                       expect_noise_cancellation_enabled, 0);
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kNoiseCancellationEnabledSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kOsSettings, 0);
 
   // Turn on noise cancellation support.
   SetNoiseCancellationSupported(/*supported=*/true);
@@ -567,6 +574,9 @@ TEST_F(CrosAudioConfigImplTest, SetNoiseCancellationState) {
   SimulateSetNoiseCancellationEnabled(/*enabled=*/true);
   histogram_tester_.ExpectBucketCount(kNoiseCancellationEnabledHistogramName,
                                       expect_noise_cancellation_enabled, 1);
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kNoiseCancellationEnabledSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kOsSettings, 1);
 
   // Add input audio nodes.
   SetAudioNodes({kInternalMic, kUsbMic});
@@ -592,6 +602,9 @@ TEST_F(CrosAudioConfigImplTest, SetNoiseCancellationState) {
   expect_noise_cancellation_enabled = false;
   histogram_tester_.ExpectBucketCount(kNoiseCancellationEnabledHistogramName,
                                       expect_noise_cancellation_enabled, 0);
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kNoiseCancellationEnabledSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kOsSettings, 1);
 
   // Turn noise cancellation off with active input device that supports noise
   // cancellation.
@@ -604,6 +617,9 @@ TEST_F(CrosAudioConfigImplTest, SetNoiseCancellationState) {
             fake_observer->GetInputAudioDevice(1)->noise_cancellation_state);
   histogram_tester_.ExpectBucketCount(kNoiseCancellationEnabledHistogramName,
                                       expect_noise_cancellation_enabled, 1);
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kNoiseCancellationEnabledSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kOsSettings, 2);
 }
 
 TEST_F(CrosAudioConfigImplTest, GetOutputAudioDevices) {
@@ -883,6 +899,9 @@ TEST_F(CrosAudioConfigImplTest, SetOutputMuted) {
                                       AudioMuteButtonAction::kMuted, 1);
   histogram_tester_.ExpectBucketCount(kOutputMuteChangeHistogramName,
                                       AudioMuteButtonAction::kUnmuted, 1);
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kOutputVolumeMuteSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kOsSettings, 2);
 }
 
 TEST_F(CrosAudioConfigImplTest, SetInputMuted) {
@@ -909,6 +928,9 @@ TEST_F(CrosAudioConfigImplTest, SetInputMuted) {
                                       AudioMuteButtonAction::kMuted, 1);
   histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
                                       AudioMuteButtonAction::kUnmuted, 1);
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kInputGainMuteSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kOsSettings, 2);
 
   // Simulate turning physical switch on.
   SetInputMuteState(mojom::MuteState::kMutedExternally, /*switch_on=*/true);
@@ -931,6 +953,9 @@ TEST_F(CrosAudioConfigImplTest, SetInputMuted) {
                                       AudioMuteButtonAction::kMuted, 1);
   histogram_tester_.ExpectBucketCount(kInputMuteChangeHistogramName,
                                       AudioMuteButtonAction::kUnmuted, 1);
+  histogram_tester_.ExpectBucketCount(
+      CrasAudioHandler::kInputGainMuteSourceHistogramName,
+      CrasAudioHandler::AudioSettingsChangeSource::kOsSettings, 2);
 }
 
 // Verify merging front and rear mic into a single device returns expected
@@ -949,8 +974,7 @@ TEST_F(CrosAudioConfigImplTest, StubInternalMicHandlesDualMicUpdates) {
       fake_observer->last_audio_system_properties_.value()
           ->input_devices[1]
           .Clone();
-  const std::string expected_display_name = "Internal Mic";
-  EXPECT_EQ(expected_display_name, internal_mic->display_name);
+  EXPECT_EQ(mojom::AudioDeviceType::kInternalMic, internal_mic->device_type);
   EXPECT_FALSE(internal_mic->is_active);
 
   SimulateSetActiveDevice(kInternalMicFrontId);
@@ -961,7 +985,7 @@ TEST_F(CrosAudioConfigImplTest, StubInternalMicHandlesDualMicUpdates) {
   internal_mic = fake_observer->last_audio_system_properties_.value()
                      ->input_devices[1]
                      .Clone();
-  EXPECT_EQ(expected_display_name, internal_mic->display_name);
+  EXPECT_EQ(mojom::AudioDeviceType::kInternalMic, internal_mic->device_type);
   EXPECT_TRUE(internal_mic->is_active);
 
   // Verify rear device ID will also set internal mic to active.
@@ -974,7 +998,7 @@ TEST_F(CrosAudioConfigImplTest, StubInternalMicHandlesDualMicUpdates) {
   internal_mic = fake_observer->last_audio_system_properties_.value()
                      ->input_devices[1]
                      .Clone();
-  EXPECT_EQ(expected_display_name, internal_mic->display_name);
+  EXPECT_EQ(mojom::AudioDeviceType::kInternalMic, internal_mic->device_type);
   EXPECT_TRUE(internal_mic->is_active);
 }
 

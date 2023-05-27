@@ -11,7 +11,9 @@
 import {AnchorAlignment, CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 
-import {css, CSSResultGroup, customElement, html, property, query, state, XfBase} from './xf_base.js';
+import {addCSSPrefixSelector, getCrActionMenuTop} from '../common/js/dom_utils.js';
+
+import {css, CSSResultGroup, customElement, html, property, query, XfBase} from './xf_base.js';
 
 /**
  * The data structure used to set the new options on the select element.
@@ -102,11 +104,6 @@ export class XfSelect extends XfBase {
   @query('cr-action-menu') private $optionsMenu_?: CrActionMenuElement;
 
   /**
-   * Keeps track of whether we are showing the options menu.
-   */
-  @state() private optionsVisible_: boolean = false;
-
-  /**
    * The currently selected option.
    */
   private selectedOption_: XfSelectedValue = {
@@ -138,7 +135,7 @@ export class XfSelect extends XfBase {
    * collapsed.
    */
   get expanded(): boolean {
-    return this.optionsVisible_;
+    return this.$optionsMenu_ ? this.$optionsMenu_.open : false;
   }
 
   /**
@@ -157,7 +154,7 @@ export class XfSelect extends XfBase {
     return html`
       <cr-button id="dropdown-toggle"
               aria-haspopup="menu"
-              aria-expanded=${this.optionsVisible_}
+              aria-expanded=${this.expanded}
               @click=${this.onToggleOptions_}>
         ${iconPart}${labelPart}<span id="dropdown-icon"></span>
       </cr-button>`;
@@ -248,7 +245,7 @@ export class XfSelect extends XfBase {
    * dropdown options.
    */
   private onToggleOptions_(): void {
-    if (this.optionsVisible_) {
+    if (this.expanded) {
       this.closeOptions_();
     } else {
       this.openOptions_();
@@ -259,12 +256,11 @@ export class XfSelect extends XfBase {
    * Opens the dropdown options, providing they were closed.
    */
   private openOptions_() {
-    if (!this.optionsVisible_) {
+    if (!this.expanded) {
       const element: HTMLElement = this.$toggleDropdownButton_!;
-      const top = element.offsetTop + element.offsetHeight + 8;
+      const top = getCrActionMenuTop(element, 8);
       this.$optionsMenu_!.showAt(
           element, {top: top, anchorAlignmentX: AnchorAlignment.AFTER_START});
-      this.optionsVisible_ = true;
     }
   }
 
@@ -272,14 +268,13 @@ export class XfSelect extends XfBase {
    * Closes the dropdown options, providing they were open.
    */
   private closeOptions_() {
-    if (this.optionsVisible_) {
+    if (this.expanded) {
       this.$optionsMenu_!.close();
-      this.optionsVisible_ = false;
     }
   }
 
   /**
-   * Reacs to one of the options being selected. If the selection changed the
+   * React to one of the options being selected. If the selection changed the
    * currently selected option, it updates the value, which prompts
    * re-rendering. It also posts a selection change event. Finally it always
    * closes the option, regardless of change.
@@ -317,7 +312,7 @@ export class XfSelect extends XfBase {
  * CSS used by the xf-select widget.
  */
 function getCSS(): CSSResultGroup {
-  return css`
+  const legacyStyle = css`
     cr-button {
       --hover-bg-color: var(--cros-ripple-color);
       --hover-border-color: var(--cros-button-stroke-color-secondary);
@@ -388,6 +383,116 @@ function getCSS(): CSSResultGroup {
       visibility: visible;
     }
   `;
+
+  const refresh23Style = css`
+    cr-button {
+      --active-bg: none;
+      --hover-bg-color: var(--cros-sys-hover_on_subtle);
+      --hover-border-color: var(--cros-sys-separator);
+      --ink-color: var(--cros-sys-ripple_neutral_on_subtle);
+      --ripple-opacity: 100%;
+      --text-color: var(--cros-sys-on_surface);
+      box-shadow: none;
+    }
+    #dropdown-toggle {
+      --border-color: var(--cros-sys-separator);
+      --cr-button-height: 32px;
+      border-radius: 8px;
+      margin-inline: 4px;
+      min-width: auto;
+      padding-inline: 12px;
+      white-space: nowrap;
+    }
+    :host-context(.focus-outline-visible) #dropdown-toggle:focus {
+      outline: 2px solid var(--cros-sys-focus_ring);
+      outline-offset: 2px;
+    }
+    .xf-select-icon {
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      background-color: var(--cros-sys-on_surface);
+      height: 20px;
+      width: 20px;
+      margin-inline: 0 8px;
+    }
+    #xf-select-icon.select-location {
+      -webkit-mask-image:
+        url(/foreground/images/files/ui/select_location.svg);
+    }
+    #xf-select-icon.select-time {
+      -webkit-mask-image:
+        url(/foreground/images/files/ui/select_time.svg);
+    }
+    #xf-select-icon.select-filetype {
+      -webkit-mask-image:
+        url(/foreground/images/files/ui/select_filetype.svg);
+    }
+    #dropdown-icon {
+      -webkit-mask-image:
+        url(/foreground/images/files/ui/xf_select_dropdown.svg);
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      background-color: var(--cros-sys-on_surface);
+      height: 20px;
+      width: 20px;
+      margin-inline: 8px 0;
+    }
+    cr-button.dropdown-item {
+      --focus-shadow-color: none;
+      padding: 0 16px;
+    }
+    cr-button.dropdown-item:hover {
+      background-color: var(--cros-sys-hover_on_subtle);
+    }
+    cr-button.dropdown-item-center {
+      justify-content: center;
+    }
+    cr-button.dropdown-item-start {
+      justify-content: start;
+    }
+    cr-button.dropdown-item-end {
+      justify-content: end;
+    }
+    div.dropdown-filler {
+      flex-grow: 1;
+    }
+    div.selected-icon {
+      -webkit-mask-image: url(/foreground/images/common/ic_selected.svg);
+      -webkit-mask-position: center;
+      -webkit-mask-repeat: no-repeat;
+      background-color: var(--cros-sys-primary);
+      height: 20px;
+      width: 20px;
+      visibility: hidden;
+    }
+    cr-button[selected] div.selected-icon {
+      visibility: visible;
+    }
+    :host-context(.focus-outline-visible) cr-action-menu cr-button:focus {
+      outline: 2px solid var(--cros-sys-focus_ring);
+      outline-offset: -2px;
+    }
+    /** Reset the hover color when using keyboard to navigate the menu items. */
+    :host-context(.focus-outline-visible) cr-action-menu cr-button:hover {
+      background-color: unset;
+    }
+    cr-action-menu {
+      --cr-menu-background-color: var(--cros-sys-base_elevated);
+      --cr-menu-background-focus-color: none;
+      --cr-menu-background-sheen: none;
+      /* TODO(wenbojie): use elevation variable when it's ready.
+      --cros-sys-elevation3 */
+      --cr-menu-shadow: var(--cros-elevation-2-shadow);
+    }
+    cr-action-menu::part(dialog) {
+      border-radius: 8px;
+    }
+  `;
+
+  return [
+    addCSSPrefixSelector(legacyStyle, '[theme="legacy"]'),
+    addCSSPrefixSelector(refresh23Style, '[theme="refresh23"]'),
+  ];
 }
 
 /**

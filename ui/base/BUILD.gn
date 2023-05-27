@@ -331,12 +331,8 @@ component("base") {
       "cocoa/touch_bar_util.mm",
       "cocoa/tracking_area.h",
       "cocoa/tracking_area.mm",
-      "cocoa/underlay_opengl_hosting_window.h",
-      "cocoa/underlay_opengl_hosting_window.mm",
       "cocoa/user_interface_item_command_handler.h",
       "cocoa/views_hostable.h",
-      "cocoa/weak_ptr_nsobject.h",
-      "cocoa/weak_ptr_nsobject.mm",
       "cocoa/window_size_constants.h",
       "cocoa/window_size_constants.mm",
       "dragdrop/os_exchange_data_provider_builder_mac.h",
@@ -968,6 +964,20 @@ if (is_ios) {
   }
 }
 
+source_set("run_all_unittests") {
+  testonly = true
+  sources = [ "test/run_all_unittests.cc" ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gtest",
+    "//ui/base",
+    "//ui/display",
+  ]
+}
+
 test("ui_base_unittests") {
   use_xvfb = use_xvfb_in_this_config
 
@@ -1122,7 +1132,6 @@ test("ui_base_unittests") {
         "cocoa/menu_controller_unittest.mm",
         "cocoa/touch_bar_util_unittest.mm",
         "cocoa/tracking_area_unittest.mm",
-        "cocoa/weak_ptr_nsobject_unittest.mm",
       ]
     }
   }

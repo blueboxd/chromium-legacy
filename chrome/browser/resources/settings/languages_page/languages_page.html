@@ -51,7 +51,7 @@
   }
 
   #restartButton {
-    margin-inline-start: var(--settings-controlled-by-spacing);
+    margin-inline-start: var(--cr-controlled-by-spacing);
   }
 </if>
 
@@ -66,7 +66,7 @@
     </h2>
     <cr-button id="addLanguages" class="header-aligned-button"
         disabled="[[!canEnableSomeSupportedLanguage_(languages)]]"
-        on-click="onAddLanguagesTap_">
+        on-click="onAddLanguagesClick_">
       $i18n{addLanguages}
     </cr-button>
   </div>
@@ -96,7 +96,7 @@
         <template is="dom-if" if="[[isRestartRequired_(
             item.language.code, languages.prospectiveUILanguage)]]"
             restamp>
-          <cr-button id="restartButton" on-click="onRestartTap_">
+          <cr-button id="restartButton" on-click="onRestartClick_">
             $i18n{restart}
           </cr-button>
         </template>
@@ -104,7 +104,7 @@
         <cr-icon-button class="icon-more-vert"
             title="$i18n{moreActions}"
             id="more-[[item.language.code]]"
-            on-click="onDotsTap_">
+            on-click="onDotsClick_">
         </cr-icon-button>
       </div>
     </template>
@@ -130,7 +130,7 @@
                 languages.prospectiveUILanguage)]]"
             on-change="onUiLanguageChange_"
             disabled="[[disableUiLanguageCheckbox_(
-                detailLanguage_, languages.prospectiveUILanguage)]]">
+                detailLanguage_, languages.prospectiveUILanguage)]]" noink>
           <span>
             $i18n{displayInThisLanguage}
           </span>
@@ -146,29 +146,29 @@
               on-change="onTranslateCheckboxChange_"
               hidden="[[!prefs.translate.enabled.value]]"
               disabled="[[disableTranslateCheckbox_(
-                  detailLanguage_, languages.translateTarget)]]">
+                  detailLanguage_, languages.translateTarget)]]" noink>
             $i18n{offerToTranslateInThisLanguage} </cr-checkbox>
           <hr hidden="[[!shouldShowDialogSeparator_(languages.enabled.*)]]">
         </template>
         <button class="dropdown-item" role="menuitem"
-            on-click="onMoveToTopTap_"
+            on-click="onMoveToTopClick_"
             hidden="[[isNthLanguage_(
                 0, detailLanguage_, languages.enabled.*)]]">
           $i18n{moveToTop}
         </button>
         <button class="dropdown-item" role="menuitem"
-            on-click="onMoveUpTap_"
+            on-click="onMoveUpClick_"
             hidden="[[!showMoveUp_(detailLanguage_, languages.enabled.*)]]">
           $i18n{moveUp}
         </button>
         <button class="dropdown-item" role="menuitem"
-            on-click="onMoveDownTap_"
+            on-click="onMoveDownClick_"
             hidden="[[!showMoveDown_(
                 detailLanguage_, languages.enabled.*)]]">
           $i18n{moveDown}
         </button>
         <button class="dropdown-item" role="menuitem"
-            on-click="onRemoveLanguageTap_"
+            on-click="onRemoveLanguageClick_"
             disabled="[[!detailLanguage_.removable]]">
           $i18n{removeLanguage}
         </button>

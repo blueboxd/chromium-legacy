@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">इमेज डीकोडर</translation>
 <translation id="1785415724048343560">सर्वोत्तम अनुभवासाठी शिफारस केलेले</translation>
 <translation id="1818308510395330587"><ph name="APP_NAME" /> ला AR वापरू देण्यासाठी, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" />मध्ये कॅमेरादेखील सुरू करा.</translation>
-<translation id="1864927262126810325"><ph name="SOURCE_NAME" /> मधून</translation>
 <translation id="187227595286001730">संबंधित साइट तुमची या गटातील अ‍ॅक्टिव्हिटी पाहू शकतात</translation>
 <translation id="1887786770086287077">या डिव्हाइसाठी स्थान अ‍ॅक्सेस बंद आहे, <ph name="BEGIN_LINK" />Android सेटिंग्‍ज<ph name="END_LINK" /> मध्‍ये हे सुरू करा.</translation>
 <translation id="1915307458270490472">बंद करा</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">डाउनलोड पूर्ण झाले <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">काही साइटवरील वैशिष्ट्ये कदाचित गुप्त मोडमध्ये काम करणार नाहीत</translation>
 <translation id="2442870161001914531">नेहमी डेस्कटॉप साइटची विनंती करा</translation>
+<translation id="2479148705183875116">सेटिंग्ज वर जा</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2485422356828889247">अनइंस्टॉल करा</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> द्वारे व्यवस्थापित केले आहे</translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">ईमेल ॲड्रेस</translation>
 <translation id="2750481671343847896">साइट ओळखीच्या सेवांकडून मिळणाऱ्या साइन इन सूचना दाखवू शकतात.</translation>
 <translation id="2822354292072154809">तुम्हाला नक्की <ph name="CHOSEN_OBJECT_NAME" /> साठी सर्व साइट परवानग्या रीसेट करायच्या आहेत का?</translation>
+<translation id="2850913818900871965">मोबाइल दृश्याची विनंती करा</translation>
 <translation id="2870560284913253234">साइट</translation>
 <translation id="2874939134665556319">मागील ट्रॅक</translation>
 <translation id="2891975107962658722">साइटला तुमच्या डिव्हाइसवर डेटा सेव्ह करण्यापासून ब्लॉक करा</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">तुमच्या ब्राउझिंग अनुभवात सुधारणा करण्यासाठी, उदाहरणार्थ, तुम्हाला साइन इन केलेले ठेवण्यासाठी किंवा तुमच्या शॉपिंग कार्टमधील आयटम लक्षात ठेवण्यासाठी साइट कुकी वापरू शकतात</translation>
 <translation id="3165022941318558018">साइटला तृतीय पक्ष कुकी वापरण्याची अनुमती द्या</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> संचयित केलेला डेटा</translation>
-<translation id="3203366800380907218">वेबवरील</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> ने तुम्हाला सूचना पाठवण्यासाठी, <ph name="BEGIN_LINK" />Android सेटिंग्ज<ph name="END_LINK" /> मध्येदेखील सूचना सुरू करा.</translation>
 <translation id="3227137524299004712">मायक्रोफोन</translation>
 <translation id="3248611290851046188">ही साइट तुम्हाला जाहिराती दाखवण्यासाठी इतर साइट वापरू शकतात अशी स्वारस्ये परिभाषित करते. तुम्हाला आणखी उपयुक्त जाहिराती दाखवण्यासाठी ही साइट Chrome मधून तुमची स्वारस्येदेखील मिळवते.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">डेस्कटॉप दृश्याची विनंती करा</translation>
 <translation id="5100237604440890931">संकुचित केले - विस्तृत करण्यासाठी क्लिक करा.</translation>
 <translation id="5123685120097942451">गुप्त टॅब</translation>
-<translation id="5134599672855298214">मोबाइल दृश्याची विनंती करा (शिफारस केलेले)</translation>
 <translation id="5186036860380548585">स्क्रीनच्या सर्वात वरती पर्याय उपलब्ध आहे</translation>
 <translation id="5197729504361054390">तुम्ही निवडलेले संपर्क <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />सोबत शेअर केले जातील.</translation>
 <translation id="5216942107514965959">आज शेवटची भेट दिली</translation>

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//ios/web/public/js_messaging/optimize_js.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
@@ -20,6 +21,7 @@ source_set("form_util") {
     "unique_id_data_tab_helper.mm",
   ]
   deps = [
+    ":form_util_feature",
     "//base",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser:util",
@@ -105,10 +107,14 @@ source_set("unit_tests") {
     "fill_js_unittest.mm",
     "form_activity_observer_bridge_unittest.mm",
     "form_activity_tab_helper_unittest.mm",
+    "form_handlers_unittest.mm",
     "form_unittest.mm",
     "unique_id_data_tab_helper_unittest.mm",
   ]
   deps = [
+    ":fill_js",
+    ":form_handlers_js",
+    ":form_js",
     ":form_util",
     ":form_util_feature",
     ":test_support",
@@ -117,10 +123,21 @@ source_set("unit_tests") {
     "//components/autofill/ios/form_util:form_handler_feature",
     "//ios/web/public/js_messaging",
     "//ios/web/public/test",
+    "//ios/web/public/test:javascript_test",
     "//ios/web/public/test:test_fixture",
+    "//ios/web/public/test:util",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
   ]
+
+  # TODO(crbug.com/1427365): Test currently fails on iOS blink.
+  if (is_ios && use_blink) {
+    sources -= [
+      "fill_js_unittest.mm",
+      "form_activity_tab_helper_unittest.mm",
+      "form_unittest.mm",
+    ]
+  }
 }
 if (is_ios) {
   fuzzer_test("form_activity_tab_helper_fuzzer") {

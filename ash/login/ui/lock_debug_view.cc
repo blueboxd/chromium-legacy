@@ -32,6 +32,7 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/user_manager/known_user.h"
@@ -350,8 +351,6 @@ class LockDebugView::DebugDataDispatcherTransformer
           case SmartLockState::kBluetoothDisabled:
             return SmartLockState::kPhoneNotAuthenticated;
           case SmartLockState::kPhoneNotAuthenticated:
-            return SmartLockState::kPasswordReentryRequired;
-          case SmartLockState::kPasswordReentryRequired:
             return SmartLockState::kPrimaryUserAbsent;
           case SmartLockState::kPrimaryUserAbsent:
             return SmartLockState::kDisabled;
@@ -387,8 +386,6 @@ class LockDebugView::DebugDataDispatcherTransformer
           case EasyUnlockIconState::LOCKED_TO_BE_ACTIVATED:
             return EasyUnlockIconState::LOCKED_WITH_PROXIMITY_HINT;
           case EasyUnlockIconState::LOCKED_WITH_PROXIMITY_HINT:
-            return EasyUnlockIconState::HARDLOCKED;
-          case EasyUnlockIconState::HARDLOCKED:
             return EasyUnlockIconState::UNLOCKED;
           case EasyUnlockIconState::UNLOCKED:
             return EasyUnlockIconState::NONE;
@@ -658,7 +655,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   // The debug overlay UI takes ground-truth data from |root_dispatcher_|,
   // applies a series of transformations to it, and exposes it to the UI via
   // |debug_dispatcher_|.
-  LoginDataDispatcher* root_dispatcher_;  // Unowned.
+  raw_ptr<LoginDataDispatcher, ExperimentalAsh> root_dispatcher_;  // Unowned.
   LoginDataDispatcher debug_dispatcher_;
 
   // Original set of users from |root_dispatcher_|.
@@ -680,7 +677,7 @@ class LockDebugView::DebugDataDispatcherTransformer
   // In such a case, we want to bypass the event handling mechanism and do
   // direct calls to the lock screen. We need either an instance of
   // LockDebugView or LockContentsView in order to do so.
-  LockDebugView* const lock_debug_view_;
+  const raw_ptr<LockDebugView, ExperimentalAsh> lock_debug_view_;
 };
 
 // In-memory wrapper around LoginDetachableBaseModel used by lock UI.
@@ -839,12 +836,12 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
   lock_ = new LockContentsView(initial_note_action_state, screen_type,
                                debug_data_dispatcher_->debug_dispatcher(),
                                std::move(debug_detachable_base_model));
-  AddChildView(lock_);
+  AddChildView(lock_.get());
 
   container_ = new NonAccessibleView();
   container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  AddChildView(container_);
+  AddChildView(container_.get());
 
   auto* margin = new NonAccessibleView();
   margin->SetPreferredSize(gfx::Size(10, 10));

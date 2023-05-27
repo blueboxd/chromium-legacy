@@ -414,7 +414,7 @@ void AuthenticationService::GrantSyncConsent(id<SystemIdentity> identity) {
   // badge in settings screen) check the sync auth error state. Sync
   // needs to be kicked off so that it resets the auth error quickly once
   // `identity` is reauthenticated.
-  sync_service_->GetUserSettings()->SetSyncRequested(true);
+  sync_service_->SetSyncFeatureRequested();
 }
 
 void AuthenticationService::SignOut(
@@ -432,8 +432,6 @@ void AuthenticationService::SignOut(
   // Get first setup complete value before to stop the sync service.
   const bool is_first_setup_complete =
       sync_setup_service_->IsFirstSetupComplete();
-
-  sync_service_->StopAndClear();
 
   auto* account_mutator = identity_manager_->GetPrimaryAccountMutator();
   // GetPrimaryAccountMutator() returns nullptr on ChromeOS only.

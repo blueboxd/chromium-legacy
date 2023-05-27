@@ -11,9 +11,11 @@ import sys
 import time
 import zipfile
 
+import compile_java
 import javac_output_processor
 from util import build_utils
-import compile_java
+import action_helpers  # build_utils adds //build to sys.path.
+import zip_helpers
 
 
 def ProcessJavacOutput(output, target_name):
@@ -26,7 +28,7 @@ def main(argv):
   build_utils.InitLogging('TURBINE_DEBUG')
   argv = build_utils.ExpandFileArgs(argv[1:])
   parser = argparse.ArgumentParser()
-  build_utils.AddDepfileOption(parser)
+  action_helpers.add_depfile_arg(parser)
   parser.add_argument('--target-name', help='Fully qualified GN target name.')
   parser.add_argument(
       '--turbine-jar-path', required=True, help='Path to the turbine jar file.')
@@ -61,10 +63,10 @@ def main(argv):
                       help='Kotlin jar to be merged into the output jar.')
   options, unknown_args = parser.parse_known_args(argv)
 
-  options.classpath = build_utils.ParseGnList(options.classpath)
-  options.processorpath = build_utils.ParseGnList(options.processorpath)
-  options.processors = build_utils.ParseGnList(options.processors)
-  options.java_srcjars = build_utils.ParseGnList(options.java_srcjars)
+  options.classpath = action_helpers.parse_gn_list(options.classpath)
+  options.processorpath = action_helpers.parse_gn_list(options.processorpath)
+  options.processors = action_helpers.parse_gn_list(options.processors)
+  options.java_srcjars = action_helpers.parse_gn_list(options.java_srcjars)
 
   files = []
   for arg in unknown_args:
@@ -77,91 +79,89 @@ def main(argv):
   # Turbine is run only on .java files.
   java_files = [f for f in files if f.endswith('.java')]
 
-  with build_utils.TempDir() as intermediate_dir:
-    if java_files:
-      # Rewrite instances of android.support.test to androidx.test. See
-      # https://crbug.com/1223832
-      java_files = compile_java.MaybeRewriteAndroidSupport(
-          java_files, intermediate_dir)
+  cmd = build_utils.JavaCmd() + [
+      '-classpath', options.turbine_jar_path, 'com.google.turbine.main.Main'
+  ]
+  javac_cmd = [
+      # We currently target JDK 11 everywhere.
+      '--release',
+      '11',
+  ]
 
-    cmd = build_utils.JavaCmd() + [
-        '-classpath', options.turbine_jar_path, 'com.google.turbine.main.Main'
-    ]
-    javac_cmd = [
-        # We currently target JDK 11 everywhere.
-        '--release',
-        '11',
-    ]
+  # Turbine reads lists from command line args by consuming args until one
+  # starts with double dash (--). Thus command line args should be grouped
+  # together and passed in together.
+  if options.processors:
+    cmd += ['--processors']
+    cmd += options.processors
 
-    # Turbine reads lists from command line args by consuming args until one
-    # starts with double dash (--). Thus command line args should be grouped
-    # together and passed in together.
-    if options.processors:
-      cmd += ['--processors']
-      cmd += options.processors
+  if options.processorpath:
+    cmd += ['--processorpath']
+    cmd += options.processorpath
 
-    if options.processorpath:
-      cmd += ['--processorpath']
-      cmd += options.processorpath
+  if options.processor_args:
+    for arg in options.processor_args:
+      javac_cmd.extend(['-A%s' % arg])
 
-    if options.processor_args:
-      for arg in options.processor_args:
-        javac_cmd.extend(['-A%s' % arg])
+  if options.classpath:
+    cmd += ['--classpath']
+    cmd += options.classpath
 
-    if options.classpath:
-      cmd += ['--classpath']
-      cmd += options.classpath
+  if options.java_srcjars:
+    cmd += ['--source_jars']
+    cmd += options.java_srcjars
 
-    if options.java_srcjars:
-      cmd += ['--source_jars']
-      cmd += options.java_srcjars
+  if java_files:
+    # Use jar_path to ensure paths are relative (needed for goma).
+    files_rsp_path = options.jar_path + '.java_files_list.txt'
+    with open(files_rsp_path, 'w') as f:
+      f.write(' '.join(java_files))
+    # Pass source paths as response files to avoid extremely long command
+    # lines that are tedius to debug.
+    cmd += ['--sources']
+    cmd += ['@' + files_rsp_path]
 
-    if java_files:
-      # Use jar_path to ensure paths are relative (needed for goma).
-      files_rsp_path = options.jar_path + '.java_files_list.txt'
-      with open(files_rsp_path, 'w') as f:
-        f.write(' '.join(java_files))
-      # Pass source paths as response files to avoid extremely long command
-      # lines that are tedius to debug.
-      cmd += ['--sources']
-      cmd += ['@' + files_rsp_path]
+  cmd += ['--javacopts']
+  cmd += javac_cmd
+  cmd += ['--']  # Terminate javacopts
 
-    cmd += ['--javacopts']
-    cmd += javac_cmd
-    cmd += ['--']  # Terminate javacopts
+  # Use AtomicOutput so that output timestamps are not updated when outputs
+  # are not changed.
+  with action_helpers.atomic_output(options.jar_path) as output_jar, \
+      action_helpers.atomic_output(options.generated_jar_path) as gensrc_jar:
+    cmd += ['--output', output_jar.name, '--gensrc_output', gensrc_jar.name]
+    process_javac_output_partial = functools.partial(
+        ProcessJavacOutput, target_name=options.target_name)
 
-    # Use AtomicOutput so that output timestamps are not updated when outputs
-    # are not changed.
-    with build_utils.AtomicOutput(options.jar_path) as output_jar, \
-        build_utils.AtomicOutput(options.generated_jar_path) as generated_jar:
-      cmd += [
-          '--output', output_jar.name, '--gensrc_output', generated_jar.name
-      ]
-
-      process_javac_output_partial = functools.partial(
-          ProcessJavacOutput, target_name=options.target_name)
-
-      logging.debug('Command: %s', cmd)
-      start = time.time()
+    logging.debug('Command: %s', cmd)
+    start = time.time()
+    try:
       build_utils.CheckOutput(cmd,
                               print_stdout=True,
                               stdout_filter=process_javac_output_partial,
                               stderr_filter=process_javac_output_partial,
                               fail_on_output=options.warnings_as_errors)
-      end = time.time() - start
-      logging.info('Header compilation took %ss', end)
-      if options.kotlin_jar_path:
-        with zipfile.ZipFile(output_jar.name, 'a') as out_zip:
-          build_utils.MergeZips(out_zip, [options.kotlin_jar_path],
-                                path_transform=lambda p: p
-                                if p.endswith('.class') else None)
+    except build_utils.CalledProcessError as e:
+      # Do not output stacktrace as it takes up space on gerrit UI, forcing
+      # you to click though to find the actual compilation error. It's never
+      # interesting to see the Python stacktrace for a Java compilation error.
+      sys.stderr.write(e.output)
+      sys.exit(1)
+    end = time.time() - start
+    logging.info('Header compilation took %ss', end)
+    if options.kotlin_jar_path:
+      with zipfile.ZipFile(output_jar.name, 'a') as out_zip:
+        path_transform = lambda p: p if p.endswith('.class') else None
+        zip_helpers.merge_zips(out_zip, [options.kotlin_jar_path],
+                               path_transform=path_transform)
 
   if options.depfile:
     # GN already knows of the java files, so avoid listing individual java files
     # in the depfile.
     depfile_deps = (options.classpath + options.processorpath +
                     options.java_srcjars)
-    build_utils.WriteDepfile(options.depfile, options.jar_path, depfile_deps)
+    action_helpers.write_depfile(options.depfile, options.jar_path,
+                                 depfile_deps)
 
 
 if __name__ == '__main__':

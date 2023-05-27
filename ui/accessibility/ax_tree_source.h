@@ -38,8 +38,14 @@ class AXTreeSource {
   virtual AXNodeSource GetRoot() const = 0;
 
   // Get a node by its id. If no node by that id exists in the tree, return a
-  // null node, i.e. one that will return false if you call IsValid on it.
+  // null node.
   virtual AXNodeSource GetFromId(AXNodeID id) const = 0;
+
+  AXNodeSource EnsureGetFromId(AXNodeID id) const {
+    AXNodeSource node = GetFromId(id);
+    DCHECK(node);
+    return node;
+  }
 
   // Return the id of a node. All ids must be positive integers; 0 is not a
   // valid ID. IDs are unique only across the current tree source, not across
@@ -53,10 +59,6 @@ class AXTreeSource {
 
   // Get the parent of |node|.
   virtual AXNodeSource GetParent(AXNodeSource node) const = 0;
-
-  // Returns true if |node| is valid, and false if it's a null pointer or a
-  // node object representing the null pointer.
-  virtual bool IsValid(AXNodeSource node) const = 0;
 
   // Returns true if |node| is an ignored node
   virtual bool IsIgnored(AXNodeSource node) const = 0;

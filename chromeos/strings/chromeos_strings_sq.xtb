@@ -123,6 +123,7 @@
 <translation id="1904932688895783618">Këtu janë disa burime të tjera të dobishme:</translation>
 <translation id="1905710495812624430">U kaluan përpjekjet maksimale të lejuara.</translation>
 <translation id="1908234395526491708">Dështimet e kërkesave UDP</translation>
+<translation id="1923388006036088459">Ngjyrat e theksimit</translation>
 <translation id="1947737735496445907">Printuar</translation>
 <translation id="1951012854035635156">Asistenti</translation>
 <translation id="1962550982027027473">Kërkohet një APN e parazgjedhur</translation>
@@ -140,6 +141,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Cilësime të tjera</translation>
 <translation id="2085089206770112532">Ulja e ndriçimit të ekranit</translation>
+<translation id="209751264101900360">Nga agimi në muzg - lëvizja e reve</translation>
 <translation id="2102231663024125441">Redaktimi i tekstit</translation>
 <translation id="2105810540595158374">Pajisja është një kontrollues loje.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versioni <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +333,7 @@
 <translation id="3967822245660637423">Shkarkimi përfundoi</translation>
 <translation id="3969602104473960991">Fjalëkalimi i ChromeOS u përditësua</translation>
 <translation id="397105322502079400">Po llogarit...</translation>
+<translation id="3974175076798940554">Tani ofrohen elemente ekskluzive të Chromebook Plus</translation>
 <translation id="39823212440917567">Printimet më të vjetra se <ph name="NUMBER_OF_DAYS" /> ditë do të hiqen</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> tani është përditësuar</translation>
 <translation id="4003384961948020559">Dështoi - Dalja është plot</translation>
@@ -370,6 +373,7 @@
 <translation id="4275663329226226506">Media</translation>
 <translation id="4289540628985791613">Përmbledhje</translation>
 <translation id="4289849978083912975">Shfaqje me rrëshqitje</translation>
+<translation id="4293621540182258188">Nga agimi në muzg - lëvizja e Tokës</translation>
 <translation id="4297501883039923494">Ndaloi - Gabim i panjohur</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> imazhe</translation>
 <translation id="4311195029067684288">I plotë</translation>
@@ -513,6 +517,7 @@
 <translation id="5423849171846380976">U aktivizua</translation>
 <translation id="5430931332414098647">Ndarja e internetit në çast</translation>
 <translation id="5431318178759467895">Ngjyra</translation>
+<translation id="5456936324019847994">Nuk mund të lidhet me asnjë APN të personalizuar të aktivizuar. Kontakto me operatorin tënd celular për më shumë informacione.</translation>
 <translation id="5457599981699367932">Shfleto si vizitor</translation>
 <translation id="54609108002486618">E menaxhuar</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} përpjekje e mbetur}other{{0} përpjekje të mbetura}}</translation>
@@ -544,6 +549,7 @@
 <translation id="576835345334454681">Ngritja e ndriçimit të ekranit</translation>
 <translation id="57838592816432529">Hiqi zërin</translation>
 <translation id="5784136236926853061">Vonesë shumë e lartë e HTTP-së</translation>
+<translation id="5809090008577139505">Agimi polar</translation>
 <translation id="5826644637650799838">Rreth artit</translation>
 <translation id="5832805196449965646">Shto person</translation>
 <translation id="583281660410589416">E panjohur</translation>
@@ -562,10 +568,12 @@
 <translation id="5907649332524363701">ngjyra e tastit</translation>
 <translation id="5916084858004523819">E ndaluar</translation>
 <translation id="5916664084637901428">Aktiv</translation>
+<translation id="5918201491776799918">Zgjidh ilustrimin ekskluziv të Chromebook Plus</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Skedari yt është skanuar dhe është ruajtur me sukses në <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Skedarët e tu janë skanuar dhe janë ruajtur me sukses në <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Skedari nuk u gjet</translation>
 <translation id="5939518447894949180">Rivendos</translation>
 <translation id="594552776027197022">Gjenero çift të rastësishëm çelësash</translation>
+<translation id="5946538341867151940">Nuk je lidhur ende. Nëse operatori yt celular rekomandon një APN të personalizuar, fut informacionet e APN-së duke zgjedhur "+ APN e re"</translation>
 <translation id="5972388717451707488">Motori i përditësimit</translation>
 <translation id="5984145644188835034">Imazhi i parazgjedhur i sfondit</translation>
 <translation id="6017514345406065928">E gjelbër</translation>
@@ -721,6 +729,7 @@
 <translation id="7281657306185710294">Ndjeje puhizën</translation>
 <translation id="7287310195820267359">Koleksionet e imazheve të sfondit</translation>
 <translation id="7297226631177386107">Nuk mund të lidhesh me sajtet e uebit HTTPS nëpërmjet murit mbrojtës</translation>
+<translation id="7297726121602187087">E gjelbër e errët</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Pyet ekspertët në forumin e ndihmës për Chromebook</translation>
@@ -755,12 +764,14 @@
 <translation id="7570674786725311828">Ekrani me prekje me USB</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> të mbetura</translation>
 <translation id="7613724632293948900">Ndrysho pozicionin me anë të miut ose tasteve të shigjetave.</translation>
+<translation id="7618774594543487847">Neutrale</translation>
 <translation id="7620771111601174153">Mëso më shumë në "Qendrën e ndihmës"</translation>
 <translation id="763165478673169849">Koha e rivendosjes së fundit</translation>
 <translation id="7648838807254605802">Vonesë e lartë në HTTPS</translation>
 <translation id="7656388927906093505">Pajisja është një maus.</translation>
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="7665800271478495366">Ndrysho simbolin</translation>
+<translation id="7675241868020048622">Aurora (ekskluzivisht për Plus)</translation>
 <translation id="7690294790491645610">Konfirmo fjalëkalimin e ri</translation>
 <translation id="7701040980221191251">Asnjë</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +828,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Zgjidh "<ph name="TOPIC_SOURCE_DESC" />" nga "<ph name="TOPIC_SOURCE" />"</translation>
 <translation id="8151185429379586178">Mjetet e zhvilluesit</translation>
+<translation id="8153923300383192510">Ekskluzive për Chromebook Plus</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Bashkëngjit</translation>
 <translation id="8206859287963243715">Rrjeti celular</translation>
@@ -839,6 +851,7 @@
 <translation id="8352772353338965963">Shto një llogari në identifikimin e shumëfishtë. Të gjitha llogaritë e identifikuara mund të qasen pa fjalëkalim, prandaj ky funksion duhet të përdoret vetëm me llogari të besuara.</translation>
 <translation id="8364946094152050673">Serverët DNS janë bosh</translation>
 <translation id="8372477600026034341">Pritësit e tjerë</translation>
+<translation id="8373046809163484087">Përdor paketat e ngjyrave që përputhen me imazhin tënd të sfondit</translation>
 <translation id="8380114448424469341">Dritarja e stacionit në gjysmën <ph name="DIRECTION" /> të ekranit</translation>
 <translation id="8395584934117017006">Kjo pajisje <ph name="DEVICE_TYPE" /> menaxhohet nga ndërmarrja</translation>
 <translation id="8398927464629426868">Shpejtësia me të cilën pajisja aktualisht po karikohet ose po shkarkohet</translation>
@@ -858,6 +871,7 @@
 <translation id="8503813439785031346">Emri i përdoruesit</translation>
 <translation id="8503836310948963452">Edhe vetëm pak minuta...</translation>
 <translation id="8508640263392900755">Detajet e APN-së</translation>
+<translation id="8522687886059337719">Tani ke qasje tek <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />imazhet e reja të sfondit<ph name="END_LINK_WALLPAPER_SUBPAGE" /> dhe te <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />mbrojtësit e rinj të ekranit<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Operatori celular mund të kërkojë këtë opsion për t'u lidhur me rrjetin e tij. Kontakto me operatorin celular për detaje.</translation>

@@ -39,7 +39,6 @@
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -110,10 +109,10 @@ ControlPart ImageInputType::AutoAppearance() const {
   return kNoControlPart;
 }
 
-LayoutObject* ImageInputType::CreateLayoutObject(const ComputedStyle& style,
-                                                 LegacyLayout legacy) const {
+LayoutObject* ImageInputType::CreateLayoutObject(
+    const ComputedStyle& style) const {
   if (use_fallback_content_)
-    return LayoutObject::CreateObject(&GetElement(), style, legacy);
+    return LayoutObject::CreateObject(&GetElement(), style);
   LayoutImage* image = MakeGarbageCollected<LayoutImage>(&GetElement());
   image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
   return image;

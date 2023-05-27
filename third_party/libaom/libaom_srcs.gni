@@ -418,6 +418,7 @@ aom_dsp_common_intrin_neon = [
   "//third_party/libaom/source/libaom/aom_dsp/arm/intrapred_neon.c",
   "//third_party/libaom/source/libaom/aom_dsp/arm/subtract_neon.c",
   "//third_party/libaom/source/libaom/aom_dsp/arm/blend_a64_mask_neon.c",
+  "//third_party/libaom/source/libaom/aom_dsp/arm/avg_pred_neon.c",
 ]
 
 aom_dsp_common_intrin_sse2 = [
@@ -559,6 +560,7 @@ aom_dsp_encoder_intrin_sse2 = [
   "//third_party/libaom/source/libaom/aom_dsp/x86/blk_sse_sum_sse2.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/sum_squares_sse2.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/variance_sse2.c",
+  "//third_party/libaom/source/libaom/aom_dsp/x86/jnt_sad_sse2.c",
 ]
 
 aom_dsp_encoder_intrin_sse4_1 = [
@@ -575,7 +577,6 @@ aom_dsp_encoder_intrin_ssse3 = [
   "//third_party/libaom/source/libaom/aom_dsp/x86/quantize_ssse3.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/variance_impl_ssse3.c",
   "//third_party/libaom/source/libaom/aom_dsp/x86/jnt_variance_ssse3.c",
-  "//third_party/libaom/source/libaom/aom_dsp/x86/jnt_sad_ssse3.c",
 ]
 
 aom_dsp_encoder_sources = [
@@ -661,8 +662,6 @@ aom_sources = [
 aom_util_sources = [
   "//third_party/libaom/source/libaom/aom_util/aom_thread.c",
   "//third_party/libaom/source/libaom/aom_util/aom_thread.h",
-  "//third_party/libaom/source/libaom/aom_util/debug_util.c",
-  "//third_party/libaom/source/libaom/aom_util/debug_util.h",
   "//third_party/libaom/source/libaom/aom_util/endian_inl.h",
 ]
 

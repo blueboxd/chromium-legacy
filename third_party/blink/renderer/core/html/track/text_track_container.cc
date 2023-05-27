@@ -33,9 +33,8 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/track/cue_timeline.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
-#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
+#include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observer_entry.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -104,9 +103,9 @@ void TextTrackContainer::RemovedFrom(ContainerNode& insertion_point) {
   }
 }
 
-LayoutObject* TextTrackContainer::CreateLayoutObject(const ComputedStyle& style,
-                                                     LegacyLayout legacy) {
-  return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
+LayoutObject* TextTrackContainer::CreateLayoutObject(
+    const ComputedStyle& style) {
+  return MakeGarbageCollected<LayoutNGBlockFlow>(this);
 }
 
 void TextTrackContainer::ObserveSizeChanges(Element& element) {

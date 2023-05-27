@@ -4,8 +4,10 @@
 
 #include "fuchsia_web/runners/cast/test/cast_runner_launcher.h"
 
+#include <chromium/cast/cpp/fidl.h>
 #include <fuchsia/buildinfo/cpp/fidl.h>
 #include <fuchsia/camera3/cpp/fidl.h>
+#include <fuchsia/component/decl/cpp/fidl.h>
 #include <fuchsia/fonts/cpp/fidl.h>
 #include <fuchsia/intl/cpp/fidl.h>
 #include <fuchsia/legacymetrics/cpp/fidl.h>
@@ -14,7 +16,6 @@
 #include <fuchsia/memorypressure/cpp/fidl.h>
 #include <fuchsia/net/interfaces/cpp/fidl.h>
 #include <fuchsia/settings/cpp/fidl.h>
-#include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <fuchsia/tracing/provider/cpp/fidl.h>
 #include <fuchsia/ui/composition/cpp/fidl.h>
@@ -30,7 +31,6 @@
 #include "base/fuchsia/process_context.h"
 #include "base/run_loop.h"
 #include "fuchsia_web/common/test/test_realm_support.h"
-#include "fuchsia_web/runners/cast/fidl/fidl/hlcpp/chromium/cast/cpp/fidl.h"
 #include "media/fuchsia/audio/fake_audio_device_enumerator_local_component.h"
 
 using ::component_testing::ChildRef;
@@ -87,25 +87,13 @@ class TestProxyLocalComponent : public component_testing::LocalComponentImpl {
 
 }  // namespace
 
-CastRunnerLauncher::CastRunnerLauncher(CastRunnerFeatures runner_features)
-    : runner_features_(runner_features) {}
-
-CastRunnerLauncher::~CastRunnerLauncher() {
-  if (realm_root_.has_value()) {
-    base::RunLoop run_loop;
-    realm_root_.value().Teardown(
-        [quit = run_loop.QuitClosure()](auto result) { quit.Run(); });
-    run_loop.Run();
-  }
-}
-
-std::unique_ptr<sys::ServiceDirectory> CastRunnerLauncher::StartCastRunner() {
+CastRunnerLauncher::CastRunnerLauncher(CastRunnerFeatures runner_features) {
   auto realm_builder = RealmBuilder::Create();
 
   static constexpr char kCastRunnerComponentName[] = "cast_runner";
   realm_builder.AddChild(kCastRunnerComponentName, "#meta/cast_runner.cm");
 
-  base::CommandLine command_line = CommandLineFromFeatures(runner_features_);
+  base::CommandLine command_line = CommandLineFromFeatures(runner_features);
   constexpr char const* kSwitchesToCopy[] = {"ozone-platform"};
   command_line.CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
                                 kSwitchesToCopy, std::size(kSwitchesToCopy));
@@ -146,8 +134,6 @@ std::unique_ptr<sys::ServiceDirectory> CastRunnerLauncher::StartCastRunner() {
               Protocol{"fuchsia.posix.socket.Provider"},
               Protocol{"fuchsia.process.Launcher"},
               Protocol{fuchsia::settings::Display::Name_},
-              Protocol{fuchsia::sys::Environment::Name_},
-              Protocol{fuchsia::sys::Loader::Name_},
               Storage{.name = "cache", .path = "/cache"},
           },
       .source = ParentRef(),
@@ -175,7 +161,7 @@ std::unique_ptr<sys::ServiceDirectory> CastRunnerLauncher::StartCastRunner() {
             .targets = {ChildRef{kCastRunnerComponentName}}});
 
   // Either route the fake AudioDeviceEnumerator or the system one.
-  if (runner_features_ & kCastRunnerFeaturesFakeAudioDeviceEnumerator) {
+  if (runner_features & kCastRunnerFeaturesFakeAudioDeviceEnumerator) {
     static constexpr char kAudioDeviceEnumerator[] =
         "fake_audio_device_enumerator";
     realm_builder.AddLocalChild(kAudioDeviceEnumerator, []() {
@@ -198,7 +184,7 @@ std::unique_ptr<sys::ServiceDirectory> CastRunnerLauncher::StartCastRunner() {
   realm_builder.AddRoute(
       Route{.capabilities = {Protocol{chromium::cast::DataReset::Name_},
                              Protocol{fuchsia::web::FrameHost::Name_},
-                             Protocol{fuchsia::sys::Runner::Name_}},
+                             Protocol{fuchsia::web::Debug::Name_}},
             .source = ChildRef{kCastRunnerComponentName},
             .targets = {ParentRef()}});
 
@@ -269,6 +255,21 @@ std::unique_ptr<sys::ServiceDirectory> CastRunnerLauncher::StartCastRunner() {
                                        std::move(test_proxy_decl));
   }
 
+  // Expose the CastRunner's Realm to the test Realm root, for it to expose
+  // for use by integration tests (see below).
+  {
+    auto runner_decl = realm_builder.GetComponentDecl(kCastRunnerComponentName);
+    runner_decl.mutable_exposes()->emplace_back(
+        fuchsia::component::decl::Expose::WithProtocol(std::move(
+            fuchsia::component::decl::ExposeProtocol()
+                .set_source(fuchsia::component::decl::Ref::WithFramework({}))
+                .set_source_name(fuchsia::component::Realm::Name_)
+                .set_target(fuchsia::component::decl::Ref::WithParent({}))
+                .set_target_name(fuchsia::component::Realm::Name_))));
+    realm_builder.ReplaceComponentDecl(kCastRunnerComponentName,
+                                       std::move(runner_decl));
+  }
+
   // Offer the test-proxy the Cast Resolver and Runner capabilities, and
   // expose its framework-provided Realm protocol out to the test.
   {
@@ -304,13 +305,36 @@ std::unique_ptr<sys::ServiceDirectory> CastRunnerLauncher::StartCastRunner() {
                     fuchsia::component::decl::ChildRef{.name = kTestProxyName}))
                 .set_target_name(kCastRunnerName))));
 
+    // Expose the CastRunner's Realm via the root component, as
+    // "fuchsia.component.Realm:runner", to allow tests to e.g.
+    // manipulate the child components in the `web_instances` collection.
+    realm_decl.mutable_exposes()->emplace_back(
+        fuchsia::component::decl::Expose::WithProtocol(std::move(
+            fuchsia::component::decl::ExposeProtocol()
+                .set_source(fuchsia::component::decl::Ref::WithChild(
+                    fuchsia::component::decl::ChildRef{
+                        .name = kCastRunnerComponentName}))
+                .set_source_name(fuchsia::component::Realm::Name_)
+                .set_target(fuchsia::component::decl::Ref::WithParent({}))
+                .set_target_name(kCastRunnerRealmProtocol))));
+
     realm_builder.ReplaceRealmDecl(std::move(realm_decl));
   }
 
-  // Create the test Realm and connect to its exposed services.
+  // Create the test realm and connect to the root component's exposed services,
+  // for use by tests.
   realm_root_ = realm_builder.Build();
-  return std::make_unique<sys::ServiceDirectory>(
+  exposed_services_ = std::make_unique<sys::ServiceDirectory>(
       realm_root_->component().CloneExposedDir());
+}
+
+CastRunnerLauncher::~CastRunnerLauncher() {
+  if (realm_root_.has_value()) {
+    base::RunLoop run_loop;
+    realm_root_.value().Teardown(
+        [quit = run_loop.QuitClosure()](auto result) { quit.Run(); });
+    run_loop.Run();
+  }
 }
 
 }  // namespace test

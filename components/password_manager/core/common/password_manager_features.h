@@ -29,6 +29,7 @@ BASE_DECLARE_FEATURE(kBiometricAuthenticationForFilling);
 BASE_DECLARE_FEATURE(kBiometricAuthenticationInSettings);
 #endif
 BASE_DECLARE_FEATURE(kBiometricTouchToFill);
+BASE_DECLARE_FEATURE(kDisablePasswordsDropdownForCvcFields);
 BASE_DECLARE_FEATURE(kEnableOverwritingPlaceholderUsernames);
 
 BASE_DECLARE_FEATURE(kEnablePasswordsAccountStorage);
@@ -40,6 +41,7 @@ inline constexpr base::FeatureParam<int>
 BASE_DECLARE_FEATURE(kEnablePasswordGenerationForClearTextFields);
 BASE_DECLARE_FEATURE(kEnablePasswordManagerWithinFencedFrame);
 BASE_DECLARE_FEATURE(kFillingAcrossAffiliatedWebsites);
+BASE_DECLARE_FEATURE(kFillingAcrossGroupedSites);
 BASE_DECLARE_FEATURE(kFillOnAccountSelect);
 BASE_DECLARE_FEATURE(kPasswordManagerLogToTerminal);
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
@@ -48,7 +50,6 @@ BASE_DECLARE_FEATURE(kForceInitialSyncWhenDecryptionFails);
 BASE_DECLARE_FEATURE(kInferConfirmationPasswordField);
 #if BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kIOSPasswordUISplit);
-BASE_DECLARE_FEATURE(kIOSPasswordManagerCrossOriginIframeSupport);
 BASE_DECLARE_FEATURE(kIOSPasswordCheckup);
 BASE_DECLARE_FEATURE(kIOSShowPasswordStorageInSaveInfobar);
 BASE_DECLARE_FEATURE(kIOSPasswordBottomSheet);
@@ -57,19 +58,17 @@ BASE_DECLARE_FEATURE(kIOSPasswordBottomSheet);
 BASE_DECLARE_FEATURE(kMemoryMapWeaknessCheckDictionaries);
 #endif
 BASE_DECLARE_FEATURE(kNewRegexForOtpFields);
+BASE_DECLARE_FEATURE(kPasswordIssuesInSpecificsMetadata);
 BASE_DECLARE_FEATURE(kPasswordViewPageInSettings);
 BASE_DECLARE_FEATURE(kSendPasswords);
 BASE_DECLARE_FEATURE(kLeakDetectionUnauthenticated);
 BASE_DECLARE_FEATURE(kPasswordChangeWellKnown);
-BASE_DECLARE_FEATURE(kPasswordImport);
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 BASE_DECLARE_FEATURE(kPasswordManagerRedesign);
 #endif
 BASE_DECLARE_FEATURE(kPasswordReuseDetectionEnabled);
 BASE_DECLARE_FEATURE(kPasswordsGrouping);
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 BASE_DECLARE_FEATURE(kPasswordsImportM2);
-#endif
 BASE_DECLARE_FEATURE(kPasswordStrengthIndicator);
 BASE_DECLARE_FEATURE(kRecoverFromNeverSaveAndroid);
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
@@ -86,12 +85,13 @@ BASE_DECLARE_FEATURE(kShowUPMErrorNotification);
 BASE_DECLARE_FEATURE(kUnifiedCredentialManagerDryRun);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerAndroid);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerErrorMessages);
+BASE_DECLARE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly);
-BASE_DECLARE_FEATURE(kUnifiedPasswordManagerReenrollment);
 BASE_DECLARE_FEATURE(kUnifiedPasswordManagerAndroidBranding);
 BASE_DECLARE_FEATURE(kExploratorySaveUpdatePasswordStrings);
 #endif
 BASE_DECLARE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing);
+BASE_DECLARE_FEATURE(kUsernameFirstFlowHonorAutocomplete);
 BASE_DECLARE_FEATURE(kPasswordGenerationPreviewOnHover);
 
 // All features parameters are in alphabetical order.
@@ -168,9 +168,6 @@ inline constexpr base::FeatureParam<UpmExperimentVariation>
     kUpmExperimentVariationParam{&kUnifiedPasswordManagerAndroid, "stage",
                                  UpmExperimentVariation::kEnableForSyncingUsers,
                                  &kUpmExperimentVariationOption};
-
-extern const base::FeatureParam<int> kMaxUPMReenrollments;
-extern const base::FeatureParam<int> kMaxUPMReenrollmentAttempts;
 
 extern const base::FeatureParam<bool> kIgnoreAuthErrorMessageTimeouts;
 extern const base::FeatureParam<int> kMaxShownUPMErrorsBeforeEviction;

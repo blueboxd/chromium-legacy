@@ -96,9 +96,6 @@ BackgroundTracingManagerImpl::~BackgroundTracingManagerImpl() = default;
 void BackgroundTracingManagerImpl::AddMetadataGeneratorFunction() {
   auto* metadata_source = tracing::TraceEventMetadataSource::GetInstance();
   metadata_source->AddGeneratorFunction(
-      base::BindRepeating(&BackgroundTracingManagerImpl::GenerateMetadataDict,
-                          base::Unretained(this)));
-  metadata_source->AddGeneratorFunction(
       base::BindRepeating(&BackgroundTracingManagerImpl::GenerateMetadataProto,
                           base::Unretained(this)));
 }
@@ -165,7 +162,8 @@ bool BackgroundTracingManagerImpl::SetActiveScenarioWithReceiveCallback(
   // TODO(oysteine): Retry when time_until_allowed has elapsed.
   if (config_impl && delegate_ &&
       !delegate_->IsAllowedToBeginBackgroundScenario(
-          *config_impl.get(), requires_anonymized_data)) {
+          config_impl->scenario_name(), requires_anonymized_data,
+          config_impl->has_crash_scenario())) {
     return false;
   }
 
@@ -362,32 +360,14 @@ void BackgroundTracingManagerImpl::OnStartTracingDone() {
   }
 }
 
-void BackgroundTracingManagerImpl::WhenIdle(
-    base::RepeatingClosure idle_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  idle_callback_ = std::move(idle_callback);
-
-  if (!active_scenario_) {
-    idle_callback_.Run();
-  }
-}
-
 bool BackgroundTracingManagerImpl::IsAllowedFinalization(
     bool is_crash_scenario) const {
   return !delegate_ ||
          (active_scenario_ &&
           delegate_->IsAllowedToEndBackgroundScenario(
-              *active_scenario_->GetConfig(),
+              active_scenario_->GetConfig()->scenario_name(),
               active_scenario_->GetConfig()->requires_anonymized_data(),
               is_crash_scenario));
-}
-
-absl::optional<base::Value::Dict>
-BackgroundTracingManagerImpl::GenerateMetadataDict() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!active_scenario_)
-    return absl::nullopt;
-  return active_scenario_->GenerateMetadataDict();
 }
 
 void BackgroundTracingManagerImpl::GenerateMetadataProto(
@@ -419,10 +399,6 @@ void BackgroundTracingManagerImpl::OnScenarioAborted() {
 
   for (auto* observer : background_tracing_observers_) {
     observer->OnScenarioAborted();
-  }
-
-  if (!idle_callback_.is_null()) {
-    idle_callback_.Run();
   }
 }
 

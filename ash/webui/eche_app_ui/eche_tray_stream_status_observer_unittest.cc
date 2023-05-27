@@ -14,6 +14,7 @@
 #include "ash/webui/eche_app_ui/eche_connection_status_handler.h"
 #include "ash/webui/eche_app_ui/eche_stream_status_change_handler.h"
 #include "ash/webui/eche_app_ui/fake_feature_status_provider.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ash/components/phonehub/fake_phone_hub_manager.h"
 #include "chromeos/ash/components/test/ash_test_suite.h"
@@ -76,8 +77,8 @@ class EcheTrayStreamStatusObserverTest : public AshTestBase {
   void TearDown() override {
     observer_.reset();
     apps_launch_info_provider_.reset();
-    connection_status_handler_.reset();
     stream_status_change_handler_.reset();
+    connection_status_handler_.reset();
     AshTestBase::TearDown();
   }
 
@@ -95,7 +96,7 @@ class EcheTrayStreamStatusObserverTest : public AshTestBase {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  EcheTray* eche_tray_ = nullptr;
+  raw_ptr<EcheTray, ExperimentalAsh> eche_tray_ = nullptr;
   std::unique_ptr<EcheConnectionStatusHandler> connection_status_handler_;
   std::unique_ptr<AppsLaunchInfoProvider> apps_launch_info_provider_;
   std::unique_ptr<EcheStreamStatusChangeHandler> stream_status_change_handler_;

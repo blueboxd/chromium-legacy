@@ -45,8 +45,8 @@ BASE_FEATURE(kNotificationInteractionHistory,
              "NotificationInteractionHistory",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kOneTimeGeolocationPermission,
-             "OneTimeGeolocationPermission",
+BASE_FEATURE(kOneTimePermission,
+             "OneTimePermission",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables an experimental permission prompt that uses a chip in the location
@@ -94,7 +94,7 @@ BASE_FEATURE(kPermissionOnDeviceNotificationPredictions,
 
 BASE_FEATURE(kPermissionOnDeviceGeolocationPredictions,
              "PermissionOnDeviceGeolocationPredictions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
 
@@ -129,6 +129,13 @@ BASE_FEATURE(kRecordPermissionExpirationTimestamps,
              "RecordPermissionExpirationTimestamps",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// When enabled, permission grants for Storage Access API will be enabled.
+// This includes enabling prompts, a new settings page and page info and
+// omnibox integration.
+BASE_FEATURE(kPermissionStorageAccessAPI,
+             "PermissionStorageAccessAPI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // When enabled "window-management" may be used as an alias for
@@ -142,7 +149,7 @@ BASE_FEATURE(kWindowManagementPermissionAlias,
 namespace feature_params {
 
 const base::FeatureParam<bool> kOkButtonBehavesAsAllowAlways(
-    &permissions::features::kOneTimeGeolocationPermission,
+    &permissions::features::kOneTimePermission,
     "OkButtonBehavesAsAllowAlways",
     true);
 
@@ -247,6 +254,16 @@ const base::FeatureParam<base::TimeDelta>
         &permissions::features::kPermissionsPromptSurvey,
         "ignored_prompts_maximum_age", base::Minutes(10)};
 
+// We count the number of one time permission prompt impressions that a user has
+// seen. This parameter specifies the buckets to which a user needs to belong to
+// in order for a HaTS survey to be triggered. Multiple values can be configured
+// by providing a comma separated list. Valid values are the return values of
+// `PermissionUtil::GetOneTimePromptsDecidedBucketString`. An empty value will
+// result in all buckets matching (no filtering).
+const base::FeatureParam<std::string>
+    kPermissionPromptSurveyOneTimePromptsDecidedBucket{
+        &permissions::features::kPermissionsPromptSurvey,
+        "one_time_prompts_decided_bucket", ""};
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace feature_params

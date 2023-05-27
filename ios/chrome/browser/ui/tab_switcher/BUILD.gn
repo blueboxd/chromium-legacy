@@ -12,12 +12,20 @@ source_set("tab_switcher") {
     "tab_collection_drag_drop_metrics.mm",
     "tab_switcher_item.h",
     "tab_switcher_item.mm",
+    "web_state_tab_switcher_item.h",
+    "web_state_tab_switcher_item.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
     "//base",
+    "//components/favicon/ios",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/snapshots",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/url",
+    "//ios/web/public",
     "//url",
   ]
 }

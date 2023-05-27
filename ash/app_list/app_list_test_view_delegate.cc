@@ -15,8 +15,10 @@ namespace test {
 
 AppListTestViewDelegate::AppListTestViewDelegate()
     : model_(std::make_unique<AppListTestModel>()),
-      search_model_(std::make_unique<SearchModel>()) {
-  model_provider_.SetActiveModel(model_.get(), search_model_.get());
+      search_model_(std::make_unique<SearchModel>()),
+      quick_app_access_model_(std::make_unique<QuickAppAccessModel>()) {
+  model_provider_.SetActiveModel(model_.get(), search_model_.get(),
+                                 quick_app_access_model_.get());
 }
 
 AppListTestViewDelegate::~AppListTestViewDelegate() = default;
@@ -52,14 +54,16 @@ void AppListTestViewDelegate::OpenSearchResult(
   if (launch_type == ash::AppListLaunchType::kAppSearchResult) {
     switch (launched_from) {
       case ash::AppListLaunchedFrom::kLaunchedFromSearchBox:
-      case ash::AppListLaunchedFrom::kLaunchedFromSuggestionChip:
       case ash::AppListLaunchedFrom::kLaunchedFromRecentApps:
         RecordAppLaunched(launched_from);
         return;
       case ash::AppListLaunchedFrom::kLaunchedFromGrid:
       case ash::AppListLaunchedFrom::kLaunchedFromShelf:
       case ash::AppListLaunchedFrom::kLaunchedFromContinueTask:
+      case ash::AppListLaunchedFrom::kLaunchedFromQuickAppAccess:
         return;
+      case ash::AppListLaunchedFrom::DEPRECATED_kLaunchedFromSuggestionChip:
+        NOTREACHED();
     }
   }
 }
@@ -72,7 +76,9 @@ void AppListTestViewDelegate::ReplaceTestModel(int item_count) {
   search_model_ = std::make_unique<SearchModel>();
   model_ = std::make_unique<AppListTestModel>();
   model_->PopulateApps(item_count);
-  model_provider_.SetActiveModel(model_.get(), search_model_.get());
+  quick_app_access_model_ = std::make_unique<QuickAppAccessModel>();
+  model_provider_.SetActiveModel(model_.get(), search_model_.get(),
+                                 quick_app_access_model_.get());
 }
 
 void AppListTestViewDelegate::SetSearchEngineIsGoogle(bool is_google) {
@@ -195,6 +201,13 @@ bool AppListTestViewDelegate::IsInTabletMode() {
 AppListNotifier* AppListTestViewDelegate::GetNotifier() {
   return nullptr;
 }
+
+std::unique_ptr<ScopedIphSession>
+AppListTestViewDelegate::CreateLauncherSearchIphSession() {
+  return nullptr;
+}
+
+void AppListTestViewDelegate::OpenSearchBoxIphUrl() {}
 
 void AppListTestViewDelegate::RecordAppLaunched(
     ash::AppListLaunchedFrom launched_from) {

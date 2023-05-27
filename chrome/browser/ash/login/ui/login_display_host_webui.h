@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -112,7 +113,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   bool HandleAccelerator(LoginAcceleratorAction action) final;
 
   // session_manager::SessionManagerObserver:
-  void OnNetworkErrorScreenShown() override;
   void OnLoginOrLockScreenVisible() override;
 
   // Trace id for ShowLoginWebUI event (since there exists at most one login
@@ -218,10 +218,10 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   std::unique_ptr<WizardController> wizard_controller_;
 
   // Container of the screen we are displaying.
-  views::Widget* login_window_ = nullptr;
+  raw_ptr<views::Widget, ExperimentalAsh> login_window_ = nullptr;
 
   // Container of the view we are displaying.
-  WebUILoginView* login_view_ = nullptr;
+  raw_ptr<WebUILoginView, ExperimentalAsh> login_view_ = nullptr;
 
   // Login display we are using.
   std::unique_ptr<LoginDisplayWebUI> login_display_;

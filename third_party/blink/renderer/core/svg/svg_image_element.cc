@@ -39,6 +39,7 @@ namespace blink {
 SVGImageElement::SVGImageElement(Document& document)
     : SVGGraphicsElement(svg_names::kImageTag, document),
       SVGURIReference(this),
+      ActiveScriptWrappable<SVGImageElement>({}),
       is_default_overridden_intrinsic_size_(
           GetExecutionContext() &&
           !GetExecutionContext()->IsFeatureEnabled(
@@ -186,8 +187,7 @@ bool SVGImageElement::SelfHasRelativeLengths() const {
          height_->CurrentValue()->IsRelative();
 }
 
-LayoutObject* SVGImageElement::CreateLayoutObject(const ComputedStyle&,
-                                                  LegacyLayout) {
+LayoutObject* SVGImageElement::CreateLayoutObject(const ComputedStyle&) {
   return MakeGarbageCollected<LayoutSVGImage>(this);
 }
 

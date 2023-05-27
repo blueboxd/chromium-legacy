@@ -5,12 +5,18 @@
 #include "components/segmentation_platform/internal/execution/processing/custom_input_processor.h"
 
 #include "base/strings/string_number_conversions.h"
+#include "base/system/sys_info.h"
 #include "base/task/sequenced_task_runner.h"
 #include "components/segmentation_platform/internal/database/ukm_types.h"
 #include "components/segmentation_platform/internal/execution/processing/feature_processor_state.h"
+#include "components/segmentation_platform/internal/execution/processing/processing_utils.h"
 #include "components/segmentation_platform/internal/metadata/metadata_utils.h"
 #include "components/segmentation_platform/public/input_delegate.h"
 #include "components/segmentation_platform/public/proto/model_metadata.pb.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "components/segmentation_platform/internal/android/execution/processing/custom_device_utils.h"
+#endif  // BUILDFLAG(IS_ANDROID)
 
 namespace segmentation_platform::processing {
 
@@ -193,6 +199,24 @@ QueryProcessor::Tensor CustomInputProcessor::ProcessSingleCustomInput(
       feature_processor_state->SetError(
           stats::FeatureProcessingError::kCustomInputError);
   } else if (custom_input.fill_policy() ==
+             proto::CustomInput::FILL_DEVICE_RAM_MB) {
+    if (!AddDeviceRAMInMB(custom_input, tensor_result)) {
+      feature_processor_state->SetError(
+          stats::FeatureProcessingError::kCustomInputError);
+    }
+  } else if (custom_input.fill_policy() ==
+             proto::CustomInput::FILL_DEVICE_OS_VERSION_NUMBER) {
+    if (!AddDeviceOSVersionNumber(custom_input, tensor_result)) {
+      feature_processor_state->SetError(
+          stats::FeatureProcessingError::kCustomInputError);
+    }
+  } else if (custom_input.fill_policy() ==
+             proto::CustomInput::FILL_DEVICE_PPI) {
+    if (!AddDevicePPI(custom_input, tensor_result)) {
+      feature_processor_state->SetError(
+          stats::FeatureProcessingError::kCustomInputError);
+    }
+  } else if (custom_input.fill_policy() ==
              proto::CustomInput::PRICE_TRACKING_HINTS) {
     feature_processor_state->SetError(
         stats::FeatureProcessingError::kCustomInputError);
@@ -261,4 +285,41 @@ bool CustomInputProcessor::AddTimeRangeBeforePrediction(
   return true;
 }
 
+bool CustomInputProcessor::AddDeviceRAMInMB(
+    const proto::CustomInput& custom_input,
+    std::vector<ProcessedValue>& out_tensor) {
+  if (custom_input.tensor_length() != 1) {
+    return false;
+  }
+  float device_ram_in_mb = base::SysInfo::AmountOfPhysicalMemoryMB();
+  out_tensor.emplace_back(device_ram_in_mb);
+  return true;
+}
+
+bool CustomInputProcessor::AddDeviceOSVersionNumber(
+    const proto::CustomInput& custom_input,
+    std::vector<ProcessedValue>& out_tensor) {
+  if (custom_input.tensor_length() != 1) {
+    return false;
+  }
+  std::string os_version = base::SysInfo::OperatingSystemVersion();
+  float device_os_version = processing::ProcessOsVersionString(os_version);
+  out_tensor.emplace_back(device_os_version);
+  return true;
+}
+
+bool CustomInputProcessor::AddDevicePPI(
+    const proto::CustomInput& custom_input,
+    std::vector<ProcessedValue>& out_tensor) {
+  if (custom_input.tensor_length() != 1) {
+    return false;
+  }
+#if BUILDFLAG(IS_ANDROID)
+  float device_ppi = CustomDeviceUtils::GetDevicePPI();
+  out_tensor.emplace_back(device_ppi);
+  return true;
+#else
+  return false;
+#endif  // BUILDFLAG(IS_ANDROID)
+}
 }  // namespace segmentation_platform::processing

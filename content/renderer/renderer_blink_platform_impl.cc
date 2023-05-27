@@ -13,7 +13,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -33,7 +32,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/trees/raster_context_provider_wrapper.h"
-#include "components/attribution_reporting/os_support.mojom.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/viz/common/features.h"
 #include "content/child/child_process.h"
@@ -81,6 +79,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/attribution.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/database/database_identifier.h"
@@ -178,15 +177,18 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       sudden_termination_disables_(0),
       is_locked_to_site_(false),
       main_thread_scheduler_(main_thread_scheduler) {
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  sk_sp<font_service::FontLoader> font_loader;
+#endif
+
   // RenderThread may not exist in some tests.
   if (RenderThreadImpl::current()) {
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
     mojo::PendingRemote<font_service::mojom::FontService> font_service;
     RenderThreadImpl::current()->BindHostReceiver(
         font_service.InitWithNewPipeAndPassReceiver());
-    font_loader_ =
-        sk_make_sp<font_service::FontLoader>(std::move(font_service));
-    SkFontConfigInterface::SetGlobal(font_loader_);
+    font_loader = sk_make_sp<font_service::FontLoader>(std::move(font_service));
+    SkFontConfigInterface::SetGlobal(font_loader);
 #endif
   }
 
@@ -195,7 +197,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 #if BUILDFLAG(IS_MAC)
     sandbox_support_ = std::make_unique<WebSandboxSupportMac>();
 #else
-    sandbox_support_ = std::make_unique<WebSandboxSupportLinux>(font_loader_);
+    sandbox_support_ = std::make_unique<WebSandboxSupportLinux>(font_loader);
 #endif
   } else {
     DVLOG(1) << "Disabling sandbox support for testing.";
@@ -873,13 +875,16 @@ void RendererBlinkPlatformImpl::CreateServiceWorkerSubresourceLoaderFactory(
         blink::mojom::ServiceWorkerContainerHostInterfaceBase>
         service_worker_container_host,
     const blink::WebString& client_id,
+    blink::mojom::ServiceWorkerFetchHandlerBypassOption
+        fetch_handler_bypass_option,
     std::unique_ptr<network::PendingSharedURLLoaderFactory> fallback_factory,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
           std::move(service_worker_container_host),
-          /*remote_controller=*/mojo::NullRemote(), client_id.Utf8()),
+          /*remote_controller=*/mojo::NullRemote(), client_id.Utf8(),
+          fetch_handler_bypass_option),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
       std::move(receiver), std::move(task_runner));
 }
@@ -993,13 +998,13 @@ base::PlatformThreadId RendererBlinkPlatformImpl::GetIOThreadId() const {
   return io_thread_id_;
 }
 
-attribution_reporting::mojom::OsSupport
-RendererBlinkPlatformImpl::GetOsSupportForAttributionReporting() {
+network::mojom::AttributionSupport
+RendererBlinkPlatformImpl::GetAttributionReportingSupport() {
   auto* render_thread = RenderThreadImpl::current();
   // RenderThreadImpl is null in some tests.
   if (!render_thread)
-    return attribution_reporting::mojom::OsSupport::kDisabled;
-  return render_thread->GetOsSupportForAttributionReporting();
+    return network::mojom::AttributionSupport::kWeb;
+  return render_thread->GetAttributionReportingSupport();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

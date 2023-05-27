@@ -166,6 +166,7 @@ const char kChromeUIPrivacySandboxDialogURL[] =
     "chrome://privacy-sandbox-dialog";
 const char kChromeUIPrivacySandboxDialogCombinedPath[] = "combined";
 const char kChromeUIPrivacySandboxDialogNoticePath[] = "notice";
+const char kChromeUIPrivacySandboxDialogNoticeRestrictedPath[] = "restricted";
 const char kChromeUIPrivacySandboxFledgeURL[] =
     "chrome://settings/adPrivacy/sites";
 const char kChromeUIPrivacySandboxTopicsURL[] =
@@ -266,10 +267,10 @@ const char kChromeUIHistoryClustersSidePanelHost[] =
     "history-clusters-side-panel.top-chrome";
 const char kChromeUIHistoryClustersSidePanelURL[] =
     "chrome://history-clusters-side-panel.top-chrome/";
-const char kChromeUIReadAnythingSidePanelHost[] =
+const char kChromeUIUntrustedReadAnythingSidePanelHost[] =
     "read-anything-side-panel.top-chrome";
-const char kChromeUIReadAnythingSidePanelURL[] =
-    "chrome://read-anything-side-panel.top-chrome/";
+const char kChromeUIUntrustedReadAnythingSidePanelURL[] =
+    "chrome-untrusted://read-anything-side-panel.top-chrome/";
 const char kChromeUIReadLaterHost[] = "read-later.top-chrome";
 const char kChromeUIReadLaterURL[] = "chrome://read-later.top-chrome/";
 const char kChromeUIUntrustedFeedURL[] = "chrome-untrusted://feed/";
@@ -598,6 +599,7 @@ const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
 
 const char kAccessibilitySubPage[] = "accessibility";
 const char kAdPrivacySubPage[] = "adPrivacy";
+const char kPrivacySandboxMeasurementSubpage[] = "adPrivacy/measurement";
 const char kAddressesSubPage[] = "addresses";
 const char kAppearanceSubPage[] = "appearance";
 const char kAutofillSubPage[] = "autofill";
@@ -716,6 +718,9 @@ const char* const kChromeHostURLs[] = {
     kChromeUIQuotaInternalsHost,
     kChromeUISignInInternalsHost,
     kChromeUISiteEngagementHost,
+#if !BUILDFLAG(IS_ANDROID)
+    kChromeUISuggestInternalsHost,
+#endif
     kChromeUINTPTilesInternalsHost,
     safe_browsing::kChromeUISafeBrowsingHost,
     kChromeUISyncInternalsHost,

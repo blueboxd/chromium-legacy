@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Lokale Ablehnung des Authentifizierungszertifikats</translation>
 <translation id="1775381402323441512">Videoinformationen</translation>
 <translation id="180035236176489073">Du musst online sein, um auf diese Dateien zugreifen zu können.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Eine Erweiterung mit der ID}other{Erweiterungen mit den IDs}}</translation>
 <translation id="1807938677607439181">Alle Dateien</translation>
 <translation id="1810764548349082891">Keine Vorschau verfügbar</translation>
 <translation id="1812302367230252929">Amharisch (Transliteration)</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Ungültige Übereinstimmung für den alternativen Betreffnamen</translation>
 <translation id="1838709767668011582">Google Sites-Website</translation>
 <translation id="1853795129690976061">Dieser Ordner wird für Linux freigegeben</translation>
-<translation id="1859422890169495746">Dieses Chromebook</translation>
 <translation id="1864756863218646478">Die Datei wurde nicht gefunden.</translation>
 <translation id="1884013283844450420">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Verbinden</translation>
 <translation id="1920670151694390848">Malayalam (Transliteration)</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planet</translation>
 <translation id="2305020378527873881">"<ph name="VOLUME_NAME" />" wurde ausgeworfen.</translation>
 <translation id="2307462900900812319">Netzwerk konfigurieren</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Es konnte keine Erweiterung mit der ID <ph name="BEGIN_LIST" /><ph name="END_LIST" /> gefunden werden. Wende dich an deinen Administrator.}other{Es konnten keine Erweiterungen mit den IDs <ph name="BEGIN_LIST" /><ph name="END_LIST" /> gefunden werden. Wende dich an deinen Administrator.}}</translation>
 <translation id="2325650632570794183">Dieser Dateityp wird nicht unterstützt. Finde im Chrome Web Store eine App, mit der du diesen Dateityp öffnen kannst.</translation>
 <translation id="2326539130272988168">Bulgarisch</translation>
 <translation id="2337715497728194187">Für Bruschetta freigeben</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Ungesichert</translation>
 <translation id="3291218047831493686">Mit diesem Netzwerk verbinden, um die Einstellung zum Sperren der SIM-Karte zu ändern</translation>
 <translation id="3293023191599135697">WEP-Netzwerke werden nicht unterstützt</translation>
+<translation id="3295006446256079333">Dieses Volumen</translation>
 <translation id="3295357220137379386">Gerät ist beschäftigt</translation>
 <translation id="3296763833017966289">Georgisch</translation>
 <translation id="3307875152560779385">Ukrainisch</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="485316830061041779">Deutsch</translation>
+<translation id="4862885579661885411">Einstellungen für „Dateien“</translation>
 <translation id="4867079195717347957">Klicken, um die Spalte in absteigender Reihenfolge zu sortieren.</translation>
 <translation id="4867297348137739678">Letzte Woche</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> Byte</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> Elemente werden kopiert...</translation>
 <translation id="7375951387215729722">Die Dateiliste wurde in absteigender Reihenfolge nach "<ph name="COLUMN_NAME" />" sortiert.</translation>
 <translation id="7377161162143020057">Die Administratorrichtlinie blockiert das Kopieren dieser Datei</translation>
-<translation id="7392500733467492920">konnte(n) nicht gefunden werden. Wende dich an deinen Administrator.</translation>
 <translation id="7402503521691663770">Chrome OS Flex-Geräte</translation>
 <translation id="7408870451288633753">Tschechisch</translation>
 <translation id="7417453074306512035">Äthiopische Tastatur</translation>

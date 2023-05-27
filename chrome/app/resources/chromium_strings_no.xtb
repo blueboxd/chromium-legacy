@@ -79,7 +79,6 @@ Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne konto
 <translation id="2928420929544864228">Installasjonen er fullført.</translation>
 <translation id="2977470724722393594">Chromium er oppdatert</translation>
 <translation id="2977506796191543575">Hvis nettsteder prøver å stjele passordet ditt, eller når du laster ned skadelige filer, kan Chromium også sende nettadresser, inkludert deler av sideinnholdet, til Safe Browsing</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium er koblet til en HID-enhet}other{Chromium er koblet til HID-enheter}}</translation>
 <translation id="3032706164202344641">Chromium kan ikke sjekke passordene dine. Prøv på nytt senere.</translation>
 <translation id="3032787606318309379">Legger til i Chromium …</translation>
 <translation id="3038232873781883849">Venter på installering</translation>
@@ -94,7 +93,6 @@ Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne konto
 <translation id="3258596308407688501">Chromium kan ikke lese og skrive til egen datakatalog:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Denne veiledningen hjelper deg med å forstå hvilke valg du har, slik at Chromium fungerer slik du ønsker</translation>
 <translation id="3283186697780795848">Versjon <ph name="PRODUCT_VERSION" /> av Chromium er installert</translation>
 <translation id="3286538390144397061">Start på nytt nå</translation>
 <translation id="328888136576916638">API-nøkler for Google mangler. Noe funksjonalitet i Chromium blir deaktivert.</translation>
@@ -239,6 +237,7 @@ Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne konto
 <translation id="6327105987658262776">Ingen oppdatering er tilgjengelig.</translation>
 <translation id="6333502561965082103">En annen handling er i gang på Chromium. Prøv på nytt senere.</translation>
 <translation id="6334986366598267305">Nå er det enklere å bruke Chromium med Google-kontoen din og på datamaskiner du deler med andre.</translation>
+<translation id="6335615313501343197">{NUM_DEVICES,plural, =0{Chromium brukte en HID-enhet}=1{Chromium bruker en HID-enhet}other{Chromium bruker HID-enheter}}</translation>
 <translation id="6365489425007284765">{COUNT,plural, =1{Administratoren din sletter automatisk nettlesingsdata når nettleseren ikke har vært i bruk på ett minutt. Dette kan omfatte loggen, autofyll og nedlastinger. De eksisterende fanene dine forblir åpne.}other{Administratoren din sletter automatisk nettlesingsdata når nettleseren ikke har vært i bruk på # minutter. Dette kan omfatte loggen, autofyll og nedlastinger. De eksisterende fanene dine forblir åpne.}}</translation>
 <translation id="6373523479360886564">Er du sikker på at du vil avinstallere Chromium?</translation>
 <translation id="6384011394608460044"><ph name="BEGIN_BOLD" />Slik bruker vi disse dataene:<ph name="END_BOLD" /> Chromium kan anslå interessene dine. Senere kan nettsteder du besøker, spørre Chromium om interessene dine for å kunne sette personlig preg på annonsene du ser.</translation>
@@ -246,8 +245,10 @@ Tillatelser du allerede har gitt nettsteder og apper, kan gjelde for denne konto
 <translation id="6442900851116057561">Start ChromiumOS på nytt</translation>
 <translation id="6455857529632101747">Velkommen til Chromium-profiler</translation>
 <translation id="6475912303565314141">Den styrer også hvilken side som vises når du starter Chromium.</translation>
+<translation id="648319183876919572">Safe Browsing med økt beskyttelse gjør mer for å beskytte deg mot farlige nettsteder og nedlastinger</translation>
 <translation id="6510925080656968729">Avinstaller Chromium</translation>
 <translation id="6542839706527980775">Hver profil har sin egen Chromium-informasjon, som bokmerker, logg, passord med mer</translation>
+<translation id="656935081669708576">Du kan bytte til å se passord fra en annen Chromium-profil</translation>
 <translation id="6570579332384693436">For å rette opp i skrivefeil sender Chromium sender tekst du skriver i tekstfelt, til Google</translation>
 <translation id="6598877126913850652">Gå til innstillinger for Chromium-varsler</translation>
 <translation id="6613594504749178791">Endringene dine trer i kraft neste gang du starter Chromium.</translation>
@@ -382,7 +383,6 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="924957577793602335">Gi Chromium et personlig preg</translation>
 <translation id="93478295209880648">Chromium fungerer kanskje ikke riktig fordi den ikke lenger støttes på Windows XP eller Windows Vista</translation>
 <translation id="942598560705308788">Sertifikater administreres av Chromium</translation>
-<translation id="959579472876010517">Få mest mulig ut av Chromium</translation>
 <translation id="965162752251293939">Hvem bruker Chromium?</translation>
 <translation id="967427899662692980">Få den sterkeste sikkerheten i Chromium</translation>
 <translation id="9792300276217204">Slett alltid nettstedsdata fra enheten når du lukker Chromium</translation>

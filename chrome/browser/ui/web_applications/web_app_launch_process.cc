@@ -5,14 +5,13 @@
 #include "chrome/browser/ui/web_applications/web_app_launch_process.h"
 
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
 #include "base/memory/values_equivalent.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -69,6 +68,20 @@ content::WebContents* WebAppLaunchProcess::CreateAndRun(
     const apps::AppLaunchParams& params) {
   return WebAppLaunchProcess(profile, registrar, os_integration_manager, params)
       .Run();
+}
+
+// static
+void WebAppLaunchProcess::SetOpenApplicationCallbackForTesting(
+    OpenApplicationCallback callback) {
+  GetOpenApplicationCallbackForTesting() = std::move(callback);  // IN-TEST
+}
+
+// static
+WebAppLaunchProcess::OpenApplicationCallback&
+WebAppLaunchProcess::GetOpenApplicationCallbackForTesting() {
+  static base::NoDestructor<WebAppLaunchProcess::OpenApplicationCallback>
+      callback;
+  return *callback;
 }
 
 WebAppLaunchProcess::WebAppLaunchProcess(
@@ -151,7 +164,6 @@ content::WebContents* WebAppLaunchProcess::Run() {
   RecordLaunchMetrics(params_->app_id, params_->container,
                       params_->launch_source, launch_url, web_contents);
 
-  MaybeShowProfileSwitchIPH(browser);
   return web_contents;
 }
 
@@ -383,17 +395,6 @@ void WebAppLaunchProcess::MaybeEnqueueWebLaunchParams(
         ->EnsureLaunchQueue()
         .Enqueue(std::move(launch_params));
   }
-}
-
-void WebAppLaunchProcess::MaybeShowProfileSwitchIPH(Browser* browser) {
-#if !BUILDFLAG(IS_CHROMEOS)
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (browser && browser->app_controller() &&
-      browser->app_controller()->HasProfileMenuButton() && profile_manager &&
-      profile_manager->GetNumberOfProfiles() > 1) {
-    browser->window()->MaybeShowProfileSwitchIPH();
-  }
-#endif
 }
 
 }  // namespace web_app

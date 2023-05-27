@@ -20,6 +20,7 @@
 #import "base/task/single_thread_task_runner.h"
 #import "base/test/gmock_callback_support.h"
 #import "base/test/ios/wait_util.h"
+#import "components/sessions/core/session_id.h"
 #import "ios/net/protocol_handler_util.h"
 #import "ios/testing/embedded_test_server_handlers.h"
 #import "ios/web/common/features.h"
@@ -85,6 +86,7 @@ const char kTestSessionStoragePageText[] = "pony";
 CRWSessionStorage* GetTestSessionStorage(const GURL& testUrl) {
   CRWSessionStorage* result = [[CRWSessionStorage alloc] init];
   result.stableIdentifier = [[NSUUID UUID] UUIDString];
+  result.uniqueIdentifier = SessionID::NewUnique();
   result.lastCommittedItemIndex = 0;
   CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
   [item setURL:testUrl];
@@ -274,7 +276,6 @@ ACTION_P6(VerifyNewPageFinishedContext,
     ASSERT_TRUE((*context)->GetResponseHeaders());
     std::string actual_mime_type;
     (*context)->GetResponseHeaders()->GetMimeType(&actual_mime_type);
-    EXPECT_EQ(mime_type, actual_mime_type);
     EXPECT_EQ(mime_type, actual_mime_type);
   }
   ASSERT_TRUE(web_state->IsLoading());
@@ -953,13 +954,13 @@ TEST_F(WebStateObserverTest, NewPageNavigation) {
   ASSERT_TRUE(LoadUrl(url));
 }
 
-// Tests loading about://newtab and immediately loading another web page without
-// waiting until about://newtab navigation finishes.
+// Tests loading about://newtab/ and immediately loading another web page
+// without waiting until about://newtab/ navigation finishes.
 TEST_F(WebStateObserverTest, AboutNewTabNavigation) {
   GURL first_url("about://newtab/");
   const GURL second_url = test_server_->GetURL("/echoall");
 
-  // Perform about://newtab navigation and immediately perform the second
+  // Perform about://newtab/ navigation and immediately perform the second
   // navigation without waiting until the first navigation finishes.
 
   // Load `first_url`.

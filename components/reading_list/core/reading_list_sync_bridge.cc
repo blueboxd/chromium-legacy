@@ -97,7 +97,7 @@ ReadingListSyncBridge::CreateMetadataChangeList() {
 // Durable storage writes, if not able to combine all change atomically, should
 // save the metadata after the data changes, so that this merge will be re-
 // driven by sync if is not completely saved during the current run.
-absl::optional<syncer::ModelError> ReadingListSyncBridge::MergeSyncData(
+absl::optional<syncer::ModelError> ReadingListSyncBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -179,7 +179,8 @@ absl::optional<syncer::ModelError> ReadingListSyncBridge::MergeSyncData(
 // |metadata_change_list| in case when some of the data changes are filtered
 // out, or even be empty in case when a commit confirmation is processed and
 // only the metadata needs to persisted.
-absl::optional<syncer::ModelError> ReadingListSyncBridge::ApplySyncChanges(
+absl::optional<syncer::ModelError>
+ReadingListSyncBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_changes) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -279,28 +280,22 @@ std::string ReadingListSyncBridge::GetStorageKey(
   return entity_data.specifics.reading_list().entry_id();
 }
 
-void ReadingListSyncBridge::ApplyStopSyncChanges(
+void ReadingListSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  // A non-null |delete_metadata_change_list| indicates sync (or reading list
-  // sync) is permanently disabled (as opposed to temporarily paused).
-  if (delete_metadata_change_list) {
-    switch (storage_type_) {
-      case syncer::StorageType::kUnspecified:
-        // Fall back to the default behavior.
-        break;
-      case syncer::StorageType::kAccount:
-        // For account storage, in addition to sync metadata deletion (which
-        // |delete_metadata_change_list| represents), the actual reading list
-        // entries need to be deleted. This function does both and is even
-        // robust against orphan or unexpected data in storage.
-        model_->SyncDeleteAllEntriesAndSyncMetadata();
-        break;
-    }
+  switch (storage_type_) {
+    case syncer::StorageType::kUnspecified:
+      // Fall back to the default behavior.
+      ModelTypeSyncBridge::ApplyDisableSyncChanges(
+          std::move(delete_metadata_change_list));
+      break;
+    case syncer::StorageType::kAccount:
+      // For account storage, in addition to sync metadata deletion (which
+      // |delete_metadata_change_list| represents), the actual reading list
+      // entries need to be deleted. This function does both and is even
+      // robust against orphan or unexpected data in storage.
+      model_->SyncDeleteAllEntriesAndSyncMetadata();
+      break;
   }
-
-  // Exercise the default codepath to be safe (but should be a no-op).
-  ModelTypeSyncBridge::ApplyStopSyncChanges(
-      std::move(delete_metadata_change_list));
 }
 
 bool ReadingListSyncBridge::IsEntityDataValid(

@@ -12,9 +12,11 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/syslog_logging.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
@@ -37,13 +39,13 @@ namespace {
 typedef std::vector<const DisplayMode*> DisplayModeList;
 
 struct DisplayState {
-  DisplaySnapshot* display = nullptr;  // Not owned.
+  raw_ptr<DisplaySnapshot, ExperimentalAsh> display = nullptr;  // Not owned.
 
   // User-selected mode for the display.
-  const DisplayMode* selected_mode = nullptr;
+  raw_ptr<const DisplayMode, ExperimentalAsh> selected_mode = nullptr;
 
   // Mode used when displaying the same desktop on multiple displays.
-  const DisplayMode* mirror_mode = nullptr;
+  raw_ptr<const DisplayMode, ExperimentalAsh> mirror_mode = nullptr;
 };
 
 // Returns whether |display_id| can be found in |display_list|,
@@ -166,7 +168,7 @@ class DisplayConfigurator::DisplayLayoutManagerImpl
   bool FindExactMatchingMirrorMode(const std::vector<DisplayState*>& displays,
                                    bool preserve_native_aspect_ratio) const;
 
-  DisplayConfigurator* configurator_;  // Not owned.
+  raw_ptr<DisplayConfigurator, ExperimentalAsh> configurator_;  // Not owned.
 
   bool configure_displays_ = false;
 };
@@ -302,7 +304,8 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
 
       for (size_t i = 0; i < states.size(); ++i) {
         const DisplayState* state = &states[i];
-        (*requests)[i].mode = display_power[i] ? state->selected_mode : NULL;
+        (*requests)[i].mode =
+            display_power[i] ? state->selected_mode.get() : NULL;
 
         if (display_power[i] || states.size() == 1) {
           const DisplayMode* mode_info = state->selected_mode;
@@ -351,7 +354,8 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
 
       for (size_t i = 0; i < states.size(); ++i) {
         const DisplayState* state = &states[i];
-        (*requests)[i].mode = display_power[i] ? state->mirror_mode : NULL;
+        (*requests)[i].mode =
+            display_power[i] ? state->mirror_mode.get() : NULL;
       }
       break;
     }
@@ -367,7 +371,8 @@ bool DisplayConfigurator::DisplayLayoutManagerImpl::GetDisplayLayout(
         const DisplayState* state = &states[i];
         (*requests)[i].origin.set_y(size.height() ? size.height() + kVerticalGap
                                                   : 0);
-        (*requests)[i].mode = display_power[i] ? state->selected_mode : NULL;
+        (*requests)[i].mode =
+            display_power[i] ? state->selected_mode.get() : NULL;
 
         // Retain the full screen size even if all displays are off so the
         // same desktop configuration can be restored when the displays are
@@ -602,7 +607,8 @@ DisplayConfigurator::DisplayConfigurator()
           layout_manager_.get(),
           base::BindRepeating(&DisplayConfigurator::configurator_disabled,
                               base::Unretained(this)))),
-      has_unassociated_display_(false) {
+      has_unassociated_display_(false),
+      pending_vrr_state_(::features::IsVariableRefreshRateEnabled()) {
   AddObserver(content_protection_manager_.get());
 }
 
@@ -1219,16 +1225,12 @@ bool DisplayConfigurator::GetRequestedVrrState() const {
 }
 
 bool DisplayConfigurator::ShouldConfigureVrr() const {
-  if (!pending_vrr_state_.has_value()) {
-    return false;
-  }
-
   for (const auto* display : cached_displays_) {
     if (!display->IsVrrCapable()) {
       continue;
     }
 
-    if (display->IsVrrEnabled() != pending_vrr_state_.value()) {
+    if (display->IsVrrEnabled() != GetRequestedVrrState()) {
       return true;
     }
   }

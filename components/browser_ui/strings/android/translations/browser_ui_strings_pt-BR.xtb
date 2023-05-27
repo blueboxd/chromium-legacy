@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Decodificador de imagem</translation>
 <translation id="1785415724048343560">Recomendado para melhorar a experiência</translation>
 <translation id="1818308510395330587">Para permitir que o app <ph name="APP_NAME" /> use RA, também é necessário ativar a câmera nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">De <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Sites relacionados podem ver sua atividade no grupo</translation>
 <translation id="1887786770086287077">O acesso ao local está desativado neste dispositivo. Ative nas <ph name="BEGIN_LINK" />Configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Desligar</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Download concluído <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Os recursos de alguns sites podem não funcionar no modo de navegação anônima</translation>
 <translation id="2442870161001914531">Sempre ver a versão para computador</translation>
+<translation id="2479148705183875116">Acessar as configurações</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
 <translation id="2490684707762498678">Gerenciadas por <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Endereços de e-mail</translation>
 <translation id="2750481671343847896">Sites podem exibir solicitações de login de serviços de identificação.</translation>
 <translation id="2822354292072154809">Tem certeza de que quer redefinir todas as permissões de site para <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Solicitar a versão para dispositivos móveis</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Faixa anterior</translation>
 <translation id="2891975107962658722">Impedir que um site salve dados no seu dispositivo</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Os sites podem usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras</translation>
 <translation id="3165022941318558018">Permitir que um site use cookies de terceiros</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> de dados armazenados</translation>
-<translation id="3203366800380907218">Da Web</translation>
 <translation id="321187648315454507">Para permitir que o app <ph name="APP_NAME" /> envie notificações, também é necessário ativá-las nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microfone</translation>
 <translation id="3248611290851046188">Este site define interesses que outros sites podem usar para mostrar anúncios. Este site acessa seus interesses no Chrome para mostrar anúncios mais relevantes.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Solicitar versão para computador</translation>
 <translation id="5100237604440890931">Visualização recolhida. Clique para expandir</translation>
 <translation id="5123685120097942451">Guia anônima</translation>
-<translation id="5134599672855298214">Solicitar versão para dispositivos móveis (recomendado)</translation>
 <translation id="5186036860380548585">Opção disponível perto da parte superior da tela</translation>
 <translation id="5197729504361054390">Os contatos selecionados serão compartilhados com <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Última visita: hoje</translation>

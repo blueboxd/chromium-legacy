@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/dcheck_is_on.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
@@ -60,8 +61,6 @@ class ConfigBase final : public TargetConfig {
   ResultCode SetJobLevel(JobLevel job_level, uint32_t ui_exceptions) override;
   JobLevel GetJobLevel() const override;
   void SetJobMemoryLimit(size_t memory_limit) override;
-  void SetAllowNoSandboxJob() override;
-  bool GetAllowNoSandboxJob() override;
   ResultCode AddRule(SubSystem subsystem,
                      Semantics semantics,
                      const wchar_t* pattern) override;
@@ -115,6 +114,7 @@ class ConfigBase final : public TargetConfig {
 
   // Should only be called once the object is configured.
   PolicyGlobal* policy();
+  absl::optional<base::span<const uint8_t>> policy_span();
   std::vector<std::wstring>& blocklisted_dlls();
   AppContainerBase* app_container();
   IntegrityLevel integrity_level() { return integrity_level_; }
@@ -137,7 +137,6 @@ class ConfigBase final : public TargetConfig {
   MitigationFlags delayed_mitigations_;
   bool add_restricting_random_sid_;
   bool lockdown_default_dacl_;
-  bool allow_no_sandbox_job_;
   bool is_csrss_connected_;
   size_t memory_limit_;
   uint32_t ui_exceptions_;
@@ -198,14 +197,6 @@ class PolicyBase final : public TargetPolicy {
   // call to TargetProcess::Init() is issued.
   ResultCode ApplyToTarget(std::unique_ptr<TargetProcess> target);
 
-  // Called when there are no more active processes in the policy's Job.
-  // If a process is not in a job, call OnProcessFinished().
-  bool OnJobEmpty();
-
-  // Called when a process no longer needs to be tracked. Processes in jobs
-  // should be notified via OnJobEmpty instead.
-  bool OnProcessFinished(DWORD process_id);
-
   EvalResult EvalPolicy(IpcTag service, CountedParameterSetBase* params);
 
   HANDLE GetStdoutHandle();
@@ -241,8 +232,6 @@ class PolicyBase final : public TargetPolicy {
   // Remaining members are unique to this instance and will be configured every
   // time.
 
-  // The policy takes ownership of a target as it is applied to it.
-  std::unique_ptr<TargetProcess> target_;
   // The user-defined global policy settings.
   HANDLE stdout_handle_;
   HANDLE stderr_handle_;
@@ -252,8 +241,10 @@ class PolicyBase final : public TargetPolicy {
   // This list contains handles other than the stderr/stdout handles which are
   // shared with the target at times.
   base::HandlesToInheritVector handles_to_share_;
-
   Job job_;
+
+  // The policy takes ownership of a target as it is applied to it.
+  std::unique_ptr<TargetProcess> target_;
 };
 
 }  // namespace sandbox

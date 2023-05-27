@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_system_provider/mount_path_util.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
@@ -44,7 +45,6 @@ struct ODFSFileSystemAndPath {
 
 // The string conversions of ash::cloud_upload::mojom::UserAction.
 const char kUserActionCancel[] = "cancel";
-const char kUserActionSetUpGoogleDrive[] = "setup-drive";
 const char kUserActionSetUpOneDrive[] = "setup-onedrive";
 const char kUserActionUploadToGoogleDrive[] = "upload-drive";
 const char kUserActionUploadToOneDrive[] = "upload-onedrive";
@@ -175,7 +175,7 @@ class CloudOpenTask : public base::RefCounted<CloudOpenTask> {
           find_all_types_of_tasks_callback,
       std::unique_ptr<std::vector<std::string>> mime_types);
 
-  Profile* profile_;
+  raw_ptr<Profile, ExperimentalAsh> profile_;
   std::vector<storage::FileSystemURL> file_urls_;
   CloudProvider cloud_provider_;
   gfx::NativeWindow modal_parent_;
@@ -239,6 +239,8 @@ class CloudUploadDialog : public SystemWebDialogDelegate {
   void OnDialogShown(content::WebUI* webui) override;
   void OnDialogClosed(const std::string& json_retval) override;
 
+  void set_modal_type(ui::ModalType modal_type) { modal_type_ = modal_type; }
+
  protected:
   ~CloudUploadDialog() override;
   ui::ModalType GetDialogModalType() const override;
@@ -258,6 +260,9 @@ class CloudUploadDialog : public SystemWebDialogDelegate {
   mojom::DialogPage dialog_page_;
   size_t num_local_tasks_;
   bool office_move_confirmation_shown_;
+  // Modal by default, although if we don't have a parent window, we will
+  // make it non-modal so that the dialog stays on top.
+  ui::ModalType modal_type_ = ui::MODAL_TYPE_WINDOW;
 };
 
 }  // namespace ash::cloud_upload

@@ -8,7 +8,6 @@
 #import <memory>
 #import <vector>
 
-#import "base/feature_list.h"
 #import "base/i18n/rtl.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/bundle_locations.h"
@@ -27,37 +26,31 @@
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
-#import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmarks_coordinator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_util.h"
 #import "ios/chrome/browser/ui/bubble/bubble_view.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_container_view.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_context_menu_delegate.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_context_menu_helper.h"
-#import "ios/chrome/browser/ui/tabs/tab_strip_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 #import "ios/chrome/browser/ui/tabs/target_frame_cache.h"
@@ -100,8 +93,7 @@ const NSTimeInterval kTabAnimationDuration = 0.25;
 const NSTimeInterval kTabStripFadeAnimationDuration = 0.15;
 
 // Amount of time needed to trigger drag and drop mode when long pressing.
-const NSTimeInterval kDragAndDropLongPressDuration = 0.08;
-const NSTimeInterval kDragAndDropLongPressLegacyDuration = 0.4;
+const NSTimeInterval kDragAndDropLongPressDuration = 0.4;
 
 // Tab dimensions.
 const CGFloat kTabOverlapStacked = 32.0;
@@ -110,7 +102,6 @@ const CGFloat kTabOverlapUnstacked = 30.0;
 const CGFloat kNewTabOverlap = 13.0;
 const CGFloat kMaxTabWidthStacked = 265.0;
 const CGFloat kMaxTabWidthUnstacked = 225.0;
-const CGFloat kPinnedTabWidth = 78.0;
 
 const CGFloat kMinTabWidthStacked = 200.0;
 const CGFloat kMinTabWidthUnstacked = 160.0;
@@ -135,9 +126,6 @@ const CGFloat kNewTabButtonWidth = 44;
 // Default image insets for the new tab button.
 const CGFloat kNewTabButtonLeadingImageInset = -10.0;
 const CGFloat kNewTabButtonBottomImageInset = -2.0;
-
-// The minimum number of visible pinned tabs.
-const NSUInteger kMinimumVisiblePinnedTabs = 4;
 
 // Identifier of the action that displays the UIMenu.
 NSString* const kMenuActionIdentifier = @"kMenuActionIdentifier";
@@ -196,7 +184,6 @@ const CGFloat kSymbolSize = 18;
 @end
 
 @interface TabStripController () <CRWWebStateObserver,
-                                  TabStripContextMenuDelegate,
                                   TabStripViewLayoutDelegate,
                                   TabViewDelegate,
                                   ViewRevealingAnimatee,
@@ -266,9 +253,6 @@ const CGFloat kSymbolSize = 18;
   // used as the new WebStateList index of the dragged tab when it is dropped.
   int _placeholderGapWebStateListIndex;
 
-  // The number of pinned tabs.
-  NSUInteger _pinnedTabCount;
-
   // YES if this tab strip is representing an incognito browser.
   BOOL _isIncognito;
 
@@ -301,14 +285,6 @@ const CGFloat kSymbolSize = 18;
 
 // The base view controller from which to present UI.
 @property(nonatomic, readwrite, weak) UIViewController* baseViewController;
-
-// Provider of context menu configurations.
-@property(nonatomic, strong) id<TabStripContextMenuProvider>
-    contextMenuProvider;
-
-// Coordinator that manages the various pieces of UI used to create, remove and
-// edit a bookmark.
-@property(nonatomic, strong) BookmarksCoordinator* bookmarksCoordinator;
 
 // If set to `YES`, tabs at either end of the tabstrip are "collapsed" into a
 // stack, such that the visible width of the tabstrip is constant.  If set to
@@ -491,8 +467,6 @@ const CGFloat kSymbolSize = 18;
             _webStateList, _webStateObserver.get());
     _style = style;
 
-    [self updatePinnedTabCount];
-
     // `self.view` setup.
     _useTabStacking = [self shouldUseTabStacking];
     CGRect tabStripFrame = SceneStateBrowserAgent::FromBrowser(browser)
@@ -517,15 +491,6 @@ const CGFloat kSymbolSize = 18;
         style == INCOGNITO ? kIncognitoTabStripId : kRegularTabStripId;
     [_view addSubview:_tabStripView];
     _view.tabStripView = _tabStripView;
-
-    if (IsPinnedTabsEnabled()) {
-      _contextMenuProvider =
-          [[TabStripContextMenuHelper alloc] initWithBrowser:_browser
-                                 tabStripContextMenuDelegate:self];
-      _bookmarksCoordinator =
-          [[BookmarksCoordinator alloc] initWithBrowser:_browser];
-      _bookmarksCoordinator.baseViewController = _baseViewController;
-    }
 
     // `self.buttonNewTab` setup.
     CGRect buttonNewTabFrame = tabStripFrame;
@@ -614,7 +579,6 @@ const CGFloat kSymbolSize = 18;
 
   self.presentationProvider = nil;
   self.baseViewController = nil;
-  self.bookmarksCoordinator = nil;
 
   _allWebStateObservationForwarder.reset();
   _webStateListFaviconObserver.reset();
@@ -695,32 +659,7 @@ const CGFloat kSymbolSize = 18;
       [[UILongPressGestureRecognizer alloc]
           initWithTarget:self
                   action:@selector(handleLongPress:)];
-
-  if (IsPinnedTabsEnabled()) {
-    // Adds an empty menu so the event triggers the first time.
-    view.menu = [UIMenu menuWithChildren:@[]];
-    [view removeActionForIdentifier:kMenuActionIdentifier
-                   forControlEvents:UIControlEventMenuActionTriggered];
-
-    // Configure an action that should be executed on each tap.
-    __weak UIButton* weakButton = view;
-    __weak __typeof(self) weakSelf = self;
-    base::WeakPtr<web::WebState> weakWebState = webState->GetWeakPtr();
-    UIAction* displayMenu =
-        [UIAction actionWithTitle:@""
-                            image:nil
-                       identifier:kMenuActionIdentifier
-                          handler:^(UIAction* uiAction) {
-                            weakButton.menu =
-                                [weakSelf menuForWebstate:weakWebState.get()];
-                          }];
-    [view addAction:displayMenu
-        forControlEvents:UIControlEventMenuActionTriggered];
-
-    [longPress setMinimumPressDuration:kDragAndDropLongPressDuration];
-  } else {
-    [longPress setMinimumPressDuration:kDragAndDropLongPressLegacyDuration];
-  }
+  [longPress setMinimumPressDuration:kDragAndDropLongPressDuration];
   [longPress setDelegate:self];
   [view addGestureRecognizer:longPress];
 
@@ -737,25 +676,7 @@ const CGFloat kSymbolSize = 18;
   return view;
 }
 
-// Returns an UIMenu for the given `webState`.
-- (UIMenu*)menuForWebstate:(web::WebState*)webState {
-  DCHECK(IsPinnedTabsEnabled());
-  if (!webState) {
-    return [UIMenu menuWithTitle:@"" children:@[]];
-  }
-  int webStateIndex = _webStateList->GetIndexOfWebState(webState);
-  NSString* identifier = webState->GetStableIdentifier();
-  BOOL pinnedState = _webStateList->IsWebStatePinnedAt(webStateIndex);
-
-  return [self.contextMenuProvider menuForWebStateIdentifier:identifier
-                                                 pinnedState:pinnedState];
-}
-
 - (void)setHighlightsSelectedTab:(BOOL)highlightsSelectedTab {
-  if (IsPinnedTabsEnabled()) {
-    return;
-  }
-
   if (highlightsSelectedTab)
     [self installDimmingViewWithAnimation:YES];
   else
@@ -939,59 +860,6 @@ const CGFloat kSymbolSize = 18;
       UrlLoadParams::InNewTab(newTabURL, base::checked_cast<int>(index));
   params.in_incognito = _browser->GetBrowserState()->IsOffTheRecord();
   UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
-}
-
-// Updates pinned tab count.
-- (void)updatePinnedTabCount {
-  _pinnedTabCount = _webStateList->GetIndexOfFirstNonPinnedWebState();
-}
-
-#pragma mark - TabStripContextMenuDelegate
-
-- (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
-  ReadingListAddCommand* command =
-      [[ReadingListAddCommand alloc] initWithURL:URL title:title];
-  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands
-  // protocol clean up.
-  id<BrowserCommands> readingListAdder =
-      static_cast<id<BrowserCommands>>(_browser->GetCommandDispatcher());
-  [readingListAdder addToReadingList:command];
-}
-
-- (void)bookmarkURL:(const GURL&)URL title:(NSString*)title {
-  bookmarks::BookmarkModel* bookmarkModel =
-      ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
-          _browser->GetBrowserState());
-  bool currentlyBookmarked =
-      bookmarkModel && bookmarkModel->GetMostRecentlyAddedUserNodeForURL(URL);
-
-  if (currentlyBookmarked) {
-    [self editBookmarkWithURL:URL];
-  } else {
-    [self.bookmarksCoordinator bookmarkURL:URL title:title];
-  }
-}
-
-- (void)editBookmarkWithURL:(const GURL&)URL {
-  [self.bookmarksCoordinator presentBookmarkEditorForURL:URL];
-}
-
-- (void)pinTabWithIdentifier:(NSString*)identifier {
-  SetWebStatePinnedState(_webStateList, identifier, /*pin_state=*/YES);
-}
-
-- (void)unpinTabWithIdentifier:(NSString*)identifier {
-  SetWebStatePinnedState(_webStateList, identifier, /*pin_state=*/NO);
-}
-
-- (void)closeTabWithIdentifier:(NSString*)identifier {
-  for (int index = 0; index < static_cast<int>(_tabArray.count); ++index) {
-    web::WebState* web_state = _webStateList->GetWebStateAt(index);
-    if ([identifier isEqualToString:web_state->GetStableIdentifier()]) {
-      _webStateList->CloseWebStateAt(index, WebStateList::CLOSE_USER_ACTION);
-      return;
-    }
-  }
 }
 
 #pragma mark - UIScrollViewDelegate
@@ -1338,8 +1206,6 @@ const CGFloat kSymbolSize = 18;
   [_closingTabs addObject:view];
   _targetFrames.RemoveFrame(view);
 
-  [self updatePinnedTabCount];
-
   // Adjust the content size now that the tab has been removed from the model.
   [self updateContentSizeAndRepositionViews];
 
@@ -1379,7 +1245,6 @@ const CGFloat kSymbolSize = 18;
   TabView* view = [self createTabViewForWebState:webState
                                       isSelected:activating];
   [_tabArray insertObject:view atIndex:[self indexForWebStateListIndex:index]];
-  [self updatePinnedTabCount];
   [[self tabStripView] addSubview:view];
 
   [self updateContentSizeAndRepositionViews];
@@ -1394,15 +1259,6 @@ const CGFloat kSymbolSize = 18;
                atIndex:(int)atIndex {
   TabView* view = [self tabViewForWebState:newWebState];
   [self updateTabView:view withWebState:newWebState];
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangePinnedStateForWebState:(web::WebState*)webState
-                            atIndex:(int)index {
-  DCHECK_EQ(_webStateList, webStateList);
-  [self updatePinnedTabCount];
-
-  [self layoutTabStripSubviews];
 }
 
 #pragma mark - WebStateFaviconDriverObserver
@@ -1461,8 +1317,7 @@ const CGFloat kSymbolSize = 18;
 - (void)updateContentSizeAndRepositionViews {
   // TODO(rohitrao): The following lines are duplicated in
   // layoutTabStripSubviews.  Find a way to consolidate this logic.
-  const NSUInteger tabCount =
-      [_tabArray count] - [_closingTabs count] - _pinnedTabCount;
+  const NSUInteger tabCount = [_tabArray count] - [_closingTabs count];
   if (!tabCount)
     return;
   const CGFloat tabHeight = CGRectGetHeight([_tabStripView bounds]);
@@ -1475,8 +1330,7 @@ const CGFloat kSymbolSize = 18;
   // Set the content size to be large enough to contain all the tabs at the
   // desired width, with the standard overlap, plus the new tab button.
   CGSize contentSize = CGSizeMake(
-      (_currentTabWidth * tabCount) + (kPinnedTabWidth * _pinnedTabCount) -
-          ([self tabOverlap] * (tabCount + _pinnedTabCount - 1)) +
+      (_currentTabWidth * tabCount) - ([self tabOverlap] * (tabCount - 1)) +
           CGRectGetWidth([_buttonNewTab frame]) - kNewTabOverlap,
       tabHeight);
   if (CGSizeEqualToSize([_tabStripView contentSize], contentSize))
@@ -1498,19 +1352,8 @@ const CGFloat kSymbolSize = 18;
   NSUInteger index = [self webStateListIndexForTabView:view];
 
   CGRect frame = [view frame];
-
-  if (_pinnedTabCount > 0) {
-    if (index < _pinnedTabCount) {
-      frame.origin.x = (kPinnedTabWidth * index);
-    } else {
-      frame.origin.x = (kPinnedTabWidth * _pinnedTabCount) +
-                       (_currentTabWidth * (index - _pinnedTabCount)) -
-                       ([self tabOverlap] * (index - 1));
-    }
-  } else {
-    frame.origin.x =
-        (_currentTabWidth * index) - ([self tabOverlap] * (index - 1));
-  }
+  frame.origin.x =
+      (_currentTabWidth * index) - ([self tabOverlap] * (index - 1));
 
   return frame;
 }
@@ -1575,7 +1418,6 @@ const CGFloat kSymbolSize = 18;
   }
 
   NSUInteger numNonClosingTabsToLeft = 0;
-  NSUInteger numPinnedTabsToLeft = 0;
 
   int i = 0;
   for (TabView* tab in _tabArray) {
@@ -1584,9 +1426,6 @@ const CGFloat kSymbolSize = 18;
 
     if (i == static_cast<int>(tabIndex)) {
       break;
-    }
-    if (i < static_cast<int>(_pinnedTabCount)) {
-      ++numPinnedTabsToLeft;
     } else {
       ++numNonClosingTabsToLeft;
     }
@@ -1595,8 +1434,7 @@ const CGFloat kSymbolSize = 18;
 
   const CGFloat tabHeight = CGRectGetHeight([_tabStripView bounds]);
   CGRect scrollRect =
-      CGRectMake((_currentTabWidth * numNonClosingTabsToLeft) +
-                     (kPinnedTabWidth * numPinnedTabsToLeft) -
+      CGRectMake((_currentTabWidth * numNonClosingTabsToLeft) -
                      ([self tabOverlap] * (numNonClosingTabsToLeft - 1)),
                  0, _currentTabWidth, tabHeight);
   [_tabStripView scrollRectToVisible:scrollRect animated:YES];
@@ -1655,13 +1493,6 @@ const CGFloat kSymbolSize = 18;
     animate = NO;
   }
 
-  // If there are pinned tabs we have to call
-  // `updateContentSizeAndRepositionViews` in order to correctly set the content
-  // size.
-  if (_pinnedTabCount > 0) {
-    [self updateContentSizeAndRepositionViews];
-  }
-
   const CGFloat tabHeight = CGRectGetHeight([_tabStripView bounds]);
 
   // In unstacked mode the space used to layout the tabs is not constrained and
@@ -1711,10 +1542,6 @@ const CGFloat kSymbolSize = 18;
   for (NSUInteger arrayIndex = 0; arrayIndex < [_tabArray count];
        ++arrayIndex) {
     TabView* view = (TabView*)[_tabArray objectAtIndex:arrayIndex];
-
-    CGFloat currentTabWith =
-        arrayIndex < _pinnedTabCount ? kPinnedTabWidth : _currentTabWidth;
-    view.pinned = arrayIndex < _pinnedTabCount;
 
     // Arrange the tabs in a V going backwards from the selected tab.  This
     // differs from desktop in order to make the tab overflow behavior work (on
@@ -1781,23 +1608,6 @@ const CGFloat kSymbolSize = 18;
 
     CGFloat realMinX =
         offset + (numPossibleCollapsedTabsToLeft * kCollapsedTabOverlap);
-    if (_pinnedTabCount > 0) {
-      CGFloat pinnedStackedTabWidth =
-          kPinnedTabWidth - kTabOverlapUnstacked - kCollapsedTabOverlap;
-      if (arrayIndex < _pinnedTabCount &&
-          arrayIndex < kMinimumVisiblePinnedTabs) {
-        // The `kMinimumVisiblePinnedTabs` first pinned tabs should always be
-        // visible.
-        realMinX =
-            offset + numPossibleCollapsedTabsToLeft * pinnedStackedTabWidth;
-      } else {
-        // Other pinned or unpinned tabs can collapse.
-        CGFloat pinnedTabCount =
-            MIN(_pinnedTabCount, kMinimumVisiblePinnedTabs);
-        realMinX = offset + (pinnedTabCount * pinnedStackedTabWidth) +
-                   ((arrayIndex - pinnedTabCount) * kCollapsedTabOverlap);
-      }
-    }
 
     // `realMaxX` is the furthest right the tab can be, in real coordinates.
     int numPossibleCollapsedTabsToRight =
@@ -1817,13 +1627,8 @@ const CGFloat kSymbolSize = 18;
     // If this tab is to the right of the currently dragged tab, add a
     // placeholder gap.
     if (_isReordering && !hasPlaceholderGap &&
-        CGRectGetMinX(dragFrame) < virtualMinX + (currentTabWith / 2.0)) {
-      if (_pinnedTabCount > 0) {
-        // The gap should be equal to the dragged tab width.
-        virtualMinX += dragFrame.size.width - [self tabOverlap];
-      } else {
-        virtualMinX += currentTabWith - [self tabOverlap];
-      }
+        CGRectGetMinX(dragFrame) < virtualMinX + (_currentTabWidth / 2.0)) {
+      virtualMinX += _currentTabWidth - [self tabOverlap];
       hasPlaceholderGap = YES;
 
       // Fix up the z-ordering of the current view.  It was placed assuming that
@@ -1843,13 +1648,13 @@ const CGFloat kSymbolSize = 18;
     // by trying to place the tab at the computed `virtualMinX`, then constrain
     // that by `realMinX` and `realMaxX`.
     CGFloat tabX = MAX(virtualMinX, realMinX);
-    if (tabX + currentTabWith > realMaxX) {
-      tabX = realMaxX - currentTabWith;
+    if (tabX + _currentTabWidth > realMaxX) {
+      tabX = realMaxX - _currentTabWidth;
     }
 
     CGRect frame = CGRectMake(AlignValueToPixel(tabX), 0,
-                              AlignValueToPixel(currentTabWith), tabHeight);
-    virtualMinX += (currentTabWith - [self tabOverlap]);
+                              AlignValueToPixel(_currentTabWidth), tabHeight);
+    virtualMinX += (_currentTabWidth - [self tabOverlap]);
     virtualMaxX = CGRectGetMaxX(frame);
 
     // Update the tab's collapsed state based on overlap with the previous tab.

@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 
 import org.junit.After;
@@ -27,7 +27,6 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -36,6 +35,7 @@ import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
@@ -296,7 +296,7 @@ public class InfoBarTest {
                 () -> sActivityTestRule.getInfoBarContainer().addAnimationListener(removeListener));
         PostTask.runOrPostTask(TaskTraits.UI_DEFAULT, () -> {
             WebContents newContents = WebContentsFactory.createWebContents(
-                    Profile.getLastUsedRegularProfile(), false);
+                    Profile.getLastUsedRegularProfile(), false, false);
             TabTestUtils.swapWebContents(
                     sActivityTestRule.getActivity().getActivityTab(), newContents, false, false);
         });

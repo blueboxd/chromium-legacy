@@ -41,13 +41,12 @@ class RectF;
 namespace autofill {
 
 class AutofillField;
-class AutofillOfferManager;
 class CreditCardAccessManager;
 struct FormData;
 struct FormFieldData;
 class FormStructure;
 class LogManager;
-class TouchToFillDelegateImpl;
+class TouchToFillDelegateAndroidImpl;
 
 // This class defines the interface should be implemented by autofill
 // implementation in browser side to interact with AutofillDriver.
@@ -154,15 +153,12 @@ class AutofillManager
   }
 
   AutofillClient* unsafe_client(
-      base::PassKey<TouchToFillDelegateImpl> pass_key) {
+      base::PassKey<TouchToFillDelegateAndroidImpl> pass_key) {
     return AutofillManager::unsafe_client();
   }
 
   // Returns a WeakPtr to the leaf class.
   virtual base::WeakPtr<AutofillManager> GetWeakPtr() = 0;
-
-  // May return nullptr.
-  virtual AutofillOfferManager* GetOfferManager() = 0;
 
   // May return nullptr.
   virtual CreditCardAccessManager* GetCreditCardAccessManager() = 0;

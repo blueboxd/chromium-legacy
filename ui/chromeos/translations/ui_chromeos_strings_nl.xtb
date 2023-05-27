@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Verificatiecertificaat lokaal geweigerd</translation>
 <translation id="1775381402323441512">Videogegevens</translation>
 <translation id="180035236176489073">Je moet online zijn om deze bestanden te openen.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Een extensie met de ID}other{Een extensie met de ID's}}</translation>
 <translation id="1807938677607439181">Alle bestanden</translation>
 <translation id="1810764548349082891">Geen voorbeeld beschikbaar</translation>
 <translation id="1812302367230252929">Amhaars (transliteratie)</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Ongeldige invoer voor overeenkomst voor alternatieve naam van onderwerp</translation>
 <translation id="1838709767668011582">Google-site</translation>
 <translation id="1853795129690976061">Deze map wordt gedeeld met Linux</translation>
-<translation id="1859422890169495746">Deze Chromebook</translation>
 <translation id="1864756863218646478">Het bestand kan niet worden gevonden.</translation>
 <translation id="1884013283844450420">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, verbinden</translation>
 <translation id="1920670151694390848">Malayalam (transliteratie)</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planeet</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> is verwijderd.</translation>
 <translation id="2307462900900812319">Netwerk configureren</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{Er kan geen extensie met de ID <ph name="BEGIN_LIST" /><ph name="END_LIST" /> worden gevonden. Neem contact op met je beheerder.}other{Er kunnen geen extensies met de ID's <ph name="BEGIN_LIST" /><ph name="END_LIST" /> worden gevonden. Neem contact op met je beheerder.}}</translation>
 <translation id="2325650632570794183">Dit bestandstype wordt niet ondersteund. Ga naar de Chrome Web Store om een app te vinden die dit bestandstype kan openen.</translation>
 <translation id="2326539130272988168">Bulgaars</translation>
 <translation id="2337715497728194187">Delen met Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Niet beveiligd</translation>
 <translation id="3291218047831493686">Maak verbinding met dit netwerk om de instelling voor de simlock te wijzigen</translation>
 <translation id="3293023191599135697">WEP-netwerken worden niet ondersteund</translation>
+<translation id="3295006446256079333">Dit volume</translation>
 <translation id="3295357220137379386">Apparaat is bezig</translation>
 <translation id="3296763833017966289">Georgisch</translation>
 <translation id="3307875152560779385">Oekraïens</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="485316830061041779">Duits</translation>
+<translation id="4862885579661885411">Instellingen voor Bestanden</translation>
 <translation id="4867079195717347957">Klik om de kolom in aflopende volgorde te sorteren.</translation>
 <translation id="4867297348137739678">Vorige week</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
@@ -802,7 +803,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> items kopiëren...</translation>
 <translation id="7375951387215729722">Lijst met bestanden gesorteerd op <ph name="COLUMN_NAME" /> in aflopende volgorde.</translation>
 <translation id="7377161162143020057">Dit bestand kopiëren is geblokkeerd door het beheerdersbeleid</translation>
-<translation id="7392500733467492920">kan niet worden gevonden. Neem contact op met je beheerder.</translation>
 <translation id="7402503521691663770">Chrome OS Flex-apparaten</translation>
 <translation id="7408870451288633753">Tsjechië</translation>
 <translation id="7417453074306512035">Ethiopisch toetsenbord</translation>

@@ -13,6 +13,7 @@
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
+#include "ui/gl/gl_surface.h"
 
 namespace gl {
 class ScopedEGLSurfaceIOSurface;
@@ -44,6 +45,8 @@ struct IOSurfaceBackingEGLState : base::RefCounted<IOSurfaceBackingEGLState> {
   IOSurfaceBackingEGLState(
       Client* client,
       EGLDisplay egl_display,
+      gl::GLContext* gl_context,
+      gl::GLSurface* gl_surface,
       GLuint gl_target,
       std::vector<scoped_refptr<gles2::TexturePassthrough>> gl_textures);
   GLenum GetGLTarget() const { return gl_target_; }
@@ -68,6 +71,9 @@ struct IOSurfaceBackingEGLState : base::RefCounted<IOSurfaceBackingEGLState> {
 
   // The display for this GL representation.
   const EGLDisplay egl_display_;
+
+  scoped_refptr<gl::GLContext> context_;
+  scoped_refptr<gl::GLSurface> surface_;
 
   // The GL (not EGL) target to which this texture is to be bound.
   const GLuint gl_target_;
@@ -106,7 +112,7 @@ class GLTextureIOSurfaceRepresentation
 };
 
 // Skia representation for both GLTextureImageBackingHelper.
-class SkiaIOSurfaceRepresentation : public SkiaImageRepresentation {
+class SkiaIOSurfaceRepresentation : public SkiaGaneshImageRepresentation {
  public:
   SkiaIOSurfaceRepresentation(
       SharedImageManager* manager,
@@ -276,7 +282,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
       WGPUDevice device,
       WGPUBackendType backend_type,
       std::vector<WGPUTextureFormat> view_formats) final;
-  std::unique_ptr<SkiaImageRepresentation> ProduceSkia(
+  std::unique_ptr<SkiaGaneshImageRepresentation> ProduceSkiaGanesh(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
@@ -294,10 +300,6 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   void IOSurfaceBackingEGLStateBeingDestroyed(
       IOSurfaceBackingEGLState* egl_state,
       bool have_context) override;
-
-  sk_sp<SkPromiseImageTexture> ProduceSkiaPromiseTextureMetal(
-      scoped_refptr<SharedContextState> context_state,
-      int plane_index);
 
   bool IsPassthrough() const { return true; }
 

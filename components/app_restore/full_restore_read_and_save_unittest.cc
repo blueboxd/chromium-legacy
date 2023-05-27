@@ -9,6 +9,7 @@
 
 #include "ash/constants/app_types.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
@@ -27,6 +28,7 @@
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/test/browser_task_environment.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/aura_test_helper.h"
@@ -40,6 +42,9 @@
 namespace full_restore {
 
 namespace {
+
+using testing::ElementsAre;
+using testing::Pair;
 
 constexpr char kAppId[] = "aaa";
 
@@ -68,6 +73,10 @@ constexpr char kExampleUrl2[] = "https://www.example2.com";
 constexpr char kLacrosWindowId[] = "123";
 
 constexpr uint32_t kBrowserSessionId = 56;
+
+// Randomly generated desk GUID to test saving removing desk GUID.
+const base::Uuid kRemovingDeskGuid = base::Uuid::GenerateRandomV4();
+const base::Uuid kNonRemovingDeskGuid = base::Uuid::GenerateRandomV4();
 
 }  // namespace
 
@@ -109,7 +118,7 @@ class FullRestoreReadHandlerTestApi {
   }
 
  private:
-  FullRestoreReadHandler* read_handler_;
+  raw_ptr<FullRestoreReadHandler, ExperimentalAsh> read_handler_;
 };
 
 class FullRestoreSaveHandlerTestApi {
@@ -195,7 +204,7 @@ class FullRestoreSaveHandlerTestApi {
     return save_handler_->arc_save_handler_.get();
   }
 
-  FullRestoreSaveHandler* save_handler_;
+  raw_ptr<FullRestoreSaveHandler, ExperimentalAsh> save_handler_;
 };
 
 // Unit tests for restore data.
@@ -334,7 +343,8 @@ class FullRestoreReadAndSaveTest : public testing::Test {
   std::unique_ptr<aura::Window> CreateWindowInfo(
       int32_t id,
       int32_t index,
-      ash::AppType app_type = ash::AppType::BROWSER) {
+      ash::AppType app_type = ash::AppType::BROWSER,
+      base::Uuid desk_guid = base::Uuid()) {
     std::unique_ptr<aura::Window> window(
         aura::test::CreateTestWindowWithId(id, nullptr));
     app_restore::WindowInfo window_info;
@@ -342,6 +352,7 @@ class FullRestoreReadAndSaveTest : public testing::Test {
     window->SetProperty(aura::client::kAppType, static_cast<int>(app_type));
     window->SetProperty(app_restore::kWindowIdKey, id);
     window_info.activation_index = index;
+    window_info.desk_guid = desk_guid;
     full_restore::SaveWindowInfo(window_info);
     return window;
   }
@@ -913,10 +924,10 @@ TEST_F(FullRestoreReadAndSaveTest, ReadBrowserRestoreData) {
   EXPECT_TRUE(app_restore_data_it != launch_list_it->second.end());
 
   const auto& data = app_restore_data_it->second;
-  EXPECT_TRUE(data->urls.has_value());
-  EXPECT_EQ(data->urls.value().size(), 2u);
-  EXPECT_EQ(data->urls.value()[0], GURL(kExampleUrl1));
-  EXPECT_EQ(data->urls.value()[1], GURL(kExampleUrl2));
+  EXPECT_FALSE(data->urls.empty());
+  EXPECT_EQ(data->urls.size(), 2u);
+  EXPECT_EQ(data->urls[0], GURL(kExampleUrl1));
+  EXPECT_EQ(data->urls[1], GURL(kExampleUrl2));
 
   EXPECT_TRUE(data->active_tab_index.has_value());
   EXPECT_EQ(data->active_tab_index.value(), active_tab_index);
@@ -948,10 +959,10 @@ TEST_F(FullRestoreReadAndSaveTest, ReadChromeAppRestoreData) {
   const auto& data = app_restore_data_it->second;
   EXPECT_TRUE(data->handler_id.has_value());
   EXPECT_EQ(kHandlerId, data->handler_id.value());
-  EXPECT_TRUE(data->file_paths.has_value());
-  EXPECT_EQ(2u, data->file_paths.value().size());
-  EXPECT_EQ(base::FilePath(kFilePath1), data->file_paths.value()[0]);
-  EXPECT_EQ(base::FilePath(kFilePath2), data->file_paths.value()[1]);
+  EXPECT_FALSE(data->file_paths.empty());
+  EXPECT_EQ(2u, data->file_paths.size());
+  EXPECT_EQ(base::FilePath(kFilePath1), data->file_paths[0]);
+  EXPECT_EQ(base::FilePath(kFilePath2), data->file_paths[1]);
 }
 
 // Verify the Lacros browser window is saved correctly when the window is
@@ -1166,6 +1177,46 @@ TEST_F(FullRestoreReadAndSaveTest,
   const auto* restore_data = GetRestoreData(GetPath());
   ASSERT_TRUE(restore_data);
   EXPECT_TRUE(restore_data->app_id_to_launch_list().empty());
+}
+
+// Verifies that saving a removing desk's GUID in `RestoreData` allows for us to
+// prevent the windows in that desk from being restored.
+TEST_F(FullRestoreReadAndSaveTest, PreventWindowsOnRemovingDeskFromRestoring) {
+  FullRestoreSaveHandler* save_handler = GetSaveHandler();
+  base::OneShotTimer* timer = save_handler->GetTimerForTesting();
+
+  // Add app launch info, and verify the timer starts.
+  AddAppLaunchInfo(GetPath(), kId1);
+  ASSERT_TRUE(timer->IsRunning());
+
+  // Add one more app launch info, and verify the timer is still running.
+  AddAppLaunchInfo(GetPath(), kId2);
+  ASSERT_TRUE(timer->IsRunning());
+
+  // Create two windows. Establish that `window1` will be on the removing desk
+  // and `window2` will be on the non-removing desk.
+  std::unique_ptr<aura::Window> window1 = CreateWindowInfo(
+      kId1, kActivationIndex1, ash::AppType::BROWSER, kRemovingDeskGuid);
+  std::unique_ptr<aura::Window> window2 = CreateWindowInfo(
+      kId2, kActivationIndex2, ash::AppType::BROWSER, kNonRemovingDeskGuid);
+
+  // Establish that the desk with `kRemovingDeskGuid` as its GUID is being
+  // removed.
+  save_handler->SaveRemovingDeskGuid(kRemovingDeskGuid);
+
+  // Simulate timeout, which should trigger a save, and verify the timer stops.
+  timer->FireNow();
+  task_environment().RunUntilIdle();
+
+  ReadFromFile(GetPath());
+
+  // Verify the restore data can be read correctly.
+  const auto* restore_data = GetRestoreData(GetPath());
+  ASSERT_TRUE(restore_data);
+
+  // The launch list in `restore_data` should only have `window2`.
+  EXPECT_THAT(restore_data->app_id_to_launch_list(),
+              ElementsAre(Pair(kAppId, ElementsAre(Pair(kId2, testing::_)))));
 }
 
 }  // namespace full_restore

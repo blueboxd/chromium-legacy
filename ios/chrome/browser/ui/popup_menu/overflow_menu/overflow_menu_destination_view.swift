@@ -145,8 +145,8 @@ struct OverflowMenuDestinationButton: ButtonStyle {
             .frame(width: Dimensions.newLabelBadgeWidth, height: Dimensions.newLabelBadgeWidth)
             .offset(x: newBadgeOffsetX, y: newBadgeOffsetY)
             .overlay {
-              if let newLabelString = L10NUtils.stringWithFixup(
-                forMessageId: IDS_IOS_NEW_LABEL_FEATURE_BADGE)
+              if let newLabelString = L10nUtils.stringWithFixup(
+                messageId: IDS_IOS_NEW_LABEL_FEATURE_BADGE)
               {
                 Text(newLabelString)
                   .font(.system(size: 10, weight: .bold, design: .rounded))
@@ -220,12 +220,16 @@ struct OverflowMenuDestinationView: View {
 
   enum AccessibilityIdentifier {
     /// The addition to the `accessibilityIdentfier` for this element if it
-    /// has a badge.
-    static let badgeAddition = "badge"
+    /// has an error badge.
+    static let errorBadge = "errorBadge"
+
+    /// The addition to the `accessibilityIdentfier` for this element if it
+    /// has a promo badge.
+    static let promoBadge = "promoBadge"
 
     /// The addition to the `accessibilityIdentfier` for this element if it
     /// has a "New" badge.
-    static let newBadgeAddition = "newBadge"
+    static let newBadge = "newBadge"
   }
 
   /// The destination for this view.
@@ -256,20 +260,21 @@ struct OverflowMenuDestinationView: View {
     return [
       destination.name,
       destination.badge == .error
-        ? L10NUtils.stringWithFixup(
-          forMessageId: IDS_IOS_ITEM_ACCOUNT_ERROR_BADGE_ACCESSIBILITY_HINT) : nil,
+        ? L10nUtils.stringWithFixup(
+          messageId: IDS_IOS_ITEM_ACCOUNT_ERROR_BADGE_ACCESSIBILITY_HINT) : nil,
       destination.badge == .promo
-        ? L10NUtils.stringWithFixup(forMessageId: IDS_IOS_NEW_ITEM_ACCESSIBILITY_HINT) : nil,
+        ? L10nUtils.stringWithFixup(messageId: IDS_IOS_NEW_ITEM_ACCESSIBILITY_HINT) : nil,
       destination.badge == .new
-        ? L10NUtils.stringWithFixup(forMessageId: IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE) : nil,
+        ? L10nUtils.stringWithFixup(messageId: IDS_IOS_TOOLS_MENU_CELL_NEW_FEATURE_BADGE) : nil,
     ].compactMap { $0 }.joined(separator: ", ")
   }
 
   var accessibilityIdentifier: String {
     return [
       destination.accessibilityIdentifier,
-      destination.badge == .promo ? AccessibilityIdentifier.badgeAddition : nil,
-      destination.badge == .new ? AccessibilityIdentifier.newBadgeAddition : nil,
+      destination.badge == .error ? AccessibilityIdentifier.errorBadge : nil,
+      destination.badge == .promo ? AccessibilityIdentifier.promoBadge : nil,
+      destination.badge == .new ? AccessibilityIdentifier.newBadge : nil,
     ].compactMap { $0 }.joined(separator: "-")
   }
 

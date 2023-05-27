@@ -52,7 +52,7 @@ enum class ProfileSignout {
   kForceSignoutAlwaysAllowedForTest = 11,
   // User cleared account cookies when there's no sync consent, which has caused
   // sign out.
-  kUserDeletedAccountCookies = 12,
+  // Deprecated (re-numbered in M114): kUserDeletedAccountCookies = 12,
   // Signout triggered by MobileIdentityConsistency rollback.
   // Deprecated: kMobileIdentityConsistencyRollback = 13,
   // Sign-out when the account id migration to Gaia ID did not finish,
@@ -81,9 +81,14 @@ enum class ProfileSignout {
   kGaiaCookieUpdated = 22,
   // Profile Signout during reconciliation.
   kAccountReconcilorReconcile = 23,
+  // Signin manager updates the unconsented primary account.
+  kSigninManagerUpdateUPA = 24,
+  // User cleared account cookies when there's no sync consent, which has caused
+  // sign out.
+  kUserDeletedAccountCookies = 25,
 
   // Keep this as the last enum.
-  kMaxValue = kAccountReconcilorReconcile
+  kMaxValue = kUserDeletedAccountCookies
 };
 
 // Enum values used for use with "AutoLogin.Reverse" histograms.
@@ -171,17 +176,22 @@ enum class AccessPoint : int {
   // component. We should replace its usage with actual access points once we
   // find ways to attribute the changes accurately.
   ACCESS_POINT_DESKTOP_SIGNIN_MANAGER = 44,
-
   // Access point for the "For You" First Run Experience on Desktop. See
   // go/for-you-fre or launch/4223982 for more info.
   ACCESS_POINT_FOR_YOU_FRE = 45,
-
   // Access point for Cormorant (Creator Feed) on Android only when the "Follow"
   // button is tapped while in a signed-out state.
   ACCESS_POINT_CREATOR_FEED_FOLLOW = 46,
-
   // Access point for the reading list sign-in promo (launch/4231282).
   ACCESS_POINT_READING_LIST = 47,
+  // Access point for the reauth info bar.
+  ACCESS_POINT_REAUTH_INFO_BAR = 48,
+  // Access point for the consistency service.
+  ACCESS_POINT_ACCOUNT_CONSISTENCY_SERVICE = 49,
+  // Access point for the search companion sign-in promo.
+  ACCESS_POINT_SEARCH_COMPANION = 50,
+  // Access point for the IOS Set Up List on the NTP.
+  ACCESS_POINT_SET_UP_LIST = 51,
 
   // Add values above this line with a corresponding label to the
   // "SigninAccessPoint" enum in tools/metrics/histograms/enums.xml

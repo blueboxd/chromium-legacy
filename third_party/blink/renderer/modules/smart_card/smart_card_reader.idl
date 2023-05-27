@@ -4,6 +4,22 @@
 
 // https://github.com/WICG/web-smart-card/blob/main/README.md#web-idl
 
+enum SmartCardReaderState {
+  "unavailable",
+  "empty",
+  "present",
+  "exclusive",
+  "inuse",
+  "mute",
+  "unpowered"
+};
+
+enum SmartCardAccessMode {
+  "shared",
+  "exclusive",
+  "direct"
+};
+
 [
   ActiveScriptWrappable,
   Exposed=Window,
@@ -12,5 +28,13 @@
   IsolatedContext
 ] interface SmartCardReader : EventTarget {
   readonly attribute DOMString name;
+
+  readonly attribute SmartCardReaderState state;
+  attribute EventHandler onstatechange;
+
+  [CallWith=ScriptState, RaisesException]
+  Promise<SmartCardConnection> connect(SmartCardAccessMode accessMode,
+      optional sequence<SmartCardProtocol> preferredProtocols);
+
   // TODO(crbug.com/1386175): add the rest of the API
 };

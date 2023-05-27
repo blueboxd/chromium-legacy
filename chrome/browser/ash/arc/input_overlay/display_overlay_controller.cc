@@ -12,10 +12,15 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
+#include "ash/wm/window_state.h"
 #include "base/functional/bind.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ash/arc/input_overlay/actions/action.h"
+#include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/action_edit_menu.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/edit_finish_view.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/educational_view.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/input_mapping_view.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/input_menu_view.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/menu_entry_view.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/message_view.h"
@@ -23,6 +28,7 @@
 #include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "chromeos/ui/base/window_properties.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/vector_icons/vector_icons.h"
@@ -37,8 +43,8 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-#include "util.h"
 
 namespace arc::input_overlay {
 
@@ -66,10 +72,6 @@ DisplayOverlayController::DisplayOverlayController(
 
   AddOverlay(first_launch ? DisplayMode::kEducation : DisplayMode::kView);
   ash::Shell::Get()->AddPreTargetHandler(this);
-  if (auto* dark_light_mode_controller =
-          ash::DarkLightModeControllerImpl::Get()) {
-    dark_light_mode_controller->AddObserver(this);
-  }
 }
 
 DisplayOverlayController::~DisplayOverlayController() {
@@ -80,10 +82,6 @@ DisplayOverlayController::~DisplayOverlayController() {
     return;
   }
 
-  if (auto* dark_light_mode_controller =
-          ash::DarkLightModeControllerImpl::Get()) {
-    dark_light_mode_controller->RemoveObserver(this);
-  }
   ash::Shell::Get()->RemovePreTargetHandler(this);
   RemoveOverlayIfAny();
 }
@@ -95,6 +93,8 @@ gfx::Rect DisplayOverlayController::GetInputMappingViewBoundsForTesting() {
 
 void DisplayOverlayController::AddOverlay(DisplayMode display_mode) {
   RemoveOverlayIfAny();
+  touch_injector_->window()->AddObserver(this);
+
   auto* shell_surface_base =
       exo::GetShellSurfaceBaseForWindow(touch_injector_->window());
   if (!shell_surface_base) {
@@ -107,11 +107,6 @@ void DisplayOverlayController::AddOverlay(DisplayMode display_mode) {
   params.overlaps_frame = false;
   params.focusable = true;
   shell_surface_base->AddOverlay(std::move(params));
-
-  auto* overlay_widget = GetOverlayWidget();
-  if (overlay_widget) {
-    overlay_widget->AddObserver(this);
-  }
 
   SetDisplayMode(display_mode);
 }
@@ -126,13 +121,10 @@ void DisplayOverlayController::RemoveOverlayIfAny() {
     // Call |RemoveInputMenuView| explicitly to make sure UMA stats is updated.
     RemoveInputMenuView();
 
-    auto* overlay_widget = GetOverlayWidget();
-    if (overlay_widget) {
-      overlay_widget->RemoveObserver(this);
-    }
-
     shell_surface_base->RemoveOverlay();
   }
+
+  touch_injector_->window()->RemoveObserver(this);
 }
 
 void DisplayOverlayController::SetEventTarget(views::Widget* overlay_widget,
@@ -368,88 +360,13 @@ void DisplayOverlayController::OnEducationalViewDismissed() {
   touch_injector_->set_first_launch(false);
 }
 
-void DisplayOverlayController::AddButtonForAddActionTap() {
-  if (add_action_tap_) {
-    return;
-  }
-  auto add_action_tap = std::make_unique<ash::PillButton>(
-      base::BindRepeating(
-          &DisplayOverlayController::OnAddActionTapButtonPressed,
-          base::Unretained(this)),
-      u"Add Action Tap", ash::PillButton::Type::kDefaultWithoutIcon,
-      /*icon=*/nullptr);
-  add_action_tap->SetSize(add_action_tap->GetPreferredSize());
-
-  auto* overlay_widget = GetOverlayWidget();
-  DCHECK(overlay_widget);
-  auto* parent_view = overlay_widget->GetContentsView();
-  DCHECK(parent_view);
-  add_action_tap_ = parent_view->AddChildView(std::move(add_action_tap));
-  add_action_tap_->SetButtonTextColor(cros_styles::ResolveColor(
-      cros_styles::ColorName::kButtonLabelColorPrimary, IsDarkModeEnabled()));
-  add_action_tap_->SetBackgroundColor(cros_styles::ResolveColor(
-      cros_styles::ColorName::kButtonBackgroundColorPrimary,
-      IsDarkModeEnabled()));
-  add_action_tap_->SetPosition(
-      gfx::Point(parent_view->width() - add_action_tap_->width(), 0));
-}
-
-void DisplayOverlayController::RemoveButtonForAddActionTap() {
-  if (!add_action_tap_) {
-    return;
-  }
-  add_action_tap_->parent()->RemoveChildViewT(add_action_tap_);
-  add_action_tap_ = nullptr;
-}
-
-void DisplayOverlayController::OnAddActionTapButtonPressed() {
-  touch_injector_->AddNewAction(ActionType::TAP);
-}
-
-void DisplayOverlayController::AddButtonForAddActionMove() {
-  auto add_action_move = std::make_unique<ash::PillButton>(
-      base::BindRepeating(
-          &DisplayOverlayController::OnAddActionMoveButtonPressed,
-          base::Unretained(this)),
-      u"Add Action Move", ash::PillButton::Type::kDefaultWithoutIcon,
-      /*icon=*/nullptr);
-  add_action_move->SetSize(add_action_move->GetPreferredSize());
-
-  auto* overlay_widget = GetOverlayWidget();
-  DCHECK(overlay_widget);
-  auto* parent_view = overlay_widget->GetContentsView();
-  DCHECK(parent_view);
-  add_action_move_ = parent_view->AddChildView(std::move(add_action_move));
-  add_action_move_->SetButtonTextColor(cros_styles::ResolveColor(
-      cros_styles::ColorName::kButtonLabelColorPrimary, IsDarkModeEnabled()));
-  add_action_move_->SetBackgroundColor(cros_styles::ResolveColor(
-      cros_styles::ColorName::kButtonBackgroundColorPrimary,
-      IsDarkModeEnabled()));
-  add_action_move_->SetPosition(
-      gfx::Point(parent_view->width() - add_action_move_->width(),
-                 add_action_tap_->height()));
-}
-
-void DisplayOverlayController::RemoveButtonForAddActionMove() {
-  if (!add_action_move_) {
-    return;
-  }
-  add_action_move_->parent()->RemoveChildViewT(add_action_move_);
-  add_action_move_ = nullptr;
-}
-
-void DisplayOverlayController::OnAddActionMoveButtonPressed() {
-  touch_injector_->AddNewAction(ActionType::MOVE);
-}
-
-void DisplayOverlayController::OnActionTrashButtonPressed(Action* action) {
-  touch_injector_->RemoveAction(action);
-}
-
 views::Widget* DisplayOverlayController::GetOverlayWidget() {
   auto* shell_surface_base =
       exo::GetShellSurfaceBaseForWindow(touch_injector_->window());
-  DCHECK(shell_surface_base);
+  // Shell surface is null for test.
+  if (!shell_surface_base) {
+    return nullptr;
+  }
 
   return shell_surface_base ? static_cast<views::Widget*>(
                                   shell_surface_base->GetFocusTraversable())
@@ -523,10 +440,6 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
       RemoveEditFinishView();
       RemoveEducationalView();
       RemoveNudgeView();
-      if (ash::features::IsArcInputOverlayBetaEnabled()) {
-        RemoveButtonForAddActionTap();
-        RemoveButtonForAddActionMove();
-      }
       AddInputMappingView(overlay_widget);
       AddMenuEntryView(overlay_widget);
       if (touch_injector_->show_nudge()) {
@@ -543,10 +456,6 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
       RemoveEducationalView();
       RemoveNudgeView();
       AddEditFinishView(overlay_widget);
-      if (ash::features::IsArcInputOverlayBetaEnabled()) {
-        AddButtonForAddActionTap();
-        AddButtonForAddActionMove();
-      }
       SetEventTarget(overlay_widget, /*on_overlay=*/true);
       break;
     case DisplayMode::kPreMenu:
@@ -716,40 +625,36 @@ void DisplayOverlayController::OnTouchEvent(ui::TouchEvent* event) {
   ProcessPressedEvent(*event);
 }
 
-void DisplayOverlayController::OnColorModeChanged(bool dark_mode_enabled) {
-  // Only make the color mode change responsive when in
-  // |DisplayMode::kEducation| because:
-  // 1. Other modes like |DisplayMode::kEdit| and |DisplayMode::kView| only have
-  // one color mode.
-  // 2. When in |DisplayMode::kMenu| and changing the color mode, the menu is
-  // closed and it becomes |DisplayMode::kView| so no need to update color mode.
-  if (display_mode_ != DisplayMode::kEducation) {
+void DisplayOverlayController::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds,
+    ui::PropertyChangeReason reason) {
+  DCHECK_EQ(window, touch_injector_->window());
+  // Disregard the bounds from animation and only care final window bounds.
+  if (reason == ui::PropertyChangeReason::FROM_ANIMATION) {
     return;
   }
-  SetDisplayMode(DisplayMode::kNone);
-  SetDisplayMode(DisplayMode::kEducation);
+
+  UpdateForBoundsChanged();
 }
 
-void DisplayOverlayController::OnWidgetBoundsChanged(
-    views::Widget* widget,
-    const gfx::Rect& new_bounds) {
-  touch_injector_->UpdateForOverlayBoundsChanged(gfx::RectF(new_bounds));
-
-  // Overlay |widget| is null for test.
-  if (!widget) {
+void DisplayOverlayController::OnWindowPropertyChanged(aura::Window* window,
+                                                       const void* key,
+                                                       intptr_t old) {
+  DCHECK_EQ(window, touch_injector_->window());
+  if (key != chromeos::kImmersiveIsActive) {
+    return;
+  }
+  bool is_immersive = window->GetProperty(chromeos::kImmersiveIsActive);
+  // This is to catch the corner case that when an app is launched as
+  // fullscreen/immersive mode, so it only cares when the window turns into
+  // immersive mode from non-immersive mode.
+  if (!is_immersive || is_immersive == static_cast<bool>(old)) {
     return;
   }
 
-  auto mode = display_mode_;
-  SetDisplayMode(DisplayMode::kNone);
-  // Transition to |kView| mode except while on |kEducation| mode since
-  // displaying this UI needs to be ensured as the user shouldn't be able to
-  // manually access said view.
-  if (mode != DisplayMode::kEducation) {
-    mode = DisplayMode::kView;
-  }
-
-  SetDisplayMode(mode);
+  UpdateForBoundsChanged();
 }
 
 bool DisplayOverlayController::HasMenuView() const {
@@ -869,15 +774,31 @@ bool DisplayOverlayController::ShowingNudge() {
   return nudge_view_ || nudge_view_alpha_;
 }
 
-void DisplayOverlayController::DismissEducationalViewForTesting() {
-  OnEducationalViewDismissed();
+void DisplayOverlayController::UpdateForBoundsChanged() {
+  auto content_bounds = CalculateWindowContentBounds(touch_injector_->window());
+  if (content_bounds == touch_injector_->content_bounds()) {
+    return;
+  }
+  touch_injector_->UpdateForOverlayBoundsChanged(content_bounds);
+
+  // Overlay widget is null for test.
+  if (!GetOverlayWidget()) {
+    return;
+  }
+
+  auto mode = display_mode_;
+  SetDisplayMode(DisplayMode::kNone);
+  // Transition to |kView| mode except while on |kEducation| mode since the
+  // educational banner needs to remain visible until dismissed by the user.
+  if (mode != DisplayMode::kEducation) {
+    mode = DisplayMode::kView;
+  }
+
+  SetDisplayMode(mode);
 }
 
-void DisplayOverlayController::TriggerWidgetBoundsChangedForTesting() {
-  auto bounds = CalculateWindowContentBounds(touch_injector_->window());
-  OnWidgetBoundsChanged(
-      /*widget=*/nullptr,
-      gfx::Rect(bounds.x(), bounds.y(), bounds.width(), bounds.height()));
+void DisplayOverlayController::DismissEducationalViewForTesting() {
+  OnEducationalViewDismissed();
 }
 
 }  // namespace arc::input_overlay

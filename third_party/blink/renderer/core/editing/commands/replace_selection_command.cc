@@ -188,8 +188,7 @@ ReplacementFragment::ReplacementFragment(Document* document,
       // register an event handler.
       &&
       !(shadow_ancestor_element && shadow_ancestor_element->GetLayoutObject() &&
-        shadow_ancestor_element->GetLayoutObject()
-            ->IsTextControlIncludingNG()) &&
+        shadow_ancestor_element->GetLayoutObject()->IsTextControl()) &&
       IsRichlyEditable(*editable_root)) {
     RemoveInterchangeNodes(fragment_);
     return;
@@ -948,7 +947,6 @@ void ReplaceSelectionCommand::MergeEndIfNeeded(EditingState* editing_state) {
 
   // Bail to avoid infinite recursion.
   if (moving_paragraph_) {
-    NOTREACHED();
     return;
   }
 
@@ -1757,7 +1755,7 @@ void ReplaceSelectionCommand::AddSpacesForSmartReplace(
   if (needs_trailing_space && end_node) {
     bool collapse_white_space =
         !end_node->GetLayoutObject() ||
-        end_node->GetLayoutObject()->Style()->CollapseWhiteSpace();
+        end_node->GetLayoutObject()->Style()->ShouldCollapseWhiteSpaces();
     end_text_node = DynamicTo<Text>(end_node);
     if (end_text_node) {
       InsertTextIntoNode(end_text_node, end_offset,
@@ -1798,7 +1796,7 @@ void ReplaceSelectionCommand::AddSpacesForSmartReplace(
   if (needs_leading_space && start_node) {
     bool collapse_white_space =
         !start_node->GetLayoutObject() ||
-        start_node->GetLayoutObject()->Style()->CollapseWhiteSpace();
+        start_node->GetLayoutObject()->Style()->ShouldCollapseWhiteSpaces();
     if (auto* start_text_node = DynamicTo<Text>(start_node)) {
       InsertTextIntoNode(start_text_node, start_offset,
                          collapse_white_space ? NonBreakingSpaceString() : " ");

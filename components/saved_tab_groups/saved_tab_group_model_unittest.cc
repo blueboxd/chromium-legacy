@@ -9,9 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "base/guid.h"
 #include "base/test/gtest_util.h"
 #include "base/token.h"
+#include "base/uuid.h"
 #include "components/saved_tab_groups/saved_tab_group.h"
 #include "components/saved_tab_groups/saved_tab_group_model_observer.h"
 #include "components/saved_tab_groups/saved_tab_group_tab.h"
@@ -25,20 +25,6 @@
 #include "url/url_constants.h"
 
 namespace {
-
-base::GUID GenerateNextGUID() {
-  static uint64_t guid_increment;
-  if (!guid_increment) {
-    guid_increment = 0;
-  }
-
-  uint64_t kBytes[] = {0, guid_increment};
-  base::GUID guid =
-      base::GUID::ParseCaseInsensitive(base::RandomDataToGUIDString(kBytes));
-
-  guid_increment++;
-  return guid;
-}
 
 void CompareSavedTabGroupTabs(const std::vector<SavedTabGroupTab>& v1,
                               const std::vector<SavedTabGroupTab>& v2) {
@@ -73,13 +59,13 @@ SavedTabGroup CreateSavedTabGroup(
     const std::u16string& group_title,
     const tab_groups::TabGroupColorId& color,
     const std::vector<SavedTabGroupTab>& group_tabs,
-    const base::GUID& id) {
+    const base::Uuid& id) {
   return SavedTabGroup(group_title, color, group_tabs, id);
 }
 
 SavedTabGroupTab CreateSavedTabGroupTab(const std::string& url,
                                         const std::u16string& title,
-                                        const base::GUID& group_guid,
+                                        const base::Uuid& group_guid,
                                         absl::optional<int> position) {
   SavedTabGroupTab tab(GURL(url), title, group_guid, nullptr, absl::nullopt,
                        absl::nullopt, position);
@@ -88,7 +74,7 @@ SavedTabGroupTab CreateSavedTabGroupTab(const std::string& url,
 }
 
 SavedTabGroup CreateTestSavedTabGroup() {
-  base::GUID id = GenerateNextGUID();
+  base::Uuid id = base::Uuid::GenerateRandomV4();
   const std::u16string title = u"Test Test";
   const tab_groups::TabGroupColorId& color = tab_groups::TabGroupColorId::kBlue;
 
@@ -122,7 +108,7 @@ class SavedTabGroupModelObserverTest : public ::testing::Test,
 
   void TearDown() override { saved_tab_group_model_.reset(); }
 
-  void SavedTabGroupAddedLocally(const base::GUID& guid) override {
+  void SavedTabGroupAddedLocally(const base::Uuid& guid) override {
     retrieved_group_.emplace_back(*saved_tab_group_model_->Get(guid));
     retrieved_index_ = saved_tab_group_model_->GetIndexOf(guid).value_or(-1);
   }
@@ -133,14 +119,14 @@ class SavedTabGroupModelObserverTest : public ::testing::Test,
   }
 
   void SavedTabGroupUpdatedLocally(
-      const base::GUID& group_guid,
-      const absl::optional<base::GUID>& tab_guid = absl::nullopt) override {
+      const base::Uuid& group_guid,
+      const absl::optional<base::Uuid>& tab_guid = absl::nullopt) override {
     retrieved_group_.emplace_back(*saved_tab_group_model_->Get(group_guid));
     retrieved_index_ =
         saved_tab_group_model_->GetIndexOf(group_guid).value_or(-1);
   }
 
-  void SavedTabGroupAddedFromSync(const base::GUID& guid) override {
+  void SavedTabGroupAddedFromSync(const base::Uuid& guid) override {
     retrieved_group_.emplace_back(*saved_tab_group_model_->Get(guid));
     retrieved_index_ = saved_tab_group_model_->GetIndexOf(guid).value_or(-1);
   }
@@ -151,8 +137,8 @@ class SavedTabGroupModelObserverTest : public ::testing::Test,
   }
 
   void SavedTabGroupUpdatedFromSync(
-      const base::GUID& group_guid,
-      const absl::optional<base::GUID>& tab_guid = absl::nullopt) override {
+      const base::Uuid& group_guid,
+      const absl::optional<base::Uuid>& tab_guid = absl::nullopt) override {
     retrieved_group_.emplace_back(*saved_tab_group_model_->Get(group_guid));
     retrieved_index_ =
         saved_tab_group_model_->GetIndexOf(group_guid).value_or(-1);
@@ -166,7 +152,7 @@ class SavedTabGroupModelObserverTest : public ::testing::Test,
     retrieved_old_index_ = -1;
     retrieved_new_index_ = -1;
     reordered_called_ = false;
-    retrieved_guid_ = base::GUID::GenerateRandomV4();
+    retrieved_guid_ = base::Uuid::GenerateRandomV4();
   }
 
   std::unique_ptr<SavedTabGroupModel> saved_tab_group_model_;
@@ -175,7 +161,7 @@ class SavedTabGroupModelObserverTest : public ::testing::Test,
   int retrieved_old_index_ = -1;
   int retrieved_new_index_ = -1;
   bool reordered_called_ = false;
-  base::GUID retrieved_guid_ = base::GUID::GenerateRandomV4();
+  base::Uuid retrieved_guid_ = base::Uuid::GenerateRandomV4();
   std::string base_path_ = "file:///c:/tmp/";
 };
 
@@ -183,9 +169,9 @@ class SavedTabGroupModelObserverTest : public ::testing::Test,
 class SavedTabGroupModelTest : public ::testing::Test {
  protected:
   SavedTabGroupModelTest()
-      : id_1_(GenerateNextGUID()),
-        id_2_(GenerateNextGUID()),
-        id_3_(GenerateNextGUID()) {}
+      : id_1_(base::Uuid::GenerateRandomV4()),
+        id_2_(base::Uuid::GenerateRandomV4()),
+        id_3_(base::Uuid::GenerateRandomV4()) {}
 
   ~SavedTabGroupModelTest() override { RemoveTestData(); }
 
@@ -233,7 +219,7 @@ class SavedTabGroupModelTest : public ::testing::Test {
     if (!saved_tab_group_model_)
       return;
     // Copy ids so we do not remove elements while we are accessing the data.
-    std::vector<base::GUID> saved_tab_group_ids;
+    std::vector<base::Uuid> saved_tab_group_ids;
     for (const SavedTabGroup& saved_group :
          saved_tab_group_model_->saved_tab_groups()) {
       saved_tab_group_ids.emplace_back(saved_group.saved_guid());
@@ -246,9 +232,9 @@ class SavedTabGroupModelTest : public ::testing::Test {
 
   std::unique_ptr<SavedTabGroupModel> saved_tab_group_model_;
   std::string base_path_ = "file:///c:/tmp/";
-  base::GUID id_1_;
-  base::GUID id_2_;
-  base::GUID id_3_;
+  base::Uuid id_1_;
+  base::Uuid id_2_;
+  base::Uuid id_3_;
 };
 
 // Tests that SavedTabGroupModel::Count holds 3 elements initially.
@@ -263,7 +249,8 @@ TEST_F(SavedTabGroupModelTest, InitialGroupsAreSaved) {
   EXPECT_TRUE(saved_tab_group_model_->Contains(id_1_));
   EXPECT_TRUE(saved_tab_group_model_->Contains(id_2_));
   EXPECT_TRUE(saved_tab_group_model_->Contains(id_3_));
-  EXPECT_FALSE(saved_tab_group_model_->Contains(GenerateNextGUID()));
+  EXPECT_FALSE(
+      saved_tab_group_model_->Contains(base::Uuid::GenerateRandomV4()));
 }
 
 // Tests that the SavedTabGroupModel::GetIndexOf preserves the order the
@@ -300,7 +287,7 @@ TEST_F(SavedTabGroupModelTest, OnlyAddUniqueElements) {
 // Tests that SavedTabGroupModel::Add adds an extra element into the model and
 // keeps the data.
 TEST_F(SavedTabGroupModelTest, AddNewElement) {
-  base::GUID id_4 = GenerateNextGUID();
+  base::Uuid id_4 = base::Uuid::GenerateRandomV4();
   const std::u16string title_4 = u"Test Test";
   const tab_groups::TabGroupColorId& color_4 =
       tab_groups::TabGroupColorId::kBlue;
@@ -976,13 +963,13 @@ TEST_F(SavedTabGroupModelObserverTest, OnGroupClosedInTabStrip) {
 TEST_F(SavedTabGroupModelObserverTest, MoveElement) {
   SavedTabGroup stg_1(std::u16string(u"stg_1"),
                       tab_groups::TabGroupColorId::kGrey, {},
-                      GenerateNextGUID());
+                      base::Uuid::GenerateRandomV4());
   SavedTabGroup stg_2(std::u16string(u"stg_2"),
                       tab_groups::TabGroupColorId::kGrey, {},
-                      GenerateNextGUID());
+                      base::Uuid::GenerateRandomV4());
   SavedTabGroup stg_3(std::u16string(u"stg_3"),
                       tab_groups::TabGroupColorId::kGrey, {},
-                      GenerateNextGUID());
+                      base::Uuid::GenerateRandomV4());
 
   saved_tab_group_model_->Add(stg_1);
   saved_tab_group_model_->Add(stg_2);
@@ -1000,9 +987,9 @@ TEST_F(SavedTabGroupModelObserverTest, GetGroupContainingTab) {
 
   // Add a matching group/tab and save the ids used for GetGroupContainingTab.
   SavedTabGroup matching_group = CreateTestSavedTabGroup();
-  base::GUID matching_group_guid = matching_group.saved_guid();
+  base::Uuid matching_group_guid = matching_group.saved_guid();
 
-  base::GUID matching_tab_guid = GenerateNextGUID();
+  base::Uuid matching_tab_guid = base::Uuid::GenerateRandomV4();
   base::Token matching_local_tab_id = base::Token::CreateRandom();
 
   SavedTabGroupTab tab(GURL(url::kAboutBlankURL), std::u16string(u"title"),
@@ -1023,8 +1010,8 @@ TEST_F(SavedTabGroupModelObserverTest, GetGroupContainingTab) {
       saved_tab_group_model_->GetGroupContainingTab(matching_local_tab_id));
 
   // Expect GetGroupContainingTab to return null when there is no match.
-  EXPECT_EQ(nullptr,
-            saved_tab_group_model_->GetGroupContainingTab(GenerateNextGUID()));
+  EXPECT_EQ(nullptr, saved_tab_group_model_->GetGroupContainingTab(
+                         base::Uuid::GenerateRandomV4()));
   EXPECT_EQ(nullptr,
             saved_tab_group_model_->GetGroupContainingTab(base::Token()));
 }

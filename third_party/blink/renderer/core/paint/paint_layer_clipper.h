@@ -158,13 +158,12 @@ class ClipRectsContext {
 // a layout tree walk and cache them for painting.
 
 class ClipRect;
-class ClipRects;
 
 class CORE_EXPORT PaintLayerClipper {
   STACK_ALLOCATED();
 
  public:
-  explicit PaintLayerClipper(const PaintLayer*, bool use_geometry_mapper);
+  explicit PaintLayerClipper(const PaintLayer*);
 
   // Computes the same thing as |background_rect| in CalculateRects(), but
   // skips applying CSS clip and the VisualOverflowRect() of |layer_|.
@@ -173,40 +172,28 @@ class CORE_EXPORT PaintLayerClipper {
 
   // Computes offset of |layer_| in the coordinates space |context.root_layer|,
   // and background and foreground clip rects for painting/event handling.
-  // |fragment_data| is only used in kUseGeometryMapper mode.
   void CalculateRects(const ClipRectsContext& context,
-                      const FragmentData* fragment_data,
+                      const FragmentData& fragment_data,
                       PhysicalOffset& layer_offset,
                       ClipRect& background_rect,
                       ClipRect& foreground_rect) const;
 
  private:
-  void CalculateClipRects(const ClipRectsContext&, ClipRects&) const;
-
   ALWAYS_INLINE bool ShouldClipOverflowAlongEitherAxis(
       const ClipRectsContext&) const;
 
   // Returned clip rect in |output| is in the space of the context's rootLayer.
-  ALWAYS_INLINE void CalculateBackgroundClipRectWithGeometryMapper(
+  ALWAYS_INLINE void CalculateBackgroundClipRectInternal(
       const ClipRectsContext&,
       const FragmentData&,
       ShouldRespectOverflowClipType should_apply_self_overflow_clip,
       ClipRect& output) const;
-
-  // Same as calculateRects, but using GeometryMapper.
-  ALWAYS_INLINE void CalculateRectsWithGeometryMapper(
-      const ClipRectsContext&,
-      const FragmentData&,
-      PhysicalOffset& layer_offset,
-      ClipRect& background_rect,
-      ClipRect& foreground_rect) const;
 
   // Returns the visual rect of |layer_| in local space. This includes
   // filter effects if needed.
   ALWAYS_INLINE PhysicalRect LocalVisualRect(const ClipRectsContext&) const;
 
   const PaintLayer* layer_;
-  bool use_geometry_mapper_;
 
   friend class PaintLayerClipperTest;
 };

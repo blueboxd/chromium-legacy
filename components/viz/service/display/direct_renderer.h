@@ -13,6 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
@@ -128,7 +129,9 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     raw_ptr<const AggregatedRenderPassList> render_passes_in_draw_order =
         nullptr;
     raw_ptr<const AggregatedRenderPass> root_render_pass = nullptr;
-    const AggregatedRenderPass* current_render_pass = nullptr;
+    // This field is not a raw_ptr<> because of a reference to raw_ptr in
+    // not-rewritten platform specific code and #addr-of.
+    RAW_PTR_EXCLUSION const AggregatedRenderPass* current_render_pass = nullptr;
 
     gfx::Rect root_damage_rect;
     std::vector<gfx::Rect> root_content_bounds;
@@ -202,7 +205,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   struct RenderPassRequirements {
     gfx::Size size;
     bool generate_mipmap = false;
-    ResourceFormat format;
+    SharedImageFormat format;
     gfx::ColorSpace color_space;
     // Render pass wants scanout
     bool is_scanout = false;
@@ -321,7 +324,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   gfx::ColorSpace CurrentRenderPassColorSpace() const;
   gfx::ColorSpace RenderPassColorSpace(
       const AggregatedRenderPass* render_pass) const;
-  ResourceFormat GetColorSpaceResourceFormat(gfx::ColorSpace color_space) const;
+  SharedImageFormat GetColorSpaceSharedImageFormat(
+      gfx::ColorSpace color_space) const;
   // Return the SkColorSpace for rendering to the current render pass. Unlike
   // CurrentRenderPassColorSpace, this color space has the value of
   // CurrentFrameSDRWhiteLevel incorporated into it.

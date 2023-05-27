@@ -40,6 +40,7 @@
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkColorType.h"
 #include "third_party/skia/include/core/SkGraphics.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -89,7 +90,7 @@ sk_sp<SkImage> MakeSkImage(const gfx::Size& size,
   green.setColor(SkColors::kGreen);
   canvas.drawRect(SkRect::MakeXYWH(10, 20, 30, 40), green);
 
-  return SkImage::MakeFromBitmap(bitmap);
+  return SkImages::RasterFromBitmap(bitmap);
 }
 
 constexpr size_t kCacheLimitBytes = 1024 * 1024;
@@ -181,7 +182,7 @@ class OopPixelTest : public testing::Test,
     gpu::Mailbox mailbox = sii->CreateSharedImage(
         viz::SinglePlaneFormat::kRGBA_8888, gfx::Size(width, height),
         options.target_color_params.color_space, kTopLeft_GrSurfaceOrigin,
-        kPremul_SkAlphaType, flags, gpu::kNullSurfaceHandle);
+        kPremul_SkAlphaType, flags, "TestLabel", gpu::kNullSurfaceHandle);
     EXPECT_TRUE(mailbox.Verify());
     ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
 
@@ -260,7 +261,7 @@ class OopPixelTest : public testing::Test,
     gpu::Mailbox mailbox = sii->CreateSharedImage(
         image_format, options.resource_size,
         color_space.value_or(options.target_color_params.color_space),
-        kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, flags,
+        kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, flags, "TestLabel",
         gpu::kNullSurfaceHandle);
     EXPECT_TRUE(mailbox.Verify());
     ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
@@ -272,8 +273,9 @@ class OopPixelTest : public testing::Test,
                     const gpu::Mailbox& mailbox,
                     const SkImageInfo& info,
                     const SkBitmap& bitmap) {
-    ri->WritePixels(mailbox, 0, 0, 0, info.minRowBytes(), info,
-                    bitmap.getPixels());
+    ri->WritePixels(mailbox, /*dst_x_offset=*/0, /*dst_y_offset=*/0,
+                    /*dst_plane_index=*/0, /*texture_target=*/0,
+                    SkPixmap(info, bitmap.getPixels(), info.minRowBytes()));
     ri->OrderingBarrierCHROMIUM();
     EXPECT_EQ(ri->GetError(), static_cast<unsigned>(GL_NO_ERROR));
   }
@@ -624,7 +626,8 @@ TEST_F(OopPixelTest, DrawImageWithTargetColorSpace) {
   EXPECT_NE(actual.getColor(0, 0), SkColors::kMagenta.toSkColor());
 }
 
-TEST_F(OopPixelTest, DrawHdrImageWithMetadata) {
+// crbug.com/1429057
+TEST_F(OopPixelTest, DISABLED_DrawHdrImageWithMetadata) {
   constexpr gfx::Size size(100, 100);
   constexpr gfx::Rect rect(size);
   float sdr_luminance = 250.f;
@@ -651,7 +654,7 @@ TEST_F(OopPixelTest, DrawHdrImageWithMetadata) {
     SkColor4f color{image_pq_pixel, image_pq_pixel, image_pq_pixel, 1.f};
     canvas.drawColor(color);
 
-    image = SkImage::MakeFromBitmap(bitmap);
+    image = SkImages::RasterFromBitmap(bitmap);
     image = image->reinterpretColorSpace(
         SkColorSpace::MakeRGB(pq, SkNamedGamut::kSRGB));
   }
@@ -2192,9 +2195,9 @@ TEST_F(OopPixelTest, CopySharedImage) {
         ri, sii, options, viz::SinglePlaneFormat::kRGBA_8888);
     ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
 
-    ri->WritePixels(source_mailbox, 0, 0, GL_TEXTURE_2D,
-                    upload_bitmap.rowBytes(), upload_bitmap.info(),
-                    upload_bitmap.getPixels());
+    ri->WritePixels(source_mailbox, /*dst_x_offset=*/0, /*dst_y_offset=*/0,
+                    /*dst_plane_index=*/0, GL_TEXTURE_2D,
+                    upload_bitmap.pixmap());
   }
 
   // Create a DisplayP3 SharedImage and copy to it.

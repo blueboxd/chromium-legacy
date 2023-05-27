@@ -211,7 +211,7 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
               gpu::SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
               gpu::SHARED_IMAGE_USAGE_GLES2 |
               gpu::SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT,
-          gpu::kNullSurfaceHandle);
+          "TestLabel", gpu::kNullSurfaceHandle);
 
       gpu::SyncToken sii_token = sii->GenVerifiedSyncToken();
       gl->WaitSyncTokenCHROMIUM(sii_token.GetConstData());
@@ -503,7 +503,7 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
     std::string javascript_to_execute = base::StringPrintf(
         kStartVideoCaptureAndVerify, video_size_.width(), video_size_.height());
     // Start video capture and wait until it started rendering
-    ASSERT_EQ("OK", EvalJs(shell(), javascript_to_execute));
+    ASSERT_TRUE(ExecJs(shell(), javascript_to_execute));
 
     std::move(finish_test_cb).Run();
   }

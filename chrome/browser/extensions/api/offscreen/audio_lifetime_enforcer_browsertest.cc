@@ -4,7 +4,6 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "components/version_info/channel.h"
@@ -14,8 +13,6 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/offscreen_document_host.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/test/test_extension_dir.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -75,10 +72,7 @@ class AudioWaiter : public content::WebContentsObserver {
 
 class AudioLifetimeEnforcerBrowserTest : public ExtensionApiTest {
  public:
-  AudioLifetimeEnforcerBrowserTest() {
-    feature_list_.InitAndEnableFeature(
-        extensions_features::kExtensionsOffscreenDocuments);
-  }
+  AudioLifetimeEnforcerBrowserTest() = default;
   ~AudioLifetimeEnforcerBrowserTest() override = default;
 
   // Creates a new OffscreenDocumentHost and waits for it to load.
@@ -116,9 +110,7 @@ class AudioLifetimeEnforcerBrowserTest : public ExtensionApiTest {
   }
 
  private:
-  ScopedCurrentChannel current_channel_override_{version_info::Channel::CANARY};
   TestExtensionDir test_dir_;
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests that an offscreen document is considered active while playing audio and
@@ -155,14 +147,11 @@ IN_PROC_BROWSER_TEST_F(AudioLifetimeEnforcerBrowserTest,
          audioTag.src = '_test_resources/long_audio.ogg';
          document.body.appendChild(audioTag);
          audioTag.play();
-         window.domAutomationController.send('done');)";
+         'done';)";
 
   {
     AudioWaiter audio_waiter(contents);
-    std::string result;
-    EXPECT_TRUE(
-        content::ExecuteScriptAndExtractString(contents, kPlayAudio, &result));
-    EXPECT_EQ("done", result);
+    EXPECT_EQ("done", content::EvalJs(contents, kPlayAudio));
     audio_waiter.WaitForAudible();
   }
 
@@ -174,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(AudioLifetimeEnforcerBrowserTest,
   // Next, prepare to stop the audio.
   static constexpr char kStopAudio[] =
       R"(document.body.getElementsByTagName('audio')[0].pause();
-         window.domAutomationController.send('done');)";
+         'done';)";
 
   // Override the timeout. We can't do this at the top of the test because
   // otherwise, the document would immediately be considered inactive.
@@ -183,10 +172,8 @@ IN_PROC_BROWSER_TEST_F(AudioLifetimeEnforcerBrowserTest,
 
   {
     // Stop the audio.
-    std::string result;
     AudioWaiter audio_waiter(contents);
-    EXPECT_TRUE(
-        content::ExecuteScriptAndExtractString(contents, kStopAudio, &result));
+    EXPECT_TRUE(content::ExecJs(contents, kStopAudio));
     audio_waiter.WaitForInaudible();
   }
 

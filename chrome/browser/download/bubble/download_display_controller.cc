@@ -96,14 +96,12 @@ void DownloadDisplayController::OnNewItem(bool show_animation) {
 }
 
 void DownloadDisplayController::OnUpdatedItem(bool is_done,
-                                              bool is_deep_scanning,
                                               bool may_show_details) {
   if (!download::ShouldShowDownloadBubble(browser_->profile())) {
     return;
   }
   const AllDownloadUIModelsInfo& info = UpdateButtonStateFromAllModelsInfo();
-  bool will_show_details =
-      may_show_details && ((is_done && IsAllDone(info)) || is_deep_scanning);
+  bool will_show_details = may_show_details && is_done && IsAllDone(info);
   if (is_done) {
     ScheduleToolbarDisappearance(kToolbarIconVisibilityTimeInterval);
   }

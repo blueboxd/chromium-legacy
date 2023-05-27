@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_util.h"
@@ -32,6 +33,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_selection.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
@@ -42,6 +44,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
@@ -99,7 +102,11 @@ class OmniboxResultSelectionIndicator : public views::View {
  public:
   METADATA_HEADER(OmniboxResultSelectionIndicator);
 
-  static constexpr int kStrokeThickness = 3;
+  const bool cr2023_expanded_state_colors_enabled =
+      features::GetChromeRefresh2023Level() ==
+          features::ChromeRefresh2023Level::kLevel2 ||
+      base::FeatureList::IsEnabled(omnibox::kExpandedStateColors);
+  const int kStrokeThickness = cr2023_expanded_state_colors_enabled ? 4 : 3;
 
   explicit OmniboxResultSelectionIndicator(OmniboxResultView* result_view)
       : result_view_(result_view) {
@@ -214,12 +221,6 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupViewViews* popup_view,
   // the whole row highlighted. This fixes that. It doesn't seem necessary to
   // further observe the child controls of |button_row_|.
   mouse_enter_exit_handler_.ObserveMouseEnterExitOn(button_row_);
-
-  keyword_view_ = suggestion_button_container->AddChildView(
-      std::make_unique<OmniboxMatchCellView>(this));
-  keyword_view_->SetVisible(false);
-  keyword_view_->icon()->SetFlipCanvasOnPaintForRTLUI(true);
-  keyword_view_->icon()->SizeToPreferredSize();
 }
 
 OmniboxResultView::~OmniboxResultView() {}
@@ -250,7 +251,6 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
                                 gfx::Insets::TLBR(0, suggestion_indent, 0, 0));
 
   suggestion_view_->OnMatchUpdate(this, match_);
-  keyword_view_->OnMatchUpdate(this, match_);
   UpdateRemoveSuggestionVisibility();
 
   suggestion_view_->content()->SetTextWithStyling(match_.contents,
@@ -272,7 +272,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   button_row_->UpdateFromModel();
 
   ApplyThemeAndRefreshIcons();
-  SetWidths();
+  InvalidateLayout();
 }
 
 void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
@@ -295,7 +295,6 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
                                     ? kColorOmniboxResultsTextDimmedSelected
                                     : kColorOmniboxResultsTextDimmed;
   suggestion_view_->separator()->ApplyTextColor(dimmed_id);
-  keyword_view_->separator()->ApplyTextColor(dimmed_id);
   if (remove_suggestion_button_->GetVisible())
     views::FocusRing::Get(remove_suggestion_button_)->SchedulePaint();
 
@@ -309,10 +308,6 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
     suggestion_view_->ClearIcon();
   else
     suggestion_view_->SetIcon(*icon.ToImageSkia());
-
-  keyword_view_->icon()->SetImage(ui::ImageModel::FromVectorIcon(
-      omnibox::kKeywordSearchIcon, icon_color_id,
-      GetLayoutConstant(LOCATION_BAR_ICON_SIZE)));
 
   // We must reapply colors for all the text fields here. If we don't, we can
   // break theme changes for ZeroSuggest. See https://crbug.com/1095205.
@@ -329,19 +324,14 @@ void OmniboxResultView::ApplyThemeAndRefreshIcons(bool force_reapply_styles) {
   } else if (match_.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY) {
     suggestion_view_->content()->ApplyTextColor(default_id);
     suggestion_view_->description()->ApplyTextColor(dimmed_id);
+  } else if (match_.type == AutocompleteMatchType::NULL_RESULT_MESSAGE) {
+    suggestion_view_->content()->ApplyTextColor(kColorOmniboxText);
   } else if (prefers_contrast || force_reapply_styles) {
     // Normally, OmniboxTextView caches its appearance, but in high contrast,
     // selected-ness changes the text colors, so the styling of the text part of
     // the results needs to be recomputed.
     suggestion_view_->content()->ReapplyStyling();
     suggestion_view_->description()->ReapplyStyling();
-  }
-
-  if (force_reapply_styles) {
-    keyword_view_->content()->ReapplyStyling();
-    keyword_view_->description()->ReapplyStyling();
-  } else if (keyword_view_->GetVisible()) {
-    keyword_view_->description()->ApplyTextColor(dimmed_id);
   }
 
   button_row_->SetThemeState(GetThemeState());
@@ -578,18 +568,11 @@ void OmniboxResultView::UpdateRemoveSuggestionVisibility() {
     InvalidateLayout();
 }
 
-void OmniboxResultView::SetWidths() {
-  keyword_view_->SetPreferredSize(
-      gfx::Size(width(), keyword_view_->CalculatePreferredSize().height()));
-
-  InvalidateLayout();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, views::View overrides, private:
 
 void OmniboxResultView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  SetWidths();
+  InvalidateLayout();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

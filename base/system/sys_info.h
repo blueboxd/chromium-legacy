@@ -150,10 +150,9 @@ class BASE_EXPORT SysInfo {
   // none of the above.
   static std::string ProcessCPUArchitecture();
 
-  // Avoid using this. Use base/cpu.h to get information about the CPU instead.
-  // http://crbug.com/148884
   // Returns the CPU model name of the system. If it can not be figured out,
   // an empty string is returned.
+  // More detailed info can be obtained from base/cpu.h.
   static std::string CPUModelName();
 
   // Return the smallest amount of memory (in bytes) which the VM system will
@@ -238,6 +237,14 @@ class BASE_EXPORT SysInfo {
   // <=1GB pre-O Android devices. See: |detectLowEndDevice| in SysUtils.java.
   // On Desktop this returns true when memory <= 2GB.
   static bool IsLowEndDevice();
+
+  // The same as IsLowEndDevice() except on Android.
+  //
+  // On Android this returns:
+  //   true when IsLowEndDevice() returns true.
+  //   true when the physical memory of the device is 4gb or 6gb and
+  //             the feature: kPartialLowEndModeOnMidEndDevices() is enabled.
+  static bool IsLowEndDeviceOrPartialLowEndModeEnabled();
 
 #if BUILDFLAG(IS_MAC)
   // Sets whether CPU security mitigations are enabled for the current process.

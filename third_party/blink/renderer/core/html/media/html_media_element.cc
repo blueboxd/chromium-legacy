@@ -442,6 +442,7 @@ void HTMLMediaElement::OnMediaControlsEnabledChange(Document* document) {
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
                                    Document& document)
     : HTMLElement(tag_name, document),
+      ActiveScriptWrappable<HTMLMediaElement>({}),
       ExecutionContextLifecycleStateObserver(GetExecutionContext()),
       load_timer_(document.GetTaskRunner(TaskType::kInternalMedia),
                   this,
@@ -809,8 +810,7 @@ bool HTMLMediaElement::LayoutObjectIsNeeded(const DisplayStyle& style) const {
   return ShouldShowControls() && HTMLElement::LayoutObjectIsNeeded(style);
 }
 
-LayoutObject* HTMLMediaElement::CreateLayoutObject(const ComputedStyle&,
-                                                   LegacyLayout) {
+LayoutObject* HTMLMediaElement::CreateLayoutObject(const ComputedStyle&) {
   return MakeGarbageCollected<LayoutMedia>(this);
 }
 

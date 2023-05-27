@@ -959,36 +959,6 @@ TEST_F(ShellSurfaceTest, SurfaceDestroyedCallback) {
   EXPECT_FALSE(shell_surface.get());
 }
 
-void DestroyedCallbackCounter(int* count) {
-  *count += 1;
-}
-
-TEST_F(ShellSurfaceTest, ForceClose) {
-  gfx::Size buffer_size(64, 64);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  surface->Attach(buffer.get());
-  surface->Commit();
-  ASSERT_TRUE(shell_surface->GetWidget());
-
-  int surface_destroyed_ctr = 0;
-  shell_surface->set_surface_destroyed_callback(base::BindOnce(
-      &DestroyedCallbackCounter, base::Unretained(&surface_destroyed_ctr)));
-
-  // Since we did not set the close callback, closing this widget will have no
-  // effect.
-  shell_surface->GetWidget()->Close();
-  EXPECT_TRUE(shell_surface->GetWidget());
-  EXPECT_EQ(surface_destroyed_ctr, 0);
-
-  // CloseNow() will always destroy the widget.
-  shell_surface->GetWidget()->CloseNow();
-  EXPECT_FALSE(shell_surface->GetWidget());
-  EXPECT_EQ(surface_destroyed_ctr, 1);
-}
-
 TEST_F(ShellSurfaceTest, ConfigureCallback) {
   // Must be before shell_surface so it outlives it, for shell_surface's
   // destructor calls Configure() referencing these 4 variables.
@@ -3108,6 +3078,24 @@ TEST_F(ShellSurfaceTest,
   window->SetProperty(aura::client::kRasterScale, 1.0f);
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_EQ(1.0f, config_data.raster_scale);
+}
+
+TEST_F(ShellSurfaceTest, MoveParentWithoutWidget) {
+  UpdateDisplay("800x600, 800x600");
+  constexpr gfx::Size kSize{256, 256};
+  std::unique_ptr<ShellSurface> parent_surface =
+      test::ShellSurfaceBuilder(kSize).BuildShellSurface();
+
+  std::unique_ptr<ShellSurface> child_surface =
+      test::ShellSurfaceBuilder(kSize).SetNoCommit().BuildShellSurface();
+  child_surface->SetParent(parent_surface.get());
+  auto* parent_widget = parent_surface->GetWidget();
+  auto* root_before = parent_widget->GetNativeWindow()->GetRootWindow();
+  parent_widget->SetBounds({{1000, 0}, kSize});
+  // Crash (crbug.com/1395433) happens when a transient parent moved
+  // to another root window before widget is created. Make sure that
+  // happened.
+  EXPECT_NE(root_before, parent_widget->GetNativeWindow()->GetRootWindow());
 }
 
 }  // namespace exo

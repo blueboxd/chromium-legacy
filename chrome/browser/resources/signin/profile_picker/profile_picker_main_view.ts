@@ -66,7 +66,6 @@ export class ProfilePickerMainViewElement extends
         type: Boolean,
         value: true,
         computed: 'computeHideAskOnStartup_(profilesList_.length)',
-
       },
 
       askOnStartup_: {
@@ -148,7 +147,7 @@ export class ProfilePickerMainViewElement extends
     this.resizeObserver_.observe(profilesContainer);
   }
 
-  private onProductLogoTap_() {
+  private onProductLogoClick_() {
     this.$['product-logo'].animate(
         {
           transform: ['none', 'rotate(-10turn)'],

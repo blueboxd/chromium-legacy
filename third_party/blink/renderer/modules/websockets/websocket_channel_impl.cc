@@ -52,8 +52,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/capture_source_location.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/fileapi/file_reader_client.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
-#include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/base_fetch_context.h"
@@ -94,17 +94,6 @@ enum WebSocketOpCode {
   kOpCodeBinary = 0x2,
 };
 
-// When enabled, a page can be aggressively throttled even if it uses a
-// WebSocket. Aggressive throttling does not affect the execution of WebSocket
-// event handlers, so there is little reason to disable it on pages using a
-// WebSocket.
-//
-// TODO(crbug.com/1121725): Cleanup this feature in June 2021, when it becomes
-// enabled by default on Stable.
-BASE_FEATURE(kAllowAggressiveThrottlingWithWebSocket,
-             "AllowAggressiveThrottlingWithWebSocket",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 }  // namespace
 
 void WebSocketChannelImpl::MessageDataDeleter::operator()(char* p) const {
@@ -129,7 +118,7 @@ WebSocketChannelImpl::MessageData WebSocketChannelImpl::CreateMessageData(
 
 class WebSocketChannelImpl::BlobLoader final
     : public GarbageCollected<WebSocketChannelImpl::BlobLoader>,
-      public FileReaderLoaderClient {
+      public FileReaderClient {
  public:
   BlobLoader(scoped_refptr<BlobDataHandle>,
              WebSocketChannelImpl*,
@@ -138,22 +127,28 @@ class WebSocketChannelImpl::BlobLoader final
 
   void Cancel();
 
-  // FileReaderLoaderClient functions.
-  void DidStartLoading() override;
-  void DidReceiveDataForClient(const char* data, unsigned data_length) override;
+  // FileReaderClient functions.
+  FileErrorCode DidStartLoading(uint64_t) override;
+  FileErrorCode DidReceiveData(const char* data, unsigned data_length) override;
   void DidFinishLoading() override;
   void DidFail(FileErrorCode) override;
 
-  void Trace(Visitor* visitor) const { visitor->Trace(channel_); }
+  void Trace(Visitor* visitor) const override {
+    FileReaderClient::Trace(visitor);
+    visitor->Trace(channel_);
+    visitor->Trace(loader_);
+  }
 
  private:
   Member<WebSocketChannelImpl> channel_;
-  std::unique_ptr<FileReaderLoader> loader_;
+  Member<FileReaderLoader> loader_;
   // This doesn't use WTF::Vector because it doesn't currently support 64-bit
   // sizes.
   MessageData data_;
   size_t size_ = 0;
   size_t offset_ = 0;
+
+  bool blob_too_large_ = false;
 };
 
 WebSocketChannelImpl::BlobLoader::BlobLoader(
@@ -161,10 +156,8 @@ WebSocketChannelImpl::BlobLoader::BlobLoader(
     WebSocketChannelImpl* channel,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : channel_(channel),
-      loader_(
-          std::make_unique<FileReaderLoader>(FileReaderLoader::kReadByClient,
-                                             this,
-                                             std::move(task_runner))) {
+      loader_(MakeGarbageCollected<FileReaderLoader>(this,
+                                                     std::move(task_runner))) {
   loader_->Start(std::move(blob_data_handle));
 }
 
@@ -174,29 +167,29 @@ void WebSocketChannelImpl::BlobLoader::Cancel() {
   data_ = nullptr;
 }
 
-void WebSocketChannelImpl::BlobLoader::DidStartLoading() {
+FileErrorCode WebSocketChannelImpl::BlobLoader::DidStartLoading(uint64_t) {
   const absl::optional<uint64_t> size = loader_->TotalBytes();
   DCHECK(size);
   if (size.value() > std::numeric_limits<size_t>::max()) {
-    loader_->Cancel();
-    loader_ = nullptr;
-    channel_->BlobTooLarge();
-    return;
+    blob_too_large_ = true;
+    return FileErrorCode::kAbortErr;
   }
   size_ = static_cast<size_t>(size.value());
   data_ = WebSocketChannelImpl::CreateMessageData(
       channel_->execution_context_->GetIsolate(), size_);
+  return FileErrorCode::kOK;
 }
 
-void WebSocketChannelImpl::BlobLoader::DidReceiveDataForClient(
+FileErrorCode WebSocketChannelImpl::BlobLoader::DidReceiveData(
     const char* data,
     unsigned data_length) {
   const size_t data_to_copy =
       std::min(size_ - offset_, static_cast<size_t>(data_length));
   if (!data_to_copy)
-    return;
+    return FileErrorCode::kOK;
   memcpy(data_.get() + offset_, data, data_to_copy);
   offset_ += data_to_copy;
+  return FileErrorCode::kOK;
 }
 
 void WebSocketChannelImpl::BlobLoader::DidFinishLoading() {
@@ -207,6 +200,10 @@ void WebSocketChannelImpl::BlobLoader::DidFinishLoading() {
 }
 
 void WebSocketChannelImpl::BlobLoader::DidFail(FileErrorCode error_code) {
+  if (error_code == FileErrorCode::kAbortErr && blob_too_large_) {
+    blob_too_large_ = false;
+    channel_->BlobTooLarge();
+  }
   channel_->DidFailLoadingBlob(error_code);
   loader_ = nullptr;
   data_ = nullptr;
@@ -281,10 +278,7 @@ bool WebSocketChannelImpl::Connect(const KURL& url, const String& protocol) {
   if (auto* scheduler = execution_context_->GetScheduler()) {
     feature_handle_for_scheduler_ = scheduler->RegisterFeature(
         SchedulingPolicy::Feature::kWebSocket,
-        base::FeatureList::IsEnabled(kAllowAggressiveThrottlingWithWebSocket)
-            ? SchedulingPolicy{SchedulingPolicy::DisableBackForwardCache()}
-            : SchedulingPolicy{SchedulingPolicy::DisableAggressiveThrottling(),
-                               SchedulingPolicy::DisableBackForwardCache()});
+        SchedulingPolicy{SchedulingPolicy::DisableBackForwardCache()});
   }
 
   if (MixedContentChecker::IsMixedContent(

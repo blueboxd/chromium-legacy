@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/mru_window_tracker.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -109,46 +110,46 @@ class ASH_EXPORT WindowCycleController : public SessionObserver,
   void SetFocusedWindow(aura::Window* window);
 
   // Checks whether |event| occurs within the cycle view.
-  bool IsEventInCycleView(const ui::LocatedEvent* event);
+  bool IsEventInCycleView(const ui::LocatedEvent* event) const;
 
   // Gets the window for the preview item located at |event|. Returns nullptr if
   // |event| is not on the cycle view or a preview item, or |window_cycle_list_|
   // does not exist.
-  aura::Window* GetWindowAtPoint(const ui::LocatedEvent* event);
+  aura::Window* GetWindowAtPoint(const ui::LocatedEvent* event) const;
 
   // Returns whether or not the event is located in tab slider container.
-  bool IsEventInTabSliderContainer(const ui::LocatedEvent* event);
+  bool IsEventInTabSliderContainer(const ui::LocatedEvent* event) const;
 
   // Returns whether or not the window cycle view is visible.
-  bool IsWindowListVisible();
+  bool IsWindowListVisible() const;
 
   // Checks if switching between alt-tab mode via the tab slider is allowed.
   // Returns true if Bento flag is enabled and users have multiple desks.
-  bool IsInteractiveAltTabModeAllowed();
+  bool IsInteractiveAltTabModeAllowed() const;
 
   // Checks if alt-tab should be per active desk. If
   // `IsInteractiveAltTabModeAllowed()`, alt-tab mode depends on users'
   // |prefs::kAltTabPerDesk| selection. Otherwise, it'll default to all desk
   // unless LimitAltTabToActiveDesk flag is explicitly enabled.
-  bool IsAltTabPerActiveDesk();
+  bool IsAltTabPerActiveDesk() const;
 
   // Returns true while switching the alt-tab mode and Bento flag is enabled.
   // This helps `Scroll()` and `Step()` distinguish between pressing tabs and
   // switching mode, so they refresh |current_index_| and the highlighted
   // window correctly.
-  bool IsSwitchingMode();
+  bool IsSwitchingMode() const;
 
   // Returns if the tab slider is currently focused instead of the window cycle
   // during keyboard navigation.
-  bool IsTabSliderFocused();
+  bool IsTabSliderFocused() const;
 
-  // SessionObserver:
-  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
-
-  // Saves |per_desk| in the user prefs and announces changes of alt-tab mode
+  // Saves `per_desk` in the user prefs and announces changes of alt-tab mode
   // and the window selection via ChromeVox. This function is called when the
   // user switches the alt-tab mode via keyboard navigation or button clicking.
   void OnModeChanged(bool per_desk, ModeSwitchSource source);
+
+  // SessionObserver:
+  void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
 
   // DesksController::Observer:
   void OnDeskAdded(const Desk* desk) override;
@@ -196,7 +197,8 @@ class ASH_EXPORT WindowCycleController : public SessionObserver,
 
   // Tracks what Window was active when starting to cycle and used to determine
   // if the active Window changed in when ending cycling.
-  aura::Window* active_window_before_window_cycle_ = nullptr;
+  raw_ptr<aura::Window, DanglingUntriaged | ExperimentalAsh>
+      active_window_before_window_cycle_ = nullptr;
 
   // Non-null while actively cycling.
   std::unique_ptr<WindowCycleEventFilter> event_filter_;
@@ -206,7 +208,7 @@ class ASH_EXPORT WindowCycleController : public SessionObserver,
 
   // The pref service of the currently active user. Can be null in
   // ash_unittests.
-  PrefService* active_user_pref_service_ = nullptr;
+  raw_ptr<PrefService, ExperimentalAsh> active_user_pref_service_ = nullptr;
 
   // The pref change registrar to observe changes in prefs value.
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

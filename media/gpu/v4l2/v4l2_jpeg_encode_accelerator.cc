@@ -9,11 +9,11 @@
 #include <string.h>
 #include <sys/mman.h>
 
+#include <algorithm>
 #include <memory>
 #include <tuple>
 #include <utility>
 
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/task/bind_post_task.h"
@@ -162,7 +162,7 @@ void V4L2JpegEncodeAccelerator::EncodedInstance::FillQuantizationTable(
   for (size_t i = 0; i < kDctSize; i++) {
     temp = ((unsigned int)basic_table[kZigZag8x8[i]] * quality + 50) / 100;
     /* limit the values to the valid range */
-    dst_table[i] = base::clamp(temp, 1u, 255u);
+    dst_table[i] = std::clamp(temp, 1u, 255u);
   }
 }
 
@@ -312,7 +312,13 @@ bool V4L2JpegEncodeAccelerator::EncodedInstance::SetUpJpegParameters(
   memset(&ctrls, 0, sizeof(ctrls));
   memset(&ctrl, 0, sizeof(ctrl));
 
-  ctrls.ctrl_class = V4L2_CTRL_CLASS_JPEG;
+  ctrls.which = V4L2_CTRL_WHICH_CUR_VAL;
+  ctrls.count = 0;
+  const bool use_modern_s_ext_ctrls =
+      device_->Ioctl(VIDIOC_S_EXT_CTRLS, &ctrls) == 0;
+
+  ctrls.which =
+      use_modern_s_ext_ctrls ? V4L2_CTRL_WHICH_CUR_VAL : V4L2_CTRL_CLASS_JPEG;
   ctrls.controls = &ctrl;
   ctrls.count = 1;
 
@@ -1000,7 +1006,7 @@ void V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::FillQuantizationTable(
   for (size_t i = 0; i < kDctSize; i++) {
     temp = ((unsigned int)basic_table[kZigZag8x8[i]] * quality + 50) / 100;
     /* limit the values to the valid range */
-    dst_table[i] = base::clamp(temp, 1u, 255u);
+    dst_table[i] = std::clamp(temp, 1u, 255u);
   }
 }
 
@@ -1152,7 +1158,13 @@ bool V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::SetUpJpegParameters(
   memset(&ctrl, 0, sizeof(ctrl));
   memset(&queryctrl, 0, sizeof(queryctrl));
 
-  ctrls.ctrl_class = V4L2_CTRL_CLASS_JPEG;
+  ctrls.which = V4L2_CTRL_WHICH_CUR_VAL;
+  ctrls.count = 0;
+  const bool use_modern_s_ext_ctrls =
+      device_->Ioctl(VIDIOC_S_EXT_CTRLS, &ctrls) == 0;
+
+  ctrls.which =
+      use_modern_s_ext_ctrls ? V4L2_CTRL_WHICH_CUR_VAL : V4L2_CTRL_CLASS_JPEG;
   ctrls.controls = &ctrl;
   ctrls.count = 1;
 

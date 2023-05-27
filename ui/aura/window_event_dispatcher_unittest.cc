@@ -50,6 +50,10 @@
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/wm/core/capture_controller.h"
 
+#if BUILDFLAG(IS_OZONE)
+#include "ui/events/ozone/events_ozone.h"
+#endif
+
 namespace aura {
 namespace {
 
@@ -401,8 +405,10 @@ TEST_F(WindowEventDispatcherTest, GetCanProcessEventsWithinSubtree) {
 
 TEST_F(WindowEventDispatcherTest, DontIgnoreUnknownKeys) {
   ui::Event::Properties properties;
-  properties.emplace(ui::kPropertyKeyboardImeFlag,
-                     std::vector<uint8_t>{ui::kPropertyKeyboardImeIgnoredFlag});
+#if BUILDFLAG(IS_OZONE)
+  ui::SetKeyboardImeFlagProperty(&properties,
+                                 ui::kPropertyKeyboardImeIgnoredFlag);
+#endif
 
   ConsumeKeyHandler handler;
   root_window()->AddPreTargetHandler(&handler);
@@ -447,10 +453,9 @@ TEST_F(WindowEventDispatcherTest, NoDelegateWindowReceivesKeyEvents) {
   ui::test::TestEventHandler handler;
   w1->AddPreTargetHandler(&handler);
   ui::KeyEvent key_press(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  ui::Event::Properties properties;
-  properties.emplace(ui::kPropertyKeyboardImeFlag,
-                     std::vector<uint8_t>{ui::kPropertyKeyboardImeIgnoredFlag});
-  key_press.SetProperties(properties);
+#if BUILDFLAG(IS_OZONE)
+  ui::SetKeyboardImeFlags(&key_press, ui::kPropertyKeyboardImeIgnoredFlag);
+#endif
 
   DispatchEventUsingWindowDispatcher(&key_press);
   EXPECT_TRUE(key_press.handled());
@@ -3261,6 +3266,41 @@ TEST_F(WindowEventDispatcherTest, TargetIsDestroyedByHeldEvent) {
   EXPECT_EQ(1, mouse_handler.num_mouse_events());
 
   root_window()->RemovePreTargetHandler(&recorder);
+}
+
+// Tests that touch event can be filtered by `StopPropagation`, but can still
+// be processed by GestureRecogtnizer with `ForceProcessGesture`.
+TEST_F(WindowEventDispatcherTest, FilteredTouchProcessGesture) {
+  // A event handler that stops propagation, but still allow gesture
+  // processing.
+  class : public ui::EventHandler {
+   public:
+    void OnTouchEvent(ui::TouchEvent* event) override {
+      event->StopPropagation();
+      event->ForceProcessGesture();
+    }
+  } handler;
+
+  root_window()->AddPreTargetHandler(&handler);
+
+  test::TestWindowDelegate delegate;
+  std::unique_ptr<aura::Window> window(test::CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(100, 100), root_window()));
+
+  EventFilterRecorder recorder;
+  window->AddPreTargetHandler(&recorder);
+
+  ui::test::EventGenerator generator(root_window());
+
+  generator.PressTouch(gfx::Point(50, 50));
+  generator.ReleaseTouch();
+
+  EXPECT_EQ(0u, recorder.touch_locations().size());
+  EXPECT_EQ(5u, recorder.gesture_locations().size());
+  EXPECT_EQ(gfx::Point(50, 50), recorder.gesture_locations()[0]);
+
+  root_window()->RemovePreTargetHandler(&handler);
+  window->RemovePreTargetHandler(&recorder);
 }
 
 }  // namespace aura

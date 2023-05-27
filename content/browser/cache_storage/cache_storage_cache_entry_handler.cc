@@ -5,12 +5,12 @@
 #include "content/browser/cache_storage/cache_storage_cache_entry_handler.h"
 
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
+#include "base/uuid.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
 #include "content/browser/cache_storage/background_fetch_cache_entry_handler_impl.h"
 #include "content/browser/cache_storage/cache_storage.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/filter/source_stream.h"
 #include "services/network/public/cpp/source_stream_to_data_pipe.h"
@@ -381,7 +381,7 @@ CacheStorageCacheEntryHandler::CreateBlobWithSideData(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto blob = blink::mojom::SerializedBlob::New();
   blob->size = blob_entry->GetSize(disk_cache_index);
-  blob->uuid = base::GenerateGUID();
+  blob->uuid = base::Uuid::GenerateRandomV4().AsLowercaseString();
 
   auto element = storage::mojom::BlobDataItem::New();
   element->size = blob_entry->GetSize(disk_cache_index);

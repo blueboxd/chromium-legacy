@@ -35,6 +35,7 @@
 
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/subresource_load_metrics.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink-forward.h"
@@ -141,10 +142,11 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
   // Populates the ResourceRequest using the given values and information
   // stored in the FetchContext implementation. Used by ResourceFetcher to
   // prepare a ResourceRequest instance at the start of resource loading.
-  virtual void PopulateResourceRequest(ResourceType,
-                                       const FetchParameters::ResourceWidth&,
-                                       ResourceRequest&,
-                                       const ResourceLoaderOptions&);
+  virtual void PopulateResourceRequest(
+      ResourceType,
+      const absl::optional<float> resource_width,
+      ResourceRequest&,
+      const ResourceLoaderOptions&);
 
   // Called when the underlying context is detached. Note that some
   // FetchContexts continue working after detached (e.g., for fetch() operations
@@ -180,11 +182,7 @@ class PLATFORM_EXPORT FetchContext : public GarbageCollected<FetchContext> {
 
   // Update SubresourceLoad metrics.
   virtual void UpdateSubresourceLoadMetrics(
-      uint32_t number_of_subresources_loaded,
-      uint32_t number_of_subresource_loads_handled_by_service_worker,
-      bool pervasive_payload_requested,
-      int64_t pervasive_bytes_fetched,
-      int64_t total_bytes_fetched) {}
+      const SubresourceLoadMetrics& subresource_load_metrics) {}
 };
 
 }  // namespace blink

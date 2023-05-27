@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -20,8 +21,11 @@ class NearbyShareClientFactory;
 class NearbyShareContactDownloader;
 class NearbyShareLocalDeviceDataManager;
 class NearbyShareProfileInfoProvider;
-class NearbyShareScheduler;
 class PrefService;
+
+namespace ash::nearby {
+class NearbyScheduler;
+}  // namespace ash::nearby
 
 // Implementation of NearbyShareContactManager that persists the set of allowed
 // contact IDs--for selected-contacts visiblity mode--in prefs. All other
@@ -105,12 +109,17 @@ class NearbyShareContactManagerImpl : public NearbyShareContactManager {
       const std::vector<nearbyshare::proto::ContactRecord>& contacts,
       uint32_t num_unreachable_contacts_filtered_out);
 
-  PrefService* pref_service_ = nullptr;
-  NearbyShareClientFactory* http_client_factory_ = nullptr;
-  NearbyShareLocalDeviceDataManager* local_device_data_manager_ = nullptr;
-  NearbyShareProfileInfoProvider* profile_info_provider_ = nullptr;
-  std::unique_ptr<NearbyShareScheduler> periodic_contact_upload_scheduler_;
-  std::unique_ptr<NearbyShareScheduler> contact_download_and_upload_scheduler_;
+  raw_ptr<PrefService, ExperimentalAsh> pref_service_ = nullptr;
+  raw_ptr<NearbyShareClientFactory, ExperimentalAsh> http_client_factory_ =
+      nullptr;
+  raw_ptr<NearbyShareLocalDeviceDataManager, ExperimentalAsh>
+      local_device_data_manager_ = nullptr;
+  raw_ptr<NearbyShareProfileInfoProvider, ExperimentalAsh>
+      profile_info_provider_ = nullptr;
+  std::unique_ptr<ash::nearby::NearbyScheduler>
+      periodic_contact_upload_scheduler_;
+  std::unique_ptr<ash::nearby::NearbyScheduler>
+      contact_download_and_upload_scheduler_;
   std::unique_ptr<NearbyShareContactDownloader> contact_downloader_;
   mojo::RemoteSet<nearby_share::mojom::DownloadContactsObserver> observers_set_;
   mojo::ReceiverSet<nearby_share::mojom::ContactManager> receiver_set_;

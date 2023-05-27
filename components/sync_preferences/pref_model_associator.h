@@ -40,6 +40,7 @@ class PrefServiceForAssociator {
   virtual base::Value::Type GetRegisteredPrefType(
       const std::string& pref_name) const = 0;
   virtual void OnIsSyncingChanged() = 0;
+  virtual uint32_t GetWriteFlags(const std::string& pref_name) const = 0;
 };
 
 // Contains all preference sync related logic.
@@ -85,6 +86,7 @@ class PrefModelAssociator : public syncer::SyncableService,
       const syncer::SyncDataList& initial_sync_data,
       std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) override;
   void StopSyncing(syncer::ModelType type) override;
+  void OnBrowserShutdown(syncer::ModelType type) override;
   absl::optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
@@ -102,15 +104,6 @@ class PrefModelAssociator : public syncer::SyncableService,
 
   // See |legacy_model_type_preferences_|.
   void RegisterPrefWithLegacyModelType(const std::string& name);
-
-  // Merges the local_value into the supplied server_value and returns
-  // the result. If there is a conflict, the server value takes precedence. Note
-  // that only certain preferences will actually be merged, all others will
-  // return a copy of the server value.
-  // Exposed for testing.
-  base::Value MergePreference(const std::string& name,
-                              const base::Value& local_value,
-                              const base::Value& server_value) const;
 
   // Fills |sync_data| with a sync representation of the preference data
   // provided.
@@ -166,6 +159,8 @@ class PrefModelAssociator : public syncer::SyncableService,
   // Notifies the synced pref observers that the pref for the given |path| is
   // synced.
   void NotifyStartedSyncing(const std::string& path) const;
+
+  void Stop(bool is_browser_shutdown);
 
   // The datatype that this associator is responsible for, either PREFERENCES or
   // PRIORITY_PREFERENCES or OS_PREFERENCES or OS_PRIORITY_PREFERENCES.

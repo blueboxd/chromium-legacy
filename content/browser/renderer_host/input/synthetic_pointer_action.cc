@@ -18,7 +18,13 @@ SyntheticPointerAction::~SyntheticPointerAction() {}
 SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  DCHECK(dispatching_controller_);
+  CHECK(dispatching_controller_);
+
+  // Keep this on the stack so we can check if the forwarded event caused the
+  // deletion of the controller (which owns `this`).
+  base::WeakPtr<SyntheticGestureController> weak_controller =
+      dispatching_controller_;
+
   if (state_ == GestureState::UNINITIALIZED) {
     gesture_source_type_ = params_.gesture_source_type;
     if (gesture_source_type_ ==
@@ -40,7 +46,7 @@ SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
     return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
 
   GestureState state = ForwardTouchOrMouseInputEvents(timestamp, target);
-  if (!dispatching_controller_) {
+  if (!weak_controller) {
     // A pointer gesture can cause the controller (and therefore `this`) to be
     // synchronously deleted (e.g. clicking tab-close). Return immediately in
     // this case.
@@ -50,7 +56,7 @@ SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
   state_ = state;
 
   if (state_ == GestureState::INVALID)
-    return POINTER_ACTION_INPUT_INVALID;
+    return SyntheticGesture::POINTER_ACTION_INPUT_INVALID;
 
   return (state_ == GestureState::DONE) ? SyntheticGesture::GESTURE_FINISHED
                                         : SyntheticGesture::GESTURE_RUNNING;
@@ -82,6 +88,12 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
   DCHECK_LT(num_actions_dispatched_, params_.params.size());
   SyntheticPointerActionListParams::ParamList& param_list =
       params_.params[num_actions_dispatched_];
+
+  // CAUTION: Forwarding a pointer input can cause `this` to be deleted.
+  // Keep this on the stack so we can check if the forwarded event caused the
+  // deletion of the controller (which owns `this`).
+  base::WeakPtr<SyntheticGestureController> weak_controller =
+      dispatching_controller_;
 
   for (const SyntheticPointerActionParams& param : param_list) {
     if (!PointerDriver()->UserInputCheck(param)) {
@@ -122,6 +134,12 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
     base::TimeTicks dispatch_timestamp =
         param.timestamp().is_null() ? timestamp : param.timestamp();
     PointerDriver()->DispatchEvent(target, dispatch_timestamp);
+
+    if (!weak_controller) {
+      // Return value is unused because the caller returns immediately in this
+      // condition as well.
+      return GestureState::DONE;
+    }
   }
 
   num_actions_dispatched_++;

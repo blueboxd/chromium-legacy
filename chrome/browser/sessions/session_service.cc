@@ -260,8 +260,8 @@ void SessionService::DeleteLastSession() {
   command_storage_manager()->DeleteLastSession();
 }
 
-void SessionService::SetTabGroup(const SessionID& window_id,
-                                 const SessionID& tab_id,
+void SessionService::SetTabGroup(SessionID window_id,
+                                 SessionID tab_id,
                                  absl::optional<tab_groups::TabGroupId> group) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
@@ -276,9 +276,10 @@ void SessionService::SetTabGroup(const SessionID& window_id,
 }
 
 void SessionService::SetTabGroupMetadata(
-    const SessionID& window_id,
+    SessionID window_id,
     const tab_groups::TabGroupId& group_id,
-    const tab_groups::TabGroupVisualData* visual_data) {
+    const tab_groups::TabGroupVisualData* visual_data,
+    const absl::optional<std::string> saved_guid) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
@@ -287,12 +288,12 @@ void SessionService::SetTabGroupMetadata(
       base::Contains(window_closing_ids_, window_id))
     return;
 
-  ScheduleCommand(
-      sessions::CreateTabGroupMetadataUpdateCommand(group_id, visual_data));
+  ScheduleCommand(sessions::CreateTabGroupMetadataUpdateCommand(
+      group_id, visual_data, std::move(saved_guid)));
 }
 
-void SessionService::AddTabExtraData(const SessionID& window_id,
-                                     const SessionID& tab_id,
+void SessionService::AddTabExtraData(SessionID window_id,
+                                     SessionID tab_id,
                                      const char* key,
                                      const std::string data) {
   if (!ShouldTrackChangesToWindow(window_id))
@@ -301,7 +302,7 @@ void SessionService::AddTabExtraData(const SessionID& window_id,
   ScheduleCommand(sessions::CreateAddTabExtraDataCommand(tab_id, key, data));
 }
 
-void SessionService::AddWindowExtraData(const SessionID& window_id,
+void SessionService::AddWindowExtraData(SessionID window_id,
                                         const char* key,
                                         const std::string data) {
   if (!ShouldTrackChangesToWindow(window_id))
@@ -311,8 +312,7 @@ void SessionService::AddWindowExtraData(const SessionID& window_id,
       sessions::CreateAddWindowExtraDataCommand(window_id, key, data));
 }
 
-void SessionService::TabClosed(const SessionID& window_id,
-                               const SessionID& tab_id) {
+void SessionService::TabClosed(SessionID window_id, SessionID tab_id) {
   if (!tab_id.id())
     return;  // Happens when the tab is replaced.
 
@@ -360,7 +360,7 @@ void SessionService::WindowOpened(Browser* browser) {
       browser->session_id(), browser->window()->IsVisibleOnAllWorkspaces());
 }
 
-void SessionService::WindowClosing(const SessionID& window_id) {
+void SessionService::WindowClosing(SessionID window_id) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
 
@@ -408,7 +408,7 @@ void SessionService::WindowClosing(const SessionID& window_id) {
   }
 }
 
-void SessionService::WindowClosed(const SessionID& window_id) {
+void SessionService::WindowClosed(SessionID window_id) {
   windows_tracking()->erase(window_id);
   last_selected_tab_in_window()->erase(window_id);
 
@@ -428,8 +428,7 @@ void SessionService::WindowClosed(const SessionID& window_id) {
   }
 }
 
-void SessionService::SetWindowType(const SessionID& window_id,
-                                   Browser::Type type) {
+void SessionService::SetWindowType(SessionID window_id, Browser::Type type) {
   sessions::SessionWindow::WindowType window_type =
       WindowTypeForBrowserType(type);
   if (!ShouldRestoreWindowOfType(window_type))
@@ -447,7 +446,7 @@ void SessionService::SetWindowType(const SessionID& window_id,
   ScheduleCommand(CreateSetWindowTypeCommand(window_id, window_type));
 }
 
-void SessionService::SetWindowUserTitle(const SessionID& window_id,
+void SessionService::SetWindowUserTitle(SessionID window_id,
                                         const std::string& user_title) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
@@ -473,8 +472,8 @@ void SessionService::OnErrorWritingSessionCommands() {
 }
 
 void SessionService::SetTabUserAgentOverride(
-    const SessionID& window_id,
-    const SessionID& tab_id,
+    SessionID window_id,
+    SessionID tab_id,
     const sessions::SerializedUserAgentOverride& user_agent_override) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
@@ -583,7 +582,7 @@ bool SessionService::RestoreIfNecessary(const StartupTabs& startup_tabs,
 }
 
 void SessionService::BuildCommandsForTab(
-    const SessionID& window_id,
+    SessionID window_id,
     WebContents* tab,
     int index_in_window,
     absl::optional<tab_groups::TabGroupId> group,
@@ -596,7 +595,7 @@ void SessionService::BuildCommandsForTab(
 
   sessions::SessionTabHelper* session_tab_helper =
       sessions::SessionTabHelper::FromWebContents(tab);
-  const SessionID& session_id(session_tab_helper->session_id());
+  SessionID session_id(session_tab_helper->session_id());
 
   const blink::UserAgentOverride& ua_override = tab->GetUserAgentOverride();
 
@@ -681,8 +680,7 @@ bool SessionService::IsOnlyOneTabLeft() const {
   return true;
 }
 
-bool SessionService::HasOpenTrackableBrowsers(
-    const SessionID& window_id) const {
+bool SessionService::HasOpenTrackableBrowsers(SessionID window_id) const {
   if (profile()->AsTestingProfile())
     return has_open_trackable_browser_for_test_;
 

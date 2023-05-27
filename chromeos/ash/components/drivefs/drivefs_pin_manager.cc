@@ -6,6 +6,7 @@
 
 #include <iomanip>
 #include <locale>
+#include <sstream>
 #include <type_traits>
 
 #include "base/files/file_path.h"
@@ -14,6 +15,8 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
@@ -25,38 +28,19 @@ namespace {
 
 using base::SequencedTaskRunner;
 using base::TimeDelta;
+using mojom::FileMetadata;
+using mojom::FileMetadataPtr;
+using mojom::QueryItem;
+using mojom::QueryItemPtr;
+using mojom::ShortcutDetails;
 using std::ostream;
 using Path = PinManager::Path;
-
-bool InProgress(const Stage stage) {
-  switch (stage) {
-    case Stage::kGettingFreeSpace:
-    case Stage::kListingFiles:
-    case Stage::kSyncing:
-      return true;
-
-    case Stage::kStopped:
-    case Stage::kPaused:
-    case Stage::kSuccess:
-    case Stage::kCannotGetFreeSpace:
-    case Stage::kCannotListFiles:
-    case Stage::kNotEnoughSpace:
-      return false;
-  }
-
-  NOTREACHED_NORETURN() << "Unexpected Stage " << stage;
-}
+using LookupStatus = ShortcutDetails::LookupStatus;
 
 int Percentage(const int64_t a, const int64_t b) {
   DCHECK_GE(a, 0);
   DCHECK_LE(a, b);
   return b ? 100 * a / b : 100;
-}
-
-mojom::QueryParametersPtr CreateMyDriveQuery() {
-  mojom::QueryParametersPtr query = mojom::QueryParameters::New();
-  query->page_size = 1000;
-  return query;
 }
 
 // Calls the spaced daemon.
@@ -78,6 +62,13 @@ class NumPunct : public std::numpunct<char> {
   std::string do_grouping() const override { return "\3"; }
 };
 
+// Returns a locale that prints numbers with thousands separators.
+std::locale NiceNumLocale() {
+  static const base::NoDestructor<std::locale> with_separators(
+      std::locale::classic(), new NumPunct);
+  return *with_separators;
+}
+
 template <typename T>
 struct Quoter {
   const T& value;
@@ -88,6 +79,22 @@ Quoter<T> Quote(const T& value) {
   return {value};
 }
 
+template <typename T>
+  requires std::is_enum_v<T>
+ostream& operator<<(ostream& out, Quoter<T> q) {
+  // Convert enum value to string.
+  const std::string s = (std::ostringstream() << q.value).str();
+
+  // Does the string start with 'k'?
+  if (!s.empty() && s.front() == 'k') {
+    // Skip the 'k' prefix.
+    return out << base::StringPiece(s).substr(1);
+  }
+
+  // No 'k' prefix. Print between parentheses.
+  return out << '(' << s << ')';
+}
+
 ostream& operator<<(ostream& out, Quoter<TimeDelta> q) {
   const int64_t ms = q.value.InMilliseconds();
   if (ms < 1000) {
@@ -96,16 +103,16 @@ ostream& operator<<(ostream& out, Quoter<TimeDelta> q) {
 
   const double seconds = ms / 1000.0;
   if (seconds < 60) {
-    return out << std::setprecision(2) << seconds << " seconds";
+    return out << base::StringPrintf("%.1f seconds", seconds);
   }
 
   const double minutes = seconds / 60.0;
   if (minutes < 60) {
-    return out << std::setprecision(2) << minutes << " minutes";
+    return out << base::StringPrintf("%.1f minutes", minutes);
   }
 
   const double hours = minutes / 60.0;
-  return out << std::setprecision(2) << hours << " hours";
+  return out << base::StringPrintf("%.1f hours", hours);
 }
 
 ostream& operator<<(ostream& out, Quoter<Path> q) {
@@ -125,88 +132,49 @@ ostream& operator<<(ostream& out, Quoter<absl::optional<T>> q) {
   return out << Quote(*q.value);
 }
 
-ostream& operator<<(ostream& out, Quoter<mojom::FileMetadata::Type> q) {
-  using Type = mojom::FileMetadata::Type;
-  switch (q.value) {
-#define PRINT(s)   \
-  case Type::k##s: \
-    return out << #s;
-    PRINT(File)
-    PRINT(Hosted)
-    PRINT(Directory)
-#undef PRINT
+ostream& operator<<(ostream& out, Quoter<ShortcutDetails> q) {
+  out << "{" << PinManager::Id(q.value.target_stable_id);
+
+  if (q.value.target_lookup_status != LookupStatus::kOk) {
+    out << " " << Quote(q.value.target_lookup_status);
   }
 
-  return out << "FileMetadata::Type("
-             << static_cast<std::underlying_type_t<Type>>(q.value) << ")";
+  return out << "}";
 }
 
-ostream& operator<<(ostream& out, Quoter<mojom::ItemEvent::State> q) {
-  using State = mojom::ItemEvent::State;
-  switch (q.value) {
-#define PRINT(s)    \
-  case State::k##s: \
-    return out << #s;
-    PRINT(Queued)
-    PRINT(InProgress)
-    PRINT(Completed)
-    PRINT(Failed)
-#undef PRINT
+ostream& operator<<(ostream& out, Quoter<FileMetadata> q) {
+  const FileMetadata& md = q.value;
+
+  out << "{" << Quote(md.type) << " " << PinManager::Id(md.stable_id);
+
+  if (md.size != 0) {
+    out << " of " << HumanReadableSize(md.size);
   }
 
-  return out << "ItemEvent::State("
-             << static_cast<std::underlying_type_t<State>>(q.value) << ")";
-}
-
-ostream& operator<<(ostream& out, Quoter<mojom::FileChange::Type> q) {
-  using Type = mojom::FileChange::Type;
-  switch (q.value) {
-#define PRINT(s)   \
-  case Type::k##s: \
-    return out << #s;
-    PRINT(Create)
-    PRINT(Delete)
-    PRINT(Modify)
-#undef PRINT
+  if (md.trashed) {
+    out << ", trashed";
   }
 
-  return out << "FileChange::Type("
-             << static_cast<std::underlying_type_t<Type>>(q.value) << ")";
-}
-
-ostream& operator<<(ostream& out,
-                    Quoter<mojom::ShortcutDetails::LookupStatus> q) {
-  using LookupStatus = mojom::ShortcutDetails::LookupStatus;
-  switch (q.value) {
-#define PRINT(s)           \
-  case LookupStatus::k##s: \
-    return out << #s;
-    PRINT(Ok)
-    PRINT(NotFound)
-    PRINT(PermissionDenied)
-    PRINT(Unknown)
-#undef PRINT
+  if (md.can_pin != FileMetadata::CanPinStatus::kOk) {
+    out << ", not pinnable";
   }
 
-  return out << "ShortcutDetails::LookupStatus("
-             << static_cast<std::underlying_type_t<LookupStatus>>(q.value)
-             << ")";
-}
+  if (VLOG_IS_ON(2)) {
+    out << ", pinned: " << md.pinned;
+  } else if (md.pinned) {
+    out << ", pinned";
+  }
 
-ostream& operator<<(ostream& out, Quoter<mojom::ShortcutDetails> q) {
-  return out << "{id: " << PinManager::Id(q.value.target_stable_id)
-             << ", status: " << Quote(q.value.target_lookup_status) << "}";
-}
+  if (VLOG_IS_ON(2)) {
+    out << ", available_offline: " << md.available_offline;
+  } else if (md.available_offline) {
+    out << ", available offline";
+  }
 
-ostream& operator<<(ostream& out, Quoter<mojom::FileMetadata> q) {
-  const mojom::FileMetadata& md = q.value;
-  out << "{" << Quote(md.type) << " " << PinManager::Id(md.stable_id)
-      << ", size: " << HumanReadableSize(md.size) << ", pinned: " << md.pinned
-      << ", can_pin: " << (md.can_pin == mojom::FileMetadata::CanPinStatus::kOk)
-      << ", available_offline: " << md.available_offline;
   if (md.shortcut_details) {
-    out << ", shortcut_details: " << Quote(*md.shortcut_details);
+    out << ", shortcut to " << Quote(*md.shortcut_details);
   }
+
   return out << "}";
 }
 
@@ -227,23 +195,6 @@ ostream& operator<<(ostream& out, Quoter<mojom::FileChange> q) {
              << "}";
 }
 
-ostream& operator<<(ostream& out, Quoter<mojom::DriveError::Type> q) {
-  using Type = mojom::DriveError::Type;
-  switch (q.value) {
-#define PRINT(s)   \
-  case Type::k##s: \
-    return out << #s;
-    PRINT(CantUploadStorageFull)
-    PRINT(PinningFailedDiskFull)
-    PRINT(CantUploadStorageFullOrganization)
-    PRINT(CantUploadSharedDriveStorageFull)
-#undef PRINT
-  }
-
-  return out << "DriveError::Type("
-             << static_cast<std::underlying_type_t<Type>>(q.value) << ")";
-}
-
 ostream& operator<<(ostream& out, Quoter<mojom::DriveError> q) {
   const mojom::DriveError& e = q.value;
   return out << "{" << Quote(e.type) << " " << PinManager::Id(e.stable_id)
@@ -258,14 +209,18 @@ int64_t RoundToBlockSize(int64_t size) {
   return (size + mask) & ~mask;
 }
 
-int64_t GetSize(const mojom::FileMetadata& metadata) {
+int64_t GetSize(const FileMetadata& metadata) {
   const int64_t kAverageHostedFileSize = 7800;
-  return metadata.type == mojom::FileMetadata::Type::kHosted
-             ? kAverageHostedFileSize
-             : metadata.size;
+  return metadata.type == FileMetadata::Type::kHosted ? kAverageHostedFileSize
+                                                      : metadata.size;
 }
 
 }  // namespace
+
+std::ostream& NiceNum(std::ostream& out) {
+  out.imbue(NiceNumLocale());
+  return out;
+}
 
 ostream& operator<<(ostream& out, const PinManager::Id id) {
   return out << "#" << static_cast<int64_t>(id);
@@ -283,9 +238,7 @@ ostream& operator<<(ostream& out, HumanReadableSize size) {
   }
 
   {
-    static const base::NoDestructor<std::locale> with_separators(
-        std::locale::classic(), new NumPunct);
-    std::locale old_locale = out.imbue(*with_separators);
+    std::locale old_locale = out.imbue(NiceNumLocale());
     out << i << " bytes";
     out.imbue(std::move(old_locale));
   }
@@ -302,27 +255,6 @@ ostream& operator<<(ostream& out, HumanReadableSize size) {
   }
 
   return out << " (" << std::setprecision(4) << d << " " << *unit << ")";
-}
-
-ostream& operator<<(ostream& out, const Stage stage) {
-  switch (stage) {
-#define PRINT(s)    \
-  case Stage::k##s: \
-    return out << #s;
-    PRINT(Stopped)
-    PRINT(Paused)
-    PRINT(GettingFreeSpace)
-    PRINT(ListingFiles)
-    PRINT(Syncing)
-    PRINT(Success)
-    PRINT(CannotGetFreeSpace)
-    PRINT(CannotListFiles)
-    PRINT(NotEnoughSpace)
-#undef PRINT
-  }
-
-  return out << "Stage(" << static_cast<std::underlying_type_t<Stage>>(stage)
-             << ")";
 }
 
 ostream& PinManager::File::PrintTo(ostream& out) const {
@@ -349,10 +281,58 @@ bool Progress::HasEnoughFreeSpace() const {
   return enough;
 }
 
+bool Progress::IsError() const {
+  switch (stage) {
+    case Stage::kCannotGetFreeSpace:
+    case Stage::kCannotListFiles:
+    case Stage::kNotEnoughSpace:
+    case Stage::kCannotEnableDocsOffline:
+      return true;
+
+    case Stage::kGettingFreeSpace:
+    case Stage::kListingFiles:
+    case Stage::kPaused:
+    case Stage::kSuccess:
+    case Stage::kSyncing:
+    case Stage::kStopped:
+      return false;
+  }
+
+  NOTREACHED_NORETURN() << "Unexpected Stage " << Quote(stage);
+}
+
+bool InProgress(const Stage stage) {
+  switch (stage) {
+    case Stage::kGettingFreeSpace:
+    case Stage::kListingFiles:
+    case Stage::kSyncing:
+      return true;
+
+    case Stage::kStopped:
+    case Stage::kPaused:
+    case Stage::kSuccess:
+    case Stage::kCannotGetFreeSpace:
+    case Stage::kCannotListFiles:
+    case Stage::kNotEnoughSpace:
+    case Stage::kCannotEnableDocsOffline:
+      return false;
+  }
+
+  NOTREACHED_NORETURN() << "Unexpected Stage " << Quote(stage);
+}
+
+std::string ToString(Stage stage) {
+  return (std::ostringstream() << Quote(stage)).str();
+}
+
+std::string ToString(TimeDelta time_delta) {
+  return (std::ostringstream() << Quote(time_delta)).str();
+}
+
 constexpr TimeDelta kStalledFileInterval = base::Seconds(10);
 
-bool PinManager::CanPin(const mojom::FileMetadata& md, const Path& path) {
-  using Type = mojom::FileMetadata::Type;
+bool PinManager::CanPin(const FileMetadata& md, const Path& path) {
+  using Type = FileMetadata::Type;
   const auto id = PinManager::Id(md.stable_id);
 
   if (md.shortcut_details) {
@@ -366,7 +346,7 @@ bool PinManager::CanPin(const mojom::FileMetadata& md, const Path& path) {
     return false;
   }
 
-  if (md.can_pin != mojom::FileMetadata::CanPinStatus::kOk) {
+  if (md.can_pin != FileMetadata::CanPinStatus::kOk) {
     VLOG(2) << "Skipped " << id << " " << Quote(path) << ": Cannot be pinned";
     return false;
   }
@@ -376,17 +356,15 @@ bool PinManager::CanPin(const mojom::FileMetadata& md, const Path& path) {
     return false;
   }
 
-  // TODO(b/266037569): Setting root in the query made to DriveFS is currently
-  // unsupported.
-  if (!Path("/root").IsParent(path)) {
-    VLOG(2) << "Skipped " << id << " " << Quote(path) << ": Not in my drive";
+  if (md.trashed) {
+    VLOG(1) << "Skipped " << id << " " << Quote(path) << ": Trashed";
     return false;
   }
 
   return true;
 }
 
-bool PinManager::Add(const mojom::FileMetadata& md, const Path& path) {
+bool PinManager::Add(const FileMetadata& md, const Path& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const Id id = Id(md.stable_id);
@@ -567,7 +545,8 @@ PinManager::PinManager(Path profile_path, mojom::DriveFs* const drivefs)
 
 PinManager::~PinManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!InProgress(progress_.stage)) << "Pin manager is " << progress_.stage;
+  DCHECK(!InProgress(progress_.stage))
+      << "Pin manager is " << Quote(progress_.stage);
 
   for (Observer& observer : observers_) {
     observer.OnDrop();
@@ -579,12 +558,13 @@ void PinManager::Start() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (InProgress(progress_.stage)) {
-    LOG(ERROR) << "Pin manager is already started: " << progress_.stage;
+    LOG(ERROR) << "Pin manager is already started: " << Quote(progress_.stage);
     return;
   }
 
   VLOG(1) << "Starting";
   progress_ = {};
+  listed_items_.clear();
   files_to_pin_.clear();
   files_to_track_.clear();
   DCHECK_EQ(progress_.syncing_files, 0);
@@ -607,10 +587,15 @@ void PinManager::Start() {
 void PinManager::Stop() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (progress_.stage != Stage::kStopped) {
+  if (!progress_.IsError()) {
     VLOG(1) << "Stopping";
     Complete(Stage::kStopped);
   }
+}
+
+void PinManager::CalculateRequiredSpace() {
+  ShouldPin(false);
+  Start();
 }
 
 void PinManager::OnFreeSpaceRetrieved1(const int64_t free_space) {
@@ -624,14 +609,15 @@ void PinManager::OnFreeSpaceRetrieved1(const int64_t free_space) {
 
   progress_.free_space = free_space;
   VLOG(1) << "Free space: " << HumanReadableSize(free_space);
-
   VLOG(1) << "Listing files";
   timer_ = base::ElapsedTimer();
   progress_.stage = Stage::kListingFiles;
   NotifyProgress();
 
-  StartSearchQuery();
-  GetNextPage();
+  DCHECK_EQ(progress_.total_queries, 0);
+  DCHECK_EQ(progress_.active_queries, 0);
+  DCHECK_EQ(progress_.max_active_queries, 0);
+  ListItems(Id::kNone, Path("/root"));
 }
 
 void PinManager::CheckFreeSpace() {
@@ -664,29 +650,67 @@ void PinManager::OnFreeSpaceRetrieved2(const int64_t free_space) {
       space_check_interval_);
 }
 
-void PinManager::StartSearchQuery() {
+void PinManager::ListItems(const Id dir_id, Path dir_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  drivefs_->StartSearchQuery(search_query_.BindNewPipeAndPassReceiver(),
-                             CreateMyDriveQuery());
+  VLOG(1) << "Visiting " << dir_id << " " << Quote(dir_path);
+
+  mojom::QueryParametersPtr params = mojom::QueryParameters::New();
+  params->page_size = 1000;
+  params->my_drive_results_only = true;
+  params->parent_stable_id = static_cast<int64_t>(dir_id);
+
+  Query query;
+  drivefs_->StartSearchQuery(query.BindNewPipeAndPassReceiver(),
+                             std::move(params));
+
+  progress_.total_queries++;
+  progress_.active_queries++;
+  VLOG(2) << NiceNum << "Active queries: " << progress_.active_queries;
+
+  if (progress_.max_active_queries < progress_.active_queries) {
+    progress_.max_active_queries = progress_.active_queries;
+  }
+
+  DCHECK_GE(progress_.total_queries, progress_.active_queries);
+
+  GetNextPage(dir_id, std::move(dir_path), std::move(query));
 }
 
-void PinManager::GetNextPage() {
+void PinManager::GetNextPage(const Id dir_id, Path dir_path, Query query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(progress_.stage, Stage::kListingFiles);
-  DCHECK(search_query_);
-  VLOG(2) << "Getting next batch of items";
-  search_query_->GetNextPage(
-      base::BindOnce(&PinManager::OnSearchResult, GetWeakPtr()));
+  DCHECK(query);
+  // Get the underlying pointer because we going to move `query`.
+  mojom::SearchQuery* const q = query.get();
+  VLOG(2) << "Getting next batch of items from " << dir_id << " "
+          << Quote(dir_path);
+  DCHECK(q);
+  q->GetNextPage(base::BindOnce(
+      [](const base::WeakPtr<PinManager> pin_manager, Id dir_id, Path dir_path,
+         Query query, const drive::FileError error,
+         const absl::optional<std::vector<QueryItemPtr>> items) {
+        if (pin_manager) {
+          pin_manager->OnSearchResult(
+              dir_id, std::move(dir_path), std::move(query), error,
+              items ? *items : base::span<const QueryItemPtr>{});
+        } else {
+          VLOG(1) << "Dropped query for " << dir_id << " " << Quote(dir_path);
+        }
+      },
+      GetWeakPtr(), dir_id, std::move(dir_path), std::move(query)));
 }
 
-void PinManager::OnSearchResult(
-    const drive::FileError error,
-    const absl::optional<std::vector<mojom::QueryItemPtr>> items) {
+void PinManager::OnSearchResult(const Id dir_id,
+                                Path dir_path,
+                                Query query,
+                                const drive::FileError error,
+                                const base::span<const QueryItemPtr> items) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(progress_.stage, Stage::kListingFiles);
 
-  if (error != drive::FILE_ERROR_OK || !items) {
-    LOG(ERROR) << "Cannot list files: " << error;
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Cannot visit " << dir_id << " " << Quote(dir_path) << ": "
+               << error;
     switch (error) {
       default:
         return Complete(Stage::kCannotListFiles);
@@ -696,32 +720,145 @@ void PinManager::OnSearchResult(
         const TimeDelta delay = base::Seconds(5);
         LOG(ERROR) << "Will retry in " << Quote(delay);
         SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-            FROM_HERE, base::BindOnce(&PinManager::GetNextPage, GetWeakPtr()),
+            FROM_HERE,
+            base::BindOnce(&PinManager::GetNextPage, GetWeakPtr(), dir_id,
+                           std::move(dir_path), std::move(query)),
             delay);
         return;
     }
   }
 
-  DCHECK(items);
-  if (items->empty()) {
-    VLOG(1) << "No more files to list";
-    search_query_.reset();
+  progress_.time_spent_listing_items = timer_.Elapsed();
+
+  if (items.empty()) {
+    VLOG(1) << "Visited " << dir_id << " " << Quote(dir_path);
+
+    DCHECK_LE(progress_.active_queries, progress_.max_active_queries);
+    DCHECK_GT(progress_.active_queries, 0);
+    if (--progress_.active_queries != 0) {
+      VLOG(2) << NiceNum << "Active queries: " << progress_.active_queries;
+      return;
+    }
+
+    VLOG(1) << "Finished listing files in "
+            << Quote(progress_.time_spent_listing_items);
+    VLOG(1) << NiceNum << "Total queries: " << progress_.total_queries;
+    VLOG(1) << NiceNum
+            << "Max active queries: " << progress_.max_active_queries;
+    VLOG(1) << NiceNum << "Found " << progress_.listed_items
+            << " items: " << progress_.listed_dirs << " dirs, "
+            << progress_.listed_files << " files, " << progress_.listed_docs
+            << " docs, " << progress_.listed_shortcuts << " shortcuts";
+    VLOG(1) << NiceNum << "Tracking " << files_to_track_.size() << " files";
+    listed_items_.clear();
     return StartPinning();
   }
 
-  VLOG(2) << "Iterating over " << items->size() << " items";
-  for (const mojom::QueryItemPtr& item : *items) {
+  progress_.listed_items += items.size();
+  VLOG(2) << "Got " << items.size() << " items from " << dir_id << " "
+          << Quote(dir_path);
+
+  for (const QueryItemPtr& item : items) {
     DCHECK(item);
-    DCHECK(item->metadata);
-    Add(*item->metadata, item->path);
+    HandleQueryItem(dir_id, dir_path, *item);
   }
 
-  progress_.listed_items += items->size();
-  VLOG(1) << "Listed " << progress_.listed_items << " items in "
-          << Quote(timer_.Elapsed()) << ", Skipped " << progress_.skipped_items
-          << " items, Tracking " << files_to_track_.size() << " files";
+  VLOG(1) << NiceNum << "Listed " << progress_.listed_items << " items in "
+          << Quote(progress_.time_spent_listing_items) << ", Skipped "
+          << progress_.skipped_items << " items, Tracking "
+          << files_to_track_.size() << " files";
   NotifyProgress();
-  GetNextPage();
+  GetNextPage(dir_id, std::move(dir_path), std::move(query));
+}
+
+void PinManager::HandleQueryItem(Id dir_id,
+                                 const Path& dir_path,
+                                 const QueryItem& item) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(item.metadata);
+  FileMetadata& md = *item.metadata;
+  Id id = Id(md.stable_id);
+  const Path& path = item.path;
+
+  VLOG(2) << "Listed " << id << " " << Quote(path) << ": " << Quote(md);
+
+  if (!dir_path.IsParent(path)) {
+    // This can happen when the parent folder was found by following a shortcut.
+    VLOG(2) << Quote(md.type) << " " << id << " " << Quote(path)
+            << " is not in Directory " << dir_id << " " << Quote(dir_path);
+  }
+
+  // Is this item a shortcut?
+  if (md.shortcut_details) {
+    progress_.listed_shortcuts++;
+
+    // Is the shortcut's target accessible?
+    if (md.shortcut_details->target_lookup_status != LookupStatus::kOk) {
+      // The shortcut target is not accessible.
+      progress_.skipped_items++;
+      VLOG(1) << "Broken shortcut " << id << " " << Quote(path) << ": "
+              << "Target " << Quote(md.type) << " "
+              << Id(md.shortcut_details->target_stable_id)
+              << " has lookup error "
+              << Quote(md.shortcut_details->target_lookup_status) << ": "
+              << Quote(md);
+      return;
+    }
+
+    // Is the shortcut's target in the trash bin?
+    if (md.trashed) {
+      // The shortcut target is in the trash bin.
+      progress_.skipped_items++;
+      VLOG(1) << "Broken shortcut " << id << " " << Quote(path) << ": "
+              << "Target " << Quote(md.type) << " "
+              << Id(md.shortcut_details->target_stable_id)
+              << " is trashed: " << Quote(md);
+      return;
+    }
+
+    // The shortcut target is accessible.
+    VLOG(1) << "Following shortcut " << id << " " << Quote(path) << " to "
+            << Quote(md.type) << " "
+            << Id(md.shortcut_details->target_stable_id) << ": " << Quote(md);
+
+    // Follow the shortcut.
+    md.stable_id = md.shortcut_details->target_stable_id;
+    id = Id(md.stable_id);
+    md.shortcut_details.reset();
+  }
+
+  // Deduplicate items.
+  if (const auto [it, ok] = listed_items_.try_emplace(id, dir_id); !ok) {
+    DCHECK_EQ(it->first, id);
+    progress_.skipped_items++;
+    VLOG(1) << "Skipped " << Quote(md.type) << " " << id << " " << Quote(path)
+            << " " << Quote(md) << " seen in Directory " << dir_id << " "
+            << Quote(dir_path) << ": Previously seen in Directory "
+            << it->second;
+    return;
+  }
+
+  using Type = FileMetadata::Type;
+  switch (md.type) {
+    case Type::kFile:
+      progress_.listed_files++;
+      Add(md, path);
+      return;
+
+    case Type::kHosted:
+      progress_.listed_docs++;
+      Add(md, path);
+      return;
+
+    case Type::kDirectory:
+      progress_.listed_dirs++;
+      ListItems(id, path);
+      return;
+  }
+
+  progress_.skipped_items++;
+  LOG(ERROR) << "Unexpected item type " << Quote(md.type) << " for " << id
+             << " " << path << ": " << Quote(md);
 }
 
 void PinManager::Complete(const Stage stage) {
@@ -743,14 +880,15 @@ void PinManager::Complete(const Stage stage) {
       break;
 
     default:
-      LOG(ERROR) << "Finished with error: " << stage;
+      LOG(ERROR) << "Finished with error: " << Quote(stage);
   }
 
   weak_ptr_factory_.InvalidateWeakPtrs();
-  search_query_.reset();
+  listed_items_.clear();
   files_to_pin_.clear();
   files_to_track_.clear();
   progress_.syncing_files = 0;
+  progress_.active_queries = 0;
   NotifyProgress();
 
   if (completion_callback_) {
@@ -762,7 +900,7 @@ void PinManager::StartPinning() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(progress_.stage, Stage::kListingFiles);
 
-  VLOG(1) << "To pin: " << files_to_pin_.size() << " files, "
+  VLOG(1) << NiceNum << "To pin: " << files_to_pin_.size() << " files, "
           << HumanReadableSize(progress_.bytes_to_pin);
   VLOG(1) << "Required space: " << HumanReadableSize(progress_.required_space);
 
@@ -775,6 +913,19 @@ void PinManager::StartPinning() {
     return Complete(Stage::kSuccess);
   }
 
+  VLOG(1) << "Enabling Docs offline";
+  drivefs_->SetDocsOfflineEnabled(
+      true, base::BindOnce(&PinManager::OnDocsOfflineEnabled, GetWeakPtr()));
+}
+
+void PinManager::OnDocsOfflineEnabled(drive::FileError error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Cannot enable Docs offline: " << error;
+    return Complete(Stage::kCannotEnableDocsOffline);
+  }
+
+  VLOG(1) << "Successfully enabled Docs offline";
   timer_ = base::ElapsedTimer();
   progress_.stage = Stage::kSyncing;
   NotifyProgress();
@@ -813,27 +964,37 @@ void PinManager::PinSomeFiles() {
     DCHECK_EQ(progress_.syncing_files, CountPinnedFiles());
   }
 
+  if (!progress_.emptied_queue) {
+    progress_.time_spent_pinning_files = timer_.Elapsed();
+  }
+
+  bool notify_progress = false;
   if (progress_timer_.Elapsed() >= base::Seconds(1)) {
-    VLOG(1) << "Progress "
+    notify_progress = true;
+    VLOG(1) << NiceNum << "Progress "
             << Percentage(progress_.pinned_bytes, progress_.bytes_to_pin)
             << "%: Synced " << HumanReadableSize(progress_.pinned_bytes)
-            << " and " << progress_.pinned_files << " files, Syncing "
+            << " and " << progress_.pinned_files << " files in "
+            << Quote(progress_.time_spent_pinning_files) << ", Syncing "
             << progress_.syncing_files << " files";
     progress_timer_ = {};
   }
 
   if (files_to_track_.empty() && !progress_.emptied_queue) {
+    notify_progress = true;
     progress_.emptied_queue = true;
     LOG_IF(ERROR, progress_.failed_files > 0)
-        << "Failed to pin " << progress_.failed_files << " files";
-    VLOG(1) << "Pinned " << progress_.pinned_files << " files and "
+        << NiceNum << "Failed to pin " << progress_.failed_files << " files";
+    VLOG(1) << NiceNum << "Pinned " << progress_.pinned_files << " files and "
             << HumanReadableSize(progress_.pinned_bytes) << " in "
-            << Quote(timer_.Elapsed());
-    VLOG(2) << "Useful events: " << progress_.useful_events;
-    VLOG(2) << "Duplicated events: " << progress_.duplicated_events;
+            << Quote(progress_.time_spent_pinning_files);
+    VLOG(2) << NiceNum << "Useful events: " << progress_.useful_events;
+    VLOG(2) << NiceNum << "Duplicated events: " << progress_.duplicated_events;
   }
 
-  NotifyProgress();
+  if (notify_progress) {
+    NotifyProgress();
+  }
 }
 
 void PinManager::OnFilePinned(const Id id,
@@ -912,14 +1073,6 @@ bool PinManager::OnSyncingEvent(mojom::ItemEvent& event) {
   using State = mojom::ItemEvent::State;
   switch (event.state) {
     case State::kQueued:
-      // (TODO b/266462624) kQueued events come with a bytes_to_transfer field
-      // incorrectly set to zero. So we set it to -1 to ignore it.
-      if (event.bytes_to_transfer == 0) {
-        VLOG(3) << "Zero bytes_to_transfer in " << Quote(event);
-        event.bytes_to_transfer = -1;
-      }
-      [[fallthrough]];
-
     case State::kInProgress:
       if (!Update(id, path, event.bytes_transferred, event.bytes_to_transfer)) {
         return false;
@@ -970,7 +1123,7 @@ void PinManager::NotifyDelete(const Id id, const Path& path) {
 }
 
 void PinManager::OnUnmounted() {
-  LOG(ERROR) << "DriveFS got unmounted";
+  VLOG(1) << "Unmounted DriveFS";
 }
 
 void PinManager::OnFilesChanged(const std::vector<mojom::FileChange>& changes) {
@@ -1000,7 +1153,7 @@ void PinManager::OnFileCreated(const mojom::FileChange& event) {
 
   if (!InProgress(progress_.stage)) {
     VLOG(2) << "Ignored " << Quote(event) << ": PinManager is currently "
-            << progress_.stage;
+            << Quote(progress_.stage);
     return;
   }
 
@@ -1009,7 +1162,12 @@ void PinManager::OnFileCreated(const mojom::FileChange& event) {
 
   if (id == Id::kNone) {
     // Ignore spurious event (b/268419828).
-    LOG(ERROR) << "Ignored " << Quote(event) << ": Spurious event";
+    VLOG(2) << "Ignored " << Quote(event) << ": Spurious event";
+    return;
+  }
+
+  if (!Path("/root").IsParent(path)) {
+    VLOG(2) << "Ignored " << Quote(event) << ": Not in 'My Drive'";
     return;
   }
 
@@ -1033,25 +1191,7 @@ void PinManager::OnFileDeleted(const mojom::FileChange& event) {
   DCHECK_EQ(event.type, mojom::FileChange::Type::kDelete);
 
   VLOG(1) << "Got " << Quote(event);
-  const Path& path = event.path;
-  const Id id = static_cast<Id>(event.stable_id);
-
-  // TODO(b/271203956) Remove this code once DriveFS automatically unpins
-  // deleted files and folders.
-  drivefs_->SetPinnedByStableId(
-      event.stable_id, /*pinned=*/false,
-      base::BindOnce(
-          [](const Id id, const Path& path, const drive::FileError status) {
-            if (status != drive::FILE_ERROR_OK) {
-              LOG(ERROR) << "Cannot unpin " << id << " " << Quote(path) << ": "
-                         << status;
-            } else {
-              VLOG(1) << "Unpinned " << id << " " << Quote(path);
-            }
-          },
-          id, path));
-
-  NotifyDelete(id, path);
+  NotifyDelete(Id(event.stable_id), event.path);
 }
 
 void PinManager::OnFileModified(const mojom::FileChange& event) {
@@ -1122,11 +1262,10 @@ void PinManager::CheckStalledFiles() {
       kStalledFileInterval);
 }
 
-void PinManager::OnMetadataForCreatedFile(
-    const Id id,
-    const Path& path,
-    const drive::FileError error,
-    const mojom::FileMetadataPtr metadata) {
+void PinManager::OnMetadataForCreatedFile(const Id id,
+                                          const Path& path,
+                                          const drive::FileError error,
+                                          const FileMetadataPtr metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (error != drive::FILE_ERROR_OK) {
@@ -1136,7 +1275,7 @@ void PinManager::OnMetadataForCreatedFile(
   }
 
   DCHECK(metadata);
-  const mojom::FileMetadata& md = *metadata;
+  const FileMetadata& md = *metadata;
   DCHECK_EQ(id, Id(md.stable_id));
   VLOG(2) << "Got metadata of created " << id << " " << Quote(path) << ": "
           << Quote(md);
@@ -1146,11 +1285,10 @@ void PinManager::OnMetadataForCreatedFile(
   }
 }
 
-void PinManager::OnMetadataForModifiedFile(
-    const Id id,
-    const Path& path,
-    const drive::FileError error,
-    const mojom::FileMetadataPtr metadata) {
+void PinManager::OnMetadataForModifiedFile(const Id id,
+                                           const Path& path,
+                                           const drive::FileError error,
+                                           const FileMetadataPtr metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (error != drive::FILE_ERROR_OK) {
@@ -1160,7 +1298,7 @@ void PinManager::OnMetadataForModifiedFile(
   }
 
   DCHECK(metadata);
-  const mojom::FileMetadata& md = *metadata;
+  const FileMetadata& md = *metadata;
   DCHECK_EQ(id, Id(md.stable_id));
 
   const Files::iterator it = files_to_track_.find(id);

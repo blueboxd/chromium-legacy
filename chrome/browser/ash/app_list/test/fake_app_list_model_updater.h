@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ash/app_list/app_list_model_updater.h"
 #include "chrome/browser/ash/app_list/search/chrome_search_result.h"
@@ -70,6 +71,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
 
   // For SearchModel:
   bool SearchEngineIsGoogle() override;
+  void RecalculateWouldTriggerLauncherSearchIph() override;
   const std::vector<ChromeSearchResult*>& search_results() const {
     return search_results_;
   }
@@ -85,7 +87,7 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   size_t update_image_count() const { return update_image_count_; }
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile, ExperimentalAsh> profile_;
 
   bool search_engine_is_google_ = false;
   std::vector<std::unique_ptr<ChromeAppListItem>> items_;

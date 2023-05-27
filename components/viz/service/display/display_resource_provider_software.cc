@@ -9,6 +9,7 @@
 
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/shared_bitmap_manager.h"
+#include "third_party/skia/include/core/SkImage.h"
 
 namespace viz {
 
@@ -34,8 +35,8 @@ DisplayResourceProviderSoftware::LockForRead(ResourceId id) {
         resource->transferable.mailbox_holder.mailbox;
     std::unique_ptr<SharedBitmap> bitmap =
         shared_bitmap_manager_->GetSharedBitmapFromId(
-            resource->transferable.size,
-            resource->transferable.format.resource_format(), shared_bitmap_id);
+            resource->transferable.size, resource->transferable.format,
+            shared_bitmap_id);
     if (bitmap) {
       resource->shared_bitmap = std::move(bitmap);
       resource->shared_bitmap_tracing_guid =
@@ -148,7 +149,7 @@ DisplayResourceProviderSoftware::ScopedReadLockSkImage::ScopedReadLockSkImage(
   resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource,
                                                   alpha_type);
   sk_bitmap.setImmutable();
-  sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
+  sk_image_ = SkImages::RasterFromBitmap(sk_bitmap);
   resource_provider_->resource_sk_images_[resource_id] = sk_image_;
 }
 

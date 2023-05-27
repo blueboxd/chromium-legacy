@@ -38,7 +38,9 @@ source_set("coordinator_impl") {
     "//base",
     "//components/bookmarks/browser",
     "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/signin:signin",
     "//ios/chrome/browser/sync:sync",
     "//ios/chrome/browser/ui/bookmarks:core",
     "//ios/chrome/browser/ui/bookmarks/folder_editor:coordinator_headers",
@@ -49,13 +51,18 @@ source_set("coordinator_impl") {
 # Contains folder chooser ui implementation.
 source_set("ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  visibility = [ ":coordinator_impl" ]
+  visibility = [
+    ":coordinator_impl",
+    ":unit_tests",
+  ]
   sources = [
     "bookmarks_folder_chooser_consumer.h",
     "bookmarks_folder_chooser_mediator.h",
     "bookmarks_folder_chooser_mediator.mm",
     "bookmarks_folder_chooser_mediator_delegate.h",
     "bookmarks_folder_chooser_mutator.h",
+    "bookmarks_folder_chooser_sub_data_source_impl.h",
+    "bookmarks_folder_chooser_sub_data_source_impl.mm",
     "bookmarks_folder_chooser_view_controller.h",
     "bookmarks_folder_chooser_view_controller.mm",
     "bookmarks_folder_chooser_view_controller_presentation_delegate.h",
@@ -66,17 +73,40 @@ source_set("ui") {
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/shared/ui/symbols:icons",
     "//ios/chrome/browser/shared/ui/table_view",
     "//ios/chrome/browser/shared/ui/table_view:utils",
+    "//ios/chrome/browser/signin:signin",
     "//ios/chrome/browser/sync:sync",
     "//ios/chrome/browser/ui/bookmarks:constants",
     "//ios/chrome/browser/ui/bookmarks:utils",
     "//ios/chrome/browser/ui/bookmarks/cells",
-    "//ios/chrome/browser/ui/icons",
     "//ios/chrome/common/ui/colors",
     "//ui/base",
   ]
   frameworks = [ "UIKit.framework" ]
+}
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "bookmarks_folder_chooser_sub_data_source_impl_unittest.mm" ]
+  deps = [
+    ":ui",
+    "//base/test:test_support",
+    "//components/bookmarks/browser",
+    "//components/bookmarks/test",
+    "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/signin:test_support",
+    "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/sync:test_support",
+    "//ios/chrome/test:test_support",
+    "//ios/web/public/test:test",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
 }
 
 source_set("eg2_tests") {

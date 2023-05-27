@@ -26,7 +26,11 @@
 #import "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/promos_manager/promos_manager_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
+#import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
@@ -36,18 +40,15 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_menu_provider.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
-#import "ios/chrome/browser/ui/main/scene_state.h"
-#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_constants.h"
@@ -96,6 +97,9 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 // Redefined to not be readonly.
 @property(nonatomic, strong)
     ContentSuggestionsMediator* contentSuggestionsMediator;
+// Metrics recorder for the content suggestions.
+@property(nonatomic, strong)
+    ContentSuggestionsMetricsRecorder* contentSuggestionsMetricsRecorder;
 
 @end
 
@@ -103,6 +107,8 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 
 - (void)start {
   DCHECK(self.browser);
+  DCHECK(self.NTPMetricsDelegate);
+
   if (self.started) {
     // Prevent this coordinator from being started twice in a row
     return;
@@ -138,9 +144,14 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
   ReadingListModel* readingListModel =
       ReadingListModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
+  PromosManager* promosManager =
+      PromosManagerFactory::GetForBrowserState(self.browser->GetBrowserState());
 
   BOOL isGoogleDefaultSearchProvider =
-      [self.ntpDelegate isGoogleDefaultSearchEngine];
+      [self.NTPDelegate isGoogleDefaultSearchEngine];
+
+  self.contentSuggestionsMetricsRecorder =
+      [[ContentSuggestionsMetricsRecorder alloc] init];
 
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
            initWithLargeIconService:largeIconService
@@ -151,6 +162,9 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
       isGoogleDefaultSearchProvider:isGoogleDefaultSearchProvider
                             browser:self.browser];
   self.contentSuggestionsMediator.feedDelegate = self.feedDelegate;
+  self.contentSuggestionsMediator.promosManager = promosManager;
+  self.contentSuggestionsMediator.contentSuggestionsMetricsRecorder =
+      self.contentSuggestionsMetricsRecorder;
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   self.contentSuggestionsMediator.dispatcher =
@@ -160,6 +174,7 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
   self.contentSuggestionsMediator.webStateList =
       self.browser->GetWebStateList();
   self.contentSuggestionsMediator.webState = self.webState;
+  self.contentSuggestionsMediator.NTPMetricsDelegate = self.NTPMetricsDelegate;
 
   self.contentSuggestionsViewController =
       [[ContentSuggestionsViewController alloc] init];
@@ -169,6 +184,8 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
   self.contentSuggestionsViewController.menuProvider = self;
   self.contentSuggestionsViewController.urlLoadingBrowserAgent =
       UrlLoadingBrowserAgent::FromBrowser(self.browser);
+  self.contentSuggestionsViewController.contentSuggestionsMetricsRecorder =
+      self.contentSuggestionsMetricsRecorder;
 
   self.contentSuggestionsMediator.consumer =
       self.contentSuggestionsViewController;
@@ -213,12 +230,12 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
 }
 
 - (void)returnToRecentTabWasAdded {
-  [self.ntpDelegate updateFeedLayout];
-  [self.ntpDelegate setContentOffsetToTop];
+  [self.NTPDelegate updateFeedLayout];
+  [self.NTPDelegate setContentOffsetToTop];
 }
 
 - (void)moduleWasRemoved {
-  [self.ntpDelegate updateFeedLayout];
+  [self.NTPDelegate updateFeedLayout];
 }
 
 - (UIEdgeInsets)safeAreaInsetsForDiscoverFeed {
@@ -339,8 +356,7 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
     // most_recent_tab is null but ShouldShowStartSurface() is YES.
     if (!base::FeatureList::IsEnabled(kNoRecentTabIfNullWebState) ||
         most_recent_tab) {
-      base::RecordAction(base::UserMetricsAction(
-          "IOS.StartSurface.ShowReturnToRecentTabTile"));
+      [self.contentSuggestionsMetricsRecorder recordReturnToRecentTabTileShown];
       DiscoverFeedServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState())
           ->SetIsShownOnStartSurface(true);
@@ -356,13 +372,6 @@ BASE_FEATURE(kNoRecentTabIfNullWebState,
             ->AddObserver(_startSurfaceObserver.get());
       }
     }
-  }
-  if (ShouldShrinkLogoForStartSurface()) {
-    base::RecordAction(base::UserMetricsAction("IOS.StartSurface.ShrinkLogo"));
-  }
-  if (ShouldHideShortcutsForStartSurface()) {
-    base::RecordAction(
-        base::UserMetricsAction("IOS.StartSurface.HideShortcuts"));
   }
 }
 

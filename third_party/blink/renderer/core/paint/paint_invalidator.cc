@@ -13,8 +13,6 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
-#include "third_party/blink/renderer/core/layout/layout_table.h"
-#include "third_party/blink/renderer/core/layout/layout_table_section.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
@@ -45,11 +43,6 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
     context.painting_layer = object.PaintingLayer();
   }
 
-  auto* layout_block_flow = DynamicTo<LayoutBlockFlow>(object);
-  if (layout_block_flow && !object.IsLayoutNGBlockFlow() &&
-      layout_block_flow->ContainsFloats())
-    context.painting_layer->SetNeedsPaintPhaseFloat();
-
   if (object.IsFloating() &&
       (object.IsInLayoutNGInlineFormattingContext() ||
        IsLayoutNGContainingBlock(object.ContainingBlock())))
@@ -57,11 +50,9 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
 
   if (!context.painting_layer->NeedsPaintPhaseDescendantOutlines() &&
       ((object != context.painting_layer->GetLayoutObject() &&
-        object.StyleRef().HasOutline()) ||
-       // If this is a block-in-inline, it may need to paint outline.
-       // See |StyleForContinuationOutline|.
-       (layout_block_flow && layout_block_flow->StyleForContinuationOutline())))
+        object.StyleRef().HasOutline()))) {
     context.painting_layer->SetNeedsPaintPhaseDescendantOutlines();
+  }
 }
 
 void PaintInvalidator::UpdateFromTreeBuilderContext(
@@ -258,15 +249,6 @@ bool PaintInvalidator::InvalidatePaint(
   }
 
   if (object.SubtreeShouldCheckForPaintInvalidation()) {
-    context.subtree_flags |=
-        PaintInvalidatorContext::kSubtreeInvalidationChecking;
-  }
-
-  if (UNLIKELY(object.ContainsInlineWithOutlineAndContinuation()) &&
-      // Need this only if the subtree needs to check geometry change.
-      PrePaintTreeWalk::ObjectRequiresTreeBuilderContext(object)) {
-    // Force subtree invalidation checking to ensure invalidation of focus rings
-    // when continuation's geometry changes.
     context.subtree_flags |=
         PaintInvalidatorContext::kSubtreeInvalidationChecking;
   }

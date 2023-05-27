@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
-#include "third_party/blink/renderer/platform/heap/cross_thread_persistent.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_handle.h"
 #include "third_party/xnnpack/src/include/xnnpack.h"
 
 namespace blink {
@@ -18,12 +18,21 @@ class ScriptPromiseResolver;
 
 namespace {
 class SharedXnnpackContext;
+class XnnRuntimeWrapper;
+struct ArrayBufferViewInfo;
 }
 
 // Map the MLGraph's input or output name to the XNNPACK external Value ID.
 using ExternalValueIdMap = HashMap<String, uint32_t>;
 
 using DataBufferPtr = std::unique_ptr<uint8_t[]>;
+using XnnSubgraphPtr =
+    std::unique_ptr<xnn_subgraph, decltype(&xnn_delete_subgraph)>;
+using XnnExternalValuesPtr = std::unique_ptr<Vector<xnn_external_value>>;
+
+typedef Vector<std::pair<String, ArrayBufferViewInfo>>
+    NamedArrayBufferViewsInfo;
+using NamedArrayBufferViewsInfoPtr = std::unique_ptr<NamedArrayBufferViewsInfo>;
 
 class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
  public:
@@ -52,113 +61,141 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   const Vector<xnn_external_value>& GetXnnExternalValuesTesting() const;
 
  private:
-  // Post the XNNPACK Subgraph and Runtime building to a background thread.
+  // Build the XNNPACK Subgraph and Runtime asynchronously on a background
+  // thread. It would execute the following four steps:
+  // 1) Running `GetSharedXnnpackContextOnBackgroundThread()` on a background
+  // thread. It may initialize the XNNPACK library, which can be time-consuming.
+  // 2) Running `OnDidGetSharedXnnpackContext()` on the caller's thread. It
+  // creates an XNNPACK Subgraph and defines its Nodes by traversing the
+  // `MLOperator`s and `MLOperand`s of a WebNN graph that are allocated in the
+  // heap of the caller's thread.
+  // 3) Running `CreateXnnRuntimeOnBackgroundThread()` on a background thread.
+  // The creation of XNNPACK Runtime includes graph optimization, operator
+  // kernel creation and memory allocation and packing that can be
+  // time-consuming.
+  // 4) Running `OnDidCreateXnnRuntime()` on the calling thread. It resolves the
+  // promise with this `MLGraphXnnpack` object if there are no errors.
+  //
+  // The sequence of above steps can be illustrated as the following diagram:
+  //       Calling thread                    background thread
+  //     `BuildAsyncImpl()`
+  //              |
+  //          post task ------->  `GetSharedXnnpackContextOnBackgroundThread()`
+  //                                                  |
+  //  `OnDidGetSharedXnnpackContext()`  <----------post task
+  //              |
+  //          post task ------------> `CreateXnnRuntimeOnBackgroundThread()`
+  //                                                  |
+  //   `OnDidCreateXnnRuntime()  <-----------------post task
   void BuildAsyncImpl(const MLNamedOperands& named_outputs,
                       ScriptPromiseResolver* resolver) override;
 
-  // Build the XNNPACK Subgraph and Runtime off the main thread.
-  static void BuildOnBackgroundThread(
-      CrossThreadPersistent<MLGraphXnnpack> graph,
-      CrossThreadPersistent<MLNamedOperands> named_outputs,
-      CrossThreadPersistent<HeapVector<Member<const MLOperator>>>
-          toposorted_operators,
-      CrossThreadPersistent<ScriptPromiseResolver> resolver,
+  static void GetSharedXnnpackContextOnBackgroundThread(
+      CrossThreadHandle<MLGraphXnnpack> graph,
+      CrossThreadHandle<MLNamedOperands> named_outputs,
+      CrossThreadHandle<ScriptPromiseResolver> resolver,
       scoped_refptr<base::SequencedTaskRunner> resolver_task_runner);
 
-  // Resolve the promise on the main thread after finish building the XNNPACK
-  // Subgraph and Runtime.
-  void OnBuildFinished(CrossThreadPersistent<ScriptPromiseResolver> resolver,
-                       xnn_status status,
-                       String error_message = String());
+  void OnDidGetSharedXnnpackContext(
+      scoped_refptr<SharedXnnpackContext> xnn_context,
+      MLNamedOperands* named_outputs,
+      ScriptPromiseResolver* resolver,
+      String error_message = String());
 
-  // Build the XNNPACK Subgraph synchronously in the caller's thread. If the
-  // XNNPACK Subgraph builds successfully, it should return this MLGraphXnnpack
-  // object. Otherwise, it returns a nullptr and throw a DOMException
-  // accordingly.
+  static void CreateXnnRuntimeOnBackgroundThread(
+      XnnSubgraphPtr subgraph,
+      scoped_refptr<SharedXnnpackContext> xnn_context,
+      Vector<DataBufferPtr> static_data_buffers,
+      CrossThreadHandle<MLGraphXnnpack> graph,
+      CrossThreadHandle<ScriptPromiseResolver> resolver,
+      scoped_refptr<base::SequencedTaskRunner> resolver_task_runner);
+
+  void OnDidCreateXnnRuntime(
+      scoped_refptr<XnnRuntimeWrapper> xnn_runtime_wrapper,
+      ScriptPromiseResolver* resolver,
+      String error_message = String());
+
+  // Build the XNNPACK Subgraph and Runtime synchronously in the caller's
+  // thread. If the XNNPACK Subgraph and Runtime build successfully, it should
+  // return this `MLGraphXnnpack` object. Otherwise, it returns a nullptr and
+  // throw a DOMException accordingly.
   MLGraph* BuildSyncImpl(const MLNamedOperands& named_outputs,
                          ExceptionState& exception_state) override;
 
-  // Post the XNNPACK Runtime object invocation to a background thread.
+  // Post the XNNPACK Runtime object invocation to a background thread. The
+  // input and output `MLNamedArrayBufferViews` will be transferred to the
+  // `NamedArrayBufferViewsInfo` that are posted to background thread. This
+  // would prevent the calling thread from modifying the contents of the
+  // `ArrayBufferView` while the background thread is accessing them. And it
+  // would also avoid accessing the heap-allocated `ArrayBufferView` in the
+  // background thread.
   void ComputeAsyncImpl(const MLNamedArrayBufferViews& inputs,
                         const MLNamedArrayBufferViews& outputs,
-                        ScriptPromiseResolver* resolver) override;
+                        ScriptPromiseResolver* resolver,
+                        ExceptionState& exception_state) override;
 
-  // Invoke the XNNPACK Runtime object off the main thread.
+  // Invoking an XNNPACK Runtime object can be time-consuming. Calling this
+  // method in a background thread avoids blocking the main thread. The
+  // ownership of `external_values`, `inputs_info` and `outputs_info` is
+  // transferred to the background thread that invokes the XNNPACK Runtime
+  // object with the input and output buffers. The GC objects wrapped by
+  // `CrossThreadHandle` must not be accessed by this method and should be
+  // passed forward to `OnDidCompute()` which is called on the thread
+  // owning these GC objects.
   static void ComputeOnBackgroundThread(
-      CrossThreadPersistent<MLGraphXnnpack> graph,
-      CrossThreadPersistent<MLNamedArrayBufferViews> inputs,
-      CrossThreadPersistent<MLNamedArrayBufferViews> outputs,
-      CrossThreadPersistent<ScriptPromiseResolver> resolver,
+      scoped_refptr<XnnRuntimeWrapper> xnn_runtime_wrapper,
+      XnnExternalValuesPtr external_values,
+      NamedArrayBufferViewsInfoPtr inputs_info,
+      NamedArrayBufferViewsInfoPtr outputs_info,
+      CrossThreadHandle<MLGraphXnnpack> graph,
+      CrossThreadHandle<ScriptPromiseResolver> resolver,
       scoped_refptr<base::SequencedTaskRunner> resolver_task_runner);
 
-  // Resolve the promise with an MLComputeResult that contains input and output
-  // ArrayBufferViews on the main thread after finish invoking the XNNPACK
-  // Runtime object.
-  void OnComputeFinished(CrossThreadPersistent<MLNamedArrayBufferViews> inputs,
-                         CrossThreadPersistent<MLNamedArrayBufferViews> outputs,
-                         CrossThreadPersistent<ScriptPromiseResolver> resolver,
-                         xnn_status status,
-                         String error_message = String());
+  // Resolve the promise with an `MLComputeResult` on the thread owning this
+  // `MLGraphXnnpack` object after invoking the XNNPACK Runtime object. The
+  // input and output `ArrayBufferView`s of the `MLComputeResult` are created
+  // from the `inputs_info` and `outputs_info` that carry the backing memory in
+  // `ArrayBufferContents` transferred from the original user supplied
+  // `ArrayBufferView`s.
+  void OnDidCompute(xnn_status status,
+                    NamedArrayBufferViewsInfoPtr inputs_info,
+                    NamedArrayBufferViewsInfoPtr outputs_info,
+                    ScriptPromiseResolver* resolver,
+                    String error_message = String());
 
   // Invoke the XNNPACK Runtime object in the caller's thread.
   void ComputeSyncImpl(const MLNamedArrayBufferViews& inputs,
                        const MLNamedArrayBufferViews& outputs,
                        ExceptionState& exception_state) override;
 
-  // This method firstly creates an XNNPACK Subgraph object and defines Subgraph
-  // Nodes and Values for the operators and operands of a WebNN graph. Then it
-  // creates an XNNPACK Runtime object from the Subgraph object. The Runtime
-  // object is a combination of an execution plan for Subgraph Nodes and a
-  // memory manager for Subgraph Values and will be used for the accelerated
-  // executions. This method can run either in a background thread for
-  // asynchronous graph building or in the caller's thread for synchronous graph
-  // building.
-  xnn_status CreateXnnSubgraphAndRuntime(
-      const MLNamedOperands& named_outputs,
-      const HeapVector<Member<const MLOperator>>& toposorted_operators,
-      String& error_message);
+  // XNNPACK Subgraph is an abstract representation of a neural network model.
+  // This method first sorts the MLOperators by searching from `named_outputs`
+  // and then creates an XNNPACK Subgraph object and defines Subgraph Nodes and
+  // Values from the sorted operators. The output XNNPACK Subgraph
+  // `out_subgraph` will be used to create an XNNPACK Runtime. Because the
+  // static data buffers of XNNPACK Values should outlive Subgraph and Runtime
+  // using them, they are returned in `out_static_data_buffers`. This method
+  // must be called on the thread owning this `MLGraphXnnpack` and
+  // `named_outputs`.
+  xnn_status CreateXnnSubgraph(const MLNamedOperands& named_outputs,
+                               XnnSubgraphPtr& out_subgraph,
+                               Vector<DataBufferPtr>& out_static_data_buffers,
+                               String& error_message);
 
   // This method creates the xnn_external_value vector from named input and
-  // output array buffer views. The xnn_external_value vector is used to set up
-  // the XNNPACK Runtime object. The returned vector is sorted by
-  // `xnn_external_value::id`, and can be passed to
-  // `NeedToSetupExternalValues()`.
-  Vector<xnn_external_value> CreateExternalValues(
+  // output array buffer views. The xnn_external_value vector is used to set
+  // up the XNNPACK Runtime object. The returned vector is sorted by
+  // `xnn_external_value::id`.
+  XnnExternalValuesPtr CreateExternalValues(
       const MLNamedArrayBufferViews& inputs,
       const MLNamedArrayBufferViews& outputs) const;
 
-  // This method checks if any data pointers of the provided
-  // `xnn_external_values` changed against the pointers that has been setup
-  // (stored in `xnn_external_values_`).
-  //
-  // The change may be caused by user providing a different ArrayBufferView that
-  // is backed by a newly allocated or reallocated store.
-  //
-  // The XNNPACK Runtime object setup may be expensive. If the data pointers
-  // haven't changed, there's no need to redo the setup.
-  bool NeedToSetupExternalValues(
-      const Vector<xnn_external_value>& xnn_external_values) const;
+  // Task runner for running XNNPACK time-consuming operations, e.g. library
+  // initialization, Runtime creation and invcation.
+  scoped_refptr<base::SequencedTaskRunner> xnnpack_task_runner_;
 
-  // This method sets up data pointers for XNNPACK external values, performs the
-  // forward pass, then stores the result in the array buffer views provided by
-  // `outputs`.
-  //
-  // This method can be called in the main thread or a background thread.
-  xnn_status InvokeXnnRuntime(const MLNamedArrayBufferViews& inputs,
-                              const MLNamedArrayBufferViews& outputs,
-                              String& error_message);
-
-  // Schedules resolving promises of asynchronous MLGraph build and compute.
+  // Task runner to resolve promises on.
   scoped_refptr<base::SequencedTaskRunner> resolver_task_runner_;
-
-  // The SharedXnnpackContext is shared and reference-counted by all instances
-  // of MLGraphXnnpack. It initializes (and also deinitializes) the XNNPACK
-  // library for graph building and execution.
-  scoped_refptr<SharedXnnpackContext> xnn_context_;
-
-  // Holds the static data of XNNPACK Values for MLGraph's constant operands.
-  // The data must outlive XNNPACK Subgraph and Runtime objects using them.
-  Vector<DataBufferPtr> static_data_buffers_;
 
   // Map the names of the MLGraph's inputs/outputs to the XNNPACK external Value
   // IDs. They will be used to set up the xnn_external_value structures from the
@@ -167,14 +204,11 @@ class MODULES_EXPORT MLGraphXnnpack final : public MLGraph {
   ExternalValueIdMap input_external_value_id_map_;
   ExternalValueIdMap output_external_value_id_map_;
 
-  // Used to track external values that have been setup, to avoid unnecessary
-  // xnn_runtime_setup calls (which may be expensive). Sorted by
-  // `xnn_external_value::id`.
-  Vector<xnn_external_value> xnn_external_values_;
-
-  // The XNNPACK Runtime object for the accelerated executions.
-  std::unique_ptr<xnn_runtime, decltype(&xnn_delete_runtime)> xnn_runtime_{
-      nullptr, &xnn_delete_runtime};
+  // The implementation wraps the objects for accelerated executions including
+  // XNNPACK Runtime object, shared XNNPACK context, static data buffers of
+  // XNNPACK Values and the vector of xnn_external_value for XNNPACK Runtime
+  // setup and invocation.
+  scoped_refptr<XnnRuntimeWrapper> xnn_runtime_wrapper_;
 };
 
 }  // namespace blink

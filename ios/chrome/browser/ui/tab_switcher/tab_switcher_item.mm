@@ -14,10 +14,23 @@
 
 - (instancetype)initWithIdentifier:(NSString*)identifier {
   DCHECK(identifier);
-  if ((self = [super init])) {
-    _identifier = identifier;
+  self = [super init];
+  if (self) {
+    _identifier = [identifier copy];
   }
   return self;
+}
+
+#pragma mark - Image Fetching
+
+- (void)fetchFavicon:(TabSwitcherImageFetchingCompletionBlock)completion {
+  // Subclasses should override this method. It is OK not to call super.
+  completion(self, nil);
+}
+
+- (void)fetchSnapshot:(TabSwitcherImageFetchingCompletionBlock)completion {
+  // Subclasses should override this method. It is OK not to call super.
+  completion(self, nil);
 }
 
 @end

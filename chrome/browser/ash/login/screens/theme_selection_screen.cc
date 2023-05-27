@@ -82,8 +82,7 @@ bool ThemeSelectionScreen::ShouldBeSkipped(const WizardContext& context) const {
   const PrefService::Preference* pref =
       ProfileManager::GetActiveUserProfile()->GetPrefs()->FindPreference(
           prefs::kDarkModeScheduleType);
-  if (pref->IsManaged() || pref->IsRecommended() ||
-      !features::IsDarkLightModeEnabled()) {
+  if (pref->IsManaged() || pref->IsRecommended()) {
     return true;
   }
 
@@ -119,10 +118,6 @@ void ThemeSelectionScreen::HideImpl() {}
 void ThemeSelectionScreen::OnUserAction(const base::Value::List& args) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   const std::string& action_id = args[0].GetString();
-
-  // Set the nudge shown count to 0 once the user goes through the Dark / Light
-  // setup to avoiding triggering Dark / Light nudge after OOBE.
-  profile->GetPrefs()->SetInteger(prefs::kDarkLightModeNudgeLeftToShowCount, 0);
 
   if (action_id == kUserActionSelect) {
     const SelectedTheme selected_theme =

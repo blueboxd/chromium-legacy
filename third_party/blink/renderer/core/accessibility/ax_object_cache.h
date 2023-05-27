@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace gfx {
 class Point;
@@ -47,14 +48,15 @@ namespace blink {
 
 class AriaNotificationOptions;
 class AXObject;
-class AbstractInlineTextBox;
 class AccessibleNode;
 class HTMLCanvasElement;
 class HTMLOptionElement;
+class HTMLTableElement;
 class HTMLFrameOwnerElement;
 class HTMLSelectElement;
 class LayoutRect;
 class LocalFrameView;
+class NGAbstractInlineTextBox;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
  public:
@@ -90,6 +92,8 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void ListboxOptionStateChanged(HTMLOptionElement*) = 0;
   virtual void ListboxSelectedChildrenChanged(HTMLSelectElement*) = 0;
   virtual void ListboxActiveIndexChanged(HTMLSelectElement*) = 0;
+  virtual void SetMenuListOptionsBounds(HTMLSelectElement*,
+                                        const WTF::Vector<gfx::Rect>&) = 0;
   virtual void LocationChanged(const LayoutObject*) = 0;
   virtual void ImageLoaded(const LayoutObject*) = 0;
 
@@ -100,7 +104,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   virtual void Remove(LayoutObject*) = 0;
   virtual void Remove(Node*) = 0;
   virtual void Remove(Document*) = 0;
-  virtual void Remove(AbstractInlineTextBox*) = 0;
+  virtual void Remove(NGAbstractInlineTextBox*) = 0;
 
   virtual const Element* RootAXEditableElement(const Node*) = 0;
 
@@ -147,6 +151,9 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   // Changes to virtual Accessibility Object Model nodes.
   virtual void HandleAttributeChanged(const QualifiedName& attr_name,
                                       AccessibleNode*) = 0;
+
+  // Called when the DOM parser has reached the closing tag of a table element.
+  virtual void FinishedParsingTable(HTMLTableElement*) = 0;
 
   // Called when a HTMLFrameOwnerElement (such as an iframe element) changes the
   // embedding token of its child frame.
@@ -206,19 +213,29 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
   // Returns true if there are any pending updates that need processing.
   virtual bool IsDirty() const = 0;
 
-  virtual void ResetSerializer() = 0;
-
   virtual void SerializeLocationChanges() = 0;
 
   virtual AXObject* GetPluginRoot() = 0;
 
   // Serialize entire tree, returning true if successful.
-  virtual bool SerializeEntireTree(bool exclude_offscreen,
-                                   size_t max_node_count,
+  virtual bool SerializeEntireTree(size_t max_node_count,
                                    base::TimeDelta timeout,
                                    ui::AXTreeUpdate*) = 0;
 
+  // Recompute the entire tree and reserialize it.
+  // This method is useful when something that potentially affects most of the
+  // page occurs, such as an inertness change or a fullscreen toggle.
+  // This keeps the existing nodes, but recomputes all of their properties and
+  // reserializes everything.
+  // Compared with ResetSerializer() and MarkAXObjectDirtyWithDetails() with
+  // subtree = true, this does more work, because it recomputes the entire tree
+  // structure and properties of each node.
   virtual void MarkDocumentDirty() = 0;
+
+  // Compared with MarkDocumentDirty(), this does less work, because it assumes
+  // the AXObjectCache's tree of objects and properties is correct, but needs to
+  // be reserialized.
+  virtual void ResetSerializer() = 0;
 
   virtual void MarkElementDirty(const Node*) = 0;
 
@@ -245,7 +262,9 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
       bool& had_load_complete_messages,
       bool& need_to_send_location_changes) = 0;
 
-  virtual void ClearDirtyObjectsAndPendingEvents() = 0;
+  // Returns a vector of the images found in |updates|.
+  virtual void GetImagesToAnnotate(ui::AXTreeUpdate& updates,
+                                   std::vector<ui::AXNodeData*>&) = 0;
 
   // Note that any pending event also causes its corresponding object to
   // become dirty.

@@ -1,4 +1,11 @@
-<style include="cr-actionable-row-style settings-shared iron-flex action-link">
+<style
+<if expr="not chromeos_ash">
+  include="cr-shared-style cr-actionable-row-style iron-flex action-link"
+</if>
+<if expr="chromeos_ash">
+  include="cr-shared-style cr-actionable-row-style iron-flex action-link cros-color-overrides"
+</if>
+>
   :host {
     --cr-icon-button-margin-end: 20px;
     padding: 0 var(--cr-section-padding);
@@ -19,12 +26,12 @@
   #outerRow {
     align-items: center;
     display: flex;
-    min-height: var(--settings-row-two-line-min-height);
+    min-height: var(--cr-section-two-line-min-height);
     width: 100%;
   }
 
   #outerRow[noSubLabel] {
-    min-height: var(--settings-row-min-height);
+    min-height: var(--cr-section-min-height);
   }
 
 <if expr="chromeos_ash">
@@ -39,11 +46,17 @@
 
   #labelWrapper,
   ::slotted([slot='more-actions']) {
-    margin-inline-end: var(--settings-control-label-spacing) !important;
+    margin-inline-end: 20px !important;
   }
 
   cr-policy-pref-indicator {
-    margin-inline-end: var(--settings-controlled-by-spacing);
+    margin-inline-end: var(--cr-controlled-by-spacing);
+  }
+
+  /* Style #learn-more or other links that can appear within
+     #sub-label-text-with-link. */
+  a {
+    color: var(--cr-link-color);
   }
 </style>
 <div id="outerRow" noSubLabel$="[[!subLabel]]">
@@ -57,7 +70,7 @@
   </if>
   <div class="flex" id="labelWrapper" hidden$="[[!label]]">
     <div class="label" aria-hidden="[[!ariaShowLabel]]">[[label]]</div>
-    <div class="secondary label" id="sub-label">
+    <div class="cr-secondary-text label" id="sub-label">
       <template is="dom-if" if="[[subLabelIcon]]">
         <span id="sub-label-icon" aria-hidden="true">
           <iron-icon slot="icon" icon="[[subLabelIcon]]">

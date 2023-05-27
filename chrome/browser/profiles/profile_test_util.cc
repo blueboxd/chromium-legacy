@@ -29,19 +29,19 @@
 
 namespace profiles::testing {
 
-Profile* CreateProfileSync(ProfileManager* profile_manager,
+Profile& CreateProfileSync(ProfileManager* profile_manager,
                            const base::FilePath& path) {
   base::test::TestFuture<Profile*> profile_future;
   profile_manager->CreateProfileAsync(path, profile_future.GetCallback());
   Profile* profile = profile_future.Get();
   CHECK(profile);
-  return profile;
+  return *profile;
 }
 
 #if !BUILDFLAG(IS_ANDROID)
 
 void SwitchToProfileSync(const base::FilePath& path, bool always_create) {
-  base::test::TestFuture<Profile*> future;
+  base::test::TestFuture<Browser*> future;
   profiles::SwitchToProfile(path, always_create, future.GetCallback());
   ASSERT_TRUE(future.Wait()) << "profiles::SwitchToProfile() did not complete";
 }

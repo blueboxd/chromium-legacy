@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/views/profiles/profile_management_step_controller.h"
-#include "chrome/browser/ui/views/profiles/profile_management_utils.h"
+#include "chrome/browser/ui/views/profiles/profile_management_types.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -123,13 +123,16 @@ void ProfileManagementFlowControllerImpl::HandleSignInCompleted(
   DCHECK(signed_in_profile);
   DCHECK_EQ(Step::kAccountSelection, current_step());
 
-  Step step = Step::kUnknown;
+  Step step;
   if (is_saml) {
     step = Step::kFinishSamlSignin;
     DCHECK(!IsStepInitialized(step));
+    // The SAML step controller handles finishing the profile setup by itself
+    // when we switch to it.
     RegisterStep(step, CreateSamlStep(signed_in_profile, std::move(contents)));
   } else {
     step = Step::kPostSignInFlow;
+    DCHECK(!IsStepInitialized(step));
     RegisterStep(step,
                  CreatePostSignInStep(signed_in_profile, std::move(contents)));
   }

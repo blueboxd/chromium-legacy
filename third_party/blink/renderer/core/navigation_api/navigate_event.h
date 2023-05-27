@@ -9,6 +9,7 @@
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_navigation_commit_behavior.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_focus_reset.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_scroll_behavior.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -60,16 +61,17 @@ class NavigateEvent final : public Event,
   FormData* formData() const { return form_data_; }
   String downloadRequest() const { return download_request_; }
   ScriptValue info() const { return info_; }
-
   void intercept(NavigationInterceptOptions*, ExceptionState&);
+  void commit(ExceptionState&);
 
-  void DoCommit();
+  // If intercept() was called, this is called after dispatch to either commit
+  // the navigation or set the appropritate state for a deferred commit.
+  void MaybeCommitImmediately(ScriptState*);
+
+  void React(ScriptState* script_state);
 
   void scroll(ExceptionState&);
 
-  void Finish(bool did_fulfill);
-
-  ScriptPromise GetReactionPromiseAll(ScriptState*);
   bool HasNavigationActions() const {
     return intercept_state_ != InterceptState::kNone;
   }
@@ -84,9 +86,15 @@ class NavigateEvent final : public Event,
  private:
   bool PerformSharedChecks(const String& function_name, ExceptionState&);
 
+  bool ShouldCommitImmediately();
+  void CommitNow();
+
   void PotentiallyResetTheFocus();
   void PotentiallyProcessScrollBehavior();
   void ProcessScrollBehavior();
+
+  class Reaction;
+  void ReactDone(ScriptValue, bool did_fulfill);
 
   String navigation_type_;
   Member<NavigationDestination> destination_;
@@ -99,6 +107,7 @@ class NavigateEvent final : public Event,
   ScriptValue info_;
   absl::optional<V8NavigationFocusReset> focus_reset_behavior_ = absl::nullopt;
   absl::optional<V8NavigationScrollBehavior> scroll_behavior_ = absl::nullopt;
+  absl::optional<V8NavigationCommitBehavior> commit_behavior_ = absl::nullopt;
 
   Member<NavigateEventDispatchParams> dispatch_params_;
 

@@ -52,6 +52,9 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_AutoDarkUserEducationMessageOptIn"
       summary="message educating users about enabling auto dark web contents
                feature globally"/>
+  <variant name="IPH_AutofillExternalAccountProfileSuggestion"
+      summary="message shown along with the externally created (e.g. in
+               Google Pay) profile suggestion option in the Autofill dropdown"/>
   <variant name="IPH_AutofillVirtualCardSuggestion"
       summary="message shown along with the virtual card suggestion option in
                the Autofill dropdown to educate users virtual cards come with
@@ -172,6 +175,8 @@ chromium-metrics-reviews@google.com.
       summary="showing the App Store Promo on iOS"/>
   <variant name="IPH_iOSPromoCredentialProviderExtension"
       summary="showing the Credential Provider Extension Promo on iOS"/>
+  <variant name="IPH_iOSPromoDefaultBrowser"
+      summary="showing the Default Browser Promo on iOS"/>
   <variant name="IPH_iOSPromoPostRestore"
       summary="showing the Post Restore Promo on iOS"/>
   <variant name="IPH_iOSPromoWhatsNew"
@@ -184,6 +189,8 @@ chromium-metrics-reviews@google.com.
       summary="payments autofill suggestions"/>
   <variant name="IPH_KeyboardAccessoryPaymentOffer"
       summary="payments autofill suggestions that have an offer"/>
+  <variant name="IPH_LauncherSearchHelpUi"
+      summary="show launcher search chips in the launcher"/>
   <variant name="IPH_LiveCaption" summary="Live Caption"/>
   <variant name="IPH_LongPressToolbarTip" summary="LongPress toolbar"/>
   <variant name="IPH_MicToolbar" summary="the mic button in the toolbar"/>
@@ -494,7 +501,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.TextBubble.ShownTime" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -536,7 +543,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tutorial.TabGroup.EditedTitle" enum="BooleanSuccess"
-    expires_after="2023-07-09">
+    expires_after="2023-09-24">
   <owner>dpenning@chromium.org</owner>
   <owner>dfried@chromium.org</owner>
   <summary>

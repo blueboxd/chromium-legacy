@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/js/assert_ts.js';
+
 import {AmbientModeAlbum, AmbientProviderInterface, AnimationTheme, TemperatureUnit, TopicSource} from '../../personalization_app.mojom-webui.js';
 import {PersonalizationStore} from '../personalization_store.js';
 
-import {setAlbumSelectedAction, setAmbientModeEnabledAction, setAnimationThemeAction, setTemperatureUnitAction, setTopicSourceAction} from './ambient_actions.js';
+import {setAlbumSelectedAction, setAmbientModeEnabledAction, setAnimationThemeAction, setScreenSaverDurationAction, setShouldShowTimeOfDayBannerAction, setTemperatureUnitAction, setTopicSourceAction} from './ambient_actions.js';
+import {getAmbientProvider} from './ambient_interface_provider.js';
+import {isValidTopicSourceAndTheme} from './utils.js';
 
 /**
  * @fileoverview contains all of the functions to interact with ambient mode
@@ -33,10 +37,22 @@ export function setAnimationTheme(
   store.dispatch(setAnimationThemeAction(animationTheme));
 }
 
+// Set ambient mode screen saver running duration in minutes.
+export function setScreenSaverDuration(
+    minutes: number, provider: AmbientProviderInterface,
+    store: PersonalizationStore): void {
+  provider.setScreenSaverDuration(minutes);
+  store.dispatch(setScreenSaverDurationAction(minutes));
+}
+
 // Set ambient mode topic source.
 export function setTopicSource(
     topicSource: TopicSource, provider: AmbientProviderInterface,
     store: PersonalizationStore): void {
+  assert(
+      isValidTopicSourceAndTheme(
+          topicSource, store.data.ambient.animationTheme),
+      'invalid topic source and animation theme combination');
   provider.setTopicSource(topicSource);
 
   // Dispatch action to select topic source.
@@ -67,4 +83,25 @@ export function setAlbumSelected(
 export function startScreenSaverPreview(provider: AmbientProviderInterface):
     void {
   provider.startScreenSaverPreview();
+}
+
+export async function getShouldShowTimeOfDayBanner(
+    store: PersonalizationStore) {
+  const {shouldShowBanner} =
+      await getAmbientProvider().shouldShowTimeOfDayBanner();
+
+  // Dispatch action to set the should show banner boolean.
+  store.dispatch(setShouldShowTimeOfDayBannerAction(shouldShowBanner));
+}
+
+
+// Sets shouldShowTimeOfDayBanner to false.
+export function dismissTimeOfDayBanner(store: PersonalizationStore): void {
+  if (!store.data.ambient.shouldShowTimeOfDayBanner) {
+    // Do nothing if the banner is already dismissed;
+    return;
+  }
+  getAmbientProvider().handleTimeOfDayBannerDismissed();
+
+  store.dispatch(setShouldShowTimeOfDayBannerAction(false));
 }

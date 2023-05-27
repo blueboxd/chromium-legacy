@@ -14,6 +14,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/files/scoped_file.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
@@ -154,9 +155,8 @@ class GFX_EXPORT SurfaceControl {
     void SetOpaque(const Surface& surface, bool opaque);
     void SetDamageRect(const Surface& surface, const gfx::Rect& rect);
     void SetColorSpace(const Surface& surface,
-                       const gfx::ColorSpace& color_space);
-    void SetHDRMetadata(const Surface& surface,
-                        const absl::optional<HDRMetadata>& hdr_metadata);
+                       const gfx::ColorSpace& color_space,
+                       const absl::optional<HDRMetadata>& metadata);
     void SetFrameRate(const Surface& surface, float frame_rate);
     void SetParent(const Surface& surface, Surface* new_parent);
     void SetPosition(const Surface& surface, const gfx::Point& position);
@@ -188,7 +188,9 @@ class GFX_EXPORT SurfaceControl {
     void DestroyIfNeeded();
 
     int id_;
-    ASurfaceTransaction* transaction_;
+    // This field is not a raw_ptr<> because it was filtered by the rewriter
+    // for: #union
+    RAW_PTR_EXCLUSION ASurfaceTransaction* transaction_;
     OnCommitCb on_commit_cb_;
     OnCompleteCb on_complete_cb_;
     bool need_to_apply_ = false;

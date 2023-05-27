@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">画像デコーダー</translation>
 <translation id="1785415724048343560">利便性が向上します（推奨）</translation>
 <translation id="1818308510395330587"><ph name="APP_NAME" /> に AR の使用を許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でもカメラをオンにしてください。</translation>
-<translation id="1864927262126810325">ソース: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">関連サイトはグループでのアクティビティを確認できます</translation>
 <translation id="1887786770086287077">位置情報へのアクセスがデバイスでオフになっています。<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でオンにしてください。</translation>
 <translation id="1915307458270490472">通話を終了</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">ダウンロードが完了しました<ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">シークレット モードでは、一部サイトの機能が使用できなくなる可能性があります</translation>
 <translation id="2442870161001914531">常に PC 版サイトを表示する</translation>
+<translation id="2479148705183875116">設定に移動</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2485422356828889247">アンインストール</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> で管理</translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">メールアドレス</translation>
 <translation id="2750481671343847896">サイトで ID サービスからのログイン メッセージを表示できるようにします。</translation>
 <translation id="2822354292072154809">「<ph name="CHOSEN_OBJECT_NAME" />」に関するすべてのサイト権限をリセットしてもよろしいですか？</translation>
+<translation id="2850913818900871965">モバイルビューをリクエストする</translation>
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2874939134665556319">前のトラック</translation>
 <translation id="2891975107962658722">サイトによるデバイスへのデータ保存をブロックします</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">サイトは、Cookie を使用してブラウジングの利便性を改善できます（ログイン状態の維持、ショッピング カートの中身の保存などが行えます）</translation>
 <translation id="3165022941318558018">サイトにサードパーティ Cookie の使用を許可する</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> の保存データ</translation>
-<translation id="3203366800380907218">ウェブから</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> に通知の送信を許可するには、<ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />でも通知をオンにしてください。</translation>
 <translation id="3227137524299004712">マイク</translation>
 <translation id="3248611290851046188">このサイトでは、他のサイトが広告の表示に使用できる興味 / 関心を定義しています。また、このサイトでは Chrome からお客様の興味 / 関心に関する情報を取得して、関連性の高い広告を表示しています。</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">デスクトップ ビューで表示する</translation>
 <translation id="5100237604440890931">折りたたまれています - クリックすると展開します。</translation>
 <translation id="5123685120097942451">シークレット タブ</translation>
-<translation id="5134599672855298214">モバイルビューで表示する（推奨）</translation>
 <translation id="5186036860380548585">設定は画面上部にあります</translation>
 <translation id="5197729504361054390">選択した連絡先が <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> と共有されます。</translation>
 <translation id="5216942107514965959">最終アクセス日: 今日</translation>

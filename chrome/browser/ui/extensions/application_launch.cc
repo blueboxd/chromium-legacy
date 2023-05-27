@@ -23,6 +23,7 @@
 #include "chrome/browser/apps/platform_apps/platform_app_launch.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/extensions/file_handlers/file_handling_launch_utils.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -41,6 +42,7 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/url_constants.h"
+#include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -144,8 +146,9 @@ bool IsAllowedToOverrideURL(const extensions::Extension* extension,
 GURL UrlForExtension(const extensions::Extension* extension,
                      Profile* profile,
                      const apps::AppLaunchParams& params) {
-  if (!extension)
+  if (!extension) {
     return params.override_url;
+  }
 
   GURL url;
   if (!params.override_url.is_empty()) {
@@ -158,8 +161,9 @@ GURL UrlForExtension(const extensions::Extension* extension,
   // For extensions lacking launch urls, determine a reasonable fallback.
   if (!url.is_valid()) {
     url = extensions::OptionsPageInfo::GetOptionsPage(extension);
-    if (!url.is_valid())
+    if (!url.is_valid()) {
       url = GURL(chrome::kChromeUIExtensionsURL);
+    }
   }
 
   return url;
@@ -282,12 +286,14 @@ WebContents* OpenApplicationTab(Profile* profile,
 WebContents* OpenEnabledApplication(Profile* profile,
                                     apps::AppLaunchParams&& params) {
   const Extension* extension = GetExtension(profile, params);
-  if (!extension)
+  if (!extension) {
     return nullptr;
+  }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  if (!profile->IsMainProfile())
+  if (!profile->IsMainProfile()) {
     return nullptr;
+  }
 #endif
 
   WebContents* tab = nullptr;
@@ -325,12 +331,14 @@ WebContents* OpenEnabledApplication(Profile* profile,
                             params.container);
 
   GURL url;
-  if (extensions::WebFileHandlers::SupportsWebFileHandlers(
-          extension->manifest_version()) &&
-      params.intent->activity_name.has_value()) {
+  bool supports_web_file_handlers =
+      extensions::WebFileHandlers::SupportsWebFileHandlers(
+          extension->manifest_version());
+  if (supports_web_file_handlers && params.intent->activity_name.has_value()) {
     // `params.intent->activity_name` is actually the `action` url set in the
     // manifest of the extension.
     url = extension->GetResourceURL(params.intent->activity_name.value());
+    params.container = apps::LaunchContainer::kLaunchContainerWindow;
   } else {
     url = UrlForExtension(extension, profile, params);
   }
@@ -358,6 +366,11 @@ WebContents* OpenEnabledApplication(Profile* profile,
       break;
   }
 
+  if (supports_web_file_handlers) {
+    extensions::EnqueueLaunchParamsInWebContents(tab, *extension, url,
+                                                 params.launch_files);
+  }
+
   return tab;
 }
 
@@ -373,12 +386,13 @@ Browser* CreateApplicationWindow(Profile* profile,
   const Extension* const extension = GetExtension(profile, params);
 
   std::string app_name;
-  if (!params.override_app_name.empty())
+  if (!params.override_app_name.empty()) {
     app_name = params.override_app_name;
-  else if (extension)
+  } else if (extension) {
     app_name = web_app::GenerateApplicationNameFromAppId(extension->id());
-  else
+  } else {
     app_name = web_app::GenerateApplicationNameFromURL(url);
+  }
 
   gfx::Rect initial_bounds;
   if (!params.override_bounds.IsEmpty()) {
@@ -427,8 +441,9 @@ WebContents* NavigateApplicationWindow(Browser* browser,
 
   WebContents* const web_contents = nav_params.navigated_or_inserted_contents;
 
-  if (extension) {
-    DCHECK(extension->is_app());
+  // Before MV3, an extension reaching this point must have been an app. MV3
+  // added support for Web File Handlers, which don't use extension TabHelper.
+  if (extension && extension->is_app()) {
     extensions::TabHelper::FromWebContents(web_contents)
         ->SetExtensionApp(extension);
   }

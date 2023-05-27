@@ -15,7 +15,6 @@
 
 #include "base/containers/contains.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
@@ -25,6 +24,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
@@ -125,24 +125,6 @@ void ExpectSameElements(const std::vector<T*>& expectations,
       results_copy.end());
 }
 
-class ScopedFeatureListWrapper {
- public:
-  explicit ScopedFeatureListWrapper(
-      const std::vector<base::test::FeatureRef>& default_enabled_features,
-      const std::vector<base::test::FeatureRef>& additional_enabled_features) {
-    std::vector<base::test::FeatureRef> all_enabled_features(
-        default_enabled_features);
-    base::ranges::copy(additional_enabled_features,
-                       std::back_inserter(all_enabled_features));
-    scoped_features_.InitWithFeatures(all_enabled_features,
-                                      /*disabled_features=*/{});
-  }
-  ~ScopedFeatureListWrapper() = default;
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
-};
-
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 std::vector<std::vector<Suggestion::Text>> ConstructLabelLineMatrix(
     const std::vector<std::u16string>& parts) {
@@ -155,10 +137,6 @@ std::vector<std::vector<Suggestion::Text>> ConstructLabelLineMatrix(
 class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
  protected:
   PersonalDataManagerHelper() = default;
-
-  explicit PersonalDataManagerHelper(
-      const std::vector<base::test::FeatureRef>& additional_enabled_features)
-      : PersonalDataManagerTestBase(additional_enabled_features) {}
 
   virtual ~PersonalDataManagerHelper() {
     if (personal_data_)
@@ -195,7 +173,8 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
   }
 
   AutofillProfile GetDefaultProfile() {
-    AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+    AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                            test::kEmptyOrigin);
     test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                          "johnwayne@me.xyz", "Fox", "123 Zoo St", "unit 5",
                          "Hollywood", "CA", "91601", "US", "12345678910",
@@ -293,7 +272,8 @@ class PersonalDataManagerHelper : public PersonalDataManagerTestBase {
   // and has not been used in last 400 days. This card is supposed to be
   // deleted during a major version upgrade.
   void CreateDeletableExpiredAndDisusedCreditCard() {
-    CreditCard credit_card1(base::GenerateGUID(), test::kEmptyOrigin);
+    CreditCard credit_card1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                            test::kEmptyOrigin);
     test::SetCreditCardInfo(&credit_card1, "Clyde Barrow",
                             "378282246310005" /* American Express */, "04",
                             "1999", "1");
@@ -506,7 +486,7 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
 
   // Add profile with identical values.  Duplicates should not get saved.
   AutofillProfile profile0a = profile0;
-  profile0a.set_guid(base::GenerateGUID());
+  profile0a.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
 
   AddProfileToPersonalDataManager(profile0a);
 
@@ -520,7 +500,7 @@ TEST_F(PersonalDataManagerTest, AddProfile) {
 
   // New profile with different email.
   AutofillProfile profile1 = profile0;
-  profile1.set_guid(base::GenerateGUID());
+  profile1.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
   profile1.SetRawInfo(EMAIL_ADDRESS, u"john@smith.com");
 
   // Add the different profile.  This should save as a separate profile.
@@ -567,6 +547,60 @@ TEST_F(PersonalDataManagerTest, GetProfiles) {
   EXPECT_THAT(personal_data_->GetProfilesFromSource(
                   AutofillProfile::Source::kLocalOrSyncable),
               ElementsAre(Pointee(kLocalProfile)));
+}
+
+// Tests the different orderings in which profiles can be retrieved.
+TEST_F(PersonalDataManagerTest, GetProfiles_Order) {
+  base::Time now = AutofillClock::Now();
+  AutofillProfile profile1 = test::GetFullProfile();
+  profile1.set_use_date(now - base::Hours(2));
+  profile1.set_use_count(1);
+  AutofillProfile profile2 = test::GetFullProfile2();
+  profile2.set_use_date(now);
+  profile2.set_use_count(1);
+  AutofillProfile profile3 = test::GetFullCanadianProfile();
+  profile3.set_use_date(now - base::Hours(1));
+  profile3.set_use_count(1234);
+
+  AddProfileToPersonalDataManager(profile1);
+  AddProfileToPersonalDataManager(profile2);
+  AddProfileToPersonalDataManager(profile3);
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // kNone doesn't guarantee any order.
+  EXPECT_THAT(
+      personal_data_->GetProfiles(PersonalDataManager::ProfileOrder::kNone),
+      UnorderedElementsAre(Pointee(profile1), Pointee(profile2),
+                           Pointee(profile3)));
+
+  // `profile3` is first, since it has a much higher use count.
+  // `profile1` and `profile2` have the same use count, so `profile2` with later
+  // use date is second.
+  EXPECT_THAT(personal_data_->GetProfiles(
+                  PersonalDataManager::ProfileOrder::kHighestFrecencyDesc),
+              testing::ElementsAre(Pointee(profile3), Pointee(profile2),
+                                   Pointee(profile1)));
+
+  std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles(
+      PersonalDataManager::ProfileOrder::kMostRecentlyUsedFirstDesc);
+  // Ordered by `use_date()`.
+  EXPECT_THAT(profiles,
+              testing::ElementsAre(Pointee(profile2), Pointee(profile3),
+                                   Pointee(profile1)));
+
+  // TODO(crbug.com/1420547): The modification date cannot be set beforehand,
+  // since it is overwritten by the database when the profile is initially
+  // stored. To test the ordering by modification date, update the `profiles`
+  // modification dates such that the order gets reversed. It is necessary to
+  // modify the PDM's profiles directly, since any modification involving the
+  // database will overwrite the modification date.
+  for (int i = 0; i < 3; i++) {
+    profiles[i]->set_modification_date(now - base::Hours(2 - i));
+  }
+  EXPECT_THAT(personal_data_->GetProfiles(
+                  PersonalDataManager::ProfileOrder::kMostRecentlyModifiedDesc),
+              testing::ElementsAre(Pointee(profile1), Pointee(profile3),
+                                   Pointee(profile2)));
 }
 
 // Tests that `GetProfilesForSettings()` orders by descending modification
@@ -859,17 +893,20 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileSetModificationDate) {
 }
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
-  AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile0, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
 
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "903 Apple Ct.", nullptr,
                        "Orlando", "FL", "32801", "US", "19482937549");
 
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
                        "Orlando", "FL", "32801", "US", "19482937549");
@@ -903,40 +940,10 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 }
 
-TEST_F(PersonalDataManagerTest, MigrateProfileToAccount) {
-  const AutofillProfile kLocalProfile = test::GetFullProfile();
-  ASSERT_EQ(kLocalProfile.source(), AutofillProfile::Source::kLocalOrSyncable);
-  AddProfileToPersonalDataManager(kLocalProfile);
-
-  personal_data_->MigrateProfileToAccount(kLocalProfile);
-  WaitForOnPersonalDataChanged();
-  const std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
-
-  // `kLocalProfile` should be gone and only the migrated account profile should
-  // exist.
-  ASSERT_EQ(profiles.size(), 1u);
-  const AutofillProfile kAccountProfile = *profiles[0];
-  EXPECT_EQ(kAccountProfile.source(), AutofillProfile::Source::kAccount);
-  EXPECT_EQ(kAccountProfile.initial_creator_id(),
-            AutofillProfile::kInitialCreatorOrModifierChrome);
-  EXPECT_EQ(kAccountProfile.last_modifier_id(),
-            AutofillProfile::kInitialCreatorOrModifierChrome);
-  EXPECT_NE(kLocalProfile.guid(), kAccountProfile.guid());
-  EXPECT_EQ(kLocalProfile.Compare(kAccountProfile), 0);
-}
-
 TEST_F(PersonalDataManagerTest, NoIBANsAddedIfDisabled) {
   prefs::SetAutofillIBANEnabled(prefs_.get(), false);
-  IBAN iban0(base::GenerateGUID());
-  iban0.set_value(u"IE12 BOFI 9000 0112 3456 78");
-  iban0.set_nickname(u"Nickname 0");
-
-  IBAN iban1(base::GenerateGUID());
-  iban1.set_value(u"DE91 1000 0000 0123 4567 89");
-  iban1.set_nickname(u"Nickname 1");
-
-  personal_data_->AddIBAN(iban0);
-  personal_data_->AddIBAN(iban1);
+  personal_data_->AddIBAN(autofill::test::GetIBAN());
+  personal_data_->AddIBAN(autofill::test::GetIBAN2());
 
   EXPECT_EQ(0U, personal_data_->GetLocalIBANs().size());
 }
@@ -955,19 +962,15 @@ TEST_F(PersonalDataManagerTest, AddingIbanUpdatesPref) {
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveIBANs) {
   prefs::SetAutofillIBANEnabled(prefs_.get(), true);
-  IBAN iban0(base::GenerateGUID());
-  iban0.set_value(u"IE12 BOFI 9000 0112 3456 78");
-  iban0.set_nickname(u"Nickname 0");
+  IBAN iban0 = autofill::test::GetIBAN();
 
-  IBAN iban1(base::GenerateGUID());
-  iban1.set_value(u"DE91 1000 0000 0123 4567 89");
+  IBAN iban1 = autofill::test::GetIBAN2();
   iban1.set_nickname(u"Nickname 1");
 
   IBAN iban1_1 = iban1;
   iban1_1.set_nickname(u"Nickname 1_1");
 
-  IBAN iban2(base::GenerateGUID());
-  iban2.set_value(u"ES79 2100 0813 6101 2345 6789");
+  IBAN iban2 = autofill::test::GetIBANWithoutNickname();
   iban2.set_nickname(u"Nickname 2");
 
   // Add two test IBANs to the database. `iban1_1` has the same value
@@ -1031,9 +1034,7 @@ TEST_F(PersonalDataManagerTest, OnAcceptedLocalIBANSave) {
   prefs::SetAutofillIBANEnabled(prefs_.get(), true);
 
   // Start with a new IBAN.
-  IBAN iban0(base::GenerateGUID());
-  iban0.set_value(u"FR76 3000 6000 0112 3456 7890 189");
-  iban0.set_nickname(u"Nickname 0");
+  IBAN iban0 = autofill::test::GetIBAN();
   // Add the IBAN to the database.
   personal_data_->OnAcceptedLocalIBANSave(iban0);
 
@@ -1043,9 +1044,7 @@ TEST_F(PersonalDataManagerTest, OnAcceptedLocalIBANSave) {
 
   // Creates a new IBAN and call `OnAcceptedLocalIBANSave()` and verify that
   // the new IBAN is saved.
-  IBAN iban1(base::GenerateGUID());
-  iban1.set_value(u"DE91 1000 0000 0123 4567 89");
-  iban1.set_nickname(u"Nickname 1");
+  IBAN iban1 = autofill::test::GetIBAN2();
   personal_data_->OnAcceptedLocalIBANSave(iban1);
   WaitForOnPersonalDataChanged();
 
@@ -1060,8 +1059,7 @@ TEST_F(PersonalDataManagerTest, OnAcceptedLocalIBANSave) {
 
   // Creates a new `iban2` which has the same value as `iban0` but with
   // different nickname and call `OnAcceptedLocalIBANSave()`.
-  IBAN iban2(base::GenerateGUID());
-  iban2.set_value(u"FR76 3000 6000 0112 3456 7890 189");
+  IBAN iban2 = iban0;
   iban2.set_nickname(u"Nickname 2");
   personal_data_->OnAcceptedLocalIBANSave(iban2);
   WaitForOnPersonalDataChanged();
@@ -1097,22 +1095,15 @@ TEST_F(PersonalDataManagerTest, OnAcceptedLocalIBANSave_IsOffTheRecordTrue) {
   personal_data_->set_is_off_the_record_for_testing(true);
   prefs::SetAutofillIBANEnabled(prefs_.get(), true);
 
-  // Start with a new IBAN.
-  IBAN iban0(base::GenerateGUID());
-  iban0.set_value(u"FR76 3000 6000 0112 3456 7890 189");
-  iban0.set_nickname(u"Nickname 0");
-
-  // Add the IBAN to the database.
-  personal_data_->AddIBAN(iban0);
+  // Start with a new IBAN and add the IBAN to the database.
+  personal_data_->AddIBAN(autofill::test::GetIBAN());
 
   // Verify the new IBAN is not saved.
   EXPECT_TRUE(personal_data_->GetLocalIBANs().empty());
 
   // Creates a new IBAN and call `OnAcceptedLocalIBANSave()` and verify that
   // the new IBAN is not saved.
-  IBAN iban1(base::GenerateGUID());
-  iban1.set_value(u"DE91 1000 0000 0123 4567 89");
-  iban1.set_nickname(u"Nickname 1");
+  IBAN iban1 = autofill::test::GetIBAN2();
   personal_data_->OnAcceptedLocalIBANSave(iban1);
 
   EXPECT_TRUE(personal_data_->GetLocalIBANs().empty());
@@ -1126,17 +1117,20 @@ TEST_F(PersonalDataManagerTest, OnAcceptedLocalIBANSave_IsOffTheRecordTrue) {
 }
 
 TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
-  CreditCard credit_card0(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card0, "John Dillinger",
                           "4234567890123456" /* Visa */, "01", "2999", "1");
   credit_card0.SetNickname(u"card zero");
 
-  CreditCard credit_card1(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card1, "Bonnie Parker",
                           "5105105105105100" /* Mastercard */, "12", "2999",
                           "1");
 
-  CreditCard credit_card2(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card2, "Clyde Barrow",
                           "378282246310005" /* American Express */, "04",
                           "2999", "1");
@@ -1179,7 +1173,8 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
   ExpectSameElements(cards, personal_data_->GetCreditCards());
 
   // Add a full server card.
-  CreditCard credit_card3(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card3(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card3, "Jane Doe",
                           "4111111111111111" /* Visa */, "04", "2999", "1");
   credit_card3.set_record_type(CreditCard::FULL_SERVER_CARD);
@@ -1200,7 +1195,8 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveCreditCards) {
 
   // Must not add a duplicate card with same contents as another server card.
   CreditCard duplicate_server_card(credit_card3);
-  duplicate_server_card.set_guid(base::GenerateGUID());
+  duplicate_server_card.set_guid(
+      base::Uuid::GenerateRandomV4().AsLowercaseString());
 
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
 
@@ -1216,7 +1212,8 @@ TEST_F(PersonalDataManagerTest, AddCreditCard_BasicInformation) {
   test_clock.SetNow(kArbitraryTime);
 
   // Add a credit card to the database.
-  CreditCard credit_card(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                         test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card, "John Dillinger",
                           "4234567890123456" /* Visa */, "01", "2999", "1");
   personal_data_->AddCreditCard(credit_card);
@@ -1368,13 +1365,15 @@ TEST_F(PersonalDataManagerMockTest, ProcessCardArtUrlChanges) {
 
 TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
   // Start with unverified data.
-  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          "https://www.example.com/");
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
   EXPECT_FALSE(profile.IsVerified());
 
-  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com/");
+  CreditCard credit_card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                         "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card, "John Dillinger",
                           "4234567890123456" /* Visa */, "01", "2999", "1");
   EXPECT_FALSE(credit_card.IsVerified());
@@ -1441,7 +1440,8 @@ TEST_F(PersonalDataManagerTest, UpdateUnverifiedProfilesAndCreditCards) {
 // remain verified.
 TEST_F(PersonalDataManagerTest, UpdateVerifiedProfilesOrigin) {
   // Start with verified data.
-  AutofillProfile profile(base::GenerateGUID(), kSettingsOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          kSettingsOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
@@ -1473,12 +1473,6 @@ TEST_F(PersonalDataManagerTest, UpdateVerifiedProfilesOrigin) {
 // Clearing/changing the primary account is not supported on CrOS.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
-  // Set up the experiment flags.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
-      /*disabled_features=*/{});
-
   // Sign out.
   identity_test_env_.ClearPrimaryAccount();
   sync_service_.SetAccountInfo(CoreAccountInfo());
@@ -1520,21 +1514,25 @@ TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
 #endif
 
 TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
-  AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile0, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
 
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "903 Apple Ct.", nullptr,
                        "Orlando", "FL", "32801", "US", "19482937549");
 
-  CreditCard credit_card0(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card0, "John Dillinger",
                           "4234567890123456" /* Visa */, "01", "2999", "1");
 
-  CreditCard credit_card1(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card1, "Bonnie Parker",
                           "5105105105105100" /* Mastercard */, "12", "2999",
                           "1");
@@ -1572,7 +1570,8 @@ TEST_F(PersonalDataManagerTest, AddProfilesAndCreditCards) {
 // Test for http://crbug.com/50047. Makes sure that guids are populated
 // correctly on load.
 TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
-  AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile0, "y", "", "", "", "", "", "", "", "", "", "",
                        "");
 
@@ -1585,7 +1584,8 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
   EXPECT_EQ(0, profile0.Compare(*results2[0]));
 
   // Add a new profile.
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "z", "", "", "", "", "", "", "", "", "", "",
                        "");
   AddProfileToPersonalDataManager(profile1);
@@ -1594,22 +1594,28 @@ TEST_F(PersonalDataManagerTest, PopulateUniqueIDsOnLoad) {
   const std::vector<AutofillProfile*>& results3 = personal_data_->GetProfiles();
   ASSERT_EQ(2U, results3.size());
   EXPECT_NE(results3[0]->guid(), results3[1]->guid());
-  EXPECT_TRUE(base::IsValidGUID(results3[0]->guid()));
-  EXPECT_TRUE(base::IsValidGUID(results3[1]->guid()));
+  EXPECT_TRUE(base::Uuid::ParseCaseInsensitive(results3[0]->guid()).is_valid());
+  EXPECT_TRUE(base::Uuid::ParseCaseInsensitive(results3[1]->guid()).is_valid());
 }
 
 TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
-  CreditCard credit_card0(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   credit_card0.SetRawInfo(CREDIT_CARD_NAME_FULL, u"John");
-  CreditCard credit_card1(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   credit_card1.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Paul");
-  CreditCard credit_card2(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   credit_card2.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Ringo");
-  CreditCard credit_card3(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card3(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   credit_card3.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Other");
-  CreditCard credit_card4(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card4(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   credit_card4.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Ozzy");
-  CreditCard credit_card5(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card5(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   credit_card5.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Dio");
 
   // Add the test credit cards to the database.
@@ -1636,7 +1642,8 @@ TEST_F(PersonalDataManagerTest, SetUniqueCreditCardLabels) {
 }
 
 TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
-  AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile0, "", "", "", "", "", "", "", "", "", "", "",
                        "");
 
@@ -1653,7 +1660,8 @@ TEST_F(PersonalDataManagerTest, SetEmptyProfile) {
 }
 
 TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
-  CreditCard credit_card0(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card0, "", "", "", "", "");
 
   // Add the empty credit card to the database.
@@ -1671,12 +1679,14 @@ TEST_F(PersonalDataManagerTest, SetEmptyCreditCard) {
 }
 
 TEST_F(PersonalDataManagerTest, Refresh) {
-  AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile0, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
 
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "903 Apple Ct.", nullptr,
                        "Orlando", "FL", "32801", "US", "19482937549");
@@ -1690,7 +1700,8 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   profiles.push_back(&profile1);
   ExpectSameElements(profiles, personal_data_->GetProfiles());
 
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
                        "Orlando", "FL", "32801", "US", "19482937549");
@@ -1734,7 +1745,8 @@ TEST_F(PersonalDataManagerTest, Refresh) {
 // overwriting existing unverified profiles.
 TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
   // Start with an unverified profile.
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
@@ -1746,7 +1758,8 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
   EXPECT_EQ(1U, personal_data_->GetProfiles().size());
 
   AutofillProfile new_verified_profile = profile;
-  new_verified_profile.set_guid(base::GenerateGUID());
+  new_verified_profile.set_guid(
+      base::Uuid::GenerateRandomV4().AsLowercaseString());
   new_verified_profile.set_origin(kSettingsOrigin);
   new_verified_profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"1 234 567-8910");
   EXPECT_TRUE(new_verified_profile.IsVerified());
@@ -1770,7 +1783,8 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfileWithVerifiedData) {
 // OnAcceptedLocalCreditCardSave.
 TEST_F(PersonalDataManagerTest, OnAcceptedLocalCreditCardSaveWithVerifiedData) {
   // Start with a verified credit card.
-  CreditCard credit_card(base::GenerateGUID(), kSettingsOrigin);
+  CreditCard credit_card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                         kSettingsOrigin);
   test::SetCreditCardInfo(&credit_card, "Biggie Smalls",
                           "4111 1111 1111 1111" /* Visa */, "01", "2999", "");
   EXPECT_TRUE(credit_card.IsVerified());
@@ -1783,7 +1797,8 @@ TEST_F(PersonalDataManagerTest, OnAcceptedLocalCreditCardSaveWithVerifiedData) {
   EXPECT_EQ(1U, personal_data_->GetCreditCards().size());
 
   CreditCard new_verified_card = credit_card;
-  new_verified_card.set_guid(base::GenerateGUID());
+  new_verified_card.set_guid(
+      base::Uuid::GenerateRandomV4().AsLowercaseString());
   new_verified_card.SetRawInfo(CREDIT_CARD_NAME_FULL, u"B. Small");
   EXPECT_TRUE(new_verified_card.IsVerified());
 
@@ -1804,7 +1819,8 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   EXPECT_EQ(0U, non_empty_types.size());
 
   // Test with one profile stored.
-  AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile0, "Marion", nullptr, "Morrison",
                        "johnwayne@me.xyz", nullptr, "123 Zoo St.", nullptr,
                        "Hollywood", "CA", "91601", "US", "14155678910");
@@ -1841,12 +1857,14 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
               testing::UnorderedElementsAreArray(expected_types));
 
   // Test with multiple profiles stored.
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "903 Apple Ct.", nullptr,
                        "Orlando", "FL", "32801", "US", "16502937549");
 
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
                        "Orlando", "FL", "32801", "US", "16502937549");
@@ -1865,7 +1883,8 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
               testing::UnorderedElementsAreArray(expected_types));
 
   // Test with credit card information also stored.
-  CreditCard credit_card(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                         test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card, "John Dillinger",
                           "4234567890123456" /* Visa */, "01", "2999", "");
   personal_data_->AddCreditCard(credit_card);
@@ -1889,13 +1908,15 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
   ASSERT_TRUE(personal_data_->GetProfiles().empty());
   ASSERT_TRUE(personal_data_->GetCreditCards().empty());
 
-  AutofillProfile steve_jobs(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile steve_jobs(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                             test::kEmptyOrigin);
   test::SetProfileInfo(&steve_jobs, "Steven", "Paul", "Jobs", "sjobs@apple.com",
                        "Apple Computer, Inc.", "1 Infinite Loop", "",
                        "Cupertino", "CA", "95014", "US", "(800) 275-2273");
   AddProfileToPersonalDataManager(steve_jobs);
 
-  CreditCard bill_gates(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard bill_gates(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                        test::kEmptyOrigin);
   test::SetCreditCardInfo(&bill_gates, "William H. Gates", "5555555555554444",
                           "1", "2020", "1");
   personal_data_->AddCreditCard(bill_gates);
@@ -1912,7 +1933,8 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
   // Add profiles or credit card shouldn't work.
   personal_data_->AddProfile(test::GetFullProfile());
 
-  CreditCard larry_page(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard larry_page(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                        test::kEmptyOrigin);
   test::SetCreditCardInfo(&larry_page, "Lawrence Page", "4111111111111111",
                           "10", "2025", "1");
   personal_data_->AddCreditCard(larry_page);
@@ -2066,7 +2088,8 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
       personal_data_->GetDefaultCountryCodeForNewAddress();
   EXPECT_EQ(2U, default_country.size());
 
-  AutofillProfile moose(base::GenerateGUID(), kSettingsOrigin);
+  AutofillProfile moose(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                        kSettingsOrigin);
   test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com", "",
                        "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2", "CA",
                        "(800) 555-9000");
@@ -2096,7 +2119,8 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeIsCached) {
 }
 
 TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
-  AutofillProfile moose(base::GenerateGUID(), kSettingsOrigin);
+  AutofillProfile moose(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                        kSettingsOrigin);
   test::SetProfileInfo(&moose, "Moose", "P", "McMahon", "mpm@example.com", "",
                        "1 Taiga TKTR", "", "Calgary", "AB", "T2B 2K2", "CA",
                        "(800) 555-9000");
@@ -2105,11 +2129,13 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
   EXPECT_EQ("CA", personal_data_->GetDefaultCountryCodeForNewAddress());
 
   // Multiple profiles cast votes.
-  AutofillProfile armadillo(base::GenerateGUID(), kSettingsOrigin);
+  AutofillProfile armadillo(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                            kSettingsOrigin);
   test::SetProfileInfo(&armadillo, "Armin", "Dill", "Oh", "ado@example.com", "",
                        "1 Speed Bump", "", "Lubbock", "TX", "77500", "MX",
                        "(800) 555-9000");
-  AutofillProfile armadillo2(base::GenerateGUID(), kSettingsOrigin);
+  AutofillProfile armadillo2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                             kSettingsOrigin);
   test::SetProfileInfo(&armadillo2, "Armin", "Dill", "Oh", "ado@example.com",
                        "", "2 Speed Bump", "", "Lubbock", "TX", "77500", "MX",
                        "(800) 555-9000");
@@ -2139,8 +2165,6 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromProfiles) {
 }
 
 TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromVariations) {
-  base::test::ScopedFeatureList enabled;
-
   const std::string expected_country_code = "DE";
   const std::string unepected_country_code = "FR";
 
@@ -2178,7 +2202,8 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromVariations) {
 
   // Now a profile is set and the correctcaching of the country code is verified
   // once more.
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
@@ -2195,7 +2220,8 @@ TEST_F(PersonalDataManagerTest, DefaultCountryCodeComesFromVariations) {
 }
 
 TEST_F(PersonalDataManagerTest, UpdateLanguageCodeInProfile) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
@@ -2215,7 +2241,8 @@ TEST_F(PersonalDataManagerTest, UpdateLanguageCodeInProfile) {
 }
 
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2237,7 +2264,8 @@ TEST_F(PersonalDataManagerTest,
   scoped_features.InitAndDisableFeature(
       features::kAutofillUseImprovedLabelDisambiguation);
 
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2259,7 +2287,8 @@ TEST_F(PersonalDataManagerTest,
   scoped_features.InitAndEnableFeature(
       features::kAutofillUseImprovedLabelDisambiguation);
 
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2276,7 +2305,8 @@ TEST_F(PersonalDataManagerTest,
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2284,17 +2314,17 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
 
   // Dupe profile, except different in email address (irrelevant for this form).
   AutofillProfile profile1 = profile;
-  profile1.set_guid(base::GenerateGUID());
+  profile1.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
   profile1.SetRawInfo(EMAIL_ADDRESS, u"spam_me@example.com");
 
   // Dupe profile, except different in address state.
   AutofillProfile profile2 = profile;
-  profile2.set_guid(base::GenerateGUID());
+  profile2.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
   profile2.SetRawInfo(ADDRESS_HOME_STATE, u"TX");
 
   // Subset profile.
   AutofillProfile profile3 = profile;
-  profile3.set_guid(base::GenerateGUID());
+  profile3.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
   profile3.SetRawInfo(ADDRESS_HOME_STATE, std::u16string());
 
   // For easier results verification, make sure |profile| is suggested first.
@@ -2326,7 +2356,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_SuggestionsLimit) {
   std::vector<AutofillProfile> profiles;
   for (size_t i = 0; i < 2 * suggestion_selection::kMaxUniqueSuggestionsCount;
        i++) {
-    AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+    AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                            test::kEmptyOrigin);
     test::SetProfileInfo(&profile, base::StringPrintf("Marion%zu", i).c_str(),
                          "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox",
                          "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2351,7 +2382,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfilesLimit) {
   std::vector<AutofillProfile> profiles;
   for (size_t i = 0; i < suggestion_selection::kMaxSuggestedProfilesCount;
        i++) {
-    AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+    AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                            test::kEmptyOrigin);
 
     test::SetProfileInfo(
         &profile, "Marion", "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox",
@@ -2369,7 +2401,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfilesLimit) {
   }
 
   // Add another profile that matches, but that will get stripped out.
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Marie", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "000 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2394,7 +2427,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfilesLimit) {
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {
   // Set up the profiles. They are named with number suffixes X so the X is the
   // order in which they should be ordered by the ranking formula.
-  AutofillProfile profile3(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile3(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile3, "Marion3", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2403,7 +2437,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {
   profile3.set_use_count(5);
   AddProfileToPersonalDataManager(profile3);
 
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2412,7 +2447,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {
   profile1.set_use_count(10);
   AddProfileToPersonalDataManager(profile1);
 
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2433,21 +2469,24 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_Ranking) {
 // Tests that GetProfileSuggestions returns all profiles suggestions.
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_NumberOfSuggestions) {
   // Set up 3 different profiles.
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
   AddProfileToPersonalDataManager(profile1);
 
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
   AddProfileToPersonalDataManager(profile2);
 
-  AutofillProfile profile3(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile3(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile3, "Marion3", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2468,7 +2507,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_NumberOfSuggestions) {
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_SuppressDisusedProfilesOnEmptyField) {
   // Set up 2 different profiles.
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Marion1", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2476,7 +2516,8 @@ TEST_F(PersonalDataManagerTest,
   profile1.set_use_date(AutofillClock::Now() - base::Days(200));
   AddProfileToPersonalDataManager(profile1);
 
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "Marion2", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "456 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -2534,7 +2575,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ProfileAutofillDisabled) {
   ASSERT_TRUE(TurnOnSyncFeature());
 
   // Add two different profiles, a local and a server one.
-  AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile local_profile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
                        "Orlando", "FL", "32801", "US", "19482937549");
@@ -2580,7 +2622,8 @@ TEST_F(PersonalDataManagerTest,
   ASSERT_TRUE(TurnOnSyncFeature());
 
   // Add two different profiles, a local and a server one.
-  AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile local_profile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
                        "Orlando", "FL", "32801", "US", "19482937549");
@@ -2628,7 +2671,8 @@ TEST_F(PersonalDataManagerTest,
   prefs::SetAutofillProfileEnabled(personal_data_->pref_service_, false);
 
   // Add a local profile.
-  AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile local_profile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
                        "Orlando", "FL", "32801", "US", "19482937549");
@@ -2641,7 +2685,8 @@ TEST_F(PersonalDataManagerTest,
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest,
        GetProfileSuggestions_LogProfileSuggestionsMadeWithFormatter) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
                        "19786744120");
@@ -2667,7 +2712,8 @@ TEST_F(PersonalDataManagerTest,
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForContactForm) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
                        "19786744120");
@@ -2692,7 +2738,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_ForContactForm) {
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressForm) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
                        "19786744120");
@@ -2717,7 +2764,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressForm) {
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressPhoneForm) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
                        "19786744120");
@@ -2742,7 +2790,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressPhoneForm) {
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressEmailForm) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
                        "19786744120");
@@ -2767,7 +2816,8 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_AddressEmailForm) {
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_F(PersonalDataManagerTest, GetProfileSuggestions_FormWithOneProfile) {
-  AutofillProfile profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetProfileInfo(&profile, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
                        "19786744120");
@@ -2799,12 +2849,14 @@ TEST_F(PersonalDataManagerTest,
                             features::kAutofillUseImprovedLabelDisambiguation},
       /*disabled_features=*/{});
 
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
                        "19786744120");
 
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "Hoa", "", "Pham", "hp@aol.com", "",
                        "216 Broadway St", "", "Lowell", "MA", "01854", "US",
                        "19784523366");
@@ -2852,11 +2904,13 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowOne) {
   scoped_features.InitAndEnableFeatureWithParameters(
       features::kAutofillUseMobileLabelDisambiguation, parameters);
 
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
                        "19786744120");
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "María", "", "Lòpez", "maria@aol.com", "",
                        "11 Elkins St", "", "Boston", "MA", "02127", "US",
                        "6172686862");
@@ -2918,11 +2972,13 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_MobileShowAll) {
   scoped_features.InitAndEnableFeatureWithParameters(
       features::kAutofillUseMobileLabelDisambiguation, parameters);
 
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Hoa", "", "Pham", "hoa.pham@comcast.net", "",
                        "401 Merrimack St", "", "Lowell", "MA", "01852", "US",
                        "19786744120");
-  AutofillProfile profile2(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile2, "María", "", "Lòpez", "maria@aol.com", "",
                        "11 Elkins St", "", "Boston", "MA", "02127", "US",
                        "6172686862");
@@ -3556,7 +3612,8 @@ TEST_F(PersonalDataManagerTest, RecordUseOf) {
   Check(profile, 1u, kArbitraryTime, kArbitraryTime);
   AddProfileToPersonalDataManager(profile);
 
-  CreditCard credit_card(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                         test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card, "John Dillinger",
                           "4234567890123456" /* Visa */, "01", "2999", "1");
   Check(credit_card, 1u, kArbitraryTime, kArbitraryTime);
@@ -3688,9 +3745,6 @@ class SaveImportedProfileTest
   }
 
   void TearDown() override { TearDownTest(); }
-
- private:
-  base::test::ScopedFeatureList scoped_features_;
 };
 
 TEST_P(SaveImportedProfileTest, SaveImportedProfile) {
@@ -4051,12 +4105,12 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_F(PersonalDataManagerTest, MergeProfile_Ranking) {
   // Create two very similar profiles except with different company names.
   std::unique_ptr<AutofillProfile> profile1 = std::make_unique<AutofillProfile>(
-      base::GenerateGUID(), test::kEmptyOrigin);
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(profile1.get(), "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
-  AutofillProfile* profile2 =
-      new AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile* profile2 = new AutofillProfile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(profile2, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "Fox", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
@@ -4070,7 +4124,8 @@ TEST_F(PersonalDataManagerTest, MergeProfile_Ranking) {
   existing_profiles.push_back(std::unique_ptr<AutofillProfile>(profile2));
 
   // Create a new imported profile with no company name.
-  AutofillProfile imported_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile imported_profile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(&imported_profile, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "US", "12345678910");
@@ -4099,8 +4154,8 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
 
   // Create an initial profile with a use count of 10, an old use date and an
   // old modification date of 4 days ago.
-  AutofillProfile* profile =
-      new AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile* profile = new AutofillProfile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(profile, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "SNP", "742 Evergreen Terrace",
                        "", "Springfield", "IL", "91601", "US", "12345678910");
@@ -4116,7 +4171,8 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
   test_clock.SetNow(kSomeLaterTime);
 
   // Create a new imported profile that will get merged with the existing one.
-  AutofillProfile imported_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile imported_profile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(&imported_profile, "Homer", "Jay", "Simpson",
                        "homer.simpson@abc.com", "", "742 Evergreen Terrace", "",
                        "Springfield", "IL", "91601", "US", "12345678910");
@@ -4143,15 +4199,18 @@ TEST_F(PersonalDataManagerTest, MAYBE_MergeProfile_UsageStats) {
 }
 
 TEST_F(PersonalDataManagerTest, DeleteLocalCreditCards) {
-  CreditCard credit_card1(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card1, "Alice",
                           "378282246310005" /* American Express */, "04",
                           "2020", "1");
-  CreditCard credit_card2(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card2(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card2, "Ben",
                           "378282246310006" /* American Express */, "04",
                           "2021", "1");
-  CreditCard credit_card3(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard credit_card3(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          test::kEmptyOrigin);
   test::SetCreditCardInfo(&credit_card3, "Clyde",
                           "5105105105105100" /* Mastercard */, "04", "2022",
                           "1");
@@ -4193,7 +4252,8 @@ TEST_F(PersonalDataManagerTest,
   // Add two different profiles, a local and a server one. Set the use stats so
   // the server profile has a higher ranking, to have a predictable ordering to
   // validate results.
-  AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile local_profile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz",
                        "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
                        "Orlando", "FL", "32801", "US", "19482937549");
@@ -4287,7 +4347,8 @@ TEST_F(PersonalDataManagerTest,
   // the server card has a higher ranking, to have a predictable ordering to
   // validate results.
   // Add a local profile.
-  AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile local_profile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(&local_profile, "John", "", "Doe", "john@doe.com", "",
                        "1212 Center.", "Bld. 5", "Orlando", "FL", "32801", "US",
                        "19482937549");
@@ -4421,7 +4482,8 @@ TEST_F(
   // Add a unique local profile and two similar server profiles. Set the use
   // stats to have a predictable ordering to validate results.
   // Add a local profile.
-  AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile local_profile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(&local_profile, "Bob", "", "Doe", "", "Fox",
                        "1212 Center.", "Bld. 5", "Orlando", "FL", "32801", "US",
                        "19482937549");
@@ -4619,7 +4681,8 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
   ASSERT_FALSE(personal_data_->IsSyncFeatureEnabled());
 
   // Add a local profile.
-  AutofillProfile local_profile(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile local_profile(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), test::kEmptyOrigin);
   test::SetProfileInfo(&local_profile, "Josephine", "Alicia", "Saenz", "",
                        "Fox", "1212 Center.", "Bld. 5", "", "", "", "", "");
   AddProfileToPersonalDataManager(local_profile);
@@ -4675,16 +4738,19 @@ TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
   std::vector<CreditCard> server_cards;
 
   // Add two different profiles
-  AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile0, "Bob", "", "Doe", "", "Fox", "1212 Center.",
                        "Bld. 5", "Orlando", "FL", "32801", "US", "19482937549");
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
+  AutofillProfile profile1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                           test::kEmptyOrigin);
   test::SetProfileInfo(&profile1, "Seb", "", "Doe", "", "ACME",
                        "1234 Evergreen Terrace", "Bld. 5", "Springfield", "IL",
                        "32801", "US", "15151231234");
 
   // Add a local and a server card that have profile0 as their billing address.
-  CreditCard local_card0(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard local_card0(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                         test::kEmptyOrigin);
   test::SetCreditCardInfo(&local_card0, "John Dillinger",
                           "4111111111111111" /* Visa */, "01", "2999",
                           profile0.guid());
@@ -4695,7 +4761,8 @@ TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
   server_cards.push_back(server_card0);
 
   // Do the same but for profile1.
-  CreditCard local_card1(base::GenerateGUID(), test::kEmptyOrigin);
+  CreditCard local_card1(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                         test::kEmptyOrigin);
   test::SetCreditCardInfo(&local_card1, "Seb Dillinger",
                           "4111111111111111" /* Visa */, "01", "2999",
                           profile1.guid());
@@ -4854,14 +4921,13 @@ TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
-// Test that calling OnSyncServiceInitialized with a null sync service remasks
-// full server cards.
+// Test that setting a null sync service remasks full server cards.
 TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NoSyncService) {
   base::HistogramTester histogram_tester;
   SetUpThreeCardTypes();
 
-  // Call OnSyncServiceInitialized with no sync service.
-  personal_data_->OnSyncServiceInitialized(nullptr);
+  // Set no sync service.
+  personal_data_->SetSyncServiceForTest(nullptr);
   WaitForOnPersonalDataChanged();
 
   // Check that cards were masked and other were untouched.
@@ -4873,16 +4939,15 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NoSyncService) {
     EXPECT_TRUE(card->record_type() == CreditCard::MASKED_SERVER_CARD);
 }
 
-// Test that calling OnSyncServiceInitialized with a sync service in auth error
-// remasks full server cards.
+// Test that setting a sync service in auth error remasks full server cards.
 TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
   base::HistogramTester histogram_tester;
   SetUpThreeCardTypes();
 
-  // Call OnSyncServiceInitialized with a sync service in auth error.
+  // Set a sync service in auth error.
   syncer::TestSyncService sync_service;
   sync_service.SetPersistentAuthError();
-  personal_data_->OnSyncServiceInitialized(&sync_service);
+  personal_data_->SetSyncServiceForTest(&sync_service);
   WaitForOnPersonalDataChanged();
 
   // Remove the auth error to be able to get the server cards.
@@ -4897,7 +4962,7 @@ TEST_F(PersonalDataManagerTest, OnSyncServiceInitialized_NotActiveSyncService) {
     EXPECT_TRUE(card->record_type() == CreditCard::MASKED_SERVER_CARD);
 
   // Call OnSyncShutdown to ensure removing observer added by
-  // OnSyncServiceInitialized.
+  // SetSyncServiceForTest.
   personal_data_->OnSyncShutdown(&sync_service);
 }
 #endif  // !(BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
@@ -4971,7 +5036,8 @@ TEST_F(
     PersonalDataManagerTest,
     SyncServiceInitializedWithAutofillDisabled_ClearProfileNonSettingsOrigins) {
   // Create a profile with a non-settings, non-empty origin.
-  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          "https://www.example.com");
   test::SetProfileInfo(&profile, "Marion0", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
                        "123 Zoo St.\nSecond Line\nThird line", "unit 5",
@@ -5005,7 +5071,8 @@ TEST_F(
     PersonalDataManagerTest,
     SyncServiceInitializedWithAutofillDisabled_ClearCreditCardNonSettingsOrigins) {
   // Create a card with a non-settings, non-empty origin.
-  CreditCard credit_card(base::GenerateGUID(), "https://www.example.com");
+  CreditCard credit_card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                         "https://www.example.com");
   test::SetCreditCardInfo(&credit_card, "Bob0",
                           "5105105105105100" /* Mastercard */, "04", "1999",
                           "1");
@@ -5126,7 +5193,8 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
   EXPECT_EQ(local_card.LastFourDigits(), cards[0]->LastFourDigits());
 
   // Add a local profile
-  AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
+  AutofillProfile profile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                          "https://www.example.com");
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox", "123 Zoo St", "unit 5",
                        "Hollywood", "CA", "91601", "US", "12345678910");
@@ -5237,23 +5305,12 @@ TEST_F(PersonalDataManagerTest, GetAccountInfoForPaymentsServer) {
   // The Active Sync AccountInfo should be returned.
   EXPECT_EQ(sync_account_email,
             personal_data_->GetAccountInfoForPaymentsServer().email);
-
-  // The Active Sync AccountInfo should still be returned even if
-  // kAutofillEnableAccountWalletStorage is disabled.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndDisableFeature(
-        features::kAutofillEnableAccountWalletStorage);
-
-    EXPECT_EQ(sync_account_email,
-              personal_data_->GetAccountInfoForPaymentsServer().email);
-  }
 }
 
 TEST_F(PersonalDataManagerTest, OnAccountsCookieDeletedByUserAction) {
   // Set up some sync transport opt-ins in the prefs.
   ::autofill::prefs::SetUserOptedInWalletSyncTransport(
-      prefs_.get(), CoreAccountId("account1"), true);
+      prefs_.get(), CoreAccountId::FromGaiaId("account1"), true);
   EXPECT_FALSE(prefs_->GetDict(prefs::kAutofillSyncTransportOptIn).empty());
 
   // Simulate that the cookies get cleared by the user.
@@ -5279,6 +5336,11 @@ TEST_F(PersonalDataManagerTest, SaveProfileMigrationStrikes) {
   // Until the strikes are removed again.
   personal_data_->RemoveStrikesToBlockProfileMigration(kGuid);
   EXPECT_FALSE(personal_data_->IsProfileMigrationBlocked(kGuid));
+
+  // `AddMaxStrikesToBlockProfileMigration()` should add sufficiently many
+  // strikes.
+  personal_data_->AddMaxStrikesToBlockProfileMigration(kGuid);
+  EXPECT_TRUE(personal_data_->IsProfileMigrationBlocked(kGuid));
 }
 
 TEST_F(PersonalDataManagerTest, SaveProfileUpdateStrikes) {
@@ -5424,10 +5486,6 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
 
-  // Set the feature to enabled.
-  base::test::ScopedFeatureList scoped_features(
-      features::kAutofillEnableAccountWalletStorage);
-
   // Make sure the function returns true.
   EXPECT_TRUE(personal_data_->ShouldShowCardsFromAccountOption());
 
@@ -5468,7 +5526,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
   EXPECT_TRUE(personal_data_->ShouldShowCardsFromAccountOption());
 
   // Set a null sync service. Check that the function now returns false.
-  personal_data_->OnSyncServiceInitialized(nullptr);
+  personal_data_->SetSyncServiceForTest(nullptr);
   EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
 }
 #else   // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) &&
@@ -5494,12 +5552,6 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
   SetServerCards(server_cards);
   personal_data_->Refresh();
   WaitForOnPersonalDataChanged();
-
-  // Set the feature to enabled.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitWithFeatures(
-      /*enabled_features=*/{features::kAutofillEnableAccountWalletStorage},
-      /*disabled_features=*/{});
 
   // Make sure the function returns false.
   EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
@@ -5541,7 +5593,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
   EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
 
   // Set a null sync service. Check that the function still returns false.
-  personal_data_->OnSyncServiceInitialized(nullptr);
+  personal_data_->SetSyncServiceForTest(nullptr);
   EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
 }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) &&
@@ -5557,40 +5609,17 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
       /*types=*/syncer::UserSelectableTypeSet(
           syncer::UserSelectableType::kAutofill));
 
-  // Check that the sync state is |SignedInAndWalletSyncTransportEnabled| if the
-  // account info is not empty, the kAutofillEnableAccountWalletStorage feature
-  // is enabled and the Wallet data type is active for the sync service.
-  {
-    base::test::ScopedFeatureList scoped_features(
-        features::kAutofillEnableAccountWalletStorage);
-
-    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
-              personal_data_->GetSyncSigninState());
-  }
-
-  // Check that the sync state is |SignedIn| if the
-  // kAutofillEnableAccountWalletStorage feature is disabled.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndDisableFeature(
-        features::kAutofillEnableAccountWalletStorage);
-
-    EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
-              personal_data_->GetSyncSigninState());
-  }
+  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
+            personal_data_->GetSyncSigninState());
 
   // Check that the sync state is |SignedIn| if the sync service does not have
   // wallet data active.
-  {
-    base::test::ScopedFeatureList scoped_features(
-        features::kAutofillEnableAccountWalletStorage);
-    sync_service_.GetUserSettings()->SetSelectedTypes(
-        /*sync_everything=*/false,
-        /*types=*/syncer::UserSelectableTypeSet());
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncer::UserSelectableTypeSet());
 
-    EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
-              personal_data_->GetSyncSigninState());
-  }
+  EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
+            personal_data_->GetSyncSigninState());
 
 // ClearPrimaryAccount is not supported on CrOS.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -5619,16 +5648,6 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
   // is enabled.
   EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
             personal_data_->GetSyncSigninState());
-
-  // Check that the sync state is |SignedInAndSyncFeature| if the the sync
-  // feature is enabled even if the kAutofillEnableAccountWalletStorage feature
-  // is enabled.
-  {
-    base::test::ScopedFeatureList scoped_features(
-        features::kAutofillEnableAccountWalletStorage);
-    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
-              personal_data_->GetSyncSigninState());
-  }
 }
 
 // On mobile, no dedicated opt-in is required for WalletSyncTransport - the
@@ -5661,19 +5680,13 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   // Account wallet storage only makes sense together with support for
   // unconsented primary accounts, i.e. on Win/Mac/Linux.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndEnableFeature(
-        features::kAutofillEnableAccountWalletStorage);
+  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
+            personal_data_->GetSyncSigninState());
 
-    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
-              personal_data_->GetSyncSigninState());
-
-    // Make sure an opt-in gets recorded if the user accepted an Upstream offer.
-    personal_data_->OnUserAcceptedUpstreamOffer();
-    EXPECT_TRUE(prefs::IsUserOptedInWalletSyncTransport(
-        prefs_.get(), active_info.account_id));
-  }
+  // Make sure an opt-in gets recorded if the user accepted an Upstream offer.
+  personal_data_->OnUserAcceptedUpstreamOffer();
+  EXPECT_TRUE(prefs::IsUserOptedInWalletSyncTransport(prefs_.get(),
+                                                      active_info.account_id));
 
   // Clear the prefs.
   prefs::ClearSyncTransportOptIns(prefs_.get());
@@ -5683,22 +5696,20 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   ///////////////////////////////////////////////////////////
   // kSignedIn
   ///////////////////////////////////////////////////////////
-  {
-    // Without AccountWalletStorage, kSignedInAndWalletSyncTransportEnabled
-    // shouldn't be available.
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitAndDisableFeature(
-        features::kAutofillEnableAccountWalletStorage);
+  // Disable the wallet data type. kSignedInAndWalletSyncTransportEnabled
+  // shouldn't be available.
+  sync_service_.GetUserSettings()->SetSelectedTypes(
+      /*sync_everything=*/false,
+      /*types=*/syncer::UserSelectableTypeSet());
 
-    EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
-              personal_data_->GetSyncSigninState());
+  EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
+            personal_data_->GetSyncSigninState());
 
-    // Make sure an opt-in does not get recorded even if the user accepted an
-    // Upstream offer.
-    personal_data_->OnUserAcceptedUpstreamOffer();
-    EXPECT_FALSE(prefs::IsUserOptedInWalletSyncTransport(
-        prefs_.get(), active_info.account_id));
-  }
+  // Make sure an opt-in does not get recorded even if the user accepted an
+  // Upstream offer.
+  personal_data_->OnUserAcceptedUpstreamOffer();
+  EXPECT_FALSE(prefs::IsUserOptedInWalletSyncTransport(prefs_.get(),
+                                                       active_info.account_id));
 
   // Clear the prefs.
   prefs::ClearSyncTransportOptIns(prefs_.get());
@@ -5791,6 +5802,40 @@ TEST_F(PersonalDataManagerTest, AddAndGetUpiId) {
   WaitOnceForOnPersonalDataChanged();
   std::vector<std::string> all_upi_ids = personal_data_->GetUpiIds();
   EXPECT_THAT(all_upi_ids, testing::ElementsAre(upi_id));
+}
+
+TEST_F(PersonalDataManagerTest, IsEligibleForAddressAccountStorage) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeaturesAndParameters(
+      /*enabled_features=*/
+      {{base::test::FeatureRefAndParams(
+           features::kAutofillAccountProfilesUnionView, {})},
+       {base::test::FeatureRefAndParams(
+           features::kAutofillAccountProfileStorage,
+           {{features::kAutofillAccountProfileStorageFromUnsupportedIPs.name,
+             "false"}})}},
+      /*disabled_features=*/{});
+
+  // No Sync, no account storage.
+  personal_data_->SetSyncServiceForTest(nullptr);
+  EXPECT_FALSE(personal_data_->IsEligibleForAddressAccountStorage());
+
+  // Fake the Sync service. All data types are running by default.
+  syncer::TestSyncService sync_service;
+  personal_data_->SetSyncServiceForTest(&sync_service);
+  EXPECT_TRUE(personal_data_->IsEligibleForAddressAccountStorage());
+
+  // Being located in an unsupported country makes the user ineligible.
+  personal_data_->set_variations_country_code_for_testing("CU");
+  EXPECT_FALSE(personal_data_->IsEligibleForAddressAccountStorage());
+
+  // Unregister the Sync observer.
+  personal_data_->OnSyncShutdown(&sync_service);
+}
+
+TEST_F(PersonalDataManagerTest, IsCountryEligibleForAccountStorage) {
+  EXPECT_TRUE(personal_data_->IsCountryEligibleForAccountStorage("AT"));
+  EXPECT_FALSE(personal_data_->IsCountryEligibleForAccountStorage("IR"));
 }
 
 }  // namespace autofill

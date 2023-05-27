@@ -16,6 +16,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/omnibox/browser/actions/omnibox_action_in_suggest.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
@@ -23,6 +24,7 @@
 #include "components/omnibox/browser/remote_suggestions_service.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/search/search.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -37,6 +39,7 @@
 #include "url/origin.h"
 
 namespace {
+constexpr bool is_android = !!BUILDFLAG(IS_ANDROID);
 
 bool MatchTypeAndContentsAreEqual(const AutocompleteMatch& lhs,
                                   const AutocompleteMatch& rhs) {
@@ -114,6 +117,18 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
   match.image_dominant_color = suggestion.entity_info().dominant_color();
   match.image_url = GURL(suggestion.entity_info().image_url());
   match.entity_id = suggestion.entity_info().entity_id();
+
+  // Attach Actions in Suggest to the newly created match on Android if Google
+  // is the default search engine.
+  if (is_android &&
+      search::TemplateURLIsGoogle(template_url, search_terms_data)) {
+    for (const omnibox::ActionInfo& action_info :
+         suggestion.entity_info().action_suggestions()) {
+      match.actions.emplace_back(
+          base::MakeRefCounted<OmniboxActionInSuggest>(action_info));
+    }
+  }
+
   match.contents = suggestion.match_contents();
   match.contents_class = suggestion.match_contents_class();
   match.suggestion_group_id = suggestion.suggestion_group_id();
@@ -265,8 +280,9 @@ void BaseSearchProvider::AppendSuggestClientToAdditionalQueryParams(
     metrics::OmniboxEventProto::PageClassification page_classification,
     TemplateURLRef::SearchTermsArgs* search_terms_args) {
   // Only append the suggest client query param for Google template URL.
-  if (template_url->GetEngineType(search_terms_data) != SEARCH_ENGINE_GOOGLE)
+  if (!search::TemplateURLIsGoogle(template_url, search_terms_data)) {
     return;
+  }
 
   if (page_classification == metrics::OmniboxEventProto::CHROMEOS_APP_LIST) {
     if (!search_terms_args->additional_query_params.empty())
@@ -308,9 +324,7 @@ bool BaseSearchProvider::CanSendZeroSuggestRequest(
   // Note that currently only the pre-populated Google search provider supports
   // zero-prefix suggestions. If other pre-populated search engines decide to
   // support it, revise this test accordingly.
-  if (template_url == nullptr ||
-      !template_url->SupportsReplacement(search_terms_data) ||
-      template_url->GetEngineType(search_terms_data) != SEARCH_ENGINE_GOOGLE) {
+  if (!search::TemplateURLIsGoogle(template_url, search_terms_data)) {
     return false;
   }
 

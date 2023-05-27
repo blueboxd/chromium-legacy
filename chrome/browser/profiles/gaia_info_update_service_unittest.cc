@@ -162,9 +162,6 @@ TEST_F(GAIAInfoUpdateServiceTest, SyncOnSyncOff) {
   EXPECT_EQ(entry->GetGAIAGivenName(), u"Pat");
   EXPECT_EQ(entry->GetGAIAName(), u"Pat Foo");
   EXPECT_EQ(entry->GetHostedDomain(), kNoHostedDomainFound);
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  EXPECT_EQ(entry->GetLocalProfileName(), u"Pat");
-#endif
 
   gfx::Image gaia_picture = gfx::test::CreateImage(256, 256);
   signin::SimulateAccountImageFetch(identity_test_env()->identity_manager(),
@@ -279,27 +276,19 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOutLogIn) {
 
   // Test correct histogram recording for all accounts info that has no getters.
   base::HistogramTester tester;
-  entry->RecordAccountMetrics();
+  entry->RecordAccountNamesMetric();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
       /*sample=*/profile_metrics::AllAccountsNames::kLikelySingleName,
-      /*expected_count=*/1);
-  tester.ExpectBucketCount(
-      "Profile.AllAccounts.Categories",
-      /*sample=*/profile_metrics::AllAccountsCategories::kSingleCategory,
       /*expected_count=*/1);
 
   // Log out and record the metric again, sign-out wipes previous info in the
   // entry so again the default values get reported.
   identity_test_env()->SetCookieAccounts({});
-  entry->RecordAccountMetrics();
+  entry->RecordAccountNamesMetric();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
       /*sample=*/profile_metrics::AllAccountsNames::kLikelySingleName,
-      /*expected_count=*/2);
-  tester.ExpectBucketCount(
-      "Profile.AllAccounts.Categories",
-      /*sample=*/profile_metrics::AllAccountsCategories::kSingleCategory,
       /*expected_count=*/2);
 
   std::string email2 = "pat2@example.com";
@@ -315,20 +304,13 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOutLogIn) {
 
   // Because due to the complete sign-out, the info about the previous account
   // got wiped. Thus the same default metrics get recorded again, despite the
-  // second account has a different gaia name and a different account category
-  // than the first one.
-  entry->RecordAccountMetrics();
+  // second account has a different gaia name than the first one.
+  entry->RecordAccountNamesMetric();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
       /*sample=*/profile_metrics::AllAccountsNames::kLikelySingleName,
       /*expected_count=*/3);
-  tester.ExpectBucketCount(
-      "Profile.AllAccounts.Categories",
-      /*sample=*/profile_metrics::AllAccountsCategories::kSingleCategory,
-      /*expected_count=*/3);
   tester.ExpectTotalCount("Profile.AllAccounts.Names", /*expected_count=*/3);
-  tester.ExpectTotalCount("Profile.AllAccounts.Categories",
-                          /*expected_count=*/3);
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, MultiLoginAndLogOut) {
@@ -354,34 +336,23 @@ TEST_F(GAIAInfoUpdateServiceTest, MultiLoginAndLogOut) {
   ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
 
   // Test correct histogram recording for all accounts info that has no getters.
-  // The two accounts have both different gaia names and account categories.
+  // The two accounts have different gaia names.
   base::HistogramTester tester;
-  entry->RecordAccountMetrics();
+  entry->RecordAccountNamesMetric();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
       /*sample=*/profile_metrics::AllAccountsNames::kMultipleNamesWithoutSync,
-      /*expected_count=*/1);
-  tester.ExpectBucketCount(
-      "Profile.AllAccounts.Categories",
-      /*sample=*/
-      profile_metrics::AllAccountsCategories::kBothConsumerAndEnterpriseNoSync,
       /*expected_count=*/1);
 
   // Log out and record the metric again, sign-out wipes previous info in the
   // entry so the default values get reported.
   identity_test_env()->SetCookieAccounts({});
-  entry->RecordAccountMetrics();
+  entry->RecordAccountNamesMetric();
   tester.ExpectBucketCount(
       "Profile.AllAccounts.Names",
       /*sample=*/profile_metrics::AllAccountsNames::kLikelySingleName,
       /*expected_count=*/1);
-  tester.ExpectBucketCount(
-      "Profile.AllAccounts.Categories",
-      /*sample=*/profile_metrics::AllAccountsCategories::kSingleCategory,
-      /*expected_count=*/1);
   tester.ExpectTotalCount("Profile.AllAccounts.Names", /*expected_count=*/2);
-  tester.ExpectTotalCount("Profile.AllAccounts.Categories",
-                          /*expected_count=*/2);
 }
 #endif  // !BUILDFLAG(ENABLE_DICE_SUPPORT)
 
@@ -409,70 +380,3 @@ TEST_F(GAIAInfoUpdateServiceTest, ClearGaiaInfoOnStartup) {
   EXPECT_FALSE(entry->GetGAIAPicture());
   EXPECT_TRUE(entry->GetHostedDomain().empty());
 }
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-TEST_F(GAIAInfoUpdateServiceTest,
-       LocalProfileNameCustomized_NoUpdateOnPrimaryAccountChange) {
-  ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
-  // Customized local profile name, shouldn't be overridden on
-  // `UpdatePrimaryAccount()`.
-  std::u16string updatedLocalName(u"UpdatedPat");
-  entry->SetLocalProfileName(updatedLocalName, false);
-  ASSERT_FALSE(
-      storage()->IsDefaultProfileName(entry->GetLocalProfileName(), false));
-
-  AccountInfo info = identity_test_env()->MakePrimaryAccountAvailable(
-      "pat@example.com", signin::ConsentLevel::kSync);
-  info = GetValidAccountInfo(info.email, info.account_id, "Pat", "Pat Foo",
-                             kNoHostedDomainFound);
-
-  signin::UpdateAccountInfoForAccount(identity_test_env()->identity_manager(),
-                                      info);
-
-  EXPECT_EQ(entry->GetLocalProfileName(), updatedLocalName);
-  EXPECT_NE(base::UTF16ToUTF8(entry->GetLocalProfileName()), info.given_name);
-}
-
-TEST_F(GAIAInfoUpdateServiceTest,
-       LocalProfileNameCustomizedToDefaultName_NoUpdateOnPrimaryAccountChange) {
-  ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
-  // Customized local profile name to the default naming.
-  // Shouldn't be overridden on `UpdatePrimaryAccount()`.
-  std::u16string updatedLocalName(u"Person 1");
-  entry->SetLocalProfileName(updatedLocalName, false);
-  ASSERT_TRUE(
-      storage()->IsDefaultProfileName(entry->GetLocalProfileName(), false));
-  ASSERT_FALSE(entry->IsUsingDefaultName());
-
-  AccountInfo info = identity_test_env()->MakePrimaryAccountAvailable(
-      "pat@example.com", signin::ConsentLevel::kSync);
-  info = GetValidAccountInfo(info.email, info.account_id, "Pat", "Pat Foo",
-                             kNoHostedDomainFound);
-
-  signin::UpdateAccountInfoForAccount(identity_test_env()->identity_manager(),
-                                      info);
-
-  EXPECT_EQ(entry->GetLocalProfileName(), updatedLocalName);
-  EXPECT_NE(base::UTF16ToUTF8(entry->GetLocalProfileName()), info.given_name);
-}
-
-TEST_F(GAIAInfoUpdateServiceTest,
-       LocalProfileNameDefaulted_UpdateOnPrimaryAccountChange) {
-  ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
-  // Local Profile Name defaulted, should be overridden on
-  // `UpdatePrimaryAccount()`.
-  ASSERT_TRUE(
-      storage()->IsDefaultProfileName(entry->GetLocalProfileName(), false));
-  ASSERT_TRUE(entry->IsUsingDefaultName());
-
-  AccountInfo info = identity_test_env()->MakePrimaryAccountAvailable(
-      "pat@example.com", signin::ConsentLevel::kSync);
-  info = GetValidAccountInfo(info.email, info.account_id, "Pat", "Pat Foo",
-                             kNoHostedDomainFound);
-
-  signin::UpdateAccountInfoForAccount(identity_test_env()->identity_manager(),
-                                      info);
-
-  EXPECT_EQ(base::UTF16ToUTF8(entry->GetLocalProfileName()), info.given_name);
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)

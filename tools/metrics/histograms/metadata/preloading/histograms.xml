@@ -21,6 +21,10 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <variants name="PreloadingPredictor">
+  <variant name="BackButtonHover"
+      summary="When the user hovers their mouse over the back button."/>
+  <variant name="BackGestureNavigation"
+      summary="When overscroll that could trigger a back navigation starts."/>
   <variant name="DefaultSearchEngine"
       summary="When preloading is triggered from the default search engine
                suggest service."/>
@@ -32,6 +36,8 @@ chromium-metrics-reviews@google.com.
       summary="When preloading is triggered by OnPointerDown."/>
   <variant name="kUrlPointerHoverOnAnchor"
       summary="When preloading is triggered by OnPointerHover."/>
+  <variant name="MouseBackButton"
+      summary="When a mouse down of a mouse back button is seen."/>
   <variant name="OmniboxDirectURLInput"
       summary="When preloading is triggered from the Omnibox DUI."/>
   <variant name="OmniboxMousePredictor"
@@ -55,7 +61,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Preloading.AnchorElementPreloader.PreloadingTriggered"
-    enum="AnchorElementPreloaderType" expires_after="2023-08-08">
+    enum="AnchorElementPreloaderType" expires_after="2023-10-08">
   <owner>spelchat@chromium.org</owner>
   <owner>curranmax@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
@@ -70,7 +76,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Preloading.Predictor.{PreloadingPredictor}.Precision"
-    enum="PredictorConfusionMatrix" expires_after="2023-06-04">
+    enum="PredictorConfusionMatrix" expires_after="2024-06-01">
   <owner>isaboori@google.com</owner>
   <owner>spelchat@chromium.org</owner>
   <owner>sreejakshetty@chromium.org</owner>
@@ -87,7 +93,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Preloading.Predictor.{PreloadingPredictor}.Recall"
-    enum="PredictorConfusionMatrix" expires_after="2023-06-04">
+    enum="PredictorConfusionMatrix" expires_after="2024-06-01">
   <owner>isaboori@google.com</owner>
   <owner>spelchat@chromium.org</owner>
   <owner>sreejakshetty@chromium.org</owner>
@@ -104,8 +110,20 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
+    name="Preloading.PrerenderBackNavigationEligibility.{PreloadingPredictor}"
+    enum="PrerenderBackNavigationEligibility" expires_after="2023-09-09">
+  <owner>mcnee@chromium.org</owner>
+  <owner>chrome-brapp-loading@chromium.org</owner>
+  <summary>
+    Records whether prerendering a back navigation is possible at the time of
+    the prediction of a back navigation by {PreloadingPredictor}.
+  </summary>
+  <token key="PreloadingPredictor" variants="PreloadingPredictor"/>
+</histogram>
+
+<histogram
     name="Preloading.{PreloadingType}.Attempt.{PreloadingPredictor}.Precision"
-    enum="PredictorConfusionMatrix" expires_after="2023-06-04">
+    enum="PredictorConfusionMatrix" expires_after="2024-06-01">
   <owner>isaboori@google.com</owner>
   <owner>spelchat@chromium.org</owner>
   <owner>sreejakshetty@chromium.org</owner>
@@ -125,7 +143,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Preloading.{PreloadingType}.Attempt.{PreloadingPredictor}.Recall"
-    enum="PredictorConfusionMatrix" expires_after="2023-06-04">
+    enum="PredictorConfusionMatrix" expires_after="2024-06-01">
   <owner>isaboori@google.com</owner>
   <owner>spelchat@chromium.org</owner>
   <owner>sreejakshetty@chromium.org</owner>
@@ -134,10 +152,11 @@ chromium-metrics-reviews@google.com.
   <summary>
     After the user starts a new navigation, the outcome of any eligible
     preloading attempt of type {PreloadingType} that is triggered by
-    {PreloadingPredictor} is recorded as a true positive or a false negative.
-    These statistics are used to compute recall of the preloading attempt. The
-    statistics about false positive and true negative cases are not required to
-    compute the recall and are not recorded here.
+    {PreloadingPredictor} or the lack of an attempt by an eligible predictor is
+    recorded as a true positive or a false negative. These statistics are used
+    to compute recall of the preloading attempt. The statistics about false
+    positive and true negative cases are not required to compute the recall and
+    are not recorded here.
   </summary>
   <token key="PreloadingType" variants="PreloadingType"/>
   <token key="PreloadingPredictor" variants="PreloadingPredictor"/>
@@ -145,7 +164,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Preloading.{PreloadingType}.Attempt.{PreloadingPredictor}.TriggeringOutcome"
-    enum="PreloadingTriggeringOutcome" expires_after="M115">
+    enum="PreloadingTriggeringOutcome" expires_after="2024-06-01">
   <owner>spelchat@chromium.org</owner>
   <owner>sreejakshetty@chromium.org</owner>
   <owner>jbroman@chromium.org</owner>

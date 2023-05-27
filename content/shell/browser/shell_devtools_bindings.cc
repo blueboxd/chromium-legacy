@@ -9,12 +9,10 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -25,6 +23,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/uuid.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -40,7 +39,6 @@
 #include "content/shell/browser/shell_browser_main_parts.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_manager_delegate.h"
-#include "content/shell/common/shell_switches.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -48,8 +46,10 @@
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#include "base/command_line.h"
 #include "content/public/browser/devtools_frontend_host.h"
+#include "content/shell/common/shell_switches.h"
 #endif
 
 namespace content {
@@ -205,7 +205,7 @@ ShellDevToolsBindings::GetInstancesForWebContents(WebContents* web_contents) {
 
 void ShellDevToolsBindings::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   content::RenderFrameHost* frame = navigation_handle->GetRenderFrameHost();
   if (navigation_handle->IsInPrimaryMainFrame()) {
     frontend_host_ = DevToolsFrontendHost::Create(
@@ -219,8 +219,9 @@ void ShellDevToolsBindings::ReadyToCommitNavigation(
   auto it = extensions_api_.find(origin);
   if (it == extensions_api_.end())
     return;
-  std::string script = base::StringPrintf("%s(\"%s\")", it->second.c_str(),
-                                          base::GenerateGUID().c_str());
+  std::string script = base::StringPrintf(
+      "%s(\"%s\")", it->second.c_str(),
+      base::Uuid::GenerateRandomV4().AsLowercaseString().c_str());
   DevToolsFrontendHost::SetupExtensionsAPI(frame, script);
 #endif
 }
@@ -228,8 +229,13 @@ void ShellDevToolsBindings::ReadyToCommitNavigation(
 void ShellDevToolsBindings::AttachInternal() {
   if (agent_host_)
     agent_host_->DetachClient(this);
-  agent_host_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-                    switches::kContentShellDevToolsTabTarget)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  const bool create_for_tab = false;
+#else
+  const bool create_for_tab = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kContentShellDevToolsTabTarget);
+#endif
+  agent_host_ = create_for_tab
                     ? DevToolsAgentHost::GetOrCreateForTab(inspected_contents_)
                     : DevToolsAgentHost::GetOrCreateFor(inspected_contents_);
   agent_host_->AttachClient(this);

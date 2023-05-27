@@ -59,6 +59,29 @@ void ValidateTraceEventHasCorrectCandidateSize(int expected_size,
   EXPECT_TRUE(traced_main_frame_flag.value());
 }
 
+void ValidateTraceEventBreakdownTimings(const TraceEvent& event,
+                                        double lcp_time) {
+  ASSERT_TRUE(event.HasDictArg("data"));
+  base::Value::Dict data = event.GetKnownArgAsDict("data");
+
+  const absl::optional<double> load_start = data.FindDouble("imageLoadStart");
+  ASSERT_TRUE(load_start.has_value());
+
+  const absl::optional<double> discovery_time =
+      data.FindDouble("imageDiscoveryTime");
+  ASSERT_TRUE(discovery_time.has_value());
+
+  const absl::optional<double> load_end = data.FindDouble("imageLoadEnd");
+  ASSERT_TRUE(load_end.has_value());
+
+  // Verify image discovery time < load start < load end < lcp time;
+  EXPECT_LT(discovery_time.value(), load_start.value());
+
+  EXPECT_LT(load_start.value(), load_end.value());
+
+  EXPECT_LT(load_end.value(), lcp_time);
+}
+
 int GetCandidateIndex(const TraceEvent& event) {
   base::Value::Dict data = event.GetKnownArgAsDict("data");
   absl::optional<int> candidate_idx = data.FindInt("candidateIndex");
@@ -73,8 +96,7 @@ bool compare_candidate_index(const TraceEvent* lhs, const TraceEvent* rhs) {
 
 }  // namespace
 
-// TODO(crbug.com/1369012, crbug.com/1426420): Fix flakiness.
-IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, DISABLED_LargestContentfulPaint) {
+IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
   auto waiter = std::make_unique<page_load_metrics::PageLoadMetricsTestWaiter>(
       web_contents());
   Start();
@@ -105,15 +127,28 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, DISABLED_LargestContentfulPaint) {
     waiter->AddPageExpectation(page_load_metrics::PageLoadMetricsTestWaiter::
                                    TimingField::kLargestContentfulPaint);
 
-    // std::string function_name = base::StringPrintf("run_test%zu()", i);
+    // The AddMinimumLargestContentfulPaintImageExpectation method adds an
+    // expected number of actual LCP updates that do change the LCP candidate
+    // value.
+    // For example, when i is 1, which is the second test, there are 2 images
+    // added. The first added image updates the LCP candidate value once. The
+    // second added, because it is larger than the first added, it should also
+    // update the LCP candidate value. Therefore we should see 2 LCP updates
+    // before the test waiter can exit the waiting.
+    waiter->AddMinimumLargestContentfulPaintImageExpectation(i + 1);
+
     content::EvalJsResult result = EvalJs(web_contents(), test_name[i]);
     EXPECT_EQ("", result.error);
+
     const auto& list = result.value.GetList();
     EXPECT_EQ(1u, list.size());
-    const std::string* url = list[0].FindStringPath("url");
+    ASSERT_TRUE(list[0].is_dict());
+
+    const std::string* url = list[0].GetDict().FindString("url");
     EXPECT_TRUE(url);
     EXPECT_EQ(*url, expected_url[i]);
-    lcp_timestamps[i] = list[0].FindDoublePath("time");
+
+    lcp_timestamps[i] = list[0].GetDict().FindDouble("time");
     EXPECT_TRUE(lcp_timestamps[i].has_value());
 
     waiter->Wait();
@@ -144,6 +179,15 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, DISABLED_LargestContentfulPaint) {
   ValidateTraceEventHasCorrectCandidateSize(96 * 96, *candidate_events[1]);
   // LCP_2 uses green-256x256.png, of size 16 x 16.
   ValidateTraceEventHasCorrectCandidateSize(256 * 256, *candidate_events[2]);
+
+  ValidateTraceEventBreakdownTimings(*candidate_events[0],
+                                     lcp_timestamps[0].value());
+
+  ValidateTraceEventBreakdownTimings(*candidate_events[1],
+                                     lcp_timestamps[1].value());
+
+  ValidateTraceEventBreakdownTimings(*candidate_events[2],
+                                     lcp_timestamps[2].value());
 
   ExpectMetricInLastUKMUpdateTraceEventNear(
       *trace_analyzer, "latest_largest_contentful_paint_ms",

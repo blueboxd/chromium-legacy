@@ -132,7 +132,7 @@ class ApkWebAppServiceDelegateImpl : public ApkWebAppService::Delegate,
                           const std::string& package_name,
                           arc::mojom::WebAppInfoPtr web_app_info,
                           arc::mojom::RawIconPngDataPtr icon) {
-    ApkWebAppInstaller::Install(profile_, std::move(web_app_info),
+    ApkWebAppInstaller::Install(profile_, package_name, std::move(web_app_info),
                                 std::move(icon), std::move(callback),
                                 weak_ptr_factory_.GetWeakPtr());
   }
@@ -173,7 +173,7 @@ ApkWebAppService::ApkWebAppService(Profile* profile, Delegate* test_delegate)
   // Can be null in tests.
   arc_app_list_prefs_ = ArcAppListPrefs::Get(profile);
   if (arc_app_list_prefs_) {
-    arc_app_list_prefs_observer_.Observe(arc_app_list_prefs_);
+    arc_app_list_prefs_observer_.Observe(arc_app_list_prefs_.get());
   }
 
   if (web_app::IsWebAppsCrosapiEnabled()) {
@@ -497,7 +497,7 @@ void ApkWebAppService::OnDidGetWebAppIcon(
     arc::mojom::WebAppInfoPtr web_app_info,
     arc::mojom::RawIconPngDataPtr icon) {
   ApkWebAppInstaller::Install(
-      profile_, std::move(web_app_info), std::move(icon),
+      profile_, package_name, std::move(web_app_info), std::move(icon),
       base::BindOnce(&ApkWebAppService::OnDidFinishInstall,
                      weak_ptr_factory_.GetWeakPtr(), package_name),
       weak_ptr_factory_.GetWeakPtr());

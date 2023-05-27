@@ -4,34 +4,23 @@
 
 #include "third_party/blink/common/permissions_policy/permissions_policy_mojom_traits.h"
 
-#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "url/mojom/origin_mojom_traits.h"
 #include "url/origin.h"
 
 namespace mojo {
 
-bool StructTraits<network::mojom::CSPSourceDataView,
+bool StructTraits<blink::mojom::OriginWithPossibleWildcardsDataView,
                   blink::OriginWithPossibleWildcards>::
-    Read(network::mojom::CSPSourceDataView in,
+    Read(blink::mojom::OriginWithPossibleWildcardsDataView in,
          blink::OriginWithPossibleWildcards* out) {
-  // We do not support any wildcard types besides host
-  // based ones for now.
-  out->has_subdomain_wildcard = in.is_host_wildcard();
-  std::string scheme;
-  std::string host;
-  if (!in.ReadScheme(&scheme) || !in.ReadHost(&host)) {
+  out->csp_source.is_host_wildcard = in.is_host_wildcard();
+  out->csp_source.port = in.port();
+  if (!in.ReadScheme(&out->csp_source.scheme) ||
+      !in.ReadHost(&out->csp_source.host)) {
     return false;
   }
-  absl::optional<url::Origin> maybe_origin =
-      url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(scheme, host,
-                                                                 in.port());
-  if (!maybe_origin) {
-    return false;
-  }
-  out->origin = *maybe_origin;
-
-  // Origins cannot be opaque.
-  return !out->origin.opaque();
+  // For local files the host might be empty, but the scheme cannot be.
+  return out->csp_source.scheme.length() != 0;
 }
 
 bool StructTraits<blink::mojom::ParsedPermissionsPolicyDeclarationDataView,

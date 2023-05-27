@@ -12,14 +12,13 @@
 
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/ash/services/ime/decoder/decoder_engine.h"
 #include "chromeos/ash/services/ime/decoder/system_engine.h"
 #include "chromeos/ash/services/ime/public/cpp/shared_lib/interfaces.h"
 #include "chromeos/ash/services/ime/public/mojom/ime_service.mojom.h"
-#include "chromeos/ash/services/ime/rule_based_engine.h"
-#include "chromeos/ash/services/ime/rule_based_engine_connection_factory.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -84,7 +83,6 @@ class ImeService : public mojom::ImeService,
       ConnectToImeEngineCallback callback) override;
   void InitializeConnectionFactory(
       mojo::PendingReceiver<mojom::ConnectionFactory> connection_factory,
-      mojom::ConnectionTarget connection_target,
       InitializeConnectionFactoryCallback callback) override;
 
   // ImeCrosPlatform overrides:
@@ -115,21 +113,20 @@ class ImeService : public mojom::ImeService,
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   // For the duration of this ImeService's lifetime, there should be one and
-  // only one of these backend connections (represented as "engine" or "factory"
-  // instances) at any point in time.
+  // only one of these backend connections (represented as "engine" instances)
+  // at any point in time.
   // TODO(b/214153032): Rename to better reflect what these represent:
   //     decoder_engine_     --> proto_mode_shared_lib_engine_
   //     system_engine_      --> mojo_mode_shared_lib_engine_
-  //     connection_factory_ --> rule_based_engine_mojo_connection_factory_
   std::unique_ptr<DecoderEngine> decoder_engine_;
   std::unique_ptr<SystemEngine> system_engine_;
-  std::unique_ptr<RuleBasedEngineConnectionFactory> connection_factory_;
 
   // Platform delegate for access to privilege resources.
   mojo::Remote<mojom::PlatformAccessProvider> platform_access_;
   mojo::ReceiverSet<mojom::InputEngineManager> manager_receivers_;
 
-  ImeSharedLibraryWrapper* ime_shared_library_ = nullptr;
+  raw_ptr<ImeSharedLibraryWrapper, ExperimentalAsh> ime_shared_library_ =
+      nullptr;
 
   std::unique_ptr<FieldTrialParamsRetriever> field_trial_params_retriever_;
 };

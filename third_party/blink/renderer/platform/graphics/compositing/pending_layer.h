@@ -68,28 +68,22 @@ class PLATFORM_EXPORT PendingLayer {
     chunks_.SetPaintArtifact(std::move(paint_artifact));
   }
 
+  using IsCompositedScrollFunction =
+      PropertyTreeState::IsCompositedScrollFunction;
+
   // Merges |guest| into |this| if it can, by appending chunks of |guest|
   // after chunks of |this|, with appropriate space conversion applied to
   // both layers from their original property tree states to |merged_state|.
   // Returns whether the merge is successful.
-  bool Merge(
-      const PendingLayer& guest,
-      LCDTextPreference lcd_text_preference = LCDTextPreference::kIgnored) {
-    return MergeInternal(guest,
-                         guest.property_tree_state_.GetPropertyTreeState(),
-                         lcd_text_preference, /*dry_run*/ false);
-  }
+  bool Merge(const PendingLayer& guest,
+             LCDTextPreference lcd_text_preference,
+             IsCompositedScrollFunction);
 
-  // Returns true if |guest| can be merged into |this|.
-  // |guest_state| is for cases where we want to check if we can merge |guest|
-  // if it has |guest_state| in the future (which may be different from its
-  // current state).
-  bool CanMerge(const PendingLayer& guest,
-                const PropertyTreeState& guest_state,
-                LCDTextPreference lcd_text_preference) const {
-    return const_cast<PendingLayer*>(this)->MergeInternal(
-        guest, guest_state, lcd_text_preference, /*dry_run*/ true);
-  }
+  // Returns true if `guest` that could be upcasted with decomposited blend
+  // mode can be merged into `this`.
+  bool CanMergeWithDecompositedBlendMode(const PendingLayer& guest,
+                                         const PropertyTreeState& upcast_state,
+                                         IsCompositedScrollFunction) const;
 
   // Mutate this layer's property tree state to a more general (shallower)
   // state, thus the name "upcast". The concrete effect of this is to
@@ -166,11 +160,16 @@ class PLATFORM_EXPORT PendingLayer {
   bool IsSolidColor() const { return is_solid_color_; }
 
  private:
-  gfx::RectF MapRectKnownToBeOpaque(const PropertyTreeState&) const;
-  bool MergeInternal(const PendingLayer& guest,
-                     const PropertyTreeState& guest_state,
-                     LCDTextPreference,
-                     bool dry_run);
+  // Checks basic merge-ability with `guest` and calls
+  // PropertyTreeState::CanUpcastWith().
+  absl::optional<PropertyTreeState> CanUpcastWith(
+      const PendingLayer& guest,
+      const PropertyTreeState& guest_state,
+      IsCompositedScrollFunction is_comosited_scroll) const;
+
+  gfx::RectF MapRectKnownToBeOpaque(
+      const PropertyTreeState& new_state,
+      const FloatClipRect& mapped_layer_bounds) const;
 
   bool PropertyTreeStateChanged(const PendingLayer* old_pending_layer) const;
 
@@ -183,8 +182,7 @@ class PLATFORM_EXPORT PendingLayer {
                           bool tracks_raster_invalidations);
   void UpdateSolidColorLayer(PendingLayer* old_pending_layer);
 
-  void UpdateLayerProperties();
-  void UpdateLayerSelection(cc::LayerSelection&);
+  void UpdateLayerProperties(cc::LayerSelection&, bool selection_only);
 
   bool UsesSolidColorLayer() const {
     return RuntimeEnabledFeatures::SolidColorLayersEnabled() && is_solid_color_;
@@ -203,7 +201,7 @@ class PLATFORM_EXPORT PendingLayer {
   gfx::Vector2dF offset_of_decomposited_transforms_;
   PaintPropertyChangeType change_of_decomposited_transforms_ =
       PaintPropertyChangeType::kUnchanged;
-  CompositingType compositing_type_;
+  CompositingType compositing_type_ = kOther;
 
   // This is set to non-null after layerization if ChunkRequiresOwnLayer() or
   // UsesSolidColorLayer() is true.

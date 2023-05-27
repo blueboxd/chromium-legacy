@@ -64,7 +64,9 @@ export class CloudUploadElement extends HTMLElement {
         ]);
 
     // TODO(b/251046341): Adjust this once the rest of the pages are in place.
-    this.pages.push(new WelcomePageElement());
+    const welcomePage = new WelcomePageElement();
+    welcomePage.setInstalled(isOfficeWebAppInstalled, isOdfsMounted);
+    this.pages.push(welcomePage);
 
     if (!isOfficeWebAppInstalled) {
       this.pages.push(new OfficePwaInstallPageElement());

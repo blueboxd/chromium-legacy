@@ -28,12 +28,8 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/style/dark_light_mode_controller.h"
 #endif
 
 using ::testing::ElementsAre;
@@ -496,14 +492,6 @@ class WebAppOfflineDarkModeTest
  public:
   WebAppOfflineDarkModeTest() {
     std::vector<base::test::FeatureRef> disabled_features;
-#if BUILDFLAG(IS_CHROMEOS)
-    disabled_features.push_back(chromeos::features::kDarkLightMode);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    disabled_features.push_back(ash::features::kNotificationsRefresh);
-#endif
-
     feature_list_.InitWithFeatures({features::kPWAsDefaultOfflinePage,
                                     blink::features::kWebAppEnableDarkMode},
                                    {disabled_features});
@@ -511,17 +499,22 @@ class WebAppOfflineDarkModeTest
 
   void SetUp() override {
 #if BUILDFLAG(IS_WIN)
-    if (base::win::GetVersion() < base::win::Version::WIN10) {
-      GTEST_SKIP();
-    } else {
-      InProcessBrowserTest::SetUp();
-    }
+    InProcessBrowserTest::SetUp();
 #elif BUILDFLAG(IS_MAC)
     // TODO(crbug.com/1298658): Get this test suite working.
     GTEST_SKIP();
 #else
     InProcessBrowserTest::SetUp();
 #endif  // BUILDFLAG(IS_MAC)
+  }
+
+  void SetUpOnMainThread() override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // Explicitly set dark mode in ChromeOS or we can't get light mode after
+    // sunset (due to dark mode auto-scheduling).
+    ash::DarkLightModeController::Get()->SetDarkModeEnabledForTest(
+        GetParam() == blink::mojom::PreferredColorScheme::kDark);
+#endif
   }
 
  protected:
@@ -539,8 +532,8 @@ class WebAppOfflineDarkModeTest
 
 // Testing offline page in dark mode for a web app with a manifest and no
 // service worker.
-// TODO(crbug.com/1373750): tests are flaky on Lacros.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// TODO(crbug.com/1373750): tests are flaky on Lacros and Linux.
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 #define MAYBE_WebAppOfflineDarkModeNoServiceWorker \
   DISABLED_WebAppOfflineDarkModeNoServiceWorker
 #else
@@ -549,6 +542,13 @@ class WebAppOfflineDarkModeTest
 #endif
 IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
                        MAYBE_WebAppOfflineDarkModeNoServiceWorker) {
+#if BUILDFLAG(IS_WIN)
+  if (GetParam() == blink::mojom::PreferredColorScheme::kLight &&
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()) {
+    GTEST_SKIP() << "Host is in dark mode; skipping test";
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // ui::NativeTheme::GetInstanceForNativeUi()->set_use_dark_colors(true);
@@ -594,8 +594,8 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
 
 // Testing offline page in dark mode for a web app with a manifest and service
 // worker that does not handle offline error.
-// TODO(crbug.com/1373750): tests are flaky on Lacros.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// TODO(crbug.com/1373750): tests are flaky on Lacros and Linux.
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 #define MAYBE_WebAppOfflineDarkModeEmptyServiceWorker \
   DISABLED_WebAppOfflineDarkModeEmptyServiceWorker
 #else
@@ -604,6 +604,13 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
 #endif
 IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
                        MAYBE_WebAppOfflineDarkModeEmptyServiceWorker) {
+#if BUILDFLAG(IS_WIN)
+  if (GetParam() == blink::mojom::PreferredColorScheme::kLight &&
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()) {
+    GTEST_SKIP() << "Host is in dark mode; skipping test";
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* web_contents =
@@ -649,8 +656,8 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
 
 // Testing offline page in dark mode for a web app with a manifest that has not
 // provided dark mode colors.
-// TODO(crbug.com/1373750): tests are flaky on Lacros.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// TODO(crbug.com/1373750): tests are flaky on Lacros and Linux.
+#if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX)
 #define MAYBE_WebAppOfflineNoDarkModeColorsProvided \
   DISABLED_WebAppOfflineNoDarkModeColorsProvided
 #else
@@ -659,6 +666,13 @@ IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
 #endif
 IN_PROC_BROWSER_TEST_P(WebAppOfflineDarkModeTest,
                        MAYBE_WebAppOfflineNoDarkModeColorsProvided) {
+#if BUILDFLAG(IS_WIN)
+  if (GetParam() == blink::mojom::PreferredColorScheme::kLight &&
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()) {
+    GTEST_SKIP() << "Host is in dark mode; skipping test";
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   content::WebContents* web_contents =

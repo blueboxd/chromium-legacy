@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
+#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_params.h"
@@ -20,6 +21,7 @@
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/files/file_path.h"
 #include "chromeos/crosapi/mojom/arc.mojom.h"
 #endif
 
@@ -135,6 +137,10 @@ class FetchManifestAndInstallCommand : public WebAppCommandTemplate<NoopLock> {
   std::unique_ptr<WebAppInstallInfo> web_app_info_;
   blink::mojom::ManifestPtr opt_manifest_;
   base::Value::Dict debug_log_;
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  absl::optional<base::FilePath> app_profile_path_;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   base::WeakPtrFactory<FetchManifestAndInstallCommand> weak_ptr_factory_{this};
 };

@@ -89,6 +89,7 @@ class Arrow : public Button {
         ButtonController::NotifyAction::kOnPress);
 
     ConfigureComboboxButtonInkDrop(this);
+    SetAccessibilityProperties(ax::mojom::Role::kButton);
   }
   Arrow(const Arrow&) = delete;
   Arrow& operator=(const Arrow&) = delete;
@@ -113,8 +114,7 @@ class Arrow : public Button {
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->role = ax::mojom::Role::kButton;
-    node_data->SetName(GetAccessibleName());
+    Button::GetAccessibleNodeData(node_data);
     node_data->SetHasPopup(ax::mojom::HasPopup::kMenu);
     if (GetEnabled()) {
       node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
@@ -376,6 +376,7 @@ EditableCombobox::EditableCombobox(
   textfield_->set_controller(this);
   textfield_->SetFontList(GetFontList());
   AddChildView(textfield_.get());
+  views::FocusRing::Get(textfield_)->SetOutsetFocusRingDisabled(true);
 
   control_elements_container_ = AddChildView(std::make_unique<BoxLayoutView>());
   if (features::IsChromeRefresh2023()) {
@@ -390,6 +391,7 @@ EditableCombobox::EditableCombobox(
   }
 
   SetLayoutManager(std::make_unique<FillLayout>());
+  SetAccessibilityProperties(ax::mojom::Role::kComboBoxGrouping);
 }
 
 EditableCombobox::~EditableCombobox() {
@@ -437,10 +439,6 @@ void EditableCombobox::OnAccessibleNameChanged(const std::u16string& new_name) {
   }
 }
 
-void EditableCombobox::SetAssociatedLabel(View* labelling_view) {
-  textfield_->SetAssociatedLabel(labelling_view);
-}
-
 void EditableCombobox::SetMenuDecorationStrategy(
     std::unique_ptr<MenuDecorationStrategy> strategy) {
   DCHECK(menu_model_);
@@ -459,9 +457,7 @@ void EditableCombobox::Layout() {
 }
 
 void EditableCombobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kComboBoxGrouping;
-
-  node_data->SetName(textfield_->GetAccessibleName());
+  View::GetAccessibleNodeData(node_data);
   node_data->SetValue(GetText());
 }
 

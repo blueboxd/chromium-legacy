@@ -13,13 +13,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents_ax_mode_notifier.h"
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
@@ -47,6 +47,14 @@ constexpr int kOnAccessibilityUsageUpdateDelaySecs = 5;
 // destroy the full accessibility tree only to immediately recreate it because
 // doing so is bad for performance.
 constexpr int kDisableAccessibilitySupportDelaySecs = 2;
+
+// Used for validating the 'basic' bundle parameter for
+// --force-renderer-accessibility.
+const char kAXModeBundleBasic[] = "basic";
+
+// Used for validating the 'form-controls' bundle parameter for
+// --force-renderer-accessibility.
+const char kAXModeBundleFormControls[] = "form-controls";
 
 // Record a histogram for an accessibility mode when it is enabled.
 void RecordNewAccessibilityModeFlags(
@@ -80,6 +88,32 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   force_renderer_accessibility_ =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility);
+  if (force_renderer_accessibility_) {
+#if BUILDFLAG(IS_WIN)
+    std::string ax_mode_bundle = base::WideToUTF8(
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+            switches::kForceRendererAccessibility));
+#else
+    std::string ax_mode_bundle =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
+            switches::kForceRendererAccessibility);
+#endif
+
+    // For backwards compatibility, allow parameter to be empty and do not force
+    // mode in that scenario.
+    if (!ax_mode_bundle.empty()) {
+      // Support --force-renderer-accessibility=[basic|form-controls|complete]
+      if (ax_mode_bundle.compare(kAXModeBundleBasic) == 0) {
+        force_renderer_accessibility_ax_mode_flags_ = ui::kAXModeBasic;
+      } else if (ax_mode_bundle.compare(kAXModeBundleFormControls) == 0) {
+        force_renderer_accessibility_ax_mode_flags_ = ui::kAXModeFormControls;
+      } else {
+        // If AXMode is 'complete' or invalid, default to complete
+        // bundle.
+        force_renderer_accessibility_ax_mode_flags_ = ui::kAXModeComplete;
+      }
+    }
+  }
 
   ResetAccessibilityModeValue();
 
@@ -157,8 +191,17 @@ bool BrowserAccessibilityStateImpl::IsRendererAccessibilityEnabled() {
 
 void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
   accessibility_mode_ = ui::AXMode();
-  if (force_renderer_accessibility_)
-    AddAccessibilityModeFlags(ui::kAXModeComplete);
+
+  // Use forced AXMode bundle if optional parameter has been provided.
+  // Otherwise, reset to kAXModeComplete by default.
+  if (force_renderer_accessibility_) {
+    if (force_renderer_accessibility_ax_mode_flags_.flags() !=
+        ui::AXMode::kNone) {
+      AddAccessibilityModeFlags(force_renderer_accessibility_ax_mode_flags_);
+    } else {
+      AddAccessibilityModeFlags(ui::kAXModeComplete);
+    }
+  }
 }
 
 void BrowserAccessibilityStateImpl::MaybeResetAccessibilityMode() {
@@ -190,10 +233,7 @@ void BrowserAccessibilityStateImpl::ResetAccessibilityMode() {
   // the observers are never notified and screen reader support fails to work.
   ui::AXPlatformNode::SetAXMode(accessibility_mode_);
 
-  std::vector<WebContentsImpl*> web_contents_vector =
-      WebContentsImpl::GetAllWebContents();
-  for (size_t i = 0; i < web_contents_vector.size(); ++i)
-    web_contents_vector[i]->SetAccessibilityMode(accessibility_mode_);
+  NotifyWebContentsToSetAXMode(accessibility_mode_);
 }
 
 bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
@@ -367,6 +407,17 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
     return;
   }
 
+  // If the --force-renderer-accessibility command line flag is present and an
+  // AXMode bundle has been provided as an argument, then the AXMode bundle
+  // should always be respected. Any attempts to set mode to flags other than
+  // the bundle should be ignored.
+  if (force_renderer_accessibility_ &&
+      (force_renderer_accessibility_ax_mode_flags_.flags() !=
+           ui::AXMode::kNone &&
+       force_renderer_accessibility_ax_mode_flags_ != mode)) {
+    return;
+  }
+
   // Adding an accessibility mode flag is generally the result of an
   // accessibility API call, so we should also reset the auto-disable
   // accessibility code. The only exception is in tests or when a user manually
@@ -442,10 +493,7 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
                               true);
   }
 
-  std::vector<WebContentsImpl*> web_contents_vector =
-      WebContentsImpl::GetAllWebContents();
-  for (size_t i = 0; i < web_contents_vector.size(); ++i)
-    web_contents_vector[i]->AddAccessibilityMode(accessibility_mode_);
+  NotifyWebContentsToAddAXMode(accessibility_mode_);
 
   // Add a crash key with the ax_mode, to enable searching for top crashes that
   // occur when accessibility is turned on. This adds it for the browser
@@ -460,8 +508,16 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
 
 void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(
     ui::AXMode mode) {
-  if (force_renderer_accessibility_ && mode == ui::kAXModeComplete)
+  // Turning off accessibility or changing the mode will not be allowed if the
+  // --force-renderer-accessibility command line flag has been enabled and
+  // either 1) there is an attempt to turn off accessibility entirely or 2) an
+  // AXMode bundle parameter has been provided.
+  if (force_renderer_accessibility_ &&
+      (mode == ui::kAXModeComplete ||
+       force_renderer_accessibility_ax_mode_flags_.flags() !=
+           ui::AXMode::kNone)) {
     return;
+  }
 
   int raw_flags = accessibility_mode_.flags() ^
                   (mode.flags() & accessibility_mode_.flags());
@@ -473,10 +529,7 @@ void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(
   // Proxy the new AXMode to AXPlatformNode.
   ui::AXPlatformNode::SetAXMode(accessibility_mode_);
 
-  std::vector<WebContentsImpl*> web_contents_vector =
-      WebContentsImpl::GetAllWebContents();
-  for (size_t i = 0; i < web_contents_vector.size(); ++i)
-    web_contents_vector[i]->SetAccessibilityMode(accessibility_mode_);
+  NotifyWebContentsToSetAXMode(accessibility_mode_);
 }
 
 base::CallbackListSubscription

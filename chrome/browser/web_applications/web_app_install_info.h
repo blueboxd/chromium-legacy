@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/scope_extension_info.h"
@@ -303,7 +304,7 @@ struct WebAppInstallInfo {
 
   // The app intends to have an extended scope containing URLs described by this
   // information.
-  std::vector<web_app::ScopeExtensionInfo> scope_extensions;
+  base::flat_set<web_app::ScopeExtensionInfo> scope_extensions;
 
   // URL within scope to launch on the lock screen for a "show on lock screen"
   // action. Valid iff this is considered a lock-screen-capable app.
@@ -346,6 +347,13 @@ struct WebAppInstallInfo {
   // is only used when the app is installed as a sub app through the SUB_APP
   // API.
   absl::optional<web_app::AppId> parent_app_id;
+
+  // A list of additional terms to use when matching this app against
+  // identifiers in admin policies (for shelf pinning, default file handlers,
+  // etc).
+  // Note that list is not meant to be an exhaustive enumeration of all possible
+  // policy_ids but rather just a supplement for tricky cases.
+  std::vector<std::string> additional_policy_ids;
 
  private:
   // Used this method in Clone() method. Use Clone() to deep copy explicitly.

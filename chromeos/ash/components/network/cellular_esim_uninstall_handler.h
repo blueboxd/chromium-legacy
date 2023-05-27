@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_response_status.h"
@@ -52,6 +53,25 @@ class NetworkState;
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimUninstallHandler
     : public NetworkStateHandlerObserver {
  public:
+  // TODO(b/271854446): Make these private once the migration has landed.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class UninstallESimResult {
+    kSuccess = 0,
+    kNetworkNotFound = 1,
+    kDisconnectFailed = 2,
+    kInhibitFailed = 3,
+    kRefreshProfilesFailed = 4,
+    kDisableProfileFailed = 5,
+    kUninstallProfileFailed = 6,
+    kRemoveServiceFailed = 7,
+    kMaxValue = kRemoveServiceFailed
+  };
+
+  // Timeout when waiting for network list change after removing network
+  // service. Service removal continues with next service.
+  static const base::TimeDelta kNetworkListWaitTimeout;
+
   CellularESimUninstallHandler();
   CellularESimUninstallHandler(const CellularESimUninstallHandler&) = delete;
   CellularESimUninstallHandler& operator=(const CellularESimUninstallHandler&) =
@@ -88,19 +108,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimUninstallHandler
   void OnShuttingDown() override;
 
   friend class CellularESimUninstallHandlerTest;
-  FRIEND_TEST_ALL_PREFIXES(CellularESimUninstallHandlerTest, Success);
-  FRIEND_TEST_ALL_PREFIXES(CellularESimUninstallHandlerTest,
-                           Success_AlreadyDisabled);
-  FRIEND_TEST_ALL_PREFIXES(CellularESimUninstallHandlerTest, DisconnectFailure);
-  FRIEND_TEST_ALL_PREFIXES(CellularESimUninstallHandlerTest, HermesFailure);
-  FRIEND_TEST_ALL_PREFIXES(CellularESimUninstallHandlerTest, MultipleRequests);
-  FRIEND_TEST_ALL_PREFIXES(CellularESimUninstallHandlerTest,
-                           StubCellularNetwork);
-  FRIEND_TEST_ALL_PREFIXES(CellularESimUninstallHandlerTest, ResetEuiccMemory);
-
-  // Timeout when waiting for network list change after removing network
-  // service. Service removal continues with next service.
-  static const base::TimeDelta kNetworkListWaitTimeout;
 
   enum class UninstallState {
     kIdle,
@@ -115,20 +122,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimUninstallHandler
   };
   friend std::ostream& operator<<(std::ostream& stream,
                                   const UninstallState& step);
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class UninstallESimResult {
-    kSuccess = 0,
-    kNetworkNotFound = 1,
-    kDisconnectFailed = 2,
-    kInhibitFailed = 3,
-    kRefreshProfilesFailed = 4,
-    kDisableProfileFailed = 5,
-    kUninstallProfileFailed = 6,
-    kRemoveServiceFailed = 7,
-    kMaxValue = kRemoveServiceFailed
-  };
 
   // Represents ESim uninstallation request parameters. Requests are queued and
   // processed one at a time. |esim_profile_path| and |euicc_path| are nullopt
@@ -196,12 +189,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimUninstallHandler
 
   base::OneShotTimer network_list_wait_timer_;
 
-  CellularInhibitor* cellular_inhibitor_ = nullptr;
-  CellularESimProfileHandler* cellular_esim_profile_handler_ = nullptr;
-  ManagedCellularPrefHandler* managed_cellular_pref_handler_ = nullptr;
-  NetworkConfigurationHandler* network_configuration_handler_ = nullptr;
-  NetworkConnectionHandler* network_connection_handler_ = nullptr;
-  NetworkStateHandler* network_state_handler_ = nullptr;
+  raw_ptr<CellularInhibitor, ExperimentalAsh> cellular_inhibitor_ = nullptr;
+  raw_ptr<CellularESimProfileHandler, ExperimentalAsh>
+      cellular_esim_profile_handler_ = nullptr;
+  raw_ptr<ManagedCellularPrefHandler, DanglingUntriaged | ExperimentalAsh>
+      managed_cellular_pref_handler_ = nullptr;
+  raw_ptr<NetworkConfigurationHandler, ExperimentalAsh>
+      network_configuration_handler_ = nullptr;
+  raw_ptr<NetworkConnectionHandler, ExperimentalAsh>
+      network_connection_handler_ = nullptr;
+  raw_ptr<NetworkStateHandler, ExperimentalAsh> network_state_handler_ =
+      nullptr;
   size_t last_service_count_removal_for_testing_ = 0;
   base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};

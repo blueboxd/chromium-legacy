@@ -217,6 +217,11 @@ class StructuredMetricsProviderTest : public testing::Test {
     return proto;
   }
 
+  // Adds a project to the disallowed projects list.
+  void AddDisallowedProject(uint64_t project_name_hash) {
+    provider_->AddDisallowedProjectForTest(project_name_hash);
+  }
+
   // Simulates the three external events that the structure metrics system cares
   // about: the metrics service initializing and enabling its providers, and a
   // user logging in.
@@ -339,37 +344,6 @@ class StructuredMetricsProviderTest : public testing::Test {
 
  private:
   TestRecorder recorder_;
-};
-
-// Test with kDelayUploadUntilHwid feature enabled.
-class StructuredMetricsProviderHwidTest : public StructuredMetricsProviderTest {
- protected:
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        metrics::structured::kDelayUploadUntilHwid);
-
-    StructuredMetricsProviderTest::SetUp();
-  }
-
-  bool events_retrieved() { return events_retrieved_; }
-
-  std::unique_ptr<ChromeUserMetricsExtension> GetUmaProto() {
-    auto uma_proto = std::make_unique<ChromeUserMetricsExtension>();
-
-    // Copy events from disk to proto.
-    if (provider_->HasIndependentMetrics()) {
-      provider_->ProvideIndependentMetrics(
-          base::BindLambdaForTesting(
-              [this](bool success) { events_retrieved_ = success; }),
-          uma_proto.get(), nullptr);
-      Wait();
-    }
-
-    return uma_proto;
-  }
-
- private:
-  bool events_retrieved_ = false;
 };
 
 // Simple test to ensure initialization works correctly in the case of a
@@ -1050,31 +1024,6 @@ TEST_F(StructuredMetricsProviderTest, LastKeyRotation) {
   EXPECT_GE(last_rotation, today - 90);
 }
 
-TEST_F(StructuredMetricsProviderHwidTest,
-       EventsNotSentIfSystemProfileNotInitialized) {
-  Init();
-
-  events::v2::test_project_one::TestEventOne().SetTestMetricTwo(1).Record();
-  events::v2::test_project_one::TestEventOne().SetTestMetricTwo(2).Record();
-
-  std::unique_ptr<ChromeUserMetricsExtension> uma_proto = GetUmaProto();
-
-  // HWID has not been set. Events should still persist in files.
-  EXPECT_EQ(uma_proto->structured_data().events_size(), 0);
-
-  InitializeSystemProfile();
-
-  // Call again to fetch the new proto with new events.
-  uma_proto = GetUmaProto();
-
-  // HWID has been set. Events should be ready to upload.
-  EXPECT_EQ(uma_proto->system_profile().hardware().full_hardware_class(),
-            kHwid);
-  EXPECT_EQ(uma_proto->structured_data().events_size(), 2);
-
-  ExpectNoErrors();
-}
-
 // Ensures that events part of event sequence are recorded properly.
 TEST_F(StructuredMetricsProviderTest, EventSequenceLogging) {
   Init();
@@ -1136,6 +1085,22 @@ TEST_F(StructuredMetricsProviderTest, EventsClone) {
   EXPECT_EQ(event.recorded_time_since_boot(),
             cloned_event.recorded_time_since_boot());
   EXPECT_EQ(event.metric_values(), cloned_event.metric_values());
+}
+
+TEST_F(StructuredMetricsProviderTest, DisallowedProjectAreDropped) {
+  Init();
+
+  AddDisallowedProject(kProjectOneHash);
+
+  events::v2::test_project_one::TestEventOne().SetTestMetricTwo(1).Record();
+  events::v2::test_project_one::TestEventOne().SetTestMetricTwo(1).Record();
+  events::v2::test_project_two::TestEventThree()
+      .SetTestMetricFour("value")
+      .Record();
+
+  const auto data = GetIndependentMetrics();
+  ASSERT_EQ(data.events_size(), 1);
+  ASSERT_EQ(data.events(0).project_name_hash(), kProjectTwoHash);
 }
 
 }  // namespace metrics::structured

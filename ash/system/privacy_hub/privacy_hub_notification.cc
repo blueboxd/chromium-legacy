@@ -4,7 +4,15 @@
 
 #include "ash/system/privacy_hub/privacy_hub_notification.h"
 
+#include <iterator>
+#include <string>
+
 #include "ash/public/cpp/sensor_disabled_notification_delegate.h"
+#include "ash/shell.h"
+#include "ash/system/privacy_hub/privacy_hub_controller.h"
+#include "ash/system/privacy_hub/privacy_hub_metrics.h"
+#include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
+#include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/enum_set.h"
 #include "components/vector_icons/vector_icons.h"
@@ -12,15 +20,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
-
-namespace {
-
-// Returns true if a notification with id `id` is in the message center.
-bool HasNotification(const std::string& id) {
-  return message_center::MessageCenter::Get()->FindNotificationById(id);
-}
-
-}  // namespace
 
 namespace ash {
 
@@ -91,11 +90,21 @@ PrivacyHubNotificationDescriptor::PrivacyHubNotificationDescriptor(
       message_ids_(message_ids),
       delegate_(delegate) {
   DCHECK(!message_ids.empty());
-  DCHECK(delegate);
   DCHECK(message_ids.size() < 2u || !sensors.Empty())
       << "Specify at least one sensor when providing more than one message ID";
   DCHECK_LE(button_ids.size(), 2u) << "Privacy hub notifications are not "
                                       "supposed to have more than two buttons.";
+  if (!delegate_) {
+    delegate_ = base::MakeRefCounted<PrivacyHubNotificationClickDelegate>(
+        base::BindRepeating(
+            [](SensorDisabledNotificationDelegate::SensorSet sensors) {
+              for (const auto sensor : sensors) {
+                PrivacyHubNotificationController::
+                    SetAndLogSensorPreferenceFromNotification(sensor, true);
+              }
+            },
+            sensors));
+  }
 }
 
 PrivacyHubNotificationDescriptor::PrivacyHubNotificationDescriptor(
@@ -136,7 +145,7 @@ PrivacyHubNotification::~PrivacyHubNotification() = default;
 
 void PrivacyHubNotification::Show() {
   SetNotificationContent();
-  if (HasNotification(id_)) {
+  if (IsShown()) {
     // The notification is already in the message center. Update the content and
     // pop it up again.
     message_center::MessageCenter::Get()->UpdateNotification(
@@ -152,12 +161,24 @@ void PrivacyHubNotification::Hide() {
                                                            /*by_user=*/false);
 }
 
+bool PrivacyHubNotification::IsShown() {
+  return message_center::MessageCenter::Get()->FindNotificationById(id_);
+}
+
 void PrivacyHubNotification::Update() {
-  if (HasNotification(id_)) {
+  if (IsShown()) {
     SetNotificationContent();
     message_center::MessageCenter::Get()->UpdateNotification(
         id_, builder_.BuildPtr());
   }
+}
+
+void PrivacyHubNotification::SetPriority(
+    message_center::NotificationPriority priority) {
+  message_center::RichNotificationData optional_fields =
+      builder_.GetOptionalFields();
+  optional_fields.priority = priority;
+  builder_.SetOptionalFields(optional_fields);
 }
 
 void PrivacyHubNotification::SetSensors(
@@ -176,21 +197,39 @@ std::vector<std::u16string> PrivacyHubNotification::GetAppsAccessingSensors(
     const size_t number_of_apps) const {
   std::vector<std::u16string> app_names;
 
-  if (SensorDisabledNotificationDelegate* delegate =
-          SensorDisabledNotificationDelegate::Get()) {
-    for (SensorDisabledNotificationDelegate::Sensor sensor : sensors_) {
-      for (const std::u16string& app :
-           delegate->GetAppsAccessingSensor(sensor)) {
-        if (!base::Contains(app_names, app)) {
-          app_names.push_back(app);
-        }
-        if (app_names.size() == number_of_apps) {
-          return app_names;
-        }
+  for (SensorDisabledNotificationDelegate::Sensor sensor : sensors_) {
+    CHECK_LE(app_names.size(), number_of_apps);
+    // This forces an implicit conversion of unsigned size_t into signed
+    // difference_type, avoiding conversion issues later on.
+    const decltype(app_names)::difference_type remaining_capacity =
+        number_of_apps - app_names.size();
+    if (remaining_capacity == 0) {
+      break;
+    }
+    std::vector<std::u16string> sensor_apps;
+    if (SensorDisabledNotificationDelegate::Sensor::kLocation == sensor) {
+      const auto* const controller = GeolocationPrivacySwitchController::Get();
+      if (controller) {
+        sensor_apps = controller->GetActiveApps(remaining_capacity);
+      }
+    } else {
+      if (SensorDisabledNotificationDelegate* delegate =
+              SensorDisabledNotificationDelegate::Get()) {
+        sensor_apps = delegate->GetAppsAccessingSensor(sensor);
       }
     }
+    // Copy de-duplicated app names.
+    std::sort(std::begin(sensor_apps), std::end(sensor_apps));
+    const auto unique_end =
+        std::unique(std::begin(sensor_apps), std::end(sensor_apps));
+    const auto elements_to_copy = std::min(
+        remaining_capacity, std::distance(std::begin(sensor_apps), unique_end));
+    std::copy(std::begin(sensor_apps),
+              std::next(std::begin(sensor_apps), elements_to_copy),
+              std::back_inserter(app_names));
   }
 
+  CHECK_LE(app_names.size(), number_of_apps);
   return app_names;
 }
 
@@ -199,9 +238,11 @@ void PrivacyHubNotification::SetNotificationContent() {
   DCHECK(descriptor != notification_descriptors_.end());
 
   if (has_sensors_changed_) {
-    message_center::RichNotificationData optional_fields;
+    message_center::RichNotificationData optional_fields =
+        builder_.GetOptionalFields();
     optional_fields.remove_on_click = true;
 
+    optional_fields.buttons.clear();
     for (int button_id : descriptor->button_ids()) {
       optional_fields.buttons.emplace_back(
           l10n_util::GetStringUTF16(button_id));

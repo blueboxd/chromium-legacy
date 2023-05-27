@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">Заснема се видеоклип</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Налице е DNS резолвер</translation>
+<translation id="1708602061922134366">Синьо от логото на Google</translation>
 <translation id="1710499924611012470">Придвижване чрез функции за достъпност</translation>
 <translation id="1715359911173058521">Има проблем с установяването на връзка със скенера. Проверете връзката с USB или мрежата и опитайте отново.</translation>
 <translation id="1717874160321062422">Управлява се от <ph name="FIRST_MANAGER" /> и <ph name="SECOND_MANAGER" /></translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">Тип удостоверяване</translation>
+<translation id="1776228893584526149">Цветови тон на тапета</translation>
 <translation id="1782199038061388045">превод</translation>
 <translation id="1790209694022261219">Прозорци и работни кътове</translation>
 <translation id="1792647875738159689">Сканирането се отменя</translation>
@@ -123,6 +125,7 @@
 <translation id="1904932688895783618">Ето някои други полезни ресурси:</translation>
 <translation id="1905710495812624430">Максималният брой опити е надвишен.</translation>
 <translation id="1908234395526491708">Неуспешни заявки през UDP</translation>
+<translation id="1923388006036088459">Цветове на акцентирането</translation>
 <translation id="1947737735496445907">Отпечатано</translation>
 <translation id="1951012854035635156">Асистент</translation>
 <translation id="1962550982027027473">Изисква се стандартно име на точката за достъп (APN)</translation>
@@ -140,6 +143,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Още настройки</translation>
 <translation id="2085089206770112532">Намаляване на яркостта на дисплея</translation>
+<translation id="209751264101900360">От зазоряване до здрачаване – облаци</translation>
 <translation id="2102231663024125441">Редактиране на текст</translation>
 <translation id="2105810540595158374">Устройството е контролер за игри.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, версия <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +335,7 @@
 <translation id="3967822245660637423">Изтеглянето завърши</translation>
 <translation id="3969602104473960991">Паролата за Chrome OS е актуализирана</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
+<translation id="3974175076798940554">Вече са налице специални активи за Chromebook Plus</translation>
 <translation id="39823212440917567">Заданията за отпечатване, по-стари от <ph name="NUMBER_OF_DAYS" /> дни, ще бъдат премахнати</translation>
 <translation id="3993704782688964914">Устройството ви <ph name="DEVICE_NAME" /> вече е актуално</translation>
 <translation id="4003384961948020559">Неуспешно – изходният контейнер е пълен</translation>
@@ -370,6 +375,7 @@
 <translation id="4275663329226226506">Медия</translation>
 <translation id="4289540628985791613">Общ преглед</translation>
 <translation id="4289849978083912975">Слайдшоу</translation>
+<translation id="4293621540182258188">От зазоряване до здрачаване – Земята</translation>
 <translation id="4297501883039923494">Спряло – неизвестна грешка</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> изображения</translation>
 <translation id="4311195029067684288">Пълно</translation>
@@ -479,6 +485,7 @@
 <translation id="5166918508782100047">Настройки за „Бързи отговори“</translation>
 <translation id="5168185087976003268">Състояние на батерията</translation>
 <translation id="5170568018924773124">Показване в папката</translation>
+<translation id="5180712487038406644">Изразителен</translation>
 <translation id="5190187232518914472">Преживейте отново любимите си спомени. За да добавите или редактирате албуми, отворете <ph name="LINK_BEGIN" />Google Снимки<ph name="LINK_END" />.</translation>
 <translation id="5212593641110061691">Таблоид</translation>
 <translation id="5222676887888702881">Изход</translation>
@@ -513,6 +520,7 @@
 <translation id="5423849171846380976">Активиран</translation>
 <translation id="5430931332414098647">Незабавен тетъринг</translation>
 <translation id="5431318178759467895">Цветно</translation>
+<translation id="5456936324019847994">Не може да се установи връзка с активирани персонализирани имена на точки за достъп (APN). Обърнете се към мобилния си оператор за още информация.</translation>
 <translation id="5457599981699367932">Сърфиране като гост</translation>
 <translation id="54609108002486618">Управляван</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Остава {0} опит}other{Остават {0} опита}}</translation>
@@ -544,6 +552,7 @@
 <translation id="576835345334454681">Увеличаване на яркостта на дисплея</translation>
 <translation id="57838592816432529">Заглушаване</translation>
 <translation id="5784136236926853061">Голямо забавяне на HTTP</translation>
+<translation id="5809090008577139505">Северно сияние</translation>
 <translation id="5826644637650799838">Всичко за произведението</translation>
 <translation id="5832805196449965646">Добавяне на човек</translation>
 <translation id="583281660410589416">Неизвестно</translation>
@@ -562,10 +571,12 @@
 <translation id="5907649332524363701">цвят на клавишите</translation>
 <translation id="5916084858004523819">Забранено</translation>
 <translation id="5916664084637901428">Включено</translation>
+<translation id="5918201491776799918">Изберете специални илюстрации за Chromebook Plus</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Файлът ви бе сканиран успешно и запазен в папката <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Файловете ви бяха сканирани успешно и запазени в папката <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Файлът не бе намерен</translation>
 <translation id="5939518447894949180">Нулиране</translation>
 <translation id="594552776027197022">Генериране на произволна двойка ключове</translation>
+<translation id="5946538341867151940">Още нямате връзка. Ако мобилният ви оператор препоръчва персонализирано име на точката за достъп (APN), въведете съответната информация, като изберете „+ Ново име на точка за достъп (APN)“</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Тапет по подразбиране</translation>
 <translation id="6017514345406065928">зелено</translation>
@@ -640,6 +651,7 @@
 <translation id="6527081081771465939">Неизвестен протокол за сигурност на Wi-Fi</translation>
 <translation id="6535178685492749208">Офлайн сте. Отзивите ще се изпратят по-късно.</translation>
 <translation id="65587193855025101">Плосък скенер</translation>
+<translation id="6560196641871357166">Ярък</translation>
 <translation id="6564646048574748301">Неуспешно – няма връзка с принтера</translation>
 <translation id="6566314079205407217">Сканиране на няколко страници</translation>
 <translation id="6574762126505704998">Запълване</translation>
@@ -721,6 +733,7 @@
 <translation id="7281657306185710294">Лек полъх</translation>
 <translation id="7287310195820267359">Колекции от тапети</translation>
 <translation id="7297226631177386107">През защитната стена не може да се установи връзка с уебсайтове, работещи с HTTPS</translation>
+<translation id="7297726121602187087">Тъмнозелено</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Попитайте експертите в Помощния форум за Chromebook</translation>
@@ -755,12 +768,14 @@
 <translation id="7570674786725311828">Сензорен екран с USB</translation>
 <translation id="7595982850646262331">Оставащо време: <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Преместете с мишката или клавишите със стрелки.</translation>
+<translation id="7618774594543487847">Неутрален</translation>
 <translation id="7620771111601174153">Научете повече в Помощния център</translation>
 <translation id="763165478673169849">Последен час на нулиране</translation>
 <translation id="7648838807254605802">Голямо забавяне на HTTPS</translation>
 <translation id="7656388927906093505">Устройството е мишка.</translation>
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7665800271478495366">Промяна на аватара</translation>
+<translation id="7675241868020048622">Северно сияние (изключително за Plus)</translation>
 <translation id="7690294790491645610">Потвърдете новата парола</translation>
 <translation id="7701040980221191251">Няма</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +832,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Избиране на <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Инстр. за програмисти</translation>
+<translation id="8153923300383192510">Специално за Chromebook Plus</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Първоначално свързване</translation>
 <translation id="8206859287963243715">Клетъчно</translation>
@@ -839,6 +855,7 @@
 <translation id="8352772353338965963">Добавете профил към функцията за централизиран вход. Всички профили, в които влезете чрез нея, ще бъдат достъпни без парола, така че трябва да използвате тази функция само с надеждни профили.</translation>
 <translation id="8364946094152050673">Не са посочени сървъри за имена</translation>
 <translation id="8372477600026034341">Допълнителни хостове</translation>
+<translation id="8373046809163484087">Използване на цветови набори, съответстващи на тапета ви</translation>
 <translation id="8380114448424469341">Прикрепване на прозореца в <ph name="DIRECTION" /> половина на екрана</translation>
 <translation id="8395584934117017006">Това устройство <ph name="DEVICE_TYPE" /> се управлява корпоративно</translation>
 <translation id="8398927464629426868">Скоростта, с която устройството се зарежда или разрежда в момента</translation>
@@ -858,11 +875,13 @@
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="8503836310948963452">Само още няколко минути…</translation>
 <translation id="8508640263392900755">Подробности за името на точката за достъп (APN)</translation>
+<translation id="8522687886059337719">Вече имате достъп до нови <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />тапети<ph name="END_LINK_WALLPAPER_SUBPAGE" /> и <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />скрийнсейвър<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Тази опция може да е необходима за свързване с мрежата на оператора ви. За подробности се обърнете към него.</translation>
 <translation id="8576249514688522074">Неинициализирана</translation>
 <translation id="8620617069779373398">Състояние на роуминга</translation>
+<translation id="86356131183441916">Светлолилав</translation>
 <translation id="8655295600908251630">Канал</translation>
 <translation id="8655828773034788261">Споделяне на URL адреса:</translation>
 <translation id="8660881923941176839">фунта</translation>
@@ -947,6 +966,7 @@
 <translation id="945522503751344254">Изпращане на отзиви</translation>
 <translation id="952992212772159698">Не е активиран</translation>
 <translation id="960719561871045870">Код на оператора</translation>
+<translation id="979450713603643090">Светлорозов</translation>
 <translation id="982713511914535780">Тестване на разреждането</translation>
 <translation id="987264212798334818">Общи</translation>
 </translationbundle>

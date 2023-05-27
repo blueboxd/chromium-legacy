@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Dawn Mac x64 DEPS Builder",
-              "project": "chromium-m113"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-dawn-archive",
@@ -31,8 +31,8 @@
           {
             "builder_id": {
               "bucket": "ci",
-              "builder": "Dawn Mac x64 DEPS Release (Intel)",
-              "project": "chromium-m113"
+              "builder": "Dawn Mac x64 DEPS Release (AMD)",
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-dawn-archive",
@@ -53,7 +53,37 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Dawn Mac x64 DEPS Builder",
-                "project": "chromium-m113"
+                "project": "chromium"
+              },
+              "run_tests_serially": true
+            }
+          },
+          {
+            "builder_id": {
+              "bucket": "ci",
+              "builder": "Dawn Mac x64 DEPS Release (Intel)",
+              "project": "chromium"
+            },
+            "builder_spec": {
+              "build_gs_bucket": "chromium-dawn-archive",
+              "builder_group": "chromium.dawn",
+              "execution_mode": "TEST",
+              "legacy_chromium_config": {
+                "apply_configs": [
+                  "mb"
+                ],
+                "build_config": "Release",
+                "config": "chromium",
+                "target_bits": 64,
+                "target_platform": "mac"
+              },
+              "legacy_gclient_config": {
+                "config": "chromium"
+              },
+              "parent": {
+                "bucket": "ci",
+                "builder": "Dawn Mac x64 DEPS Builder",
+                "project": "chromium"
               },
               "run_tests_serially": true
             }
@@ -64,14 +94,19 @@
         {
           "bucket": "ci",
           "builder": "Dawn Mac x64 DEPS Builder",
-          "project": "chromium-m113"
+          "project": "chromium"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
+          "builder": "Dawn Mac x64 DEPS Release (AMD)",
+          "project": "chromium"
+        },
+        {
+          "bucket": "ci",
           "builder": "Dawn Mac x64 DEPS Release (Intel)",
-          "project": "chromium-m113"
+          "project": "chromium"
         }
       ]
     }
@@ -91,5 +126,6 @@
     ]
   },
   "builder_group": "tryserver.chromium.dawn",
+  "cq": "path-based",
   "recipe": "chromium_trybot"
 }

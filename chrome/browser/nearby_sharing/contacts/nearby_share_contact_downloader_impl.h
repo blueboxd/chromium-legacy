@@ -9,12 +9,13 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/nearby_sharing/common/nearby_share_http_result.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_downloader.h"
 #include "chrome/browser/nearby_sharing/proto/contact_rpc.pb.h"
 #include "chrome/browser/nearby_sharing/proto/rpc_resources.pb.h"
+#include "chromeos/ash/components/nearby/common/client/nearby_http_result.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class NearbyShareClient;
@@ -68,13 +69,13 @@ class NearbyShareContactDownloaderImpl : public NearbyShareContactDownloader {
       const absl::optional<std::string>& next_page_token);
   void OnListContactPeopleSuccess(
       const nearbyshare::proto::ListContactPeopleResponse& response);
-  void OnListContactPeopleFailure(NearbyShareHttpError error);
+  void OnListContactPeopleFailure(ash::nearby::NearbyHttpError error);
   void OnListContactPeopleTimeout();
 
   size_t current_page_number_ = 0;
   std::vector<nearbyshare::proto::ContactRecord> contacts_;
   base::TimeDelta timeout_;
-  NearbyShareClientFactory* client_factory_ = nullptr;
+  raw_ptr<NearbyShareClientFactory, ExperimentalAsh> client_factory_ = nullptr;
   base::TimeTicks start_timestamp_;
   std::unique_ptr<NearbyShareClient> client_;
   base::OneShotTimer timer_;

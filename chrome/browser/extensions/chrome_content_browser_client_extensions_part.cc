@@ -60,8 +60,8 @@
 #include "extensions/browser/extension_service_worker_message_filter.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/extensions_guest_view.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
-#include "extensions/browser/info_map.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/service_worker/service_worker_host.h"
@@ -762,13 +762,26 @@ bool ChromeContentBrowserClientExtensionsPart::
   // of the process.
   //
   // Ensure that we are only granting extension preferences to URLs with
-  // the correct scheme. Without this check, chrome-guest:// schemes used by
-  // webview tags as well as hosts that happen to match the id of an
-  // installed extension would get the wrong preferences.
+  // the correct scheme. Without this check, hosts that happen to match the id
+  // of an installed extension would get the wrong preferences.
+  // TODO(crbug.com/1435121): Once the `web_prefs` have been set based on
+  // `extension` below, they are not unset when navigating a tab from an
+  // extension page to a regular web page. We should clear extension settings in
+  // this case.
   const GURL& site_url =
       web_contents->GetPrimaryMainFrame()->GetSiteInstance()->GetSiteURL();
   if (!site_url.SchemeIs(kExtensionScheme))
     return false;
+
+  // If a webview navigates to a webview accessible resource, extension
+  // preferences should not be applied to the webview.
+  // TODO(crbug.com/1435121): Once it is possible to clear extension settings
+  // after a navigation, we can remove this case so that extension settings can
+  // apply to webview accessible resources without impacting web pages
+  // subsequently loaded in the webview.
+  if (WebViewGuest::FromWebContents(web_contents)) {
+    return false;
+  }
 
   const Extension* extension =
       registry->enabled_extensions().GetByID(site_url.host());

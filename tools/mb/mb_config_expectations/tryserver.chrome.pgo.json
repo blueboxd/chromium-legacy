@@ -1,6 +1,7 @@
 {
   "android-arm32-pgo": {
     "gn_args": {
+      "android_override_version_code": "1234567890",
       "chrome_pgo_phase": 1,
       "clang_use_default_sample_profile": false,
       "debuggable_apks": false,
@@ -12,11 +13,12 @@
       "symbol_level": 1,
       "target_cpu": "arm",
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android-arm64-pgo": {
     "gn_args": {
+      "android_override_version_code": "1234567890",
       "chrome_pgo_phase": 1,
       "clang_use_default_sample_profile": false,
       "debuggable_apks": false,
@@ -28,11 +30,47 @@
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "lacros-amd64-generic-pgo": {
     "args_file": "//build/args/chromeos/amd64-generic-crostoolchain.gni",
+    "gn_args": {
+      "chrome_pgo_phase": 1,
+      "chromeos_is_browser_only": true,
+      "dcheck_always_on": false,
+      "is_cfi": true,
+      "is_chrome_branded": true,
+      "is_chromeos_device": true,
+      "is_debug": false,
+      "is_official_build": true,
+      "is_on_release_branch": true,
+      "symbol_level": 0,
+      "target_os": "chromeos",
+      "use_remoteexec": true,
+      "use_thin_lto": true
+    }
+  },
+  "lacros-arm-generic-pgo": {
+    "args_file": "//build/args/chromeos/arm-generic-crostoolchain.gni",
+    "gn_args": {
+      "chrome_pgo_phase": 1,
+      "chromeos_is_browser_only": true,
+      "dcheck_always_on": false,
+      "is_cfi": true,
+      "is_chrome_branded": true,
+      "is_chromeos_device": true,
+      "is_debug": false,
+      "is_official_build": true,
+      "is_on_release_branch": true,
+      "symbol_level": 0,
+      "target_os": "chromeos",
+      "use_remoteexec": true,
+      "use_thin_lto": true
+    }
+  },
+  "lacros-arm64-generic-pgo": {
+    "args_file": "//build/args/chromeos/arm64-generic-crostoolchain.gni",
     "gn_args": {
       "chrome_pgo_phase": 1,
       "chromeos_is_browser_only": true,
@@ -58,7 +96,7 @@
       "is_official_build": true,
       "is_on_release_branch": true,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac-arm-pgo": {
@@ -73,7 +111,7 @@
       "is_on_release_branch": true,
       "symbol_level": 0,
       "target_cpu": "arm64",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "mac-pgo": {
@@ -87,7 +125,7 @@
       "is_official_build": true,
       "is_on_release_branch": true,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "win32-pgo": {
@@ -100,7 +138,7 @@
       "is_on_release_branch": true,
       "symbol_level": 0,
       "target_cpu": "x86",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "win64-pgo": {
@@ -113,7 +151,7 @@
       "is_on_release_branch": true,
       "symbol_level": 0,
       "target_cpu": "x64",
-      "use_goma": true
+      "use_remoteexec": true
     }
   }
 }

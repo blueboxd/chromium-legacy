@@ -200,7 +200,8 @@ scoped_refptr<media::StreamParserBuffer> MakeVideoStreamParserBuffer(
 SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
                            MediaSource* source,
                            EventQueue* async_event_queue)
-    : ExecutionContextLifecycleObserver(source->GetExecutionContext()),
+    : ActiveScriptWrappable<SourceBuffer>({}),
+      ExecutionContextLifecycleObserver(source->GetExecutionContext()),
       web_source_buffer_(std::move(web_source_buffer)),
       source_(source),
       track_defaults_(MakeGarbageCollected<TrackDefaultList>()),
@@ -233,9 +234,7 @@ SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
     video_tracks_ = attachment->CreateVideoTrackList(tracer);
     DCHECK(video_tracks_);
   } else {
-    DCHECK(RuntimeEnabledFeatures::MediaSourceInWorkersEnabled(
-               GetExecutionContext()) &&
-           GetExecutionContext()->IsDedicatedWorkerGlobalScope());
+    DCHECK(GetExecutionContext()->IsDedicatedWorkerGlobalScope());
     DCHECK(!IsMainThread());
 
     // TODO(https://crbug.com/878133): Enable construction of media tracks that

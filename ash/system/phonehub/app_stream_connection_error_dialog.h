@@ -7,7 +7,9 @@
 
 #include "ash/ash_export.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/scoped_multi_source_observation.h"
+#include "ui/events/event.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -16,7 +18,7 @@ namespace gfx {
 class Rect;
 }
 
-using StartTetheringCallback = base::OnceCallback<void()>;
+using StartTetheringCallback = base::OnceCallback<void(const ui::Event&)>;
 
 namespace ash {
 
@@ -29,7 +31,9 @@ class ASH_EXPORT AppStreamConnectionErrorDialog : public views::WidgetObserver,
   AppStreamConnectionErrorDialog(
       views::View* host_view,
       base::OnceClosure on_close_callback,
-      StartTetheringCallback start_tethering_callback);
+      StartTetheringCallback start_tethering_callback,
+      bool is_different_network,
+      bool is_phone_on_cellular);
   AppStreamConnectionErrorDialog(const AppStreamConnectionErrorDialog& other) =
       delete;
   AppStreamConnectionErrorDialog& operator=(
@@ -52,9 +56,9 @@ class ASH_EXPORT AppStreamConnectionErrorDialog : public views::WidgetObserver,
   views::Widget* widget() { return widget_; }
 
  private:
-  views::Widget* widget_ = nullptr;
+  raw_ptr<views::Widget, ExperimentalAsh> widget_ = nullptr;
 
-  views::View* const host_view_;
+  const raw_ptr<views::View, ExperimentalAsh> host_view_;
 
   base::OnceClosure on_close_callback_;
 

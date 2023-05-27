@@ -40,9 +40,11 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test.h"
@@ -140,16 +142,6 @@ content::WebContents* GetWebContentsFromCloudUploadDialog() {
   return web_contents;
 }
 
-// Fill in the placeholder from `script_with_placeholder` with the JS command
-// to retrieve the HTML `element`. Return the resulting JS script.
-std::string ScriptFillPlaceholder(const char script_with_placeholder[],
-                                  std::string element) {
-  const char element_with_placeholder[] = "document.querySelectorAll('%s')[0]";
-  std::string element_script =
-      base::StringPrintf(element_with_placeholder, element.c_str());
-  return base::StringPrintf(script_with_placeholder, element_script.c_str());
-}
-
 // Set email (using a domain from |kNonManagedDomainPatterns|) to login a
 // non-managed user. Intended to be used in the override of |SetUpCommandLine|
 // from |InProcessBrowserTest| to ensure
@@ -169,7 +161,8 @@ void SetUpCommandLineForNonManagedUser(base::CommandLine* command_line) {
 class FileHandlerDialogBrowserTest : public InProcessBrowserTest {
  public:
   FileHandlerDialogBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kUploadOfficeToCloud);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
   }
 
   FileHandlerDialogBrowserTest(const FileHandlerDialogBrowserTest&) = delete;
@@ -191,8 +184,8 @@ class FileHandlerDialogBrowserTest : public InProcessBrowserTest {
   // Create test office files and store in `files_` and create `num_tasks_` fake
   // web apps for all office file types.
   void SetUpTasksAndFiles() {
-    // Create `n` fake web apps for office files with the Doc extension and
-    // store the created `urls_` and `tasks_`.
+    // Create `num_tasks_` fake web apps for office files with the Doc extension
+    // and store the created `urls_` and `tasks_`.
     CreateFakeWebApps(
         profile(), &urls_, &tasks_,
         {kDocxFileExtension, kPptxFileExtension, kXlsxFileExtension},
@@ -279,6 +272,8 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest,
       FindSystemWebAppBrowser(profile(), SystemWebAppType::FILE_MANAGER);
   ASSERT_EQ(nullptr, browser);
 
+  ui_test_utils::BrowserChangeObserver browser_added_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   // Open a files app window.
   base::RunLoop run_loop;
   file_manager::util::ShowItemInFolder(
@@ -290,6 +285,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest,
             run_loop.Quit();
           }));
   run_loop.Run();
+  browser_added_observer.Wait();
 
   browser = FindSystemWebAppBrowser(profile(), SystemWebAppType::FILE_MANAGER);
   ASSERT_NE(nullptr, browser);
@@ -324,6 +320,8 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, ModalParentProvided) {
   ASSERT_EQ(nullptr, browser);
 
   // Open a files app window.
+  ui_test_utils::BrowserChangeObserver browser_added_observer(
+      nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
   base::RunLoop run_loop;
   file_manager::util::ShowItemInFolder(
       profile(), files_.at(0).path(),
@@ -334,6 +332,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, ModalParentProvided) {
             run_loop.Quit();
           }));
   run_loop.Run();
+  browser_added_observer.Wait();
 
   browser = FindSystemWebAppBrowser(profile(), SystemWebAppType::FILE_MANAGER);
   ASSERT_NE(nullptr, browser);
@@ -390,34 +389,27 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, OpenFileTaskFromDialog) {
   // Get the `tasks` member from the `FileHandlerPageElement` which are all of
   // the observed local file tasks.
   bool dialog_init_complete = false;
-  base::internal::JSONParser parser(base::JSON_PARSE_RFC);
-  absl::optional<base::Value> value;
-  std::string result;
+  base::Value::List observed_app_ids;
   while (!dialog_init_complete) {
     // It is possible that the `FileHandlerPageElement` element still hasn't
-    // been initiated yet. It is completed when the `tasks` member is non-empty.
-    if (!content::ExecuteScriptAndExtractString(
-            web_contents,
-            base::StringPrintf(
-                "domAutomationController.send(%s)",
-                ScriptFillPlaceholder(
-                    "JSON.stringify(%s.tasks.map(task => task.appId))",
-                    "file-handler-page")
-                    .c_str()),
-            &result)) {
+    // been initiated yet. It is completed when the `localTasks` member is
+    // non-empty.
+    content::EvalJsResult eval_result =
+        content::EvalJs(web_contents,
+                        "document.querySelector('file-handler-page')"
+                        ".localTasks.map(task => task.appId)");
+    if (!eval_result.error.empty()) {
       continue;
     }
-    value = parser.Parse(result);
-    ASSERT_TRUE(value->is_list());
-    dialog_init_complete = !(value->GetList().empty());
+    observed_app_ids = eval_result.ExtractList().TakeList();
+    dialog_init_complete = !observed_app_ids.empty();
   }
 
-  base::Value::List& observed_app_ids = value->GetList();
-// Check QuickOffice was not observed by the dialog.
+// Check QuickOffice was observed by the dialog as it should always be shown.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   ASSERT_TRUE(file_manager::file_tasks::IsExtensionInstalled(
       profile(), extension_misc::kQuickOfficeComponentExtensionId));
-  ASSERT_LT(PositionInList(observed_app_ids,
+  ASSERT_GE(PositionInList(observed_app_ids,
                            extension_misc::kQuickOfficeComponentExtensionId),
             0);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -426,7 +418,7 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, OpenFileTaskFromDialog) {
   // task to be opened. Use this to find the `selected_task_position` and to
   // watch for the appropriate url in `urls_` to open.
   size_t selected_task = 1;
-  // Position of the selected task in dialog's tasks array - this is not
+  // Position of the selected task in dialog's localTasks array - this is not
   // necessarily the same as the `tasks_` vector. Its position is its id
   // so use this to click the task's button.
   size_t selected_task_position;
@@ -458,22 +450,20 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, OpenFileTaskFromDialog) {
       &default_task));
 
   // Expand local tasks accordion.
-  std::string expand_local_tasks = "%s.$('#accordion').click()";
   EXPECT_TRUE(content::ExecJs(
       web_contents,
-      ScriptFillPlaceholder(expand_local_tasks.c_str(), "file-handler-page")));
+      "document.querySelector('file-handler-page').$('#accordion').click()"));
 
   // Click the selected task.
-  std::string rename_task_id =
-      "%s.$('#id" + base::NumberToString(selected_task_position) + "').click()";
+  std::string position_string = base::NumberToString(selected_task_position);
   EXPECT_TRUE(content::ExecJs(
-      web_contents,
-      ScriptFillPlaceholder(rename_task_id.c_str(), "file-handler-page")));
+      web_contents, "document.querySelector('file-handler-page').$('#id" +
+                        position_string + "').click()"));
 
   // Click the open button.
-  EXPECT_TRUE(content::ExecJs(
-      web_contents, ScriptFillPlaceholder("%s.$('.action-button').click()",
-                                          "file-handler-page")));
+  EXPECT_TRUE(content::ExecJs(web_contents,
+                              "document.querySelector('file-handler-page')"
+                              ".$('.action-button').click()"));
 
   // Wait for selected task to open.
   navigation_observer_task.Wait();
@@ -552,7 +542,8 @@ IN_PROC_BROWSER_TEST_F(FileHandlerDialogBrowserTest, OnDialogCompleteNoCrash) {
 class FixUpFlowBrowserTest : public InProcessBrowserTest {
  public:
   FixUpFlowBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kUploadOfficeToCloud);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
   }
 
   FixUpFlowBrowserTest(const FixUpFlowBrowserTest&) = delete;
@@ -574,7 +565,7 @@ class FixUpFlowBrowserTest : public InProcessBrowserTest {
   void AddFakeODFS() {
     auto fake_provider =
         ash::file_system_provider::FakeExtensionProvider::Create(
-            file_manager::file_tasks::kODFSExtensionId);
+            extension_misc::kODFSExtensionId);
     const auto kProviderId = fake_provider->GetId();
     auto* service = file_system_provider::Service::Get(profile());
     service->RegisterProvider(std::move(fake_provider));
@@ -631,16 +622,15 @@ IN_PROC_BROWSER_TEST_F(FixUpFlowBrowserTest, FixUpFlowWhenODFSNotMounted) {
   // Click through the Welcome Page.
   while (!content::ExecJs(
       web_contents,
-      ScriptFillPlaceholder(
-          "%s.$('welcome-page').querySelector('.action-button').click()",
-          "cloud-upload"))) {
+      "document.querySelector('cloud-upload').$('welcome-page')"
+      ".querySelector('.action-button').click()")) {
   }
 
   // Wait for the ODFS Sign In Page.
   while (!content::ExecJs(
-      web_contents, ScriptFillPlaceholder(
-                        "%s.$('sign-in-page').querySelector('.action-button')",
-                        "cloud-upload"))) {
+      web_contents,
+      "document.querySelector('cloud-upload').$('sign-in-page')"
+      ".querySelector('.action-button')")) {
   }
 }
 
@@ -674,18 +664,16 @@ IN_PROC_BROWSER_TEST_F(FixUpFlowBrowserTest,
   // Click through the Welcome Page.
   while (!content::ExecJs(
       web_contents,
-      ScriptFillPlaceholder(
-          "%s.$('welcome-page').querySelector('.action-button').click()",
-          "cloud-upload"))) {
+      "document.querySelector('cloud-upload').$('welcome-page')"
+      ".querySelector('.action-button').click()")) {
   }
 
   // Wait for the Office PWA Install Page, this script will fail until the page
   // exists.
   while (!content::ExecJs(
       web_contents,
-      ScriptFillPlaceholder(
-          "%s.$('office-pwa-install-page').querySelector('.action-button')",
-          "cloud-upload"))) {
+      "document.querySelector('cloud-upload').$('office-pwa-install-page')"
+      ".querySelector('.action-button')")) {
   }
 }
 
@@ -753,17 +741,15 @@ IN_PROC_BROWSER_TEST_F(FixUpFlowBrowserTest,
   // Click through the Welcome Page.
   while (!content::ExecJs(
       web_contents,
-      ScriptFillPlaceholder(
-          "%s.$('welcome-page').querySelector('.action-button').click()",
-          "cloud-upload"))) {
+      "document.querySelector('cloud-upload').$('welcome-page')"
+      ".querySelector('.action-button').click()")) {
   }
 
   // Click through the Upload Page.
-  while (!content::ExecJs(
-      web_contents,
-      ScriptFillPlaceholder(
-          "%s.$('upload-page').querySelector('.action-button').click()",
-          "cloud-upload"))) {
+  while (
+      !content::ExecJs(web_contents,
+                       "document.querySelector('cloud-upload').$('upload-page')"
+                       ".querySelector('.action-button').click()")) {
   }
 
   // Check that the Office PWA has been made the default for doc files.
@@ -825,17 +811,15 @@ IN_PROC_BROWSER_TEST_F(FixUpFlowBrowserTest,
   // Click through the Welcome Page.
   while (!content::ExecJs(
       web_contents,
-      ScriptFillPlaceholder(
-          "%s.$('welcome-page').querySelector('.action-button').click()",
-          "cloud-upload"))) {
+      "document.querySelector('cloud-upload').$('welcome-page')"
+      ".querySelector('.action-button').click()")) {
   }
 
   // Click through the Upload Page.
-  while (!content::ExecJs(
-      web_contents,
-      ScriptFillPlaceholder(
-          "%s.$('upload-page').querySelector('.action-button').click()",
-          "cloud-upload"))) {
+  while (
+      !content::ExecJs(web_contents,
+                       "document.querySelector('cloud-upload').$('upload-page')"
+                       ".querySelector('.action-button').click()")) {
   }
 
   // Check that there is still not a default task for doc files.
@@ -849,7 +833,8 @@ IN_PROC_BROWSER_TEST_F(FixUpFlowBrowserTest,
 class MoveConfirmationDialogBrowserTest : public InProcessBrowserTest {
  public:
   MoveConfirmationDialogBrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kUploadOfficeToCloud);
+    feature_list_.InitAndEnableFeature(
+        chromeos::features::kUploadOfficeToCloud);
   }
 
   MoveConfirmationDialogBrowserTest(const MoveConfirmationDialogBrowserTest&) =
@@ -871,17 +856,17 @@ class MoveConfirmationDialogBrowserTest : public InProcessBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Tests that the preference |kOfficeMoveConfirmationShown| is False before the
-// `kMoveConfirmationGoogleDrive` dialog and True afterwards.
+// Tests that the preference |kOfficeMoveConfirmationShownForDrive| is False
+// before the `kMoveConfirmationGoogleDrive` dialog and True afterwards.
 IN_PROC_BROWSER_TEST_F(MoveConfirmationDialogBrowserTest,
                        MoveConfirmationGoogleDriveSetsPref) {
-  ASSERT_FALSE(
-      file_manager::file_tasks::OfficeMoveConfirmationShown(profile()));
+  ASSERT_FALSE(file_manager::file_tasks::GetOfficeMoveConfirmationShownForDrive(
+      profile()));
   {
     base::RunLoop run_loop;
     PrefChangeRegistrar change_observer;
     change_observer.Init(profile()->GetPrefs());
-    change_observer.Add(prefs::kOfficeMoveConfirmationShown,
+    change_observer.Add(prefs::kOfficeMoveConfirmationShownForDrive,
                         run_loop.QuitClosure());
     mojom::DialogArgsPtr args = mojom::DialogArgs::New();
     args->dialog_page = mojom::DialogPage::kMoveConfirmationGoogleDrive;
@@ -895,17 +880,18 @@ IN_PROC_BROWSER_TEST_F(MoveConfirmationDialogBrowserTest,
   }
 }
 
-// Tests that the preference |kOfficeMoveConfirmationShown| is False before the
-// `kMoveConfirmationOneDrive` dialog and True afterwards.
+// Tests that the preference |kOfficeMoveConfirmationShownForOneDrive| is False
+// before the `kMoveConfirmationOneDrive` dialog and True afterwards.
 IN_PROC_BROWSER_TEST_F(MoveConfirmationDialogBrowserTest,
                        MoveConfirmationOneDriveSetsPref) {
   ASSERT_FALSE(
-      file_manager::file_tasks::OfficeMoveConfirmationShown(profile()));
+      file_manager::file_tasks::GetOfficeMoveConfirmationShownForOneDrive(
+          profile()));
   {
     base::RunLoop run_loop;
     PrefChangeRegistrar change_observer;
     change_observer.Init(profile()->GetPrefs());
-    change_observer.Add(prefs::kOfficeMoveConfirmationShown,
+    change_observer.Add(prefs::kOfficeMoveConfirmationShownForOneDrive,
                         run_loop.QuitClosure());
     mojom::DialogArgsPtr args = mojom::DialogArgs::New();
     args->dialog_page = mojom::DialogPage::kMoveConfirmationOneDrive;

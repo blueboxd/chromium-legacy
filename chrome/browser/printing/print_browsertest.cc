@@ -115,12 +115,7 @@ using OnDidCreatePrintJobCallback =
 namespace {
 
 constexpr int kTestPrinterCapabilitiesMaxCopies = 99;
-constexpr int kDefaultDocumentCookie = 1234;
-
-const PrinterSemanticCapsAndDefaults::Paper kTestPaper{
-    /*display_name=*/"Letter", /*vendor_id=*/"45",
-    /*size_um=*/gfx::Size(215900, 279400),
-    /*printable_area_um=*/gfx::Rect(0, 0, 215900, 279400)};
+const int kDefaultDocumentCookie = PrintSettings::NewCookie();
 
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 constexpr char kFakeDmToken[] = "fake-dm-token";
@@ -600,7 +595,8 @@ void PrintBrowserTest::AddPrinter(const std::string& printer_name) {
   default_caps->copies_max = kTestPrinterCapabilitiesMaxCopies;
   default_caps->dpis = kTestPrinterCapabilitiesDefaultDpis;
   default_caps->default_dpi = kTestPrinterCapabilitiesDpi;
-  default_caps->papers.push_back(kTestPaper);
+  default_caps->papers.push_back(kTestPaperLetter);
+  default_caps->papers.push_back(kTestPaperLegal);
   test_print_backend_->AddValidPrinter(
       printer_name, std::move(default_caps),
       std::make_unique<PrinterBasicInfo>(printer_info));
@@ -1593,7 +1589,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintExtensionBrowserTest,
 
 // Printing frame content for the main frame of a generic webpage with N-up
 // printing. This is a regression test for https://crbug.com/937247
-IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintNup) {
+// TODO(crbug.com/1371776): Fix flakiness and re-enable.
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest, DISABLED_PrintNup) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/multipagenup.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -1616,7 +1613,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintNup) {
 }
 
 // Site per process version of PrintBrowserTest.PrintNup.
-IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, PrintNup) {
+// TODO(crbug.com/1371776): Fix flakiness and re-enable.
+IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest, DISABLED_PrintNup) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/multipagenup.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));

@@ -143,11 +143,22 @@ class AutofillProfile : public AutofillDataModel {
   bool operator==(const AutofillProfile& profile) const;
   virtual bool operator!=(const AutofillProfile& profile) const;
 
-  // Like IsSubsetOf, but considers only the given |types|.
+  // Tests that for every supported type of AutofillProfile, the values of
+  // `this` and `profile` either agree or the value of `*this` is empty (meaning
+  // that `this` is a subset of `profile`).
+  // Note that a profile is considered a subset of itself.
+  // Comparisons are done using the `comparator`.
+  bool IsSubsetOf(const AutofillProfileComparator& comparator,
+                  const AutofillProfile& profile) const;
+
+  // Like `IsSubsetOf()`, but considers only the given `types`.
   bool IsSubsetOfForFieldSet(const AutofillProfileComparator& comparator,
                              const AutofillProfile& profile,
-                             const std::string& app_locale,
                              const ServerFieldTypeSet& types) const;
+
+  // Like `IsSubsetOf()`, but for strict superset instead of subset.
+  bool IsStrictSupersetOf(const AutofillProfileComparator& comparator,
+                          const AutofillProfile& profile) const;
 
   // Overwrites the data of |this| profile with data from the given |profile|.
   // Expects that the profiles have the same guid.

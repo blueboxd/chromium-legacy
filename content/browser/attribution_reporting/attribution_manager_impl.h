@@ -32,6 +32,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "content/browser/attribution_reporting/attribution_reporting.mojom-forward.h"
+#endif
+
 namespace attribution_reporting {
 class SuitableOrigin;
 }  // namespace attribution_reporting
@@ -109,7 +113,11 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       const base::FilePath& user_data_directory,
       scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy);
 
-  static attribution_reporting::mojom::OsSupport GetOsSupport();
+  static network::mojom::AttributionSupport GetSupport();
+
+#if BUILDFLAG(IS_ANDROID)
+  static void UpdateSupportForRenderProcessHosts();
+#endif
 
   AttributionManagerImpl(
       StoragePartitionImpl* storage_partition,
@@ -165,7 +173,9 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
     return attribution_os_level_manager_.get();
   }
 
-  void NotifyOsRegistration(const OsRegistration&, bool is_debug_key_allowed);
+  void NotifyOsRegistration(const OsRegistration&,
+                            bool is_debug_key_allowed,
+                            attribution_reporting::mojom::OsRegistrationResult);
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -185,7 +195,6 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
       std::unique_ptr<AttributionStorageDelegate> storage_delegate,
       std::unique_ptr<AttributionCookieChecker> cookie_checker,
       std::unique_ptr<AttributionReportSender> report_sender,
-      std::unique_ptr<AttributionDataHostManager> data_host_manager,
       scoped_refptr<base::UpdateableSequencedTaskRunner> storage_task_runner);
 
   void MaybeEnqueueEvent(SourceOrTrigger);
@@ -256,6 +265,9 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   void OverrideOsLevelManagerForTesting(
       std::unique_ptr<AttributionOsLevelManager>);
   void ProcessNextOsEvent();
+  void OnOsRegistration(const OsRegistration&,
+                        bool is_debug_key_allowed,
+                        bool success);
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // Never null.
@@ -303,8 +315,7 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
   // We keep track of pending reports timings in memory to record metrics
   // when the browser becomes unavailable to send reports due to becoming
   // offline or being shutdown.
-  base::flat_map<AttributionReport::AggregatableAttributionData::Id,
-                 PendingReportTimings>
+  base::flat_map<AttributionReport::Id, PendingReportTimings>
       pending_aggregatable_reports_;
 
   base::ObserverList<AttributionObserver> observers_;

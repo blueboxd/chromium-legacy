@@ -205,7 +205,6 @@
           "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -228,7 +227,6 @@
           "--test-launcher-jobs=1"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "browser_tests_functional",
@@ -250,7 +248,6 @@
           "--gtest_filter=WebRtc*"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -273,7 +270,6 @@
           "--test-launcher-jobs=1"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "content_browsertests_sequential",
@@ -298,7 +294,6 @@
           "--test-launcher-timeout=120000"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "content_browsertests_stress",
@@ -320,7 +315,6 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -341,7 +335,6 @@
           "--gtest_filter=Webrtc*"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -381,7 +374,6 @@
           "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -404,7 +396,6 @@
           "--test-launcher-jobs=1"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "browser_tests_functional",
@@ -426,7 +417,6 @@
           "--gtest_filter=WebRtc*"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -449,7 +439,6 @@
           "--test-launcher-jobs=1"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "content_browsertests_sequential",
@@ -474,7 +463,6 @@
           "--test-launcher-timeout=120000"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "content_browsertests_stress",
@@ -496,7 +484,6 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -517,7 +504,6 @@
           "--gtest_filter=Webrtc*"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -557,7 +543,6 @@
           "--test-launcher-print-test-stdio=always"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -580,7 +565,6 @@
           "--test-launcher-jobs=1"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "browser_tests_functional",
@@ -602,7 +586,6 @@
           "--gtest_filter=WebRtc*"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -625,7 +608,6 @@
           "--test-launcher-jobs=1"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "content_browsertests_sequential",
@@ -650,7 +632,6 @@
           "--test-launcher-timeout=120000"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "content_browsertests_stress",
@@ -672,7 +653,6 @@
           "--test-launcher-filter-file=../../testing/buildbot/filters/webrtc.content_unittests.filter"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -693,7 +673,6 @@
           "--gtest_filter=Webrtc*"
         ],
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
@@ -719,7 +698,7 @@
           "--platform",
           "iPad Air (3rd generation)",
           "--version",
-          "14.5",
+          "16.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -728,10 +707,9 @@
         ],
         "isolate_name": "ios_remoting_unittests",
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests iPad Air (3rd generation) 14.5",
+        "name": "ios_remoting_unittests iPad Air (3rd generation) 16.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -742,7 +720,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
             }
           ],
           "dimension_sets": [
@@ -757,21 +735,21 @@
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_14_5",
-              "path": "Runtime-ios-14.5"
+              "name": "runtime_ios_16_2",
+              "path": "Runtime-ios-16.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
-        "variant_id": "iPad Air (3rd generation) 14.5"
+        "variant_id": "iPad Air (3rd generation) 16.2"
       },
       {
         "args": [
           "--platform",
           "iPhone X",
           "--version",
-          "14.5",
+          "16.2",
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
@@ -780,10 +758,9 @@
         ],
         "isolate_name": "ios_remoting_unittests",
         "merge": {
-          "args": [],
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests iPhone X 14.5",
+        "name": "ios_remoting_unittests iPhone X 16.2",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -794,7 +771,7 @@
             {
               "cipd_package": "infra/tools/mac_toolchain/${platform}",
               "location": ".",
-              "revision": "git_revision:723fc1a6c8cdf2631a57851f5610e598db0c1de1"
+              "revision": "git_revision:a598cd77abc01089647a79e3cfa3cc8e8ecb5118"
             }
           ],
           "dimension_sets": [
@@ -809,14 +786,14 @@
               "path": "Xcode.app"
             },
             {
-              "name": "runtime_ios_14_5",
-              "path": "Runtime-ios-14.5"
+              "name": "runtime_ios_16_2",
+              "path": "Runtime-ios-16.2"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
-        "variant_id": "iPhone X 14.5"
+        "variant_id": "iPhone X 16.2"
       }
     ]
   }

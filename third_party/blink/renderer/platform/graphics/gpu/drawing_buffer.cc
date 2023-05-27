@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -383,8 +384,8 @@ DrawingBuffer::RegisteredBitmap DrawingBuffer::CreateOrRecycleBitmap(
 
   const viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
   const viz::SharedImageFormat format = viz::SinglePlaneFormat::kRGBA_8888;
-  base::MappedReadOnlyRegion shm = viz::bitmap_allocation::AllocateSharedBitmap(
-      size_, format.resource_format());
+  base::MappedReadOnlyRegion shm =
+      viz::bitmap_allocation::AllocateSharedBitmap(size_, format);
   auto bitmap = base::MakeRefCounted<cc::CrossThreadSharedBitmap>(
       id, std::move(shm), size_, format);
   RegisteredBitmap registered = {
@@ -464,7 +465,7 @@ DrawingBuffer::GetUnacceleratedStaticBitmapImage(bool flip_y) {
   if (!bitmap.tryAllocN32Pixels(size_.width(), size_.height()))
     return nullptr;
   ReadFramebufferIntoBitmapPixels(static_cast<uint8_t*>(bitmap.getPixels()));
-  auto sk_image = SkImage::MakeFromBitmap(bitmap);
+  auto sk_image = SkImages::RasterFromBitmap(bitmap);
 
   bool origin_top_left =
       flip_y ? opengl_flip_y_extension_ : !opengl_flip_y_extension_;
@@ -504,7 +505,7 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
       static_cast<uint8_t*>(registered.bitmap->memory()));
 
   *out_resource = viz::TransferableResource::MakeSoftware(
-      registered.bitmap->id(), size_, viz::RGBA_8888);
+      registered.bitmap->id(), size_, viz::SinglePlaneFormat::kRGBA_8888);
   out_resource->color_space = back_color_buffer_->color_space;
 
   // This holds a ref on the DrawingBuffer that will keep it alive until the
@@ -698,7 +699,7 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
     if (!black_bitmap.tryAllocN32Pixels(size_.width(), size_.height()))
       return nullptr;
     black_bitmap.eraseARGB(0, 0, 0, 0);
-    sk_sp<SkImage> black_image = SkImage::MakeFromBitmap(black_bitmap);
+    sk_sp<SkImage> black_image = SkImages::RasterFromBitmap(black_bitmap);
     if (!black_image)
       return nullptr;
     return UnacceleratedStaticBitmapImage::Create(black_image);
@@ -801,19 +802,14 @@ scoped_refptr<CanvasResource> DrawingBuffer::ExportCanvasResource() {
 
   SkImageInfo resource_info = SkImageInfo::MakeN32Premul(
       out_resource.size.width(), out_resource.size.height());
-  switch (out_resource.format.resource_format()) {
-    case viz::RGBA_8888:
-      resource_info = resource_info.makeColorType(kRGBA_8888_SkColorType);
-      break;
-    case viz::RGBX_8888:
-      resource_info = resource_info.makeColorType(kRGB_888x_SkColorType);
-      break;
-    case viz::RGBA_F16:
-      resource_info = resource_info.makeColorType(kRGBA_F16_SkColorType);
-      break;
-    default:
-      NOTREACHED();
-      break;
+  if (out_resource.format == viz::SinglePlaneFormat::kRGBA_8888) {
+    resource_info = resource_info.makeColorType(kRGBA_8888_SkColorType);
+  } else if (out_resource.format == viz::SinglePlaneFormat::kRGBX_8888) {
+    resource_info = resource_info.makeColorType(kRGB_888x_SkColorType);
+  } else if (out_resource.format == viz::SinglePlaneFormat::kRGBA_F16) {
+    resource_info = resource_info.makeColorType(kRGBA_F16_SkColorType);
+  } else {
+    NOTREACHED();
   }
 
   return ExternalCanvasResource::Create(
@@ -1138,15 +1134,14 @@ bool DrawingBuffer::CopyToVideoFrame(
   const GrSurfaceOrigin src_surface_origin = src_origin_is_top_left
                                                  ? kTopLeft_GrSurfaceOrigin
                                                  : kBottomLeft_GrSurfaceOrigin;
-  auto copy_function = [&](const gpu::MailboxHolder& src_mailbox,
-                           viz::SharedImageFormat src_format,
-                           SkAlphaType src_alpha_type,
-                           const gfx::Size& src_size,
-                           const gfx::ColorSpace& src_color_space) {
-    return frame_pool->CopyRGBATextureToVideoFrame(
-        src_format.resource_format(), src_size, src_color_space,
-        src_surface_origin, src_mailbox, dst_color_space, std::move(callback));
-  };
+  auto copy_function =
+      [&](const gpu::MailboxHolder& src_mailbox,
+          viz::SharedImageFormat src_format, SkAlphaType src_alpha_type,
+          const gfx::Size& src_size, const gfx::ColorSpace& src_color_space) {
+        return frame_pool->CopyRGBATextureToVideoFrame(
+            src_format, src_size, src_color_space, src_surface_origin,
+            src_mailbox, dst_color_space, std::move(callback));
+      };
   return CopyToPlatformInternal(raster_interface, /*dst_is_unpremul_gl=*/false,
                                 src_buffer, copy_function);
 }
@@ -1883,7 +1878,8 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
           gpu_memory_buffer->SetColorSpace(color_space_);
           back_buffer_mailbox = sii->CreateSharedImage(
               gpu_memory_buffer.get(), gpu_memory_buffer_manager, color_space_,
-              origin, back_buffer_alpha_type, usage | additional_usage_flags);
+              origin, back_buffer_alpha_type, usage | additional_usage_flags,
+              "WebGLDrawingBuffer");
 #if BUILDFLAG(IS_MAC)
           // A CHROMIUM_image backed texture requires a specialized set of
           // parameters on OSX.
@@ -1904,9 +1900,10 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
         back_buffer_alpha_type = kUnpremul_SkAlphaType;
       }
 
-      back_buffer_mailbox = sii->CreateSharedImage(
-          color_buffer_format_, size, color_space_, origin,
-          back_buffer_alpha_type, usage, gpu::kNullSurfaceHandle);
+      back_buffer_mailbox =
+          sii->CreateSharedImage(color_buffer_format_, size, color_space_,
+                                 origin, back_buffer_alpha_type, usage,
+                                 "WebGLDrawingBuffer", gpu::kNullSurfaceHandle);
     }
   }
 

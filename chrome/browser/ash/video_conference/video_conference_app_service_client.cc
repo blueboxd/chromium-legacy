@@ -192,6 +192,15 @@ void VideoConferenceAppServiceClient::OnCapabilityAccessUpdate(
     }
   }
 
+  // For some apps, the instance is firstly removed, and then
+  // OnCapabilityAccessUpdate is called. There is a chance that the app_id is
+  // removed after OnInstanceUpdate, but added back in OnCapabilityAccessUpdate.
+  // Thus we want to remove the app_id if it is not capturing and no instance
+  // running.
+  if (!state.is_capturing_microphone && !state.is_capturing_camera) {
+    MaybeRemoveApp(app_id);
+  }
+
   HandleMediaUsageUpdate();
 }
 
@@ -204,6 +213,11 @@ void VideoConferenceAppServiceClient::OnAppCapabilityAccessCacheWillBeDestroyed(
 void VideoConferenceAppServiceClient::OnInstanceUpdate(
     const apps::InstanceUpdate& update) {
   const AppIdString& app_id = update.AppId();
+
+  // We only care about the apps being tracked already.
+  if (!base::Contains(id_to_app_state_, app_id)) {
+    return;
+  }
 
   // An instance of app_id is about to be destructed.
   if (update.IsDestruction() &&
@@ -218,8 +232,7 @@ void VideoConferenceAppServiceClient::OnInstanceUpdate(
   }
 
   if (update.StateChanged() &&
-      update.State() == apps::InstanceState::kVisible &&
-      base::Contains(id_to_app_state_, app_id)) {
+      (update.State() & apps::InstanceState::kActive) != 0) {
     id_to_app_state_[app_id].last_activity_time = update.LastUpdatedTime();
     return;
   }

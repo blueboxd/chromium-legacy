@@ -7,6 +7,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/metrics_hashes.h"
+#include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/clock.h"
@@ -99,6 +100,7 @@ struct TrainingDataCollectorImpl::TrainingTimings {
 TrainingDataCollectorImpl::TrainingDataCollectorImpl(
     processing::FeatureListQueryProcessor* processor,
     HistogramSignalHandler* histogram_signal_handler,
+    UserActionSignalHandler* user_action_signal_handler,
     StorageService* storage_service,
     std::vector<std::unique_ptr<Config>>* configs,
     PrefService* profile_prefs,
@@ -106,6 +108,7 @@ TrainingDataCollectorImpl::TrainingDataCollectorImpl(
     : segment_info_database_(storage_service->segment_info_database()),
       feature_list_query_processor_(processor),
       histogram_signal_handler_(histogram_signal_handler),
+      user_action_signal_handler_(user_action_signal_handler),
       signal_storage_config_(storage_service->signal_storage_config()),
       configs_(configs),
       clock_(clock),
@@ -116,6 +119,7 @@ TrainingDataCollectorImpl::TrainingDataCollectorImpl(
 
 TrainingDataCollectorImpl::~TrainingDataCollectorImpl() {
   histogram_signal_handler_->RemoveObserver(this);
+  user_action_signal_handler_->RemoveObserver(this);
 }
 
 void TrainingDataCollectorImpl::OnModelMetadataUpdated() {
@@ -137,6 +141,7 @@ void TrainingDataCollectorImpl::OnServiceInitialized() {
 void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
     DefaultModelManager::SegmentInfoList segments) {
   histogram_signal_handler_->AddObserver(this);
+  user_action_signal_handler_->AddObserver(this);
   std::map<SegmentId, proto::SegmentInfo> segment_list =
       GetPreferredSegmentInfo(std::move(segments));
 
@@ -206,9 +211,15 @@ void TrainingDataCollectorImpl::OnGetSegmentsInfoList(
       const auto& trigger = training_config.observation_trigger(i);
       if (trigger.has_uma_trigger() &&
           trigger.uma_trigger().has_uma_feature()) {
-        immediate_trigger_histograms_
-            [trigger.uma_trigger().uma_feature().name_hash()]
-                .emplace(segment.first);
+        const auto& feature = trigger.uma_trigger().uma_feature();
+        if (feature.type() == proto::SignalType::USER_ACTION) {
+          immediate_trigger_user_actions_[feature.name_hash()].emplace(
+              segment.first);
+        } else if (feature.type() == proto::SignalType::HISTOGRAM_VALUE ||
+                   feature.type() == proto::SignalType::HISTOGRAM_ENUM) {
+          immediate_trigger_histograms_[feature.name_hash()].emplace(
+              segment.first);
+        }
       }
     }
   }
@@ -232,20 +243,42 @@ void TrainingDataCollectorImpl::OnHistogramSignalUpdated(
     param->output_value = static_cast<float>(sample);
     for (auto segment : segments) {
       segment_info_database_->GetSegmentInfo(
-          segment, base::BindOnce(&TrainingDataCollectorImpl::
-                                      OnHistogramUpdatedReportForSegmentInfo,
-                                  weak_ptr_factory_.GetWeakPtr(), param));
+          segment,
+          base::BindOnce(
+              &TrainingDataCollectorImpl::OnUmaUpdatedReportForSegmentInfo,
+              weak_ptr_factory_.GetWeakPtr(), param));
     }
   }
 }
 
-void TrainingDataCollectorImpl::OnHistogramUpdatedReportForSegmentInfo(
+void TrainingDataCollectorImpl::OnUserAction(const std::string& user_action,
+                                             base::TimeTicks action_time) {
+  // Report training data for all models which output collection is triggered by
+  // |user_action|.
+  auto hash = base::HashMetricName(user_action);
+  auto it = immediate_trigger_user_actions_.find(hash);
+  if (it != immediate_trigger_user_actions_.end()) {
+    auto segments = it->second;
+    for (auto segment : segments) {
+      segment_info_database_->GetSegmentInfo(
+          segment,
+          base::BindOnce(
+              &TrainingDataCollectorImpl::OnUmaUpdatedReportForSegmentInfo,
+              weak_ptr_factory_.GetWeakPtr(), absl::nullopt));
+    }
+  }
+}
+
+void TrainingDataCollectorImpl::OnUmaUpdatedReportForSegmentInfo(
     const absl::optional<ImmediaCollectionParam>& param,
     absl::optional<proto::SegmentInfo> segment) {
   if (segment.has_value()) {
     absl::optional<TrainingRequestId> request_id =
         training_cache_->GetRequestId(segment.value().segment_id());
     if (request_id.has_value()) {
+      RecordTrainingDataCollectionEvent(
+          segment.value().segment_id(),
+          stats::TrainingDataCollectionEvent::kHistogramTriggerHit);
       OnObservationTrigger(param, request_id.value(), segment.value());
     }
   }
@@ -412,15 +445,28 @@ void TrainingDataCollectorImpl::OnGetSegmentInfoAtDecisionTime(
 
   // If no segment info list has been found.
   if (it == preferred_segment_info.end()) {
+    RecordTrainingDataCollectionEvent(
+        segment_id, stats::TrainingDataCollectionEvent::kNoSegmentInfo);
     return;
   }
 
   const proto::SegmentInfo& segment_info = it->second;
 
-  if (!CanReportTrainingData(segment_info, /*include_outputs*/ false))
+  if (!CanReportTrainingData(segment_info, /*include_outputs*/ false)) {
+    RecordTrainingDataCollectionEvent(
+        segment_id,
+        stats::TrainingDataCollectionEvent::kDisallowedForRecording);
     return;
+  }
 
   TrainingTimings training_request = ComputeDecisionTiming(segment_info);
+
+  auto is_periodic = (type != proto::TrainingOutputs::TriggerConfig::ONDEMAND);
+  RecordTrainingDataCollectionEvent(
+      segment_info.segment_id(),
+      is_periodic
+          ? stats::TrainingDataCollectionEvent::kContinousCollectionStart
+          : stats::TrainingDataCollectionEvent::kImmediateCollectionStart);
 
   // Start training data collection and generate training data inputs.
   base::Time unused;
@@ -462,17 +508,41 @@ void TrainingDataCollectorImpl::OnGetTrainingTensorsAtDecisionTime(
                                std::move(training_data),
                                /*save_to_db=*/store_to_disk);
 
+  if (has_error) {
+    RecordTrainingDataCollectionEvent(
+        segment_info.segment_id(),
+        stats::TrainingDataCollectionEvent::kGetInputTensorsFailed);
+  } else {
+    RecordTrainingDataCollectionEvent(
+        segment_info.segment_id(),
+        stats::TrainingDataCollectionEvent::kCollectAndStoreInputsSuccess);
+  }
+
   // Set up delayed output recordings based on time delay triggers defined
   // in model metadata.
   // TODO(haileywang): This is slightly inaccurate since the the delay timer is
   // only started after the input training tensors are cached.
   if (training_request.observation_delayed_task) {
+    if (training_request.observation_delayed_task.value().is_zero()) {
+      RecordTrainingDataCollectionEvent(
+          segment_info.segment_id(),
+          stats::TrainingDataCollectionEvent::kImmediateObservationPosted);
+    } else {
+      RecordTrainingDataCollectionEvent(
+          segment_info.segment_id(),
+          stats::TrainingDataCollectionEvent::kDelayedTaskPosted);
+    }
+
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&TrainingDataCollectorImpl::OnObservationTrigger,
                        weak_ptr_factory_.GetWeakPtr(), absl::nullopt,
                        request_id, segment_info),
         *training_request.observation_delayed_task);
+  } else {
+    RecordTrainingDataCollectionEvent(
+        segment_info.segment_id(),
+        stats::TrainingDataCollectionEvent::kWaitingForNonDelayedTrigger);
   }
 }
 
@@ -480,8 +550,16 @@ void TrainingDataCollectorImpl::OnObservationTrigger(
     const absl::optional<ImmediaCollectionParam>& param,
     TrainingRequestId request_id,
     const proto::SegmentInfo& segment_info) {
-  if (!CanReportTrainingData(segment_info, /*include_outputs*/ true))
+  RecordTrainingDataCollectionEvent(
+      segment_info.segment_id(),
+      stats::TrainingDataCollectionEvent::kObservationTimeReached);
+
+  if (!CanReportTrainingData(segment_info, /*include_outputs*/ true)) {
+    RecordTrainingDataCollectionEvent(
+        segment_info.segment_id(),
+        stats::TrainingDataCollectionEvent::kObservationDisallowed);
     return;
+  }
 
   // Retrieve input tensor from cache.
   training_cache_->GetInputsAndDelete(
@@ -494,8 +572,12 @@ void TrainingDataCollectorImpl::OnGetStoredTrainingData(
     const absl::optional<ImmediaCollectionParam>& param,
     const proto::SegmentInfo& segment_info,
     absl::optional<proto::TrainingData> input) {
-  if (!input.has_value())
+  if (!input.has_value()) {
+    RecordTrainingDataCollectionEvent(
+        segment_info.segment_id(),
+        stats::TrainingDataCollectionEvent::kTrainingDataMissing);
     return;
+  }
 
   // Observation trigger always gets prediction time from cached partial
   // tensor.
@@ -585,12 +667,6 @@ TrainingDataCollectorImpl::ComputeDecisionTiming(
       training_request.observation_delayed_task = absl::nullopt;
     }
   }
-
-  RecordTrainingDataCollectionEvent(
-      info.segment_id(),
-      is_periodic
-          ? stats::TrainingDataCollectionEvent::kContinousCollectionStart
-          : stats::TrainingDataCollectionEvent::kImmediateCollectionStart);
 
   return training_request;
 }

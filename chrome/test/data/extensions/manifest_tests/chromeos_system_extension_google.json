@@ -7,7 +7,9 @@
     "version": "1.0",
     "manifest_version": 3,
     "permissions": [
+      "os.attached_device_info",
       "os.diagnostics",
+      "os.events",
       "os.telemetry"
     ],
     "optional_permissions": [

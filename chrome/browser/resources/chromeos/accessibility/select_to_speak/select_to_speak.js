@@ -192,25 +192,16 @@ export class SelectToSpeak {
     this.runContentScripts_();
     this.setUpEventListeners_();
 
-    const contextMenuOptionFeature =
-        chrome.accessibilityPrivate.AccessibilityFeature
-            .SELECT_TO_SPEAK_CONTEXT_MENU_OPTION;
-    chrome.accessibilityPrivate.isFeatureEnabled(
-        contextMenuOptionFeature, enabled => {
-          if (enabled) {
-            chrome.contextMenus.create({
-              title: chrome.i18n.getMessage(
-                  'select_to_speak_listen_context_menu_option_text'),
-              contexts: ['selection'],
-              onclick: () => {
-                chrome.automation.getFocus(
-                    focusedNode => this.requestSpeakSelectedText_(
-                        MetricsUtils.StartSpeechMethod.CONTEXT_MENU,
-                        focusedNode));
-              },
-            });
-          }
-        });
+    chrome.contextMenus.create({
+      title: chrome.i18n.getMessage(
+          'select_to_speak_listen_context_menu_option_text'),
+      contexts: ['selection'],
+      onclick: () => {
+        chrome.automation.getFocus(
+            focusedNode => this.requestSpeakSelectedText_(
+                MetricsUtils.StartSpeechMethod.CONTEXT_MENU, focusedNode));
+      },
+    });
   }
 
   /**
@@ -1719,43 +1710,26 @@ export class SelectToSpeak {
   }
 
   /**
-   * Fires a mock key down event for testing.
-   * @param {!Event} event The fake key down event to fire. The object
-   * must contain at minimum a keyCode.
+   * @param {!Array<number>} keysPressed Which keys to pretend are currently
+   *     pressed.
    * @protected
    */
-  fireMockKeyDownEvent(event) {
-    this.inputHandler_.onKeyDown_(event);
-  }
-
-  /**
-   * Fires a mock key up event for testing.
-   * @param {!Event} event The fake key up event to fire. The object
-   * must contain at minimum a keyCode.
-   * @protected
-   */
-  fireMockKeyUpEvent(event) {
-    this.inputHandler_.onKeyUp_(event);
+  sendMockSelectToSpeakKeysPressedChanged(keysPressed) {
+    this.inputHandler_.onKeysPressedChanged_(new Set(keysPressed));
   }
 
   /**
    * Fires a mock mouse down event for testing.
-   * @param {!Event} event The fake mouse down event to fire. The object
-   * must contain at minimum a screenX and a screenY.
+   * @param {!chrome.accessibilityPrivate.SyntheticMouseEventType} type The
+   *     event type.
+   * @param {number} mouse_x The mouse x coordinate in global screen
+   *     coordinates.
+   * @param {number} mouse_y The mouse y coordinate in global screen
+   *     coordinates.
    * @protected
    */
-  fireMockMouseDownEvent(event) {
-    this.inputHandler_.onMouseDown_(event);
-  }
-
-  /**
-   * Fires a mock mouse up event for testing.
-   * @param {!Event} event The fake mouse up event to fire. The object
-   * must contain at minimum a screenX and a screenY.
-   * @protected
-   */
-  fireMockMouseUpEvent(event) {
-    this.inputHandler_.onMouseUp_(event);
+  fireMockMouseEvent(type, mouse_x, mouse_y) {
+    this.inputHandler_.onMouseEvent_(type, mouse_x, mouse_y);
   }
 
   /**

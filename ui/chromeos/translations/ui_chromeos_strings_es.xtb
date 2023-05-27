@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
 <translation id="1775381402323441512">Información del vídeo</translation>
 <translation id="180035236176489073">Tienes que conectarte a Internet para acceder a estos archivos.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{No se ha encontrado ninguna extensión con este ID:}other{No se han encontrado extensiones con estos IDs:}}</translation>
 <translation id="1807938677607439181">Todos los archivos</translation>
 <translation id="1810764548349082891">No hay vistas previas disponibles</translation>
 <translation id="1812302367230252929">Amárico (transliteración)</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Entrada de la coincidencia del nombre alternativo del sujeto no válida</translation>
 <translation id="1838709767668011582">Sitio de Google</translation>
 <translation id="1853795129690976061">Esta carpeta se comparte con Linux</translation>
-<translation id="1859422890169495746">Este Chromebook</translation>
 <translation id="1864756863218646478">No se ha podido encontrar el archivo.</translation>
 <translation id="1884013283844450420">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, conectar</translation>
 <translation id="1920670151694390848">Malayalam (transliteración)</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Planeta</translation>
 <translation id="2305020378527873881">Se ha expulsado <ph name="VOLUME_NAME" />.</translation>
 <translation id="2307462900900812319">Configurar red</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{No se puede encontrar ninguna extensión con el ID: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> Ponte en contacto con tu administrador.}other{No se pueden encontrar extensiones con los IDs: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> Ponte en contacto con tu administrador.}}</translation>
 <translation id="2325650632570794183">No se admite este tipo de archivo. Accede a Chrome Web Store para buscar una aplicación que pueda abrir este tipo de archivo.</translation>
 <translation id="2326539130272988168">Búlgaro</translation>
 <translation id="2337715497728194187">Compartir con Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">No segura</translation>
 <translation id="3291218047831493686">Debes conectarte a esta red para cambiar el ajuste de bloqueo de la SIM</translation>
 <translation id="3293023191599135697">Las redes WEP no son compatibles</translation>
+<translation id="3295006446256079333">Este volumen</translation>
 <translation id="3295357220137379386">Dispositivo ocupado</translation>
 <translation id="3296763833017966289">Georgiano</translation>
 <translation id="3307875152560779385">Ucraniano</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="485316830061041779">Alemán</translation>
+<translation id="4862885579661885411">Configuración de Archivos</translation>
 <translation id="4867079195717347957">Haz clic para mostrar la columna en orden descendente.</translation>
 <translation id="4867297348137739678">Última semana</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bytes</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">Se están copiando <ph name="NUMBER_OF_ITEMS" /> elementos...</translation>
 <translation id="7375951387215729722">Lista de archivos ordenados por <ph name="COLUMN_NAME" /> en orden descendente.</translation>
 <translation id="7377161162143020057">La política del administrador ha bloqueado la opción de copiar este archivo</translation>
-<translation id="7392500733467492920">Ponte en contacto con tu administrador.</translation>
 <translation id="7402503521691663770">Dispositivos ChromeOS Flex</translation>
 <translation id="7408870451288633753">Checo</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>

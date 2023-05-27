@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/audio_config_service.h"
 #include "ash/public/cpp/bluetooth_config_service.h"
+#include "ash/public/cpp/connectivity_services.h"
 #include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/hotspot_config_service.h"
 #include "ash/public/cpp/network_config_service.h"
@@ -28,6 +29,8 @@
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/os_apps_page/app_notification_handler.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_hats_manager.h"
+#include "chrome/browser/ui/webui/settings/ash/os_settings_hats_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/ash/pref_names.h"
@@ -49,6 +52,11 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/webui/color_change_listener/color_change_handler.h"
+
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+#include "chrome/grit/settings_shared_resources.h"
+#include "chrome/grit/settings_shared_resources_map.h"
+#endif
 
 namespace {
 
@@ -96,6 +104,12 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       html_source,
       base::make_span(kOsSettingsResources, kOsSettingsResourcesSize),
       IDR_OS_SETTINGS_OS_SETTINGS_V3_HTML);
+
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+  html_source->AddResourcePaths(
+      base::make_span(kSettingsSharedResources, kSettingsSharedResourcesSize));
+#endif
+
   html_source->DisableTrustedTypesCSP();
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc,
@@ -111,6 +125,19 @@ OSSettingsUI::~OSSettingsUI() {
                                 /*min=*/base::Microseconds(500),
                                 /*max=*/base::Hours(1),
                                 /*buckets=*/50);
+
+  // Sends request for OsSettingsHats notification upon shutting down the app.
+  OsSettingsHatsManager* settingsHatsManager =
+      OsSettingsHatsManagerFactory::GetInstance()->GetForProfile(
+          Profile::FromWebUI(web_ui()));
+  settingsHatsManager->MaybeSendSettingsHats();
+
+  // OsSettingsHatsManager records whether the user used the Search
+  // functionality per each session that Settings app has opened up. When the
+  // Settings app is closed, OsSettingsHatsManager will remain alive in the
+  // background and the state remains stored in the manager, so we will reset
+  // that knowledge.
+  settingsHatsManager->SetSettingsUsedSearch(false);
 }
 
 void OSSettingsUI::BindInterface(
@@ -270,6 +297,23 @@ void OSSettingsUI::BindInterface(
   auth::BindToPinFactorEditor(std::move(receiver),
                               quick_unlock::QuickUnlockFactory::GetDelegate(),
                               *pin_backend);
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<google_drive::mojom::PageHandlerFactory> receiver) {
+  CHECK(ash::features::IsDriveFsBulkPinningEnabled());
+  // The PageHandlerFactory is reused across same-origin navigations, so ensure
+  // any existing factories are reset.
+  google_drive_page_handler_factory_.reset();
+  google_drive_page_handler_factory_ =
+      std::make_unique<GoogleDrivePageHandlerFactory>(
+          Profile::FromWebUI(web_ui()), std::move(receiver));
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<chromeos::connectivity::mojom::PasspointService>
+        receiver) {
+  ash::GetPasspointService(std::move(receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(OSSettingsUI)

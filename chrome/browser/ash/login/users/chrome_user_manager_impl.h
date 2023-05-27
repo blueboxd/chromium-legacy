@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
@@ -34,14 +35,9 @@
 #include "components/user_manager/user.h"
 
 class PrefRegistrySimple;
-class PrefService;
 
 namespace gfx {
 class ImageSkia;
-}
-
-namespace user_manager {
-class RemoveUserDelegate;
 }
 
 namespace policy {
@@ -99,7 +95,7 @@ class ChromeUserManagerImpl
   bool IsGuestSessionAllowed() const override;
   bool IsGaiaUserAllowed(const user_manager::User& user) const override;
   bool IsUserAllowed(const user_manager::User& user) const override;
-  bool AreEphemeralUsersEnabled() const override;
+  bool IsEphemeralAccountId(const AccountId& account_id) const override;
   const AccountId& GetGuestAccountId() const override;
   bool IsFirstExecAfterBoot() const override;
   void AsyncRemoveCryptohome(const AccountId& account_id) const override;
@@ -134,25 +130,16 @@ class ChromeUserManagerImpl
   void OnProfileAdded(Profile* profile) override;
   void OnProfileManagerDestroying() override;
 
-  // UserManagerBase:
-  void OnUserRemoved(const AccountId& account_id) override;
-
   // ChromeUserManager:
   bool IsEnterpriseManaged() const override;
   void SetUserAffiliation(
       const AccountId& account_id,
-      const AffiliationIDSet& user_affiliation_ids) override;
+      const base::flat_set<std::string>& user_affiliation_ids) override;
   bool IsFullManagementDisclosureNeeded(
       policy::DeviceLocalAccountPolicyBroker* broker) const override;
-  void CacheRemovedUser(const std::string& user_email,
-                        user_manager::UserRemovalReason) override;
-  std::vector<std::pair<std::string, user_manager::UserRemovalReason>>
-  GetRemovedUserCache() const override;
-  void MarkReporterInitialized() override;
 
  protected:
   const std::string& GetApplicationLocale() const override;
-  PrefService* GetLocalState() const override;
   void LoadDeviceLocalAccounts(std::set<AccountId>* users_set) override;
   void NotifyOnLogin() override;
   void NotifyUserAddedToSession(const user_manager::User* added_user,
@@ -161,8 +148,7 @@ class ChromeUserManagerImpl
   void PerformPostUserLoggedInActions(bool browser_restart) override;
   void RemoveNonCryptohomeData(const AccountId& account_id) override;
   void RemoveUserInternal(const AccountId& account_id,
-                          user_manager::UserRemovalReason reason,
-                          user_manager::RemoveUserDelegate* delegate) override;
+                          user_manager::UserRemovalReason reason) override;
   bool IsDeviceLocalAccountMarkedForRemoval(
       const AccountId& account_id) const override;
   void GuestUserLoggedIn() override;
@@ -244,10 +230,11 @@ class ChromeUserManagerImpl
       const AccountId& account_id);
 
   // Interface to the signed settings store.
-  CrosSettings* cros_settings_;
+  raw_ptr<CrosSettings, ExperimentalAsh> cros_settings_;
 
   // Interface to device-local account definitions and associated policy.
-  policy::DeviceLocalAccountPolicyService* device_local_account_policy_service_;
+  raw_ptr<policy::DeviceLocalAccountPolicyService, ExperimentalAsh>
+      device_local_account_policy_service_;
 
   base::ScopedObservation<session_manager::SessionManager,
                           session_manager::SessionManagerObserver>
@@ -277,6 +264,7 @@ class ChromeUserManagerImpl
   base::CallbackListSubscription family_link_accounts_subscription_;
   base::CallbackListSubscription owner_subscription_;
 
+  base::CallbackListSubscription ephemeral_users_enabled_subscription_;
   base::CallbackListSubscription local_accounts_subscription_;
 
   std::unique_ptr<MultiProfileUserController> multi_profile_user_controller_;
@@ -284,13 +272,8 @@ class ChromeUserManagerImpl
   std::vector<std::unique_ptr<policy::CloudExternalDataPolicyHandler>>
       cloud_external_data_policy_handlers_;
 
-  std::vector<std::pair<std::string, user_manager::UserRemovalReason>>
-      removed_user_cache_;
-
   base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observation_{this};
-
-  bool user_added_removed_reporter_intialized_ = false;
 
   base::RepeatingClosure remove_non_cryptohome_data_barrier_;
 

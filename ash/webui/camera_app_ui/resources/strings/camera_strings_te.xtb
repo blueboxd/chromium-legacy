@@ -27,9 +27,7 @@
 <translation id="199526504800285197">రికార్డింగ్ ఆపివేయబడింది</translation>
 <translation id="1995951722691075581">పరికరంలో స్టోరేజ్ స్పేస్ తక్కువగా ఉన్న కారణంగా మీ రికార్డింగ్ ఆగిపోయింది. మరిన్ని వీడియోలు రీకార్డ్ చేయడానికి, మీరు మీ పరికరంలో స్పేస్‌ను ఖాళీ చేయవలసి ఉంటుంది.</translation>
 <translation id="2036868001356139588">టైమర్ వ్యవధి</translation>
-<translation id="2050339315714019657">పోర్ట్రెయిట్</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> యాక్టివ్‌గా ఉంది</translation>
-<translation id="2128052519899549250">టైమ్-ల్యాప్స్ వీడియోను రికార్డ్ చేయండి</translation>
 <translation id="2134029355740465625">వీడియో సెట్టింగ్‌లు</translation>
 <translation id="2144806332417375165">అనుకూల వీడియో పారామీటర్‌లు</translation>
 <translation id="2175927920773552910">QR కోడ్</translation>
@@ -82,6 +80,7 @@
 <translation id="4864143361253542638">స్కాన్ చేసిన పేజీ లిస్ట్</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="491895758387112773">మల్టీస్ట్రీమ్ వీడియో రికార్డింగ్</translation>
+<translation id="495170559598752135">చర్యలు</translation>
 <translation id="4984613436295737187">క్వాడ్ HD (1440p)</translation>
 <translation id="5034763830503483128">ఫోటో ఆకార నిష్పత్తి</translation>
 <translation id="5057360777601936059">మీ కెమెరా ప్రస్తుతం అందుబాటులో లేదు.
@@ -92,7 +91,6 @@
 <translation id="5317780077021120954">సేవ్ చేయండి</translation>
 <translation id="5320594929574852403">ఎడమ వైపునకు కదులుతోంది</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
-<translation id="5577251651370645658">టైమ్-ల్యాప్స్</translation>
 <translation id="5662366948659129155"><ph name="COUNT" />వ పేజీని స్కాన్ చేస్తోంది</translation>
 <translation id="5671277269877808209">చతురస్రం</translation>
 <translation id="5746169159649715125">PDF లాగా సేవ్ చేయండి</translation>
@@ -122,6 +120,7 @@
 <translation id="6888362557094394345">దిగువకు కదులుతోంది</translation>
 <translation id="695140971690006676">అన్నీ రీసెట్ చేయి</translation>
 <translation id="6965382102122355670">సరే</translation>
+<translation id="6965830616442491568">పోర్ట్రెయిట్</translation>
 <translation id="698156982839284926">3 సెకన్లు</translation>
 <translation id="7134221860976209830">10 సెకన్ల టైమర్</translation>
 <translation id="7191890674911603392">రికార్డ్ రకం</translation>
@@ -137,6 +136,7 @@
 <translation id="7658239707568436148">రద్దు చేయండి</translation>
 <translation id="7670511624014457267">60 FPS</translation>
 <translation id="7671804233658741790">డాక్యుమెంట్ దిగువు కుడి మూలన</translation>
+<translation id="7684446460490665873">టైమ్-ల్యాప్స్ వీడియోను రికార్డ్ చేయండి</translation>
 <translation id="7692090236657809299">ప్యాన్ టిల్ట్ జూమ్‌ను ఎనేబుల్ చేయండి</translation>
 <translation id="7726641833034062494">సాధారణ వీడియోను రికార్డ్ చేయండి</translation>
 <translation id="7748344063862150053">డాక్యుమెంట్ ఎగువ కుడి మూలన</translation>
@@ -162,6 +162,7 @@
 <translation id="9045010116236796332">డాక్యుమెంట్‌లోని అన్ని అంచులు ఫ్రేమ్ లోపల వచ్చేటట్టుగా ఉంచండి</translation>
 <translation id="9045155556724273246">10 సెకన్లు</translation>
 <translation id="906331135292332864">ఇమేజ్‌ను ప్రాసెస్ చేస్తోంది...</translation>
+<translation id="9161584225258678723">టైమ్ ల్యాప్స్</translation>
 <translation id="922762992951083513">మిర్రర్ బటన్‌ను ఆన్ చేయండి</translation>
 <translation id="945522503751344254">ఫీడ్‌బ్యాక్ పంపండి</translation>
 </translationbundle>

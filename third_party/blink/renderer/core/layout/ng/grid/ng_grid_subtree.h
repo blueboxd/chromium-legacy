@@ -48,27 +48,27 @@ class NGGridSubtree {
   explicit operator bool() const { return static_cast<bool>(grid_tree_); }
 
   SubtreeType FirstChild() const {
-    return SubtreeType(/* parent_end_index */ NextSiblingIndex(),
-                       /* subtree_root */ subtree_root_ + 1, grid_tree_);
+    return SubtreeType(grid_tree_, /* parent_end_index */ NextSiblingIndex(),
+                       /* subtree_root */ subtree_root_ + 1);
   }
 
   SubtreeType NextSibling() const {
-    return SubtreeType(/* parent_end_index */ parent_end_index_,
-                       /* subtree_root */ NextSiblingIndex(), grid_tree_);
+    return SubtreeType(grid_tree_, /* parent_end_index */ parent_end_index_,
+                       /* subtree_root */ NextSiblingIndex());
   }
 
  protected:
   NGGridSubtree() = default;
 
-  NGGridSubtree(GridTreePtr grid_tree)
-      : grid_tree_(std::move(grid_tree)), subtree_root_(0) {
+  explicit NGGridSubtree(GridTreePtr grid_tree, wtf_size_t subtree_root = 0)
+      : grid_tree_(std::move(grid_tree)), subtree_root_(subtree_root) {
     DCHECK(grid_tree_);
-    parent_end_index_ = grid_tree_->Size();
+    parent_end_index_ = NextSiblingIndex();
   }
 
-  NGGridSubtree(wtf_size_t parent_end_index,
-                wtf_size_t subtree_root,
-                GridTreePtr grid_tree) {
+  NGGridSubtree(GridTreePtr grid_tree,
+                wtf_size_t parent_end_index,
+                wtf_size_t subtree_root) {
     DCHECK_LE(subtree_root, parent_end_index);
 
     // If the subtree root is beyond the parent's end index, we will keep this

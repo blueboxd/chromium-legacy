@@ -3,21 +3,11 @@
 // found in the LICENSE file.
 
 import {FilesAppState} from '../files_app_state.js';
-import {addEntries, ENTRIES, EntryType, getCaller, getDateWithDayDiff, pending, repeatUntil, RootPath, sendTestMessage, TestEntryInfo} from '../test_util.js';
+import {addEntries, ENTRIES, EntryType, getCaller, getDateWithDayDiff, pending, repeatUntil, RootPath, sendTestMessage, SharedOption, TestEntryInfo} from '../test_util.js';
 import {testcase} from '../testcase.js';
 
 import {mountCrostini, navigateWithDirectoryTree, remoteCall, setupAndWaitUntilReady} from './background.js';
-import {BASIC_DRIVE_ENTRY_SET, BASIC_FAKE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, NESTED_ENTRY_SET} from './test_data.js';
-
-/**
- * Expected files shown in the search results for 'hello'
- *
- * @type {!Array<!TestEntryInfo>}
- * @const
- */
-const SEARCH_RESULTS_ENTRY_SET = [
-  ENTRIES.hello,
-];
+import {BASIC_ANDROID_ENTRY_SET, BASIC_DRIVE_ENTRY_SET, BASIC_FAKE_ENTRY_SET, BASIC_LOCAL_ENTRY_SET, NESTED_ENTRY_SET} from './test_data.js';
 
 /**
  * @param {string} appId The ID that identifies the files app.
@@ -48,23 +38,12 @@ testcase.searchDownloadsWithResults = async () => {
   // Open Files app on Downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
-  // Click on the search button to display the search box.
-  await remoteCall.waitAndClickElement(appId, '#search-button');
-
-  // Focus the search box.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeEvent', appId, ['#search-box [type="search"]', 'focus']));
-
-  // Input a text.
-  await remoteCall.inputText(appId, '#search-box [type="search"]', 'hello');
-
-  // Notify the element of the input.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeEvent', appId, ['#search-box [type="search"]', 'input']));
+  // Search for all files with "hello" in their name.
+  await remoteCall.typeSearchText(appId, 'hello');
 
   // Wait file list to display the search result.
   await remoteCall.waitForFiles(
-      appId, TestEntryInfo.getExpectedRows(SEARCH_RESULTS_ENTRY_SET));
+      appId, TestEntryInfo.getExpectedRows([ENTRIES.hello]));
 
   // Check that a11y message for results has been issued.
   const a11yMessages =
@@ -82,17 +61,8 @@ testcase.searchDownloadsWithNoResults = async () => {
   // Open Files app on Downloads.
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
 
-  // Focus the search box.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeEvent', appId, ['#search-box [type="search"]', 'focus']));
-
-  // Input a text.
-  await remoteCall.inputText(
-      appId, '#search-box [type="search"]', 'INVALID TERM');
-
-  // Notify the element of the input.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeEvent', appId, ['#search-box [type="search"]', 'input']));
+  // Search for name not present among basic entry set.
+  await remoteCall.typeSearchText(appId, 'INVALID TERM');
 
   // Wait file list to display no results.
   await remoteCall.waitForFiles(appId, []);
@@ -545,7 +515,7 @@ async function mountUsb(appId, withPartitions) {
 testcase.searchRemovableDevice = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
   // Mount a USB with no partitions.
-  mountUsb(appId, false);
+  await mountUsb(appId, false);
 
   // Navigate to the root of the USB.
   await remoteCall.callRemoteTestUtil(
@@ -565,7 +535,7 @@ testcase.searchRemovableDevice = async () => {
  */
 testcase.searchPartitionedRemovableDevice = async () => {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
-  mountUsb(appId, true);
+  await mountUsb(appId, true);
 
   // Wait for removable partition-1 to appear in the directory tree.
   const partitionOne = await remoteCall.waitForElement(
@@ -604,7 +574,7 @@ testcase.resetSearchOptionsOnFolderChange = async () => {
 
   // Check the defaults.
   chrome.test.assertEq(
-      'This folder', await getSelectedOptionText(appId, 'location'));
+      'Downloads', await getSelectedOptionText(appId, 'location'));
   chrome.test.assertEq(
       'Any time', await getSelectedOptionText(appId, 'recency'));
   chrome.test.assertEq('All types', await getSelectedOptionText(appId, 'type'));
@@ -624,7 +594,7 @@ testcase.resetSearchOptionsOnFolderChange = async () => {
 
   // Check that we are back to defaults.
   chrome.test.assertEq(
-      'This folder', await getSelectedOptionText(appId, 'location'));
+      'photos', await getSelectedOptionText(appId, 'location'));
   chrome.test.assertEq(
       'Any time', await getSelectedOptionText(appId, 'recency'));
   chrome.test.assertEq('All types', await getSelectedOptionText(appId, 'type'));
@@ -737,25 +707,152 @@ testcase.selectionPath = async () => {
   const singleSelectionPath = await remoteCall.waitForElement(appId, [
     'xf-path-display',
   ]);
+  chrome.test.assertFalse(singleSelectionPath.hidden);
   chrome.test.assertEq(
-      'My files/Downloads', singleSelectionPath.attributes.path);
-  // Select now the desktop entry, too. Both are in the same
-  // directory, so the path should not change.
+      'My files/Downloads/' + ENTRIES.hello.nameText,
+      singleSelectionPath.attributes.path);
+  // Select now the desktop entry, too. Two or more selected files,
+  // regardless of the directory in which they sit, result in no path.
   await remoteCall.waitAndClickElement(
       appId, `#file-list [file-name="${ENTRIES.desktop.nameText}"]`,
       {ctrl: true});
-  const twoFilesOneFolderPath = await remoteCall.waitForElement(appId, [
+  const twoFilesSelectedPath = await remoteCall.waitForElement(appId, [
     'xf-path-display',
   ]);
-  chrome.test.assertEq(
-      'My files/Downloads', twoFilesOneFolderPath.attributes.path);
+  chrome.test.assertTrue(twoFilesSelectedPath.hidden);
+  chrome.test.assertEq('', twoFilesSelectedPath.attributes.path);
   await remoteCall.waitAndClickElement(
       appId,
       `#file-list [file-name="${ENTRIES.deeplyBurriedSmallJpeg.nameText}"]`,
       {ctrl: true});
-  const threeFilesTwoFolderPath = await remoteCall.waitForElement(appId, [
+  const threeFilesSelectedPath = await remoteCall.waitForElement(appId, [
     'xf-path-display',
   ]);
-  chrome.test.assertEq(
-      'Multiple file locations', threeFilesTwoFolderPath.attributes.path);
+  chrome.test.assertTrue(threeFilesSelectedPath.hidden);
+  chrome.test.assertEq('', threeFilesSelectedPath.attributes.path);
+};
+
+/**
+ * Checks that we correctly traverse search hierarchy. If you start searching in
+ * a local folder, the search should search it and its subfolders only. If we
+ * change the location to be the root directory, it should correctly search any
+ * folders (including Linux and Playfiles, if necessary) that are visually
+ * under the root folder. Finally, search everywhere should search everything
+ * we can search (Google Doc, removable drives, local file syste, * etc.).
+ */
+testcase.searchHierarchy = async () => {
+  // hello file stored in My files/Downloads/photos.
+  const photosHello = ENTRIES.hello.cloneWith({
+    targetPath: 'photos/photos-hello.txt',
+    nameText: 'photos-hello.txt',
+  });
+  // hello file stored in My files
+  const myFilesHello = ENTRIES.hello.cloneWith({
+    targetPath: 'my-files-hello.txt',
+    nameText: 'my-files-hello.txt',
+  });
+  // hello file stored on Linux.
+  const linuxHello = ENTRIES.hello.cloneWith({
+    targetPath: 'linux-hello.txt',
+    nameText: 'linux-hello.txt',
+  });
+  // hello file stored on a removable drive.
+  const usbHello = ENTRIES.hello.cloneWith({
+    targetPath: 'usb-hello.txt',
+    nameText: 'usb-hello.txt',
+  });
+  // hello file stored on Google Drive.
+  const driveHello = ENTRIES.hello.cloneWith({
+    targetPath: 'drive-hello.txt',
+    nameText: 'drive-hello.txt',
+  });
+  // hello file stored in playfiles.
+  const playfilesHello = ENTRIES.hello.cloneWith({
+    targetPath: 'Documents/playfile-hello.txt',
+    nameText: 'playfile-hello.txt',
+  });
+
+  // Set up the app. This creates entries in My files and Drive.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [myFilesHello, ENTRIES.photos, photosHello],
+      [driveHello]);
+
+  // Mount USBs.
+  await mountUsb(appId, false);
+
+  // Add Linux files.
+  await mountCrostini(appId);
+
+  // Add custom hello files to Linux, USB, and PlayFiles.
+  await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET.concat([
+    ENTRIES.directoryDocuments,
+    playfilesHello,
+  ]));
+  await addEntries(['usb'], [usbHello]);
+  await addEntries(['crostini'], [linuxHello]);
+
+  // Move to a nested directory under My files.
+  await navigateWithDirectoryTree(appId, '/My files/Downloads/photos');
+
+  // Expect photosHello, as the only result when searching in photos.
+  await remoteCall.typeSearchText(appId, '-hello.txt');
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([photosHello]),
+      {ignoreLastModifiedTime: true});
+
+  // Select the second button, which is root directory (My Fles in our case).
+  chrome.test.assertTrue(
+      !!await remoteCall.selectSearchOption(appId, 'location', 2),
+      'Failed to click "My files" location selector');
+
+  // Expect files from My files, Play files and Linux files.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([
+        myFilesHello,
+        photosHello,
+        linuxHello,
+        playfilesHello,
+      ]),
+      {ignoreLastModifiedTime: true});
+
+  // Select the first button, which is Everywhere.
+  chrome.test.assertTrue(
+      !!await remoteCall.selectSearchOption(appId, 'location', 1),
+      'Failed to click "Everywhere" location selector');
+
+  // Expect files from My files, Play files, Linux files, USB, and Drive.
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows([
+        myFilesHello,
+        photosHello,
+        linuxHello,
+        playfilesHello,
+        driveHello,
+        usbHello,
+      ]),
+      {ignoreLastModifiedTime: true});
+};
+
+/**
+ * Checks that search is not visible when in the Trash volume.
+ */
+testcase.hideSearchInTrash = async () => {
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
+  // Make sure that the search button is visible in Downloads.
+  await remoteCall.waitForElement(appId, '#search-button');
+  let searchButton = await remoteCall.waitForElementStyles(
+      appId, ['#search-button'], ['display']);
+  chrome.test.assertTrue(searchButton.styles['display'] !== 'none');
+
+  // Navigate to Trash and confirm that the search button is now hidden.
+  await navigateWithDirectoryTree(appId, '/Trash');
+  searchButton = await remoteCall.waitForElementStyles(
+      appId, ['#search-button'], ['display']);
+  chrome.test.assertTrue(searchButton.styles['display'] === 'none');
+
+  // Go back to Downloads and confirm that the search button is visible again.
+  await navigateWithDirectoryTree(appId, '/My files/Downloads');
+  searchButton = await remoteCall.waitForElementStyles(
+      appId, ['#search-button'], ['display']);
+  chrome.test.assertTrue(searchButton.styles['display'] !== 'none');
 };

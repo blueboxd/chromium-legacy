@@ -783,8 +783,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // underlying windowing system.
   void SetOpacity(float opacity);
 
-  // Sets the aspect ratio of the widget's content, which will be maintained
-  // during interactive resizing. This size disregards title bar and borders.
+  // Sets the aspect ratio of the widget's client view, which will be maintained
+  // during interactive resizing.  Note that for widgets that have a client view
+  // that is framed by custom-drawn borders / window frame / etc, the widget
+  // size will be chosen so that the aspect ratio of client view, not the entire
+  // widget, will be `aspect_ratio`.
+  //
   // Once set, some platforms ensure the content will only size to integer
   // multiples of |aspect_ratio|.
   void SetAspectRatio(const gfx::SizeF& aspect_ratio);
@@ -1072,6 +1076,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Called when the ShouldPaintAsActive() of parent changes.
   void OnParentShouldPaintAsActiveChanged();
 
+  // Notifies registered callbacks and the native widget of changes to
+  // the ShouldPaintAsActive() state.
+  void NotifyPaintAsActiveChanged();
+
   base::WeakPtr<Widget> GetWeakPtr();
 
   // Overridden from NativeWidgetDelegate:
@@ -1129,6 +1137,11 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Overridden from ui::NativeThemeObserver:
   void OnNativeThemeUpdated(ui::NativeTheme* observed_theme) override;
+
+  // Sets an override for `color_mode` when `GetColorProvider()` is requested.
+  // e.g. if set to kDark, colors will always be for the dark theme.
+  void SetColorModeOverride(
+      absl::optional<ui::ColorProviderManager::ColorMode> color_mode);
 
   // ui::ColorProviderSource:
   const ui::ColorProvider* GetColorProvider() const override;
@@ -1312,6 +1325,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   ui::ColorProviderManager::ElevationMode background_elevation_ =
       ui::ColorProviderManager::ElevationMode::kLow;
 #endif
+
+  // If set, overrides this value is used instead of the one from NativeTheme
+  // when constructing a ColorProvider.
+  absl::optional<ui::ColorProviderManager::ColorMode> color_mode_override_;
 
   // The current frame type in use by this window. Defaults to
   // FrameType::kDefault.

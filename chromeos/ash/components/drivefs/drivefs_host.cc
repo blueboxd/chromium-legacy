@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -147,6 +148,8 @@ class DriveFsHost::MountState : public DriveFsSession,
   }
 
   void DispatchBatchIndividualSyncEvents() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+
     if (!base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus)) {
       return;
     }
@@ -179,6 +182,8 @@ class DriveFsHost::MountState : public DriveFsSession,
   }
 
   void OnSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+
     if (base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus)) {
       ResetThrottleTimer();
 
@@ -324,11 +329,6 @@ class DriveFsHost::MountState : public DriveFsSession,
       std::move(callback).Run(mojom::DialogResult::kNotDisplayed);
       return;
     }
-    if (error->type == mojom::DialogReason::Type::kEnableDocsOffline &&
-        host_->ShouldAlwaysEnableDocsOffline()) {
-      std::move(callback).Run(mojom::DialogResult::kAccept);
-      return;
-    }
     host_->dialog_handler_.Run(
         *error, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
                     std::move(callback), mojom::DialogResult::kNotDisplayed));
@@ -378,7 +378,7 @@ class DriveFsHost::MountState : public DriveFsSession,
   }
 
   // Owns |this|.
-  DriveFsHost* const host_;
+  const raw_ptr<DriveFsHost, ExperimentalAsh> host_;
 
   std::unique_ptr<DriveFsSearch> search_;
   std::unique_ptr<DriveFsHttpClient> http_client_;

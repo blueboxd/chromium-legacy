@@ -17,6 +17,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -151,13 +152,22 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
   void GetDefaultPrinterName(
       mojom::PrintBackendService::GetDefaultPrinterNameCallback callback)
       override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       mojom::PrintBackendService::GetPrinterSemanticCapsAndDefaultsCallback
           callback) override;
+#endif
   void FetchCapabilities(
       const std::string& printer_name,
       mojom::PrintBackendService::FetchCapabilitiesCallback callback) override;
+#if BUILDFLAG(IS_WIN)
+  void GetPaperPrintableArea(
+      const std::string& printer_name,
+      const PrintSettings::RequestedMedia& media,
+      mojom::PrintBackendService::GetPaperPrintableAreaCallback callback)
+      override;
+#endif
   void EstablishPrintingContext(uint32_t context_id
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
                                 ,
@@ -165,24 +175,28 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
 #endif
                                 ) override;
   void UseDefaultSettings(
+      uint32_t context_id,
       mojom::PrintBackendService::UseDefaultSettingsCallback callback) override;
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
   void AskUserForSettings(
-      uint32_t parent_window_id,
+      uint32_t context_id,
       int max_pages,
       bool has_selection,
       bool is_scripted,
       mojom::PrintBackendService::AskUserForSettingsCallback callback) override;
 #endif
   void UpdatePrintSettings(
+      uint32_t context_id,
       base::Value::Dict job_settings,
       mojom::PrintBackendService::UpdatePrintSettingsCallback callback)
       override;
   void StartPrinting(
+      uint32_t context_id,
       int document_cookie,
       const std::u16string& document_name,
-      mojom::PrintTargetType target_type,
-      const PrintSettings& settings,
+#if !BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
+      const absl::optional<PrintSettings>& settings,
+#endif
       mojom::PrintBackendService::StartPrintingCallback callback) override;
 #if BUILDFLAG(IS_WIN)
   void RenderPrintedPage(
@@ -209,6 +223,12 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
               mojom::PrintBackendService::CancelCallback callback) override;
 
   // Callbacks from worker functions.
+#if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
+  void OnDidAskUserForSettings(
+      uint32_t context_id,
+      mojom::PrintBackendService::AskUserForSettingsCallback callback,
+      mojom::ResultCode result);
+#endif
   void OnDidStartPrintingReadyDocument(DocumentHelper& document_helper,
                                        mojom::ResultCode result);
   void OnDidDocumentDone(
@@ -220,6 +240,7 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
 
   // Utility helpers.
   std::unique_ptr<PrintingContextDelegate> CreatePrintingContextDelegate();
+  PrintingContext* GetPrintingContext(uint32_t context_id);
   DocumentHelper* GetDocumentHelper(int document_cookie);
   void RemoveDocumentHelper(DocumentHelper& document_helper);
 
@@ -241,13 +262,10 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
 
   scoped_refptr<PrintBackend> print_backend_;
 
-  // Map from a context ID to a printing device context.
+  // Map from a context ID to a printing device context.  Accessed only from
+  // the main thread.
   base::flat_map<uint32_t, std::unique_ptr<ContextContainer>>
       persistent_printing_contexts_;
-
-  // TODO(crbug.com/1414968):  Delete this once callers switch to complete
-  // local contexts or using `persistent_printing_contexts_`.
-  PrintingContextDelegate context_delegate_;
 
   // Want all callbacks and document helper sequence manipulations to be made
   // from main thread, not a thread runner.

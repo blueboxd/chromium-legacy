@@ -766,7 +766,6 @@ class PageInfoBubbleViewAboutThisSiteBrowserTest : public InProcessBrowserTest {
         {
             page_info::kPageInfoAboutThisSiteEn,
             page_info::kPageInfoAboutThisSiteNonEn,
-            page_info::kPageInfoAboutThisSiteMoreInfo,
         },
         {});
   }
@@ -791,9 +790,9 @@ class PageInfoBubbleViewAboutThisSiteBrowserTest : public InProcessBrowserTest {
     description->mutable_source()->set_label("Example source");
     site_info.mutable_more_about()->set_url(
         https_server_.GetURL("a.test", "/title2.html").spec());
-    EXPECT_EQ(page_info::about_this_site_validation::ValidateSiteInfo(
-                  site_info, page_info::IsMoreAboutThisSiteFeatureEnabled()),
-              AboutThisSiteStatus::kValid);
+    EXPECT_EQ(
+        page_info::about_this_site_validation::ValidateSiteInfo(site_info),
+        AboutThisSiteStatus::kValid);
     return site_info;
   }
 
@@ -868,8 +867,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteBrowserTest,
   auto url = https_server_.GetURL("a.test", "/title1.html");
   auto site_info = CreateValidSiteInfo();
   site_info.clear_description();
-  EXPECT_EQ(page_info::about_this_site_validation::ValidateSiteInfo(
-                site_info, page_info::IsMoreAboutThisSiteFeatureEnabled()),
+  EXPECT_EQ(page_info::about_this_site_validation::ValidateSiteInfo(site_info),
             AboutThisSiteStatus::kValid);
   AddHintForTesting(browser(), url, site_info);
 
@@ -985,61 +983,6 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteDisabledBrowserTest,
   histograms.ExpectBucketCount(
       "Security.PageInfo.AboutThisSiteInteraction",
       AboutThisSiteInteraction::kNotShownOptimizationGuideNotAllowed, 1);
-}
-
-// Test that info is shown and "kShownWithoutMsbb" and
-// "kClickedWithoutDescription" are logged when users that have disabled hints
-// fetching are supported (e.g. non-MSBB users)
-class PageInfoBubbleViewAboutThisSiteAllowNonMsbbBrowserTest
-    : public PageInfoBubbleViewAboutThisSiteBrowserTest {
- public:
-  PageInfoBubbleViewAboutThisSiteAllowNonMsbbBrowserTest() {
-    feature_list_.InitWithFeatures(
-        {
-            page_info::kPageInfoAboutThisSiteMoreInfo,
-            page_info::kPageInfoAboutThisSiteNewIcon,
-            page_info::kPageInfoAboutThisSiteNonMsbb,
-        },
-        {});
-  }
-
-  void SetUpCommandLine(base::CommandLine* cmd) override {
-    // Don't set the flag to enable hints fetching.
-  }
-
- protected:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewAboutThisSiteAllowNonMsbbBrowserTest,
-                       AboutThisSiteWithoutOptinAndWithNonMsbbUsers) {
-  ukm::TestAutoSetUkmRecorder ukm_recorder;
-  base::HistogramTester histograms;
-
-  auto url = https_server_.GetURL("a.test", "/title1.html");
-  auto site_info = CreateValidSiteInfo();
-  site_info.clear_description();
-  EXPECT_EQ(page_info::about_this_site_validation::ValidateSiteInfo(
-                site_info, page_info::IsMoreAboutThisSiteFeatureEnabled()),
-            AboutThisSiteStatus::kValid);
-  AddHintForTesting(browser(), url, site_info);
-
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
-  OpenPageInfoBubble(browser());
-
-  auto* page_info = PageInfoBubbleView::GetPageInfoBubbleForTesting();
-  views::View* button = page_info->GetViewByID(
-      PageInfoViewFactory::VIEW_ID_PAGE_INFO_ABOUT_THIS_SITE_BUTTON);
-  ASSERT_TRUE(button);
-
-  histograms.ExpectUniqueSample("Security.PageInfo.AboutThisSiteInteraction",
-                                AboutThisSiteInteraction::kShownWithoutMsbb, 1);
-
-  PerformMouseClickOnView(button);
-  histograms.ExpectTotalCount("Security.PageInfo.AboutThisSiteInteraction", 2);
-  histograms.ExpectBucketCount(
-      "Security.PageInfo.AboutThisSiteInteraction",
-      AboutThisSiteInteraction::kClickedWithoutDescription, 1);
 }
 
 class PageInfoBubbleViewSiteSettingsBrowserTest : public InProcessBrowserTest {

@@ -574,15 +574,12 @@ static bool EvalResolution(const MediaQueryExpValue& value,
     return !!actual_resolution;
   }
 
-  if (!value.IsNumeric()) {
-    return false;
-  }
-
-  if (value.Unit() == CSSPrimitiveValue::UnitType::kNumber) {
+  if (value.IsNumeric() &&
+      value.Unit() == CSSPrimitiveValue::UnitType::kNumber) {
     return CompareValue(actual_resolution, ClampTo<float>(value.Value()), op);
   }
 
-  if (!CSSPrimitiveValue::IsResolution(value.Unit())) {
+  if (!value.IsResolution()) {
     return false;
   }
 
@@ -619,7 +616,7 @@ static bool DevicePixelRatioMediaFeatureEval(const MediaQueryExpValue& value,
 static bool ResolutionMediaFeatureEval(const MediaQueryExpValue& value,
                                        MediaQueryOperator op,
                                        const MediaValues& media_values) {
-  return (!value.IsValid() || CSSPrimitiveValue::IsResolution(value.Unit())) &&
+  return (!value.IsValid() || value.IsResolution()) &&
          EvalResolution(value, op, media_values);
 }
 
@@ -1543,18 +1540,18 @@ KleeneValue MediaQueryEvaluator::EvalStyleFeature(
 
   const MediaQueryExpBounds& bounds = feature.Bounds();
 
-  // Style features always have the form of "property(feature): value".
+  // Style features do not support the range syntax.
   DCHECK(!bounds.IsRange());
   DCHECK(bounds.right.op == MediaQueryOperator::kNone);
-  DCHECK(bounds.right.IsValid());
-  DCHECK(bounds.right.value.IsCSSValue());
 
   Element* container = media_values_->ContainerElement();
   DCHECK(container);
 
   AtomicString property_name(feature.Name());
-
-  const CSSValue& query_specified = bounds.right.value.GetCSSValue();
+  bool explicit_value = bounds.right.value.IsValid();
+  const CSSValue& query_specified = explicit_value
+                                        ? bounds.right.value.GetCSSValue()
+                                        : *CSSInitialValue::Create();
 
   if (query_specified.IsRevertValue() || query_specified.IsRevertLayerValue()) {
     return KleeneValue::kFalse;
@@ -1581,7 +1578,7 @@ KleeneValue MediaQueryEvaluator::EvalStyleFeature(
           .CSSValueFromComputedStyle(container->ComputedStyleRef(),
                                      nullptr /* layout_object */,
                                      false /* allow_visited_style */);
-  if (base::ValuesEquivalent(query_value, computed_value)) {
+  if (base::ValuesEquivalent(query_value, computed_value) == explicit_value) {
     return KleeneValue::kTrue;
   }
   return KleeneValue::kFalse;

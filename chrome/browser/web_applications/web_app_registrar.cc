@@ -16,7 +16,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/observer_list.h"
-#include "base/strings/string_util.h"
+#include "base/strings/to_string.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -42,6 +42,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/web_applications/chromeos_web_app_experiments.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 namespace web_app {
@@ -91,8 +92,8 @@ bool WebAppRegistrar::IsPlaceholderApp(
         .IsPlaceholderApp(app_id);
   }
 
-  DCHECK(source_type == WebAppManagement::kPolicy ||
-         source_type == WebAppManagement::kKiosk);
+  CHECK(source_type == WebAppManagement::kPolicy ||
+        source_type == WebAppManagement::kKiosk);
   const WebApp* web_app = GetAppById(app_id);
   if (!web_app)
     return false;
@@ -107,6 +108,9 @@ bool WebAppRegistrar::IsPlaceholderApp(
   return it->second.is_placeholder;
 }
 
+// TODO(crbug.com/1434692): Revert changes back to old code
+// once the system starts enforcing a single install URL per
+// app_id.
 absl::optional<AppId> WebAppRegistrar::LookupPlaceholderAppId(
     const GURL& install_url,
     const WebAppManagement::Type source_type) const {
@@ -116,11 +120,22 @@ absl::optional<AppId> WebAppRegistrar::LookupPlaceholderAppId(
         .LookupPlaceholderAppId(install_url);
   }
 
-  DCHECK(source_type == WebAppManagement::kPolicy ||
-         source_type == WebAppManagement::kKiosk);
-  absl::optional<AppId> app_id = LookUpAppIdByInstallUrl(install_url);
-  if (app_id.has_value() && IsPlaceholderApp(app_id.value(), source_type))
-    return app_id;
+  CHECK(source_type == WebAppManagement::kPolicy ||
+        source_type == WebAppManagement::kKiosk);
+  for (const WebApp& web_app : GetApps()) {
+    const WebApp::ExternalConfigMap& config_map =
+        web_app.management_to_external_config_map();
+    auto it = config_map.find(source_type);
+
+    if (it == config_map.end()) {
+      continue;
+    }
+
+    if (base::Contains(it->second.install_urls, install_url) &&
+        it->second.is_placeholder) {
+      return web_app.app_id();
+    }
+  }
   return absl::nullopt;
 }
 
@@ -328,8 +343,7 @@ size_t WebAppRegistrar::GetUrlInAppScopeScore(const std::string& url_spec,
           : 0;
 
 #if BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(
-          features::kMicrosoftOfficeWebAppExperiment)) {
+  if (chromeos::features::IsUploadOfficeToCloudEnabled()) {
     score = std::max(score, ChromeOsWebAppExperiments::GetExtendedScopeScore(
                                 app_id, url_spec));
   }
@@ -979,6 +993,13 @@ apps::UrlHandlers WebAppRegistrar::GetAppUrlHandlers(
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->url_handlers()
                  : std::vector<apps::UrlHandlerInfo>();
+}
+
+base::flat_set<ScopeExtensionInfo> WebAppRegistrar::GetValidatedScopeExtensions(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->validated_scope_extensions()
+                 : base::flat_set<ScopeExtensionInfo>();
 }
 
 GURL WebAppRegistrar::GetAppManifestUrl(const AppId& app_id) const {

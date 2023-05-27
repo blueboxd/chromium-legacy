@@ -17,6 +17,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/system/message_center/test_notifier_settings_controller.h"
 #include "ash/test/pixel/ash_pixel_test_init_params.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_command_line.h"
 #include "chromeos/ash/components/system/fake_statistics_provider.h"
 #include "chromeos/ash/services/bluetooth_config/scoped_bluetooth_config_test_helper.h"
@@ -55,7 +56,7 @@ class TestNewWindowDelegateProvider;
 class TestWallpaperControllerClient;
 
 namespace input_method {
-class MockInputMethodManager;
+class MockInputMethodManagerImpl;
 }  // namespace input_method
 
 // A helper class that does common initialization required for Ash. Creates a
@@ -72,7 +73,7 @@ class AshTestHelper : public aura::test::AuraTestHelper {
     bool start_session = true;
     // If this is not set, a TestShellDelegate will be used automatically.
     std::unique_ptr<ShellDelegate> delegate;
-    PrefService* local_state = nullptr;
+    raw_ptr<PrefService, ExperimentalAsh> local_state = nullptr;
 
     // Used only when setting up a pixel diff test.
     absl::optional<pixel_test::InitParams> pixel_test_init_params;
@@ -164,6 +165,10 @@ class AshTestHelper : public aura::test::AuraTestHelper {
     return saved_desk_test_helper_.get();
   }
 
+  input_method::MockInputMethodManagerImpl* input_method_manager() {
+    return input_method_manager_;
+  }
+
  private:
   // Scoping objects to manage init/teardown of services.
   class BluezDBusManagerInitializer;
@@ -209,7 +214,9 @@ class AshTestHelper : public aura::test::AuraTestHelper {
 
   // InputMethodManager is not owned by this class. It is stored in a
   // global that is registered via InputMethodManager::Initialize().
-  input_method::MockInputMethodManager* input_method_manager_ = nullptr;
+  raw_ptr<input_method::MockInputMethodManagerImpl,
+          DanglingUntriaged | ExperimentalAsh>
+      input_method_manager_ = nullptr;
 
   // True if a fake global `CrasAudioHandler` should be created.
   bool create_global_cras_audio_handler_ = true;

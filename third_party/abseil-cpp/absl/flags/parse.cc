@@ -22,6 +22,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -693,7 +694,8 @@ std::vector<std::string> GetMisspellingHints(const absl::string_view flag) {
 
 std::vector<char*> ParseCommandLineImpl(int argc, char* argv[],
                                         UsageFlagsAction usage_flag_action,
-                                        OnUndefinedFlag undef_flag_action) {
+                                        OnUndefinedFlag undef_flag_action,
+                                        std::ostream& error_help_output) {
   std::vector<char*> positional_args;
   std::vector<UnrecognizedFlag> unrecognized_flags;
 
@@ -706,7 +708,10 @@ std::vector<char*> ParseCommandLineImpl(int argc, char* argv[],
         (undef_flag_action == OnUndefinedFlag::kAbortIfUndefined));
 
     if (undef_flag_action == OnUndefinedFlag::kAbortIfUndefined) {
-      if (!unrecognized_flags.empty()) { std::exit(1); }
+      if (!unrecognized_flags.empty()) {
+        flags_internal::HandleUsageFlags(error_help_output,
+        ProgramUsageMessage()); std::exit(1);
+      }
     }
   }
 
@@ -891,7 +896,7 @@ HelpMode ParseAbseilFlagsOnlyImpl(
     flags_internal::ReportUsageError(
         "NOTE: command line flags are disabled in this build", true);
 #else
-    flags_internal::HandleUsageFlags(std::cout, ProgramUsageMessage());
+    flags_internal::HandleUsageFlags(std::cerr, ProgramUsageMessage());
 #endif
     return HelpMode::kFull;  // We just need to make sure the exit with
                              // code 1.

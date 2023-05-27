@@ -67,6 +67,20 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& jguid);
 
+  // Determines whether the logged in user (if any) is eligible to store
+  // Autofill address profiles to their account.
+  jboolean IsEligibleForAddressAccountStorage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj);
+
+  // Users based in unsupported countries and profiles with a country value set
+  // to an unsupported country are not eligible for account storage. This
+  // function determines if the `country_code` is eligible.
+  bool IsCountryEligibleForAccountStorage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& unused_obj,
+      const base::android::JavaParamRef<jstring>& country_code) const;
+
   // Adds or modifies a profile.  If |jguid| is an empty string, we are creating
   // a new profile.  Else we are updating an existing profile.  Always returns
   // the GUID for this profile; the GUID it may have just been created.
@@ -208,18 +222,6 @@ class PersonalDataManagerAndroid : public PersonalDataManagerObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& unused_obj,
       const base::android::JavaParamRef<jstring>& jguid);
-
-  // Gets the card CVC and expiration date (if it's expired). If the card is
-  // masked, unmasks it. If the user has entered new expiration date, the new
-  // date is saved on disk.
-  //
-  // The full card details are sent to the delegate.
-  void GetFullCardForPaymentRequest(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& unused_obj,
-      const base::android::JavaParamRef<jobject>& jweb_contents,
-      const base::android::JavaParamRef<jobject>& jcard,
-      const base::android::JavaParamRef<jobject>& jdelegate);
 
   // PersonalDataManagerObserver:
   void OnPersonalDataChanged() override;

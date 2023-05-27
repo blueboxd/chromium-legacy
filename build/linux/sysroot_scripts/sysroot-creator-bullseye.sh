@@ -13,7 +13,7 @@ DIST=bullseye
 # It should not be incremented when adding packages.
 SYSROOT_RELEASE=1
 
-ARCHIVE_TIMESTAMP=20221105T211506Z
+ARCHIVE_TIMESTAMP=20230329T085712Z
 ARCHIVE_URL="https://snapshot.debian.org/archive/debian/$ARCHIVE_TIMESTAMP/"
 APT_SOURCES_LIST=(
   # Debian 12 (Bookworm) is needed for GTK4.  It should be kept before bullseye
@@ -61,6 +61,7 @@ DEBIAN_PACKAGES="\
   libaudit1
   libavahi-client3
   libavahi-common3
+  libb2-1
   libblkid-dev
   libblkid1
   libbluetooth-dev
@@ -204,6 +205,7 @@ DEBIAN_PACKAGES="\
   libkrb5support0
   liblcms2-2
   libldap-2.4-2
+  liblerc4
   libltdl7
   liblz4-1
   liblzma5
@@ -259,6 +261,7 @@ DEBIAN_PACKAGES="\
   libpixman-1-dev
   libpng-dev
   libpng16-16
+  libproxy1v5
   libpsl5
   libpthread-stubs0-dev
   libpulse-dev
@@ -274,6 +277,18 @@ DEBIAN_PACKAGES="\
   libqt5test5
   libqt5widgets5
   libqt5xml5
+  libqt6concurrent6
+  libqt6core6
+  libqt6dbus6
+  libqt6gui6
+  libqt6network6
+  libqt6opengl6
+  libqt6openglwidgets6
+  libqt6printsupport6
+  libqt6sql6
+  libqt6test6
+  libqt6widgets6
+  libqt6xml6
   libre2-9
   libre2-dev
   librest-0.7-0
@@ -305,9 +320,11 @@ DEBIAN_PACKAGES="\
   libthai0
   libtiff-dev
   libtiff5
+  libtiff6
   libtiffxx5
   libtinfo6
   libtirpc3
+  libts0
   libudev-dev
   libudev1
   libunbound8
@@ -336,6 +353,7 @@ DEBIAN_PACKAGES="\
   libwayland-server0
   libwebp-dev
   libwebp6
+  libwebp7
   libwebpdemux2
   libwebpmux3
   libwrap0
@@ -420,6 +438,8 @@ DEBIAN_PACKAGES="\
   libzstd1
   linux-libc-dev
   mesa-common-dev
+  qt6-base-dev
+  qt6-base-dev-tools
   qtbase5-dev
   qtbase5-dev-tools
   shared-mime-info

@@ -62,9 +62,6 @@ const uint64_t kUnknownPipeIdForDebug = 0x7f7f7f7f7f7f7f7fUL;
 // invitation.
 constexpr base::StringPiece kIsolatedInvitationPipeName = {"\0\0\0\0", 4};
 
-// Set according to the field trial "MojoAvoidRandomPipeId".
-bool g_avoid_random_pipe_id;
-
 void InvokeProcessErrorCallback(MojoProcessErrorHandler handler,
                                 uintptr_t context,
                                 const std::string& error,
@@ -119,9 +116,7 @@ uint64_t MakePipeId() {
 #if BUILDFLAG(MOJO_TRACE_ENABLED)
   return base::trace_event::GetNextGlobalTraceId();
 #else
-  if (g_avoid_random_pipe_id)
-    return 0;
-  return base::RandUint64();
+  return 0;
 #endif
 }
 
@@ -1306,8 +1301,6 @@ MojoResult Core::SendInvitation(
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (transport_endpoint->type != MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL &&
       transport_endpoint->type !=
-          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER &&
-      transport_endpoint->type !=
           MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_ASYNC) {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
@@ -1323,18 +1316,8 @@ MojoResult Core::SendInvitation(
   if (!endpoint.is_valid())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  ConnectionParams connection_params;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_POSIX)
-  if (transport_endpoint->type ==
-      MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER) {
-    connection_params =
-        ConnectionParams(PlatformChannelServerEndpoint(std::move(endpoint)));
-  }
-#endif
-  if (!connection_params.server_endpoint().is_valid()) {
-    connection_params =
-        ConnectionParams(PlatformChannelEndpoint(std::move(endpoint)));
-  }
+  ConnectionParams connection_params(
+      PlatformChannelEndpoint(std::move(endpoint)));
 
   // At this point everything else has been validated, so we can take ownership
   // of the dispatcher.
@@ -1347,7 +1330,6 @@ MojoResult Core::SendInvitation(
       // Release ownership of the endpoint platform handle, per the API
       // contract. The caller retains ownership on failure.
       connection_params.TakeEndpoint().TakePlatformHandle().release();
-      connection_params.TakeServerEndpoint().TakePlatformHandle().release();
       return result;
     }
     DCHECK_EQ(removed_dispatcher.get(), invitation_dispatcher);
@@ -1405,8 +1387,6 @@ MojoResult Core::AcceptInvitation(
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (transport_endpoint->type != MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL &&
       transport_endpoint->type !=
-          MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER &&
-      transport_endpoint->type !=
           MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_ASYNC) {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
@@ -1426,18 +1406,8 @@ MojoResult Core::AcceptInvitation(
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  ConnectionParams connection_params;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_POSIX)
-  if (transport_endpoint->type ==
-      MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER) {
-    connection_params =
-        ConnectionParams(PlatformChannelServerEndpoint(std::move(endpoint)));
-  }
-#endif
-  if (!connection_params.server_endpoint().is_valid()) {
-    connection_params =
-        ConnectionParams(PlatformChannelEndpoint(std::move(endpoint)));
-  }
+  ConnectionParams connection_params(
+      PlatformChannelEndpoint(std::move(endpoint)));
   if (options &&
       options->flags & MOJO_ACCEPT_INVITATION_FLAG_LEAK_TRANSPORT_ENDPOINT) {
     connection_params.set_leak_endpoint(true);
@@ -1524,11 +1494,6 @@ MojoResult Core::SetDefaultProcessErrorHandler(
 void Core::GetActiveHandlesForTest(std::vector<MojoHandle>* handles) {
   base::AutoLock lock(handles_->GetLock());
   handles_->GetActiveHandlesForTest(handles);
-}
-
-// static
-void Core::set_avoid_random_pipe_id(bool avoid_random_pipe_id) {
-  g_avoid_random_pipe_id = avoid_random_pipe_id;
 }
 
 // static

@@ -12,19 +12,19 @@
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/open_from_clipboard/clipboard_recent_content.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
-#import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/load_query_commands.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/page_info_commands.h"
+#import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
 #import "ios/chrome/browser/shared/public/commands/price_notifications_commands.h"
 #import "ios/chrome/browser/shared/public/commands/qr_scanner_commands.h"
 #import "ios/chrome/browser/shared/public/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler_delegate.h"
 #import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
@@ -80,7 +80,7 @@ using base::UserMetricsAction;
       [self.delegate readPageLater];
       break;
     case PopupMenuActionPageBookmark: {
-      RecordAction(UserMetricsAction("MobileMenuAddToBookmarks"));
+      RecordAction(UserMetricsAction("MobileMenuAddToOrEditBookmark"));
       LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
       web::WebState* currentWebState = self.delegate.currentWebState;
       if (!currentWebState) {

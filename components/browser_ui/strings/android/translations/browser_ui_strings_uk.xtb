@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Декодер зображень</translation>
 <translation id="1785415724048343560">Рекомендовано, щоб завжди показувалася потрібна версія сайту</translation>
 <translation id="1818308510395330587">Щоб дозволити додатку <ph name="APP_NAME" /> використовувати доповнену реальність, увімкніть камеру в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Джерело: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Пов’язані сайти можуть переглядати ваші дії в групі</translation>
 <translation id="1887786770086287077">На цьому пристрої вимкнено доступ до геоданих. Увімкніть його в <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Закрити</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Завантажено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Функції на деяких сайтах можуть не працювати в режимі анонімного перегляду</translation>
 <translation id="2442870161001914531">Завжди запитувати версію сайту для комп’ютера</translation>
+<translation id="2479148705183875116">Перейти в налаштування</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
 <translation id="2485422356828889247">Видалити</translation>
 <translation id="2490684707762498678">Адміністратор сімейної групи: <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Електронні адреси</translation>
 <translation id="2750481671343847896">Сайти можуть показувати підказки щодо входу від сервісів ідентифікації</translation>
 <translation id="2822354292072154809">Скинути всі дозволи сайту <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Запит на мобільну версію</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Попередня композиція</translation>
 <translation id="2891975107962658722">Заборонити сайту зберігати дані на вашому пристрої</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Сайти можуть використовувати файли cookie, щоб покращувати веб-перегляд, наприклад не виходити з облікового запису чи запам'ятовувати товари в кошику для покупок</translation>
 <translation id="3165022941318558018">Дозволити сайту використовувати сторонні файли cookie</translation>
 <translation id="3198916472715691905">У пам'яті зайнято <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3203366800380907218">З Інтернету</translation>
 <translation id="321187648315454507">Щоб дозволити додатку <ph name="APP_NAME" /> надсилати вам сповіщення, також увімкніть їх у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Мікрофон</translation>
 <translation id="3248611290851046188">Цей сайт визначає інтереси, які можуть використовувати інші сайти для показу оголошень. Цей сайт також використовує дані про ваші інтереси з Chrome, щоб показувати вам доречнішу рекламу.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Запит на версію для ПК</translation>
 <translation id="5100237604440890931">Згорнуто – натисніть, щоб розгорнути.</translation>
 <translation id="5123685120097942451">Анонімна вкладка</translation>
-<translation id="5134599672855298214">Запит на мобільну версію (рекомендовано)</translation>
 <translation id="5186036860380548585">Для цього натисніть відповідну кнопку вгорі екрана</translation>
 <translation id="5197729504361054390">Веб-сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> отримає доступ до вибраних контактів.</translation>
 <translation id="5216942107514965959">Останнє відвідування: сьогодні</translation>

@@ -36,8 +36,9 @@ class VIZ_SERVICE_EXPORT OutputPresenterGL : public OutputPresenter {
 
   // OutputPresenter implementation:
   void InitializeCapabilities(OutputSurface::Capabilities* capabilities) final;
-  bool Reshape(const SkSurfaceCharacterization& characterization,
+  bool Reshape(const SkImageInfo& image_info,
                const gfx::ColorSpace& color_space,
+               int sample_count,
                float device_scale_factor,
                gfx::OverlayTransform transform) final;
   std::vector<std::unique_ptr<Image>> AllocateImages(
@@ -68,7 +69,7 @@ class VIZ_SERVICE_EXPORT OutputPresenterGL : public OutputPresenter {
   scoped_refptr<gl::Presenter> presenter_;
   raw_ptr<SkiaOutputSurfaceDependency> dependency_;
 
-  ResourceFormat image_format_ = RGBA_8888;
+  SharedImageFormat image_format_ = SinglePlaneFormat::kRGBA_8888;
 
   // Shared Image factories
   const raw_ptr<gpu::SharedImageFactory> shared_image_factory_;

@@ -1374,21 +1374,21 @@ type exists to configure the authentication.
 
 * **SubjectMatch**
     * (optional) - **string**
-    * WiFi only. A substring which a remote RADIUS service certificate subject
-      name must contain in order to connect.
+    * A substring which a remote RADIUS service certificate subject name must
+      contain in order to connect.
 
 * **SubjectAlternativeNameMatch**
 	* (optional) - [array of AlternativeSubjectName](#AlternativeSubjectName-type)
-	* WiFi only. A list of alternative subject names to be matched against the
-    alternative subject name of an authentication server certificate.
+	* A list of alternative subject names to be matched against the alternative
+      subject name of an authentication server certificate.
 
 * **DomainSuffixMatch**
     * (optional) - **array of string**
-    * WiFi only. A list of constraints for the server domain name. If set, the
-      entries will be used as suffix match requirements against the DNS name
-      element(s) of the alternative subject name of an authentication server
-      certificate. When multiple match strings are specified, a match with any one
-      of the values is considered a sufficient match for the server certificate.
+    * A list of constraints for the server domain name. If set, the entries will
+      be used as suffix match requirements against the DNS name element(s) of
+      the alternative subject name of an authentication server certificate.
+      When multiple match strings are specified, a match with any one of the
+      values is considered a sufficient match for the server certificate.
 
 * **TLSVersionMax**
     * (optional) - **string**
@@ -1474,6 +1474,11 @@ ONC configuration of of **Cellular** networks is not yet supported.
     * Indicating that the network should be connected to automatically when
       possible. Note, that disabled **AllowRoaming**
       takes precedence over autoconnect.
+
+* **CustomAPNList**
+    * (optional) - [array of APN](#APN-type)
+    * List of custom APN configurations, added by either the user or enterprise
+      admin.
 
 * **EID**
     * (optional, read-only, provided only for eSIM networks) - **string**
@@ -1625,10 +1630,6 @@ ONC configuration of of **Cellular** networks is not yet supported.
 * **SupportNetworkScan**
     * (optional, read-only) - **boolean**
     * True if the cellular network supports scanning.
-
-* **UserAPNList**
-    * (optional) - [array of APN](#APN-type)
-    * List of user APN configurations.
 
 ### APN type
 

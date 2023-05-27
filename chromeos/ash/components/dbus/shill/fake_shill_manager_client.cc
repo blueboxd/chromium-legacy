@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <tuple>
 #include <vector>
 
 #include "base/command_line.h"
@@ -15,6 +16,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -48,7 +50,7 @@ struct ValueEquals {
   bool operator()(const base::Value* second) const {
     return *first_ == *second;
   }
-  const base::Value* first_;
+  raw_ptr<const base::Value, ExperimentalAsh> first_;
 };
 
 bool GetBoolValue(const base::Value::Dict& dict, const char* key) {
@@ -251,8 +253,7 @@ const char kRoamingRequired[] = "required";
 const char FakeShillManagerClient::kFakeEthernetNetworkGuid[] = "eth1_guid";
 
 FakeShillManagerClient::FakeShillManagerClient()
-    : cellular_technology_(shill::kNetworkTechnologyGsm),
-      return_null_properties_(false) {
+    : cellular_technology_(shill::kNetworkTechnologyGsm) {
   ParseCommandLineSwitch();
 }
 
@@ -430,6 +431,10 @@ void FakeShillManagerClient::ConfigureService(
   if (service_path.empty())
     service_path = service_client->FindSimilarService(properties);
   if (service_path.empty()) {
+    // shill specifies that non-wifi services are always visible.
+    // For wifi services, let the test case decide.
+    bool initial_visible =
+        type != shill::kTypeWifi || wifi_services_visible_by_default_;
     // In the stub, service paths don't have to be DBus paths, so build
     // something out of the GUID as service path.
     // Don't use the GUID itself, so tests are forced to distinguish between
@@ -437,7 +442,7 @@ void FakeShillManagerClient::ConfigureService(
     service_path = "service_path_for_" + guid;
     service_client->AddServiceWithIPConfig(
         service_path, guid /* guid */, name /* name */, type, shill::kStateIdle,
-        ipconfig_path, true /* visible */);
+        ipconfig_path, initial_visible);
   }
 
   // Set all the properties.
@@ -480,14 +485,23 @@ void FakeShillManagerClient::GetService(const base::Value::Dict& properties,
 void FakeShillManagerClient::ScanAndConnectToBestServices(
     base::OnceClosure callback,
     ErrorCallback error_callback) {
+  connect_to_best_services_callbacks_ =
+      std::make_tuple(std::move(callback), std::move(error_callback));
+  RequestScan(shill::kTypeWifi, base::DoNothing(),
+              base::BindOnce(&LogErrorCallback));
+}
+
+void FakeShillManagerClient::ContinueConnectToBestServices(
+    ConnectToBestServicesCallbacks connect_to_best_services_callbacks) {
   if (best_service_.empty()) {
     VLOG(1) << "No 'best' service set.";
     return;
   }
 
-  ShillServiceClient::Get()->Connect(dbus::ObjectPath(best_service_),
-                                     std::move(callback),
-                                     std::move(error_callback));
+  ShillServiceClient::Get()->Connect(
+      dbus::ObjectPath(best_service_),
+      std::move(std::get<0>(connect_to_best_services_callbacks)),
+      std::move(std::get<1>(connect_to_best_services_callbacks)));
 }
 
 void FakeShillManagerClient::AddPasspointCredentials(
@@ -1267,6 +1281,11 @@ void FakeShillManagerClient::SetShouldReturnNullProperties(bool value) {
   return_null_properties_ = value;
 }
 
+void FakeShillManagerClient::SetWifiServicesVisibleByDefault(
+    bool wifi_services_visible_by_default) {
+  wifi_services_visible_by_default_ = wifi_services_visible_by_default;
+}
+
 void FakeShillManagerClient::ScanCompleted(const std::string& device_path) {
   VLOG(1) << "ScanCompleted: " << device_path;
   if (!device_path.empty()) {
@@ -1275,6 +1294,16 @@ void FakeShillManagerClient::ScanCompleted(const std::string& device_path) {
         /*notify_changed=*/true);
   }
   CallNotifyObserversPropertyChanged(shill::kServiceCompleteListProperty);
+  if (connect_to_best_services_callbacks_) {
+    // Use PostTask so the ScanAndConnectToBestServices callback is executed
+    // after the Scanning property change has been dispatched.
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&FakeShillManagerClient::ContinueConnectToBestServices,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(connect_to_best_services_callbacks_.value())));
+    connect_to_best_services_callbacks_.reset();
+  }
 }
 
 void FakeShillManagerClient::ParseCommandLineSwitch() {

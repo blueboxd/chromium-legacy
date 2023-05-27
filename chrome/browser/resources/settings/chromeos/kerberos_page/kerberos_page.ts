@@ -28,7 +28,8 @@ import {getTemplate} from './kerberos_page.html.js';
 const SettingsKerberosPageElementBase =
     WebUiListenerMixin(I18nMixin(PolymerElement));
 
-class SettingsKerberosPageElement extends SettingsKerberosPageElementBase {
+export class SettingsKerberosPageElement extends
+    SettingsKerberosPageElementBase {
   static get is() {
     return 'settings-kerberos-page';
   }
@@ -56,7 +57,7 @@ class SettingsKerberosPageElement extends SettingsKerberosPageElementBase {
 
   private focusConfig_: Map<string, string>;
 
-  private onKerberosAccountsTap_(): void {
+  private onKerberosAccountsClick_(): void {
     Router.getInstance().navigateTo(routes.KERBEROS_ACCOUNTS_V2);
   }
 }

@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Декодиране на изображения</translation>
 <translation id="1785415724048343560">Препоръчва се за най-добра практическа работа</translation>
 <translation id="1818308510395330587">За да разрешите на <ph name="APP_NAME" /> да използва AR, камерата трябва да бъде включена от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">От <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Сродните сайтове могат да виждат активността ви в групата</translation>
 <translation id="1887786770086287077">Достъпът до местоположението е изключен за това устройство. Включете го от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Затваряне</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Изтеглянето завърши <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Функциите в някои сайтове може да не работят в режим „инкогнито“</translation>
 <translation id="2442870161001914531">Винаги да се заявява настолният сайт</translation>
+<translation id="2479148705183875116">Към настройките</translation>
 <translation id="2482878487686419369">Известия</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
 <translation id="2490684707762498678">Управляват се от <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Имейл адреси</translation>
 <translation id="2750481671343847896">Сайтовете могат да показват подкани за вход от услуги за идентифициране.</translation>
 <translation id="2822354292072154809">Наистина ли искате да зададете повторно всички разрешения за сайта за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Заявяване на изглед за мобилни устройства</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Предишен запис</translation>
 <translation id="2891975107962658722">Блокиране на даден сайт, така че да не запазва данни на устройството ви</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Сайтовете могат да използват „бисквитки“ с цел по-добро сърфиране, например за да оставате в профила си или за да запомнят артикулите в пазарската ви кошница</translation>
 <translation id="3165022941318558018">Разрешаване на даден сайт да използва „бисквитки“ на трети страни</translation>
 <translation id="3198916472715691905">Съхранявани данни: <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3203366800380907218">От мрежата</translation>
 <translation id="321187648315454507">За да разрешите на <ph name="APP_NAME" /> да ви изпраща известия, те трябва да бъдат включени и от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3248611290851046188">Този сайт определя интересите, които другите сайтове могат да използват, за да ви показват реклами. Той също така получава информация за интересите ви от Chrome, за да ви показва по-подходящи реклами.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Заявяване на изглед за настолни компютри</translation>
 <translation id="5100237604440890931">Свито – кликнете за разгъване.</translation>
 <translation id="5123685120097942451">Раздел в режим „инкогнито“</translation>
-<translation id="5134599672855298214">Заявяване на изглед за мобилни устройства (препоръчително)</translation>
 <translation id="5186036860380548585">Опцията е в горната част на екрана</translation>
 <translation id="5197729504361054390">Избраните от вас контакти ще бъдат споделени със сайта <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Последно посещение: днес</translation>

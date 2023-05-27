@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Дешифратор изображений</translation>
 <translation id="1785415724048343560">Рекомендуется для максимального удобства</translation>
 <translation id="1818308510395330587">Чтобы браузер "<ph name="APP_NAME" />" мог использовать дополненную реальность, также предоставьте ему доступ к камере в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Источник: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Связанные сайты могут отслеживать действия в группе</translation>
 <translation id="1887786770086287077">Для устройства отключено определение местоположения. Включите эту функцию в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Закрыть</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Скачивание завершено <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">В режиме инкогнито некоторые функции сайтов могут быть отключены</translation>
 <translation id="2442870161001914531">Всегда запрашивать версию для ПК</translation>
+<translation id="2479148705183875116">Открыть настройки</translation>
 <translation id="2482878487686419369">Уведомления</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2490684707762498678">Под управлением приложения "<ph name="APP_NAME" />"</translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Адреса электронной почты</translation>
 <translation id="2750481671343847896">Сайты могут показывать предложения войти в аккаунт от сервисов подтверждения личности.</translation>
 <translation id="2822354292072154809">Сбросить разрешения для сайта <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Запрашивать мобильную версию</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Предыдущий трек</translation>
 <translation id="2891975107962658722">Запретить сайту сохранять данные на вашем устройстве</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Сайты могут использовать файлы cookie для вашего удобства, например, чтобы сохранять информацию о товарах в корзине или о том, что вы вошли в аккаунт.</translation>
 <translation id="3165022941318558018">Разрешите сайту использовать сторонние файлы cookie.</translation>
 <translation id="3198916472715691905">В памяти занято: <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3203366800380907218">Из интернета</translation>
 <translation id="321187648315454507">Чтобы получать уведомления из приложения "<ph name="APP_NAME" />", включите их в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3248611290851046188">Этот сайт определяет интересы аудитории, чтобы другие ресурсы могли на их основе показывать ей рекламу. Кроме того, этот сайт использует информацию из Chrome о ваших интересах, чтобы показывать вам более подходящие объявления.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Запрашивать версию для ПК</translation>
 <translation id="5100237604440890931">Свернуто. Нажмите, чтобы развернуть.</translation>
 <translation id="5123685120097942451">Вкладка инкогнито</translation>
-<translation id="5134599672855298214">Запрашивать мобильную версию (рекомендуется)</translation>
 <translation id="5186036860380548585">Действие доступно вверху экрана</translation>
 <translation id="5197729504361054390">Сайт <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> получит доступ к выбранным контактам.</translation>
 <translation id="5216942107514965959">Последнее посещение: сегодня</translation>

@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_span.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
@@ -306,9 +305,9 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
   // TODO(layout-dev): This could likely be optimized further.
   // TODO(layout-dev): Handle cases where the old items are not consecutive.
   const ComputedStyle& new_style = layout_text->StyleRef();
-  const bool collapse_spaces = new_style.CollapseWhiteSpace();
+  const bool collapse_spaces = new_style.ShouldCollapseWhiteSpaces();
   const bool preserve_newlines =
-      new_style.PreserveNewline() && LIKELY(!is_text_combine_);
+      new_style.ShouldPreserveBreaks() && LIKELY(!is_text_combine_);
   if (NGInlineItem* last_item = LastItemToCollapseWith(items_)) {
     if (collapse_spaces) {
       switch (last_item->EndCollapseType()) {
@@ -545,9 +544,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendText(
 
   if (text_chunk_offsets_ && AppendTextChunks(string, *layout_object))
     return;
-  if (!style.CollapseWhiteSpace()) {
+  if (style.ShouldPreserveWhiteSpaces()) {
     AppendPreserveWhitespace(string, &style, layout_object);
-  } else if (style.PreserveNewline() && !should_not_preserve_newline) {
+  } else if (style.ShouldPreserveBreaks() && !should_not_preserve_newline) {
     AppendPreserveNewline(string, &style, layout_object);
   } else {
     AppendCollapseWhitespace(string, &style, layout_object);
@@ -562,7 +561,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextChunks(
   if (iter == text_chunk_offsets_->end())
     return false;
   const ComputedStyle& style = layout_text.StyleRef();
-  const bool should_collapse_space = style.CollapseWhiteSpace();
+  const bool should_collapse_space = style.ShouldCollapseWhiteSpaces();
   unsigned start = 0;
   for (unsigned offset : iter->value) {
     DCHECK_LE(offset, string.length());
@@ -797,7 +796,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
   if (UNLIKELY(is_text_combine_))
     return false;
   // Check if we are at a preserved space character and auto-wrap is enabled.
-  if (style.CollapseWhiteSpace() || !style.ShouldWrapLine() ||
+  if (style.ShouldCollapseWhiteSpaces() || !style.ShouldWrapLine() ||
       !string.length() || index >= string.length() ||
       string[index] != kSpaceCharacter) {
     return false;
@@ -1253,8 +1252,9 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterBlock(
                      kPopDirectionalFormattingCharacter);
   }
 
-  if (style->Display() == EDisplay::kListItem && style->ListStyleType())
+  if (style->IsDisplayListItem() && style->ListStyleType()) {
     is_block_level_ = false;
+  }
 }
 
 template <typename OffsetMappingBuilder>

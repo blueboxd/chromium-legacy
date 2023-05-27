@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTERNALLY_MANAGED_APP_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTERNALLY_MANAGED_APP_MANAGER_H_
 
+#include <iosfwd>
 #include <map>
 #include <memory>
-#include <ostream>
 #include <vector>
 
 #include "base/containers/flat_map.h"
@@ -24,7 +24,7 @@ enum class InstallResultCode;
 
 namespace web_app {
 
-class FullSystemLock;
+class AllAppsLock;
 class WebAppInstallFinalizer;
 class WebAppCommandScheduler;
 class WebAppUiManager;
@@ -66,6 +66,8 @@ class ExternallyManagedAppManager {
     webapps::InstallResultCode code;
     absl::optional<AppId> app_id;
     bool did_uninstall_and_replace = false;
+    // When adding fields, please update the `==` and `<<` operators to include
+    // the new field.
   };
 
   using OnceInstallCallback =
@@ -189,7 +191,7 @@ class ExternallyManagedAppManager {
       std::vector<ExternalInstallOptions> desired_apps_install_options,
       ExternalInstallSource install_source,
       SynchronizeCallback callback,
-      FullSystemLock& lock);
+      AllAppsLock& lock);
 
   void InstallForSynchronizeCallback(
       ExternalInstallSource source,
@@ -212,6 +214,11 @@ class ExternallyManagedAppManager {
 
   base::WeakPtrFactory<ExternallyManagedAppManager> weak_ptr_factory_{this};
 };
+
+// For logging and testing purposes.
+std::ostream& operator<<(
+    std::ostream& out,
+    const ExternallyManagedAppManager::InstallResult& install_result);
 
 }  // namespace web_app
 

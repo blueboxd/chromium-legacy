@@ -31,6 +31,13 @@ void WebAXContext::SetAXMode(const ui::AXMode& mode) const {
   private_->SetAXMode(mode);
 }
 
+void WebAXContext::MarkDocumentDirty() {
+  if (!HasActiveDocument()) {
+    return;
+  }
+  private_->GetAXObjectCache().MarkDocumentDirty();
+}
+
 void WebAXContext::ResetSerializer() {
   if (!HasActiveDocument()) {
     return;
@@ -71,8 +78,7 @@ void WebAXContext::Thaw() {
   private_->GetAXObjectCache().Thaw();
 }
 
-bool WebAXContext::SerializeEntireTree(bool exclude_offscreen,
-                                       size_t max_node_count,
+bool WebAXContext::SerializeEntireTree(size_t max_node_count,
                                        base::TimeDelta timeout,
                                        ui::AXTreeUpdate* response) {
   if (!HasActiveDocument()) {
@@ -84,8 +90,8 @@ bool WebAXContext::SerializeEntireTree(bool exclude_offscreen,
     return false;
   }
 
-  return private_->GetAXObjectCache().SerializeEntireTree(
-      exclude_offscreen, max_node_count, timeout, response);
+  return private_->GetAXObjectCache().SerializeEntireTree(max_node_count,
+                                                          timeout, response);
 }
 
 void WebAXContext::MarkAllImageAXObjectsDirty() {
@@ -110,11 +116,9 @@ void WebAXContext::SerializeDirtyObjectsAndEvents(
       had_load_complete_messages, need_to_send_location_changes);
 }
 
-void WebAXContext::ClearDirtyObjectsAndPendingEvents() {
-  if (!HasActiveDocument()) {
-    return;
-  }
-  private_->GetAXObjectCache().ClearDirtyObjectsAndPendingEvents();
+void WebAXContext::GetImagesToAnnotate(ui::AXTreeUpdate& updates,
+                                       std::vector<ui::AXNodeData*>& nodes) {
+  private_->GetAXObjectCache().GetImagesToAnnotate(updates, nodes);
 }
 
 bool WebAXContext::HasDirtyObjects() {

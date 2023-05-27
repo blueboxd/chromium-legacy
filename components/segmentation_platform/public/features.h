@@ -56,11 +56,15 @@ BASE_DECLARE_FEATURE(kContextualPageActionShareModel);
 // Feature flag for enabling shopping user segment feature.
 BASE_DECLARE_FEATURE(kShoppingUserSegmentFeature);
 
-// Feature flag for enabling `SegmentInfoCache` for `SegmentInfoDatabase`.
-BASE_DECLARE_FEATURE(kSegmentationPlatformSegmentInfoCache);
-
 // Feature flag for enabling default reporting segments.
 BASE_DECLARE_FEATURE(kSegmentationDefaultReportingSegments);
+
+// Feature flag for enabling device tier segment.
+BASE_DECLARE_FEATURE(kSegmentationPlatformDeviceTier);
+
+// Feature flag for enabling tablet productivity user segment.
+BASE_DECLARE_FEATURE(kSegmentationPlatformTabletProductivityUser);
+
 }  // namespace segmentation_platform::features
 
 #endif  // COMPONENTS_SEGMENTATION_PLATFORM_PUBLIC_FEATURES_H_

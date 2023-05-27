@@ -109,11 +109,10 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
-#include "third_party/blink/renderer/core/layout/layout_file_upload_control.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
@@ -145,6 +144,7 @@
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/accessibility/ax_common.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -1396,10 +1396,10 @@ ax::mojom::blink::Role InferredCSSToggleRole(Node* node) {
     case CSSToggleRole::kAccordionItemButton:
       return ax::mojom::blink::Role::kButton;
     case CSSToggleRole::kTabContainer:
-      // TODO(dbaron): We should verify that using kTabList really
-      // works here, since this is a container that has both the tab
-      // list *and* the tab panels.  We should also make sure that
-      // posinset/setsize work correctly for the tabs.
+      // TODO(https://crbug.com/1250716): We should verify that using
+      // kTabList really works here, since this is a container that has
+      // both the tab list *and* the tab panels.  We should also make
+      // sure that posinset/setsize work correctly for the tabs.
       return ax::mojom::blink::Role::kTabList;
     case CSSToggleRole::kTab:
       return ax::mojom::blink::Role::kTab;
@@ -1446,8 +1446,8 @@ ax::mojom::blink::Role AXNodeObject::DetermineAccessibilityRole() {
   //   3. Native markup role
   // but we may decide to change how the CSS Toggle inference fits in.
   //
-  // TODO(dbaron): Perhaps revisit whether there are types of elements
-  // where toggles should not work.
+  // TODO(https://crbug.com/1250716): Perhaps revisit whether there are
+  // types of elements where toggles should not work.
 
   if (aria_role_ != ax::mojom::blink::Role::kUnknown) {
     return aria_role_;
@@ -1639,7 +1639,7 @@ bool AXNodeObject::IsLineBreakingObject() const {
   // Line 2</pre>
   if (const LayoutText* layout_text = DynamicTo<LayoutText>(layout_object)) {
     const ComputedStyle& style = layout_object->StyleRef();
-    if (layout_text->HasNonCollapsedText() && style.PreserveNewline() &&
+    if (layout_text->HasNonCollapsedText() && style.ShouldPreserveBreaks() &&
         layout_text->PlainText().find('\n') != WTF::kNotFound) {
       return true;
     }
@@ -2628,8 +2628,9 @@ String AXNodeObject::ImageDataUrl(const gfx::Size& max_size) const {
   Vector<char> pixel_storage(
       base::checked_cast<wtf_size_t>(info.computeByteSize(row_bytes)));
   SkPixmap pixmap(info, pixel_storage.data(), row_bytes);
-  if (!SkImage::MakeFromBitmap(bitmap)->readPixels(pixmap, 0, 0))
+  if (!SkImages::RasterFromBitmap(bitmap)->readPixels(pixmap, 0, 0)) {
     return String();
+  }
 
   // Encode as a PNG and return as a data url.
   std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(pixmap);
@@ -3162,9 +3163,6 @@ String AXNodeObject::GetValueForControl() const {
     return aria_value_text;
   }
 
-  if (GetLayoutObject() && GetLayoutObject()->IsFileUploadControl())
-    return To<LayoutFileUploadControl>(GetLayoutObject())->FileTextValue();
-
   // Handle other HTML input elements that aren't text controls, like date and
   // time controls, by returning their value converted to text, with the
   // exception of checkboxes and radio buttons (which would return "on"), and
@@ -3416,14 +3414,14 @@ bool AXNodeObject::OnNativeSetValueAction(const String& string) {
     return false;
 
   auto* html_input_element = DynamicTo<HTMLInputElement>(*GetNode());
-  if (html_input_element && layout_object->IsTextFieldIncludingNG()) {
+  if (html_input_element && layout_object->IsTextField()) {
     html_input_element->SetValue(
         string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
     return true;
   }
 
   if (auto* text_area_element = DynamicTo<HTMLTextAreaElement>(*GetNode())) {
-    DCHECK(layout_object->IsTextAreaIncludingNG());
+    DCHECK(layout_object->IsTextArea());
     text_area_element->SetValue(
         string, TextFieldEventBehavior::kDispatchInputAndChangeEvent);
     return true;
@@ -3550,15 +3548,14 @@ String AXNodeObject::TextAlternative(
   }
 
   // Step 2I from: http://www.w3.org/TR/accname-aam-1.1
-  name_from = ax::mojom::blink::NameFrom::kTitle;
-  const AtomicString& title = GetAttribute(kTitleAttr);
-  String titleText = text_alternative = TextAlternativeFromTitleAttribute(
-      title, name_from, name_sources, &found_text_alternative);
-  if (!title.empty()) {
+  String resulting_text = TextAlternativeFromTooltip(
+      name_from, name_sources, &found_text_alternative, &text_alternative,
+      related_objects);
+  if (!resulting_text.empty()) {
     if (name_sources) {
-      text_alternative = titleText;
+      text_alternative = resulting_text;
     } else {
-      return titleText;
+      return resulting_text;
     }
   }
 
@@ -3607,6 +3604,7 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
     case ax::mojom::blink::NameFrom::kRelatedElement:
     case ax::mojom::blink::NameFrom::kTitle:
     case ax::mojom::blink::NameFrom::kValue:
+    case ax::mojom::blink::NameFrom::kPopoverAttribute:
       return true;
   }
   switch (name_from) {
@@ -3620,6 +3618,7 @@ static bool ShouldInsertSpaceBetweenObjectsIfNeeded(
     case ax::mojom::blink::NameFrom::kRelatedElement:
     case ax::mojom::blink::NameFrom::kTitle:
     case ax::mojom::blink::NameFrom::kValue:
+    case ax::mojom::blink::NameFrom::kPopoverAttribute:
       return true;
   }
 
@@ -3680,6 +3679,11 @@ String AXNodeObject::TextFromDescendants(
   base::AutoReset<bool> auto_reset(&is_computing_text_from_descendants_, true);
 #endif
   for (AXObject* child : children) {
+    if (!child || child->IsDetached()) {
+      // If this child was destroyed while processing another, the weak member
+      // will become null.
+      continue;
+    }
     constexpr size_t kMaxDescendantsForTextAlternativeComputation = 100;
     if (visited.size() > kMaxDescendantsForTextAlternativeComputation)
       break;
@@ -4083,9 +4087,8 @@ void AXNodeObject::AddInlineTextBoxChildren(bool force) {
   }
 
   auto* layout_text = To<LayoutText>(GetLayoutObject());
-  for (scoped_refptr<AbstractInlineTextBox> box =
-           layout_text->FirstAbstractInlineTextBox();
-       box.get(); box = box->NextInlineTextBox()) {
+  for (auto box = layout_text->FirstAbstractInlineTextBox(); box.get();
+       box = box->NextInlineTextBox()) {
     AXObject* ax_box = AXObjectCache().GetOrCreate(box.get(), this);
     if (!ax_box)
       continue;
@@ -4692,6 +4695,33 @@ const AtomicString& AXNodeObject::GetInternalsAttribute(
   return element.EnsureElementInternals().FastGetAttribute(attribute);
 }
 
+bool AXNodeObject::OnNativeBlurAction() {
+  Document* document = GetDocument();
+  Node* node = GetNode();
+  if (!document || !node) {
+    return false;
+  }
+
+  document->UpdateStyleAndLayoutTreeForNode(node);
+
+  // An AXObject's node will always be of type `Element`, `Document` or
+  // `Text`. If the object we're currently on is associated with the currently
+  // focused element or the document object, we want to clear the focus.
+  // Otherwise, no modification is needed.
+  Element* element = GetElement();
+  if (element) {
+    element->blur();
+    return true;
+  }
+
+  if (IsA<Document>(GetNode())) {
+    document->ClearFocusedElement();
+    return true;
+  }
+
+  return false;
+}
+
 bool AXNodeObject::OnNativeFocusAction() {
   // Checking if node is focusable in a native focus action requires that we
   // have updated style and layout tree, since the focus check relies on the
@@ -4920,6 +4950,73 @@ AXObject* AXNodeObject::ErrorMessage() const {
   return AXObjectCache().ValidationMessageObjectIfInvalid(true);
 }
 
+String AXNodeObject::TextAlternativeFromTooltip(
+    ax::mojom::blink::NameFrom& name_from,
+    NameSources* name_sources,
+    bool* found_text_alternative,
+    String* text_alternative,
+    AXRelatedObjectVector* related_objects) const {
+  name_from = ax::mojom::blink::NameFrom::kTitle;
+  const AtomicString& title = GetAttribute(kTitleAttr);
+  String title_text = *text_alternative = TextAlternativeFromTitleAttribute(
+      title, name_from, name_sources, found_text_alternative);
+  if (!title_text.empty()) {
+    return title_text;
+  }
+
+  auto* form_control = DynamicTo<HTMLFormControlElement>(GetElement());
+  if (!form_control) {
+    return String();
+  }
+
+  auto popover_target = form_control->popoverTargetElement();
+  if (!popover_target.popover ||
+      popover_target.popover->PopoverType() != PopoverValueType::kHint) {
+    return String();
+  }
+
+  DCHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
+
+  name_from = ax::mojom::blink::NameFrom::kPopoverAttribute;
+  if (name_sources) {
+    name_sources->push_back(
+        NameSource(*found_text_alternative, html_names::kPopovertargetAttr));
+    name_sources->back().type = name_from;
+  }
+  AXObject* popover_ax_object =
+      AXObjectCache().GetOrCreate(popover_target.popover);
+
+  // Hint popovers are used for text if and only if all of the contents are
+  // plain, e.g. have no interesting semantic or interactive elements.
+  // Otherwise, the hint will be exposed via the kDetails relationship. The
+  // motivation for this is that by reusing the simple mechanism of titles,
+  // screen reader users can easily access the information of plain hints
+  // without having to navigate to it, making the content more accessible.
+  // However, in the case of rich hints, a kDetails relationship is required to
+  // ensure that users are able to access and interact with the hint as they can
+  // navigate to it using commands.
+  if (!popover_ax_object || !popover_ax_object->IsPlainContent()) {
+    return String();
+  }
+  AXObjectSet visited;
+  String popover_text =
+      RecursiveTextAlternative(*popover_ax_object, popover_ax_object, visited);
+  *text_alternative = popover_text;
+  if (related_objects) {
+    related_objects->push_back(MakeGarbageCollected<NameSourceRelatedObject>(
+        popover_ax_object, popover_text));
+  }
+
+  if (name_sources) {
+    NameSource& source = name_sources->back();
+    source.related_objects = *related_objects;
+    source.text = *text_alternative;
+    *found_text_alternative = true;
+  }
+
+  return popover_text;
+}
+
 String AXNodeObject::TextAlternativeFromTitleAttribute(
     const AtomicString& title,
     ax::mojom::blink::NameFrom& name_from,
@@ -5099,15 +5196,15 @@ String AXNodeObject::NativeTextAlternative(
       }
     }
 
-    // title attr
-    const AtomicString& title = input_element->getAttribute(kTitleAttr);
-    String titleText = text_alternative = TextAlternativeFromTitleAttribute(
-        title, name_from, name_sources, found_text_alternative);
-    if (!titleText.IsNull()) {
+    // title attr or popover
+    String resulting_text = TextAlternativeFromTooltip(
+        name_from, name_sources, found_text_alternative, &text_alternative,
+        related_objects);
+    if (!resulting_text.empty()) {
       if (name_sources) {
-        text_alternative = titleText;
+        text_alternative = resulting_text;
       } else {
-        return titleText;
+        return resulting_text;
       }
     }
 
@@ -5131,15 +5228,14 @@ String AXNodeObject::NativeTextAlternative(
   // 5.1 Text inputs - step 3 (placeholder attribute)
   if (html_element && html_element->IsTextControl()) {
     // title attr
-    name_from = ax::mojom::blink::NameFrom::kAttribute;
-    const AtomicString& title = html_element->getAttribute(kTitleAttr);
-    String titleText = text_alternative = TextAlternativeFromTitleAttribute(
-        title, name_from, name_sources, found_text_alternative);
-    if (!titleText.IsNull()) {
+    String resulting_text = TextAlternativeFromTooltip(
+        name_from, name_sources, found_text_alternative, &text_alternative,
+        related_objects);
+    if (!resulting_text.empty()) {
       if (name_sources) {
-        text_alternative = titleText;
+        text_alternative = resulting_text;
       } else {
-        return titleText;
+        return resulting_text;
       }
     }
 
@@ -5719,35 +5815,37 @@ String AXNodeObject::Description(
 
   // For form controls that act as triggering elements for popovers of type
   // kHint, then set aria-describedby to the popover.
-  if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
-    auto popover_target = form_control->popoverTargetElement();
-    if (popover_target.popover &&
-        popover_target.popover->PopoverType() == PopoverValueType::kHint) {
-      DCHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
-      description_from = ax::mojom::blink::DescriptionFrom::kPopoverAttribute;
-      if (description_sources) {
-        description_sources->push_back(DescriptionSource(
-            found_description, html_names::kPopovertargetAttr));
-        description_sources->back().type = description_from;
-      }
-      AXObject* popover_ax_object =
-          AXObjectCache().GetOrCreate(popover_target.popover);
-      if (popover_ax_object) {
-        AXObjectSet visited;
-        description = RecursiveTextAlternative(*popover_ax_object,
-                                               popover_ax_object, visited);
-        if (related_objects) {
-          related_objects->push_back(
-              MakeGarbageCollected<NameSourceRelatedObject>(popover_ax_object,
-                                                            description));
-        }
+  if (name_from != ax::mojom::blink::NameFrom::kPopoverAttribute) {
+    if (auto* form_control = DynamicTo<HTMLFormControlElement>(element)) {
+      auto popover_target = form_control->popoverTargetElement();
+      if (popover_target.popover &&
+          popover_target.popover->PopoverType() == PopoverValueType::kHint) {
+        DCHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
+        description_from = ax::mojom::blink::DescriptionFrom::kPopoverAttribute;
         if (description_sources) {
-          DescriptionSource& source = description_sources->back();
-          source.related_objects = *related_objects;
-          source.text = description;
-          found_description = true;
-        } else {
-          return description;
+          description_sources->push_back(DescriptionSource(
+              found_description, html_names::kPopovertargetAttr));
+          description_sources->back().type = description_from;
+        }
+        AXObject* popover_ax_object =
+            AXObjectCache().GetOrCreate(popover_target.popover);
+        if (popover_ax_object && popover_ax_object->IsPlainContent()) {
+          AXObjectSet visited;
+          description = RecursiveTextAlternative(*popover_ax_object,
+                                                 popover_ax_object, visited);
+          if (related_objects) {
+            related_objects->push_back(
+                MakeGarbageCollected<NameSourceRelatedObject>(popover_ax_object,
+                                                              description));
+          }
+          if (description_sources) {
+            DescriptionSource& source = description_sources->back();
+            source.related_objects = *related_objects;
+            source.text = description;
+            found_description = true;
+          } else {
+            return description;
+          }
         }
       }
     }

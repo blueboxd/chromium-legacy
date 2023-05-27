@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">ପ୍ରମାଣିକିକରଣ ସର୍ଟିଫିକେଟ୍‌ ସ୍ଥାନୀୟ ସ୍ତରରେ ଖାରଜ କରାଯାଇଛି</translation>
 <translation id="1775381402323441512">ଭିଡିଓର ସୂଚନା</translation>
 <translation id="180035236176489073">ଏହି ଫାଇଲ୍‌ଗୁଡ଼ିକୁ ଆକ୍ସେସ୍ କରିବା ପାଇଁ ଆପଣଙ୍କୁ ନିଶ୍ଚିତ ରୂପେ ଅନ୍‍ଲାଇନ୍ ରହିବାକୁ ହେବ।</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{ID ଥିବା ଏକ ଏକ୍ସଟେନସନ}other{ID ଥିବା ଏକ୍ସଟେନସନଗୁଡ଼ିକ}}</translation>
 <translation id="1807938677607439181">ସମସ୍ତ ଫାଇଲ୍</translation>
 <translation id="1810764548349082891">କୌଣସି ପୂର୍ବାବଲୋକନ ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="1812302367230252929">ଆମହାରିକ୍ ଟ୍ରାନ୍ସଲିଟ୍ରେସନ୍</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">ସବଜେକ୍ଟ ଅଲଟରନେଟିଭ୍ ନେମ୍ ସହ ମେଳ ହେଉଥିବା ଏଣ୍ଟ୍ରି ଅବୈଧ ଅଟେ</translation>
 <translation id="1838709767668011582">Google ସାଇଟ୍</translation>
 <translation id="1853795129690976061">ଏହି ଫୋଲ୍ଡରକୁ Linux ସହିତ ସେୟାର୍ କରାଯାଇଛି</translation>
-<translation id="1859422890169495746">ଏହି Chromebook</translation>
 <translation id="1864756863218646478">ଏହି ଫାଇଲ୍ ମିଳିଲା ନାହଁ।</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" /> ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="1920670151694390848">ମାଲାୟଲମ୍ ଟ୍ରାନ୍ସଲିଟ୍ରେସନ୍</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">ଗ୍ରହ</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> ବାହାର କରାଯାଇଛି</translation>
 <translation id="2307462900900812319">ନେଟ୍‍ୱର୍କ କନ୍‌ଫିଗର୍ କରନ୍ତୁ</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{ଏହି ID <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ସହ କୌଣସି ଏକ୍ସଟେନସନ ମିଳିଲା ନାହିଁ। ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ସହ କଣ୍ଟାକ୍ଟ କରନ୍ତୁ।}other{ଏହି IDଗୁଡ଼ିକ <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ସହ ଏକ୍ସଟେନସନଗୁଡ଼ିକ ମିଳିଲା ନାହିଁ। ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ସହ କଣ୍ଟାକ୍ଟ କରନ୍ତୁ।}}</translation>
 <translation id="2325650632570794183">ଏହି ଫାଇଲ୍ ପ୍ରକାର ସମର୍ଥିତ ନୁହେଁ। ଏହି ପ୍ରକାରର ଫାଇଲ୍ ଖୋଲିବା ପାଇଁ ଗୋଟିଏ ଆପ୍ ଖୋଜିବାକୁ ଦୟାକରି Chrome ୱେବ୍ ଷ୍ଟୋର୍‌କୁ ଯାଆନ୍ତୁ।</translation>
 <translation id="2326539130272988168">ବୁଲଗେରିଆନ୍</translation>
 <translation id="2337715497728194187">Bruschetta ସହ ସେୟାର କରନ୍ତୁ</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">ଅସୁରକ୍ଷିତ</translation>
 <translation id="3291218047831493686">SIM ଲକ୍ ସେଟିଂସ୍ ବଦଳାଇବା ପାଇଁ ଏହି ନେଟୱାର୍କରେ ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="3293023191599135697">WEP ନେଟୱାର୍କ ସମର୍ଥିତ ନୁହେଁ</translation>
+<translation id="3295006446256079333">ଏହି ଭଲ୍ୟୁମ</translation>
 <translation id="3295357220137379386">ଡିଭାଇସଟି ବ୍ୟସ୍ତ ଅଛି</translation>
 <translation id="3296763833017966289">ଜର୍ଜିଆନ୍</translation>
 <translation id="3307875152560779385">ୟୁକ୍ରେନିଆନ୍</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebases</translation>
 <translation id="4850886885716139402">ଦେଖନ୍ତୁ</translation>
 <translation id="485316830061041779">ଜର୍ମାନ୍</translation>
+<translation id="4862885579661885411">ଫାଇଲ୍ସ ସେଟିଂସ</translation>
 <translation id="4867079195717347957">କଲମ୍‍କୁ ବଡ଼ରୁ ସାନ କ୍ରମରେ ସଜାଇବା ପାଇଁ କ୍ଲିକ୍ କରନ୍ତୁ।</translation>
 <translation id="4867297348137739678">ଶେଷ ସପ୍ତାହ</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> ବାଇଟ୍</translation>
@@ -795,7 +796,6 @@
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ୍‌ କପି ହେଉଛି...</translation>
 <translation id="7375951387215729722"><ph name="COLUMN_NAME" /> ଦ୍ୱାରା ଫାଇଲ୍‌ର ତାଲିକା ବଡ଼ରୁ ସାନ କ୍ରମରେ ସଜାଯାଇଛି।</translation>
 <translation id="7377161162143020057">ଆଡମିନିଷ୍ଟ୍ରେଟର ନୀତି ଅନୁଯାୟୀ ଏହି ଫାଇଲ କପି କରିବାକୁ ବ୍ଲକ କରାଯାଇଛି</translation>
-<translation id="7392500733467492920">ଖୋଜାଯାଇପାରିବ ନାହିଁ। ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ସହ କଣ୍ଟାକ୍ଟ କରନ୍ତୁ।</translation>
 <translation id="7402503521691663770">ChromeOS Flex ଡିଭାଇସଗୁଡ଼ିକ</translation>
 <translation id="7408870451288633753">ଚେକ୍</translation>
 <translation id="7417453074306512035">ଇଥିଓପିକ୍ କୀବୋର୍ଡ</translation>

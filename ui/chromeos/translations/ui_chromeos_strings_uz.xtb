@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">Haqiqiylikni tekshirish sertifikati mahalliy tarzda rad etildi</translation>
 <translation id="1775381402323441512">Video haqida</translation>
 <translation id="180035236176489073">Ushbu fayllarni ochish uchun internetga ulangan bo‘lish kerak.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{Identifikatorli kengaytma}other{Identifikatorli kengaytmalar}}</translation>
 <translation id="1807938677607439181">Barcha fayllar</translation>
 <translation id="1810764548349082891">Oldindan ko‘rib bo‘lmaydi</translation>
 <translation id="1812302367230252929">Amxara (transliteratsiya)</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">Subyektning muqobil nomi bilan mos keladigan xato yozuv topildi</translation>
 <translation id="1838709767668011582">Google sayti</translation>
 <translation id="1853795129690976061">Bu jild Linuxga ulashilgan</translation>
-<translation id="1859422890169495746">Shu Chromebook</translation>
 <translation id="1864756863218646478">Fayl topilmadi.</translation>
 <translation id="1884013283844450420">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, Nomi: <ph name="NETWORK_NAME" />, Ulanish</translation>
 <translation id="1920670151694390848">Malayalam tili transliteratsiyasi</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">Sayyora</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> tizimdan uzildi.</translation>
 <translation id="2307462900900812319">Tarmoqni sozlash</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{<ph name="BEGIN_LIST" /><ph name="END_LIST" /> identifikatorli kengaytma topilmaydi. Administratorga murojaat qiling.}other{<ph name="BEGIN_LIST" /><ph name="END_LIST" /> identifikatorli kengaytmalar topilmaydi. Administratorga murojaat qiling.}}</translation>
 <translation id="2325650632570794183">Bunday fayl turi qo‘llab-quvvatlanmaydi. Bu faylni ocha oladigan ilovani topish uchun Chrome Internet do‘koniga kiring.</translation>
 <translation id="2326539130272988168">Bolgar</translation>
 <translation id="2337715497728194187">Bruschettaga ulashish</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">Himoyalanmagan</translation>
 <translation id="3291218047831493686">SIM karta qulfi sozlamalarini almashtirish uchun bu tarmoqqa ulaning</translation>
 <translation id="3293023191599135697">WEP tarmoqlari ishlamaydi</translation>
+<translation id="3295006446256079333">Bu joy</translation>
 <translation id="3295357220137379386">Qurilma band</translation>
 <translation id="3296763833017966289">Gruzin tili</translation>
 <translation id="3307875152560779385">Ukrain</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">Chromebase qurilmalari</translation>
 <translation id="4850886885716139402">Ko‘rish</translation>
 <translation id="485316830061041779">Nemis</translation>
+<translation id="4862885579661885411">Fayllar sozlamalari</translation>
 <translation id="4867079195717347957">Ustundagi fayllar roʻyxatini kamayish boʻyicha tartiblash.</translation>
 <translation id="4867297348137739678">Avvalgi hafta</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> bayt</translation>
@@ -800,7 +801,6 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> ta fayl nusxalanmoqda...</translation>
 <translation id="7375951387215729722"><ph name="COLUMN_NAME" /> ustunidagi fayllar roʻyxati kamayishi boʻyicha tartiblangan.</translation>
 <translation id="7377161162143020057">Bu fayllarni nusxalash administrator tomonidan bloklandi</translation>
-<translation id="7392500733467492920">topilmadi. Administratorga murojaat qiling.</translation>
 <translation id="7402503521691663770">ChromeOS Flex qurilmalari</translation>
 <translation id="7408870451288633753">Chex</translation>
 <translation id="7417453074306512035">Efiop klaviaturasi</translation>

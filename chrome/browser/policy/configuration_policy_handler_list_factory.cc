@@ -168,6 +168,7 @@
 #include "chrome/browser/ash/policy/handlers/lacros_selection_policy_handler.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
+#include "chrome/browser/policy/device_login_screen_geolocation_access_level_policy_handler.h"
 #include "chrome/browser/policy/os_color_mode_policy_handler.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/ash/services/multidevice_setup/public/cpp/prefs.h"
@@ -267,9 +268,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSafeBrowsingEnabled,
     prefs::kSafeBrowsingEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kClientSidePhishingProtectionAllowed,
-    prefs::kSafeBrowsingCsdPhishingProtectionAllowedByPolicy,
-    base::Value::Type::BOOLEAN },
   { key::kSavingBrowserHistoryDisabled,
     prefs::kSavingBrowserHistoryDisabled,
     base::Value::Type::BOOLEAN },
@@ -310,6 +308,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kThirdPartyStoragePartitioningBlockedForOrigins,
     prefs::kManagedThirdPartyStoragePartitioningBlockedForOrigins,
     base::Value::Type::LIST },
+  { key::kInsecureHashesInTLSHandshakesEnabled,
+    prefs::kInsecureHashesInTLSHandshakesEnabled,
+    base::Value::Type::BOOLEAN },
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
   { key::kAuthAndroidNegotiateAccountType,
@@ -594,9 +595,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kQuicAllowed,
     prefs::kQuicAllowed,
     base::Value::Type::BOOLEAN },
-  { key::kRealTimeDownloadProtectionRequestAllowed,
-    prefs::kRealTimeDownloadProtectionRequestAllowedByPolicy,
-    base::Value::Type::BOOLEAN },
   { key::kRelaunchNotification,
     prefs::kRelaunchNotification,
     base::Value::Type::INTEGER },
@@ -816,9 +814,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDefaultWebBluetoothGuardSetting,
     prefs::kManagedDefaultWebBluetoothGuardSetting,
     base::Value::Type::INTEGER },
-  { key::kCECPQ2Enabled,
-    prefs::kCECPQ2Enabled,
-    base::Value::Type::BOOLEAN },
   { key::kEncryptedClientHelloEnabled,
     prefs::kEncryptedClientHelloEnabled,
     base::Value::Type::BOOLEAN },
@@ -1014,7 +1009,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     nullptr,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenPrimaryMouseButtonSwitch,
-    ::prefs::kOwnerPrimaryMouseButtonRight,
+    ash::prefs::kOwnerPrimaryMouseButtonRight,
     base::Value::Type::BOOLEAN },
   { key::kDeviceLoginScreenDefaultSpokenFeedbackEnabled,
     nullptr,
@@ -1341,9 +1336,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSecurityTokenSessionNotificationSeconds,
     prefs::kSecurityTokenSessionNotificationSeconds,
     base::Value::Type::INTEGER },
-  { key::kDeviceArcDataSnapshotHours,
-    arc::prefs::kArcSnapshotHours,
-    base::Value::Type::DICT },
   { key::kDeviceAllowMGSToStoreDisplayProperties,
     ash::prefs::kAllowMGSToStoreDisplayProperties,
     base::Value::Type::BOOLEAN },
@@ -1722,6 +1714,15 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kKioskTroubleshootingToolsEnabled,
     prefs::kKioskTroubleshootingToolsEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kRealTimeDownloadProtectionRequestAllowed,
+    prefs::kRealTimeDownloadProtectionRequestAllowedByPolicy,
+    base::Value::Type::BOOLEAN },
+  { key::kClientSidePhishingProtectionAllowed,
+    prefs::kSafeBrowsingCsdPhishingProtectionAllowedByPolicy,
+    base::Value::Type::BOOLEAN },
+  { key::kSafeBrowsingExtensionProtectionAllowed,
+    prefs::kSafeBrowsingExtensionProtectionAllowedByPolicy,
+    base::Value::Type::BOOLEAN },
 #endif // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
@@ -1788,13 +1789,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kPdfAnnotationsEnabled,
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(ENABLE_EXTENSIONS) && (BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) \
-    || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_FUCHSIA))
-  { key::kChromeAppsEnabled,
-    extensions::pref_names::kChromeAppsEnabled,
-    base::Value::Type::BOOLEAN },
-#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   { key::kChromeAppsWebViewPermissiveBehaviorAllowed,
@@ -2453,6 +2447,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<ash::platform_keys::KeyPermissionsPolicyHandler>(
           chrome_schema));
   handlers->AddHandler(std::make_unique<DefaultGeolocationPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<DeviceLoginScreenGeolocationAccessLevelPolicyHandler>());
   handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
       key::kNoteTakingAppsLockScreenAllowlist,
       prefs::kNoteTakingAppsLockScreenAllowlist, false /*allow_wildcards*/));

@@ -255,7 +255,8 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     std::string source_lang,
     std::string target_lang,
     std::string fluent_languages,
-    std::string related_searches_stamp)
+    std::string related_searches_stamp,
+    bool apply_lang_hint)
     : version(version),
       contextual_cards_version(contextual_cards_version),
       home_country(home_country),
@@ -265,7 +266,8 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
       source_lang(source_lang),
       target_lang(target_lang),
       fluent_languages(fluent_languages),
-      related_searches_stamp(related_searches_stamp) {}
+      related_searches_stamp(related_searches_stamp),
+      apply_lang_hint(apply_lang_hint) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     const ContextualSearchParams& other) = default;
@@ -721,6 +723,9 @@ bool TemplateURLRef::ParseParameter(size_t start,
   } else if (parameter == "google:imageThumbnailBase64") {
     replacements->push_back(
         Replacement(TemplateURLRef::GOOGLE_IMAGE_THUMBNAIL_BASE64, start));
+  } else if (parameter == "google:processedImageDimensions") {
+    replacements->emplace_back(
+        Replacement(TemplateURLRef::GOOGLE_PROCESSED_IMAGE_DIMENSIONS, start));
   } else if (parameter == "google:imageURL") {
     replacements->push_back(Replacement(TemplateURLRef::GOOGLE_IMAGE_URL,
                                         start));
@@ -1068,6 +1073,8 @@ std::string TemplateURLRef::HandleReplacements(
           args.push_back("ctxs_fls=" + params.fluent_languages);
         if (!params.related_searches_stamp.empty())
           args.push_back("ctxsl_rs=" + params.related_searches_stamp);
+        if (params.apply_lang_hint)
+          args.push_back("ctxsl_applylh=1");
 
         HandleReplacement(std::string(), base::JoinString(args, "&"),
                           replacement, &url);
@@ -1356,6 +1363,14 @@ std::string TemplateURLRef::HandleReplacements(
         break;
       }
 
+      case GOOGLE_PROCESSED_IMAGE_DIMENSIONS: {
+        std::string dimensions = search_terms_args.processed_image_dimensions;
+        if (!dimensions.empty()) {
+          HandleReplacement(std::string(), dimensions, replacement, &url);
+        }
+        break;
+      }
+
       case GOOGLE_IMAGE_URL:
         if (search_terms_args.image_url.is_valid()) {
           HandleReplacement(std::string(), search_terms_args.image_url.spec(),
@@ -1494,6 +1509,8 @@ bool TemplateURL::IsBetterThanEngineWithConflictingKeyword(
     return std::make_tuple(
         // Policy-created engines always win over non-policy created engines.
         engine->created_by_policy(),
+        // Policy-enforced engines always win over policy-recommended engines.
+        engine->enforced_by_policy(),
         // The integral value of the type enum is used to sort next.
         // This makes extension-controlled engines win.
         engine->type(),

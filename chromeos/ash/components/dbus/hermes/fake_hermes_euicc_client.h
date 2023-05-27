@@ -63,6 +63,8 @@ class COMPONENT_EXPORT(HERMES_CLIENT) FakeHermesEuiccClient
       const dbus::ObjectPath& euicc_path,
       const dbus::ObjectPath& carrier_profile_path) override;
   void QueueHermesErrorStatus(HermesResponseStatus status) override;
+  void SetNextInstallProfileFromActivationCodeResult(
+      HermesResponseStatus status) override;
   void SetInteractiveDelay(base::TimeDelta delay) override;
   std::string GenerateFakeActivationCode() override;
   bool GetLastRefreshProfilesRestoreSlotArg() override;
@@ -80,6 +82,10 @@ class COMPONENT_EXPORT(HERMES_CLIENT) FakeHermesEuiccClient
   void RefreshInstalledProfiles(const dbus::ObjectPath& euicc_path,
                                 bool restore_slot,
                                 HermesResponseCallback callback) override;
+  void RefreshSmdxProfiles(const dbus::ObjectPath& euicc_path,
+                           const std::string& activation_code,
+                           bool restore_slot,
+                           RefreshSmdxProfilesCallback callback) override;
   void RequestPendingProfiles(const dbus::ObjectPath& euicc_path,
                               const std::string& root_smds,
                               HermesResponseCallback callback) override;
@@ -104,6 +110,9 @@ class COMPONENT_EXPORT(HERMES_CLIENT) FakeHermesEuiccClient
                                HermesResponseCallback callback);
   void DoRequestInstalledProfiles(const dbus::ObjectPath& euicc_path,
                                   HermesResponseCallback callback);
+  void DoRefreshSmdxProfiles(const dbus::ObjectPath& euicc_path,
+                             const std::string& activation_code,
+                             RefreshSmdxProfilesCallback callback);
   void DoRequestPendingProfiles(const dbus::ObjectPath& euicc_path,
                                 HermesResponseCallback callback);
   void DoUninstallProfile(const dbus::ObjectPath& euicc_path,
@@ -128,6 +137,10 @@ class COMPONENT_EXPORT(HERMES_CLIENT) FakeHermesEuiccClient
 
   // Counter to generate fake ids and properties for profiles.
   int fake_profile_counter_ = 0;
+
+  // When set, this will be returned as the result of the next attempt to
+  // install a profile using an activation code.
+  absl::optional<HermesResponseStatus> next_install_profile_result_;
 
   // Queue of error code to be returned from method calls.
   std::queue<HermesResponseStatus> error_status_queue_;

@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -62,10 +63,10 @@ void ApplyMargin(
   // TODO(szager): Make sure the spec is clear that left/right margins are
   // resolved against width and not height.
   const PhysicalRect& rect = resolution_rect.value_or(expand_rect);
-  LayoutRectOutsets outsets(ComputeMargin(margin[0], rect.Height(), zoom),
-                            ComputeMargin(margin[1], rect.Width(), zoom),
-                            ComputeMargin(margin[2], rect.Height(), zoom),
-                            ComputeMargin(margin[3], rect.Width(), zoom));
+  NGPhysicalBoxStrut outsets(ComputeMargin(margin[0], rect.Height(), zoom),
+                             ComputeMargin(margin[1], rect.Width(), zoom),
+                             ComputeMargin(margin[2], rect.Height(), zoom),
+                             ComputeMargin(margin[3], rect.Width(), zoom));
   expand_rect.Expand(outsets);
 }
 
@@ -128,7 +129,7 @@ std::pair<PhysicalRect, bool> InitializeTargetRect(const LayoutObject* target,
                      flags & IntersectionGeometry::kUseOverflowClipEdge);
   } else if (target->IsLayoutInline()) {
     result.first = PhysicalRect::EnclosingRect(
-        To<LayoutBoxModelObject>(target)->LocalBoundingBoxRectF());
+        To<LayoutInline>(target)->LocalBoundingBoxRectF());
   } else {
     result.first = To<LayoutText>(target)->PhysicalLinesBoundingBox();
   }

@@ -16,6 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
@@ -25,12 +26,12 @@
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/child_accounts/child_policy_observer.h"
 #include "chrome/browser/ash/hats/hats_notification_controller.h"
-#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/ash/login/signin/token_handle_util.h"
 #include "chrome/browser/ash/net/secure_dns_manager.h"
 #include "chrome/browser/ash/release_notes/release_notes_notification.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/login/auth/authenticator.h"
 #include "chromeos/ash/components/login/auth/public/user_context.h"
@@ -338,6 +339,12 @@ class UserSessionManager
   // milestone.
   void MaybeShowHelpAppDiscoverNotification(Profile* profile);
 
+  using EolNotificationHandlerFactoryCallback =
+      base::RepeatingCallback<std::unique_ptr<EolNotification>(
+          Profile* profile)>;
+  void SetEolNotificationHandlerFactoryForTesting(
+      const EolNotificationHandlerFactoryCallback& eol_notification_factory);
+
   base::WeakPtr<UserSessionManager> GetUserSessionManagerAsWeakPtr();
 
  protected:
@@ -529,7 +536,8 @@ class UserSessionManager
   base::WeakPtr<UserSessionManagerDelegate> delegate_;
 
   // Used to listen to network changes.
-  network::NetworkConnectionTracker* network_connection_tracker_;
+  raw_ptr<network::NetworkConnectionTracker, ExperimentalAsh>
+      network_connection_tracker_;
 
   // Authentication/user context.
   UserContext user_context_;
@@ -629,6 +637,9 @@ class UserSessionManager
 
   std::unique_ptr<OnboardingUserActivityCounter>
       onboarding_user_activity_counter_;
+
+  // Callback that allows tests to inject a test EolNotification implementation.
+  EolNotificationHandlerFactoryCallback eol_notification_handler_test_factory_;
 
   base::WeakPtrFactory<UserSessionManager> weak_factory_{this};
 };

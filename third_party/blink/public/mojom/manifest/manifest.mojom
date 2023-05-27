@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "services/device/public/mojom/screen_orientation_lock_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "third_party/blink/public/mojom/url_pattern.mojom";
 import "third_party/blink/public/mojom/manifest/display_mode.mojom";
 import "third_party/blink/public/mojom/manifest/capture_links.mojom";
 import "third_party/blink/public/mojom/manifest/manifest_launch_handler.mojom";
@@ -379,6 +380,9 @@ struct HomeTabParams {
   // If the array is empty, the platform can choose what icon to use. This is
   // the same as setting 'auto' on the icons field.
   array<ManifestImageResource> icons;
+
+  // TODO(crbug.com/1381374): Use URLPatternList once available.
+  array<UrlPattern> scope_patterns;
 };
 
 // Structure representing the new tab button customization to the tab strip.

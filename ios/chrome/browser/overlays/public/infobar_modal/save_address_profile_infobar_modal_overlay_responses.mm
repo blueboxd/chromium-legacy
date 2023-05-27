@@ -10,11 +10,22 @@
 
 namespace save_address_profile_infobar_modal_responses {
 
+#pragma mark - LegacyEditedProfileSaveAction
+
+OVERLAY_USER_DATA_SETUP_IMPL(LegacyEditedProfileSaveAction);
+
+LegacyEditedProfileSaveAction::LegacyEditedProfileSaveAction(
+    NSDictionary* profileData)
+    : profile_data_(profileData) {}
+
+LegacyEditedProfileSaveAction::~LegacyEditedProfileSaveAction() = default;
+
 #pragma mark - EditedProfileSaveAction
 
 OVERLAY_USER_DATA_SETUP_IMPL(EditedProfileSaveAction);
 
-EditedProfileSaveAction::EditedProfileSaveAction(NSDictionary* profileData)
+EditedProfileSaveAction::EditedProfileSaveAction(
+    autofill::AutofillProfile* profileData)
     : profile_data_(profileData) {}
 
 EditedProfileSaveAction::~EditedProfileSaveAction() = default;
@@ -27,5 +38,9 @@ CancelViewAction::CancelViewAction(BOOL edit_view_is_dismissed)
     : edit_view_is_dismissed_(edit_view_is_dismissed) {}
 
 CancelViewAction::~CancelViewAction() = default;
+
+#pragma mark - NoThanksViewAction
+
+OVERLAY_USER_DATA_SETUP_IMPL(NoThanksViewAction);
 
 }  // save_address_profile_infobar_modal_responses

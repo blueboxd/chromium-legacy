@@ -19,6 +19,7 @@
 #import "base/task/single_thread_task_runner.h"
 #import "base/task/thread_pool.h"
 #import "base/time/default_tick_clock.h"
+#import "build/blink_buildflags.h"
 #import "components/content_settings/core/browser/cookie_settings.h"
 #import "components/content_settings/core/common/content_settings_pattern.h"
 #import "components/crash/core/common/crash_key.h"
@@ -243,7 +244,9 @@ void IOSChromeMainParts::PreCreateThreads() {
       .SetProfilingClientParameters(
           channel, metrics::CallStackProfileParams::Process::kBrowser)
       .SetDispatcherParameters(memory_system::DispatcherParameters::
-                                   PoissonAllocationSamplerInclusion::kDynamic)
+                                   PoissonAllocationSamplerInclusion::kDynamic,
+                               memory_system::DispatcherParameters::
+                                   AllocationTraceRecorderInclusion::kIgnore)
       .Initialize(memory_system_);
 
   variations::InitCrashKeys();
@@ -265,6 +268,10 @@ void IOSChromeMainParts::PreCreateThreads() {
   }
 
   application_context_->PreCreateThreads();
+}
+
+void IOSChromeMainParts::PostCreateThreads() {
+  application_context_->PostCreateThreads();
 }
 
 void IOSChromeMainParts::PreMainMessageLoopRun() {
@@ -360,12 +367,6 @@ void IOSChromeMainParts::PreMainMessageLoopRun() {
   safe_browsing_service->Initialize(last_used_browser_state->GetPrefs(),
                                     user_data_path,
                                     safe_browsing_metrics_collector);
-
-  // Ensure the Fullscren Promos Manager is initialized.
-  PromosManager* promos_manager = application_context_->GetPromosManager();
-  if (promos_manager) {
-    promos_manager->Init();
-  }
 }
 
 void IOSChromeMainParts::PostMainMessageLoopRun() {
@@ -386,8 +387,11 @@ void IOSChromeMainParts::SetUpFieldTrials(
   base::SetRecordActionTaskRunner(web::GetUIThreadTaskRunner({}));
 
   // FeatureList requires VariationsIdsProvider to be created.
+#if !BUILDFLAG(USE_BLINK)
+  // TODO(crbug.com/1427308) Move variations to PostEarlyInitialization.
   variations::VariationsIdsProvider::Create(
       variations::VariationsIdsProvider::Mode::kUseSignedInState);
+#endif
 
   // Initialize FieldTrialList to support FieldTrials that use one-time
   // randomization.
@@ -402,10 +406,13 @@ void IOSChromeMainParts::SetUpFieldTrials(
   std::vector<std::string> variation_ids =
       RegisterAllFeatureVariationParameters(&flags_storage, feature_list.get());
 
+#if !BUILDFLAG(USE_BLINK)
+  // TODO(crbug.com/1427308) Move variations to PostEarlyInitialization.
   application_context_->GetVariationsService()->SetUpFieldTrials(
       variation_ids, command_line_variation_ids,
       std::vector<base::FeatureList::FeatureOverrideInfo>(),
       std::move(feature_list), &ios_field_trials_);
+#endif
 }
 
 void IOSChromeMainParts::SetupMetrics() {

@@ -537,7 +537,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PerformanceMonitor.UsageScenario.LongInterval"
     enum="PerformanceMonitor.UsageScenario.LongInterval"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -552,7 +552,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PerformanceMonitor.UsageScenario.ShortInterval"
     enum="PerformanceMonitor.UsageScenario.ShortInterval"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>olivierli@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -633,7 +633,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.AdaptiveChargingMinutes.{ReportType}" units="minutes"
-    expires_after="2023-03-19">
+    expires_after="2024-03-23">
   <owner>dbasehore@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -840,7 +840,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeGranularityAvailable"
-    enum="BooleanAvailable" expires_after="2023-08-08">
+    enum="BooleanAvailable" expires_after="2023-10-08">
   <owner>pmonette@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
   <summary>
@@ -858,7 +858,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeGranularityIsOrdered"
-    enum="BooleanOrdered" expires_after="2023-08-08">
+    enum="BooleanOrdered" expires_after="2023-10-08">
   <owner>pmonette@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
   <summary>
@@ -873,7 +873,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeGranularityMilliwattHours2"
-    units="milliwatt-hours" expires_after="2023-08-08">
+    units="milliwatt-hours" expires_after="2023-10-08">
   <owner>pmonette@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
   <summary>
@@ -892,7 +892,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeGranularityRelative2"
-    units="hundredth of a percent" expires_after="2023-08-08">
+    units="hundredth of a percent" expires_after="2023-10-08">
   <owner>pmonette@chromium.org</owner>
   <owner>fdoray@chromium.org</owner>
   <summary>
@@ -932,7 +932,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeRate" units="mW"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1264,7 +1264,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerProcessType" enum="ProcessType2"
-    expires_after="2023-07-31">
+    expires_after="2023-10-22">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1717,7 +1717,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.ForegroundThermalState.ChangeEvent.Android"
-    enum="DeviceThermalState" expires_after="2023-08-13">
+    enum="DeviceThermalState" expires_after="2023-10-15">
   <owner>carlscab@google.com</owner>
   <owner>eseckler@chromium.org</owner>
   <owner>khokhlov@google.com</owner>
@@ -1761,7 +1761,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.HasPreciseBatteryDischargeGranularity" enum="Boolean"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1933,7 +1933,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.IOPMPowerSource.SamplingEventDelta" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -2042,7 +2042,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram base="true" name="Power.Mac" units="mW" expires_after="2023-07-30">
+<histogram base="true" name="Power.Mac" units="mW" expires_after="2023-10-01">
   <owner>olivierli@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
   <summary>
@@ -2054,7 +2054,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.Mac.IsOnBattery2" enum="BooleanOnBattery"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>avi@chromium.org</owner>
   <owner>lgrey@chromium.org</owner>
   <summary>
@@ -2173,7 +2173,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.PowerButtonPressed" units="units"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>emaamari@google.com</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>
@@ -2294,7 +2294,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.ShutdownReason" enum="ShutdownReason"
-    expires_after="M85">
+    expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <summary>
     The reason for the Chrome OS power manager shutting down or rebooting the
@@ -2321,7 +2321,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttemptsBeforeCancel" units="units"
-    expires_after="2023-07-30">
+    expires_after="2023-10-01">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -2347,6 +2347,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Power.SuspendDelay" units="seconds" expires_after="2023-12-31">
+  <owner>niwa@chromium.org</owner>
+  <owner>puthik@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    The amount of time powerd waited until all clients (e.g. Bluetooth Manager)
+    to be ready to suspend after receiving a suspend request. The maximum
+    recorded value is 60 seconds.
+  </summary>
+</histogram>
+
 <histogram name="Power.SuspendResult" enum="SuspendResult"
     expires_after="2023-09-17">
   <owner>puthik@chromium.org</owner>
@@ -2358,7 +2369,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.TimeInSuspendAtBoot" units="minutes"
-    expires_after="2021-03-15">
+    expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <summary>
     Chrome OS time in minutes spent in suspend-to-RAM mode sampled at boot
@@ -2367,7 +2378,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.TimeInSuspendAtResume" units="minutes"
-    expires_after="2021-04-04">
+    expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <summary>
     Chrome OS time in minutes spent in suspend-to-RAM mode sampled at resume.
@@ -2375,7 +2386,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.UserBrightnessAdjustmentsPerSessionOnAC" units="units"
-    expires_after="2022-05-01">
+    expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -2386,7 +2397,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.UserBrightnessAdjustmentsPerSessionOnBattery"
-    units="units" expires_after="2021-10-25">
+    units="units" expires_after="2024-03-23">
   <owner>tbroch@chromium.org</owner>
   <owner>napper@chromium.org</owner>
   <summary>
@@ -2446,7 +2457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.NonModelDim.Result" enum="PowerMLFinalResult"
-    expires_after="2023-07-30">
+    expires_after="2023-10-01">
   <owner>napper@chromium.org</owner>
   <owner>thanhdng@chromium.org</owner>
   <summary>
@@ -2489,7 +2500,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PowerML.SmartDimComponent.WorkerType"
-    enum="PowerMLSmartDimComponentWorkerType" expires_after="2023-08-08">
+    enum="PowerMLSmartDimComponentWorkerType" expires_after="2023-10-08">
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>

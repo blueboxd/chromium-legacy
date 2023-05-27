@@ -16,7 +16,6 @@
 #include "chrome/browser/ash/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ash/arc/input_overlay/db/data_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
-#include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/key_event_source_rewriter.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -26,12 +25,15 @@
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/base/ime/input_method.h"
 #include "ui/display/display_observer.h"
 
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
+
+namespace ui {
+class InputMethod;
+}  // namespace ui
 
 namespace arc::input_overlay {
 
@@ -56,6 +58,8 @@ class ArcInputOverlayManager : public KeyedService,
   ArcInputOverlayManager& operator=(const ArcInputOverlayManager&) = delete;
   ~ArcInputOverlayManager() override;
 
+  static void EnsureFactoryBuilt();
+
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* new_window) override;
 
@@ -67,6 +71,8 @@ class ArcInputOverlayManager : public KeyedService,
   void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowRemovingFromRootWindow(aura::Window* window,
                                       aura::Window* new_root) override;
+  void OnWindowParentChanged(aura::Window* window,
+                             aura::Window* parent) override;
 
   // KeyedService:
   void Shutdown() override;
@@ -83,22 +89,23 @@ class ArcInputOverlayManager : public KeyedService,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-  static void EnsureFactoryBuilt();
-
  private:
   friend class ArcInputOverlayManagerTest;
   friend class TestArcInputOverlayManager;
 
   class InputMethodObserver;
 
+  // Remove |window| from observation list.
+  void RemoveWindowObservation(aura::Window* window);
+  void UnregisterAndRemoveObservation(aura::Window* window);
   // Read default data.
   static std::unique_ptr<TouchInjector> ReadDefaultData(
       std::unique_ptr<TouchInjector> touch_injector);
   // Called when finishing reading default data.
   void OnFinishReadDefaultData(std::unique_ptr<TouchInjector> touch_injector);
-  // Called when receiving app category from ARC.
-  void OnReceiveAppCategory(std::unique_ptr<TouchInjector> touch_injector,
-                            arc::mojom::AppCategory category);
+  // Called after checking if GIO is applicable.
+  void OnDidCheckGioApplicable(std::unique_ptr<TouchInjector> touch_injector,
+                               bool is_gio_applicable);
   // Read customized data. Customized data will overrides the default data if
   // there is any.
   void ReadCustomizedData(const std::string& package_name,
@@ -145,10 +152,6 @@ class ArcInputOverlayManager : public KeyedService,
   std::unique_ptr<DisplayOverlayController> display_overlay_controller_;
   std::unique_ptr<DataController> data_controller_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  // Point at the ARC mojom connection holder. This manager has the same
-  // lifecycle with ARC session and the |connection_|.
-  arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
-      connection_ = nullptr;
 
   // TODO(b/253646354): This can be removed when removing the flag.
   bool beta_ = ash::features::IsArcInputOverlayBetaEnabled();

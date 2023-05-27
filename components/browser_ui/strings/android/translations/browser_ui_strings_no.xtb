@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Bildedekoder</translation>
 <translation id="1785415724048343560">Anbefalt for den beste opplevelsen</translation>
 <translation id="1818308510395330587">For å la <ph name="APP_NAME" /> bruke AR, slå på kameraet i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" /> også.</translation>
-<translation id="1864927262126810325">Fra <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Relaterte nettsteder kan se aktiviteten din i gruppen</translation>
 <translation id="1887786770086287077">Posisjonstilgang er slått av for denne enheten. Slå den på i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Legg på</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Nedlasting fullført <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Det kan hende at funksjoner på enkelte nettsteder ikke fungerer i Inkognitomodus</translation>
 <translation id="2442870161001914531">Be alltid om nettstedet for datamaskiner</translation>
+<translation id="2479148705183875116">Gå til Innstillinger</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
 <translation id="2490684707762498678">Administreres av <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">E-postadresser</translation>
 <translation id="2750481671343847896">Nettsteder kan vise påloggingsforespørsler fra identitetstjenester.</translation>
 <translation id="2822354292072154809">Er du sikker på at du vil tilbakestille alle nettstedstillatelser for <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Be om mobilvisning</translation>
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2874939134665556319">Forrige spor</translation>
 <translation id="2891975107962658722">Blokker et nettsted fra å lagre data på enheten din</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Nettsteder kan bruke informasjonskapsler for å gi deg en bedre surfeopplevelse, for eksempel for å holde deg pålogget eller huske varene i handlekurven din</translation>
 <translation id="3165022941318558018">La et nettsted bruke informasjonskapsler fra tredjeparter.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> lagrede data</translation>
-<translation id="3203366800380907218">Fra nettet</translation>
 <translation id="321187648315454507">For at <ph name="APP_NAME" /> skal kunne sende deg varsler, må du også slå på varsler i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3248611290851046188">Dette nettstedet definerer interesser som andre nettsteder kan bruke til å vise deg annonser. Dette nettstedet mottar også interessene dine fra Chrome for å kunne vise deg mer relevante annonser.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Be om datamaskinvisning</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="5123685120097942451">Inkognitofane</translation>
-<translation id="5134599672855298214">Be om mobilvisning (anbefalt)</translation>
 <translation id="5186036860380548585">Alternativet finner du nesten øverst på skjermen</translation>
 <translation id="5197729504361054390">Kontaktene du velger, deles med <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Sist besøkt i dag</translation>

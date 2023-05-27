@@ -506,10 +506,15 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // in flight change).
   bool RequestRepaintForTesting();
 
+  // Called after every cross-document navigation. Note that for prerender
+  // navigations, this is called before the renderer is shown.
+  void DidNavigate();
+
   // Called after every cross-document navigation. The displayed graphics of
   // the renderer is cleared after a certain timeout if it does not produce a
-  // new CompositorFrame after navigation.
-  void DidNavigate();
+  // new CompositorFrame after navigation. This is called after either
+  // navigation (for non-prerender pages) or activation (for prerender pages).
+  void StartNewContentRenderingTimeout();
 
   // Forwards the keyboard event with optional commands to the renderer. If
   // |key_event| is not forwarded for any reason, then |commands| are ignored.
@@ -822,7 +827,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DidStopFlinging();
 
   bool IsContentRenderingTimeoutRunning() const;
-  void GetContentRenderingTimeoutFrom(RenderWidgetHostImpl* other);
 
   // Called on delayed response from the renderer by either
   // 1) |hang_monitor_timeout_| (slow to ack input events) or
@@ -1079,8 +1083,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnInvalidInputEventSource() override;
 
   // Dispatch input events with latency information
-  void DispatchInputEventWithLatencyInfo(const blink::WebInputEvent& event,
-                                         ui::LatencyInfo* latency);
+  void DispatchInputEventWithLatencyInfo(
+      const blink::WebInputEvent& event,
+      ui::LatencyInfo* latency,
+      ui::EventLatencyMetadata* event_latency_metadata);
 
   void WindowSnapshotReachedScreen(int snapshot_id);
 
@@ -1193,7 +1199,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Our delegate, which wants to know mainly about keyboard events.
   // It will remain non-null until DetachDelegate() is called.
-  raw_ptr<RenderWidgetHostDelegate> delegate_;
+  raw_ptr<RenderWidgetHostDelegate, DanglingUntriaged> delegate_;
 
   // The delegate of the owner of this object.
   // This member is non-null if and only if this RenderWidgetHost is associated
@@ -1358,6 +1364,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
                              1] = {false};
   bool is_in_touchpad_gesture_fling_ = false;
 
+  // TODO(crbug.com/1432355): The gesture controller can cause synchronous
+  // destruction of the page (sending a click to the tab close button). Since
+  // that'll destroy the RenderWidgetHostImpl, having it own the controller is
+  // awkward.
   std::unique_ptr<SyntheticGestureController> synthetic_gesture_controller_;
 
   // Must be declared before `input_router_`. The latter is constructed by

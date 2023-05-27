@@ -11,8 +11,8 @@
 #include "ash/clipboard/clipboard_nudge.h"
 #include "ash/clipboard/clipboard_nudge_constants.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
-#include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/tray/system_nudge_controller.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
@@ -39,7 +39,6 @@ class ASH_EXPORT ClipboardNudgeController
     : public SystemNudgeController,
       public ClipboardHistory::Observer,
       public ui::ClipboardObserver,
-      public SessionObserver,
       public ClipboardHistoryController::Observer {
  public:
   class TimeMetricHelper {
@@ -77,9 +76,6 @@ class ASH_EXPORT ClipboardNudgeController
 
   // ui::ClipboardObserver:
   void OnClipboardDataRead() override;
-
-  // SessionObserver:
-  void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
 
   // Resets nudge state and show nudge timer.
   void HandleNudgeShown();
@@ -126,10 +122,11 @@ class ASH_EXPORT ClipboardNudgeController
   TimeMetricHelper screenshot_notification_last_shown_time_;
 
   // Owned by ClipboardHistoryController.
-  const ClipboardHistory* clipboard_history_;
+  raw_ptr<const ClipboardHistory, ExperimentalAsh> clipboard_history_;
 
   // Owned by ash/Shell.
-  ClipboardHistoryControllerImpl* const clipboard_history_controller_;
+  const raw_ptr<ClipboardHistoryControllerImpl, ExperimentalAsh>
+      clipboard_history_controller_;
 
   // Current clipboard state.
   ClipboardState clipboard_state_ = ClipboardState::kInit;

@@ -25,14 +25,12 @@ import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
-import android.support.test.runner.lifecycle.Stage;
 import android.util.Base64;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.UiController;
 import androidx.test.espresso.ViewAction;
 import androidx.test.espresso.contrib.RecyclerViewActions;
@@ -49,12 +47,12 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.gesturenav.GestureNavigationUtils;
+import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.layouts.LayoutTestUtils;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
@@ -63,6 +61,7 @@ import org.chromium.chrome.browser.suggestions.tile.TileSource;
 import org.chromium.chrome.browser.suggestions.tile.TileTitleSource;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
@@ -74,6 +73,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
@@ -105,6 +105,10 @@ public class StartSurfaceTestUtils {
             + "/open_ntp_instead_of_start/false/open_start_as_homepage/true";
     public static final String START_SURFACE_TEST_BASE_PARAMS =
             "force-fieldtrial-params=Study.Group:";
+
+    public static final String START_SURFACE_ON_TABLET_TEST_PARAMS =
+            "force-fieldtrial-params=Study.Group:"
+            + StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS_PARAM + "/0";
     public static List<ParameterSet> sClassParamsForStartSurfaceTest =
             Arrays.asList(new ParameterSet().value(false, false).name("NoInstant_NoReturn"),
                     new ParameterSet().value(true, false).name("Instant_NoReturn"),
@@ -135,7 +139,7 @@ public class StartSurfaceTestUtils {
         if (immediateReturn) {
             StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.setForTesting(0);
             assertEquals(0, StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getValue());
-            assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+            assertTrue(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
 
             // Need to start main activity from launcher for immediate return to be effective.
             // However, need at least one tab for carousel to show, which starting main activity
@@ -146,7 +150,7 @@ public class StartSurfaceTestUtils {
             TabAttributeCache.setTitleForTesting(0, "tab title");
             startMainActivityFromLauncher(activityTestRule);
         } else {
-            assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1));
+            assertFalse(ReturnToChromeUtil.shouldShowTabSwitcher(-1, false));
             // Cannot use StartSurfaceTestUtils.startMainActivityFromLauncher().
             // Otherwise tab switcher could be shown immediately if single-pane is enabled.
             activityTestRule.startMainActivityOnBlankPage();
@@ -170,8 +174,7 @@ public class StartSurfaceTestUtils {
     public static void startAndWaitNativeInitialization(
             ChromeTabbedActivityTestRule activityTestRule) {
         Assert.assertTrue(NativeLibraryLoadedStatus.getProviderForTesting() == null
-                || !NativeLibraryLoadedStatus.getProviderForTesting()
-                            .areMainDexNativeMethodsReady());
+                || !NativeLibraryLoadedStatus.getProviderForTesting().areNativeMethodsReady());
 
         CommandLine.getInstance().removeSwitch(ChromeSwitches.DISABLE_NATIVE_INITIALIZATION);
         TestThreadUtils.runOnUiThreadBlocking(
@@ -189,7 +192,10 @@ public class StartSurfaceTestUtils {
      * @param cta The ChromeTabbedActivity under test.
      */
     public static void waitForStartSurfaceVisible(ChromeTabbedActivity cta) {
+        CriteriaHelper.pollUiThread(() -> cta.getLayoutManager() != null);
         LayoutTestUtils.waitForLayout(cta.getLayoutManager(), getStartSurfaceLayoutType());
+
+        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
     }
 
     /**
@@ -221,6 +227,8 @@ public class StartSurfaceTestUtils {
             @LayoutType int currentlyActiveLayout, ChromeTabbedActivity cta) {
         waitForLayoutVisible(layoutChangedCallbackHelper, currentlyActiveLayout, cta,
                 getStartSurfaceLayoutType());
+
+        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
     }
 
     /**
@@ -276,6 +284,11 @@ public class StartSurfaceTestUtils {
      */
     public static void createTabStateFile(int[] tabIds, @Nullable String[] urls, int selectedIndex)
             throws IOException {
+        createTabStateFile(tabIds, urls, selectedIndex, true);
+    }
+
+    private static void createTabStateFile(int[] tabIds, @Nullable String[] urls, int selectedIndex,
+            boolean createStateFile) throws IOException {
         TabPersistentStore.TabModelMetadata normalInfo =
                 new TabPersistentStore.TabModelMetadata(selectedIndex);
         for (int i = 0; i < tabIds.length; i++) {
@@ -283,7 +296,9 @@ public class StartSurfaceTestUtils {
             String url = urls != null ? urls[i] : "about:blank";
             normalInfo.urls.add(url);
 
-            saveTabState(tabIds[i], false);
+            if (createStateFile) {
+                saveTabState(tabIds[i], false);
+            }
         }
         TabPersistentStore.TabModelMetadata incognitoInfo =
                 new TabPersistentStore.TabModelMetadata(0);
@@ -295,6 +310,17 @@ public class StartSurfaceTestUtils {
         FileOutputStream output = new FileOutputStream(stateFile);
         output.write(listData);
         output.close();
+    }
+
+    /**
+     * Creates a Tab state metadata file without creating Tab state files for the given Tab's info.
+     * @param tabIds All the Tab IDs in the normal tab model.
+     * @param urls All the Tab URLs in the normal tab model.
+     * @param selectedIndex The selected index of normal tab model.
+     */
+    public static void prepareTabStateMetadataFile(
+            int[] tabIds, @Nullable String[] urls, int selectedIndex) throws IOException {
+        createTabStateFile(tabIds, urls, selectedIndex, false);
     }
 
     /**
@@ -332,6 +358,17 @@ public class StartSurfaceTestUtils {
         AtomicReference<StartSurface> startSurface = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> startSurface.set(cta.getStartSurface()));
         return (StartSurfaceCoordinator) startSurface.get();
+    }
+
+    /**
+     * Gets the current active Tab from UI thread.
+     * @param cta The ChromeTabbedActivity under test.
+     */
+    public static Tab getCurrentTabFromUIThread(ChromeTabbedActivity cta) {
+        AtomicReference<Tab> tab = new AtomicReference<>();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> tab.set(TabModelUtils.getCurrentTab(cta.getCurrentTabModel())));
+        return tab.get();
     }
 
     /**
@@ -377,7 +414,7 @@ public class StartSurfaceTestUtils {
         onView(withId(R.id.tab_switcher_toolbar)).check(matches(not(isDisplayed())));
 
         // Check the toolbar's background color.
-        ToolbarPhone toolbar = cta.findViewById(org.chromium.chrome.R.id.toolbar);
+        ToolbarPhone toolbar = cta.findViewById(R.id.toolbar);
         Assert.assertEquals(toolbar.getToolbarDataProvider().getPrimaryColor(),
                 toolbar.getBackgroundDrawable().getColor());
     }
@@ -410,6 +447,21 @@ public class StartSurfaceTestUtils {
     public static void gestureNavigateBack(ChromeTabbedActivityTestRule activityTestRule) {
         GestureNavigationUtils navUtils = new GestureNavigationUtils(activityTestRule);
         navUtils.swipeFromLeftEdge();
+    }
+
+    /**
+     * Perform gesture navigate back action on the start surface to put Chrome background.
+     * @param activityTestRule The ChromeTabbedActivityTestRule under test.
+     */
+    public static void gestureNavigateBackToBringChromeBackground(
+            ChromeTabbedActivityTestRule activityTestRule) {
+        AsyncInitializationActivity.interceptMoveTaskToBackForTesting();
+        GestureNavigationUtils navUtils = new GestureNavigationUtils(activityTestRule);
+        navUtils.swipeFromLeftEdge();
+
+        // Back gesture on the start surface puts Chrome background.
+        CriteriaHelper.pollUiThread(
+                () -> AsyncInitializationActivity.wasMoveTaskToBackInterceptedForTesting());
     }
 
     /**
@@ -453,7 +505,7 @@ public class StartSurfaceTestUtils {
      * @param position The position of the tab which is clicked.
      */
     public static void clickTabInCarousel(int position) {
-        onViewWaiting(allOf(withParent(withId(R.id.carousel_tab_switcher_container)),
+        onViewWaiting(allOf(withParent(withId(R.id.tab_switcher_module_container)),
                               withId(R.id.tab_list_view)))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(position, click()));
     }
@@ -553,8 +605,8 @@ public class StartSurfaceTestUtils {
      * Gets the "tab_list_view" from the carousel tab switcher module on Start surface.
      */
     static View getCarouselTabSwitcherTabListView(ChromeTabbedActivity cta) {
-        return cta.findViewById(R.id.carousel_tab_switcher_container)
-                .findViewById(org.chromium.chrome.test.R.id.tab_list_view);
+        return cta.findViewById(R.id.tab_switcher_module_container)
+                .findViewById(R.id.tab_list_view);
     }
 
     /**
@@ -562,18 +614,9 @@ public class StartSurfaceTestUtils {
      */
     public static void pressBackAndVerifyChromeToBackground(ChromeTabbedActivityTestRule testRule) {
         // Verifies Chrome is closed.
-        try {
-            pressBack(testRule);
-        } catch (Exception e) {
-        } finally {
-            CriteriaHelper.pollUiThread(
-                    ()
-                            -> ActivityLifecycleMonitorRegistry.getInstance().getLifecycleStageOf(
-                                       testRule.getActivity())
-                            == Stage.STOPPED,
-                    "Tapping back button should close Chrome.", MAX_TIMEOUT_MS,
-                    CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-        }
+        AsyncInitializationActivity.interceptMoveTaskToBackForTesting();
+        pressBack(testRule);
+        Assert.assertTrue(AsyncInitializationActivity.wasMoveTaskToBackInterceptedForTesting());
     }
 
     /**

@@ -128,6 +128,7 @@ android_library("content_main_dex_java") {
 
 android_library("content_full_java") {
   deps = [
+    ":content_java_resources",
     ":content_main_dex_java",
     "$google_play_services_package:google_play_services_auth_api_phone_java",
     "$google_play_services_package:google_play_services_base_java",
@@ -165,10 +166,14 @@ android_library("content_full_java") {
     "//services/shape_detection/public/mojom:mojom_java",
     "//skia/public/mojom:mojom_java",
     "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
+    "//third_party/android_deps:com_google_guava_listenablefuture_java",
+    "//third_party/android_deps:guava_android_java",
     "//third_party/androidx:androidx_annotation_annotation_experimental_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_collection_collection_java",
     "//third_party/androidx:androidx_core_core_java",
+    "//third_party/androidx:androidx_privacysandbox_ads_ads_adservices_java",
+    "//third_party/androidx:androidx_privacysandbox_ads_ads_adservices_java_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/common:common_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
@@ -191,6 +196,7 @@ android_library("content_full_java") {
     "//ui/touch_selection:ui_touch_handle_orientation_srcjar",
     "//ui/touch_selection:ui_touch_selection_enums_srcjar",
   ]
+  resources_package = "org.chromium.content"
 
   sources = [
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
@@ -320,6 +326,7 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/webcontents/EmptyInternalAccessDelegate.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
+    "java/src/org/chromium/content/browser/webid/MDocProviderAndroid.java",
     "java/src/org/chromium/content_public/browser/ActionModeCallbackHelper.java",
     "java/src/org/chromium/content_public/browser/BrowserContextHandle.java",
     "java/src/org/chromium/content_public/browser/ChildProcessLauncherHelper.java",
@@ -376,6 +383,7 @@ android_library("content_full_java") {
     "java/src/org/chromium/content_public/browser/WebContentsStatics.java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  proguard_configs = [ "proguard.flags" ]
 }
 
 java_strings_grd("content_strings_grd") {
@@ -393,7 +401,6 @@ java_cpp_enum("content_public_android_java_enums_srcjar") {
     "//content/public/browser/android/message_payload_type.h",
     "//content/public/browser/android/motion_event_action.h",
     "//content/public/browser/bluetooth_scanning_prompt.h",
-    "//content/public/browser/browser_task_traits.h",
     "//content/public/browser/browsing_data_remover.h",
     "//content/public/browser/invalidate_type.h",
     "//content/public/browser/navigation_controller.h",
@@ -467,6 +474,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/sms/SmsProviderGms.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
+    "java/src/org/chromium/content/browser/webid/MDocProviderAndroid.java",
     "java/src/org/chromium/content/common/SurfaceWrapper.java",
     "java/src/org/chromium/content_public/browser/LoadCommittedDetails.java",
     "java/src/org/chromium/content_public/browser/LoadUrlParams.java",
@@ -485,11 +493,14 @@ group("jni") {
 
 android_library("content_javatests") {
   testonly = true
+  resources_package = "org.chromium.content"
 
   deps = [
     ":content_java",
+    ":content_java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:base_java_test_support_uncommon",
     "//base:process_launcher_java",
     "//cc/mojom:mojom_java",
     "//components/payments/mojom:mojom_java",
@@ -519,11 +530,10 @@ android_library("content_javatests") {
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_sdk:android_test_runner_java",
-    "//third_party/android_support_test_runner:rules_java",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_collection_collection_java",
     "//third_party/androidx:androidx_core_core_java",
+    "//third_party/androidx:androidx_test_monitor_java",
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/blink/public/common:common_java",
@@ -613,6 +623,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/remoteobjects/RemoteObjectHostImplTest.java",
     "javatests/src/org/chromium/content/browser/scheduler/NativePostTaskTest.java",
     "javatests/src/org/chromium/content/browser/scheduler/UiThreadSchedulerTest.java",
+    "javatests/src/org/chromium/content/browser/scheduler/UncaughtExceptionTest.java",
     "javatests/src/org/chromium/content/browser/webcontents/WebContentsTest.java",
     "javatests/src/org/chromium/content_public/browser/ClientDataJsonTest.java",
   ]
@@ -634,10 +645,12 @@ android_library("content_javatests") {
 }
 
 robolectric_binary("content_junit_tests") {
+  resources_package = "org.chromium.content"
   sources = [
     "junit/src/org/chromium/content/browser/BindingManagerTest.java",
     "junit/src/org/chromium/content/browser/ChildProcessConnectionMetricsUnitTest.java",
     "junit/src/org/chromium/content/browser/ChildProcessRankingTest.java",
+    "junit/src/org/chromium/content/browser/ContentUiEventHandlerTest.java",
     "junit/src/org/chromium/content/browser/GestureListenerManagerImplUnitTest.java",
     "junit/src/org/chromium/content/browser/ScreenOrientationProviderImplTest.java",
     "junit/src/org/chromium/content/browser/SpareChildConnectionTest.java",

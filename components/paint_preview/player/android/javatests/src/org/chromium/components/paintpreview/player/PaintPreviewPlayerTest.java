@@ -4,15 +4,20 @@
 
 package org.chromium.components.paintpreview.player;
 
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
+
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.support.test.InstrumentationRegistry;
 import android.util.Size;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.UiDevice;
@@ -35,6 +40,7 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.ui.test.util.BlankUiTestActivityTestCase;
 import org.chromium.ui.test.util.RenderTestRule;
+import org.chromium.ui.test.util.ViewUtils;
 import org.chromium.url.GURL;
 
 import java.util.List;
@@ -513,6 +519,9 @@ public class PaintPreviewPlayerTest extends BlankUiTestActivityTestCase {
                     ((ViewGroup) mPlayerManager.getView()).getChildCount(),
                     Matchers.greaterThan(0));
         }, TIMEOUT_MS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        ViewUtils.onViewWaiting(allOf(
+                equalTo(((ViewGroup) mPlayerManager.getView()).getChildAt(0)), isDisplayed()));
 
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat("Required bitmaps were not loaded.",

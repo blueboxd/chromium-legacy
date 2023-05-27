@@ -7,7 +7,6 @@ package org.chromium.chrome.test.util;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.text.Editable;
 import android.view.KeyEvent;
 import android.view.View;
@@ -17,6 +16,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.test.InstrumentationRegistry;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -278,7 +278,7 @@ public class OmniboxTestUtils {
                     mLocationBar.getAutocompleteCoordinator().getSuggestionModelListForTest();
             for (int i = 0; i < currentModels.size(); i++) {
                 DropdownItemViewInfo info = (DropdownItemViewInfo) currentModels.get(i);
-                if (filter.apply(info)) {
+                if (filter.apply(info) && getSuggestionViewForIndex(i) != null) {
                     result.set(new SuggestionInfo<T>(i, info.type, mAutocomplete.getSuggestionAt(i),
                             info.model, getSuggestionViewForIndex(i)));
                     return true;

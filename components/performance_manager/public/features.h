@@ -38,29 +38,10 @@ BASE_DECLARE_FEATURE(kRunOnDedicatedThreadPoolThread);
 // directly from Performance Manager rather than via TabLoader.
 BASE_DECLARE_FEATURE(kBackgroundTabLoadingFromPerformanceManager);
 
-// Make the High-Efficiency or Battery Saver Modes available to users. If this
-// is enabled, it doesn't mean the specific Mode is enabled, just that the user
-// has the option of toggling it.
-BASE_DECLARE_FEATURE(kHighEfficiencyModeAvailable);
+// Make the Battery Saver Modes available to users. If this is enabled, it
+// doesn't mean the mode is enabled, just that the user has the option of
+// toggling it.
 BASE_DECLARE_FEATURE(kBatterySaverModeAvailable);
-
-// Defines the time in seconds before a background tab is discarded for
-// High-Efficiency Mode.
-extern const base::FeatureParam<base::TimeDelta>
-    kHighEfficiencyModeTimeBeforeDiscard;
-
-// The default state of the high-efficiency mode pref
-extern const base::FeatureParam<bool> kHighEfficiencyModeDefaultState;
-
-// The number of tabs at which the user may be prompted to enable high
-// efficiency mode.
-extern const base::FeatureParam<int> kHighEfficiencyModePromoTabCountThreshold;
-
-// The percentage of used memory at which the user may be prompted to enable
-// high efficiency mode. For instance, if this parameter is set to 70, the promo
-// would be triggered when memory use exceeds 70% of available memory.
-extern const base::FeatureParam<int>
-    kHighEfficiencyModePromoMemoryPercentThreshold;
 
 // Flag to control a baseline HaTS survey for Chrome performance.
 BASE_DECLARE_FEATURE(kPerformanceControlsPerformanceSurvey);
@@ -97,17 +78,66 @@ extern const base::FeatureParam<int>
 extern const base::FeatureParam<int>
     kHeuristicMemorySaverThresholdNotReachedHeartbeatSeconds;
 
-// The percentage of available physical memory at which
-// HeuristicMemorySaverPolicy will start discarding tabs. For example, setting
-// this param to 10 will cause HeuristicMemorySaverPolicy to discard tabs
-// periodically as long as the available system memory is under 10%.
+// The amount of available physical memory at which
+// HeuristicMemorySaverPolicy will start discarding tabs. The amount of
+// available memory must be such that it's both lower than the "Percent" param
+// when expressed as a % of total installed physical memory and lower than the
+// "Mb" threshold.
+//
+// For example, if the params are set as:
+// - kHeuristicMemorySaverAvailableMemoryThresholdPercent to 20%
+// - kHeuristicMemorySaverAvailableMemoryThresholdMb to 2048
+//
+// A device with 8Gb of installed RAM, 1Gb of which is available is under the
+// threshold and will discard tabs (12.5% available and 1Gb < 2048Mb)
+//
+// A device with 16Gb of installed RAM, 3Gb of which are available is under
+// the percentage threshold but will not discard tabs because it's above the
+// absolute Mb threshold (18.75% available, but 3Gb > 2048Mb)
 extern const base::FeatureParam<int>
     kHeuristicMemorySaverAvailableMemoryThresholdPercent;
+extern const base::FeatureParam<int>
+    kHeuristicMemorySaverAvailableMemoryThresholdMb;
+
+// The percentage of the page cache that should be considered "available" for
+// the purposes of Memory Saver thresholding. For instance, setting this
+// parameter to 20 will make it so that 20% of the page cache is added to the
+// "free" memory figure on macOS. See the comment in
+// `HeuristicMemorySaverPolicy::DefaultGetAmountOfAvailablePhysicalMemory` for
+// more information.
+extern const base::FeatureParam<int> kHeuristicMemorySaverPageCacheDiscountMac;
 
 // The minimum amount of minutes a tab has to spend in the background before
 // HeuristicMemorySaverPolicy will consider it eligible for discarding.
 extern const base::FeatureParam<int>
     kHeuristicMemorySaverMinimumMinutesInBackground;
+
+// Round 2 Performance Controls features
+
+// This enables the UI for the multi-state version of high efficiency mode.
+BASE_DECLARE_FEATURE(kHighEfficiencyMultistateMode);
+// This shows more information about discarded tabs in the tab strip and
+// hovercards.
+BASE_DECLARE_FEATURE(kDiscardedTabTreatment);
+// This displays active memory usage in hovercards.
+BASE_DECLARE_FEATURE(kMemoryUsageInHovercards);
+// This enables improved UI for adding site exceptions for tab discarding.
+BASE_DECLARE_FEATURE(kDiscardExceptionsImprovements);
+// This enables improved UI for highlighting memory savings in the page action
+// chip and dialog.
+BASE_DECLARE_FEATURE(kMemorySavingsReportingImprovements);
+
+// The minimum time between instances where the chip is shown in expanded mode.
+extern const base::FeatureParam<base::TimeDelta>
+    kExpandedHighEfficiencyChipFrequency;
+
+// The minimum discard savings that a tab must have for the chip to be expanded.
+extern const base::FeatureParam<int> kExpandedHighEfficiencyChipThresholdBytes;
+
+// The minimum time a tab must be discarded before the chip can be shown
+// expanded.
+extern const base::FeatureParam<base::TimeDelta>
+    kExpandedHighEfficiencyChipDiscardedDuration;
 
 #endif
 

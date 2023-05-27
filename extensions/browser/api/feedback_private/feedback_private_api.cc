@@ -83,7 +83,7 @@ feedback_private::LandingPageType GetLandingPageType(
       ->GetFeedbackPrivateDelegate()
       ->GetLandingPageType(feedback_data);
 #else
-  return feedback_private::LANDING_PAGE_TYPE_NORMAL;
+  return feedback_private::LandingPageType::kNormal;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
@@ -176,12 +176,13 @@ void SendFeedback(content::BrowserContext* browser_context,
   FeedbackPrivateAPI::GetFactoryInstance()
       ->Get(browser_context)
       ->GetService()
-      ->SendFeedback(feedback_params, feedback_data, std::move(send_callback));
+      ->RedactThenSendFeedback(feedback_params, feedback_data,
+                               std::move(send_callback));
 }
 
 feedback_private::Status ToFeedbackStatus(bool success) {
-  return success ? feedback_private::STATUS_SUCCESS
-                 : feedback_private::STATUS_DELAYED;
+  return success ? feedback_private::Status::kSuccess
+                 : feedback_private::Status::kDelayed;
 }
 
 }  // namespace

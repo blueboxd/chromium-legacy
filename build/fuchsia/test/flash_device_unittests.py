@@ -9,6 +9,7 @@ import subprocess
 import unittest
 import unittest.mock as mock
 
+import common
 import flash_device
 
 _TEST_IMAGE_DIR = 'test/image/dir'
@@ -24,8 +25,6 @@ class FlashDeviceTest(unittest.TestCase):
         context_mock = mock.Mock()
         context_mock.__enter__ = mock.Mock(return_value=None)
         context_mock.__exit__ = mock.Mock(return_value=None)
-        config_patcher = mock.patch('flash_device.ScopedFfxConfig',
-                                    return_value=context_mock)
         ffx_mock = mock.Mock()
         ffx_mock.returncode = 0
         ffx_patcher = mock.patch('common.run_ffx_command',
@@ -36,12 +35,10 @@ class FlashDeviceTest(unittest.TestCase):
         swarming_patcher = mock.patch('flash_device.running_unattended',
                                       return_value=False)
         check_patcher = mock.patch('flash_device.check_ssh_config_file')
-        self._config_mock = config_patcher.start()
         self._ffx_mock = ffx_patcher.start()
         self._sdk_hash_mock = sdk_hash_patcher.start()
         self._check_patcher_mock = check_patcher.start()
         self._swarming_mock = swarming_patcher.start()
-        self.addCleanup(self._config_mock.stop)
         self.addCleanup(self._ffx_mock.stop)
         self.addCleanup(self._sdk_hash_mock.stop)
         self.addCleanup(self._check_patcher_mock.stop)
@@ -79,7 +76,7 @@ class FlashDeviceTest(unittest.TestCase):
                 self.assertLogs():
             mock_find.return_value = 'path/to/image/dir'
             update_required, new_image_dir = flash_device.update_required(
-                'update', 'product-bundle', None)
+                'update', 'product-bundle', None, None)
             self.assertTrue(update_required)
             self.assertEqual(new_image_dir, 'path/to/image/dir')
             mock_find.assert_called_once_with('product-bundle')
@@ -118,6 +115,32 @@ class FlashDeviceTest(unittest.TestCase):
             self.assertEqual(self._ffx_mock.call_count, 1)
             self.assertEqual(self._sdk_hash_mock.call_count, 1)
 
+    def test_update_system_info_catches_boot_failure(self) -> None:
+        """Test update when |os_check=check| catches boot_device exceptions."""
+
+        self._swarming_mock.return_value = True
+        with mock.patch('os.path.exists', return_value=True), \
+                mock.patch('flash_device._add_exec_to_flash_binaries'), \
+                mock.patch('flash_device.boot_device') as mock_boot, \
+                mock.patch('flash_device.get_system_info') as mock_sys_info, \
+                mock.patch('flash_device.subprocess.run'):
+            mock_boot.side_effect = common.StateTransitionError(
+                'Incorrect state')
+            self._ffx_mock.return_value.stdout = \
+                '[{"title": "Build", "child": [{"value": "wrong.version"}, ' \
+                '{"value": "wrong_product"}]}]'
+            flash_device.update(_TEST_IMAGE_DIR,
+                                'check',
+                                None,
+                                should_pave=False)
+            # Regular boot is to check the versions.
+            mock_boot.assert_called_once_with(mock.ANY,
+                                              common.BootMode.REGULAR, None)
+            self.assertEqual(self._ffx_mock.call_count, 1)
+
+            # get_system_info should not even be called due to early exit.
+            mock_sys_info.assert_not_called()
+
     def test_update_system_info_mismatch(self) -> None:
         """Test update when |os_check| is 'check' and system info does not
         match."""
@@ -125,6 +148,7 @@ class FlashDeviceTest(unittest.TestCase):
         self._swarming_mock.return_value = True
         with mock.patch('os.path.exists', return_value=True), \
                 mock.patch('flash_device._add_exec_to_flash_binaries'), \
+                mock.patch('flash_device.boot_device') as mock_boot, \
                 mock.patch('flash_device.subprocess.run'):
             self._ffx_mock.return_value.stdout = \
                 '[{"title": "Build", "child": [{"value": "wrong.version"}, ' \
@@ -133,7 +157,10 @@ class FlashDeviceTest(unittest.TestCase):
                                 'check',
                                 None,
                                 should_pave=False)
-            self.assertEqual(self._ffx_mock.call_count, 4)
+            # Regular boot is to check the versions.
+            mock_boot.assert_called_once_with(mock.ANY,
+                                              common.BootMode.REGULAR, None)
+            self.assertEqual(self._ffx_mock.call_count, 3)
 
     def test_update_system_info_mismatch_adds_exec_to_flash_binaries(self
                                                                      ) -> None:
@@ -200,13 +227,17 @@ class FlashDeviceTest(unittest.TestCase):
 
         with mock.patch('time.sleep'), \
                 mock.patch('os.path.exists', return_value=True), \
+                mock.patch('flash_device.boot_device') as mock_boot, \
                 mock.patch('flash_device._add_exec_to_flash_binaries'):
             flash_device.update(_TEST_IMAGE_DIR,
                                 'update',
                                 None,
                                 'test_serial',
                                 should_pave=False)
-        self.assertEqual(self._ffx_mock.call_count, 4)
+            mock_boot.assert_called_once_with(mock.ANY,
+                                              common.BootMode.BOOTLOADER,
+                                              'test_serial')
+        self.assertEqual(self._ffx_mock.call_count, 3)
 
     def test_reboot_failure(self) -> None:
         """Test update when |serial_num| is specified."""
@@ -214,7 +245,8 @@ class FlashDeviceTest(unittest.TestCase):
         with mock.patch('time.sleep'), \
                 mock.patch('os.path.exists', return_value=True), \
                 mock.patch('flash_device.running_unattended',
-                           return_value=True):
+                           return_value=True), \
+                mock.patch('flash_device.boot_device'):
             required, _ = flash_device.update_required('check',
                                                        _TEST_IMAGE_DIR, None)
             self.assertEqual(required, True)
@@ -226,18 +258,22 @@ class FlashDeviceTest(unittest.TestCase):
                 mock.patch('os.path.exists', return_value=True), \
                 mock.patch('flash_device.running_unattended',
                            return_value=True), \
+                mock.patch('flash_device.boot_device') as mock_boot, \
                 mock.patch('flash_device.pave') as mock_pave:
             flash_device.update(_TEST_IMAGE_DIR,
                                 'update',
                                 'some-target-id',
                                 should_pave=True)
+
+            mock_boot.assert_called_once_with('some-target-id',
+                                              common.BootMode.RECOVERY, None)
             mock_pave.assert_called_once_with(_TEST_IMAGE_DIR,
                                               'some-target-id')
 
     # pylint: enable=no-self-use
 
     def test_update_raises_error_if_unattended_with_no_target(self) -> None:
-        """Test update calls pave if specified."""
+        """Test update raises error if no target specified."""
 
         self._swarming_mock.return_value = True
         with mock.patch('time.sleep'), \
@@ -257,13 +293,17 @@ class FlashDeviceTest(unittest.TestCase):
         with mock.patch('time.sleep'), \
              mock.patch('os.path.exists', return_value=True), \
              mock.patch('flash_device._add_exec_to_flash_binaries'), \
+             mock.patch('flash_device.boot_device') as mock_boot, \
              mock.patch('subprocess.run'):
             flash_device.update(_TEST_IMAGE_DIR,
                                 'update',
                                 None,
                                 'test_serial',
                                 should_pave=False)
-        self.assertEqual(self._ffx_mock.call_count, 3)
+            mock_boot.assert_called_once_with(mock.ANY,
+                                              common.BootMode.BOOTLOADER,
+                                              'test_serial')
+        self.assertEqual(self._ffx_mock.call_count, 2)
 
     # pylint: disable=no-self-use
     def test_update_with_pave_timeout_defaults_to_flash(self) -> None:
@@ -273,6 +313,7 @@ class FlashDeviceTest(unittest.TestCase):
                 mock.patch('flash_device.running_unattended',
                            return_value=True), \
                 mock.patch('flash_device.pave') as mock_pave, \
+                mock.patch('flash_device.boot_device'), \
                 mock.patch('flash_device.flash') as mock_flash:
             mock_pave.side_effect = subprocess.TimeoutExpired(
                 cmd='/some/cmd',
@@ -286,38 +327,6 @@ class FlashDeviceTest(unittest.TestCase):
                                               'some-target-id')
             mock_flash.assert_called_once_with(_TEST_IMAGE_DIR,
                                                'some-target-id', None)
-
-    def test_remove_stale_removes_stale_file_lock(self) -> None:
-        """Test remove_stale_flash_file_lock removes stale file lock."""
-        with mock.patch('time.time') as mock_time, \
-             mock.patch('os.remove') as mock_remove, \
-             mock.patch('os.stat') as mock_stat:
-            mock_time.return_value = 60 * 20
-            # Set st_mtime
-            mock_stat.return_value = os.stat_result((0, ) * 8 + (100, 0))
-            flash_device._remove_stale_flash_file_lock()
-            mock_stat.assert_called_once_with(flash_device._FF_LOCK)
-            mock_remove.assert_called_once_with(flash_device._FF_LOCK)
-
-    def test_remove_stale_does_not_remove_non_stale_file(self) -> None:
-        """Test remove_stale_flash_file_lock does not remove fresh file."""
-        with mock.patch('time.time') as mock_time, \
-             mock.patch('os.remove') as mock_remove, \
-             mock.patch('os.stat') as mock_stat:
-            mock_time.return_value = 60 * 10
-            # Set st_mtime
-            mock_stat.return_value = os.stat_result((0, ) * 8 + (100, 0))
-            flash_device._remove_stale_flash_file_lock()
-            mock_remove.assert_not_called()
-
-    def test_remove_stale_does_not_raise_file_not_found(self) -> None:
-        """Test remove_stale_flash_file_lock does not raise FileNotFound."""
-        with mock.patch('time.time'), \
-             mock.patch('os.remove'), \
-             mock.patch('os.stat') as mock_stat:
-            mock_stat.side_effect = FileNotFoundError
-            flash_device._remove_stale_flash_file_lock()
-            mock_stat.assert_called_once_with(flash_device._FF_LOCK)
 
     # pylint: enable=no-self-use
 

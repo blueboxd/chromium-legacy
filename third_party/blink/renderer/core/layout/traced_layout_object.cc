@@ -7,9 +7,9 @@
 #include <inttypes.h>
 #include <memory>
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 
 namespace blink {
 
@@ -71,8 +71,7 @@ void DumpToTracedValue(const LayoutObject& object,
     // Table layout might be dirty if traceGeometry is false.
     // See https://crbug.com/664271 .
     if (trace_geometry) {
-      const LayoutNGTableCellInterface& c =
-          ToInterface<LayoutNGTableCellInterface>(object);
+      const auto& c = To<LayoutNGTableCell>(object);
       traced_value->SetDouble("row", c.RowIndex());
       traced_value->SetDouble("col", c.AbsoluteColumnIndex());
       if (c.ResolvedRowSpan() != 1)

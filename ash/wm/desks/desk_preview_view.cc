@@ -4,19 +4,19 @@
 
 #include "ash/wm/desks/desk_preview_view.h"
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <utility>
 
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
-#include "ash/style/ash_color_provider.h"
 #include "ash/style/style_util.h"
 #include "ash/wallpaper/wallpaper_base_view.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/float/float_controller.h"
@@ -32,12 +32,13 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/cxx17_backports.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/layer_type.h"
@@ -191,7 +192,7 @@ void MirrorLayerTree(
 
     // Define what to use for layer ordering.
     struct LayerOrderData {
-      ui::Layer* layer;
+      raw_ptr<ui::Layer, ExperimentalAsh> layer;
       // z-order in target desk.
       size_t primary_key;
       // z-order in active desk.
@@ -357,7 +358,7 @@ DeskPreviewView::DeskPreviewView(PressedCallback callback,
   wallpaper_preview_layer->SetFillsBoundsOpaquely(false);
   wallpaper_preview_layer->SetRoundedCornerRadius(GetRoundedCorner());
   wallpaper_preview_layer->SetIsFastRoundedCorner(true);
-  AddChildView(wallpaper_preview_);
+  AddChildView(wallpaper_preview_.get());
 
   if (!chromeos::features::IsJellyrollEnabled()) {
     shadow_ = SystemShadow::CreateShadowOnNinePatchLayerForView(
@@ -371,7 +372,7 @@ DeskPreviewView::DeskPreviewView(PressedCallback callback,
   contents_view_layer->SetName("Desk mirrored contents view");
   contents_view_layer->SetRoundedCornerRadius(GetRoundedCorner());
   contents_view_layer->SetIsFastRoundedCorner(true);
-  AddChildView(desk_mirrored_contents_view_);
+  AddChildView(desk_mirrored_contents_view_.get());
 
   highlight_overlay_ = AddChildView(std::make_unique<views::View>());
   highlight_overlay_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
@@ -395,8 +396,8 @@ int DeskPreviewView::GetHeight(aura::Window* root) {
       root->bounds().width() <= kUseSmallerHeightDividerWidthThreshold
           ? kRootHeightDividerForSmallScreen
           : kRootHeightDivider;
-  return base::clamp(root->bounds().height() / height_divider,
-                     kDeskPreviewMinHeight, kDeskPreviewMaxHeight);
+  return std::clamp(root->bounds().height() / height_divider,
+                    kDeskPreviewMinHeight, kDeskPreviewMaxHeight);
 }
 
 void DeskPreviewView::SetHighlightOverlayVisibility(bool visible) {
@@ -523,7 +524,7 @@ void DeskPreviewView::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void DeskPreviewView::OnGestureEvent(ui::GestureEvent* event) {
-  DesksBarView* owner_bar = mini_view_->owner_bar();
+  DeskBarViewBase* owner_bar = mini_view_->owner_bar();
 
   switch (event->type()) {
     // Only long press can trigger drag & drop.
@@ -553,14 +554,16 @@ void DeskPreviewView::OnGestureEvent(ui::GestureEvent* event) {
 void DeskPreviewView::OnThemeChanged() {
   views::Button::OnThemeChanged();
 
-  highlight_overlay_->layer()->SetColor(
-      SkColorSetA(AshColorProvider::Get()->GetControlsLayerColor(
-                      AshColorProvider::ControlsLayerType::kHighlightColor1),
-                  kHighlightTransparency));
+  highlight_overlay_->layer()->SetColor(SkColorSetA(
+      GetColorProvider()->GetColor(ui::kColorHighlightBorderHighlight1),
+      kHighlightTransparency));
 }
 
 void DeskPreviewView::OnFocus() {
-  UpdateOverviewHighlightForFocusAndSpokenFeedback(this);
+  if (mini_view_->owner_bar()->overview_grid()) {
+    UpdateOverviewHighlightForFocusAndSpokenFeedback(this);
+  }
+
   mini_view_->UpdateFocusColor();
   View::OnFocus();
 }
@@ -612,7 +615,7 @@ bool DeskPreviewView::MaybeActivateHighlightedViewOnOverviewExit(
 
 void DeskPreviewView::OnViewHighlighted() {
   mini_view_->UpdateFocusColor();
-  mini_view_->owner_bar()->ScrollToShowMiniViewIfNecessary(mini_view_);
+  mini_view_->owner_bar()->ScrollToShowViewIfNecessary(mini_view_);
 }
 
 void DeskPreviewView::OnViewUnhighlighted() {

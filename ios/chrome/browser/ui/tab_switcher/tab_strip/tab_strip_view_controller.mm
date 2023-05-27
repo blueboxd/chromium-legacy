@@ -9,7 +9,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/numerics/safe_conversions.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_view_layout.h"
@@ -238,15 +238,13 @@ const CGFloat kSymbolSize = 18;
     cell.delegate = self;
     cell.itemIdentifier = item.identifier;
     cell.titleLabel.text = item.title;
-    NSString* itemIdentifier = item.identifier;
-    [self.faviconDataSource
-        faviconForIdentifier:itemIdentifier
-                  completion:^(UIImage* icon) {
-                    // Only update the icon if the cell is not
-                    // already reused for another item.
-                    if ([cell hasIdentifier:itemIdentifier])
-                      cell.faviconView.image = icon;
-                  }];
+    [item fetchFavicon:^(TabSwitcherItem* innerItem, UIImage* icon) {
+      // Only update the icon if the cell is not
+      // already reused for another item.
+      if ([cell hasIdentifier:innerItem.identifier]) {
+        cell.faviconView.image = icon;
+      }
+    }];
     cell.selected = [cell hasIdentifier:self.selectedItemID];
   }
 }

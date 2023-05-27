@@ -4,9 +4,9 @@
 
 source_set("cells") {
   sources = [
+    "action_list_module.h",
+    "action_list_module.mm",
     "content_suggestions_gesture_commands.h",
-    "content_suggestions_module_container.h",
-    "content_suggestions_module_container.mm",
     "content_suggestions_most_visited_action_item.h",
     "content_suggestions_most_visited_action_item.mm",
     "content_suggestions_most_visited_constants.h",
@@ -26,6 +26,8 @@ source_set("cells") {
     "content_suggestions_tile_layout_util.mm",
     "content_suggestions_tile_view.h",
     "content_suggestions_tile_view.mm",
+    "magic_stack_module_container.h",
+    "magic_stack_module_container.mm",
     "query_suggestion_view.h",
     "query_suggestion_view.mm",
     "suggested_content.h",
@@ -37,15 +39,15 @@ source_set("cells") {
     "//components/ntp_tiles",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/shared/ui/util",
+    "//ios/chrome/browser/shared/ui/util/image",
     "//ios/chrome/browser/ui/content_suggestions:constants",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_ui_util",
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/content_suggestions:public",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
-    "//ios/chrome/browser/ui/icons:symbols",
-    "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/resources:module_shadow",
     "//ios/chrome/common:string_util",
     "//ios/chrome/common:timing",
@@ -71,8 +73,8 @@ source_set("constants") {
 
   deps = [
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
-    "//ios/chrome/browser/ui/icons:symbols",
     "//ui/base:base",
   ]
 }

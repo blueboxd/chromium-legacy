@@ -142,7 +142,7 @@ GLTextureImageBackingHelper::ProduceDawnCommon(
   bool success = factory->CreateSharedImage(
       dst_mailbox, backing->format(), backing->size(), backing->color_space(),
       kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, gpu::kNullSurfaceHandle,
-      backing->usage() | SHARED_IMAGE_USAGE_WEBGPU);
+      backing->usage() | SHARED_IMAGE_USAGE_WEBGPU, "ProduceDawnCommon");
   if (!success) {
     DLOG(ERROR) << "Cannot create a shared image resource for internal blit";
     return nullptr;
@@ -224,7 +224,7 @@ GLuint GLTextureImageBackingHelper::MakeTextureAndSetParameters(
     GLenum target,
     bool framebuffer_attachment_angle,
     scoped_refptr<gles2::TexturePassthrough>* passthrough_texture,
-    raw_ptr<gles2::Texture, DanglingUntriaged>* texture) {
+    raw_ptr<gles2::Texture>* texture) {
   gl::GLApi* api = gl::g_current_gl_context;
   ScopedRestoreTexture scoped_restore(api, target);
 

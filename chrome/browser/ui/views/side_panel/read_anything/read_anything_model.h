@@ -16,9 +16,6 @@
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_menu_model.h"
 #include "chrome/common/accessibility/read_anything.mojom.h"
 #include "chrome/common/accessibility/read_anything_constants.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
-#include "content/public/browser/ax_event_notification_details.h"
-#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/base/models/combobox_model.h"
 
 using read_anything::mojom::LetterSpacing;
@@ -43,20 +40,27 @@ class ReadAnythingFontModel : public ui::ComboboxModel {
   bool IsValidFontIndex(size_t index);
   size_t GetFontNameIndex(std::string font_name);
   void SetSelectedIndex(size_t index);
-  std::string GetLabelFontListAt(size_t index);
+  std::vector<std::string> GetLabelFontNameAt(size_t index) override;
+  absl::optional<int> GetLabelFontSize() override;
   size_t GetSelectedIndex() { return selected_index_; }
 
-  absl::optional<ui::ColorId> GetDropdownForegroundColorAt(
+  absl::optional<ui::ColorId> GetDropdownForegroundColorIdAt(
       size_t index) const override;
-  absl::optional<ui::ColorId> GetDropdownBackgroundColorAt(
+  absl::optional<ui::ColorId> GetDropdownBackgroundColorIdAt(
+      size_t index) const override;
+  absl::optional<ui::ColorId> GetDropdownSelectedBackgroundColorIdAt(
       size_t index) const override;
 
-  void SetForegroundColor(absl::optional<ui::ColorId> foreground_color) {
+  void SetForegroundColorId(ui::ColorId foreground_color) {
     foreground_color_id_ = foreground_color;
   }
 
-  void SetBackgroundColor(absl::optional<ui::ColorId> background_color) {
+  void SetBackgroundColorId(ui::ColorId background_color) {
     background_color_id_ = background_color;
+  }
+
+  void SetSelectedBackgroundColorId(ui::ColorId selected_color) {
+    selected_color_id_ = selected_color;
   }
 
   // Used by tests only.
@@ -77,6 +81,7 @@ class ReadAnythingFontModel : public ui::ComboboxModel {
 
   absl::optional<ui::ColorId> foreground_color_id_;
   absl::optional<ui::ColorId> background_color_id_;
+  absl::optional<ui::ColorId> selected_color_id_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -88,25 +93,33 @@ class ReadAnythingFontModel : public ui::ComboboxModel {
 //
 class ReadAnythingColorsModel : public ReadAnythingMenuModel {
  public:
-  ReadAnythingColorsModel();
-  ReadAnythingColorsModel(const ReadAnythingColorsModel&) = delete;
-  ReadAnythingColorsModel& operator=(const ReadAnythingColorsModel&) = delete;
-  ~ReadAnythingColorsModel() override;
-
-  // Enum for logging the user-chosen color.
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class ReadAnythingColor {
-    kDefault = 0,
-    kLight = 1,
-    kDark = 2,
-    kYellow = 3,
-    kBlue = 4,
-    kMaxValue = kBlue,
-  };
-
   // Simple struct to hold the various colors to keep code cleaner.
   struct ColorInfo {
+    // Enum for logging the user-chosen color.
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    enum class ReadAnythingColor {
+      kDefault = 0,
+      kLight = 1,
+      kDark = 2,
+      kYellow = 3,
+      kBlue = 4,
+      kMaxValue = kBlue,
+    };
+
+    ColorInfo(std::u16string name,
+              int icon_asset,
+              ui::ColorId foreground_color_id,
+              ui::ColorId background_color_id,
+              ui::ColorId separator_color_id,
+              ui::ColorId dropdown_color_id,
+              ui::ColorId selected_color_id,
+              ColorInfo::ReadAnythingColor logging_value);
+    ColorInfo(const ColorInfo& other);
+    ColorInfo(ColorInfo&&);
+    ColorInfo& operator=(const ColorInfo&);
+    ColorInfo& operator=(ColorInfo&&);
+
     // The name of the colors, e.g. Default, Light, Dark.
     std::u16string name;
 
@@ -126,9 +139,18 @@ class ReadAnythingColorsModel : public ReadAnythingMenuModel {
     // The color of the dropdown menu, used for the combobox menu model.
     ui::ColorId dropdown_color_id;
 
+    // The selected / hover color of the dropdown menu, used for the combobox
+    // menu model.
+    ui::ColorId selected_dropdown_color_id;
+
     // The enum value used to log this theme.
-    ReadAnythingColorsModel::ReadAnythingColor logging_value;
+    ColorInfo::ReadAnythingColor logging_value;
   };
+
+  ReadAnythingColorsModel();
+  ReadAnythingColorsModel(const ReadAnythingColorsModel&) = delete;
+  ReadAnythingColorsModel& operator=(const ReadAnythingColorsModel&) = delete;
+  ~ReadAnythingColorsModel() override;
 
   bool IsValidIndex(size_t index) override;
   ColorInfo& GetColorsAt(size_t index);
@@ -225,11 +247,6 @@ class ReadAnythingModel {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    virtual void AccessibilityEventReceived(
-        const content::AXEventNotificationDetails& details) {}
-    virtual void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id,
-                                         const ukm::SourceId& ukm_source_id) {}
-    virtual void OnAXTreeDestroyed(const ui::AXTreeID& tree_id) {}
     virtual void OnReadAnythingThemeChanged(
         const std::string& font_name,
         double font_scale,
@@ -237,11 +254,9 @@ class ReadAnythingModel {
         ui::ColorId background_color_id,
         ui::ColorId separator_color_id,
         ui::ColorId dropdown_color_id,
+        ui::ColorId selected_color_id,
         read_anything::mojom::LineSpacing line_spacing,
         read_anything::mojom::LetterSpacing letter_spacing) = 0;
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-    virtual void ScreenAIServiceReady() {}
-#endif
   };
 
   ReadAnythingModel();
@@ -257,15 +272,6 @@ class ReadAnythingModel {
 
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
-
-  void AccessibilityEventReceived(
-      const content::AXEventNotificationDetails& details);
-  void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id,
-                               const ukm::SourceId& ukm_source_id);
-  void OnAXTreeDestroyed(const ui::AXTreeID& tree_id);
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  void ScreenAIServiceReady();
-#endif
 
   void SetSelectedFontByIndex(size_t new_index);
   double GetValidFontScale(double font_scale);
@@ -289,7 +295,7 @@ class ReadAnythingModel {
   read_anything::mojom::LetterSpacing letter_spacing() {
     return letter_spacing_;
   }
-  ReadAnythingColorsModel::ReadAnythingColor color_logging_value() {
+  ReadAnythingColorsModel::ColorInfo::ReadAnythingColor color_logging_value() {
     return colors_model_->GetColorsAt(colors_combobox_index_).logging_value;
   }
 
@@ -306,6 +312,7 @@ class ReadAnythingModel {
   // Additional theme colors.
   ui::ColorId separator_color_id_ = kColorReadAnythingSeparator;
   ui::ColorId dropdown_color_id_ = kColorReadAnythingDropdownBackground;
+  ui::ColorId selected_dropdown_color_id_ = kColorReadAnythingDropdownSelected;
 
   // A scale multiplier for font size (internal use only, not shown to user).
   float font_scale_ = kReadAnythingDefaultFontScale;

@@ -6,6 +6,7 @@
 
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable_creation_key.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_estimate.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_storage_usage_details.h"
@@ -23,12 +24,18 @@ namespace blink {
 
 StorageBucket::StorageBucket(
     NavigatorBase* navigator,
+    const String& name,
     mojo::PendingRemote<mojom::blink::BucketHost> remote)
     : ExecutionContextClient(navigator->GetExecutionContext()),
+      name_(name),
       remote_(GetExecutionContext()),
       navigator_base_(navigator) {
   remote_.Bind(std::move(remote), GetExecutionContext()->GetTaskRunner(
                                       TaskType::kInternalDefault));
+}
+
+const String& StorageBucket::name() {
+  return name_;
 }
 
 ScriptPromise StorageBucket::persist(ScriptState* script_state) {
@@ -143,7 +150,7 @@ ScriptPromise StorageBucket::expires(ScriptState* script_state) {
 
 IDBFactory* StorageBucket::indexedDB() {
   if (!idb_factory_) {
-    idb_factory_ = MakeGarbageCollected<IDBFactory>();
+    idb_factory_ = MakeGarbageCollected<IDBFactory>(GetExecutionContext());
     mojo::PendingRemote<mojom::blink::IDBFactory> factory;
     remote_->GetIdbFactory(factory.InitWithNewPipeAndPassReceiver());
     idb_factory_->SetFactory(std::move(factory), GetExecutionContext());

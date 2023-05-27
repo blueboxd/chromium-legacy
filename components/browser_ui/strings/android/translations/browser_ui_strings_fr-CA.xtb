@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Décodeur d’image</translation>
 <translation id="1785415724048343560">Recommandé pour une expérience optimale</translation>
 <translation id="1818308510395330587">Pour autoriser <ph name="APP_NAME" /> à utiliser la RA, activez aussi l'accès à l'appareil photo dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">De <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Les sites connexes peuvent voir votre activité dans le groupe</translation>
 <translation id="1887786770086287077">L'accès à la localisation est désactivé pour cet appareil. Activez-le dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Raccrocher</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Téléchargement terminé <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Les fonctionnalités de certains sites peuvent ne pas fonctionner en mode de navigation privée</translation>
 <translation id="2442870161001914531">Toujours demander le site pour ordinateurs de bureau</translation>
+<translation id="2479148705183875116">Accéder aux paramètres</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2490684707762498678">Les notifications sont gérées par <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Adresses de courriel</translation>
 <translation id="2750481671343847896">Les sites peuvent afficher des invites de connexion provenant de services de vérification d'identité.</translation>
 <translation id="2822354292072154809">Voulez-vous vraiment réinitialiser toutes les autorisations de site pour <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Demander l'affichage sur un appareil mobile</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2874939134665556319">Chanson précédente</translation>
 <translation id="2891975107962658722">Empêcher un site d'enregistrer des données sur votre appareil</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Les sites peuvent utiliser des témoins afin d'améliorer votre expérience de navigation, par exemple en vous permettant de rester connecté ou en mémorisant des articles de votre panier d'achats</translation>
 <translation id="3165022941318558018">Autoriser un site à utiliser des témoins tiers</translation>
 <translation id="3198916472715691905">Stockage de données : <ph name="STORAGE_AMOUNT" /></translation>
-<translation id="3203366800380907218">Du Web</translation>
 <translation id="321187648315454507">Pour autoriser <ph name="APP_NAME" /> à vous envoyer des notifications, vous devez aussi activer celles-ci dans les <ph name="BEGIN_LINK" />paramètres d'Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Microphone</translation>
 <translation id="3248611290851046188">Ce site définit des centres d'intérêt que d'autres sites peuvent utiliser pour vous montrer des annonces. Ce site récupère également vos centres d'intérêt de Chrome pour vous montrer des annonces plus pertinentes.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Demandez l'affichage sur ordinateur de bureau</translation>
 <translation id="5100237604440890931">Réduit : cliquer pour développer</translation>
 <translation id="5123685120097942451">Onglet de navigation privée</translation>
-<translation id="5134599672855298214">Demandez l'affichage sur appareil mobile (recommandé)</translation>
 <translation id="5186036860380548585">Option accessible près du haut de l'écran</translation>
 <translation id="5197729504361054390">Les contacts que vous sélectionnez seront partagés avec <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Dernière visite : aujourd'hui</translation>

@@ -17,7 +17,6 @@
 
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
@@ -120,8 +119,8 @@ std::pair<gfx::PointF, gfx::PointF> GetVisibleSelectionEndPoints(
     const gfx::RectF& rect,
     const gfx::PointF& top,
     const gfx::PointF& bottom) {
-  gfx::PointF start(base::clamp(top.x(), rect.x(), rect.right()),
-                    base::clamp(top.y(), rect.y(), rect.bottom()));
+  gfx::PointF start(std::clamp(top.x(), rect.x(), rect.right()),
+                    std::clamp(top.y(), rect.y(), rect.bottom()));
   gfx::PointF end = start + (bottom - top);
   return {start, end};
 }
@@ -238,10 +237,13 @@ void LayerTreeImpl::DidUpdateScrollOffset(ElementId id) {
       !base::FeatureList::IsEnabled(features::kScrollUnification) ||
       scroll_tree.CanRealizeScrollsOnCompositor(*scroll_node);
 
-  DCHECK(scroll_node->transform_id != kInvalidPropertyNodeId);
-  TransformTree& transform_tree = property_trees()->transform_tree_mutable();
-  auto* transform_node = transform_tree.Node(scroll_node->transform_id);
-  if (should_realize_scroll_on_compositor) {
+  // A ScrollNode may have an invalid transform_id if its scroller is
+  // unpainted. Since an unpainted scroller would not be visible to the
+  // user, realizing this scroll is a nop.
+  if (should_realize_scroll_on_compositor &&
+      scroll_node->transform_id != kInvalidPropertyNodeId) {
+    TransformTree& transform_tree = property_trees()->transform_tree_mutable();
+    auto* transform_node = transform_tree.Node(scroll_node->transform_id);
     if (transform_node->scroll_offset !=
         scroll_tree.current_scroll_offset(id)) {
       transform_node->scroll_offset = scroll_tree.current_scroll_offset(id);
@@ -1294,7 +1296,7 @@ bool LayerTreeImpl::ClampTopControlsShownRatio() {
         host_impl_->browser_controls_manager()->TopControlsShownRatioRange();
   }
   return top_controls_shown_ratio_->SetCurrent(
-      base::clamp(ratio, range.first, range.second));
+      std::clamp(ratio, range.first, range.second));
 }
 
 bool LayerTreeImpl::ClampBottomControlsShownRatio() {
@@ -1307,7 +1309,7 @@ bool LayerTreeImpl::ClampBottomControlsShownRatio() {
         host_impl_->browser_controls_manager()->BottomControlsShownRatioRange();
   }
   return bottom_controls_shown_ratio_->SetCurrent(
-      base::clamp(ratio, range.first, range.second));
+      std::clamp(ratio, range.first, range.second));
 }
 
 bool LayerTreeImpl::SetCurrentBrowserControlsShownRatio(float top_ratio,
@@ -2939,6 +2941,16 @@ LayerTreeImpl::TakeViewTransitionRequests() {
 
 bool LayerTreeImpl::HasViewTransitionRequests() const {
   return !view_transition_requests_.empty();
+}
+
+bool LayerTreeImpl::HasViewTransitionSaveRequest() const {
+  for (const auto& request : view_transition_requests_) {
+    if (request->type() == ViewTransitionRequest::Type::kSave) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool LayerTreeImpl::IsReadyToActivate() const {

@@ -435,6 +435,22 @@ chrome.fileManagerPrivate.PolicyDefaultHandlerStatus = {
 };
 
 /**
+ * @enum {string}
+ */
+chrome.fileManagerPrivate.BulkPinStage = {
+  STOPPED: 'stopped',
+  PAUSED: 'paused',
+  GETTING_FREE_SPACE: 'getting_free_space',
+  LISTING_FILES: 'listing_files',
+  SYNCING: 'syncing',
+  SUCCESS: 'success',
+  CANNOT_GET_FREE_SPACE: 'cannot_get_free_space',
+  CANNOT_LIST_FILES: 'cannot_list_files',
+  NOT_ENOUGH_SPACE: 'not_enough_space',
+  CANNOT_ENABLE_DOCS_OFFLINE: 'cannot_enable_docs_offline',
+};
+
+/**
  * @typedef {{
  *   appId: string,
  *   taskType: string,
@@ -868,7 +884,8 @@ chrome.fileManagerPrivate.ResumeParams;
  *   showNotification: boolean,
  *   errorName: string,
  *   pauseParams: (!chrome.fileManagerPrivate.PauseParams|undefined),
- *   outputs: (!Array<Entry>|undefined)
+ *   outputs: (!Array<Entry>|undefined),
+ *   destinationVolumeId: string
  * }}
  */
 chrome.fileManagerPrivate.ProgressStatus;
@@ -916,6 +933,18 @@ chrome.fileManagerPrivate.MountableGuest;
  * }}
  */
 chrome.fileManagerPrivate.ParsedTrashInfoFile;
+
+/**
+ * @typedef {{
+ *   stage: !chrome.fileManagerPrivate.BulkPinStage,
+ *   freeSpaceBytes: number,
+ *   requiredSpaceBytes: number,
+ *   bytesToPin: number,
+ *   pinnedBytes: number,
+ *   filesToPin: number
+ * }}
+ */
+chrome.fileManagerPrivate.BulkPinProgress;
 
 /**
  * Cancels file selection.
@@ -1700,6 +1729,12 @@ chrome.fileManagerPrivate.openManageSyncSettings = function() {};
 chrome.fileManagerPrivate.parseTrashInfoFiles = function(entries, callback) {};
 
 /**
+ * Returns the current progress of the bulk pinning manager.
+ * @param {function(!chrome.fileManagerPrivate.BulkPinProgress): void} callback
+ */
+chrome.fileManagerPrivate.getBulkPinProgress = function(callback) {};
+
+/**
  * @type {!ChromeEvent}
  */
 chrome.fileManagerPrivate.onMountCompleted;
@@ -1775,3 +1810,8 @@ chrome.fileManagerPrivate.onIOTaskProgressStatus;
  * @type {!ChromeEvent}
  */
 chrome.fileManagerPrivate.onMountableGuestsChanged;
+
+/**
+ * @type {!ChromeEvent}
+ */
+chrome.fileManagerPrivate.onBulkPinProgress;

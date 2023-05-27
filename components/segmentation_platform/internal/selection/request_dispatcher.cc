@@ -8,10 +8,31 @@
 #include "base/task/single_thread_task_runner.h"
 #include "components/segmentation_platform/internal/selection/request_handler.h"
 #include "components/segmentation_platform/internal/selection/segment_result_provider.h"
+#include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/prediction_options.h"
 
 namespace segmentation_platform {
+
+namespace {
+
+// Wrap callback to record metrics.
+ClassificationResultCallback GetWrappedCallback(
+    const std::string& segmentation_key,
+    ClassificationResultCallback callback) {
+  auto wrapped_callback = base::BindOnce(
+      [](const std::string& segmentation_key, base::Time start_time,
+         ClassificationResultCallback callback,
+         const ClassificationResult& result) -> void {
+        stats::RecordClassificationRequestTotalDuration(
+            segmentation_key, base::Time::Now() - start_time);
+        std::move(callback).Run(result);
+      },
+      segmentation_key, base::Time::Now(), std::move(callback));
+
+  return wrapped_callback;
+}
+}  // namespace
 
 RequestDispatcher::RequestDispatcher(
     const std::vector<std::unique_ptr<Config>>& configs,
@@ -51,11 +72,22 @@ void RequestDispatcher::GetClassificationResult(
     scoped_refptr<InputContext> input_context,
     ClassificationResultCallback callback) {
   if (!options.on_demand_execution) {
+    auto wrapped_callback =
+        GetWrappedCallback(segmentation_key, std::move(callback));
+
     // Returns result directly from prefs for non-ondemand models.
     auto result =
         cached_result_provider_->GetCachedResultForClient(segmentation_key);
+
+    stats::RecordSegmentSelectionFailure(
+        segmentation_key, result.status == PredictionStatus::kSucceeded
+                              ? stats::SegmentationSelectionFailureReason::
+                                    kClassificationResultFromPrefs
+                              : stats::SegmentationSelectionFailureReason::
+                                    kClassificationResultNotAvailableInPrefs);
+
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), result));
+        FROM_HERE, base::BindOnce(std::move(wrapped_callback), result));
     return;
   }
 
@@ -75,6 +107,9 @@ void RequestDispatcher::GetClassificationResult(
   // If the platform initialization failed, invoke callback to return invalid
   // results.
   if (!storage_init_status_.value()) {
+    stats::RecordSegmentSelectionFailure(
+        segmentation_key,
+        stats::SegmentationSelectionFailureReason::kDBInitFailure);
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
@@ -82,10 +117,13 @@ void RequestDispatcher::GetClassificationResult(
     return;
   }
 
+  auto wrapped_callback =
+      GetWrappedCallback(segmentation_key, std::move(callback));
+
   auto iter = request_handlers_.find(segmentation_key);
   CHECK(iter != request_handlers_.end());
   iter->second->GetClassificationResult(options, input_context,
-                                        std::move(callback));
+                                        std::move(wrapped_callback));
 }
 
 }  // namespace segmentation_platform

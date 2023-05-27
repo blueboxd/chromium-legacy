@@ -22,10 +22,9 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/metrics_util.h"
-#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/wm/work_area_insets.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
@@ -73,7 +72,7 @@ class SearchBoxFocusHost : public views::View {
   const char* GetClassName() const override { return "SearchBoxFocusHost"; }
 
  private:
-  views::Widget* search_box_widget_;
+  raw_ptr<views::Widget, ExperimentalAsh> search_box_widget_;
 };
 
 float ComputeSubpixelOffset(const display::Display& display, float value) {
@@ -479,18 +478,6 @@ void AppListView::SetChildViewsForStateTransition(
   }
 }
 
-void AppListView::RecordStateTransitionForUma(AppListViewState new_state) {
-  AppListStateTransitionSource transition =
-      GetAppListStateTransitionSource(new_state);
-  // kMaxAppListStateTransition denotes a transition we are not interested in
-  // recording (ie. FullscreenAllApps->FullscreenAllApps).
-  if (transition == kMaxAppListStateTransition)
-    return;
-
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppListStateTransitionSource", transition,
-                            kMaxAppListStateTransition);
-}
-
 void AppListView::MaybeCreateAccessibilityEvent(AppListViewState new_state) {
   if (new_state == app_list_state_ || !delegate_->AppListTargetVisibility())
     return;
@@ -525,40 +512,6 @@ AppsContainerView* AppListView::GetAppsContainerView() {
 
 PagedAppsGridView* AppListView::GetRootAppsGridView() {
   return GetAppsContainerView()->apps_grid_view();
-}
-
-AppListStateTransitionSource AppListView::GetAppListStateTransitionSource(
-    AppListViewState target_state) const {
-  // TODO(https://crbug.com/1356661): Remove peeking and half launcher
-  // transitions.
-  switch (app_list_state_) {
-    case AppListViewState::kClosed:
-      // CLOSED->X transitions are not useful for UMA.
-      return kMaxAppListStateTransition;
-    case AppListViewState::kFullscreenAllApps:
-      switch (target_state) {
-        case AppListViewState::kClosed:
-          return kFullscreenAllAppsToClosed;
-        case AppListViewState::kFullscreenSearch:
-          return kFullscreenAllAppsToFullscreenSearch;
-        case AppListViewState::kFullscreenAllApps:
-          // FULLSCREEN_ALL_APPS->FULLSCREEN_ALL_APPS is used when resetting the
-          // widget positon after a failed state transition. Not useful for UMA.
-          return kMaxAppListStateTransition;
-      }
-    case AppListViewState::kFullscreenSearch:
-      switch (target_state) {
-        case AppListViewState::kClosed:
-          return kFullscreenSearchToClosed;
-        case AppListViewState::kFullscreenAllApps:
-          return kFullscreenSearchToFullscreenAllApps;
-        case AppListViewState::kFullscreenSearch:
-          // FULLSCREEN_SEARCH->FULLSCREEN_SEARCH is used when resetting the
-          // widget position after a failed state transition. Not useful for
-          // UMA.
-          return kMaxAppListStateTransition;
-      }
-  }
 }
 
 views::View* AppListView::GetInitiallyFocusedView() {
@@ -684,21 +637,10 @@ void AppListView::SetState(AppListViewState new_state) {
   if (!set_state_request)
     return;
 
-  // Bail out if `WorkAreaInsets::SetPersistentDeskBarHeight(int height)` causes
-  // another call to `SetState()`. Note, the persistent desks bar is created in
-  // the primary display for now.
-  if (Shell::HasInstance() &&
-      WorkAreaInsets::ForWindow(Shell::GetPrimaryRootWindow())
-          ->PersistentDeskBarHeightInChange() &&
-      app_list_state_ == new_state) {
-    return;
-  }
-
   MaybeCreateAccessibilityEvent(new_state);
 
   app_list_main_view_->contents_view()->OnAppListViewTargetStateChanged(
       new_state);
-  RecordStateTransitionForUma(new_state);
   app_list_state_ = new_state;
   if (delegate_)
     delegate_->OnViewStateChanged(new_state);

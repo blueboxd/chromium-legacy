@@ -310,6 +310,8 @@ void ShortcutsProviderTest::TearDown() {
   provider_ = nullptr;
   client_.reset();
   task_environment_.RunUntilIdle();
+  scoped_feature_list_.Reset();
+  RichAutocompletionParams::ClearParamsForTesting();
 }
 
 int ShortcutsProviderTest::CalculateAggregateScore(
@@ -783,14 +785,14 @@ TEST_F(ShortcutsProviderTest, GetMatchesWithScoringSignals) {
   EXPECT_EQ(matches.size(), 3u);
   // There are 2 shortcuts with the wilson7 url which have the same aggregate
   // text length, visit count, and last visit as the 1 winston shortcut.
-  EXPECT_EQ(matches[0].scoring_signals.shortcut_visit_count(), 3);
-  EXPECT_EQ(matches[0].scoring_signals.shortest_shortcut_len(), 7);
+  EXPECT_EQ(matches[0].scoring_signals->shortcut_visit_count(), 3);
+  EXPECT_EQ(matches[0].scoring_signals->shortest_shortcut_len(), 7);
 
-  EXPECT_EQ(matches[1].scoring_signals.shortcut_visit_count(), 3);
-  EXPECT_EQ(matches[1].scoring_signals.shortest_shortcut_len(), 7);
+  EXPECT_EQ(matches[1].scoring_signals->shortcut_visit_count(), 3);
+  EXPECT_EQ(matches[1].scoring_signals->shortest_shortcut_len(), 7);
 
-  EXPECT_EQ(matches[2].scoring_signals.shortcut_visit_count(), 2);
-  EXPECT_EQ(matches[2].scoring_signals.shortest_shortcut_len(), 7);
+  EXPECT_EQ(matches[2].scoring_signals->shortcut_visit_count(), 2);
+  EXPECT_EQ(matches[2].scoring_signals->shortest_shortcut_len(), 7);
 }
 
 TEST_F(ShortcutsProviderTest, Score) {
@@ -878,7 +880,7 @@ TEST_F(ShortcutsProviderTest, ScoreBoost) {
   OmniboxTriggeredFeatureService* trigger_service =
       client_->GetOmniboxTriggeredFeatureService();
   OmniboxTriggeredFeatureService::Feature trigger_feature =
-      OmniboxTriggeredFeatureService::Feature::kShortcutBoost;
+      metrics::OmniboxEventProto_Feature_SHORTCUT_BOOST;
 
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitAndEnableFeatureWithParameters(

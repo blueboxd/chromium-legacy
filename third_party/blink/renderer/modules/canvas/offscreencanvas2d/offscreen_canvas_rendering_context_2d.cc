@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
-#include "third_party/blink/renderer/platform/text/bidi_text_run.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -340,10 +339,6 @@ void OffscreenCanvasRenderingContext2D::ValidateStateStackWithCanvas(
               state_stack_.size() + 1);
   }
 #endif
-}
-
-bool OffscreenCanvasRenderingContext2D::isContextLost() const {
-  return context_lost_mode_ != kNotLostContext;
 }
 
 void OffscreenCanvasRenderingContext2D::LoseContext(LostContextMode lost_mode) {

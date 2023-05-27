@@ -11,15 +11,15 @@
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/public/commands/activity_service_commands.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
-#import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
 #import "ios/chrome/browser/shared/public/commands/popup_menu_commands.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
-#import "ios/chrome/browser/ui/main/layout_guide_util.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
@@ -92,6 +92,16 @@
   self.mediator = nil;
 }
 
+#pragma mark - Public
+
+- (BOOL)isOmniboxFirstResponder {
+  return [self.locationBarCoordinator isOmniboxFirstResponder];
+}
+
+- (BOOL)showingOmniboxPopup {
+  return [self.locationBarCoordinator showingOmniboxPopup];
+}
+
 #pragma mark - SideSwipeToolbarSnapshotProviding
 
 - (UIImage*)toolbarSideSwipeSnapshotForWebState:(web::WebState*)webState {
@@ -133,7 +143,8 @@
 
 - (ToolbarButtonFactory*)buttonFactoryWithType:(ToolbarType)type {
   BOOL isIncognito = self.browser->GetBrowserState()->IsOffTheRecord();
-  ToolbarStyle style = isIncognito ? INCOGNITO : NORMAL;
+  ToolbarStyle style =
+      isIncognito ? ToolbarStyle::kIncognito : ToolbarStyle::kNormal;
 
   ToolbarButtonActionsHandler* actionHandler =
       [[ToolbarButtonActionsHandler alloc] init];
@@ -145,8 +156,6 @@
   actionHandler.activityHandler =
       HandlerForProtocol(dispatcher, ActivityServiceCommands);
   actionHandler.menuHandler = HandlerForProtocol(dispatcher, PopupMenuCommands);
-  actionHandler.findHandler =
-      HandlerForProtocol(dispatcher, FindInPageCommands);
   actionHandler.omniboxHandler =
       HandlerForProtocol(dispatcher, OmniboxCommands);
 

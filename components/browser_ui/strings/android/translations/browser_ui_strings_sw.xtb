@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Kisimbuaji cha picha</translation>
 <translation id="1785415724048343560">Inapendekezwa kwa ajili ya hali bora ya utumiaji</translation>
 <translation id="1818308510395330587">Ili uruhusu <ph name="APP_NAME" /> itumie Uhalisia Ulioboreshwa, washa pia kamera katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Kutoka <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Tovuti zinazohusiana zinaweza kuona shughuli zako kwenye kikundi</translation>
 <translation id="1887786770086287077">Kipengele cha mahali kimezimwa kwenye kifaa hiki. Kiwashe katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Kata simu</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Upakuaji umekamilika <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Huenda vipengele kwenye baadhi ya tovuti visifanye kazi katika Hali fiche</translation>
 <translation id="2442870161001914531">Omba tovuti katika mwonekano wa kompyuta kila wakati</translation>
+<translation id="2479148705183875116">Nenda kwenye Mipangilio</translation>
 <translation id="2482878487686419369">Arifa</translation>
 <translation id="2485422356828889247">Ondoa</translation>
 <translation id="2490684707762498678">Inasimamiwa na <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Anwani za barua pepe</translation>
 <translation id="2750481671343847896">Tovuti inaweza kuonyesha vidokezo vya kuingia katika akaunti kutoka kwa huduma za utambulisho.</translation>
 <translation id="2822354292072154809">Una uhakika ungependa kubadilisha ruhusa zote za tovuti ya <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Omba mwonekano wa kifaa cha mkononi</translation>
 <translation id="2870560284913253234">Tovuti</translation>
 <translation id="2874939134665556319">Wimbo uliotangulia</translation>
 <translation id="2891975107962658722">Zuia tovuti isihifadhi data kwenye kifaa chako</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Tovuti zinaweza kutumia vidakuzi ili kuboresha hali yako ya kuvinjari, kwa mfano, ili kufanya ubaki ukiwa umeingia katika akaunti au kukumbuka bidhaa zilizo kwenye kikapu chako cha ununuzi</translation>
 <translation id="3165022941318558018">Ruhusu tovuti itumie vidakuzi vya washirika wengine</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> za data iliyohifadhiwa</translation>
-<translation id="3203366800380907218">Kutoka kwenye wavuti</translation>
 <translation id="321187648315454507">Ili uruhusu <ph name="APP_NAME" /> ikutumie arifa, washa pia arifa katika <ph name="BEGIN_LINK" />Mipangilio ya Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Maikrofoni</translation>
 <translation id="3248611290851046188">Tovuti hii hubaini mambo yanayokuvutia ambayo tovuti nyingine zinaweza kuyatumia ili kukuonyesha matangazo. Tovuti hii pia hupata mambo yanayokuvutia kutoka kwenye Chrome ili kukuonyesha matangazo faafu zaidi.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Omba mwonekano wa kompyuta</translation>
 <translation id="5100237604440890931">Imekunjwa - bofya ili upanue.</translation>
 <translation id="5123685120097942451">Kichupo fiche</translation>
-<translation id="5134599672855298214">Omba mwonekano wa kifaa cha mkononi (inapendekezwa)</translation>
 <translation id="5186036860380548585">Chaguo linapatikana karibu na sehemu ya juu ya skrini</translation>
 <translation id="5197729504361054390">Anwani unazochagua zitashirikiwa na <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Ilitembelewa mara ya mwisho leo</translation>

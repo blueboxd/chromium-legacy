@@ -360,6 +360,9 @@ HEADLESS_PROTOCOL_TEST(ShowFilePickerInterception,
 
 HEADLESS_PROTOCOL_TEST(WindowSizeOnStart, "sanity/window-size-on-start.js")
 
+HEADLESS_PROTOCOL_TEST(LargeBrowserWindowSize,
+                       "sanity/large-browser-window-size.js")
+
 HEADLESS_PROTOCOL_TEST(ScreencastBasics, "sanity/screencast-basics.js")
 
 class HeadlessProtocolBrowserTestWithProxy

@@ -41,6 +41,10 @@ export class PowerBookmarkRowElement extends PolymerElement {
         type: String,
         value: '',
       },
+      forceHover: {
+        type: Boolean,
+        value: false,
+      },
       hasCheckbox: {
         type: Boolean,
         reflectToAttribute: true,
@@ -71,6 +75,10 @@ export class PowerBookmarkRowElement extends PolymerElement {
         type: String,
         value: '',
       },
+      trailingIconTooltip: {
+        type: String,
+        value: '',
+      },
     };
   }
 
@@ -78,13 +86,25 @@ export class PowerBookmarkRowElement extends PolymerElement {
   checkboxDisabled: boolean;
   compact: boolean;
   description: string;
+  forceHover: boolean;
   hasCheckbox: boolean;
   hasInput: boolean;
   rowAriaDescription: string;
   rowAriaLabel: string;
   trailingIcon: string;
   trailingIconAriaLabel: string;
+  trailingIconTooltip: string;
   imageUrls: string[];
+
+  constructor() {
+    super();
+
+    // The row has a [tabindex] attribute on it to move focus using iron-list
+    // but the row itself should not be focusable. By setting `delegatesFocus`
+    // to true, the browser will automatically move focus to the focusable
+    // elements within it when the row itself tries to gain focus.
+    this.attachShadow({mode: 'open', delegatesFocus: true});
+  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -97,6 +117,10 @@ export class PowerBookmarkRowElement extends PolymerElement {
 
   private isBookmarksBar_(): boolean {
     return this.bookmark.id === loadTimeData.getString('bookmarksBarId');
+  }
+
+  private showTrailingIcon_(): boolean {
+    return !this.hasInput && !this.hasCheckbox;
   }
 
   private onInputDisplayChange_() {

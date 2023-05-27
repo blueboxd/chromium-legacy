@@ -24,9 +24,6 @@ BASE_FEATURE(kCloudGamingDevice,
              "CloudGamingDevice",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables dark/light mode feature.
-BASE_FEATURE(kDarkLightMode, "DarkLightMode", base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables Demo Mode System Web App migration
 BASE_FEATURE(kDemoModeSWA, "DemoModeSWA", base::FEATURE_ENABLED_BY_DEFAULT);
 
@@ -49,6 +46,11 @@ BASE_FEATURE(kDisableOfficeEditingComponentApp,
 // Disables translation services of the Quick Answers V2.
 BASE_FEATURE(kDisableQuickAnswersV2Translation,
              "DisableQuickAnswersV2Translation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable experimental goldfish web app profile isolation.
+BASE_FEATURE(kExperimentalWebAppProfileIsolation,
+             "ExperimentalWebAppProfileIsolation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable experimental goldfish web app isolation.
@@ -79,16 +81,17 @@ BASE_FEATURE(kQuickAnswersRichCard,
              "QuickAnswersRichCard",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the Office files upload workflow to improve Office files support.
+BASE_FEATURE(kUploadOfficeToCloud,
+             "UploadOfficeToCloud",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool IsCloudGamingDeviceEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   return chromeos::BrowserParamsProxy::Get()->IsCloudGamingDevice();
 #else
   return base::FeatureList::IsEnabled(kCloudGamingDevice);
 #endif
-}
-
-bool IsDarkLightModeEnabled() {
-  return base::FeatureList::IsEnabled(kDarkLightMode);
 }
 
 bool IsDemoModeSWAEnabled() {
@@ -119,6 +122,14 @@ bool IsQuickAnswersRichCardEnabled() {
 
 bool IsQuickAnswersV2SettingsSubToggleEnabled() {
   return base::FeatureList::IsEnabled(kQuickAnswersV2SettingsSubToggle);
+}
+
+bool IsUploadOfficeToCloudEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return chromeos::BrowserParamsProxy::Get()->IsUploadOfficeToCloudEnabled();
+#else
+  return base::FeatureList::IsEnabled(kUploadOfficeToCloud);
+#endif
 }
 
 }  // namespace chromeos::features

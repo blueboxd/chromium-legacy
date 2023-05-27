@@ -215,6 +215,12 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
     this.setVideoPlay_(visible);
   }
 
+  getProjectSimonProductName() {
+    return loadTimeData.valueExists('kProjectSimonProductName') ?
+        loadTimeData.getString('kProjectSimonProductName') :
+        '';
+  }
+
   /**
    * Play or pause welcome video.
    * @param {boolean} play - whether play or pause welcome video.
@@ -222,10 +228,9 @@ export class OobeWelcomeDialog extends OobeWelcomeDialogBase {
    * @suppress {missingProperties}
    */
   setVideoPlay_(play) {
-    if (this.isMeet_) {
-      return;
+    if (this.$$('#welcomeAnimation')) {
+      this.$$('#welcomeAnimation').playing = play;
     }
-    this.$.welcomeAnimation.playing = play;
   }
 
   /**

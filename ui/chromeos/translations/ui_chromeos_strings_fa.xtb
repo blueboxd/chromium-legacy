@@ -97,7 +97,6 @@
 <translation id="1773212559869067373">گواهینامه راستی‌آزمایی به صورت محلی رد شد</translation>
 <translation id="1775381402323441512">اطلاعات ویدیو</translation>
 <translation id="180035236176489073">باید آنلاین باشید تا به این فایل‌ها دسترسی داشته باشید.</translation>
-<translation id="1805030087840125683">{COUNT,plural, =1{افزونه با شناسه}one{افزونه با شناسه}other{افزونه‌ها با شناسه‌ها}}</translation>
 <translation id="1807938677607439181">همه فایل‌ها</translation>
 <translation id="1810764548349082891">پیش‌نمایشی وجود ندارد</translation>
 <translation id="1812302367230252929">نویسه‌گردانی آمهاریک</translation>
@@ -108,7 +107,6 @@
 <translation id="1834290891154666894">ورودی مربوط به «مطابقت نام جایگزین موضوع» نامعتبر است</translation>
 <translation id="1838709767668011582">‏سایت Google</translation>
 <translation id="1853795129690976061">‏این پوشه با Linux هم‌رسانی شده است</translation>
-<translation id="1859422890169495746">‏این Chromebook</translation>
 <translation id="1864756863218646478">این فایل پیدا نشد.</translation>
 <translation id="1884013283844450420">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، اتصال</translation>
 <translation id="1920670151694390848">نویسه‌گردانی مالایالم</translation>
@@ -161,6 +159,7 @@
 <translation id="2304820083631266885">سیاره</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" /> خارج شد.</translation>
 <translation id="2307462900900812319">پیکربندی شبکه</translation>
+<translation id="2312704192806647271">{COUNT,plural, =1{افزونه‌ای با شناسه <ph name="BEGIN_LIST" /><ph name="END_LIST" /> پیدا نشد. با سرپرست تماس بگیرید.}one{افزونه‌ای با شناسه <ph name="BEGIN_LIST" /><ph name="END_LIST" /> پیدا نشد. با سرپرست تماس بگیرید.}other{افزونه‌هایی با شناسه‌های <ph name="BEGIN_LIST" /><ph name="END_LIST" /> پیدا نشد. با سرپرست تماس بگیرید.}}</translation>
 <translation id="2325650632570794183">‏این نوع فایل پشتیبانی نمی‌شود. لطفاً به «نت‌بازار Chrome» بروید تا برنامه‌ای را پیدا کنید که بتواند این نوع فایل را باز کند.</translation>
 <translation id="2326539130272988168">بلغاری</translation>
 <translation id="2337715497728194187">‏هم‌رسانی با Bruschetta</translation>
@@ -276,6 +275,7 @@
 <translation id="3290356915286466215">ناامن</translation>
 <translation id="3291218047831493686">برای تغییر دادن تنظیم قفل سیم‌کارت، به این شبکه متصل شوید</translation>
 <translation id="3293023191599135697">‏از شبکه‌های WEP پشتیبانی نمی‌شود</translation>
+<translation id="3295006446256079333">این حجم</translation>
 <translation id="3295357220137379386">دستگاه مشغول است</translation>
 <translation id="3296763833017966289">گرجستانی</translation>
 <translation id="3307875152560779385">اوکراینی</translation>
@@ -475,6 +475,7 @@
 <translation id="4843566743023903107">‏دستگاه‌های Chromebase</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="485316830061041779">آلمانی</translation>
+<translation id="4862885579661885411">‏تنظیمات Files</translation>
 <translation id="4867079195717347957">کلیک کنید تا ستون به‌صورت نزولی مرتب شود.</translation>
 <translation id="4867297348137739678">هفته قبل</translation>
 <translation id="4873265419374180291"><ph name="NUMBER_OF_BYTES" /> بایت</translation>
@@ -801,7 +802,6 @@
 <translation id="7359359531237882347">در حال کپی کردن <ph name="NUMBER_OF_ITEMS" /> مورد…</translation>
 <translation id="7375951387215729722">فهرست فایل براساس <ph name="COLUMN_NAME" /> به‌ترتیب نزولی مرتب شد.</translation>
 <translation id="7377161162143020057">خط‌مشی سرپرست کپی کردن این فایل را مسدود کرده است</translation>
-<translation id="7392500733467492920">پیدا نشد. با سرپرست تماس بگیرید.</translation>
 <translation id="7402503521691663770">‏دستگاه‌های ChromeOS Flex</translation>
 <translation id="7408870451288633753">چکی</translation>
 <translation id="7417453074306512035">صفحه‌کلید اتیوپیایی</translation>

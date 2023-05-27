@@ -98,6 +98,7 @@ component("events_base") {
   sources = [
     "base_event_utils.cc",
     "base_event_utils.h",
+    "event_latency_metadata.h",
     "event_switches.cc",
     "event_switches.h",
     "events_base_export.h",
@@ -166,7 +167,7 @@ component("events_base") {
       "keycodes/keyboard_code_conversion_fuchsia.h",
     ]
 
-    deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input3:fuchsia.ui.input3_hlcpp" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input3:fuchsia.ui.input3_cpp" ]
   }
 
   if (ozone_platform_x11) {
@@ -496,6 +497,7 @@ component("gesture_detection") {
     "//ui/display",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/latency",
   ]
 
   defines = [ "GESTURE_DETECTION_IMPLEMENTATION" ]
@@ -614,7 +616,7 @@ static_library("test_support") {
   }
 }
 
-if (!is_ios) {
+if (use_blink) {
   test("events_unittests") {
     use_xvfb = use_xvfb_in_this_config
 
@@ -699,6 +701,7 @@ if (!is_ios) {
 
     if (use_ozone) {
       deps += [
+        "//ui/events/devices:unittests",
         "//ui/events/ozone:unittests",
         "//ui/events/ozone/layout",
       ]
@@ -734,7 +737,7 @@ if (!is_ios) {
 
       deps += [
         "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input:fuchsia.ui.input_hlcpp",
-        "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input3:fuchsia.ui.input3_hlcpp",
+        "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input3:fuchsia.ui.input3_cpp",
         "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.pointer:fuchsia.ui.pointer_cpp",
         "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.pointer:fuchsia.ui.pointer_cpp_hlcpp_conversion",
         "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp_testing",

@@ -9,12 +9,12 @@
       }
 
       settings-collapse-radio-button {
-        --settings-collapse-toggle-min-height: var(--settings-row-min-height);
+        --settings-collapse-toggle-min-height: var(--cr-section-min-height);
       }
 
       settings-collapse-radio-button.two-line {
         --settings-collapse-toggle-min-height:
-            var(--settings-row-two-line-min-height);
+            var(--cr-section-two-line-min-height);
       }
 
       settings-collapse-radio-button:not(:first-of-type) {
@@ -38,7 +38,7 @@
             start-icon="cr:delete"
             label="$i18n{clearBrowsingData}"
             sub-label="$i18n{clearBrowsingDataDescription}"
-            on-click="onClearBrowsingDataTap_"></cr-link-row>
+            on-click="onClearBrowsingDataClick_"></cr-link-row>
         <template is="dom-if" if="[[isPrivacyGuideAvailable]]">
           <cr-link-row id="privacyGuideLinkRow" class="hr"
               start-icon="settings20:wind-rose"
@@ -67,7 +67,10 @@
           </cr-link-row>
         </template>
         <template is="dom-if" if=
-            "[[isPrivacySandboxSettings4Enabled_(isPrivacySandboxRestricted_, isPrivacySandboxSettings4_)]]">
+            "[[isPrivacySandboxSettings4Enabled_(
+                isPrivacySandboxRestricted_,
+                isPrivacySandboxRestrictedNoticeEnabled_,
+                isPrivacySandboxSettings4_)]]">
           <cr-link-row id="privacySandboxLinkRow"
               start-icon="settings20:ads-click"
               class="hr"
@@ -96,7 +99,6 @@
               sub-label="[[computePrivacySandboxSublabel_(
                   prefs.privacy_sandbox.*)]]"
               on-click="onPrivacySandboxClick_"
-              button-aria-description="$i18n{opensInNewTab}"
               external
               role-description="$i18n{subpageArrowRoleDescription}">
           </cr-link-row>
@@ -155,7 +157,10 @@
       </template>
 
       <template is="dom-if" if=
-          "[[isPrivacySandboxSettings4Enabled_(isPrivacySandboxRestricted_, isPrivacySandboxSettings4_)]]">
+          "[[isPrivacySandboxSettings4Enabled_(
+              isPrivacySandboxRestricted_,
+              isPrivacySandboxRestrictedNoticeEnabled_,
+              isPrivacySandboxSettings4_)]]">
         <template is="dom-if" route-path="/adPrivacy">
           <settings-subpage id="privacy-sandbox"
               page-title="$i18n{adPrivacyPageTitle}"
@@ -720,7 +725,8 @@
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/usbDevices" no-search>
-        <settings-subpage page-title="$i18n{siteSettingsUsbDevices}">
+        <settings-subpage page-title="$i18n{siteSettingsUsbDevices}"
+          learn-more-url="$i18n{chooserUsbOverviewURL}">
           <div class="content-settings-header secondary">
             $i18n{siteSettingsUsbDescription}
           </div>
@@ -738,7 +744,8 @@
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/serialPorts" no-search>
-        <settings-subpage page-title="$i18n{siteSettingsSerialPorts}">
+        <settings-subpage page-title="$i18n{siteSettingsSerialPorts}"
+          learn-more-url="$i18n{chooserSerialOverviewUrl}">
           <div class="content-settings-header secondary">
             $i18n{siteSettingsSerialPortsDescription}
           </div>
@@ -758,7 +765,8 @@
       </template>
       <template is="dom-if" if="[[enableWebBluetoothNewPermissionsBackend_]]">
         <template is="dom-if" route-path="/content/bluetoothDevices" no-search>
-          <settings-subpage page-title="$i18n{siteSettingsBluetoothDevices}">
+          <settings-subpage page-title="$i18n{siteSettingsBluetoothDevices}"
+            learn-more-url="$i18n{bluetoothAdapterOffHelpURL}">
               <div class="content-settings-header secondary">
                 $i18n{siteSettingsBluetoothDevicesDescription}
               </div>
@@ -806,7 +814,8 @@
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/hidDevices" no-search>
-        <settings-subpage page-title="$i18n{siteSettingsHidDevices}">
+        <settings-subpage page-title="$i18n{siteSettingsHidDevices}"
+          learn-more-url="$i18n{chooserHidOverviewUrl}">
           <div class="content-settings-header secondary">
             $i18n{siteSettingsHidDevicesDescription}
           </div>

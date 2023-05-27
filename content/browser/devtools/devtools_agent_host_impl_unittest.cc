@@ -7,11 +7,11 @@
 #include <string>
 #include <utility>
 
-#include "base/guid.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
 #include "content/common/content_constants_internal.h"
 #include "content/public/browser/browser_context.h"
@@ -19,6 +19,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
+#include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
@@ -89,6 +90,16 @@ class TestWebContentsDelegate : public WebContentsDelegate {
   bool renderer_unresponsive_received_;
 };
 
+class BrowserClient : public ContentBrowserClient {
+ public:
+  BrowserClient() = default;
+  ~BrowserClient() override = default;
+  std::unique_ptr<content::DevToolsManagerDelegate>
+  CreateDevToolsManagerDelegate() override {
+    return std::make_unique<DevToolsManagerDelegate>();
+  }
+};
+
 }  // namespace
 
 class DevToolsAgentHostImplTest : public RenderViewHostImplTestHarness {
@@ -99,7 +110,21 @@ class DevToolsAgentHostImplTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     TestDevToolsClientHost::ResetCounters();
+    browser_content_client_ = std::make_unique<BrowserClient>();
+    original_client_ =
+        SetBrowserClientForTesting(browser_content_client_.get());
+    DevToolsManager::ShutdownForTests();
   }
+  void TearDown() override {
+    SetBrowserClientForTesting(original_client_);
+    DevToolsManager::ShutdownForTests();
+
+    RenderViewHostImplTestHarness::TearDown();
+  }
+
+ private:
+  std::unique_ptr<ContentBrowserClient> browser_content_client_;
+  raw_ptr<ContentBrowserClient> original_client_ = nullptr;
 };
 
 TEST_F(DevToolsAgentHostImplTest, OpenAndManuallyCloseDevToolsClientHost) {
@@ -203,8 +228,8 @@ TEST_F(DevToolsAgentHostImplTest, TestExternalProxy) {
   std::unique_ptr<TestExternalAgentDelegate> delegate(
       new TestExternalAgentDelegate());
 
-  scoped_refptr<DevToolsAgentHost> agent_host =
-      DevToolsAgentHost::Forward(base::GenerateGUID(), std::move(delegate));
+  scoped_refptr<DevToolsAgentHost> agent_host = DevToolsAgentHost::Forward(
+      base::Uuid::GenerateRandomV4().AsLowercaseString(), std::move(delegate));
   EXPECT_EQ(agent_host, DevToolsAgentHost::GetForId(agent_host->GetId()));
 
   TestDevToolsClientHost client_host;

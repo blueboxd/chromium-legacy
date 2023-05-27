@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/policy/policy_earl_grey_utils.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/ui/elements/elements_constants.h"
 #import "ios/chrome/browser/signin/capabilities_types.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/signin/test_constants.h"
@@ -24,11 +25,11 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_app_interface.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
-#import "ios/chrome/browser/ui/elements/elements_constants.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
@@ -1288,6 +1289,16 @@ void SetSigninEnterprisePolicyValue(BrowserSigninMode signinMode) {
                          kRecentTabsTableViewControllerAccessibilityIdentifier),
                      grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
+}
+
+// Tests to dismiss the sign-in view by swipe down without an identity.
+// See http://crbug.com/1434238.
+- (void)testSwipeDownSignInViewWithoutAnIdentity {
+  [self openSigninFromView:OpenSigninMethodFromSettings tapSettingsLink:NO];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kUnifiedConsentScrollViewIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+  // Test no crash.
 }
 
 @end

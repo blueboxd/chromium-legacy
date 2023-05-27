@@ -15,7 +15,6 @@
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_install_task.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/web_contents/web_app_url_loader.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
@@ -27,8 +26,10 @@ class WebContents;
 
 namespace web_app {
 
-class FullSystemLock;
+class AllAppsLock;
 class ExternallyManagedAppRegistrationTaskBase;
+class WebAppUrlLoader;
+class WebAppDataRetriever;
 
 // Installs, uninstalls, and updates any External Web Apps. This class should
 // only be used from the UI thread.
@@ -54,6 +55,8 @@ class ExternallyManagedAppManagerImpl : public ExternallyManagedAppManager {
   void Shutdown() override;
 
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
+  void SetDataRetrieverFactoryForTesting(
+      base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()> factory);
 
  protected:
   virtual void ReleaseWebContents();
@@ -75,7 +78,7 @@ class ExternallyManagedAppManagerImpl : public ExternallyManagedAppManager {
   void PostMaybeStartNext();
 
   void MaybeStartNext();
-  void MaybeStartNextOnLockAcquired(FullSystemLock& lock);
+  void MaybeStartNextOnLockAcquired(AllAppsLock& lock);
 
   void StartInstallationTask(std::unique_ptr<TaskAndCallback> task);
 
@@ -96,6 +99,9 @@ class ExternallyManagedAppManagerImpl : public ExternallyManagedAppManager {
 
   // unique_ptr so that it can be replaced in tests.
   std::unique_ptr<WebAppUrlLoader> url_loader_;
+  // Allows tests to set the data retriever for install tasks.
+  base::RepeatingCallback<std::unique_ptr<WebAppDataRetriever>()>
+      data_retriever_factory_for_testing_;
 
   std::unique_ptr<content::WebContents> web_contents_;
 

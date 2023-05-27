@@ -4,9 +4,10 @@
 
 package org.chromium.chrome.browser.test;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import static org.hamcrest.Matchers.isIn;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -15,8 +16,8 @@ import android.app.Instrumentation;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.os.Build;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
 import org.json.JSONArray;

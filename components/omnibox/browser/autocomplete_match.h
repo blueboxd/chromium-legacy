@@ -13,10 +13,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "build/build_config.h"
+#include "components/omnibox/browser/actions/omnibox_action_concepts.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 #include "components/omnibox/browser/buildflags.h"
@@ -93,6 +95,9 @@ struct RichAutocompletionParams {
 // example, a search result may say "Search for asdf" as the description, but
 // "asdf" should appear in the box.
 struct AutocompleteMatch {
+  using ScoringSignals =
+      ::metrics::OmniboxEventProto::Suggestion::ScoringSignals;
+
   // Autocomplete matches contain strings that are classified according to a
   // separate vector of styles.  This vector associates flags with particular
   // string segments, and must be in sorted order.  All text must be associated
@@ -502,6 +507,11 @@ struct AutocompleteMatch {
   // providers.
   bool IsOnDeviceSearchSuggestion() const;
 
+  // Filter OmniboxActions based on the supplied qualifiers.
+  // The order of the supplied qualifiers determines the preference.
+  void FilterOmniboxActions(
+      const std::vector<OmniboxActionId>& allowed_action_ids);
+
   // Returns whether the autocompletion is trivial enough that we consider it
   // an autocompletion for which the omnibox autocompletion code did not add
   // any value.
@@ -582,17 +592,16 @@ struct AutocompleteMatch {
   // need to be selected. If no such action is found, returns nullptr.
   template <typename Predicate>
   OmniboxAction* GetActionWhere(Predicate predicate) const {
-    auto it = std::find_if(actions.begin(), actions.end(), predicate);
-    if (it == actions.end()) {
-      return nullptr;
-    }
-    return it->get();
+    auto it = base::ranges::find_if(actions, std::move(predicate));
+    return it != actions.end() ? it->get() : nullptr;
   }
 
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
   // no provider (or memory of the user's selection).
-  AutocompleteProvider* provider = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION AutocompleteProvider* provider = nullptr;
 
   // The relevance of this match. See table in autocomplete.h for scores
   // returned by various providers. This is used to rank matches among all
@@ -711,8 +720,6 @@ struct AutocompleteMatch {
 
   // If true, UI-level code should swap the contents and description fields
   // before displaying.
-  // This field is set when matches are appended to autocomplete results via
-  // |AutocompleteResult::AppendMatches| rather than when matches are created.
   bool swap_contents_and_description = false;
 
   // A rich-format version of the display for the dropdown.
@@ -808,7 +815,7 @@ struct AutocompleteMatch {
   std::vector<SuggestTile> suggest_tiles;
 
   // Signals for ML scoring.
-  metrics::OmniboxEventProto::Suggestion::ScoringSignals scoring_signals;
+  absl::optional<ScoringSignals> scoring_signals;
 
   // A flag to mark whether this would've been excluded from the "original" list
   // of matches. Traditionally, providers limit the number of suggestions they

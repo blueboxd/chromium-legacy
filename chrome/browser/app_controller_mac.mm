@@ -1789,7 +1789,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
     return dockMenu;
 
   if (IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
-      IncognitoModePrefs::Availability::kDisabled) {
+      policy::IncognitoModeAvailability::kDisabled) {
     titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
     item.reset(
         [[NSMenuItem alloc] initWithTitle:titleStr

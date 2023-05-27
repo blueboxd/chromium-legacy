@@ -14,7 +14,9 @@
 #include "ash/wm/drag_details.h"
 #include "ash/wm/multi_display/persistent_window_info.h"
 #include "ash/wm/wm_metrics.h"
+#include "base/auto_reset.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -441,6 +443,9 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // mis-triggered drag to maximize behavior.
   void TrackDragToMaximizeBehavior();
 
+  // Allows for caller to prevent property changes within scope.
+  base::AutoReset<bool> GetScopedIgnorePropertyChange();
+
   // Returns a pointer to DragDetails during drag operations.
   const DragDetails* drag_details() const { return drag_details_.get(); }
   DragDetails* drag_details() { return drag_details_.get(); }
@@ -490,7 +495,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
     void OnWindowDestroying(aura::Window* window) override;
 
    private:
-    aura::Window* window_;
+    raw_ptr<aura::Window, ExperimentalAsh> window_;
     BoundsChangeAnimationType previous_bounds_animation_type_;
   };
 
@@ -622,7 +627,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool has_ever_been_dragged_to_maximized_ = false;
 
   // The owner of this window settings.
-  aura::Window* window_;
+  raw_ptr<aura::Window, ExperimentalAsh> window_;
   std::unique_ptr<WindowStateDelegate> delegate_;
 
   bool bounds_changed_by_user_;
@@ -694,8 +699,14 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   // state types can be put in the restore history stack.
   std::vector<RestoreState> window_state_restore_history_;
 
-  // Holds the current working restore state.
-  absl::optional<RestoreState> current_restore_state_;
+  // Usually we want to use the tip of the window_state_restore_history_ to
+  // retrieve the restore_bounds. However, there are cases where we might want
+  // to explicitly set or store a specific restore bounds when transitioning
+  // between states. This typically happens because an operation might cause
+  // the restore bounds to become incorrect. If a value is present, it will have
+  // a higher precedent than whatever is at the tip of
+  // window_state_restore_history_.
+  absl::optional<gfx::Rect> restore_bounds_override_;
 
   // This is used to record where the current snap window state change request
   // comes from.

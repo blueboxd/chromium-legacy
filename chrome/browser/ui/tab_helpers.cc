@@ -52,7 +52,7 @@
 #include "chrome/browser/page_info/page_info_features.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
-#include "chrome/browser/permissions/last_tab_standing_tracker_tab_helper.h"
+#include "chrome/browser/permissions/one_time_permissions_tracker_helper.h"
 #include "chrome/browser/permissions/unused_site_permissions_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_tab_helper.h"
@@ -61,6 +61,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/resource_coordinator/tab_helper.h"
+#include "chrome/browser/safe_browsing/chrome_password_reuse_detection_manager_client.h"
 #include "chrome/browser/safe_browsing/chrome_safe_browsing_tab_observer_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -84,7 +85,7 @@
 #include "chrome/browser/ui/focus_tab_after_navigation_helper.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
-#include "chrome/browser/ui/performance_controls/tab_discard_tab_helper.h"
+#include "chrome/browser/ui/performance_controls/high_efficiency_chip_tab_helper.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_prompt_helper.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
@@ -164,6 +165,7 @@
 #include "content/public/common/content_features.h"
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/preloading/prefetch/zero_suggest_prefetch/zero_suggest_prefetch_tab_helper.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -172,6 +174,7 @@
 #include "chrome/browser/ui/javascript_dialogs/javascript_tab_modal_dialog_manager_delegate_desktop.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
+#include "chrome/browser/ui/side_panel/companion/companion_tab_helper.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_tab_helper.h"
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
 #include "chrome/browser/ui/side_panel/history_clusters/history_clusters_tab_helper.h"
@@ -226,12 +229,14 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/ui/extensions/extension_side_panel_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_tab_helper.h"
 #include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/mojom/view_type.mojom.h"
 #endif
 
@@ -272,8 +277,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   // If already adopted, nothing to be done.
   base::SupportsUserData::Data* adoption_tag =
       web_contents->GetUserData(&kTabContentsAttachedTabHelpersUserDataKey);
-  if (adoption_tag)
+  if (adoption_tag) {
     return;
+  }
 
   // Mark as adopted.
   web_contents->SetUserData(&kTabContentsAttachedTabHelpersUserDataKey,
@@ -317,6 +323,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ContentAutofillClient::FromWebContents(web_contents));
+  ChromePasswordReuseDetectionManagerClient::CreateForWebContents(web_contents);
   CreateSubresourceFilterWebContentsHelper(web_contents);
   ChromeTranslateClient::CreateForWebContents(web_contents);
   client_hints::ClientHintsWebContentsObserver::CreateForWebContents(
@@ -476,9 +483,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       web_contents,
       std::make_unique<JavaScriptTabModalDialogManagerDelegateDesktop>(
           web_contents));
-  if (base::FeatureList::IsEnabled(
-          permissions::features::kOneTimeGeolocationPermission)) {
-    LastTabStandingTrackerTabHelper::CreateForWebContents(web_contents);
+  if (base::FeatureList::IsEnabled(permissions::features::kOneTimePermission)) {
+    OneTimePermissionsTrackerHelper::CreateForWebContents(web_contents);
   }
   ManagePasswordsUIController::CreateForWebContents(web_contents);
   if (PrivacySandboxPromptHelper::ProfileRequiresPrompt(profile))
@@ -486,10 +492,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   SadTabHelper::CreateForWebContents(web_contents);
   SearchTabHelper::CreateForWebContents(web_contents);
   TabDialogs::CreateForWebContents(web_contents);
-  if (base::FeatureList::IsEnabled(
-          performance_manager::features::kHighEfficiencyModeAvailable)) {
-    TabDiscardTabHelper::CreateForWebContents(web_contents);
-  }
+  HighEfficiencyChipTabHelper::CreateForWebContents(web_contents);
   if (base::FeatureList::IsEnabled(features::kTabHoverCardImages) ||
       base::FeatureList::IsEnabled(features::kWebUITabStrip)) {
     ThumbnailTabHelper::CreateForWebContents(web_contents);
@@ -511,6 +514,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   }
   if (base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule)) {
     side_panel::HistoryClustersTabHelper::CreateForWebContents(web_contents);
+  }
+  if (base::FeatureList::IsEnabled(companion::features::kSidePanelCompanion)) {
+    companion::CompanionTabHelper::CreateForWebContents(web_contents);
   }
 #endif
 
@@ -605,6 +611,13 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                           extensions::mojom::ViewType::kTabContents);
 
   extensions::TabHelper::CreateForWebContents(web_contents);
+
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kExtensionSidePanelIntegration)) {
+    extensions::side_panel_util::CreateSidePanelManagerForWebContents(
+        profile, web_contents);
+  }
+
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
   if (web_app::AreWebAppsEnabled(profile))
     web_app::WebAppTabHelper::CreateForWebContents(web_contents);

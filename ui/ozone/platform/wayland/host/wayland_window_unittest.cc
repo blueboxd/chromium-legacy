@@ -456,12 +456,12 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
   AdvanceFrameToCurrent(window_.get(), delegate_);
 
   EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
-  PostToServerAndWait([id = surface_id_, bounds_with_insets](
-                          wl::TestWaylandServerThread* server) {
+  PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
     wl::MockSurface* surface = server->GetObject<wl::MockSurface>(id);
     ASSERT_TRUE(surface);
     wl::MockXdgSurface* xdg_surface = surface->xdg_surface();
-    EXPECT_CALL(*xdg_surface, SetWindowGeometry(bounds_with_insets));
+    // No update to the window geometry.
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(_)).Times(0);
   });
 
   SendConfigureEvent(surface_id_, bounds_with_insets.size(), state);
@@ -474,6 +474,7 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
   PostToServerAndWait([](wl::TestWaylandServerThread* server) {
     auto* output = server->output();
     output->SetScale(kHiDpiScale);
+    output->SetDeviceScaleFactor(kHiDpiScale);
     output->Flush();
   });
 
@@ -496,13 +497,14 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
   // Now send configure events many times - bounds mustn't change.
   for (size_t i = 0; i < 10; i++) {
     EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
-    PostToServerAndWait([id = surface_id_, bounds_with_insets](
-                            wl::TestWaylandServerThread* server) {
-      wl::MockSurface* surface = server->GetObject<wl::MockSurface>(id);
-      ASSERT_TRUE(surface);
-      wl::MockXdgSurface* xdg_surface = surface->xdg_surface();
-      EXPECT_CALL(*xdg_surface, SetWindowGeometry(bounds_with_insets));
-    });
+    PostToServerAndWait(
+        [id = surface_id_](wl::TestWaylandServerThread* server) {
+          wl::MockSurface* surface = server->GetObject<wl::MockSurface>(id);
+          ASSERT_TRUE(surface);
+          wl::MockXdgSurface* xdg_surface = surface->xdg_surface();
+          // No update to the window geometry.
+          EXPECT_CALL(*xdg_surface, SetWindowGeometry(_)).Times(0);
+        });
     SendConfigureEvent(surface_id_, bounds_with_insets.size(), state);
     AdvanceFrameToCurrent(window_.get(), delegate_);
   }
@@ -661,6 +663,33 @@ TEST_P(WaylandWindowTest, OnSequencePointClearsPreviousUnackedConfigures) {
   AdvanceFrameToCurrent(window_.get(), delegate_);
 }
 
+// This test is specifically to guard against origin being set to (0, 0)
+// thus lacros can be restored to correct display (crbug.com/1423690)
+TEST_P(WaylandWindowTest, RestoredBoundsSetWithCorrectOrigin) {
+  constexpr gfx::Rect kNormalBounds{1376, 10, 500, 300};
+  constexpr gfx::Rect kMaximizedBounds{1366, 0, 800, 600};
+
+  // Make sure the window has normal state initially.
+  window_->SetBoundsInDIP(kNormalBounds);
+  EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
+  AdvanceFrameToCurrent(window_.get(), delegate_);
+  VerifyAndClearExpectations();
+
+  // Deactivate the surface.
+  auto empty_state = MakeStateArray({});
+  SendConfigureEvent(surface_id_, {0, 0}, empty_state);
+  AdvanceFrameToCurrent(window_.get(), delegate_);
+
+  WaylandWindow::WindowStates window_states{.is_maximized = true,
+                                            .is_activated = true};
+
+  window_->HandleToplevelConfigure(kMaximizedBounds.width(),
+                                   kMaximizedBounds.height(), window_states);
+
+  EXPECT_EQ(PlatformWindowState::kMaximized, window_->GetPlatformWindowState());
+  EXPECT_EQ(window_->GetRestoredBoundsInDIP(), kNormalBounds);
+}
+
 TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   constexpr gfx::Rect kNormalBounds{500, 300};
   constexpr gfx::Rect kMaximizedBounds{800, 600};
@@ -704,12 +733,11 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   VerifyAndClearExpectations();
 
   auto inactive_maximized = MakeStateArray({XDG_TOPLEVEL_STATE_MAXIMIZED});
-  PostToServerAndWait([id = surface_id_, bounds = kMaximizedBounds](
-                          wl::TestWaylandServerThread* server) {
+  PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
     wl::MockSurface* mock_surface = server->GetObject<wl::MockSurface>(id);
     ASSERT_TRUE(mock_surface);
     wl::MockXdgSurface* xdg_surface = mock_surface->xdg_surface();
-    EXPECT_CALL(*xdg_surface, SetWindowGeometry(gfx::Rect(bounds.size())));
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(_)).Times(0);
   });
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(false)));
   EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
@@ -717,12 +745,11 @@ TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   AdvanceFrameToCurrent(window_.get(), delegate_);
   VerifyAndClearExpectations();
 
-  PostToServerAndWait([id = surface_id_, bounds = kMaximizedBounds](
-                          wl::TestWaylandServerThread* server) {
+  PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
     wl::MockSurface* mock_surface = server->GetObject<wl::MockSurface>(id);
     ASSERT_TRUE(mock_surface);
     wl::MockXdgSurface* xdg_surface = mock_surface->xdg_surface();
-    EXPECT_CALL(*xdg_surface, SetWindowGeometry(gfx::Rect(bounds.size())));
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(_)).Times(0);
   });
   EXPECT_CALL(delegate_, OnActivationChanged(Eq(true)));
   EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
@@ -877,8 +904,7 @@ TEST_P(WaylandWindowTest, ServerInitiatedRestoreFromMinimizedState) {
   window_->HandleSurfaceConfigure(3);
   EXPECT_EQ(PlatformWindowState::kMinimized, window_->GetPlatformWindowState());
 
-  if (window_->IsSupportedOnAuraSurface(
-          ZAURA_TOPLEVEL_STATE_MINIMIZED_SINCE_VERSION)) {
+  if (window_->SupportsConfigureMinimizedState()) {
     // If the minimized state is supported via the zaura extension, while
     // minimized a restore event from the server should return the window to the
     // normal state.
@@ -1224,13 +1250,12 @@ TEST_P(WaylandWindowTest, SetMaximizedFullscreenAndRestore) {
   EXPECT_EQ(PlatformWindowState::kMaximized, window_->GetPlatformWindowState());
   VerifyAndClearExpectations();
 
-  PostToServerAndWait([id = surface_id_, bounds = kMaximizedBounds](
-                          wl::TestWaylandServerThread* server) {
+  PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
     wl::MockSurface* mock_surface = server->GetObject<wl::MockSurface>(id);
     ASSERT_TRUE(mock_surface);
     wl::MockXdgSurface* xdg_surface = mock_surface->xdg_surface();
     EXPECT_CALL(*xdg_surface->xdg_toplevel(), SetFullscreen());
-    EXPECT_CALL(*xdg_surface, SetWindowGeometry(gfx::Rect(bounds.size())));
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(_)).Times(0);
   });
   EXPECT_CALL(delegate_, OnBoundsChanged(_)).Times(0);
   EXPECT_CALL(delegate_, OnWindowStateChanged(_, _)).Times(1);
@@ -1415,36 +1440,20 @@ TEST_P(WaylandWindowTest, SendsBoundsOnRequest) {
   const gfx::Rect new_bounds =
       gfx::Rect(initial_bounds.width() + 10, initial_bounds.height() + 10);
   EXPECT_CALL(delegate_, OnBoundsChanged(kDefaultBoundsChange));
-  window_->SetBoundsInDIP(new_bounds);
-  AdvanceFrameToCurrent(window_.get(), delegate_);
 
-  wl::ScopedWlArray states = InitializeWlArrayWithActivatedState();
-
-  // First case is when Wayland sends a configure event with 0,0 height and
-  // width.
   PostToServerAndWait([id = surface_id_,
                        new_bounds](wl::TestWaylandServerThread* server) {
     wl::MockSurface* mock_surface = server->GetObject<wl::MockSurface>(id);
     ASSERT_TRUE(mock_surface);
     wl::MockXdgSurface* xdg_surface = mock_surface->xdg_surface();
     EXPECT_CALL(*xdg_surface, SetWindowGeometry(gfx::Rect(new_bounds.size())))
-        .Times(2);
+        .Times(1);
   });
-  SendConfigureEvent(surface_id_, {0, 0}, states);
+  window_->SetBoundsInDIP(new_bounds);
   AdvanceFrameToCurrent(window_.get(), delegate_);
 
   // Restored bounds should keep empty value.
   gfx::Rect restored_bounds = window_->GetRestoredBoundsInDIP();
-  EXPECT_EQ(restored_bounds, gfx::Rect());
-
-  // Second case is when Wayland sends a configure event with 1, 1 height and
-  // width. It looks more like a bug in Gnome Shell with Wayland as long as the
-  // documentation says it must be set to 0, 0, when wayland requests bounds.
-  SendConfigureEvent(surface_id_, {0, 0}, states);
-  AdvanceFrameToCurrent(window_.get(), delegate_);
-
-  // Restored bounds should keep empty value.
-  restored_bounds = window_->GetRestoredBoundsInDIP();
   EXPECT_EQ(restored_bounds, gfx::Rect());
 }
 
@@ -1653,7 +1662,6 @@ TEST_P(WaylandWindowTest, ConfigureEventWithNulledSize) {
     wl::MockSurface* mock_surface = server->GetObject<wl::MockSurface>(id);
     ASSERT_TRUE(mock_surface);
     auto* xdg_surface = mock_surface->xdg_surface();
-    EXPECT_CALL(*xdg_surface, SetWindowGeometry(gfx::Rect(800, 600)));
     EXPECT_CALL(*xdg_surface, AckConfigure(14u));
   });
 
@@ -1735,6 +1743,38 @@ TEST_P(WaylandWindowTest, ManyConfigureEventsDoesNotCrash) {
     size.Enlarge(1, 1);
   }
   AdvanceFrameToCurrent(window_.get(), delegate_);
+}
+
+// If the server immediately changes the bounds after a window is initialised,
+// make sure that the client doesn't wait for a new frame to be produced.
+// See https://crbug.com/1427954.
+TEST_P(WaylandWindowTest, InitialConfigureFollowedByBoundsChangeCompletesAck) {
+  constexpr gfx::Rect kFirstBounds{0, 0, 800, 600};
+  constexpr gfx::Rect kSecondBounds{50, 50, 800, 600};
+  constexpr uint32_t kConfigureSerial = 2u;
+
+  // Make sure that we start off with the initial bounds we expect.
+  EXPECT_EQ(kFirstBounds, window_->latched_state().bounds_dip);
+  EXPECT_EQ(kFirstBounds, window_->applied_state().bounds_dip);
+
+  // Expect an origin change.
+  EXPECT_CALL(delegate_, OnBoundsChanged(Eq(BoundsChange{true})));
+
+  PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
+    auto* mock_surface = server->GetObject<wl::MockSurface>(id);
+    ASSERT_TRUE(mock_surface);
+    auto* xdg_surface = mock_surface->xdg_surface();
+    EXPECT_CALL(*xdg_surface, AckConfigure(kConfigureSerial)).Times(1);
+  });
+
+  window_->HandleAuraToplevelConfigure(
+      kSecondBounds.x(), kSecondBounds.y(), kSecondBounds.width(),
+      kSecondBounds.height(), {.is_activated = true});
+  window_->HandleSurfaceConfigure(kConfigureSerial);
+
+  // Don't call AdvanceFrameToCurrent here, because just updating the
+  // bounds origin won't generate a new frame. The client should ack
+  // even if there is no new frame produced.
 }
 
 TEST_P(WaylandWindowTest, OnActivationChanged) {
@@ -2349,6 +2389,7 @@ TEST_P(WaylandWindowTest, ToplevelWindowUpdateWindowScale) {
     auto* output2 =
         server->CreateAndInitializeOutput(wl::TestOutputMetrics({1920, 1080}));
     output2->SetScale(2);
+    output2->SetDeviceScaleFactor(2);
   });
   WaitForAllDisplaysReady();
 
@@ -2409,6 +2450,7 @@ TEST_P(WaylandWindowTest, WaylandPopupSurfaceScale) {
     auto* output2 = server->CreateAndInitializeOutput(
         wl::TestOutputMetrics({1920, 0, 1920, 1080}));
     output2->SetScale(2);
+    output2->SetDeviceScaleFactor(2);
   });
   WaitForAllDisplaysReady();
 
@@ -2547,7 +2589,9 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferScale) {
                   server->GetObject<wl::TestOutput>(secondary_output_id);
               // Update scale factors first.
               main_output->SetScale(main_output_scale);
+              main_output->SetDeviceScaleFactor(main_output_scale);
               secondary_output->SetScale(secondary_output_scale);
+              secondary_output->SetDeviceScaleFactor(secondary_output_scale);
 
               main_output->Flush();
               secondary_output->Flush();
@@ -2606,6 +2650,7 @@ TEST_P(WaylandWindowTest, WaylandPopupInitialBufferUsesParentScale) {
     auto* output2 = server->CreateAndInitializeOutput(
         wl::TestOutputMetrics({1921, 0, 1920, 1080}));
     output2->SetScale(2);
+    output2->SetDeviceScaleFactor(2);
   });
   WaitForAllDisplaysReady();
 
@@ -2740,6 +2785,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
     wl::TestOutput* output2 = server->GetObject<wl::TestOutput>(wl_output2_id);
     // Pretend that the output2 has scale factor equals to 2 now.
     output2->SetScale(2);
+    output2->SetDeviceScaleFactor(2);
     output2->Flush();
   });
 
@@ -2759,6 +2805,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
     wl::TestOutput* output1 = server->GetObject<wl::TestOutput>(wl_output1_id);
     // Now, the output1 changes its scale factor to 2 as well.
     output1->SetScale(2);
+    output1->SetDeviceScaleFactor(2);
     output1->Flush();
   });
 
@@ -2769,6 +2816,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
     wl::TestOutput* output1 = server->GetObject<wl::TestOutput>(wl_output1_id);
     // Now, the output1 changes its scale factor back to 1.
     output1->SetScale(1);
+    output1->SetDeviceScaleFactor(1);
     output1->Flush();
   });
 
@@ -2780,6 +2828,7 @@ TEST_P(WaylandWindowTest, GetPreferredOutput) {
     // All outputs have scale factor of 1. window_ prefers the output that
     // it entered first again.
     output2->SetScale(1);
+    output2->SetDeviceScaleFactor(1);
     output2->Flush();
   });
 
@@ -2892,6 +2941,7 @@ TEST_P(WaylandWindowTest, GetChildrenPreferredOutput) {
     wl::TestOutput* output2 = server->GetObject<wl::TestOutput>(wl_output2_id);
     // Now, the output2 changes its scale factor to 2.
     output2->SetScale(2);
+    output2->SetDeviceScaleFactor(2);
     output2->Flush();
   });
 
@@ -3298,8 +3348,12 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
-  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
-                                  false, kAugmentedSurfaceNotSupportedVersion);
+  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {},
+                                  /*supports_dma_buf=*/false,
+                                  /*supports_viewporter=*/true,
+                                  /*supports_acquire_fence=*/false,
+                                  /*supports_overlays=*/true,
+                                  kAugmentedSurfaceNotSupportedVersion);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id1 = 1;
@@ -4036,8 +4090,12 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
-  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
-                                  false, kAugmentedSurfaceNotSupportedVersion);
+  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {},
+                                  /*supports_dma_buf=*/false,
+                                  /*supports_viewporter=*/true,
+                                  /*supports_acquire_fence=*/false,
+                                  /*supports_overlays=*/true,
+                                  kAugmentedSurfaceNotSupportedVersion);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id = 1;
@@ -4223,13 +4281,12 @@ TEST_P(WaylandWindowTest, StartWithMinimized) {
                             })));
   // The window geometry has to be set to the current bounds of the window for
   // minimized state.
-  gfx::Rect bounds = window_->GetBoundsInDIP();
-  PostToServerAndWait(
-      [id = surface_id_, bounds](wl::TestWaylandServerThread* server) {
-        auto* surface = server->GetObject<wl::MockSurface>(id);
-        auto* xdg_surface = surface->xdg_surface();
-        EXPECT_CALL(*xdg_surface, SetWindowGeometry(gfx::Rect(bounds.size())));
-      });
+  EXPECT_EQ(gfx::Rect(800, 600), window_->GetBoundsInDIP());
+  PostToServerAndWait([id = surface_id_](wl::TestWaylandServerThread* server) {
+    auto* surface = server->GetObject<wl::MockSurface>(id);
+    auto* xdg_surface = surface->xdg_surface();
+    EXPECT_CALL(*xdg_surface, SetWindowGeometry(_)).Times(0);
+  });
   // Send one additional empty configuration event for minimized state.
   // (which means the surface is not maximized, fullscreen or activated)
   states = wl::ScopedWlArray({});
@@ -4488,15 +4545,20 @@ INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
 INSTANTIATE_TEST_SUITE_P(
     XdgVersionStableTestWithAuraShell,
     WaylandWindowTest,
-    Values(wl::ServerConfig{
-        .enable_aura_shell = wl::EnableAuraShellProtocol::kEnabled}));
+    Values(wl::ServerConfig{.enable_aura_shell =
+                                wl::EnableAuraShellProtocol::kEnabled},
+           wl::ServerConfig{
+               .enable_aura_shell = wl::EnableAuraShellProtocol::kEnabled,
+               .use_aura_output_manager = true}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandSubsurfaceTest,
                          Values(wl::ServerConfig{}));
 INSTANTIATE_TEST_SUITE_P(
     XdgVersionStableTestWithAuraShell,
     WaylandSubsurfaceTest,
-    Values(wl::ServerConfig{
-        .enable_aura_shell = wl::EnableAuraShellProtocol::kEnabled}));
-
+    Values(wl::ServerConfig{.enable_aura_shell =
+                                wl::EnableAuraShellProtocol::kEnabled},
+           wl::ServerConfig{
+               .enable_aura_shell = wl::EnableAuraShellProtocol::kEnabled,
+               .use_aura_output_manager = true}));
 }  // namespace ui

@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/wm/desks/desk_button_base.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 
 namespace gfx {
@@ -15,7 +16,7 @@ struct VectorIcon;
 
 namespace ash {
 
-class DesksBarView;
+class DeskBarViewBase;
 
 // A button in zero state bar showing "Desk 1". Zero state is the state of the
 // desks bar when there's only a single desk available, in which case the bar is
@@ -26,7 +27,7 @@ class ASH_EXPORT ZeroStateDefaultDeskButton : public DeskButtonBase {
  public:
   METADATA_HEADER(ZeroStateDefaultDeskButton);
 
-  explicit ZeroStateDefaultDeskButton(DesksBarView* bar_view);
+  explicit ZeroStateDefaultDeskButton(DeskBarViewBase* bar_view);
   ZeroStateDefaultDeskButton(const ZeroStateDefaultDeskButton&) = delete;
   ZeroStateDefaultDeskButton& operator=(const ZeroStateDefaultDeskButton&) =
       delete;
@@ -39,8 +40,6 @@ class ASH_EXPORT ZeroStateDefaultDeskButton : public DeskButtonBase {
 
  private:
   void OnButtonPressed();
-
-  DesksBarView* bar_view_;
 };
 
 // A button in the zero state bar with an icon. Zero state is the state of the
@@ -50,7 +49,8 @@ class ASH_EXPORT ZeroStateIconButton : public DeskButtonBase {
  public:
   METADATA_HEADER(ZeroStateIconButton);
 
-  ZeroStateIconButton(const gfx::VectorIcon* button_icon,
+  ZeroStateIconButton(DeskBarViewBase* bar_view,
+                      const gfx::VectorIcon* button_icon,
                       const std::u16string& text,
                       base::RepeatingClosure callback);
   ZeroStateIconButton(const ZeroStateIconButton&) = delete;
@@ -66,7 +66,7 @@ class ASH_EXPORT ZeroStateIconButton : public DeskButtonBase {
   void OnMouseExited(const ui::MouseEvent& event) override;
 
  private:
-  const gfx::VectorIcon* const button_icon_;
+  const raw_ptr<const gfx::VectorIcon, ExperimentalAsh> button_icon_;
 };
 
 }  // namespace ash

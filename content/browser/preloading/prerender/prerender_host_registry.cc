@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
@@ -23,6 +24,7 @@
 #include "content/browser/preloading/prerender/prerender_metrics.h"
 #include "content/browser/preloading/prerender/prerender_navigation_utils.h"
 #include "content/browser/preloading/prerender/prerender_new_tab_handle.h"
+#include "content/browser/preloading/prerender/prerender_trigger_type_impl.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -33,6 +35,8 @@
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "net/base/load_flags.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/global_memory_dump.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 #include "third_party/blink/public/common/features.h"
@@ -77,16 +81,140 @@ bool DeviceHasEnoughMemoryForPrerender() {
   return base::SysInfo::AmountOfPhysicalMemoryMB() > memory_threshold_mb;
 }
 
+base::MemoryPressureListener::MemoryPressureLevel
+GetCurrentMemoryPressureLevel() {
+  // Ignore the memory pressure event if the memory control is disabled.
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kPrerender2MemoryControls)) {
+    return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  }
+
+  auto* monitor = base::MemoryPressureMonitor::Get();
+  if (!monitor) {
+    return base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
+  }
+  return monitor->GetCurrentPressureLevel();
+}
+
+// Create a resource request for `back_url` that only checks whether the
+// resource is in the HTTP cache.
+std::unique_ptr<network::SimpleURLLoader> CreateHttpCacheQueryingResourceLoad(
+    const GURL& back_url) {
+  url::Origin origin = url::Origin::Create(back_url);
+  net::IsolationInfo isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RequestType::kMainFrame, origin, origin,
+      net::SiteForCookies::FromOrigin(origin));
+  network::ResourceRequest::TrustedParams trusted_params;
+  trusted_params.isolation_info = isolation_info;
+
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->url = back_url;
+  request->load_flags =
+      net::LOAD_ONLY_FROM_CACHE | net::LOAD_SKIP_CACHE_VALIDATION;
+  request->trusted_params = trusted_params;
+  request->site_for_cookies = trusted_params.isolation_info.site_for_cookies();
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
+  request->skip_service_worker = true;
+  request->do_not_prompt_for_login = true;
+
+  CHECK(!request->SendsCookies());
+  CHECK(!request->SavesCookies());
+  constexpr net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("back_navigation_cache_query",
+                                          R"(
+          semantics {
+            sender: "Prerender"
+            description:
+              "This is not actually a network request. It is used internally "
+              "by the browser to determine if the HTTP cache would be used if "
+              "the user were to navigate back in session history. It only "
+              "checks the cache and does not hit the network."
+            trigger:
+              "When the user performs an action that would suggest that they "
+              "intend to navigate back soon. Examples include hovering the "
+              "mouse over the back button and the start of a gestural back "
+              "navigation."
+            user_data {
+              type: NONE
+            }
+            data: "None. The request doesn't hit the network."
+            destination: LOCAL
+            internal {
+              contacts {
+                email: "chrome-brapp-loading@chromium.org"
+              }
+            }
+            last_reviewed: "2023-03-24"
+          }
+          policy {
+            cookies_allowed: NO
+            setting:
+              "This is not controlled by a setting."
+            policy_exception_justification: "This is not a network request."
+        })");
+
+  return network::SimpleURLLoader::Create(std::move(request),
+                                          traffic_annotation);
+}
+
+// Returns true if the given navigation is meant to be predicted by a predictor
+// related to session history (e.g. hovering over the back button could have
+// predicted the navigation).
+bool IsNavigationInSessionHistoryPredictorDomain(NavigationHandle* handle) {
+  CHECK(handle->IsInPrimaryMainFrame());
+  CHECK(!handle->IsSameDocument());
+
+  if (handle->IsRendererInitiated()) {
+    return false;
+  }
+
+  // Note that currently the only predictors are for back navigations of a
+  // single step, however we still include all session history navigations in
+  // the domain. The preloading of back navigations could generalize to session
+  // history navigations of other offsets, but we haven't explored this due to
+  // the higher usage of the back button compared to the forward button or
+  // history menu.
+  if (!(handle->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK)) {
+    return false;
+  }
+
+  if (handle->IsPost()) {
+    return false;
+  }
+
+  if (handle->IsServedFromBackForwardCache()) {
+    return false;
+  }
+
+  if (!handle->GetURL().SchemeIsHTTPOrHTTPS()) {
+    return false;
+  }
+
+  // Note that even though the current predictors do not handle session history
+  // navigations that are same-site or which don't use the HTTP cache, they are
+  // still included in the domain.
+  return true;
+}
+
+bool IsDevToolsOpen(WebContents& web_contents) {
+  return DevToolsAgentHost::HasFor(&web_contents);
+}
+
 }  // namespace
 
-PrerenderHostRegistry::PrerenderHostRegistry(WebContents& web_contents) {
+PrerenderHostRegistry::PrerenderHostRegistry(WebContents& web_contents)
+    : memory_pressure_listener_(
+          FROM_HERE,
+          base::BindRepeating(&PrerenderHostRegistry::OnMemoryPressure,
+                              base::Unretained(this))) {
   Observe(&web_contents);
 }
 
 PrerenderHostRegistry::~PrerenderHostRegistry() {
   // This function is called by WebContentsImpl's dtor, so web_contents() should
   // not be a null ptr at this moment.
-  DCHECK(web_contents());
+  CHECK(web_contents());
 
   PrerenderFinalStatus final_status =
       web_contents()->GetClosedByUserGesture()
@@ -122,12 +250,12 @@ int PrerenderHostRegistry::CreateAndStartHost(
 
   // The initiator WebContents can be different from the WebContents that will
   // host a prerendered page only when the prerender-in-new-tab runs.
-  DCHECK(attributes.initiator_web_contents);
+  CHECK(attributes.initiator_web_contents);
   auto& initiator_web_contents =
       static_cast<WebContentsImpl&>(*attributes.initiator_web_contents);
   auto& prerender_web_contents = static_cast<WebContentsImpl&>(*web_contents());
-  DCHECK(&initiator_web_contents == &prerender_web_contents ||
-         base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab));
+  CHECK(&initiator_web_contents == &prerender_web_contents ||
+        base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab));
 
   int frame_tree_node_id = RenderFrameHost::kNoFrameTreeNodeId;
 
@@ -169,7 +297,7 @@ int PrerenderHostRegistry::CreateAndStartHost(
               attributes);
           break;
         default:
-          NOTREACHED();
+          NOTREACHED_NORETURN();
       }
       if (attempt)
         attempt->SetEligibility(reason);
@@ -198,6 +326,22 @@ int PrerenderHostRegistry::CreateAndStartHost(
       if (attempt)
         attempt->SetEligibility(PreloadingEligibility::kLowMemory);
       return RenderFrameHost::kNoFrameTreeNodeId;
+    }
+
+    // Don't prerender under critical memory pressure.
+    switch (GetCurrentMemoryPressureLevel()) {
+      case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+      case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+        break;
+      case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+        RecordFailedPrerenderFinalStatus(
+            PrerenderCancellationReason(
+                PrerenderFinalStatus::kMemoryPressureOnTrigger),
+            attributes);
+        if (attempt) {
+          attempt->SetEligibility(PreloadingEligibility::kMemoryPressure);
+        }
+        return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
     // Allow prerendering only for same-site. The initiator origin is nullopt
@@ -305,6 +449,7 @@ int PrerenderHostRegistry::CreateAndStartHost(
           blink::features::kPrerender2SequentialPrerendering)) {
     switch (attributes.trigger_type) {
       case PrerenderTriggerType::kSpeculationRule:
+      case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
         pending_prerenders_.push_back(frame_tree_node_id);
         // Start the initial prerendering navigation of the pending request in
         // the head of the queue if there's no running prerender.
@@ -312,12 +457,12 @@ int PrerenderHostRegistry::CreateAndStartHost(
           // No running prerender means that no other prerender is waiting in
           // the pending queue, because the prerender sequence only stops when
           // all the pending prerenders are started.
-          DCHECK_EQ(pending_prerenders_.size(), 1u);
+          CHECK_EQ(pending_prerenders_.size(), 1u);
           int started_frame_tree_node_id =
               StartPrerendering(RenderFrameHost::kNoFrameTreeNodeId);
-          DCHECK(started_frame_tree_node_id == frame_tree_node_id ||
-                 started_frame_tree_node_id ==
-                     RenderFrameHost::kNoFrameTreeNodeId);
+          CHECK(started_frame_tree_node_id == frame_tree_node_id ||
+                started_frame_tree_node_id ==
+                    RenderFrameHost::kNoFrameTreeNodeId);
           frame_tree_node_id = started_frame_tree_node_id;
         }
         break;
@@ -341,8 +486,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
 
 int PrerenderHostRegistry::CreateAndStartHostForNewTab(
     const PrerenderAttributes& attributes) {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab));
-  DCHECK_EQ(attributes.trigger_type, PrerenderTriggerType::kSpeculationRule);
+  CHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab));
+  CHECK(IsSpeculationRuleType(attributes.trigger_type));
   std::string recorded_url =
       attributes.initiator_origin.has_value()
           ? attributes.initiator_origin.value().GetURL().spec()
@@ -362,10 +507,14 @@ int PrerenderHostRegistry::CreateAndStartHostForNewTab(
 }
 
 int PrerenderHostRegistry::StartPrerendering(int frame_tree_node_id) {
+  // TODO(https://crbug.com/1424425): Don't start prerendering if the current
+  // memory pressure level is critical, and then retry prerendering when the
+  // memory pressure level goes down.
+
   if (frame_tree_node_id == RenderFrameHost::kNoFrameTreeNodeId) {
-    DCHECK(base::FeatureList::IsEnabled(
+    CHECK(base::FeatureList::IsEnabled(
         blink::features::kPrerender2SequentialPrerendering));
-    DCHECK_EQ(running_prerender_host_id_, RenderFrameHost::kNoFrameTreeNodeId);
+    CHECK_EQ(running_prerender_host_id_, RenderFrameHost::kNoFrameTreeNodeId);
 
     for (auto iter = pending_prerenders_.begin();
          iter != pending_prerenders_.end();) {
@@ -382,7 +531,7 @@ int PrerenderHostRegistry::StartPrerendering(int frame_tree_node_id) {
 
       // The initiator WebContents should be alive as it cancels all the
       // prerendering requests during destruction.
-      DCHECK(prerender_host->initiator_web_contents());
+      CHECK(prerender_host->initiator_web_contents());
 
       // Don't start the pending prerender triggered by the background tab.
       if (IsBackground(
@@ -403,7 +552,7 @@ int PrerenderHostRegistry::StartPrerendering(int frame_tree_node_id) {
 
   auto prerender_host_it =
       prerender_host_by_frame_tree_node_id_.find(frame_tree_node_id);
-  DCHECK(prerender_host_it != prerender_host_by_frame_tree_node_id_.end());
+  CHECK(prerender_host_it != prerender_host_by_frame_tree_node_id_.end());
   PrerenderHost& prerender_host = *prerender_host_it->second;
   devtools_instrumentation::WillInitiatePrerender(
       prerender_host.GetPrerenderFrameTree());
@@ -417,6 +566,7 @@ int PrerenderHostRegistry::StartPrerendering(int frame_tree_node_id) {
   switch (prerender_host_by_frame_tree_node_id_[frame_tree_node_id]
               ->trigger_type()) {
     case PrerenderTriggerType::kSpeculationRule:
+    case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
       DestroyWhenUsingExcessiveMemory(frame_tree_node_id);
       break;
     case PrerenderTriggerType::kEmbedder:
@@ -431,6 +581,7 @@ int PrerenderHostRegistry::StartPrerendering(int frame_tree_node_id) {
     switch (prerender_host_by_frame_tree_node_id_[frame_tree_node_id]
                 ->trigger_type()) {
       case PrerenderTriggerType::kSpeculationRule:
+      case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
         running_prerender_host_id_ = frame_tree_node_id;
         break;
       case PrerenderTriggerType::kEmbedder:
@@ -484,7 +635,7 @@ std::set<int> PrerenderHostRegistry::CancelHosts(
           iter != prerender_new_tab_handle_by_frame_tree_node_id_.end()) {
         // The host should be driven by PrerenderHostRegistry associated with
         // the new tab.
-        DCHECK_NE(running_prerender_host_id_, host_id);
+        CHECK_NE(running_prerender_host_id_, host_id);
 
         std::unique_ptr<PrerenderNewTabHandle> handle = std::move(iter->second);
         prerender_new_tab_handle_by_frame_tree_node_id_.erase(iter);
@@ -492,7 +643,7 @@ std::set<int> PrerenderHostRegistry::CancelHosts(
         cancelled_ids.insert(host_id);
       }
     } else {
-      DCHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
+      CHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
     }
   }
 
@@ -521,34 +672,30 @@ bool PrerenderHostRegistry::CancelHost(
   return !cancelled_ids.empty();
 }
 
-void PrerenderHostRegistry::CancelHostsForTrigger(
-    PrerenderTriggerType trigger_type,
+void PrerenderHostRegistry::CancelHostsForTriggers(
+    std::vector<PrerenderTriggerType> trigger_types,
     const PrerenderCancellationReason& reason) {
   TRACE_EVENT1("navigation", "PrerenderHostRegistry::CancelHostsForTrigger",
-               "trigger_type", trigger_type);
+               "trigger_type", trigger_types[0]);
 
   std::vector<int> ids_to_be_deleted;
 
   for (auto& iter : prerender_host_by_frame_tree_node_id_) {
-    if (iter.second->trigger_type() == trigger_type) {
+    if (base::Contains(trigger_types, iter.second->trigger_type())) {
       ids_to_be_deleted.push_back(iter.first);
     }
   }
-
   if (base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab)) {
-    switch (trigger_type) {
-      case PrerenderTriggerType::kSpeculationRule:
-        for (auto& iter : prerender_new_tab_handle_by_frame_tree_node_id_) {
-          ids_to_be_deleted.push_back(iter.first);
-        }
-        break;
-      case PrerenderTriggerType::kEmbedder:
-        // Prerendering into a new tab can be triggered by speculation
-        // rules only.
-        break;
+    for (auto& iter : prerender_new_tab_handle_by_frame_tree_node_id_) {
+      if (base::Contains(trigger_types, iter.second->trigger_type())) {
+        // Prerendering into a new tab can be triggered by speculation rules
+        // only.
+        CHECK(IsSpeculationRuleType(iter.second->trigger_type()));
+        ids_to_be_deleted.push_back(iter.first);
+      }
     }
   } else {
-    DCHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
+    CHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
   }
 
   CancelHosts(ids_to_be_deleted, reason);
@@ -572,7 +719,7 @@ void PrerenderHostRegistry::CancelAllHosts(PrerenderFinalStatus final_status) {
     for (auto& iter : prerender_new_tab_handle_map)
       iter.second->CancelPrerendering(reason);
   } else {
-    DCHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
+    CHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
   }
 
   pending_prerenders_.clear();
@@ -629,10 +776,10 @@ int PrerenderHostRegistry::ReserveHostToActivate(
   std::unique_ptr<PrerenderHost> host =
       std::move(prerender_host_by_frame_tree_node_id_[host_id]);
   prerender_host_by_frame_tree_node_id_.erase(host_id);
-  DCHECK_EQ(host_id, host->frame_tree_node_id());
+  CHECK_EQ(host_id, host->frame_tree_node_id());
 
   // Reserve the host for activation.
-  DCHECK(!reserved_prerender_host_);
+  CHECK(!reserved_prerender_host_);
   reserved_prerender_host_ = std::move(host);
 
   return host_id;
@@ -643,7 +790,7 @@ RenderFrameHostImpl* PrerenderHostRegistry::GetRenderFrameHostForReservedHost(
   if (!reserved_prerender_host_)
     return nullptr;
 
-  DCHECK_EQ(frame_tree_node_id, reserved_prerender_host_->frame_tree_node_id());
+  CHECK_EQ(frame_tree_node_id, reserved_prerender_host_->frame_tree_node_id());
 
   return reserved_prerender_host_->GetPrerenderedMainFrameHost();
 }
@@ -661,8 +808,8 @@ std::unique_ptr<StoredPage> PrerenderHostRegistry::ActivateReservedHost(
 
 void PrerenderHostRegistry::OnActivationFinished(int frame_tree_node_id) {
   // OnActivationFinished() should not be called for non-reserved hosts.
-  DCHECK(!base::Contains(prerender_host_by_frame_tree_node_id_,
-                         frame_tree_node_id));
+  CHECK(!base::Contains(prerender_host_by_frame_tree_node_id_,
+                        frame_tree_node_id));
 
   if (!reserved_prerender_host_) {
     // The activation finished successfully and has already activated the
@@ -672,7 +819,7 @@ void PrerenderHostRegistry::OnActivationFinished(int frame_tree_node_id) {
 
   // The activation navigation is cancelled before activating the prerendered
   // page, which means the activation failed.
-  DCHECK_EQ(frame_tree_node_id, reserved_prerender_host_->frame_tree_node_id());
+  CHECK_EQ(frame_tree_node_id, reserved_prerender_host_->frame_tree_node_id());
 
   // TODO(https://crbug.com/1378151): Monitor the final status metric and see
   // whether it could be possible.
@@ -705,7 +852,7 @@ std::unique_ptr<WebContentsImpl>
 PrerenderHostRegistry::TakePreCreatedWebContentsForNewTabIfExists(
     const mojom::CreateNewWindowParams& create_new_window_params,
     const WebContents::CreateParams& web_contents_create_params) {
-  DCHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab));
+  CHECK(base::FeatureList::IsEnabled(blink::features::kPrerender2InNewTab));
 
   // Don't serve a prerendered page if the window needs the opener or is created
   // for non-regular navigations.
@@ -753,7 +900,7 @@ PrerenderHost* PrerenderHostRegistry::FindHostByUrlForTesting(
 }
 
 void PrerenderHostRegistry::CancelAllHostsForTesting() {
-  DCHECK(!reserved_prerender_host_)
+  CHECK(!reserved_prerender_host_)
       << "It is not possible to cancel a reserved host, so they must not exist "
          "when trying to cancel all hosts";
 
@@ -768,6 +915,135 @@ void PrerenderHostRegistry::CancelAllHostsForTesting() {
   // After we're done scheduling deletion, clear the map and the pending queue.
   prerender_host_by_frame_tree_node_id_.clear();
   pending_prerenders_.clear();
+}
+
+void PrerenderHostRegistry::BackNavigationLikely(
+    PreloadingPredictor predictor) {
+  if (http_cache_query_loader_) {
+    return;
+  }
+
+  PreloadingData* preloading_data =
+      PreloadingData::GetOrCreateForWebContents(web_contents());
+  preloading_data->SetIsNavigationInDomainCallback(
+      predictor,
+      base::BindRepeating(IsNavigationInSessionHistoryPredictorDomain));
+
+  WebContentsImpl* contents = static_cast<WebContentsImpl*>(web_contents());
+  NavigationControllerImpl& controller = contents->GetController();
+  const absl::optional<int> target_index = controller.GetIndexForGoBack();
+
+  if (!target_index.has_value()) {
+    RecordPrerenderBackNavigationEligibility(
+        predictor, PrerenderBackNavigationEligibility::kNoBackEntry, nullptr);
+    return;
+  }
+
+  NavigationEntryImpl* back_entry = controller.GetEntryAtIndex(*target_index);
+  CHECK(back_entry);
+  const GURL& back_url = back_entry->GetURL();
+
+  if (controller.GetBackForwardCache()
+          .GetOrEvictEntry(back_entry->GetUniqueID())
+          .has_value()) {
+    RecordPrerenderBackNavigationEligibility(
+        predictor, PrerenderBackNavigationEligibility::kBfcacheEntryExists,
+        nullptr);
+    return;
+  }
+
+  PreloadingURLMatchCallback same_url_matcher =
+      PreloadingData::GetSameURLMatcher(back_url);
+  preloading_data->AddPreloadingPrediction(predictor, /*confidence=*/100,
+                                           same_url_matcher);
+  PreloadingAttempt* attempt = preloading_data->AddPreloadingAttempt(
+      predictor, PreloadingType::kPrerender, same_url_matcher);
+
+  if (back_entry->GetMainFrameDocumentSequenceNumber() ==
+      controller.GetLastCommittedEntry()
+          ->GetMainFrameDocumentSequenceNumber()) {
+    RecordPrerenderBackNavigationEligibility(
+        predictor, PrerenderBackNavigationEligibility::kTargetIsSameDocument,
+        attempt);
+    return;
+  }
+
+  if (back_entry->root_node()->frame_entry->method() != "GET") {
+    RecordPrerenderBackNavigationEligibility(
+        predictor, PrerenderBackNavigationEligibility::kMethodNotGet, attempt);
+    return;
+  }
+
+  if (prerender_navigation_utils::IsDisallowedHttpResponseCode(
+          back_entry->GetHttpStatusCode())) {
+    RecordPrerenderBackNavigationEligibility(
+        predictor,
+        PrerenderBackNavigationEligibility::kTargetIsFailedNavigation, attempt);
+    return;
+  }
+
+  if (!back_url.SchemeIsHTTPOrHTTPS()) {
+    RecordPrerenderBackNavigationEligibility(
+        predictor, PrerenderBackNavigationEligibility::kTargetIsNonHttp,
+        attempt);
+    return;
+  }
+
+  // While same site back navigations could potentially be prerendered, doing so
+  // would involve more significant compat risk. For now, we consider them
+  // ineligible. See https://crbug.com/1422266 .
+  if (prerender_navigation_utils::IsSameSite(
+          back_url,
+          contents->GetPrimaryMainFrame()->GetLastCommittedOrigin())) {
+    RecordPrerenderBackNavigationEligibility(
+        predictor, PrerenderBackNavigationEligibility::kTargetIsSameSite,
+        attempt);
+    return;
+  }
+
+  // To determine whether the resource for the target entry is in the HTTP
+  // cache, we send a "fake" ResourceRequest which only loads from the cache.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      contents->GetPrimaryMainFrame()
+          ->GetStoragePartition()
+          ->GetURLLoaderFactoryForBrowserProcess();
+  http_cache_query_loader_ = CreateHttpCacheQueryingResourceLoad(back_url);
+  http_cache_query_loader_->DownloadHeadersOnly(
+      url_loader_factory.get(),
+      base::BindOnce(&PrerenderHostRegistry::OnBackResourceCacheResult,
+                     base::Unretained(this), predictor, attempt->GetWeakPtr(),
+                     back_url));
+}
+
+void PrerenderHostRegistry::OnBackResourceCacheResult(
+    PreloadingPredictor predictor,
+    base::WeakPtr<PreloadingAttempt> attempt,
+    GURL back_url,
+    scoped_refptr<net::HttpResponseHeaders> headers) {
+  // It's safe to delete the SimpleURLLoader while running the callback that was
+  // passed to it. We do so once we're done with it in this method.
+  std::unique_ptr<network::SimpleURLLoader> http_cache_query_loader =
+      std::move(http_cache_query_loader_);
+
+  if (!http_cache_query_loader->LoadedFromCache()) {
+    // If not in the cache, then this cache-only request must have failed.
+    CHECK_NE(http_cache_query_loader->NetError(), net::OK);
+
+    RecordPrerenderBackNavigationEligibility(
+        predictor, PrerenderBackNavigationEligibility::kNoHttpCacheEntry,
+        attempt.get());
+    return;
+  }
+
+  RecordPrerenderBackNavigationEligibility(
+      predictor, PrerenderBackNavigationEligibility::kEligible, attempt.get());
+
+  if (attempt) {
+    attempt->SetHoldbackStatus(PreloadingHoldbackStatus::kAllowed);
+    // At this point, we are only collecting metrics and not actually
+    // prerendering anything.
+    attempt->SetTriggeringOutcome(PreloadingTriggeringOutcome::kNoOp);
+  }
 }
 
 base::WeakPtr<PrerenderHostRegistry> PrerenderHostRegistry::GetWeakPtr() {
@@ -840,17 +1116,21 @@ void PrerenderHostRegistry::OnVisibilityChanged(Visibility visibility) {
     // amount of time. The timeout differs depending on the trigger type.
     timeout_timer_for_embedder_.Start(
         FROM_HERE, kTimeToLiveInBackgroundForEmbedder,
-        base::BindOnce(&PrerenderHostRegistry::CancelHostsForTrigger,
-                       base::Unretained(this), PrerenderTriggerType::kEmbedder,
+        base::BindOnce(&PrerenderHostRegistry::CancelHostsForTriggers,
+                       base::Unretained(this),
+                       std::vector({PrerenderTriggerType::kEmbedder}),
                        PrerenderCancellationReason(
                            PrerenderFinalStatus::kTimeoutBackgrounded)));
     timeout_timer_for_speculation_rules_.Start(
         FROM_HERE, kTimeToLiveInBackgroundForSpeculationRules,
-        base::BindOnce(&PrerenderHostRegistry::CancelHostsForTrigger,
-                       base::Unretained(this),
-                       PrerenderTriggerType::kSpeculationRule,
-                       PrerenderCancellationReason(
-                           PrerenderFinalStatus::kTimeoutBackgrounded)));
+        base::BindOnce(
+            &PrerenderHostRegistry::CancelHostsForTriggers,
+            base::Unretained(this),
+            std::vector(
+                {PrerenderTriggerType::kSpeculationRule,
+                 PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld}),
+            PrerenderCancellationReason(
+                PrerenderFinalStatus::kTimeoutBackgrounded)));
   } else {
     // Stop the timer when a prerendered page gets visible to users.
     timeout_timer_for_embedder_.Stop();
@@ -870,7 +1150,7 @@ void PrerenderHostRegistry::ResourceLoadComplete(
     RenderFrameHost* render_frame_host,
     const GlobalRequestID& request_id,
     const blink::mojom::ResourceLoadInfo& resource_load_info) {
-  DCHECK(render_frame_host);
+  CHECK(render_frame_host);
 
   if (render_frame_host->GetLifecycleState() !=
       RenderFrameHost::LifecycleState::kPrerendering) {
@@ -955,7 +1235,7 @@ int PrerenderHostRegistry::FindHostToActivateInternal(
   }
 
   if (!host->GetInitialNavigationId().has_value()) {
-    DCHECK(base::FeatureList::IsEnabled(
+    CHECK(base::FeatureList::IsEnabled(
         blink::features::kPrerender2SequentialPrerendering));
     CancelHost(host->frame_tree_node_id(),
                PrerenderFinalStatus::kActivatedBeforeStarted);
@@ -996,7 +1276,7 @@ int PrerenderHostRegistry::FindHostToActivateInternal(
       cancelled_prerenders.push_back(host_id);
     }
   } else {
-    DCHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
+    CHECK(prerender_new_tab_handle_by_frame_tree_node_id_.empty());
   }
   CancelHosts(
       cancelled_prerenders,
@@ -1030,7 +1310,7 @@ void PrerenderHostRegistry::NotifyTrigger(const GURL& url) {
 PrerenderTriggerType PrerenderHostRegistry::GetPrerenderTriggerType(
     int frame_tree_node_id) {
   PrerenderHost* prerender_host = FindReservedHostById(frame_tree_node_id);
-  DCHECK(prerender_host);
+  CHECK(prerender_host);
 
   return prerender_host->trigger_type();
 }
@@ -1038,7 +1318,7 @@ PrerenderTriggerType PrerenderHostRegistry::GetPrerenderTriggerType(
 const std::string& PrerenderHostRegistry::GetPrerenderEmbedderHistogramSuffix(
     int frame_tree_node_id) {
   PrerenderHost* prerender_host = FindReservedHostById(frame_tree_node_id);
-  DCHECK(prerender_host);
+  CHECK(prerender_host);
 
   return prerender_host->embedder_histogram_suffix();
 }
@@ -1055,6 +1335,7 @@ bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
 
   switch (trigger_type) {
     case PrerenderTriggerType::kSpeculationRule:
+    case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
       // The number of prerenders triggered by speculation rules is limited to a
       // Finch config param.
       return trigger_type_count <
@@ -1074,6 +1355,11 @@ void PrerenderHostRegistry::DestroyWhenUsingExcessiveMemory(
   if (!base::FeatureList::IsEnabled(blink::features::kPrerender2MemoryControls))
     return;
 
+  // Override the memory restriction when the DevTools is open.
+  if (IsDevToolsOpen(*web_contents())) {
+    return;
+  }
+
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestPrivateMemoryFootprint(
           base::kNullProcessId,
@@ -1085,8 +1371,14 @@ void PrerenderHostRegistry::DidReceiveMemoryDump(
     int frame_tree_node_id,
     bool success,
     std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump) {
-  DCHECK(
+  CHECK(
       base::FeatureList::IsEnabled(blink::features::kPrerender2MemoryControls));
+
+  // Override the memory restriction when the DevTools is open.
+  if (IsDevToolsOpen(*web_contents())) {
+    return;
+  }
+
   // Stop a prerendering when we can't get the current memory usage.
   if (!success) {
     CancelHost(frame_tree_node_id, PrerenderFinalStatus::kFailToGetMemoryUsage);
@@ -1114,6 +1406,24 @@ void PrerenderHostRegistry::DidReceiveMemoryDump(
       acceptable_percent_of_system_memory * 0.01 *
           base::SysInfo::AmountOfPhysicalMemory()) {
     CancelHost(frame_tree_node_id, PrerenderFinalStatus::kMemoryLimitExceeded);
+  }
+}
+
+void PrerenderHostRegistry::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
+  // Ignore the memory pressure event if the memory control is disabled.
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kPrerender2MemoryControls)) {
+    return;
+  }
+
+  switch (memory_pressure_level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      CancelAllHosts(PrerenderFinalStatus::kMemoryPressureAfterTriggered);
+      break;
   }
 }
 

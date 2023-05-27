@@ -244,17 +244,31 @@ inline constexpr SharedImageFormat kBGRA_1010102 =
     SharedImageFormat::SinglePlane(ResourceFormat::BGRA_1010102);
 }  // namespace SinglePlaneFormat
 
+// Constants for legacy single-plane representations of multiplanar formats.
+// TODO(crbug.com/1366495): Eliminate these once the codebase is completely
+// converted to using MultiplanarSharedImage.
+namespace LegacyMultiPlaneFormat {
+inline constexpr SharedImageFormat kYV12 =
+    SharedImageFormat::SinglePlane(ResourceFormat::YVU_420);
+inline constexpr SharedImageFormat kNV12 =
+    SharedImageFormat::SinglePlane(ResourceFormat::YUV_420_BIPLANAR);
+inline constexpr SharedImageFormat kNV12A =
+    SharedImageFormat::SinglePlane(ResourceFormat::YUVA_420_TRIPLANAR);
+inline constexpr SharedImageFormat kP010 =
+    SharedImageFormat::SinglePlane(ResourceFormat::P010);
+}  // namespace LegacyMultiPlaneFormat
+
 // Constants for common multi-planar formats.
 namespace MultiPlaneFormat {
-inline constexpr SharedImageFormat kYVU_420 =
+inline constexpr SharedImageFormat kYV12 =
     SharedImageFormat::MultiPlane(SharedImageFormat::PlaneConfig::kY_V_U,
                                   SharedImageFormat::Subsampling::k420,
                                   SharedImageFormat::ChannelFormat::k8);
-inline constexpr SharedImageFormat kYUV_420_BIPLANAR =
+inline constexpr SharedImageFormat kNV12 =
     SharedImageFormat::MultiPlane(SharedImageFormat::PlaneConfig::kY_UV,
                                   SharedImageFormat::Subsampling::k420,
                                   SharedImageFormat::ChannelFormat::k8);
-inline constexpr SharedImageFormat kYUVA_420_TRIPLANAR =
+inline constexpr SharedImageFormat kNV12A =
     SharedImageFormat::MultiPlane(SharedImageFormat::PlaneConfig::kY_UV_A,
                                   SharedImageFormat::Subsampling::k420,
                                   SharedImageFormat::ChannelFormat::k8);

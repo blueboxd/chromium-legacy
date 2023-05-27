@@ -50,6 +50,9 @@ class AutofillSaveUpdateAddressProfileDelegateIOS
   // Returns the subtitle text to be displayed in the save/update banner.
   std::u16string GetDescription() const;
 
+  // Returns the profile description shown in the migration prompt.
+  std::u16string GetProfileDescriptionForMigrationPrompt() const;
+
   // Returns subtitle for the update modal.
   std::u16string GetSubtitle();
 
@@ -68,9 +71,11 @@ class AutofillSaveUpdateAddressProfileDelegateIOS
   void MessageTimeout();
   void MessageDeclined();
   void AutoDecline();
+  virtual bool Never();
 
   // Updates |profile_| |type| value to |value|.
   void SetProfileInfo(const ServerFieldType& type, const std::u16string& value);
+  void SetProfile(AutofillProfile* profile);
 
   const AutofillProfile* GetProfile() const;
   const AutofillProfile* GetOriginalProfile() const;
@@ -91,6 +96,16 @@ class AutofillSaveUpdateAddressProfileDelegateIOS
   bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
 
   bool IsMigrationToAccount() const { return is_migration_to_account_; }
+
+  absl::optional<std::u16string> SyncingUserEmail() const {
+    return syncing_user_email_;
+  }
+
+  // Returns true if the profile's source is
+  // `AutofillProfile::Source::kAccount`.
+  bool IsProfileAnAccountProfile() const {
+    return profile_.source() == autofill::AutofillProfile::Source::kAccount;
+  }
 
 #if defined(UNIT_TEST)
   // Getter for |user_decision_|. Used for the testing purposes.

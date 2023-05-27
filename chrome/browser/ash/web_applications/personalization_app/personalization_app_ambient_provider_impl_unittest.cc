@@ -7,8 +7,10 @@
 #include <memory>
 #include <vector>
 #include "ash/ambient/ambient_controller.h"
+#include "ash/ambient/ambient_ui_settings.h"
 #include "ash/ambient/test/ambient_ash_test_helper.h"
 #include "ash/constants/ambient_theme.h"
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
@@ -16,9 +18,11 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/ash/web_applications/personalization_app/ambient_video_albums.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -35,6 +39,16 @@
 namespace ash::personalization_app {
 
 namespace {
+
+using ::testing::_;
+using ::testing::AllOf;
+using ::testing::Contains;
+using ::testing::Eq;
+using ::testing::Field;
+using ::testing::IsFalse;
+using ::testing::IsSupersetOf;
+using ::testing::IsTrue;
+using ::testing::Pointee;
 
 constexpr char kFakeTestEmail[] = "fakeemail@example.com";
 
@@ -57,6 +71,10 @@ class TestAmbientObserver
       std::vector<ash::personalization_app::mojom::AmbientModeAlbumPtr> albums)
       override {
     albums_ = std::move(albums);
+  }
+
+  void OnScreenSaverDurationChanged(uint32_t minutes) override {
+    duration_ = minutes;
   }
 
   void OnTemperatureUnitChanged(
@@ -97,9 +115,10 @@ class TestAmbientObserver
     return topic_source_;
   }
 
-  std::vector<ash::personalization_app::mojom::AmbientModeAlbumPtr> albums() {
+  const std::vector<ash::personalization_app::mojom::AmbientModeAlbumPtr>&
+  albums() {
     ambient_observer_receiver_.FlushForTesting();
-    return std::move(albums_);
+    return albums_;
   }
 
   ash::AmbientModeTemperatureUnit temperature_unit() {
@@ -124,6 +143,7 @@ class TestAmbientObserver
   bool ambient_mode_enabled_ = false;
 
   ash::AmbientTheme animation_theme_ = ash::AmbientTheme::kSlideshow;
+  uint32_t duration_ = 10;
   ash::AmbientModeTopicSource topic_source_ =
       ash::AmbientModeTopicSource::kArtGallery;
   ash::AmbientModeTemperatureUnit temperature_unit_ =
@@ -142,7 +162,12 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
       : ash::AshTestBase(std::unique_ptr<base::test::TaskEnvironment>(
             std::make_unique<content::BrowserTaskEnvironment>(
                 base::test::TaskEnvironment::TimeSource::MOCK_TIME))),
-        profile_manager_(TestingBrowserProcess::GetGlobal()) {}
+        profile_manager_(TestingBrowserProcess::GetGlobal()) {
+    scoped_feature_list_.InitWithFeatures(
+        {ash::features::kTimeOfDayWallpaper,
+         ash::features::kTimeOfDayScreenSaver},
+        {});
+  }
   PersonalizationAppAmbientProviderImplTest(
       const PersonalizationAppAmbientProviderImplTest&) = delete;
   PersonalizationAppAmbientProviderImplTest& operator=(
@@ -218,7 +243,7 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
     return test_ambient_observer_.topic_source();
   }
 
-  std::vector<ash::personalization_app::mojom::AmbientModeAlbumPtr>
+  const std::vector<ash::personalization_app::mojom::AmbientModeAlbumPtr>&
   ObservedAlbums() {
     ambient_provider_remote_.FlushForTesting();
     return test_ambient_observer_.albums();
@@ -262,6 +287,10 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
       ambient_provider_->settings_ = ash::AmbientSettings();
 
     ambient_provider_->UpdateSettings();
+  }
+
+  void SetScreenSaverDuration(int minutes) {
+    ambient_provider_->SetScreenSaverDuration(minutes);
   }
 
   void SetTopicSource(ash::AmbientModeTopicSource topic_source) {
@@ -345,11 +374,20 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
     fake_backend_controller_->ReplyUpdateSettings(success);
   }
 
+  void EnableUpdateSettingsAutoReply(bool success) {
+    fake_backend_controller_->EnableUpdateSettingsAutoReply(success);
+  }
+
+  AmbientModeTemperatureUnit GetCurrentTemperatureUnitInServer() const {
+    return fake_backend_controller_->current_temperature_unit();
+  }
+
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   TestingProfileManager profile_manager_;
   content::TestWebUI web_ui_;
   std::unique_ptr<content::WebContents> web_contents_;
-  TestingProfile* profile_;
+  raw_ptr<TestingProfile, ExperimentalAsh> profile_;
   mojo::Remote<ash::personalization_app::mojom::AmbientProvider>
       ambient_provider_remote_;
   std::unique_ptr<PersonalizationAppAmbientProviderImpl> ambient_provider_;
@@ -429,6 +467,11 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   EXPECT_EQ(ash::AmbientTheme::kFeelTheBreeze, ObservedAnimationTheme());
   histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
                                        ash::AmbientTheme::kFeelTheBreeze, 1);
+
+  SetAnimationTheme(ash::AmbientTheme::kVideo);
+  EXPECT_EQ(ash::AmbientTheme::kVideo, ObservedAnimationTheme());
+  histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
+                                       ash::AmbientTheme::kVideo, 1);
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest, FetchPreviewImages) {
@@ -448,16 +491,30 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 
   SetTopicSource(ash::AmbientModeTopicSource::kArtGallery);
   EXPECT_EQ(ash::AmbientModeTopicSource::kArtGallery, ObservedTopicSource());
+
+  // The `kVideo` topic source is exclusive to the `kVideo` theme. It does not
+  // apply to any of the other themes, so the existing topic source sticks.
+  SetTopicSource(ash::AmbientModeTopicSource::kVideo);
+  EXPECT_EQ(ash::AmbientModeTopicSource::kArtGallery, ObservedTopicSource());
+
+  SetAnimationTheme(AmbientTheme::kVideo);
+  EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
+
+  // The other topic sources do not apply to the video theme, so all other
+  // `SeTopicSource()` calls should be rejected.
+  SetTopicSource(AmbientModeTopicSource::kArtGallery);
+  EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
+  SetTopicSource(AmbientModeTopicSource::kGooglePhotos);
+  EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest, ShouldCallOnAlbumsChanged) {
   SetAmbientObserver();
   FetchSettings();
   ReplyFetchSettingsAndAlbums(/*success=*/true);
-  auto albums = ObservedAlbums();
   // The fake albums are set in FakeAmbientBackendControllerImpl. Hidden setting
   // will be sent to JS side.
-  EXPECT_EQ(4u, albums.size());
+  EXPECT_EQ(6u, ObservedAlbums().size());
   EXPECT_FALSE(ObservedPreviews().empty());
 }
 
@@ -468,10 +525,25 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   ReplyFetchSettingsAndAlbums(/*success=*/true);
   EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
             ObservedTemperatureUnit());
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            GetCurrentTemperatureUnitInServer());
 
   SetTemperatureUnit(ash::AmbientModeTemperatureUnit::kFahrenheit);
+  ReplyUpdateSettings(/*success=*/true);
   EXPECT_EQ(ash::AmbientModeTemperatureUnit::kFahrenheit,
             ObservedTemperatureUnit());
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kFahrenheit,
+            GetCurrentTemperatureUnitInServer());
+
+  // Even while the video topic source is active, temperature settings changes
+  // should still be sent to the backend.
+  SetAnimationTheme(AmbientTheme::kVideo);
+  SetTemperatureUnit(ash::AmbientModeTemperatureUnit::kCelsius);
+  ReplyUpdateSettings(/*success=*/true);
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            ObservedTemperatureUnit());
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            GetCurrentTemperatureUnitInServer());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
@@ -802,6 +874,53 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, TestSetSelectedArtAlbum) {
   EXPECT_EQ(it->album_id, "1");
 }
 
+TEST_F(PersonalizationAppAmbientProviderImplTest, TestSetSelectedVideo) {
+  auto expect_videos_selected = [this](bool clouds_selected,
+                                       bool new_mexico_select) {
+    EXPECT_THAT(
+        ObservedAlbums(),
+        IsSupersetOf({Pointee(AllOf(Field(&mojom::AmbientModeAlbum::id,
+                                          Eq(kCloudsAlbumId)),
+                                    Field(&mojom::AmbientModeAlbum::checked,
+                                          Eq(clouds_selected)))),
+                      Pointee(AllOf(Field(&mojom::AmbientModeAlbum::id,
+                                          Eq(kNewMexicoAlbumId)),
+                                    Field(&mojom::AmbientModeAlbum::checked,
+                                          Eq(new_mexico_select))))}));
+  };
+
+  SetAmbientObserver();
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+  // Even before the video theme is selected, the default video should be
+  // present in the list of albums and considered "checked".
+  expect_videos_selected(/*clouds_selected=*/false,
+                         /*new_mexico_selected=*/true);
+
+  SetAnimationTheme(AmbientTheme::kVideo);
+
+  // After video theme is selected, the default video should remain checked.
+  expect_videos_selected(/*clouds_selected=*/false,
+                         /*new_mexico_selected=*/true);
+
+  // Switch to clouds.
+  SetAlbumSelected(kCloudsAlbumId.data(), AmbientModeTopicSource::kVideo, true);
+  expect_videos_selected(/*clouds_selected=*/true,
+                         /*new_mexico_selected=*/false);
+
+  // Switch back to new mexico.
+  SetAlbumSelected(kNewMexicoAlbumId.data(), AmbientModeTopicSource::kVideo,
+                   true);
+  expect_videos_selected(/*clouds_selected=*/false,
+                         /*new_mexico_selected=*/true);
+
+  // Should never be in a state where there are no videos selected.
+  SetAlbumSelected(kNewMexicoAlbumId.data(), AmbientModeTopicSource::kVideo,
+                   false);
+  expect_videos_selected(/*clouds_selected=*/false,
+                         /*new_mexico_selected=*/true);
+}
+
 TEST_F(PersonalizationAppAmbientProviderImplTest, TestAlbumNumbersAreRecorded) {
   FetchSettings();
   ReplyFetchSettingsAndAlbums(/*success=*/true);
@@ -873,6 +992,85 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   settings.topic_source = AmbientModeTopicSource::kGooglePhotos;
   ReplyFetchSettingsAndAlbums(/*success=*/true,
                               /*settings=*/std::move(settings));
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       HandlesTransitionToFromVideoTopicSource) {
+  // Start with the video topic source already active on boot.
+  AmbientUiSettings(AmbientTheme::kVideo, AmbientVideo::kClouds)
+      .WriteToPrefService(*profile()->GetPrefs());
+
+  SetAmbientObserver();
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+
+  EXPECT_EQ(ObservedTopicSource(), AmbientModeTopicSource::kVideo);
+  EXPECT_THAT(ObservedAlbums(),
+              Contains(Pointee(
+                  AllOf(Field(&mojom::AmbientModeAlbum::id, Eq(kCloudsAlbumId)),
+                        Field(&mojom::AmbientModeAlbum::checked, IsTrue())))));
+
+  // Switch to slide show mode and change settings to some custom configuration.
+  SetAnimationTheme(AmbientTheme::kSlideshow);
+  SetTopicSource(AmbientModeTopicSource::kArtGallery);
+  SetAlbumSelected("1", AmbientModeTopicSource::kArtGallery, /*selected=*/true);
+  ReplyUpdateSettings(/*success=*/true);
+
+  // Switch back to video theme. Same video settings should remain.
+  SetAnimationTheme(AmbientTheme::kVideo);
+  EXPECT_EQ(ObservedTopicSource(), AmbientModeTopicSource::kVideo);
+  EXPECT_THAT(ObservedAlbums(),
+              Contains(Pointee(
+                  AllOf(Field(&mojom::AmbientModeAlbum::id, Eq(kCloudsAlbumId)),
+                        Field(&mojom::AmbientModeAlbum::checked, IsTrue())))));
+
+  // Switch back to slide show. The custom setting set previously should stick.
+  SetAnimationTheme(AmbientTheme::kSlideshow);
+  EXPECT_EQ(ObservedTopicSource(), AmbientModeTopicSource::kArtGallery);
+  EXPECT_THAT(ObservedAlbums(),
+              Contains(Pointee(
+                  AllOf(Field(&mojom::AmbientModeAlbum::id, Eq("1")),
+                        Field(&mojom::AmbientModeAlbum::checked, IsTrue())))));
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       HandlesFailedSettingsUpdateForVideo) {
+  EnableUpdateSettingsAutoReply(/*success=*/false);
+
+  SetAmbientObserver();
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+
+  SetAnimationTheme(AmbientTheme::kVideo);
+  // Let retries happen and try to expose any erroneous settings changes.
+  task_environment()->FastForwardBy(base::Minutes(1));
+  // Should not get stuck in a state where video theme is active with a
+  // non-video topic source.
+  ASSERT_EQ(ObservedAnimationTheme(), AmbientTheme::kVideo);
+  EXPECT_EQ(ObservedTopicSource(), AmbientModeTopicSource::kVideo);
+  EXPECT_THAT(ObservedAlbums(),
+              Contains(Pointee(AllOf(
+                  Field(&mojom::AmbientModeAlbum::id, Eq(kNewMexicoAlbumId)),
+                  Field(&mojom::AmbientModeAlbum::checked, IsTrue())))));
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       DismissingBannerHidesItForever) {
+  bool called = false;
+  ambient_provider_remote()->ShouldShowTimeOfDayBanner(
+      base::BindLambdaForTesting([&called](bool should_show_banner) {
+        called = true;
+        EXPECT_TRUE(should_show_banner);
+      }));
+  ambient_provider_remote().FlushForTesting();
+  EXPECT_TRUE(called);
+
+  ambient_provider_remote()->HandleTimeOfDayBannerDismissed();
+
+  ambient_provider_remote()->ShouldShowTimeOfDayBanner(
+      base::BindLambdaForTesting(
+          [](bool should_show_nudge) { EXPECT_FALSE(should_show_nudge); }));
+  ambient_provider_remote().FlushForTesting();
 }
 
 }  // namespace ash::personalization_app

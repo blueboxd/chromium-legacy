@@ -54,12 +54,16 @@ namespace printing {
 namespace {
 
 #if !BUILDFLAG(IS_CHROMEOS)
-constexpr gfx::Size kPhysicalSize = gfx::Size(612, 792);
-constexpr gfx::Rect kPrintableArea = gfx::Rect(0, 0, 612, 792);
+constexpr gfx::Size kLetterPhysicalSize = gfx::Size(612, 792);
+constexpr gfx::Rect kLetterPrintableArea = gfx::Rect(5, 5, 602, 782);
+constexpr gfx::Size kLegalPhysicalSize = gfx::Size(612, 1008);
+constexpr gfx::Rect kLegalPrintableArea = gfx::Rect(5, 5, 602, 998);
 
 // The default margins are set to 1.0cm in //printing/print_settings.cc, which
-// is about 28 printer units. The resulting content size is 556 x 736.
-constexpr gfx::Size kExpectedContentSize = gfx::Size(556, 736);
+// is about 28 printer units. The resulting content size is 556 x 736 for
+// Letter, and similarly is 556 x 952 for Legal.
+constexpr gfx::Size kLetterExpectedContentSize = gfx::Size(556, 736);
+constexpr gfx::Size kLegalExpectedContentSize = gfx::Size(556, 952);
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
 }  // namespace
@@ -151,16 +155,18 @@ class TestPrintJobWorkerOop : public PrintJobWorkerOop {
   TestPrintJobWorkerOop(
       std::unique_ptr<PrintingContext::Delegate> printing_context_delegate,
       std::unique_ptr<PrintingContext> printing_context,
-      PrintBackendServiceManager::ClientId client_id,
+      absl::optional<PrintBackendServiceManager::ClientId> client_id,
+      absl::optional<PrintBackendServiceManager::ContextId> context_id,
       PrintJob* print_job,
-      mojom::PrintTargetType print_target_type,
+      bool print_from_system_dialog,
       bool simulate_spooling_memory_errors,
       TestPrintJobWorkerOop::PrintCallbacks* callbacks)
       : PrintJobWorkerOop(std::move(printing_context_delegate),
                           std::move(printing_context),
                           client_id,
+                          context_id,
                           print_job,
-                          print_target_type,
+                          print_from_system_dialog,
                           simulate_spooling_memory_errors),
         callbacks_(callbacks) {}
   TestPrintJobWorkerOop(const TestPrintJobWorkerOop&) = delete;
@@ -252,8 +258,9 @@ class TestPrinterQueryOop : public PrinterQueryOop {
       PrintJob* print_job) override {
     return std::make_unique<TestPrintJobWorkerOop>(
         std::move(printing_context_delegate_), std::move(printing_context_),
-        *print_document_client_id(), print_job, print_target_type(),
-        simulate_spooling_memory_errors_, callbacks_);
+        print_document_client_id(), context_id(), print_job,
+        print_from_system_dialog(), simulate_spooling_memory_errors_,
+        callbacks_);
   }
 
   bool simulate_spooling_memory_errors_;
@@ -388,15 +395,22 @@ class SystemAccessProcessPrintBrowserTestBase
     print_job->AddObserver(*this);
   }
 
-  void SetUpPrintViewManager(content::WebContents* web_contents) {
+  TestPrintViewManager* SetUpAndReturnPrintViewManager(
+      content::WebContents* web_contents) {
     auto manager = std::make_unique<TestPrintViewManager>(
         web_contents,
         base::BindRepeating(
             &SystemAccessProcessPrintBrowserTestBase::OnCreatedPrintJob,
             base::Unretained(this)));
     manager->AddObserver(*this);
+    TestPrintViewManager* manager_ptr = manager.get();
     web_contents->SetUserData(PrintViewManager::UserDataKey(),
                               std::move(manager));
+    return manager_ptr;
+  }
+
+  void SetUpPrintViewManager(content::WebContents* web_contents) {
+    std::ignore = SetUpAndReturnPrintViewManager(web_contents);
   }
 
   void PrintAfterPreviewIsReadyAndLoaded() {
@@ -422,6 +436,35 @@ class SystemAccessProcessPrintBrowserTestBase
       button.click();)";
     ASSERT_TRUE(content::ExecuteScript(preview_dialog, kScript));
     WaitUntilCallbackReceived();
+  }
+
+  void AdjustMediaAfterPreviewIsReadyAndLoaded() {
+    // First invoke the Print Preview dialog with `StartPrint()`.
+    TestPrintPreviewObserver print_preview_observer(/*wait_for_loaded=*/true);
+    StartPrint(browser()->tab_strip_model()->GetActiveWebContents(),
+               /*print_renderer=*/mojo::NullAssociatedRemote(),
+               /*print_preview_disabled=*/false,
+               /*has_selection=*/false);
+    content::WebContents* preview_dialog =
+        print_preview_observer.WaitUntilPreviewIsReadyAndReturnPreviewDialog();
+    ASSERT_TRUE(preview_dialog);
+
+    set_rendered_page_count(print_preview_observer.rendered_page_count());
+
+    // Initial Print Preview is completely ready.
+    // Reset the observer, and then modify the paper size.  This will initiate
+    // another preview render.
+    // The default paper size is first in the list at index zero, so choose
+    // the second item from the list to cause a change.
+    print_preview_observer.ResetForAnotherPreview();
+    const char kSetPaperSizeScript[] = R"(
+      var element =
+          document.getElementsByTagName('print-preview-app')[0]
+              .$['sidebar']
+              .shadowRoot.querySelector('print-preview-media-size-settings');
+      element.setSetting('mediaSize', element.capability.option[1]);)";
+    ASSERT_TRUE(content::ExecJs(preview_dialog, kSetPaperSizeScript));
+    print_preview_observer.WaitUntilPreviewIsReady();
   }
 
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
@@ -812,12 +855,40 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
       print_view_manager.snooped_params();
   ASSERT_TRUE(snooped_params);
   EXPECT_EQ(kTestPrinterCapabilitiesDpi, snooped_params->params->dpi);
-  EXPECT_EQ(kPhysicalSize, snooped_params->params->page_size);
-  EXPECT_EQ(kPrintableArea, snooped_params->params->printable_area);
-  EXPECT_EQ(kExpectedContentSize, snooped_params->params->content_size);
+  EXPECT_EQ(kLetterPhysicalSize, snooped_params->params->page_size);
+  EXPECT_EQ(kLetterPrintableArea, snooped_params->params->printable_area);
+  EXPECT_EQ(kLetterExpectedContentSize, snooped_params->params->content_size);
 }
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
+
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
+                       UpdatePrintSettingsPrintableArea) {
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  TestPrintViewManager print_view_manager(web_contents);
+  PrintViewManager::SetReceiverImplForTesting(&print_view_manager);
+
+  AdjustMediaAfterPreviewIsReadyAndLoaded();
+
+  EXPECT_EQ(1u, rendered_page_count());
+
+  const mojom::PrintPagesParamsPtr& snooped_params =
+      print_view_manager.snooped_params();
+  ASSERT_TRUE(snooped_params);
+  EXPECT_EQ(kTestPrinterCapabilitiesDpi, snooped_params->params->dpi);
+  EXPECT_EQ(kLegalPhysicalSize, snooped_params->params->page_size);
+  EXPECT_EQ(kLegalPrintableArea, snooped_params->params->printable_area);
+  EXPECT_EQ(kLegalExpectedContentSize, snooped_params->params->content_size);
+}
 
 IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        StartPrinting) {
@@ -1300,14 +1371,6 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
                        SystemPrintFromPrintPreview) {
-  // TODO(crbug.com/1393505)  Enable OOP test coverage once underlying
-  // printing stack updates to support this scenario with out-of-process are
-  // in place.
-  if (GetParam() != PrintBackendFeatureVariation::kInBrowserProcess) {
-    GTEST_SKIP() << "Skipping test for out-of-process, which is known to crash "
-                    "when transitioning to system print from print preview";
-  }
-
   AddPrinter("printer1");
   SetPrinterNameForSubsequentContexts("printer1");
 
@@ -1340,22 +1403,59 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
     SetNumExpectedMessages(/*num=*/4);
 #endif  // BUILDFLAG(IS_WIN)
   } else {
-    // TODO(crbug.com/1393505)  Fill in expected events once the printing stack
-    // updates to support this scenario with out-of-process are in place.
+#if BUILDFLAG(IS_WIN)
+    // Once the transition to system print is initiated, the expected events
+    // are:
+    // 1.  A print job is started.
+    // 2.  Rendering for 1 page of document of content.
+    // 3.  Completes with document done.
+    // 4.  Wait for the one print job to be destroyed, to ensure printing
+    //     finished cleanly before completing the test.
+    SetNumExpectedMessages(/*num=*/4);
+#else
+    // Once the transition to system print is initiated, the expected events
+    // are:
+    // 1.  A print job is started.
+    // 2.  Rendering for 1 page of document of content.
+    // 3.  Completes with document done.
+    // 4.  Wait until all processing for DidPrintDocument is known to have
+    //     completed, to ensure printing finished cleanly before completing the
+    //     test.
+    // 5.  Wait for the one print job to be destroyed, to ensure printing
+    //     finished cleanly before completing the test.
+    SetNumExpectedMessages(/*num=*/5);
+#endif  // BUILDFLAG(IS_WIN)
   }
   SystemPrintFromPreviewOnceReadyAndLoaded(/*wait_for_callback=*/true);
 
-#if !BUILDFLAG(IS_WIN)
   if (GetParam() == PrintBackendFeatureVariation::kInBrowserProcess) {
+#if !BUILDFLAG(IS_WIN)
     EXPECT_TRUE(did_get_settings_with_ui());
     EXPECT_EQ(did_print_document_count(), 1);
-  } else {
-    // TODO(crbug.com/1393505)  Fill in expectations once the printing stack
-    // updates to support this scenario with out-of-process are in place.
-  }
 #endif
-  ASSERT_EQ(*MakeUserModifiedPrintSettings("printer1"),
-            *document_print_settings());
+    EXPECT_EQ(*MakeUserModifiedPrintSettings("printer1"),
+              *document_print_settings());
+  } else {
+    EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
+#if BUILDFLAG(IS_WIN)
+    // TODO(crbug.com/1008222)  Include Windows coverage of
+    // RenderPrintedDocument() once XPS print pipeline is added.
+    EXPECT_EQ(render_printed_page_result(), mojom::ResultCode::kSuccess);
+    EXPECT_EQ(render_printed_page_count(), 1);
+#else
+    EXPECT_EQ(render_printed_document_result(), mojom::ResultCode::kSuccess);
+#endif
+    EXPECT_EQ(document_done_result(), mojom::ResultCode::kSuccess);
+#if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
+    EXPECT_EQ(*MakeUserModifiedPrintSettings("printer1"),
+              *document_print_settings());
+#else
+    // TODO(crbug.com/1414968):  Update the expectation once system print
+    // settings are properly reflected at start of job print.
+    EXPECT_NE(*MakeUserModifiedPrintSettings("printer1"),
+              *document_print_settings());
+#endif
+  }
   EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
@@ -1408,11 +1508,14 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
   EXPECT_EQ(use_default_settings_result(), mojom::ResultCode::kSuccess);
   EXPECT_EQ(ask_user_for_settings_result(), mojom::ResultCode::kSuccess);
-#endif
-  // TODO(crbug.com/1414968)  Correct expectation once system print settings
-  // are properly reflected at start of job print.
-  ASSERT_NE(*MakeUserModifiedPrintSettings("printer1"),
+  EXPECT_EQ(*MakeUserModifiedPrintSettings("printer1"),
             *document_print_settings());
+#else
+  // TODO(crbug.com/1414968):  Update the expectation once system print
+  // settings are properly reflected at start of job print.
+  EXPECT_NE(*MakeUserModifiedPrintSettings("printer1"),
+            *document_print_settings());
+#endif
   EXPECT_EQ(start_printing_result(), mojom::ResultCode::kSuccess);
 #if BUILDFLAG(IS_WIN)
   // TODO(crbug.com/1008222)  Include Windows coverage of
@@ -1595,6 +1698,17 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessServicePrintBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
                        StartBasicPrintConcurrent) {
+  // Linux allows concurrent printing, so regular setup for printing is needed.
+  // It is uninteresting to do a full print in this case, it is better to exit
+  // the print sequence early, but at a known time after when PrintNow() would
+  // fail if concurrent printing isn't allowed.  That can be achieved by just
+  // canceling out from asking for settings.
+#if BUILDFLAG(IS_LINUX)
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+  PrimeForCancelInAskUserForSettings();
+#endif
+
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
@@ -1603,15 +1717,28 @@ IN_PROC_BROWSER_TEST_F(SystemAccessProcessSandboxedServicePrintBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   TestPrintViewManager* print_view_manager =
-      TestPrintViewManager::CreateForWebContents(web_contents);
+      SetUpAndReturnPrintViewManager(web_contents);
 
   // Pretend that a window has started a system print.
   absl::optional<PrintBackendServiceManager::ClientId> client_id =
       PrintBackendServiceManager::GetInstance().RegisterQueryWithUiClient();
   ASSERT_TRUE(client_id.has_value());
 
+#if BUILDFLAG(IS_LINUX)
+  // The expected events for this are:
+  // 1.  Get the default settings.
+  // 2.  Ask the user for settings, which indicates to cancel the print
+  //     request.  No further printing calls are made.
+  // No print job is created because of such an early cancel.
+  SetNumExpectedMessages(/*num=*/2);
+#endif
+
   // Now initiate a system print that would exist concurrently with that.
   StartBasicPrint(web_contents);
+
+#if BUILDFLAG(IS_LINUX)
+  WaitUntilCallbackReceived();
+#endif
 
   const absl::optional<bool>& result = print_view_manager->print_now_result();
   ASSERT_TRUE(result.has_value());

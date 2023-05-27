@@ -5,11 +5,13 @@
 #import "base/ios/ios_util.h"
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
+#import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -98,6 +100,42 @@ void WaitForSettingDoneButton() {
   [SigninEarlGreyUI tapSigninConfirmationDialog];
   // Test the user is signed in.
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+}
+
+// Tests the following scenario:
+//  * Open the advanced link
+//  * Open the encryption view
+//  * Open the create syncpassphrase view
+//  * Interrupt the sign-in by opening a link
+// Result: the link should be opened without a crash.
+// See http://crbug.com/1424870.
+- (void)testInterruptSyncPassphraseEdition {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  // Open the sync passphrase editor through the sign-in flow.
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
+  [[[EarlGrey selectElementWithMatcher:SettingsLink()]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_accessibilityID(
+                               kUnifiedConsentScrollViewIdentifier)]
+      performAction:grey_tap()];
+  [[[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                           kEncryptionAccessibilityIdentifier)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_accessibilityID(
+                               kManageSyncTableViewAccessibilityIdentifier)]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_SYNC_FULL_ENCRYPTION_DATA))]
+      performAction:grey_tap()];
+  // Interrupt the flow by opening an URL.
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL expectedURL = self.testServer->GetURL("/echo");
+  // Result: the URL is opened without a crash.
+  [ChromeEarlGrey
+      simulateExternalAppURLOpeningAndWaitUntilOpenedWithGURL:expectedURL];
 }
 
 // Tests that a user that signs in and gives sync consent can sign

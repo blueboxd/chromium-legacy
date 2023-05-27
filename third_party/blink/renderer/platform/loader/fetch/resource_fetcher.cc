@@ -190,10 +190,14 @@ bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
 
 bool ShouldResourceBeKeptStrongReferenceByType(Resource* resource) {
   // Image, fonts, stylesheets and scripts are the most commonly reused scripts.
-  return (resource->GetType() == ResourceType::kImage ||
-          resource->GetType() == ResourceType::kFont ||
-          resource->GetType() == ResourceType::kCSSStyleSheet ||
-          resource->GetType() == ResourceType::kScript);
+  return (resource->GetType() == ResourceType::kImage &&
+          !base::FeatureList::IsEnabled(
+              features::kMemoryCacheStrongReferenceFilterImages)) ||
+         (resource->GetType() == ResourceType::kScript &&
+          !base::FeatureList::IsEnabled(
+              features::kMemoryCacheStrongReferenceFilterScripts)) ||
+         resource->GetType() == ResourceType::kFont ||
+         resource->GetType() == ResourceType::kCSSStyleSheet;
 }
 
 bool ShouldResourceBeKeptStrongReference(Resource* resource) {
@@ -454,7 +458,9 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
     FetchParameters::SpeculativePreloadType speculative_preload_type,
     RenderBlockingBehavior render_blocking_behavior,
     mojom::blink::ScriptType script_type,
-    bool is_link_preload) {
+    bool is_link_preload,
+    const absl::optional<float> resource_width,
+    const absl::optional<float> resource_height) {
   DCHECK(!resource_request.PriorityHasBeenSet() ||
          type == ResourceType::kImage);
   ResourceLoadPriority priority = TypeToPriority(type);
@@ -530,6 +536,10 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
       priority, type, resource_request, defer_option, render_blocking_behavior,
       is_link_preload);
 
+  priority = AdjustImagePriority(priority, type, resource_request,
+                                 speculative_preload_type, is_link_preload,
+                                 resource_width, resource_height);
+
   if (properties_->IsSubframeDeprioritizationEnabled()) {
     if (properties_->IsOutermostMainFrame()) {
       UMA_HISTOGRAM_ENUMERATION(
@@ -553,6 +563,52 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   }
 
   return priority;
+}
+
+// Boost the priority for the first N not-small images from the preload scanner
+ResourceLoadPriority ResourceFetcher::AdjustImagePriority(
+    ResourceLoadPriority priority_so_far,
+    ResourceType type,
+    const ResourceRequestHead& resource_request,
+    FetchParameters::SpeculativePreloadType speculative_preload_type,
+    bool is_link_preload,
+    const absl::optional<float> resource_width,
+    const absl::optional<float> resource_height) {
+  ResourceLoadPriority new_priority = priority_so_far;
+
+  if (speculative_preload_type ==
+          FetchParameters::SpeculativePreloadType::kInDocument &&
+      type == ResourceType::kImage && !is_link_preload &&
+      boosted_image_count_ < boosted_image_target_) {
+    // If the width or height is available, determine if it is a "small" image
+    // where "small" is any image that covers less than 10,000px^2.
+    // If a size can not be determined then it defaults to "not small"
+    // and gets the relevant priority boost.
+    bool is_small_image = false;
+    if (resource_width && resource_height) {
+      float image_area = resource_width.value() * resource_height.value();
+      if (image_area <= small_image_max_size_) {
+        is_small_image = true;
+      }
+    } else if (resource_width && resource_width == 0) {
+      is_small_image = true;
+    } else if (resource_height && resource_height == 0) {
+      is_small_image = true;
+    }
+    // Count all candidate images
+    if (!is_small_image) {
+      ++boosted_image_count_;
+
+      // only boost the priority if one wasn't explicitly set
+      if (new_priority < ResourceLoadPriority::kMedium &&
+          resource_request.GetFetchPriorityHint() ==
+              mojom::blink::FetchPriorityHint::kAuto) {
+        new_priority = ResourceLoadPriority::kMedium;
+      }
+    }
+  }
+
+  return new_priority;
 }
 
 // This method simply takes in information about a ResourceRequest, and returns
@@ -608,17 +664,25 @@ ResourceFetcher::ResourceFetcher(const ResourceFetcherInit& init)
               : nullptr),
       blob_registry_remote_(init.context_lifecycle_notifier),
       resource_cache_remote_(init.context_lifecycle_notifier),
+      context_lifecycle_notifier_(init.context_lifecycle_notifier),
       auto_load_images_(true),
       images_enabled_(true),
       allow_stale_resources_(false),
       image_fetched_(false) {
   InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
 
+  // Determine the number of images that should get a boosted priority and the
+  // pixel area threshold for determining "small" images.
+  // TODO(http://crbug.com/1431169): Change these to constexpr after the
+  // experiments determine appropriate values.
+  if (base::FeatureList::IsEnabled(features::kBoostImagePriority)) {
+    boosted_image_target_ = features::kBoostImagePriorityImageCount.Get();
+    small_image_max_size_ = features::kBoostImagePriorityImageSize.Get();
+  }
+
   if (IsMainThread()) {
     MainThreadFetchersSet().insert(this);
-    if (MemoryPressureListenerRegistry::IsLowEndDevice()) {
-      MemoryPressureListenerRegistry::Instance().RegisterClient(this);
-    }
+    MemoryPressureListenerRegistry::Instance().RegisterClient(this);
   }
 }
 
@@ -864,11 +928,6 @@ void ResourceFetcher::UpdateMemoryCacheStats(
     RecordResourceHistogram("Preload.", factory.GetType(), policy);
   } else {
     RecordResourceHistogram("", factory.GetType(), policy);
-
-    // Log metrics to evaluate effectiveness of the memory cache if it was
-    // partitioned by the top-frame site.
-    if (same_top_frame_site_resource_cached)
-      RecordResourceHistogram("PerTopFrameSite.", factory.GetType(), policy);
   }
 
   // Aims to count Resource only referenced from MemoryCache (i.e. what would be
@@ -994,7 +1053,8 @@ absl::optional<ResourceRequestBlockedReason> ResourceFetcher::PrepareRequest(
         resource_type, params.GetResourceRequest(),
         ResourcePriority::kNotVisible, params.Defer(),
         params.GetSpeculativePreloadType(), params.GetRenderBlockingBehavior(),
-        params.GetScriptType(), params.IsLinkPreload());
+        params.GetScriptType(), params.IsLinkPreload(),
+        params.GetResourceWidth(), params.GetResourceHeight());
   }
 
   DCHECK_NE(computed_load_priority, ResourceLoadPriority::kUnresolved);
@@ -1108,10 +1168,10 @@ ukm::MojoUkmRecorder* ResourceFetcher::UkmRecorder() {
   if (ukm_recorder_)
     return ukm_recorder_.get();
 
-  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+  mojo::Remote<ukm::mojom::UkmRecorderFactory> factory;
   Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-      recorder.InitWithNewPipeAndPassReceiver());
-  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
+      factory.BindNewPipeAndPassReceiver());
+  ukm_recorder_ = ukm::MojoUkmRecorder::Create(*factory);
 
   return ukm_recorder_.get();
 }
@@ -1365,8 +1425,10 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   return resource;
 }
 
-void ResourceFetcher::RemoveImageStrongReference(Resource* image_resource) {
-  document_resource_strong_refs_.erase(image_resource);
+void ResourceFetcher::RemoveResourceStrongReference(Resource* resource) {
+  if (resource) {
+    document_resource_strong_refs_.erase(resource);
+  }
 }
 
 void ResourceFetcher::ResourceTimingReportTimerFired(TimerBase* timer) {
@@ -1426,7 +1488,9 @@ std::unique_ptr<URLLoader> ResourceFetcher::CreateURLLoader(
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       unfreezable_task_runner_;
-  if (request.GetKeepalive()) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration) &&
+      request.GetKeepalive()) {
     // Set the `task_runner` to the `AgentGroupScheduler`'s task-runner for
     // keepalive fetches because we want it to keep running even after the
     // frame is detached. It's pretty fragile to do that with the
@@ -1966,7 +2030,9 @@ void ResourceFetcher::ClearContext() {
   // first choice font failed to load).
   StopFetching();
 
-  if (!loaders_.empty() || !non_blocking_loaders_.empty()) {
+  if ((!loaders_.empty() || !non_blocking_loaders_.empty()) &&
+      !base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
     // There are some keepalive requests.
     // The use of WrapPersistent creates a reference cycle intentionally,
     // to keep the ResourceFetcher and ResourceLoaders alive until the requests
@@ -2091,36 +2157,37 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
 
   // kRaw might not be subresource, and we do not need them.
   if (resource->GetType() != ResourceType::kRaw) {
-    ++number_of_subresources_loaded_;
+    ++subresource_load_metrics_.number_of_subresources_loaded;
     if (resource->GetResponse().WasFetchedViaServiceWorker()) {
-      ++number_of_subresource_loads_handled_by_service_worker_;
-    }
-
-    if (IsControlledByServiceWorker() ==
-        mojom::blink::ControllerServiceWorkerMode::kControlled) {
-      if (resource->GetResponse().WasFetchedViaServiceWorker()) {
-        base::UmaHistogramEnumeration("ServiceWorker.Subresource.Handled.Type",
-                                      resource->GetType());
-      } else {
-        base::UmaHistogramEnumeration(
-            "ServiceWorker.Subresource.Fallbacked.Type", resource->GetType());
-      }
+      ++subresource_load_metrics_
+            .number_of_subresource_loads_handled_by_service_worker;
     }
   }
 
-  pervasive_payload_requested_ |= pervasive_payload_requested;
+  if (IsControlledByServiceWorker() ==
+      mojom::blink::ControllerServiceWorkerMode::kControlled) {
+    if (resource->GetResponse().WasFetchedViaServiceWorker()) {
+      base::UmaHistogramEnumeration("ServiceWorker.Subresource.Handled.Type2",
+                                    resource->GetType());
+    } else {
+      base::UmaHistogramEnumeration(
+          "ServiceWorker.Subresource.Fallbacked.Type2", resource->GetType());
+    }
+    UpdateServiceWorkerSubresourceMetrics(
+        resource->GetType(),
+        resource->GetResponse().WasFetchedViaServiceWorker());
+  }
+
+  subresource_load_metrics_.pervasive_payload_requested |=
+      pervasive_payload_requested;
   if (bytes_fetched > 0) {
-    total_bytes_fetched_ += bytes_fetched;
+    subresource_load_metrics_.total_bytes_fetched += bytes_fetched;
     if (pervasive_payload_requested) {
-      pervasive_bytes_fetched_ += bytes_fetched;
+      subresource_load_metrics_.pervasive_bytes_fetched += bytes_fetched;
     }
   }
 
-  context_->UpdateSubresourceLoadMetrics(
-      number_of_subresources_loaded_,
-      number_of_subresource_loads_handled_by_service_worker_,
-      pervasive_payload_requested_, pervasive_bytes_fetched_,
-      total_bytes_fetched_);
+  context_->UpdateSubresourceLoadMetrics(subresource_load_metrics_);
 
   DCHECK_LE(inflight_keepalive_bytes, inflight_keepalive_bytes_);
   inflight_keepalive_bytes_ -= inflight_keepalive_bytes;
@@ -2299,7 +2366,8 @@ bool ResourceFetcher::StartLoad(
     }
 
     loader = MakeGarbageCollected<ResourceLoader>(
-        this, scheduler_, resource, std::move(request_body), size);
+        this, scheduler_, resource, context_lifecycle_notifier_,
+        std::move(request_body), size);
     // Preload requests should not block the load event. IsLinkPreload()
     // actually continues to return true for Resources matched from the preload
     // cache that must block the load event, but that is OK because this method
@@ -2348,7 +2416,12 @@ void ResourceFetcher::RemoveResourceLoader(ResourceLoader* loader) {
 }
 
 void ResourceFetcher::StopFetching() {
-  StopFetchingInternal(StopFetchingTarget::kExcludingKeepaliveLoaders);
+  if (base::FeatureList::IsEnabled(
+          blink::features::kKeepAliveInBrowserMigration)) {
+    StopFetchingInternal(StopFetchingTarget::kIncludingKeepaliveLoaders);
+  } else {
+    StopFetchingInternal(StopFetchingTarget::kExcludingKeepaliveLoaders);
+  }
 }
 
 void ResourceFetcher::SetDefersLoading(LoaderFreezeMode mode) {
@@ -2670,16 +2743,12 @@ void ResourceFetcher::CancelWebBundleSubresourceLoadersFor(
 void ResourceFetcher::MaybeSaveResourceToStrongReference(Resource* resource) {
   if (base::FeatureList::IsEnabled(features::kMemoryCacheStrongReference) &&
       ShouldResourceBeKeptStrongReference(resource)) {
-    if (resource->GetType() != ResourceType::kImage ||
-        !base::FeatureList::IsEnabled(
-            features::kMemoryCacheStrongReferenceFilterImages)) {
-      document_resource_strong_refs_.insert(resource);
-      freezable_task_runner_->PostDelayedTask(
-          FROM_HERE,
-          WTF::BindOnce(&ResourceFetcher::RemoveImageStrongReference,
-                        WrapWeakPersistent(this), WrapWeakPersistent(resource)),
-          GetResourceStrongReferenceTimeout(resource));
-    }
+    document_resource_strong_refs_.insert(resource);
+    freezable_task_runner_->PostDelayedTask(
+        FROM_HERE,
+        WTF::BindOnce(&ResourceFetcher::RemoveResourceStrongReference,
+                      WrapWeakPersistent(this), WrapWeakPersistent(resource)),
+        GetResourceStrongReferenceTimeout(resource));
   }
 }
 
@@ -2758,6 +2827,7 @@ void ResourceFetcher::Trace(Visitor* visitor) const {
   visitor->Trace(subresource_web_bundles_);
   visitor->Trace(document_resource_strong_refs_);
   visitor->Trace(resource_cache_remote_);
+  visitor->Trace(context_lifecycle_notifier_);
   MemoryPressureListener::Trace(visitor);
 }
 
@@ -2776,6 +2846,117 @@ void ResourceFetcher::RecordResourceHistogram(
   base::UmaHistogramEnumeration(
       base::StrCat({RESOURCE_HISTOGRAM_PREFIX, prefix, ResourceTypeName(type)}),
       policy);
+}
+
+void ResourceFetcher::UpdateServiceWorkerSubresourceMetrics(
+    ResourceType resource_type,
+    bool handled_by_serviceworker) {
+  if (!subresource_load_metrics_.service_worker_subresource_load_metrics) {
+    subresource_load_metrics_.service_worker_subresource_load_metrics =
+        blink::ServiceWorkerSubresourceLoadMetrics{};
+  }
+  auto& metrics =
+      *subresource_load_metrics_.service_worker_subresource_load_metrics;
+  switch (resource_type) {
+    case ResourceType::kImage:  // 1
+      if (handled_by_serviceworker) {
+        metrics.image_handled |= true;
+      } else {
+        metrics.image_fallback |= true;
+      }
+      break;
+    case ResourceType::kCSSStyleSheet:  // 2
+      if (handled_by_serviceworker) {
+        metrics.css_handled |= true;
+      } else {
+        metrics.css_fallback |= true;
+      }
+      break;
+    case ResourceType::kScript:  // 3
+      if (handled_by_serviceworker) {
+        metrics.script_handled |= true;
+      } else {
+        metrics.script_fallback |= true;
+      }
+      break;
+    case ResourceType::kFont:  // 4
+      if (handled_by_serviceworker) {
+        metrics.font_handled |= true;
+      } else {
+        metrics.font_fallback |= true;
+      }
+      break;
+    case ResourceType::kRaw:  // 5
+      if (handled_by_serviceworker) {
+        metrics.raw_handled |= true;
+      } else {
+        metrics.raw_fallback |= true;
+      }
+      break;
+    case ResourceType::kSVGDocument:  // 6
+      if (handled_by_serviceworker) {
+        metrics.svg_handled |= true;
+      } else {
+        metrics.svg_fallback |= true;
+      }
+      break;
+    case ResourceType::kXSLStyleSheet:  // 7
+      if (handled_by_serviceworker) {
+        metrics.xsl_handled |= true;
+      } else {
+        metrics.xsl_fallback |= true;
+      }
+      break;
+    case ResourceType::kLinkPrefetch:  // 8
+      if (handled_by_serviceworker) {
+        metrics.link_prefetch_handled |= true;
+      } else {
+        metrics.link_prefetch_fallback |= true;
+      }
+      break;
+    case ResourceType::kTextTrack:  // 9
+      if (handled_by_serviceworker) {
+        metrics.text_track_handled |= true;
+      } else {
+        metrics.text_track_fallback |= true;
+      }
+      break;
+    case ResourceType::kAudio:  // 10
+      if (handled_by_serviceworker) {
+        metrics.audio_handled |= true;
+      } else {
+        metrics.audio_fallback |= true;
+      }
+      break;
+    case ResourceType::kVideo:  // 11
+      if (handled_by_serviceworker) {
+        metrics.video_handled |= true;
+      } else {
+        metrics.video_fallback |= true;
+      }
+      break;
+    case ResourceType::kManifest:  // 12
+      if (handled_by_serviceworker) {
+        metrics.manifest_handled |= true;
+      } else {
+        metrics.manifest_fallback |= true;
+      }
+      break;
+    case ResourceType::kSpeculationRules:  // 13
+      if (handled_by_serviceworker) {
+        metrics.speculation_rules_handled |= true;
+      } else {
+        metrics.speculation_rules_fallback |= true;
+      }
+      break;
+    case ResourceType::kMock:  // 14
+      if (handled_by_serviceworker) {
+        metrics.mock_handled |= true;
+      } else {
+        metrics.mock_fallback |= true;
+      }
+      break;
+  }
 }
 
 }  // namespace blink

@@ -22,6 +22,7 @@
 #include "base/types/strong_alias.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "components/browsing_topics/common/common_types.h"
 #include "components/download/public/common/quarantine_connection.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/commit_deferring_condition.h"
 #include "content/public/browser/generated_code_cache_settings.h"
+#include "content/public/browser/interest_group_manager.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/mojo_binder_policy_map.h"
 #include "content/public/browser/storage_partition_config.h"
@@ -211,6 +213,7 @@ class FontAccessDelegate;
 class HidDelegate;
 class IdentityRequestDialogController;
 class LoginDelegate;
+class MDocProvider;
 class MediaObserver;
 class NavigationHandle;
 class NavigationThrottle;
@@ -856,22 +859,28 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin& top_frame_origin,
       const url::Origin& api_origin);
 
+  virtual void OnAuctionComplete(
+      RenderFrameHost* render_frame_host,
+      InterestGroupManager::InterestGroupDataKey data_key);
+
   enum class AttributionReportingOperation {
     kSource,
     kTrigger,
     kReport,
     kSourceVerboseDebugReport,
     kTriggerVerboseDebugReport,
+    kOsSource,
+    kOsTrigger,
     kAny,
   };
 
   // Allows the embedder to control if Attribution Reporting API operations can
   // happen in a given context. Origins must be provided for a given operation
   // as follows:
-  //   - `kSource` must provide a non-null `source_origin` and
+  //   - `kSource` and `kOsSource` must provide a non-null `source_origin` and
   //   `reporting_origin`
-  //   - `kTrigger` must provide a non-null `destination_origin` and
-  //   `reporting_origin`
+  //   - `kTrigger` and `kOsTrigger` must provide a non-null
+  //   `destination_origin` and `reporting_origin`
   //   - `kReport` must provide all non-null origins
   //   - `kAny` may provide all null origins. It checks whether conversion
   //   measurement is allowed anywhere in `browser_context`, returning false if
@@ -883,6 +892,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin* source_origin,
       const url::Origin* destination_origin,
       const url::Origin* reporting_origin);
+
+#if BUILDFLAG(IS_ANDROID)
+  // Allows the embedder to control if web attribution reporting is allowed.
+  // This method must be idempotent.
+  virtual bool IsWebAttributionReportingAllowed();
+#endif
 
   // Allows the embedder to control if Shared Storage API operations can happen
   // in a given context.
@@ -966,13 +981,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // can be cached and the amount of disk space used for caching generated code.
   virtual GeneratedCodeCacheSettings GetGeneratedCodeCacheSettings(
       BrowserContext* context);
-
-  // Allows the embedder to control initialization of the
-  // CertVerifierServiceFactory. May return nullptr to use defaults. This must
-  // return the same parameters for the lifetime of the process. Will be called
-  // when the CertVerifierService is created or re-created.
-  virtual cert_verifier::mojom::CertVerifierServiceParamsPtr
-  GetCertVerifierServiceParams();
 
   // Informs the embedder that a certificate error has occurred. If
   // |overridable| is true and if |strict_enforcement| is false, the user
@@ -2290,6 +2298,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual std::unique_ptr<IdentityRequestDialogController>
   CreateIdentityRequestDialogController();
 
+  // Creates an mdoc provider to fetch mdocs from native apps.
+  virtual std::unique_ptr<MDocProvider> CreateMDocProvider();
+
   // Returns true if JS dialogs from an iframe with different origin from the
   // main frame should be disallowed.
   virtual bool SuppressDifferentOriginSubframeJSDialogs(
@@ -2384,13 +2395,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void OnDisplayInsecureContent(WebContents* web_contents) {}
 
 #if BUILDFLAG(IS_MAC)
-  // Gets the path for an embedder-specific helper child process. The
+  // Gets the suffix for an embedder-specific helper child process. The
   // |child_flags| is a value greater than
-  // ChildProcessHost::CHILD_EMBEDDER_FIRST. The |helpers_path| is the location
-  // of the known //content Mac helpers in the framework bundle.
-  virtual base::FilePath GetChildProcessPath(
-      int child_flags,
-      const base::FilePath& helpers_path);
+  // ChildProcessHost::CHILD_EMBEDDER_FIRST. The embedder-specific helper app
+  // bundle should be placed next to the known //content Mac helpers in the
+  // framework bundle.
+  virtual std::string GetChildProcessSuffix(int child_flags);
 #endif  // BUILDFLAG(IS_MAC)
 
   // Checks if Isolated Web Apps are enabled, e.g. by feature flag

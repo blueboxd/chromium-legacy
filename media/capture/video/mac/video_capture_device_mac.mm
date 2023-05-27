@@ -28,7 +28,7 @@
 @implementation DeviceNameAndTransportType
 
 - (instancetype)initWithName:(NSString*)deviceName
-               transportType:(int32_t)transportType {
+               transportType:(media::VideoCaptureTransportType)transportType {
   if (self = [super init]) {
     _deviceName.reset([deviceName copy]);
     _transportType = transportType;
@@ -40,7 +40,7 @@
   return _deviceName;
 }
 
-- (int32_t)transportType {
+- (media::VideoCaptureTransportType)deviceTransportType {
   return _transportType;
 }
 
@@ -174,7 +174,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     return;
 
   PowerLineFrequency frequency = GetPowerLineFrequency(params);
-  if (frequency != PowerLineFrequency::FREQUENCY_DEFAULT) {
+  if (frequency != PowerLineFrequency::kDefault) {
     // Try setting the power line frequency removal (anti-flicker). The built-in
     // cameras are normally suspended so the configuration must happen right
     // before starting capture and during configuration.
@@ -184,8 +184,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     if (device_model.length() > 2 * kVidPidSize) {
       if (UvcControl uvc(device_model, uvc::kVcProcessingUnit); uvc.Good()) {
         int power_line_flag_value =
-            (frequency == PowerLineFrequency::FREQUENCY_50HZ) ? uvc::k50Hz
-                                                              : uvc::k60Hz;
+            (frequency == PowerLineFrequency::k50Hz) ? uvc::k50Hz : uvc::k60Hz;
         uvc.SetControlCurrent<uint8_t>(uvc::kPuPowerLineFrequencyControl,
                                        power_line_flag_value,
                                        "power line frequency");
@@ -232,6 +231,8 @@ void VideoCaptureDeviceMac::TakePhoto(TakePhotoCallback callback) {
 }
 
 void VideoCaptureDeviceMac::GetPhotoState(GetPhotoStateCallback callback) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+               "VideoCaptureDeviceMac::GetPhotoState");
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   auto photo_state = mojo::CreateEmptyPhotoState();
@@ -303,7 +304,7 @@ void VideoCaptureDeviceMac::GetPhotoState(GetPhotoStateCallback callback) {
     uvc.MaybeUpdateControlRange<uint16_t>(uvc::kPuContrastAbsoluteControl,
                                           photo_state->contrast.get(),
                                           "contrast");
-    uvc.MaybeUpdateControlRange<uint16_t>(uvc::kPuBrightnessAbsoluteControl,
+    uvc.MaybeUpdateControlRange<uint16_t>(uvc::kPuSaturationAbsoluteControl,
                                           photo_state->saturation.get(),
                                           "saturation");
     uvc.MaybeUpdateControlRange<uint16_t>(uvc::kPuSharpnessAbsoluteControl,
@@ -345,6 +346,8 @@ void VideoCaptureDeviceMac::GetPhotoState(GetPhotoStateCallback callback) {
 
 void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
                                             SetPhotoOptionsCallback callback) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+               "VideoCaptureDeviceMac::SetPhotoOptions");
   DCHECK(task_runner_->BelongsToCurrentThread());
   // Drop |callback| and return if there are any unsupported |settings|.
   // TODO(mcasas): centralise checks elsewhere, https://crbug.com/724285.
@@ -598,6 +601,8 @@ std::string VideoCaptureDeviceMac::GetDeviceModelId(
 // static
 VideoCaptureControlSupport VideoCaptureDeviceMac::GetControlSupport(
     const std::string& device_model) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+               "VideoCaptureDeviceMac::GetControlSupport");
   VideoCaptureControlSupport control_support;
 
   UvcControl uvc(device_model, uvc::kVcInputTerminal);

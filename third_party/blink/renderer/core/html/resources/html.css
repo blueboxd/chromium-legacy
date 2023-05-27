@@ -408,7 +408,10 @@ button {
 }
 
 /* Form controls don't go vertical. */
-input, textarea, select, button {
+input:not([type="range"]):not([type="color"]), textarea, select {
+    writing-mode: horizontal-tb !important;
+}
+button:not(::-internal-selectmenu-button) {
     writing-mode: horizontal-tb !important;
 }
 
@@ -448,6 +451,10 @@ input {
     -webkit-rtl-ordering: logical;
     cursor: text;
     background-color: Field;
+}
+
+input:not([type="file" i], [type="image" i]) {
+    -internal-align-content-block: center;
 }
 
 input[type="search" i] {
@@ -666,7 +673,7 @@ input[type="file" i]::-webkit-file-upload-button {
     -webkit-user-modify: read-only !important;
     white-space: nowrap;
     margin: 0;
-    margin-inline-end: 4px;
+    margin-inline-end: 4px; /* See FileUploadControlIntrinsicInlineSize() */
     font-size: inherit;
 }
 
@@ -815,8 +822,8 @@ input[type="radio" i] {
 
 input[type="color" i] {
     appearance: auto;
-    width: 50px;
-    height: 27px;
+    inline-size: 50px;
+      block-size: 27px;
     /* Same as native_theme_base. */
     border: 1px solid ButtonBorder;
     padding: 1px 2px;
@@ -847,8 +854,8 @@ input[type="color" i]::-webkit-color-swatch {
 
 input[type="color" i][list] {
     appearance: auto;
-    width: 94px;
-    height: 27px
+    inline-size: 94px;
+      block-size: 27px
 }
 
 input[type="color" i][list]::-webkit-color-swatch-wrapper {
@@ -1411,7 +1418,7 @@ dialog:modal {
     /* https://github.com/w3c/csswg-drafts/issues/6939#issuecomment-1016679588 */
     user-select: text;
     visibility: visible;
-    top-layer: browser !important;
+    overlay: auto !important;
 }
 
 /* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the
@@ -1421,7 +1428,7 @@ dialog::backdrop {
     inset: 0;
     /* https://html.spec.whatwg.org/multipage/rendering.html#flow-content-3 */
     background: rgba(0,0,0,0.1);
-    top-layer: browser !important;
+    overlay: auto !important;
 }
 
 slot {

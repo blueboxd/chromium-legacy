@@ -29,6 +29,7 @@
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
+#include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/geometry/size.h"
@@ -188,7 +189,7 @@ class ImageTransferCacheEntryTest
     DCHECK(!allocated_texture.hasMipMaps());
     DCHECK(allocated_texture_info.fTarget == GL_TEXTURE_2D);
     *released = false;
-    return SkImage::MakeFromTexture(
+    return SkImages::BorrowTextureFrom(
         gr_context, allocated_texture, kTopLeft_GrSurfaceOrigin,
         texture_format == GL_RG8_EXT ? kR8G8_unorm_SkColorType
                                      : kAlpha_8_SkColorType,
@@ -236,9 +237,10 @@ TEST_P(ImageTransferCacheEntryTest, MAYBE_Deserialize) {
   ASSERT_TRUE(yuva_pixmaps.plane(0).erase(SkColors::kBlack, &top_color_rect));
 
   auto client_entry(std::make_unique<ClientImageTransferCacheEntry>(
-      yuva_pixmaps.planes().data(), yuva_info.planeConfig(),
-      yuva_info.subsampling(), nullptr /* decoded color space*/,
-      yuva_info.yuvColorSpace(), true /* needs_mips */, absl::nullopt));
+      ClientImageTransferCacheEntry::Image(yuva_pixmaps.planes().data(),
+                                           yuva_info,
+                                           nullptr /* decoded color space*/),
+      true /* needs_mips */, absl::nullopt));
   uint32_t size = client_entry->SerializedSize();
   std::vector<uint8_t> data(size);
   ASSERT_TRUE(client_entry->Serialize(
@@ -388,8 +390,10 @@ TEST(ImageTransferCacheEntryTestNoYUV, CPUImageWithMips) {
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(gr_context->maxTextureSize() + 1, 10));
-  ClientImageTransferCacheEntry client_entry(&bitmap.pixmap(), true,
-                                             absl::nullopt);
+
+  ClientImageTransferCacheEntry client_entry(
+      ClientImageTransferCacheEntry::Image(&bitmap.pixmap()), true,
+      absl::nullopt);
   std::vector<uint8_t> storage(client_entry.SerializedSize());
   client_entry.Serialize(base::make_span(storage.data(), storage.size()));
 
@@ -415,8 +419,9 @@ TEST(ImageTransferCacheEntryTestNoYUV, CPUImageAddMipsLater) {
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(gr_context->maxTextureSize() + 1, 10));
-  ClientImageTransferCacheEntry client_entry(&bitmap.pixmap(), false,
-                                             absl::nullopt);
+  ClientImageTransferCacheEntry client_entry(
+      ClientImageTransferCacheEntry::Image(&bitmap.pixmap()), false,
+      absl::nullopt);
   std::vector<uint8_t> storage(client_entry.SerializedSize());
   client_entry.Serialize(base::make_span(storage.data(), storage.size()));
 
@@ -433,6 +438,127 @@ TEST(ImageTransferCacheEntryTestNoYUV, CPUImageAddMipsLater) {
   EXPECT_FALSE(service_entry.image()->isTextureBacked());
   EXPECT_TRUE(service_entry.has_mips());
   EXPECT_EQ(pre_mip_image, service_entry.image());
+}
+
+TEST(ImageTransferCacheEntryTestHDR, Gainmap) {
+  // Using an invalid context within the narrow scope of serializing and
+  // deserializing will test the path using software rendering.
+  GrDirectContext* gr_context = nullptr;
+
+  // Initialize the SDR image pixels.
+  constexpr int kSdrWidth = 2;
+  constexpr int kSdrHeight = 4;
+  SkBitmap sdr_bitmap;
+  {
+    constexpr float k10 = 1.0f;
+    constexpr float k05 = 0.735357f;
+    SkColor4f pixels[kSdrHeight][kSdrWidth] = {
+        {{k10, k10, k10, k10}, {k10, k10, k05, k10}},
+        {{k10, k05, k10, k10}, {k10, k05, k05, k10}},
+        {{k05, k10, k10, k10}, {k05, k10, k05, k10}},
+        {{k05, k05, k10, k10}, {k05, k05, k05, k10}},
+    };
+    SkPixmap pixmap(
+        SkImageInfo::Make(kSdrWidth, kSdrHeight, kRGBA_F32_SkColorType,
+                          kPremul_SkAlphaType),
+        pixels, kSdrWidth * sizeof(SkColor4f));
+
+    SkImageInfo info = SkImageInfo::Make(
+        kSdrWidth, kSdrHeight, kRGBA_8888_SkColorType, kPremul_SkAlphaType);
+    sdr_bitmap.allocPixels(info, info.minRowBytes());
+    EXPECT_TRUE(pixmap.readPixels(sdr_bitmap.pixmap(), 0, 0));
+  }
+
+  // Initialize the gainmap pixels.
+  constexpr int kGainmapWidth = 1;
+  constexpr int kGainmapHeight = 4;
+  SkBitmap gainmap_bitmap;
+  {
+    constexpr float k10 = 1.0f;
+    constexpr float k00 = 0.0f;
+    SkColor4f pixels[kGainmapHeight][kGainmapWidth] = {
+        {{k10, k00, k00, 1.f}},
+        {{k10, k00, k00, 1.f}},
+        {{k00, k10, k10, 1.f}},
+        {{k00, k10, k10, 1.f}},
+    };
+    SkPixmap pixmap(
+        SkImageInfo::Make(kGainmapWidth, kGainmapHeight, kRGBA_F32_SkColorType,
+                          kPremul_SkAlphaType),
+        pixels, kGainmapWidth * sizeof(SkColor4f));
+
+    SkImageInfo info =
+        SkImageInfo::Make(kGainmapWidth, kGainmapHeight, kRGBA_8888_SkColorType,
+                          kPremul_SkAlphaType);
+    gainmap_bitmap.allocPixels(info, info.minRowBytes());
+    EXPECT_TRUE(pixmap.readPixels(gainmap_bitmap.pixmap(), 0, 0));
+  }
+
+  // Initialize the gainmap rendering parameters.
+  SkGainmapInfo gainmap_info;
+  {
+    constexpr float kHdrRatioMax = 2.f;
+    gainmap_info.fDisplayRatioSdr = 1.f;
+    gainmap_info.fDisplayRatioHdr = kHdrRatioMax;
+    gainmap_info.fEpsilonSdr = {0.f, 0.f, 0.f, 1.f};
+    gainmap_info.fEpsilonHdr = {0.f, 0.f, 0.f, 1.f};
+    gainmap_info.fGainmapRatioMin = {1.f, 1.f, 1.f, 1.f};
+    gainmap_info.fGainmapRatioMax = {kHdrRatioMax, kHdrRatioMax, kHdrRatioMax,
+                                     1.f};
+  }
+
+  // Read the resulting image back into a bitmap.
+  SkBitmap result;
+  {
+    TargetColorParams target_color_params;
+    target_color_params.hdr_max_luminance_relative = 2.f;
+
+    ClientImageTransferCacheEntry client_entry(
+        ClientImageTransferCacheEntry::Image(&sdr_bitmap.pixmap()),
+        ClientImageTransferCacheEntry::Image(&gainmap_bitmap.pixmap()),
+        gainmap_info, false, target_color_params);
+
+    std::vector<uint8_t> storage(client_entry.SerializedSize());
+    client_entry.Serialize(base::make_span(storage.data(), storage.size()));
+
+    ServiceImageTransferCacheEntry service_entry;
+    service_entry.Deserialize(gr_context,
+                              base::make_span(storage.data(), storage.size()));
+    ASSERT_TRUE(service_entry.image());
+    auto image = service_entry.image();
+
+    SkImageInfo info =
+        SkImageInfo::Make(kSdrWidth, kSdrHeight, kRGBA_F32_SkColorType,
+                          kPremul_SkAlphaType, SkColorSpace::MakeSRGBLinear());
+    result.allocPixels(info, info.minRowBytes());
+    EXPECT_TRUE(image->readPixels(gr_context, result.pixmap(), 0, 0));
+  }
+
+  // Ensure that it matches the expected result.
+  {
+    constexpr float k20 = 2.0f;
+    constexpr float k10 = 1.0f;
+    constexpr float k05 = 0.5f;
+    SkColor4f pixels[4][2] = {
+        {{k20, k10, k10, 1.f}, {k20, k10, k05, 1.f}},
+        {{k20, k05, k10, 1.f}, {k20, k05, k05, 1.f}},
+        {{k05, k20, k20, 1.f}, {k05, k20, k10, 1.f}},
+        {{k05, k10, k20, 1.f}, {k05, k10, k10, 1.f}},
+    };
+    auto approx_equal = [](const SkColor4f& a, const SkColor4f& b) {
+      constexpr float kEpsilon = 1 / 64.f;
+      return std::abs(a.fR - b.fR) < kEpsilon &&
+             std::abs(a.fG - b.fG) < kEpsilon &&
+             std::abs(a.fB - b.fB) < kEpsilon &&
+             std::abs(a.fA - b.fA) < kEpsilon;
+    };
+    for (int y = 0; y < 4; ++y) {
+      for (int x = 0; x < 2; ++x) {
+        auto color = result.getColor4f(x, y);
+        EXPECT_TRUE(approx_equal(color, pixels[y][x]));
+      }
+    }
+  }
 }
 
 }  // namespace

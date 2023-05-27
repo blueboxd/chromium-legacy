@@ -42,6 +42,7 @@
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/policy/management_utils.h"
 #include "chrome/browser/policy/status_provider/ash_lacros_policy_stack_bridge.h"
 #include "chrome/browser/policy/status_provider/user_policy_status_provider_lacros.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -53,6 +54,10 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/policy/value_provider/extension_policies_value_provider.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#include "components/policy/core/common/cloud/profile_cloud_policy_manager.h"
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 namespace {
 void AppendPolicyIdsToList(const base::Value::Dict& policy_values,
@@ -99,11 +104,16 @@ std::unique_ptr<policy::PolicyStatusProvider> GetUserPolicyStatusProvider(
         active_directory_policy, profile);
   }
 #else  // BUILDFLAG(IS_CHROMEOS_ASH)
-  policy::UserCloudPolicyManager* user_cloud_policy_manager =
+  policy::CloudPolicyManager* cloud_policy_manager =
       profile->GetUserCloudPolicyManager();
-  if (user_cloud_policy_manager) {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+  if (!cloud_policy_manager) {
+    cloud_policy_manager = profile->GetProfileCloudPolicyManager();
+  }
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAS(IS_LINUX)
+  if (cloud_policy_manager) {
     return std::make_unique<UserCloudPolicyStatusProvider>(
-        user_cloud_policy_manager->core(), profile);
+        cloud_policy_manager->core(), profile);
   } else {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     if (profile->IsMainProfile()) {
@@ -200,8 +210,10 @@ PolicyValueAndStatusAggregator::CreateDefaultPolicyValueAndStatusAggregator(
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // We will use AshLacrosPolicyStackBridge to retrieve device policies in
   // Lacros.
-  aggregator->AddPolicyStatusAndValueProvider(
-      kDeviceStatusKey, std::make_unique<AshLacrosPolicyStackBridge>());
+  if (policy::IsDeviceEnterpriseManaged()) {
+    aggregator->AddPolicyStatusAndValueProvider(
+        kDeviceStatusKey, std::make_unique<AshLacrosPolicyStackBridge>());
+  }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Machine policies.

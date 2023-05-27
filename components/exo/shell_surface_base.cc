@@ -24,6 +24,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -42,11 +43,13 @@
 #include "components/exo/surface.h"
 #include "components/exo/window_properties.h"
 #include "components/exo/wm_helper.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_occlusion_tracker.h"
 #include "ui/aura/window_targeter.h"
@@ -185,7 +188,7 @@ class CustomFrameView : public ash::NonClientFrameViewAsh {
   }
 
  private:
-  ShellSurfaceBase* const shell_surface_;
+  const raw_ptr<ShellSurfaceBase, ExperimentalAsh> shell_surface_;
 };
 
 class CustomWindowTargeter : public aura::WindowTargeter {
@@ -262,8 +265,8 @@ class CustomWindowTargeter : public aura::WindowTargeter {
     return false;
   }
 
-  ShellSurfaceBase* shell_surface_;
-  views::Widget* const widget_;
+  raw_ptr<ShellSurfaceBase, ExperimentalAsh> shell_surface_;
+  const raw_ptr<views::Widget, ExperimentalAsh> widget_;
 };
 
 void CloseAllShellSurfaceTransientChildren(aura::Window* window) {
@@ -390,6 +393,12 @@ void ShellSurfaceBase::SetTitle(const std::u16string& title) {
   TRACE_EVENT1("exo", "ShellSurfaceBase::SetTitle", "title",
                base::UTF16ToUTF8(title));
   WidgetDelegate::SetTitle(title);
+
+  aura::Env::GetInstance()
+      ->context_factory()
+      ->GetHostFrameSinkManager()
+      ->SetFrameSinkDebugLabel(host_window()->GetFrameSinkId(),
+                               base::UTF16ToUTF8(title));
 }
 
 void ShellSurfaceBase::SetIcon(const gfx::ImageSkia& icon) {
@@ -821,7 +830,7 @@ void ShellSurfaceBase::RebindRootSurface(Surface* root_surface,
                               /*old_value(unused)=*/0);
     }
     if (window->HasFocus())
-      host_window()->Focus();
+      root_surface->window()->Focus();
   }
 
   SetCanMinimize(can_minimize_);
@@ -1233,6 +1242,7 @@ void ShellSurfaceBase::OnWidgetClosing(views::Widget* widget) {
   //    problematic with X11 as all of xwayland shares the same client.
   //  - Transitively kill all the wl_resources rooted at this window's
   //    wl_surface, which is not really supported in wayland.
+  surface_destroyed_callback_.Reset();
   OnSurfaceDestroying(root_surface());
 }
 
@@ -1277,17 +1287,23 @@ views::FocusTraversable* ShellSurfaceBase::GetFocusTraversable() {
 // aura::WindowObserver overrides:
 
 void ShellSurfaceBase::OnWindowDestroying(aura::Window* window) {
+  surface_destroyed_callback_.Reset();
+  if (!close_callback_.is_null()) {
+    close_callback_.Run();
+  }
+
   if (window == parent_)
     SetParentInternal(nullptr);
   window->RemoveObserver(this);
-  if (widget_ && window == widget_->GetNativeWindow() && root_surface())
+  if (widget_ && window == widget_->GetNativeWindow() && root_surface()) {
     root_surface()->ThrottleFrameRate(false);
+  }
 }
 
 void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
                                                const void* key,
                                                intptr_t old_value) {
-  if (widget_ && window == widget_->GetNativeWindow()) {
+  if (IsShellSurfaceWindow(window)) {
     if (key == aura::client::kSkipImeProcessing) {
       SetSkipImeProcessingToDescendentSurfaces(
           window, window->GetProperty(aura::client::kSkipImeProcessing));
@@ -1304,11 +1320,17 @@ void ShellSurfaceBase::OnWindowPropertyChanged(aura::Window* window,
 }
 
 void ShellSurfaceBase::OnWindowAddedToRootWindow(aura::Window* window) {
+  if (!IsShellSurfaceWindow(window)) {
+    return;
+  }
   UpdateDisplayOnTree();
 }
 
 void ShellSurfaceBase::OnWindowParentChanged(aura::Window* window,
                                              aura::Window* parent) {
+  if (!IsShellSurfaceWindow(window)) {
+    return;
+  }
   root_surface()->OnDeskChanged(GetWindowDeskStateChanged(window));
 }
 
@@ -1570,6 +1592,10 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   root_surface()->OnFullscreenStateChanged(widget_->IsFullscreen());
 
   WMHelper::GetInstance()->NotifyExoWindowCreated(widget_->GetNativeWindow());
+}
+
+bool ShellSurfaceBase::IsShellSurfaceWindow(const aura::Window* window) const {
+  return widget_ && window == widget_->GetNativeWindow();
 }
 
 ShellSurfaceBase::OverlayParams::OverlayParams(

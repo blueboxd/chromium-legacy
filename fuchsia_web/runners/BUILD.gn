@@ -23,14 +23,11 @@ source_set("common") {
   ]
   deps = [
     "//base",
-    "//fuchsia_web/runners/common/modular",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//ui/gfx/geometry",
     "//url",
   ]
   public_deps = [
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.modular:fuchsia.modular_hlcpp",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys:fuchsia.sys_hlcpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.app:fuchsia.ui.app_hlcpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web:fuchsia.web_hlcpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
@@ -51,8 +48,6 @@ source_set("cast_runner_core") {
     "cast/cast_runner.h",
     "cast/cast_runner_switches.cc",
     "cast/cast_runner_switches.h",
-    "cast/cast_runner_v1.cc",
-    "cast/cast_runner_v1.h",
     "cast/cast_streaming.cc",
     "cast/cast_streaming.h",
     "cast/named_message_port_connector_fuchsia.cc",
@@ -70,13 +65,15 @@ source_set("cast_runner_core") {
     "//components/fuchsia_component_support",
     "//components/fuchsia_component_support:dynamic_component_host",
     "//fuchsia_web/cast_streaming",
-    "//fuchsia_web/runners/common/modular",
     "//fuchsia_web/webinstance_host",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.decl:fuchsia.component.decl_hlcpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component:fuchsia.component_cpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.decl:fuchsia.component.decl_cpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.diagnostics:fuchsia.diagnostics_hlcpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.legacymetrics:fuchsia.legacymetrics_hlcpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media.sessions2:fuchsia.media.sessions2_cpp_hlcpp_conversion",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem:fuchsia.mem_hlcpp",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.modular:fuchsia.modular_hlcpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.app:fuchsia.ui.app_cpp_wire",
+    "//third_party/fuchsia-sdk/sdk/pkg/component_incoming_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//url",
@@ -84,8 +81,9 @@ source_set("cast_runner_core") {
 
   public_deps = [
     ":common",
+    "./cast/fidl:fidl_cpp",
     "./cast/fidl:fidl_hlcpp",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.resolution:fuchsia.component.resolution_hlcpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.resolution:fuchsia.component.resolution_cpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.runner:fuchsia.component.runner_hlcpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web:fuchsia.web_hlcpp",
   ]
@@ -98,6 +96,7 @@ executable("cast_runner_exe") {
     "//content/public/common",
     "//media",
     "//third_party/blink/common",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.modular:*",
   ]
 
   sources = [ "cast/main.cc" ]
@@ -142,11 +141,6 @@ if (!is_component_build) {
   }
 }
 
-fuchsia_component("cast_runner_component_v1") {
-  manifest = "cast/cast_runner.cmx"
-  data_deps = [ ":cast_runner_exe" ]
-}
-
 fuchsia_component("cast_runner_component") {
   manifest = "cast/cast_runner.cml"
   data_deps = [ ":cast_runner_exe" ]
@@ -154,10 +148,7 @@ fuchsia_component("cast_runner_component") {
 
 fuchsia_package("cast_runner_pkg") {
   package_name = "cast_runner"
-  deps = [
-    ":cast_runner_component",
-    ":cast_runner_component_v1",
-  ]
+  deps = [ ":cast_runner_component" ]
   excluded_files = _web_instance_host_deps_files_to_exclude
 }
 
@@ -171,34 +162,15 @@ fuchsia_package_installer("cast_runner") {
       ] ]
 }
 
-source_set("cast_runner_test_core") {
-  visibility += [ "//fuchsia_web/runners/cast/test:*" ]
-  testonly = true
-  sources = [
-    "cast/fake_api_bindings.cc",
-    "cast/fake_api_bindings.h",
-    "cast/fake_application_config_manager.cc",
-    "cast/fake_application_config_manager.h",
-  ]
-  deps = [ ":cast_runner_core" ]
-  public_deps = [
-    "./cast/fidl:fidl_hlcpp",
-    "//base",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys:fuchsia.sys_hlcpp",
-    "//url",
-  ]
-}
-
 test("cast_runner_unittests") {
   sources = [ "cast/application_controller_impl_unittest.cc" ]
   deps = [
     ":cast_runner_core",
-    ":cast_runner_test_core",
-    "common/modular:unit_tests",
     "//base",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//fuchsia_web/common/test:test_support",
+    "//fuchsia_web/runners/cast/test:test_support",
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -208,31 +180,23 @@ test("cast_runner_unittests") {
 }
 
 test("cast_runner_integration_tests") {
-  sources = [
-    "cast/cast_runner_cfv1_shim_integration_test.cc",
-    "cast/cast_runner_integration_test.cc",
-    "cast/cast_runner_integration_test_base.cc",
-    "cast/cast_runner_integration_test_base.h",
-    "common/modular/fake_component_context.cc",
-    "common/modular/fake_component_context.h",
-  ]
+  sources = [ "cast/cast_runner_integration_test.cc" ]
   data = [ "cast/testdata" ]
   deps = [
     ":cast_runner_core",
-    ":cast_runner_test_core",
     "//base/test:test_support",
     "//build:chromecast_buildflags",
     "//components/cast/message_port",
+    "//components/fuchsia_component_support:dynamic_component_host",
     "//fuchsia_web/common",
     "//fuchsia_web/common/test:run_all_integration_tests",
     "//fuchsia_web/common/test:test_support",
     "//fuchsia_web/runners/cast/test:integration",
-    "//fuchsia_web/runners/common/modular",
+    "//fuchsia_web/runners/cast/test:test_support",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3:fuchsia.camera3_hlcpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.legacymetrics:fuchsia.legacymetrics_hlcpp",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.modular:fuchsia.modular_hlcpp",
     "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
   ]
@@ -240,20 +204,12 @@ test("cast_runner_integration_tests") {
   # Include cast_runner.cm as a component in the test's package.
   fuchsia_package_deps = [ ":cast_runner_component" ]
 
-  # Deploy the cast_runner and web_engine packages. cast_runner is needed only
-  # for the v1 shim integration tests.
-  package_deps = [
-    [
-      ":cast_runner_pkg",
-      "cast_runner",
-    ],
-    [
-      "//fuchsia_web/webengine:web_engine",
-      "web_engine",
-    ],
-  ]
+  # Deploy the web_engine packages
+  package_deps = [ [
+        "//fuchsia_web/webengine:web_engine",
+        "web_engine",
+      ] ]
   additional_manifest_fragments = [
-    "//build/config/fuchsia/test/cfv1_launcher.shard.test-cml",
     "//build/config/fuchsia/test/fonts.shard.test-cml",
     "//build/config/fuchsia/test/network.shard.test-cml",
     "//fuchsia_web/runners/cast/cast_runner_integration_test.shard.test-cml",
@@ -271,13 +227,13 @@ test("cast_runner_browsertests") {
   data = [ "cast/testdata" ]
   deps = [
     ":cast_runner_core",
-    ":cast_runner_test_core",
     "//base/test:test_support",
     "//components/cast/message_port",
     "//components/cast/message_port:test_message_port_receiver",
     "//content/public/browser",
     "//content/test:test_support",
     "//fuchsia_web/common/test:test_support",
+    "//fuchsia_web/runners/cast/test:test_support",
     "//fuchsia_web/webengine:browsertest_core",
     "//testing/gmock",
     "//testing/gtest",

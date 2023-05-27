@@ -110,7 +110,7 @@ PaintImage PaintImage::CreateFromBitmap(SkBitmap bitmap) {
 
   return PaintImageBuilder::WithDefault()
       .set_id(PaintImage::GetNextId())
-      .set_image(SkImage::MakeFromBitmap(bitmap),
+      .set_image(SkImages::RasterFromBitmap(bitmap),
                  PaintImage::GetNextContentId())
       .TakePaintImage();
 }
@@ -148,19 +148,24 @@ bool PaintImage::readPixels(const SkImageInfo& dst_info,
   return false;
 }
 
-SkImageInfo PaintImage::GetSkImageInfo() const {
-  if (paint_image_generator_) {
-    return paint_image_generator_->GetSkImageInfo();
-  } else if (texture_backing_) {
-    return texture_backing_->GetSkImageInfo();
-  } else if (cached_sk_image_) {
-    return cached_sk_image_->imageInfo();
-  } else if (paint_worklet_input_) {
-    auto size = paint_worklet_input_->GetSize();
-    return SkImageInfo::MakeUnknown(base::ClampCeil(size.width()),
-                                    base::ClampCeil(size.height()));
-  } else {
-    return SkImageInfo::MakeUnknown();
+SkImageInfo PaintImage::GetSkImageInfo(AuxImage aux_image) const {
+  switch (aux_image) {
+    case AuxImage::kDefault:
+      if (paint_image_generator_) {
+        return paint_image_generator_->GetSkImageInfo();
+      } else if (texture_backing_) {
+        return texture_backing_->GetSkImageInfo();
+      } else if (cached_sk_image_) {
+        return cached_sk_image_->imageInfo();
+      } else if (paint_worklet_input_) {
+        auto size = paint_worklet_input_->GetSize();
+        return SkImageInfo::MakeUnknown(base::ClampCeil(size.width()),
+                                        base::ClampCeil(size.height()));
+      }
+      return SkImageInfo::MakeUnknown();
+    case AuxImage::kGainmap:
+      DCHECK(gainmap_paint_image_generator_);
+      return gainmap_paint_image_generator_->GetSkImageInfo();
   }
 }
 
@@ -181,56 +186,71 @@ void PaintImage::CreateSkImage() {
   if (sk_image_) {
     cached_sk_image_ = sk_image_;
   } else if (paint_record_) {
-    cached_sk_image_ = SkImage::MakeFromPicture(
+    cached_sk_image_ = SkImages::DeferredFromPicture(
         paint_record_->ToSkPicture(gfx::RectToSkRect(paint_record_rect_)),
         SkISize::Make(paint_record_rect_.width(), paint_record_rect_.height()),
-        nullptr, nullptr, SkImage::BitDepth::kU8, SkColorSpace::MakeSRGB());
+        nullptr, nullptr, SkImages::BitDepth::kU8, SkColorSpace::MakeSRGB());
   } else if (paint_image_generator_) {
-    cached_sk_image_ =
-        SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
-            paint_image_generator_, kDefaultFrameIndex,
-            kDefaultGeneratorClientId));
+    cached_sk_image_ = SkImages::DeferredFromGenerator(
+        std::make_unique<SkiaPaintImageGenerator>(paint_image_generator_,
+                                                  kDefaultFrameIndex,
+                                                  kDefaultGeneratorClientId));
   } else if (texture_backing_) {
     cached_sk_image_ = texture_backing_->GetAcceleratedSkImage();
   }
 }
 
-SkISize PaintImage::GetSupportedDecodeSize(
-    const SkISize& requested_size) const {
-  if (paint_image_generator_)
-    return paint_image_generator_->GetSupportedDecodeSize(requested_size);
-  return SkISize::Make(width(), height());
+SkISize PaintImage::GetSupportedDecodeSize(const SkISize& requested_size,
+                                           AuxImage aux_image) const {
+  switch (aux_image) {
+    case AuxImage::kDefault:
+      if (paint_image_generator_) {
+        return paint_image_generator_->GetSupportedDecodeSize(requested_size);
+      }
+      return SkISize::Make(width(), height());
+    case AuxImage::kGainmap:
+      return gainmap_paint_image_generator_->GetSupportedDecodeSize(
+          requested_size);
+  }
 }
 
 bool PaintImage::Decode(SkPixmap pixmap,
                         size_t frame_index,
+                        AuxImage aux_image,
                         GeneratorClientId client_id) const {
   // We only support decode to supported decode size.
-  DCHECK(pixmap.dimensions() == GetSupportedDecodeSize(pixmap.dimensions()));
-
-  if (paint_image_generator_) {
-    return DecodeFromGenerator(pixmap, frame_index, client_id);
+  DCHECK(pixmap.dimensions() ==
+         GetSupportedDecodeSize(pixmap.dimensions(), aux_image));
+  switch (aux_image) {
+    case AuxImage::kDefault:
+      if (paint_image_generator_) {
+        return paint_image_generator_->GetPixels(pixmap, frame_index, client_id,
+                                                 stable_id());
+      }
+      return DecodeFromSkImage(pixmap, frame_index, client_id);
+    case AuxImage::kGainmap:
+      DCHECK(gainmap_paint_image_generator_);
+      return gainmap_paint_image_generator_->GetPixels(pixmap, frame_index,
+                                                       client_id, stable_id());
   }
-  return DecodeFromSkImage(pixmap, frame_index, client_id);
 }
 
 bool PaintImage::DecodeYuv(const SkYUVAPixmaps& pixmaps,
                            size_t frame_index,
+                           AuxImage aux_image,
                            GeneratorClientId client_id) const {
   DCHECK(pixmaps.isValid());
-  DCHECK(paint_image_generator_);
   const uint32_t lazy_pixel_ref = stable_id();
-  return paint_image_generator_->GetYUVAPlanes(pixmaps, frame_index,
-                                               lazy_pixel_ref, client_id);
-}
-
-bool PaintImage::DecodeFromGenerator(SkPixmap pixmap,
-                                     size_t frame_index,
-                                     GeneratorClientId client_id) const {
-  DCHECK(paint_image_generator_);
-  const uint32_t lazy_pixel_ref = stable_id();
-  return paint_image_generator_->GetPixels(pixmap, frame_index, client_id,
-                                           lazy_pixel_ref);
+  switch (aux_image) {
+    case AuxImage::kDefault:
+      DCHECK(paint_image_generator_);
+      return paint_image_generator_->GetYUVAPlanes(pixmaps, frame_index,
+                                                   lazy_pixel_ref, client_id);
+    case AuxImage::kGainmap:
+      DCHECK(gainmap_paint_image_generator_);
+      return gainmap_paint_image_generator_->GetYUVAPlanes(
+          pixmaps, frame_index, lazy_pixel_ref, client_id);
+  }
 }
 
 bool PaintImage::DecodeFromSkImage(SkPixmap pixmap,
@@ -240,7 +260,8 @@ bool PaintImage::DecodeFromSkImage(SkPixmap pixmap,
   auto image = GetSkImageForFrame(frame_index, client_id);
   DCHECK(image);
   if (color_space) {
-    image = image->makeColorSpace(color_space, nullptr);
+    image = image->makeColorSpace(color_space,
+                                  static_cast<GrDirectContext*>(nullptr));
     if (!image)
       return false;
   }
@@ -280,6 +301,10 @@ void PaintImage::FlushPendingSkiaOps() {
     texture_backing_->FlushPendingSkiaOps();
 }
 
+gfx::Size PaintImage::GetSize(AuxImage aux_image) const {
+  return gfx::SkISizeToSize(GetSkISize(aux_image));
+}
+
 gfx::ContentColorUsage PaintImage::GetContentColorUsage(bool* is_hlg) const {
   if (is_hlg)
     *is_hlg = false;
@@ -288,11 +313,17 @@ gfx::ContentColorUsage PaintImage::GetContentColorUsage(bool* is_hlg) const {
   if (paint_worklet_input_)
     return gfx::ContentColorUsage::kSRGB;
 
+  // Gainmap images are always HDR.
+  if (HasGainmap()) {
+    return gfx::ContentColorUsage::kHDR;
+  }
+
   const auto* color_space = GetSkImageInfo().colorSpace();
 
   // Assume the image will be sRGB if we don't know yet.
-  if (!color_space || color_space->isSRGB())
+  if (!color_space || color_space->isSRGB()) {
     return gfx::ContentColorUsage::kSRGB;
+  }
 
   skcms_TransferFunction fn;
   if (!color_space->isNumericalTransferFn(&fn)) {
@@ -318,14 +349,23 @@ const ImageHeaderMetadata* PaintImage::GetImageHeaderMetadata() const {
 
 bool PaintImage::IsYuv(
     const SkYUVAPixmapInfo::SupportedDataTypes& supported_data_types,
+    AuxImage aux_image,
     SkYUVAPixmapInfo* info) const {
   SkYUVAPixmapInfo temp_info;
   if (!info)
     info = &temp_info;
+
   // ImageDecoder will fill out the SkYUVColorSpace in |info| depending on the
   // codec's specification.
-  return paint_image_generator_ &&
-         paint_image_generator_->QueryYUVA(supported_data_types, info);
+  switch (aux_image) {
+    case AuxImage::kDefault:
+      return paint_image_generator_ &&
+             paint_image_generator_->QueryYUVA(supported_data_types, info);
+    case AuxImage::kGainmap:
+      return gainmap_paint_image_generator_ &&
+             gainmap_paint_image_generator_->QueryYUVA(supported_data_types,
+                                                       info);
+  }
 }
 
 const std::vector<FrameMetadata>& PaintImage::GetFrameMetadata() const {
@@ -362,7 +402,7 @@ sk_sp<SkImage> PaintImage::GetSkImageForFrame(
     return GetSwSkImage();
 
   sk_sp<SkImage> image =
-      SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
+      SkImages::DeferredFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
           paint_image_generator_, index, client_id));
   return image;
 }
@@ -378,7 +418,8 @@ std::string PaintImage::ToString() const {
       << " completion_state_: " << static_cast<int>(completion_state_)
       << " is_multipart_: " << is_multipart_
       << " may_be_lcp_candidate_: " << may_be_lcp_candidate_
-      << " is YUV: " << IsYuv(SkYUVAPixmapInfo::SupportedDataTypes::All());
+      << " has gainmap: " << HasGainmap() << " is YUV: "
+      << IsYuv(SkYUVAPixmapInfo::SupportedDataTypes::All(), AuxImage::kDefault);
   return str.str();
 }
 

@@ -9,6 +9,8 @@ import androidx.annotation.Nullable;
 
 import org.chromium.webengine.interfaces.IWebEngineParams;
 
+import java.util.ArrayList;
+
 /**
  * Parameters for {@link WebSandbox#createFragment}.
  */
@@ -21,11 +23,18 @@ public class WebEngineParams {
 
     private boolean mIsIncognito;
 
+    private boolean mIsExternalIntentsEnabled = true;
+
+    @Nullable
+    private ArrayList<String> mAllowedOrigins;
+
     IWebEngineParams getParcelable() {
         IWebEngineParams params = new IWebEngineParams();
         params.profileName = mProfileName;
         params.persistenceId = mPersistenceId;
         params.isIncognito = mIsIncognito;
+        params.isExternalIntentsEnabled = mIsExternalIntentsEnabled;
+        params.allowedOrigins = mAllowedOrigins;
         return params;
     }
 
@@ -35,6 +44,10 @@ public class WebEngineParams {
     public static final class Builder {
         private WebEngineParams mParams = new WebEngineParams();
 
+        /**
+         * Returns the WebEngineParam instance asscoaiated with this Builder.
+         */
+        @NonNull
         public WebEngineParams build() {
             return mParams;
         }
@@ -44,7 +57,7 @@ public class WebEngineParams {
          * profile. If {@code profile} must only contain alphanumeric and underscore characters
          * since it will be used as a directory name in the file system.
          *
-         * @param name The name of the profile.
+         * @param profileName The name of the profile.
          */
         @NonNull
         public Builder setProfileName(@Nullable String profileName) {
@@ -68,11 +81,46 @@ public class WebEngineParams {
 
         /**
          * Sets whether the profile is incognito.
-         * @param incognito Whether the profile should be incognito.
+         * @param isIncognito Whether the profile should be incognito.
          */
         @NonNull
         public Builder setIsIncognito(boolean isIncognito) {
             mParams.mIsIncognito = isIncognito;
+            return this;
+        }
+
+        /**
+         * Sets whether pages will be able to open native intents.
+         * @param isExternalIntentsEnabled Whether all pages will have the ability to open intent
+         *         urls.
+         */
+        @NonNull
+        public Builder setIsExternalIntentsEnabled(boolean isExternalIntentsEnabled) {
+            mParams.mIsExternalIntentsEnabled = isExternalIntentsEnabled;
+            return this;
+        }
+
+        /**
+         * Sets whether a list of origins are allowed to be navigated to. If this is not set all
+         * origins will be allowed.
+         * @param allowedOrigins An ArrayList of origins the WebEngine can navigate to.
+         *         This does not support wild cards; full host strings must be provided.
+         *
+         * <pre>
+         * {@code
+         * ArrayList<String> allowList = new ArrayList<>();
+         * allowList.add("https://www.example.com");
+         * allowList.add("http://foo.com");
+         *
+         * new WebEngineParams.Builder()
+         * .setAllowedOrigins(allowList)
+         * .build();
+         * }
+         * </pre>
+         */
+        @NonNull
+        public Builder setAllowedOrigins(@Nullable ArrayList<String> allowedOrigins) {
+            mParams.mAllowedOrigins = allowedOrigins;
             return this;
         }
     }

@@ -4,7 +4,10 @@
 
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 
+#include <string>
+
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "ash/rgb_keyboard/rgb_keyboard_manager.h"
@@ -38,15 +41,20 @@ namespace ash::personalization_app {
 
 namespace {
 
-inline constexpr char kGooglePhotosURL[] = "https://photos.google.com";
-
-GURL GetGooglePhotosURL() {
-  return GURL(kGooglePhotosURL);
+std::u16string GetGooglePhotosURL() {
+  return u"https://photos.google.com";
 }
 
 bool IsAmbientModeAllowed() {
   return ash::AmbientClient::Get() &&
          ash::AmbientClient::Get()->IsAmbientModeAllowed();
+}
+
+AmbientBackendController* GetAmbientBackendController() {
+  AmbientBackendController* ambient_backend_controller =
+      AmbientBackendController::Get();
+  DCHECK(ambient_backend_controller);
+  return ambient_backend_controller;
 }
 
 void AddResources(content::WebUIDataSource* source) {
@@ -111,6 +119,25 @@ void AddStrings(content::WebUIDataSource* source) {
 
       // Theme related strings.
       {"themeLabel", IDS_PERSONALIZATION_APP_THEME_LABEL},
+      {"dynamicColorLabel", IDS_PERSONALIZATION_APP_THEME_DYNAMIC_COLOR_LABEL},
+      {"dynamicColorDescription",
+       IDS_PERSONALIZATION_APP_THEME_DYNAMIC_COLOR_DESCRIPTION},
+      {"colorSchemeTonalSpot",
+       IDS_PERSONALIZATION_APP_THEME_COLOR_SCHEME_TONAL_SPOT},
+      {"colorSchemeNeutral",
+       IDS_PERSONALIZATION_APP_THEME_COLOR_SCHEME_NEUTRAL},
+      {"colorSchemeVibrant",
+       IDS_PERSONALIZATION_APP_THEME_COLOR_SCHEME_VIBRANT},
+      {"colorSchemeExpressive",
+       IDS_PERSONALIZATION_APP_THEME_COLOR_SCHEME_EXPRESSIVE},
+      {"staticColorGoogleBlue",
+       IDS_PERSONALIZATION_APP_THEME_STATIC_COLOR_GOOGLE_BLUE},
+      {"staticColorLightPink",
+       IDS_PERSONALIZATION_APP_THEME_STATIC_COLOR_LIGHT_PINK},
+      {"staticColorDarkGreen",
+       IDS_PERSONALIZATION_APP_THEME_STATIC_COLOR_DARK_GREEN},
+      {"staticColorLightPurple",
+       IDS_PERSONALIZATION_APP_THEME_STATIC_COLOR_LIGHT_PURPLE},
       {"darkColorMode", IDS_PERSONALIZATION_APP_THEME_DARK_COLOR_MODE},
       {"lightColorMode", IDS_PERSONALIZATION_APP_THEME_LIGHT_COLOR_MODE},
       {"autoColorMode", IDS_PERSONALIZATION_APP_THEME_AUTO_COLOR_MODE},
@@ -176,6 +203,10 @@ void AddStrings(content::WebUIDataSource* source) {
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY},
       {"ambientModeTopicSourceArtGalleryDescription",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_ART_GALLERY_DESCRIPTION},
+      {"ambientModeTopicSourceVideo",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_VIDEO},
+      {"ambientModeTopicSourceVideoDescription",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_VIDEO_DESCRIPTION},
       {"ambientModeTopicSourceSelectedRow",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_TOPIC_SOURCE_SELECTED_ROW},
       {"ambientModeTopicSourceUnselectedRow",
@@ -210,6 +241,8 @@ void AddStrings(content::WebUIDataSource* source) {
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_FEEL_THE_BREEZE_LABEL},
       {"ambientModeAnimationFloatOnByLabel",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_FLOAT_ON_BY_LABEL},
+      {"ambientModeAnimationVideoLabel",
+       IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_VIDEO_LABEL},
       {"ambientModeZeroStateMessage",
        IDS_PERSONALIZATION_APP_AMBIENT_MODE_ZERO_STATE_MESSAGE},
       {"ambientModeMultipleAlbumsDesc",
@@ -260,6 +293,7 @@ void AddStrings(content::WebUIDataSource* source) {
       {"wallpaperColorDescription",
        IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_WALLPAPER_COLOR_DESCRIPTION},
       {"zoneTitle", IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_ZONE_TITLE},
+      {"keyboardZonesTitle", IDS_PERSONALIZATION_APP_KEYBOARD_ZONES_TITLE},
 
       // Google Photos strings
       // TODO(b/229149314): Finalize error and retry strings.
@@ -293,20 +327,29 @@ void AddStrings(content::WebUIDataSource* source) {
       {"timeOfDayWallpaperDialogBackButton",
        IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_BACK_BUTTON},
       {"timeOfDayWallpaperDialogConfirmButton",
-       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONFIRM_BUTTON}};
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_DIALOG_CONFIRM_BUTTON},
+      {"timeOfDayBannerTitle",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_TITLE},
+      {"timeOfDayBannerDescription",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_DESCRIPTION}};
 
   source->AddLocalizedStrings(kLocalizedStrings);
+
+  source->AddString("googlePhotosURL", GetGooglePhotosURL());
+
+  source->AddString("timeOfDayBannerImageUrl",
+                    GetAmbientBackendController()->GetPromoBannerUrl());
 
   source->AddString(
       "ambientModeAlbumsSubpageGooglePhotosTitle",
       l10n_util::GetStringFUTF16(
           IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_GOOGLE_PHOTOS_TITLE,
-          base::UTF8ToUTF16(GetGooglePhotosURL().spec())));
+          GetGooglePhotosURL()));
   source->AddString(
       "ambientModeAlbumsSubpageGooglePhotosNoAlbum",
       l10n_util::GetStringFUTF16(
           IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_GOOGLE_PHOTOS_NO_ALBUM,
-          base::UTF8ToUTF16(GetGooglePhotosURL().spec())));
+          GetGooglePhotosURL()));
 
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
@@ -402,9 +445,6 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
   source->AddBoolean("isGooglePhotosSharedAlbumsEnabled",
                      features::IsWallpaperGooglePhotosSharedAlbumsEnabled());
 
-  source->AddBoolean("isDarkLightModeEnabled",
-                     features::IsDarkLightModeEnabled());
-
   source->AddBoolean("isAmbientModeAllowed", IsAmbientModeAllowed());
 
   source->AddBoolean(
@@ -420,6 +460,12 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
 
   source->AddBoolean("isPersonalizationJellyEnabled",
                      features::IsPersonalizationJellyEnabled());
+
+  source->AddBoolean("isUserAvatarCustomizationSelectorsEnabled",
+                     user_provider_->IsCustomizationSelectorsPrefEnabled());
+
+  source->AddBoolean("isTimeOfDayScreenSaverEnabled",
+                     features::IsTimeOfDayScreenSaverEnabled());
 }
 
 void PersonalizationAppUI::AddIntegers(content::WebUIDataSource* source) {

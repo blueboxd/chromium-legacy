@@ -43,7 +43,6 @@ buildflag_header("media_buildflags") {
     "ENABLE_FFMPEG_VIDEO_DECODERS=$enable_ffmpeg_video_decoders",
     "ENABLE_PLATFORM_HEVC=$enable_platform_hevc",
     "ENABLE_HEVC_PARSER_AND_HW_DECODER=$enable_hevc_parser_and_hw_decoder",
-    "ENABLE_HLS_SAMPLE_AES=$enable_hls_sample_aes",
     "ENABLE_HLS_DEMUXER=$enable_hls_demuxer",
     "ENABLE_LIBAOM=$enable_libaom",
     "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
@@ -110,7 +109,7 @@ config("media_config") {
 #
 config("subcomponent_config") {
   visibility = media_subcomponent_deps
-  if (is_mac) {
+  if (is_apple) {
     visibility += [ "//media/base/mac" ]
   }
   defines = [ "IS_MEDIA_IMPL" ]
@@ -147,7 +146,7 @@ component("media") {
   ]
 
   # This must be included here since it actually depends on //media/base.
-  if (is_mac) {
+  if (is_mac || (use_blink && is_ios)) {
     public_deps += [ "//media/base/mac" ]
   }
 

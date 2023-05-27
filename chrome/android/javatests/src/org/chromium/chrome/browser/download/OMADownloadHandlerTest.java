@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.browser.download;
 
+import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
+
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
@@ -257,7 +259,7 @@ public class OMADownloadHandlerTest {
         Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_DESCRIPTION), "testjpg");
         Assert.assertEquals(info.getValue(OMADownloadHandler.OMA_NEXT_URL), "http://nexturl.html");
         List<String> types = info.getTypes();
-        Assert.assertThat(
+        assertThat(
                 types, Matchers.containsInAnyOrder("image/jpeg", MimeUtils.OMA_DRM_MESSAGE_MIME));
     }
 

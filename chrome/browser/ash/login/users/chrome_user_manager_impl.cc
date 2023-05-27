@@ -52,6 +52,7 @@
 #include "chrome/browser/ash/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/ash/login/users/supervised_user_manager_impl.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/policy/core/device_local_account.h"
 #include "chrome/browser/ash/policy/external_data/handlers/crostini_ansible_playbook_external_data_handler.h"
 #include "chrome/browser/ash/policy/external_data/handlers/preconfigured_desk_templates_external_data_handler.h"
 #include "chrome/browser/ash/policy/external_data/handlers/print_servers_external_data_handler.h"
@@ -92,6 +93,7 @@
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "components/account_id/account_id.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/policy/core/common/cloud/affiliation.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -100,7 +102,6 @@
 #include "components/proxy_config/proxy_prefs.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
-#include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
@@ -254,6 +255,38 @@ void CheckProfileForSanity() {
       << "The user profile was loaded before we mounted the cryptohome.";
 }
 
+user_manager::UserManager::EphemeralModeConfig CreateEphemeralModeConfig(
+    ash::CrosSettings* cros_settings) {
+  DCHECK(cros_settings);
+
+  bool ephemeral_users_enabled = false;
+  cros_settings->GetBoolean(ash::kAccountsPrefEphemeralUsersEnabled,
+                            &ephemeral_users_enabled);
+
+  std::vector<AccountId> ephemeral_accounts, non_ephemeral_accounts;
+
+  const auto accounts = policy::GetDeviceLocalAccounts(cros_settings);
+  for (const auto& account : accounts) {
+    switch (account.ephemeral_mode) {
+      case policy::DeviceLocalAccount::EphemeralMode::kEnable:
+        ephemeral_accounts.push_back(AccountId::FromUserEmail(account.user_id));
+        break;
+      case policy::DeviceLocalAccount::EphemeralMode::kDisable:
+        non_ephemeral_accounts.push_back(
+            AccountId::FromUserEmail(account.user_id));
+        break;
+      case policy::DeviceLocalAccount::EphemeralMode::kUnset:
+      case policy::DeviceLocalAccount::EphemeralMode::kFollowDeviceWidePolicy:
+        // Do nothing.
+        break;
+    }
+  }
+
+  return user_manager::UserManager::EphemeralModeConfig(
+      ephemeral_users_enabled, std::move(ephemeral_accounts),
+      std::move(non_ephemeral_accounts));
+}
+
 }  // namespace
 
 // static
@@ -321,6 +354,10 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
       base::BindRepeating(&UserManager::NotifyUsersSignInConstraintsChanged,
                           weak_factory_.GetWeakPtr()));
 
+  ephemeral_users_enabled_subscription_ = cros_settings_->AddSettingsObserver(
+      kAccountsPrefEphemeralUsersEnabled,
+      base::BindRepeating(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
+                          weak_factory_.GetWeakPtr()));
   local_accounts_subscription_ = cros_settings_->AddSettingsObserver(
       kAccountsPrefDeviceLocalAccounts,
       base::BindRepeating(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
@@ -394,6 +431,7 @@ void ChromeUserManagerImpl::Shutdown() {
     GetMinimumVersionPolicyHandler()->RemoveObserver(this);
   }
 
+  ephemeral_users_enabled_subscription_ = {};
   local_accounts_subscription_ = {};
 
   if (session_length_limiter_ && IsEnterpriseManaged()) {
@@ -525,13 +563,12 @@ user_manager::UserList ChromeUserManagerImpl::GetUnlockUsers() const {
 
 void ChromeUserManagerImpl::RemoveUserInternal(
     const AccountId& account_id,
-    user_manager::UserRemovalReason reason,
-    user_manager::RemoveUserDelegate* delegate) {
+    user_manager::UserRemovalReason reason) {
   CrosSettings* cros_settings = CrosSettings::Get();
 
   auto callback =
       base::BindOnce(&ChromeUserManagerImpl::RemoveUserInternal,
-                     weak_factory_.GetWeakPtr(), account_id, reason, delegate);
+                     weak_factory_.GetWeakPtr(), account_id, reason);
 
   // Ensure the value of owner email has been fetched.
   if (CrosSettingsProvider::TRUSTED !=
@@ -549,38 +586,7 @@ void ChromeUserManagerImpl::RemoveUserInternal(
   g_browser_process->profile_manager()
       ->GetProfileAttributesStorage()
       .RemoveProfileByAccountId(account_id);
-  if (!user_added_removed_reporter_intialized_) {
-    CacheRemovedUser(account_id.GetUserEmail(), reason);
-  }
-  RemoveNonOwnerUserInternal(account_id, reason, delegate);
-}
-
-void ChromeUserManagerImpl::CacheRemovedUser(
-    const std::string& user_email,
-    user_manager::UserRemovalReason reason) {
-  // There is only a need to cache removed users if they should be reported.
-  bool reporting_enabled = false;
-  CrosSettings::Get()->GetBoolean(kReportDeviceLoginLogout, &reporting_enabled);
-  if (!reporting_enabled) {
-    return;
-  }
-
-  // Unaffiliated users should not have their email reported.
-  if (ShouldReportUser(user_email)) {
-    removed_user_cache_.push_back(std::make_pair(user_email, reason));
-  } else {
-    removed_user_cache_.push_back(std::make_pair("", reason));
-  }
-}
-
-std::vector<std::pair<std::string, user_manager::UserRemovalReason>>
-ChromeUserManagerImpl::GetRemovedUserCache() const {
-  return removed_user_cache_;
-}
-
-void ChromeUserManagerImpl::MarkReporterInitialized() {
-  removed_user_cache_.clear();
-  user_added_removed_reporter_intialized_ = true;
+  RemoveNonOwnerUserInternal(account_id, reason);
 }
 
 void ChromeUserManagerImpl::SaveUserOAuthStatus(
@@ -665,24 +671,17 @@ bool ChromeUserManagerImpl::IsUserNonCryptohomeDataEphemeral(
          ChromeUserManager::IsUserNonCryptohomeDataEphemeral(account_id);
 }
 
-bool ChromeUserManagerImpl::AreEphemeralUsersEnabled() const {
+bool ChromeUserManagerImpl::IsEphemeralAccountId(
+    const AccountId& account_id) const {
   policy::BrowserPolicyConnectorAsh* connector =
       g_browser_process->platform_part()->browser_policy_connector_ash();
-  return GetEphemeralUsersEnabled() &&
+  return GetEphemeralModeConfig().IsAccountIdIncluded(account_id) &&
          (connector->IsDeviceEnterpriseManaged() ||
           GetOwnerAccountId().is_valid());
 }
 
-void ChromeUserManagerImpl::OnUserRemoved(const AccountId& account_id) {
-  RemoveReportingUser(account_id);
-}
-
 const std::string& ChromeUserManagerImpl::GetApplicationLocale() const {
   return g_browser_process->GetApplicationLocale();
-}
-
-PrefService* ChromeUserManagerImpl::GetLocalState() const {
-  return g_browser_process ? g_browser_process->local_state() : nullptr;
 }
 
 bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
@@ -735,7 +734,7 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
   if (!GetLocalState())
     return;
 
-  SetEphemeralUsersEnabled(false);
+  SetEphemeralModeConfig(EphemeralModeConfig());
   SetOwnerId(EmptyAccountId());
 
   // Schedule a callback if device policy has not yet been verified.
@@ -746,10 +745,7 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
     return;
   }
 
-  bool ephemeral_users_enabled = false;
-  cros_settings_->GetBoolean(kAccountsPrefEphemeralUsersEnabled,
-                             &ephemeral_users_enabled);
-  SetEphemeralUsersEnabled(ephemeral_users_enabled);
+  SetEphemeralModeConfig(CreateEphemeralModeConfig(cros_settings_));
 
   std::string owner_email;
   cros_settings_->GetString(kDeviceOwner, &owner_email);
@@ -765,14 +761,15 @@ void ChromeUserManagerImpl::RetrieveTrustedDevicePolicies() {
 
   // If ephemeral users are enabled and we are on the login screen, take this
   // opportunity to clean up by removing all regular users except the owner.
-  if (GetEphemeralUsersEnabled() && !IsUserLoggedIn()) {
+  if (!IsUserLoggedIn()) {
     ScopedListPrefUpdate prefs_users_update(GetLocalState(),
                                             user_manager::kRegularUsersPref);
     prefs_users_update->clear();
     for (user_manager::UserList::iterator it = users_.begin();
          it != users_.end();) {
       const AccountId account_id = (*it)->GetAccountId();
-      if ((*it)->HasGaiaAccount() && account_id != GetOwnerAccountId()) {
+      if ((*it)->HasGaiaAccount() && account_id != GetOwnerAccountId() &&
+          IsEphemeralAccountId(account_id)) {
         user_manager::UserManager::Get()->NotifyUserToBeRemoved(account_id);
         RemoveNonCryptohomeData(account_id);
         DeleteUser(*it);
@@ -950,8 +947,6 @@ void ChromeUserManagerImpl::RemoveNonCryptohomeDataPostExternalDataRemoval(
   supervised_user_manager_->RemoveNonCryptohomeData(account_id.GetUserEmail());
 
   multi_profile_user_controller_->RemoveCachedValues(account_id.GetUserEmail());
-
-  EasyUnlockService::ResetLocalStateForUser(account_id);
 
   ChromeUserManager::RemoveNonCryptohomeData(account_id);
 }
@@ -1264,24 +1259,17 @@ void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
 
 void ChromeUserManagerImpl::SetUserAffiliation(
     const AccountId& account_id,
-    const AffiliationIDSet& user_affiliation_ids) {
+    const base::flat_set<std::string>& user_affiliation_ids) {
   user_manager::User* user = FindUserAndModify(account_id);
 
   if (user) {
     policy::BrowserPolicyConnectorAsh const* const connector =
         g_browser_process->platform_part()->browser_policy_connector_ash();
-    const bool is_affiliated = IsUserAffiliated(
-        user_affiliation_ids, connector->GetDeviceAffiliationIDs(),
+    const bool is_affiliated = policy::IsUserAffiliated(
+        user_affiliation_ids, connector->device_affiliation_ids(),
         account_id.GetUserEmail());
     user->SetAffiliation(is_affiliated);
-
-    if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
-      if (is_affiliated) {
-        AddReportingUser(account_id);
-      } else {
-        RemoveReportingUser(account_id);
-      }
-    }
+    NotifyUserAffiliationUpdated(*user);
   }
 }
 

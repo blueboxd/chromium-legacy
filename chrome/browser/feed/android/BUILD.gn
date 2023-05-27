@@ -35,7 +35,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/feed/FeedSurfaceDelegate.java",
     "java/src/org/chromium/chrome/browser/feed/FeedSurfaceLifecycleManager.java",
     "java/src/org/chromium/chrome/browser/feed/FeedSurfaceProvider.java",
-    "java/src/org/chromium/chrome/browser/feed/FeedSurfaceScopeDependencyProvider.java",
+    "java/src/org/chromium/chrome/browser/feed/FeedSurfaceScopeDependencyProviderImpl.java",
     "java/src/org/chromium/chrome/browser/feed/FeedSurfaceScrollDelegate.java",
     "java/src/org/chromium/chrome/browser/feed/FeedSurfaceTracker.java",
     "java/src/org/chromium/chrome/browser/feed/FeedSwipeRefreshLayout.java",
@@ -232,6 +232,7 @@ generate_jni("jni_headers") {
 
 android_library("javatests") {
   testonly = true
+  resources_package = "org.chromium.chrome.browser.feed.test"
 
   sources = [
     "java/src/org/chromium/chrome/browser/feed/FeedProcessScopeDependencyProviderNativeTest.java",
@@ -239,6 +240,7 @@ android_library("javatests") {
   ]
 
   deps = [
+    ":feed_java_resources",
     ":java",
     "//base:base_java_test_support",
     "//chrome/browser/feature_engagement:java",
@@ -266,7 +268,6 @@ android_library("javatests") {
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:espresso_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_preference_preference_java",
     "//third_party/androidx:androidx_test_runner_java",
@@ -356,7 +357,6 @@ robolectric_library("junit") {
     "//third_party/android_deps:espresso_java",
     "//third_party/android_deps:material_design_java",
     "//third_party/android_deps:protobuf_lite_runtime_java",
-    "//third_party/android_support_test_runner:runner_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
     "//third_party/androidx:androidx_lifecycle_lifecycle_common_java",

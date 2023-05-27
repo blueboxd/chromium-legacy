@@ -79,7 +79,7 @@ constexpr uint32_t kMaxXdgShellVersion = 5;
 constexpr uint32_t kMaxWpPresentationVersion = 1;
 constexpr uint32_t kMaxWpViewporterVersion = 1;
 constexpr uint32_t kMaxTextInputManagerVersion = 1;
-constexpr uint32_t kMaxTextInputExtensionVersion = 7;
+constexpr uint32_t kMaxTextInputExtensionVersion = 8;
 constexpr uint32_t kMaxExplicitSyncVersion = 2;
 constexpr uint32_t kMaxAlphaCompositingVersion = 1;
 constexpr uint32_t kMaxXdgDecorationVersion = 1;
@@ -535,6 +535,13 @@ void WaylandConnection::Global(void* data,
     }
   } else if (!connection->xdg_output_manager_ &&
              strcmp(interface, "zxdg_output_manager_v1") == 0) {
+    // Responsibilities of zxdg_output_manager_v1 have been subsumed into the
+    // zaura_output_manager. If using the zaura_output_manager avoid binding
+    // unnecessarily.
+    if (connection->zaura_output_manager_) {
+      LOG(WARNING) << "Skipping bind to zxdg_output_manager_v1";
+      return;
+    }
     connection->xdg_output_manager_ = wl::Bind<struct zxdg_output_manager_v1>(
         registry, name, std::min(version, kMaxXdgOutputManagerVersion));
     if (!connection->xdg_output_manager_) {
@@ -606,6 +613,10 @@ const gfx::PointF WaylandConnection::MaybeConvertLocation(
   gfx::PointF converted(location);
   converted.InvScale(window->applied_state().window_scale);
   return converted;
+}
+
+bool WaylandConnection::ShouldUseOverlayDelegation() const {
+  return IsWaylandOverlayDelegationEnabled() && !overlay_delegation_disabled_;
 }
 
 // static

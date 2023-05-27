@@ -213,7 +213,8 @@ class MODULES_EXPORT RTCPeerConnection final
   ScriptPromise LegacyCallbackBasedGetStats(
       ScriptState*,
       V8RTCStatsCallback* success_callback,
-      MediaStreamTrack* selector);
+      MediaStreamTrack* selector,
+      ExceptionState&);
   ScriptPromise PromiseBasedGetStats(ScriptState*,
                                      MediaStreamTrack* selector,
                                      ExceptionState&);
@@ -303,7 +304,7 @@ class MODULES_EXPORT RTCPeerConnection final
                              Vector<uintptr_t>,
                              bool is_remote_description_or_rollback) override;
   void DidAddRemoteDataChannel(
-      scoped_refptr<webrtc::DataChannelInterface> channel) override;
+      rtc::scoped_refptr<webrtc::DataChannelInterface> channel) override;
   void DidNoteInterestingUsage(int usage_pattern) override;
   void UnregisterPeerConnectionHandler() override;
   void ClosePeerConnection() override;

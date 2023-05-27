@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_manager.h"
 
-#include "ash/components/arc/test/fake_app_instance.h"
+#include "ash/components/arc/test/fake_compatibility_mode_instance.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
@@ -124,9 +124,9 @@ class ArcInputOverlayManagerTest : public ash::AshTestBase {
 
   void EnableBetaFlag() { arc_test_input_overlay_manager_->beta_ = true; }
 
-  void TriggerDisplayOverlayOnWindowBoundsChange() {
-    arc_test_input_overlay_manager_->display_overlay_controller_
-        ->TriggerWidgetBoundsChangedForTesting();
+  bool IsObserving(aura::Window* window) const {
+    return arc_test_input_overlay_manager_->window_observations_
+        .IsObservingSource(window);
   }
 
  protected:
@@ -155,22 +155,25 @@ TEST_F(ArcInputOverlayManagerTest, TestPropertyChangeAndWindowDestroy) {
   auto arc_window = CreateArcWindowSyncAndWait(
       task_environment(), ash::Shell::GetPrimaryRootWindow(),
       gfx::Rect(10, 10, 100, 100), kEnabledPackageName);
-  EXPECT_TRUE(IsInputOverlayEnabled(arc_window->GetNativeWindow()));
+  auto* arc_window_ptr = arc_window->GetNativeWindow();
+  EXPECT_TRUE(IsObserving(arc_window_ptr));
+  EXPECT_TRUE(IsInputOverlayEnabled(arc_window_ptr));
   // Input overlay registers the window after reading the data when the window
   // is still focused. In the test, the arc_window is considered as focused now.
   EXPECT_TRUE(GetRegisteredWindow());
-  focus_client->FocusWindow(arc_window->GetNativeWindow());
+  focus_client->FocusWindow(arc_window_ptr);
   EXPECT_TRUE(GetRegisteredWindow());
 
   // Test app with input overlay data when window is destroyed.
-  auto* arc_window_ptr = arc_window->GetNativeWindow();
   arc_window.reset();
+  EXPECT_FALSE(IsObserving(arc_window_ptr));
   EXPECT_FALSE(IsInputOverlayEnabled(arc_window_ptr));
 
   // Test app without input overlay data.
   auto arc_window_no_data = CreateArcWindowSyncAndWait(
       task_environment(), ash::Shell::GetPrimaryRootWindow(),
       gfx::Rect(10, 10, 100, 100), kRandomPackageName);
+  EXPECT_FALSE(IsObserving(arc_window_ptr));
   EXPECT_FALSE(IsInputOverlayEnabled(arc_window_no_data->GetNativeWindow()));
 }
 
@@ -398,9 +401,6 @@ TEST_F(ArcInputOverlayManagerTest, TestWindowBoundsChanged) {
       ash::Shell::GetPrimaryRootWindow()->GetBoundsInScreen());
   arc_window->GetNativeWindow()->SetBoundsInScreen(gfx::Rect(10, 10, 150, 150),
                                                    display);
-  // No overlay widget attached to |arc_window| in this test, so it needs to
-  // trigger the |OnWidgetBoundsChanged()| call manually.
-  TriggerDisplayOverlayOnWindowBoundsChange();
   EXPECT_EQ(injector->content_bounds(),
             gfx::RectF(10, 10 + caption_height, 150, 150 - caption_height));
   EXPECT_POINTF_NEAR(
@@ -455,19 +455,15 @@ TEST_F(ArcInputOverlayManagerTest, TestDisplayRotationChanged) {
 TEST_F(ArcInputOverlayManagerTest, TestFeatureAvailability) {
   std::unique_ptr<TestingProfile> profile = std::make_unique<TestingProfile>();
   ArcAppTest arc_app_test;
+  arc_app_test.set_wait_compatibility_mode(true);
   arc_app_test.SetUp(profile.get());
 
   // Test without enabling beta flag.
-  int task_id = 21;
-  arc_app_test.app_instance()->set_app_category_of_pkg(
-      kRandomGamePackageName, arc::mojom::AppCategory::kGame);
+  arc_app_test.compatibility_mode_instance()->set_is_gio_applicable(false);
   task_environment()->RunUntilIdle();
   auto game_window =
       CreateArcWindow(ash::Shell::GetPrimaryRootWindow(),
                       gfx::Rect(10, 10, 100, 100), kRandomGamePackageName);
-  exo::SetShellApplicationId(
-      game_window->GetNativeWindow(),
-      base::StringPrintf("org.chromium.arc.%d", task_id));
   task_environment()->FastForwardBy(kIORead);
   auto* injector = GetTouchInjector(game_window->GetNativeWindow());
   EXPECT_FALSE(injector);
@@ -491,17 +487,11 @@ TEST_F(ArcInputOverlayManagerTest, TestFeatureAvailability) {
   task_environment()->FastForwardBy(kIORead);
   injector = GetTouchInjector(app_window->GetNativeWindow());
   EXPECT_FALSE(injector);
-  // Create an app with game category.
-  task_id = 22;
-  arc_app_test.app_instance()->set_app_category_of_pkg(
-      kRandomGamePackageName, arc::mojom::AppCategory::kGame);
+  arc_app_test.compatibility_mode_instance()->set_is_gio_applicable(true);
   task_environment()->RunUntilIdle();
   game_window =
       CreateArcWindow(ash::Shell::GetPrimaryRootWindow(),
                       gfx::Rect(10, 10, 100, 100), kRandomGamePackageName);
-  exo::SetShellApplicationId(
-      game_window->GetNativeWindow(),
-      base::StringPrintf("org.chromium.arc.%d", task_id));
   task_environment()->FastForwardBy(kIORead);
   injector = GetTouchInjector(game_window->GetNativeWindow());
   EXPECT_TRUE(injector);

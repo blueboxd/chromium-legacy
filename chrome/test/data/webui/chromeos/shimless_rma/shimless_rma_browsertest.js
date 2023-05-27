@@ -21,8 +21,8 @@ this.ShimlessRmaBrowserTest = class extends PolymerTest {
   get featureList() {
     return {
       enabled: [
-        'ash::features::kShimlessRMAFlow',
         'ash::features::kShimlessRMAOsUpdate',
+        'ash::features::kShimlessRMADiagnosticPage',
       ],
     };
   }
@@ -37,6 +37,7 @@ const tests = [
   ['AllInputsDisabledTest', 'all_inputs_disabled_test.js'],
   ['HardwareErrorPageTest', 'hardware_error_page_test.js'],
   ['CriticalErrorPageTest', 'critical_error_page_test.js'],
+  ['DiagnosticPageTest', 'diagnostic_page_test.js'],
   ['FakeShimlessRmaServiceTestSuite', 'fake_shimless_rma_service_test.js'],
   [
     'OnboardingChooseDestinationPageTest',

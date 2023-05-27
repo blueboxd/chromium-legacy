@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/supervised_user/supervised_user_extensions_delegate_impl.h"
 #include "chrome/browser/supervised_user/supervised_user_extensions_metrics_recorder.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
@@ -22,6 +23,8 @@
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/supervised_user_extensions_delegate.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
@@ -51,21 +54,19 @@ class SupervisedUserExtensionTest : public ExtensionServiceTestWithInstall,
 
  protected:
   void InitServices(bool profile_is_supervised) {
-    ExtensionServiceInitParams params = CreateDefaultInitParams();
+    ExtensionServiceInitParams params;
     params.profile_is_supervised = profile_is_supervised;
-    // If profile is supervised, don't pass a pref file such that the testing
-    // profile creates a pref service that uses SupervisedUserPrefStore.
-    if (profile_is_supervised) {
-      params.pref_file = base::FilePath();
-    }
     InitializeExtensionService(params);
 
     supervised_user_service()->Init();
+    supervised_user_extensions_delegate_ =
+        std::make_unique<SupervisedUserExtensionsDelegateImpl>(profile());
   }
 
-  std::string InstallPermissionsTestExtension() {
-    return InstallTestExtension(permissions_increase, dir_path("1"),
-                                pem_path());
+  const Extension* InstallPermissionsTestExtension() {
+    const Extension* extension =
+        InstallTestExtension(permissions_increase, dir_path("1"), pem_path());
+    return extension;
   }
 
   void UpdatePermissionsTestExtension(const std::string& id,
@@ -75,7 +76,7 @@ class SupervisedUserExtensionTest : public ExtensionServiceTestWithInstall,
                         expected_state);
   }
 
-  std::string InstallNoPermissionsTestExtension() {
+  const Extension* InstallNoPermissionsTestExtension() {
     base::FilePath base_path = data_dir().AppendASCII("autoupdate");
     base::FilePath pem_path = base_path.AppendASCII("key.pem");
     base::FilePath dir_path = base_path.AppendASCII("v1");
@@ -93,9 +94,9 @@ class SupervisedUserExtensionTest : public ExtensionServiceTestWithInstall,
     UpdateTestExtension(dir_path, pem_path, id, version, expected_state);
   }
 
-  std::string InstallTestExtension(const std::string& id,
-                                   const base::FilePath& dir_path,
-                                   const base::FilePath& pem_path) {
+  const Extension* InstallTestExtension(const std::string& id,
+                                        const base::FilePath& dir_path,
+                                        const base::FilePath& pem_path) {
     const Extension* extension =
         PackAndInstallCRX(dir_path, pem_path, INSTALL_WITHOUT_LOAD);
     // The extension must now be installed.
@@ -103,7 +104,7 @@ class SupervisedUserExtensionTest : public ExtensionServiceTestWithInstall,
     EXPECT_EQ(extension->id(), id);
     CheckDisabledForCustodianApproval(id);
     EXPECT_EQ(base::Version("1"), extension->version());
-    return id;
+    return extension;
   }
 
   void UpdateTestExtension(const base::FilePath& dir_path,
@@ -166,6 +167,10 @@ class SupervisedUserExtensionTest : public ExtensionServiceTestWithInstall,
     return SupervisedUserServiceFactory::GetForProfile(profile());
   }
 
+  SupervisedUserExtensionsDelegate* supervised_user_extensions_delegate() {
+    return supervised_user_extensions_delegate_.get();
+  }
+
   bool extensions_permissions_for_supervised_users_on_desktop() const {
     return GetParam();
   }
@@ -192,6 +197,9 @@ class SupervisedUserExtensionTest : public ExtensionServiceTestWithInstall,
     return base_path().AppendASCII("permissions.pem");
   }
 
+  std::unique_ptr<SupervisedUserExtensionsDelegateImpl>
+      supervised_user_extensions_delegate_;
+
   base::test::ScopedFeatureList feature;
 };
 
@@ -206,12 +214,12 @@ TEST_P(SupervisedUserExtensionTest,
   const Extension* extension = InstallCRX(path, INSTALL_NEW);
   ASSERT_TRUE(extension);
 
-  supervised_user_service()->AddExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension);
 
   histogram_tester.ExpectTotalCount(
       SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 0);
 
-  supervised_user_service()->RemoveExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->RemoveExtensionApproval(*extension);
 
   histogram_tester.ExpectTotalCount(
       SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 0);
@@ -234,8 +242,8 @@ TEST_P(SupervisedUserExtensionTest,
   CheckEnabled(id);
 
   // Simulate custodian approval and removal.
-  supervised_user_service()->AddExtensionApproval(*extension);
-  supervised_user_service()->RemoveExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->RemoveExtensionApproval(*extension);
   // The extension should still be enabled.
   CheckEnabled(id);
 }
@@ -262,13 +270,13 @@ TEST_P(SupervisedUserExtensionTest, ExtensionsDisabledAfterGellerization) {
   CheckDisabledForCustodianApproval(id);
 
   // Grant parent approval.
-  supervised_user_service()->AddExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension);
 
   // The extension should be enabled now.
   CheckEnabled(id);
 
   // Remove parent approval.
-  supervised_user_service()->RemoveExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->RemoveExtensionApproval(*extension);
 
   // The extension should be disabled again now.
   CheckDisabledForCustodianApproval(id);
@@ -293,12 +301,12 @@ TEST_P(SupervisedUserExtensionTest,
   CheckDisabledForCustodianApproval(id);
 
   // Grant parent approval.
-  supervised_user_service()->AddExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension);
   // The extension is now enabled.
   CheckEnabled(id);
 
   // Remove parent approval.
-  supervised_user_service()->RemoveExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->RemoveExtensionApproval(*extension);
 
   // The extension should be disabled again now.
   CheckDisabledForCustodianApproval(id);
@@ -325,10 +333,10 @@ TEST_P(SupervisedUserExtensionTest, UpdateWithPermissionsIncrease) {
       user_action_tester.GetActionCount(
           SupervisedUserExtensionsMetricsRecorder::kApprovalRemovedActionName));
 
-  std::string id = InstallPermissionsTestExtension();
+  std::string id = InstallPermissionsTestExtension()->id();
   // Simulate parent approval.
-  supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, SupervisedUserService::ApprovedExtensionChange::kAdd);
+  supervised_user_extensions_delegate()->AddExtensionApproval(
+      *registry()->GetInstalledExtension(id));
   // The extension should be enabled.
   CheckEnabled(id);
 
@@ -358,8 +366,8 @@ TEST_P(SupervisedUserExtensionTest, UpdateWithPermissionsIncrease) {
   CheckEnabled(id);
 
   // Remove extension approval.
-  supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, SupervisedUserService::ApprovedExtensionChange::kRemove);
+  supervised_user_extensions_delegate()->RemoveExtensionApproval(
+      *registry()->GetInstalledExtension(id));
 
   // Should see 1 kApprovalRemoved metric count.
   histogram_tester.ExpectBucketCount(
@@ -391,11 +399,11 @@ TEST_P(SupervisedUserExtensionTest,
 
   base::HistogramTester histogram_tester;
 
-  std::string id = InstallPermissionsTestExtension();
+  std::string id = InstallPermissionsTestExtension()->id();
   const Extension* extension1 = CheckDisabledForCustodianApproval(id);
   ASSERT_TRUE(extension1);
   // Simulate parent granting approval for the initial version.
-  supervised_user_service()->AddExtensionApproval(*extension1);
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension1);
   // The extension should be enabled now.
   CheckEnabled(id);
 
@@ -446,10 +454,10 @@ TEST_P(SupervisedUserExtensionTest, UpdateWithoutPermissionIncrease) {
   supervised_user_test_util::
       SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), true);
 
+  const Extension* extension = InstallNoPermissionsTestExtension();
   // Save the id, as the extension object will be destroyed during updating.
-  std::string id = InstallNoPermissionsTestExtension();
-  supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, SupervisedUserService::ApprovedExtensionChange::kAdd);
+  std::string id = extension->id();
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension);
   // The extension should be enabled now.
   CheckEnabled(id);
 
@@ -502,7 +510,7 @@ TEST_P(SupervisedUserExtensionTest, DontTriggerMetricsIfAlreadyApproved) {
   CheckDisabledForCustodianApproval(extension->id());
 
   // Simulate parent approval for the extension installation.
-  supervised_user_service()->AddExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension);
   // The extension should be enabled now.
   CheckEnabled(extension->id());
 
@@ -517,7 +525,7 @@ TEST_P(SupervisedUserExtensionTest, DontTriggerMetricsIfAlreadyApproved) {
 
   // Simulate the supervised user disabling and re-enabling the extension
   // without changing anything else.
-  supervised_user_service()->AddExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension);
 
   // Should not see another kApprovalGranted metric count recorded because it
   // was already approved. The previous step should be a no-op.
@@ -530,7 +538,7 @@ TEST_P(SupervisedUserExtensionTest, DontTriggerMetricsIfAlreadyApproved) {
       SupervisedUserExtensionsMetricsRecorder::kExtensionsHistogramName, 1);
 
   // Now remove approval.
-  supervised_user_service()->RemoveExtensionApproval(*extension);
+  supervised_user_extensions_delegate()->RemoveExtensionApproval(*extension);
 
   // There should be a kApprovalRemoved metric count.
   histogram_tester.ExpectBucketCount(
@@ -582,11 +590,11 @@ TEST_P(SupervisedUserExtensionTest, ToggleOffDoesNotAffectAlreadyEnabled) {
 
   // The installation helper function checks that the extension is initially
   // disabled.
-  std::string id = InstallNoPermissionsTestExtension();
+  const Extension* extension = InstallNoPermissionsTestExtension();
+  std::string id = extension->id();
 
   // Now approve the extension.
-  supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, SupervisedUserService::ApprovedExtensionChange::kAdd);
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension);
 
   // The extension should be enabled now.
   CheckEnabled(id);
@@ -606,8 +614,9 @@ TEST_P(SupervisedUserExtensionTest, ExtensionApprovalBeforeInstallation) {
   supervised_user_test_util::
       SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), true);
 
-  supervised_user_service()->UpdateApprovedExtensionForTesting(
-      good_crx, SupervisedUserService::ApprovedExtensionChange::kAdd);
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder(good_crx).SetID(good_crx).SetVersion("0").Build();
+  supervised_user_extensions_delegate()->AddExtensionApproval(*extension.get());
 
   // Now install an extension.
   base::FilePath path = data_dir().AppendASCII("good.crx");
@@ -625,7 +634,7 @@ TEST_P(SupervisedUserExtensionTest, ParentApprovalNecessaryButNotSufficient) {
   supervised_user_test_util::
       SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), true);
 
-  std::string id = InstallPermissionsTestExtension();
+  std::string id = InstallPermissionsTestExtension()->id();
   // Update to a new version with increased permissions.
   UpdatePermissionsTestExtension(id, "2", DISABLED);
   // Expect both disable reasons.
@@ -641,8 +650,8 @@ TEST_P(SupervisedUserExtensionTest, ParentApprovalNecessaryButNotSufficient) {
   CheckDisabledForPermissionsIncrease(id);
 
   // Simulate parent approval.
-  supervised_user_service()->UpdateApprovedExtensionForTesting(
-      id, SupervisedUserService::ApprovedExtensionChange::kAdd);
+  supervised_user_extensions_delegate()->AddExtensionApproval(
+      *registry()->GetInstalledExtension(id));
   // The extension is still disabled (not sufficient).
   CheckDisabledForPermissionsIncrease(id);
 

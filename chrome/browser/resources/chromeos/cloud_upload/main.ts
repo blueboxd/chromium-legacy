@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 import './cloud_upload_dialog.js';
-import './drive_upload_page.js';
 import './file_handler_page.js';
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
@@ -25,21 +24,17 @@ switch (dialogArgs.args.dialogPage) {
     document.body.append(document.createElement('cloud-upload'));
     break;
   }
-  case DialogPage.kGoogleDriveSetup: {
-    document.body.append(document.createElement('drive-upload-page'));
-    break;
-  }
   case DialogPage.kMoveConfirmationOneDrive: {
     const movePage = new MoveConfirmationPageElement();
     movePage.setNumFiles(dialogArgs.args.fileNames.length);
-    movePage.setCloudProvider(CloudProvider.ONE_DRIVE);
+    await movePage.setCloudProvider(CloudProvider.ONE_DRIVE);
     document.body.append(movePage);
     break;
   }
   case DialogPage.kMoveConfirmationGoogleDrive: {
     const movePage = new MoveConfirmationPageElement();
     movePage.setNumFiles(dialogArgs.args.fileNames.length);
-    movePage.setCloudProvider(CloudProvider.GOOGLE_DRIVE);
+    await movePage.setCloudProvider(CloudProvider.GOOGLE_DRIVE);
     document.body.append(movePage);
     break;
   }

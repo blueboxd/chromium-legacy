@@ -4,16 +4,21 @@
 
 #include "chrome/browser/password_manager/web_app_profile_switcher.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
+#include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -53,6 +58,13 @@ void WebAppProfileSwitcher::SwitchToProfile(
       &WebAppProfileSwitcher::QueryProfileWebAppRegistryToOpenWebApp,
       weak_factory_.GetWeakPtr());
   profiles::LoadProfileAsync(profile_to_open, std::move(open_web_app_callback));
+
+  if (app_id_ == web_app::kPasswordManagerAppId) {
+    base::UmaHistogramEnumeration(
+        "PasswordManager.ShortcutMetric",
+        password_manager::metrics_util::PasswordManagerShortcutMetric::
+            kProfileSwitched);
+  }
 }
 
 void WebAppProfileSwitcher::OnProfileWillBeDestroyed(Profile* profile) {
@@ -81,12 +93,19 @@ void WebAppProfileSwitcher::QueryProfileWebAppRegistryToOpenWebApp(
 void WebAppProfileSwitcher::InstallOrOpenWebAppWindowForProfile(
     web_app::AppLock& new_profile_lock) {
   if (new_profile_lock.registrar().IsInstalled(app_id_)) {
-    // The web app is already installed and can be launched.
-    LaunchAppWithId(app_id_,
-                    webapps::InstallResultCode::kSuccessAlreadyInstalled);
+    // The web app is already installed and can be launched, or foregrounded,
+    // if it's already launched.
+    Browser* launched_app =
+        web_app::AppBrowserController::FindForWebApp(*new_profile_, app_id_);
+    if (launched_app) {
+      launched_app->window()->Activate();
+      RunCompletionCallback();
+    } else {
+      LaunchAppWithId(app_id_,
+                      webapps::InstallResultCode::kSuccessAlreadyInstalled);
+    }
     return;
   }
-
   // Fetch app icons from the already installed app prior to
   // installation.
   // TODO(crbug/1414331) Use the icon loading command once it's available.
@@ -144,7 +163,8 @@ void WebAppProfileSwitcher::LaunchAppWithId(
       ->scheduler()
       .LaunchAppWithCustomParams(
           std::move(params),
-          base::IgnoreArgs<Browser*, content::WebContents*,
+          base::IgnoreArgs<base::WeakPtr<Browser>,
+                           base::WeakPtr<content::WebContents>,
                            apps::LaunchContainer>(
               base::BindOnce(&WebAppProfileSwitcher::RunCompletionCallback,
                              weak_factory_.GetWeakPtr())));

@@ -6,6 +6,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
@@ -441,7 +443,7 @@ TEST_F(HTMLElementTest, PopoverTopLayerRemovalTiming) {
 
   EXPECT_FALSE(target->popoverOpen());
   EXPECT_FALSE(target->IsInTopLayer());
-  target->ShowPopoverInternal(nullptr);
+  target->ShowPopoverInternal(/*invoker*/ nullptr, /*exception_state*/ nullptr);
   EXPECT_TRUE(target->popoverOpen());
   EXPECT_TRUE(target->IsInTopLayer());
 
@@ -456,7 +458,7 @@ TEST_F(HTMLElementTest, PopoverTopLayerRemovalTiming) {
   EXPECT_FALSE(target->IsInTopLayer());
 
   // Document removal should cause immediate top layer removal.
-  target->ShowPopoverInternal(nullptr);
+  target->ShowPopoverInternal(/*invoker*/ nullptr, /*exception_state*/ nullptr);
   EXPECT_TRUE(target->popoverOpen());
   EXPECT_TRUE(target->IsInTopLayer());
   target->remove();

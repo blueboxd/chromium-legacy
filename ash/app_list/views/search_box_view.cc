@@ -10,10 +10,12 @@
 #include <vector>
 
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/app_list_util.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/model/search/search_box_model.h"
 #include "ash/app_list/model/search/search_model.h"
+#include "ash/app_list/views/launcher_search_iph_view.h"
 #include "ash/app_list/views/result_selection_controller.h"
 #include "ash/app_list/views/search_box_view_delegate.h"
 #include "ash/app_list/views/search_result_base_view.h"
@@ -21,6 +23,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -28,6 +31,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/typography.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -43,6 +48,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/color/color_id.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
@@ -52,6 +58,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
@@ -100,6 +107,20 @@ constexpr SearchBoxView::PlaceholderTextType kGamingPlaceholders[4] = {
     SearchBoxView::PlaceholderTextType::kTabs,
     SearchBoxView::PlaceholderTextType::kSettings,
     SearchBoxView::PlaceholderTextType::kGames,
+};
+
+constexpr views::Radii kAssistantButtonBackgroundRadiiLTR = {
+    .top_left = 18.0f,
+    .top_right = 18.0f,
+    .bottom_right = 4.0f,
+    .bottom_left = 18.0f,
+};
+
+constexpr views::Radii kAssistantButtonBackgroundRadiiRTL = {
+    .top_left = 18.0f,
+    .top_right = 18.0f,
+    .bottom_right = 18.0f,
+    .bottom_left = 4.0f,
 };
 
 bool IsTrimmedQueryEmpty(const std::u16string& query) {
@@ -156,6 +177,12 @@ void RecordAutocompleteMatchMetric(SearchBoxTextMatch match_type) {
   base::UmaHistogramEnumeration("Apps.AppListSearchAutocomplete", match_type);
 }
 
+ui::ColorId GetFocusColorId(bool use_jelly_colors) {
+  return use_jelly_colors
+             ? static_cast<ui::ColorId>(cros_tokens::kCrosSysFocusRing)
+             : ui::kColorAshFocusRing;
+}
+
 }  // namespace
 
 class SearchBoxView::FocusRingLayer : public ui::Layer, ui::LayerDelegate {
@@ -210,12 +237,22 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                              bool is_app_list_bubble)
     : delegate_(delegate),
       view_delegate_(view_delegate),
-      is_app_list_bubble_(is_app_list_bubble) {
+      is_app_list_bubble_(is_app_list_bubble),
+      is_jelly_enabled_(chromeos::features::IsJellyEnabled()) {
   AppListModelProvider* const model_provider = AppListModelProvider::Get();
   model_provider->AddObserver(this);
   SearchBoxModel* const search_box_model =
       model_provider->search_model()->search_box();
   search_box_model_observer_.Observe(search_box_model);
+
+  if (is_jelly_enabled_) {
+    auto font_list = TypographyProvider::Get()->ResolveTypographyToken(
+        TypographyToken::kCrosBody1);
+    SetPreferredStyleForSearchboxText(font_list,
+                                      cros_tokens::kCrosSysOnSurface);
+    SetPreferredStyleForAutocompleteText(font_list,
+                                         cros_tokens::kCrosSysOnSurfaceVariant);
+  }
 
   views::ImageButton* close_button = CreateCloseButton(base::BindRepeating(
       &SearchBoxView::CloseButtonPressed, base::Unretained(this)));
@@ -233,6 +270,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   assistant_button->SetAccessibleName(assistant_button_label);
   assistant_button->SetTooltipText(assistant_button_label);
   SetShowAssistantButton(search_box_model->show_assistant_button());
+
+  UpdateIphViewVisibility();
 }
 
 SearchBoxView::~SearchBoxView() {
@@ -293,6 +332,11 @@ void SearchBoxView::OnActiveAppListModelsChanged(AppListModel* model,
   ResetForShow();
   UpdateSearchIcon();
   ShowAssistantChanged();
+
+  // `UpdateIphViewVisibility` expect that `AppListModelProvider` returns the
+  // new model.
+  CHECK(search_model == AppListModelProvider::Get()->search_model());
+  UpdateIphViewVisibility();
 }
 
 void SearchBoxView::UpdateKeyboardVisibility() {
@@ -357,6 +401,8 @@ void SearchBoxView::HandleQueryChange(const std::u16string& query,
 
   current_query_ = query;
 
+  UpdateIphViewVisibility();
+
   // The search box background depens on whether the query is empty, so schedule
   // repaint when this changes.
   if (query_empty_changed)
@@ -372,15 +418,23 @@ void SearchBoxView::HandleQueryChange(const std::u16string& query,
 }
 
 void SearchBoxView::UpdatePlaceholderTextStyle() {
+  SkColor primary_color =
+      is_jelly_enabled_
+          ? GetColorProvider()->GetColor(cros_tokens::kCrosSysOnSurface)
+          : AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kTextColorPrimary);
+  SkColor secondary_color =
+      is_jelly_enabled_
+          ? GetColorProvider()->GetColor(cros_tokens::kCrosSysOnSurfaceVariant)
+          : AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kTextColorSecondary);
   if (is_app_list_bubble_) {
     // The bubble launcher text is always side-aligned.
     search_box()->set_placeholder_text_draw_flags(
         base::i18n::IsRTL() ? gfx::Canvas::TEXT_ALIGN_RIGHT
                             : gfx::Canvas::TEXT_ALIGN_LEFT);
     // Bubble launcher uses standard text colors (light-on-dark by default).
-    search_box()->set_placeholder_text_color(
-        AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kTextColorSecondary));
+    search_box()->set_placeholder_text_color(secondary_color);
     return;
   }
   // Fullscreen launcher centers the text when inactive.
@@ -390,9 +444,8 @@ void SearchBoxView::UpdatePlaceholderTextStyle() {
                                  : gfx::Canvas::TEXT_ALIGN_LEFT)
           : gfx::Canvas::TEXT_ALIGN_CENTER);
   // Fullscreen launcher uses custom colors (dark-on-light by default).
-  search_box()->set_placeholder_text_color(GetColorProvider()->GetColor(
-      is_search_box_active() ? kColorAshTextColorSecondary
-                             : kColorAshTextColorPrimary));
+  search_box()->set_placeholder_text_color(
+      is_search_box_active() ? secondary_color : primary_color);
 }
 
 void SearchBoxView::UpdateSearchBoxBorder() {
@@ -417,9 +470,10 @@ void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
     if (search_box()->HasFocus() && IsTrimmedQueryEmpty(current_query_)) {
       gfx::Point icon_origin;
       views::View::ConvertPointToTarget(search_icon(), this, &icon_origin);
-      PaintFocusBar(canvas, gfx::Point(0, icon_origin.y()),
-                    /*height=*/GetSearchBoxIconSize(),
-                    GetColorProvider()->GetColor(ui::kColorAshFocusRing));
+      PaintFocusBar(
+          canvas, gfx::Point(0, icon_origin.y()),
+          /*height=*/GetSearchBoxIconSize(),
+          GetColorProvider()->GetColor(GetFocusColorId(is_jelly_enabled_)));
     }
   }
 }
@@ -431,8 +485,7 @@ void SearchBoxView::OnPaintBorder(gfx::Canvas* canvas) {
         gfx::RoundedCornersF(corner_radius_),
         chromeos::features::IsJellyrollEnabled()
             ? views::HighlightBorder::Type::kHighlightBorderNoShadow
-            : views::HighlightBorder::Type::kHighlightBorder1,
-        false);
+            : views::HighlightBorder::Type::kHighlightBorder1);
   }
 }
 
@@ -453,10 +506,12 @@ void SearchBoxView::OnThemeChanged() {
       views::ImageButton::STATE_NORMAL,
       gfx::CreateVectorIcon(chromeos::kAssistantIcon, GetSearchBoxIconSize(),
                             button_icon_color));
+  auto* focus_ring = views::FocusRing::Get(assistant_button());
+  focus_ring->SetColorId(GetFocusColorId(is_jelly_enabled_));
 
   if (focus_ring_layer_) {
     focus_ring_layer_->SetColor(
-        GetColorProvider()->GetColor(ui::kColorAshFocusRing));
+        GetColorProvider()->GetColor(GetFocusColorId(is_jelly_enabled_)));
   }
 
   UpdateSearchIcon();
@@ -478,44 +533,28 @@ void SearchBoxView::AddedToWidget() {
   if (!is_app_list_bubble_) {
     focus_ring_layer_ = std::make_unique<FocusRingLayer>();
     focus_ring_layer_->SetColor(
-        GetColorProvider()->GetColor(ui::kColorAshFocusRing));
+        GetColorProvider()->GetColor(GetFocusColorId(is_jelly_enabled_)));
     layer()->parent()->Add(focus_ring_layer_.get());
     layer()->parent()->StackAtBottom(focus_ring_layer_.get());
     UpdateSearchBoxFocusPaint();
   }
 }
 
+void SearchBoxView::RunLauncherSearchQuery(const std::u16string& query) {
+  UpdateQuery(query);
+}
+
+void SearchBoxView::OpenAssistantPage() {
+  delegate_->AssistantButtonPressed();
+}
+
+void SearchBoxView::OpenSearchBoxIphUrl() {
+  view_delegate_->OpenSearchBoxIphUrl();
+}
+
 // static
 int SearchBoxView::GetFocusRingSpacing() {
   return kSearchBoxFocusRingWidth + kSearchBoxFocusRingPadding;
-}
-
-void SearchBoxView::RecordSearchBoxActivationHistogram(
-    ui::EventType event_type) {
-  ActivationSource activation_type;
-  switch (event_type) {
-    case ui::ET_GESTURE_TAP:
-      activation_type = ActivationSource::kGestureTap;
-      break;
-    case ui::ET_MOUSE_PRESSED:
-      activation_type = ActivationSource::kMousePress;
-      break;
-    case ui::ET_KEY_PRESSED:
-      activation_type = ActivationSource::kKeyPress;
-      break;
-    default:
-      return;
-  }
-
-  base::UmaHistogramEnumeration("Apps.AppListSearchBoxActivated",
-                                activation_type);
-  if (is_app_list_bubble_) {
-    base::UmaHistogramEnumeration(
-        "Apps.AppListSearchBoxActivated.ClamshellMode", activation_type);
-  } else {
-    base::UmaHistogramEnumeration("Apps.AppListSearchBoxActivated.TabletMode",
-                                  activation_type);
-  }
 }
 
 void SearchBoxView::OnSearchBoxActiveChanged(bool active) {
@@ -614,9 +653,11 @@ void SearchBoxView::UpdateBackground(AppListState target_state) {
 void SearchBoxView::UpdateLayout(AppListState target_state,
                                  int target_state_height) {
   // Horizontal margins are selected to match search box icon's vertical
-  // margins.
+  // margins. Space used for iph should be ignored.
+  const int iph_height =
+      iph_view() ? iph_view()->GetPreferredSize().height() : 0;
   const int horizontal_spacing =
-      (target_state_height - GetSearchBoxIconSize()) / 2;
+      (target_state_height - iph_height - GetSearchBoxIconSize()) / 2;
   const int horizontal_right_padding =
       horizontal_spacing -
       (GetSearchBoxButtonSize() - GetSearchBoxIconSize()) / 2;
@@ -642,14 +683,18 @@ SkColor SearchBoxView::GetBackgroundColorForState(AppListState state) const {
 
   if (is_app_list_bubble_) {
     return app_list_widget->GetColorProvider()->GetColor(
-        kColorAshControlBackgroundColorInactive);
+        is_jelly_enabled_
+            ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated)
+            : kColorAshControlBackgroundColorInactive);
   }
 
   if (search_result_page_visible_)
     return SK_ColorTRANSPARENT;
 
   return app_list_widget->GetColorProvider()->GetColor(
-      kColorAshShieldAndBase80);
+      is_jelly_enabled_
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated)
+          : kColorAshShieldAndBase80);
 }
 
 void SearchBoxView::ProcessAutocomplete(
@@ -793,6 +838,16 @@ int SearchBoxView::GetSearchBoxButtonSize() {
   return kBubbleLauncherSearchBoxButtonSizeDip;
 }
 
+void SearchBoxView::SetIsIphAllowed(bool iph_allowed) {
+  if (is_iph_allowed_ == iph_allowed) {
+    return;
+  }
+
+  is_iph_allowed_ = iph_allowed;
+
+  UpdateIphViewVisibility();
+}
+
 void SearchBoxView::CloseButtonPressed() {
   delegate_->CloseButtonPressed();
 }
@@ -831,8 +886,11 @@ bool SearchBoxView::IsValidAutocompleteText(
 }
 
 void SearchBoxView::UpdateTextColor() {
-  search_box()->SetTextColor(
-      GetColorProvider()->GetColor(kColorAshTextColorPrimary));
+  ui::ColorId color_id =
+      is_jelly_enabled_
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysOnSurface)
+          : kColorAshTextColorPrimary;
+  search_box()->SetTextColor(GetColorProvider()->GetColor(color_id));
 }
 
 void SearchBoxView::UpdatePlaceholderTextAndAccessibleName() {
@@ -1196,6 +1254,62 @@ void SearchBoxView::ShowAssistantChanged() {
                              ->search_model()
                              ->search_box()
                              ->show_assistant_button());
+
+  // `LauncherSearchIphView` and an Assistant button have synchronized
+  // backgrounds. The IPH UI is integrated with the Assistant button. We don't
+  // show an IPH if Assistant is disabled. Both `LauncherSearchIphView` and the
+  // Assistant button are hosted by `SearchBoxViewBase`.
+  UpdateIphViewVisibility();
+}
+
+void SearchBoxView::UpdateIphViewVisibility() {
+  const bool show_assistant_button = AppListModelProvider::Get()
+                                         ->search_model()
+                                         ->search_box()
+                                         ->show_assistant_button();
+  const bool would_trigger_iph =
+      AppListModelProvider::Get()->search_model()->would_trigger_iph();
+  const bool is_iph_showing = iph_view() != nullptr;
+
+  const bool should_show_iph = show_assistant_button && is_iph_allowed_ &&
+                               !HasValidQuery() &&
+                               (would_trigger_iph || is_iph_showing);
+
+  if (should_show_iph == is_iph_showing) {
+    return;
+  }
+
+  if (should_show_iph) {
+    std::unique_ptr<ScopedIphSession> scoped_iph_session =
+        view_delegate_->CreateLauncherSearchIphSession();
+    if (!scoped_iph_session) {
+      return;
+    }
+
+    SetIphView(std::make_unique<LauncherSearchIphView>(
+        std::move(scoped_iph_session), /*delegate=*/this,
+        /*is_in_tablet_mode=*/!is_app_list_bubble_));
+
+    assistant_button()->SetBackground(views::CreateThemedRoundedRectBackground(
+        kColorAshControlBackgroundColorInactive,
+        base::i18n::IsRTL() ? kAssistantButtonBackgroundRadiiRTL
+                            : kAssistantButtonBackgroundRadiiLTR,
+        /*for_border_thickness=*/0));
+  } else {
+    DeleteIphView();
+    assistant_button()->SetBackground(nullptr);
+  }
+
+  // Adding or removing IPH view can change `SearchBoxView` bounds largely.
+  // Re-layout can be necessary on parent views as well. Explicitly call
+  // `InvalidateLayout` to trigger re-layouts on all parent views. Without this,
+  // we can have unnecessary spaces in `SearchBoxView` for an IPH dismiss under
+  // some conditions.
+  InvalidateLayout();
+}
+
+void SearchBoxView::OnWouldTriggerIphChanged() {
+  UpdateIphViewVisibility();
 }
 
 bool SearchBoxView::ShouldProcessAutocomplete() {

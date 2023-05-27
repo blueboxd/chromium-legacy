@@ -4,8 +4,8 @@
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_registry_cache.h"
 
 #include "chrome/browser/apps/app_service/package_id.h"
+#include "chrome/browser/apps/app_service/promise_apps/promise_app.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_update.h"
-#include "chrome/browser/apps/app_service/promise_apps/promise_apps.h"
 
 namespace apps {
 
@@ -37,7 +37,16 @@ void PromiseAppRegistryCache::OnPromiseApp(PromiseAppPtr delta) {
   update_in_progress_ = false;
 }
 
-const PromiseApp* PromiseAppRegistryCache::GetPromiseApp(
+// Retrieve a copy of all the registered promise apps.
+std::vector<PromiseAppPtr> PromiseAppRegistryCache::GetAllPromiseApps() const {
+  std::vector<PromiseAppPtr> promise_apps;
+  for (const auto& promise_pair : promise_app_map_) {
+    promise_apps.push_back(promise_pair.second.get()->Clone());
+  }
+  return promise_apps;
+}
+
+const PromiseApp* PromiseAppRegistryCache::GetPromiseAppForTesting(
     const PackageId& package_id) const {
   return FindPromiseApp(package_id);
 }

@@ -15,6 +15,7 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 
 using ::testing::Mock;
 using ::testing::StrictMock;
@@ -181,8 +182,8 @@ TEST(ContextCacheControllerTest, CheckSkiaResourcePurgeAPI) {
     auto image_info = SkImageInfo::MakeN32Premul(200, 200);
     std::vector<uint8_t> image_data(image_info.computeMinByteSize());
     SkPixmap pixmap(image_info, image_data.data(), image_info.minRowBytes());
-    auto image = SkImage::MakeRasterCopy(pixmap);
-    auto image_gpu = image->makeTextureImage(gr_context);
+    auto image = SkImages::RasterFromPixmapCopy(pixmap);
+    auto image_gpu = SkImages::TextureFromImage(gr_context, std::move(image));
     gr_context->flushAndSubmit();
   }
 

@@ -29,8 +29,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.components.power_bookmarks.PowerBookmarkMeta;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -102,6 +102,7 @@ public class PowerBookmarkTagChipListRenderTest extends BlankUiTestActivityTestC
     @MediumTest
     @Feature({"RenderTest"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @DisabledTest(message = "https://crbug.com/1429103")
     public void testTagListLarge() throws IOException {
         PowerBookmarkMeta.Builder meta = PowerBookmarkMeta.newBuilder();
         PowerBookmarkMeta.Tag.Builder tag = PowerBookmarkMeta.Tag.newBuilder();

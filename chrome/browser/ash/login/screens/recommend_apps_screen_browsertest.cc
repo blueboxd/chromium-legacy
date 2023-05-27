@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "ash/components/arc/arc_prefs.h"
+#include "ash/constants/ash_switches.h"
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/test/test_future.h"
 #include "base/values.h"
@@ -123,7 +125,7 @@ class StubRecommendAppsFetcher : public RecommendAppsFetcher {
   void Retry() override { NOTREACHED(); }
 
  protected:
-  RecommendAppsFetcherDelegate* const delegate_;
+  const raw_ptr<RecommendAppsFetcherDelegate, ExperimentalAsh> delegate_;
   bool started_ = false;
 };
 
@@ -133,8 +135,17 @@ class RecommendAppsScreenTest : public OobeBaseTest {
   ~RecommendAppsScreenTest() override = default;
 
   // OobeBaseTest:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    OobeBaseTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kArcAvailability,
+                                    "officially-supported");
+  }
+
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
+    LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build =
+        true;
+
     recommend_apps_fetcher_factory_ =
         std::make_unique<ScopedTestRecommendAppsFetcherFactory>(
             base::BindRepeating(

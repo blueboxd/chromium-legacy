@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_EXPORTED_WEB_SHARED_STORAGE_WORKLET_THREAD_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_EXPORTED_WEB_SHARED_STORAGE_WORKLET_THREAD_IMPL_H_
 
-#include "third_party/blink/public/mojom/shared_storage/shared_storage_worklet_service.mojom-forward.h"
+#include "third_party/blink/public/mojom/shared_storage/shared_storage_worklet_service.mojom-blink-forward.h"
 #include "third_party/blink/public/web/web_shared_storage_worklet_thread.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
-#include "third_party/blink/renderer/modules/shared_storage/services/shared_storage_worklet_messaging_proxy.h"
+#include "third_party/blink/renderer/modules/shared_storage/shared_storage_worklet_messaging_proxy.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 
 namespace blink {
@@ -23,7 +23,8 @@ class MODULES_EXPORT WebSharedStorageWorkletThreadImpl final
  public:
   WebSharedStorageWorkletThreadImpl(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
-      mojo::PendingReceiver<mojom::SharedStorageWorkletService> receiver);
+      mojo::PendingReceiver<mojom::blink::SharedStorageWorkletService>
+          receiver);
 
   ~WebSharedStorageWorkletThreadImpl() override;
 

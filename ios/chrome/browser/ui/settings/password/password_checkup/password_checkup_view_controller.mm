@@ -4,11 +4,15 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_view_controller.h"
 
+#import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/strings/string_number_conversions.h"
+#import "components/google/core/common/google_util.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/application_context/application_context.h"
+#import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_item.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_commands.h"
@@ -19,21 +23,18 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
-#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
 using password_manager::InsecurePasswordCounts;
+using password_manager::WarningType;
 
 namespace {
 
 // Height of the image used as a header for the table view.
 constexpr CGFloat kHeaderImageHeight = 99;
-
-// The size of the trailing icons for the items in the insecure types section.
-constexpr NSInteger kTrailingIconSize = 22;
 
 // Sections of the Password Checkup Homepage UI.
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -50,13 +51,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Section: SectionIdentifierLastPasswordCheckup
   ItemTypePasswordCheckupTimestamp,
   ItemTypeCheckPasswordsButton,
-};
-
-// Possible states for the items in the insecure types section.
-enum class ItemState {
-  kSafe,
-  kWarning,
-  kSevereWarning,
+  ItemTypePasswordCheckupDescriptionFooter,
 };
 
 // Helper method to get the right header image depending on the
@@ -81,7 +76,6 @@ UIImage* GetHeaderImage(PasswordCheckupHomepageState password_checkup_state,
     case PasswordCheckupHomepageStateRunning:
       return [UIImage
           imageNamed:password_manager::kPasswordCheckupHeaderImageLoading];
-    case PasswordCheckupHomepageStateError:
     case PasswordCheckupHomepageStateDisabled:
       return nil;
   }
@@ -105,25 +99,6 @@ NSString* GetCompromisedPasswordsItemDetailText(bool has_compromised_passwords,
   return detailText;
 }
 
-// Sets up the trailing icon and its tint color for the given item. This is used
-// to set up the trailing icon of the items in the insecure types section.
-void SetUpTrailingIcon(SettingsCheckItem* item, ItemState item_state) {
-  if (item_state == ItemState::kSafe) {
-    item.trailingImage = DefaultSymbolTemplateWithPointSize(
-        kCheckmarkCircleFillSymbol, kTrailingIconSize);
-    item.trailingImageTintColor = [UIColor colorNamed:kGreen500Color];
-    return;
-  }
-
-  item.trailingImage = DefaultSymbolTemplateWithPointSize(
-      kErrorCircleFillSymbol, kTrailingIconSize);
-  if (item_state == ItemState::kWarning) {
-    item.trailingImageTintColor = [UIColor colorNamed:kYellow500Color];
-  } else {
-    item.trailingImageTintColor = [UIColor colorNamed:kRed500Color];
-  }
-}
-
 // Sets up the trailing icon and the accessory type of the given `item`
 // depending on the `password_checkup_state`, whether there are insecure
 // passwords and whether the insecure passwords are compromised. This is used to
@@ -139,12 +114,12 @@ void SetUpTrailingIconAndAccessoryType(
   switch (password_checkup_state) {
     case PasswordCheckupHomepageStateDone:
       if (has_insecure_passwords) {
-        SetUpTrailingIcon(item, has_compromised_passwords
-                                    ? ItemState::kSevereWarning
-                                    : ItemState::kWarning);
+        item.warningState = has_compromised_passwords
+                                ? WarningState::kSevereWarning
+                                : WarningState::kWarning;
         item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
       } else {
-        SetUpTrailingIcon(item, ItemState::kSafe);
+        item.warningState = WarningState::kSafe;
       }
       break;
     case PasswordCheckupHomepageStateRunning: {
@@ -152,7 +127,6 @@ void SetUpTrailingIconAndAccessoryType(
       item.indicatorHidden = NO;
       break;
     }
-    case PasswordCheckupHomepageStateError:
     case PasswordCheckupHomepageStateDisabled:
       break;
   }
@@ -179,6 +153,9 @@ void SetUpTrailingIconAndAccessoryType(
   // The button to start password check.
   TableViewTextItem* _checkPasswordsButtonItem;
 
+  // The footer item briefly explaining the purpose of Password Checkup.
+  TableViewLinkHeaderFooterItem* _passwordCheckupDescriptionFooterItem;
+
   // Whether Settings have been dismissed.
   BOOL _settingsAreDismissed;
 
@@ -187,6 +164,12 @@ void SetUpTrailingIconAndAccessoryType(
 
   // Password counts associated with the different insecure types.
   InsecurePasswordCounts _insecurePasswordCounts;
+
+  // The string containing the timestamp of the last completed check.
+  NSString* _formattedElapsedTimeSinceLastCheck;
+
+  // The number of affiliated groups for which the user has saved passwords.
+  NSInteger _affiliatedGroupCount;
 
   // Image view at the top of the screen, indicating the overall Password
   // Checkup status.
@@ -285,6 +268,18 @@ void SetUpTrailingIconAndAccessoryType(
   }
   [model addItem:_checkPasswordsButtonItem
       toSectionWithIdentifier:SectionIdentifierLastPasswordCheckup];
+
+  if (!_passwordCheckupDescriptionFooterItem) {
+    _passwordCheckupDescriptionFooterItem =
+        [self passwordCheckupDescriptionFooterItem];
+  }
+  [model setFooter:_passwordCheckupDescriptionFooterItem
+      forSectionWithIdentifier:SectionIdentifierLastPasswordCheckup];
+
+  if (_consumerHasBeenUpdated) {
+    [self updateItemsDependingOnPasswordCheckupState];
+  }
+  [self updatePasswordCheckupTimestampDetailText];
 }
 
 #pragma mark - Items
@@ -335,6 +330,22 @@ void SetUpTrailingIconAndAccessoryType(
   return checkPasswordsButtonItem;
 }
 
+- (TableViewLinkHeaderFooterItem*)passwordCheckupDescriptionFooterItem {
+  TableViewLinkHeaderFooterItem* footerItem =
+      [[TableViewLinkHeaderFooterItem alloc]
+          initWithType:ItemTypePasswordCheckupDescriptionFooter];
+  footerItem.text =
+      l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_FOOTER);
+  CrURL* footerURL = [[CrURL alloc]
+      initWithGURL:
+          google_util::AppendGoogleLocaleParam(
+              GURL(password_manager::
+                       kPasswordManagerHelpCenterChangeUnsafePasswordsURL),
+              GetApplicationContext()->GetApplicationLocale())];
+  footerItem.urls = @[ footerURL ];
+  return footerItem;
+}
+
 #pragma mark - SettingsControllerProtocol
 
 - (void)reportDismissalUserAction {
@@ -370,25 +381,43 @@ void SetUpTrailingIconAndAccessoryType(
   // If state is PasswordCheckupHomepageStateDisabled, it means that there is no
   // saved password to check, so we return to the Password Manager.
   if (state == PasswordCheckupHomepageStateDisabled) {
-    [self.handler dismissPasswordCheckupViewController];
+    [self.handler dismissAfterAllPasswordsGone];
   }
 
   _passwordCheckupState = state;
   _insecurePasswordCounts = insecurePasswordCounts;
-  [self updateHeaderImage];
-  [self updateCompromisedPasswordsItem];
-  [self updateReusedPasswordsItem];
-  [self updateWeakPasswordsItem];
-  [self updatePasswordCheckupTimestampTextWith:
-            formattedElapsedTimeSinceLastCheck];
-  [self updateCheckPasswordsButtonItem];
+  _formattedElapsedTimeSinceLastCheck = formattedElapsedTimeSinceLastCheck;
+  [self updateItemsDependingOnPasswordCheckupState];
 
   _consumerHasBeenUpdated = YES;
 }
 
 - (void)setAffiliatedGroupCount:(NSInteger)affiliatedGroupCount {
-  [self updatePasswordCheckupTimestampDetailTextWithAffiliatedGroupCount:
-            affiliatedGroupCount];
+  // If the affiliated group count hasn't changed, there is no need to update
+  // the item.
+  if (_affiliatedGroupCount == affiliatedGroupCount) {
+    return;
+  }
+
+  _affiliatedGroupCount = affiliatedGroupCount;
+  [self updatePasswordCheckupTimestampDetailText];
+}
+
+- (void)showErrorDialogWithMessage:(NSString*)message {
+  NSString* title = l10n_util::GetNSString(
+      IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_ERROR_DIALOG_TITLE);
+  UIAlertController* alert =
+      [UIAlertController alertControllerWithTitle:title
+                                          message:message
+                                   preferredStyle:UIAlertControllerStyleAlert];
+
+  UIAlertAction* okAction =
+      [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
+                               style:UIAlertActionStyleDefault
+                             handler:nil];
+  [alert addAction:okAction];
+
+  [self presentViewController:alert animated:YES completion:nil];
 }
 
 #pragma mark - UITableViewDelegate
@@ -402,10 +431,19 @@ void SetUpTrailingIconAndAccessoryType(
       static_cast<ItemType>([model itemTypeForIndexPath:indexPath]);
   switch (itemType) {
     case ItemTypeCompromisedPasswords:
+      [self showPasswordIssuesWithWarningType:WarningType::
+                                                  kCompromisedPasswordsWarning];
+      break;
     case ItemTypeReusedPasswords:
+      [self showPasswordIssuesWithWarningType:WarningType::
+                                                  kReusedPasswordsWarning];
+      break;
     case ItemTypeWeakPasswords:
+      [self
+          showPasswordIssuesWithWarningType:WarningType::kWeakPasswordsWarning];
       break;
     case ItemTypePasswordCheckupTimestamp:
+    case ItemTypePasswordCheckupDescriptionFooter:
       break;
     case ItemTypeCheckPasswordsButton:
       if (_checkPasswordsButtonItem.isEnabled) {
@@ -435,6 +473,28 @@ void SetUpTrailingIconAndAccessoryType(
       return _checkPasswordsButtonItem.isEnabled;
   }
   return YES;
+}
+
+- (UIView*)tableView:(UITableView*)tableView
+    viewForFooterInSection:(NSInteger)section {
+  UIView* view = [super tableView:tableView viewForFooterInSection:section];
+  NSInteger sectionIdentifier =
+      [self.tableViewModel sectionIdentifierForSectionIndex:section];
+  if (sectionIdentifier == SectionIdentifierLastPasswordCheckup &&
+      [self.tableViewModel footerForSectionIndex:section]) {
+    // Attach self as delegate to handle clicks in page footer.
+    TableViewLinkHeaderFooterView* footerView =
+        base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
+    footerView.delegate = self;
+  }
+
+  return view;
+}
+
+#pragma mark - TableViewLinkHeaderFooterItemDelegate
+
+- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(CrURL*)URL {
+  [self.handler dismissAndOpenURL:URL];
 }
 
 #pragma mark - Private
@@ -484,15 +544,17 @@ void SetUpTrailingIconAndAccessoryType(
       [_headerImageView setImage:headerImage];
       break;
     }
-    case PasswordCheckupHomepageStateError:
     case PasswordCheckupHomepageStateDisabled:
       break;
   }
-  [self.tableView layoutIfNeeded];
 }
 
 // Updates the `_compromisedPasswordsItem`.
 - (void)updateCompromisedPasswordsItem {
+  if (!_compromisedPasswordsItem) {
+    return;
+  }
+
   BOOL hasCompromisedPasswords = _insecurePasswordCounts.compromised_count > 0;
   BOOL hasDismissedWarnings = _insecurePasswordCounts.dismissed_count > 0;
 
@@ -512,6 +574,10 @@ void SetUpTrailingIconAndAccessoryType(
 
 // Updates the `_reusedPasswordsItem`.
 - (void)updateReusedPasswordsItem {
+  if (!_reusedPasswordsItem) {
+    return;
+  }
+
   BOOL hasReusedPasswords = _insecurePasswordCounts.reused_count > 0;
 
   NSString* text;
@@ -539,6 +605,10 @@ void SetUpTrailingIconAndAccessoryType(
 
 // Updates the `_weakPasswordsItem`.
 - (void)updateWeakPasswordsItem {
+  if (!_weakPasswordsItem) {
+    return;
+  }
+
   BOOL hasWeakPasswords = _insecurePasswordCounts.weak_count > 0;
 
   NSString* text;
@@ -565,8 +635,11 @@ void SetUpTrailingIconAndAccessoryType(
 }
 
 // Updates the `_passwordCheckupTimestampItem` text.
-- (void)updatePasswordCheckupTimestampTextWith:
-    (NSString*)formattedElapsedTimeSinceLastCheck {
+- (void)updatePasswordCheckupTimestampText {
+  if (!_passwordCheckupTimestampItem) {
+    return;
+  }
+
   switch (_passwordCheckupState) {
     case PasswordCheckupHomepageStateRunning: {
       _passwordCheckupTimestampItem.text =
@@ -575,9 +648,8 @@ void SetUpTrailingIconAndAccessoryType(
       break;
     }
     case PasswordCheckupHomepageStateDone:
-    case PasswordCheckupHomepageStateError:
     case PasswordCheckupHomepageStateDisabled:
-      _passwordCheckupTimestampItem.text = formattedElapsedTimeSinceLastCheck;
+      _passwordCheckupTimestampItem.text = _formattedElapsedTimeSinceLastCheck;
       _passwordCheckupTimestampItem.indicatorHidden = YES;
       break;
   }
@@ -586,16 +658,23 @@ void SetUpTrailingIconAndAccessoryType(
 }
 
 // Updates the `_passwordCheckupTimestampItem` detail text.
-- (void)updatePasswordCheckupTimestampDetailTextWithAffiliatedGroupCount:
-    (NSInteger)affiliatedGroupCount {
+- (void)updatePasswordCheckupTimestampDetailText {
+  if (!_passwordCheckupTimestampItem) {
+    return;
+  }
+
   _passwordCheckupTimestampItem.detailText = l10n_util::GetPluralNSStringF(
-      IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT, affiliatedGroupCount);
+      IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT, _affiliatedGroupCount);
 
   [self reconfigureCellsForItems:@[ _passwordCheckupTimestampItem ]];
 }
 
 // Updates the `_checkPasswordsButtonItem`.
 - (void)updateCheckPasswordsButtonItem {
+  if (!_checkPasswordsButtonItem) {
+    return;
+  }
+
   if (_passwordCheckupState == PasswordCheckupHomepageStateRunning) {
     _checkPasswordsButtonItem.enabled = NO;
     _checkPasswordsButtonItem.textColor =
@@ -610,6 +689,31 @@ void SetUpTrailingIconAndAccessoryType(
   }
 
   [self reconfigureCellsForItems:@[ _checkPasswordsButtonItem ]];
+}
+
+// Updates all items whose content is depending on `_passwordCheckupState`.
+- (void)updateItemsDependingOnPasswordCheckupState {
+  // Make these updates in a `performBatchUpdates` completion block to make sure
+  // the cell's height adjust if the new content takes up more lines than the
+  // current one.
+  [self.tableView
+      performBatchUpdates:^{
+        [self updateHeaderImage];
+        [self updateCompromisedPasswordsItem];
+        [self updateReusedPasswordsItem];
+        [self updateWeakPasswordsItem];
+        [self updatePasswordCheckupTimestampText];
+        [self updateCheckPasswordsButtonItem];
+      }
+               completion:nil];
+}
+
+// Opens the Password Issues list for the given `warningType` and resets the
+// navigation bar background color to what it was before getting to the
+// PasswordCheckupViewController.
+- (void)showPasswordIssuesWithWarningType:(WarningType)warningType {
+  [self.handler showPasswordIssuesWithWarningType:warningType];
+  [self updateNavigationBarBackgroundColorForDismissal:YES];
 }
 
 @end

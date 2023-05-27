@@ -13,12 +13,8 @@
   @androidx.annotation.Keep <methods>;
 }
 
-# Even unused methods kept due to explicit jni registration:
-# https://crbug.com/688465.
--keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class !org.chromium.base.library_loader.**,** {
-  native <methods>;
-}
--keepclasseswithmembernames,includedescriptorclasses,allowaccessmodification class org.chromium.base.library_loader.** {
+# Allow unused native methods to be removed, but prevent renaming on those that are kept.
+-keepclasseswithmembernames,includedescriptorclasses,allowaccessmodification class ** {
   native <methods>;
 }
 
@@ -54,3 +50,7 @@
 -keep,allowobfuscation,allowaccessmodification class * extends <1> {
   <init>();
 }
+
+# TODO(agrieve): Remove once we start to use Android U SDK.
+-dontwarn android.window.BackEvent
+-dontwarn android.window.OnBackAnimationCallback

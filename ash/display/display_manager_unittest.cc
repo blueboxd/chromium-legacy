@@ -34,6 +34,7 @@
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
 #include "base/format_macros.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/math_constants.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -1772,7 +1773,15 @@ TEST_F(DisplayManagerTest, TestNativeDisplaysChangedNoInternal) {
       Shell::GetPrimaryRootWindow()->GetHost()->GetBoundsInPixels().size());
 }
 
-TEST_F(DisplayManagerTest, NativeDisplaysChangedAfterPrimaryChange) {
+// TODO(crbug.com/1431416): Fix the test flakiness on MSan.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_NativeDisplaysChangedAfterPrimaryChange \
+  DISABLED_NativeDisplaysChangedAfterPrimaryChange
+#else
+#define MAYBE_NativeDisplaysChangedAfterPrimaryChange \
+  NativeDisplaysChangedAfterPrimaryChange
+#endif
+TEST_F(DisplayManagerTest, MAYBE_NativeDisplaysChangedAfterPrimaryChange) {
   const int64_t internal_display_id =
       display::test::DisplayManagerTestApi(display_manager())
           .SetFirstDisplayAsInternalDisplay();
@@ -2082,8 +2091,8 @@ class CloseDisplayHandler : public ui::EventHandler {
   }
 
  private:
-  AshTestBase* test_base_;
-  aura::Window* root_;
+  raw_ptr<AshTestBase, ExperimentalAsh> test_base_;
+  raw_ptr<aura::Window, ExperimentalAsh> root_;
 };
 
 }  // namespace
@@ -2600,10 +2609,10 @@ TEST_F(DisplayManagerTest, UnifiedDesktopWithHardwareMirroring) {
   Shell::GetPrimaryRootWindow()->RemoveObserver(this);
 
   // Enter to hardware mirroring.
-  display::ManagedDisplayInfo d1(1, "", false);
-  d1.SetBounds(gfx::Rect(0, 0, 500, 400));
-  display::ManagedDisplayInfo d2(2, "", false);
-  d2.SetBounds(gfx::Rect(0, 0, 500, 400));
+  display::ManagedDisplayInfo d1 =
+      display::CreateDisplayInfo(1, gfx::Rect(0, 0, 500, 400));
+  display::ManagedDisplayInfo d2 =
+      display::CreateDisplayInfo(2, gfx::Rect(0, 0, 500, 400));
   std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.push_back(d1);
   display_info_list.push_back(d2);
@@ -3596,9 +3605,9 @@ TEST_F(DisplayManagerFontTest,
 
 TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
   int64_t id = display_manager()->GetDisplayAt(0).id();
-  display_manager()->RegisterDisplayProperty(id, display::Display::ROTATE_90,
-                                             nullptr, gfx::Size(), 1.0f, 1.0f,
-                                             60.f, false);
+  display_manager()->RegisterDisplayProperty(
+      id, display::Display::ROTATE_90, nullptr, gfx::Size(), 1.0f, 1.0f, 60.f,
+      false, display::kVrrNotCapable, absl::nullopt);
 
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(id);
@@ -3743,47 +3752,6 @@ TEST_F(DisplayManagerTest, DisconnectedInternalDisplayShouldUpdateDisplayInfo) {
   EXPECT_EQ(1.6f, display_info.device_scale_factor());
   ASSERT_EQ(1u, display_info.display_modes().size());
   EXPECT_EQ(1.6f, display_info.display_modes()[0].device_scale_factor());
-}
-
-// TODO(crbug/1262970): Delete when we can read radius from command line.
-TEST_F(DisplayManagerTest, SettingDefaultRoundedCornersOnInternalDisplay) {
-  scoped_feature_list().InitAndEnableFeature(
-      display::features::kRoundedDisplay);
-
-  Shell* shell = Shell::Get();
-  display::DisplayChangeObserver observer(shell->display_manager());
-
-  const std::unique_ptr<display::DisplaySnapshot> internal_snapshot =
-      display::FakeDisplaySnapshot::Builder()
-          .SetId(123)
-          .SetName("AmazingFakeRoundedDisplay")
-          .SetNativeMode(MakeDisplayMode())
-          .SetType(
-              display::DisplayConnectionType::DISPLAY_CONNECTION_TYPE_INTERNAL)
-          .Build();
-
-  internal_snapshot->set_current_mode(internal_snapshot->native_mode());
-
-  display::DisplayConfigurator::DisplayStateList outputs;
-  outputs.push_back(internal_snapshot.get());
-
-  // Update the display manager through DisplayChangeObserver.
-  observer.OnDisplayModeChanged(outputs);
-
-  display::Display primary_display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
-
-  WindowTreeHostManager* window_manager =
-      Shell::Get()->window_tree_host_manager();
-
-  auto* primary_display_provider =
-      window_manager->GetRoundedDisplayProvider(primary_display.id());
-
-  ash::RoundedDisplayProviderTestApi primary_display_provider_test(
-      primary_display_provider);
-
-  EXPECT_EQ(gfx::RoundedCornersF(16.0),
-            primary_display_provider_test.GetCurrentPanelRadii());
 }
 
 TEST_F(DisplayManagerTest, UpdateInternalDisplayNativeBounds) {

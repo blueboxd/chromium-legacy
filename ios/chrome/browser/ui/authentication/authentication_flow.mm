@@ -8,6 +8,8 @@
 #import "base/check_op.h"
 #import "base/ios/block_types.h"
 #import "base/notreached.h"
+#import "components/bookmarks/common/bookmark_features.h"
+#import "components/reading_list/features/reading_list_switches.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -44,6 +46,7 @@ enum AuthenticationState {
   CLEAR_DATA,
   SIGN_IN,
   COMMIT_SYNC,
+  ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE,
   REGISTER_FOR_USER_POLICY,
   FETCH_USER_POLICY,
   COMPLETE_WITH_SUCCESS,
@@ -192,6 +195,7 @@ enum AuthenticationState {
     case CLEAR_DATA:
     case SIGN_IN:
     case COMMIT_SYNC:
+    case ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE:
     case REGISTER_FOR_USER_POLICY:
     case FETCH_USER_POLICY:
       return COMPLETE_WITH_FAILURE;
@@ -219,9 +223,16 @@ enum AuthenticationState {
       return CHECK_MERGE_CASE;
     case CHECK_MERGE_CASE:
       // If the user enabled Sync, expect the data clearing strategy to be set.
-      DCHECK(self.postSignInAction == POST_SIGNIN_ACTION_NONE ||
-             (self.postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC &&
-              self.localDataClearingStrategy != SHOULD_CLEAR_DATA_USER_CHOICE));
+      switch (self.postSignInAction) {
+        case PostSignInAction::kNone:
+        case PostSignInAction::kEnableBookmarkReadingListAccountStorage:
+          // `localDataClearingStrategy` is not required.
+          break;
+        case PostSignInAction::kCommitSync:
+          DCHECK_NE(SHOULD_CLEAR_DATA_USER_CHOICE,
+                    self.localDataClearingStrategy);
+          break;
+      }
       if (_shouldShowManagedConfirmation)
         return SHOW_MANAGED_CONFIRMATION;
       else if (_shouldSignOut)
@@ -245,14 +256,18 @@ enum AuthenticationState {
       return SIGN_IN;
     case SIGN_IN:
       switch (self.postSignInAction) {
-        case POST_SIGNIN_ACTION_COMMIT_SYNC:
+        case PostSignInAction::kCommitSync:
           return COMMIT_SYNC;
-        case POST_SIGNIN_ACTION_NONE:
+        case PostSignInAction::kEnableBookmarkReadingListAccountStorage:
+          return ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE;
+        case PostSignInAction::kNone:
           return COMPLETE_WITH_SUCCESS;
       }
     case COMMIT_SYNC:
       if (policy::IsUserPolicyEnabled() && _shouldFetchUserPolicy)
         return REGISTER_FOR_USER_POLICY;
+      return COMPLETE_WITH_SUCCESS;
+    case ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE:
       return COMPLETE_WITH_SUCCESS;
     case REGISTER_FOR_USER_POLICY:
       if (!_dmToken.length || !_clientID.length) {
@@ -273,7 +288,7 @@ enum AuthenticationState {
 }
 
 - (void)continueSignin {
-  ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState = [self originalBrowserState];
   if (self.handlingError) {
     // The flow should not continue while the error is being handled, e.g. while
     // the user is being informed of an issue.
@@ -332,6 +347,10 @@ enum AuthenticationState {
       [self continueSignin];
       return;
 
+    case ENABLE_BOOKMARK_READING_LIST_ACCOUNT_STORAGE:
+      [self optInBookmarkReadingListAccountStorage];
+      return;
+
     case REGISTER_FOR_USER_POLICY:
       [_performer registerUserPolicy:browserState
                          forIdentity:_identityToSignIn];
@@ -380,10 +399,11 @@ enum AuthenticationState {
     return;
   }
   switch (self.postSignInAction) {
-    case POST_SIGNIN_ACTION_COMMIT_SYNC:
+    case PostSignInAction::kCommitSync:
       [self checkMergeCaseForUnsupervisedAccounts];
       break;
-    case POST_SIGNIN_ACTION_NONE:
+    case PostSignInAction::kEnableBookmarkReadingListAccountStorage:
+    case PostSignInAction::kNone:
       [self continueSignin];
       break;
   }
@@ -404,7 +424,7 @@ enum AuthenticationState {
 // is not subject to parental controls and then continues sign-in.
 - (void)checkMergeCaseForUnsupervisedAccounts {
   if (([_performer shouldHandleMergeCaseForIdentity:_identityToSignIn
-                                  browserStatePrefs:_browser->GetBrowserState()
+                                  browserStatePrefs:[self originalBrowserState]
                                                         ->GetPrefs()])) {
     [_performer promptMergeCaseForIdentity:_identityToSignIn
                                    browser:_browser
@@ -420,7 +440,7 @@ enum AuthenticationState {
 - (void)checkSigninSteps {
   id<SystemIdentity> currentIdentity =
       AuthenticationServiceFactory::GetForBrowserState(
-          _browser->GetBrowserState())
+          [self originalBrowserState])
           ->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if (currentIdentity && ![currentIdentity isEqual:_identityToSignIn]) {
     // If the identity to sign-in is different than the current identity,
@@ -432,7 +452,7 @@ enum AuthenticationState {
 }
 
 - (void)signInIdentity:(id<SystemIdentity>)identity {
-  ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState = [self originalBrowserState];
   ChromeAccountManagerService* accountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
 
@@ -456,9 +476,10 @@ enum AuthenticationState {
     bool isManagedAccount = _identityToSignInHostedDomain.length > 0;
     signin_metrics::RecordSigninAccountType(signin::ConsentLevel::kSignin,
                                             isManagedAccount);
-    if (self.postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC)
+    if (self.postSignInAction == PostSignInAction::kCommitSync) {
       signin_metrics::RecordSigninAccountType(signin::ConsentLevel::kSync,
                                               isManagedAccount);
+    }
   }
   if (_signInCompletion) {
     // Make sure the completion callback is always called after
@@ -502,6 +523,26 @@ enum AuthenticationState {
                               browser:_browser];
 }
 
+// Opts in the bookmark and reading list account storage and continues the
+// sign-in flow.
+- (void)optInBookmarkReadingListAccountStorage {
+  bool bookmarksAccountStorageEnabled =
+      base::FeatureList::IsEnabled(bookmarks::kEnableBookmarksAccountStorage);
+  bool dualReadingListModelEnabled = base::FeatureList::IsEnabled(
+      reading_list::switches::kReadingListEnableDualReadingListModel);
+  bool readingListTransportUponSignInEnabled = base::FeatureList::IsEnabled(
+      reading_list::switches::kReadingListEnableSyncTransportModeUponSignIn);
+  CHECK(bookmarksAccountStorageEnabled ||
+        (dualReadingListModelEnabled && readingListTransportUponSignInEnabled))
+      << "bookmarksAccountStorageEnabled: " << bookmarksAccountStorageEnabled
+      << ", dualReadingListModelEnabled: " << dualReadingListModelEnabled
+      << ", readingListTransportUponSignInEnabled: "
+      << readingListTransportUponSignInEnabled;
+  // TODO(crbug.com/1427044): Need to call the right APIs to opt in, as soon as
+  // those APIs will be implemented.
+  [self continueSignin];
+}
+
 #pragma mark AuthenticationFlowPerformerDelegate
 
 - (void)didSignOut {
@@ -531,7 +572,7 @@ enum AuthenticationState {
   DCHECK_EQ(FETCH_MANAGED_STATUS, _state);
   _shouldShowManagedConfirmation =
       [hostedDomain length] > 0 &&
-      (self.postSignInAction == POST_SIGNIN_ACTION_COMMIT_SYNC);
+      (self.postSignInAction == PostSignInAction::kCommitSync);
   _identityToSignInHostedDomain = hostedDomain;
   _shouldFetchUserPolicy = YES;
   [self continueSignin];
@@ -598,6 +639,14 @@ enum AuthenticationState {
                                             completion();
                                           }
                                         }];
+}
+
+#pragma mark - Private methods
+
+// The original chrome browser state used for services that don't exist in
+// incognito mode.
+- (ChromeBrowserState*)originalBrowserState {
+  return _browser->GetBrowserState()->GetOriginalChromeBrowserState();
 }
 
 #pragma mark - Used for testing

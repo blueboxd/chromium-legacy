@@ -51,12 +51,6 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
   // while the incognito button and left/ride fade stay fixed. Put the new tab
   // button and tabs in a separate layer placed visually below the others.
   scrollable_strip_layer_->SetIsDrawable(true);
-  const bool tab_strip_improvements_enabled =
-      base::FeatureList::IsEnabled(chrome::android::kTabStripImprovements);
-  if (!tab_strip_improvements_enabled) {
-    scrollable_strip_layer_->AddChild(new_tab_button_);
-  }
-
   tab_strip_layer_->SetIsDrawable(true);
   tab_strip_layer_->AddChild(scrollable_strip_layer_);
 
@@ -65,12 +59,10 @@ TabStripSceneLayer::TabStripSceneLayer(JNIEnv* env,
   tab_strip_layer_->AddChild(model_selector_button_);
   tab_strip_layer_->AddChild(model_selector_button_background_);
   model_selector_button_background_->AddChild(model_selector_button_);
-  if (tab_strip_improvements_enabled) {
-    if (tab_strip_redesign_enabled) {
-      tab_strip_layer_->AddChild(new_tab_button_background_);
-    }
-    tab_strip_layer_->AddChild(new_tab_button_);
+  if (tab_strip_redesign_enabled) {
+    tab_strip_layer_->AddChild(new_tab_button_background_);
   }
+  tab_strip_layer_->AddChild(new_tab_button_);
   layer()->AddChild(tab_strip_layer_);
 }
 
@@ -171,11 +163,6 @@ void TabStripSceneLayer::UpdateNewTabButton(
 
   new_tab_button_->SetUIResourceId(button_resource->ui_resource()->id());
 
-  // The touch target for the new tab button is skewed towards the end of the
-  // strip. This ensures that the view itself is correctly aligned without
-  // adjusting the touch target.
-  float left_offset = touch_target_offset;
-
   new_tab_button_->SetBounds(button_resource->size());
   new_tab_button_->SetHideLayerAndSubtree(!visible);
   new_tab_button_->SetOpacity(button_alpha);
@@ -193,7 +180,7 @@ void TabStripSceneLayer::UpdateNewTabButton(
                                   2;
     new_tab_button_background_->SetUIResourceId(
         button_background_resource->ui_resource()->id());
-    new_tab_button_background_->SetPosition(gfx::PointF(x + left_offset, y));
+    new_tab_button_background_->SetPosition(gfx::PointF(x, y));
 
     new_tab_button_background_->SetBounds(button_background_resource->size());
     new_tab_button_background_->SetHideLayerAndSubtree(!visible);
@@ -202,6 +189,11 @@ void TabStripSceneLayer::UpdateNewTabButton(
         gfx::PointF(background_left_offset, background_top_offset));
     new_tab_button_background_->AddChild(new_tab_button_);
   } else {
+    // The touch target for the new tab button is skewed towards the end of the
+    // strip. This ensures that the view itself is correctly aligned without
+    // adjusting the touch target.
+    float left_offset = touch_target_offset;
+
     // Only show new tab button icon when TSR is disabled
     new_tab_button_->SetPosition(gfx::PointF(x + left_offset, y));
   }
@@ -271,6 +263,7 @@ void TabStripSceneLayer::UpdateModelSelectorButtonBackground(
   float background_top_offset = (button_background_resource->size().height() -
                                  button_resource->size().height()) /
                                 2;
+
   model_selector_button_background_->SetPosition(gfx::PointF(x, y));
 
   model_selector_button_background_->SetBounds(

@@ -224,7 +224,7 @@ public class MessageQueueManagerTest {
         queueManager.enqueueMessage(m3, m3, SCOPE_INSTANCE_ID_A, false);
 
         var dismissed = HistogramWatcher.newBuilder()
-                                .expectIntRecords("Android.Messages.Dismissed.TestMessage",
+                                .expectIntRecordTimes("Android.Messages.Dismissed.TestMessage",
                                         DismissReason.ACTIVITY_DESTROYED, 3)
                                 .build();
         queueManager.dismissAllMessages(DismissReason.ACTIVITY_DESTROYED);

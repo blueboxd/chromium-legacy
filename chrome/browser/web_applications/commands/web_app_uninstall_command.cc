@@ -11,9 +11,9 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/string_util.h"
+#include "base/strings/to_string.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/locks/full_system_lock.h"
+#include "chrome/browser/web_applications/locks/all_apps_lock.h"
 #include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -30,7 +30,7 @@ namespace web_app {
 namespace {
 
 bool CanUninstallAllManagementSources(
-    const webapps::WebappUninstallSource& uninstall_source) {
+    webapps::WebappUninstallSource uninstall_source) {
   // Check that the source was from a known 'user' or allowed ones such
   // as kMigration.
   return uninstall_source == webapps::WebappUninstallSource::kUnknown ||
@@ -54,8 +54,8 @@ WebAppUninstallCommand::WebAppUninstallCommand(
     webapps::WebappUninstallSource uninstall_source,
     UninstallWebAppCallback callback,
     Profile* profile)
-    : WebAppCommandTemplate<FullSystemLock>("WebAppUninstallCommand"),
-      lock_description_(std::make_unique<FullSystemLockDescription>()),
+    : WebAppCommandTemplate<AllAppsLock>("WebAppUninstallCommand"),
+      lock_description_(std::make_unique<AllAppsLockDescription>()),
       app_id_(app_id),
       callback_(std::move(callback)),
       profile_prefs_(profile->GetPrefs()) {
@@ -68,8 +68,7 @@ WebAppUninstallCommand::WebAppUninstallCommand(
 
 WebAppUninstallCommand::~WebAppUninstallCommand() = default;
 
-void WebAppUninstallCommand::StartWithLock(
-    std::unique_ptr<FullSystemLock> lock) {
+void WebAppUninstallCommand::StartWithLock(std::unique_ptr<AllAppsLock> lock) {
   lock_ = std::move(lock);
 
   while (!queued_uninstalls_.empty()) {
@@ -217,17 +216,27 @@ void WebAppUninstallCommand::Abort(webapps::UninstallResultCode code) {
 
 void WebAppUninstallCommand::Uninstall(
     const AppId& app_id,
-    const webapps::WebappUninstallSource& uninstall_source) {
+    webapps::WebappUninstallSource uninstall_source) {
   QueueSubAppsForUninstallIfAny(app_id);
 
+  auto* web_app = lock_->registrar().GetAppById(app_id);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  absl::optional<base::FilePath> app_profile_path;
+  if (web_app->chromeos_data().has_value()) {
+    app_profile_path = web_app->chromeos_data()->app_profile_path;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   auto uninstall_job = WebAppUninstallJob::CreateAndStart(
-      app_id,
-      url::Origin::Create(lock_->registrar().GetAppById(app_id)->start_url()),
+      app_id, url::Origin::Create(web_app->start_url()),
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      app_profile_path,
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
       base::BindOnce(&WebAppUninstallCommand::OnSingleUninstallComplete,
                      weak_factory_.GetWeakPtr(), app_id, uninstall_source),
       lock_->os_integration_manager(), lock_->sync_bridge(),
       lock_->icon_manager(), lock_->registrar(), lock_->install_manager(),
-      lock_->translation_manager(), *profile_prefs_);
+      lock_->translation_manager(), *profile_prefs_, uninstall_source);
   apps_pending_uninstall_[app_id] = std::move(uninstall_job);
 }
 
@@ -244,7 +253,7 @@ void WebAppUninstallCommand::QueueSubAppsForUninstallIfAny(
 void WebAppUninstallCommand::RemoveManagementTypeAfterOsUninstallRegistration(
     const AppId& app_id,
     const WebAppManagement::Type& management_type,
-    const webapps::WebappUninstallSource& uninstall_source,
+    webapps::WebappUninstallSource uninstall_source,
     OsHooksErrors os_hooks_errors) {
   {
     ScopedRegistryUpdate update(&lock_->sync_bridge());
@@ -266,7 +275,7 @@ void WebAppUninstallCommand::RemoveManagementTypeAfterOsUninstallRegistration(
 
 void WebAppUninstallCommand::OnSingleUninstallComplete(
     const AppId& app_id,
-    const webapps::WebappUninstallSource& source,
+    webapps::WebappUninstallSource source,
     webapps::UninstallResultCode code) {
   DCHECK(base::Contains(apps_pending_uninstall_, app_id));
   apps_pending_uninstall_.erase(app_id);

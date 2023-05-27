@@ -580,12 +580,12 @@ bool IsPlainTextMarkup(Node* node) {
 static bool ShouldPreserveNewline(const EphemeralRange& range) {
   if (Node* node = range.StartPosition().NodeAsRangeFirstNode()) {
     if (LayoutObject* layout_object = node->GetLayoutObject())
-      return layout_object->Style()->PreserveNewline();
+      return layout_object->Style()->ShouldPreserveBreaks();
   }
 
   if (Node* node = range.StartPosition().AnchorNode()) {
     if (LayoutObject* layout_object = node->GetLayoutObject())
-      return layout_object->Style()->PreserveNewline();
+      return layout_object->Style()->ShouldPreserveBreaks();
   }
 
   return false;
@@ -897,7 +897,8 @@ static Document* CreateStagingDocumentForMarkupSanitization(
   frame->SetView(frame_view);
   // TODO(https://crbug.com/1355751) Initialize `storage_key`.
   frame->Init(/*opener=*/nullptr, DocumentToken(), /*policy_container=*/nullptr,
-              StorageKey(), /*document_ukm_source_id=*/ukm::kInvalidSourceId);
+              StorageKey(), /*document_ukm_source_id=*/ukm::kInvalidSourceId,
+              /*creator_base_url=*/KURL());
 
   Document* document = frame->GetDocument();
   DCHECK(document);

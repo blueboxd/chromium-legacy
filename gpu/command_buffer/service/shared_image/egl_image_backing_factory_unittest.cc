@@ -29,9 +29,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
+#include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/buffer_format_utils.h"
@@ -96,7 +98,7 @@ void CreateSharedContext(const GpuDriverBugWorkarounds& workarounds,
   context_state = base::MakeRefCounted<SharedContextState>(
       std::move(share_group), surface, context,
       /*use_virtualized_gl_contexts=*/false, base::DoNothing());
-  context_state->InitializeGrContext(GpuPreferences(), workarounds, nullptr);
+  context_state->InitializeSkia(GpuPreferences(), workarounds);
   context_state->InitializeGL(GpuPreferences(), feature_info);
 }
 
@@ -175,7 +177,7 @@ class EGLImageBackingFactoryThreadSafeTest
     EXPECT_EQ(size.height(), backend_texture.height());
 
     // Create an Sk Image from GrBackendTexture.
-    auto sk_image = SkImage::MakeFromTexture(
+    auto sk_image = SkImages::BorrowTextureFrom(
         context_state_->gr_context(), backend_texture, kTopLeft_GrSurfaceOrigin,
         kRGBA_8888_SkColorType, kOpaque_SkAlphaType, nullptr);
 
@@ -391,7 +393,7 @@ TEST_F(EGLImageBackingFactoryThreadSafeTest, Dawn_SkiaGL) {
   // requested to be.
   auto backing = backing_factory_->CreateSharedImage(
       mailbox, format, surface_handle, size, color_space,
-      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage,
+      kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, usage, "TestLabel",
       /* is_thread_safe=*/true);
   ASSERT_NE(backing, nullptr);
 
@@ -428,7 +430,7 @@ TEST_F(EGLImageBackingFactoryThreadSafeTest, Dawn_SkiaGL) {
 
     wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
     wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPassDesc);
-    pass.EndPass();
+    pass.End();
     wgpu::CommandBuffer commands = encoder.Finish();
 
     wgpu::Queue queue = device.GetQueue();
@@ -477,11 +479,11 @@ CreateAndValidateSharedImageRepresentations::
         viz::ResourceSizes::CheckedSizeInBytes<unsigned int>(size_, format));
     backing_ = backing_factory->CreateSharedImage(
         mailbox_, format, size_, color_space, surface_origin, alpha_type, usage,
-        initial_data);
+        "TestLabel", initial_data);
   } else {
     backing_ = backing_factory->CreateSharedImage(
         mailbox_, format, surface_handle, size_, color_space, surface_origin,
-        alpha_type, usage, is_thread_safe);
+        alpha_type, usage, "TestLabel", is_thread_safe);
   }
 
   // As long as either |chromium_image_ar30| or |chromium_image_ab30| is

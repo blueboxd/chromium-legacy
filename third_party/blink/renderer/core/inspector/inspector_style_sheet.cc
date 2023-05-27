@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_layer_block_rule.h"
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
+#include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
+#include "third_party/blink/renderer/core/css/css_try_rule.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_local_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_observer.h"
@@ -149,7 +151,7 @@ void GetClassNamesFromRule(CSSStyleRule* rule, HashSet<String>& unique_names) {
     while (simple_selector) {
       if (simple_selector->Match() == CSSSelector::kClass)
         unique_names.insert(simple_selector->Value());
-      simple_selector = simple_selector->TagHistory();
+      simple_selector = simple_selector->NextSimpleSelector();
     }
   }
 }
@@ -614,6 +616,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kFontFace:
       case StyleRule::kKeyframe:
       case StyleRule::kFontFeature:
+      case StyleRule::kTry:
         result->push_back(data);
         break;
       case StyleRule::kStyle:
@@ -624,6 +627,7 @@ void FlattenSourceData(const CSSRuleSourceDataList& data_list,
       case StyleRule::kContainer:
       case StyleRule::kLayerBlock:
       case StyleRule::kFontFeatureValues:
+      case StyleRule::kPositionFallback:
         result->push_back(data);
         FlattenSourceData(data->child_rules, result);
         break;
@@ -659,6 +663,10 @@ CSSRuleList* AsCSSRuleList(CSSRule* rule) {
   if (auto* layer_rule = DynamicTo<CSSLayerBlockRule>(rule))
     return layer_rule->cssRules();
 
+  if (auto* position_fallback_rule = DynamicTo<CSSPositionFallbackRule>(rule)) {
+    return position_fallback_rule->cssRules();
+  }
+
   return nullptr;
 }
 
@@ -680,6 +688,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kViewportRule:
       case CSSRule::kKeyframeRule:
       case CSSRule::kFontFeatureRule:
+      case CSSRule::kTryRule:
         result->push_back(rule);
         break;
       case CSSRule::kStyleRule:
@@ -690,6 +699,7 @@ void CollectFlatRules(RuleList rule_list, CSSRuleVector* result) {
       case CSSRule::kContainerRule:
       case CSSRule::kLayerBlockRule:
       case CSSRule::kFontFeatureValuesRule:
+      case CSSRule::kPositionFallbackRule:
         result->push_back(rule);
         CollectFlatRules(AsCSSRuleList(rule), result);
         break;
@@ -1188,7 +1198,8 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
 
   CSSRule* rule = RuleForSourceData(source_data);
   if (!rule || !rule->parentStyleSheet() ||
-      (!IsA<CSSStyleRule>(rule) && !IsA<CSSKeyframeRule>(rule))) {
+      (!IsA<CSSStyleRule>(rule) && !IsA<CSSKeyframeRule>(rule) &&
+       !IsA<CSSTryRule>(rule))) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotFoundError,
         "Source range didn't match existing style source range");
@@ -1196,10 +1207,13 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
   }
 
   CSSStyleDeclaration* style = nullptr;
-  if (auto* style_rule = DynamicTo<CSSStyleRule>(rule))
+  if (auto* style_rule = DynamicTo<CSSStyleRule>(rule)) {
     style = style_rule->style();
-  else
+  } else if (IsA<CSSTryRule>(rule)) {
+    style = To<CSSTryRule>(rule)->style();
+  } else {
     style = To<CSSKeyframeRule>(rule)->style();
+  }
 
   Document* owner_document = page_style_sheet_->OwnerDocument();
   ExecutionContext* execution_context =
@@ -1777,6 +1791,10 @@ InspectorStyleSheet::BuildObjectForStyleSheetInfo() {
   if (HasSourceURL())
     result->setHasSourceURL(true);
 
+  if (request_failed_to_load_.has_value()) {
+    result->setLoadingFailed(*request_failed_to_load_);
+  }
+
   if (style_sheet->ownerNode()) {
     result->setOwnerNode(
         IdentifiersFactory::IntIdForNode(style_sheet->ownerNode()));
@@ -1893,6 +1911,19 @@ InspectorStyleSheet::BuildObjectForRuleUsage(CSSRule* rule, bool was_used) {
           .setUsed(was_used)
           .build();
 
+  return result;
+}
+
+std::unique_ptr<protocol::CSS::CSSTryRule>
+InspectorStyleSheet::BuildObjectForTryRule(CSSTryRule* try_rule) {
+  std::unique_ptr<protocol::CSS::CSSTryRule> result =
+      protocol::CSS::CSSTryRule::create()
+          .setOrigin(origin_)
+          .setStyle(BuildObjectForStyle(try_rule->style()))
+          .build();
+  if (CanBind(origin_) && !Id().empty()) {
+    result->setStyleSheetId(Id());
+  }
   return result;
 }
 
@@ -2172,7 +2203,8 @@ const CSSRuleVector& InspectorStyleSheet::FlatRules() {
   return cssom_flat_rules_;
 }
 
-bool InspectorStyleSheet::ResourceStyleSheetText(String* result) {
+bool InspectorStyleSheet::ResourceStyleSheetText(String* result,
+                                                 bool* loadingFailed) {
   if (origin_ == protocol::CSS::StyleSheetOriginEnum::Injected ||
       origin_ == protocol::CSS::StyleSheetOriginEnum::UserAgent)
     return false;
@@ -2195,7 +2227,8 @@ bool InspectorStyleSheet::ResourceStyleSheetText(String* result) {
 
   bool base64_encoded;
   bool success = network_agent_->FetchResourceContent(
-      page_style_sheet_->OwnerDocument(), KURL(href), result, &base64_encoded);
+      page_style_sheet_->OwnerDocument(), KURL(href), result, &base64_encoded,
+      loadingFailed);
   return success && !base64_encoded;
 }
 
@@ -2248,11 +2281,15 @@ void InspectorStyleSheet::SyncTextIfNeeded() {
 
 void InspectorStyleSheet::UpdateText() {
   String text;
+  request_failed_to_load_.reset();
   bool success = InspectorStyleSheetText(&text);
   if (!success)
     success = InlineStyleSheetText(&text);
-  if (!success)
-    success = ResourceStyleSheetText(&text);
+  if (!success) {
+    bool loadingFailed = false;
+    success = ResourceStyleSheetText(&text, &loadingFailed);
+    request_failed_to_load_ = loadingFailed;
+  }
   if (!success)
     success = CSSOMStyleSheetText(&text);
   if (success)

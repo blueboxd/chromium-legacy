@@ -351,9 +351,19 @@ void SetupFragmentBuilderForFragmentation(
   DCHECK(!node.IsMonolithic() || space.IsAnonymous());
   // If we turn off fragmentation on a non-monolithic node, we need to treat the
   // resulting fragment as monolithic. This matters when it comes to determining
-  // the containing block of out-of-flow positioned descendants.
+  // the containing block of out-of-flow positioned descendants. In order to
+  // match the behavior in OOF layout, however, the fragment should only become
+  // monolithic when fragmentation is forced off at the first fragment. If we
+  // reach the end of the visible area after the containing block has inserted a
+  // break, it should not be set as monolithic. (How can we be monolithic, if we
+  // create more than one fragment, anyway?) An OOF fragment will always become
+  // a direct child of the fragmentainer if the containing block generates more
+  // than one fragment. The monolithicness flag is ultimately checked by
+  // pre-paint, in order to know where in the tree to look for the OOF fragment
+  // (direct fragmentainer child vs. child of the actual containing block).
   builder->SetIsMonolithic(!space.IsAnonymous() &&
-                           space.IsBlockFragmentationForcedOff());
+                           space.IsBlockFragmentationForcedOff() &&
+                           !IsBreakInside(previous_break_token));
 
   if (space.HasBlockFragmentation())
     builder->SetHasBlockFragmentation();
@@ -502,21 +512,21 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
     // already have broken inside). We'll allow this to overflow the
     // fragmentainer.
     //
-    // TODO(mstensho): This is desired behavior for multicol, but not ideal for
-    // printing, where we'd prefer the unbreakable content to be sliced into
-    // different pages, lest it be clipped and lost.
-    //
     // There is a last-resort breakpoint before trailing border and padding, so
     // first check if we can break there and still make progress. Don't allow a
     // break here for table cells, though, as that might disturb the row
     // stretching machinery, causing an infinite loop. We'd add the stretch
     // amount to the block-size to the content box of the table cell, even
-    // though we're past it.
+    // though we're past it. We're always guaranteed progress if there's
+    // incoming monolithic overflow, so in such cases we can always break before
+    // border / padding (and add as many fragments we need in order to get past
+    // the overflow).
     DCHECK_GE(desired_intrinsic_block_size, trailing_border_padding);
     DCHECK_GE(desired_block_size, trailing_border_padding);
 
     LayoutUnit subtractable_border_padding;
-    if (desired_block_size > trailing_border_padding && !node.IsTableCell()) {
+    if ((desired_block_size > trailing_border_padding && !node.IsTableCell()) ||
+        (previous_break_token && previous_break_token->MonolithicOverflow())) {
       subtractable_border_padding = trailing_border_padding;
     }
 
@@ -562,6 +572,19 @@ NGBreakStatus FinishFragmentation(NGBlockNode node,
     if (!was_broken_by_child)
       builder->SetIsAtBlockEnd();
     return NGBreakStatus::kContinue;
+  }
+
+  if (!final_block_size && previous_break_token &&
+      previous_break_token->MonolithicOverflow()) {
+    // See if we've now managed to move past previous fragmentainer overflow, or
+    // if we need to steer clear of at least some of it in the next
+    // fragmentainer as well. This only happens when printing monolithic
+    // content.
+    LayoutUnit remaining_overflow = previous_break_token->MonolithicOverflow() -
+                                    FragmentainerCapacity(space);
+    if (remaining_overflow > LayoutUnit()) {
+      builder->ReserveSpaceForMonolithicOverflow(remaining_overflow);
+    }
   }
 
   if (builder->ShouldBreakInside()) {
@@ -1163,25 +1186,30 @@ bool IsEarlyBreakTarget(const NGEarlyBreak& early_break,
   return early_break.IsBreakBefore() && early_break.BlockNode() == child;
 }
 
-NGConstraintSpace CreateConstraintSpaceForColumns(
+NGConstraintSpace CreateConstraintSpaceForFragmentainer(
     const NGConstraintSpace& parent_space,
-    LogicalSize column_size,
+    NGFragmentationType fragmentation_type,
+    LogicalSize fragmentainer_size,
     LogicalSize percentage_resolution_size,
     bool allow_discard_start_margin,
     bool balance_columns,
     NGBreakAppeal min_break_appeal) {
   NGConstraintSpaceBuilder space_builder(
       parent_space, parent_space.GetWritingDirection(), /* is_new_fc */ true);
-  space_builder.SetAvailableSize(column_size);
+  space_builder.SetAvailableSize(fragmentainer_size);
   space_builder.SetPercentageResolutionSize(percentage_resolution_size);
   space_builder.SetInlineAutoBehavior(NGAutoBehavior::kStretchImplicit);
-  space_builder.SetFragmentationType(kFragmentColumn);
+  space_builder.SetFragmentationType(fragmentation_type);
   space_builder.SetShouldPropagateChildBreakValues();
-  space_builder.SetFragmentainerBlockSize(column_size.block_size);
+  space_builder.SetFragmentainerBlockSize(fragmentainer_size.block_size);
   space_builder.SetIsAnonymous(true);
-  space_builder.SetIsInColumnBfc();
-  if (balance_columns)
+  if (fragmentation_type == kFragmentColumn) {
+    space_builder.SetIsInColumnBfc();
+  }
+  if (balance_columns) {
+    DCHECK_EQ(fragmentation_type, kFragmentColumn);
     space_builder.SetIsInsideBalancedColumns();
+  }
   space_builder.SetMinBreakAppeal(min_break_appeal);
   if (allow_discard_start_margin) {
     // Unless it's the first column in the multicol container, or the first
@@ -1398,8 +1426,9 @@ bool CanPaintMultipleFragments(const LayoutObject& layout_object) {
     return true;
 
   // If the object isn't monolithic, we're good.
-  if (layout_box->GetNGPaginationBreakability() != LayoutBox::kForbidBreaks)
+  if (!layout_box->IsMonolithic()) {
     return true;
+  }
 
   // There seems to be many issues preventing us from allowing repeated
   // scrollable containers, so we need to disallow them (unless we're printing,

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ref.h"
 #include "base/strings/stringprintf.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
@@ -178,20 +179,20 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
       CreateRequestActionForTesting(RequestAction::Type::MODIFY_HEADERS,
                                     *rule_1.id, *rule_1.priority, kSource1ID);
   action_1.request_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE,
+      RequestAction::HeaderInfo("header1", dnr_api::HeaderOperation::kRemove,
                                 absl::nullopt),
-      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_SET,
+      RequestAction::HeaderInfo("header2", dnr_api::HeaderOperation::kSet,
                                 "value2")};
 
   RequestAction action_2 =
       CreateRequestActionForTesting(RequestAction::Type::MODIFY_HEADERS,
                                     *rule_2.id, *rule_2.priority, kSource2ID);
   action_2.response_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE,
+      RequestAction::HeaderInfo("header1", dnr_api::HeaderOperation::kRemove,
                                 absl::nullopt),
-      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_APPEND,
+      RequestAction::HeaderInfo("header2", dnr_api::HeaderOperation::kAppend,
                                 "VALUE2"),
-      RequestAction::HeaderInfo("header3", dnr_api::HEADER_OPERATION_SET,
+      RequestAction::HeaderInfo("header3", dnr_api::HeaderOperation::kSet,
                                 "VALUE3")};
 
   // |action_2| should be before |action_1| because |rule_2|
@@ -227,20 +228,20 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
       CreateRequestActionForTesting(RequestAction::Type::MODIFY_HEADERS,
                                     *rule_1.id, *rule_1.priority, kSource1ID);
   action_1.request_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE,
+      RequestAction::HeaderInfo("header1", dnr_api::HeaderOperation::kRemove,
                                 absl::nullopt),
-      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_SET,
+      RequestAction::HeaderInfo("header2", dnr_api::HeaderOperation::kSet,
                                 "value2")};
 
   action_2 =
       CreateRequestActionForTesting(RequestAction::Type::MODIFY_HEADERS,
                                     *rule_2.id, *rule_2.priority, kSource2ID);
   action_2.response_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE,
+      RequestAction::HeaderInfo("header1", dnr_api::HeaderOperation::kRemove,
                                 absl::nullopt),
-      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_APPEND,
+      RequestAction::HeaderInfo("header2", dnr_api::HeaderOperation::kAppend,
                                 "VALUE2"),
-      RequestAction::HeaderInfo("header3", dnr_api::HEADER_OPERATION_SET,
+      RequestAction::HeaderInfo("header3", dnr_api::HeaderOperation::kSet,
                                 "VALUE3")};
 
   // |action_1| should now be before |action_2| after their
@@ -346,10 +347,12 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions_Priority) {
 
   RequestAction header_3_action = create_action_for_rule(
       url_rule_3, kSource1ID,
-      {HeaderInfo("header3", dnr_api::HEADER_OPERATION_REMOVE, absl::nullopt)});
+      {HeaderInfo("header3", dnr_api::HeaderOperation::kRemove,
+                  absl::nullopt)});
   RequestAction header_6_action = create_action_for_rule(
       regex_rule_3, kSource2ID,
-      {HeaderInfo("header6", dnr_api::HEADER_OPERATION_REMOVE, absl::nullopt)});
+      {HeaderInfo("header6", dnr_api::HeaderOperation::kRemove,
+                  absl::nullopt)});
 
   // For the request to "http://google.com/1", since |url_rule_3| and
   // |regex_rule_3| are the only rules with a greater priority than
@@ -371,16 +374,20 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions_Priority) {
 
   RequestAction header_1_action = create_action_for_rule(
       url_rule_1, kSource1ID,
-      {HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE, absl::nullopt)});
+      {HeaderInfo("header1", dnr_api::HeaderOperation::kRemove,
+                  absl::nullopt)});
   RequestAction header_2_action = create_action_for_rule(
       url_rule_2, kSource1ID,
-      {HeaderInfo("header2", dnr_api::HEADER_OPERATION_REMOVE, absl::nullopt)});
+      {HeaderInfo("header2", dnr_api::HeaderOperation::kRemove,
+                  absl::nullopt)});
   RequestAction header_4_action = create_action_for_rule(
       regex_rule_1, kSource2ID,
-      {HeaderInfo("header4", dnr_api::HEADER_OPERATION_REMOVE, absl::nullopt)});
+      {HeaderInfo("header4", dnr_api::HeaderOperation::kRemove,
+                  absl::nullopt)});
   RequestAction header_5_action = create_action_for_rule(
       regex_rule_2, kSource2ID,
-      {HeaderInfo("header5", dnr_api::HEADER_OPERATION_REMOVE, absl::nullopt)});
+      {HeaderInfo("header5", dnr_api::HeaderOperation::kRemove,
+                  absl::nullopt)});
 
   // For the request to "http://google.com/2", "header1" to "header6" should be
   // removed since all modifyHeaders rules are matched and there is no matching
@@ -429,43 +436,43 @@ TEST_F(CompositeMatcherTest, NotifyWithholdFromPageAccess) {
   GURL https_example_url = GURL("https://example.com");
 
   struct {
-    GURL& request_url;
+    const raw_ref<GURL, ExperimentalAsh> request_url;
     PageAccess access;
     absl::optional<GURL> expected_final_url;
     bool should_notify_withheld;
   } test_cases[] = {
       // If access to the request is allowed, we should not notify that
       // the request is withheld.
-      {google_url, PageAccess::kAllowed, ruleset1_url, false},
-      {example_url, PageAccess::kAllowed, https_example_url, false},
-      {yahoo_url, PageAccess::kAllowed, absl::nullopt, false},
+      {raw_ref(google_url), PageAccess::kAllowed, ruleset1_url, false},
+      {raw_ref(example_url), PageAccess::kAllowed, https_example_url, false},
+      {raw_ref(yahoo_url), PageAccess::kAllowed, absl::nullopt, false},
 
       // Notify the request is withheld if it matches with a redirect rule.
-      {google_url, PageAccess::kWithheld, absl::nullopt, true},
+      {raw_ref(google_url), PageAccess::kWithheld, absl::nullopt, true},
       // If the page access to the request is withheld but it matches with
       // an upgrade rule, or no rule, then we should not notify.
-      {example_url, PageAccess::kWithheld, https_example_url, false},
-      {yahoo_url, PageAccess::kWithheld, absl::nullopt, false},
+      {raw_ref(example_url), PageAccess::kWithheld, https_example_url, false},
+      {raw_ref(yahoo_url), PageAccess::kWithheld, absl::nullopt, false},
 
       // If access to the request is denied instead of withheld, the extension
       // should not be notified.
-      {google_url, PageAccess::kDenied, absl::nullopt, false},
+      {raw_ref(google_url), PageAccess::kDenied, absl::nullopt, false},
       // If the page access to the request is denied but it matches with
       // an upgrade rule, or no rule, then we should not notify.
-      {example_url, PageAccess::kDenied, https_example_url, false},
-      {yahoo_url, PageAccess::kDenied, absl::nullopt, false},
+      {raw_ref(example_url), PageAccess::kDenied, https_example_url, false},
+      {raw_ref(yahoo_url), PageAccess::kDenied, absl::nullopt, false},
   };
 
   for (const auto& test_case : test_cases) {
     SCOPED_TRACE(base::StringPrintf(
         "request_url=%s, access=%d, expected_final_url=%s, "
         "should_notify_withheld=%d",
-        test_case.request_url.spec().c_str(), test_case.access,
+        test_case.request_url->spec().c_str(), test_case.access,
         test_case.expected_final_url.value_or(GURL()).spec().c_str(),
         test_case.should_notify_withheld));
 
     RequestParams params;
-    params.url = &test_case.request_url;
+    params.url = &*test_case.request_url;
     params.element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
     params.is_third_party = false;
 

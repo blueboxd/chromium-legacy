@@ -17,13 +17,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_FOR_TABLETS;
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_SELECTION_EDITOR_V2;
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_STRIP_IMPROVEMENTS;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.widget.LinearLayout;
 
 import androidx.appcompat.content.res.AppCompatResources;
@@ -43,7 +40,6 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -52,8 +48,8 @@ import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.ButtonType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.IconPosition;
 import org.chromium.chrome.browser.tasks.tab_management.TabSelectionEditorAction.ShowMode;
-import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.widget.NumberRollView;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuButton;
@@ -82,7 +78,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@Features.EnableFeatures({TAB_STRIP_IMPROVEMENTS, TAB_GROUPS_FOR_TABLETS, TAB_SELECTION_EDITOR_V2})
+@Features.EnableFeatures({TAB_GROUPS_FOR_TABLETS})
 @Batch(Batch.PER_CLASS)
 public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
     private static final int TAB_COUNT = 3;
@@ -178,7 +174,6 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        ChromeFeatureList.sTabSelectionEditorV2.setForTesting(true);
         MockitoAnnotations.initMocks(this);
 
         when(mTabModelSelector.getCurrentModel()).thenReturn(mTabModel);
@@ -208,7 +203,6 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
             layout.addView(mToolbar, layoutParams);
             getActivity().setContentView(layout);
             mToolbar.initialize(mSelectionDelegate, 0, 0, 0, true);
-            mToolbar.setActionButtonVisibility(View.GONE);
 
             mPropertyListModel = new PropertyListModel<>();
             mTabSelectionEditorMenu =
@@ -224,7 +218,6 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
     @Override
     public void tearDownTest() throws Exception {
         NightModeTestUtils.tearDownNightModeForBlankUiTestActivity();
-        ChromeFeatureList.sTabSelectionEditorV2.setForTesting(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> { mPropertyListModel.clear(); });
         super.tearDownTest();
     }
@@ -505,26 +498,6 @@ public class TabSelectionEditorMenuTest extends BlankUiTestActivityTestCase {
 
         forceFinishRollAnimation();
         mRenderTestRule.render(mToolbar, "longTextV2ActionAndMenu");
-    }
-
-    // Regression test for https://crbug.com/1377205.
-    @Test
-    @MediumTest
-    @Feature({"RenderTest"})
-    @Features.DisableFeatures({TAB_SELECTION_EDITOR_V2})
-    public void testLongTextV2Disabled() throws Exception {
-        ChromeFeatureList.sTabSelectionEditorV2.setForTesting(false);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mToolbar.setActionButtonVisibility(View.VISIBLE);
-            NumberRollView numberRoll =
-                    (NumberRollView) mToolbar.getActionViewLayout().getChildAt(0);
-            numberRoll.setStringForZero(R.string.close_all_tabs_dialog_message);
-        });
-
-        setSelectedItems(new HashSet<Integer>(Arrays.asList(new Integer[] {})));
-
-        forceFinishRollAnimation();
-        mRenderTestRule.render(mToolbar, "longTextDefaultGroupButton");
     }
 
     @Test

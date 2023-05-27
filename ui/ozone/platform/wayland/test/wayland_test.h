@@ -129,8 +129,6 @@ class WaylandTestBase {
 
   std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   base::test::ScopedFeatureList feature_list_;
-
-  const wl::ServerConfig config_;
 };
 
 // Version of WaylandTestBase that uses parametrised tests (TEST_P).
@@ -152,6 +150,7 @@ class WaylandTest : public WaylandTestBase,
 class WaylandTestSimple : public WaylandTestBase, public ::testing::Test {
  public:
   WaylandTestSimple();
+  explicit WaylandTestSimple(wl::ServerConfig);
   WaylandTestSimple(const WaylandTestSimple&) = delete;
   WaylandTestSimple& operator=(const WaylandTestSimple&) = delete;
   ~WaylandTestSimple() override;

@@ -93,9 +93,13 @@ base::FilePath GetSetupExecutablePath() {
   return GetExecutablePath();
 }
 
-void EnterTestMode(const GURL& url) {
+void EnterTestMode(const GURL& update_url,
+                   const GURL& crash_upload_url,
+                   const GURL& device_management_url) {
   ASSERT_TRUE(ExternalConstantsBuilder()
-                  .SetUpdateURL(std::vector<std::string>{url.spec()})
+                  .SetUpdateURL(std::vector<std::string>{update_url.spec()})
+                  .SetCrashUploadURL(crash_upload_url.spec())
+                  .SetDeviceManagementURL(device_management_url.spec())
                   .SetUseCUP(false)
                   .SetInitialDelay(base::Milliseconds(100))
                   .SetServerKeepAliveTime(base::Seconds(1))
@@ -200,15 +204,10 @@ void ExpectInstalled(UpdaterScope scope) {
 
   absl::optional<base::FilePath> keystone_path = GetKeystoneFolderPath(scope);
   ASSERT_TRUE(keystone_path);
-  absl::optional<base::FilePath> ksadmin_symlink =
-      keystone_path->Append(FILE_PATH_LITERAL(KEYSTONE_NAME ".bundle"))
-          .Append(FILE_PATH_LITERAL("Contents"))
-          .Append(FILE_PATH_LITERAL("MacOS"))
-          .Append(FILE_PATH_LITERAL("ksadmin"));
 
   // Files must exist on the file system.
-  for (const auto& path : {GetInstallDirectory(scope), keystone_path,
-                           GetKSAdminPath(scope), ksadmin_symlink}) {
+  for (const auto& path :
+       {GetInstallDirectory(scope), keystone_path, GetKSAdminPath(scope)}) {
     ASSERT_TRUE(path) << path;
     EXPECT_TRUE(base::PathExists(*path)) << path;
   }
@@ -303,19 +302,22 @@ void SetupRealUpdaterLowerVersion(UpdaterScope scope) {
 }
 
 void SetupFakeLegacyUpdater(UpdaterScope scope) {
-  base::FilePath test_ticket_store_path;
+  base::FilePath updater_test_data_path;
   ASSERT_TRUE(
-      base::PathService::Get(chrome::DIR_TEST_DATA, &test_ticket_store_path));
-  test_ticket_store_path =
-      test_ticket_store_path.Append(FILE_PATH_LITERAL("updater"))
-          .Append(FILE_PATH_LITERAL("Keystone.legacy.ticketstore"));
+      base::PathService::Get(chrome::DIR_TEST_DATA, &updater_test_data_path));
+  updater_test_data_path =
+      updater_test_data_path.Append(FILE_PATH_LITERAL("updater"));
 
+  base::FilePath keystone_path = GetKeystoneFolderPath(scope).value();
   base::FilePath keystone_ticket_store_path =
-      GetKeystoneFolderPath(scope)->Append(FILE_PATH_LITERAL("TicketStore"));
+      keystone_path.Append(FILE_PATH_LITERAL("TicketStore"));
   ASSERT_TRUE(base::CreateDirectory(keystone_ticket_store_path));
-  ASSERT_TRUE(base::CopyFile(test_ticket_store_path,
-                             keystone_ticket_store_path.Append(
-                                 FILE_PATH_LITERAL("Keystone.ticketstore"))));
+  ASSERT_TRUE(base::CopyFile(
+      updater_test_data_path.AppendASCII("Keystone.legacy.ticketstore"),
+      keystone_ticket_store_path.AppendASCII("Keystone.ticketstore")));
+  ASSERT_TRUE(base::CopyFile(
+      updater_test_data_path.AppendASCII("CountingMetrics.plist"),
+      keystone_path.AppendASCII("CountingMetrics.plist")));
 }
 
 void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
@@ -327,8 +329,8 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_FALSE(
       persisted_data->GetProductVersion("com.google.keystone").IsValid());
 
-  // Uninstalled app should not be migrated.
-  EXPECT_FALSE(
+  // Uninstalled app should be migrated.
+  EXPECT_TRUE(
       persisted_data->GetProductVersion("com.chromium.NonExistApp").IsValid());
 
   // App Kipple.
@@ -341,6 +343,8 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_TRUE(persisted_data->GetBrandCode(kKippleApp).empty());
   EXPECT_TRUE(persisted_data->GetBrandPath(kKippleApp).empty());
   EXPECT_TRUE(persisted_data->GetFingerprint(kKippleApp).empty());
+  EXPECT_FALSE(persisted_data->GetDateLastActive(kKippleApp));    // no data.
+  EXPECT_FALSE(persisted_data->GetDateLastRollcall(kKippleApp));  // wrong type.
 
   // App PopularApp.
   const std::string kPopularApp = "com.chromium.PopularApp";
@@ -349,9 +353,21 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_EQ(persisted_data->GetExistenceCheckerPath(kPopularApp),
             base::FilePath("/"));
   EXPECT_EQ(persisted_data->GetAP(kPopularApp), "GOOG");
-  EXPECT_TRUE(persisted_data->GetBrandCode(kKippleApp).empty());
+  EXPECT_TRUE(persisted_data->GetBrandCode(kPopularApp).empty());
   EXPECT_EQ(persisted_data->GetBrandPath(kPopularApp), base::FilePath("/"));
   EXPECT_TRUE(persisted_data->GetFingerprint(kPopularApp).empty());
+  EXPECT_EQ(persisted_data->GetDateLastActive(kPopularApp).value(), 5921);
+  EXPECT_EQ(persisted_data->GetDateLastRollcall(kPopularApp).value(), 5922);
+
+  // App CorruptedApp (client-regulated counting data is corrupted).
+  const std::string kCorruptedApp = "com.chromium.CorruptedApp";
+  EXPECT_EQ(persisted_data->GetProductVersion(kCorruptedApp),
+            base::Version("1.2.1"));
+  EXPECT_EQ(persisted_data->GetExistenceCheckerPath(kCorruptedApp),
+            base::FilePath("/"));
+  EXPECT_EQ(persisted_data->GetAP(kCorruptedApp), "canary");
+  EXPECT_FALSE(persisted_data->GetDateLastActive(kCorruptedApp));
+  EXPECT_FALSE(persisted_data->GetDateLastRollcall(kCorruptedApp));
 }
 
 void InstallApp(UpdaterScope scope, const std::string& app_id) {

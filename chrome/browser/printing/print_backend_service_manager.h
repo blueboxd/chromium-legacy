@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -16,6 +17,7 @@
 #include "base/unguessable_token.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -132,10 +134,18 @@ class PrintBackendServiceManager {
       mojom::PrintBackendService::FetchCapabilitiesCallback callback);
   void GetDefaultPrinterName(
       mojom::PrintBackendService::GetDefaultPrinterNameCallback callback);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void GetPrinterSemanticCapsAndDefaults(
       const std::string& printer_name,
       mojom::PrintBackendService::GetPrinterSemanticCapsAndDefaultsCallback
           callback);
+#endif
+#if BUILDFLAG(IS_WIN)
+  void GetPaperPrintableArea(
+      const std::string& printer_name,
+      const PrintSettings::RequestedMedia& media,
+      mojom::PrintBackendService::GetPaperPrintableAreaCallback callback);
+#endif
   ContextId EstablishPrintingContext(ClientId client_id,
                                      const std::string& printer_name
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
@@ -145,41 +155,45 @@ class PrintBackendServiceManager {
   );
   void UseDefaultSettings(
       ClientId client_id,
+      ContextId context_id,
       mojom::PrintBackendService::UseDefaultSettingsCallback callback);
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
   void AskUserForSettings(
       ClientId client_id,
-      gfx::NativeView parent_view,
+      ContextId context_id,
       int max_pages,
       bool has_selection,
       bool is_scripted,
       mojom::PrintBackendService::AskUserForSettingsCallback callback);
 #endif
-  // `UpdatePrintSettings()` can be used in two different scenarios:
-  //    - For Print Preview, where the desire is to use the appropriate
-  //      service based on the `printer_name` indicated.
-  //    - System printing, where a particular PrintBackendService instance
-  //      is desired, and is selected based upon a ClientId.
-  // When `client_id` is null, then the `printer_name` will be used to select
-  // the service.  Otherwise the `client_id` value will be used, similar to
-  // other methods related for supporting the system print dialog and for
-  // printing the document.
-  // TODO(crbug.com/1414968):  Remove use of optional for `client_id` once
-  // this the callers are updated to take advantage of `UpdatePrintSettings()`
-  // no longer being needed for Print Preview queries after
-  // https://crrev.com/1117252.
+  // `UpdatePrintSettings()` can be used prior to initiating a system print
+  // dialog or right before starting to print a document.  The first requires a
+  // `client_id` of `kQueryWithUi` type, while the latter requires a the ID to
+  // be of type `kPrintDocument`.
+  // The destination printer is still unknown when initiating a system print
+  // dialog, so `printer_name` will be empty in this case.  The destination
+  // must be known when starting to print a document.  `UpdatePrintSettings()`
+  // uses this insight to know what kind of client type is to be expected for
+  // the provided `client_id`.  The function will CHECK if the `client_id`
+  // is not registered for the expected type.
   void UpdatePrintSettings(
-      absl::optional<ClientId> client_id,
+      ClientId client_id,
       const std::string& printer_name,
+      ContextId context_id,
       base::Value::Dict job_settings,
       mojom::PrintBackendService::UpdatePrintSettingsCallback callback);
+  // `StartPrinting()` initiates the printing of a document.  The optional
+  // `settings` is used in the case where a system print dialog is invoked
+  // from in the browser, and this provides those settings for printing.
   void StartPrinting(
       ClientId client_id,
       const std::string& printer_name,
+      ContextId context_id,
       int document_cookie,
       const std::u16string& document_name,
-      mojom::PrintTargetType target_type,
-      const PrintSettings& settings,
+#if !BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
+      absl::optional<PrintSettings> settings,
+#endif
       mojom::PrintBackendService::StartPrintingCallback callback);
 #if BUILDFLAG(IS_WIN)
   void RenderPrintedPage(
@@ -286,6 +300,10 @@ class PrintBackendServiceManager {
       RemoteSavedStructCallbacks<mojom::DefaultPrinterNameResult>;
   using RemoteSavedGetPrinterSemanticCapsAndDefaultsCallbacks =
       RemoteSavedStructCallbacks<mojom::PrinterSemanticCapsAndDefaultsResult>;
+#if BUILDFLAG(IS_WIN)
+  using RemoteSavedGetPaperPrintableAreaCallbacks =
+      RemoteSavedCallbacks<const gfx::Rect&>;
+#endif
   using RemoteSavedUseDefaultSettingsCallbacks =
       RemoteSavedStructCallbacks<mojom::PrintSettingsResult>;
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
@@ -336,6 +354,8 @@ class PrintBackendServiceManager {
   PrintBackendServiceManager();
   ~PrintBackendServiceManager();
 
+  static std::string ClientTypeToString(ClientType client_type);
+
   static void LogCallToRemote(base::StringPiece name,
                               const CallbackContext& context);
   static void LogCallbackFromRemote(base::StringPiece name,
@@ -375,16 +395,17 @@ class PrintBackendServiceManager {
   // platform specific.
   bool PrinterDriverKnownToRequireElevatedPrivilege(
       const std::string& printer_name,
-      ClientType client_type);
+      ClientType client_type) const;
 #endif
 
+  // Determines if a service should be sandboxed when launched.
+  bool ShouldServiceBeSandboxed(const std::string& printer_name,
+                                ClientType client_type) const;
+
   // Acquires a remote handle to the Print Backend Service instance, launching a
-  // process to host the service if necessary. `is_sandboxed` is set to indicate
-  // if the service was launched within a sandbox.
-  const mojo::Remote<mojom::PrintBackendService>& GetService(
-      const std::string& printer_name,
-      ClientType client_type,
-      bool* is_sandboxed);
+  // process to host the service if necessary.
+  const mojo::Remote<mojom::PrintBackendService>&
+  GetService(const RemoteId& remote_id, ClientType client_type, bool sandboxed);
 
   // Helper to `GetService` for a particular remotes bundle type.
   template <class T>
@@ -449,6 +470,10 @@ class PrintBackendServiceManager {
   GetRemoteSavedGetDefaultPrinterNameCallbacks(bool sandboxed);
   RemoteSavedGetPrinterSemanticCapsAndDefaultsCallbacks&
   GetRemoteSavedGetPrinterSemanticCapsAndDefaultsCallbacks(bool sandboxed);
+#if BUILDFLAG(IS_WIN)
+  RemoteSavedGetPaperPrintableAreaCallbacks&
+  GetRemoteSavedGetPaperPrintableAreaCallbacks(bool sandboxed);
+#endif
   RemoteSavedUseDefaultSettingsCallbacks&
   GetRemoteSavedUseDefaultSettingsCallbacks(bool sandboxed);
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
@@ -528,6 +553,10 @@ class PrintBackendServiceManager {
   void OnDidGetPrinterSemanticCapsAndDefaults(
       const CallbackContext& context,
       mojom::PrinterSemanticCapsAndDefaultsResultPtr printer_caps);
+#if BUILDFLAG(IS_WIN)
+  void OnDidGetPaperPrintableArea(const CallbackContext& context,
+                                  const gfx::Rect& printable_area_um);
+#endif
   void OnDidUseDefaultSettings(const CallbackContext& context,
                                mojom::PrintSettingsResultPtr settings);
 #if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
@@ -558,7 +587,7 @@ class PrintBackendServiceManager {
   template <class... T>
   void RunSavedCallbacks(RemoteSavedCallbacks<T...>& saved_callbacks,
                          const RemoteId& remote_id,
-                         T... result);
+                         std::remove_reference<T>::type... result);
 
   // Test support for client ID management.
   static void SetClientsForTesting(
@@ -622,6 +651,12 @@ class PrintBackendServiceManager {
       sandboxed_saved_get_printer_semantic_caps_and_defaults_callbacks_;
   RemoteSavedGetPrinterSemanticCapsAndDefaultsCallbacks
       unsandboxed_saved_get_printer_semantic_caps_and_defaults_callbacks_;
+#if BUILDFLAG(IS_WIN)
+  RemoteSavedGetPaperPrintableAreaCallbacks
+      sandboxed_saved_get_paper_printable_area_callbacks_;
+  RemoteSavedGetPaperPrintableAreaCallbacks
+      unsandboxed_saved_get_paper_printable_area_callbacks_;
+#endif
   RemoteSavedUseDefaultSettingsCallbacks
       sandboxed_saved_use_default_settings_callbacks_;
   RemoteSavedUseDefaultSettingsCallbacks

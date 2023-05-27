@@ -17,6 +17,7 @@
 #include "base/functional/callback.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
@@ -537,7 +538,9 @@ class ToRenderFrameHost {
   RenderFrameHost* render_frame_host() const { return render_frame_host_; }
 
  private:
-  RenderFrameHost* render_frame_host_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #union
+  RAW_PTR_EXCLUSION RenderFrameHost* render_frame_host_;
 };
 
 RenderFrameHost* ConvertToRenderFrameHost(RenderFrameHost* render_view_host);
@@ -594,23 +597,10 @@ void ExecuteScriptAsyncWithoutUserGesture(const ToRenderFrameHost& adapter,
 // execution failed or did not evaluate to the expected type.
 //
 // Deprecated: Use EvalJs().
-[[nodiscard]] bool ExecuteScriptAndExtractInt(const ToRenderFrameHost& adapter,
-                                              const std::string& script,
-                                              int* result);
 [[nodiscard]] bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
                                                const std::string& script,
                                                bool* result);
 [[nodiscard]] bool ExecuteScriptAndExtractString(
-    const ToRenderFrameHost& adapter,
-    const std::string& script,
-    std::string* result);
-
-// Same as above but the script executed without user gesture.
-[[nodiscard]] bool ExecuteScriptWithoutUserGestureAndExtractBool(
-    const ToRenderFrameHost& adapter,
-    const std::string& script,
-    bool* result);
-[[nodiscard]] bool ExecuteScriptWithoutUserGestureAndExtractString(
     const ToRenderFrameHost& adapter,
     const std::string& script,
     std::string* result);
@@ -1077,9 +1067,6 @@ void SetFileSystemAccessPermissionContext(
     FileSystemAccessPermissionContext* permission_context);
 
 // Waits until all resources have loaded in the given RenderFrameHost.
-// When the load completes, this function sends a "pageLoadComplete" message
-// via domAutomationController. The caller should make sure this extra
-// message is handled properly.
 [[nodiscard]] bool WaitForRenderFrameReady(RenderFrameHost* rfh);
 
 // Enable accessibility support for all of the frames in this WebContents
@@ -1777,7 +1764,9 @@ class TestNavigationManager : public WebContentsObserver {
   void ResumeIfPaused();
 
   const GURL url_;
-  NavigationRequest* request_ = nullptr;
+  // This field is not a raw_ptr<> because of incompatibilities with tracing
+  // (TRACE_EVENT*), perfetto::TracedDictionary::Add and gmock/EXPECT_THAT.
+  RAW_PTR_EXCLUSION NavigationRequest* request_ = nullptr;
   bool navigation_paused_ = false;
   NavigationState current_state_ = NavigationState::INITIAL;
   NavigationState desired_state_ = NavigationState::WILL_START;

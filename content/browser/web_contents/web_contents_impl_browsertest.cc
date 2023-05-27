@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -3696,11 +3697,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   WebContents* new_contents = nullptr;
   {
     ShellAddedObserver new_shell_observer;
-    bool success = false;
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell(),
-        "window.domAutomationController.send(clickLinkToSelfNoOpener());",
-        &success));
+    EXPECT_TRUE(ExecJs(shell(), "clickLinkToSelfNoOpener();"));
     new_shell = new_shell_observer.GetShell();
     new_contents = new_shell->web_contents();
     // Delaying popup holds the initial load of |url|.
@@ -3740,10 +3737,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   WebContents* new_contents = nullptr;
   {
     ShellAddedObserver new_shell_observer;
-    bool success = false;
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell(), "window.domAutomationController.send(clickLinkToSelf());",
-        &success));
+    EXPECT_TRUE(ExecJs(shell(), "clickLinkToSelf();"));
     new_shell = new_shell_observer.GetShell();
     new_contents = new_shell->web_contents();
     // Delaying popup holds the initial load of |url|.
@@ -5926,7 +5920,24 @@ class PCScanFeature {
 // Initialize PCScanFeature before WebContentsImplBrowserTest to make sure that
 // the feature is enabled within the entire lifetime of the test.
 class WebContentsImplStarScanBrowserTest : private PCScanFeature,
-                                           public WebContentsImplBrowserTest {};
+                                           public WebContentsImplBrowserTest {
+ public:
+  void SetUp() override {
+    // Since ReconfigureAfterFeatureListInit() has been already invoked at
+    // FeatureListScopedToEachTest::OnTestStart(), we cannot enable PCScan
+    // and cannot re-reconfigure partition roots here. This causes DCHECK()
+    // failure at PerfromcScan().
+    if (!base::FeatureList::IsEnabled(base::features::kPartitionAllocPCScan) &&
+        !base::FeatureList::IsEnabled(
+            base::features::kPartitionAllocPCScanBrowserOnly) &&
+        !base::FeatureList::IsEnabled(
+            base::features::kPartitionAllocPCScanRendererOnly)) {
+      GTEST_SKIP() << "PCScanFeature is not enabled. Need --enable-features"
+                   << "=PartitionAllocPCScan";
+    }
+    WebContentsImplBrowserTest::SetUp();
+  }
+};
 
 }  // namespace
 

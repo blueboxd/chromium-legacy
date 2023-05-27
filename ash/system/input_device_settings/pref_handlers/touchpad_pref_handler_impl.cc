@@ -4,15 +4,20 @@
 
 #include "ash/system/input_device_settings/pref_handlers/touchpad_pref_handler_impl.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/mojom/input_device_settings.mojom-forward.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_defaults.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
+#include "ash/system/input_device_settings/input_device_settings_utils.h"
 #include "ash/system/input_device_settings/input_device_tracker.h"
 #include "base/check.h"
+#include "base/values.h"
+#include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
+#include "components/user_manager/known_user.h"
 
 namespace ash {
 namespace {
@@ -30,6 +35,7 @@ struct ForceTouchpadSettingPersistence {
   bool scroll_acceleration = false;
   bool haptic_sensitivity = false;
   bool haptic_enabled = false;
+  bool three_finger_click_enabled = false;
 };
 
 mojom::TouchpadSettingsPtr GetDefaultTouchpadSettings() {
@@ -139,7 +145,6 @@ mojom::TouchpadSettingsPtr GetTouchpadSettingsFromPrefs(
 }
 
 mojom::TouchpadSettingsPtr RetrieveTouchpadSettings(
-    PrefService* pref_service,
     const mojom::Touchpad& touchpad,
     const base::Value::Dict& settings_dict) {
   mojom::TouchpadSettingsPtr settings = mojom::TouchpadSettings::New();
@@ -176,13 +181,96 @@ mojom::TouchpadSettingsPtr RetrieveTouchpadSettings(
   return settings;
 }
 
-bool ExistingSettingsHasValue(base::StringPiece setting_key,
-                              const base::Value::Dict* existing_settings_dict) {
-  if (!existing_settings_dict) {
-    return false;
+base::Value::Dict ConvertSettingsToDict(
+    const mojom::Touchpad& touchpad,
+    const ForceTouchpadSettingPersistence& force_persistence,
+    const base::Value::Dict* existing_settings_dict) {
+  // Populate `settings_dict` with all settings in `settings`.
+  base::Value::Dict settings_dict;
+
+  if (ShouldPersistSetting(prefs::kTouchpadSettingSensitivity,
+                           static_cast<int>(touchpad.settings->sensitivity),
+                           kDefaultSensitivity, force_persistence.sensitivity,
+                           existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingSensitivity,
+                      touchpad.settings->sensitivity);
   }
 
-  return existing_settings_dict->Find(setting_key) != nullptr;
+  if (ShouldPersistSetting(
+          prefs::kTouchpadSettingReverseScrolling,
+          touchpad.settings->reverse_scrolling, kDefaultReverseScrolling,
+          force_persistence.reverse_scrolling, existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingReverseScrolling,
+                      touchpad.settings->reverse_scrolling);
+  }
+
+  if (ShouldPersistSetting(
+          prefs::kTouchpadSettingAccelerationEnabled,
+          touchpad.settings->acceleration_enabled, kDefaultAccelerationEnabled,
+          force_persistence.acceleration_enabled, existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingAccelerationEnabled,
+                      touchpad.settings->acceleration_enabled);
+  }
+
+  if (ShouldPersistSetting(
+          prefs::kTouchpadSettingScrollSensitivity,
+          static_cast<int>(touchpad.settings->scroll_sensitivity),
+          kDefaultSensitivity, force_persistence.scroll_sensitivity,
+          existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingScrollSensitivity,
+                      touchpad.settings->scroll_sensitivity);
+  }
+
+  if (ShouldPersistSetting(
+          prefs::kTouchpadSettingScrollAcceleration,
+          touchpad.settings->scroll_acceleration, kDefaultScrollAcceleration,
+          force_persistence.scroll_acceleration, existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingScrollAcceleration,
+                      touchpad.settings->scroll_acceleration);
+  }
+
+  if (ShouldPersistSetting(
+          prefs::kTouchpadSettingTapToClickEnabled,
+          touchpad.settings->tap_to_click_enabled, kDefaultTapToClickEnabled,
+          force_persistence.tap_to_click_enabled, existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingTapToClickEnabled,
+                      touchpad.settings->tap_to_click_enabled);
+  }
+
+  if (ShouldPersistSetting(prefs::kTouchpadSettingThreeFingerClickEnabled,
+                           touchpad.settings->three_finger_click_enabled,
+                           kDefaultThreeFingerClickEnabled,
+                           force_persistence.three_finger_click_enabled,
+                           existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingThreeFingerClickEnabled,
+                      touchpad.settings->three_finger_click_enabled);
+  }
+
+  if (ShouldPersistSetting(
+          prefs::kTouchpadSettingTapDraggingEnabled,
+          touchpad.settings->tap_dragging_enabled, kDefaultTapDraggingEnabled,
+          force_persistence.tap_dragging_enabled, existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingTapDraggingEnabled,
+                      touchpad.settings->tap_dragging_enabled);
+  }
+
+  if (ShouldPersistSetting(
+          prefs::kTouchpadSettingHapticSensitivity,
+          static_cast<int>(touchpad.settings->haptic_sensitivity),
+          kDefaultSensitivity, force_persistence.haptic_sensitivity,
+          existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingHapticSensitivity,
+                      touchpad.settings->haptic_sensitivity);
+  }
+
+  if (ShouldPersistSetting(
+          prefs::kTouchpadSettingHapticEnabled,
+          touchpad.settings->haptic_enabled, kDefaultHapticFeedbackEnabled,
+          force_persistence.haptic_enabled, existing_settings_dict)) {
+    settings_dict.Set(prefs::kTouchpadSettingHapticEnabled,
+                      touchpad.settings->haptic_enabled);
+  }
+  return settings_dict;
 }
 
 void UpdateTouchpadSettingsImpl(
@@ -194,96 +282,9 @@ void UpdateTouchpadSettingsImpl(
       pref_service->GetDict(prefs::kTouchpadDeviceSettingsDictPref).Clone();
   base::Value::Dict* existing_settings_dict =
       devices_dict.FindDict(touchpad.device_key);
-  const mojom::TouchpadSettings& settings = *touchpad.settings;
 
-  // Populate `settings_dict` with all settings in `settings`.
-  base::Value::Dict settings_dict;
-
-  // Settings should only be persisted if one or more of the following is true:
-  // - Setting was previously persisted to storage
-  // - `force_persistence` requires the setting to be persisted, this means this
-  //   device is being transitioned from the old global settings to per-device
-  //   settings and the user specified the specific value for this setting.
-  // - Setting is different than the default, which means the user manually
-  //   changed the value.
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingSensitivity,
-                               existing_settings_dict) ||
-      force_persistence.sensitivity ||
-      settings.sensitivity != kDefaultSensitivity) {
-    settings_dict.Set(prefs::kTouchpadSettingSensitivity, settings.sensitivity);
-  }
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingReverseScrolling,
-                               existing_settings_dict) ||
-      force_persistence.reverse_scrolling ||
-      settings.reverse_scrolling != kDefaultReverseScrolling) {
-    settings_dict.Set(prefs::kTouchpadSettingReverseScrolling,
-                      settings.reverse_scrolling);
-  }
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingAccelerationEnabled,
-                               existing_settings_dict) ||
-      force_persistence.acceleration_enabled ||
-      settings.acceleration_enabled != kDefaultAccelerationEnabled) {
-    settings_dict.Set(prefs::kTouchpadSettingAccelerationEnabled,
-                      settings.acceleration_enabled);
-  }
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingScrollSensitivity,
-                               existing_settings_dict) ||
-      force_persistence.scroll_sensitivity ||
-      settings.scroll_sensitivity != kDefaultSensitivity) {
-    settings_dict.Set(prefs::kTouchpadSettingScrollSensitivity,
-                      settings.scroll_sensitivity);
-  }
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingScrollAcceleration,
-                               existing_settings_dict) ||
-      force_persistence.scroll_acceleration ||
-      settings.scroll_acceleration != kDefaultScrollAcceleration) {
-    settings_dict.Set(prefs::kTouchpadSettingScrollAcceleration,
-                      settings.scroll_acceleration);
-  }
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingTapToClickEnabled,
-                               existing_settings_dict) ||
-      force_persistence.tap_to_click_enabled ||
-      settings.tap_to_click_enabled != kDefaultTapToClickEnabled) {
-    settings_dict.Set(prefs::kTouchpadSettingTapToClickEnabled,
-                      settings.tap_to_click_enabled);
-  }
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingThreeFingerClickEnabled,
-                               existing_settings_dict) ||
-      settings.three_finger_click_enabled != kDefaultThreeFingerClickEnabled) {
-    settings_dict.Set(prefs::kTouchpadSettingThreeFingerClickEnabled,
-                      settings.three_finger_click_enabled);
-  }
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingTapDraggingEnabled,
-                               existing_settings_dict) ||
-      force_persistence.tap_dragging_enabled ||
-      settings.tap_dragging_enabled != kDefaultTapDraggingEnabled) {
-    settings_dict.Set(prefs::kTouchpadSettingTapDraggingEnabled,
-                      settings.tap_dragging_enabled);
-  }
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingHapticSensitivity,
-                               existing_settings_dict) ||
-      force_persistence.haptic_sensitivity ||
-      settings.haptic_sensitivity != kDefaultSensitivity) {
-    settings_dict.Set(prefs::kTouchpadSettingHapticSensitivity,
-                      settings.haptic_sensitivity);
-  }
-
-  if (ExistingSettingsHasValue(prefs::kTouchpadSettingHapticEnabled,
-                               existing_settings_dict) ||
-      force_persistence.haptic_enabled ||
-      settings.haptic_enabled != kDefaultHapticFeedbackEnabled) {
-    settings_dict.Set(prefs::kTouchpadSettingHapticEnabled,
-                      settings.haptic_enabled);
-  }
+  base::Value::Dict settings_dict = ConvertSettingsToDict(
+      touchpad, force_persistence, existing_settings_dict);
 
   // If an old settings dict already exists for the device, merge the updated
   // settings into the old settings. Otherwise, insert the dict at
@@ -298,6 +299,18 @@ void UpdateTouchpadSettingsImpl(
                         std::move(devices_dict));
 }
 
+mojom::TouchpadSettingsPtr GetTouchpadSettingsFromOldLocalStatePrefs(
+    PrefService* local_state,
+    const AccountId& account_id,
+    const mojom::Touchpad& Touchpad) {
+  mojom::TouchpadSettingsPtr settings = GetDefaultTouchpadSettings();
+  settings->tap_to_click_enabled =
+      user_manager::KnownUser(local_state)
+          .FindBoolPath(account_id, prefs::kOwnerTapToClickEnabled)
+          .value_or(kDefaultTapToClickEnabled);
+
+  return settings;
+}
 }  // namespace
 
 TouchpadPrefHandlerImpl::TouchpadPrefHandlerImpl() = default;
@@ -316,8 +329,7 @@ void TouchpadPrefHandlerImpl::InitializeTouchpadSettings(
   const auto* settings_dict = devices_dict.FindDict(touchpad->device_key);
   ForceTouchpadSettingPersistence force_persistence;
   if (settings_dict) {
-    touchpad->settings =
-        RetrieveTouchpadSettings(pref_service, *touchpad, *settings_dict);
+    touchpad->settings = RetrieveTouchpadSettings(*touchpad, *settings_dict);
   } else if (Shell::Get()->input_device_tracker()->WasDevicePreviouslyConnected(
                  InputDeviceTracker::InputDeviceCategory::kTouchpad,
                  touchpad->device_key)) {
@@ -336,6 +348,57 @@ void TouchpadPrefHandlerImpl::UpdateTouchpadSettings(
     const mojom::Touchpad& touchpad) {
   UpdateTouchpadSettingsImpl(pref_service, touchpad,
                              /*force_persistence=*/{});
+}
+
+void TouchpadPrefHandlerImpl::InitializeLoginScreenTouchpadSettings(
+    PrefService* local_state,
+    const AccountId& account_id,
+    mojom::Touchpad* touchpad) {
+  CHECK(local_state);
+  // If the flag is disabled, clear all the settings dictionaries.
+  if (!features::IsInputDeviceSettingsSplitEnabled()) {
+    user_manager::KnownUser known_user(local_state);
+    known_user.SetPath(account_id,
+                       prefs::kTouchpadLoginScreenInternalSettingsPref,
+                       absl::nullopt);
+    known_user.SetPath(account_id,
+                       prefs::kTouchpadLoginScreenExternalSettingsPref,
+                       absl::nullopt);
+    return;
+  }
+
+  const auto* settings_dict = GetLoginScreenSettingsDict(
+      local_state, account_id,
+      touchpad->is_external ? prefs::kTouchpadLoginScreenExternalSettingsPref
+                            : prefs::kTouchpadLoginScreenInternalSettingsPref);
+  if (settings_dict) {
+    touchpad->settings = RetrieveTouchpadSettings(*touchpad, *settings_dict);
+  } else {
+    touchpad->settings = GetTouchpadSettingsFromOldLocalStatePrefs(
+        local_state, account_id, *touchpad);
+  }
+}
+
+void TouchpadPrefHandlerImpl::UpdateLoginScreenTouchpadSettings(
+    PrefService* local_state,
+    const AccountId& account_id,
+    const mojom::Touchpad& touchpad) {
+  CHECK(local_state);
+  const auto* pref_name = touchpad.is_external
+                              ? prefs::kTouchpadLoginScreenExternalSettingsPref
+                              : prefs::kTouchpadLoginScreenInternalSettingsPref;
+  auto* settings_dict =
+      GetLoginScreenSettingsDict(local_state, account_id, pref_name);
+
+  user_manager::KnownUser(local_state)
+      .SetPath(account_id, pref_name,
+               absl::make_optional<base::Value>(ConvertSettingsToDict(
+                   touchpad, /*force_persistence=*/{}, settings_dict)));
+}
+
+void TouchpadPrefHandlerImpl::InitializeWithDefaultTouchpadSettings(
+    mojom::Touchpad* touchpad) {
+  touchpad->settings = GetDefaultTouchpadSettings();
 }
 
 }  // namespace ash

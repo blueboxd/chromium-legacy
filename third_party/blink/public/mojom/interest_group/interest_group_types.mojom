@@ -23,7 +23,7 @@ struct InterestGroupAd {
 };
 
 // The maximum size of a valid interest group in bytes.
-const uint32 kMaxInterestGroupSize = 51200; // 50 * 1024
+const uint32 kMaxInterestGroupSize = 1048576; // 1 * 1024 * 1024
 
 // Permissions granted by an interest group to sellers.
 struct SellerCapabilities {
@@ -60,11 +60,9 @@ struct InterestGroup {
     kGroupedByOriginMode,
     // kFrozenContext mode uses a "frozen" JavaScript context to execute the
     // bidding scripts for all interest groups that share a common biddnig
-    // script. Before the script is loaded the global object is recursively
-    // frozen to prevent persisting state. After the script is loaded, the
-    // script context is also frozen and checked for any state that may persist
-    // between function execution. If any potentially persistent state is
-    // identified, execution abandoned.
+    // script. After the script is loaded, the script context is frozen and
+    // checked for any state that may persist between function execution. If any
+    // potentially persistent state is identified, execution abandoned.
     kFrozenContext,
   };
 
@@ -231,6 +229,27 @@ union AuctionAdConfigMaybePromiseBuyerTimeouts {
   AuctionAdConfigBuyerTimeouts value;
 };
 
+struct AdCurrency {
+  // Must meet blink::IsValidAdCurrencyCode
+  string currency_code;
+};
+
+// See blink::AuctionConfig::BuyerCurrencies
+struct AuctionAdConfigBuyerCurrencies {
+  // Requirement for bid currency that, if specified, will apply to all bids
+  // made by buyers not specified in `per_buyer_currencies`.
+  AdCurrency? all_buyers_currency;
+
+  // Can provide a requirement for bid currency for buyers by origin.
+  map<url.mojom.Origin, AdCurrency>? per_buyer_currencies;
+};
+
+// See blink::AuctionConfig::MaybePromiseBuyerCurrencies
+union AuctionAdConfigMaybePromiseBuyerCurrencies {
+  uint32 promise; // value unused
+  AuctionAdConfigBuyerCurrencies value;
+};
+
 union AuctionAdConfigMaybePromiseDirectFromSellerSignals {
   uint32 promise;  // value unused
   DirectFromSellerSignals? value;
@@ -295,6 +314,16 @@ struct AuctionAdConfigNonSharedParams {
 
   // Timeouts for individual interest group worklet Javascript execution.
   AuctionAdConfigMaybePromiseBuyerTimeouts buyer_timeouts;
+
+  // Expectations for currency provided by seller when modifying bids for
+  // parent auctions or to help with mixed-currency reporting. If this is set,
+  // any currency annotation from seller will be checked against it.
+  AdCurrency? seller_currency;
+
+  // Expectations for currencies used by buyers to bid. If a currency is
+  // specified for a buyer here, and they annotate their bid with a currency,
+  // their consistency will be checked before accepting the bid.
+  AuctionAdConfigMaybePromiseBuyerCurrencies buyer_currencies;
 
   // Cumulative timeouts for all interest groups with the same buyer. Includes
   // launching worklet processes, loading scripts and signals, and running

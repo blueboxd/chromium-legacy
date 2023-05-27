@@ -6,8 +6,8 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_new_tab_button.h"
@@ -28,8 +28,6 @@
   NSArray<NSLayoutConstraint*>* _compactConstraints;
   NSArray<NSLayoutConstraint*>* _floatingConstraints;
   NSLayoutConstraint* _largeNewTabButtonBottomAnchor;
-  TabGridNewTabButton* _smallNewTabButton;
-  TabGridNewTabButton* _largeNewTabButton;
   UIBarButtonItem* _doneButton;
   UIBarButtonItem* _closeAllOrUndoButton;
   UIBarButtonItem* _editButton;
@@ -266,6 +264,9 @@
   // Remove the border of UIToolbar.
   [_toolbar setShadowImage:[[UIImage alloc] init]
         forToolbarPosition:UIBarPositionAny];
+  [_toolbar
+      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
+                                      forAxis:UILayoutConstraintAxisVertical];
 
   _closeAllOrUndoButton = [[UIBarButtonItem alloc] init];
   _closeAllOrUndoButton.tintColor =
@@ -336,7 +337,7 @@
     // When a11y font size is used, long press on UIBarButtonItem will show a
     // built-in a11y modal panel with image and title if set. The size is not
     // taken into account.
-    if (base::FeatureList::IsEnabled(kSFSymbolsFollowup)) {
+    if (base::FeatureList::IsEnabled(kSFSymbolsFollowUp)) {
       _newTabButtonItem.image =
           CustomSymbolWithPointSize(kPlusCircleFillSymbol, 0);
     } else {

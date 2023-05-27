@@ -4,11 +4,13 @@
 
 #include "ash/wm/desks/cros_next_default_desk_button.h"
 
+#include <algorithm>
+
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -31,13 +33,13 @@ constexpr int kDefaultDeskButtonHeight = 28;
 
 }  // namespace
 
-CrOSNextDefaultDeskButton::CrOSNextDefaultDeskButton(DesksBarView* bar_view)
+CrOSNextDefaultDeskButton::CrOSNextDefaultDeskButton(DeskBarViewBase* bar_view)
     : CrOSNextDeskButtonBase(
           DesksController::Get()->desks()[0]->name(),
           /*set_text=*/true,
+          bar_view,
           base::BindRepeating(&CrOSNextDefaultDeskButton::OnButtonPressed,
-                              base::Unretained(this))),
-      bar_view_(bar_view) {
+                              base::Unretained(this))) {
   GetViewAccessibility().OverrideName(
       l10n_util::GetStringFUTF16(IDS_ASH_DESKS_DESK_ACCESSIBLE_NAME,
                                  DesksController::Get()->desks()[0]->name()));
@@ -67,7 +69,7 @@ gfx::Size CrOSNextDefaultDeskButton::CalculatePreferredSize() const {
   // tests with extreme abnormal size of display.
   const int min_width = std::min(preview_width, kDefaultDeskButtonMinWidth);
   const int max_width = std::max(preview_width, kDefaultDeskButtonMinWidth);
-  const int width = base::clamp(
+  const int width = std::clamp(
       label_width + 2 * kDefaultButtonHorizontalPadding, min_width, max_width);
   return gfx::Size(width, kDefaultDeskButtonHeight);
 }

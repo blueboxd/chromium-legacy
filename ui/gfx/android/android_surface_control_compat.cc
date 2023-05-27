@@ -10,13 +10,17 @@
 
 #include "base/android/build_info.h"
 #include "base/atomic_sequence_num.h"
+#include "base/containers/flat_set.h"
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/hash/md5_constexpr.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/synchronization/lock.h"
 #include "base/system/sys_info.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
@@ -103,6 +107,11 @@ using pASurfaceTransaction_setHdrMetadata_smpte2086 =
     void (*)(ASurfaceTransaction* transaction,
              ASurfaceControl* surface,
              struct AHdrMetadata_smpte2086* metadata);
+using pASurfaceTransaction_setExtendedRangeBrightness =
+    void (*)(ASurfaceTransaction* transaction,
+             ASurfaceControl* surface_control,
+             float currentBufferRatio,
+             float desiredRatio);
 using pASurfaceTransaction_setFrameRate =
     void (*)(ASurfaceTransaction* transaction,
              ASurfaceControl* surface_control,
@@ -245,6 +254,8 @@ struct SurfaceControlMethods {
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setBufferDataSpace);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setHdrMetadata_cta861_3);
     LOAD_FUNCTION(main_dl_handle, ASurfaceTransaction_setHdrMetadata_smpte2086);
+    LOAD_FUNCTION_MAYBE(main_dl_handle,
+                        ASurfaceTransaction_setExtendedRangeBrightness);
     LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setFrameRate);
     LOAD_FUNCTION_MAYBE(main_dl_handle, ASurfaceTransaction_setFrameTimeline);
 
@@ -291,6 +302,9 @@ struct SurfaceControlMethods {
       ASurfaceTransaction_setHdrMetadata_cta861_3Fn;
   pASurfaceTransaction_setHdrMetadata_smpte2086
       ASurfaceTransaction_setHdrMetadata_smpte2086Fn;
+  pASurfaceTransaction_setExtendedRangeBrightness
+      ASurfaceTransaction_setExtendedRangeBrightnessFn;
+
   pASurfaceTransaction_setFrameRate ASurfaceTransaction_setFrameRateFn;
   pASurfaceTransaction_setFrameTimeline ASurfaceTransaction_setFrameTimelineFn;
   pASurfaceTransaction_setEnableBackPressure
@@ -355,6 +369,8 @@ enum DataSpace : uint64_t {
   // Ranges;
   RANGE_FULL = 1 << 27,
   RANGE_LIMITED = 2 << 27,
+  RANGE_EXTENDED = 3 << 27,
+  RANGE_MASK = 7 << 27,
 
   ADATASPACE_DCI_P3 = 155844608
 };
@@ -418,6 +434,11 @@ uint64_t ColorSpaceToADataSpace(const gfx::ColorSpace& color_space) {
 
   if (base::android::BuildInfo::GetInstance()->sdk_int() >=
       base::android::SDK_VERSION_S) {
+    if (color_space == gfx::ColorSpace::CreateExtendedSRGB()) {
+      return DataSpace::STANDARD_BT709 | DataSpace::TRANSFER_SRGB |
+             DataSpace::RANGE_EXTENDED;
+    }
+
     auto standard = GetDataSpaceStandard(color_space);
     auto transfer = GetDataSpaceTransfer(color_space);
     auto range = GetDataSpaceRange(color_space);
@@ -481,6 +502,16 @@ uint64_t GetTraceIdForTransaction(int transaction_id) {
   return kMask ^ transaction_id;
 }
 
+base::Lock& GetGlobalLock() {
+  static base::NoDestructor<base::Lock> lock;
+  return *lock;
+}
+
+base::flat_set<int>& GetGlobalPendingCompleteCallbackIds() {
+  static base::NoDestructor<base::flat_set<int>> set;
+  return *set;
+}
+
 // Note that the framework API states that this callback can be dispatched on
 // any thread (in practice it should be a binder thread).
 void OnTransactionCompletedOnAnyThread(void* context,
@@ -492,6 +523,17 @@ void OnTransactionCompletedOnAnyThread(void* context,
   TRACE_EVENT_WITH_FLOW0(
       "toplevel.flow", "gfx::SurfaceControlTransaction completed",
       GetTraceIdForTransaction(ack_ctx->id), TRACE_EVENT_FLAG_FLOW_IN);
+
+  bool dump = false;
+  {
+    base::AutoLock lock(GetGlobalLock());
+    size_t num_removed =
+        GetGlobalPendingCompleteCallbackIds().erase(ack_ctx->id);
+    dump = !num_removed;
+  }
+  if (dump) {
+    base::debug::DumpWithoutCrashing(base::Location::Current(), base::Days(1));
+  }
 
   std::move(ack_ctx->callback).Run(std::move(transaction_stats));
   delete ack_ctx;
@@ -768,7 +810,11 @@ void SurfaceControl::Transaction::SetDamageRect(const Surface& surface,
 
 void SurfaceControl::Transaction::SetColorSpace(
     const Surface& surface,
-    const gfx::ColorSpace& color_space) {
+    const gfx::ColorSpace& color_space,
+    const absl::optional<HDRMetadata>& metadata) {
+  // Metadata shouldn't exist for SDR color spaces.
+  DCHECK(!metadata || color_space.IsHDR());
+
   auto data_space = ColorSpaceToADataSpace(color_space);
 
   // Log the data space in crash keys for debugging crbug.com/997592.
@@ -780,13 +826,12 @@ void SurfaceControl::Transaction::SetColorSpace(
 
   SurfaceControlMethods::Get().ASurfaceTransaction_setBufferDataSpaceFn(
       transaction_, surface.surface(), data_space);
-}
 
-void SurfaceControl::Transaction::SetHDRMetadata(
+  const bool extended_range =
+      (data_space & DataSpace::RANGE_MASK) == DataSpace::RANGE_EXTENDED;
 
-    const Surface& surface,
-    const absl::optional<HDRMetadata>& metadata) {
-  if (metadata) {
+  // Set the HDR metadata for not extended SRGB case.
+  if (metadata && !extended_range) {
     AHdrMetadata_cta861_3 cta861_3 = {
         .maxContentLightLevel =
             static_cast<float>(metadata->max_content_light_level),
@@ -811,6 +856,28 @@ void SurfaceControl::Transaction::SetHDRMetadata(
         transaction_, surface.surface(), nullptr);
     SurfaceControlMethods::Get().ASurfaceTransaction_setHdrMetadata_smpte2086Fn(
         transaction_, surface.surface(), nullptr);
+  }
+
+  // Set brightness points for extended range.
+  if (extended_range) {
+    CHECK(metadata);
+    CHECK(metadata->extended_range_brightness);
+    CHECK(SurfaceControlMethods::Get()
+              .ASurfaceTransaction_setExtendedRangeBrightnessFn);
+    SurfaceControlMethods::Get()
+        .ASurfaceTransaction_setExtendedRangeBrightnessFn(
+            transaction_, surface.surface(),
+            metadata->extended_range_brightness->current_buffer_ratio,
+            metadata->extended_range_brightness->desired_ratio);
+  } else {
+    // If extended range brightness is supported, we need reset it to default
+    // values.
+    if (SurfaceControlMethods::Get()
+            .ASurfaceTransaction_setExtendedRangeBrightnessFn) {
+      SurfaceControlMethods::Get()
+          .ASurfaceTransaction_setExtendedRangeBrightnessFn(
+              transaction_, surface.surface(), 1.0f, 1.0f);
+    }
   }
 }
 
@@ -883,6 +950,16 @@ void SurfaceControl::Transaction::PrepareCallbacks() {
     ack_ctx->callback = std::move(on_complete_cb_);
     ack_ctx->id = id_;
 
+    bool dump = false;
+    {
+      base::AutoLock lock(GetGlobalLock());
+      auto result = GetGlobalPendingCompleteCallbackIds().insert(id_);
+      dump = !result.second;
+    }
+    if (dump) {
+      base::debug::DumpWithoutCrashing(base::Location::Current(),
+                                       base::Days(1));
+    }
     SurfaceControlMethods::Get().ASurfaceTransaction_setOnCompleteFn(
         transaction_, ack_ctx, &OnTransactionCompletedOnAnyThread);
     need_to_apply_ = true;

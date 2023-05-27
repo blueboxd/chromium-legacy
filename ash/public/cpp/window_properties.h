@@ -15,7 +15,6 @@
 class SkRegion;
 
 namespace aura {
-class Window;
 template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
 }  // namespace aura
@@ -179,11 +178,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<ResizeShadowType>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkRegion*>* const
     kSystemGestureExclusionKey;
 
-// A property key to store the address of the source window that the drag
-// originated from if the window is currently in tab-dragging process.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<aura::Window*>* const
-    kTabDraggingSourceWindowKey;
-
 // A property key to indicate whether ash should perform auto management of
 // window positions; when you open a second browser, ash will move the two to
 // minimize overlap.
@@ -199,6 +193,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 // handle.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
     kWindowPipResizeHandleBoundsKey;
+
+// A property key to indicate a desk guid of a workspace this window belongs
+// to.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
+    kDeskGuidKey;
 
 // Alphabetical sort.
 

@@ -38,6 +38,11 @@ let AutofillFormFieldData;
 let AutofillFormData;
 
 /**
+ * Maps elements using their unique ID
+ */
+const elementMap = new Map();
+
+/**
  * Namespace for this file. It depends on |__gCrWeb| having already been
  * injected. String 'fill' is used in |__gCrWeb['fill']| as it needs to be
  * accessed in Objective-C code.
@@ -58,6 +63,16 @@ __gCrWeb['fill'] = __gCrWeb.fill;
  * @const {number}
  */
 __gCrWeb.fill.MAX_DATA_LENGTH = 1024;
+
+/**
+ * The maximum string length supported by Autofill.
+ *
+ * This variable is from kMaxStringLength in
+ * chromium/src/components/autofill/core/common/autofill_constant.h
+ *
+ * @const {number}
+ */
+__gCrWeb.fill.MAX_STRING_LENGTH = 1024;
 
 /**
  * The maximum number of form fields we are willing to parse, due to
@@ -181,6 +196,26 @@ __gCrWeb.fill.autoComplete = function(element) {
     return false;
   }
   if (getLowerCaseAttribute_(element.form, 'autocomplete') == 'off') {
+    return false;
+  }
+  return true;
+};
+
+/**
+ * Returns true if an element should suggest autocomplete dropdown.
+ *
+ * @param {Element} element An element to check if it can be autocompleted.
+ * @return {boolean} true if autocomplete dropdown should be suggested.
+ */
+__gCrWeb.fill.shouldAutocomplete = function(element) {
+  if (!__gCrWeb.fill.autoComplete(element)) {
+    return false;
+  }
+  if (getLowerCaseAttribute_(element, 'autocomplete') === 'one-time-code') {
+    return false;
+  }
+  if (getLowerCaseAttribute_(element.form, 'autocomplete') ===
+      'one-time-code') {
     return false;
   }
   return true;
@@ -675,7 +710,7 @@ function isVisibleNode_(node) {
  * field_element.isFormControlElement().
  *
  * This also uses (|controlElements|, |elementArray|) because there is no
- * guaranteeded Map support on iOS yet.
+ * guaranteed Map support on iOS yet.
  * TODO(crbug.com/1030490): Make |elementArray| a Map.
  *
  * @param {NodeList} labels The labels to match.
@@ -694,7 +729,9 @@ function matchLabelsAndFields_(
       // Sometimes site authors will incorrectly specify the corresponding
       // field element's name rather than its id, so we compensate here.
       const elementName = label.htmlFor;
-      if (!elementName) continue;
+      if (!elementName) {
+        continue;
+      }
       // Look through the list for elements with this name. There can actually
       // be more than one. In this case, the label may not be particularly
       // useful, so just discard it.
@@ -724,7 +761,9 @@ function matchLabelsAndFields_(
       }
     }
 
-    if (!fieldData) continue;
+    if (!fieldData) {
+      continue;
+    }
 
     if (!('label' in fieldData)) {
       fieldData['label'] = '';
@@ -762,7 +801,7 @@ function matchLabelsAndFields_(
  *
  * @param {HTMLFormElement} formElement The form element that will be processed.
  * @param {FormControlElement} formControlElement A control element in
- *     formElment, the FormField of which will be returned in field.
+ *     formElement, the FormField of which will be returned in field.
  * @param {Array<Element>} fieldsets The fieldsets to look through if
  *     formElement and formControlElement are not specified.
  * @param {Array<FormControlElement>} controlElements The control elements that
@@ -786,8 +825,9 @@ __gCrWeb.fill.formOrFieldsetsToFormData = function(
   // The extracted FormFields.
   const formFields = [];
 
-  // A vector of bools that indicate whether each element in |controlElements|
-  // meets the requirements and thus will be in the resulting |form|.
+  // A vector of booleans that indicate whether each element in
+  // |controlElements| meets the requirements and thus will be in the resulting
+  // |form|.
   const fieldsExtracted = [];
 
   if (!extractFieldsFromControlElements_(
@@ -820,7 +860,9 @@ __gCrWeb.fill.formOrFieldsetsToFormData = function(
        i < controlElements.length && fieldIdx < formFields.length; ++i) {
     // This field didn't meet the requirements, so don't try to find a label
     // for it.
-    if (!fieldsExtracted[i]) continue;
+    if (!fieldsExtracted[i]) {
+      continue;
+    }
 
     const controlElement = controlElements[i];
     const currentField = formFields[fieldIdx];
@@ -833,7 +875,9 @@ __gCrWeb.fill.formOrFieldsetsToFormData = function(
           currentField['label'].substr(0, __gCrWeb.fill.MAX_DATA_LENGTH);
     }
 
-    if (controlElement === formControlElement) field = formFields[fieldIdx];
+    if (controlElement === formControlElement) {
+      field = formFields[fieldIdx];
+    }
     ++fieldIdx;
   }
 
@@ -865,7 +909,7 @@ __gCrWeb.fill.formOrFieldsetsToFormData = function(
  *     formElement is in.
  * @param {HTMLFormElement} formElement The form element that will be processed.
  * @param {FormControlElement} formControlElement A control element in
- *     formElment, the FormField of which will be returned in field.
+ *     formElement, the FormField of which will be returned in field.
  * @param {number} extractMask Mask controls what data is extracted from
  *     formElement.
  * @param {Object} form Form to fill in the AutofillFormData
@@ -1815,8 +1859,10 @@ __gCrWeb.fill.getOptionStringsFromElement = function(selectElement, field) {
   const options = selectElement.options;
   for (let i = 0; i < options.length; ++i) {
     const option = options[i];
-    field['option_values'].push(option['value']);
-    field['option_contents'].push(option['text']);
+    field['option_values'].push(
+        option['value'].substring(0, __gCrWeb.fill.MAX_STRING_LENGTH));
+    field['option_contents'].push(
+        option['text'].substring(0, __gCrWeb.fill.MAX_STRING_LENGTH));
   }
 };
 
@@ -2016,7 +2062,7 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
       __gCrWeb.fill.isTextAreaElement(element) ||
       __gCrWeb.fill.isSelectElement(element)) {
     field['is_autofilled'] = element['isAutofilled'];
-    field['should_autocomplete'] = __gCrWeb.fill.autoComplete(element);
+    field['should_autocomplete'] = __gCrWeb.fill.shouldAutocomplete(element);
     field['is_focusable'] = !element.disabled && !element.readOnly &&
         element.tabIndex >= 0 && isVisibleNode_(element);
   }
@@ -2353,6 +2399,10 @@ __gCrWeb.fill.setUniqueIDIfNeeded = function(element) {
     if (typeof document[uniqueID] !== 'undefined' &&
         typeof element[uniqueID] === 'undefined') {
       element[uniqueID] = document[uniqueID]++;
+      // TODO(crbug.com/1350973): WeakRef starts in 14.5, remove checks once 14
+      // is deprecated.
+      elementMap.set(
+          element[uniqueID], window.WeakRef ? new WeakRef(element) : element);
     }
   } catch (e) {
   }
@@ -2372,5 +2422,19 @@ __gCrWeb.fill.getUniqueID = function(element) {
     }
   } catch (e) {
     return __gCrWeb.fill.RENDERER_ID_NOT_SET;
+  }
+};
+
+/**
+ * @param {int} Unique ID.
+ * @return {Element} element Form or form input element.
+ */
+__gCrWeb.fill.getElementByUniqueID = function(id) {
+  try {
+    // TODO(crbug.com/1350973): WeakRef starts in 14.5, remove checks once 14 is
+    // deprecated.
+    return window.WeakRef ? elementMap.get(id).deref() : elementMap.get(id);
+  } catch (e) {
+    return null;
   }
 };

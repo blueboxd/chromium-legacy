@@ -78,7 +78,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.DeletedUserProfiles" units="profiles"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -380,7 +380,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.Errors" enum="CryptohomeError"
-    expires_after="2023-08-06">
+    expires_after="2023-10-08">
   <owner>apronin@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Cryptohome errors.</summary>
@@ -469,7 +469,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.LECredential.LogReplayEntryCount" units="count"
-    expires_after="2023-08-19">
+    expires_after="2023-10-22">
   <owner>hcyang@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -520,6 +520,10 @@ chromium-metrics-reviews@google.com.
     <variant name="GetDelayInSeconds"/>
     <variant name="Insert"/>
     <variant name="Remove"/>
+    <variant name="ReplayCheck"/>
+    <variant name="ReplayInsert"/>
+    <variant name="ReplayRemove"/>
+    <variant name="ReplayReset"/>
     <variant name="Reset"/>
     <variant name="ResetTree"/>
     <variant name="Sync"/>
@@ -684,7 +688,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.OOPMountOperationResult"
-    enum="CryptohomeOOPMountOperationResult" expires_after="2023-08-13">
+    enum="CryptohomeOOPMountOperationResult" expires_after="2023-10-15">
   <owner>betuls@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -808,7 +812,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToGenerateEccAuthValue" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -832,7 +836,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToMountEx" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>betuls@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -873,7 +877,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToPerformMount" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>betuls@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -884,7 +888,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToUSSLoadPersisted" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>thomascedeno@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -897,7 +901,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.TimeToUSSPersist" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>thomascedeno@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -1029,7 +1033,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cryptohome.{Action}AuthBlockType"
-    enum="CryptohomeAuthBlockType" expires_after="2023-04-11">
+    enum="CryptohomeAuthBlockType" expires_after="2023-10-11">
   <owner>yich@google.com</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>

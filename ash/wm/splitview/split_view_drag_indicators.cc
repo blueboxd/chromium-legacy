@@ -15,8 +15,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/style/default_color_constants.h"
-#include "ash/style/default_colors.h"
 #include "ash/utility/haptics_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
@@ -26,11 +24,13 @@
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -139,10 +139,18 @@ class SplitViewDragIndicators::RotatedImageLabelView
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
 
+    SetBackground(views::CreateThemedRoundedRectBackground(
+        cros_tokens::kCrosSysBaseElevated, kSplitviewLabelRoundRectRadiusDp));
+
+    SetBorder(std::make_unique<views::HighlightBorder>(
+        /*corner_radius=*/kSplitviewLabelRoundRectRadiusDp,
+        views::HighlightBorder::Type::kHighlightBorder1));
+
     label_ = AddChildView(std::make_unique<views::Label>(
         std::u16string(), views::style::CONTEXT_LABEL));
     label_->SetFontList(views::Label::GetDefaultFontList().Derive(
         2, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
+    label_->SetEnabledColorId(cros_tokens::kCrosSysOnSurface);
   }
 
   RotatedImageLabelView(const RotatedImageLabelView&) = delete;
@@ -199,39 +207,12 @@ class SplitViewDragIndicators::RotatedImageLabelView
     }
   }
 
-  // views:View:
-  void OnThemeChanged() override {
-    views::View::OnThemeChanged();
-
-    SetBackground(views::CreateRoundedRectBackground(
-        AshColorProvider::Get()->GetBaseLayerColor(
-            AshColorProvider::BaseLayerType::kTransparent80),
-        kSplitviewLabelRoundRectRadiusDp));
-
-    // TODO(crbug/1258983): Add blur background. This requires fixing a bug
-    // that `SetRoundedCornerRadius()` does not work with transform or find a
-    // solution to work around.
-    label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
-    label_->SetBackgroundColor(AshColorProvider::Get()->GetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent80));
-    label_->SetFontList(views::Label::GetDefaultFontList().Derive(
-        2, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::NORMAL));
-
-    if (chromeos::features::IsDarkLightModeEnabled()) {
-      SetBorder(std::make_unique<views::HighlightBorder>(
-          /*corner_radius=*/kSplitviewLabelRoundRectRadiusDp,
-          views::HighlightBorder::Type::kHighlightBorder1,
-          /*use_light_colors=*/false));
-    }
-  }
-
  private:
   // True if the label view is the right/bottom side one, false if it is the
   // left/top one.
   const bool is_right_or_bottom_;
 
-  views::Label* label_ = nullptr;
+  raw_ptr<views::Label, ExperimentalAsh> label_ = nullptr;
 };
 
 // View which contains two highlights on each side indicator where a user should
@@ -633,16 +614,18 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
     right_rotated_view_->layer()->SetTransform(right_rotation);
   }
 
-  SplitViewHighlightView* left_highlight_view_ = nullptr;
-  SplitViewHighlightView* right_highlight_view_ = nullptr;
-  RotatedImageLabelView* left_rotated_view_ = nullptr;
-  RotatedImageLabelView* right_rotated_view_ = nullptr;
+  raw_ptr<SplitViewHighlightView, ExperimentalAsh> left_highlight_view_ =
+      nullptr;
+  raw_ptr<SplitViewHighlightView, ExperimentalAsh> right_highlight_view_ =
+      nullptr;
+  raw_ptr<RotatedImageLabelView, ExperimentalAsh> left_rotated_view_ = nullptr;
+  raw_ptr<RotatedImageLabelView, ExperimentalAsh> right_rotated_view_ = nullptr;
 
   WindowDraggingState window_dragging_state_ = WindowDraggingState::kNoDrag;
   WindowDraggingState previous_window_dragging_state_ =
       WindowDraggingState::kNoDrag;
 
-  aura::Window* dragged_window_ = nullptr;
+  raw_ptr<aura::Window, ExperimentalAsh> dragged_window_ = nullptr;
 };
 
 SplitViewDragIndicators::SplitViewDragIndicators(aura::Window* root_window) {

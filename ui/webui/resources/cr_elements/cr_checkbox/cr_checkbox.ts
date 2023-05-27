@@ -9,6 +9,9 @@
  * used as labels. If no label will be provided, a .no-label class should be
  * added to hide the spacing between the checkbox and the label container.
  *
+ * If a label is provided, it will be shown by default after the checkbox. A
+ * .label-first CSS class can be added to show the label before the checkbox.
+ *
  * List of customizable styles:
  *  --cr-checkbox-border-size
  *  --cr-checkbox-checked-box-background-color
@@ -122,6 +125,10 @@ export class CrCheckboxElement extends CrCheckboxElementBase {
   }
 
   private showRipple_() {
+    if (this.noink) {
+      return;
+    }
+
     this.getRipple().showAndHoldDown();
   }
 

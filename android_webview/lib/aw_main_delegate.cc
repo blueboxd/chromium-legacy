@@ -70,7 +70,6 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/switches.h"
 #include "tools/v8_context_snapshot/buildflags.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -232,6 +231,7 @@ absl::optional<int> AwMainDelegate::BasicStartupComplete() {
 
     if (cl->HasSwitch(switches::kWebViewFencedFrames)) {
       features.EnableIfNotSet(blink::features::kFencedFrames);
+      features.EnableIfNotSet(blink::features::kFencedFramesAPIChanges);
       features.EnableIfNotSet(blink::features::kSharedStorageAPI);
       features.EnableIfNotSet(::features::kPrivacySandboxAdsAPIsOverride);
     }
@@ -314,13 +314,9 @@ absl::optional<int> AwMainDelegate::BasicStartupComplete() {
 
     // FedCM is not yet supported on WebView.
     features.DisableIfNotSet(::features::kFedCm);
-  }
 
-  // Enable Event.path on Beta and Stable. The feature has been deprecated and
-  // removed on other platforms, but needs more time on WebView.
-  // See crbug.com/1277431 for more details.
-  if (version_info::android::GetChannel() >= version_info::Channel::BETA) {
-    cl->AppendSwitch(blink::switches::kEventPathEnabledByDefault);
+    // Disable network-change migration on WebView due to crbug.com/1430082.
+    features.DisableIfNotSet(net::features::kMigrateSessionsOnNetworkChangeV2);
   }
 
   android_webview::RegisterPathProvider();
@@ -504,7 +500,9 @@ void AwMainDelegate::InitializeMemorySystem(const bool is_browser_process) {
   memory_system::Initializer()
       .SetGwpAsanParameters(gwp_asan_boost_sampling, process_type)
       .SetDispatcherParameters(memory_system::DispatcherParameters::
-                                   PoissonAllocationSamplerInclusion::kEnforce)
+                                   PoissonAllocationSamplerInclusion::kEnforce,
+                               memory_system::DispatcherParameters::
+                                   AllocationTraceRecorderInclusion::kIgnore)
       .Initialize(memory_system_);
 }
 }  // namespace android_webview

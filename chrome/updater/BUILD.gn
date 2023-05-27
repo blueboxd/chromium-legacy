@@ -227,6 +227,10 @@ if (is_win || is_mac || is_linux) {
         "app/server/win/server.h",
         "app/server/win/service_main.cc",
         "app/server/win/service_main.h",
+        "app/server/win/update_service_internal_stub_win.cc",
+        "app/server/win/update_service_internal_stub_win.h",
+        "app/server/win/update_service_stub_win.cc",
+        "app/server/win/update_service_stub_win.h",
         "app/server/win/wrl_classes.cc",
         "device_management/dm_storage_win.cc",
         "ipc/update_service_internal_proxy_win.cc",
@@ -699,12 +703,16 @@ if (is_win || is_mac || is_linux) {
       "policy/service_unittest.cc",
       "prefs_unittest.cc",
       "tag_unittest.cc",
+      "test/http_request.cc",
+      "test/http_request.h",
       "test/integration_test_commands.h",
       "test/integration_test_commands_system.cc",
       "test/integration_test_commands_user.cc",
       "test/integration_tests.cc",
       "test/integration_tests_impl.cc",
       "test/integration_tests_impl.h",
+      "test/request_matcher.cc",
+      "test/request_matcher.h",
       "test/server.cc",
       "test/server.h",
       "test_scope.h",
@@ -738,6 +746,7 @@ if (is_win || is_mac || is_linux) {
       "//testing/gtest",
       "//third_party/crashpad/crashpad/client",
       "//third_party/re2",
+      "//third_party/zlib/google:compression_utils",
       "//url",
     ]
 
@@ -824,6 +833,7 @@ if (is_win || is_mac || is_linux) {
       sources += [
         "mac/keystone/ksadmin_unittest.cc",
         "mac/privileged_helper/privileged_helper_unittests.mm",
+        "mac/setup/keystone_unittest.cc",
         "mac/setup/ks_tickets_unittest.mm",
         "mac/setup/setup_unittest.mm",
         "policy/mac/managed_preference_policy_manager_impl_unittest.mm",
@@ -841,6 +851,7 @@ if (is_win || is_mac || is_linux) {
       ]
 
       data += [
+        "//chrome/test/data/updater/CountingMetrics.plist",
         "//chrome/test/data/updater/Keystone.ticketstore",
         "//chrome/test/data/updater/Keystone.withlaunchservicechecker.ticketstore",
         "//chrome/test/data/updater/Keystone.legacy.ticketstore",
@@ -873,10 +884,12 @@ if (is_win || is_mac || is_linux) {
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Helpers/ksinstall",
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Info.plist",
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/MacOS/GoogleSoftwareUpdate",
+        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/MacOS/ksadmin",
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/Info.plist",
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/MacOS/GoogleSoftwareUpdateAgent",
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/Resources/GoogleSoftwareUpdateAgent.app/Contents/_CodeSignature",
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/GoogleSoftwareUpdate.bundle/Contents/_CodeSignature",
+        "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Helpers/launcher",
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/Info.plist",
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/MacOS/GoogleUpdater",
         "//third_party/updater/chrome_mac_universal_prod/GoogleUpdater.app/Contents/_CodeSignature",
@@ -884,7 +897,7 @@ if (is_win || is_mac || is_linux) {
 
       data_deps = [
         ":updater_selfupdate_test_crx",
-        "//chrome/updater/mac:ksadmin",
+        "//chrome/updater/mac:ksadmin_test",
         "//chrome/updater/mac:updater_bundle_test",
       ]
 
@@ -990,9 +1003,7 @@ if (is_win || is_mac || is_linux) {
     }
     if (is_linux) {
       data_deps = [ "//chrome/updater/linux:updater_test" ]
-      if (is_chrome_branded) {
-        data_deps += [ "//third_party/updater:old_updater" ]
-      }
+      data_deps += [ "//third_party/updater:old_updater" ]
     }
   }
 

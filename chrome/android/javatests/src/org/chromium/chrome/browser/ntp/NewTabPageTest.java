@@ -22,11 +22,12 @@ import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.content.ComponentCallbacks2;
 import android.graphics.Canvas;
-import android.support.test.InstrumentationRegistry;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
@@ -36,7 +37,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -62,7 +62,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.feed.FeedActionDelegate;
 import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
@@ -82,10 +81,14 @@ import org.chromium.chrome.browser.suggestions.tile.Tile;
 import org.chromium.chrome.browser.suggestions.tile.TileGroup;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNTP;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
@@ -99,10 +102,10 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.base.PageTransition;
@@ -202,14 +205,6 @@ public class NewTabPageTest {
         testValuesOverride.addFeatureFlagOverride(
                 ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID, isScrollableMVTEnabled);
         FeatureList.setTestValues(testValuesOverride);
-    }
-
-    @BeforeClass
-    public static void setUpBeforeActivityLaunched() {
-        // Only needs to be loaded once and needs to be loaded before HistogramTestRule.
-        // TODO(https://crbug.com/1211884): Revise after HistogramTestRule is revised to not require
-        // native loading.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
     }
 
     @Before
@@ -704,6 +699,7 @@ public class NewTabPageTest {
      */
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1434807")
     public void testRecordHistogramMostVisitedItemClick_Ntp() {
         Tile tileForTest = new Tile(mSiteSuggestions.get(0), 0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -827,6 +823,21 @@ public class NewTabPageTest {
     }
 
     /**
+     * Test whether the clicking action on the profile button in {@link NewTabPage} is been
+     * recorded in histogram correctly.
+     */
+    @Test
+    @SmallTest
+    @DisabledTest(message = "https://crbug.com/1433093")
+    public void testRecordHistogramProfileButtonClick_Ntp() {
+        HistogramWatcher histogramWatcher = HistogramWatcher.newSingleRecordWatcher(
+                HISTOGRAM_NTP_MODULE_CLICK, BrowserUiUtils.ModuleTypeOnStartAndNTP.PROFILE_BUTTON);
+        onView(withId(R.id.optional_toolbar_button)).perform(click());
+        histogramWatcher.assertExpected(HISTOGRAM_NTP_MODULE_CLICK
+                + " is not recorded correctly when click on the profile button.");
+    }
+
+    /**
      * Test whether the clicking action on Logo in {@link NewTabPage} is been recorded in
      * histogram correctly.
      */
@@ -858,6 +869,213 @@ public class NewTabPageTest {
         onView(withId(R.id.menu_button_wrapper)).perform(click());
         histogramWatcher.assertExpected(HISTOGRAM_NTP_MODULE_CLICK
                 + " is not recorded correctly when click on the menu button.");
+    }
+
+    /**
+     * Test show and click on the single tab card on the {@link NewTabPage} in the tablet.
+     */
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    public void testSingleTabCardShowAndClick() {
+        ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrl(TEST_URL);
+        Tab mostRecentTab = activity.getActivityTab();
+        Tab newTab = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+        NewTabPageTestUtils.waitForNtpLoaded(newTab);
+        NewTabPage ntp = (NewTabPage) newTab.getNativePage();
+        NewTabPageLayout ntpLayout = ntp.getNewTabPageLayout();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> ntp.showHomeSurfaceUi(mostRecentTab));
+
+        View singleTabCardView = ntpLayout.findViewById(R.id.single_tab_view);
+        assertEquals("The single tab card is still invisible after initialization.", View.VISIBLE,
+                singleTabCardView.getVisibility());
+        TextView title = singleTabCardView.findViewById(R.id.tab_title_view);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            String mostRecentTabTitle = mostRecentTab.getTitle();
+            assertEquals("The title of the single tab card is wrong.", mostRecentTabTitle,
+                    title.getText());
+        });
+
+        onView(withId(R.id.single_tab_view)).perform(click());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            int mostRecentTabId = mostRecentTab.getId();
+            assertEquals("After clicking on the single tab card, it leads us to the wrong tab.",
+                    mostRecentTabId, mActivityTestRule.getActivity().getActivityTab().getId());
+        });
+    }
+
+    /**
+     * Test destroy the already existing single tab card on the {@link NewTabPage} on tablet.
+     */
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    public void testSingleTabCardDestroy() {
+        ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrl(TEST_URL);
+        Tab mostRecentTab = activity.getActivityTab();
+        Tab newTab = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+        NewTabPageTestUtils.waitForNtpLoaded(newTab);
+        NewTabPage ntp = (NewTabPage) newTab.getNativePage();
+        NewTabPageLayout ntpLayout = ntp.getNewTabPageLayout();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> ntp.showHomeSurfaceUi(mostRecentTab));
+
+        ViewGroup singleTabCardViewContainer =
+                ntpLayout.findViewById(R.id.tab_switcher_module_container);
+        assertEquals("The single tab card container is still invisible after initialization.",
+                View.VISIBLE, singleTabCardViewContainer.getVisibility());
+        View singleTabCardView = ntpLayout.findViewById(R.id.single_tab_view);
+        assertEquals("The single tab card is still invisible after initialization.", View.VISIBLE,
+                singleTabCardView.getVisibility());
+
+        TestThreadUtils.runOnUiThreadBlocking(ntp::destroySingleTabCard);
+        assertEquals("The single tab card container is still visible after destroying it.",
+                View.GONE, singleTabCardViewContainer.getVisibility());
+        assertEquals("The single tab card is still visible after destroying it.", View.GONE,
+                singleTabCardView.getVisibility());
+    }
+
+    /**
+     * Test hide the already existing single tab card on the {@link NewTabPage} in the tablet
+     * by the tab observer.
+     */
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    public void testSingleTabCardHide() {
+        ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrl(TEST_URL);
+        Tab mostRecentTab = activity.getActivityTab();
+        Tab newTab = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+        NewTabPageTestUtils.waitForNtpLoaded(newTab);
+        NewTabPage ntp = (NewTabPage) newTab.getNativePage();
+        NewTabPageLayout ntpLayout = ntp.getNewTabPageLayout();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> ntp.showHomeSurfaceUi(mostRecentTab));
+
+        ViewGroup singleTabCardViewContainer =
+                ntpLayout.findViewById(R.id.tab_switcher_module_container);
+        assertEquals("The single tab card container is still invisible after initialization.",
+                View.VISIBLE, singleTabCardViewContainer.getVisibility());
+        View singleTabCardView = ntpLayout.findViewById(R.id.single_tab_view);
+        assertEquals("The single tab card is still invisible after initialization.", View.VISIBLE,
+                singleTabCardView.getVisibility());
+
+        TabObserver tabObserver = ntp.getTabObserverForTesting();
+        ntp.setShownAsHomeSurfaceForTesting(false);
+        Assert.assertFalse(
+                "The variable controlling whether to show the single tab card hasn't been "
+                        + "set to false.",
+                ntp.getShownAsHomeSurfaceForTesting());
+        ntpLayout.setMostVisitedTilesCoordinatorForTesting(null);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { tabObserver.onShown(newTab, TabSelectionType.FROM_NEW); });
+        assertEquals("The single tab card container is still visible after hiding it.", View.GONE,
+                singleTabCardViewContainer.getVisibility());
+        assertEquals("The single tab card is still visible after hiding it.", View.GONE,
+                singleTabCardView.getVisibility());
+    }
+
+    /**
+     * Test update the most recent tab of the single tab card with the regular tab information.
+     */
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    public void testSingleTabCardUpdateMostRecentTab_NotNtp() {
+        ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrl(ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
+        Tab originalMostRecentTab = activity.getActivityTab();
+        Tab tab = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+        NewTabPageTestUtils.waitForNtpLoaded(tab);
+        NewTabPage ntp = (NewTabPage) tab.getNativePage();
+        NewTabPageLayout ntpLayout = ntp.getNewTabPageLayout();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> ntp.showHomeSurfaceUi(originalMostRecentTab));
+
+        View singleTabCardView = ntpLayout.findViewById(R.id.single_tab_view);
+        assertEquals("The single tab card is still invisible after initialization.", View.VISIBLE,
+                singleTabCardView.getVisibility());
+        TextView title = singleTabCardView.findViewById(R.id.tab_title_view);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            String originalMostRecentTabTitleForCheck = originalMostRecentTab.getTitle();
+            assertEquals("The title of the single tab card is wrong after initialization.",
+                    originalMostRecentTabTitleForCheck, title.getText());
+        });
+
+        Tab newMostRecentTab = mActivityTestRule.loadUrlInNewTab(TEST_URL);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TabModelUtils.setIndex(activity.getCurrentTabModel(),
+                    TabModelUtils.getTabIndexById(activity.getCurrentTabModel(), tab.getId()),
+                    false);
+            ntp.showHomeSurfaceUi(newMostRecentTab);
+        });
+
+        assertEquals("The single tab card is invisible after updating the single tab card.",
+                View.VISIBLE, singleTabCardView.getVisibility());
+        TextView newTitle = singleTabCardView.findViewById(R.id.tab_title_view);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            String newMostRecentTabTitleForCheck = newMostRecentTab.getTitle();
+            assertEquals("The title of the single tab card is wrong after updating.",
+                    newMostRecentTabTitleForCheck, newTitle.getText());
+        });
+    }
+
+    /**
+     * Test update the most recent tab of the single tab card with the new tab page information.
+     */
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage"})
+    public void testSingleTabCardUpdateMostRecentTab_Ntp() {
+        ChromeTabbedActivity activity = mActivityTestRule.getActivity();
+        mActivityTestRule.loadUrl(TEST_URL);
+        Tab originalMostRecentTab = activity.getActivityTab();
+        Tab tab = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+        NewTabPageTestUtils.waitForNtpLoaded(tab);
+        NewTabPage ntp = (NewTabPage) tab.getNativePage();
+        NewTabPageLayout ntpLayout = ntp.getNewTabPageLayout();
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> ntp.showHomeSurfaceUi(originalMostRecentTab));
+
+        ViewGroup singleTabCardViewContainer =
+                ntpLayout.findViewById(R.id.tab_switcher_module_container);
+        assertEquals("The single tab card container is still invisible after initialization.",
+                View.VISIBLE, singleTabCardViewContainer.getVisibility());
+        View singleTabCardView = ntpLayout.findViewById(R.id.single_tab_view);
+        assertEquals("The single tab card is still invisible after initialization.", View.VISIBLE,
+                singleTabCardView.getVisibility());
+        TextView title = singleTabCardView.findViewById(R.id.tab_title_view);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            String originalMostRecentTabTitleForCheck = originalMostRecentTab.getTitle();
+            assertEquals("The title of the single tab card is wrong after initialization.",
+                    originalMostRecentTabTitleForCheck, title.getText());
+        });
+
+        Tab newMostRecentTab = mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            TabModelUtils.setIndex(activity.getCurrentTabModel(),
+                    TabModelUtils.getTabIndexById(activity.getCurrentTabModel(), tab.getId()),
+                    false);
+            ntp.showHomeSurfaceUi(newMostRecentTab);
+        });
+
+        assertEquals("The single tab card container is still visible after updating with "
+                        + "the new tab page information.",
+                View.GONE, singleTabCardViewContainer.getVisibility());
+        assertEquals("The single tab card is still visible after updating with the new tab "
+                        + "page information.",
+                View.GONE, singleTabCardView.getVisibility());
+        TextView new_title = singleTabCardView.findViewById(R.id.tab_title_view);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            String newMostRecentTabTitleForCheck = "";
+            assertEquals("The title of the single tab card is wrong after updating with "
+                            + "the new tab page information.",
+                    newMostRecentTabTitleForCheck, new_title.getText());
+        });
     }
 
     private void captureThumbnail() {

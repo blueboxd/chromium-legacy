@@ -2482,6 +2482,26 @@ void GLES2TraceImplementation::ReadbackARGBImagePixelsINTERNAL(
       plane_index, pixels);
 }
 
+void GLES2TraceImplementation::WritePixelsINTERNAL(const GLbyte* mailbox,
+                                                   const void* src_color_space,
+                                                   GLuint src_color_space_size,
+                                                   GLuint src_size,
+                                                   GLuint src_width,
+                                                   GLuint src_height,
+                                                   GLuint src_sk_color_type,
+                                                   GLuint src_sk_alpha_type,
+                                                   GLuint src_row_bytes,
+                                                   GLint x_offset,
+                                                   GLint y_offset,
+                                                   GLint plane_index,
+                                                   const void* src_pixels) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::WritePixelsINTERNAL");
+  gl_->WritePixelsINTERNAL(mailbox, src_color_space, src_color_space_size,
+                           src_size, src_width, src_height, src_sk_color_type,
+                           src_sk_alpha_type, src_row_bytes, x_offset, y_offset,
+                           plane_index, src_pixels);
+}
+
 void GLES2TraceImplementation::EnableiOES(GLenum target, GLuint index) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::EnableiOES");
   gl_->EnableiOES(target, index);
@@ -2601,6 +2621,18 @@ void GLES2TraceImplementation::PixelLocalStorageBarrierANGLE() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::PixelLocalStorageBarrierANGLE");
   gl_->PixelLocalStorageBarrierANGLE();
+}
+
+void GLES2TraceImplementation::FramebufferPixelLocalStorageInterruptANGLE() {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::FramebufferPixelLocalStorageInterruptANGLE");
+  gl_->FramebufferPixelLocalStorageInterruptANGLE();
+}
+
+void GLES2TraceImplementation::FramebufferPixelLocalStorageRestoreANGLE() {
+  TRACE_EVENT_BINARY_EFFICIENT0(
+      "gpu", "GLES2Trace::FramebufferPixelLocalStorageRestoreANGLE");
+  gl_->FramebufferPixelLocalStorageRestoreANGLE();
 }
 
 void GLES2TraceImplementation::GetFramebufferPixelLocalStorageParameterfvANGLE(

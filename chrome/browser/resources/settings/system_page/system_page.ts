@@ -7,13 +7,13 @@
  * operating system (i.e. network, background processes, hardware).
  */
 
+import 'chrome://resources/cr_components/settings_prefs/prefs.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.js';
 import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
-import '../controls/extension_controlled_indicator.js';
+import '/shared/settings/controls/extension_controlled_indicator.js';
 import '../controls/settings_toggle_button.js';
-import '../prefs/prefs.js';
 import '../relaunch_confirmation_dialog.js';
 import '../settings_shared.css.js';
 
@@ -99,13 +99,13 @@ export class SettingsSystemPageElement extends SettingsSystemPageElementBase {
         'refresh-pref', {bubbles: true, composed: true, detail: 'proxy'}));
   }
 
-  private onProxyTap_() {
+  private onProxyClick_() {
     if (this.isProxyDefault_) {
       SystemPageBrowserProxyImpl.getInstance().showProxySettings();
     }
   }
 
-  private onRestartTap_(e: Event) {
+  private onRestartClick_(e: Event) {
     // Prevent event from bubbling up to the toggle button.
     e.stopPropagation();
     this.performRestart(RestartType.RESTART);

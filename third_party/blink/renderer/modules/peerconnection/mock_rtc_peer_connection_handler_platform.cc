@@ -252,6 +252,11 @@ class MockRTCPeerConnectionHandlerPlatform::DummyRTCRtpTransceiverPlatform
       const override {
     return absl::nullopt;
   }
+  webrtc::RTCError Stop() override { return webrtc::RTCError::OK(); }
+  webrtc::RTCError SetCodecPreferences(
+      Vector<webrtc::RtpCodecCapability>) override {
+    return webrtc::RTCError::OK();
+  }
   webrtc::RTCError SetHeaderExtensionsToNegotiate(
       Vector<webrtc::RtpHeaderExtensionCapability> header_extensions) override {
     return webrtc::RTCError(webrtc::RTCErrorType::UNSUPPORTED_OPERATION);
@@ -382,7 +387,7 @@ MockRTCPeerConnectionHandlerPlatform::RemoveTrack(
   return std::unique_ptr<RTCRtpTransceiverPlatform>(std::move(copy));
 }
 
-scoped_refptr<webrtc::DataChannelInterface>
+rtc::scoped_refptr<webrtc::DataChannelInterface>
 MockRTCPeerConnectionHandlerPlatform::CreateDataChannel(
     const String& label,
     const webrtc::DataChannelInit&) {

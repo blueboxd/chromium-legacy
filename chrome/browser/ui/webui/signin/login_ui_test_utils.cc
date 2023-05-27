@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/public/base/consent_level.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -217,7 +218,9 @@ std::string GetButtonIdForSyncConfirmationDialogAction(
     case SyncConfirmationDialogAction::kConfirm:
       return "confirmButton";
     case SyncConfirmationDialogAction::kCancel:
-      return "cancelButton";
+      return base::FeatureList::IsEnabled(switches::kTangibleSync)
+                 ? "notNowButton"
+                 : "cancelButton";
   }
 }
 
@@ -263,21 +266,18 @@ std::string GetButtonSelectorForApp(const std::string& app,
 
 bool IsElementReady(content::WebContents* web_contents,
                     const std::string& element_selector) {
-  std::string message;
   std::string find_element_js = base::StringPrintf(
       "if (document.readyState != 'complete') {"
-      "  window.domAutomationController.send('DocumentNotReady');"
+      "  'DocumentNotReady';"
       "} else if (%s == null) {"
-      "  window.domAutomationController.send('NotFound');"
+      "  'NotFound';"
       "} else if (%s.hidden) {"
-      "  window.domAutomationController.send('Hidden');"
+      "  'Hidden';"
       "} else {"
-      "  window.domAutomationController.send('Ok');"
+      "  'Ok';"
       "}",
       element_selector.c_str(), element_selector.c_str());
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, find_element_js, &message));
-  return message == "Ok";
+  return content::EvalJs(web_contents, find_element_js).ExtractString() == "Ok";
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -415,19 +415,19 @@ class SigninViewControllerTestUtil {
 };
 
 void WaitUntilUIReady(Browser* browser) {
-  std::string message;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      browser->tab_strip_model()->GetActiveWebContents(),
-      "var handler = function() {"
-      "  window.domAutomationController.send('ready');"
-      "};"
-      "if (!document.querySelector('inline-login-app').loading_)"
-      "  handler();"
-      "else"
-      "  document.querySelector('inline-login-app').authExtHost_"
-      "     .addEventListener('ready', handler);",
-      &message));
-  ASSERT_EQ("ready", message);
+  ASSERT_EQ("ready",
+            content::EvalJs(
+                browser->tab_strip_model()->GetActiveWebContents(),
+                "new Promise(resolve => {"
+                "  var handler = function() {"
+                "    resolve('ready');"
+                "  };"
+                "  if (!document.querySelector('inline-login-app').loading_)"
+                "    handler();"
+                "  else"
+                "    document.querySelector('inline-login-app').authExtHost_"
+                "       .addEventListener('ready', handler);"
+                "});"));
 }
 
 void SigninInNewGaiaFlow(content::WebContents* web_contents,

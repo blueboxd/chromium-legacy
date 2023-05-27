@@ -7,6 +7,7 @@
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
@@ -17,6 +18,9 @@
 #include "chrome/common/chrome_paths.h"
 
 namespace ash {
+
+BrowserDataBackMigratorBase*
+    LacrosDataBackwardMigrationScreen::migrator_for_testing_ = nullptr;
 
 LacrosDataBackwardMigrationScreen::LacrosDataBackwardMigrationScreen(
     base::WeakPtr<LacrosDataBackwardMigrationScreenView> view)
@@ -58,8 +62,12 @@ void LacrosDataBackwardMigrationScreen::ShowImpl() {
     const base::FilePath profile_data_dir =
         user_data_dir.Append(ProfileHelper::GetUserProfileDir(user_id_hash));
 
-    migrator_ = std::make_unique<BrowserDataBackMigrator>(
-        profile_data_dir, user_id_hash, g_browser_process->local_state());
+    if (migrator_for_testing_) {
+      migrator_ = base::WrapUnique(migrator_for_testing_);
+    } else {
+      migrator_ = std::make_unique<BrowserDataBackMigrator>(
+          profile_data_dir, user_id_hash, g_browser_process->local_state());
+    }
   }
 
   migrator_->Migrate(
@@ -77,17 +85,23 @@ void LacrosDataBackwardMigrationScreen::OnProgress(int percent) {
 }
 
 void LacrosDataBackwardMigrationScreen::OnMigrated(
-    BrowserDataBackMigrator::Result result) {
+    BrowserDataBackMigratorBase::Result result) {
   switch (result) {
-    case BrowserDataBackMigrator::Result::kSucceeded:
+    case BrowserDataBackMigratorBase::Result::kSucceeded:
       chrome::AttemptRestart();
       break;
-    case BrowserDataBackMigrator::Result::kFailed:
+    case BrowserDataBackMigratorBase::Result::kFailed:
       view_->SetFailureStatus();
       break;
   }
 }
 
 void LacrosDataBackwardMigrationScreen::HideImpl() {}
+
+// static
+void LacrosDataBackwardMigrationScreen::SetMigratorForTesting(
+    BrowserDataBackMigratorBase* migrator) {
+  migrator_for_testing_ = migrator;
+}
 
 }  // namespace ash

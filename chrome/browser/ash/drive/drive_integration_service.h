@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -94,6 +95,9 @@ class DriveIntegrationServiceObserver : public base::CheckedObserver {
 
   // Triggered when the mirroring functionality is disabled.
   virtual void OnMirroringDisabled() {}
+
+  // Triggered when the bulk pinning manager reports progress.
+  virtual void OnBulkPinProgress(const drivefs::pinning::Progress& progress) {}
 };
 
 // DriveIntegrationService is used to integrate Drive to Chrome. This class
@@ -105,9 +109,11 @@ class DriveIntegrationServiceObserver : public base::CheckedObserver {
 // that are used to integrate Drive to Chrome. The object of this class is
 // created per-profile.
 class DriveIntegrationService : public KeyedService,
-                                public drivefs::DriveFsHost::MountObserver {
+                                public drivefs::DriveFsHost::MountObserver,
+                                public drivefs::pinning::PinManager::Observer {
  public:
   class PreferenceWatcher;
+  class BulkPinningPrefUpdater;
   using DriveFsMojoListenerFactory = base::RepeatingCallback<
       std::unique_ptr<drivefs::DriveFsBootstrapListener>()>;
   using GetQuickAccessItemsCallback =
@@ -171,6 +177,9 @@ class DriveIntegrationService : public KeyedService,
   void OnUnmounted(absl::optional<base::TimeDelta> remount_delay) override;
   void OnMountFailed(MountFailure failure,
                      absl::optional<base::TimeDelta> remount_delay) override;
+
+  // PinManager::Observer implementation
+  void OnProgress(const drivefs::pinning::Progress& progress) override;
 
   EventLogger* event_logger() { return logger_.get(); }
 
@@ -297,6 +306,8 @@ class DriveIntegrationService : public KeyedService,
   // files.
   void GetTotalPinnedSize(base::OnceCallback<void(int64_t)> callback);
 
+  void ClearOfflineFiles(base::OnceCallback<void(drive::FileError)> callback);
+
   // Called by lacros to register a bridge that this service can call into when
   // DriveFS wants to initiate a connection to an extension in lacros.
   void RegisterDriveFsNativeMessageHostBridge(
@@ -414,7 +425,7 @@ class DriveIntegrationService : public KeyedService,
 
   friend class DriveIntegrationServiceFactory;
 
-  Profile* profile_;
+  raw_ptr<Profile, ExperimentalAsh> profile_;
   State state_;
   bool enabled_;
   bool mount_failed_ = false;
@@ -435,6 +446,7 @@ class DriveIntegrationService : public KeyedService,
   std::unique_ptr<DriveFsHolder> drivefs_holder_;
   std::unique_ptr<PreferenceWatcher> preference_watcher_;
   std::unique_ptr<drivefs::pinning::PinManager> pin_manager_;
+  std::unique_ptr<BulkPinningPrefUpdater> bulk_pinning_pref_updater_;
   int drivefs_total_failures_count_ = 0;
   int drivefs_consecutive_failures_count_ = 0;
   bool remount_when_online_ = false;

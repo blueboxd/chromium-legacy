@@ -13,6 +13,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/time/time.h"
+#include "base/types/strong_alias.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
@@ -25,13 +26,45 @@ namespace password_manager {
 // PasswordForm primary key which is used in the database.
 using FormPrimaryKey = base::StrongAlias<class FormPrimaryKeyTag, int>;
 
-// Pair of a value and the name of the element that contained this value.
-using ValueElementPair = std::pair<std::u16string, std::u16string>;
+// Represents a value, field renderer id, and the name of the element that
+// contained the value. Used to determine whether another element must be
+// selected as the right username or password field.
+struct AlternativeElement {
+  using Value =
+      base::StrongAlias<class AlternativeElementValueTag, std::u16string>;
+  using Name =
+      base::StrongAlias<class AlternativeElementNameTag, std::u16string>;
 
-// Vector of possible username values and corresponding field names.
-using ValueElementVector = std::vector<ValueElementPair>;
+  AlternativeElement(const Value& value,
+               autofill::FieldRendererId field_renderer_id,
+               const Name& name);
+  AlternativeElement(const AlternativeElement& rhs);
+  AlternativeElement(AlternativeElement&& rhs);
+  AlternativeElement& operator=(const AlternativeElement& rhs);
+  AlternativeElement& operator=(AlternativeElement&& rhs);
+  ~AlternativeElement();
+
+  bool operator==(const AlternativeElement&) const;
+  std::strong_ordering operator<=>(const AlternativeElement&) const;
+
+  // The value of the field.
+  std::u16string value;
+  // The renderer id of the field.
+  autofill::FieldRendererId field_renderer_id;
+  // The name attribute of the field.
+  std::u16string name;
+};
+
+#if defined(UNIT_TEST)
+std::ostream& operator<<(std::ostream& os, const AlternativeElement& form);
+#endif
+
+// Vector of possible username or password values and corresponding field data.
+using AlternativeElementVector = std::vector<AlternativeElement>;
 
 using IsMuted = base::StrongAlias<class IsMutedTag, bool>;
+using TriggerBackendNotification =
+    base::StrongAlias<class TriggerBackendNotificationTag, bool>;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -50,7 +83,10 @@ enum class InsecureType {
 // Metadata for insecure credentials
 struct InsecurityMetadata {
   InsecurityMetadata();
-  InsecurityMetadata(base::Time create_time, IsMuted is_muted);
+  InsecurityMetadata(
+      base::Time create_time,
+      IsMuted is_muted,
+      TriggerBackendNotification trigger_notification_from_backend);
   InsecurityMetadata(const InsecurityMetadata& rhs);
   ~InsecurityMetadata();
 
@@ -58,6 +94,9 @@ struct InsecurityMetadata {
   base::Time create_time;
   // Whether the problem was explicitly muted by the user.
   IsMuted is_muted{false};
+  // Whether the backend should send a notification about the issue. True if
+  // the user hasn't already been notified (e.g. via a leak check prompt).
+  TriggerBackendNotification trigger_notification_from_backend{false};
 };
 
 bool operator==(const InsecurityMetadata& lhs, const InsecurityMetadata& rhs);
@@ -240,14 +279,14 @@ struct PasswordForm {
   // This member is populated in cases where we there are multiple input
   // elements that could possibly be the username. Used when our heuristics for
   // determining the username are incorrect. Optional.
-  ValueElementVector all_possible_usernames;
+  AlternativeElementVector all_alternative_usernames;
 
   // This member is populated in cases where we there are multiple possible
   // password values. Used in pending password state, to populate a dropdown
   // for possible passwords. Contains all possible passwords. Optional.
-  ValueElementVector all_possible_passwords;
+  AlternativeElementVector all_alternative_passwords;
 
-  // True if |all_possible_passwords| have autofilled value or its part.
+  // True if |all_alternative_passwords| have autofilled value or its part.
   bool form_has_autofilled_value = false;
 
   // The name of the input element corresponding to the current password.
@@ -367,6 +406,9 @@ struct PasswordForm {
 
   // If true, this is a credential found using affiliation-based match.
   bool is_affiliation_based_match = false;
+
+  // If true, this is a credential found using grouping match.
+  bool is_grouped_match = false;
 
   // The type of the event that was taken as an indication that this form is
   // being or has already been submitted. This field is not persisted and filled

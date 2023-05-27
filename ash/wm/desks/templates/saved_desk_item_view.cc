@@ -15,6 +15,7 @@
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
 #include "ash/wm/desks/desk_textfield.h"
+#include "ash/wm/desks/templates/saved_desk_constants.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
 #include "ash/wm/desks/templates/saved_desk_icon_container.h"
@@ -33,6 +34,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,11 +62,7 @@ namespace ash {
 namespace {
 
 // The padding values of the SavedDeskItemView.
-constexpr int kHorizontalPaddingDp = 24;
 constexpr int kVerticalPaddingDp = 16;
-
-// The corner radius for the SavedDeskItemView.
-constexpr int kCornerRadius = 16;
 
 // The margin for the delete button.
 constexpr int kDeleteButtonMargin = 8;
@@ -75,13 +73,12 @@ constexpr int kLaunchButtonDistanceFromBottomDp = 14;
 // The preferred width of the container that houses the saved desk name
 // textfield and managed status indicator and the time label.
 constexpr int kSavedDeskNameAndTimePreferredWidth =
-    SavedDeskItemView::kPreferredSize.width() - kHorizontalPaddingDp * 2;
+    SavedDeskItemView::kPreferredSize.width() - kSaveDeskPaddingDp * 2;
 
 // The height of the view which contains the time of the saved desk.
 constexpr int kTimeViewHeight = 24;
 
-// The spacing between the textfield and the managed status icon.
-constexpr int kManagedStatusIndicatorSpacing = 8;
+// The size of the managed status icon.
 constexpr int kManagedStatusIndicatorSize = 20;
 
 // There is a gap between the background of the name view and the name view's
@@ -136,16 +133,18 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
       .SetAccessibleName(saved_desk_name)
       .SetCallback(std::move(launch_template_callback))
       .SetBackground(views::CreateThemedRoundedRectBackground(
-          cros_tokens::kCrosSysSystemBaseElevated, kCornerRadius))
+          cros_tokens::kCrosSysSystemBaseElevated, kSaveDeskCornerRadius))
       .SetBorder(std::make_unique<views::HighlightBorder>(
-          kCornerRadius, views::HighlightBorder::Type::kHighlightBorder1,
-          /*use_light_colors=*/false))
+          kSaveDeskCornerRadius,
+          chromeos::features::IsJellyrollEnabled()
+              ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+              : views::HighlightBorder::Type::kHighlightBorder1))
       // TODO(b/274025495): Update Shadow for SavedDeskItemView.
       .AddChildren(
           views::Builder<views::FlexLayoutView>()
               .SetOrientation(views::LayoutOrientation::kVertical)
               .SetInteriorMargin(
-                  gfx::Insets::VH(kVerticalPaddingDp, kHorizontalPaddingDp))
+                  gfx::Insets::VH(kVerticalPaddingDp, kSaveDeskPaddingDp))
               // TODO(richui): Consider splitting some of the children into
               // different files and/or classes.
               .AddChildren(
@@ -176,7 +175,7 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
                           // "managed-by-admin" admin icon.
                           views::Builder<views::View>()
                               .SetPreferredSize(
-                                  gfx::Size(kManagedStatusIndicatorSpacing, 1))
+                                  gfx::Size(kSaveDeskSpacingDp, 1))
                               .SetProperty(
                                   views::kFlexBehaviorKey,
                                   views::FlexSpecification(
@@ -266,7 +265,7 @@ SavedDeskItemView::SavedDeskItemView(std::unique_ptr<DeskTemplate> saved_desk)
                                    /*highlight_on_hover=*/false,
                                    /*highlight_on_focus=*/false);
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
-                                                kCornerRadius);
+                                                kSaveDeskCornerRadius);
 
   views::FocusRing* focus_ring =
       StyleUtil::SetUpFocusRingForView(this, kFocusRingHaloInset);
@@ -327,7 +326,7 @@ void SavedDeskItemView::SetDisplayName(const std::u16string& saved_desk_name) {
 }
 
 void SavedDeskItemView::MaybeShowReplaceDialog(DeskTemplateType type,
-                                               const base::GUID& uuid) {
+                                               const base::Uuid& uuid) {
   // Show replace saved desk dialog. If accepted, replace old saved desk item
   // and commit name change.
   auto* controller = saved_desk_util::GetSavedDeskDialogController();
@@ -343,7 +342,7 @@ void SavedDeskItemView::MaybeShowReplaceDialog(DeskTemplateType type,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SavedDeskItemView::ReplaceSavedDesk(const base::GUID& uuid) {
+void SavedDeskItemView::ReplaceSavedDesk(const base::Uuid& uuid) {
   // Make sure we delete the saved desk we are replacing first, so that we don't
   // get saved desk name collisions. Passing `nullopt` as `record_for_type`
   // since we only record the delete operation when the user specifically

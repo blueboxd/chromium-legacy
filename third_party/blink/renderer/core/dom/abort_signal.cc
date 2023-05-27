@@ -6,10 +6,8 @@
 
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/functional/callback.h"
 #include "base/time/time.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/abort_signal_composition_manager.h"
@@ -72,96 +70,14 @@ class FollowAlgorithm final : public AbortSignal::Algorithm {
   Member<AbortSignal> following_;
 };
 
-// Variant of `AbortAlgorithmCollection` that implements removal. This holds
-// weak references to algorithm handles, leaving the lifetime up to algorithm
-// creators. Used only when features::kAbortSignalHandleBasedRemoval is true.
-class RemovableAbortAlgorithmCollection final
-    : public AbortSignal::AbortAlgorithmCollection {
- public:
-  RemovableAbortAlgorithmCollection() = default;
-  ~RemovableAbortAlgorithmCollection() = default;
-
-  RemovableAbortAlgorithmCollection(const RemovableAbortAlgorithmCollection&) =
-      delete;
-  RemovableAbortAlgorithmCollection& operator=(
-      const RemovableAbortAlgorithmCollection&) = delete;
-
-  void AddAlgorithm(AbortSignal::AlgorithmHandle* handle) override {
-    DCHECK(!abort_algorithms_.Contains(handle));
-    // This always appends since `handle` is not already in the collection.
-    abort_algorithms_.insert(handle);
-  }
-
-  void RemoveAlgorithm(AbortSignal::AlgorithmHandle* handle) override {
-    abort_algorithms_.erase(handle);
-  }
-
-  void Clear() override { abort_algorithms_.clear(); }
-
-  bool Empty() const override { return abort_algorithms_.empty(); }
-
-  void Run() override {
-    for (AbortSignal::AlgorithmHandle* handle : abort_algorithms_) {
-      handle->GetAlgorithm()->Run();
-    }
-  }
-
-  void Trace(Visitor* visitor) const override {
-    visitor->Trace(abort_algorithms_);
-    AbortAlgorithmCollection::Trace(visitor);
-  }
-
- private:
-  HeapLinkedHashSet<WeakMember<AbortSignal::AlgorithmHandle>> abort_algorithms_;
-};
-
-// Variant of `AbortAlgorithmCollection` that does not implement removal. This
-// holds strong references to algorithms, leaving algorithms around for as long
-// as the signal is alive. Enabled when features::kAbortSignalHandleBasedRemoval
-// is false.
-class UnremovableAbortAlgorithmCollection final
-    : public AbortSignal::AbortAlgorithmCollection {
- public:
-  UnremovableAbortAlgorithmCollection() = default;
-  ~UnremovableAbortAlgorithmCollection() = default;
-
-  UnremovableAbortAlgorithmCollection(
-      const UnremovableAbortAlgorithmCollection&) = delete;
-  UnremovableAbortAlgorithmCollection& operator=(
-      const UnremovableAbortAlgorithmCollection&) = delete;
-
-  void AddAlgorithm(AbortSignal::AlgorithmHandle* handle) override {
-    abort_algorithms_.push_back(handle->GetAlgorithm());
-  }
-
-  void RemoveAlgorithm(AbortSignal::AlgorithmHandle* handle) override {}
-
-  void Clear() override { abort_algorithms_.clear(); }
-
-  bool Empty() const override { return abort_algorithms_.empty(); }
-
-  void Run() override {
-    for (AbortSignal::Algorithm* algorithm : abort_algorithms_) {
-      algorithm->Run();
-    }
-  }
-
-  void Trace(Visitor* visitor) const override {
-    visitor->Trace(abort_algorithms_);
-    AbortAlgorithmCollection::Trace(visitor);
-  }
-
- private:
-  HeapVector<Member<AbortSignal::Algorithm>> abort_algorithms_;
-};
-
 }  // namespace
 
 AbortSignal::AbortSignal(ExecutionContext* execution_context)
     : AbortSignal(execution_context, SignalType::kInternal) {}
 
 AbortSignal::AbortSignal(ExecutionContext* execution_context,
-                         SignalType signal_type) {
+                         SignalType signal_type)
+    : LazyActiveScriptWrappable<AbortSignal>({}) {
   DCHECK_NE(signal_type, SignalType::kComposite);
   InitializeCommon(execution_context, signal_type);
 
@@ -172,7 +88,8 @@ AbortSignal::AbortSignal(ExecutionContext* execution_context,
 }
 
 AbortSignal::AbortSignal(ScriptState* script_state,
-                         HeapVector<Member<AbortSignal>>& source_signals) {
+                         HeapVector<Member<AbortSignal>>& source_signals)
+    : LazyActiveScriptWrappable<AbortSignal>({}) {
   DCHECK(RuntimeEnabledFeatures::AbortSignalCompositionEnabled());
   InitializeCommon(ExecutionContext::From(script_state),
                    SignalType::kComposite);
@@ -197,14 +114,6 @@ void AbortSignal::InitializeCommon(ExecutionContext* execution_context,
          signal_type != SignalType::kComposite);
   execution_context_ = execution_context;
   signal_type_ = signal_type;
-
-  if (base::FeatureList::IsEnabled(features::kAbortSignalHandleBasedRemoval)) {
-    abort_algorithms_ =
-        MakeGarbageCollected<RemovableAbortAlgorithmCollection>();
-  } else {
-    abort_algorithms_ =
-        MakeGarbageCollected<UnremovableAbortAlgorithmCollection>();
-  }
 }
 
 AbortSignal::~AbortSignal() = default;
@@ -303,16 +212,10 @@ AbortSignal::AlgorithmHandle* AbortSignal::AddAlgorithm(Algorithm* algorithm) {
     return nullptr;
   }
   auto* handle = MakeGarbageCollected<AlgorithmHandle>(algorithm);
-  abort_algorithms_->AddAlgorithm(handle);
+  CHECK(!abort_algorithms_.Contains(handle));
+  // This always appends since `handle` is not already in the collection.
+  abort_algorithms_.insert(handle);
   return handle;
-}
-
-void AbortSignal::RemoveAlgorithm(AlgorithmHandle* handle) {
-  if (aborted() || (RuntimeEnabledFeatures::AbortSignalCompositionEnabled() &&
-                    composition_manager_->IsSettled())) {
-    return;
-  }
-  abort_algorithms_->RemoveAlgorithm(handle);
 }
 
 AbortSignal::AlgorithmHandle* AbortSignal::AddAlgorithm(
@@ -324,8 +227,18 @@ AbortSignal::AlgorithmHandle* AbortSignal::AddAlgorithm(
   auto* callback_algorithm =
       MakeGarbageCollected<OnceCallbackAlgorithm>(std::move(algorithm));
   auto* handle = MakeGarbageCollected<AlgorithmHandle>(callback_algorithm);
-  abort_algorithms_->AddAlgorithm(handle);
+  CHECK(!abort_algorithms_.Contains(handle));
+  // This always appends since `handle` is not already in the collection.
+  abort_algorithms_.insert(handle);
   return handle;
+}
+
+void AbortSignal::RemoveAlgorithm(AlgorithmHandle* handle) {
+  if (aborted() || (RuntimeEnabledFeatures::AbortSignalCompositionEnabled() &&
+                    composition_manager_->IsSettled())) {
+    return;
+  }
+  abort_algorithms_.erase(handle);
 }
 
 void AbortSignal::SignalAbort(ScriptState* script_state) {
@@ -350,10 +263,14 @@ void AbortSignal::SignalAbort(ScriptState* script_state, ScriptValue reason) {
   } else {
     abort_reason_ = reason;
   }
-  abort_algorithms_->Run();
+
+  for (AbortSignal::AlgorithmHandle* handle : abort_algorithms_) {
+    handle->GetAlgorithm()->Run();
+  }
+
   if (!RuntimeEnabledFeatures::AbortSignalCompositionEnabled()) {
     // This is cleared when the signal is settled when the feature is enabled.
-    abort_algorithms_->Clear();
+    abort_algorithms_.clear();
   }
   dependent_signal_algorithms_.clear();
   DispatchEvent(*Event::Create(event_type_names::kAbort));
@@ -416,7 +333,7 @@ void AbortSignal::DetachFromController() {
 void AbortSignal::OnSignalSettled(AbortSignalCompositionType type) {
   DCHECK(RuntimeEnabledFeatures::AbortSignalCompositionEnabled());
   DCHECK_EQ(type, AbortSignalCompositionType::kAbort);
-  abort_algorithms_->Clear();
+  abort_algorithms_.clear();
 }
 
 bool AbortSignal::HasPendingActivity() const {
@@ -431,7 +348,7 @@ bool AbortSignal::HasPendingActivity() const {
   }
   // Otherwise the signal needs to be kept alive if aborting can be observed.
   return HasEventListeners(event_type_names::kAbort) ||
-         !abort_algorithms_->Empty();
+         !abort_algorithms_.empty();
 }
 
 bool AbortSignal::CanAbort() const {

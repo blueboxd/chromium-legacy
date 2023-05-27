@@ -4,8 +4,10 @@
 
 #include "fuchsia_web/runners/cast/cast_component.h"
 
+#include <lib/async/default.h>
 #include <lib/fidl/cpp/binding.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
+
 #include <algorithm>
 #include <string>
 #include <utility>
@@ -21,7 +23,6 @@
 #include "components/cast/message_port/platform_message_port.h"
 #include "fuchsia_web/runners/cast/cast_runner.h"
 #include "fuchsia_web/runners/cast/cast_streaming.h"
-#include "fuchsia_web/runners/cast/fidl/fidl/hlcpp/chromium/cast/cpp/fidl.h"
 #include "fuchsia_web/runners/common/web_component.h"
 
 namespace {
@@ -72,17 +73,15 @@ CastComponent::CastComponent(base::StringPiece debug_name,
                              WebContentRunner* runner,
                              CastComponent::Params params,
                              bool is_headless)
-    : WebComponent(debug_name,
-                   runner,
-                   std::move(params.startup_context),
-                   nullptr),
+    : WebComponent(debug_name, runner, std::move(params.startup_context)),
       is_headless_(is_headless),
       application_config_(std::move(params.application_config)),
       url_rewrite_rules_provider_(std::move(params.url_rewrite_rules_provider)),
       initial_url_rewrite_rules_(
           std::move(params.initial_url_rewrite_rules.value())),
       api_bindings_client_(std::move(params.api_bindings_client)),
-      application_context_(params.application_context.Bind()),
+      application_context_(std::move(params.application_context),
+                           async_get_default_dispatcher()),
       media_settings_(std::move(params.media_settings.value())),
       headless_disconnect_watch_(FROM_HERE) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
@@ -104,8 +103,7 @@ void CastComponent::StartComponent() {
   url_rewrite_rules_provider_.set_error_handler([this](zx_status_t status) {
     ZX_LOG_IF(ERROR, status != ZX_OK, status)
         << "UrlRequestRewriteRulesProvider disconnected.";
-    DestroyComponent(kRewriteRulesProviderDisconnectExitCode,
-                     fuchsia::sys::TerminationReason::INTERNAL_ERROR);
+    DestroyComponent(kRewriteRulesProviderDisconnectExitCode);
   });
   OnRewriteRulesReceived(std::move(initial_url_rewrite_rules_));
 
@@ -131,8 +129,7 @@ void CastComponent::StartComponent() {
         CreateWebMessage("", std::move(message_port_for_web_engine)),
         [this](fuchsia::web::Frame_PostMessage_Result result) {
           if (result.is_err()) {
-            DestroyComponent(kBindingsFailureExitCode,
-                             fuchsia::sys::TerminationReason::INTERNAL_ERROR);
+            DestroyComponent(kBindingsFailureExitCode);
           }
         });
     api_bindings_client_->OnPortConnected(kCastStreamingMessagePortName,
@@ -142,8 +139,7 @@ void CastComponent::StartComponent() {
   api_bindings_client_->AttachToFrame(
       frame(), connector_.get(),
       base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
-                     kBindingsFailureExitCode,
-                     fuchsia::sys::TerminationReason::INTERNAL_ERROR));
+                     kBindingsFailureExitCode));
 
   // Media loading has to be unblocked by the agent via the
   // ApplicationController.
@@ -155,7 +151,7 @@ void CastComponent::StartComponent() {
   }
 
   application_controller_ = std::make_unique<ApplicationControllerImpl>(
-      frame(), application_context_.get());
+      frame(), application_context_);
 
   // Apply application-specific web permissions to the fuchsia.web.Frame.
   if (application_config_.has_permissions()) {
@@ -190,15 +186,18 @@ void CastComponent::StartComponent() {
   frame()->SetContentAreaSettings(std::move(settings));
 }
 
-void CastComponent::DestroyComponent(int64_t exit_code,
-                                     fuchsia::sys::TerminationReason reason) {
+void CastComponent::DestroyComponent(int64_t exit_code) {
   DCHECK(!constructor_active_);
 
-  // If the component EXITED then pass the |exit_code| to the Agent, to allow it
-  // to distinguish graceful termination from crashes.
-  if (reason == fuchsia::sys::TerminationReason::EXITED &&
-      application_controller_) {
-    application_context_->OnApplicationExit(exit_code);
+  // If the `application_controller_` is available then use it to inform the
+  // Agent of the `exit_code`. For graceful teardown (whether self-initiated by
+  // the web content, or due to a component `Stop()` request) the Agent expects
+  // to be notified with `exit_code` set to `ZX_OK`.  All other `exit_code`
+  // values, or failure to report one, indicate teardown due to error.
+  if (application_controller_) {
+    auto result = application_context_->OnApplicationExit(exit_code);
+    LOG_IF(ERROR, result.is_error())
+        << base::FidlMethodResultErrorMessage(result, "OnApplicationExit");
   }
 
   // frame() is about to be destroyed, so there is no need to perform cleanup
@@ -214,7 +213,7 @@ void CastComponent::DestroyComponent(int64_t exit_code,
         base::TimeDelta::FromZxDuration(application_config_.shutdown_delay()));
   }
 
-  WebComponent::DestroyComponent(exit_code, reason);
+  WebComponent::DestroyComponent(exit_code);
 }
 
 void CastComponent::OnRewriteRulesReceived(
@@ -244,16 +243,6 @@ void CastComponent::OnNavigationStateChanged(
 
   WebComponent::OnNavigationStateChanged(std::move(change),
                                          std::move(callback));
-}
-
-void CastComponent::CreateView(
-    zx::eventpair view_token,
-    fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
-    fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
-  scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
-  CreateViewWithViewRef(std::move(view_token),
-                        std::move(view_ref_pair.control_ref),
-                        std::move(view_ref_pair.view_ref));
 }
 
 void CastComponent::CreateViewWithViewRef(
@@ -289,7 +278,7 @@ void CastComponent::CreateView2(fuchsia::ui::app::CreateView2Args view_args) {
 void CastComponent::Kill() {
   // The Component Framework has requested forcible teardown, so immediately
   // destroy this component.
-  DestroyComponent(ZX_OK, fuchsia::sys::TerminationReason::EXITED);
+  DestroyComponent(ZX_OK);
 }
 
 void CastComponent::Stop() {

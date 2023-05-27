@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">أداة فك ترميز الصور</translation>
 <translation id="1785415724048343560">ننصحك بهذا الخيار للحصول على أفضل تجربة</translation>
 <translation id="1818308510395330587">‏للسماح لتطبيق <ph name="APP_NAME" /> باستخدام ميزة الواقع المعزَّز، يُرجى أيضًا تفعيل الكاميرا في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">من <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">يمكن للمواقع الإلكترونية ذات الصلة الاطّلاع على نشاطك في المجموعة.</translation>
 <translation id="1887786770086287077">‏الوصول إلى الموقع الجغرافي متوقف لهذا الجهاز. يمكنك تفعليه في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">قطع الاتصال</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">اكتمل التنزيل <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">قد لا تعمل ميزات بعض المواقع الإلكترونية في وضع التصفُّح المتخفي.</translation>
 <translation id="2442870161001914531">دائمًا طلب الموقع الإلكتروني المتوافق مع أجهزة الكمبيوتر</translation>
+<translation id="2479148705183875116">الانتقال إلى الإعدادات</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2490684707762498678">تتم إدارتها من خلال <ph name="APP_NAME" /></translation>
@@ -104,6 +104,7 @@
 <translation id="2717722538473713889">عنوان البريد الإلكتروني</translation>
 <translation id="2750481671343847896">بإمكان المواقع الإلكترونية حظر رسائل المطالبة بتسجيل الدخول من خدمات تقديم الهويات.</translation>
 <translation id="2822354292072154809">هل تريد فعلاً إعادة ضبط جميع أذونات الموقع الإلكتروني للكائن <ph name="CHOSEN_OBJECT_NAME" />؟</translation>
+<translation id="2850913818900871965">طلب العرض المخصّص للجهاز الجوّال</translation>
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2874939134665556319">المقطع الصوتي السابق</translation>
 <translation id="2891975107962658722">منع موقع إلكتروني من حفظ البيانات على جهازك</translation>
@@ -125,7 +126,6 @@
 <translation id="3162899666601560689">يسمح هذا الإجراء للمواقع الإلكترونية باستخدام ملفات تعريف الارتباط لتحسين تجربة التصفُّح، مثل إبقائك مُسجِّلاً الدخول أو تذكُّر عناصر في سلة التسوق.</translation>
 <translation id="3165022941318558018">يمكنك السماح لأحد المواقع الإلكترونية باستخدام ملفات تعريف الارتباط التابعة لجهات خارجية.</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> من البيانات المخزّنة</translation>
-<translation id="3203366800380907218">من الويب</translation>
 <translation id="321187648315454507">‏للسماح لتطبيق <ph name="APP_NAME" /> بإرسال الإشعارات إليك، يُرجى أيضًا تفعيل الإشعارات في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">الميكروفون</translation>
 <translation id="3248611290851046188">‏يحدِّد هذا الموقع الإلكتروني الاهتمامات التي يمكن أن تستخدمها المواقع الإلكترونية الأخرى لعرض الإعلانات التي تهمّك، كما يتعرّف هذا الموقع الإلكتروني على اهتماماتك من خلال متصفِّح Chrome ويعرض لك إعلانات تناسبك أكثر.</translation>
@@ -223,7 +223,6 @@
 <translation id="509133520954049755">طلب العرض المخصَّص للكمبيوتر المكتبي</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
 <translation id="5123685120097942451">علامة تبويب "التصفُّح المتخفي"</translation>
-<translation id="5134599672855298214">طلب العرض المخصّص للجهاز الجوّال (يُنصح به)</translation>
 <translation id="5186036860380548585">يمكنك العثور على خيار حفظ كلمة المرور بالقرب من أعلى الشاشة.</translation>
 <translation id="5197729504361054390">ستتم مشاركة جهات الاتصال التي تختارها مع الموقع الإلكتروني <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">تمّت زيارة الموقع الإلكتروني آخر مرّة اليوم</translation>

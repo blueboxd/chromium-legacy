@@ -22,7 +22,9 @@
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/net/crurl.h"
+#import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_cell.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_info_button_item.h"
@@ -37,7 +39,6 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_edit_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_address_profile_source.h"
@@ -248,8 +249,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   AutofillProfileItem* item =
       [[AutofillProfileItem alloc] initWithType:ItemTypeAddress];
-  item.text = title;
-  item.leadingDetailText = subTitle;
+  item.title = title;
+  item.detailText = subTitle;
   item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   item.accessibilityIdentifier = title;
   item.GUID = guid;
@@ -261,6 +262,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
         AutofillAddressProfileSource::AutofillSyncableProfile;
   } else {
     item.autofillProfileSource = AutofillLocalProfile;
+    if (base::FeatureList::IsEnabled(
+            autofill::features::kAutofillAccountProfileStorage)) {
+      item.image = CustomSymbolTemplateWithPointSize(
+          kCloudSlashSymbol, kCloudSlashSymbolPointSize);
+    }
   }
   return item;
 }
@@ -519,6 +525,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     [self setEditing:NO animated:NO];
   }
 
+  [self setSyncingUserEmail];
   [self updateUIForEditState];
   [self reloadData];
 }

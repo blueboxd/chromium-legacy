@@ -4,7 +4,7 @@
 
 #include "chrome/browser/preloading/prerender/prerender_utils.h"
 
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/browser_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/page_transition_types.h"
 
@@ -16,6 +16,7 @@ BASE_FEATURE(kHidePrefetchParameter,
 
 const char kDefaultSearchEngineMetricSuffix[] = "DefaultSearchEngine";
 const char kDirectUrlInputMetricSuffix[] = "DirectURLInput";
+const char kBookmarkBarMetricSuffix[] = "BookmarkBar";
 
 bool IsDirectUrlInputPrerenderEnabled() {
   return base::FeatureList::IsEnabled(features::kOmniboxTriggerForPrerender2);
@@ -31,7 +32,7 @@ bool ShouldUpdateCacheEntryManually() {
 }
 
 bool SearchPrefetchUpgradeToPrerenderIsEnabled() {
-  DCHECK(IsSearchSuggestionPrerenderEnabled());
+  CHECK(IsSearchSuggestionPrerenderEnabled());
   switch (features::kSearchSuggestionPrerenderImplementationTypeParam.Get()) {
     case features::SearchSuggestionPrerenderImplementationType::kUsePrefetch:
       return true;

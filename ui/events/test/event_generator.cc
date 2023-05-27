@@ -28,6 +28,10 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #endif
 
+#if BUILDFLAG(IS_OZONE)
+#include "ui/events/ozone/events_ozone.h"
+#endif
+
 namespace ui {
 namespace test {
 
@@ -39,11 +43,18 @@ class TestTickClock : public base::TickClock {
   TestTickClock(const TestTickClock&) = delete;
   TestTickClock& operator=(const TestTickClock&) = delete;
 
-  // Unconditionally returns a tick count that is 1ms later than the previous
-  // call, starting at 1ms.
+  // Returns a tick count that is 1ms later than the previous call to
+  // `NowTicks`, plus possible additional time from calls to `Advance`. Starts
+  // at 1ms.
   base::TimeTicks NowTicks() const override {
     static constexpr base::TimeDelta kOneMillisecond = base::Milliseconds(1);
     return ticks_ += kOneMillisecond;
+  }
+
+  // Advances the clock by `delta`. `delta` should be non-negative.
+  void Advance(const base::TimeDelta& delta) {
+    DCHECK(delta >= base::TimeDelta());
+    ticks_ += delta;
   }
 
  private:
@@ -627,6 +638,10 @@ void EventGenerator::Dispatch(ui::Event* event) {
   }
 }
 
+void EventGenerator::AdvanceClock(const base::TimeDelta& delta) {
+  tick_clock_->Advance(delta);
+}
+
 void EventGenerator::Init(gfx::NativeWindow root_window,
                           gfx::NativeWindow target_window) {
   tick_clock_ = std::make_unique<TestTickClock>();
@@ -677,15 +692,14 @@ void EventGenerator::DispatchKeyEvent(bool is_press,
 #else
   ui::EventType type = is_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
   ui::KeyEvent keyev(type, key_code, flags);
+#if BUILDFLAG(IS_OZONE)
   if (is_press) {
     // Set a property as if this is a key event not consumed by IME.
     // Ozone/X11+GTK IME works so already. Ozone/wayland IME relies on this
     // flag to work properly.
-    keyev.SetProperties({{
-        kPropertyKeyboardImeFlag,
-        std::vector<uint8_t>{kPropertyKeyboardImeIgnoredFlag},
-    }});
+    SetKeyboardImeFlags(&keyev, kPropertyKeyboardImeIgnoredFlag);
   }
+#endif  // BUILDFLAG(IS_OZONE)
 #endif  // BUILDFLAG(IS_WIN)
   keyev.set_source_device_id(source_device_id);
   Dispatch(&keyev);

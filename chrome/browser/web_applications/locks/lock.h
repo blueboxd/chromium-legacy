@@ -12,15 +12,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/web_app_id.h"
-#include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
+
+namespace content {
+struct PartitionedLockHolder;
+}
 
 namespace web_app {
 
 // Represents a lock in the WebAppProvider system. Locks can be acquired by
 // creating one of the subclasses of this class, and using the
-// `WebAppLockManager` to acquire the lock. The lock is acquired when the
-// callback given to the WebAppLockManager is called. Destruction of this class
-// will release the lock or cancel the lock request if it is not acquired yet.
+// `WebAppLockManager` to acquire the lock.
 class LockDescription {
  public:
   enum class Type {
@@ -28,7 +29,7 @@ class LockDescription {
     kBackgroundWebContents,
     kApp,
     kAppAndWebContents,
-    kFullSystem,
+    kAllAppsLock,
   };
 
   LockDescription(LockDescription&&);
@@ -68,11 +69,18 @@ class LockDescription {
 std::ostream& operator<<(std::ostream& os,
                          const LockDescription& lock_description);
 
+// See `WebAppLockManager` for how to use locks. Destruction of this class will
+// release the lock or cancel the lock request if it is not acquired yet.
+//
+// Note: Accessing a lock will CHECK-fail if the WebAppProvider system has
+// shutdown (or the profile has shut down).
 class Lock {
  public:
-  explicit Lock(std::unique_ptr<content::PartitionedLockHolder> holder);
-
+  Lock() = delete;
   ~Lock();
+
+ protected:
+  explicit Lock(std::unique_ptr<content::PartitionedLockHolder> holder);
 
  private:
   friend class WebAppLockManager;

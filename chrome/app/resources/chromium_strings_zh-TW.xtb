@@ -79,7 +79,6 @@
 <translation id="2928420929544864228">安裝完成。</translation>
 <translation id="2977470724722393594">Chromium 目前是最新版本</translation>
 <translation id="2977506796191543575">如果有網站試圖竊取你的密碼，或當你下載有害檔案時，Chromium 可能也會將網址 (包括部分網頁內容) 傳送給安全瀏覽功能</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{Chromium 已連線至 HID 裝置}other{Chromium 已連線至 HID 裝置}}</translation>
 <translation id="3032706164202344641">Chromium 無法檢查你的密碼，請稍後再試。</translation>
 <translation id="3032787606318309379">正在新增至 Chromium...</translation>
 <translation id="3038232873781883849">正在等待安裝...</translation>
@@ -94,7 +93,6 @@
 <translation id="3258596308407688501">Chromium 無法讀取及寫入資料目錄：
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">你可以透過這份指南瞭解各項選擇，讓 Chromium 依照所需方式運作</translation>
 <translation id="3283186697780795848">已安裝 Chromium <ph name="PRODUCT_VERSION" /> 版</translation>
 <translation id="3286538390144397061">立即重新啟動</translation>
 <translation id="328888136576916638">缺少 Google API 金鑰，系統將停用 Chromium 的部分功能。</translation>
@@ -246,8 +244,10 @@
 <translation id="6442900851116057561">重新啟動 Chromium OS</translation>
 <translation id="6455857529632101747">歡迎使用 Chromium 設定檔</translation>
 <translation id="6475912303565314141">這個擴充功能也會控管你啟動 Chromium 時所顯示的網頁。</translation>
+<translation id="648319183876919572">安全瀏覽強化防護功能可進一步協助你防範危險的網站和下載內容</translation>
 <translation id="6510925080656968729">解除安裝 Chromium</translation>
 <translation id="6542839706527980775">每個設定檔都有獨立專屬的 Chromium 資訊，例如書籤、歷史記錄和密碼等等</translation>
+<translation id="656935081669708576">你可以切換查看其他 Chromium 設定檔的密碼</translation>
 <translation id="6570579332384693436">為修正拼字錯誤，Chromium 會將你在文字欄位輸入的文字傳送給 Google</translation>
 <translation id="6598877126913850652">前往 Chromium 通知設定</translation>
 <translation id="6613594504749178791">你的變更將於下次重新啟動 Chromium 時生效。</translation>
@@ -383,7 +383,6 @@ Chromium 無法復原你的設定。</translation>
 <translation id="924957577793602335">享有個人化的 Chromium 體驗</translation>
 <translation id="93478295209880648">Chromium 已不適用於 Windows XP 或 Windows Vista，因此可能無法正常運作</translation>
 <translation id="942598560705308788">由 Chromium 管理的憑證</translation>
-<translation id="959579472876010517">充分發揮 Chromium 的效用</translation>
 <translation id="965162752251293939">誰在使用 Chromium？</translation>
 <translation id="967427899662692980">獲得 Chromium 最強大的安全防護</translation>
 <translation id="9792300276217204">在 Chromium 關閉後一律清除裝置上的網站資料</translation>

@@ -17,15 +17,17 @@
 <translation id="1278833599417554002">Neu starten, um &amp;Chrome zu aktualisieren</translation>
 <translation id="1302523850133262269">Bitte warte, bis die aktuellen Systemupdates von Chrome installiert wurden.</translation>
 <translation id="1335640173511558774">Für <ph name="MANAGER" /> ist es erforderlich, dass du vor der Verwendung dieses Geräts die folgenden Nutzungsbedingungen liest und akzeptierst. Durch diese Nutzungsbedingungen werden die Google Chrome OS Flex-Nutzungsbedingungen nicht erweitert, geändert oder eingeschränkt.</translation>
+<translation id="1341711321000856656">Wenn du das Profil wechselst, kannst du dir Passwörter anderer Chrome-Profile anzeigen lassen</translation>
 <translation id="1363996462118479832">Chrome OS konnte deine Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1399397803214730675">Auf diesem Computer befindet sich bereits eine neuere Version von Google Chrome. Falls die Software nicht funktioniert, deinstalliere Google Chrome und versuche es noch einmal.</translation>
 <translation id="139993653570221430">Du kannst deine Meinung jederzeit ändern und deine Chrome-Einstellungen entsprechend anpassen. Die Tests laufen parallel zur aktuellen Auslieferungsart für Werbung, Änderungen werden also nicht sofort sichtbar.</translation>
+<translation id="1425903838053942728">{COUNT,plural, =0{Die Aktualisierung von Chrome ist abgeschlossen. Du kannst die neueste Version nach dem Neustart verwenden. Anschließend werden deine aktuellen Tabs wieder geöffnet.}=1{Die Aktualisierung von Chrome ist abgeschlossen. Du kannst die neueste Version nach dem Neustart verwenden. Anschließend werden deine aktuellen Tabs wieder geöffnet. Dein Inkognitofenster wird nicht wieder geöffnet.}other{Die Aktualisierung von Chrome ist abgeschlossen. Du kannst die neueste Version nach dem Neustart verwenden. Anschließend werden deine aktuellen Tabs wieder geöffnet. Deine # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
 <translation id="1434626383986940139">Chrome Canary-Apps</translation>
+<translation id="1492280395845991349">Neu starten, um das Chrome-Update abzuschließen</translation>
 <translation id="1507198376417198979">Personalisiere dein neues Chrome-Profil</translation>
 <translation id="1516530951338665275">Google Chrome benötigt Zugriff auf Bluetooth, um mit der Koppelung 
  fortzufahren. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
-<translation id="1535597783576881392">In dieser Anleitung erfährst du mehr über deine Möglichkeiten, damit Chrome so funktioniert, wie du es möchtest</translation>
 <translation id="1547295885616600893">Chrome OS wird durch zusätzliche <ph name="BEGIN_LINK_CROS_OSS" />Open-Source-Software<ph name="END_LINK_CROS_OSS" /> ermöglicht.</translation>
 <translation id="1553358976309200471">Chrome aktualisieren</translation>
 <translation id="1583073672411044740"><ph name="EXISTING_USER" /> ist bereits in diesem Chrome-Profil angemeldet. Dadurch wird ein neues Chrome-Profil für <ph name="USER_EMAIL_ADDRESS" /> erstellt.</translation>
@@ -66,7 +68,6 @@
 <translation id="2131230230468101642">Zum Schutz deiner Daten löschen wir automatisch deine Interessen, die älter als vier Wochen sind. Je nach deinen Browsingaktivitäten können die Interessen wieder in der Liste erscheinen. Du kannst jedoch Interessen entfernen, die Chrome nicht berücksichtigen soll.</translation>
 <translation id="2139300032719313227">Chrome OS neu starten</translation>
 <translation id="2151406531797534936">Starte Chrome jetzt neu</translation>
-<translation id="2163996651553460171">Chrome optimal nutzen</translation>
 <translation id="2174917724755363426">Die Installation wurde nicht abgeschlossen. Möchtest du den Vorgang wirklich abbrechen?</translation>
 <translation id="223889379102603431">Informationen zur Verwaltung von Root-Zertifikaten in Chrome</translation>
 <translation id="2258103955319320201">Wenn du auf allen deinen Geräten auf deine Chrome-Browserinhalte zugreifen möchtest, melde dich an und aktiviere die Synchronisierung</translation>
@@ -93,6 +94,7 @@
 <translation id="2652691236519827073">Link in neuem Chrome-Tab öffnen</translation>
 <translation id="2665296953892887393">Absturzberichte und <ph name="UMA_LINK" /> zur Verbesserung von Google Chrome an Google senden</translation>
 <translation id="2689103672227170538">Die beim Start von Chrome angezeigte Seite wurde durch diese Erweiterung geändert.</translation>
+<translation id="2712234843277364121">Zum Aktualisieren neu starten – Tabs werden wieder geöffnet</translation>
 <translation id="2742320827292110288">Achtung: Google Chrome kann nicht verhindern, dass dein Browser-Verlauf von Erweiterungen aufgezeichnet wird. Schalte diese Option aus, um die Erweiterung im Inkognitomodus zu deaktivieren.</translation>
 <translation id="2765403129283291972">Chrome benötigt für diese Website die Berechtigung, auf dein Mikrofon zuzugreifen</translation>
 <translation id="2770231113462710648">Standardbrowser ändern in:</translation>
@@ -124,7 +126,6 @@
 <translation id="3140883423282498090">Deine Änderungen werden beim nächsten Neustart von Google Chrome wirksam.</translation>
 <translation id="3149510190863420837">Chrome-Apps</translation>
 <translation id="3169523567916669830">Während die Tests laufen, kannst du Themen von Interesse sehen, die von Websites verwendet werden, um dir Werbung anzuzeigen, und diese Themen entfernen. Chrome schätzt auf Grundlage deines aktuellen Browserverlaufs, welche Themen dich interessieren.</translation>
-<translation id="3211604354460514046">{NUM_DEVICES,plural, =1{Google Chrome ist mit einem HID-Gerät verbunden}other{Google Chrome ist mit HID-Geräten verbunden}}</translation>
 <translation id="3245429137663807393">Wenn du Chrome-Nutzungsberichte teilst, enthalten diese Berichte die von dir aufgerufenen URLs</translation>
 <translation id="3282568296779691940">In Chrome anmelden</translation>
 <translation id="3286538390144397061">Jetzt neu starten</translation>
@@ -276,6 +277,7 @@
 <translation id="6365489425007284765">{COUNT,plural, =1{Dein Administrator hat festgelegt, dass Browserdaten automatisch gelöscht werden, wenn Chromium eine Minute lang nicht verwendet wird. Dazu können der Verlauf, Autofill-Daten und Downloads gehören. Deine aktuellen Tabs bleiben geöffnet.}other{Dein Administrator hat festgelegt, dass Browserdaten automatisch gelöscht werden, wenn Chromium # Minuten lang nicht verwendet wird. Dazu können der Verlauf, Autofill-Daten und Downloads gehören. Deine aktuellen Tabs bleiben geöffnet.}}</translation>
 <translation id="6412673304250309937">Prüft URLs anhand einer Liste unsicherer Websites, die in Chrome gespeichert wird. Wenn eine Website versucht, dein Passwort zu stehlen, oder wenn du eine schädliche Datei herunterlädst, kann Chrome auch URLs, einschließlich Teile von Seiteninhalten, an Safe Browsing senden.</translation>
 <translation id="6418662306461808273">Zu bestehendem Chrome-Profil wechseln?</translation>
+<translation id="648319183876919572">Erweitertes Safe Browsing schützt dich besser vor gefährlichen Websites und Downloads</translation>
 <translation id="6493527311031785448">Google Chrome versucht, <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">Chrome benötigt die Kameraberechtigung, um eine 3D-Karte deiner Umgebung zu erstellen</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
@@ -406,6 +408,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="8989968390305463310">Dein Browserverlauf hat Einfluss auf die unten stehenden, geschätzten Interessen und darauf, welche Werbung dir gezeigt wird. Zum Schutz deiner Daten löscht Chrome automatisch jeden Monat deine Interessen. Solange du deine Interessen nicht entfernst, können sie aktualisiert werden.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Ein Chrome-Update ist verfügbar}=1{Ein Chrome-Update ist verfügbar}other{Ein Chrome-Update ist seit # Tagen verfügbar}}</translation>
 <translation id="9053892488859122171">Chrome OS Flex-System</translation>
+<translation id="9054037008353851982">Zum Aktualisieren neu starten – Tabs werden wieder geöffnet</translation>
 <translation id="911206726377975832">Auch die Browserdaten löschen?</translation>
 <translation id="9138603949443464873">Starte Chrome neu, um die Änderungen zu übernehmen</translation>
 <translation id="9195993889682885387">Chrome kann auf Grundlage deines Browserverlaufs der letzten Wochen deine Interessen schätzen. Diese Daten bleiben auf deinem Gerät.</translation>

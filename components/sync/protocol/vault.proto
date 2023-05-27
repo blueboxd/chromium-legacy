@@ -4,6 +4,9 @@
 
 // Trusted vault protos to communicate with backend written in proto3 to avoid
 // subtle differences between enum fields.
+
+// TODO(crbug.com/1423343): Delete this file once downstream references are
+// updated to use components/trusted_vault/proto.
 syntax = "proto3";
 
 option java_multiple_files = true;

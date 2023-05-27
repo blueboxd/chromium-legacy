@@ -13,9 +13,11 @@
 
 namespace gpu {
 
-class ExternalVkImageSkiaImageRepresentation : public SkiaImageRepresentation {
+class ExternalVkImageSkiaImageRepresentation
+    : public SkiaGaneshImageRepresentation {
  public:
-  ExternalVkImageSkiaImageRepresentation(SharedImageManager* manager,
+  ExternalVkImageSkiaImageRepresentation(GrDirectContext* gr_context,
+                                         SharedImageManager* manager,
                                          SharedImageBacking* backing,
                                          MemoryTypeTracker* tracker);
   ~ExternalVkImageSkiaImageRepresentation() override;

@@ -138,30 +138,17 @@ void FakeAmbientBackendControllerImpl::FetchPreviewImages(
       FROM_HERE, base::BindOnce(std::move(callback), urls));
 }
 
-void FakeAmbientBackendControllerImpl::GetSettings(
-    GetSettingsCallback callback) {
-  // Pretend to respond asynchronously.
-  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), CreateFakeSettings()));
-}
-
 void FakeAmbientBackendControllerImpl::UpdateSettings(
     const AmbientSettings& settings,
     UpdateSettingsCallback callback) {
   // |show_weather| should always be set to true.
   DCHECK(settings.show_weather);
+  current_temperature_unit_ = settings.temperature_unit;
+  if (update_auto_reply_.has_value()) {
+    std::move(callback).Run(update_auto_reply_.value());
+    return;
+  }
   pending_update_callback_ = std::move(callback);
-}
-
-void FakeAmbientBackendControllerImpl::FetchPersonalAlbums(
-    int banner_width,
-    int banner_height,
-    int num_albums,
-    const std::string& resume_token,
-    OnPersonalAlbumsFetchedCallback callback) {
-  // Pretend to respond asynchronously.
-  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), CreateFakeAlbums()));
 }
 
 void FakeAmbientBackendControllerImpl::FetchSettingsAndAlbums(
@@ -180,6 +167,16 @@ void FakeAmbientBackendControllerImpl::FetchWeather(
 const std::array<const char*, 2>&
 FakeAmbientBackendControllerImpl::GetBackupPhotoUrls() const {
   return kFakeBackupPhotoUrls;
+}
+
+std::array<const char*, 2>
+FakeAmbientBackendControllerImpl::GetTimeOfDayVideoPreviewImageUrls(
+    AmbientVideo video) const {
+  return kFakeBackupPhotoUrls;
+}
+
+const char* FakeAmbientBackendControllerImpl::GetPromoBannerUrl() const {
+  return kFakeUrl;
 }
 
 void FakeAmbientBackendControllerImpl::ReplyFetchSettingsAndAlbums(
@@ -216,6 +213,11 @@ void FakeAmbientBackendControllerImpl::ReplyUpdateSettings(bool success) {
 
 bool FakeAmbientBackendControllerImpl::IsUpdateSettingsPending() const {
   return !pending_update_callback_.is_null();
+}
+
+void FakeAmbientBackendControllerImpl::EnableUpdateSettingsAutoReply(
+    bool success) {
+  update_auto_reply_.emplace(success);
 }
 
 void FakeAmbientBackendControllerImpl::SetWeatherInfo(

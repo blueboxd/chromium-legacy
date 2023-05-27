@@ -66,9 +66,9 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/skia/include/core/SkAlphaType.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkEncodedImageFormat.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/encode/SkPngEncoder.h"
 
 namespace blink {
 
@@ -185,7 +185,7 @@ void HibernationHandler::Encode(
   DCHECK(
       base::FeatureList::IsEnabled(features::kCanvasCompressHibernatedImage));
   sk_sp<SkData> encoded =
-      params->image->encodeToData(SkEncodedImageFormat::kPNG, 100);
+      SkPngEncoder::Encode(nullptr, params->image.get(), {});
 
   size_t original_memory_size = ImageMemorySize(*params->image);
   int compression_ratio_percentage = static_cast<int>(
@@ -216,7 +216,7 @@ sk_sp<SkImage> HibernationHandler::GetImage() {
 
   base::TimeTicks before = base::TimeTicks::Now();
   // Note: not discarding the encoded image.
-  auto image = SkImage::MakeFromEncoded(encoded_)->makeRasterImage();
+  auto image = SkImages::DeferredFromEncodedData(encoded_)->makeRasterImage();
   base::TimeTicks after = base::TimeTicks::Now();
   UMA_HISTOGRAM_TIMES(
       "Blink.Canvas.2DLayerBridge.Compression.DecompressionTime",

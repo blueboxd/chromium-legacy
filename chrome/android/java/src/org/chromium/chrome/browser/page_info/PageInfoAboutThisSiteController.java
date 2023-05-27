@@ -29,20 +29,19 @@ import org.chromium.components.page_info.PageInfoAction;
 import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PageInfoMainController;
 import org.chromium.components.page_info.PageInfoRowView;
-import org.chromium.components.page_info.PageInfoSubpageController;
 import org.chromium.components.page_info.proto.AboutThisSiteMetadataProto.SiteInfo;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.ViewUtils;
 import org.chromium.url.GURL;
 
 /**
  * Class for controlling the page info 'About This Site' section.
  */
-public class PageInfoAboutThisSiteController implements PageInfoSubpageController {
+public class PageInfoAboutThisSiteController {
     public static final int ROW_ID = View.generateViewId();
     private static final String TAG = "PageInfo";
 
@@ -68,33 +67,6 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
         mDelegate = delegate;
         mWebContents = webContents;
         setupRow();
-    }
-
-    private void launchSubpage() {
-        mMainController.recordAction(PageInfoAction.PAGE_INFO_ABOUT_THIS_SITE_PAGE_OPENED);
-        mMainController.launchSubpage(this);
-    }
-
-    @Override
-    public String getSubpageTitle() {
-        return mRowView.getContext().getResources().getString(
-                R.string.page_info_about_this_site_title);
-    }
-
-    @Override
-    public View createViewForSubpage(ViewGroup parent) {
-        // The subpage can only be created if there is a row and the row is only visible if siteInfo
-        // is populated.
-        assert mSiteInfo != null;
-        assert mSiteInfo.hasDescription();
-        assert !mDelegate.isIncognito();
-        AboutThisSiteView view = (AboutThisSiteView) LayoutInflaterUtils.inflate(
-                parent.getContext(), R.layout.page_info_about_this_site_view, parent, false);
-        view.setSiteInfo(mSiteInfo,
-                ()
-                        -> openUrl(mSiteInfo.getDescription().getSource().getUrl(),
-                                PageInfoAction.PAGE_INFO_ABOUT_THIS_SITE_SOURCE_LINK_CLICKED));
-        return view;
     }
 
     private void openUrl(String url, @PageInfoAction int action) {
@@ -141,6 +113,9 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
 
                 TextView title = toolbarView.findViewById(R.id.title);
                 title.setTextAppearance(R.style.TextAppearance_TextLarge_Primary);
+                // Style change affects the toolbar height. Requests layout again.
+                ViewUtils.requestLayout(
+                        toolbarView, "PageInfoAboutThisSiteController.onToolbarCreated");
             }
 
             @Override
@@ -166,9 +141,6 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
                 .createNewTab(new LoadUrlParams(url, PageTransition.LINK), TabLaunchType.FROM_LINK,
                         TabUtils.fromWebContents(mWebContents));
     }
-
-    @Override
-    public void onSubpageRemoved() {}
 
     private void setupRow() {
         if (!mDelegate.isSiteSettingsAvailable() || mDelegate.isIncognito()) {
@@ -196,23 +168,18 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
         rowParams.iconResId = isNewIconFeatureEnabled()
                 ? PageInfoAboutThisSiteControllerJni.get().getJavaDrawableIconId()
                 : R.drawable.ic_info_outline_grey_24dp;
-        rowParams.iconNeedsTint = !isNewIconFeatureEnabled();
         rowParams.decreaseIconSize = true;
         rowParams.clickCallback = this::onAboutThisSiteRowClicked;
         mRowView.setParams(rowParams);
     }
 
     private boolean isNewIconFeatureEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_NEW_ICON)
-                && ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_MORE_INFO);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_NEW_ICON);
     }
 
     private String getTitle() {
         return mRowView.getContext().getResources().getString(
-                ChromeFeatureList.isEnabled(ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_MORE_INFO)
-                        ? R.string.page_info_about_this_page_title
-                        : R.string.page_info_about_this_site_title);
+                R.string.page_info_about_this_page_title);
     }
 
     private @Nullable SiteInfo getSiteInfo() {
@@ -230,21 +197,11 @@ public class PageInfoAboutThisSiteController implements PageInfoSubpageControlle
     }
 
     private void onAboutThisSiteRowClicked() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.PAGE_INFO_ABOUT_THIS_SITE_MORE_INFO)) {
-            openUrl(mSiteInfo.getMoreAbout().getUrl(),
-                    PageInfoAction.PAGE_INFO_ABOUT_THIS_SITE_PAGE_OPENED);
-        } else {
-            launchSubpage();
-        }
+        openUrl(mSiteInfo.getMoreAbout().getUrl(),
+                PageInfoAction.PAGE_INFO_ABOUT_THIS_SITE_PAGE_OPENED);
         PageInfoAboutThisSiteControllerJni.get().onAboutThisSiteRowClicked(
                 mSiteInfo.hasDescription());
     }
-
-    @Override
-    public void clearData() {}
-
-    @Override
-    public void updateRowIfNeeded() {}
 
     @NativeMethods
     interface Natives {

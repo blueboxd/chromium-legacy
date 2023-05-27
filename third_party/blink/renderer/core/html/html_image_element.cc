@@ -57,7 +57,6 @@
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
@@ -100,6 +99,7 @@ HTMLImageElement::HTMLImageElement(Document& document,
 
 HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
     : HTMLElement(html_names::kImgTag, document),
+      ActiveScriptWrappable<HTMLImageElement>({}),
       image_loader_(MakeGarbageCollected<HTMLImageLoader>(this)),
       image_device_pixel_ratio_(1.0f),
       source_(nullptr),
@@ -376,9 +376,9 @@ void HTMLImageElement::ParseAttribute(
     }
   } else if (name == html_names::kAttributionsrcAttr) {
     LocalDOMWindow* window = GetDocument().domWindow();
-    if (!params.new_value.empty() && window && window->GetFrame()) {
-      window->GetFrame()->GetAttributionSrcLoader()->Register(
-          GetDocument().CompleteURL(params.new_value), this);
+    if (window && window->GetFrame()) {
+      window->GetFrame()->GetAttributionSrcLoader()->Register(params.new_value,
+                                                              /*element=*/this);
     }
   } else {
     HTMLElement::ParseAttribute(params);
@@ -459,17 +459,16 @@ ImageCandidate HTMLImageElement::FindBestFitImageFromPictureParent() {
   return ImageCandidate();
 }
 
-LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style,
-                                                   LegacyLayout legacy) {
+LayoutObject* HTMLImageElement::CreateLayoutObject(const ComputedStyle& style) {
   if (auto* content_image =
           DynamicTo<ImageContentData>(style.GetContentData())) {
     if (!content_image->GetImage()->ErrorOccurred())
-      return LayoutObject::CreateObject(this, style, legacy);
+      return LayoutObject::CreateObject(this, style);
   }
 
   switch (layout_disposition_) {
     case LayoutDisposition::kFallbackContent:
-      return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy);
+      return LayoutObject::CreateBlockFlowOrListItem(this, style);
     case LayoutDisposition::kPrimaryContent: {
       LayoutImage* image = MakeGarbageCollected<LayoutImage>(this);
       image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
@@ -832,11 +831,13 @@ static bool SourceSizeValue(const Element* element,
   return exists;
 }
 
-FetchParameters::ResourceWidth HTMLImageElement::GetResourceWidth() const {
-  FetchParameters::ResourceWidth resource_width;
+absl::optional<float> HTMLImageElement::GetResourceWidth() const {
+  absl::optional<float> resource_width;
+  float width_value;
   Element* element = source_.Get();
-  resource_width.is_set = SourceSizeValue(element ? element : this,
-                                          GetDocument(), resource_width.width);
+  if (SourceSizeValue(element ? element : this, GetDocument(), width_value)) {
+    resource_width = width_value;
+  }
   return resource_width;
 }
 

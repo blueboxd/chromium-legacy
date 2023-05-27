@@ -32,6 +32,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/nuke_profile_directory_utils.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -50,12 +51,13 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/profile_ui_test_utils.h"
+#include "chrome/browser/ui/signin/profile_customization_util.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
-#include "chrome/browser/ui/views/profiles/profile_management_utils.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_test_base.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/browser/ui/webui/signin/enterprise_profile_welcome_handler.h"
@@ -98,7 +100,6 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/common/extension_id.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/base/url_util.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -521,8 +522,7 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
 
     // The DICE navigation happens in a new web contents (for the profile being
     // created), wait for it.
-    WaitForLoadStop(net::AppendQueryParameter(
-        GaiaUrls::GetInstance()->signin_chrome_sync_dice(), "flow", "promo"));
+    WaitForLoadStop(GetSigninChromeSyncDiceUrl());
     return static_cast<Profile*>(web_contents()->GetBrowserContext());
   }
 
@@ -674,6 +674,54 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
             kProfileColor);
 }
 
+// Regression test for https://crbug.com/1431342
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       CreateSignedInProfileClosePicker) {
+  // Closes the picker at the same time the new browser is created.
+  class ClosePickerOnBrowserAddedObserver : public BrowserListObserver {
+   public:
+    explicit ClosePickerOnBrowserAddedObserver(
+        ProfilePickerCreationFlowBrowserTest* fixture)
+        : fixture_(fixture) {
+      BrowserList::AddObserver(this);
+    }
+
+    // This observer is registered early, before the call to
+    // `OpenBrowserWindowForProfile()` in `ProfileManagementFlowController`. It
+    // causes the `ProfileManagementFlowController` to be deleted before its
+    // `clear_host_callback_` is called
+    void OnBrowserAdded(Browser* browser) override {
+      BrowserList::RemoveObserver(this);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      // On Lacros, using `ProfilePicker::Hide()` causes a timeout.
+      fixture_->widget()->CloseNow();
+#else
+      ProfilePicker::Hide();
+#endif
+      fixture_->WaitForPickerClosed();
+    }
+
+   private:
+    raw_ptr<ProfilePickerCreationFlowBrowserTest> fixture_ = nullptr;
+  };
+
+  ClosePickerOnBrowserAddedObserver close_picker_on_browser_added(this);
+
+  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
+  // Simulate a successful sign-in and wait for the sign-in to propagate to the
+  // flow, resulting in sync confirmation screen getting displayed.
+  Profile* profile_being_created = SignInForNewProfile(
+      GetSyncConfirmationURL(), "joe.consumer@gmail.com", "Joe");
+
+  // Simulate closing the UI with "No, thanks".
+  LoginUIServiceFactory::GetForProfile(profile_being_created)
+      ->SyncConfirmationUIClosed(LoginUIService::ABORT_SYNC);
+
+  Browser* new_browser = BrowserAddedWaiter(/*total_count=*/2u).Wait();
+  WaitForLoadStop(GURL("chrome://newtab/"),
+                  new_browser->tab_strip_model()->GetActiveWebContents());
+}
+
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
 // TODO(crbug.com/1368936) Test is flaky on Linux Tests
 #if BUILDFLAG(IS_LINUX)
@@ -756,9 +804,11 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       GetSyncConfirmationURL(), "joe.consumer@gmail.com", "Joe");
 
   // Close the flow with the [X] button.
+  ProfileDeletionObserver observer;
   base::FilePath canceled_path = profile_to_cancel->GetPath();
   widget()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
   WaitForPickerClosed();
+  observer.Wait();
 
   ProfileAttributesStorage& storage =
       g_browser_process->profile_manager()->GetProfileAttributesStorage();
@@ -804,8 +854,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   base::FilePath profile_to_cancel_path = profile_to_cancel->GetPath();
 
   // Close the flow with the [X] button.
+  ProfileDeletionObserver observer;
   widget()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
   WaitForPickerClosed();
+  observer.Wait();
 
   // The profile entry is deleted.
   ProfileAttributesEntry* entry =
@@ -839,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
-                       CancelWhileSigningInWithNoOtherWindow) {
+                       PRE_CancelWhileSigningInWithNoOtherWindow) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   Profile* profile_to_cancel = StartDiceSignIn();
   base::FilePath profile_to_cancel_path = profile_to_cancel->GetPath();
@@ -853,15 +905,28 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   widget()->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
   WaitForPickerClosed();
 
-  // The profile entry is deleted.
+  // The profile entry is not yet deleted when Chrome is shutting down, but it
+  // will be deleted at next startup since it is an ephemeral profile.
   ProfileAttributesEntry* entry =
       g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
           .GetProfileAttributesWithPath(profile_to_cancel_path);
-  EXPECT_EQ(entry, nullptr);
+  EXPECT_NE(entry, nullptr);
+  EXPECT_TRUE(entry->IsEphemeral());
+  ASSERT_EQ(2u, g_browser_process->profile_manager()
+                    ->GetProfileAttributesStorage()
+                    .GetNumberOfProfiles());
 
   // Still no browser window is open.
   EXPECT_EQ(0u, BrowserList::GetInstance()->size());
+}
+
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       CancelWhileSigningInWithNoOtherWindow) {
+  // There is only one profile left.
+  ASSERT_EQ(1u, g_browser_process->profile_manager()
+                    ->GetProfileAttributesStorage()
+                    .GetNumberOfProfiles());
 }
 
 // Tests dice-specific logic for keeping track of the new profile color.
@@ -922,8 +987,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
-// TODO(crbug.com/1289326) Test is flaky on Linux CFI
-#if BUILDFLAG(CFI_ICALL_CHECK) && BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1289326) Test is flaky on Linux CFI, Linux dbg, Mac ASan
+#if ((BUILDFLAG(CFI_ICALL_CHECK) || !defined(NDEBUG)) && \
+     BUILDFLAG(IS_LINUX)) ||                             \
+    (BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER))
 #define MAYBE_CreateSignedInProfileSettings \
   DISABLED_CreateSignedInProfileSettings
 #else
@@ -1350,8 +1417,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       metrics::StartupProfilingFinishReason::kDone, 1);
 }
 
-// TODO(crbug.com/1289326) Test is flaky on Linux CFI
-#if BUILDFLAG(CFI_ICALL_CHECK) && BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1289326) Test is flaky on Linux CFI, Linux dbg, Mac ASan
+#if ((BUILDFLAG(CFI_ICALL_CHECK) || !defined(NDEBUG)) && \
+     BUILDFLAG(IS_LINUX)) ||                             \
+    (BUILDFLAG(IS_MAC) && defined(ADDRESS_SANITIZER))
 #define MAYBE_OpenProfile_Settings DISABLED_OpenProfile_Settings
 #else
 #define MAYBE_OpenProfile_Settings OpenProfile_Settings
@@ -1555,7 +1624,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
 
   // Sync is disabled.
   EXPECT_NE(entry->GetGAIAId(), std::string());
-  EXPECT_FALSE(sync_service->GetUserSettings()->IsSyncRequested());
+  EXPECT_FALSE(sync_service->IsSyncFeatureEnabled());
   EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
                 ->GetAutogeneratedThemeColor(),
             kProfileColor);
@@ -1806,12 +1875,14 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   EXPECT_EQ(ProfilePicker::GetSwitchProfilePath(), other_path);
 
   // Simulate clicking on the cancel button.
+  ProfileDeletionObserver observer;
   ProfilePickerHandler* handler = profile_picker_handler();
   base::Value::List args;
   handler->HandleCancelProfileSwitch(args);
 
   // Check expectations when the profile creation flow is done.
   WaitForPickerClosed();
+  observer.Wait();
 
   // Only one browser should be displayed.
   EXPECT_EQ(BrowserList::GetInstance()->size(), 1u);
@@ -2131,14 +2202,8 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLocalProfileCreationDialogBrowserTest,
   EXPECT_FALSE(new_browser->signin_view_controller()->ShowsModalDialog());
 }
 
-// TODO(crbug.com/1367031): Test is flaky on Linux and macOS
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC)
-#define MAYBE_CancelLocalProfileCreation DISABLED_CancelLocalProfileCreation
-#else
-#define MAYBE_CancelLocalProfileCreation CancelLocalProfileCreation
-#endif
 IN_PROC_BROWSER_TEST_F(ProfilePickerLocalProfileCreationDialogBrowserTest,
-                       MAYBE_CancelLocalProfileCreation) {
+                       CancelLocalProfileCreation) {
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   ASSERT_EQ(1u, g_browser_process->profile_manager()
                     ->GetProfileAttributesStorage()
@@ -2179,8 +2244,9 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerLocalProfileCreationDialogBrowserTest,
 
   // Simulate clicking the "Delete profile" button on the profile customization
   // dialog.
+  ProfileDeletionObserver observer;
   DeleteLocalProfile(dialog_web_contents);
-  ui_test_utils::WaitForBrowserToClose(new_browser);
+  observer.Wait();
 
   ASSERT_EQ(1u, g_browser_process->profile_manager()
                     ->GetProfileAttributesStorage()

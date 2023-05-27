@@ -5,6 +5,9 @@
 /**
  * @fileoverview Class to manage the ChromeVox menus.
  */
+import {AsyncUtil} from '../../common/async_util.js';
+import {EventGenerator} from '../../common/event_generator.js';
+import {KeyCode} from '../../common/key_code.js';
 import {Command, CommandStore} from '../common/command_store.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelNodeMenuData, PanelNodeMenuId, PanelNodeMenuItemData} from '../common/panel_menu_data.js';
@@ -102,6 +105,21 @@ export class MenuManager {
     this.nodeMenuDictionary_[itemData.menuId].addItemFromData(itemData);
   }
 
+  /** @param {!PanelMenu} menu */
+  async addOSKeyboardShortcutsMenuItem(menu) {
+    let localizedSlash =
+        await AsyncUtil.getLocalizedDomKeyStringForKeyCode(KeyCode.OEM_2);
+    if (!localizedSlash) {
+      localizedSlash = '/';
+    }
+    menu.addMenuItem(
+        Msgs.getMsg('open_keyboard_shortcuts_menu'),
+        `Ctrl+Alt+${localizedSlash}`, '', '', async () => {
+          EventGenerator.sendKeyPress(
+              KeyCode.OEM_2 /* forward slash */, {'ctrl': true, 'alt': true});
+        });
+  }
+
   /**
    * Create a new search menu with the given name and add it to the menu bar.
    * @param {string} menuMsg The msg id of the new menu to add.
@@ -132,6 +150,32 @@ export class MenuManager {
     $('menus_background').appendChild(this.searchMenu_.menuContainerElement);
     this.menus_.push(this.searchMenu_);
     return this.searchMenu_;
+  }
+
+  /**
+   * Advance the index of the current active menu by |delta|.
+   * @param {number} delta The number to add to the active menu index.
+   */
+  advanceActiveMenuBy(delta) {
+    let activeIndex = this.menus_.findIndex(menu => menu === this.activeMenu_);
+
+    if (activeIndex >= 0) {
+      activeIndex += delta;
+      activeIndex = (activeIndex + this.menus_.length) % this.menus_.length;
+    } else {
+      if (delta >= 0) {
+        activeIndex = 0;
+      } else {
+        activeIndex = this.menus_.length - 1;
+      }
+    }
+
+    activeIndex = this.findEnabledMenuIndex(activeIndex, delta > 0 ? 1 : -1);
+    if (activeIndex === -1) {
+      return;
+    }
+
+    this.activateMenu(this.menus_[activeIndex], true /* activateFirstItem */);
   }
 
   /**

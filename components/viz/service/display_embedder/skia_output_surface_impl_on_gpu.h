@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_ON_GPU_H_
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -146,8 +147,9 @@ class SkiaOutputSurfaceImplOnGpu
     return weak_ptr_;
   }
 
-  void Reshape(const SkSurfaceCharacterization& characterization,
+  void Reshape(const SkImageInfo& image_info,
                const gfx::ColorSpace& color_space,
+               int sample_count,
                float device_scale_factor,
                gfx::OverlayTransform transform);
   void FinishPaintCurrentFrame(
@@ -201,7 +203,6 @@ class SkiaOutputSurfaceImplOnGpu
   void ResetStateOfImages();
   void EndAccessImages(const base::flat_set<ImageContextImpl*>& image_contexts);
 
-  sk_sp<GrContextThreadSafeProxy> GetGrContextThreadSafeProxy();
   size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   void ReleaseImageContexts(
       std::vector<std::unique_ptr<ExternalUseClient::ImageContext>>
@@ -263,10 +264,11 @@ class SkiaOutputSurfaceImplOnGpu
   void RemoveAsyncReadResultHelperWithLock(AsyncReadResultHelper* helper);
 
   void CreateSharedImage(gpu::Mailbox mailbox,
-                         ResourceFormat format,
+                         SharedImageFormat format,
                          const gfx::Size& size,
                          const gfx::ColorSpace& color_space,
                          uint32_t usage,
+                         std::string debug_label,
                          gpu::SurfaceHandle surface_handle);
   void CreateSolidColorSharedImage(gpu::Mailbox mailbox,
                                    const SkColor4f& color,
@@ -318,12 +320,10 @@ class SkiaOutputSurfaceImplOnGpu
     return !!vulkan_context_provider_ &&
            gpu_preferences_.gr_context_type == gpu::GrContextType::kVulkan;
   }
-  bool is_using_dawn() const {
-    return !!dawn_context_provider_ &&
-           gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn;
-  }
 
-  bool is_using_gl() const { return !is_using_vulkan() && !is_using_dawn(); }
+  bool is_using_gl() const {
+    return gpu_preferences_.gr_context_type == gpu::GrContextType::kGL;
+  }
 
   // Helper for `CopyOutput()` method, handles the RGBA format.
   void CopyOutputRGBA(SkSurface* surface,
@@ -352,9 +352,10 @@ class SkiaOutputSurfaceImplOnGpu
 
   // Helper for `CopyOutputNV12()` & `CopyOutputRGBA()` methods:
   std::unique_ptr<gpu::SkiaImageRepresentation>
-  CreateSharedImageRepresentationSkia(ResourceFormat resource_format,
+  CreateSharedImageRepresentationSkia(SharedImageFormat format,
                                       const gfx::Size& size,
-                                      const gfx::ColorSpace& color_space);
+                                      const gfx::ColorSpace& color_space,
+                                      base::StringPiece debug_label);
 
   // Helper for `CopyOutputNV12()` & `CopyOutputRGBA()` methods, renders
   // |surface| into |dest_surface|'s canvas, cropping and scaling the results
@@ -368,11 +369,12 @@ class SkiaOutputSurfaceImplOnGpu
 
   // Helper for `CopyOutputNV12()` & `CopyOutputRGBA()` methods, flushes writes
   // to |surface| with |end_semaphores| and |end_state|.
-  bool FlushSurface(SkSurface* surface,
-                    std::vector<GrBackendSemaphore>& end_semaphores,
-                    std::unique_ptr<GrBackendSurfaceMutableState> end_state,
-                    GrGpuFinishedProc finished_proc = nullptr,
-                    GrGpuFinishedContext finished_context = nullptr);
+  bool FlushSurface(
+      SkSurface* surface,
+      std::vector<GrBackendSemaphore>& end_semaphores,
+      gpu::SkiaImageRepresentation::ScopedWriteAccess* scoped_write_access,
+      GrGpuFinishedProc finished_proc = nullptr,
+      GrGpuFinishedContext finished_context = nullptr);
 
   // Creates surfaces needed to store the data in NV12 format.
   // |plane_access_datas| will be populated with information needed to access
@@ -511,9 +513,7 @@ class SkiaOutputSurfaceImplOnGpu
     base::flat_set<ImageContextImpl*> image_contexts_;
   };
   PromiseImageAccessHelper promise_image_access_helper_{this};
-  base::flat_set<std::pair<ImageContextImpl*,
-                           std::unique_ptr<GrBackendSurfaceMutableState>>>
-      image_contexts_with_end_access_state_;
+  base::flat_set<ImageContextImpl*> image_contexts_to_apply_end_state_;
 
   std::unique_ptr<SkiaOutputDevice> output_device_;
   std::unique_ptr<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;
@@ -568,7 +568,7 @@ class SkiaOutputSurfaceImplOnGpu
   // The format that will be used to CreateSolidColorSharedImage(). This should
   // be either RGBA_8888 by default, or BGRA_8888 if the default is not
   // supported on Linux.
-  ResourceFormat solid_color_image_format_ = RGBA_8888;
+  SharedImageFormat solid_color_image_format_ = SinglePlaneFormat::kRGBA_8888;
 
   THREAD_CHECKER(thread_checker_);
 

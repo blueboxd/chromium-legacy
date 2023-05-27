@@ -288,7 +288,7 @@ TEST_F(SyncDataTypeManagerImplTest, NoControllers) {
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
 
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 
@@ -303,13 +303,15 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.connected_types());
+  EXPECT_TRUE(dtm_->GetTypesWithPendingDownloadForInitialSync().Has(BOOKMARKS));
 
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(1U, configurer_.connected_types().Size());
+  EXPECT_TRUE(dtm_->GetTypesWithPendingDownloadForInitialSync().Empty());
 
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.connected_types().Empty());
   EXPECT_EQ(0, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
@@ -355,10 +357,13 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileDownloadPending) {
     Configure(ModelTypeSet(BOOKMARKS));
     EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
     EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.connected_types());
+    EXPECT_TRUE(
+        dtm_->GetTypesWithPendingDownloadForInitialSync().Has(BOOKMARKS));
 
-    dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+    dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
     EXPECT_TRUE(configurer_.connected_types().Empty());
+    EXPECT_TRUE(dtm_->GetTypesWithPendingDownloadForInitialSync().Empty());
   }
 
   FinishDownloadWhileStopped(ModelTypeSet(BOOKMARKS), ModelTypeSet());
@@ -383,7 +388,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneStopWhileStartingModel) {
     ASSERT_EQ(DataTypeController::MODEL_STARTING,
               GetController(BOOKMARKS)->state());
 
-    dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+    dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
     EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
     EXPECT_TRUE(configurer_.connected_types().Empty());
     dtm_.reset();
@@ -432,7 +437,7 @@ TEST_F(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
 
   // Step 5.
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 
@@ -454,11 +459,16 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.connected_types());
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS),
+            dtm_->GetTypesWithPendingDownloadForInitialSync());
 
   // Step 2.
-  FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
+  FinishDownload(ModelTypeSet(NIGORI), ModelTypeSet());  // control types
+  EXPECT_EQ(ModelTypeSet(BOOKMARKS),
+            dtm_->GetTypesWithPendingDownloadForInitialSync());
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(), dtm_->GetTypesWithPendingDownloadForInitialSync());
 
   observer_.ResetExpectations();
   SetConfigureStartExpectation();
@@ -469,15 +479,20 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenBoth) {
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(BOOKMARKS, PREFERENCES),
             configurer_.connected_types());
+  EXPECT_EQ(ModelTypeSet(PREFERENCES),
+            dtm_->GetTypesWithPendingDownloadForInitialSync());
   EXPECT_EQ(0, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
 
   // Step 4.
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
+  EXPECT_EQ(ModelTypeSet(PREFERENCES),
+            dtm_->GetTypesWithPendingDownloadForInitialSync());
   FinishDownload(ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(ModelTypeSet(), dtm_->GetTypesWithPendingDownloadForInitialSync());
 
   // Step 5.
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.connected_types().Empty());
 }
@@ -522,7 +537,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
 
   // Step 5.
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.connected_types().Empty());
 }
@@ -571,7 +586,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureModelLoading) {
             configurer_.connected_types());
 
   // Step 5: Stop the DTM.
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.connected_types().Empty());
 }
@@ -640,7 +655,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPending) {
             configurer_.connected_types());
 
   // Step 5.
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.connected_types().Empty());
 }
@@ -683,7 +698,7 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
             configurer_.connected_types());
 
   // Step 5.
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.connected_types().Empty());
 }
@@ -895,7 +910,7 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationStop) {
             GetController(PRIORITY_PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_EQ(DataTypeController::NOT_RUNNING,
             GetController(PRIORITY_PREFERENCES)->state());
@@ -960,7 +975,7 @@ TEST_F(SyncDataTypeManagerImplTest, FilterDesiredTypes) {
   EXPECT_EQ(AddControlTypesTo(BOOKMARKS), last_configure_params().to_download);
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
 
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
 }
 
@@ -998,7 +1013,7 @@ TEST_F(SyncDataTypeManagerImplTest, FailingPreconditionKeepData) {
   observer_.ResetExpectations();
   dtm_->DataTypePreconditionChanged(BOOKMARKS);
 
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.connected_types().Empty());
 
@@ -1286,6 +1301,8 @@ TEST_F(SyncDataTypeManagerImplTest, ErrorBeforeStartup) {
 
   EXPECT_TRUE(dtm_->GetActiveDataTypes().Has(PREFERENCES));
   EXPECT_FALSE(dtm_->GetActiveDataTypes().Has(BOOKMARKS));
+  EXPECT_FALSE(
+      dtm_->GetTypesWithPendingDownloadForInitialSync().Has(BOOKMARKS));
 }
 
 // Test that sync configures properly if all types are already downloaded.
@@ -1308,6 +1325,11 @@ TEST_F(SyncDataTypeManagerImplTest, AllTypesReady) {
 
   Configure(ModelTypeSet(PRIORITY_PREFERENCES, BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+
+  // Both types were downloaded already, so they aren't downloading initial
+  // data even during the CONFIGURING state.
+  EXPECT_TRUE(dtm_->GetTypesWithPendingDownloadForInitialSync().Empty());
+
   // This started the configuration of control types, which aren't tracked by
   // DataTypeManagerImpl, so always considered already downloaded.
   ASSERT_EQ(1, configurer_.configure_call_count());
@@ -1342,8 +1364,9 @@ TEST_F(SyncDataTypeManagerImplTest, AllTypesReady) {
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(2U, configurer_.connected_types().Size());
   EXPECT_TRUE(dtm_->GetActiveProxyDataTypes().Empty());
+  EXPECT_TRUE(dtm_->GetTypesWithPendingDownloadForInitialSync().Empty());
 
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.connected_types().Empty());
 }
@@ -1433,13 +1456,13 @@ TEST_F(SyncDataTypeManagerImplTest, StopWithDisableSync) {
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 
-  dtm_->Stop(ShutdownReason::DISABLE_SYNC_AND_CLEAR_DATA);
+  dtm_->Stop(SyncStopMetadataFate::CLEAR_METADATA);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.connected_types().Empty());
   EXPECT_EQ(1, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
 }
 
-TEST_F(SyncDataTypeManagerImplTest, PurgeDataOnStartingPersistent) {
+TEST_F(SyncDataTypeManagerImplTest, PurgeDataOnStarting) {
   AddController(BOOKMARKS);
   AddController(AUTOFILL_WALLET_DATA, /*enable_transport_mode=*/true);
 
@@ -1456,7 +1479,7 @@ TEST_F(SyncDataTypeManagerImplTest, PurgeDataOnStartingPersistent) {
   ASSERT_EQ(2U, configurer_.connected_types().Size());
 
   // The user temporarily turns off Sync.
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
+  dtm_->Stop(SyncStopMetadataFate::KEEP_METADATA);
   ASSERT_EQ(DataTypeManager::STOPPED, dtm_->state());
   ASSERT_TRUE(configurer_.connected_types().Empty());
   ASSERT_EQ(0, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
@@ -1477,50 +1500,11 @@ TEST_F(SyncDataTypeManagerImplTest, PurgeDataOnStartingPersistent) {
   // Stop(CLEAR_METADATA) has *not* been called on the controller though; that
   // happens only when stopping or reconfiguring, not when (re)starting without
   // the type.
+  // TODO(crbug.com/897628): Metadata *should* probably be cleared here.
   EXPECT_EQ(0, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
 }
 
-TEST_F(SyncDataTypeManagerImplTest, DontPurgeDataOnStartingEphemeral) {
-  AddController(BOOKMARKS);
-  controllers_[AUTOFILL_WALLET_DATA] = std::make_unique<FakeDataTypeController>(
-      AUTOFILL_WALLET_DATA,
-      /*enable_transport_only_model=*/true);
-
-  // Configure as usual.
-  SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
-
-  Configure(ModelTypeSet(BOOKMARKS, AUTOFILL_WALLET_DATA), SyncMode::kFull);
-  ASSERT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-
-  FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(BOOKMARKS, AUTOFILL_WALLET_DATA), ModelTypeSet());
-  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
-  ASSERT_EQ(2U, configurer_.connected_types().Size());
-
-  // The user temporarily turns off Sync.
-  dtm_->Stop(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
-  ASSERT_EQ(DataTypeManager::STOPPED, dtm_->state());
-  ASSERT_TRUE(configurer_.connected_types().Empty());
-  ASSERT_EQ(0, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
-
-  // Now we restart in ephemeral mode, with a reduced set of data types.
-  SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
-  Configure(ModelTypeSet(AUTOFILL_WALLET_DATA), SyncMode::kTransportOnly);
-  ASSERT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-
-  FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(AUTOFILL_WALLET_DATA), ModelTypeSet());
-  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
-  ASSERT_EQ(1U, configurer_.connected_types().Size());
-
-  // This should *not* have purged the data for the excluded type.
-  EXPECT_TRUE(last_configure_params().to_purge.Empty());
-  EXPECT_EQ(0, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
-}
-
-TEST_F(SyncDataTypeManagerImplTest, PurgeDataOnReconfiguringPersistent) {
+TEST_F(SyncDataTypeManagerImplTest, PurgeDataOnReconfiguring) {
   AddController(BOOKMARKS);
   controllers_[AUTOFILL_WALLET_DATA] = std::make_unique<FakeDataTypeController>(
       AUTOFILL_WALLET_DATA,
@@ -1554,40 +1538,6 @@ TEST_F(SyncDataTypeManagerImplTest, PurgeDataOnReconfiguringPersistent) {
   // Also Stop(CLEAR_METADATA) has been called on the controller since the type
   // is no longer enabled.
   EXPECT_EQ(1, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
-}
-
-TEST_F(SyncDataTypeManagerImplTest, DontPurgeDataOnReconfiguringEphemeral) {
-  AddController(BOOKMARKS);
-  controllers_[AUTOFILL_WALLET_DATA] = std::make_unique<FakeDataTypeController>(
-      AUTOFILL_WALLET_DATA,
-      /*enable_transport_only_model=*/true);
-
-  // Configure as usual.
-  SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
-
-  Configure(ModelTypeSet(BOOKMARKS, AUTOFILL_WALLET_DATA), SyncMode::kFull);
-  ASSERT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-
-  FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(BOOKMARKS, AUTOFILL_WALLET_DATA), ModelTypeSet());
-  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
-  ASSERT_EQ(2U, configurer_.connected_types().Size());
-
-  // Now we reconfigure into ephemeral mode, with a reduced set of data types.
-  SetConfigureStartExpectation();
-  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
-  Configure(ModelTypeSet(AUTOFILL_WALLET_DATA), SyncMode::kTransportOnly);
-  ASSERT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-
-  FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(AUTOFILL_WALLET_DATA), ModelTypeSet());
-  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
-  ASSERT_EQ(1U, configurer_.connected_types().Size());
-
-  // This should *not* have cleared the data for the excluded type.
-  EXPECT_TRUE(last_configure_params().to_purge.Empty());
-  EXPECT_EQ(0, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
 }
 
 TEST_F(SyncDataTypeManagerImplTest, ShouldRecordInitialConfigureTimeHistogram) {

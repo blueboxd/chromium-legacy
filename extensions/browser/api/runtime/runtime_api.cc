@@ -19,12 +19,14 @@
 #include "base/version.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/blocklist_extension_prefs.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/events/lazy_event_dispatch_util.h"
+#include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -32,7 +34,9 @@
 #include "extensions/browser/lazy_context_id.h"
 #include "extensions/browser/lazy_context_task_queue.h"
 #include "extensions/browser/process_manager_factory.h"
+#include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/runtime.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
@@ -150,6 +154,51 @@ std::string GetUninstallURL(ExtensionPrefs* prefs,
   std::string url_string;
   prefs->ReadPrefAsString(extension_id, kUninstallUrl, &url_string);
   return url_string;
+}
+
+// Returns true if the given `context` matches the `filter`.
+bool ExtensionContextMatchesFilter(
+    const api::runtime::ExtensionContext& context,
+    const api::runtime::ContextFilter& filter) {
+  if (filter.context_types &&
+      !base::Contains(*filter.context_types, context.context_type)) {
+    return false;
+  }
+  if (filter.context_ids &&
+      !base::Contains(*filter.context_ids, context.context_id)) {
+    return false;
+  }
+  if (filter.tab_ids && !base::Contains(*filter.tab_ids, context.tab_id)) {
+    return false;
+  }
+  if (filter.window_ids &&
+      !base::Contains(*filter.window_ids, context.window_id)) {
+    return false;
+  }
+  if (filter.document_ids &&
+      (!context.document_id ||
+       !base::Contains(*filter.document_ids, *context.document_id))) {
+    return false;
+  }
+  if (filter.frame_ids &&
+      !base::Contains(*filter.frame_ids, context.frame_id)) {
+    return false;
+  }
+  if (filter.document_urls &&
+      (!context.document_url ||
+       !base::Contains(*filter.document_urls, *context.document_url))) {
+    return false;
+  }
+  if (filter.document_origins &&
+      (!context.document_origin ||
+       !base::Contains(*filter.document_origins, *context.document_origin))) {
+    return false;
+  }
+  if (filter.incognito && *filter.incognito != context.incognito) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -742,6 +791,143 @@ RuntimeGetPackageDirectoryEntryFunction::Run() {
   dict.Set("fileSystemId", filesystem.id());
   dict.Set("baseName", relative_path);
   return RespondNow(WithArguments(std::move(dict)));
+}
+
+RuntimeGetContextsFunction::RuntimeGetContextsFunction() = default;
+RuntimeGetContextsFunction::~RuntimeGetContextsFunction() = default;
+
+ExtensionFunction::ResponseAction RuntimeGetContextsFunction::Run() {
+  EXTENSION_FUNCTION_VALIDATE(extension());
+
+  auto params = api::runtime::GetContexts::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+  const api::runtime::ContextFilter& filter = params->filter;
+
+  std::vector<api::runtime::ExtensionContext> result;
+
+  // Minor optimization: only construct the context if there's a chance it will
+  // match the filter.
+  if (!filter.context_types ||
+      base::Contains(*filter.context_types,
+                     api::runtime::ContextType::kBackground)) {
+    if (absl::optional<api::runtime::ExtensionContext> worker =
+            GetWorkerContext()) {
+      result.push_back(std::move(*worker));
+    }
+  }
+
+  std::vector<api::runtime::ExtensionContext> frame_contexts =
+      GetFrameContexts();
+  result.insert(result.end(), std::make_move_iterator(frame_contexts.begin()),
+                std::make_move_iterator(frame_contexts.end()));
+
+  // Erase any contexts that don't match the specified filter.
+  base::EraseIf(result,
+                [&filter](const api::runtime::ExtensionContext& context) {
+                  return !ExtensionContextMatchesFilter(context, filter);
+                });
+
+  return RespondNow(
+      ArgumentList(api::runtime::GetContexts::Results::Create(result)));
+}
+
+absl::optional<api::runtime::ExtensionContext>
+RuntimeGetContextsFunction::GetWorkerContext() {
+  ProcessManager* const process_manager =
+      ProcessManager::Get(browser_context());
+  DCHECK(process_manager);
+
+  std::vector<WorkerId> active_workers =
+      process_manager->GetServiceWorkersForExtension(extension()->id());
+  CHECK_LE(active_workers.size(), 1u);
+
+  if (active_workers.empty()) {
+    return absl::nullopt;
+  }
+
+  api::runtime::ExtensionContext context;
+  context.context_type = api::runtime::ContextType::kBackground;
+  base::Uuid context_id =
+      process_manager->GetContextIdForWorker(active_workers[0]);
+  CHECK(context_id.is_valid());
+  context.context_id = context_id.AsLowercaseString();
+  context.tab_id = extension_misc::kUnknownTabId;
+  context.window_id = extension_misc::kUnknownWindowId;
+  // TODO(devlin): Add extension_misc::kUnknownFrameId and use it here?
+  context.frame_id = -1;
+  context.incognito = browser_context()->IsOffTheRecord();
+  return context;
+}
+
+std::vector<api::runtime::ExtensionContext>
+RuntimeGetContextsFunction::GetFrameContexts() {
+  ProcessManager* const process_manager =
+      ProcessManager::Get(browser_context());
+  CHECK(process_manager);
+
+  auto get_context_type = [](content::WebContents* web_contents) {
+    mojom::ViewType view_type = GetViewType(web_contents);
+    switch (view_type) {
+      // These should never be reached for extensions capable of calling this
+      // method.
+      case mojom::ViewType::kInvalid:
+      case mojom::ViewType::kAppWindow:
+      case mojom::ViewType::kBackgroundContents:
+      case mojom::ViewType::kComponent:
+      case mojom::ViewType::kExtensionBackgroundPage:
+      case mojom::ViewType::kExtensionDialog:
+        NOTREACHED();
+        break;
+
+      case mojom::ViewType::kExtensionPopup:
+        return api::runtime::ContextType::kPopup;
+      case mojom::ViewType::kTabContents:
+        return api::runtime::ContextType::kTab;
+      case mojom::ViewType::kOffscreenDocument:
+        return api::runtime::ContextType::kOffscreenDocument;
+
+      case mojom::ViewType::kExtensionSidePanel:
+      case mojom::ViewType::kExtensionGuest:
+        // Skip these view types for now.
+        break;
+    }
+
+    return api::runtime::ContextType::kNone;
+  };
+
+  ProcessManager::FrameSet frames =
+      process_manager->GetRenderFrameHostsForExtension(extension()->id());
+  std::vector<api::runtime::ExtensionContext> results;
+
+  for (content::RenderFrameHost* host : frames) {
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderFrameHost(host);
+    CHECK(web_contents);
+
+    auto context_type = get_context_type(web_contents);
+    if (context_type == api::runtime::ContextType::kNone) {
+      // Skip unsupported contexts.
+      continue;
+    }
+
+    api::runtime::ExtensionContext context;
+    context.context_type = context_type;
+    context.context_id =
+        ExtensionApiFrameIdMap::GetContextId(host).AsLowercaseString();
+    context.tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
+    context.window_id =
+        sessions::SessionTabHelper::IdForWindowContainingTab(web_contents).id();
+    context.document_id =
+        ExtensionApiFrameIdMap::GetDocumentId(host).ToString();
+    context.frame_id = ExtensionApiFrameIdMap::GetFrameId(host);
+    context.document_url = host->GetLastCommittedURL().spec();
+    context.document_origin = host->GetLastCommittedOrigin().Serialize();
+    context.incognito = host->GetBrowserContext()->IsOffTheRecord();
+
+    results.push_back(std::move(context));
+  }
+
+  return results;
 }
 
 }  // namespace extensions

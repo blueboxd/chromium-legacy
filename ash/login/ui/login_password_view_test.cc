@@ -8,6 +8,7 @@
 #include "ash/public/cpp/login_types.h"
 #include "ash/shell.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -24,8 +25,6 @@ namespace {
 constexpr base::TimeDelta kClearPasswordAfterDelay = base::Seconds(30);
 
 constexpr base::TimeDelta kHidePasswordAfterDelay = base::Seconds(5);
-
-constexpr base::TimeDelta kLeftIconDisplayTime = base::Seconds(4);
 
 class LoginPasswordViewTest : public LoginTestBase {
  public:
@@ -50,8 +49,6 @@ class LoginPasswordViewTest : public LoginTestBase {
         base::BindRepeating(&LoginPasswordViewTest::OnPasswordTextChanged,
                             base::Unretained(this)),
         base::BindRepeating(&LoginPasswordViewTest::OnEasyUnlockIconHovered,
-                            base::Unretained(this)),
-        base::BindRepeating(&LoginPasswordViewTest::OnEasyUnlockIconTapped,
                             base::Unretained(this)));
 
     SetWidget(CreateWidgetWithContent(view_));
@@ -64,9 +61,8 @@ class LoginPasswordViewTest : public LoginTestBase {
     is_password_field_empty_ = is_empty;
   }
   void OnEasyUnlockIconHovered() { easy_unlock_icon_hovered_called_ = true; }
-  void OnEasyUnlockIconTapped() { easy_unlock_icon_tapped_called_ = true; }
 
-  LoginPasswordView* view_ = nullptr;
+  raw_ptr<LoginPasswordView, ExperimentalAsh> view_ = nullptr;
   absl::optional<std::u16string> password_;
   bool is_password_field_empty_ = true;
   bool easy_unlock_icon_hovered_called_ = false;
@@ -247,72 +243,6 @@ TEST_F(LoginPasswordViewTest, CtrlZDisabled) {
   EXPECT_TRUE(is_password_field_empty_);
   generator->PressKey(ui::KeyboardCode::VKEY_Z, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(is_password_field_empty_);
-}
-
-// Ensures that the switch animation between easy unlock icon and caps lock
-// icon works correctly.
-// TODO(crbug.com/1166659): Test is flaky.
-TEST_F(LoginPasswordViewTest, DISABLED_SwitchBetweenEasyUnlockAndCapsLock) {
-  LoginPasswordView::TestApi test_api(view_);
-
-  // Ensure there is no left icon shown.
-  EXPECT_FALSE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_FALSE(test_api.capslock_icon()->GetVisible());
-
-  // Show the easy unlock icon.
-  view_->SetEasyUnlockIcon(EasyUnlockIconState::SPINNER,
-                           std::u16string() /*accessibility_label*/);
-  // The easy unlock icon should be visible.
-  EXPECT_TRUE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_FALSE(test_api.capslock_icon()->GetVisible());
-
-  // Animations must be enabled for fast-forwarding to work.
-  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
-      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
-  view_->OnCapsLockChanged(true);
-
-  EXPECT_FALSE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_TRUE(test_api.capslock_icon()->GetVisible());
-
-  // After a delay, the left icon should display the easy unlock icon again.
-  task_environment()->FastForwardBy(kLeftIconDisplayTime);
-  EXPECT_TRUE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_FALSE(test_api.capslock_icon()->GetVisible());
-
-  // The Caps lock should be displayed again after a delay.
-  task_environment()->FastForwardBy(kLeftIconDisplayTime);
-  EXPECT_FALSE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_TRUE(test_api.capslock_icon()->GetVisible());
-
-  // Disable Caps lock.
-  view_->OnCapsLockChanged(false);
-  // The easy unlock icon should be immediately visible.
-  EXPECT_TRUE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_FALSE(test_api.capslock_icon()->GetVisible());
-
-  // Hide the easy unlock icon.
-  view_->SetEasyUnlockIcon(EasyUnlockIconState::NONE,
-                           std::u16string() /*accessibility_label*/);
-  // Nothing should be displayed.
-  EXPECT_FALSE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_FALSE(test_api.capslock_icon()->GetVisible());
-
-  // This time, show the Caps lock icon first.
-  view_->OnCapsLockChanged(true);
-  EXPECT_FALSE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_TRUE(test_api.capslock_icon()->GetVisible());
-
-  // Then trigger the easy unlock icon, it should be displayed immediately.
-  view_->SetEasyUnlockIcon(EasyUnlockIconState::SPINNER,
-                           std::u16string() /*accessibility_label*/);
-  EXPECT_TRUE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_FALSE(test_api.capslock_icon()->GetVisible());
-
-  // Hide the easy unlock icon, the capslock icon should be shown.
-  view_->SetEasyUnlockIcon(EasyUnlockIconState::NONE,
-                           std::u16string() /*accessibility_label*/);
-  EXPECT_FALSE(test_api.easy_unlock_icon()->GetVisible());
-  EXPECT_TRUE(test_api.capslock_icon()->GetVisible());
 }
 
 // Verifies that the password textfield clears after a delay when the display

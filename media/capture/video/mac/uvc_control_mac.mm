@@ -14,6 +14,12 @@
 
 namespace media {
 
+namespace {
+
+const unsigned int kRequestTimeoutInMilliseconds = 1000;
+
+}
+
 // Addition to the IOUSB family of structures, with subtype and unit ID.
 // Sec. 3.7.2 "Class-Specific VC Interface Descriptor"
 typedef struct VcCsInterfaceDescriptor {
@@ -21,6 +27,73 @@ typedef struct VcCsInterfaceDescriptor {
   UInt8 bDescriptorSubType;
   UInt8 bUnitID;
 } VcCsInterfaceDescriptor;
+
+// Sec. 3.7.2.5 "Processing Unit Descriptor"
+typedef struct ProcessingUnitDescriptor {
+  UInt8 bLength;
+  UInt8 bDescriptorType;
+  UInt8 bDescriptorSubType;
+  UInt8 bUnitID;
+  UInt8 bSourceID;
+  UInt16 wMaxMultiplier;
+  UInt8 bControlSize;  // Size of the bmControls field, in bytes.
+  UInt8 bmControls[];  // A bit set to 1 indicates that the mentioned Control is
+                       // supported for the video stream.
+} __attribute__((packed)) ProcessingUnitDescriptor;
+
+// Sec. 3.7.2.3 "Camera Terminal Descriptor"
+typedef struct {
+  UInt8 bLength;
+  UInt8 bDescriptorType;
+  UInt8 bDescriptorSubType;
+  UInt8 bTerminalId;
+  UInt16 wTerminalType;
+  UInt8 bAssocTerminal;
+  UInt8 iTerminal;
+  UInt16 wObjectiveFocalLengthMin;
+  UInt16 wObjectiveFocalLengthMax;
+  UInt16 wOcularFocalLength;
+  UInt8 bControlSize;  // Size of the bmControls field, in bytes.
+  UInt8 bmControls[];  // A bit set to 1 indicates that the mentioned Control is
+                       // supported for the video stream.
+} __attribute__((packed)) CameraTerminalDescriptor;
+
+static constexpr int kPuBrightnessAbsoluteControlBitIndex = 0;
+static constexpr int kPuContrastAbsoluteControlBitIndex = 1;
+static constexpr int kPuSaturationAbsoluteControlBitIndex = 3;
+static constexpr int kPuSharpnessAbsoluteControlBitIndex = 4;
+static constexpr int kPuWhiteBalanceTemperatureControlBitIndex = 5;
+static constexpr int kPuPowerLineFrequencyControlBitIndex = 10;
+static constexpr int kPuWhiteBalanceTemperatureAutoControlBitIndex = 12;
+
+static constexpr int kCtAutoExposureModeControlBitIndex = 1;
+static constexpr int kCtExposureTimeAbsoluteControlBitIndex = 3;
+static constexpr int kCtFocusAbsoluteControlBitIndex = 5;
+static constexpr int kCtZoomAbsoluteControlBitIndex = 9;
+static constexpr int kCtPanTiltAbsoluteControlBitIndex = 11;
+static constexpr int kCtFocusAutoControlBitIndex = 17;
+
+static const base::flat_map<int, size_t> kProcessingUnitControlBitIndexes = {
+    {uvc::kPuBrightnessAbsoluteControl, kPuBrightnessAbsoluteControlBitIndex},
+    {uvc::kPuContrastAbsoluteControl, kPuContrastAbsoluteControlBitIndex},
+    {uvc::kPuSaturationAbsoluteControl, kPuSaturationAbsoluteControlBitIndex},
+    {uvc::kPuSharpnessAbsoluteControl, kPuSharpnessAbsoluteControlBitIndex},
+    {uvc::kPuWhiteBalanceTemperatureControl,
+     kPuWhiteBalanceTemperatureControlBitIndex},
+    {uvc::kPuPowerLineFrequencyControl, kPuPowerLineFrequencyControlBitIndex},
+    {uvc::kPuWhiteBalanceTemperatureAutoControl,
+     kPuWhiteBalanceTemperatureAutoControlBitIndex},
+};
+
+static const base::flat_map<int, size_t> kCameraTerminalControlBitIndexes = {
+    {uvc::kCtAutoExposureModeControl, kCtAutoExposureModeControlBitIndex},
+    {uvc::kCtExposureTimeAbsoluteControl,
+     kCtExposureTimeAbsoluteControlBitIndex},
+    {uvc::kCtFocusAbsoluteControl, kCtFocusAbsoluteControlBitIndex},
+    {uvc::kCtZoomAbsoluteControl, kCtZoomAbsoluteControlBitIndex},
+    {uvc::kCtPanTiltAbsoluteControl, kCtPanTiltAbsoluteControlBitIndex},
+    {uvc::kCtFocusAutoControl, kCtFocusAutoControlBitIndex},
+};
 
 static bool FindDeviceWithVendorAndProductIds(int vendor_id,
                                               int product_id,
@@ -117,12 +190,25 @@ static bool FindVideoControlInterfaceInDeviceInterface(
   return true;
 }
 
+template <typename DescriptorType>
+std::vector<uint8_t> ExtractControls(IOUSBDescriptorHeader* usb_descriptor) {
+  auto* descriptor = reinterpret_cast<DescriptorType>(usb_descriptor);
+  if (descriptor->bControlSize > 0) {
+    NSData* data = [[NSData alloc] initWithBytes:&descriptor->bmControls[0]
+                                          length:descriptor->bControlSize];
+    const uint8_t* bytes = reinterpret_cast<const uint8_t*>([data bytes]);
+    return std::vector<uint8_t>(bytes, bytes + [data length]);
+  }
+  return std::vector<uint8_t>();
+}
+
 // Open the video class specific interface in a USB webcam identified by
 // |device_model|. Returns interface when it is succcessfully opened.
 static ScopedIOUSBInterfaceInterface OpenVideoClassSpecificControlInterface(
     std::string device_model,
     int descriptor_subtype,
-    int* unit_id) {
+    int& unit_id,
+    std::vector<uint8_t>& controls) {
   if (device_model.length() <= 2 * media::kVidPidSize) {
     return ScopedIOUSBInterfaceInterface();
   }
@@ -187,14 +273,19 @@ static ScopedIOUSBInterfaceInterface OpenVideoClassSpecificControlInterface(
     auto* cs_descriptor =
         reinterpret_cast<VcCsInterfaceDescriptor*>(descriptor);
     if (cs_descriptor->bDescriptorSubType == descriptor_subtype) {
-      *unit_id = cs_descriptor->bUnitID;
+      unit_id = cs_descriptor->bUnitID;
+      if (descriptor_subtype == uvc::kVcProcessingUnit) {
+        controls = ExtractControls<ProcessingUnitDescriptor*>(descriptor);
+      } else if (descriptor_subtype == uvc::kVcInputTerminal) {
+        controls = ExtractControls<CameraTerminalDescriptor*>(descriptor);
+      }
       break;
     }
   }
 
-  VLOG_IF(1, *unit_id == -1) << "This USB device doesn't seem to have a "
-                             << descriptor_subtype << " descriptor subtype.";
-  if (*unit_id == -1) {
+  VLOG_IF(1, unit_id == -1) << "This USB device doesn't seem to have a "
+                            << descriptor_subtype << " descriptor subtype.";
+  if (unit_id == -1) {
     return ScopedIOUSBInterfaceInterface();
   }
 
@@ -211,9 +302,13 @@ static ScopedIOUSBInterfaceInterface OpenVideoClassSpecificControlInterface(
   return control_interface;
 }
 
-UvcControl::UvcControl(std::string device_model, int descriptor_subtype) {
+UvcControl::UvcControl(std::string device_model, int descriptor_subtype)
+    : descriptor_subtype_(descriptor_subtype) {
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("video_and_image_capture"),
+               "UvcControl::CreateUvcControl", "device_model", device_model,
+               "descriptor_subtype", descriptor_subtype);
   interface_ = OpenVideoClassSpecificControlInterface(
-      device_model, descriptor_subtype, &unit_id_);
+      device_model, descriptor_subtype, unit_id_, controls_);
 }
 
 UvcControl::~UvcControl() {
@@ -222,17 +317,46 @@ UvcControl::~UvcControl() {
   }
 }
 
-// Create an empty IOUSBDevRequest for a USB device to either set or get
+bool UvcControl::IsControlAvailable(int control_selector) const {
+  if (!controls_.size()) {
+    return false;
+  }
+  size_t bitIndex;
+  if (descriptor_subtype_ == uvc::kVcProcessingUnit) {
+    auto it = kProcessingUnitControlBitIndexes.find(control_selector);
+    if (it == kProcessingUnitControlBitIndexes.end()) {
+      return false;
+    }
+    bitIndex = it->second;
+  } else if (descriptor_subtype_ == uvc::kVcInputTerminal) {
+    auto it = kCameraTerminalControlBitIndexes.find(control_selector);
+    if (it == kCameraTerminalControlBitIndexes.end()) {
+      return false;
+    }
+    bitIndex = it->second;
+  } else {
+    return false;
+  }
+  UInt8 byteIndex = bitIndex / 8;
+  if (byteIndex > controls_.size()) {
+    return false;
+  }
+  return ((controls_[byteIndex] & (1 << bitIndex % 8)) != 0);
+}
+
+// Create an empty IOUSBDevRequestTO for a USB device to either set or get
 // controls.
-IOUSBDevRequest UvcControl::CreateEmptyCommand(int request_code,
-                                               int endpoint_direction,
-                                               int control_selector,
-                                               int control_command_size) const {
+IOUSBDevRequestTO UvcControl::CreateEmptyCommand(
+    int request_code,
+    int endpoint_direction,
+    int control_selector,
+    int control_command_size) const {
   CHECK(interface_);
   CHECK((endpoint_direction == kUSBIn) || (endpoint_direction == kUSBOut));
   UInt8 interface_number;
   (*interface_)->GetInterfaceNumber(interface_, &interface_number);
-  IOUSBDevRequest command;
+  IOUSBDevRequestTO command;
+  memset(&command, 0, sizeof(command));
   command.bmRequestType = USBmakebmRequestType(
       endpoint_direction, UInt8{kUSBClass}, UInt8{kUSBInterface});
   command.bRequest = request_code;
@@ -240,6 +364,8 @@ IOUSBDevRequest UvcControl::CreateEmptyCommand(int request_code,
   command.wValue = (control_selector << 8);
   command.wLength = control_command_size;
   command.wLenDone = 0;
+  command.noDataTimeout = kRequestTimeoutInMilliseconds;
+  command.completionTimeout = kRequestTimeoutInMilliseconds;
   return command;
 }
 

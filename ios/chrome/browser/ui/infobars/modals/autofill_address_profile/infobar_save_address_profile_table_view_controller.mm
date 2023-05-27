@@ -8,16 +8,17 @@
 #import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/infobars/modals/autofill_address_profile/infobar_save_address_profile_modal_delegate.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_cell.h"
@@ -35,12 +36,12 @@
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierSaveModalFields = kSectionIdentifierEnumZero,
-  SectionIdentifierUpdateModalFields,
+  SectionIdentifierFields = kSectionIdentifierEnumZero,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSaveAddress = kItemTypeEnumZero,
+  ItemTypeMigrateInAccountAddress,
   ItemTypeSaveEmail,
   ItemTypeSavePhone,
   ItemTypeUpdateModalDescription,
@@ -54,9 +55,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeUpdateEmailOld,
   ItemTypeUpdatePhoneOld,
   ItemTypeAddressProfileSaveUpdateButton,
+  ItemTypeAddressProfileNoThanksButton,
+  ItemTypeFooter
 };
 
 const CGFloat kSymbolSize = 16;
+
+// Defines the separator inset value for this table view.
+const CGFloat kInfobarSaveAddressProfileSeparatorInset = 54;
 
 }  // namespace
 
@@ -82,6 +88,15 @@ const CGFloat kSymbolSize = 16;
 @property(nonatomic, copy) NSDictionary* profileDataDiff;
 // Description of the update modal.
 @property(nonatomic, copy) NSString* updateModalDescription;
+// Stores the user email for the currently syncing account.
+@property(nonatomic, copy) NSString* syncingUserEmail;
+// If YES, denotes that the profile will be added to the Google Account.
+@property(nonatomic, assign) BOOL isMigrationToAccount;
+// IF YES, for update prompt, the profile belongs to the Google Account.
+// For save prompt, denotes that the profile will be saved to Google Account.
+@property(nonatomic, assign) BOOL profileAnAccountProfile;
+// Description shown in the migration prompt.
+@property(nonatomic, copy) NSString* profileDescriptionForMigrationPrompt;
 
 @end
 
@@ -107,15 +122,24 @@ const CGFloat kSymbolSize = 16;
   self.styler.cellBackgroundColor = [UIColor colorNamed:kBackgroundColor];
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
-  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+  [self.tableView
+      setSeparatorInset:UIEdgeInsetsMake(
+                            0,
+                            self.isUpdateModal
+                                ? kTableViewHorizontalSpacing
+                                : kInfobarSaveAddressProfileSeparatorInset,
+                            0, 0)];
 
-  // Configure the NavigationBar.
-  UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
-                           target:self
-                           action:@selector(dismissInfobarModal)];
-  cancelButton.accessibilityIdentifier = kInfobarModalCancelButton;
-  self.navigationItem.leftBarButtonItem = cancelButton;
+  if (!self.isMigrationToAccount || self.currentAddressProfileSaved) {
+    // Do not show the cancel button when the migration prompt is presented and
+    // the profile is not migrated yet.
+    UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
+        initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
+                             target:self
+                             action:@selector(dismissInfobarModal)];
+    cancelButton.accessibilityIdentifier = kInfobarModalCancelButton;
+    self.navigationItem.leftBarButtonItem = cancelButton;
+  }
 
   if (!self.currentAddressProfileSaved) {
     UIBarButtonItem* editButton = [[UIBarButtonItem alloc]
@@ -129,12 +153,17 @@ const CGFloat kSymbolSize = 16;
 
   self.navigationController.navigationBar.prefersLargeTitles = NO;
 
-  if (self.isUpdateModal) {
-    self.navigationItem.title =
+  if (self.isMigrationToAccount) {
+    self.title = l10n_util::GetNSString(
+        IDS_IOS_AUTOFILL_ADDRESS_MIGRATION_TO_ACCOUNT_PROMPT_TITLE);
+  } else if (self.isUpdateModal) {
+    self.title =
         l10n_util::GetNSString(IDS_IOS_AUTOFILL_UPDATE_ADDRESS_PROMPT_TITLE);
   } else {
-    self.navigationItem.title =
-        l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_ADDRESS_PROMPT_TITLE);
+    self.title = l10n_util::GetNSString(
+        self.isMigrationToAccount
+            ? IDS_IOS_AUTOFILL_SAVE_ADDRESS_IN_ACCOUNT_PROMPT_TITLE
+            : IDS_IOS_AUTOFILL_SAVE_ADDRESS_PROMPT_TITLE);
   }
 
   [self loadModel];
@@ -161,7 +190,9 @@ const CGFloat kSymbolSize = 16;
 - (void)loadModel {
   [super loadModel];
 
-  if (self.isUpdateModal) {
+  if (self.isMigrationToAccount) {
+    [self loadMigrationToAccountModal];
+  } else if (self.isUpdateModal) {
     [self loadUpdateAddressModal];
   } else {
     [self loadSaveAddressModal];
@@ -183,7 +214,24 @@ const CGFloat kSymbolSize = 16;
                addTarget:self
                   action:@selector(saveAddressProfileButtonWasPressed:)
         forControlEvents:UIControlEventTouchUpInside];
+    // Hide the separator line.
+    cell.separatorInset =
+        UIEdgeInsetsMake(0, 0, 0, self.tableView.bounds.size.width);
+  } else if (itemType == ItemTypeAddressProfileNoThanksButton) {
+    TableViewTextButtonCell* tableViewTextButtonCell =
+        base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+    [tableViewTextButtonCell.button
+               addTarget:self
+                  action:@selector(noThanksButtonWasPressed:)
+        forControlEvents:UIControlEventTouchUpInside];
   } else {
+    if (itemType == ItemTypeFooter ||
+        itemType == ItemTypeUpdateModalDescription ||
+        itemType == ItemTypeUpdateModalTitle) {
+      // Hide the separator line.
+      cell.separatorInset =
+          UIEdgeInsetsMake(0, 0, 0, self.tableView.bounds.size.width);
+    }
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
   }
   return cell;
@@ -248,6 +296,12 @@ const CGFloat kSymbolSize = 16;
   self.isUpdateModal = [prefs[kIsUpdateModalPrefKey] boolValue];
   self.profileDataDiff = prefs[kProfileDataDiffKey];
   self.updateModalDescription = prefs[kUpdateModalDescriptionKey];
+  self.isMigrationToAccount = [prefs[kIsMigrationToAccountKey] boolValue];
+  self.syncingUserEmail = prefs[kSyncingUserEmailKey];
+  self.profileAnAccountProfile =
+      [prefs[kIsProfileAnAccountProfileKey] boolValue];
+  self.profileDescriptionForMigrationPrompt =
+      prefs[kProfileDescriptionForMigrationPromptKey];
   [self.tableView reloadData];
 }
 
@@ -271,6 +325,10 @@ const CGFloat kSymbolSize = 16;
   [self.saveAddressProfileModalDelegate showEditView];
 }
 
+- (void)noThanksButtonWasPressed:(UIButton*)sender {
+  [self.saveAddressProfileModalDelegate noThanksButtonWasPressed];
+}
+
 #pragma mark - Private Methods
 
 - (void)loadUpdateAddressModal {
@@ -286,9 +344,9 @@ const CGFloat kSymbolSize = 16;
 
   TableViewModel* model = self.tableViewModel;
 
-  [model addSectionWithIdentifier:SectionIdentifierUpdateModalFields];
+  [model addSectionWithIdentifier:SectionIdentifierFields];
   [model addItem:[self updateModalDescriptionItem]
-      toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
+      toSectionWithIdentifier:SectionIdentifierFields];
 
   if (showOld) {
     TableViewTextItem* newTitleItem = [self
@@ -296,11 +354,8 @@ const CGFloat kSymbolSize = 16;
             l10n_util::GetNSString(
                 IDS_AUTOFILL_UPDATE_ADDRESS_PROMPT_NEW_VALUES_SECTION_LABEL)];
     [model addItem:newTitleItem
-        toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
+        toSectionWithIdentifier:SectionIdentifierFields];
   }
-
-  // Store the last added field to the modal other than the update button.
-  SettingsImageDetailTextItem* lastAddedItem = nil;
 
   for (NSNumber* type in self.profileDataDiff) {
     if ([self.profileDataDiff[type][0] length] > 0) {
@@ -312,9 +367,7 @@ const CGFloat kSymbolSize = 16;
                               text:self.profileDataDiff[type][0]
                             symbol:[self symbolForAutofillInputTypeNumber:type]
               imageTintColorIsGrey:NO];
-      lastAddedItem = newItem;
-      [model addItem:newItem
-          toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
+      [model addItem:newItem toSectionWithIdentifier:SectionIdentifierFields];
     }
   }
 
@@ -324,7 +377,7 @@ const CGFloat kSymbolSize = 16;
             l10n_util::GetNSString(
                 IDS_AUTOFILL_UPDATE_ADDRESS_PROMPT_OLD_VALUES_SECTION_LABEL)];
     [model addItem:oldTitleItem
-        toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
+        toSectionWithIdentifier:SectionIdentifierFields];
     for (NSNumber* type in self.profileDataDiff) {
       if ([self.profileDataDiff[type][1] length] > 0) {
         SettingsImageDetailTextItem* oldItem = [self
@@ -335,40 +388,35 @@ const CGFloat kSymbolSize = 16;
                             text:self.profileDataDiff[type][1]
                           symbol:[self symbolForAutofillInputTypeNumber:type]
             imageTintColorIsGrey:YES];
-        lastAddedItem = oldItem;
-        [model addItem:oldItem
-            toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
+        [model addItem:oldItem toSectionWithIdentifier:SectionIdentifierFields];
       }
     }
   }
 
-  // Remove the separator after the last field.
-  lastAddedItem.useCustomSeparator = NO;
+  if (self.profileAnAccountProfile) {
+    DCHECK([self.syncingUserEmail length] > 0);
+    [model addItem:[self updateFooterItem]
+        toSectionWithIdentifier:SectionIdentifierFields];
+  }
 
   [model addItem:[self saveUpdateButton]
-      toSectionWithIdentifier:SectionIdentifierUpdateModalFields];
+      toSectionWithIdentifier:SectionIdentifierFields];
 }
 
 - (void)loadSaveAddressModal {
   TableViewModel* model = self.tableViewModel;
-  [model addSectionWithIdentifier:SectionIdentifierSaveModalFields];
+  [model addSectionWithIdentifier:SectionIdentifierFields];
 
   SettingsImageDetailTextItem* addressItem = [self
       detailItemForSaveModalWithText:self.address
                       autofillUIType:AutofillUITypeProfileHomeAddressStreet];
-  [model addItem:addressItem
-      toSectionWithIdentifier:SectionIdentifierSaveModalFields];
-
-  // Store the last added field to the modal other than the save button.
-  SettingsImageDetailTextItem* lastAddedItem = addressItem;
+  [model addItem:addressItem toSectionWithIdentifier:SectionIdentifierFields];
 
   if ([self.emailAddress length]) {
     SettingsImageDetailTextItem* emailItem =
         [self detailItemForSaveModalWithText:self.emailAddress
                               autofillUIType:AutofillUITypeProfileEmailAddress];
-    [model addItem:emailItem
-        toSectionWithIdentifier:SectionIdentifierSaveModalFields];
-    lastAddedItem = emailItem;
+    [model addItem:emailItem toSectionWithIdentifier:SectionIdentifierFields];
   }
 
   if ([self.phoneNumber length]) {
@@ -376,16 +424,41 @@ const CGFloat kSymbolSize = 16;
         [self detailItemForSaveModalWithText:self.phoneNumber
                               autofillUIType:
                                   AutofillUITypeProfileHomePhoneWholeNumber];
-    [model addItem:phoneItem
-        toSectionWithIdentifier:SectionIdentifierSaveModalFields];
-    lastAddedItem = phoneItem;
+    [model addItem:phoneItem toSectionWithIdentifier:SectionIdentifierFields];
   }
 
-  // Remove the separator after the last field.
-  lastAddedItem.useCustomSeparator = NO;
+  if (self.isMigrationToAccount || self.profileAnAccountProfile) {
+    DCHECK([self.syncingUserEmail length] > 0);
+    [model addItem:[self saveFooterItem]
+        toSectionWithIdentifier:SectionIdentifierFields];
+  }
 
   [model addItem:[self saveUpdateButton]
-      toSectionWithIdentifier:SectionIdentifierSaveModalFields];
+      toSectionWithIdentifier:SectionIdentifierFields];
+}
+
+- (void)loadMigrationToAccountModal {
+  TableViewModel* model = self.tableViewModel;
+  [model addSectionWithIdentifier:SectionIdentifierFields];
+
+  [model addItem:[self migrationPromptFooterItem]
+      toSectionWithIdentifier:SectionIdentifierFields];
+
+  SettingsImageDetailTextItem* addressItem =
+      [self detailItemWithType:ItemTypeMigrateInAccountAddress
+                          text:self.profileDescriptionForMigrationPrompt
+                        symbol:CustomSymbolTemplateWithPointSize(
+                                   kLocationFillSymbol, kSymbolSize)
+          imageTintColorIsGrey:YES];
+  [model addItem:addressItem toSectionWithIdentifier:SectionIdentifierFields];
+
+  [model addItem:[self saveUpdateButton]
+      toSectionWithIdentifier:SectionIdentifierFields];
+
+  if (!self.currentAddressProfileSaved) {
+    [model addItem:[self noThanksButton]
+        toSectionWithIdentifier:SectionIdentifierFields];
+  }
 }
 
 - (TableViewTextButtonItem*)saveUpdateButton {
@@ -393,7 +466,10 @@ const CGFloat kSymbolSize = 16;
       initWithType:ItemTypeAddressProfileSaveUpdateButton];
   saveUpdateButton.textAlignment = NSTextAlignmentNatural;
 
-  if (self.isUpdateModal) {
+  if (self.isMigrationToAccount) {
+    saveUpdateButton.buttonText = l10n_util::GetNSString(
+        IDS_AUTOFILL_ADDRESS_MIGRATION_TO_ACCOUNT_PROMPT_OK_BUTTON_LABEL);
+  } else if (self.isUpdateModal) {
     saveUpdateButton.buttonText = l10n_util::GetNSString(
         IDS_AUTOFILL_UPDATE_ADDRESS_PROMPT_OK_BUTTON_LABEL);
   } else {
@@ -404,6 +480,17 @@ const CGFloat kSymbolSize = 16;
   saveUpdateButton.enabled = !self.currentAddressProfileSaved;
   saveUpdateButton.disableButtonIntrinsicWidth = YES;
   return saveUpdateButton;
+}
+
+- (TableViewTextButtonItem*)noThanksButton {
+  TableViewTextButtonItem* noThanksButton = [[TableViewTextButtonItem alloc]
+      initWithType:ItemTypeAddressProfileNoThanksButton];
+  noThanksButton.textAlignment = NSTextAlignmentNatural;
+  noThanksButton.buttonBackgroundColor = [UIColor colorNamed:kBackgroundColor];
+  noThanksButton.buttonTextColor = [UIColor colorNamed:kBlueColor];
+  noThanksButton.buttonText = l10n_util::GetNSString(
+      IDS_AUTOFILL_ADDRESS_MIGRATION_TO_ACCOUNT_PROMPT_CANCEL_BUTTON_LABEL);
+  return noThanksButton;
 }
 
 - (TableViewTextItem*)titleWithTextItem:(NSString*)text {
@@ -523,7 +610,6 @@ const CGFloat kSymbolSize = 16;
   detailItem.alignImageWithFirstLineOfText = YES;
   if (symbol) {
     detailItem.image = symbol;
-    detailItem.useCustomSeparator = YES;
     if (imageTintColorIsGrey) {
       detailItem.imageViewTintColor = [UIColor colorNamed:kGrey400Color];
     } else {
@@ -532,6 +618,41 @@ const CGFloat kSymbolSize = 16;
   }
 
   return detailItem;
+}
+
+- (TableViewTextItem*)saveFooterItem {
+  // TODO(crbug.com/1407666): Align the text with the icon of the other fields.
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
+  item.text =
+      l10n_util::GetNSStringF(IDS_IOS_AUTOFILL_SAVE_ADDRESS_IN_ACCOUNT_FOOTER,
+                              base::SysNSStringToUTF16(self.syncingUserEmail));
+  item.textFont = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  item.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  return item;
+}
+
+- (TableViewTextItem*)updateFooterItem {
+  // TODO(crbug.com/1407666): Align the text with the icon of the other fields.
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
+  item.text = l10n_util::GetNSStringF(
+      IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT,
+      base::SysNSStringToUTF16(self.syncingUserEmail));
+  item.textFont = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  item.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  return item;
+}
+
+- (TableViewTextItem*)migrationPromptFooterItem {
+  TableViewTextItem* item =
+      [[TableViewTextItem alloc] initWithType:ItemTypeFooter];
+  item.text = l10n_util::GetNSStringF(
+      IDS_IOS_AUTOFILL_ADDRESS_MIGRATE_IN_ACCOUNT_FOOTER,
+      base::SysNSStringToUTF16(self.syncingUserEmail));
+  item.textFont = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  item.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  return item;
 }
 
 @end

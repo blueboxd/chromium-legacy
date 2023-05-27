@@ -47,6 +47,7 @@ constexpr base::TimeDelta kExplicitGrantDuration = base::Days(30);
 // Returns true iff the request was answered implicitly (assuming it met some
 // other baseline prerequisites).
 bool IsImplicitOutcome(RequestOutcome outcome) {
+  CHECK_NE(outcome, RequestOutcome::kDeniedByPrerequisites);
   return outcome == RequestOutcome::kGrantedByAllowance ||
          outcome == RequestOutcome::kGrantedByFirstPartySet ||
          outcome == RequestOutcome::kDeniedByFirstPartySet;
@@ -77,18 +78,44 @@ void RecordOutcomeSample(RequestOutcome outcome) {
 }
 
 content_settings::ContentSettingConstraints ComputeConstraints(
-    RequestOutcome outcome,
-    bool implicit_result) {
-  if (!implicit_result) {
-    return {content_settings::GetConstraintExpiration(kExplicitGrantDuration),
-            content_settings::SessionModel::Durable};
+    RequestOutcome outcome) {
+  switch (outcome) {
+    case RequestOutcome::kGrantedByFirstPartySet:
+      return {content_settings::GetConstraintExpiration(kImplicitGrantDuration),
+              content_settings::SessionModel::NonRestorableUserSession};
+    case RequestOutcome::kGrantedByAllowance:
+      return {content_settings::GetConstraintExpiration(kImplicitGrantDuration),
+              content_settings::SessionModel::UserSession};
+    case RequestOutcome::kDismissedByUser:
+    case RequestOutcome::kDeniedByFirstPartySet:
+    case RequestOutcome::kDeniedByPrerequisites:
+    case RequestOutcome::kReusedPreviousDecision:
+      NOTREACHED_NORETURN();
+    case RequestOutcome::kGrantedByUser:
+    case RequestOutcome::kDeniedByUser:
+      return {content_settings::GetConstraintExpiration(kExplicitGrantDuration),
+              content_settings::SessionModel::Durable};
   }
-  if (outcome == RequestOutcome::kGrantedByFirstPartySet) {
-    return {content_settings::GetConstraintExpiration(kImplicitGrantDuration),
-            content_settings::SessionModel::NonRestorableUserSession};
+}
+
+bool ShouldPersistSetting(bool permission_allowed,
+                          RequestOutcome outcome,
+                          bool persist) {
+  // Regardless of how the result was obtained, the permissions code determined
+  // the result should not be persisted; respect that determination.
+  if (!persist) {
+    return false;
   }
-  return {content_settings::GetConstraintExpiration(kImplicitGrantDuration),
-          content_settings::SessionModel::UserSession};
+  // Explicit responses to a prompt should be persisted to avoid user annoyance
+  // or prompt spam.
+  if (!IsImplicitOutcome(outcome)) {
+    return true;
+  }
+  // Implicit denials are not persisted, since they can be re-derived easily and
+  // don't have any user-facing concerns, so persistence just adds complexity.
+  // Grants, however, should be persisted to ensure the associated behavioral
+  // changes stick.
+  return permission_allowed;
 }
 
 }  // namespace
@@ -140,7 +167,7 @@ void StorageAccessGrantPermissionContext::DecidePermission(
 
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(id.global_render_frame_host_id());
-  DCHECK(rfh);
+  CHECK(rfh);
 
   net::SchemefulSite embedding_site(embedding_origin);
 
@@ -163,8 +190,8 @@ void StorageAccessGrantPermissionContext::CheckForAutoGrantOrAutoDenial(
     permissions::BrowserPermissionCallback callback,
     net::FirstPartySetMetadata metadata) {
   // We should only run this method if something might need the FPS metadata.
-  DCHECK(blink::features::kStorageAccessAPIAutoGrantInFPS.Get() ||
-         blink::features::kStorageAccessAPIAutoDenyOutsideFPS.Get());
+  CHECK(blink::features::kStorageAccessAPIAutoGrantInFPS.Get() ||
+        blink::features::kStorageAccessAPIAutoDenyOutsideFPS.Get());
 
   if (metadata.AreSitesInSameFirstPartySet()) {
     if (blink::features::kStorageAccessAPIAutoGrantInFPS.Get()) {
@@ -173,7 +200,7 @@ void StorageAccessGrantPermissionContext::CheckForAutoGrantOrAutoDenial(
       if (metadata.top_frame_entry()->site_type() == net::SiteType::kService) {
         NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
                                     std::move(callback),
-                                    /*persist=*/true, CONTENT_SETTING_BLOCK,
+                                    /*persist=*/false, CONTENT_SETTING_BLOCK,
                                     RequestOutcome::kDeniedByPrerequisites);
         return;
       }
@@ -209,7 +236,7 @@ void StorageAccessGrantPermissionContext::UseImplicitGrantOrPrompt(
     permissions::BrowserPermissionCallback callback) {
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser_context());
-  DCHECK(settings_map);
+  CHECK(settings_map);
 
   // Normally a previous prompt rejection would already be filtered, but the
   // requirement not to surface the user's denial back to the caller means this
@@ -223,7 +250,7 @@ void StorageAccessGrantPermissionContext::UseImplicitGrantOrPrompt(
   if (existing_setting == CONTENT_SETTING_BLOCK) {
     NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
                                 std::move(callback),
-                                /*persist=*/true, CONTENT_SETTING_BLOCK,
+                                /*persist=*/false, CONTENT_SETTING_BLOCK,
                                 RequestOutcome::kReusedPreviousDecision);
     return;
   }
@@ -265,6 +292,11 @@ ContentSetting StorageAccessGrantPermissionContext::GetPermissionStatusInternal(
     return CONTENT_SETTING_BLOCK;
   }
 
+  // Permission query from top-level frame should be "granted" by default.
+  if (render_frame_host && render_frame_host->IsInPrimaryMainFrame()) {
+    return CONTENT_SETTING_ALLOW;
+  }
+
   ContentSetting setting = PermissionContextBase::GetPermissionStatusInternal(
       render_frame_host, requesting_origin, embedding_origin);
 
@@ -285,8 +317,8 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
     ContentSetting content_setting,
     bool is_one_time,
     bool is_final_decision) {
-  DCHECK(!is_one_time);
-  DCHECK(is_final_decision);
+  CHECK(!is_one_time);
+  CHECK(is_final_decision);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NotifyPermissionSetInternal(
       id, requesting_origin, embedding_origin, std::move(callback), persist,
@@ -312,7 +344,7 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
   const bool permission_allowed = (content_setting == CONTENT_SETTING_ALLOW);
   UpdateTabContext(id, requesting_origin, permission_allowed);
 
-  if (!permission_allowed || !persist) {
+  if (!ShouldPersistSetting(permission_allowed, outcome, persist)) {
     if (content_setting == CONTENT_SETTING_DEFAULT) {
       content_setting = CONTENT_SETTING_ASK;
     }
@@ -321,26 +353,24 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
     return;
   }
 
-  // Our failure cases are tracked by the prompt outcomes in the
-  // `Permissions.Action.StorageAccess` histogram. We'll only log when a grant
-  // is actually generated.
   bool implicit_result = IsImplicitOutcome(outcome);
-  base::UmaHistogramBoolean("API.StorageAccess.GrantIsImplicit",
-                            implicit_result);
-
+  // Our failure cases are tracked by the prompt outcomes in the
+  // `Permissions.Action.StorageAccess` histogram. Because implicitly denied
+  // results return early, in practice this means that an implicit result at
+  // this point means a grant was generated.
+  CHECK(!implicit_result || permission_allowed);
+  if (permission_allowed) {
+    base::UmaHistogramBoolean("API.StorageAccess.GrantIsImplicit",
+                              implicit_result);
+  }
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser_context());
-  DCHECK(settings_map);
-  DCHECK(persist);
+  CHECK(settings_map);
+  CHECK(persist);
 
-  // This permission was allowed so store it either ephemerally or more
-  // permanently depending on if the allow came from a prompt or automatic
-  // grant.
-  settings_map->SetContentSettingCustomScope(
-      URLToSchemefulSitePattern(requesting_origin),
-      URLToSchemefulSitePattern(embedding_origin),
-      ContentSettingsType::STORAGE_ACCESS, content_setting,
-      ComputeConstraints(outcome, implicit_result));
+  settings_map->SetContentSettingDefaultScope(
+      requesting_origin, embedding_origin, ContentSettingsType::STORAGE_ACCESS,
+      content_setting, ComputeConstraints(outcome));
 
   ContentSettingsForOneType grants;
   settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,
@@ -366,9 +396,9 @@ void StorageAccessGrantPermissionContext::UpdateContentSetting(
     const GURL& embedding_origin,
     ContentSetting content_setting,
     bool is_one_time) {
-  DCHECK(!is_one_time);
+  CHECK(!is_one_time);
   // We need to notify the network service of content setting updates before we
   // run our callback. As a result we do our updates when we're notified of a
   // permission being set and should not be called here.
-  NOTREACHED();
+  NOTREACHED_NORETURN();
 }

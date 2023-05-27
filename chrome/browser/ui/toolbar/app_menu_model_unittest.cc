@@ -24,6 +24,7 @@
 #include "chrome/test/base/menu_model_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/performance_manager/public/features.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -107,7 +108,6 @@ class AppMenuModelTest : public BrowserWithTestWindowTest,
     user_manager->UserLoggedIn(account_id, user->username_hash(),
                                /*browser_restart=*/false,
                                /*is_child=*/false);
-    user_manager->set_local_state(g_browser_process->local_state());
 #endif
   }
 
@@ -185,6 +185,14 @@ TEST_F(AppMenuModelTest, Basics) {
   EXPECT_TRUE(detector->notify_upgrade());
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Forcibly enable Lacros Profile migration, so that IDC_LACROS_DATA_MIGRATION
+  // becomes visible. Note that profile migration is only enabled if Lacros is
+  // the only browser.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
+       ash::features::kLacrosOnly},
+      {});
   auto set_lacros_enabled = BrowserSupport::SetLacrosEnabledForTest(true);
 #endif
 
@@ -302,28 +310,13 @@ TEST_P(ExtensionsMenuModelTest, ExtensionsMenu) {
   }
 }
 
-TEST_F(AppMenuModelTest, EnabledPerformanceItem) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      performance_manager::features::kHighEfficiencyModeAvailable);
+TEST_F(AppMenuModelTest, PerformanceItem) {
   AppMenuModel model(this, browser());
   model.Init();
   ToolsMenuModel toolModel(&model, browser());
   size_t performance_index =
       toolModel.GetIndexOfCommandId(IDC_PERFORMANCE).value();
   EXPECT_TRUE(toolModel.IsEnabledAt(performance_index));
-}
-
-TEST_F(AppMenuModelTest, DisabledPerformanceItem) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      /*enabled_features=*/{}, /*disabled_features=*/{
-          performance_manager::features::kHighEfficiencyModeAvailable,
-          performance_manager::features::kBatterySaverModeAvailable});
-  AppMenuModel model(this, browser());
-  model.Init();
-  ToolsMenuModel toolModel(&model, browser());
-  EXPECT_FALSE(toolModel.GetIndexOfCommandId(IDC_PERFORMANCE).has_value());
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -377,3 +370,38 @@ TEST_F(AppMenuModelTest, DisableSettingsItem) {
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+class AppMenuModelPasswordManagerTest
+    : public AppMenuModelTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  AppMenuModelPasswordManagerTest() {
+    feature_list_.InitWithFeatureState(
+        password_manager::features::kPasswordManagerRedesign, GetParam());
+  }
+
+  AppMenuModelPasswordManagerTest(const AppMenuModelPasswordManagerTest&) =
+      delete;
+  AppMenuModelPasswordManagerTest& operator=(
+      const AppMenuModelPasswordManagerTest&) = delete;
+
+  ~AppMenuModelPasswordManagerTest() override = default;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    AppMenuModelPasswordManagerTest,
+    /* features::kPasswordManagerRedesign enabled */ testing::Bool());
+
+TEST_P(AppMenuModelPasswordManagerTest, NewPasswordManagerHasMenuEntry) {
+  AppMenuModel model(this, browser());
+  model.Init();
+  auto index = model.GetIndexOfCommandId(IDC_VIEW_PASSWORDS);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerRedesign)) {
+    ASSERT_TRUE(index.has_value());
+    EXPECT_TRUE(model.IsVisibleAt(index.value()));
+  } else {
+    EXPECT_FALSE(index.has_value());
+  }
+}

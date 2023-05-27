@@ -4,6 +4,7 @@
 
 #include "ui/views/accessible_pane_view.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/raw_ptr.h"
@@ -267,6 +268,32 @@ TEST_F(AccessiblePaneViewTest, MAYBE_DoesntCrashOnEscapeWithRemovedView) {
   v1->parent()->RemoveChildView(v1);
   // This shouldn't hit a CHECK in the FocusManager.
   EXPECT_TRUE(test_view2->AcceleratorPressed(test_view2->escape_key()));
+}
+
+TEST_F(AccessiblePaneViewTest, AccessibleProperties) {
+  std::unique_ptr<TestBarView> test_view = std::make_unique<TestBarView>();
+  test_view->SetAccessibleName(u"Name");
+  test_view->SetAccessibleDescription(u"Description");
+  EXPECT_EQ(test_view->GetAccessibleName(), u"Name");
+  EXPECT_EQ(test_view->GetAccessibleDescription(), u"Description");
+  EXPECT_EQ(test_view->GetAccessibleRole(), ax::mojom::Role::kPane);
+
+  ui::AXNodeData data;
+  test_view->GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
+            u"Name");
+  EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kDescription),
+            u"Description");
+  EXPECT_EQ(data.role, ax::mojom::Role::kPane);
+
+  data = ui::AXNodeData();
+  test_view->SetAccessibleRole(ax::mojom::Role::kToolbar);
+  test_view->GetAccessibleNodeData(&data);
+  EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kName),
+            u"Name");
+  EXPECT_EQ(data.GetString16Attribute(ax::mojom::StringAttribute::kDescription),
+            u"Description");
+  EXPECT_EQ(data.role, ax::mojom::Role::kToolbar);
 }
 
 }  // namespace views

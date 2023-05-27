@@ -8,8 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/download/bubble/download_bubble_update_service.h"
 #include "chrome/browser/download/bubble/download_display.h"
 #include "chrome/browser/download/bubble/download_display_controller.h"
@@ -68,7 +70,7 @@ class MockDownloadDisplayController : public DownloadDisplayController {
   }
   void MaybeShowButtonWhenCreated() override {}
   MOCK_METHOD1(OnNewItem, void(bool));
-  MOCK_METHOD3(OnUpdatedItem, void(bool, bool, bool));
+  MOCK_METHOD2(OnUpdatedItem, void(bool, bool));
   MOCK_METHOD1(OnRemovedItem, void(const ContentId&));
 };
 
@@ -104,14 +106,14 @@ class MockDownloadBubbleUpdateService : public DownloadBubbleUpdateService {
     for (ModelType type : model_types_) {
       if (type == ModelType::kDownloadItem) {
         auto model = DownloadItemModel::Wrap(
-            download_items_.at(download_item_index++).get());
+            download_items_->at(download_item_index++).get());
         if (model->ShouldShowInBubble()) {
           models.push_back(std::move(model));
         }
       } else {
         auto model = OfflineItemModel::Wrap(
             OfflineItemModelManagerFactory::GetForBrowserContext(profile_),
-            offline_items_.at(offline_item_index++));
+            offline_items_->at(offline_item_index++));
         if (model->ShouldShowInBubble()) {
           models.push_back(std::move(model));
         }
@@ -130,10 +132,12 @@ class MockDownloadBubbleUpdateService : public DownloadBubbleUpdateService {
               (const override));
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile> profile_;
   std::vector<ModelType> model_types_;
-  const std::vector<std::unique_ptr<StrictMockDownloadItem>>& download_items_;
-  const OfflineItemList& offline_items_;
+  const raw_ref<const std::vector<std::unique_ptr<StrictMockDownloadItem>>,
+                ExperimentalAsh>
+      download_items_;
+  const raw_ref<const OfflineItemList, ExperimentalAsh> offline_items_;
 };
 
 class DownloadBubbleUIControllerTest : public testing::Test {
@@ -270,6 +274,9 @@ class DownloadBubbleUIControllerTest : public testing::Test {
         .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
     EXPECT_CALL(item(index), GetReferrerUrl())
         .WillRepeatedly(ReturnRef(GURL::EmptyGURL()));
+    EXPECT_CALL(item(index), GetDangerType())
+        .WillRepeatedly(
+            Return(DownloadDangerType::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
     std::vector<download::DownloadItem*> items;
     for (size_t i = 0; i < items_.size(); ++i) {
       items.push_back(&item(i));
@@ -370,14 +377,14 @@ TEST_F(DownloadBubbleUIControllerTest, ProcessesUpdatedItems) {
   EXPECT_CALL(display_controller(), OnNewItem(true)).Times(1);
   InitDownloadItem(FILE_PATH_LITERAL("/foo/bar.pdf"),
                    download::DownloadItem::IN_PROGRESS, ids[0]);
-  EXPECT_CALL(display_controller(), OnUpdatedItem(false, false, true)).Times(1);
+  EXPECT_CALL(display_controller(), OnUpdatedItem(false, true)).Times(1);
   UpdateDownloadItem(/*item_index=*/0, DownloadState::IN_PROGRESS);
-  EXPECT_CALL(display_controller(), OnUpdatedItem(true, false, true)).Times(1);
+  EXPECT_CALL(display_controller(), OnUpdatedItem(true, true)).Times(1);
   UpdateDownloadItem(/*item_index=*/0, DownloadState::COMPLETE);
 
   EXPECT_CALL(display_controller(), OnNewItem(false)).Times(1);
   InitOfflineItem(OfflineItemState::IN_PROGRESS, ids[1]);
-  EXPECT_CALL(display_controller(), OnUpdatedItem(true, false, true)).Times(1);
+  EXPECT_CALL(display_controller(), OnUpdatedItem(true, true)).Times(1);
   UpdateOfflineItem(/*item_index=*/0, OfflineItemState::COMPLETE);
 }
 
@@ -385,7 +392,7 @@ TEST_F(DownloadBubbleUIControllerTest, UpdatedItemIsPendingDeepScanning) {
   EXPECT_CALL(display_controller(), OnNewItem(true)).Times(1);
   InitDownloadItem(FILE_PATH_LITERAL("/foo/bar.pdf"),
                    download::DownloadItem::IN_PROGRESS, "Download 1");
-  EXPECT_CALL(display_controller(), OnUpdatedItem(false, true, true)).Times(1);
+  EXPECT_CALL(display_controller(), OnUpdatedItem(true, true)).Times(1);
   UpdateDownloadItem(
       /*item_index=*/0, DownloadState::IN_PROGRESS, false,
       DownloadDangerType::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING);
@@ -501,6 +508,33 @@ TEST_F(DownloadBubbleUIControllerTest, NoItemsReturnedForPartialViewTooSoon) {
   EXPECT_CALL(display_controller(), OnNewItem(true)).Times(1);
   InitDownloadItem(FILE_PATH_LITERAL("/foo/bar4.pdf"),
                    download::DownloadItem::IN_PROGRESS, ids[3]);
+  EXPECT_EQ(controller().GetPartialView().size(), 1u);
+}
+
+// Tests that the partial view timer doesn't start if the partial view was
+// empty and thus not shown.
+TEST_F(DownloadBubbleUIControllerTest, EmptyPartialViewDoesNotPreventOpening) {
+  EXPECT_EQ(controller().GetPartialView().size(), 0u);
+
+  EXPECT_CALL(display_controller(), OnNewItem(true)).Times(1);
+  InitDownloadItem(FILE_PATH_LITERAL("/foo/bar2.pdf"),
+                   download::DownloadItem::COMPLETE, "Download");
+  // Partial view is returned despite previous call to GetPartialView less than
+  // 15 seconds ago.
+  EXPECT_EQ(controller().GetPartialView().size(), 1u);
+}
+
+// Test that the preference suppresses the partial view.
+TEST_F(DownloadBubbleUIControllerTest, PrefSuppressesPartialView) {
+  download::SetDownloadBubblePartialViewEnabled(profile(), false);
+
+  EXPECT_CALL(display_controller(), OnNewItem(true)).Times(1);
+  InitDownloadItem(FILE_PATH_LITERAL("/foo/bar2.pdf"),
+                   download::DownloadItem::COMPLETE, "Download");
+
+  EXPECT_EQ(controller().GetPartialView().size(), 0u);
+
+  download::SetDownloadBubblePartialViewEnabled(profile(), true);
   EXPECT_EQ(controller().GetPartialView().size(), 1u);
 }
 

@@ -12,6 +12,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -42,12 +43,19 @@ const gfx::AcceleratedWidget kDefaultWidgetHandle = 1;
 
 }  // namespace
 
-class DrmOverlayValidatorTest : public testing::Test {
+// TODO(crbug.com/1431767): Re-enable this test
+#if defined(LEAK_SANITIZER)
+#define MAYBE_DrmOverlayValidatorTest DISABLED_DrmOverlayValidatorTest
+#else
+#define MAYBE_DrmOverlayValidatorTest DrmOverlayValidatorTest
+#endif
+class MAYBE_DrmOverlayValidatorTest : public testing::Test {
  public:
-  DrmOverlayValidatorTest() = default;
+  MAYBE_DrmOverlayValidatorTest() = default;
 
-  DrmOverlayValidatorTest(const DrmOverlayValidatorTest&) = delete;
-  DrmOverlayValidatorTest& operator=(const DrmOverlayValidatorTest&) = delete;
+  MAYBE_DrmOverlayValidatorTest(const MAYBE_DrmOverlayValidatorTest&) = delete;
+  MAYBE_DrmOverlayValidatorTest& operator=(
+      const MAYBE_DrmOverlayValidatorTest&) = delete;
 
   void SetUp() override;
   void TearDown() override;
@@ -123,10 +131,10 @@ class DrmOverlayValidatorTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment_{
       base::test::SingleThreadTaskEnvironment::MainThreadType::UI};
   scoped_refptr<MockDrmDevice> drm_;
-  MockGbmDevice* gbm_ = nullptr;
+  raw_ptr<MockGbmDevice, ExperimentalAsh> gbm_ = nullptr;
   std::unique_ptr<ScreenManager> screen_manager_;
   std::unique_ptr<DrmDeviceManager> drm_device_manager_;
-  DrmWindow* window_;
+  raw_ptr<DrmWindow, ExperimentalAsh> window_;
   std::unique_ptr<DrmOverlayValidator> overlay_validator_;
   std::vector<OverlaySurfaceCandidate> overlay_params_;
   DrmOverlayPlaneList plane_list_;
@@ -140,7 +148,7 @@ class DrmOverlayValidatorTest : public testing::Test {
   void SetupControllers();
 };
 
-void DrmOverlayValidatorTest::SetUp() {
+void MAYBE_DrmOverlayValidatorTest::SetUp() {
   on_swap_buffers_count_ = 0;
   last_swap_buffers_result_ = gfx::SwapResult::SWAP_FAILED;
 
@@ -149,7 +157,7 @@ void DrmOverlayValidatorTest::SetUp() {
   drm_ = new MockDrmDevice(std::move(gbm));
 }
 
-void DrmOverlayValidatorTest::InitDrmStatesAndControllers(
+void MAYBE_DrmOverlayValidatorTest::InitDrmStatesAndControllers(
     const std::vector<CrtcState>& crtc_states,
     const std::vector<PlaneState>& movable_planes) {
   size_t plane_count = crtc_states[0].planes.size();
@@ -195,7 +203,7 @@ void DrmOverlayValidatorTest::InitDrmStatesAndControllers(
   SetupControllers();
 }
 
-void DrmOverlayValidatorTest::SetupControllers() {
+void MAYBE_DrmOverlayValidatorTest::SetupControllers() {
   uint32_t primary_crtc_id = drm_->crtc_property(0).id;
   uint32_t primary_connector_id = drm_->connector_property(0).id;
 
@@ -245,7 +253,8 @@ void DrmOverlayValidatorTest::SetupControllers() {
   AddPlane(overlay_candidate);
 }
 
-void DrmOverlayValidatorTest::AddPlane(const OverlaySurfaceCandidate& params) {
+void MAYBE_DrmOverlayValidatorTest::AddPlane(
+    const OverlaySurfaceCandidate& params) {
   scoped_refptr<DrmDevice> drm = window_->GetController()->GetDrmDevice();
 
   scoped_refptr<DrmFramebuffer> drm_framebuffer = CreateOverlayBuffer(
@@ -255,13 +264,13 @@ void DrmOverlayValidatorTest::AddPlane(const OverlaySurfaceCandidate& params) {
       gfx::ToNearestRect(params.display_rect), params.crop_rect, true, nullptr);
 }
 
-void DrmOverlayValidatorTest::TearDown() {
+void MAYBE_DrmOverlayValidatorTest::TearDown() {
   std::unique_ptr<DrmWindow> window =
       screen_manager_->RemoveWindow(kDefaultWidgetHandle);
   window->Shutdown();
 }
 
-TEST_F(DrmOverlayValidatorTest, WindowWithNoController) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, WindowWithNoController) {
   CrtcState crtc_state = {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}};
   InitDrmStatesAndControllers({crtc_state});
 
@@ -276,7 +285,8 @@ TEST_F(DrmOverlayValidatorTest, WindowWithNoController) {
   window_->SetController(controller);
 }
 
-TEST_F(DrmOverlayValidatorTest, DontPromoteMoreLayersThanAvailablePlanes) {
+TEST_F(MAYBE_DrmOverlayValidatorTest,
+       DontPromoteMoreLayersThanAvailablePlanes) {
   CrtcState crtc_state = {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}};
   InitDrmStatesAndControllers({crtc_state});
 
@@ -286,7 +296,8 @@ TEST_F(DrmOverlayValidatorTest, DontPromoteMoreLayersThanAvailablePlanes) {
   EXPECT_EQ(returns.back(), OVERLAY_STATUS_NOT);
 }
 
-TEST_F(DrmOverlayValidatorTest, DontCollapseOverlayToPrimaryInFullScreen) {
+TEST_F(MAYBE_DrmOverlayValidatorTest,
+       DontCollapseOverlayToPrimaryInFullScreen) {
   CrtcState crtc_state = {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}};
   InitDrmStatesAndControllers({crtc_state});
 
@@ -303,7 +314,7 @@ TEST_F(DrmOverlayValidatorTest, DontCollapseOverlayToPrimaryInFullScreen) {
   EXPECT_EQ(returns.back(), OVERLAY_STATUS_NOT);
 }
 
-TEST_F(DrmOverlayValidatorTest, OverlayFormat_XRGB) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, OverlayFormat_XRGB) {
   // This test checks for optimal format in case of non full screen video case.
   // This should be XRGB when overlay doesn't support YUV.
   CrtcState state = {
@@ -322,7 +333,7 @@ TEST_F(DrmOverlayValidatorTest, OverlayFormat_XRGB) {
     EXPECT_EQ(param, OVERLAY_STATUS_ABLE);
 }
 
-TEST_F(DrmOverlayValidatorTest, OverlayFormat_YUV) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, OverlayFormat_YUV) {
   // This test checks for optimal format in case of non full screen video case.
   // Prefer YUV as optimal format when Overlay supports it and scaling is
   // needed.
@@ -347,7 +358,7 @@ TEST_F(DrmOverlayValidatorTest, OverlayFormat_YUV) {
     EXPECT_EQ(param, OVERLAY_STATUS_ABLE);
 }
 
-TEST_F(DrmOverlayValidatorTest, RejectYUVBuffersIfNotSupported) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, RejectYUVBuffersIfNotSupported) {
   // Check case where buffer storage format is already YUV 420 but planes don't
   // support it.
   CrtcState state = {.planes = {{.formats = {DRM_FORMAT_XRGB8888}},
@@ -367,7 +378,7 @@ TEST_F(DrmOverlayValidatorTest, RejectYUVBuffersIfNotSupported) {
   EXPECT_EQ(returns.back(), OVERLAY_STATUS_NOT);
 }
 
-TEST_F(DrmOverlayValidatorTest,
+TEST_F(MAYBE_DrmOverlayValidatorTest,
        RejectYUVBuffersIfNotSupported_MirroredControllers) {
   std::vector<CrtcState> crtc_states = {
       {.planes = {{.formats = {DRM_FORMAT_XRGB8888}},
@@ -396,7 +407,7 @@ TEST_F(DrmOverlayValidatorTest,
   EXPECT_EQ(returns.back(), OVERLAY_STATUS_ABLE);
 }
 
-TEST_F(DrmOverlayValidatorTest,
+TEST_F(MAYBE_DrmOverlayValidatorTest,
        RejectYUVBuffersIfNotSupported_NoPackedFormatsInMirroredCrtc) {
   // This configuration should not be promoted to Overlay when either of the
   // controllers don't support YUV 420 format.
@@ -429,7 +440,7 @@ TEST_F(DrmOverlayValidatorTest,
   EXPECT_EQ(returns.back(), OVERLAY_STATUS_NOT);
 }
 
-TEST_F(DrmOverlayValidatorTest,
+TEST_F(MAYBE_DrmOverlayValidatorTest,
        RejectYUVBuffersIfNotSupported_NoPackedFormatsInPrimaryDisplay) {
   std::vector<CrtcState> crtc_states = {
       {.planes = {{.formats = {DRM_FORMAT_XRGB8888}},
@@ -459,7 +470,7 @@ TEST_F(DrmOverlayValidatorTest,
   EXPECT_EQ(returns.back(), OVERLAY_STATUS_NOT);
 }
 
-TEST_F(DrmOverlayValidatorTest, OptimalFormatXRGB_MirroredControllers) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, OptimalFormatXRGB_MirroredControllers) {
   std::vector<CrtcState> crtc_states = {
       {.planes = {{.formats = {DRM_FORMAT_XRGB8888}},
                   {.formats = {DRM_FORMAT_XRGB8888, DRM_FORMAT_NV12}}}},
@@ -483,7 +494,7 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatXRGB_MirroredControllers) {
   EXPECT_EQ(returns.back(), OVERLAY_STATUS_ABLE);
 }
 
-TEST_F(DrmOverlayValidatorTest,
+TEST_F(MAYBE_DrmOverlayValidatorTest,
        OptimalFormatXRGB_NoPackedFormatInMirroredCrtc) {
   std::vector<CrtcState> crtc_states = {
       {.planes = {{.formats = {DRM_FORMAT_XRGB8888}},
@@ -507,7 +518,7 @@ TEST_F(DrmOverlayValidatorTest,
   EXPECT_EQ(returns.back(), OVERLAY_STATUS_ABLE);
 }
 
-TEST_F(DrmOverlayValidatorTest,
+TEST_F(MAYBE_DrmOverlayValidatorTest,
        OptimalFormatXRGB_NoPackedFormatInPrimaryDisplay) {
   std::vector<CrtcState> crtc_states = {
       {.planes = {{.formats = {DRM_FORMAT_XRGB8888}},
@@ -531,7 +542,7 @@ TEST_F(DrmOverlayValidatorTest,
   EXPECT_EQ(returns.back(), OVERLAY_STATUS_ABLE);
 }
 
-TEST_F(DrmOverlayValidatorTest, RejectBufferAllocationFail) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, RejectBufferAllocationFail) {
   CrtcState crtc_state = {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}};
   InitDrmStatesAndControllers({crtc_state});
 
@@ -548,7 +559,7 @@ TEST_F(DrmOverlayValidatorTest, RejectBufferAllocationFail) {
 // This test verifies that the Ozone/DRM implementation does not reject overlay
 // candidates purely on the basis of having non-integer bounds. Instead, they
 // should be rounded to the nearest integer.
-TEST_F(DrmOverlayValidatorTest, NonIntegerDisplayRect) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, NonIntegerDisplayRect) {
   CrtcState state = {
       .planes = {{.formats = {DRM_FORMAT_XRGB8888}},
                  {.formats = {DRM_FORMAT_XRGB8888, DRM_FORMAT_NV12}}}};
@@ -566,10 +577,10 @@ TEST_F(DrmOverlayValidatorTest, NonIntegerDisplayRect) {
 }
 
 class TestAtOnceDrmOverlayValidatorTest
-    : public DrmOverlayValidatorTest,
+    : public MAYBE_DrmOverlayValidatorTest,
       public testing::WithParamInterface<bool> {};
 
-TEST_F(DrmOverlayValidatorTest, FourCandidates_OneCommit) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, FourCandidates_OneCommit) {
   // Four planes.
   CrtcState crtc_state = {.planes = {{.formats = {DRM_FORMAT_XRGB8888}},
                                      {.formats = {DRM_FORMAT_XRGB8888}},
@@ -597,7 +608,7 @@ TEST_F(DrmOverlayValidatorTest, FourCandidates_OneCommit) {
   EXPECT_EQ(drm_->get_commit_count() - setup_commits, 1);
 }
 
-TEST_F(DrmOverlayValidatorTest, FourCandidatesTwoPlanes_OneCommit) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, FourCandidatesTwoPlanes_OneCommit) {
   // Only two planes.
   CrtcState crtc_state = {.planes = {{.formats = {DRM_FORMAT_XRGB8888}},
                                      {.formats = {DRM_FORMAT_XRGB8888}}}};
@@ -624,7 +635,7 @@ TEST_F(DrmOverlayValidatorTest, FourCandidatesTwoPlanes_OneCommit) {
   EXPECT_EQ(drm_->get_commit_count() - setup_commits, 1);
 }
 
-TEST_F(DrmOverlayValidatorTest, TwoOfSixIgnored_OneCommit) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, TwoOfSixIgnored_OneCommit) {
   // Six planes.
   CrtcState crtc_state = {.planes = {{.formats = {DRM_FORMAT_XRGB8888}},
                                      {.formats = {DRM_FORMAT_XRGB8888}},
@@ -663,7 +674,7 @@ TEST_F(DrmOverlayValidatorTest, TwoOfSixIgnored_OneCommit) {
   EXPECT_EQ(drm_->get_commit_count() - setup_commits, 1);
 }
 
-TEST_F(DrmOverlayValidatorTest, PinnedPlanesCantBeReused) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, PinnedPlanesCantBeReused) {
   std::vector<CrtcState> crtc_states = {
       {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}},
       {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}}};
@@ -682,7 +693,7 @@ TEST_F(DrmOverlayValidatorTest, PinnedPlanesCantBeReused) {
       << "The overlay plane should not be available.";
 }
 
-TEST_F(DrmOverlayValidatorTest, UnpinnedMovablePlanesCanBeUsed) {
+TEST_F(MAYBE_DrmOverlayValidatorTest, UnpinnedMovablePlanesCanBeUsed) {
   std::vector<CrtcState> crtc_states = {
       {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}},
       {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}}};

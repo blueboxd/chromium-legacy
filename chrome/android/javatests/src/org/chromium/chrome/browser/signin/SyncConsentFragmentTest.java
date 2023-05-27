@@ -24,16 +24,15 @@ import static org.mockito.Mockito.when;
 import android.accounts.Account;
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.lifecycle.Stage;
 
 import androidx.fragment.app.Fragment;
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.MediumTest;
+import androidx.test.runner.lifecycle.Stage;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -43,7 +42,6 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import org.chromium.base.test.BaseActivityTestRule;
-import org.chromium.base.test.metrics.HistogramTestRule;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CommandLineFlags.Add;
@@ -51,7 +49,6 @@ import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.HistogramWatcher;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunPageDelegate;
 import org.chromium.chrome.browser.firstrun.SyncConsentFirstRunFragment;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -62,6 +59,7 @@ import org.chromium.chrome.browser.signin.services.SigninMetricsUtils.State;
 import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
@@ -74,7 +72,6 @@ import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.components.sync.UserSelectableType;
-import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.ViewUtils;
@@ -134,9 +131,6 @@ public class SyncConsentFragmentTest {
     public final SigninTestRule mSigninTestRule = new SigninTestRule();
 
     @Rule
-    public final HistogramTestRule mHistogramTestRule = new HistogramTestRule();
-
-    @Rule
     public final ChromeTabbedActivityTestRule mChromeActivityTestRule =
             new ChromeTabbedActivityTestRule();
 
@@ -159,14 +153,6 @@ public class SyncConsentFragmentTest {
     private ExternalAuthUtils mExternalAuthUtilsMock;
 
     private SyncConsentActivity mSyncConsentActivity;
-
-    @BeforeClass
-    public static void setUpBeforeActivityLaunched() {
-        // Only needs to be loaded once and needs to be loaded before HistogramTestRule.
-        // TODO(https://crbug.com/1211884): Revise after HistogramTestRule is revised to not require
-        // native loading.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
 
     @Before
     public void setUp() {
@@ -585,7 +571,7 @@ public class SyncConsentFragmentTest {
                     .hasPrimaryAccount(ConsentLevel.SYNC);
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            assertTrue(SyncService.get().isSyncRequested());
+            assertTrue(SyncService.get().hasSyncConsent());
             assertFalse(SyncService.get().isFirstSetupComplete());
             assertEquals(ALL_CLANK_SYNCABLE_DATA_TYPES, SyncService.get().getSelectedTypes());
             assertTrue(SyncService.get().hasKeepEverythingSynced());
@@ -616,7 +602,7 @@ public class SyncConsentFragmentTest {
                     .hasPrimaryAccount(ConsentLevel.SYNC);
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            assertTrue(SyncService.get().isSyncRequested());
+            assertTrue(SyncService.get().hasSyncConsent());
             assertFalse(SyncService.get().isFirstSetupComplete());
             assertEquals(HISTORY_SYNC_DATA_TYPES, SyncService.get().getSelectedTypes());
             assertFalse(SyncService.get().hasKeepEverythingSynced());
@@ -651,7 +637,7 @@ public class SyncConsentFragmentTest {
                     .hasPrimaryAccount(ConsentLevel.SYNC);
         });
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            assertTrue(SyncService.get().isSyncRequested());
+            assertTrue(SyncService.get().hasSyncConsent());
             assertFalse(SyncService.get().isFirstSetupComplete());
         });
         // Click the cancel button to exit the activity.
@@ -756,6 +742,11 @@ public class SyncConsentFragmentTest {
     @DisableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
     public void testSyncConsentFragmentAddAccountFlowSucceeded() {
         mSigninTestRule.setResultForNextAddAccountFlow(Activity.RESULT_OK, NEW_ACCOUNT_NAME);
+        HistogramWatcher addAccountStateHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords("Signin.AddAccountState", State.REQUESTED, State.STARTED,
+                                State.SUCCEEDED)
+                        .build();
 
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
@@ -765,17 +756,8 @@ public class SyncConsentFragmentTest {
                 });
 
         onView(withText(NEW_ACCOUNT_NAME)).check(matches(isDisplayed()));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.REQUESTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount("Signin.AddAccountState", State.STARTED));
-        // Poll for this histogram as it's recorded asynchronously.
-        CriteriaHelper.pollUiThread(() -> {
-            return mHistogramTestRule.getHistogramValueCount(
-                           "Signin.AddAccountState", State.SUCCEEDED)
-                    == 1;
-        });
+        // Poll for these histograms as SUCCEEDED is recorded asynchronously.
+        addAccountStateHistogram.pollInstrumentationThreadUntilSatisfied();
     }
 
     @Test
@@ -783,6 +765,11 @@ public class SyncConsentFragmentTest {
     @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
     public void testTangibleSyncConsentFragmentAddAccountFlowSucceeded() {
         mSigninTestRule.setResultForNextAddAccountFlow(Activity.RESULT_OK, NEW_ACCOUNT_NAME);
+        HistogramWatcher addAccountStateHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords("Signin.AddAccountState", State.REQUESTED, State.STARTED,
+                                State.SUCCEEDED)
+                        .build();
 
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
@@ -794,15 +781,7 @@ public class SyncConsentFragmentTest {
 
         // Wait for the added account to be visible.
         onView(withId(R.id.sync_consent_title)).check(matches(isDisplayed()));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.REQUESTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount("Signin.AddAccountState", State.STARTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.SUCCEEDED));
-        assertEquals(3, mHistogramTestRule.getHistogramTotalCount("Signin.AddAccountState"));
+        addAccountStateHistogram.assertExpected();
     }
 
     @Test
@@ -864,6 +843,11 @@ public class SyncConsentFragmentTest {
     @DisableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
     public void testSyncConsentFragmentAddAccountFlowCancelled() {
         mSigninTestRule.setResultForNextAddAccountFlow(Activity.RESULT_CANCELED, null);
+        HistogramWatcher addAccountStateHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords("Signin.AddAccountState", State.REQUESTED, State.STARTED,
+                                State.CANCELLED)
+                        .build();
 
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
@@ -873,15 +857,7 @@ public class SyncConsentFragmentTest {
                 });
 
         onView(withText(R.string.signin_add_account)).check(matches(isDisplayed()));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.REQUESTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount("Signin.AddAccountState", State.STARTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.CANCELLED));
-        assertEquals(3, mHistogramTestRule.getHistogramTotalCount("Signin.AddAccountState"));
+        addAccountStateHistogram.assertExpected();
     }
 
     @Test
@@ -889,6 +865,11 @@ public class SyncConsentFragmentTest {
     @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
     public void testTangibleSyncConsentFragmentAddAccountFlowCancelled() {
         mSigninTestRule.setResultForNextAddAccountFlow(Activity.RESULT_CANCELED, null);
+        HistogramWatcher addAccountStateHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords("Signin.AddAccountState", State.REQUESTED, State.STARTED,
+                                State.CANCELLED)
+                        .build();
 
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
@@ -900,21 +881,18 @@ public class SyncConsentFragmentTest {
 
         // SyncConsentActivity is destroyed if add account flow is cancelled.
         ApplicationTestUtils.waitForActivityState(mSyncConsentActivity, Stage.DESTROYED);
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.REQUESTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount("Signin.AddAccountState", State.STARTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.CANCELLED));
-        assertEquals(3, mHistogramTestRule.getHistogramTotalCount("Signin.AddAccountState"));
+        addAccountStateHistogram.assertExpected();
     }
 
     @Test
     @LargeTest
     @DisableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
     public void testSyncConsentFragmentAddAccountFlowFailed() {
+        HistogramWatcher addAccountStateHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords("Signin.AddAccountState", State.REQUESTED, State.FAILED)
+                        .build();
+
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
                     SyncConsentActivityLauncherImpl.get().launchActivityForPromoAddAccountFlow(
@@ -925,18 +903,18 @@ public class SyncConsentFragmentTest {
         // In this case the sync consent activity will be backgrounded and android settings page
         // will be shown.
         ApplicationTestUtils.waitForActivityState(mSyncConsentActivity, Stage.STOPPED);
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.REQUESTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount("Signin.AddAccountState", State.FAILED));
-        assertEquals(2, mHistogramTestRule.getHistogramTotalCount("Signin.AddAccountState"));
+        addAccountStateHistogram.assertExpected();
     }
 
     @Test
     @LargeTest
     @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
     public void testTangibleSyncConsentFragmentAddAccountFlowFailed() {
+        HistogramWatcher addAccountStateHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords("Signin.AddAccountState", State.REQUESTED, State.FAILED)
+                        .build();
+
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
                     SyncConsentActivityLauncherImpl.get()
@@ -947,12 +925,7 @@ public class SyncConsentFragmentTest {
 
         // SyncConsentActivity is destroyed if add account flow fails.
         ApplicationTestUtils.waitForActivityState(mSyncConsentActivity, Stage.DESTROYED);
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.REQUESTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount("Signin.AddAccountState", State.FAILED));
-        assertEquals(2, mHistogramTestRule.getHistogramTotalCount("Signin.AddAccountState"));
+        addAccountStateHistogram.assertExpected();
     }
 
     @Test
@@ -960,6 +933,11 @@ public class SyncConsentFragmentTest {
     @DisableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
     public void testSyncConsentFragmentAddAccountFlowReturnedNullAccountName() {
         mSigninTestRule.setResultForNextAddAccountFlow(Activity.RESULT_OK, null);
+        HistogramWatcher addAccountStateHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords("Signin.AddAccountState", State.REQUESTED, State.STARTED,
+                                State.SUCCEEDED, State.NULL_ACCOUNT_NAME)
+                        .build();
 
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SyncConsentActivity.class, () -> {
@@ -969,24 +947,18 @@ public class SyncConsentFragmentTest {
                 });
 
         onView(withText(R.string.signin_add_account)).check(matches(isDisplayed()));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.REQUESTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount("Signin.AddAccountState", State.STARTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.SUCCEEDED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.NULL_ACCOUNT_NAME));
-        assertEquals(4, mHistogramTestRule.getHistogramTotalCount("Signin.AddAccountState"));
+        addAccountStateHistogram.assertExpected();
     }
 
     @Test
     @LargeTest
     @EnableFeatures({ChromeFeatureList.TANGIBLE_SYNC})
     public void testTangibleSyncConsentFragmentAddAccountFlowReturnedNullAccountName() {
+        HistogramWatcher addAccountStateHistogram =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecords("Signin.AddAccountState", State.REQUESTED, State.STARTED,
+                                State.SUCCEEDED, State.NULL_ACCOUNT_NAME)
+                        .build();
         mSigninTestRule.setResultForNextAddAccountFlow(Activity.RESULT_OK, null);
 
         mSyncConsentActivity = ActivityTestUtils.waitForActivity(
@@ -999,18 +971,7 @@ public class SyncConsentFragmentTest {
 
         // SyncConsentActivity is destroyed if the add account flow returns null account name.
         ApplicationTestUtils.waitForActivityState(mSyncConsentActivity, Stage.DESTROYED);
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.REQUESTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount("Signin.AddAccountState", State.STARTED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.SUCCEEDED));
-        assertEquals(1,
-                mHistogramTestRule.getHistogramValueCount(
-                        "Signin.AddAccountState", State.NULL_ACCOUNT_NAME));
-        assertEquals(4, mHistogramTestRule.getHistogramTotalCount("Signin.AddAccountState"));
+        addAccountStateHistogram.assertExpected();
     }
 
     private void launchActivityWithFragment(Fragment fragment) {

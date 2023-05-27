@@ -13,8 +13,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.url.GURL;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 /** A central hub for accessing shopping and product information. */
@@ -233,6 +231,15 @@ public class ShoppingService {
                 mNativeShoppingServiceAndroid, this);
     }
 
+    // This is a feature check for the "price tracking", which will return true if the user has the
+    // feature flag enabled or (if applicable) is in an eligible country and locale.
+    public boolean isCommercePriceTrackingEnabled() {
+        if (mNativeShoppingServiceAndroid == 0) return false;
+
+        return ShoppingServiceJni.get().isCommercePriceTrackingEnabled(
+                mNativeShoppingServiceAndroid, this);
+    }
+
     @CalledByNative
     private void destroy() {
         mNativeShoppingServiceAndroid = 0;
@@ -279,27 +286,22 @@ public class ShoppingService {
     }
 
     @CalledByNative
-    private List<CommerceSubscription> createSubscriptionAndAddToList(
-            List<CommerceSubscription> subs, int type, int idType, int managementType, String id) {
-        if (subs == null) {
-            subs = new ArrayList<>();
-        }
-        CommerceSubscription sub = new CommerceSubscription(type, idType, id, managementType, null);
-        subs.add(sub);
-        return subs;
+    private static CommerceSubscription createSubscription(
+            int type, int idType, int managementType, String id) {
+        return new CommerceSubscription(type, idType, id, managementType, null);
     }
 
     @CalledByNative
-    private void onSubscribe(List<CommerceSubscription> subs, boolean succeeded) {
+    private void onSubscribe(CommerceSubscription sub, boolean succeeded) {
         for (SubscriptionsObserver o : mSubscriptionsObservers) {
-            o.onSubscribe(subs, succeeded);
+            o.onSubscribe(sub, succeeded);
         }
     }
 
     @CalledByNative
-    private void onUnsubscribe(List<CommerceSubscription> subs, boolean succeeded) {
+    private void onUnsubscribe(CommerceSubscription sub, boolean succeeded) {
         for (SubscriptionsObserver o : mSubscriptionsObservers) {
-            o.onUnsubscribe(subs, succeeded);
+            o.onUnsubscribe(sub, succeeded);
         }
     }
 
@@ -324,5 +326,7 @@ public class ShoppingService {
                 int type, int idType, int managementType, String id);
         boolean isShoppingListEligible(long nativeShoppingServiceAndroid, ShoppingService caller);
         boolean isMerchantViewerEnabled(long nativeShoppingServiceAndroid, ShoppingService caller);
+        boolean isCommercePriceTrackingEnabled(
+                long nativeShoppingServiceAndroid, ShoppingService caller);
     }
 }

@@ -113,6 +113,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_promise_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
@@ -139,6 +140,10 @@
 #include "third_party/webrtc/rtc_base/ssl_identity.h"
 
 namespace blink {
+
+BASE_FEATURE(kWebRtcLegacyGetStatsThrows,
+             "WebRtcLegacyGetStatsThrows",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 namespace {
 
@@ -583,7 +588,8 @@ RTCPeerConnection::RTCPeerConnection(
     bool encoded_insertable_streams,
     GoogMediaConstraints* media_constraints,
     ExceptionState& exception_state)
-    : ExecutionContextLifecycleObserver(context),
+    : ActiveScriptWrappable<RTCPeerConnection>({}),
+      ExecutionContextLifecycleObserver(context),
       pending_local_description_(nullptr),
       current_local_description_(nullptr),
       pending_remote_description_(nullptr),
@@ -1658,7 +1664,7 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
         V8MediaStreamTrack::ToImplWithTypeCheck(isolate,
                                                 legacy_selector.V8Value());
     return LegacyCallbackBasedGetStats(script_state, success_callback,
-                                       selector_or_null);
+                                       selector_or_null, exception_state);
   }
   // Custom binding for spec-compliant
   // "getStats(optional MediaStreamTrack? selector)". null is a valid selector
@@ -1680,7 +1686,8 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
 ScriptPromise RTCPeerConnection::LegacyCallbackBasedGetStats(
     ScriptState* script_state,
     V8RTCStatsCallback* success_callback,
-    MediaStreamTrack* selector) {
+    MediaStreamTrack* selector,
+    ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -1693,12 +1700,20 @@ ScriptPromise RTCPeerConnection::LegacyCallbackBasedGetStats(
     UseCounter::Count(context,
                       WebFeature::kRTCPeerConnectionLegacyGetStatsTrial);
   } else {
-    // The deprecation trial is NOT enabled: show a deprecation warning.
-    // TODO(https://crbug.com/822696): In M114 add a base::Feature to control
-    // the throwing of an exception here. The plan is to throw in Canary/Beta in
-    // M114 and to throw in Stable in M117.
+    // The deprecation trial is NOT enabled: show a deprecation warning and
+    // maybe throw an exception.
     Deprecation::CountDeprecation(
         context, WebFeature::kRTCPeerConnectionGetStatsLegacyNonCompliant);
+    // The plan from the Intent to Deprecate is:
+    // - M114: Throw an exception in Canary/Beta.
+    // - M117: Throw in Stable.
+    // Which channel to throw on is controlled via the base::Feature.
+    if (base::FeatureList::IsEnabled(kWebRtcLegacyGetStatsThrows)) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kNotSupportedError,
+          "The callback-based getStats() method is no longer supported.");
+      return ScriptPromise();
+    }
   }
   auto* stats_request = MakeGarbageCollected<RTCStatsRequestImpl>(
       GetExecutionContext(), this, success_callback, selector);
@@ -2019,7 +2034,7 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   }
   // Further checks of DataChannelId are done in the webrtc layer.
 
-  scoped_refptr<webrtc::DataChannelInterface> webrtc_channel =
+  rtc::scoped_refptr<webrtc::DataChannelInterface> webrtc_channel =
       peer_handler_->CreateDataChannel(label, init);
   if (!webrtc_channel) {
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
@@ -2579,7 +2594,7 @@ void RTCPeerConnection::SetAssociatedMediaStreams(
 }
 
 void RTCPeerConnection::DidAddRemoteDataChannel(
-    scoped_refptr<webrtc::DataChannelInterface> channel) {
+    rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
   DCHECK(!closed_);
   DCHECK(GetExecutionContext()->IsContextThread());
 

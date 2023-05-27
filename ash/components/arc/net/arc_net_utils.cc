@@ -141,6 +141,30 @@ std::string IPv4AddressToString(uint32_t addr) {
   return !inet_ntop(AF_INET, &ia, buf, sizeof(buf)) ? std::string() : buf;
 }
 
+std::string KeyManagementMethodToString(arc::mojom::KeyManagement management) {
+  switch (management) {
+    case arc::mojom::KeyManagement::kIeee8021X:
+      return "WEP-8021X";
+    case arc::mojom::KeyManagement::kFtEap:
+      return "FT-EAP";
+    case arc::mojom::KeyManagement::kFtPsk:
+      return "FT-PSK";
+    case arc::mojom::KeyManagement::kFtSae:
+      return "FT-SAE";
+    case arc::mojom::KeyManagement::kWpaEap:
+      return "WPA-EAP";
+    case arc::mojom::KeyManagement::kWpaEapSha256:
+      return "WPA-EAP-SHA256";
+    case arc::mojom::KeyManagement::kWpaPsk:
+      return "WPA-PSK";
+    case arc::mojom::KeyManagement::kSae:
+      return "SAE";
+    case arc::mojom::KeyManagement::kNone:
+      return "None";
+  }
+  return "unknown";
+}
+
 }  // namespace
 
 namespace arc::net_utils {
@@ -258,6 +282,38 @@ std::string TranslateEapPhase2Method(arc::mojom::EapPhase2Method method) {
   return "";
 }
 
+std::string TranslateEapMethodToOnc(arc::mojom::EapMethod method) {
+  switch (method) {
+    case arc::mojom::EapMethod::kLeap:
+      return onc::eap::kLEAP;
+    case arc::mojom::EapMethod::kPeap:
+      return onc::eap::kPEAP;
+    case arc::mojom::EapMethod::kTls:
+      return onc::eap::kEAP_TLS;
+    case arc::mojom::EapMethod::kTtls:
+      return onc::eap::kEAP_TTLS;
+    case arc::mojom::EapMethod::kNone:
+      return std::string();
+  }
+  NET_LOG(ERROR) << "Unknown EAP method: " << method;
+  return std::string();
+}
+
+std::string TranslateEapPhase2MethodToOnc(arc::mojom::EapPhase2Method method) {
+  switch (method) {
+    case arc::mojom::EapPhase2Method::kPap:
+      return onc::eap::kPAP;
+    case arc::mojom::EapPhase2Method::kMschap:
+      return onc::eap::kMSCHAP;
+    case arc::mojom::EapPhase2Method::kMschapv2:
+      return onc::eap::kMSCHAPv2;
+    case arc::mojom::EapPhase2Method::kNone:
+      return std::string();
+  }
+  NET_LOG(ERROR) << "Unknown EAP phase 2 method: " << method;
+  return std::string();
+}
+
 std::string TranslateKeyManagement(mojom::KeyManagement management) {
   switch (management) {
     case arc::mojom::KeyManagement::kIeee8021X:
@@ -277,6 +333,18 @@ std::string TranslateKeyManagement(mojom::KeyManagement management) {
   }
   NET_LOG(ERROR) << "Unknown key management";
   return "";
+}
+
+std::string TranslateKeyManagementToOnc(mojom::KeyManagement management) {
+  if (management == arc::mojom::KeyManagement::kIeee8021X) {
+    return onc::wifi::kWEP_8021X;
+  } else if (management == arc::mojom::KeyManagement::kNone) {
+    return std::string();
+  }
+  // Currently other key managements are not handled.
+  NET_LOG(ERROR) << "Key management is not supported or invalid: "
+                 << KeyManagementMethodToString(management);
+  return std::string();
 }
 
 arc::mojom::SecurityType TranslateWiFiSecurity(
@@ -427,6 +495,23 @@ std::vector<arc::mojom::NetworkConfigurationPtr> TranslateNetworkStates(
     networks.push_back(std::move(network));
   }
   return networks;
+}
+
+base::Value::List TranslateSubjectNameMatchListToValue(
+    const std::vector<std::string>& string_list) {
+  base::Value::List result;
+  for (const auto& item : string_list) {
+    // Type and value is separated by ":" in vector, separate them by splitting
+    // at ":".
+    int idx = item.find(":");
+    std::string type = item.substr(0, idx);
+    std::string value = item.substr(idx + 1, item.size());
+    base::Value::Dict entry;
+    entry.Set(::onc::eap_subject_alternative_name_match::kType, type);
+    entry.Set(::onc::eap_subject_alternative_name_match::kValue, value);
+    result.Append(std::move(entry));
+  }
+  return result;
 }
 
 }  // namespace arc::net_utils

@@ -38,7 +38,15 @@ namespace web {
 class ContentWebState : public WebState, public content::WebContentsObserver {
  public:
   explicit ContentWebState(const CreateParams& params);
+
+  // Constructor for ContentWebState created for deserialized sessions
+  ContentWebState(const CreateParams& params,
+                  CRWSessionStorage* session_storage);
+
   ~ContentWebState() override;
+
+  // Returns the WebContents owned by this ContentWebState.
+  content::WebContents* GetWebContents();
 
   // WebState implementation.
   WebStateDelegate* GetDelegate() override;
@@ -76,6 +84,7 @@ class ContentWebState : public WebState, public content::WebContentsObserver {
   void LoadData(NSData* data, NSString* mime_type, const GURL& url) override;
   void ExecuteUserJavaScript(NSString* javaScript) override;
   NSString* GetStableIdentifier() const override;
+  SessionID GetUniqueIdentifier() const override;
   const std::string& GetContentsMimeType() const override;
   bool ContentIsHTML() const override;
   const std::u16string& GetTitle() const override;
@@ -100,8 +109,6 @@ class ContentWebState : public WebState, public content::WebContentsObserver {
   void CloseWebState() override;
   bool SetSessionStateData(NSData* data) override;
   NSData* SessionStateData() override;
-  void SetSwipeRecognizerProvider(
-      id<CRWSwipeRecognizerProvider> delegate) override;
   PermissionState GetStateForPermission(Permission permission) const override
       API_AVAILABLE(ios(15.0));
   void SetStateForPermission(PermissionState state,
@@ -158,15 +165,20 @@ class ContentWebState : public WebState, public content::WebContentsObserver {
 
  private:
   UIScrollView* web_view_;
+  CRWSessionStorage* session_storage_;
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<web::SessionCertificatePolicyCache> certificate_policy_cache_;
   id<CRWWebViewProxy> web_view_proxy_;
   NSString* UUID_;
+  // The unique identifier. Stable across application restarts.
+  const SessionID unique_identifier_;
   base::ObserverList<WebStatePolicyDecider, true> policy_deciders_;
   base::ObserverList<WebStateObserver, true> observers_;
   std::unique_ptr<ContentNavigationManager> navigation_manager_;
   std::unique_ptr<ContentWebFramesManager> web_frames_manager_;
   FaviconStatus favicon_status_;
+
+  base::WeakPtrFactory<ContentWebState> weak_factory_{this};
 };
 
 }  // namespace web

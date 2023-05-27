@@ -89,6 +89,14 @@
     @org.chromium.build.annotations.AlwaysInline *;
 }
 
+# Keep all logs (Log.VERBOSE = 2). R8 does not allow setting to 0.
+-maximumremovedandroidloglevel 1 class ** {
+   @org.chromium.build.annotations.DoNotStripLogs <methods>;
+}
+-maximumremovedandroidloglevel 1 @org.chromium.build.annotations.DoNotStripLogs class ** {
+   <methods>;
+}
+
 # Never merge classes horizontally or vertically with this annotation.
 # Relevant to classes being used as a key in maps or sets.
 -keep,allowaccessmodification,allowobfuscation,allowshrinking @org.chromium.build.annotations.DoNotClassMerge class *
@@ -202,12 +210,8 @@
   @androidx.annotation.Keep <methods>;
 }
 
-# Even unused methods kept due to explicit jni registration:
-# https://crbug.com/688465.
--keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class !org.chromium.base.library_loader.**,** {
-  native <methods>;
-}
--keepclasseswithmembernames,includedescriptorclasses,allowaccessmodification class org.chromium.base.library_loader.** {
+# Allow unused native methods to be removed, but prevent renaming on those that are kept.
+-keepclasseswithmembernames,includedescriptorclasses,allowaccessmodification class ** {
   native <methods>;
 }
 
@@ -243,6 +247,10 @@
 -keep,allowobfuscation,allowaccessmodification class * extends <1> {
   <init>();
 }
+
+# TODO(agrieve): Remove once we start to use Android U SDK.
+-dontwarn android.window.BackEvent
+-dontwarn android.window.OnBackAnimationCallback
 
 # File: ../../build/android/dcheck_is_off.flags
 # Copyright 2019 The Chromium Authors
@@ -319,6 +327,11 @@
 -dontwarn com.google.common.logging.nano.Vr$**
 -dontwarn com.google.vr.**
 
+# Since we manually register, we need to keep every native method.
+-keepclasseswithmembers,includedescriptorclasses class com.google.vr.** {
+    native <methods>;
+}
+
 # File: ../../third_party/gvr-android-sdk/src/proguard-gvr.txt
 # Don't obfuscate any NDK/SDK code. This makes the debugging of stack traces
 # in release builds easier.
@@ -354,6 +367,14 @@
 }
 
 -dontwarn com.google.protobuf.nano.NanoEnumValue
+
+# File: ../../content/public/android/proguard.flags
+# Copyright 2023 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# TODO(crbug/1426964): Remove this -dontwarn once chrome builds with Android U SDK.
+-dontwarn android.adservices.**
 
 # File: ../../android_webview/support_library/boundary_interfaces/proguard.flags
 # Copyright 2018 The Chromium Authors
@@ -842,17 +863,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
-# Remove Log.d(), Log.v(), and all isLoggable() where the return value is
-# unused (e.g. if it was guarding a call to Log.d()).
--assumenosideeffects class android.util.Log {
-  static int d(...);
-  static int v(...);
-  # Don't use "return false" here because some code guards info logs behind
-  # isLoggable(DEBUG) as a way to enable logs via adb.
-  # https://crbug.com/1366880
-  static boolean isLoggable(...);
-}
+# Remove Log.d(), Log.v(), and corresponding isLoggable() calls.
+# Log.DEBUG = 3, Log.VERBOSE = 2.
+# https://stackoverflow.com/questions/73876633/what-does-the-r8-maximumremovedandroidloglevel-option
+-maximumremovedandroidloglevel 3
 
 # Makes try-with-resources less inefficient. Saved 3.8kb when added.
 -assumenosideeffects class java.lang.Throwable {
@@ -902,7 +916,7 @@
     @android.support.annotation.Keep <init>(...);
 }
 
-# File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_android/kotlinx-coroutines-android-1.6.1.jar:META-INF/com.android.tools/r8-from-1.6.0/coroutines.pro
+# File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_android/kotlinx-coroutines-android-1.6.4.jar:META-INF/com.android.tools/r8-from-1.6.0/coroutines.pro
 # Allow R8 to optimize away the FastServiceLoader.
 # Together with ServiceLoader optimization in R8
 # this results in direct instantiation when loading Dispatchers.Main
@@ -913,8 +927,6 @@
 -assumenosideeffects class kotlinx.coroutines.internal.FastServiceLoaderKt {
     boolean ANDROID_DETECTED return true;
 }
-
--keep class kotlinx.coroutines.android.AndroidDispatcherFactory {*;}
 
 # Disable support for "Missing Main Dispatcher", since we always have Android main dispatcher
 -assumenosideeffects class kotlinx.coroutines.internal.MainDispatchersKt {
@@ -928,7 +940,7 @@
     boolean getRECOVER_STACK_TRACES() return false;
 }
 
-# File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm/kotlinx-coroutines-core-jvm-1.6.1.jar:META-INF/com.android.tools/r8/coroutines.pro
+# File: ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm/kotlinx-coroutines-core-jvm-1.6.4.jar:META-INF/com.android.tools/r8/coroutines.pro
 # When editing this file, update the following files as well:
 # - META-INF/proguard/coroutines.pro
 # - META-INF/com.android.tools/proguard/coroutines.pro

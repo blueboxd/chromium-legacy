@@ -72,6 +72,7 @@ class BluetoothAllowedDevicesMap;
 class BroadcastChannelService;
 class BrowsingDataFilterBuilder;
 class BrowsingTopicsURLLoaderService;
+class KeepAliveURLLoaderService;
 class BucketManager;
 class CacheStorageControlWrapper;
 class CookieStoreManager;
@@ -91,6 +92,7 @@ class PaymentAppContextImpl;
 class PrefetchURLLoaderService;
 class PrivateAggregationManager;
 class PushMessagingContext;
+class ResourceCacheManager;
 class QuotaContext;
 class SharedStorageWorkletHostManager;
 class SharedWorkerServiceImpl;
@@ -254,6 +256,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   storage::BlobUrlRegistry* GetBlobUrlRegistry();
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
   BrowsingTopicsURLLoaderService* GetBrowsingTopicsURLLoaderService();
+  KeepAliveURLLoaderService* GetKeepAliveURLLoaderService();
   CookieStoreManager* GetCookieStoreManager();
   FileSystemAccessManagerImpl* GetFileSystemAccessManager();
   BucketManager* GetBucketManager();
@@ -271,6 +274,7 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   storage::SharedStorageManager* GetSharedStorageManager() override;
   PrivateAggregationManager* GetPrivateAggregationManager();
+  ResourceCacheManager* GetResourceCacheManager();
 
   // blink::mojom::DomStorage interface.
   void OpenLocalStorage(
@@ -648,6 +652,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   std::unique_ptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
   std::unique_ptr<BrowsingTopicsURLLoaderService>
       browsing_topics_url_loader_service_;
+  std::unique_ptr<KeepAliveURLLoaderService> keep_alive_url_loader_service_;
   std::unique_ptr<CookieStoreManager> cookie_store_manager_;
   std::unique_ptr<BucketManager> bucket_manager_;
   scoped_refptr<GeneratedCodeCacheContext> generated_code_cache_context_;
@@ -678,6 +683,8 @@ class CONTENT_EXPORT StoragePartitionImpl
       shared_storage_worklet_host_manager_;
 
   std::unique_ptr<PrivateAggregationManager> private_aggregation_manager_;
+
+  std::unique_ptr<ResourceCacheManager> resource_cache_manager_;
 
   // ReceiverSet for DomStorage, using the
   // ChildProcessSecurityPolicyImpl::Handle as the binding context type. The

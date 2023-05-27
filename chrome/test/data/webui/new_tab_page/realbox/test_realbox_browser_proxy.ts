@@ -20,7 +20,6 @@ class FakePageHandler extends TestBrowserProxy implements PageHandlerInterface {
     super([
       'deleteAutocompleteMatch',
       'executeAction',
-      'logCharTypedToRepaintLatency',
       'onNavigationLikely',
       'openAutocompleteMatch',
       'queryAutocomplete',
@@ -33,15 +32,17 @@ class FakePageHandler extends TestBrowserProxy implements PageHandlerInterface {
     this.methodCalled('setPage', page);
   }
 
-  deleteAutocompleteMatch(line: number) {
-    this.methodCalled('deleteAutocompleteMatch', {line});
+  deleteAutocompleteMatch(line: number, url: Url) {
+    this.methodCalled('deleteAutocompleteMatch', {line, url});
   }
 
   executeAction(
-      line: number, matchSelectionTimestamp: TimeTicks, mouseButton: number,
-      altKey: boolean, ctrlKey: boolean, metaKey: boolean, shiftKey: boolean) {
+      line: number, url: Url, matchSelectionTimestamp: TimeTicks,
+      mouseButton: number, altKey: boolean, ctrlKey: boolean, metaKey: boolean,
+      shiftKey: boolean) {
     this.methodCalled('executeAction', {
       line,
+      url,
       matchSelectionTimestamp,
       mouseButton,
       altKey,
@@ -49,10 +50,6 @@ class FakePageHandler extends TestBrowserProxy implements PageHandlerInterface {
       metaKey,
       shiftKey,
     });
-  }
-
-  logCharTypedToRepaintLatency(timeDelta: TimeDelta) {
-    this.methodCalled('logCharTypedToRepaintLatency', {timeDelta});
   }
 
   openAutocompleteMatch(
@@ -72,8 +69,9 @@ class FakePageHandler extends TestBrowserProxy implements PageHandlerInterface {
     });
   }
 
-  onNavigationLikely(line: number, navigationPredictor: NavigationPredictor) {
-    this.methodCalled('onNavigationLikely', {line, navigationPredictor});
+  onNavigationLikely(
+      line: number, url: Url, navigationPredictor: NavigationPredictor) {
+    this.methodCalled('onNavigationLikely', {line, url, navigationPredictor});
   }
 
   queryAutocomplete(input: String16, preventInlineAutocomplete: boolean) {

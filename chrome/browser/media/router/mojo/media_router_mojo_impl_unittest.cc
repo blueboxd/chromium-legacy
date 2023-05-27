@@ -1089,26 +1089,22 @@ TEST_F(MediaRouterMojoImplTest, TestGetCurrentRoutes) {
   EXPECT_TRUE(router()->GetCurrentRoutes().empty());
 }
 
-TEST_F(MediaRouterMojoImplTest, TestGetMirroringStatsNoProviderId) {
-  router()->GetMirroringStats(kRouteId, base::BindOnce([](base::Value dict) {
-                                EXPECT_EQ(base::Value(), dict);
-                              }));
-}
-
-// TODO(gbj): Add a test case where a nonempty dict is returned. Probably need
-// to create a setter in MockMediaRouteProvider.
-TEST_F(MediaRouterMojoImplTest, TestGetMirroringStats) {
-  ProvideTestRoute(mojom::MediaRouteProviderId::CAST, kRouteId);
-  router()->GetMirroringStats(kRouteId, base::BindOnce([](base::Value dict) {
-                                EXPECT_EQ(base::Value(), dict);
-                              }));
-}
-
 TEST_F(MediaRouterMojoImplTest, GetMirroringMediaControllerHost) {
   MediaSource tab_source(kTabSourceOne);
-  std::vector<MediaRoute> local_mirroring_routes{
-      MediaRoute(kRouteId, tab_source, kSinkId, kDescription, true)};
+  auto local_mirroring_route =
+      MediaRoute(kRouteId, tab_source, kSinkId, kDescription, true);
+  local_mirroring_route.set_controller_type(RouteControllerType::kGeneric);
+  std::vector<MediaRoute> local_mirroring_routes{local_mirroring_route};
+  EXPECT_CALL(mock_cast_provider_,
+              CreateMediaRouteControllerInternal(kRouteId, _, _, _))
+      .WillOnce(
+          [&](const std::string& route_id,
+              mojo::PendingReceiver<mojom::MediaController>& media_controller,
+              mojo::PendingRemote<mojom::MediaStatusObserver>& observer,
+              MockMediaRouteProvider::CreateMediaRouteControllerCallback&
+                  callback) { std::move(callback).Run(true); });
   UpdateRoutes(mojom::MediaRouteProviderId::CAST, local_mirroring_routes);
+  base::RunLoop().RunUntilIdle();
 
   // Expect the host to exist for a local mirroring source.
   EXPECT_NE(nullptr, router()->GetMirroringMediaControllerHost(kRouteId));

@@ -33,14 +33,16 @@ BASE_FEATURE(kMojoInlineMessagePayloads,
              "MojoInlineMessagePayloads",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kMojoAvoidRandomPipeId,
-             "MojoAvoidRandomPipeId",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
 BASE_FEATURE(kMojoIpcz, "MojoIpcz", base::FEATURE_DISABLED_BY_DEFAULT);
 #else
 BASE_FEATURE(kMojoIpcz, "MojoIpcz", base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kMojoDirectSharedMemoryAndroid,
+             "MojoDirectSharedMemoryAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 }  // namespace core

@@ -30,6 +30,7 @@ import {ResultSaver} from '../models/result_saver.js';
 import {VideoSaver} from '../models/video_saver.js';
 import {ChromeHelper} from '../mojo/chrome_helper.js';
 import {DeviceOperator} from '../mojo/device_operator.js';
+import {ToteMetricFormat} from '../mojo/type.js';
 import * as nav from '../nav.js';
 import {PerfLogger} from '../perf.js';
 import * as sound from '../sound.js';
@@ -523,7 +524,8 @@ export class Camera extends View implements CameraViewUI {
     });
     try {
       const name = (new Filenamer(timestamp)).newImageName();
-      await this.resultSaver.savePhoto(blob, name, metadata);
+      await this.resultSaver.savePhoto(
+          blob, ToteMetricFormat.PHOTO, name, metadata);
     } catch (e) {
       toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
       throw e;
@@ -572,7 +574,8 @@ export class Camera extends View implements CameraViewUI {
 
       try {
         const name = (new Filenamer(timestamp)).newImageName();
-        await this.resultSaver.savePhoto(blob, name, metadata);
+        await this.resultSaver.savePhoto(
+            blob, ToteMetricFormat.PHOTO, name, metadata);
       } catch (e) {
         toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
         throw e;
@@ -614,7 +617,8 @@ export class Camera extends View implements CameraViewUI {
       const filenamer = new Filenamer(timestamp);
       const name = filenamer.newBurstName(false);
       try {
-        await this.resultSaver.savePhoto(blob, name, metadata);
+        await this.resultSaver.savePhoto(
+            blob, ToteMetricFormat.PHOTO, name, metadata);
       } catch (e) {
         toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
         throw e;
@@ -625,7 +629,8 @@ export class Camera extends View implements CameraViewUI {
         const {blob: portraitBlob, metadata: portraitMetadata} =
             await pendingPortrait;
         const name = filenamer.newBurstName(true);
-        await this.resultSaver.savePhoto(portraitBlob, name, portraitMetadata);
+        await this.resultSaver.savePhoto(
+            portraitBlob, ToteMetricFormat.PHOTO, name, portraitMetadata);
       } catch (e) {
         toast.show(I18nString.ERROR_MSG_TAKE_PORTRAIT_BOKEH_PHOTO_FAILED);
         // PortraitModeProcessError might be thrown when no face is detected
@@ -836,12 +841,39 @@ export class Camera extends View implements CameraViewUI {
     ChromeHelper.getInstance().maybeTriggerSurvey();
   }
 
-  async onTimeLapseCaptureDone({timeLapseSaver}: TimeLapseResult):
-      Promise<void> {
-    // TODO(b/236800499): Send perf metrics, trigger survey.
+  async onTimeLapseCaptureDone(
+      {autoStopped, duration, everPaused, resolution, speed, timeLapseSaver}:
+          TimeLapseResult): Promise<void> {
+    if (autoStopped) {
+      this.showLowStorageDialog(LowStorageDialogType.AUTO_STOP);
+    }
     nav.open(ViewName.FLASH);
-    await this.resultSaver.finishSaveVideo(timeLapseSaver);
-    nav.close(ViewName.FLASH);
+    state.set(PerfEvent.TIME_LAPSE_CAPTURE_POST_PROCESSING, true);
+    try {
+      metrics.sendCaptureEvent({
+        recordType: metrics.RecordType.TIME_LAPSE,
+        facing: this.getFacing(),
+        duration,
+        everPaused,
+        resolution,
+        shutterType: this.shutterType,
+        resolutionLevel: this.cameraManager.getVideoResolutionLevel(resolution),
+        aspectRatioSet: this.cameraManager.getAspectRatioSet(resolution),
+        timeLapseSpeed: speed,
+      });
+      await this.resultSaver.finishSaveVideo(timeLapseSaver);
+      state.set(
+          PerfEvent.TIME_LAPSE_CAPTURE_POST_PROCESSING, false,
+          {resolution, facing: this.getFacing()});
+    } catch (e) {
+      state.set(
+          PerfEvent.TIME_LAPSE_CAPTURE_POST_PROCESSING, false,
+          {hasError: true});
+      throw e;
+    } finally {
+      nav.close(ViewName.FLASH);
+    }
+    ChromeHelper.getInstance().maybeTriggerSurvey();
   }
 
   override layout(): void {

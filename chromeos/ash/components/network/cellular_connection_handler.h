@@ -9,6 +9,7 @@
 
 #include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
@@ -57,6 +58,21 @@ class NetworkState;
 class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularConnectionHandler
     : public NetworkStateHandlerObserver {
  public:
+  // TODO(b/271854446): Make these private once the migration has landed.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class PrepareCellularConnectionResult {
+    kSuccess = 0,
+    kCouldNotFindNetworkWithIccid = 1,
+    kInhibitFailed = 2,
+    kCouldNotFindRelevantEuicc = 3,
+    kRefreshProfilesFailed = 4,
+    kCouldNotFindRelevantESimProfile = 5,
+    kEnableProfileFailed = 6,
+    kTimeoutWaitingForConnectable = 7,
+    kMaxValue = kTimeoutWaitingForConnectable
+  };
+
   CellularConnectionHandler();
   CellularConnectionHandler(const CellularConnectionHandler&) = delete;
   CellularConnectionHandler& operator=(const CellularConnectionHandler&) =
@@ -99,32 +115,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularConnectionHandler
       ErrorCallback error_callback);
 
  private:
-  friend class CellularConnectionHandlerTest;
   friend class CellularESimInstallerTest;
   friend class CellularPolicyHandlerTest;
   friend class ManagedNetworkConfigurationHandlerTest;
   friend class cellular_setup::ESimTestBase;
-
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest, NoService);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest,
-                           ServiceAlreadyConnectable);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest, FailsInhibiting);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest, NoRelevantEuicc);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest,
-                           FailsRequestingInstalledProfiles);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest,
-                           TimeoutWaitingForConnectable_ESim);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest,
-                           TimeoutWaitingForConnectable_PSim);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest,
-                           Success_AutoConnected);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest,
-                           Success_TimeoutAutoConnected);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest,
-                           Success_AlreadyEnabled);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest, ConnectToStub);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest, MultipleRequests);
-  FRIEND_TEST_ALL_PREFIXES(CellularConnectionHandlerTest, NewProfile);
 
   struct ConnectionRequestMetadata {
     ConnectionRequestMetadata(const std::string& iccid,
@@ -160,20 +154,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularConnectionHandler
   };
   friend std::ostream& operator<<(std::ostream& stream,
                                   const ConnectionState& step);
-
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class PrepareCellularConnectionResult {
-    kSuccess = 0,
-    kCouldNotFindNetworkWithIccid = 1,
-    kInhibitFailed = 2,
-    kCouldNotFindRelevantEuicc = 3,
-    kRefreshProfilesFailed = 4,
-    kCouldNotFindRelevantESimProfile = 5,
-    kEnableProfileFailed = 6,
-    kTimeoutWaitingForConnectable = 7,
-    kMaxValue = kTimeoutWaitingForConnectable
-  };
 
   // Timeout waiting for a cellular network to auto connect after switch
   // profile.
@@ -225,11 +205,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularConnectionHandler
 
   base::OneShotTimer timer_;
 
-  NetworkStateHandler* network_state_handler_ = nullptr;
+  raw_ptr<NetworkStateHandler, ExperimentalAsh> network_state_handler_ =
+      nullptr;
   base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};
-  CellularInhibitor* cellular_inhibitor_ = nullptr;
-  CellularESimProfileHandler* cellular_esim_profile_handler_ = nullptr;
+  raw_ptr<CellularInhibitor, ExperimentalAsh> cellular_inhibitor_ = nullptr;
+  raw_ptr<CellularESimProfileHandler, ExperimentalAsh>
+      cellular_esim_profile_handler_ = nullptr;
 
   ConnectionState state_ = ConnectionState::kIdle;
   base::queue<std::unique_ptr<ConnectionRequestMetadata>> request_queue_;

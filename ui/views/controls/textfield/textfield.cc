@@ -240,6 +240,7 @@ Textfield::Textfield()
   views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
                                                 GetCornerRadius());
   FocusRing::Install(this);
+  FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
 
 #if !BUILDFLAG(IS_MAC)
   // Do not map accelerators on Mac. E.g. They might not reflect custom
@@ -257,6 +258,8 @@ Textfield::Textfield()
   AddAccelerator(ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN));
 #endif
 
+  SetAccessibilityProperties(ax::mojom::Role::kTextField);
+
   // Sometimes there are additional ignored views, such as the View representing
   // the cursor, inside the text field. These should always be ignored by
   // accessibility since a plain text field should always be a leaf node in the
@@ -269,11 +272,6 @@ Textfield::~Textfield() {
     // The textfield should have been blurred before destroy.
     DCHECK(this != GetInputMethod()->GetTextInputClient());
   }
-}
-
-void Textfield::SetAssociatedLabel(View* labelling_view) {
-  DCHECK(labelling_view);
-  GetViewAccessibility().OverrideLabelledBy(labelling_view);
 }
 
 void Textfield::SetController(TextfieldController* controller) {
@@ -740,13 +738,18 @@ bool Textfield::OnKeyReleased(const ui::KeyEvent& event) {
 
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP: {
       RequestFocusForGesture(event->details());
       if (controller_ && controller_->HandleGestureEvent(this, *event)) {
         selection_dragging_state_ = SelectionDraggingState::kNone;
         event->SetHandled();
         return;
       }
+
+      const size_t tap_pos =
+          GetRenderText()->FindCursorPosition(event->location()).caret_pos();
+      const bool should_toggle_menu = event->details().tap_count() == 1 &&
+                                      GetSelectedRange() == gfx::Range(tap_pos);
       if (selection_dragging_state_ != SelectionDraggingState::kNone) {
         // Selection has already been set in the preceding ET_GESTURE_TAP_DOWN
         // event, so handles should be shown without changing the selection.
@@ -772,8 +775,12 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
         OnAfterUserAction();
       }
       CreateTouchSelectionControllerAndNotifyIt();
+      if (touch_selection_controller_ && should_toggle_menu) {
+        touch_selection_controller_->ToggleQuickMenu();
+      }
       event->SetHandled();
       break;
+    }
     case ui::ET_GESTURE_TAP_DOWN: {
       if (::features::IsTouchTextEditingRedesignEnabled() && HasFocus()) {
         if (event->details().tap_down_count() == 2) {
@@ -1013,10 +1020,7 @@ void Textfield::OnDragDone() {
 }
 
 void Textfield::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kTextField;
-
-  node_data->SetName(GetAccessibleName());
-  node_data->SetNameFrom(ax::mojom::NameFrom::kAttribute);
+  View::GetAccessibleNodeData(node_data);
 
   // Editable state indicates support of editable interface, and is always set
   // for a textfield, even if disabled or readonly.
@@ -2499,6 +2503,7 @@ void Textfield::UpdateBackgroundColor() {
 void Textfield::UpdateBorder() {
   auto border = std::make_unique<views::FocusableBorder>();
   const LayoutProvider* provider = LayoutProvider::Get();
+  border->SetColorId(ui::kColorTextfieldOutline);
   border->SetInsets(gfx::Insets::TLBR(
       extra_insets_.top() +
           provider->GetDistanceMetric(DISTANCE_CONTROL_VERTICAL_TEXT_PADDING),
@@ -2510,6 +2515,8 @@ void Textfield::UpdateBorder() {
                                   DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING)));
   if (invalid_) {
     border->SetColorId(ui::kColorTextfieldInvalidOutline);
+  } else if (!GetEnabled() || GetReadOnly()) {
+    border->SetColorId(ui::kColorTextfieldDisabledOutline);
   }
   border->SetCornerRadius(GetCornerRadius());
   View::SetBorder(std::move(border));
@@ -2566,9 +2573,6 @@ void Textfield::UpdateCursorVisibility() {
 gfx::Rect Textfield::CalculateCursorViewBounds() const {
   gfx::Rect location(GetRenderText()->GetUpdatedCursorBounds());
   location.set_x(GetMirroredXForRect(location));
-  location.set_height(
-      std::min(location.height(),
-               GetLocalBounds().height() - location.y() - location.y()));
   return location;
 }
 
@@ -2752,8 +2756,11 @@ void Textfield::OnEditFailed() {
 bool Textfield::ShouldShowCursor() const {
   // Show the cursor when the primary selected range is empty; secondary
   // selections do not affect cursor visibility.
+  // TODO(crbug.com/1434319): The cursor will be entirely hidden if partially
+  // occluded. It would be better if only the occluded part is hidden.
   return HasFocus() && !HasSelection(true) && GetEnabled() && !GetReadOnly() &&
-         !drop_cursor_visible_ && GetRenderText()->cursor_enabled();
+         !drop_cursor_visible_ && GetRenderText()->cursor_enabled() &&
+         GetLocalBounds().Contains(cursor_view_->bounds());
 }
 
 int Textfield::CharsToDips(int width_in_chars) const {

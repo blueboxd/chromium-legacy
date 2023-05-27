@@ -144,7 +144,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
         return VideoFrameResourceType::YUV;
       } else {
         DCHECK_EQ(num_textures, 1u);
-        si_formats[0] = viz::MultiPlaneFormat::kYVU_420;
+        si_formats[0] = viz::MultiPlaneFormat::kYV12;
         return VideoFrameResourceType::RGB;
       }
 
@@ -168,7 +168,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
         return VideoFrameResourceType::YUV;
       } else {
         DCHECK_EQ(num_textures, 1u);
-        si_formats[0] = viz::MultiPlaneFormat::kYUV_420_BIPLANAR;
+        si_formats[0] = viz::MultiPlaneFormat::kNV12;
         return VideoFrameResourceType::RGB;
       }
 
@@ -181,7 +181,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
         return VideoFrameResourceType::YUVA;
       } else {
         DCHECK_EQ(num_textures, 1u);
-        si_formats[0] = viz::MultiPlaneFormat::kYUVA_420_TRIPLANAR;
+        si_formats[0] = viz::MultiPlaneFormat::kNV12A;
         return VideoFrameResourceType::RGBA;
       }
 
@@ -447,7 +447,7 @@ class VideoResourceUpdater::SoftwarePlaneResource
     // Allocate SharedMemory and notify display compositor of the allocation.
     base::MappedReadOnlyRegion shm =
         viz::bitmap_allocation::AllocateSharedBitmap(
-            resource_size(), viz::ResourceFormat::RGBA_8888);
+            resource_size(), viz::SinglePlaneFormat::kRGBA_8888);
     shared_mapping_ = std::move(shm.mapping);
     shared_bitmap_reporter_->DidAllocateSharedBitmap(std::move(shm.region),
                                                      shared_bitmap_id_);
@@ -537,7 +537,8 @@ class VideoResourceUpdater::HardwarePlaneResource
     auto* sii = SharedImageInterface();
     mailbox_ = sii->CreateSharedImage(
         format, size, color_space, kTopLeft_GrSurfaceOrigin,
-        kPremul_SkAlphaType, shared_image_usage, gpu::kNullSurfaceHandle);
+        kPremul_SkAlphaType, shared_image_usage, "VideoResourceUpdater",
+        gpu::kNullSurfaceHandle);
     ContextGL()->WaitSyncTokenCHROMIUM(
         sii->GenUnverifiedSyncToken().GetConstData());
   }
@@ -1413,8 +1414,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         for (int row = 0; row < resource_size_pixels.height(); ++row) {
           uint16_t* dst = reinterpret_cast<uint16_t*>(
               &upload_pixels_[upload_image_stride * row]);
-          const uint16_t* src = reinterpret_cast<uint16_t*>(
-              video_frame->writable_data(i) + (video_stride_bytes * row));
+          const uint16_t* src = reinterpret_cast<const uint16_t*>(
+              video_frame->data(i) + (video_stride_bytes * row));
           half_float_maker->MakeHalfFloats(src, bytes_per_row / 2, dst);
         }
       } else if (needs_bit_downshifting) {
@@ -1422,7 +1423,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
                plane_si_format == viz::SinglePlaneFormat::kR_8);
         const int scale = 0x10000 >> (bits_per_channel - 8);
         libyuv::Convert16To8Plane(
-            reinterpret_cast<uint16_t*>(video_frame->writable_data(i)),
+            reinterpret_cast<const uint16_t*>(video_frame->data(i)),
             video_stride_bytes / 2, upload_pixels_.get(), upload_image_stride,
             scale, bytes_per_row, resource_size_pixels.height());
       } else {

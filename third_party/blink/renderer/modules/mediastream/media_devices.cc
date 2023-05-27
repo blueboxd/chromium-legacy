@@ -365,7 +365,8 @@ MediaDevices* MediaDevices::mediaDevices(Navigator& navigator) {
 }
 
 MediaDevices::MediaDevices(Navigator& navigator)
-    : Supplement<Navigator>(navigator),
+    : ActiveScriptWrappable<MediaDevices>({}),
+      Supplement<Navigator>(navigator),
       ExecutionContextLifecycleObserver(navigator.DomWindow()),
       stopped_(false),
       dispatcher_host_(navigator.GetExecutionContext()),
@@ -514,6 +515,33 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
 
   request->Start();
   return promise;
+}
+
+ScriptPromise MediaDevices::getAllScreensMedia(
+    ScriptState* script_state,
+    ExceptionState& exception_state) {
+  // This timeout of base::Seconds(6) is an initial value and based on the data
+  // in Media.MediaDevices.GetAllScreensMedia.Latency, it should be iterated
+  // upon.
+  auto* resolver = MakeGarbageCollected<
+      ScriptPromiseResolverWithTracker<UserMediaRequestResult>>(
+      script_state, "Media.MediaDevices.GetAllScreensMedia", base::Seconds(6));
+
+  ExecutionContext* const context = GetExecutionContext();
+  if (!context) {
+    resolver->RecordAndThrowDOMException(
+        exception_state, DOMExceptionCode::kInvalidStateError,
+        "No media device client available; is this a detached window?",
+        UserMediaRequestResult::kContextDestroyed);
+    return ScriptPromise();
+  }
+
+  MediaStreamConstraints* constraints = MediaStreamConstraints::Create();
+  constraints->setVideo(
+      MakeGarbageCollected<V8UnionBooleanOrMediaTrackConstraints>(true));
+  constraints->setAutoSelectAllScreens(true);
+  return SendUserMediaRequest(UserMediaRequestType::kDisplayMediaSet, resolver,
+                              constraints, exception_state);
 }
 
 ScriptPromise MediaDevices::getDisplayMediaSet(
@@ -707,10 +735,9 @@ ScriptPromise MediaDevices::ProduceCropTarget(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!element || !element->IsSupportedByRegionCapture()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Support for this subtype is not yet implemented.");
+  if (!element) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      "Invalid element.");
     return ScriptPromise();
   }
 

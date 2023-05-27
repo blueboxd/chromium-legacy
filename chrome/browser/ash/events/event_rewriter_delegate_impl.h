@@ -6,7 +6,8 @@
 #define CHROME_BROWSER_ASH_EVENTS_EVENT_REWRITER_DELEGATE_IMPL_H_
 
 #include "ash/public/cpp/input_device_settings_controller.h"
-#include "ui/chromeos/events/event_rewriter_chromeos.h"
+#include "base/memory/raw_ptr.h"
+#include "ui/events/ash/event_rewriter_ash.h"
 #include "ui/wm/public/activation_client.h"
 
 class PrefService;
@@ -15,7 +16,7 @@ namespace ash {
 
 class DeprecationNotificationController;
 
-class EventRewriterDelegateImpl : public ui::EventRewriterChromeOS::Delegate {
+class EventRewriterDelegateImpl : public ui::EventRewriterAsh::Delegate {
  public:
   explicit EventRewriterDelegateImpl(wm::ActivationClient* activation_client);
   EventRewriterDelegateImpl(
@@ -33,7 +34,7 @@ class EventRewriterDelegateImpl : public ui::EventRewriterChromeOS::Delegate {
     pref_service_for_testing_ = pref_service;
   }
 
-  // ui::EventRewriterChromeOS::Delegate:
+  // ui::EventRewriterAsh::Delegate:
   bool RewriteModifierKeys() override;
   bool RewriteMetaTopRowKeyComboEvents(int device_id) const override;
   absl::optional<ui::mojom::ModifierKey> GetKeyboardRemappedModifierValue(
@@ -52,9 +53,10 @@ class EventRewriterDelegateImpl : public ui::EventRewriterChromeOS::Delegate {
  private:
   const PrefService* GetPrefService() const;
 
-  const PrefService* pref_service_for_testing_;
+  raw_ptr<const PrefService, ExperimentalAsh> pref_service_for_testing_;
 
-  wm::ActivationClient* activation_client_;
+  raw_ptr<wm::ActivationClient, DanglingUntriaged | ExperimentalAsh>
+      activation_client_;
 
   // Handles showing notifications when deprecated event rewrites occur.
   std::unique_ptr<DeprecationNotificationController> deprecation_controller_;

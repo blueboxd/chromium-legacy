@@ -17,7 +17,8 @@ import {ACMatchClassification, AutocompleteMatch, NavigationPredictor, PageHandl
 import {RealboxBrowserProxy} from './realbox_browser_proxy.js';
 import {RealboxIconElement} from './realbox_icon.js';
 import {getTemplate} from './realbox_match.html.js';
-import {decodeString16, mojoTimeTicks} from './utils.js';
+import {decodeString16, mojoTimeTicks, sideTypeToClass} from './utils.js';
+
 
 // clang-format off
 /**
@@ -110,6 +111,13 @@ export class RealboxMatchElement extends PolymerElement {
 
       sideType: Number,
 
+      /** String representation of `sideType` to use in CSS. */
+      sideTypeClass_: {
+        type: String,
+        computed: 'computeSideTypeClass_(sideType)',
+        reflectToAttribute: true,
+      },
+
       //========================================================================
       // Private properties
       //========================================================================
@@ -167,6 +175,7 @@ export class RealboxMatchElement extends PolymerElement {
   private removeButtonAriaLabel_: string;
   private removeButtonTitle_: string;
   private separatorText_: string;
+  private sideTypeClass_: string;
   private tailSuggestPrefix_: string;
 
   private pageHandler_: PageHandlerInterface;
@@ -194,7 +203,7 @@ export class RealboxMatchElement extends PolymerElement {
    */
   private executeAction_(e: MouseEvent|KeyboardEvent) {
     this.pageHandler_.executeAction(
-        this.matchIndex, mojoTimeTicks(Date.now()),
+        this.matchIndex, this.match.destinationUrl, mojoTimeTicks(Date.now()),
         (e as MouseEvent).button || 0, e.altKey, e.ctrlKey, e.metaKey,
         e.shiftKey);
   }
@@ -238,7 +247,8 @@ export class RealboxMatchElement extends PolymerElement {
 
   private onMatchMouseDown_() {
     this.pageHandler_.onNavigationLikely(
-        this.matchIndex, NavigationPredictor.kMouseDown);
+        this.matchIndex, this.match.destinationUrl,
+        NavigationPredictor.kMouseDown);
   }
 
   private onRemoveButtonClick_(e: MouseEvent) {
@@ -359,6 +369,10 @@ export class RealboxMatchElement extends PolymerElement {
     return this.match && decodeString16(this.match.description) ?
         loadTimeData.getString('realboxSeparator') :
         '';
+  }
+
+  private computeSideTypeClass_(): string {
+    return sideTypeToClass(this.sideType);
   }
 
   /**

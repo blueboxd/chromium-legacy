@@ -14,7 +14,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import android.os.Handler;
@@ -40,16 +39,15 @@ import org.robolectric.shadows.ShadowPausedSystemClock;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.jank_tracker.DummyJankTracker;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteMediator.EditSessionState;
+import org.chromium.chrome.browser.omnibox.suggestions.base.HistoryClustersProcessor;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -63,6 +61,7 @@ import org.chromium.components.metrics.OmniboxEventProtos.OmniboxEventProto.Page
 import org.chromium.components.omnibox.AutocompleteMatch;
 import org.chromium.components.omnibox.AutocompleteMatchBuilder;
 import org.chromium.components.omnibox.AutocompleteResult;
+import org.chromium.components.omnibox.OmniboxSuggestionType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -104,6 +103,8 @@ public class AutocompleteMediatorUnitTest {
     private @Mock WindowAndroid mMockWindowAndroid;
     private @Mock ActionChipsDelegate mActionChipsDelegate;
     private @Mock LargeIconBridge.Natives mLargeIconBridgeJniMock;
+    @Mock
+    private HistoryClustersProcessor.OpenHistoryClustersDelegate mOpenHistoryClustersDelegate;
 
     private PropertyModel mListModel;
     private AutocompleteMediator mMediator;
@@ -131,7 +132,7 @@ public class AutocompleteMediatorUnitTest {
                     mAutocompleteDelegate, mTextStateProvider, mListModel,
                     new Handler(), () -> mModalDialogManager, null, null,
                     mLocationBarDataProvider, tab -> {}, mTabWindowManagerSupplier, url -> false,
-                    new DummyJankTracker(), mActionChipsDelegate);
+                    mActionChipsDelegate, mOpenHistoryClustersDelegate);
             mMediator.setAutocompleteProfile(mProfile);
         });
         // clang-format on
@@ -139,8 +140,6 @@ public class AutocompleteMediatorUnitTest {
                 mMockProcessor);
         mMediator.getDropdownItemViewInfoListBuilderForTest().setHeaderProcessorForTest(
                 mMockHeaderProcessor);
-        mMediator.setSuggestionVisibilityState(
-                AutocompleteMediator.SuggestionVisibilityState.ALLOWED);
 
         doReturn(SUGGESTION_MIN_HEIGHT).when(mMockProcessor).getMinimumViewHeight();
         doReturn(true).when(mMockProcessor).doesProcessSuggestion(any(), anyInt());
@@ -504,14 +503,16 @@ public class AutocompleteMediatorUnitTest {
     @SmallTest
     public void onSuggestionsReceived_sendsOnSuggestionsChanged() {
         mMediator.onNativeInitialized();
+        mMediator.onUrlFocusChange(true);
         mMediator.onSuggestionsReceived(
                 AutocompleteResult.fromCache(mSuggestionsList, null), "inline_autocomplete", true);
         verify(mAutocompleteDelegate).onSuggestionsChanged("inline_autocomplete", true);
 
-        // Ensure duplicate requests are suppressed.
+        // Ensure duplicate requests are not suppressed, to preserve the
+        // relationship between Native and Java AutocompleteResult objects.
         mMediator.onSuggestionsReceived(
                 AutocompleteResult.fromCache(mSuggestionsList, null), "inline_autocomplete2", true);
-        verifyNoMoreInteractions(mAutocompleteDelegate);
+        verify(mAutocompleteDelegate).onSuggestionsChanged("inline_autocomplete", true);
     }
 
     @Test

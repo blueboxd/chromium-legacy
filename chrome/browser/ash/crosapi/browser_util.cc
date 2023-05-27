@@ -427,11 +427,6 @@ bool IsLacrosEnabledForMigration(const User* user,
 }
 
 bool IsProfileMigrationEnabled() {
-  if (base::FeatureList::IsEnabled(
-          ash::features::kLacrosProfileMigrationForceOff)) {
-    return false;
-  }
-
   const UserManager* user_manager = UserManager::Get();
   if (!user_manager) {
     return false;
@@ -442,7 +437,16 @@ bool IsProfileMigrationEnabled() {
     return false;
   }
 
-  return IsLacrosEnabledForMigration(user, PolicyInitState::kAfterInit);
+  return IsProfileMigrationEnabledWithUserAndPolicyInitState(
+      user, PolicyInitState::kAfterInit);
+}
+
+bool IsProfileMigrationEnabledWithUserAndPolicyInitState(
+    const user_manager::User* user,
+    PolicyInitState policy_init_state) {
+  return !base::FeatureList::IsEnabled(
+             ash::features::kLacrosProfileMigrationForceOff) &&
+         !IsAshWebBrowserEnabledForMigration(user, policy_init_state);
 }
 
 bool IsProfileMigrationAvailable() {
@@ -746,13 +750,14 @@ bool DoesMetadataSupportNewAccountManager(base::Value* metadata) {
   if (!metadata)
     return false;
 
-  base::Value* version = metadata->FindPath("content.version");
-  if (!version || !version->is_string())
+  std::string* version_str =
+      metadata->GetDict().FindStringByDottedPath("content.version");
+  if (!version_str) {
     return false;
+  }
 
-  std::string version_str = version->GetString();
   std::vector<std::string> versions_str = base::SplitString(
-      version_str, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      *version_str, ".", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (versions_str.size() != 4)
     return false;
 
@@ -953,6 +958,9 @@ Channel GetLacrosSelectionUpdateChannel(LacrosSelection selection) {
       // For 'stateful' Lacros directly check the channel of stateful-lacros
       // that the user is on.
       return GetStatefulLacrosChannel();
+    case LacrosSelection::kDeployedLocally:
+      // For locally deployed Lacros there is no channel so return unknown.
+      return Channel::UNKNOWN;
   }
 }
 
@@ -1051,7 +1059,7 @@ bool IsProfileMigrationCompletedForUser(PrefService* local_state,
 
   const base::Value* value = pref->GetValue();
   DCHECK(value->is_dict());
-  absl::optional<bool> is_completed = value->FindBoolKey(user_id_hash);
+  absl::optional<bool> is_completed = value->GetDict().FindBool(user_id_hash);
 
   // If migration was skipped or failed, disable lacros.
   return is_completed.value_or(false);

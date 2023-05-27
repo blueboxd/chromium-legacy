@@ -6,14 +6,11 @@
 
 #include "ash/assistant/test/assistant_ash_test_base.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
-#include "base/test/scoped_feature_list.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
@@ -36,15 +33,6 @@ SkColor GetCenterColor(views::Separator* separator) {
 class AssistantMainStageTest : public AssistantAshTestBase {
  public:
   // AssistantAshTestBase:
-  void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{},
-        /*disabled_features=*/{chromeos::features::kDarkLightMode,
-                               features::kNotificationsRefresh});
-
-    AssistantAshTestBase::SetUp();
-  }
-
   void TearDown() override {
     // NativeTheme instance will be re-used across test cases. Make sure that a
     // test case ends with setting ShouldUseDarkColors to false.
@@ -53,14 +41,9 @@ class AssistantMainStageTest : public AssistantAshTestBase {
 
     AssistantAshTestBase::TearDown();
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(AssistantMainStageTest, DarkAndLightTheme) {
-  base::test::ScopedFeatureList scoped_feature_list(
-      chromeos::features::kDarkLightMode);
   auto* dark_light_mode_controller = DarkLightModeControllerImpl::Get();
   dark_light_mode_controller->OnActiveUserPrefServiceChanged(
       Shell::Get()->session_controller()->GetActivePrefService());

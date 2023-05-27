@@ -34,13 +34,8 @@ void RecordAboutThisSiteInteraction(AboutThisSiteInteraction interaction) {
 
 AboutThisSiteService::AboutThisSiteService(
     std::unique_ptr<Client> client,
-    TemplateURLService* template_url_service,
-    bool allow_missing_description,
-    bool allow_non_msbb_users)
-    : client_(std::move(client)),
-      template_url_service_(template_url_service),
-      allow_missing_description_(allow_missing_description),
-      allow_non_msbb_users_(allow_non_msbb_users) {}
+    TemplateURLService* template_url_service)
+    : client_(std::move(client)), template_url_service_(template_url_service) {}
 
 absl::optional<proto::SiteInfo> AboutThisSiteService::GetAboutThisSiteInfo(
     const GURL& url,
@@ -58,19 +53,10 @@ absl::optional<proto::SiteInfo> AboutThisSiteService::GetAboutThisSiteInfo(
     return absl::nullopt;
   }
 
-  if (!client_->IsOptimizationGuideAllowed() && !allow_non_msbb_users_) {
+  if (!client_->IsOptimizationGuideAllowed()) {
     RecordAboutThisSiteInteraction(
         AboutThisSiteInteraction::kNotShownOptimizationGuideNotAllowed);
     return absl::nullopt;
-  }
-
-  if (!client_->IsOptimizationGuideAllowed() && allow_non_msbb_users_) {
-    RecordAboutThisSiteInteraction(AboutThisSiteInteraction::kShownWithoutMsbb);
-
-    proto::SiteInfo site_info;
-    proto::MoreAbout* more_about = site_info.mutable_more_about();
-    more_about->set_url(CreateMoreAboutUrl(url).spec());
-    return site_info;
   }
 
   optimization_guide::OptimizationMetadata metadata;
@@ -82,7 +68,7 @@ absl::optional<proto::SiteInfo> AboutThisSiteService::GetAboutThisSiteInfo(
       decision == OptimizationGuideDecision::kUnknown
           ? AboutThisSiteStatus::kUnknown
           : about_this_site_validation::ValidateMetadata(
-                about_this_site_metadata, allow_missing_description_);
+                about_this_site_metadata);
   base::UmaHistogramEnumeration("Security.PageInfo.AboutThisSiteStatus",
                                 status);
   RecordAboutThisSiteInteraction(
@@ -112,15 +98,6 @@ absl::optional<proto::SiteInfo> AboutThisSiteService::GetAboutThisSiteInfo(
   if (kShowSampleContent.Get()) {
     page_info::proto::SiteInfo site_info;
     if (url == GURL("https://example.com")) {
-      if (!allow_missing_description_) {
-        auto* description = site_info.mutable_description();
-        description->set_name("Example website");
-        description->set_subtitle("Website");
-        description->set_description(
-            "A domain used in illustrative examples in documents.");
-        description->mutable_source()->set_url("https://example.com");
-        description->mutable_source()->set_label("Example source");
-      }
       site_info.mutable_more_about()->set_url(
           "https://example.com/#more-about");
       return site_info;
@@ -141,18 +118,6 @@ absl::optional<proto::SiteInfo> AboutThisSiteService::GetAboutThisSiteInfo(
   }
 
   return absl::nullopt;
-}
-
-// TODO(crbug.com/1412109): Remove this method upon cleaning non-msbb support
-// static
-GURL AboutThisSiteService::CreateMoreAboutUrl(const GURL& url) {
-  GURL more_about_url = GURL("https://www.google.com/search");
-  more_about_url =
-      net::AppendQueryParameter(more_about_url, "q", "About " + url.spec());
-  more_about_url = net::AppendQueryParameter(more_about_url, "tbm", "ilp");
-  more_about_url = net::AppendQueryParameter(more_about_url, "ctx", "chrome");
-
-  return more_about_url;
 }
 
 // static

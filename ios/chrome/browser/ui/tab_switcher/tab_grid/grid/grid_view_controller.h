@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_theme.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_count_consumer.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_info_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
 
@@ -86,14 +86,21 @@
     (GridViewController*)gridViewController;
 
 // Tells the delegate that the inactive tabs button was tapped in
-// `gridViewController`, i.e., there was an intention to show inactive tabs.
+// `gridViewController`, i.e., there was an intention to show inactive tabs (in
+// TabGridModeNormal).
 - (void)didTapInactiveTabsButtonInGridViewController:
+    (GridViewController*)gridViewController;
+
+// Tells the delegate that the inactive tabs settings link was tapped in
+// `gridViewController`, i.e., there was an intention to show inactive tabs
+// settings (in TabGridModeInactive).
+- (void)didTapInactiveTabsSettingsLinkInGridViewController:
     (GridViewController*)gridViewController;
 
 @end
 
 // A view controller that contains a grid of items.
-@interface GridViewController : UIViewController <InactiveTabsCountConsumer,
+@interface GridViewController : UIViewController <InactiveTabsInfoConsumer,
                                                   IncognitoReauthConsumer,
                                                   LayoutSwitcher,
                                                   TabCollectionConsumer,
@@ -133,9 +140,6 @@
 // YES if the selected cell is visible in the grid.
 @property(nonatomic, readonly, getter=isSelectedCellVisible)
     BOOL selectedCellVisible;
-// YES if the grid should show cell selection updates. This would be set to NO,
-// for example, if the grid was about to be transitioned out of.
-@property(nonatomic, assign) BOOL showsSelectionUpdates;
 // The fraction of the last item of the grid that is visible.
 @property(nonatomic, assign, readonly) CGFloat fractionVisibleOfLastItem;
 // YES when the current contents are hidden from the user before a successful

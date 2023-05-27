@@ -12,7 +12,9 @@
 #include "ash/ambient/ambient_view_delegate_impl.h"
 #include "ash/ambient/model/ambient_backend_model.h"
 #include "ash/ambient/ui/ambient_background_image_view.h"
+#include "ash/ambient/ui/ambient_slideshow_peripheral_ui.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
+#include "ash/ambient/ui/jitter_calculator.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "base/functional/bind.h"
@@ -37,19 +39,15 @@ void ReportSmoothness(int value) {
   base::UmaHistogramPercentage(kPhotoTransitionSmoothness, value);
 }
 
-constexpr JitterCalculator::Config kGlanceableInfoJitterConfig = {
-    /*step_size=*/5,
-    /*x_min_translation=*/0,
-    /*x_max_translation=*/20,
-    /*y_min_translation=*/-20,
-    /*y_max_translation=*/0};
-
 }  // namespace
 
 // PhotoView ------------------------------------------------------------------
-PhotoView::PhotoView(AmbientViewDelegateImpl* delegate)
-    : delegate_(delegate),
-      glanceable_info_jitter_calculator_(kGlanceableInfoJitterConfig) {
+PhotoView::PhotoView(AmbientViewDelegateImpl* delegate,
+                     bool peripheral_ui_visible)
+    : peripheral_ui_visible_(peripheral_ui_visible),
+      delegate_(delegate),
+      glanceable_info_jitter_calculator_(
+          AmbientSlideshowPeripheralUi::CreateDefaultJitterCalculator()) {
   DCHECK(delegate_);
   SetID(AmbientViewID::kAmbientPhotoView);
   Init();
@@ -84,10 +82,11 @@ void PhotoView::Init() {
     // transitioning between AmbientBackgroundImageViews in
     // StartTransitionAnimation().
     image_view = AddChildView(std::make_unique<AmbientBackgroundImageView>(
-        delegate_, &glanceable_info_jitter_calculator_));
+        delegate_, glanceable_info_jitter_calculator_.get()));
     // Each image view will be animated on its own layer.
     image_view->SetPaintToLayer();
     image_view->layer()->SetFillsBoundsOpaquely(false);
+    image_view->SetPeripheralUiVisibility(peripheral_ui_visible_);
   }
 
   // Hides one image view initially for fade in animation.
@@ -183,7 +182,7 @@ gfx::ImageSkia PhotoView::GetVisibleImageForTesting() {
 }
 
 JitterCalculator* PhotoView::GetJitterCalculatorForTesting() {
-  return &glanceable_info_jitter_calculator_;
+  return glanceable_info_jitter_calculator_.get();
 }
 
 BEGIN_METADATA(PhotoView, views::View)

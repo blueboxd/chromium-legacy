@@ -1789,33 +1789,13 @@ TEST_F(SiteInstanceTest, CreateForUrlInfo) {
 }
 
 TEST_F(SiteInstanceTest, CreateForGuest) {
-  const GURL kGuestUrl(std::string(kGuestScheme) + "://abc123/path");
-
-  // Verify that a SiteInstance created with CreateForUrlInfo() is not
-  // considered a <webview> guest and has the path removed for the site URL like
-  // any other standard URL.
-  auto instance1 = SiteInstanceImpl::CreateForTesting(context(), kGuestUrl);
-  EXPECT_FALSE(instance1->IsGuest());
-  if (AreDefaultSiteInstancesEnabled()) {
-    EXPECT_TRUE(instance1->IsDefaultSiteInstance());
-  } else {
-    EXPECT_NE(kGuestUrl, instance1->GetSiteURL());
-    EXPECT_EQ(GURL(std::string(kGuestScheme) + "://abc123/"),
-              instance1->GetSiteURL());
-  }
-
   // Verify that a SiteInstance created with CreateForGuest() is considered
-  // a <webview> guest.  Without site isolation for guests, its site URL
-  // should reflect the guest's StoragePartition configuration.
+  // a <webview> guest and has the correct StoragePartition.
   const StoragePartitionConfig kGuestConfig = StoragePartitionConfig::Create(
       context(), "appid", "partition_name", /*in_memory=*/false);
-  const GURL kGuestSiteUrl(std::string(kGuestScheme) +
-                           "://appid/persist?partition_name#nofallback");
   auto instance2 = SiteInstanceImpl::CreateForGuest(context(), kGuestConfig);
   EXPECT_TRUE(instance2->IsGuest());
   EXPECT_EQ(instance2->GetStoragePartitionConfig(), kGuestConfig);
-  if (!SiteIsolationPolicy::IsSiteIsolationForGuestsEnabled())
-    EXPECT_EQ(kGuestSiteUrl, instance2->GetSiteURL());
 }
 
 // TODO(https://crbug.com/1377466): Test is flaky for android builders.
@@ -2048,6 +2028,39 @@ TEST_F(SiteInstanceTest, SiteInfoDetermineProcessLock_OriginAgentCluster) {
       SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled());
   EXPECT_EQ(foo_url, site_info_for_a_foo.process_lock_url());
   EXPECT_FALSE(site_info_for_a_foo.requires_origin_keyed_process());
+}
+
+TEST_F(SiteInstanceTest, ShouldAssignSiteForAboutBlank) {
+  const GURL about_blank(url::kAboutBlankURL);
+  url::Origin example_origin =
+      url::Origin::Create(GURL("https://www.example.com"));
+  url::Origin opaque_with_precursor_origin =
+      example_origin.DeriveNewOpaqueOrigin();
+  url::Origin opaque_unique_origin;
+
+  UrlInfo blank_no_origin = UrlInfo(UrlInfoInit(about_blank));
+  UrlInfo blank_with_normal_origin(
+      UrlInfoInit(about_blank).WithOrigin(example_origin));
+  UrlInfo blank_with_opaque_origin_and_precursor(
+      UrlInfoInit(about_blank).WithOrigin(opaque_with_precursor_origin));
+  UrlInfo blank_with_opaque_unique_origin(
+      UrlInfo(UrlInfoInit(about_blank).WithOrigin(opaque_unique_origin)));
+
+  // about:blank with no associated origin should not assign a site.
+  EXPECT_FALSE(SiteInstanceImpl::ShouldAssignSiteForUrlInfo(blank_no_origin));
+
+  // about:blank with an origin *should* assign a site.
+  EXPECT_TRUE(
+      SiteInstanceImpl::ShouldAssignSiteForUrlInfo(blank_with_normal_origin));
+
+  // Similarly, about:blank with an opaque origin that has a valid precursor
+  // origin also needs to assign a site.
+  EXPECT_TRUE(SiteInstanceImpl::ShouldAssignSiteForUrlInfo(
+      blank_with_opaque_origin_and_precursor));
+
+  // about:blank with an opaque unique origin does not need to assign a site.
+  EXPECT_FALSE(SiteInstanceImpl::ShouldAssignSiteForUrlInfo(
+      blank_with_opaque_unique_origin));
 }
 
 TEST_F(SiteInstanceTest, CoopRelatedSiteInstanceIdentity) {

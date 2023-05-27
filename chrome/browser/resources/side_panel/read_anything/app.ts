@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://read-anything-side-panel.top-chrome/shared/sp_empty_state.js';
-import 'chrome://resources/cr_elements/cr_hidden_style.css.js';
+import '//read-anything-side-panel.top-chrome/shared/sp_empty_state.js';
+import '//resources/cr_elements/cr_hidden_style.css.js';
 import '../strings.m.js';
 
-import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
-import {rgbToSkColor, skColorToRgba} from 'chrome://resources/js/color_utils.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
-import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {WebUiListenerMixin} from '//resources/cr_elements/web_ui_listener_mixin.js';
+import {assert} from '//resources/js/assert_ts.js';
+import {rgbToSkColor, skColorToRgba} from '//resources/js/color_utils.js';
+import {loadTimeData} from '//resources/js/load_time_data.js';
+import {SkColor} from '//resources/mojo/skia/public/mojom/skcolor.mojom-webui.js';
+import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './app.html.js';
 
@@ -26,19 +26,25 @@ const darkThemeBackgroundSkColor =
     rgbToSkColor(style.getPropertyValue('--google-grey-900-rgb'));
 const lightThemeBackgroundSkColor =
     rgbToSkColor(style.getPropertyValue('--google-grey-50-rgb'));
+const yellowThemeBackgroundSkColor =
+    rgbToSkColor(style.getPropertyValue('--google-yellow-200-rgb'));
 const darkThemeEmptyStateBodyColor = 'var(--google-grey-500)';
 const defaultThemeEmptyStateBodyColor = 'var(--google-grey-700)';
+const darkThemeLinkColors: LinkColor = {
+  default: 'var(--google-blue-300)',
+  visited: 'var(--google-purple-200)',
+};
 const defaultLinkColors: LinkColor = {
+  default: 'var(--google-blue-900)',
+  visited: 'var(--google-purple-900)',
+};
+const lightThemeLinkColors: LinkColor = {
   default: 'var(--google-blue-800)',
   visited: 'var(--google-purple-900)',
 };
-const darkThemeLinkColors: LinkColor = {
-  default: 'var(--google-blue-300)',
-  visited: 'var(--google-purple-100)',
-};
-const lightThemeSelectionColor = 'var(--google-yellow-100)';
-const darkThemeSelectionColor = 'var(--google-blue-300)';
-const defaultThemeSelctionColor = 'var(--google-blue-100)';
+const darkThemeSelectionColor = 'var(--google-blue-200)';
+const defaultSelectionColor = 'var(--google-yellow-100)';
+const yellowThemeSelectionColor = 'var(--google-blue-100)';
 
 // A two-way map where each key is unique and each value is unique. The keys are
 // DOM nodes and the values are numbers, representing AXNodeIDs.
@@ -220,9 +226,9 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   showLoading() {
-    this.emptyStateImagePath_ = 'chrome://resources/images/throbber_small.svg';
+    this.emptyStateImagePath_ = '//resources/images/throbber_small.svg';
     this.emptyStateDarkImagePath_ =
-        'chrome://resources/images/throbber_small_dark.svg';
+        '//resources/images/throbber_small_dark.svg';
     this.emptyStateHeading_ =
         loadTimeData.getString('readAnythingLoadingMessage');
     this.emptyStateSubheading_ = '';
@@ -308,8 +314,14 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   private getLinkColor_(backgroundSkColor: SkColor): LinkColor {
-    const isDark = backgroundSkColor.value === darkThemeBackgroundSkColor.value;
-    return isDark ? darkThemeLinkColors : defaultLinkColors;
+    switch (backgroundSkColor.value) {
+      case darkThemeBackgroundSkColor.value:
+        return darkThemeLinkColors;
+      case lightThemeBackgroundSkColor.value:
+        return lightThemeLinkColors;
+      default:
+        return defaultLinkColors;
+    }
   }
 
   private getEmptyStateBodyColor_(backgroundSkColor: SkColor): string {
@@ -320,12 +332,12 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
 
   private getSelectionColor_(backgroundSkColor: SkColor): string {
     switch (backgroundSkColor.value) {
-      case lightThemeBackgroundSkColor.value:
-        return lightThemeSelectionColor;
       case darkThemeBackgroundSkColor.value:
         return darkThemeSelectionColor;
+      case yellowThemeBackgroundSkColor.value:
+        return yellowThemeSelectionColor;
       default:
-        return defaultThemeSelctionColor;
+        return defaultSelectionColor;
     }
   }
 

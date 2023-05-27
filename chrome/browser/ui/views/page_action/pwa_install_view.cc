@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/user_education/common/feature_promo_controller.h"
@@ -90,6 +92,10 @@ void PwaInstallView::UpdateImpl() {
     SetVisible(false);
     return;
   }
+
+  SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_OMNIBOX_PWA_INSTALL_ICON_TOOLTIP,
+      webapps::AppBannerManager::GetInstallableWebAppName(web_contents)));
 
   auto* manager = webapps::AppBannerManager::FromWebContents(web_contents);
   // May not be present e.g. in incognito mode.
@@ -174,16 +180,9 @@ views::BubbleDialogDelegate* PwaInstallView::GetBubble() const {
 }
 
 const gfx::VectorIcon& PwaInstallView::GetVectorIcon() const {
-  return omnibox::kInstallDesktopIcon;
-}
-
-std::u16string PwaInstallView::GetTextForTooltipAndAccessibleName() const {
-  content::WebContents* web_contents = GetWebContents();
-  if (!web_contents)
-    return std::u16string();
-  return l10n_util::GetStringFUTF16(
-      IDS_OMNIBOX_PWA_INSTALL_ICON_TOOLTIP,
-      webapps::AppBannerManager::GetInstallableWebAppName(web_contents));
+  return OmniboxFieldTrial::IsChromeRefreshIconsEnabled()
+             ? kInstallDesktopChromeRefreshIcon
+             : omnibox::kInstallDesktopIcon;
 }
 
 bool PwaInstallView::ShouldShowIph(content::WebContents* web_contents,

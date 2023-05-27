@@ -12,11 +12,11 @@ import 'chrome://resources/cr_elements/policy/cr_policy_pref_indicator.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import './os_search_selection_dialog.js';
-import '../../controls/extension_controlled_indicator.js';
+import '/shared/settings/controls/extension_controlled_indicator.js';
 import '../../controls/controlled_button.js';
 import '../../controls/settings_toggle_button.js';
-import '../../prefs/prefs.js';
-import '../../prefs/pref_util.js';
+import 'chrome://resources/cr_components/settings_prefs/prefs.js';
+import 'chrome://resources/cr_components/settings_prefs/pref_util.js';
 import '../../settings_shared.css.js';
 import '../../settings_vars.css.js';
 

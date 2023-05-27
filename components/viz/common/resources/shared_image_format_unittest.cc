@@ -32,7 +32,7 @@ class SharedImageFormatTest : public testing::Test {
 
 TEST_F(SharedImageFormatTest, MultiPlaneYUVBiplanar8bit) {
   // 8-bit 4:2:0 Y_UV biplanar format (YUV_420_BIPLANAR)
-  SharedImageFormat format = MultiPlaneFormat::kYUV_420_BIPLANAR;
+  SharedImageFormat format = MultiPlaneFormat::kNV12;
   // Test for NumChannelsInPlane
   std::vector<int> expected_channels = {1, 2};
   TestNumChannelsInPlane(expected_channels, format);
@@ -46,7 +46,7 @@ TEST_F(SharedImageFormatTest, MultiPlaneYUVBiplanar8bit) {
 
 TEST_F(SharedImageFormatTest, MultiPlaneYVU) {
   // 8-bit 4:2:0 Y_V_U format (YVU_420)
-  SharedImageFormat format = MultiPlaneFormat::kYVU_420;
+  SharedImageFormat format = MultiPlaneFormat::kYV12;
   // Test for NumChannelsInPlane
   std::vector<int> expected_channels = {1, 1, 1};
   TestNumChannelsInPlane(expected_channels, format);
@@ -149,21 +149,36 @@ TEST_F(SharedImageFormatTest, SinglePlaneETC1) {
   EXPECT_EQ(format.EstimatedSizeInBytes(kOddSize), 45u);
 }
 
-TEST_F(SharedImageFormatTest, SinglePlaneP010) {
-  auto format = SharedImageFormat::SinglePlane(ResourceFormat::P010);
+TEST_F(SharedImageFormatTest, LegacyMultiPlaneP010) {
+  auto format = LegacyMultiPlaneFormat::kP010;
   EXPECT_EQ(1, format.NumberOfPlanes());
 
   EXPECT_EQ(format.EstimatedSizeInBytes(kDefaultSize), 30000u);
   EXPECT_EQ(format.EstimatedSizeInBytes(kOddSize), 262u);
 }
 
-TEST_F(SharedImageFormatTest, SinglePlaneYUV_420_BIPLANAR) {
-  auto format =
-      SharedImageFormat::SinglePlane(ResourceFormat::YUV_420_BIPLANAR);
+TEST_F(SharedImageFormatTest, LegacyMultiPlaneYV12) {
+  auto format = LegacyMultiPlaneFormat::kYV12;
   EXPECT_EQ(1, format.NumberOfPlanes());
 
   EXPECT_EQ(format.EstimatedSizeInBytes(kDefaultSize), 15000u);
   EXPECT_EQ(format.EstimatedSizeInBytes(kOddSize), 131u);
+}
+
+TEST_F(SharedImageFormatTest, LegacyMultiPlaneNV12) {
+  auto format = LegacyMultiPlaneFormat::kNV12;
+  EXPECT_EQ(1, format.NumberOfPlanes());
+
+  EXPECT_EQ(format.EstimatedSizeInBytes(kDefaultSize), 15000u);
+  EXPECT_EQ(format.EstimatedSizeInBytes(kOddSize), 131u);
+}
+
+TEST_F(SharedImageFormatTest, LegacyMultiPlaneNV12A) {
+  auto format = LegacyMultiPlaneFormat::kNV12A;
+  EXPECT_EQ(1, format.NumberOfPlanes());
+
+  EXPECT_EQ(format.EstimatedSizeInBytes(kDefaultSize), 25000u);
+  EXPECT_EQ(format.EstimatedSizeInBytes(kOddSize), 212u);
 }
 
 TEST_F(SharedImageFormatTest, EstimatedSizeInBytesOverflow) {

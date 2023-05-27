@@ -5,9 +5,12 @@
 #include "third_party/blink/renderer/core/navigation_api/navigate_event.h"
 
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-shared.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigate_event_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_intercept_handler.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_navigation_intercept_options.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -15,14 +18,35 @@
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/navigation_api/navigation_destination.h"
-#include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
+
+enum class ResolveType { kFulfill, kReject };
+class NavigateEvent::Reaction final : public ScriptFunction::Callable {
+ public:
+  Reaction(NavigateEvent* navigate_event, ResolveType resolve_type)
+      : navigate_event_(navigate_event), resolve_type_(resolve_type) {}
+  void Trace(Visitor* visitor) const final {
+    ScriptFunction::Callable::Trace(visitor);
+    visitor->Trace(navigate_event_);
+  }
+  ScriptValue Call(ScriptState*, ScriptValue value) final {
+    navigate_event_->ReactDone(value, resolve_type_ == ResolveType::kFulfill);
+    return ScriptValue();
+  }
+
+ private:
+  Member<NavigateEvent> navigate_event_;
+  ResolveType resolve_type_;
+};
 
 NavigateEvent::NavigateEvent(ExecutionContext* context,
                              const AtomicString& type,
@@ -89,6 +113,17 @@ void NavigateEvent::intercept(NavigationInterceptOptions* options,
     return;
   }
 
+  if (RuntimeEnabledFeatures::NavigateEventCommitBehaviorEnabled() &&
+      !cancelable() && options->hasCommit() &&
+      options->commit().AsEnum() ==
+          V8NavigationCommitBehavior::Enum::kAfterTransition) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "intercept() may only be called with a commit option of "
+        "\"after-transition\" when the navigate event is cancelable.");
+    return;
+  }
+
   if (!HasNavigationActions()) {
     DomWindow()->document()->AddFocusedElementChangeObserver(this);
   }
@@ -123,6 +158,23 @@ void NavigateEvent::intercept(NavigationInterceptOptions* options,
     scroll_behavior_ = options->scroll();
   }
 
+  if (RuntimeEnabledFeatures::NavigateEventCommitBehaviorEnabled()) {
+    if (options->hasCommit()) {
+      if (commit_behavior_ &&
+          commit_behavior_->AsEnum() != options->commit().AsEnum()) {
+        GetExecutionContext()->AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::blink::ConsoleMessageSource::kJavaScript,
+                mojom::blink::ConsoleMessageLevel::kWarning,
+                "The \"" + options->commit().AsString() + "\" value for " +
+                    "intercept()'s commit option "
+                    "will override the previously-passed value of \"" +
+                    commit_behavior_->AsString() + "\"."));
+      }
+      commit_behavior_ = options->commit();
+    }
+  }
+
   CHECK(intercept_state_ == InterceptState::kNone ||
         intercept_state_ == InterceptState::kIntercepted);
   intercept_state_ = InterceptState::kIntercepted;
@@ -130,7 +182,62 @@ void NavigateEvent::intercept(NavigationInterceptOptions* options,
     navigation_action_handlers_list_.push_back(options->handler());
 }
 
-void NavigateEvent::DoCommit() {
+void NavigateEvent::commit(ExceptionState& exception_state) {
+  if (!PerformSharedChecks("commit", exception_state)) {
+    return;
+  }
+
+  if (intercept_state_ == InterceptState::kNone) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "intercept() must be called before commit().");
+    return;
+  }
+  if (ShouldCommitImmediately()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "commit() may only be used if { commit: "
+                                      "'after-transition' } was specified.");
+  }
+  if (IsBeingDispatched()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "commit() may not be called during event dispatch");
+    return;
+  }
+  if (intercept_state_ == InterceptState::kFinished) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "commit() may not be called after transition completes.");
+    return;
+  }
+  if (intercept_state_ == InterceptState::kCommitted ||
+      intercept_state_ == InterceptState::kScrolled) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "commit() already called.");
+    return;
+  }
+  CommitNow();
+}
+
+void NavigateEvent::MaybeCommitImmediately(ScriptState* script_state) {
+  if (ShouldCommitImmediately()) {
+    CommitNow();
+    return;
+  }
+
+  LocalFrame* frame = DomWindow()->GetFrame();
+  frame->GetLocalFrameHostRemote().StartLoadingForAsyncNavigationApiCommit();
+  frame->Loader().Progress().ProgressStarted();
+
+  FinalizeNavigationActionPromisesList();
+}
+
+bool NavigateEvent::ShouldCommitImmediately() {
+  return !commit_behavior_ || commit_behavior_->AsEnum() ==
+                                  V8NavigationCommitBehavior::Enum::kImmediate;
+}
+
+void NavigateEvent::CommitNow() {
   CHECK_EQ(intercept_state_, InterceptState::kIntercepted);
   CHECK(!dispatch_params_->destination_item || !dispatch_params_->state_object);
 
@@ -150,46 +257,98 @@ void NavigateEvent::DoCommit() {
       state_object, dispatch_params_->frame_load_type,
       dispatch_params_->is_browser_initiated,
       dispatch_params_->is_synchronously_committed_same_document);
+}
 
-  // This is considered a soft navigation URL change at this point, when the
-  // user visible URL change happens. Skip the descendant check because the URL
-  // change doesn't happen in a JS task.
-  auto* soft_navigation_heuristics =
-      DomWindow() ? SoftNavigationHeuristics::From(*DomWindow()) : nullptr;
-  if (soft_navigation_heuristics && user_initiated_ && !download_request_) {
-    auto* script_state = ToScriptStateForMainWorld(DomWindow()->GetFrame());
-    ScriptState::Scope scope(script_state);
-    soft_navigation_heuristics->SawURLChange(script_state,
-                                             dispatch_params_->url,
-                                             /*skip_descendant_check=*/true);
+void NavigateEvent::React(ScriptState* script_state) {
+  CHECK(navigation_action_handlers_list_.empty());
+
+  ScriptPromise promise;
+  if (!navigation_action_promises_list_.empty()) {
+    promise =
+        ScriptPromise::All(script_state, navigation_action_promises_list_);
+  } else {
+    // There is a subtle timing difference between the fast-path for zero
+    // promises and the path for 1+ promises, in both spec and implementation.
+    // In most uses of ScriptPromise::All / the Web IDL spec's "wait for all",
+    // this does not matter. However for us there are so many events and promise
+    // handlers firing around the same time (navigatesuccess, committed promise,
+    // finished promise, ...) that the difference is pretty easily observable by
+    // web developers and web platform tests. So, let's make sure we always go
+    // down the 1+ promises path.
+    promise = ScriptPromise::All(
+        script_state, HeapVector<ScriptPromise>(
+                          {ScriptPromise::CastUndefined(script_state)}));
+  }
+
+  promise.Then(MakeGarbageCollected<ScriptFunction>(
+                   script_state,
+                   MakeGarbageCollected<Reaction>(this, ResolveType::kFulfill)),
+               MakeGarbageCollected<ScriptFunction>(
+                   script_state,
+                   MakeGarbageCollected<Reaction>(this, ResolveType::kReject)));
+
+  if (HasNavigationActions() && DomWindow()) {
+    if (AXObjectCache* cache =
+            DomWindow()->document()->ExistingAXObjectCache()) {
+      cache->HandleLoadStart(DomWindow()->document());
+    }
   }
 }
 
-ScriptPromise NavigateEvent::GetReactionPromiseAll(ScriptState* script_state) {
-  CHECK(navigation_action_handlers_list_.empty());
-  if (!navigation_action_promises_list_.empty()) {
-    return ScriptPromise::All(script_state, navigation_action_promises_list_);
+void NavigateEvent::ReactDone(ScriptValue value, bool did_fulfill) {
+  CHECK_NE(intercept_state_, InterceptState::kFinished);
+
+  LocalDOMWindow* window = DomWindow();
+  if (signal_->aborted() || !window) {
+    return;
   }
-  // There is a subtle timing difference between the fast-path for zero
-  // promises and the path for 1+ promises, in both spec and implementation.
-  // In most uses of ScriptPromise::All / the Web IDL spec's "wait for all",
-  // this does not matter. However for us there are so many events and promise
-  // handlers firing around the same time (navigatesuccess, committed promise,
-  // finished promise, ...) that the difference is pretty easily observable by
-  // web developers and web platform tests. So, let's make sure we always go
-  // down the 1+ promises path.
-  return ScriptPromise::All(
-      script_state,
-      HeapVector<ScriptPromise>({ScriptPromise::CastUndefined(script_state)}));
+
+  CHECK_EQ(this, window->navigation()->ongoing_navigate_event_);
+  window->navigation()->ongoing_navigate_event_ = nullptr;
+
+  if (intercept_state_ == InterceptState::kIntercepted) {
+    if (did_fulfill) {
+      CommitNow();
+    } else {
+      DomWindow()->GetFrame()->Client()->DidFailAsyncSameDocumentCommit();
+    }
+  }
+
+  if (intercept_state_ >= InterceptState::kCommitted) {
+    PotentiallyResetTheFocus();
+    if (did_fulfill) {
+      PotentiallyProcessScrollBehavior();
+    }
+    intercept_state_ = InterceptState::kFinished;
+  }
+
+  if (did_fulfill) {
+    window->navigation()->DidFinishOngoingNavigation();
+  } else {
+    window->navigation()->DidFailOngoingNavigation(value);
+  }
+
+  if (HasNavigationActions()) {
+    if (LocalFrame* frame = window->GetFrame()) {
+      frame->Loader().DidFinishNavigation(
+          did_fulfill ? FrameLoader::NavigationFinishState::kSuccess
+                      : FrameLoader::NavigationFinishState::kFailure);
+    }
+    if (AXObjectCache* cache = window->document()->ExistingAXObjectCache()) {
+      cache->HandleLoadComplete(window->document());
+    }
+  }
 }
 
 void NavigateEvent::FinalizeNavigationActionPromisesList() {
-  for (auto& function : navigation_action_handlers_list_) {
+  HeapVector<Member<V8NavigationInterceptHandler>> handlers_list;
+  handlers_list.swap(navigation_action_handlers_list_);
+
+  for (auto& function : handlers_list) {
     ScriptPromise result;
     if (function->Invoke(this).To(&result))
       navigation_action_promises_list_.push_back(result);
   }
-  navigation_action_handlers_list_.clear();
 }
 
 void NavigateEvent::PotentiallyResetTheFocus() {
@@ -255,19 +414,6 @@ void NavigateEvent::scroll(ExceptionState& exception_state) {
   }
 
   ProcessScrollBehavior();
-}
-
-void NavigateEvent::Finish(bool did_fulfill) {
-  CHECK_NE(intercept_state_, InterceptState::kIntercepted);
-  CHECK_NE(intercept_state_, InterceptState::kFinished);
-  if (intercept_state_ == InterceptState::kNone) {
-    return;
-  }
-  PotentiallyResetTheFocus();
-  if (did_fulfill) {
-    PotentiallyProcessScrollBehavior();
-  }
-  intercept_state_ = InterceptState::kFinished;
 }
 
 void NavigateEvent::PotentiallyProcessScrollBehavior() {

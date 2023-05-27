@@ -10,6 +10,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/update_client/buildflags.h"
 #include "components/update_client/update_query_params_delegate.h"
 #include "components/version_info/version_info.h"
 
@@ -45,25 +46,25 @@ const char kOs[] =
 #endif
 
 const char kArch[] =
-#if defined(__amd64__) || defined(_WIN64)
+#if defined(ARCH_CPU_X86_64)
     "x64";
-#elif defined(__i386__) || defined(_WIN32)
+#elif defined(ARCH_CPU_X86)
     "x86";
-#elif defined(__arm__)
+#elif defined(ARCH_CPU_ARMEL)
     "arm";
-#elif defined(__aarch64__)
+#elif defined(ARCH_CPU_ARM64)
     "arm64";
-#elif defined(__mips__) && (__mips == 64)
+#elif defined(ARCH_CPU_MIPS64EL)
     "mips64el";
-#elif defined(__mips__)
+#elif defined(ARCH_CPU_MIPSEL)
     "mipsel";
 #elif defined(__powerpc64__)
     "ppc64";
-#elif defined(__loongarch32)
+#elif defined(ARCH_CPU_LOONG32)
     "loong32";
-#elif defined(__loongarch64)
+#elif defined(ARCH_CPU_LOONG64)
     "loong64";
-#elif defined(__riscv) && (__riscv_xlen == 64)
+#elif defined(ARCH_CPU_RISCV64)
     "riscv64";
 #else
 #error "unknown arch"
@@ -85,11 +86,19 @@ UpdateQueryParamsDelegate* g_delegate = nullptr;
 
 // static
 std::string UpdateQueryParams::Get(ProdId prod) {
+#if BUILDFLAG(ENABLE_PUFFIN_PATCHES)
+  return base::StringPrintf(
+      "os=%s&arch=%s&os_arch=%s&nacl_arch=%s&prod=%s%s&acceptformat=crx3,puff",
+      kOs, kArch, base::SysInfo().OperatingSystemArchitecture().c_str(),
+      GetNaclArch(), GetProdIdString(prod),
+      g_delegate ? g_delegate->GetExtraParams().c_str() : "");
+#else
   return base::StringPrintf(
       "os=%s&arch=%s&os_arch=%s&nacl_arch=%s&prod=%s%s&acceptformat=crx3", kOs,
       kArch, base::SysInfo().OperatingSystemArchitecture().c_str(),
       GetNaclArch(), GetProdIdString(prod),
       g_delegate ? g_delegate->GetExtraParams().c_str() : "");
+#endif
 }
 
 // static

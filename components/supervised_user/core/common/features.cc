@@ -20,7 +20,19 @@ namespace supervised_user {
 BASE_FEATURE(kWebFilterInterstitialRefresh,
              "WebFilterInterstitialRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
-#else
+#elif BUILDFLAG(IS_IOS)
+BASE_FEATURE(kWebFilterInterstitialRefresh,
+             "WebFilterInterstitialRefresh",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+BASE_FEATURE(kWebFilterInterstitialRefresh,
+             "WebFilterInterstitialRefresh",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+BASE_FEATURE(kWebFilterInterstitialRefresh,
+             "WebFilterInterstitialRefresh",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else  // Desktop
 BASE_FEATURE(kWebFilterInterstitialRefresh,
              "WebFilterInterstitialRefresh",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -33,12 +45,24 @@ BASE_FEATURE(kWebFilterInterstitialRefresh,
 //
 // The feature includes one experiment parameter: "preferred_button", which
 // determines which button is displayed as the preferred option in the
-// interstitial UI (i.e. dark blue button).
-#if BUILDFLAG(IS_CHROMEOS)
+// interstitial UI (i.e. dark blue button).#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
+BASE_FEATURE(kLocalWebApprovals,
+             "LocalWebApprovals",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#elif BUILDFLAG(IS_IOS)
+BASE_FEATURE(kLocalWebApprovals,
+             "LocalWebApprovals",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kLocalWebApprovals,
              "LocalWebApprovals",
              base::FEATURE_ENABLED_BY_DEFAULT);
-#else
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+BASE_FEATURE(kLocalWebApprovals,
+             "LocalWebApprovals",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#else  // Desktop
 BASE_FEATURE(kLocalWebApprovals,
              "LocalWebApprovals",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -66,6 +90,11 @@ BASE_FEATURE(kAllowHistoryDeletionForChildAccounts,
 // Enables the new Kids Management Api.
 BASE_FEATURE(kEnableKidsManagementService,
              "EnableKidsManagementService",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the proto api for ClassifyURL calls.
+BASE_FEATURE(kEnableProtoApiForClassifyUrl,
+             "EnableProtoApiForClassifyUrl",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables synchronous sign-in checking in the First Run Experience.
@@ -78,9 +107,15 @@ BASE_FEATURE(kRetireStaticDenyList,
              "RetireStaticDenyList",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables the new local extension approvals experience, which requests approval
+// through a platform-specific Parent Access Widget.
+BASE_FEATURE(kLocalExtensionApprovalsV2,
+             "LocalExtensionApprovalsV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool IsWebFilterInterstitialRefreshEnabled() {
-  DCHECK(base::FeatureList::IsEnabled(kWebFilterInterstitialRefresh) ||
-         !base::FeatureList::IsEnabled(kLocalWebApprovals));
+  CHECK(base::FeatureList::IsEnabled(kWebFilterInterstitialRefresh) ||
+        !base::FeatureList::IsEnabled(kLocalWebApprovals));
   return base::FeatureList::IsEnabled(kWebFilterInterstitialRefresh);
 }
 
@@ -118,6 +153,10 @@ bool IsKidsManagementServiceEnabled() {
   return base::FeatureList::IsEnabled(kEnableKidsManagementService);
 }
 
+bool IsProtoApiForClassifyUrlEnabled() {
+  return base::FeatureList::IsEnabled(kEnableProtoApiForClassifyUrl);
+}
+
 // The following flags control whether supervision features are enabled on
 // desktop and iOS. These are structured as follows:
 //
@@ -142,5 +181,9 @@ BASE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop,
 
 bool IsSynchronousSignInCheckingEnabled() {
   return base::FeatureList::IsEnabled(kSynchronousSignInChecking);
+}
+
+bool IsLocalExtensionApprovalsV2Enabled() {
+  return base::FeatureList::IsEnabled(kLocalExtensionApprovalsV2);
 }
 }  // namespace supervised_user

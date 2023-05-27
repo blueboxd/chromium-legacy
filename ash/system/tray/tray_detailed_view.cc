@@ -13,6 +13,7 @@
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/typography.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -21,8 +22,12 @@
 #include "ash/system/tray/tri_view.h"
 #include "base/check.h"
 #include "base/containers/adapters.h"
+#include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
@@ -235,7 +240,7 @@ class ScrollContentsView : public views::View {
     if (!details.is_add && details.parent == this) {
       headers_.erase(std::remove_if(headers_.begin(), headers_.end(),
                                     [details](const Header& header) {
-                                      return header.view == details.child;
+                                      return header.view.get() == details.child;
                                     }),
                      headers_.end());
     } else if (details.is_add && details.parent == this &&
@@ -264,7 +269,7 @@ class ScrollContentsView : public views::View {
         : view(view), natural_offset(view->y()), draw_separator_below(false) {}
 
     // A header View that can be decorated as sticky.
-    views::View* view;
+    raw_ptr<views::View, ExperimentalAsh> view;
 
     // Offset from the top of ScrollContentsView to |view|'s original vertical
     // position.
@@ -363,7 +368,7 @@ class ScrollContentsView : public views::View {
     canvas->DrawRect(shadowed_area, flags);
   }
 
-  views::BoxLayout* box_layout_ = nullptr;
+  raw_ptr<views::BoxLayout, ExperimentalAsh> box_layout_ = nullptr;
 
   // Header child views that stick to the top of visible viewport when scrolled.
   std::vector<Header> headers_;
@@ -384,7 +389,15 @@ TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
   }
 }
 
-TrayDetailedView::~TrayDetailedView() = default;
+TrayDetailedView::~TrayDetailedView() {
+  // TDV_D stands for `TrayDetailedView`'s destructor. Here using the
+  // short version since the log method has a character count limit of 40.
+  SCOPED_CRASH_KEY_BOOL("TDV_D", "title_label_", !!title_label_);
+  SCOPED_CRASH_KEY_BOOL("TDV_D", "sub_header_label_", !!sub_header_label_);
+  SCOPED_CRASH_KEY_BOOL("TDV_D", "sub_header_image_view_",
+                        !!sub_header_image_view_);
+  SCOPED_CRASH_KEY_BOOL("TDV_D", "title_separator_", !!title_separator_);
+}
 
 void TrayDetailedView::OnViewClicked(views::View* sender) {
   DCHECK(sender);
@@ -495,6 +508,7 @@ HoverHighlightView* TrayDetailedView::AddScrollListItem(
     views::FocusRing::Install(item);
     views::InstallRoundRectHighlightPathGenerator(item, gfx::Insets(2),
                                                   /*corner_radius=*/0);
+    views::FocusRing::Get(item)->SetColorId(cros_tokens::kCrosSysFocusRing);
     // Unset the focus painter set by `ActionableView`.
     item->SetFocusPainter(nullptr);
   }
@@ -673,12 +687,38 @@ const char* TrayDetailedView::GetClassName() const {
 }
 
 void TrayDetailedView::OnThemeChanged() {
-  views::View::OnThemeChanged();
+  // TDV_OTC stands for `TrayDetailedView::OnThemeChanged`. Here using the
+  // short version since the log method has a character count limit of 40.
+  SCOPED_CRASH_KEY_BOOL("TDV_OTC", "color_provider", !!AshColorProvider::Get());
+  SCOPED_CRASH_KEY_BOOL("TDV_OTC", "title_label_", !!title_label_);
+  SCOPED_CRASH_KEY_BOOL("TDV_OTC", "sub_header_label_", !!sub_header_label_);
+  SCOPED_CRASH_KEY_BOOL("TDV_OTC", "sub_header_image_view_",
+                        !!sub_header_image_view_);
+  SCOPED_CRASH_KEY_BOOL("TDV_OTC", "title_separator_", !!title_separator_);
+  SCOPED_CRASH_KEY_BOOL("TDV_OTC", "widget", !!GetWidget());
+  if (GetWidget()) {
+    SCOPED_CRASH_KEY_BOOL("TDV_OTC", "native_window",
+                          !!GetWidget()->GetNativeWindow());
+    if (GetWidget()->GetNativeWindow()) {
+      SCOPED_CRASH_KEY_BOOL("TDV_OTC", "native_window_is_destroying",
+                            GetWidget()->GetNativeWindow()->is_destroying());
+    }
+  }
 
+  SCOPED_CRASH_KEY_STRING32("TDV_OTC", "class_name", GetClassName());
+
+  views::View::OnThemeChanged();
   auto* color_provider = AshColorProvider::Get();
   if (title_label_) {
-    title_label_->SetEnabledColor(color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
+    title_label_->SetEnabledColor(
+        features::IsQsRevampEnabled()
+            ? GetColorProvider()->GetColor(cros_tokens::kCrosSysOnSurface)
+            : color_provider->GetContentLayerColor(
+                  AshColorProvider::ContentLayerType::kTextColorPrimary));
+    if (chromeos::features::IsJellyEnabled()) {
+      TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosTitle1,
+                                            *title_label_);
+    }
   }
   if (sub_header_label_) {
     sub_header_label_->SetEnabledColor(color_provider->GetContentLayerColor(

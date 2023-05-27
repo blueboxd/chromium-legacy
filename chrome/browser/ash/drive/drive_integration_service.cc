@@ -21,6 +21,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/hash/md5.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
@@ -513,9 +514,10 @@ class DriveIntegrationService::PreferenceWatcher
     }
   }
 
-  PrefService* pref_service_;
+  raw_ptr<PrefService, ExperimentalAsh> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
-  DriveIntegrationService* integration_service_ = nullptr;
+  raw_ptr<DriveIntegrationService, ExperimentalAsh> integration_service_ =
+      nullptr;
   PortalState portal_state_ = PortalState::kUnknown;
 
   base::WeakPtrFactory<PreferenceWatcher> weak_ptr_factory_{this};
@@ -698,8 +700,9 @@ class DriveIntegrationService::DriveFsHolder
     profile_->GetPrefs()->SetString(prefs::kDriveFsMirrorSyncMachineRootId, id);
   }
 
-  Profile* const profile_;
-  drivefs::DriveFsHost::MountObserver* const mount_observer_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
+  const raw_ptr<drivefs::DriveFsHost::MountObserver, ExperimentalAsh>
+      mount_observer_;
 
   const DriveFsMojoListenerFactory test_drivefs_mojo_listener_factory_;
 
@@ -712,6 +715,29 @@ class DriveIntegrationService::DriveFsHolder
   mojo::Remote<crosapi::mojom::DriveFsNativeMessageHostBridge>
       native_message_host_bridge_;
   base::OnceClosure pending_connect_to_extension_request_;
+};
+
+// Updates the bulk pinning preference when the `PinManager` stops or errors.
+using drivefs::pinning::PinManager;
+using drivefs::pinning::Progress;
+class DriveIntegrationService::BulkPinningPrefUpdater
+    : public PinManager::Observer {
+ public:
+  explicit BulkPinningPrefUpdater(PrefService* pref_service)
+      : pref_service_(pref_service) {
+    DCHECK(pref_service_);
+  }
+
+  void OnProgress(const Progress& progress) override {
+    if (progress.IsError()) {
+      VLOG(1) << "Disabling bulk pinning preference";
+      pref_service_->SetBoolean(drive::prefs::kDriveFsBulkPinningEnabled,
+                                false);
+    }
+  }
+
+ private:
+  raw_ptr<PrefService> const pref_service_;
 };
 
 DriveIntegrationService::DriveIntegrationService(
@@ -1074,9 +1100,13 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
 
   if (pin_manager_) {
     pin_manager_->Stop();
+    pin_manager_->RemoveObserver(this);
+    if (bulk_pinning_pref_updater_) {
+      pin_manager_->RemoveObserver(bulk_pinning_pref_updater_.get());
+      bulk_pinning_pref_updater_.reset();
+    }
     GetDriveFsHost()->RemoveObserver(pin_manager_.get());
     pin_manager_.reset();
-    GetDriveFsHost()->SetAlwaysEnableDocsOffline(false);
   }
 }
 
@@ -1160,6 +1190,11 @@ void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
     DCHECK(!pin_manager_);
     pin_manager_ = std::make_unique<PinManager>(profile_->GetPath(),
                                                 GetDriveFsInterface());
+    pin_manager_->AddObserver(this);
+    DCHECK(!bulk_pinning_pref_updater_);
+    bulk_pinning_pref_updater_ =
+        std::make_unique<BulkPinningPrefUpdater>(GetPrefs());
+    pin_manager_->AddObserver(bulk_pinning_pref_updater_.get());
     GetDriveFsHost()->AddObserver(pin_manager_.get());
 
     if (preference_watcher_) {
@@ -1191,6 +1226,13 @@ void DriveIntegrationService::OnMountFailed(
     // We don't record mount time until we mount successfully at least once.
   }
   MaybeRemountFileSystem(remount_delay, true);
+}
+
+void DriveIntegrationService::OnProgress(
+    const drivefs::pinning::Progress& progress) {
+  for (auto& observer : observers_) {
+    observer.OnBulkPinProgress(progress);
+  }
 }
 
 void DriveIntegrationService::Initialize() {
@@ -1280,11 +1322,8 @@ void DriveIntegrationService::ToggleBulkPinning() {
     return;
   }
 
-  const bool enabled =
-      GetPrefs()->GetBoolean(prefs::kDriveFsBulkPinningEnabled);
-  GetDriveFsHost()->SetAlwaysEnableDocsOffline(enabled);
-
-  if (enabled) {
+  if (GetPrefs()->GetBoolean(prefs::kDriveFsBulkPinningEnabled)) {
+    pin_manager_->ShouldPin(true);
     pin_manager_->Start();
   } else {
     pin_manager_->Stop();
@@ -1299,56 +1338,28 @@ void DriveIntegrationService::GetTotalPinnedSize(
     return;
   }
 
-  auto query_params = drivefs::mojom::QueryParameters::New();
-  query_params->page_size = 1000;
-  query_params->available_offline = true;
-
-  int64_t total_size = 0;
-  mojo::Remote<drivefs::mojom::SearchQuery> search_query;
-
-  GetDriveFsInterface()->StartSearchQuery(
-      search_query.BindNewPipeAndPassReceiver(), std::move(query_params));
-
-  auto* raw_search_query = search_query.get();
-  raw_search_query->GetNextPage(
-      base::BindOnce(&DriveIntegrationService::OnGetOfflineItemsPage,
-                     weak_ptr_factory_.GetWeakPtr(), total_size,
-                     std::move(search_query), std::move(callback)));
+  GetDriveFsInterface()->GetOfflineFilesSpaceUsage(base::BindOnce(
+      [](base::OnceCallback<void(int64_t)> callback, drive::FileError error,
+         int64_t total_size) {
+        if (error != drive::FILE_ERROR_OK) {
+          LOG(ERROR) << "Cannot get offline size: " << error;
+          std::move(callback).Run(-1);
+          return;
+        }
+        std::move(callback).Run(total_size);
+      },
+      std::move(callback)));
 }
 
-void DriveIntegrationService::OnGetOfflineItemsPage(
-    int64_t total_size,
-    mojo::Remote<drivefs::mojom::SearchQuery> search_query,
-    base::OnceCallback<void(int64_t)> callback,
-    drive::FileError error,
-    absl::optional<std::vector<drivefs::mojom::QueryItemPtr>> results) {
-  if (!ash::features::IsDriveFsBulkPinningEnabled() ||
-      error != drive::FILE_ERROR_OK || results->empty() ||
-      callback.IsCancelled()) {
-    LOG_IF(ERROR, error != drive::FILE_ERROR_OK)
-        << "Failed to get offline size: " << drive::FileErrorToString(error);
-    std::move(callback).Run(total_size);
+void DriveIntegrationService::ClearOfflineFiles(
+    base::OnceCallback<void(drive::FileError)> callback) {
+  if (!ash::features::IsDriveFsBulkPinningEnabled() || !IsMounted() ||
+      !GetDriveFsInterface()) {
+    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE);
     return;
   }
 
-  for (auto& result : *results) {
-    if (!result->metadata) {
-      continue;
-    }
-    // We only want to show storage used by Drive that a user can action (i.e.
-    // files that can be unpinned). This should exclude files that DriveFS
-    // implicitly caches as users can't remove these files.
-    const drivefs::mojom::FileMetadata& metadata = *result->metadata;
-    if (metadata.available_offline && metadata.pinned) {
-      total_size += result->metadata->size;
-    }
-  }
-
-  auto* raw_search_query = search_query.get();
-  raw_search_query->GetNextPage(
-      base::BindOnce(&DriveIntegrationService::OnGetOfflineItemsPage,
-                     weak_ptr_factory_.GetWeakPtr(), total_size,
-                     std::move(search_query), std::move(callback)));
+  GetDriveFsInterface()->ClearOfflineFiles(std::move(callback));
 }
 
 void DriveIntegrationService::GetQuickAccessItems(

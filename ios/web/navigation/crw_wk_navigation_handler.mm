@@ -222,6 +222,12 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
         UMA_HISTOGRAM_BOOLEAN("IOS.MainFrameNavigationIsInLockdownMode",
                               preferences.lockdownModeEnabled);
       }
+
+      if (self.webStateImpl) {
+        web::BrowserState* browser_state = self.webStateImpl->GetBrowserState();
+        if (web::GetWebClient()->IsBrowserLockdownModeEnabled(browser_state))
+          preferences.lockdownModeEnabled = true;
+      }
     }
 #endif  // defined (__IPHONE_16_0)
     handler(policy, preferences);
@@ -734,8 +740,6 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   }
 
   if (context) {
-    if (self.pendingNavigationInfo.MIMEType)
-      context->SetMimeType(self.pendingNavigationInfo.MIMEType);
     if (self.pendingNavigationInfo.HTTPHeaders)
       context->SetResponseHeaders(self.pendingNavigationInfo.HTTPHeaders);
   }
@@ -748,17 +752,34 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     web::NavigationManager* navigationManager =
         self.webStateImpl->GetNavigationManager();
     GURL pendingURL;
+    web::NavigationItem* pendingItem = nullptr;
     if (navigationManager->GetPendingItemIndex() == -1) {
-      if (context->GetItem()) {
-        // Item may not exist if navigation was stopped (see
-        // crbug.com/969915).
-        pendingURL = context->GetItem()->GetURL();
-      }
+      // Item may not exist if navigation was stopped (see
+      // crbug.com/969915).
+      pendingItem = context->GetItem();
     } else {
-      if (navigationManager->GetPendingItem()) {
-        pendingURL = navigationManager->GetPendingItem()->GetURL();
-      }
+      pendingItem = navigationManager->GetPendingItem();
     }
+
+    if (pendingItem) {
+      pendingURL = pendingItem->GetURL();
+    }
+
+    if (self.pendingNavigationInfo.MIMEType) {
+      context->SetMimeType(self.pendingNavigationInfo.MIMEType);
+    } else if (pendingItem && !context->GetMimeType()) {
+      // For navigations handled directly by WebKit's back/forward cache, such
+      // as swipe-triggered navigations, `pendingNavigationInfo` will not get
+      // populated since there is no `decidePolicyForNavigationResponse`
+      // callback. The context's MIME type will also not get set when creating
+      // the navigation, since swipe-triggered navigations are directly
+      // initiated by WebKit. In this case, use the MIME type stored with the
+      // navigation item.
+      context->SetMimeType(
+          web::WKBackForwardListItemHolder::FromNavigationItem(pendingItem)
+              ->mime_type());
+    }
+
     if ((pendingURL == webViewURL) || (context->IsLoadingHtmlString())) {
       // Commit navigation if at least one of these is true:
       //  - Navigation has pending item (this should always be true, but
@@ -888,8 +909,6 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
       context ? web::GetItemWithUniqueID(self.navigationManagerImpl, context)
               : nullptr;
   // Item may not exist if navigation was stopped (see crbug.com/969915).
-
-  DCHECK(context);
   UMA_HISTOGRAM_BOOLEAN("IOS.FinishedNavigationHasContext", context);
   UMA_HISTOGRAM_BOOLEAN("IOS.FinishedNavigationHasItem", item);
 
@@ -1344,12 +1363,10 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
     // case insensitive, so it's enough to test the lower case only.
     if ([request valueForHTTPHeaderField:cookieHeaderName]) {
       // Case insensitive search in `headers`.
-      NSSet* cookieKeys = [item->GetHttpRequestHeaders()
-          keysOfEntriesPassingTest:^(id key, id obj, BOOL* stop) {
-            NSString* header = (NSString*)key;
+      NSSet<NSString*>* cookieKeys = [item->GetHttpRequestHeaders()
+          keysOfEntriesPassingTest:^(NSString* key, NSString* obj, BOOL* stop) {
             const BOOL found =
-                [header caseInsensitiveCompare:cookieHeaderName] ==
-                NSOrderedSame;
+                [key caseInsensitiveCompare:cookieHeaderName] == NSOrderedSame;
             *stop = found;
             return found;
           }];

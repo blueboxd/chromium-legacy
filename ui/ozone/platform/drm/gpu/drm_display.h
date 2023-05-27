@@ -10,10 +10,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/hdr_static_metadata.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -48,7 +50,8 @@ class DrmDisplay {
     drmModePropertyRes* GetWritePrivacyScreenProperty() const;
 
     const scoped_refptr<DrmDevice> drm_;
-    drmModeConnector* connector_ = nullptr;  // not owned.
+    raw_ptr<drmModeConnector, ExperimentalAsh> connector_ =
+        nullptr;  // not owned.
 
     display::PrivacyScreenState property_last_ =
         display::kPrivacyScreenStateLast;
@@ -88,6 +91,7 @@ class DrmDisplay {
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
   bool SetPrivacyScreen(bool enabled);
+  bool SetHDR10Mode();
   void SetColorSpace(const gfx::ColorSpace& color_space);
 
   void set_is_hdr_capable_for_testing(bool value) { is_hdr_capable_ = value; }
@@ -106,6 +110,7 @@ class DrmDisplay {
   gfx::Point origin_;
   bool is_hdr_capable_ = false;
   gfx::ColorSpace current_color_space_;
+  absl::optional<gfx::HDRStaticMetadata> hdr_static_metadata_;
   std::unique_ptr<PrivacyScreenProperty> privacy_screen_property_;
 };
 

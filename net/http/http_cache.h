@@ -316,11 +316,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   friend class MockHttpCache;
   friend class HttpCacheIOCallbackTest;
 
-  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest_SplitCacheFeature,
+  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest_SplitCacheFeatureEnabled,
                            SplitCacheWithNetworkIsolationKey);
   FRIEND_TEST_ALL_PREFIXES(HttpCacheTest, NonSplitCache);
-  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest_SplitCacheFeature, SplitCache);
-  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest_SplitCacheFeature,
+  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest_SplitCacheFeatureEnabled, SplitCache);
+  FRIEND_TEST_ALL_PREFIXES(HttpCacheTest_SplitCacheFeatureEnabled,
                            SplitCacheUsesRegistrableDomain);
 
   using TransactionList = std::list<Transaction*>;
@@ -395,8 +395,6 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
 
     // True if entry is doomed.
     bool doomed = false;
-
-    absl::optional<bool> writers_done_writing_to_entry_history;
   };
 
   using ActiveEntriesMap =

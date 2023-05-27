@@ -29,6 +29,8 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
@@ -37,6 +39,7 @@
 #include "chrome/browser/web_applications/web_app_launch_queue.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/devicetype.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
@@ -274,6 +277,14 @@ ChromeCameraAppUIDelegate::~ChromeCameraAppUIDelegate() {
   MaybeTriggerSurvey();
 }
 
+ash::HoldingSpaceClient* ChromeCameraAppUIDelegate::GetHoldingSpaceClient() {
+  ash::HoldingSpaceKeyedService* holding_space_keyed_service =
+      ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
+          Profile::FromWebUI(web_ui_));
+  CHECK(holding_space_keyed_service);
+  return holding_space_keyed_service->client();
+}
+
 void ChromeCameraAppUIDelegate::SetLaunchDirectory() {
   Profile* profile = Profile::FromWebUI(web_ui_);
   content::WebContents* web_contents = web_ui_->GetWebContents();
@@ -311,11 +322,10 @@ void ChromeCameraAppUIDelegate::PopulateLoadTimeData(
   source->AddString("board_name", base::SysInfo::GetLsbReleaseBoard());
   source->AddString("device_type",
                     DeviceTypeToString(chromeos::GetDeviceType()));
-  source->AddBoolean(
-      "lowStorageWarning",
-      base::FeatureList::IsEnabled(ash::features::kCameraAppLowStorageWarning));
   source->AddBoolean("timeLapse", base::FeatureList::IsEnabled(
                                       ash::features::kCameraAppTimeLapse));
+  source->AddBoolean("jelly",
+                     base::FeatureList::IsEnabled(chromeos::features::kJelly));
 }
 
 bool ChromeCameraAppUIDelegate::IsMetricsAndCrashReportingEnabled() {

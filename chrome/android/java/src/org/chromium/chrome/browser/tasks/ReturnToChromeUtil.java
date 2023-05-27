@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tasks;
 
-import static org.chromium.chrome.features.start_surface.StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -24,15 +22,20 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.feed.FeedFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
@@ -41,7 +44,11 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.segmentation_platform.SegmentationPlatformServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabCreator;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.ActiveTabState;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.util.BrowserUiUtils;
@@ -51,6 +58,7 @@ import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.chrome.features.start_surface.StartSurfaceUserData;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
+import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.segmentation_platform.SegmentSelectionResult;
 import org.chromium.components.segmentation_platform.SegmentationPlatformService;
@@ -97,9 +105,12 @@ public final class ReturnToChromeUtil {
         private final Runnable mOnBackPressedCallback;
         private final ActivityTabProvider.ActivityTabTabObserver mActivityTabObserver;
         private final ActivityTabProvider mActivityTabProvider;
+        private final Supplier<Tab> mTabSupplier; // for debugging only
+        private final Supplier<LayoutStateProvider> mLayoutStateProviderSupplier;
 
-        public ReturnToChromeBackPressHandler(
-                ActivityTabProvider activityTabProvider, Runnable onBackPressedCallback) {
+        public ReturnToChromeBackPressHandler(ActivityTabProvider activityTabProvider,
+                Runnable onBackPressedCallback, Supplier<Tab> tabSupplier,
+                Supplier<LayoutStateProvider> layoutStateProviderSupplier) {
             mActivityTabProvider = activityTabProvider;
             mActivityTabObserver =
                     new ActivityTabProvider.ActivityTabTabObserver(activityTabProvider, true) {
@@ -109,6 +120,8 @@ public final class ReturnToChromeUtil {
                         }
                     };
             mOnBackPressedCallback = onBackPressedCallback;
+            mTabSupplier = tabSupplier;
+            mLayoutStateProviderSupplier = layoutStateProviderSupplier;
             onBackPressStateChanged();
         }
 
@@ -121,8 +134,16 @@ public final class ReturnToChromeUtil {
         public @BackPressResult int handleBackPress() {
             Tab tab = mActivityTabProvider.get();
             boolean res = tab != null && !tab.canGoBack() && isTabFromStartSurface(tab);
-            assert res
-                : String.format("tab %s; back press state %s", tab, tab != null && tab.canGoBack());
+            if (!res) {
+                var controlTab = mTabSupplier.get();
+                int layoutType = mLayoutStateProviderSupplier.hasValue()
+                        ? mLayoutStateProviderSupplier.get().getActiveLayoutType()
+                        : LayoutType.NONE;
+                assert false
+                    : String.format("tab %s; control tab %s; back press state %s; layout %s", tab,
+                              controlTab, tab != null && tab.canGoBack(), layoutType);
+            }
+
             mOnBackPressedCallback.run();
             return res ? BackPressResult.SUCCESS : BackPressResult.FAILURE;
         }
@@ -148,17 +169,13 @@ public final class ReturnToChromeUtil {
      *
      * @param lastTimeMillis The last time the application was backgrounded or foreground, depends
      *                       on which time is the max. Set in ChromeTabbedActivity::onStopWithNative
+     * @param isTablet Whether the activity is running in tablet mode.
      * @return true if past threshold, false if not past threshold or experiment cannot be loaded.
      */
-    public static boolean shouldShowTabSwitcher(final long lastTimeMillis) {
-        long tabSwitcherAfterMillis =
-                StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getValue()
-                * DateUtils.SECOND_IN_MILLIS;
-        if (ChromeFeatureList.sStartSurfaceReturnTime.isEnabled()
-                && StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS.getValue() != 0
-                && StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL.getValue()) {
-            tabSwitcherAfterMillis = getReturnTimeFromSegmentation();
-        }
+    public static boolean shouldShowTabSwitcher(final long lastTimeMillis, boolean isTablet) {
+        long tabSwitcherAfterMillis = getReturnTime(isTablet
+                        ? StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS
+                        : StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS);
 
         if (lastTimeMillis == -1) {
             // No last background timestamp set, use control behavior unless "immediate" was set.
@@ -174,6 +191,19 @@ public final class ReturnToChromeUtil {
     }
 
     /**
+     * Gets the return time interval. The return time is in the unit of milliseconds.
+     * @param returnTime The return time parameter based on form factor, either phones or tablets.
+     */
+    private static long getReturnTime(IntCachedFieldTrialParameter returnTime) {
+        if (ChromeFeatureList.sStartSurfaceReturnTime.isEnabled() && returnTime.getValue() != 0
+                && StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL.getValue()) {
+            return getReturnTimeFromSegmentation(returnTime);
+        }
+
+        return returnTime.getValue() * DateUtils.SECOND_IN_MILLIS;
+    }
+
+    /**
      * Gets the cached return time obtained from the segmentation platform service.
      * Note: this function should NOT been called on tablets! The default value for tablets is -1
      * which means not showing.
@@ -181,11 +211,11 @@ public final class ReturnToChromeUtil {
      *         0 means showing immediately. The return time is in the unit of milliseconds.
      */
     @VisibleForTesting
-    public static long getReturnTimeFromSegmentation() {
+    public static long getReturnTimeFromSegmentation(IntCachedFieldTrialParameter returnTime) {
         // Sets the default value as 8 hours; 0 means showing immediately.
         return SharedPreferencesManager.getInstance().readLong(
                 ChromePreferenceKeys.START_RETURN_TIME_SEGMENTATION_RESULT_MS,
-                START_SURFACE_RETURN_TIME_SECONDS.getDefaultValue());
+                returnTime.getDefaultValue());
     }
 
     /**
@@ -441,6 +471,12 @@ public final class ReturnToChromeUtil {
         // If Start surface isn't enabled, return false.
         if (!ReturnToChromeUtil.isStartSurfaceEnabled(context)) return false;
 
+        return shouldShowHomeSurfaceAtStartupImpl(
+                false /* isTablet */, intent, tabModelSelector, inactivityTracker);
+    }
+
+    private static boolean shouldShowHomeSurfaceAtStartupImpl(boolean isTablet, Intent intent,
+            TabModelSelector tabModelSelector, ChromeInactivityTracker inactivityTracker) {
         // All of the following checks are based on Start surface is enabled.
         // If there's no tab existing, handle the initial tab creation.
         // Note: if user has a customized homepage, we don't show Start even there isn't any tab.
@@ -464,14 +500,22 @@ public final class ReturnToChromeUtil {
         // Checks whether to show the Start surface due to feature flag TAB_SWITCHER_ON_RETURN_MS.
         long lastVisibleTimeMs = inactivityTracker.getLastVisibleTimeMs();
         long lastBackgroundTimeMs = inactivityTracker.getLastBackgroundedTimeMs();
-        boolean tabSwitcherOnReturn = IntentUtils.isMainIntentFromLauncher(intent)
+        return IntentUtils.isMainIntentFromLauncher(intent)
                 && ReturnToChromeUtil.shouldShowTabSwitcher(
-                        Math.max(lastBackgroundTimeMs, lastVisibleTimeMs));
+                        Math.max(lastBackgroundTimeMs, lastVisibleTimeMs), isTablet);
+    }
 
-        // If the overview page won't be shown on startup, stops here.
-        if (!tabSwitcherOnReturn) return false;
+    /**
+     * Returns whether should show a NTP as the home surface at startup. This feature is only
+     * enabled on Tablet.
+     */
+    public static boolean shouldShowNtpAsHomeSurfaceAtStartup(boolean isTablet, Intent intent,
+            TabModelSelector tabModelSelector, ChromeInactivityTracker inactivityTracker) {
+        // If "Start surface on tablet" isn't enabled, return false.
+        if (!StartSurfaceConfiguration.isNtpAsHomeSurfaceEnabled(isTablet)) return false;
 
-        return true;
+        return shouldShowHomeSurfaceAtStartupImpl(
+                true /* isTablet */, intent, tabModelSelector, inactivityTracker);
     }
 
     /**
@@ -483,6 +527,79 @@ public final class ReturnToChromeUtil {
         final @TabLaunchType int type = currentTab.getLaunchType();
         return type == TabLaunchType.FROM_START_SURFACE
                 || StartSurfaceUserData.isOpenedFromStart(currentTab);
+    }
+
+    /**
+     * Creates a new Tab and show Home surface UI. This is called when the last active Tab isn't a
+     * NTP, and we need to create one and show Home surface UI (a module showing the last active
+     * Tab).
+     * @param tabCreator The {@link TabCreator} object.
+     * @param tabModelSelector The {@link TabModelSelector} object.
+     * @param lastActiveTabUrl The URL of the last active Tab. It is non-null in cold startup before
+     *                         the Tab is restored.
+     * @param lastActiveTab The object of the last active Tab. It is non-null after TabModel is
+     *                      initialized, e.g., in warm startup.
+     */
+    public static Tab createNewTabAndShowHomeSurfaceUi(TabCreator tabCreator,
+            TabModelSelector tabModelSelector, @Nullable String lastActiveTabUrl,
+            @Nullable Tab lastActiveTab) {
+        assert lastActiveTab != null || lastActiveTabUrl != null;
+
+        // Creates a new Tab if doesn't find an existing to reuse.
+        Tab ntpTab = tabCreator.createNewTab(
+                new LoadUrlParams(UrlConstants.NTP_URL), TabLaunchType.FROM_STARTUP, null);
+
+        // If the last active Tab isn't ready yet, we will listen to the willAddTab() event and find
+        // the Tab instance with the given last active Tab's URL. The last active Tab is always the
+        // first one to be restored.
+        if (lastActiveTab == null) {
+            assert lastActiveTabUrl != null;
+            TabModelObserver observer = new TabModelObserver() {
+                @Override
+                public void willAddTab(Tab tab, int type) {
+                    assert TextUtils.equals(lastActiveTabUrl, tab.getUrl().getSpec())
+                        : "The URL of first Tab restored doesn't match the URL of the last active Tab read from the Tab state metadata file!";
+                    showHomeSurfaceUiOnNtp(ntpTab, tab);
+                    tabModelSelector.getModel(false).removeObserver(this);
+                }
+            };
+            tabModelSelector.getModel(false).addObserver(observer);
+        } else {
+            showHomeSurfaceUiOnNtp(ntpTab, lastActiveTab);
+        }
+
+        return ntpTab;
+    }
+
+    /**
+     * Shows a NTP on warm startup on tablets if return time arrives. Only create a new NTP if there
+     * isn't any existing NTP to reuse.
+     * @param isIncognito Whether the incognito mode is selected.
+     * @param shouldShowNtpHomeSurfaceOnStartup Whether to show a NTP as home surface on startup.
+     * @param currentTabModel The object of the current {@link  TabModel}.
+     * @param tabCreator The {@link TabCreator} object.
+     */
+    public static void setInitialOverviewStateOnResumeOnTablet(boolean isIncognito,
+            boolean shouldShowNtpHomeSurfaceOnStartup, TabModel currentTabModel,
+            TabCreator tabCreator) {
+        if (isIncognito || !shouldShowNtpHomeSurfaceOnStartup) {
+            return;
+        }
+
+        int index = currentTabModel.index();
+        Tab lastActiveTab = TabModelUtils.getCurrentTab(currentTabModel);
+        if (lastActiveTab == null) return;
+
+        int indexOfFirstNtp = TabModelUtils.getTabIndexByUrl(currentTabModel, UrlConstants.NTP_URL);
+        if (indexOfFirstNtp != TabModel.INVALID_TAB_INDEX) {
+            // If the last active Tab is NTP, early return here.
+            if (indexOfFirstNtp == index) return;
+
+            TabModelUtils.setIndex(currentTabModel, indexOfFirstNtp, false);
+            showHomeSurfaceUiOnNtp(currentTabModel.getTabAt(indexOfFirstNtp), lastActiveTab);
+        } else {
+            createNewTabAndShowHomeSurfaceUi(tabCreator, null, null, lastActiveTab);
+        }
     }
 
     /*
@@ -615,5 +732,13 @@ public final class ReturnToChromeUtil {
             BrowserUiUtils.recordModuleClickHistogram(HostSurface.NEW_TAB_PAGE,
                     BrowserUiUtils.ModuleTypeOnStartAndNTP.TAB_SWITCHER_BUTTON);
         }
+    }
+
+    /**
+     * Shows the home surface UI on the given Ntp on tablets.
+     */
+    private static void showHomeSurfaceUiOnNtp(Tab ntpTab, Tab lastActiveTab) {
+        assert ntpTab.isNativePage();
+        ((NewTabPage) ntpTab.getNativePage()).showHomeSurfaceUi(lastActiveTab);
     }
 }

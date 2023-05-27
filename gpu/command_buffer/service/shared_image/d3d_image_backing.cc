@@ -10,7 +10,6 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/shared_image_trace_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/dxgi_shared_handle_manager.h"
@@ -68,29 +67,31 @@ size_t NumPlanes(DXGI_FORMAT dxgi_format) {
 
 viz::SharedImageFormat PlaneFormat(DXGI_FORMAT dxgi_format, size_t plane) {
   DCHECK_LT(plane, NumPlanes(dxgi_format));
-  viz::ResourceFormat format;
+  viz::SharedImageFormat format;
   switch (dxgi_format) {
     case DXGI_FORMAT_NV12:
       // Y plane is accessed as R8 and UV plane is accessed as RG88 in D3D.
-      format = plane == 0 ? viz::RED_8 : viz::RG_88;
+      format = plane == 0 ? viz::SinglePlaneFormat::kR_8
+                          : viz::SinglePlaneFormat::kRG_88;
       break;
     case DXGI_FORMAT_P010:
-      format = plane == 0 ? viz::R16_EXT : viz::RG16_EXT;
+      format = plane == 0 ? viz::SinglePlaneFormat::kR_16
+                          : viz::SinglePlaneFormat::kRG_1616;
       break;
     case DXGI_FORMAT_B8G8R8A8_UNORM:
-      format = viz::BGRA_8888;
+      format = viz::SinglePlaneFormat::kBGRA_8888;
       break;
     case DXGI_FORMAT_R10G10B10A2_UNORM:
-      format = viz::RGBA_1010102;
+      format = viz::SinglePlaneFormat::kRGBA_1010102;
       break;
     case DXGI_FORMAT_R16G16B16A16_FLOAT:
-      format = viz::RGBA_F16;
+      format = viz::SinglePlaneFormat::kRGBA_F16;
       break;
     default:
       NOTREACHED();
-      format = viz::BGRA_8888;
+      format = viz::SinglePlaneFormat::kBGRA_8888;
   }
-  return viz::SharedImageFormat::SinglePlane(format);
+  return format;
 }
 
 WGPUTextureFormat DXGIToWGPUFormat(DXGI_FORMAT dxgi_format) {
@@ -341,7 +342,7 @@ std::unique_ptr<D3DImageBacking> D3DImageBacking::Create(
 
 std::unique_ptr<D3DImageBacking> D3DImageBacking::CreateFromGLTexture(
     const Mailbox& mailbox,
-    viz::ResourceFormat format,
+    viz::SharedImageFormat format,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
@@ -356,9 +357,8 @@ std::unique_ptr<D3DImageBacking> D3DImageBacking::CreateFromGLTexture(
       base::PassKey<D3DImageBacking>(), std::move(gl_texture),
       gl::ScopedEGLImage());
   return base::WrapUnique(new D3DImageBacking(
-      mailbox, viz::SharedImageFormat::SinglePlane(format), size, color_space,
-      surface_origin, alpha_type, usage, std::move(d3d11_texture),
-      {std::move(gl_texture_holder)},
+      mailbox, format, size, color_space, surface_origin, alpha_type, usage,
+      std::move(d3d11_texture), {std::move(gl_texture_holder)},
       /*dxgi_shared_handle_state=*/nullptr, texture_target, array_slice));
 }
 
@@ -395,7 +395,8 @@ D3DImageBacking::CreateFromVideoTexture(
     // value from default-construction.
     constexpr gfx::ColorSpace kInvalidColorSpace;
 
-    // TODO(sunnyps): Switch to GL_TEXTURE_2D since it's now supported by ANGLE.
+    // TODO(crbug.com/1430349): Switch to GL_TEXTURE_2D since it's now supported
+    // by ANGLE.
     constexpr GLenum kTextureTarget = GL_TEXTURE_EXTERNAL_OES;
 
     // Do not cache a GL texture in the backing if it could be owned by WebGPU
@@ -1116,7 +1117,8 @@ D3DImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
       manager, this, tracker, std::move(gl_texture_holders));
 }
 
-std::unique_ptr<SkiaImageRepresentation> D3DImageBacking::ProduceSkia(
+std::unique_ptr<SkiaGaneshImageRepresentation>
+D3DImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {

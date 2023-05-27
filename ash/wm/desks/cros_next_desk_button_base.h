@@ -7,12 +7,16 @@
 
 #include "ash/wm/overview/overview_highlightable_view.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/views/controls/button/label_button.h"
 
 namespace ash {
 
+class DeskBarViewBase;
+
 // The base class of buttons (default desk button, new desk button and library
-// button) on desks bar.
+// button) on desks bar. It's guaranteed this button always lives under a desk
+// bar view.
 // TODO(conniekxu): Remove `DeskButtonBase`, replace it with this class and
 // rename this class by removing the prefix CrOSNext.
 class CrOSNextDeskButtonBase : public views::LabelButton,
@@ -22,6 +26,7 @@ class CrOSNextDeskButtonBase : public views::LabelButton,
 
   explicit CrOSNextDeskButtonBase(const std::u16string& text,
                                   bool set_text,
+                                  DeskBarViewBase* bar_view,
                                   base::RepeatingClosure pressed_callback);
   CrOSNextDeskButtonBase(const CrOSNextDeskButtonBase&) = delete;
   CrOSNextDeskButtonBase& operator=(const CrOSNextDeskButtonBase&) = delete;
@@ -41,6 +46,9 @@ class CrOSNextDeskButtonBase : public views::LabelButton,
 
  protected:
   virtual void UpdateFocusState();
+
+  // Owned by the views hierarchy.
+  const raw_ptr<DeskBarViewBase, ExperimentalAsh> bar_view_;
 
  private:
   base::RepeatingClosure pressed_callback_;

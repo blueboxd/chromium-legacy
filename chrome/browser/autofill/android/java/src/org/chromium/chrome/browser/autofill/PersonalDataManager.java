@@ -27,7 +27,6 @@ import org.chromium.components.image_fetcher.ImageFetcherConfig;
 import org.chromium.components.image_fetcher.ImageFetcherFactory;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -58,26 +57,6 @@ public class PersonalDataManager {
          * Called when the data is changed.
          */
         void onPersonalDataChanged();
-    }
-
-    /**
-     * Callback for full card request.
-     */
-    public interface FullCardRequestDelegate {
-        /**
-         * Called when user provided the full card details, including the CVC and the full PAN.
-         *
-         * @param card The full card.
-         * @param cvc The CVC for the card.
-         */
-        @CalledByNative("FullCardRequestDelegate")
-        void onFullCardDetails(CreditCard card, String cvc);
-
-        /**
-         * Called when user did not provide full card details.
-         */
-        @CalledByNative("FullCardRequestDelegate")
-        void onFullCardError();
     }
 
     /**
@@ -502,6 +481,10 @@ public class PersonalDataManager {
 
         public void setOrigin(String origin) {
             mOrigin = origin;
+        }
+
+        public void setSource(@Source int source) {
+            mSource = source;
         }
 
         public void setHonorificPrefix(String honorificPrefix) {
@@ -1105,12 +1088,6 @@ public class PersonalDataManager {
                 mPersonalDataManagerAndroid, PersonalDataManager.this, profile);
     }
 
-    public void getFullCard(
-            WebContents webContents, CreditCard card, FullCardRequestDelegate delegate) {
-        PersonalDataManagerJni.get().getFullCardForPaymentRequest(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, webContents, card, delegate);
-    }
-
     /**
      * Records the use of the profile associated with the specified {@code guid}. Effectively
      * increments the use count of the profile and sets its use date to the current time. Also logs
@@ -1196,6 +1173,25 @@ public class PersonalDataManager {
     @VisibleForTesting
     public static void setInstanceForTesting(PersonalDataManager manager) {
         sManager = manager;
+    }
+
+    /**
+     * Determines whether the logged in user (if any) is eligible to store
+     * Autofill address profiles to their account.
+     */
+    public boolean isEligibleForAddressAccountStorage() {
+        return PersonalDataManagerJni.get().isEligibleForAddressAccountStorage(
+                mPersonalDataManagerAndroid, PersonalDataManager.this);
+    }
+
+    /**
+     * Users based in unsupported countries and profiles with a country value set
+     * to an unsupported country are not eligible for account storage. This
+     * function determines if the `country_code` is eligible.
+     */
+    public boolean isCountryEligibleForAccountStorage(String countryCode) {
+        return PersonalDataManagerJni.get().isCountryEligibleForAccountStorage(
+                mPersonalDataManagerAndroid, PersonalDataManager.this, countryCode);
     }
 
     /**
@@ -1334,6 +1330,21 @@ public class PersonalDataManager {
     }
 
     /**
+     * @return Whether the Autofill feature for payment methods mandatory reauth is enabled.
+     */
+    public static boolean isAutofillPaymentMethodsMandatoryReauthEnabled() {
+        return getPrefService().getBoolean(Pref.AUTOFILL_PAYMENT_METHODS_MANDATORY_REAUTH);
+    }
+
+    /**
+     * Enables or disables the Autofill feature for payment methods mandatory reauth.
+     * @param enable True to enable payment methods mandatory reauth, false otherwise.
+     */
+    public static void setAutofillPaymentMethodsMandatoryReauth(boolean enable) {
+        getPrefService().setBoolean(Pref.AUTOFILL_PAYMENT_METHODS_MANDATORY_REAUTH, enable);
+    }
+
+    /**
      * @return Whether the Autofill feature is managed.
      */
     public static boolean isAutofillManaged() {
@@ -1431,6 +1442,8 @@ public class PersonalDataManager {
             // If the image fetching was unsuccessful, silently return.
             if (bitmap == null) return;
 
+            // When adding new sizes for card icons, check if the corner radius needs to be added as
+            // a suffix for caching (crbug.com/1431283).
             mCreditCardArtImages.put(urlWithParams.getSpec(),
                     AutofillUiUtils.resizeAndAddRoundedCornersAndGreyBorder(bitmap, width, height,
                             cornerRadius,
@@ -1471,6 +1484,10 @@ public class PersonalDataManager {
                 boolean includeOrganizationInLabel, boolean includeCountryInLabel);
         AutofillProfile getProfileByGUID(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, String guid);
+        boolean isEligibleForAddressAccountStorage(
+                long nativePersonalDataManagerAndroid, PersonalDataManager caller);
+        boolean isCountryEligibleForAccountStorage(long nativePersonalDataManagerAndroid,
+                PersonalDataManager caller, String countryCode);
         String setProfile(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
                 AutofillProfile profile);
         String setProfileToLocal(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
@@ -1525,9 +1542,6 @@ public class PersonalDataManager {
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller);
         void clearUnmaskedCache(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, String guid);
-        void getFullCardForPaymentRequest(long nativePersonalDataManagerAndroid,
-                PersonalDataManager caller, WebContents webContents, CreditCard card,
-                FullCardRequestDelegate delegate);
         void loadRulesForAddressNormalization(long nativePersonalDataManagerAndroid,
                 PersonalDataManager caller, String regionCode);
         void loadRulesForSubKeys(long nativePersonalDataManagerAndroid, PersonalDataManager caller,

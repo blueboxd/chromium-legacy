@@ -28,10 +28,7 @@
 #include "base/notreached.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/layout/api/line_layout_item.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
-#include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
-#include "third_party/blink/renderer/core/layout/line/line_box_list.h"
 
 namespace blink {
 
@@ -150,72 +147,24 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   LayoutUnit MarginTop() const final;
   LayoutUnit MarginBottom() const final;
 
+  // Returns the bounding box of all quads returned by `LocalQuadsForSelf`.
+  gfx::RectF LocalBoundingBoxRectF() const;
+
   gfx::RectF LocalBoundingBoxRectForAccessibility() const final;
 
   PhysicalRect PhysicalLinesBoundingBox() const;
   PhysicalRect PhysicalVisualOverflowRect() const final;
   PhysicalRect ReferenceBoxForClipPath() const;
 
-  InlineFlowBox* CreateAndAppendInlineFlowBox();
-
-  void DirtyLineBoxes(bool full_layout);
-
-  // LineBoxes() and FirstInlineFragment() are mutually exclusive,
-  // depends on IsInLayoutNGInlineFormattingContext().
-  const LineBoxList* LineBoxes() const {
-    NOT_DESTROYED();
-    return IsInLayoutNGInlineFormattingContext() ? &LineBoxList::Empty()
-                                                 : &line_boxes_;
-  }
-  LineBoxList* MutableLineBoxes();
-
-  InlineFlowBox* FirstLineBox() const {
-    NOT_DESTROYED();
-    return LineBoxes()->First();
-  }
-  InlineFlowBox* LastLineBox() const {
-    NOT_DESTROYED();
-    return LineBoxes()->Last();
-  }
-  InlineBox* FirstLineBoxIncludingCulling() const {
-    NOT_DESTROYED();
-    return AlwaysCreateLineBoxes() ? FirstLineBox()
-                                   : CulledInlineFirstLineBox();
-  }
-  InlineBox* LastLineBoxIncludingCulling() const {
-    NOT_DESTROYED();
-    return AlwaysCreateLineBoxes() ? LastLineBox() : CulledInlineLastLineBox();
-  }
-
   bool HasInlineFragments() const final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;
   void ClearFirstInlineFragmentItemIndex() final;
   void SetFirstInlineFragmentItemIndex(wtf_size_t) final;
 
-  LayoutBoxModelObject* VirtualContinuation() const final {
-    NOT_DESTROYED();
-    return Continuation();
-  }
-  LayoutInline* InlineElementContinuation() const;
-
-  PhysicalOffset OffsetForInFlowPositionedInline(const LayoutBox& child) const;
-
-  void AddOutlineRects(Vector<PhysicalRect>&,
+  void AddOutlineRects(OutlineRectCollector&,
                        OutlineInfo*,
                        const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
-  // The following methods are called from the container if it has already added
-  // outline rects for line boxes and/or children of this LayoutInline.
-  void AddOutlineRectsForChildrenAndContinuations(
-      Vector<PhysicalRect>&,
-      const PhysicalOffset& additional_offset,
-      NGOutlineType) const;
-  void AddOutlineRectsForContinuations(Vector<PhysicalRect>&,
-                                       const PhysicalOffset& additional_offset,
-                                       NGOutlineType) const;
-
-  using LayoutBoxModelObject::Continuation;
-  using LayoutBoxModelObject::SetContinuation;
 
   bool AlwaysCreateLineBoxes() const {
     NOT_DESTROYED();
@@ -242,8 +191,7 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   }
   void UpdateShouldCreateBoxFragment();
 
-  LayoutRect LocalCaretRect(const InlineBox*,
-                            int,
+  LayoutRect LocalCaretRect(int,
                             LayoutUnit* extra_width_to_end_of_line) const final;
 
   // When this LayoutInline doesn't generate line boxes of its own, regenerate
@@ -279,15 +227,12 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
 
   void InLayoutNGInlineFormattingContextWillChange(bool) final;
 
-  void DeleteLineBoxes();
-
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 
-  void LocalQuadsForSelf(Vector<gfx::QuadF>& quads) const override;
-  void AbsoluteQuadsForSelf(Vector<gfx::QuadF>& quads,
-                            MapCoordinatesFlags mode = 0) const override;
+  void AbsoluteQuads(Vector<gfx::QuadF>& quads,
+                     MapCoordinatesFlags mode = 0) const override;
 
   PhysicalOffset OffsetFromContainerInternal(
       const LayoutObject*,
@@ -327,8 +272,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   bool ComputeInitialShouldCreateBoxFragment(const ComputedStyle& style) const;
 
   PhysicalRect CulledInlineVisualOverflowBoundingBox() const;
-  InlineBox* CulledInlineFirstLineBox() const;
-  InlineBox* CulledInlineLastLineBox() const;
 
   // For PhysicalVisualOverflowRect() only, to get bounding box of visual
   // overflow of line boxes.
@@ -338,8 +281,6 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
   // void (const PhysicalRect&).
   template <typename PhysicalRectCollector>
   void CollectLineBoxRects(const PhysicalRectCollector&) const;
-  template <typename PhysicalRectCollector>
-  void CollectCulledLineBoxRects(const PhysicalRectCollector&) const;
 
   // FlippedRectCollector should be like a function:
   // void (const LayoutRect&);
@@ -348,29 +289,13 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
       const FlippedRectCollector&,
       const LayoutInline* container) const;
 
-  void AddChildToContinuation(LayoutObject* new_child,
-                              LayoutObject* before_child);
   void AddChildIgnoringContinuation(LayoutObject* new_child,
                                     LayoutObject* before_child = nullptr) final;
   void AddChildAsBlockInInline(LayoutObject* new_child,
                                LayoutObject* before_child);
 
-  void MoveChildrenToIgnoringContinuation(LayoutInline* to,
-                                          LayoutObject* start_child);
-
-  void SplitInlines(LayoutBlockFlow* from_block,
-                    LayoutBlockFlow* to_block,
-                    LayoutBlockFlow* middle_block,
-                    LayoutObject* before_child,
-                    LayoutBoxModelObject* old_cont);
-  void SplitFlow(LayoutObject* before_child,
-                 LayoutBlockFlow* new_block_box,
-                 LayoutObject* new_child,
-                 LayoutBoxModelObject* old_cont);
-
   // Create an anonymous block for block children of this inline.
-  LayoutBlockFlow* CreateAnonymousContainerForBlockChildren(
-      bool split_flow) const;
+  LayoutBlockFlow* CreateAnonymousContainerForBlockChildren() const;
   LayoutBox* CreateAnonymousBoxToSplit(
       const LayoutBox* box_to_split) const final;
 
@@ -412,21 +337,11 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
     return gfx::Rect(bounding_box.size());
   }
 
-  virtual InlineFlowBox* CreateInlineFlowBox();  // Subclassed by SVG and Ruby
-
   void DirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior) final;
 
   // TODO(leviw): This should probably be an int. We don't snap equivalent lines
   // to different heights.
-  LayoutUnit LineHeight(
-      bool first_line,
-      LineDirectionMode,
-      LinePositionMode = kPositionOnContainingLine) const final;
-  LayoutUnit BaselinePosition(
-      FontBaseline,
-      bool first_line,
-      LineDirectionMode,
-      LinePositionMode = kPositionOnContainingLine) const final;
+  LayoutUnit FirstLineHeight() const final;
 
   void ChildBecameNonInline(LayoutObject* child) final;
 
@@ -442,30 +357,16 @@ class CORE_EXPORT LayoutInline : public LayoutBoxModelObject {
     return true;
   }
 
-  LayoutInline* Clone() const;
-
-  LayoutBoxModelObject* ContinuationBefore(LayoutObject* before_child);
-
   absl::optional<PhysicalOffset> FirstLineBoxTopLeftInternal() const;
   PhysicalOffset AnchorPhysicalLocation() const;
 
   LayoutObjectChildList children_;
 
-  // All of the line boxes created for this inline flow. For example,
-  // <i>Hello<br>world.</i> will have two <i> line boxes.
-  // Valid only when !IsInLayoutNGInlineFormattingContext().
-  LineBoxList line_boxes_;
-
   // The index of the first fragment item associated with this object in
   // |NGFragmentItems::Items()|. Zero means there are no such item.
   // Valid only when IsInLayoutNGInlineFormattingContext().
   wtf_size_t first_fragment_item_index_ = 0u;
-  };
-
-inline LineBoxList* LayoutInline::MutableLineBoxes() {
-  CHECK(!IsInLayoutNGInlineFormattingContext());
-  return &line_boxes_;
-}
+};
 
 inline wtf_size_t LayoutInline::FirstInlineFragmentItemIndex() const {
   if (!IsInLayoutNGInlineFormattingContext())

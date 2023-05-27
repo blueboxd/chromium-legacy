@@ -41,6 +41,7 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 
 namespace {
 
@@ -375,7 +376,6 @@ scoped_refptr<URLIndexPrivateData> URLIndexPrivateData::RebuildFromHistory(
       OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup();
   int num_urls_indexed = 0;
   for (history::URLRow row; history_enum.GetNextURL(&row);) {
-    DCHECK(RowQualifiesAsSignificant(row, base::Time()));
     // Do not use >= to account for case of -1 for unlimited urls.
     if (rebuilt_data->IndexRow(history_db, nullptr, row, scheme_allowlist,
                                nullptr) &&
@@ -704,7 +704,7 @@ void URLIndexPrivateData::HistoryIdsToScoredMatches(
     if (new_scored_match.raw_score_before_domain_boosting <
         new_scored_match.raw_score_after_domain_boosting) {
       triggered_feature_service->FeatureTriggered(
-          OmniboxTriggeredFeatureService::Feature::kDomainSuggestions);
+          metrics::OmniboxEventProto_Feature_DOMAIN_SUGGESTIONS);
     }
 
     // Filter new matches that ended up scoring 0. (These are usually matches

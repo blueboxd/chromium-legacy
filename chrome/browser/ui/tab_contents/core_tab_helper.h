@@ -116,11 +116,23 @@ class CoreTabHelper : public content::WebContentsObserver,
       const std::string& thumbnail_content_type,
       const std::vector<uint8_t>& thumbnail_data,
       const gfx::Size& original_size,
+      const gfx::Size& downscaled_size,
       const std::string& image_extension,
       const std::vector<lens::mojom::LatencyLogPtr> latency_logs);
 
   // Wrapper method for fetching template URL service.
   TemplateURLService* GetTemplateURLService();
+
+  // Encode the image and set the content type and image format for the
+  // result image. Returns the vector of image bytes.
+  static std::vector<unsigned char> EncodeImage(
+      const gfx::Image& image,
+      std::string& content_type,
+      lens::mojom::ImageFormat& image_format);
+
+  // Helper function to return if the companion side panel is enabled for image
+  // search.
+  bool IsImageSearchSupportedForCompanion();
 
   // Posts the bytes and content type to the specified URL If |use_side_panel|
   // is true, the content will open in a side panel, otherwise it will open in

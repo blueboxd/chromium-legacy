@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DIPS_DIPS_STORAGE_H_
 #define CHROME_BROWSER_DIPS_DIPS_STORAGE_H_
 
+#include <cstddef>
 #include <map>
 #include <string>
 
@@ -48,20 +49,30 @@ class DIPSStorage {
   void RecordBounce(const GURL& url, base::Time time, bool stateful);
 
   // Storage querying Methods --------------------------------------------------
+
+  // Returns the subset of sites in |sites| WITHOUT user interaction recorded.
+  std::set<std::string> FilterSitesWithoutInteraction(
+      std::set<std::string> sites) const;
+
   // Returns all sites that did a bounce that aren't protected from DIPS.
-  std::vector<std::string> GetSitesThatBounced() const;
+  std::vector<std::string> GetSitesThatBounced(
+      const base::TimeDelta& grace_period) const;
 
   // Returns all sites that did a stateful bounce that aren't protected from
   // DIPS.
-  std::vector<std::string> GetSitesThatBouncedWithState() const;
+  std::vector<std::string> GetSitesThatBouncedWithState(
+      const base::TimeDelta& grace_period) const;
 
   // Returns all sites which use storage that aren't protected from DIPS.
-  std::vector<std::string> GetSitesThatUsedStorage() const;
+  std::vector<std::string> GetSitesThatUsedStorage(
+      const base::TimeDelta& grace_period) const;
 
   // Returns the list of sites that should have their state cleared by DIPS. How
   // these sites are determined is controlled by the value of
-  // `dips::kTriggeringAction`.
-  std::vector<std::string> GetSitesToClear() const;
+  // `dips::kTriggeringAction`. Passing a non-NULL `grace_period` parameter
+  // overrides the use of `dips::kGracePeriod` when evaluating sites to clear.
+  std::vector<std::string> GetSitesToClear(
+      absl::optional<base::TimeDelta> grace_period) const;
 
   // Utility Methods -----------------------------------------------------------
 

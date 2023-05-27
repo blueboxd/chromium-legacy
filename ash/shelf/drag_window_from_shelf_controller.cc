@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ash/shelf/drag_window_from_shelf_controller.h"
+#include "base/memory/raw_ptr.h"
+
+#include <algorithm>
 
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/ash_features.h"
@@ -20,6 +23,7 @@
 #include "ash/wallpaper/wallpaper_constants.h"
 #include "ash/wallpaper/wallpaper_view.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/desks/desks_util.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -33,7 +37,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_macros.h"
@@ -197,7 +200,7 @@ class DragWindowFromShelfController::WindowsHider
   }
 
  private:
-  aura::Window* dragged_window_;
+  raw_ptr<aura::Window, ExperimentalAsh> dragged_window_;
   std::vector<aura::Window*> hidden_windows_;
 };
 
@@ -242,8 +245,20 @@ DragWindowFromShelfController::DragWindowFromShelfController(
       other_window_copy_ = wm::RecreateLayers(other_window_);
       other_window_copy_->root()->SetVisible(true);
       other_window_copy_->root()->SetOpacity(1.f);
-      other_window_->layer()->parent()->StackAbove(other_window_copy_->root(),
-                                                   other_window_->layer());
+
+      // If `other_window_` is the floated window, we need to move the copy to
+      // the active desk container. The float container will be moved under the
+      // desk containers (see `ScopedFloatContainerStacker `), so that the
+      // overview item does not appear above the dragged window during the drag.
+      if (other_window_ == floated_window) {
+        ui::Layer* new_parent = desks_util::GetActiveDeskContainerForRoot(
+                                    Shell::GetPrimaryRootWindow())
+                                    ->layer();
+        new_parent->Add(other_window_copy_->root());
+      } else {
+        other_window_->layer()->parent()->StackAbove(other_window_copy_->root(),
+                                                     other_window_->layer());
+      }
     }
   }
 
@@ -585,8 +600,8 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
   float y_diff = location_in_screen.y() - min_y;
   float scale = (1.0f - kMinimumWindowScaleDuringDragging) * y_diff / y_full +
                 kMinimumWindowScaleDuringDragging;
-  scale = base::clamp(scale, /*min=*/kMinimumWindowScaleDuringDragging,
-                      /*max=*/1.f);
+  scale = std::clamp(scale, /*min=*/kMinimumWindowScaleDuringDragging,
+                     /*max=*/1.f);
 
   // Calculate the desired translation so that the dragged window stays under
   // the finger during the dragging.
@@ -625,15 +640,19 @@ void DragWindowFromShelfController::UpdateDraggedWindow(
     float copy_scale =
         (bounds.bottom() - location_in_screen.y()) /
         (display_bounds.height() / kOtherWindowFullFadeHeightRatio);
-    copy_scale = 1.f - base::clamp(copy_scale, 0.f, 1.f);
+    copy_scale = 1.f - std::clamp(copy_scale, 0.f, 1.f);
 
     other_window_copy_->root()->SetOpacity(copy_scale);
-    const float copy_transform_scale =
-        base::clamp(copy_scale, kOtherWindowMaxScale, 1.f);
-    const gfx::Transform copy_transform = gfx::GetScaleTransform(
-        other_window_copy_->root()->bounds().CenterPoint(),
-        copy_transform_scale);
-    other_window_copy_->root()->SetTransform(copy_transform);
+
+    CHECK(other_window_);
+    if (!WindowState::Get(other_window_)->IsFloated()) {
+      const float copy_transform_scale =
+          std::clamp(copy_scale, kOtherWindowMaxScale, 1.f);
+      const gfx::Transform copy_transform = gfx::GetScaleTransform(
+          other_window_copy_->root()->bounds().CenterPoint(),
+          copy_transform_scale);
+      other_window_copy_->root()->SetTransform(copy_transform);
+    }
   }
 }
 

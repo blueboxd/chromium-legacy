@@ -5,7 +5,8 @@
 #ifndef GPU_IPC_CLIENT_CLIENT_SHARED_IMAGE_INTERFACE_H_
 #define GPU_IPC_CLIENT_CLIENT_SHARED_IMAGE_INTERFACE_H_
 
-#include "base/containers/flat_set.h"
+#include <set>
+
 #include "base/memory/raw_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
@@ -50,6 +51,7 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
                             GrSurfaceOrigin surface_origin,
                             SkAlphaType alpha_type,
                             uint32_t usage,
+                            base::StringPiece debug_label,
                             gpu::SurfaceHandle surface_handle) override;
   Mailbox CreateSharedImage(viz::SharedImageFormat format,
                             const gfx::Size& size,
@@ -57,6 +59,7 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
                             GrSurfaceOrigin surface_origin,
                             SkAlphaType alpha_type,
                             uint32_t usage,
+                            base::StringPiece debug_label,
                             base::span<const uint8_t> pixel_data) override;
   Mailbox CreateSharedImage(viz::SharedImageFormat format,
                             const gfx::Size& size,
@@ -64,6 +67,7 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
                             GrSurfaceOrigin surface_origin,
                             SkAlphaType alpha_type,
                             uint32_t usage,
+                            base::StringPiece debug_label,
                             gfx::GpuMemoryBufferHandle buffer_handle) override;
   Mailbox CreateSharedImage(gfx::GpuMemoryBuffer* gpu_memory_buffer,
                             GpuMemoryBufferManager* gpu_memory_buffer_manager,
@@ -71,7 +75,8 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
                             const gfx::ColorSpace& color_space,
                             GrSurfaceOrigin surface_origin,
                             SkAlphaType alpha_type,
-                            uint32_t usage) override;
+                            uint32_t usage,
+                            base::StringPiece debug_label) override;
 #if BUILDFLAG(IS_WIN)
   void CopyToGpuMemoryBuffer(const SyncToken& sync_token,
                              const Mailbox& mailbox) override;
@@ -97,7 +102,7 @@ class GPU_EXPORT ClientSharedImageInterface : public SharedImageInterface {
   const raw_ptr<SharedImageInterfaceProxy> proxy_;
 
   base::Lock lock_;
-  base::flat_set<Mailbox> mailboxes_ GUARDED_BY(lock_);
+  std::multiset<Mailbox> mailboxes_ GUARDED_BY(lock_);
 };
 
 }  // namespace gpu

@@ -10,6 +10,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/web_applications/commands/fetch_installability_for_chrome_management.h"
 #include "chrome/browser/web_applications/commands/manifest_update_check_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_finalize_command.h"
@@ -43,6 +44,7 @@ class WebAppProvider;
 struct IsolationData;
 class WebApp;
 enum class ApiApprovalState;
+struct SynchronizeOsOptions;
 
 // The command scheduler is the main API to access the web app system. The
 // scheduler internally ensures:
@@ -136,6 +138,7 @@ class WebAppCommandScheduler {
   void ScheduleManifestUpdateCheck(
       const GURL& url,
       const AppId& app_id,
+      base::Time check_time,
       base::WeakPtr<content::WebContents> contents,
       ManifestUpdateCheckCommand::CompletedCallback callback,
       const base::Location& location = FROM_HERE);
@@ -159,10 +162,13 @@ class WebAppCommandScheduler {
 
   // Schedules a command that installs the Isolated Web App described by the
   // given IsolatedWebAppUrlInfo and IsolationData.
-  void InstallIsolatedWebApp(const IsolatedWebAppUrlInfo& url_info,
-                             const IsolatedWebAppLocation& location,
-                             InstallIsolatedWebAppCallback callback,
-                             const base::Location& call_location = FROM_HERE);
+  void InstallIsolatedWebApp(
+      const IsolatedWebAppUrlInfo& url_info,
+      const IsolatedWebAppLocation& location,
+      std::unique_ptr<ScopedKeepAlive> keep_alive,
+      std::unique_ptr<ScopedProfileKeepAlive> profile_keep_alive,
+      InstallIsolatedWebAppCallback callback,
+      const base::Location& call_location = FROM_HERE);
 
   // Computes the browsing data size of all installed Isolated Web Apps.
   void GetIsolatedWebAppBrowsingData(
@@ -266,9 +272,11 @@ class WebAppCommandScheduler {
 
   // Used to schedule a synchronization of a web app's OS states with the
   // current DB states.
-  void SynchronizeOsIntegration(const AppId& app_id,
-                                base::OnceClosure synchronize_callback,
-                                const base::Location& location = FROM_HERE);
+  void SynchronizeOsIntegration(
+      const AppId& app_id,
+      base::OnceClosure synchronize_callback,
+      absl::optional<SynchronizeOsOptions> synchronize_options = absl::nullopt,
+      const base::Location& location = FROM_HERE);
 
   // TODO(https://crbug.com/1298130): expose all commands for web app
   // operations.

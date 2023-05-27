@@ -4,8 +4,8 @@
 
 #include <stddef.h>
 
+#include <deque>
 #include <memory>
-#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/command_line.h"
@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/extensions/extension_side_panel_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -107,6 +108,7 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/value_builder.h"
@@ -178,41 +180,35 @@ void DispatchOnTestSuiteSkipCheck(DevToolsWindow* window,
                                   const char* method,
                                   T... args) {
   WebContents* wc = DevToolsWindowTesting::Get(window)->main_web_contents();
-  std::string result;
   const char* args_array[] = {method, args...};
   std::ostringstream script;
   script << "uiTests.dispatchOnTestSuite([";
   for (size_t i = 0; i < std::size(args_array); ++i)
     script << (i ? "," : "") << '\"' << args_array[i] << '\"';
   script << "])";
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(wc, script.str(), &result));
-  EXPECT_EQ("[OK]", result);
+  EXPECT_EQ("[OK]", content::EvalJs(wc, script.str(),
+                                    content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 }
 
 void LoadLegacyFilesInFrontend(DevToolsWindow* window) {
-  std::string result;
   WebContents* wc = DevToolsWindowTesting::Get(window)->main_web_contents();
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      wc, "uiTests.setupLegacyFilesForTest();", &result));
-  ASSERT_EQ("[OK]", result);
+  ASSERT_EQ("[OK]", content::EvalJs(wc, "uiTests.setupLegacyFilesForTest();",
+                                    content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 }
 
 template <typename... T>
 void DispatchOnTestSuite(DevToolsWindow* window,
                          const char* method,
                          T... args) {
-  std::string result;
   WebContents* wc = DevToolsWindowTesting::Get(window)->main_web_contents();
   // At first check that JavaScript part of the front-end is loaded by
   // checking that global variable uiTests exists(it's created after all js
   // files have been loaded) and has runTest method.
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      wc,
-      "window.domAutomationController.send("
-      "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
-      &result));
-  ASSERT_EQ("function", result) << "DevTools front-end is broken.";
+  ASSERT_EQ(
+      "function",
+      content::EvalJs(
+          wc, "'' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite))"))
+      << "DevTools front-end is broken.";
   LoadLegacyFilesInFrontend(window);
   DispatchOnTestSuiteSkipCheck(window, method, args...);
 }
@@ -255,6 +251,13 @@ void AllowDevTools(Browser* browser) {
       prefs::kDevToolsAvailability,
       static_cast<int>(
           policy::DeveloperToolsPolicyHandler::Availability::kAllowed));
+}
+
+scoped_refptr<DevToolsAgentHost> GetOrCreateDevToolsHostForWebContents(
+    WebContents* wc) {
+  return base::FeatureList::IsEnabled(::features::kDevToolsTabTarget)
+             ? content::DevToolsAgentHost::GetOrCreateForTab(wc)
+             : content::DevToolsAgentHost::GetOrCreateFor(wc);
 }
 
 }  // namespace
@@ -573,15 +576,14 @@ class DevToolsExtensionTest : public DevToolsTest {
   // listed as a devtools_page in the manifest.  If |devtools_page| is empty, a
   // non-devtools extension is created instead. |panel_iframe_src| controls the
   // src= attribute of the <iframe> element in the 'panel.html' test page.
-  extensions::TestExtensionDir* BuildExtensionForTest(
+  extensions::TestExtensionDir& BuildExtensionForTest(
       const std::string& name,
       const std::string& devtools_page,
       const std::string& panel_iframe_src) {
-    test_extension_dirs_.push_back(
-        std::make_unique<extensions::TestExtensionDir>());
-    extensions::TestExtensionDir* dir = test_extension_dirs_.back().get();
+    test_extension_dirs_.emplace_back();
+    extensions::TestExtensionDir& dir = test_extension_dirs_.back();
 
-    dir->WriteManifest(BuildExtensionManifest(name, devtools_page));
+    dir.WriteManifest(BuildExtensionManifest(name, devtools_page));
 
     GURL http_frame_url =
         embedded_test_server()->GetURL("a.com", "/popup_iframe.html");
@@ -589,36 +591,36 @@ class DevToolsExtensionTest : public DevToolsTest {
     // If this is a devtools extension, |devtools_page| will indicate which of
     // these devtools_pages will end up being used.  Different tests use
     // different devtools_pages.
-    dir->WriteFile(FILE_PATH_LITERAL("web_devtools_page.html"),
-                   "<html><body><iframe src='" + http_frame_url.spec() +
-                       "'></iframe></body></html>");
+    dir.WriteFile(FILE_PATH_LITERAL("web_devtools_page.html"),
+                  "<html><body><iframe src='" + http_frame_url.spec() +
+                      "'></iframe></body></html>");
 
-    dir->WriteFile(FILE_PATH_LITERAL("simple_devtools_page.html"),
-                   "<html><body></body></html>");
+    dir.WriteFile(FILE_PATH_LITERAL("simple_devtools_page.html"),
+                  "<html><body></body></html>");
 
-    dir->WriteFile(
+    dir.WriteFile(
         FILE_PATH_LITERAL("panel_devtools_page.html"),
         "<html><head><script "
         "src='panel_devtools_page.js'></script></head><body></body></html>");
 
-    dir->WriteFile(FILE_PATH_LITERAL("panel_devtools_page.js"),
-                   "chrome.devtools.panels.create('iframe_panel',\n"
-                   "    null,\n"
-                   "    'panel.html',\n"
-                   "    function(panel) {\n"
-                   "      chrome.devtools.inspectedWindow.eval(\n"
-                   "        'console.log(\"PASS\")');\n"
-                   "    }\n"
-                   ");\n");
+    dir.WriteFile(FILE_PATH_LITERAL("panel_devtools_page.js"),
+                  "chrome.devtools.panels.create('iframe_panel',\n"
+                  "    null,\n"
+                  "    'panel.html',\n"
+                  "    function(panel) {\n"
+                  "      chrome.devtools.inspectedWindow.eval(\n"
+                  "        'console.log(\"PASS\")');\n"
+                  "    }\n"
+                  ");\n");
 
-    dir->WriteFile(FILE_PATH_LITERAL("source.map"),
-                   R"({"version":3,"sources":["foo.js"],"mappings":"AAyCAA"})");
+    dir.WriteFile(FILE_PATH_LITERAL("source.map"),
+                  R"({"version":3,"sources":["foo.js"],"mappings":"AAyCAA"})");
 
-    dir->WriteFile(FILE_PATH_LITERAL("sidebarpane_devtools_page.html"),
-                   "<html><head><script src='sidebarpane_devtools_page.js'>"
-                   "</script></head><body></body></html>");
+    dir.WriteFile(FILE_PATH_LITERAL("sidebarpane_devtools_page.html"),
+                  "<html><head><script src='sidebarpane_devtools_page.js'>"
+                  "</script></head><body></body></html>");
 
-    dir->WriteFile(
+    dir.WriteFile(
         FILE_PATH_LITERAL("sidebarpane_devtools_page.js"),
         "chrome.devtools.panels.elements.createSidebarPane('iframe_pane',\n"
         "    function(sidebar) {\n"
@@ -628,20 +630,20 @@ class DevToolsExtensionTest : public DevToolsTest {
         "    }\n"
         ");\n");
 
-    dir->WriteFile(FILE_PATH_LITERAL("panel.html"),
-                   "<html><body><iframe src='" + panel_iframe_src +
-                       "'></iframe></body></html>");
+    dir.WriteFile(FILE_PATH_LITERAL("panel.html"),
+                  "<html><body><iframe src='" + panel_iframe_src +
+                      "'></iframe></body></html>");
 
-    dir->WriteFile(FILE_PATH_LITERAL("simple_test_page.html"),
-                   "<html><body>This is a test</body></html>");
+    dir.WriteFile(FILE_PATH_LITERAL("simple_test_page.html"),
+                  "<html><body>This is a test</body></html>");
 
     GURL web_url = embedded_test_server()->GetURL("a.com", "/title3.html");
 
-    dir->WriteFile(FILE_PATH_LITERAL("multi_frame_page.html"),
-                   "<html><body><iframe src='about:blank'>"
-                   "</iframe><iframe src='data:text/html,foo'>"
-                   "</iframe><iframe src='" +
-                       web_url.spec() + "'></iframe></body></html>");
+    dir.WriteFile(FILE_PATH_LITERAL("multi_frame_page.html"),
+                  "<html><body><iframe src='about:blank'>"
+                  "</iframe><iframe src='data:text/html,foo'>"
+                  "</iframe><iframe src='" +
+                      web_url.spec() + "'></iframe></body></html>");
     return dir;
   }
 
@@ -650,9 +652,9 @@ class DevToolsExtensionTest : public DevToolsTest {
   const Extension* LoadExtensionForTest(const std::string& name,
                                         const std::string& devtools_page,
                                         const std::string& panel_iframe_src) {
-    extensions::TestExtensionDir* dir =
+    extensions::TestExtensionDir& dir =
         BuildExtensionForTest(name, devtools_page, panel_iframe_src);
-    return LoadExtensionFromPath(dir->UnpackedPath());
+    return LoadExtensionFromPath(dir.UnpackedPath());
   }
 
   std::string BuildComponentExtension() {
@@ -664,14 +666,14 @@ class DevToolsExtensionTest : public DevToolsTest {
     extensions::ExtensionRegistry* extension_registry =
         extensions::ExtensionRegistry::Get(browser()->profile());
 
-    extensions::TestExtensionDir* extension_dir =
+    extensions::TestExtensionDir& extension_dir =
         BuildExtensionForTest("Component extension", "" /* devtools_page */,
                               "" /* panel_iframe_src */);
     std::string manifest = BuildExtensionManifest(
         "Component extension", "" /* devtools_page */, kPublicKey);
     component_loader->set_ignore_allowlist_for_testing(true);
     std::string extension_id =
-        component_loader->Add(manifest, extension_dir->UnpackedPath());
+        component_loader->Add(manifest, extension_dir.UnpackedPath());
     EXPECT_TRUE(extension_registry->enabled_extensions().GetByID(extension_id));
     return extension_id;
   }
@@ -691,8 +693,8 @@ class DevToolsExtensionTest : public DevToolsTest {
     return nullptr;
   }
 
-  std::vector<std::unique_ptr<extensions::TestExtensionDir>>
-      test_extension_dirs_;
+  // Use std::deque to avoid dangling references to existing elements.
+  std::deque<extensions::TestExtensionDir> test_extension_dirs_;
   const base::FilePath test_extensions_dir_;
 };
 
@@ -1032,22 +1034,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                        TestDevToolsExtensionAPI) {
   LoadExtension("devtools_extension");
   RunTest("waitForTestResultsInConsole", kArbitraryPage);
-}
-
-// Tests that chrome.devtools extension is correctly exposed.
-IN_PROC_BROWSER_TEST_F(DevToolsExtensionChromeUrlTest, TestExtensionOnNewTab) {
-  // Install the dynamically-generated devtools extension.
-  const Extension* devtools_extension = LoadExtensionForTest(
-      "Devtools Extension", "panel_devtools_page.html", "");
-  ASSERT_TRUE(devtools_extension);
-  extensions::util::SetIsIncognitoEnabled(devtools_extension->id(),
-                                          browser()->profile(), true);
-
-  OpenDevToolsWindowOnOffTheRecordTab(chrome::kChromeUINewTabURL);
-
-  // Wait for the extension's panel to finish loading -- it'll output 'PASS'
-  // when it's installed. waitForTestResultsInConsole waits until that 'PASS'.
-  RunTestFunction(window_, "waitForTestResultsInConsole");
 }
 
 // Tests that http Iframes within the visible devtools panel for the devtools
@@ -1587,10 +1573,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_DevtoolsInDevTools) {
       devtools_instance->GetSiteURL().SchemeIs(content::kChromeDevToolsScheme));
   EXPECT_EQ(devtools_instance, devtools_iframe_rfh->GetSiteInstance());
 
-  std::string message;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      devtools_iframe_rfh, "domAutomationController.send(self.origin)",
-      &message));
+  std::string message =
+      content::EvalJs(devtools_iframe_rfh, "self.origin").ExtractString();
   EXPECT_EQ(devtools_url.DeprecatedGetOriginAsURL().spec(), message + "/");
 }
 
@@ -1723,6 +1707,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   RunTest("testConsoleContextNames", kPageWithContentScript);
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, CantInspectNewTabPage) {
+  LoadExtension("can_inspect_url");
+  RunTest("waitForTestResultsAsMessage",
+          base::StrCat({kArbitraryPage, "#chrome://newtab/"}));
+}
+
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, CantInspectChromeScheme) {
   LoadExtension("can_inspect_url");
   RunTest("waitForTestResultsAsMessage",
@@ -1763,9 +1753,79 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                         extension_id, "/simple_test_page.html"}));
 }
 
+class DevToolsExtensionSidePanelTest
+    : public DevToolsExtensionTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  DevToolsExtensionSidePanelTest() {
+    if (GetParam()) {
+      feature_list_.InitWithFeatures(
+          /*enabled_features=*/{extensions_features::
+                                    kExtensionSidePanelIntegration,
+                                ::features::kDevToolsTabTarget},
+          /*disabled_features=*/{});
+    } else {
+      feature_list_.InitWithFeatures(
+          /*enabled_features=*/{extensions_features::
+                                    kExtensionSidePanelIntegration},
+          /*disabled_features=*/{::features::kDevToolsTabTarget});
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test that an extension's side panel view is inspectable whether or not the
+// `kDevToolsTabTarget` flag is enabled.
+IN_PROC_BROWSER_TEST_P(DevToolsExtensionSidePanelTest,
+                       CanInspectExtensionSidePanelView) {
+  base::FilePath side_panel_extension_dir =
+      base::PathService::CheckedGet(chrome::DIR_TEST_DATA)
+          .AppendASCII("extensions/api_test/side_panel");
+
+  // Load an extension and wait for its side panel view to be shown.
+  scoped_refptr<const extensions::Extension> extension = LoadExtensionFromPath(
+      side_panel_extension_dir.AppendASCII("simple_default"));
+  ASSERT_TRUE(extension);
+
+  ExtensionTestMessageListener default_path_listener("default_path");
+  extensions::OpenExtensionSidePanel(*browser(), extension->id());
+  ASSERT_TRUE(default_path_listener.WaitUntilSatisfied());
+
+  content::WebContents* side_panel_contents =
+      extensions::GetExtensionSidePanelWebContents(*browser(), extension->id());
+  ASSERT_TRUE(side_panel_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(side_panel_contents));
+
+  std::vector<RenderFrameHost*> frames =
+      CollectAllRenderFrameHosts(side_panel_contents);
+  ASSERT_EQ(1u, frames.size());
+  RenderFrameHost* side_panel_host = frames[0];
+
+  // Inspect the extension's side panel view and check that the top level html
+  // tag is inspected.
+  DevToolsWindowCreationObserver observer;
+  DevToolsWindow::InspectElement(side_panel_host, 0, 0);
+  observer.WaitForLoad();
+  DevToolsWindow* window = observer.devtools_window();
+
+  DispatchOnTestSuite(window, "testInspectedElementIs", "HTML");
+  DevToolsWindowTesting::CloseDevToolsWindowSync(window);
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         DevToolsExtensionSidePanelTest,
+                         ::testing::Bool(),
+                         [](const testing::TestParamInfo<
+                             DevToolsExtensionSidePanelTest::ParamType>& info) {
+                           return info.param ? "DevToolsTabTargetEnabled"
+                                             : "DevToolsTabTargetDisabled";
+                         });
+
 class DevToolsExtensionFileAccessTest : public DevToolsExtensionTest {
  protected:
-  void Run(bool allow_file_access) {
+  void Run(bool allow_file_access, const std::string& url_scheme) {
     extensions::TestExtensionDir dir;
 
     dir.WriteManifest(BuildExtensionManifest("File Access", "devtools.html"));
@@ -1789,28 +1849,36 @@ class DevToolsExtensionFileAccessTest : public DevToolsExtensionTest {
                 .AppendASCII("content/test/data/devtools/navigation.html"))
             .spec();
 
-    base::ReplaceFirstSubstringAfterOffset(&file_url, 0, "file:///", "file:");
-
     const Extension* extension =
         LoadExtensionFromPath(dir.UnpackedPath(), allow_file_access);
     ASSERT_TRUE(extension);
 
     std::string url = base::StringPrintf(
-        R"(data:text/html,<script>//%%23%%20sourceMappingURL=data:application/json,{"version":3,"sources":["file:%s"]}</script>)",
-        file_url.c_str());
+        R"(data:text/html,<script>//%%23%%20sourceMappingURL=data:application/json,{"version":3,"sources":["%s:%s"]}</script>)",
+        url_scheme.c_str(), file_url.c_str() + strlen("file:///"));
     OpenDevToolsWindow(url, false);
     RunTestFunction(window_, "waitForTestResultsAsMessage");
   }
 };
 
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionFileAccessTest,
-                       CantGetFileResourceWithoutFileAccess) {
-  Run(false);
+                       CanGetFileResourceWithFileAccess) {
+  Run(true, "file:///");
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionFileAccessTest,
-                       CanGetFileResourceWithFileAccess) {
-  Run(true);
+                       CantGetFileResourceWithoutFileAccess) {
+  Run(false, "file:///");
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionFileAccessTest,
+                       CantGetFileResourceWithoutFileAccessNoSlashes) {
+  Run(false, "file:");
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionFileAccessTest,
+                       CantGetFileResourceWithoutFileAccessMixedCase) {
+  Run(false, "fILe:");
 }
 
 // Tests that scripts are not duplicated after Scripts Panel switch.
@@ -2090,12 +2158,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, DISABLED_TestReattachAfterCrash) {
 IN_PROC_BROWSER_TEST_F(DevToolsTest, TestPageWithNoJavaScript) {
   OpenDevToolsWindow("about:blank", false);
   std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      main_web_contents(),
-      "window.domAutomationController.send("
-      "    '' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite)));",
-      &result));
-  ASSERT_EQ("function", result) << "DevTools front-end is broken.";
+  ASSERT_EQ(
+      "function",
+      content::EvalJs(
+          main_web_contents(),
+          "'' + (window.uiTests && (typeof uiTests.dispatchOnTestSuite));"))
+      << "DevTools front-end is broken.";
   CloseDevToolsWindow();
 }
 
@@ -2202,7 +2270,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, DISABLED_SecondTabAfterDevTools) {
   WebContents* second = browser()->tab_strip_model()->GetActiveWebContents();
 
   scoped_refptr<content::DevToolsAgentHost> agent(
-      content::DevToolsAgentHost::GetOrCreateFor(second));
+      GetOrCreateDevToolsHostForWebContents(second));
   EXPECT_EQ("page", agent->GetType());
 
   CloseDevToolsWindow();
@@ -2299,7 +2367,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, PolicyDisallowed) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  auto agent_host = GetOrCreateDevToolsHostForWebContents(web_contents);
   ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 }
 
@@ -2308,7 +2376,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest, PolicyDisallowedCloseConnection) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  auto agent_host = GetOrCreateDevToolsHostForWebContents(web_contents);
 
   // Policy change must close the connection
   DisallowDevTools(browser());
@@ -2354,7 +2422,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionForceInstallTest,
   ASSERT_NO_FATAL_FAILURE(ForceInstallExtensionAndOpen(&web_contents));
 
   DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  auto agent_host = GetOrCreateDevToolsHostForWebContents(web_contents);
   ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 }
 
@@ -2366,7 +2434,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_NO_FATAL_FAILURE(ForceInstallExtensionAndOpen(&web_contents));
 
   DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  auto agent_host = GetOrCreateDevToolsHostForWebContents(web_contents);
 
   ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 
@@ -2387,7 +2455,7 @@ IN_PROC_BROWSER_TEST_F(
   // It's possible to open DevTools for about:blank.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  auto agent_host = GetOrCreateDevToolsHostForWebContents(web_contents);
   ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 
   // Navigating to extension page should close DevTools.
@@ -2408,7 +2476,7 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
   DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  auto agent_host = GetOrCreateDevToolsHostForWebContents(web_contents);
   ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 
   // Policy change to must not disrupt CDP coneciton unrelated to a force
@@ -2440,7 +2508,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsAllowedByCommandLineSwitch,
   ASSERT_NO_FATAL_FAILURE(ForceInstallExtensionAndOpen(&web_contents));
 
   DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
+  auto agent_host = GetOrCreateDevToolsHostForWebContents(web_contents);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 #else
@@ -2900,7 +2968,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsPolicyTest, OpenBlockedDevTools) {
 
   WebContents* wc = browser()->tab_strip_model()->GetActiveWebContents();
   scoped_refptr<content::DevToolsAgentHost> agent(
-      content::DevToolsAgentHost::GetOrCreateFor(wc));
+      GetOrCreateDevToolsHostForWebContents(wc));
   DevToolsWindow::OpenDevToolsWindow(wc);
   DevToolsWindow* window = DevToolsWindow::FindDevToolsWindow(agent.get());
   if (window) {
@@ -3028,14 +3096,11 @@ namespace {
 class DevToolsLocalizationTest : public DevToolsTest {
  public:
   bool NavigatorLanguageMatches(const std::string& expected_locale) {
-    bool result = false;
-    const bool execute_result = content::ExecuteScriptAndExtractBool(
-        main_web_contents(),
-        "window.domAutomationController.send(window.navigator.language === "
-        "'" +
-            expected_locale + "')",
-        &result);
-    return execute_result && result;
+    return content::EvalJs(main_web_contents(),
+                           "window.navigator.language === "
+                           "'" +
+                               expected_locale + "'")
+        .ExtractBool();
   }
 };
 

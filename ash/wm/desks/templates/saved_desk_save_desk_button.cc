@@ -4,19 +4,18 @@
 
 #include "ash/wm/desks/templates/saved_desk_save_desk_button.h"
 
-#include "ash/constants/ash_features.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/style/style_util.h"
+#include "ash/wm/desks/templates/saved_desk_constants.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_utils.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/highlight_border.h"
 
 namespace ash {
-
-constexpr int kCornerRadius = 16;
 
 SavedDeskSaveDeskButton::SavedDeskSaveDeskButton(
     base::RepeatingClosure callback,
@@ -36,12 +35,11 @@ SavedDeskSaveDeskButton::SavedDeskSaveDeskButton(
   });
   focus_ring->SetColorId(ui::kColorAshFocusRing);
 
-  if (features::IsDarkLightModeEnabled()) {
-    SetBorder(std::make_unique<views::HighlightBorder>(
-        /*corner_radius=*/kCornerRadius,
-        views::HighlightBorder::Type::kHighlightBorder1,
-        /*use_light_colors=*/false));
-  }
+  SetBorder(std::make_unique<views::HighlightBorder>(
+      kSaveDeskCornerRadius,
+      chromeos::features::IsJellyrollEnabled()
+          ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+          : views::HighlightBorder::Type::kHighlightBorder2));
 }
 
 SavedDeskSaveDeskButton::~SavedDeskSaveDeskButton() = default;

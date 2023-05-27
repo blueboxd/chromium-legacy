@@ -43,8 +43,10 @@ constexpr auto enabled_by_default_desktop_only =
 // language users from any locale and Spanish language users from the Spain
 // es-ES locale. A feature param containing "" is unrestricted by locale and any
 // user may load it.
-bool IsSupportedLocaleForFeature(const std::string locale,
-                                 const base::Feature& feature) {
+bool IsSupportedLocaleForFeature(
+    const std::string locale,
+    const base::Feature& feature,
+    const std::string& default_value = "de,en,es,fr,it,nl,pt,tr") {
   if (!base::FeatureList::IsEnabled(feature)) {
     return false;
   }
@@ -53,7 +55,7 @@ bool IsSupportedLocaleForFeature(const std::string locale,
       base::GetFieldTrialParamValueByFeature(feature, "supported_locales");
   if (value.empty()) {
     // The default list of supported locales for optimization guide features.
-    value = "de,en,es,fr,it,nl,pt,tr";
+    value = default_value;
   } else if (value == "*") {
     // Still provide a way to enable all locales remotely via the '*' character.
     return true;
@@ -128,7 +130,7 @@ BASE_FEATURE(kPageEntitiesPageContentAnnotations,
 // Enables the page visibility model to be annotated on every page load.
 BASE_FEATURE(kPageVisibilityPageContentAnnotations,
              "PageVisibilityPageContentAnnotations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // This feature flag does not allow for the entities model to load the name and
 // prefix filters.
@@ -528,7 +530,8 @@ bool ShouldUseBatchEntityMetadataSimplication() {
 bool ShouldExecutePageVisibilityModelOnPageContent(const std::string& locale) {
   return base::FeatureList::IsEnabled(kPageVisibilityPageContentAnnotations) &&
          IsSupportedLocaleForFeature(locale,
-                                     kPageVisibilityPageContentAnnotations);
+                                     kPageVisibilityPageContentAnnotations,
+                                     /*default_value=*/"en");
 }
 
 bool RemotePageMetadataEnabled() {

@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/containers/span.h"
+#include "base/feature_list.h"
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/geo/country_data.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_field.h"
 
@@ -37,10 +39,10 @@ class AutofillCountry {
   // Autofill relies on libaddressinput for its address format.
   // AddressFormatExtensions are used to extend this format on a country-by-
   // country basis. This is needed because while some field types are not
-  // strictly required for a valid address, we nonetheless see them in practise
+  // strictly required for a valid address, we nonetheless see them in practice
   // and want to offer filling support.
   // This struct defines that a certain `type` is considered part of the address
-  // format in Autofill, specifies its `label` and placment after the existing
+  // format in Autofill, specifies its `label` and placement after the existing
   // type `placed_after` in the settings-UI.
   // `large_sized` indicates if the field stretches the entire line (true) or
   // half the line (false).
@@ -78,6 +80,12 @@ class AutofillCountry {
   // Returns the name of the country translated into the `locale` provided to
   // the constructor. If no `locale` was provided, an empty string is returned.
   const std::u16string& name() const { return name_; }
+
+  // Full name is expected in a complete address for this country.
+  bool requires_full_name() const {
+    return base::FeatureList::IsEnabled(
+        features::kAutofillRequireNameForProfileImport);
+  }
 
   // City is expected in a complete address for this country.
   bool requires_city() const {

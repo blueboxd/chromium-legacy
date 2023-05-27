@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">છબી ડીકોડર</translation>
 <translation id="1785415724048343560">શ્રેષ્ઠ અનુભવ માટે આનો સુઝાવ આપવામાં આવે છે</translation>
 <translation id="1818308510395330587"><ph name="APP_NAME" />ને ARનો વપરાશ કરવા દેવા માટે, <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માંથી પણ કૅમેરા ચાલુ કરો.</translation>
-<translation id="1864927262126810325"><ph name="SOURCE_NAME" /> પરથી</translation>
 <translation id="187227595286001730">સંબંધિત સાઇટ, ગ્રૂપમાંની તમારી પ્રવૃત્તિ જોઈ શકે છે</translation>
 <translation id="1887786770086287077">આ ઉપકરણ માટે સ્થાન ઍક્સેસ બંધ છે. તેને <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં ચાલુ કરો.</translation>
 <translation id="1915307458270490472">સમાપ્ત કરો</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">ડાઉનલોડ પૂર્ણ <ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">છૂપા મોડમાં અમુક સાઇટ પર અમુક સુવિધાઓ કદાચ કામ કરી શકશે નહીં</translation>
 <translation id="2442870161001914531">હંમેશાં ડેસ્કટૉપ સાઇટની વિનંતી કરો</translation>
+<translation id="2479148705183875116">સેટિંગ પર જાઓ</translation>
 <translation id="2482878487686419369">નોટિફિકેશનો</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટૉલ કરો</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> દ્વારા મેનેજ થયેલ</translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">ઇમેઇલ ઍડ્રેસ</translation>
 <translation id="2750481671343847896">સાઇટ ઓળખ સેવાઓના સાઇન ઇન કરવાના સંકેતો બતાવી શકે છે.</translation>
 <translation id="2822354292072154809">શું તમે ખરેખર <ph name="CHOSEN_OBJECT_NAME" />ની બધી સાઇટ પસંદગીઓને રીસેટ કરવા માગો છે?</translation>
+<translation id="2850913818900871965">મોબાઇલ વ્યૂની વિનંતી કરો</translation>
 <translation id="2870560284913253234">સાઇટ</translation>
 <translation id="2874939134665556319">પાછલું ટ્રૅક</translation>
 <translation id="2891975107962658722">કોઈ સાઇટને તમારા ડિવાઇસ પર ડેટા સાચવવાથી બ્લૉક કરો</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">તમને વધુ સારો બ્રાઉઝિંગ અનુભવ આપવા માટે, ઉદાહરણ તરીકે, તમને સાઇન ઇન કરીને રાખવા અથવા તમારા શૉપિંગ કાર્ટની આઇટમ યાદ રાખવા માટે, સાઇટ કુકીનો ઉપયોગ કરી શકે છે</translation>
 <translation id="3165022941318558018">સાઇટને ત્રીજા પક્ષની કુકીનો ઉપયોગ કરવાની મંજૂરી આપો</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> સંગ્રહિત ડેટા</translation>
-<translation id="3203366800380907218">વેબ પરથી</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> તમને નોટિફિકેશન મોકલી શકે તે માટે <ph name="BEGIN_LINK" />Android સેટિંગ<ph name="END_LINK" />માં પણ નોટિફિકેશન ચાલુ કરો.</translation>
 <translation id="3227137524299004712">માઇક્રોફોન</translation>
 <translation id="3248611290851046188">આ સાઇટ એવી રુચિઓને નિર્ધારિત કરે છે કે જેનો ઉપયોગ અન્ય સાઇટ તમને જાહેરાતો બતાવવા માટે કરી શકે છે. તમને વધુ સંબંધિત જાહેરાતો બતાવવા માટે, આ સાઇટ Chromeમાંથી તમારી રુચિઓ પણ મેળવે છે.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">ડેસ્કટૉપ વ્યૂની વિનંતી કરો</translation>
 <translation id="5100237604440890931">સંકુચિત - વિસ્તૃત કરવા માટે ક્લિક કરો.</translation>
 <translation id="5123685120097942451">છૂપા મોડમાંની ટૅબ</translation>
-<translation id="5134599672855298214">મોબાઇલ વ્યૂની વિનંતી કરો (સુઝાવ આપવામાં આવે છે)</translation>
 <translation id="5186036860380548585">સ્ક્રીનની ટોચની નજીક વિકલ્પ ઉપલબ્ધ છે</translation>
 <translation id="5197729504361054390">તમે પસંદ કરશો તે સંપર્કોને <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> સાથે શેર કરવામાં આવશે.</translation>
 <translation id="5216942107514965959">છેલ્લે આજે મુલાકાત લીધી</translation>

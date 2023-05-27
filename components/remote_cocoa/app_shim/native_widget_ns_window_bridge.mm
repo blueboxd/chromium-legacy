@@ -17,6 +17,7 @@
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/sys_string_conversions.h"
@@ -311,8 +312,7 @@ NativeWidgetNSWindowBridge::NativeWidgetNSWindowBridge(
     : id_(bridged_native_widget_id),
       host_(host),
       host_helper_(host_helper),
-      text_input_host_(text_input_host),
-      ns_weak_factory_(this) {
+      text_input_host_(text_input_host) {
   DCHECK(GetIdToWidgetImplMap().find(id_) == GetIdToWidgetImplMap().end());
   GetIdToWidgetImplMap().insert(std::make_pair(id_, this));
 }
@@ -680,13 +680,12 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
           FROM_HERE,
           base::BindOnce(
-              [](WeakPtrNSObject* handle) {
-                if (auto* bridge = ui::WeakPtrNSObjectFactory<
-                        NativeWidgetNSWindowBridge>::Get(handle)) {
-                  bridge->OnWindowKeyStatusChangedTo(/*is_key*/ true);
+              [](const base::WeakPtr<NativeWidgetNSWindowBridge>& bridge) {
+                if (bridge) {
+                  bridge->OnWindowKeyStatusChangedTo(/*is_key=*/true);
                 }
               },
-              ns_weak_factory_.handle()));
+              factory_.GetWeakPtr()));
     }
     return;
   }
@@ -847,21 +846,22 @@ bool NativeWidgetNSWindowBridge::HasCapture() {
 
 void NativeWidgetNSWindowBridge::SetLocalEventMonitorEnabled(bool enabled) {
   if (enabled) {
-    // Create the event montitor if it does not exist yet.
-    if (key_down_event_monitor_)
+    // Create the event monitor if it does not exist yet.
+    if (key_down_event_monitor_) {
       return;
+    }
 
-    // Capture a WeakPtr via NSObject. This allows the block to detect another
-    // event monitor for the same event deleting `this`.
-    WeakPtrNSObject* handle = ns_weak_factory_.handle();
+    base::WeakPtr<NativeWidgetNSWindowBridge> weak_ptr = factory_.GetWeakPtr();
+
     auto block = ^NSEvent*(NSEvent* event) {
-      auto* bridge =
-          ui::WeakPtrNSObjectFactory<NativeWidgetNSWindowBridge>::Get(handle);
-      if (!bridge)
+      if (!weak_ptr) {
         return event;
+      }
+
       std::unique_ptr<ui::Event> ui_event = ui::EventFromNative(event);
       bool event_handled = false;
-      bridge->host_->DispatchMonitorEvent(std::move(ui_event), &event_handled);
+      weak_ptr->host_->DispatchMonitorEvent(std::move(ui_event),
+                                            &event_handled);
       return event_handled ? nil : event;
     };
     key_down_event_monitor_ =
@@ -941,6 +941,14 @@ void NativeWidgetNSWindowBridge::EnableImmersiveFullscreen(
         std::move(callback));
   }
   immersive_mode_controller_->Enable();
+
+  // It is possible for the fullscreen transition to complete before the
+  // immersive mode controller is created. Mark the transition as complete as
+  // needed here.
+  if (!fullscreen_controller_.IsInFullscreenTransition() &&
+      fullscreen_controller_.GetTargetFullscreenState()) {
+    immersive_mode_controller_->FullscreenTransitionCompleted();
+  }
 
   // Reveal locks can outlive immersive_mode_controller_, re-establish any
   // outstanding locks.
@@ -1444,9 +1452,16 @@ void NativeWidgetNSWindowBridge::SetCanAppearInExistingFullscreenSpaces(
   NSWindow* window = window_.get();
   NSWindowCollectionBehavior collectionBehavior = window.collectionBehavior;
   if (can_appear_in_existing_fullscreen_spaces) {
+    if (@available(macOS 13.0, *)) {
+      collectionBehavior &= ~NSWindowCollectionBehaviorPrimary;
+    }
     collectionBehavior |= NSWindowCollectionBehaviorFullScreenAuxiliary;
     collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
   } else {
+    if (@available(macOS 13.0, *)) {
+      collectionBehavior |= NSWindowCollectionBehaviorPrimary;
+    }
+    collectionBehavior |= NSWindowCollectionBehaviorFullScreenPrimary;
     collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenAuxiliary;
   }
   window.collectionBehavior = collectionBehavior;
@@ -1492,10 +1507,11 @@ void NativeWidgetNSWindowBridge::SetWindowLevel(int32_t level) {
 }
 
 void NativeWidgetNSWindowBridge::SetAspectRatio(
-    const gfx::SizeF& aspect_ratio) {
+    const gfx::SizeF& aspect_ratio,
+    const gfx::Size& excluded_margin) {
   DCHECK(!aspect_ratio.IsEmpty());
-  [window_delegate_
-      setAspectRatio:aspect_ratio.width() / aspect_ratio.height()];
+  [window_delegate_ setAspectRatio:aspect_ratio.width() / aspect_ratio.height()
+                    excludedMargin:excluded_margin];
 }
 
 void NativeWidgetNSWindowBridge::SetCALayerParams(
@@ -1695,29 +1711,6 @@ void NativeWidgetNSWindowBridge::UpdateWindowGeometry() {
   // after the frame from the compositor arrives.
   if (content_resized && ![window_ isOpaque])
     invalidate_shadow_on_frame_swap_ = true;
-}
-
-void NativeWidgetNSWindowBridge::MoveChildrenTo(
-    NativeWidgetNSWindowBridge* target,
-    bool anchored_only) {
-  // Make a copy of `child_windows_` because it will be updated during the loop.
-  std::vector<NativeWidgetNSWindowBridge*> child_windows(child_windows_);
-  for (NativeWidgetNSWindowBridge* child : child_windows) {
-    if (child != target) {
-      // If anchored_only is true, skip windows that are not anchored to the
-      // target window.
-      if (anchored_only) {
-        bool contained = false;
-        child->host()->BubbleAnchorViewContainedInWidget(target->id_,
-                                                         &contained);
-        if (!contained) {
-          continue;
-        }
-      }
-      child->SetParent(target->id_);
-      child->host()->OnWindowParentChanged(target->id_);
-    }
-  }
 }
 
 void NativeWidgetNSWindowBridge::UpdateWindowDisplay() {

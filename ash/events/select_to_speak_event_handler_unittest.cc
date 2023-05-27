@@ -13,6 +13,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/ash_test_views_delegate.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
@@ -93,7 +94,8 @@ class TestDelegate : public SelectToSpeakEventHandlerDelegate {
     last_mouse_location_ = event.location();
     last_mouse_root_location_ = event.root_location();
   }
-  void DispatchKeyEvent(const ui::KeyEvent& event) override {
+  void DispatchKeysCurrentlyDown(
+      const std::set<ui::KeyboardCode>& pressed_keys) override {
     // Unused for now.
   }
 
@@ -141,9 +143,9 @@ class SelectToSpeakEventHandlerTest : public AshTestBase {
   }
 
  protected:
-  ui::test::EventGenerator* generator_ = nullptr;
+  raw_ptr<ui::test::EventGenerator, ExperimentalAsh> generator_ = nullptr;
   EventCapturer event_capturer_;
-  AccessibilityControllerImpl* controller_ = nullptr;
+  raw_ptr<AccessibilityControllerImpl, ExperimentalAsh> controller_ = nullptr;
   std::unique_ptr<TestDelegate> delegate_;
 };
 

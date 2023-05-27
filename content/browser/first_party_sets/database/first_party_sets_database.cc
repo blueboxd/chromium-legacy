@@ -14,7 +14,6 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/sequence_checker.h"
@@ -785,7 +784,7 @@ FirstPartySetsDatabase::InitStatus FirstPartySetsDatabase::InitializeTables() {
   sql::Transaction transaction(db_.get());
   if (!transaction.Begin()) {
     LOG(WARNING) << "First-Party Sets database begin initialization failed.";
-    db_->RazeAndClose();
+    db_->RazeAndPoison();
     return InitStatus::kError;
   }
 
@@ -901,14 +900,15 @@ bool FirstPartySetsDatabase::Destroy() {
   // Reset the value.
   run_count_ = 0;
 
-  if (db_ && db_->is_open() && !db_->RazeAndClose())
+  if (db_ && db_->is_open() && !db_->RazeAndPoison()) {
     return false;
+  }
 
   // The file already doesn't exist.
   if (db_path_.empty())
     return true;
 
-  return base::DeleteFile(db_path_);
+  return sql::Database::Delete(db_path_);
 }
 
 }  // namespace content

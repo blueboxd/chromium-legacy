@@ -25,14 +25,16 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/web_package/test_support/signed_web_bundles/web_bundle_signer.h"
 #include "components/web_package/web_bundle_builder.h"
+#include "content/public/common/content_features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkEncodedImageFormat.h"
-#include "third_party/skia/include/core/SkImageEncoder.h"
+#include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/encode/SkPngEncoder.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -59,14 +61,19 @@ constexpr base::StringPiece kTestIconUrl = "/256x256-green.png";
 
 std::string GetTestIconInString() {
   SkBitmap icon_bitmap = CreateSquareIcon(256, SK_ColorGREEN);
-  sk_sp<SkData> icon_skdata =
-      SkEncodeBitmap(icon_bitmap, SkEncodedImageFormat::kPNG, 100);
+  SkDynamicMemoryWStream stream;
+  bool success = SkPngEncoder::Encode(&stream, icon_bitmap.pixmap(), {});
+  CHECK(success);
+  sk_sp<SkData> icon_skdata = stream.detachAsData();
   return std::string(static_cast<const char*>(icon_skdata->data()),
                      icon_skdata->size());
 }
 }  // namespace
 
-IsolatedWebAppBrowserTestHarness::IsolatedWebAppBrowserTestHarness() = default;
+IsolatedWebAppBrowserTestHarness::IsolatedWebAppBrowserTestHarness() {
+  iwa_scoped_feature_list_.InitWithFeatures(
+      {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode}, {});
+}
 
 IsolatedWebAppBrowserTestHarness::~IsolatedWebAppBrowserTestHarness() = default;
 
@@ -129,7 +136,8 @@ IsolatedWebAppUrlInfo InstallDevModeProxyIsolatedWebApp(
   auto url_info = IsolatedWebAppUrlInfo::CreateFromSignedWebBundleId(
       web_package::SignedWebBundleId::CreateRandomForDevelopment());
   WebAppProvider::GetForWebApps(profile)->scheduler().InstallIsolatedWebApp(
-      url_info, DevModeProxy{.proxy_url = proxy_origin}, future.GetCallback());
+      url_info, DevModeProxy{.proxy_url = proxy_origin}, /*keep_alive=*/nullptr,
+      /*profile_keep_alive=*/nullptr, future.GetCallback());
 
   CHECK(future.Get().has_value()) << future.Get().error();
 

@@ -16,6 +16,7 @@ class WebState;
 @protocol FeedDelegate;
 @protocol NewTabPageControllerDelegate;
 @protocol NewTabPageDelegate;
+@protocol NewTabPageMetricsDelegate;
 @protocol ThumbStripSupporting;
 @class ViewRevealingVerticalPanHandler;
 
@@ -45,10 +46,14 @@ class WebState;
     thumbStripSupporting;
 
 // Delegate for NTP related actions.
-@property(nonatomic, weak) id<NewTabPageDelegate> ntpDelegate;
+@property(nonatomic, weak) id<NewTabPageDelegate> NTPDelegate;
 
 // Delegate used to communicate to communicate events to the feed.
 @property(nonatomic, weak) id<FeedDelegate> feedDelegate;
+
+// Delegate for reporting content suggestions actions to the NTP metrics
+// recorder.
+@property(nonatomic, weak) id<NewTabPageMetricsDelegate> NTPMetricsDelegate;
 
 // Reloads the suggestions.
 - (void)reload;

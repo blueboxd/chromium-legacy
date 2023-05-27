@@ -119,6 +119,7 @@
 #include "components/media_router/browser/media_router_dialog_controller.h"  // nogncheck
 #include "components/media_router/browser/media_router_metrics.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -492,7 +493,7 @@ void NewEmptyWindow(Profile* profile, bool should_trigger_session_restore) {
   PrefService* prefs = profile->GetPrefs();
   if (off_the_record) {
     if (IncognitoModePrefs::GetAvailability(prefs) ==
-        IncognitoModePrefs::Availability::kDisabled) {
+        policy::IncognitoModeAvailability::kDisabled) {
       off_the_record = false;
     }
   } else if (profile->IsGuestSession() ||
@@ -538,7 +539,13 @@ Browser* OpenEmptyWindow(Profile* profile,
       Browser::CreateParams(Browser::TYPE_NORMAL, profile, true);
   params.should_trigger_session_restore = should_trigger_session_restore;
   Browser* browser = Browser::Create(params);
-  AddTabAt(browser, GURL(), -1, true);
+
+  // Startup tabs could be created during browser creation. Add an empty tab
+  // only if no tabs are created.
+  if (browser->tab_strip_model()->empty()) {
+    AddTabAt(browser, GURL(), -1, true);
+  }
+
   browser->window()->Show();
   return browser;
 }
@@ -953,7 +960,7 @@ void MoveTabsToNewWindow(Browser* browser,
       // 1) Stop listening to changes on it
       // 2) Close the group in the browser
       // 3) Open the group in a new browser and link it to the saved guid.
-      const base::GUID& saved_guid =
+      const base::Uuid& saved_guid =
           service->model()->Get(group.value())->saved_guid();
 
       service->DisconnectLocalTabGroup(group.value());

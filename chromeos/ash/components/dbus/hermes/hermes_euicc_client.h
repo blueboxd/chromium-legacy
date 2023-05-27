@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
+#include "base/check.h"
 #include "base/functional/callback_forward.h"
 #include "base/observer_list.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_response_status.h"
@@ -25,6 +27,13 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesEuiccClient {
   using InstallCarrierProfileCallback =
       base::OnceCallback<void(HermesResponseStatus status,
                               const dbus::ObjectPath* carrier_profile_path)>;
+
+  // Callback for the RefreshSmdxProfiles(). Callback returns the status code
+  // and 0 or more object paths for profiles available to be installed for the
+  // activation code provided to the method.
+  using RefreshSmdxProfilesCallback = base::OnceCallback<void(
+      HermesResponseStatus status,
+      const std::vector<dbus::ObjectPath>& profile_paths)>;
 
   class TestInterface {
    public:
@@ -98,6 +107,13 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesEuiccClient {
     // method call.
     virtual void QueueHermesErrorStatus(HermesResponseStatus status) = 0;
 
+    // Sets the return for the next call to
+    // HermesEuiccClient::InstallProfileFromActivationCode(). The implementation
+    // of this method should only accept error statuses since clients expect
+    // addition information about the installed profile on success.
+    virtual void SetNextInstallProfileFromActivationCodeResult(
+        HermesResponseStatus status) = 0;
+
     // Set delay for interactive methods.
     virtual void SetInteractiveDelay(base::TimeDelta delay) = 0;
 
@@ -121,9 +137,15 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesEuiccClient {
     dbus::Property<bool>& is_active() { return is_active_; }
     dbus::Property<std::vector<dbus::ObjectPath>>&
     installed_carrier_profiles() {
+      DCHECK(!features::IsSmdsDbusMigrationEnabled());
       return installed_carrier_profiles_;
     }
+    dbus::Property<std::vector<dbus::ObjectPath>>& profiles() {
+      DCHECK(features::IsSmdsDbusMigrationEnabled());
+      return profiles_;
+    }
     dbus::Property<std::vector<dbus::ObjectPath>>& pending_carrier_profiles() {
+      DCHECK(!features::IsSmdsDbusMigrationEnabled());
       return pending_carrier_profiles_;
     }
     dbus::Property<int32_t>& physical_slot() { return physical_slot_; }
@@ -141,6 +163,11 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesEuiccClient {
     // List of pending carrier profiles from SMDS available for
     // installation on this device.
     dbus::Property<std::vector<dbus::ObjectPath>> pending_carrier_profiles_;
+
+    // List of all carrier profiles known to the device. This includes
+    // currently installed profiles and pending profiles scanned from
+    // SM-DS or SM-DP+ servers.
+    dbus::Property<std::vector<dbus::ObjectPath>> profiles_;
 
     // Physical slot number of the Euicc.
     dbus::Property<int32_t> physical_slot_;
@@ -192,6 +219,15 @@ class COMPONENT_EXPORT(HERMES_CLIENT) HermesEuiccClient {
   virtual void RefreshInstalledProfiles(const dbus::ObjectPath& euicc_path,
                                         bool restore_slot,
                                         HermesResponseCallback callback) = 0;
+
+  // Fetches the available profiles for Euicc at |euicc_path| using the
+  // activation code provided by |activation_code|. This method will update the
+  // set of known profiles before returning. If |restore_slot| is |true| then
+  // the SIM slot that was active prior to refreshing is restored.
+  virtual void RefreshSmdxProfiles(const dbus::ObjectPath& euicc_path,
+                                   const std::string& activation_code,
+                                   bool restore_slot,
+                                   RefreshSmdxProfilesCallback callback) = 0;
 
   // Updates pending profiles for Euicc at |euicc_path| from the SMDS server
   // using the given |root_smds| server address. Passing an empty |root_smds|

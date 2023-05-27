@@ -207,33 +207,16 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
   InputHandler& operator=(const InputHandler&) = delete;
 
   struct ScrollStatus {
-    ScrollStatus() = default;
-    ScrollStatus(ScrollThread thread, uint32_t main_thread_scrolling_reasons)
-        : thread(thread),
-          main_thread_scrolling_reasons(main_thread_scrolling_reasons) {}
-    ScrollStatus(ScrollThread thread,
-                 uint32_t main_thread_scrolling_reasons,
-                 bool needs_main_thread_hit_test)
-        : thread(thread),
-          main_thread_scrolling_reasons(main_thread_scrolling_reasons),
-          needs_main_thread_hit_test(needs_main_thread_hit_test) {}
     ScrollThread thread = ScrollThread::SCROLL_ON_IMPL_THREAD;
-    // TODO(crbug.com/1155663): Make sure to set main_thread_scrolling_reasons
-    // only when ScrollStatus.thread is set to
-    // InputHander::ScrollThread::SCROLL_ON_MAIN_THREAD
+    // This should be set to nonzero iff `thread` is SCROLL_ON_MAIN_THREAD.
     uint32_t main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNotScrollingOnMain;
-    // TODO(crbug.com/1155758): This is a temporary workaround for GuestViews
-    // as they create viewport nodes and want to bubble scroll if the
-    // viewport cannot scroll in the given delta directions. There should be
-    // a parameter to ThreadInputHandler to specify whether unused delta is
-    // consumed by the viewport or bubbles to the parent.
-    bool viewport_cannot_scroll = false;
 
-    // Used only in scroll unification. Tells the caller that the input handler
-    // detected a case where it cannot reliably target a scroll node and needs
-    // the main thread to perform a hit test.
-    bool needs_main_thread_hit_test = false;
+    // Used only in scroll unification. If nonzero, it tells the caller that
+    // the input handler detected a case where it cannot reliably target a
+    // scroll node and needs the main thread to perform a hit test.
+    uint32_t main_thread_hit_test_reasons =
+        MainThreadScrollingReason::kNotScrollingOnMain;
 
     // Used only in scroll unification. A nonzero value means we have performed
     // the scroll (i.e. updated the offset in the scroll tree) on the compositor
@@ -243,7 +226,15 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
     // from the MainThreadScrollingReason enum. (Unification avoids setting
     // main_thread_scrolling_reasons, to keep that field consistent with
     // semantics of ScrollThread::SCROLL_ON_IMPL_THREAD.)
-    uint32_t main_thread_repaint_reasons = 0;
+    uint32_t main_thread_repaint_reasons =
+        MainThreadScrollingReason::kNotScrollingOnMain;
+
+    // TODO(crbug.com/1155758): This is a temporary workaround for GuestViews
+    // as they create viewport nodes and want to bubble scroll if the
+    // viewport cannot scroll in the given delta directions. There should be
+    // a parameter to ThreadInputHandler to specify whether unused delta is
+    // consumed by the viewport or bubbles to the parent.
+    bool viewport_cannot_scroll = false;
   };
 
   enum class TouchStartOrMoveEventListenerType {
@@ -446,6 +437,8 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
       const gfx::Vector2dF& scroll_delta,
       ui::ScrollGranularity granularity);
 
+  bool CurrentScrollNeedsFrameAlignment() const;
+
   // Used to set the pinch gesture active state when the pinch gesture is
   // handled on another layer tree. In a page with OOPIFs, only the main
   // frame's layer tree directly handles pinch events. But layer trees for
@@ -640,6 +633,8 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
   struct ScrollHitTestResult {
     raw_ptr<ScrollNode> scroll_node;
     bool hit_test_successful;
+    uint32_t main_thread_hit_test_reasons =
+        MainThreadScrollingReason::kNotScrollingOnMain;
   };
   ScrollHitTestResult HitTestScrollNode(
       const gfx::PointF& device_viewport_point) const;
@@ -751,6 +746,10 @@ class CC_EXPORT InputHandler : public InputDelegateForCompositor {
   // but delta_consumed_for_scroll_gesture_ can be true when only browser
   // controls consume all the delta.
   bool delta_consumed_for_scroll_gesture_ = false;
+
+  // True if any of the non-zero deltas in a begin/update/end sequence was
+  // applied to the layout viewport.
+  bool outer_viewport_consumed_delta_ = false;
 
   // TODO(bokan): Mac doesn't yet have smooth scrolling for wheel; however, to
   // allow consistency in tests we use this bit to override that decision.

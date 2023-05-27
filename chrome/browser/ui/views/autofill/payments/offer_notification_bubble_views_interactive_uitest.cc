@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/autofill/payments/promo_code_label_button.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
@@ -78,7 +79,7 @@ class OfferNotificationBubbleViewsInteractiveUiTest
          GURL("https://www.merchantsite2.com/")});
     ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
     NavigateTo("https://www.merchantsite1.com/first");
-    WaitForObservedEvent();
+    ASSERT_TRUE(WaitForObservedEvent());
     EXPECT_TRUE(IsIconVisible());
     EXPECT_TRUE(GetOfferNotificationBubbleViews());
   }
@@ -91,7 +92,7 @@ class OfferNotificationBubbleViewsInteractiveUiTest
          GURL("https://www.merchantsite2.com/")});
     ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
     NavigateTo("https://www.merchantsite1.com/first");
-    WaitForObservedEvent();
+    ASSERT_TRUE(WaitForObservedEvent());
     EXPECT_TRUE(IsIconVisible());
     EXPECT_TRUE(GetOfferNotificationBubbleViews());
   }
@@ -104,7 +105,7 @@ class OfferNotificationBubbleViewsInteractiveUiTest
          GURL("https://www.merchantsite2.com/")});
     ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
     NavigateTo("https://www.merchantsite1.com/first");
-    WaitForObservedEvent();
+    ASSERT_TRUE(WaitForObservedEvent());
     EXPECT_TRUE(IsIconVisible());
     EXPECT_TRUE(GetOfferNotificationBubbleViews());
   }
@@ -124,7 +125,7 @@ class OfferNotificationBubbleViewsInteractiveUiTest
     EXPECT_TRUE(icon);
     ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
     chrome::ExecuteCommand(browser(), IDC_OFFERS_AND_REWARDS_FOR_PAGE);
-    WaitForObservedEvent();
+    ASSERT_TRUE(WaitForObservedEvent());
     EXPECT_TRUE(IsIconVisible());
     EXPECT_TRUE(GetOfferNotificationBubbleViews());
   }
@@ -201,7 +202,7 @@ IN_PROC_BROWSER_TEST_P(OfferNotificationBubbleViewsInteractiveUiTest,
 
     ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
     NavigateTo("https://www.merchantsite1.com/first");
-    WaitForObservedEvent();
+    ASSERT_TRUE(WaitForObservedEvent());
 
     // Bubble should be visible.
     ASSERT_TRUE(IsIconVisible());
@@ -275,7 +276,7 @@ IN_PROC_BROWSER_TEST_P(OfferNotificationBubbleViewsInteractiveUiTest,
   // Change to the first background tab.
   ResetEventWaiterForSequence({DialogEvent::BUBBLE_SHOWN});
   browser()->tab_strip_model()->ActivateTabAt(1);
-  WaitForObservedEvent();
+  ASSERT_TRUE(WaitForObservedEvent());
   // Icon should always be visible, and the bubble should be visible too.
   EXPECT_TRUE(IsIconVisible());
   ASSERT_TRUE(GetOfferNotificationBubbleViews());
@@ -624,6 +625,17 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_FALSE(IsIconVisible());
   histogram_tester.ExpectBucketCount(
       "Autofill.PageLoadsWithOfferIconShowing.FreeListingCouponOffer", true, 2);
+}
+
+IN_PROC_BROWSER_TEST_P(OfferNotificationBubbleViewsInteractiveUiTest,
+                       IconViewAccessibleName) {
+  EXPECT_EQ(GetOfferNotificationIconView()->GetAccessibleName(),
+            l10n_util::GetStringUTF16(
+                IDS_AUTOFILL_OFFERS_REMINDER_ICON_TOOLTIP_TEXT));
+  EXPECT_EQ(
+      GetOfferNotificationIconView()->GetTextForTooltipAndAccessibleName(),
+      l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_OFFERS_REMINDER_ICON_TOOLTIP_TEXT));
 }
 
 }  // namespace autofill

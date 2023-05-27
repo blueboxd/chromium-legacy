@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
+#include "chromeos/ash/components/network/enterprise_managed_metadata_store.h"
 #include "chromeos/ash/components/network/hotspot_configuration_handler.h"
 #include "chromeos/ash/components/network/hotspot_controller.h"
 #include "chromeos/ash/components/network/network_event_log.h"
@@ -231,16 +232,20 @@ HotspotMetricsHelper::~HotspotMetricsHelper() {
 }
 
 void HotspotMetricsHelper::Init(
+    EnterpriseManagedMetadataStore* enterprise_managed_metadata_store,
     HotspotCapabilitiesProvider* hotspot_capabilities_provider,
     HotspotStateHandler* hotspot_state_handler,
     HotspotController* hotspot_controller,
     HotspotConfigurationHandler* hotspot_configuration_handler,
+    HotspotEnabledStateNotifier* hotspot_enabled_state_notifier,
     NetworkStateHandler* network_state_handler) {
+  enterprise_managed_metadata_store_ = enterprise_managed_metadata_store;
   hotspot_state_handler_ = hotspot_state_handler;
   hotspot_state_handler_->AddObserver(this);
   hotspot_capabilities_provider_ = hotspot_capabilities_provider;
   hotspot_capabilities_provider_->AddObserver(this);
   hotspot_configuration_handler_ = hotspot_configuration_handler;
+  hotspot_enabled_state_notifier_ = hotspot_enabled_state_notifier;
   network_state_handler_ = network_state_handler;
 
   if (LoginState::IsInitialized()) {
@@ -248,12 +253,8 @@ void HotspotMetricsHelper::Init(
     LoggedInStateChanged();
   }
 
-  hotspot_state_handler_->ObserveEnabledStateChanges(
-      hotspot_state_enabled_state_observer_receiver_
-          .BindNewPipeAndPassRemote());
-  hotspot_controller->ObserveEnabledStateChanges(
-      hotspot_controller_enabled_state_observer_receiver_
-          .BindNewPipeAndPassRemote());
+  hotspot_enabled_state_notifier->ObserveEnabledStateChanges(
+      hotspot_enabled_state_notifier_receiver_.BindNewPipeAndPassRemote());
 }
 
 void HotspotMetricsHelper::OnHotspotCapabilitiesChanged() {
@@ -354,7 +355,9 @@ void HotspotMetricsHelper::LogMaxClientCount() {
 }
 
 void HotspotMetricsHelper::LogIsDeviceManaged() {
-  base::UmaHistogramBoolean(kHotspotIsDeviceManaged, is_enterprise_managed_);
+  bool is_enterprise_managed =
+      enterprise_managed_metadata_store_->is_enterprise_managed();
+  base::UmaHistogramBoolean(kHotspotIsDeviceManaged, is_enterprise_managed);
 }
 
 void HotspotMetricsHelper::LogUpstreamStatus() {

@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "base/guid.h"
 #include "base/rand_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -12,6 +11,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -78,6 +78,7 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
                           /*local_state=*/autofill_client_.GetPrefs(),
                           /*identity_manager=*/nullptr,
                           /*history_service=*/nullptr,
+                          /*sync_service=*/nullptr,
                           /*strike_database=*/nullptr,
                           /*image_fetcher=*/nullptr,
                           /*is_off_the_record=*/false);
@@ -116,14 +117,19 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
   gfx::Image CreateFakeImage() { return gfx::test::CreateImage(32, 32); }
 
   void SetUpIbanImageResources() {
-    if (ui::ResourceBundle::HasSharedInstance()) {
-      ui::ResourceBundle::CleanupSharedInstance();
-    }
+    original_resource_bundle_ =
+        ui::ResourceBundle::SwapSharedInstanceForTesting(nullptr);
     ui::ResourceBundle::InitSharedInstanceWithLocale(
         "en-US", &mock_resource_delegate_,
         ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
     ON_CALL(mock_resource_delegate_, GetImageNamed(IDR_AUTOFILL_IBAN))
         .WillByDefault(testing::Return(CreateFakeImage()));
+  }
+
+  void CleanUpIbanImageResources() {
+    ui::ResourceBundle::CleanupSharedInstance();
+    ui::ResourceBundle::SwapSharedInstanceForTesting(
+        original_resource_bundle_.ExtractAsDangling());
   }
 
   bool VerifyCardArtImageExpectation(Suggestion& suggestion,
@@ -155,6 +161,7 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
   std::unique_ptr<TestAutofillSuggestionGenerator> suggestion_generator_;
   scoped_refptr<AutofillWebDataService> database_;
   testing::NiceMock<ui::MockResourceBundleDelegate> mock_resource_delegate_;
+  raw_ptr<ui::ResourceBundle> original_resource_bundle_;
 };
 
 TEST_F(AutofillSuggestionGeneratorTest,
@@ -173,7 +180,9 @@ TEST_F(AutofillSuggestionGeneratorTest,
   all_card_ptrs.reserve(kNumCards);
   for (size_t i = 0; i < kNumCards; ++i) {
     constexpr base::TimeDelta k30Days = base::Days(30);
-    all_card_data.emplace_back(base::GenerateGUID(), "https://example.com");
+    all_card_data.emplace_back(
+        base::Uuid::GenerateRandomV4().AsLowercaseString(),
+        "https://example.com");
     if (i < 5) {
       all_card_data.back().set_use_date(kNow - (i + i + 1) * k30Days);
       test::SetCreditCardInfo(&all_card_data.back(), "Clyde Barrow",
@@ -608,7 +617,7 @@ TEST_F(AutofillSuggestionGeneratorTest, GetIBANSuggestions) {
 
   auto MakeIBAN = [](const std::u16string& value,
                      const std::u16string& nickname) {
-    IBAN iban(base::GenerateGUID());
+    IBAN iban(base::Uuid::GenerateRandomV4().AsLowercaseString());
     iban.set_value(value);
     if (!nickname.empty())
       iban.set_nickname(nickname);
@@ -676,6 +685,8 @@ TEST_F(AutofillSuggestionGeneratorTest, GetIBANSuggestions) {
   EXPECT_EQ(iban_suggestions[5].main_text.value,
             l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS));
   EXPECT_EQ(iban_suggestions[5].frontend_id, POPUP_ITEM_ID_AUTOFILL_OPTIONS);
+
+  CleanUpIbanImageResources();
 }
 
 TEST_F(AutofillSuggestionGeneratorTest,

@@ -12,6 +12,7 @@
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/system/status_area_widget.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
@@ -20,6 +21,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/metadata/view_factory.h"
 #include "ui/views/mouse_watcher.h"
@@ -39,7 +41,8 @@ class SystemShadow;
 // border rendering. This also has its own delegate for handling mouse events
 // and other implementation specific details.
 class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
-                                  public views::MouseWatcherListener {
+                                  public views::MouseWatcherListener,
+                                  public message_center::MessageCenterObserver {
  public:
   METADATA_HEADER(TrayBubbleView);
 
@@ -106,7 +109,7 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     // corresponding tray has been cleaned up.
     base::WeakPtr<Delegate> delegate = nullptr;
     gfx::NativeWindow parent_window = nullptr;
-    View* anchor_view = nullptr;
+    raw_ptr<View, ExperimentalAsh> anchor_view = nullptr;
     AnchorMode anchor_mode = AnchorMode::kView;
     // Only used if anchor_mode == AnchorMode::kRect.
     gfx::Rect anchor_rect;
@@ -214,6 +217,11 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   bool ShouldUseFixedHeight() const;
   void SetShouldUseFixedHeight(bool shoud_use_fixed_height);
 
+  // message_center::MessageCenterObserver:
+  void OnNotificationDisplayed(
+      const std::string& notification_id,
+      const message_center::DisplaySource source) override;
+
  protected:
   // views::View:
   void ChildPreferredSizeChanged(View* child) override;
@@ -243,13 +251,13 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
 
    private:
     // TrayBubbleView to which key events are going to be rerouted. Not owned.
-    TrayBubbleView* tray_bubble_view_;
+    raw_ptr<TrayBubbleView, ExperimentalAsh> tray_bubble_view_;
   };
 
   void CloseBubbleView();
 
   InitParams params_;
-  views::BoxLayout* layout_;
+  raw_ptr<views::BoxLayout, ExperimentalAsh> layout_;
   base::WeakPtr<Delegate> delegate_;
   int preferred_width_;
   bool is_gesture_dragging_;

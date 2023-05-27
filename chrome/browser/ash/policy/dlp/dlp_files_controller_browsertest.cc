@@ -6,8 +6,10 @@
 
 #include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_piece_forward.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
 #include "chrome/browser/extensions/api/file_system/file_entry_picker.h"
@@ -99,7 +101,7 @@ class DlpFilesControllerBrowserTest : public InProcessBrowserTest {
  protected:
   // MockDlpRulesManager is owned by KeyedService and is guaranteed to outlive
   // this class.
-  MockDlpRulesManager* mock_rules_manager_ = nullptr;
+  raw_ptr<MockDlpRulesManager, ExperimentalAsh> mock_rules_manager_ = nullptr;
 
   std::unique_ptr<DlpFilesController> files_controller_ = nullptr;
 
@@ -190,9 +192,7 @@ IN_PROC_BROWSER_TEST_F(DlpFilesControllerBrowserTest, WarningDialog) {
                                  kExampleUrl);
   EXPECT_EQ(files_controller_->GetWarnDialogForTesting(), nullptr);
   files_controller_->IsFilesTransferRestricted(
-      transferred_files,
-      DlpFilesController::DlpFileDestination(
-          DlpRulesManager::Component::kDrive),
+      transferred_files, DlpFileDestination(DlpRulesManager::Component::kDrive),
       DlpFilesController::FileAction::kMove, base::DoNothing());
   EXPECT_NE(files_controller_->GetWarnDialogForTesting(), nullptr);
 }

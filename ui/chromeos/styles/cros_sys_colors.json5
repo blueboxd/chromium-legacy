@@ -18,8 +18,71 @@
       field_id: 1,
     },
   },
+  legacy_mappings: {
+    'cros-color-primary' : '$cros.sys.on-surface',
+    'cros-color-secondary' : '$cros.sys.secondary',
+    'cros-color-prominent' : '$cros.sys.primary',
+    'cros-color-disabled' : '$cros.sys.disabled',
+    'cros-text-color-secondary': '$cros.sys.on-surface-variant',
+    'cros-bg-color' : '$cros.sys.app-base',
+    'cros-bg-color-elevation1' : '$cros.sys.base-elevated',
+    'cros-bg-color-elevation2' : '$cros.sys.base-elevated',
+    'cros-bg-color-elevation3' : '$cros.sys.base-elevated',
+    'cros-bg-color-elevation4' : '$cros.sys.base-elevated',
+    'cros-bg-color-elevation5' : '$cros.sys.base-elevated',
+    'cros-bg-color-dropped-elevation1' : '$cros.sys.app-base-shaded',
+    'cros-bg-color-dropped-elevation2' : '$cros.sys.app-base-shaded',
+    'cros-ripple-color' : '$cros.sys.hover-on-prominent',
+    'cros-ripple-color-prominent' : '$cros.sys.ripple-primary',
+    'cros-separator-color' : '$cros.sys.separator',
+    'cros-link-color' : '$cros.sys.primary',
+    'cros-app-scrollbar-color' : '$cros.sys.scrollbar',
+    'cros-app-scrollbar-color-hover' : '$cros.sys.scrollbar-hover',
+    'cros-app-shield-color' : '$cros.sys.scrim',
+    'cros-app-shield20' : '$cros.sys.scrim',
+    'cros-app-shield40' : '$cros.sys.scrim',
+    'cros-app-shield60' : '$cros.sys.scrim',
+    'cros-app-shield80' : '$cros.sys.scrim',
+    'cros-highlight-color' : '$cros.sys.highlight-shape',
+    'cros-highlight-color-hover' : '$cros.sys.hover-on-subtle',
+    'cros-highlight-color-focus' : '$cros.sys.ripple-neutral-on-subtle',
+    'cros-highlight-color-error' : '$cros.sys.error-container',
+    'cros-highlight-color-green' : '$cros.sys.positive-container',
+    'cros-highlight-color-red' : '$cros.sys.error-container',
+    'cros-highlight-color-yellow' : '$cros.sys.warning-container',
+    'cros-text-highlight-color' : '$cros.sys.highlight-text',
+    'cros-button-label-color-secondary' : '$cros.sys.on-primary-container',
+    'cros-button-ripple-color-secondary' : '$cros.sys.ripple-primary',
+    'cros-highlight-color' : '$cros.sys.primary',
+    'cros-textfield-background-color' : '$cros.sys.input-field-on-shaded',
+    'cros-textfield-label-color' : '$cros.sys.on-surface',
+    'cros-slider-color-active' : '$cros.sys.primary',
+    /** cros.sys.primary-container @ 30% */
+    'cros-slider-track-color-active': 'rgba($cros.sys.primary-container.rgb,.3)',
+    /** cros.sys.primary-container @ 30% */
+    'cros-slider-track-color-inactive': 'rgba($cros.sys.disabled.rgb,.3)',
+    'cros-slider-label-text-color' : '$cros.sys.on-primary',
+    'cros-slider-color-inactive' : '$cros.sys.disabled',
+    'cros-switch-knob-color-active' : '$cros.sys.on-primary',
+    'cros-switch-knob-color-inactive' : '$cros.sys.on-secondary',
+    'cros-switch-track-color-active' : '$cros.sys.primary',
+    'cros-switch-track-color-inactive' : '$cros.sys.secondary',
+    'cros-tooltip-label-color' : '$cros.sys.inverse-on-surface',
+    'cros-tooltip-background-color' : '$cros.sys.on-surface',
+    'cros-nudge-label-color' : '$cros.sys.on-primary',
+    'cros-nudge-icon-color' : '$cros.sys.on-primary',
+    'cros-nudge-background-color' : '$cros.sys.primary',
+    'cros-menu-label-color' : '$cros.sys.on-surface',
+    'cros-menu-icon-color' : '$cros.sys.on-surface',
+    'cros-menu-shortcut-color' : '$cros.sys.secondary',
+    'cros-menu-item-background-hover' : '$cros.sys.hover-on-subtle',
+    'cros-color-positive' : '$cros.sys.positive',
+    'cros-color-warning' : '$cros.sys.warning',
+    'cros-color-alert' : '$cros.sys.error',
+  },
   colors: {
     /* Primary */
+    /* If this is changed, please also update SampleColorScheme */
     primary: {
       light: '$cros.ref.primary40',
       dark: '$cros.ref.primary80',
@@ -33,6 +96,7 @@
       light: '$cros.ref.primary100',
       dark:  '$cros.ref.primary20',
     },
+    /* If this is changed, please also update SampleColorScheme */
     'primary-container': {
       light: '$cros.ref.primary90',
       dark:  'blend(rgba($cros.ref.primary30.rgb, 0.08), $cros.ref.secondary30)',
@@ -70,6 +134,7 @@
       light: '$cros.ref.tertiary100',
       dark:  '$cros.ref.tertiary20',
     },
+    /* If this is changed, please also update SampleColorScheme */
     'tertiary-container': {
       light: '$cros.ref.tertiary90',
       dark:  '$cros.ref.tertiary30',
@@ -105,6 +170,7 @@
     'on-surface-variant': {
       light: '$cros.ref.neutralvariant30',
       dark:  '$cros.ref.neutralvariant80',
+      generate_per_mode: true,
     },
     outline: {
       light: '$cros.ref.neutralvariant50',
@@ -132,7 +198,7 @@
       light: '$cros.ref.neutral99',
       dark:  '$cros.ref.neutral10',
     },
-    'app-base-elevated': {
+    'base-elevated': {
       light: '$cros.ref.neutralvariant100',
       /* In dark mode we layer primary80 @ 11% ontop of neutral80 @ 2% ontop of neutral 10. */
       dark: 'blend(rgba($cros.ref.primary80.rgb, .11), blend(rgba($cros.ref.neutral80.rgb, .02), $cros.ref.neutral10))',
@@ -181,6 +247,7 @@
       light: 'rgba($cros.ref.secondary90.rgb, 0.6)',
       dark:  'rgba($cros.ref.secondary30.rgb, 0.48)',
     },
+    'dialog-container': '$cros.sys.base-elevated',
     'inverse-surface': {
       light: '$cros.ref.neutral20',
       dark:  '$cros.ref.neutral90',
@@ -198,21 +265,25 @@
       dark: 'rgba($cros.ref.neutralvariant0.rgb, 0.14)',
     },
 
-    'input-field-light': {
+    'input-field-on-shaded': {
       light: '$cros.ref.neutral99',
       dark: 'rgba($cros.ref.neutral50.rgb, 0.4)'
     },
-    'input-field-dark': {
+    'input-field-on-base': {
       light: '$cros.ref.neutral95',
       dark: 'rgba($cros.ref.neutral0.rgb, 0.6)'
     },
     'system-on-base': {
+      light: 'rgba($cros.ref.neutralvariant99.rgb, 0.6)',
+      dark: 'rgba($cros.ref.neutralvariant40.rgb, 0.5)',
+    },
+    'system-on-base-opaque': {
       light: '$cros.ref.neutralvariant95',
-      dark: 'rgba($cros.ref.neutralvariant40.rgb, 0.4)',
+      dark: '$cros.ref.neutralvariant30',
     },
     'system-on-base1': {
-      light: 'rgba($cros.ref.neutral99.rgb, 0.10)',
-      dark: 'rgba($cros.ref.neutral10.rgb, 0.06)',
+      light: 'rgba($cros.ref.neutral10.rgb, 0.06)',
+      dark: 'rgba($cros.ref.neutral99.rgb, 0.10)',
     },
     'system-primary-container': {
       light: '$cros.ref.primary80',
@@ -303,6 +374,10 @@
     'disabled': {
       light: 'rgba($cros.sys.on-surface.rgb, 0.38)',
       dark: 'rgba($cros.sys.on-surface.rgb, 0.38)',
+    },
+    'disabled-opaque': {
+      light: '$cros.ref.neutralvariant80',
+      dark: '$cros.ref.neutralvariant30',
     },
     'disabled-container': 'rgba($cros.sys.on-surface.rgb, 0.12)',
     // TODO(b/224402466): Add cros.sys.warning
@@ -403,6 +478,46 @@
     'illo.secondary': {
       light: '$cros.ref.neutralvariant90',
       dark: '$cros.ref.neutralvariant40',
+    },
+    'illo.card.color1' : {
+      light: '#fce3e0',
+      dark: '#4d2726',
+    },
+    'illo.card.on-color1' : {
+      light: '#a50e0e',
+      dark: '#f6aea9',
+    },
+    'illo.card.color2' : {
+      light: '#fef2cb',
+      dark: '#443117',
+    },
+    'illo.card.on-color2' : {
+      light: '#9b6100',
+      dark: '#fde293',
+    },
+    'illo.card.color3' : {
+      light: '#dcf4e3',
+      dark: '#16341e',
+    },
+    'illo.card.on-color3' : {
+      light: '#0d652d',
+      dark: '#a8dab5',
+    },
+    'illo.card.color4' : {
+      light: '#d6e5fc',
+      dark: '#20314e',
+    },
+    'illo.card.on-color4' : {
+      light: '#185abc',
+      dark: '#aecbfa',
+    },
+    'illo.card.color5' : {
+      light: '#f4e3fe',
+      dark: '#433355',
+    },
+    'illo.card.on-color5' : {
+      light: '#75099b',
+      dark: '#d7aefb',
     },
   },
 }

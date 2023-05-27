@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FittingType, OpenPdfParamsParser} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_wrapper.js';
+import {FittingType, OpenPdfParamsParser, ViewMode} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_wrapper.js';
 
 const URL = 'http://xyz.pdf';
 
 function getParamsParser(): OpenPdfParamsParser {
+  const getPageBoundingBoxCallback = function(_page: number) {
+    return Promise.resolve({x: 10, y: 15, width: 200, height: 300});
+  };
   const paramsParser = new OpenPdfParamsParser(function(destination: string) {
     // Set the dummy viewport dimensions for calculating the zoom level for
     // view destination with 'FitR' type.
@@ -27,69 +30,69 @@ function getParamsParser(): OpenPdfParamsParser {
     if (destination === 'DestWithXYZ') {
       return Promise.resolve({
         messageId: 'getNamedDestination_4',
-        namedDestinationView: 'XYZ,111,222,1.7',
+        namedDestinationView: `${ViewMode.XYZ},111,222,1.7`,
         pageNumber: 10,
       });
     }
     if (destination === 'DestWithXYZAtZoomNull') {
       return Promise.resolve({
         messageId: 'getNamedDestination_5',
-        namedDestinationView: 'XYZ,111,222,null',
+        namedDestinationView: `${ViewMode.XYZ},111,222,null`,
         pageNumber: 10,
       });
     }
     if (destination === 'DestWithXYZWithX0') {
       return Promise.resolve({
         messageId: 'getNamedDestination_6',
-        namedDestinationView: 'XYZ,0,200,1.7',
+        namedDestinationView: `${ViewMode.XYZ},0,200,1.7`,
         pageNumber: 11,
       });
     }
     if (destination === 'DestWithXYZWithXNull') {
       return Promise.resolve({
         messageId: 'getNamedDestination_7',
-        namedDestinationView: 'XYZ,null,200,1.7',
+        namedDestinationView: `${ViewMode.XYZ},null,200,1.7`,
         pageNumber: 11,
       });
     }
     if (destination === 'DestWithXYZWithY0') {
       return Promise.resolve({
         messageId: 'getNamedDestination_8',
-        namedDestinationView: 'XYZ,100,0,1.7',
+        namedDestinationView: `${ViewMode.XYZ},100,0,1.7`,
         pageNumber: 11,
       });
     }
     if (destination === 'DestWithXYZWithYNull') {
       return Promise.resolve({
         messageId: 'getNamedDestination_9',
-        namedDestinationView: 'XYZ,100,null,1.7',
+        namedDestinationView: `${ViewMode.XYZ},100,null,1.7`,
         pageNumber: 11,
       });
     }
     if (destination === 'DestWithFitR') {
       return Promise.resolve({
         messageId: 'getNamedDestination_10',
-        namedDestinationView: 'FitR,20,100,120,300',
+        namedDestinationView: `${ViewMode.FIT_R},20,100,120,300`,
         pageNumber: 0,
       });
     }
     if (destination === 'DestWithFitRReversedCoordinates') {
       return Promise.resolve({
         messageId: 'getNamedDestination_11',
-        namedDestinationView: 'FitR,120,300,20,100',
+        namedDestinationView: `${ViewMode.FIT_R},120,300,20,100`,
         pageNumber: 0,
       });
     }
     if (destination === 'DestWithFitRWithNull') {
       return Promise.resolve({
         messageId: 'getNamedDestination_12',
-        namedDestinationView: 'FitR,null,100,100,300',
+        namedDestinationView: `${ViewMode.FIT_R},null,100,100,300`,
         pageNumber: 0,
       });
     }
     return Promise.resolve(
         {messageId: 'getNamedDestination_13', pageNumber: -1});
-  });
+  }, getPageBoundingBoxCallback);
   return paramsParser;
 }
 
@@ -258,41 +261,44 @@ chrome.test.runTests([
     const paramsParser = getParamsParser();
 
     // Checking #view=Fit.
-    let params = await paramsParser.getViewportFromUrlParams(`${URL}#view=Fit`);
+    let params = await paramsParser.getViewportFromUrlParams(
+        `${URL}#view=${ViewMode.FIT}`);
     chrome.test.assertEq(FittingType.FIT_TO_PAGE, params.view);
     chrome.test.assertEq(undefined, params.viewPosition);
 
     // Checking #view=FitH.
-    params = await paramsParser.getViewportFromUrlParams(`${URL}#view=FitH`);
+    params = await paramsParser.getViewportFromUrlParams(
+        `${URL}#view=${ViewMode.FIT_H}`);
     chrome.test.assertEq(FittingType.FIT_TO_WIDTH, params.view);
     chrome.test.assertEq(undefined, params.viewPosition);
 
     // Checking #view=FitH,[int position].
-    params =
-        await paramsParser.getViewportFromUrlParams(`${URL}#view=FitH,789`);
+    params = await paramsParser.getViewportFromUrlParams(
+        `${URL}#view=${ViewMode.FIT_H},789`);
     chrome.test.assertEq(FittingType.FIT_TO_WIDTH, params.view);
     chrome.test.assertEq(789, params.viewPosition);
 
     // Checking #view=FitH,[float position].
-    params =
-        await paramsParser.getViewportFromUrlParams(`${URL}#view=FitH,7.89`);
+    params = await paramsParser.getViewportFromUrlParams(
+        `${URL}#view=${ViewMode.FIT_H},7.89`);
     chrome.test.assertEq(FittingType.FIT_TO_WIDTH, params.view);
     chrome.test.assertEq(7.89, params.viewPosition);
 
     // Checking #view=FitV.
-    params = await paramsParser.getViewportFromUrlParams(`${URL}#view=FitV`);
+    params = await paramsParser.getViewportFromUrlParams(
+        `${URL}#view=${ViewMode.FIT_V}`);
     chrome.test.assertEq(FittingType.FIT_TO_HEIGHT, params.view);
     chrome.test.assertEq(undefined, params.viewPosition);
 
     // Checking #view=FitV,[int position].
-    params =
-        await paramsParser.getViewportFromUrlParams(`${URL}#view=FitV,123`);
+    params = await paramsParser.getViewportFromUrlParams(
+        `${URL}#view=${ViewMode.FIT_V},123`);
     chrome.test.assertEq(FittingType.FIT_TO_HEIGHT, params.view);
     chrome.test.assertEq(123, params.viewPosition);
 
     // Checking #view=FitV,[float position].
-    params =
-        await paramsParser.getViewportFromUrlParams(`${URL}#view=FitV,1.23`);
+    params = await paramsParser.getViewportFromUrlParams(
+        `${URL}#view=${ViewMode.FIT_V},1.23`);
     chrome.test.assertEq(FittingType.FIT_TO_HEIGHT, params.view);
     chrome.test.assertEq(1.23, params.viewPosition);
 
@@ -308,26 +314,28 @@ chrome.test.runTests([
     chrome.test.assertEq(undefined, params.viewPosition);
 
     // Checking #view=[wrong parameter].
-    params = await paramsParser.getViewportFromUrlParams(`${URL}#view=XYZ`);
+    params = await paramsParser.getViewportFromUrlParams(
+        `${URL}#view=${ViewMode.XYZ}`);
     chrome.test.assertEq(undefined, params.view);
     chrome.test.assertEq(undefined, params.viewPosition);
 
     // Checking #view=[wrong parameter],[position].
     params = await paramsParser.getViewportFromUrlParams(
-        `${URL}#view=XYZ,111,222,1.7`);
+        `${URL}#view=${ViewMode.XYZ},111,222,1.7`);
     chrome.test.assertEq(undefined, params.zoom);
     chrome.test.assertEq(undefined, params.position);
     chrome.test.assertEq(undefined, params.view);
     chrome.test.assertEq(undefined, params.viewPosition);
 
     // Checking #view=[wrong parameter].
-    params = await paramsParser.getViewportFromUrlParams(`${URL}#view=FitR`);
+    params = await paramsParser.getViewportFromUrlParams(
+        `${URL}#view=${ViewMode.FIT_R}`);
     chrome.test.assertEq(undefined, params.view);
     chrome.test.assertEq(undefined, params.viewPosition);
 
     // Checking #view=[wrong parameter],[position].
     params = await paramsParser.getViewportFromUrlParams(
-        `${URL}#view=FitR,20,100,120,300`);
+        `${URL}#view=${ViewMode.FIT_R},20,100,120,300`);
     chrome.test.assertEq(undefined, params.zoom);
     chrome.test.assertEq(undefined, params.position);
     chrome.test.assertEq(undefined, params.view);
@@ -375,6 +383,21 @@ chrome.test.runTests([
     // Checking no relevant parameters defaults to !sidenavCollapsed.
     chrome.test.assertFalse(paramsParser.shouldShowSidenav(`${URL}`, true));
     chrome.test.assertTrue(paramsParser.shouldShowSidenav(`${URL}`, false));
+
+    chrome.test.succeed();
+  },
+  async function testParamsViewFitB() {
+    const paramsParser = getParamsParser();
+
+    // Checking #view=FitB.
+    const params =
+        await paramsParser.getViewportFromUrlParams(`${URL}#view=FitB`);
+    chrome.test.assertEq(FittingType.FIT_TO_BOUNDING_BOX, params.view);
+    chrome.test.assertTrue(params.boundingBox !== undefined);
+    chrome.test.assertEq(10, params.boundingBox.x);
+    chrome.test.assertEq(15, params.boundingBox.y);
+    chrome.test.assertEq(200, params.boundingBox.width);
+    chrome.test.assertEq(300, params.boundingBox.height);
 
     chrome.test.succeed();
   },

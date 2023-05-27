@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Slikovni dekodirnik</translation>
 <translation id="1785415724048343560">Priporočljivo za najboljšo izkušnjo</translation>
 <translation id="1818308510395330587">Če želite aplikaciji <ph name="APP_NAME" /> dovoliti uporabo razširjene resničnosti, prav tako vklopite fotoaparat v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
-<translation id="1864927262126810325">Iz: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Povezana spletna mesta si lahko ogledajo vašo dejavnost v skupini.</translation>
 <translation id="1887786770086287077">Dostop do lokacije je izklopljen za to napravo. Vklopite ga lahko v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Prekini</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Prenos je končan <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Funkcije na nekaterih spletnih mestih morda ne bodo delovale v anonimnem načinu</translation>
 <translation id="2442870161001914531">Vedno zahtevaj spletno mesto za namizne računalnike</translation>
+<translation id="2479148705183875116">V nastavitve</translation>
 <translation id="2482878487686419369">Obvestila</translation>
 <translation id="2485422356828889247">Odmeščanje</translation>
 <translation id="2490684707762498678">Upravlja aplikacija <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">E-poštni naslovi</translation>
 <translation id="2750481671343847896">Spletna mesta lahko prikazujejo pozive za prijavo zunanjih ponudnikov.</translation>
 <translation id="2822354292072154809">Ali ste prepričani, da želite ponastaviti vsa dovoljenja za spletna mesta za <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Zahtevanje pogleda za mobilno napravo</translation>
 <translation id="2870560284913253234">Spletno mesto</translation>
 <translation id="2874939134665556319">Prejšnja skladba</translation>
 <translation id="2891975107962658722">Blokiranje spletnim mestom shranjevanje podatkov v napravi.</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Spletna mesta lahko uporabljajo piškotke za izboljšanje izkušnje brskanja, in sicer tako, da na primer poskrbijo, da ostanete prijavljeni, ali si zapomnijo izdelke v nakupovalnem vozičku.</translation>
 <translation id="3165022941318558018">Dovoli spletnemu mestu uporabo piškotkov tretje osebe</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> shranjenih podatkov</translation>
-<translation id="3203366800380907218">Iz spleta</translation>
 <translation id="321187648315454507">Če želite, da vam aplikacija <ph name="APP_NAME" /> pošilja obvestila, obvestila vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="3248611290851046188">To spletno mesto določa zanimanja, ki jih druga spletna mesta lahko uporabijo pri prikazovanju oglasov. To spletno mesto tudi pridobi vaša zanimanja iz Chroma, da vam prikaže ustreznejše oglase.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Zahtevaj pogled za namizni računalnik</translation>
 <translation id="5100237604440890931">Strnjeno – kliknite, če želite razširiti.</translation>
 <translation id="5123685120097942451">Anonimni zavihek</translation>
-<translation id="5134599672855298214">Zahtevaj pogled za mobilno napravo (priporočeno)</translation>
 <translation id="5186036860380548585">Možnosti so na voljo blizu vrha zaslona</translation>
 <translation id="5197729504361054390">Izbrani stiki bodo v skupni rabi s spletnim mestom <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Nazadnje obiskano danes</translation>

@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -48,6 +47,12 @@
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser_list.h"
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/feature_list.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chromeos/constants/chromeos_features.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace {
 
@@ -298,7 +303,15 @@ ProfileAttributesStorage::ProfileAttributesStorage(
 
     // `info` may become invalid after this call.
     // Profiles loaded from disk can never be omitted.
-    InitEntryWithKey(kv.first, /*is_omitted=*/false);
+    bool is_omitted = false;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    // Lacros has one exception to the above rule: web app profiles are
+    // persisted on disk and hidden from the UI.
+    is_omitted = base::FeatureList::IsEnabled(
+                     chromeos::features::kExperimentalWebAppProfileIsolation) &&
+                 Profile::IsWebAppProfileName(kv.first);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+    InitEntryWithKey(kv.first, is_omitted);
   }
 
   // A profile name can depend on other profile names. Do an additional pass to
@@ -363,36 +376,41 @@ void ProfileAttributesStorage::AddProfile(ProfileAttributesInitParams params) {
   ScopedDictPrefUpdate update(prefs_, prefs::kProfileAttributes);
   base::Value::Dict& attributes = update.Get();
 
-  base::Value info(base::Value::Type::DICT);
-  info.SetStringKey(ProfileAttributesEntry::kNameKey, params.profile_name);
-  info.SetStringKey(ProfileAttributesEntry::kGAIAIdKey, params.gaia_id);
-  info.SetStringKey(ProfileAttributesEntry::kUserNameKey, params.user_name);
   DCHECK(!params.is_consented_primary_account || !params.gaia_id.empty() ||
          !params.user_name.empty());
-  info.SetBoolKey(ProfileAttributesEntry::kIsConsentedPrimaryAccountKey,
-                  params.is_consented_primary_account);
-  info.SetStringKey(ProfileAttributesEntry::kAvatarIconKey,
-                    profiles::GetDefaultAvatarIconUrl(params.icon_index));
-  // Default value for whether background apps are running is false.
-  info.SetBoolKey(ProfileAttributesEntry::kBackgroundAppsKey, false);
-  info.SetStringKey(ProfileAttributesEntry::kSupervisedUserId,
-                    params.supervised_user_id);
-  info.SetBoolKey(ProfileAttributesEntry::kProfileIsEphemeral,
-                  params.is_ephemeral);
-  // Either the user has provided a name manually on purpose, and in this case
-  // we should not check for legacy profile names or this a new profile but then
-  // it is not a legacy name, so we dont need to check for legacy names.
-  info.SetBoolKey(
-      ProfileAttributesEntry::kIsUsingDefaultNameKey,
-      IsDefaultProfileName(params.profile_name,
-                           /*include_check_for_legacy_profile_name*/ false));
-  // Assume newly created profiles use a default avatar.
-  info.SetBoolKey(ProfileAttributesEntry::kIsUsingDefaultAvatarKey, true);
-  if (params.account_id.HasAccountIdKey())
-    info.SetStringKey(ProfileAttributesEntry::kAccountIdKey,
-                      params.account_id.GetAccountIdKey());
-  info.SetBoolKey(prefs::kSignedInWithCredentialProvider,
-                  params.is_signed_in_with_credential_provider);
+
+  base::Value::Dict info =
+      base::Value::Dict()
+          .Set(ProfileAttributesEntry::kNameKey, params.profile_name)
+          .Set(ProfileAttributesEntry::kGAIAIdKey, params.gaia_id)
+          .Set(ProfileAttributesEntry::kUserNameKey, params.user_name)
+          .Set(ProfileAttributesEntry::kIsConsentedPrimaryAccountKey,
+               params.is_consented_primary_account)
+          .Set(ProfileAttributesEntry::kAvatarIconKey,
+               profiles::GetDefaultAvatarIconUrl(params.icon_index))
+          // Default value for whether background apps are running is false.
+          .Set(ProfileAttributesEntry::kBackgroundAppsKey, false)
+          .Set(ProfileAttributesEntry::kSupervisedUserId,
+               params.supervised_user_id)
+          .Set(ProfileAttributesEntry::kProfileIsEphemeral, params.is_ephemeral)
+          // Either the user has provided a name manually on purpose, and in
+          // this case we should not check for legacy profile names or this a
+          // new profile but then it is not a legacy name, so we dont need to
+          // check for legacy names.
+          .Set(ProfileAttributesEntry::kIsUsingDefaultNameKey,
+               IsDefaultProfileName(
+                   params.profile_name,
+                   /*include_check_for_legacy_profile_name*/ false))
+          // Assume newly created profiles use a default avatar.
+          .Set(ProfileAttributesEntry::kIsUsingDefaultAvatarKey, true)
+          .Set(prefs::kSignedInWithCredentialProvider,
+               params.is_signed_in_with_credential_provider);
+
+  if (params.account_id.HasAccountIdKey()) {
+    info.Set(ProfileAttributesEntry::kAccountIdKey,
+             params.account_id.GetAccountIdKey());
+  }
+
   attributes.Set(key, std::move(info));
 
   ProfileAttributesEntry* entry = InitEntryWithKey(key, params.is_omitted);
@@ -577,9 +595,10 @@ bool ProfileAttributesStorage::IsDefaultProfileName(
     return true;
 
   // Check if it's one of the old-style profile names.
-  for (size_t i = 0; i < std::size(kDefaultNames); ++i) {
-    if (name == l10n_util::GetStringUTF16(kDefaultNames[i]))
+  for (int default_name : kDefaultNames) {
+    if (name == l10n_util::GetStringUTF16(default_name)) {
       return true;
+    }
   }
   return false;
 }

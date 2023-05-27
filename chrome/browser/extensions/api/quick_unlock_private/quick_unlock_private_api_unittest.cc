@@ -13,6 +13,7 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
@@ -642,7 +643,8 @@ class QuickUnlockPrivateUnitTest
   }
 
   base::test::ScopedFeatureList feature_list_;
-  sync_preferences::TestingPrefServiceSyncable* test_pref_service_;
+  raw_ptr<sync_preferences::TestingPrefServiceSyncable, ExperimentalAsh>
+      test_pref_service_;
 
  private:
   // Runs the given |func| with the given |params|.
@@ -653,7 +655,7 @@ class QuickUnlockPrivateUnitTest
         api_test_utils::RunFunctionWithDelegateAndReturnSingleResult(
             std::move(func), std::move(params),
             std::make_unique<ExtensionFunctionDispatcher>(profile()),
-            api_test_utils::NONE);
+            api_test_utils::FunctionMode::kNone);
     base::RunLoop().RunUntilIdle();
     return result;
   }
@@ -664,7 +666,8 @@ class QuickUnlockPrivateUnitTest
     base::RunLoop().RunUntilIdle();
     auto dispatcher = std::make_unique<ExtensionFunctionDispatcher>(profile());
     api_test_utils::RunFunction(func.get(), std::move(params),
-                                std::move(dispatcher), api_test_utils::NONE);
+                                std::move(dispatcher),
+                                api_test_utils::FunctionMode::kNone);
     EXPECT_TRUE(func->GetResultListForTest()->empty());
     base::RunLoop().RunUntilIdle();
     return func->GetError();
@@ -678,7 +681,8 @@ class QuickUnlockPrivateUnitTest
     expect_modes_changed_ = false;
   }
 
-  ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
+  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> fake_user_manager_ =
+      nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   QuickUnlockPrivateSetModesFunction::ModesChangedEventHandler
       modes_changed_handler_;

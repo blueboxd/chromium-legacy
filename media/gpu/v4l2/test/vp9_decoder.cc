@@ -25,6 +25,7 @@
 namespace media {
 
 namespace v4l2_test {
+constexpr uint32_t kDriverCodecFourcc = V4L2_PIX_FMT_VP9_FRAME;
 
 constexpr uint32_t kNumberOfBuffersInCaptureQueue = 10;
 
@@ -137,11 +138,8 @@ static void FillV4L2VP9ProbsParams(
 
 Vp9Decoder::Vp9Decoder(std::unique_ptr<IvfParser> ivf_parser,
                        std::unique_ptr<V4L2IoctlShim> v4l2_ioctl,
-                       std::unique_ptr<V4L2Queue> OUTPUT_queue,
-                       std::unique_ptr<V4L2Queue> CAPTURE_queue)
-    : VideoDecoder::VideoDecoder(std::move(v4l2_ioctl),
-                                 std::move(OUTPUT_queue),
-                                 std::move(CAPTURE_queue)),
+                       gfx::Size display_resolution)
+    : VideoDecoder::VideoDecoder(std::move(v4l2_ioctl), display_resolution),
       ivf_parser_(std::move(ivf_parser)),
       vp9_parser_(
           std::make_unique<Vp9Parser>(/*parsing_compressed_header=*/true)),
@@ -165,8 +163,6 @@ Vp9Decoder::~Vp9Decoder() = default;
 // static
 std::unique_ptr<Vp9Decoder> Vp9Decoder::Create(
     const base::MemoryMappedFile& stream) {
-  constexpr uint32_t kDriverCodecFourcc = V4L2_PIX_FMT_VP9_FRAME;
-
   VLOG(2) << "Attempting to create decoder with codec "
           << media::FourccToString(kDriverCodecFourcc);
 
@@ -190,45 +186,19 @@ std::unique_ptr<Vp9Decoder> Vp9Decoder::Create(
   }
 
   auto v4l2_ioctl = std::make_unique<V4L2IoctlShim>(kDriverCodecFourcc);
-  uint32_t uncompressed_fourcc = V4L2_PIX_FMT_NV12;
-  int num_planes = 1;
 
-  if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
-                                      uncompressed_fourcc)) {
-    // Fall back to MM21 for MediaTek platforms
-    uncompressed_fourcc = V4L2_PIX_FMT_MM21;
-    num_planes = 2;
-
-    if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
-                                        uncompressed_fourcc)) {
-      LOG(ERROR) << "Device doesn't support the provided FourCCs.";
-      return nullptr;
-    }
+  if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc)) {
+    LOG(ERROR) << "Device doesn't support "
+               << media::FourccToString(kDriverCodecFourcc) << ".";
+    return nullptr;
   }
 
-  LOG(INFO) << "Ivf file header: " << file_header.width << " x "
-            << file_header.height;
+  gfx::Size display_resolution =
+      gfx::Size(file_header.width, file_header.height);
+  LOG(INFO) << "Ivf file header: " << display_resolution.ToString();
 
-  // TODO(stevecho): might need to consider using more than 1 file descriptor
-  // (fd) & buffer with the output queue for 4K60 requirement.
-  // https://buganizer.corp.google.com/issues/202214561#comment31
-  auto OUTPUT_queue = std::make_unique<V4L2Queue>(
-      V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, kDriverCodecFourcc,
-      gfx::Size(file_header.width, file_header.height), /*num_planes=*/1,
-      V4L2_MEMORY_MMAP, /*num_buffers=*/1);
-
-  // TODO(stevecho): enable V4L2_MEMORY_DMABUF memory for CAPTURE queue.
-  // |num_planes| represents separate memory buffers, not planes for Y, U, V.
-  // https://www.kernel.org/doc/html/v5.10/userspace-api/media/v4l/pixfmt-v4l2-mplane.html#c.V4L.v4l2_plane_pix_format
-  auto CAPTURE_queue = std::make_unique<V4L2Queue>(
-      V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE, uncompressed_fourcc,
-      gfx::Size(file_header.width, file_header.height),
-      /*num_planes=*/num_planes, V4L2_MEMORY_MMAP,
-      /*num_buffers=*/kNumberOfBuffersInCaptureQueue);
-
-  return base::WrapUnique(
-      new Vp9Decoder(std::move(ivf_parser), std::move(v4l2_ioctl),
-                     std::move(OUTPUT_queue), std::move(CAPTURE_queue)));
+  return base::WrapUnique(new Vp9Decoder(
+      std::move(ivf_parser), std::move(v4l2_ioctl), display_resolution));
 }
 
 std::set<int> Vp9Decoder::RefreshReferenceSlots(
@@ -477,6 +447,11 @@ VideoDecoder::Result Vp9Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
       break;
   }
 
+  const bool is_OUTPUT_queue_new = !OUTPUT_queue_;
+  if (!OUTPUT_queue_) {
+    CreateOUTPUTQueue(kDriverCodecFourcc);
+  }
+
   VLOG_IF(2, !frame_hdr.show_frame) << "not displaying frame";
   last_decoded_frame_visible_ = frame_hdr.show_frame;
 
@@ -512,22 +487,27 @@ VideoDecoder::Result Vp9Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
                                    .ptr = &v4l2_compressed_hdr_probs};
   }
 
-  if (!v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, &ext_ctrls))
-    LOG(FATAL) << "VIDIOC_S_EXT_CTRLS failed.";
+  // Before the CAPTURE queue is set up the first frame must be parsed by the
+  // driver. This is done so that when VIDIOC_G_FMT is called the frame
+  // dimensions and format will be ready. Specifying V4L2_CTRL_WHICH_CUR_VAL
+  // when VIDIOC_S_EXT_CTRLS processes the request immediately so that the frame
+  // is parsed by the driver and the state is readied.
+  v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, &ext_ctrls,
+                           is_OUTPUT_queue_new && cur_val_is_supported_);
+  v4l2_ioctl_->MediaRequestIocQueue(OUTPUT_queue_);
 
-  if (!v4l2_ioctl_->MediaRequestIocQueue(OUTPUT_queue_))
-    LOG(FATAL) << "MEDIA_REQUEST_IOC_QUEUE failed.";
-
-  uint32_t buffer_id;
-
-  if (!v4l2_ioctl_->DQBuf(CAPTURE_queue_, &buffer_id)) {
-    LOG(FATAL) << "VIDIOC_DQBUF failed for CAPTURE queue.";
+  if (!CAPTURE_queue_) {
+    CreateCAPTUREQueue(kNumberOfBuffersInCaptureQueue);
   }
 
+  uint32_t buffer_id;
+  v4l2_ioctl_->DQBuf(CAPTURE_queue_, &buffer_id);
+
   scoped_refptr<MmappedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
-  size = CAPTURE_queue_->display_size();
-  ConvertToYUV(y_plane, u_plane, v_plane, size, buffer->mmapped_planes(),
-               CAPTURE_queue_->coded_size(), CAPTURE_queue_->fourcc());
+
+  ConvertToYUV(y_plane, u_plane, v_plane, OUTPUT_queue_->resolution(),
+               buffer->mmapped_planes(), CAPTURE_queue_->resolution(),
+               CAPTURE_queue_->fourcc());
 
   const std::set<int> reusable_buffer_slots = RefreshReferenceSlots(
       frame_hdr.refresh_frame_flags, CAPTURE_queue_->GetBuffer(buffer_id),
@@ -551,17 +531,14 @@ VideoDecoder::Result Vp9Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
       CAPTURE_queue_->set_last_queued_buffer_id(reusable_buffer_slot);
   }
 
-  if (!v4l2_ioctl_->DQBuf(OUTPUT_queue_, &buffer_id)) {
-    LOG(FATAL) << "VIDIOC_DQBUF failed for OUTPUT queue.";
-  }
+  v4l2_ioctl_->DQBuf(OUTPUT_queue_, &buffer_id);
 
   // TODO(stevecho): With current VP9 API, VIDIOC_G_EXT_CTRLS ioctl call is
   // needed when forward probabilities update is used. With new VP9 API landing
   // in kernel 5.17, VIDIOC_G_EXT_CTRLS ioctl call is no longer needed, see:
   // https://lwn.net/Articles/855419/
 
-  if (!v4l2_ioctl_->MediaRequestIocReinit(OUTPUT_queue_))
-    LOG(FATAL) << "MEDIA_REQUEST_IOC_REINIT failed.";
+  v4l2_ioctl_->MediaRequestIocReinit(OUTPUT_queue_);
 
   return Vp9Decoder::kOk;
 }

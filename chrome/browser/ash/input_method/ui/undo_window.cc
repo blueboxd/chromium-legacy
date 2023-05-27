@@ -5,7 +5,6 @@
 #include "chrome/browser/ash/input_method/ui/undo_window.h"
 
 #include "ash/public/cpp/style/color_provider.h"
-#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/input_method/assistive_window_properties.h"
 #include "chrome/browser/ash/input_method/ui/border_factory.h"
@@ -88,9 +87,6 @@ UndoWindow::UndoWindow(gfx::NativeView parent, AssistiveDelegate* delegate)
 }
 
 void UndoWindow::OnThemeChanged() {
-  // Without the scoped light mode, default for ash color provider is dark mode,
-  // which is bad.
-  ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
   undo_button_->SetImage(
       views::Button::ButtonState::STATE_NORMAL,
       gfx::CreateVectorIcon(
@@ -104,15 +100,15 @@ void UndoWindow::OnThemeChanged() {
   const auto* const color_provider = GetColorProvider();
   learn_more_button_->SetBorder(views::CreatePaddedBorder(
       views::CreateSolidSidedBorder(
-          gfx::Insets::TLBR(1, 0, 0, 0),
-          color_provider->GetColor(ui::kColorBubbleFooterBorder)),
+          gfx::Insets::TLBR(4, 0, 4, 4),
+          color_provider->GetColor(ui::kColorButtonBackground)),
       views::LayoutProvider::Get()->GetInsetsMetric(
           views::INSETS_VECTOR_IMAGE_BUTTON)));
 
   // TODO(crbug.com/1099044): Update and use cros colors.
   learn_more_button_->SetImageModel(
       views::Button::ButtonState::STATE_NORMAL,
-      ui::ImageModel::FromVectorIcon(vector_icons::kHelpOutlineIcon,
+      ui::ImageModel::FromVectorIcon(vector_icons::kSettingsOutlineIcon,
                                      ui::kColorIconSecondary));
 
   BubbleDialogDelegateView::OnThemeChanged();

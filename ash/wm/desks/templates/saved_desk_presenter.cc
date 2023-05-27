@@ -13,9 +13,9 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desk.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
 #include "ash/wm/desks/templates/saved_desk_library_view.h"
 #include "ash/wm/desks/templates/saved_desk_metrics_util.h"
@@ -27,6 +27,7 @@
 #include "base/containers/cxx20_erase_vector.h"
 #include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/scoped_multi_source_observation.h"
 #include "base/time/default_tick_clock.h"
@@ -63,7 +64,7 @@ desks_storage::DeskModel* GetDeskModel() {
 // is true.
 void ShowLibrary(aura::Window* const root_window,
                  const std::u16string& saved_desk_name,
-                 const base::GUID& uuid,
+                 const base::Uuid& uuid,
                  bool remove_desk) {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
 
@@ -128,11 +129,11 @@ WindowCloseObserver* g_window_close_observer = nullptr;
 class WindowCloseObserver : public aura::WindowObserver {
  public:
   WindowCloseObserver(aura::Window* root_window,
-                      const base::GUID& saved_desk_guid,
+                      const base::Uuid& saved_desk_uuid,
                       const std::u16string& saved_desk_name,
                       const std::vector<aura::Window*>& windows)
       : root_window_(root_window),
-        saved_desk_guid_(saved_desk_guid),
+        saved_desk_uuid_(saved_desk_uuid),
         saved_desk_name_(saved_desk_name) {
     DCHECK(g_window_close_observer == nullptr);
 
@@ -142,7 +143,7 @@ class WindowCloseObserver : public aura::WindowObserver {
     desk_container_ = desks_controller->GetDeskContainer(
         root_window, desks_controller->GetDeskIndex(desk_to_remove_));
     DCHECK(desk_container_);
-    window_observer_.AddObservation(desk_container_);
+    window_observer_.AddObservation(desk_container_.get());
 
     // If any of the observed windows belong to an ARC app, we need to handle
     // things a bit differently.
@@ -164,7 +165,7 @@ class WindowCloseObserver : public aura::WindowObserver {
 
     system_modal_container_ = Shell::Get()->GetContainer(
         root_window, kShellWindowId_SystemModalContainer);
-    window_observer_.AddObservation(system_modal_container_);
+    window_observer_.AddObservation(system_modal_container_.get());
   }
 
   ~WindowCloseObserver() override {
@@ -268,18 +269,18 @@ class WindowCloseObserver : public aura::WindowObserver {
 
   void ShowLibrary(bool remove_desk) {
     window_observer_.RemoveAllObservations();
-    ::ash::ShowLibrary(root_window_, saved_desk_name_, saved_desk_guid_,
+    ::ash::ShowLibrary(root_window_, saved_desk_name_, saved_desk_uuid_,
                        remove_desk);
   }
 
   void Terminate() { delete this; }
 
-  aura::Window* root_window_;
+  raw_ptr<aura::Window, ExperimentalAsh> root_window_;
 
-  aura::Window* system_modal_container_ = nullptr;
+  raw_ptr<aura::Window, ExperimentalAsh> system_modal_container_ = nullptr;
 
   // Current desk container. Will be used when monitoring for new windows.
-  aura::Window* desk_container_ = nullptr;
+  raw_ptr<aura::Window, ExperimentalAsh> desk_container_ = nullptr;
 
   // Tracks whether a modal "confirm close" dialog has been showed.
   bool modal_dialog_showed_ = false;
@@ -296,10 +297,10 @@ class WindowCloseObserver : public aura::WindowObserver {
 
   // The desk that the user has saved and that we will remove once windows have
   // been removed.
-  const Desk* desk_to_remove_ = nullptr;
+  raw_ptr<const Desk, ExperimentalAsh> desk_to_remove_ = nullptr;
 
-  // GUID and name of the saved desk.
-  const base::GUID saved_desk_guid_;
+  // UUID and name of the saved desk.
+  const base::Uuid saved_desk_uuid_;
   const std::u16string saved_desk_name_;
 
   // Used by unit tests to wait for modal dialogs.
@@ -345,7 +346,7 @@ size_t SavedDeskPresenter::GetMaxEntryCount(DeskTemplateType type) const {
 ash::DeskTemplate* SavedDeskPresenter::FindOtherEntryWithName(
     const std::u16string& name,
     ash::DeskTemplateType type,
-    const base::GUID& uuid) const {
+    const base::Uuid& uuid) const {
   return GetDeskModel()->FindOtherEntryWithName(name, type, uuid);
 }
 
@@ -379,7 +380,7 @@ void SavedDeskPresenter::UpdateUIForSavedDeskLibrary() {
     should_show_saved_desk_library_ =
         !in_tablet_mode && (is_showing_library || has_saved_desks);
 
-    if (DesksBarView* desks_bar_view = overview_grid->desks_bar_view()) {
+    if (LegacyDeskBarView* desks_bar_view = overview_grid->desks_bar_view()) {
       desks_bar_view->UpdateLibraryButtonVisibility();
       desks_bar_view->UpdateButtonsForSavedDeskGrid();
       overview_grid->UpdateSaveDeskButtons();
@@ -388,7 +389,7 @@ void SavedDeskPresenter::UpdateUIForSavedDeskLibrary() {
 }
 
 void SavedDeskPresenter::DeleteEntry(
-    const base::GUID& uuid,
+    const base::Uuid& uuid,
     absl::optional<DeskTemplateType> record_for_type) {
   weak_ptr_factory_.InvalidateWeakPtrs();
   GetDeskModel()->DeleteEntry(
@@ -481,11 +482,11 @@ void SavedDeskPresenter::EntriesAddedOrUpdatedRemotely(
 }
 
 void SavedDeskPresenter::EntriesRemovedRemotely(
-    const std::vector<base::GUID>& uuids) {
+    const std::vector<base::Uuid>& uuids) {
   RemoveUIEntries(uuids);
 }
 
-void SavedDeskPresenter::GetAllEntries(const base::GUID& item_to_focus,
+void SavedDeskPresenter::GetAllEntries(const base::Uuid& item_to_focus,
                                        const std::u16string& saved_desk_name,
                                        aura::Window* const root_window) {
   auto result = GetDeskModel()->GetAllEntries();
@@ -528,7 +529,7 @@ void SavedDeskPresenter::GetAllEntries(const base::GUID& item_to_focus,
 }
 
 void SavedDeskPresenter::OnDeleteEntry(
-    const base::GUID& uuid,
+    const base::Uuid& uuid,
     absl::optional<DeskTemplateType> record_for_type,
     desks_storage::DeskModel::DeleteEntryStatus status) {
   if (status != desks_storage::DeskModel::DeleteEntryStatus::kOk)
@@ -554,7 +555,7 @@ void SavedDeskPresenter::LaunchSavedDeskIntoNewDesk(
   // store the template ID here since we're about to move the desk template.
   const auto saved_desk_type = saved_desk->type();
   const auto saved_desk_creation_time = saved_desk->created_time();
-  const base::GUID uuid = saved_desk->uuid();
+  const base::Uuid uuid = saved_desk->uuid();
 
   auto* overview_controller = Shell::Get()->overview_controller();
   if (saved_desk_type == DeskTemplateType::kSaveAndRecall) {
@@ -563,7 +564,7 @@ void SavedDeskPresenter::LaunchSavedDeskIntoNewDesk(
       OverviewGrid* overview_grid =
           overview_session->GetGridWithRootWindow(root_window);
 
-      const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
+      const LegacyDeskBarView* desks_bar_view = overview_grid->desks_bar_view();
       DCHECK(desks_bar_view);
       DeskMiniView* mini_view = desks_bar_view->FindMiniViewForDesk(new_desk);
       DCHECK(mini_view);
@@ -651,7 +652,7 @@ void SavedDeskPresenter::OnAddOrUpdateEntry(
 
     if (!was_update) {
       // Shows the library if it was hidden. This will not call `GetAllEntries`.
-      overview_session_->ShowSavedDeskLibrary(base::GUID(),
+      overview_session_->ShowSavedDeskLibrary(base::Uuid(),
                                               /*saved_desk_name=*/u"",
                                               root_window);
       if (SavedDeskItemView* item_view =
@@ -739,7 +740,7 @@ void SavedDeskPresenter::AddOrUpdateUIEntries(
     std::move(on_update_ui_closure_for_testing_).Run();
 }
 
-void SavedDeskPresenter::RemoveUIEntries(const std::vector<base::GUID>& uuids) {
+void SavedDeskPresenter::RemoveUIEntries(const std::vector<base::Uuid>& uuids) {
   if (uuids.empty())
     return;
 

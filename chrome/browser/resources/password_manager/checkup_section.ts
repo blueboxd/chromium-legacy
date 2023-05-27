@@ -10,16 +10,19 @@ import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import './shared_style.css.js';
 
+import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_elements/cr_a11y_announcer/cr_a11y_announcer.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {focusWithoutInk} from 'chrome://resources/js/focus_without_ink.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {PaperSpinnerLiteElement} from 'chrome://resources/polymer/v3_0/paper-spinner/paper-spinner-lite.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './checkup_section.html.js';
+import {FocusConfig} from './focus_config.js';
 import {CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckStatusChangedListener, PasswordManagerImpl} from './password_manager_proxy.js';
 import {CheckupSubpage, Page, Route, RouteObserverMixin, Router, UrlParam} from './router.js';
 
@@ -52,6 +55,11 @@ export class CheckupSectionElement extends CheckupSectionElementBase {
 
   static get properties() {
     return {
+      focusConfig: {
+        type: Object,
+        observer: 'focusConfigChanged_',
+      },
+
       /**
        * The number of checked passwords as a formatted string.
        */
@@ -114,6 +122,7 @@ export class CheckupSectionElement extends CheckupSectionElementBase {
     };
   }
 
+  focusConfig: FocusConfig;
   private checkedPasswordsText_: string;
   private compromisedPasswordsText_: string;
   private reusedPasswordsText_: string;
@@ -212,6 +221,22 @@ export class CheckupSectionElement extends CheckupSectionElementBase {
         this.checkedPasswordsText_ =
             await PluralStringProxyImpl.getInstance().getPluralString(
                 'checkedPasswords', this.status_.totalNumberOfPasswords || 0);
+        if (!!oldStatus && oldStatus.state === CheckState.RUNNING &&
+            newStatus.state !== CheckState.NO_PASSWORDS) {
+          let stateText: string;
+          if (this.compromisedPasswords_.length > 0) {
+            stateText = this.i18n('checkupResultRed');
+          } else if (this.hasAnyIssues_()) {
+            stateText = this.i18n('checkupResultYellow');
+          } else {
+            stateText = this.i18n('checkupResultGreen');
+          }
+          getAnnouncerInstance().announce(
+              [this.checkedPasswordsText_, stateText].join('. '));
+          focusWithoutInk(
+              this.showRetryButton_() ? this.$.retryButton :
+                                        this.$.refreshButton);
+        }
         return;
       case CheckState.CANCELED:
         this.checkedPasswordsText_ = this.i18n('checkupCanceled');
@@ -287,7 +312,8 @@ export class CheckupSectionElement extends CheckupSectionElementBase {
       return 'checkup_result_banner_error';
     }
 
-    if (this.computeIsCheckRunning_()) {
+    if (this.computeIsCheckRunning_() ||
+        this.status_.state === CheckState.NO_PASSWORDS) {
       return 'checkup_result_banner_running';
     }
     if (this.computeIsCheckSuccessful_()) {
@@ -417,6 +443,28 @@ export class CheckupSectionElement extends CheckupSectionElementBase {
       return false;
     }
     return this.status_.state !== CheckState.NO_PASSWORDS;
+  }
+
+  private focusConfigChanged_(_newConfig: FocusConfig, oldConfig: FocusConfig) {
+    // focusConfig is set only once on the parent, so this observer should
+    // only fire once.
+    assert(!oldConfig);
+
+    this.focusConfig.set(Page.CHECKUP_DETAILS, () => {
+      const previousRoute = Router.getInstance().previousRoute;
+
+      switch (previousRoute?.details as unknown as CheckupSubpage) {
+        case CheckupSubpage.COMPROMISED:
+          focusWithoutInk(this.$.compromisedRow);
+          break;
+        case CheckupSubpage.REUSED:
+          focusWithoutInk(this.$.reusedRow);
+          break;
+        case CheckupSubpage.WEAK:
+          focusWithoutInk(this.$.weakRow);
+          break;
+      }
+    });
   }
 }
 

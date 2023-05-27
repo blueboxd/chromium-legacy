@@ -629,10 +629,6 @@ TEST_F(PaymentsClientTest, GetUnmaskDetailsSuccess) {
 }
 
 TEST_F(PaymentsClientTest, GetUnmaskDetailsIncludesChromeUserContext) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kAutofillEnableAccountWalletStorage);
-
   StartGettingUnmaskDetails();
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
@@ -774,50 +770,7 @@ TEST_F(PaymentsClientTest,
   EXPECT_EQ(AutofillClient::PaymentsRpcResult::kPermanentFailure, result_);
 }
 
-TEST_F(PaymentsClientTest, VirtualCardRiskBasedYellowPathResponse_CvcFlagOff) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kAutofillEnableCvcForVcnYellowPath);
-  StartUnmasking(CardUnmaskOptions().with_virtual_card_risk_based());
-  IssueOAuthToken();
-  ReturnResponse(
-      net::HTTP_OK,
-      "{ \"fido_request_options\": { \"challenge\": \"fake_fido_challenge\" }, "
-      "\"context_token\": \"fake_context_token\", \"idv_challenge_options\": "
-      "[{ \"sms_otp_challenge_option\": { \"challenge_id\": "
-      "\"fake_challenge_id_1\", \"masked_phone_number\": \"(***)-***-1234\" } "
-      "}, { \"sms_otp_challenge_option\": { \"challenge_id\": "
-      "\"fake_challenge_id_2\", \"masked_phone_number\": \"(***)-***-5678\" } "
-      "}, { \"cvc_challenge_option\": { \"challenge_id\": "
-      "\"fake_challenge_id_3\", \"cvc_length\": 3, \"cvc_position\": "
-      "\"CVC_POSITION_BACK\"}}]}");
-
-  // Ensure that it's not treated as failure when no pan is returned.
-  EXPECT_EQ(AutofillClient::PaymentsRpcResult::kSuccess, result_);
-  EXPECT_EQ("fake_context_token", unmask_response_details_->context_token);
-  // Verify the FIDO request challenge is correctly parsed.
-  EXPECT_EQ(
-      "fake_fido_challenge",
-      *unmask_response_details_->fido_request_options->FindString("challenge"));
-  // Verify the two idv challenge options are both sms challenge and fields can
-  // be correctly parsed.
-  ASSERT_EQ(2u, unmask_response_details_->card_unmask_challenge_options.size());
-  const CardUnmaskChallengeOption& challenge_option_1 =
-      unmask_response_details_->card_unmask_challenge_options[0];
-  EXPECT_EQ(CardUnmaskChallengeOptionType::kSmsOtp, challenge_option_1.type);
-  EXPECT_EQ("fake_challenge_id_1", challenge_option_1.id.value());
-  EXPECT_EQ(u"(***)-***-1234", challenge_option_1.challenge_info);
-  const CardUnmaskChallengeOption& challenge_option_2 =
-      unmask_response_details_->card_unmask_challenge_options[1];
-  EXPECT_EQ(CardUnmaskChallengeOptionType::kSmsOtp, challenge_option_2.type);
-  EXPECT_EQ("fake_challenge_id_2", challenge_option_2.id.value());
-  EXPECT_EQ(u"(***)-***-5678", challenge_option_2.challenge_info);
-}
-
-TEST_F(PaymentsClientTest, VirtualCardRiskBasedYellowPathResponse_CvcFlagOn) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAutofillEnableCvcForVcnYellowPath);
+TEST_F(PaymentsClientTest, VirtualCardRiskBasedYellowPathResponse) {
   StartUnmasking(CardUnmaskOptions().with_virtual_card_risk_based());
   IssueOAuthToken();
   ReturnResponse(
@@ -994,20 +947,6 @@ TEST_F(PaymentsClientTest, IncorrectOtp) {
   EXPECT_EQ("FLOW_STATUS_INCORRECT_OTP", unmask_response_details_->flow_status);
 }
 
-TEST_F(PaymentsClientTest, UnmaskIncludesChromeUserContext) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kAutofillEnableAccountWalletStorage);
-
-  StartUnmasking(CardUnmaskOptions());
-  IssueOAuthToken();
-  ReturnResponse(net::HTTP_OK, "{}");
-
-  // ChromeUserContext was set.
-  EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
-}
-
 TEST_F(PaymentsClientTest, UnmaskIncludesLegacyAndNonLegacyId) {
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
@@ -1042,12 +981,7 @@ TEST_F(PaymentsClientTest, UnmaskIncludesOnlyNonLegacyId) {
   EXPECT_TRUE(GetUploadData().find("credit_card_id") == std::string::npos);
 }
 
-TEST_F(PaymentsClientTest,
-       UnmaskIncludesChromeUserContextIfWalletStorageFlagEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnableAccountWalletStorage);
-
+TEST_F(PaymentsClientTest, UnmaskIncludesChromeUserContext) {
   StartUnmasking(CardUnmaskOptions());
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
@@ -1223,19 +1157,6 @@ TEST_P(PaymentsClientUploadDetailsTest,
               std::string::npos);
 }
 
-TEST_P(PaymentsClientUploadDetailsTest, GetDetailsIncludesChromeUserContext) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kAutofillEnableAccountWalletStorage);
-
-  StartGettingUploadDetails(GetUploadDetailsOptions());
-  IssueOAuthTokenIfNecessaryForPreflightCall();
-
-  // ChromeUserContext was set.
-  EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
-}
-
 TEST_P(PaymentsClientUploadDetailsTest,
        GetDetailsIncludesIncludesClientBehaviorSignalsInChromeUserContext) {
   base::test::ScopedFeatureList feature_list;
@@ -1258,12 +1179,7 @@ TEST_P(PaymentsClientUploadDetailsTest,
   EXPECT_THAT(GetUploadData(), HasSubstr("\"client_behavior_signals\":[1]"));
 }
 
-TEST_P(PaymentsClientUploadDetailsTest,
-       GetDetailsIncludesChromeUserContextIfWalletStorageFlagEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnableAccountWalletStorage);
-
+TEST_P(PaymentsClientUploadDetailsTest, GetDetailsIncludesChromeUserContext) {
   StartGettingUploadDetails(GetUploadDetailsOptions());
   IssueOAuthTokenIfNecessaryForPreflightCall();
 
@@ -1648,8 +1564,9 @@ TEST_F(PaymentsClientTest, UploadRequestIncludesEncryptedPan) {
   IssueOAuthToken();
 
   // Verify that the encrypted_pan and s7e_1_pan parameters were included
-  // in the request.
+  // in the request, and ephemeral_pan was not.
   EXPECT_TRUE(GetUploadData().find("encrypted_pan") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("ephemeral_pan") == std::string::npos);
   EXPECT_TRUE(GetUploadData().find("__param:s7e_1_pan") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("&s7e_1_pan=4111111111111111") !=
               std::string::npos);
@@ -1676,8 +1593,7 @@ TEST_F(PaymentsClientTest, UploadRequestIncludesClientBehaviorSignals) {
               HasSubstr("%22client_behavior_signals%22:%5B1%5D"));
 }
 
-TEST_F(PaymentsClientTest,
-       UploadRequestIncludesEncryptedPanUsingAlternateType) {
+TEST_F(PaymentsClientTest, UploadRequestIncludesEphemeralPan) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kAutofillUpstreamUseAlternateSecureDataType);
@@ -1685,9 +1601,10 @@ TEST_F(PaymentsClientTest,
   StartUploading(UploadCardOptions());
   IssueOAuthToken();
 
-  // Verify that the encrypted_pan and s7e_38_pan parameters were included
-  // in the request.
-  EXPECT_TRUE(GetUploadData().find("encrypted_pan") != std::string::npos);
+  // Verify that the ephemeral_pan and s7e_38_pan parameters were included
+  // in the request, and encrypted_pan was not.
+  EXPECT_TRUE(GetUploadData().find("encrypted_pan") == std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("ephemeral_pan") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("__param:s7e_38_pan") != std::string::npos);
   EXPECT_TRUE(GetUploadData().find("&s7e_38_pan=4111111111111111") !=
               std::string::npos);
@@ -1717,24 +1634,6 @@ TEST_F(PaymentsClientTest, UploadDoesNotIncludeCvcInRequestIfNotProvided) {
 }
 
 TEST_F(PaymentsClientTest, UploadIncludesChromeUserContext) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kAutofillEnableAccountWalletStorage);
-
-  StartUploading(UploadCardOptions());
-  IssueOAuthToken();
-
-  // ChromeUserContext was set.
-  EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
-}
-
-TEST_F(PaymentsClientTest,
-       UploadIncludesChromeUserContextIfWalletStorageFlagEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnableAccountWalletStorage);
-
   StartUploading(UploadCardOptions());
   IssueOAuthToken();
 
@@ -1976,24 +1875,6 @@ TEST_F(PaymentsClientTest,
 }
 
 TEST_F(PaymentsClientTest, MigrationRequestIncludesChromeUserContext) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(
-      features::kAutofillEnableAccountWalletStorage);
-
-  StartMigrating(/*has_cardholder_name=*/true);
-  IssueOAuthToken();
-
-  // ChromeUserContext was set.
-  EXPECT_TRUE(GetUploadData().find("chrome_user_context") != std::string::npos);
-  EXPECT_TRUE(GetUploadData().find("full_sync_enabled") != std::string::npos);
-}
-
-TEST_F(PaymentsClientTest,
-       MigrationRequestIncludesChromeUserContextIfWalletStorageFlagEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kAutofillEnableAccountWalletStorage);
-
   StartMigrating(/*has_cardholder_name=*/true);
   IssueOAuthToken();
 

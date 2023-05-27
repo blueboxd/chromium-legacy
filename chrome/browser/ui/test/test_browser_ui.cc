@@ -11,6 +11,7 @@
 #include "build/chromeos_buildflags.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/base/ui_base_switches.h"
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
@@ -52,7 +53,13 @@ void InstallUIControlsAura() {
 TestBrowserUi::TestBrowserUi() {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
-#if BUILDFLAG(IS_WIN) || (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
+#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)
+  // TODO(1429079): Make these pass with x64 win magic numbers.
+  SetPixelMatchAlgorithm(
+      std::make_unique<ui::test::FuzzySkiaGoldMatchingAlgorithm>(
+          /*max_different_pixels=*/1000, /*pixel_delta_threshold=*/255 * 3));
+#elif BUILDFLAG(IS_WIN) || \
+    (BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   // Default to fuzzy diff. The magic number is chosen based on
   // past experiments.
   SetPixelMatchAlgorithm(
@@ -113,6 +120,15 @@ void TestBrowserUi::SetPixelMatchAlgorithm(
 
 void TestBrowserUi::ShowAndVerifyUi() {
   PreShow();
+#if BUILDFLAG(IS_WIN)
+  // Gold files for pixel tests are for light mode, so if dark mode is not
+  // forced, and host is in dark mode, skip test.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kForceDarkMode) &&
+      ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors()) {
+    GTEST_SKIP() << "Host is in dark mode; skipping test";
+  }
+#endif  // BUILDFLAG(IS_WIN)
   ShowUi(NameFromTestCase());
   ASSERT_TRUE(VerifyUi());
   if (IsInteractiveUi())

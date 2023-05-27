@@ -79,7 +79,6 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="2928420929544864228">Instalação concluída.</translation>
 <translation id="2977470724722393594">O Chromium está atualizado</translation>
 <translation id="2977506796191543575">Se um site tentar roubar a sua palavra-passe, ou quando transferir um ficheiro prejudicial, o Chromium também pode enviar URLs, incluindo bits de conteúdo das páginas, para a Navegação segura</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{O Chromium está associado a um dispositivo HID (dispositivo de interface humana)}other{O Chromium está associado a dispositivos HID}}</translation>
 <translation id="3032706164202344641">O Chromium não consegue verificar as suas palavras-passe. Tente mais tarde.</translation>
 <translation id="3032787606318309379">A adicionar ao Chromium...</translation>
 <translation id="3038232873781883849">A aguardar a instalação…</translation>
@@ -94,7 +93,6 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="3258596308407688501">O Chromium não consegue ler e escrever no respetivo diretório de dados:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Este guia permite-lhe compreender as suas escolhas, de modo a que o Chromium funcione da forma que quer</translation>
 <translation id="3283186697780795848">A versão <ph name="PRODUCT_VERSION" /> do Chromium está instalada.</translation>
 <translation id="3286538390144397061">Reiniciar agora</translation>
 <translation id="328888136576916638">As chaves da API do Google estão em falta. Algumas funcionalidades do Chromium serão desativadas.</translation>
@@ -239,6 +237,7 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="6327105987658262776">Nenhuma atualização disponível.</translation>
 <translation id="6333502561965082103">Está em curso outra operação no Chromium. Tente mais tarde.</translation>
 <translation id="6334986366598267305">Agora é mais fácil utilizar o Chromium com a sua Conta Google e em computadores partilhados.</translation>
+<translation id="6335615313501343197">{NUM_DEVICES,plural, =0{O Chromium estava a aceder a um dispositivo HID}=1{O Chromium está a aceder a um dispositivo HID}other{O Chromium está a aceder a dispositivos HID}}</translation>
 <translation id="6365489425007284765">{COUNT,plural, =1{O administrador elimina automaticamente os dados de navegação quando não forem usados durante 1 minuto. Estas informações podem incluir o histórico, o preenchimento automático e as transferências. Os separadores existentes permanecem abertos.}other{O administrador elimina automaticamente os dados de navegação quando estes não são usados durante # minutos. Estas informações podem incluir o histórico, o preenchimento automático e as transferências. Os separadores existentes permanecem abertos.}}</translation>
 <translation id="6373523479360886564">Tem a certeza de que pretende desinstalar o Chromium?</translation>
 <translation id="6384011394608460044"><ph name="BEGIN_BOLD" />Como usamos estes dados:<ph name="END_BOLD" /> o Chromium pode estimar os seus interesses. Posteriormente, um site que visitar pode pedir ao Chromium para ver os seus interesses para personalizar os anúncios que vê.</translation>
@@ -246,8 +245,10 @@ As autorizações que já concedeu aos Websites e apps podem aplicar-se a esta c
 <translation id="6442900851116057561">Reinicie o ChromiumOS</translation>
 <translation id="6455857529632101747">Damos-lhe as boas-vindas aos perfis do Chromium</translation>
 <translation id="6475912303565314141">Também controla a página apresentada quando inicia o Chromium.</translation>
+<translation id="648319183876919572">A Navegação segura melhorada faz mais para proteger contra transferências e Websites perigosos</translation>
 <translation id="6510925080656968729">Desinstalar o Chromium</translation>
 <translation id="6542839706527980775">Cada perfil possui as suas próprias informações do Chromium, como marcadores, histórico, palavras-passe e muito mais.</translation>
+<translation id="656935081669708576">Pode mudar para ver as palavras-passe de outro perfil do Chromium</translation>
 <translation id="6570579332384693436">Para corrigir erros ortográficos, o Chromium envia o texto que introduzir nos campos de texto para a Google.</translation>
 <translation id="6598877126913850652">Aceder às definições de notificação do Chromium</translation>
 <translation id="6613594504749178791">As alterações serão aplicadas da próxima vez que reiniciar o Chromium.</translation>
@@ -383,7 +384,6 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="924957577793602335">Personalize o Chromium</translation>
 <translation id="93478295209880648">O Chromium pode não funcionar corretamente, uma vez que já não é suportado no Windows XP ou no Windows Vista.</translation>
 <translation id="942598560705308788">Certificados geridos pelo Chromium</translation>
-<translation id="959579472876010517">Tire o máximo partido do Chromium</translation>
 <translation id="965162752251293939">Quem está a utilizar o Chromium?</translation>
 <translation id="967427899662692980">Obtenha a segurança mais avançada do Chromium</translation>
 <translation id="9792300276217204">Limpar sempre os dados de sites do seu dispositivo ao fechar o Chromium</translation>

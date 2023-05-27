@@ -17,21 +17,6 @@
 
 namespace arc::input_overlay {
 
-// About Json strings.
-constexpr char kMouseAction[] = "mouse_action";
-constexpr char kPrimaryClick[] = "primary_click";
-constexpr char kSecondaryClick[] = "secondary_click";
-constexpr char kHoverMove[] = "hover_move";
-constexpr char kPrimaryDragMove[] = "primary_drag_move";
-constexpr char kSecondaryDragMove[] = "secondary_drag_move";
-
-// Gets the event flags for the modifier domcode. Return ui::DomCode::NONE if
-// |code| is not modifier DomCode.
-int ModifierDomCodeToEventFlag(ui::DomCode code);
-bool IsSameDomCode(ui::DomCode a, ui::DomCode b);
-// Convert mouse action strings to enum values.
-MouseAction ConvertToMouseActionEnum(const std::string& mouse_action);
-
 // InputElement creates input elements bound for each action.
 // TODO(cuicuiruan): It only supports ActionTap and ActionMove now. Supports
 // more actions as needed.
@@ -89,7 +74,7 @@ class InputElement {
   // For key binding.
   std::vector<ui::DomCode> keys_;
   // |is_modifier_key_| == true is especially for modifier keys (Only Ctrl,
-  // Shift and Alt are supported for now) because EventRewriterChromeOS handles
+  // Shift and Alt are supported for now) because EventRewriterAsh handles
   // specially on modifier key released event by skipping the following event
   // rewriters on key released event. If |is_modifier_key_| == true, touch
   // release event is sent right after touch pressed event for original key

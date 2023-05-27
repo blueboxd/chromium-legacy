@@ -4,10 +4,12 @@
 
 css_files = [
   "button.css",
+  "colors_default.css",
   "custom_toast.css",
   "flash.css",
   "inkdrop.css",
   "main.css",
+  "menu.css",
   "mode/mode.css",
   "mode/scan.css",
   "mode/video.css",

@@ -25,7 +25,7 @@ class IdentityManager;
 
 namespace ash {
 
-class AnnotatorPageHandlerImpl;
+class UntrustedAnnotatorPageHandlerImpl;
 struct AnnotatorTool;
 struct ProjectorScreencastVideo;
 struct NewScreencastPrecondition;
@@ -89,22 +89,22 @@ class ProjectorAppClient {
     // Used to notify the Projector SWA app on whether it can start a new
     // screencast session.
     virtual void OnNewScreencastPreconditionChanged(
-        const NewScreencastPrecondition& precondition) = 0;
+        const NewScreencastPrecondition& precondition) {}
 
     // Observes the pending screencast state change events.
     virtual void OnScreencastsPendingStatusChanged(
-        const PendingScreencastSet& pending_screencast) = 0;
+        const PendingScreencastSet& pending_screencast) {}
 
     // Notifies the observer the SODA binary and language pack download and
     // installation progress.
-    virtual void OnSodaProgress(int combined_progress) = 0;
+    virtual void OnSodaProgress(int combined_progress) {}
 
     // Notifies the observer that an error occurred during installation.
-    virtual void OnSodaError() = 0;
+    virtual void OnSodaError() {}
 
     // Notifies the observer that installation of SODA binary and at least one
     // language pack has finished.
-    virtual void OnSodaInstalled() = 0;
+    virtual void OnSodaInstalled() {}
   };
 
   ProjectorAppClient(const ProjectorAppClient&) = delete;
@@ -160,11 +160,13 @@ class ProjectorAppClient {
 
   // Registers the AnnotatorPageHandlerImpl that is owned by the WebUI that
   // contains the Projector annotator.
-  virtual void SetAnnotatorPageHandler(AnnotatorPageHandlerImpl* handler) = 0;
+  virtual void SetAnnotatorPageHandler(
+      UntrustedAnnotatorPageHandlerImpl* handler) = 0;
 
   // Resets the stored AnnotatorPageHandlerImpl if it matches the one that is
   // passed in.
-  virtual void ResetAnnotatorPageHandler(AnnotatorPageHandlerImpl* handler) = 0;
+  virtual void ResetAnnotatorPageHandler(
+      UntrustedAnnotatorPageHandlerImpl* handler) = 0;
 
   // Sets the tool inside the annotator WebUI.
   virtual void SetTool(const AnnotatorTool& tool) = 0;

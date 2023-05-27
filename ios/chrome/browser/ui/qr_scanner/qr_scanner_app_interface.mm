@@ -11,8 +11,9 @@
 #import "components/version_info/version_info.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_provider.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/shared/ui/symbols/chrome_icon.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #import "ios/chrome/browser/ui/qr_scanner/qr_scanner_camera_controller.h"
@@ -39,7 +40,8 @@ using scanner::CameraState;
 
 + (UIViewController*)currentBrowserViewController {
   MainController* mainController = chrome_test_util::GetMainController();
-  return mainController.interfaceProvider.mainInterface.viewController;
+  return mainController.browserProviderInterface.mainBrowserProvider
+      .viewController;
 }
 
 + (NSString*)closeIconAccessibilityLabel {

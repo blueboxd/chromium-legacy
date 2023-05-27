@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller.h"
 
+class AuthenticationService;
 @class BookmarksFolderEditorViewController;
 class Browser;
 @protocol SnackbarCommands;
@@ -68,28 +69,21 @@ class SyncService;
 // Snackbar commands handler for this ViewController.
 @property(nonatomic, weak) id<SnackbarCommands> snackbarCommandsHandler;
 
-// Designated factory methods.
-
-// Returns a view controller set to create a new folder in `parentFolder`.
-// If `parentFolder` is NULL, a default parent will be set.
-// `bookmarkModel` must not be NULL and must be loaded.
-+ (instancetype)
-    folderCreatorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-                      parentFolder:(const bookmarks::BookmarkNode*)parentFolder
-                           browser:(Browser*)browser
-                  syncSetupService:(SyncSetupService*)syncSetupService
-                       syncService:(syncer::SyncService*)syncService;
-
-// `bookmarkModel` must not be null and must be loaded.
-// `folder` must not be NULL and be editable.
-// `browser` must not be null.
-+ (instancetype)
-    folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
-                           folder:(const bookmarks::BookmarkNode*)folder
-                          browser:(Browser*)browser
-                 syncSetupService:(SyncSetupService*)syncSetupService
-                      syncService:(syncer::SyncService*)syncService;
-
+// `profileBookmarkModel` must not be `nullptr` and must be loaded.
+// `parentFolder` must not be `nullptr`.
+// If `folder` is not `nullptr` than it means we're editing an existing folder
+// and `folder` must also be editable (`folder` can't be the root node or any
+// of the permanent nodes).
+// `browser` must not be `nullptr`.
+- (instancetype)
+    initWithProfileBookmarkModel:(bookmarks::BookmarkModel*)profileBookmarkModel
+            accountBookmarkModel:(bookmarks::BookmarkModel*)accountBookmarkModel
+                      folderNode:(const bookmarks::BookmarkNode*)folder
+                parentFolderNode:(const bookmarks::BookmarkNode*)parentFolder
+           authenticationService:(AuthenticationService*)authService
+                syncSetupService:(SyncSetupService*)syncSetupService
+                     syncService:(syncer::SyncService*)syncService
+                         browser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 
 // Called when the user attempt to swipe down the view controller.

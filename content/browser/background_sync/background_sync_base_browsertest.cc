@@ -13,7 +13,7 @@
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -186,8 +186,7 @@ bool BackgroundSyncBaseBrowserTest::LoadTestPage(const std::string& path) {
 
 std::string BackgroundSyncBaseBrowserTest::RunScript(
     const std::string& script) {
-  return EvalJs(web_contents(), script, EXECUTE_SCRIPT_USE_MANUAL_REPLY)
-      .ExtractString();
+  return EvalJs(web_contents(), script).ExtractString();
 }
 
 void BackgroundSyncBaseBrowserTest::SetTestClock(base::SimpleTestClock* clock) {

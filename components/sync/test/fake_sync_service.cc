@@ -20,6 +20,8 @@ FakeSyncService::FakeSyncService() = default;
 
 FakeSyncService::~FakeSyncService() = default;
 
+void FakeSyncService::SetSyncFeatureRequested() {}
+
 syncer::SyncUserSettings* FakeSyncService::GetUserSettings() {
   return nullptr;
 }
@@ -57,6 +59,11 @@ bool FakeSyncService::IsLocalSyncEnabled() const {
 void FakeSyncService::TriggerRefresh(const ModelTypeSet& types) {}
 
 ModelTypeSet FakeSyncService::GetActiveDataTypes() const {
+  return ModelTypeSet();
+}
+
+ModelTypeSet FakeSyncService::GetTypesWithPendingDownloadForInitialSync()
+    const {
   return ModelTypeSet();
 }
 

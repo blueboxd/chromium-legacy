@@ -30,6 +30,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/interest_group/ad_auction_currencies.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom-shared.h"
 #include "third_party/blink/public/mojom/private_aggregation/aggregatable_report.mojom.h"
@@ -80,11 +81,16 @@ class ContextRecyclerTest : public testing::Test {
     std::vector<v8::Local<v8::Value>> args;
     if (!maybe_arg.IsEmpty())
       args.push_back(maybe_arg);
-    return helper_->RunScript(scope.GetContext(), script,
-                              /*debug_id=*/nullptr,
-                              AuctionV8Helper::ExecMode::kTopLevelAndFunction,
-                              function_name, args,
-                              /*script_timeout=*/absl::nullopt, error_msgs);
+    if (!helper_->RunScript(scope.GetContext(), script,
+                            /*debug_id=*/nullptr,
+                            /*script_timeout=*/absl::nullopt, error_msgs)) {
+      return {};
+    }
+    return helper_->CallFunction(scope.GetContext(),
+                                 /*debug_id=*/nullptr,
+                                 helper_->FormatScriptName(script),
+                                 function_name, args,
+                                 /*script_timeout=*/absl::nullopt, error_msgs);
   }
 
   // Runs a function with a list of arguments.
@@ -93,11 +99,16 @@ class ContextRecyclerTest : public testing::Test {
                                 const std::string& function_name,
                                 std::vector<std::string>& error_msgs,
                                 std::vector<v8::Local<v8::Value>> args) {
-    return helper_->RunScript(scope.GetContext(), script,
-                              /*debug_id=*/nullptr,
-                              AuctionV8Helper::ExecMode::kTopLevelAndFunction,
-                              function_name, args,
-                              /*script_timeout=*/absl::nullopt, error_msgs);
+    if (!helper_->RunScript(scope.GetContext(), script,
+                            /*debug_id=*/nullptr,
+                            /*script_timeout=*/absl::nullopt, error_msgs)) {
+      return {};
+    }
+    return helper_->CallFunction(scope.GetContext(),
+                                 /*debug_id=*/nullptr,
+                                 helper_->FormatScriptName(script),
+                                 function_name, args,
+                                 /*script_timeout=*/absl::nullopt, error_msgs);
   }
 
  protected:
@@ -142,7 +153,10 @@ TEST_F(ContextRecyclerTest, ForDebuggingOnlyBindings) {
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddForDebuggingOnlyBindings();
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddForDebuggingOnlyBindings();
+  }
 
   {
     ContextRecyclerScope scope(context_recycler);
@@ -189,7 +203,10 @@ TEST_F(ContextRecyclerTest, RegisterAdBeaconBindings) {
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddRegisterAdBeaconBindings();
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddRegisterAdBeaconBindings();
+  }
 
   {
     ContextRecyclerScope scope(context_recycler);
@@ -227,7 +244,10 @@ TEST_F(ContextRecyclerTest, ReportBindings) {
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddReportBindings();
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddReportBindings();
+  }
 
   {
     // Make sure an exception doesn't stick around between executions.
@@ -281,7 +301,10 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddSetBidBindings();
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddSetBidBindings();
+  }
 
   base::RepeatingCallback<bool(const GURL&)> matches_ad1 = base::BindRepeating(
       [](const GURL& url) { return url == GURL("https://example.com/ad1"); });
@@ -299,6 +322,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
+        /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -333,6 +357,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
+        /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -371,6 +396,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
+        /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -411,6 +437,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
+        /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -464,6 +491,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
+        /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
         /*is_component_ad_excluded=*/ignore_arg_return_false);
 
@@ -505,6 +533,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
+        /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/matches_ad1,
         /*is_component_ad_excluded=*/matches_ad1);
 
@@ -537,6 +566,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
+        /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/matches_ad1,
         /*is_component_ad_excluded=*/matches_ad1);
 
@@ -558,6 +588,74 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     EXPECT_EQ(10.0, bid->bid);
     EXPECT_EQ(base::Milliseconds(500), bid->bid_duration);
   }
+
+  {
+    // Bid currency --- expect USD.
+    ContextRecyclerScope scope(context_recycler);
+    mojom::BidderWorkletNonSharedParamsPtr params =
+        mojom::BidderWorkletNonSharedParams::New();
+    params->ads.emplace();
+    params->ads.value().emplace_back(GURL("https://example.com/ad2"),
+                                     absl::nullopt);
+
+    context_recycler.set_bid_bindings()->ReInitialize(
+        base::TimeTicks::Now(),
+        /*has_top_level_seller_origin=*/false, params.get(),
+        blink::AdCurrency::From("USD"),
+        /*is_ad_excluded=*/matches_ad1,
+        /*is_component_ad_excluded=*/matches_ad1);
+
+    gin::Dictionary bid_dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    bid_dict.Set("render", std::string("https://example.com/ad2"));
+    bid_dict.Set("bid", 10.0);
+    bid_dict.Set("bidCurrency", std::string("USD"));
+
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), bid_dict));
+
+    EXPECT_THAT(error_msgs, ElementsAre());
+    ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
+    mojom::BidderWorkletBidPtr bid =
+        context_recycler.set_bid_bindings()->TakeBid();
+    EXPECT_EQ("https://example.com/ad2", bid->ad_descriptor.url);
+    EXPECT_EQ(10.0, bid->bid);
+    ASSERT_TRUE(bid->bid_currency.has_value());
+    EXPECT_EQ("USD", bid->bid_currency->currency_code());
+  }
+
+  {
+    // Bid currency --- expect CAD.
+    ContextRecyclerScope scope(context_recycler);
+    mojom::BidderWorkletNonSharedParamsPtr params =
+        mojom::BidderWorkletNonSharedParams::New();
+    params->ads.emplace();
+    params->ads.value().emplace_back(GURL("https://example.com/ad2"),
+                                     absl::nullopt);
+
+    context_recycler.set_bid_bindings()->ReInitialize(
+        base::TimeTicks::Now(),
+        /*has_top_level_seller_origin=*/false, params.get(),
+        blink::AdCurrency::From("CAD"),
+        /*is_ad_excluded=*/matches_ad1,
+        /*is_component_ad_excluded=*/matches_ad1);
+
+    gin::Dictionary bid_dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    bid_dict.Set("render", std::string("https://example.com/ad2"));
+    bid_dict.Set("bid", 10.0);
+    bid_dict.Set("bidCurrency", std::string("USD"));
+
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), bid_dict));
+
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre(
+            "https://example.org/script.js:3 Uncaught TypeError: bidCurrency "
+            "mismatch; returned 'USD', expected 'CAD'."));
+    EXPECT_FALSE(context_recycler.set_bid_bindings()->has_bid());
+  }
 }
 
 // Exercise SetPriorityBindings, and make sure they reset properly.
@@ -572,7 +670,10 @@ TEST_F(ContextRecyclerTest, SetPriorityBindings) {
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddSetPriorityBindings();
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddSetPriorityBindings();
+  }
 
   {
     // Make sure an exception doesn't stick around between executions.
@@ -633,8 +734,11 @@ TEST_F(ContextRecyclerTest, BidderLazyFiller) {
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddInterestGroupLazyFiller();
-  context_recycler.AddBiddingBrowserSignalsLazyFiller();
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddInterestGroupLazyFiller();
+    context_recycler.AddBiddingBrowserSignalsLazyFiller();
+  }
 
   {
     base::Time now = base::Time::Now();
@@ -734,8 +838,11 @@ TEST_F(ContextRecyclerTest, BidderLazyFiller2) {
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddInterestGroupLazyFiller();
-  context_recycler.AddBiddingBrowserSignalsLazyFiller();
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddInterestGroupLazyFiller();
+    context_recycler.AddBiddingBrowserSignalsLazyFiller();
+  }
 
   {
     base::Time now = base::Time::Now();
@@ -835,9 +942,12 @@ TEST_F(ContextRecyclerTest, SharedStorageMethods) {
   auction_worklet::TestAuctionSharedStorageHost test_shared_storage_host;
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddSharedStorageBindings(
-      &test_shared_storage_host,
-      /*shared_storage_permissions_policy_allowed=*/true);
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddSharedStorageBindings(
+        &test_shared_storage_host,
+        /*shared_storage_permissions_policy_allowed=*/true);
+  }
 
   {
     ContextRecyclerScope scope(context_recycler);
@@ -1048,9 +1158,12 @@ TEST_F(ContextRecyclerTest, SharedStorageMethodsPermissionsPolicyDisabled) {
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddSharedStorageBindings(
-      nullptr,
-      /*shared_storage_permissions_policy_allowed=*/false);
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddSharedStorageBindings(
+        nullptr,
+        /*shared_storage_permissions_policy_allowed=*/false);
+  }
 
   {
     ContextRecyclerScope scope(context_recycler);
@@ -1176,8 +1289,11 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddPrivateAggregationBindings(
-      /*private_aggregation_permissions_policy_allowed=*/true);
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddPrivateAggregationBindings(
+        /*private_aggregation_permissions_policy_allowed=*/true);
+  }
 
   // Basic test
   {
@@ -1521,8 +1637,11 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddPrivateAggregationBindings(
-      /*private_aggregation_permissions_policy_allowed=*/true);
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddPrivateAggregationBindings(
+        /*private_aggregation_permissions_policy_allowed=*/true);
+  }
 
   // Debug mode enabled with no debug key
   {
@@ -1893,8 +2012,11 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddPrivateAggregationBindings(
-      /*private_aggregation_permissions_policy_allowed=*/true);
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddPrivateAggregationBindings(
+        /*private_aggregation_permissions_policy_allowed=*/true);
+  }
 
   // Basic test
   {
@@ -2645,8 +2767,11 @@ TEST_F(ContextRecyclerPrivateAggregationDisabledTest,
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddPrivateAggregationBindings(
-      /*private_aggregation_permissions_policy_allowed=*/true);
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddPrivateAggregationBindings(
+        /*private_aggregation_permissions_policy_allowed=*/true);
+  }
 
   {
     ContextRecyclerScope scope(context_recycler);
@@ -2700,8 +2825,11 @@ TEST_F(ContextRecyclerPrivateAggregationDisabledForFledgeOnlyTest,
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddPrivateAggregationBindings(
-      /*private_aggregation_permissions_policy_allowed=*/true);
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddPrivateAggregationBindings(
+        /*private_aggregation_permissions_policy_allowed=*/true);
+  }
 
   {
     ContextRecyclerScope scope(context_recycler);
@@ -2760,8 +2888,11 @@ TEST_F(ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest,
   ASSERT_FALSE(script.IsEmpty());
 
   ContextRecycler context_recycler(helper_.get());
-  context_recycler.AddPrivateAggregationBindings(
-      /*private_aggregation_permissions_policy_allowed=*/true);
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddPrivateAggregationBindings(
+        /*private_aggregation_permissions_policy_allowed=*/true);
+  }
 
   {
     ContextRecyclerScope scope(context_recycler);

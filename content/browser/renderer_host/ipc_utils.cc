@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/site_instance.h"
 #include "content/public/common/url_constants.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -70,39 +69,12 @@ bool VerifyInitiatorOrigin(int process_id,
   return true;
 }
 
-bool VerifyHasStorageAccess(
-    const RenderFrameHostImpl& current_rfh,
-    blink::LocalFrameToken* initiator_frame_token,
-    const blink::mojom::CommonNavigationParams& common_params) {
-  if (!common_params.has_storage_access) {
-    return true;
-  }
-
-  // The initiator origin must be provided, and must be same-origin with the
-  // request URL.
-  if (!common_params.initiator_origin.has_value() ||
-      !common_params.initiator_origin.value().IsSameOriginWith(
-          common_params.url)) {
-    return false;
-  }
-
-  // The initiator's frame token must be provided and must be equal to the
-  // current frame token.
-  if (!initiator_frame_token ||
-      *initiator_frame_token != current_rfh.GetFrameToken()) {
-    return false;
-  }
-
-  return true;
-}
-
 }  // namespace
 
-bool VerifyDownloadUrlParams(SiteInstance* site_instance,
+bool VerifyDownloadUrlParams(RenderProcessHost* process,
                              const blink::mojom::DownloadURLParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(site_instance);
-  RenderProcessHost* process = site_instance->GetProcess();
+  CHECK(process);
   int process_id = process->GetID();
 
   // Verifies |params.blob_url_token| is appropriately set.
@@ -124,17 +96,16 @@ bool VerifyDownloadUrlParams(SiteInstance* site_instance,
 }
 
 bool VerifyOpenURLParams(RenderFrameHostImpl* current_rfh,
-                         SiteInstance* site_instance,
+                         RenderProcessHost* process,
                          const blink::mojom::OpenURLParamsPtr& params,
                          GURL* out_validated_url,
                          scoped_refptr<network::SharedURLLoaderFactory>*
                              out_blob_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(current_rfh);
-  DCHECK(site_instance);
+  DCHECK(process);
   DCHECK(out_validated_url);
   DCHECK(out_blob_url_loader_factory);
-  RenderProcessHost* process = site_instance->GetProcess();
   int process_id = process->GetID();
 
   // Verify |params.url| and populate |out_validated_url|.
@@ -148,14 +119,12 @@ bool VerifyOpenURLParams(RenderFrameHostImpl* current_rfh,
   if (params->blob_url_token.is_valid()) {
     *out_blob_url_loader_factory =
         ChromeBlobStorageContext::URLLoaderFactoryForToken(
-            site_instance->GetBrowserContext()->GetStoragePartition(
-                site_instance),
-            std::move(params->blob_url_token));
+            process->GetStoragePartition(), std::move(params->blob_url_token));
   }
 
   // Verify |params.post_body|.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanReadRequestBody(site_instance, params->post_body)) {
+  if (!policy->CanReadRequestBody(process, params->post_body)) {
     bad_message::ReceivedBadMessage(process,
                                     bad_message::ILLEGAL_UPLOAD_PARAMS);
     return false;
@@ -164,6 +133,17 @@ bool VerifyOpenURLParams(RenderFrameHostImpl* current_rfh,
   // Verify |params.initiator_origin|.
   if (!VerifyInitiatorOrigin(process_id, params->initiator_origin))
     return false;
+
+  if (params->initiator_base_url) {
+    // `initiator_base_url` should only be defined for about:blank and
+    // about:srcdoc navigations, and should never be an empty GURL (if it is not
+    // nullopt).
+    if (params->initiator_base_url->is_empty() ||
+        !(out_validated_url->IsAboutBlank() ||
+          out_validated_url->IsAboutSrcdoc())) {
+      return false;
+    }
+  }
 
   // Verify that the initiator frame can navigate `current_rfh`.
   if (!VerifyNavigationInitiator(current_rfh, params->initiator_frame_token,
@@ -187,13 +167,10 @@ bool VerifyOpenURLParams(RenderFrameHostImpl* current_rfh,
 
 bool VerifyBeginNavigationCommonParams(
     const RenderFrameHostImpl& current_rfh,
-    SiteInstance* site_instance,
-    blink::LocalFrameToken* initiator_frame_token,
     blink::mojom::CommonNavigationParams* common_params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(site_instance);
   DCHECK(common_params);
-  RenderProcessHost* process = site_instance->GetProcess();
+  RenderProcessHost* process = current_rfh.GetProcess();
   int process_id = process->GetID();
 
   // Verify (and possibly rewrite) |url|.
@@ -205,7 +182,7 @@ bool VerifyBeginNavigationCommonParams(
 
   // Verify |post_data|.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (!policy->CanReadRequestBody(site_instance, common_params->post_data)) {
+  if (!policy->CanReadRequestBody(process, common_params->post_data)) {
     bad_message::ReceivedBadMessage(process,
                                     bad_message::ILLEGAL_UPLOAD_PARAMS);
     return false;
@@ -243,14 +220,6 @@ bool VerifyBeginNavigationCommonParams(
   // navigate an existing document to a different site.
   if (NavigationTypeUtils::IsSameDocument(common_params->navigation_type))
     return false;
-
-  // Verify |has_storage_access|. This corresponds to some of the changes to
-  // "create navigation params by fetching" in the Storage Access API spec:
-  // https://privacycg.github.io/storage-access/#navigation
-  if (!VerifyHasStorageAccess(current_rfh, initiator_frame_token,
-                              *common_params)) {
-    return false;
-  }
 
   // Verification succeeded.
   return true;

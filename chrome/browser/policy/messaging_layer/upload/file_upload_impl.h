@@ -30,6 +30,8 @@ namespace reporting {
 
 class FileUploadDelegate : public FileUploadJob::Delegate {
  public:
+  static constexpr int64_t kMaxUploadBufferSize = 1L * 1024L * 1024L;  // 1 MiB
+
   FileUploadDelegate();
   ~FileUploadDelegate() override;
 
@@ -63,6 +65,8 @@ class FileUploadDelegate : public FileUploadJob::Delegate {
       base::StringPiece session_token,
       base::OnceCallback<void(StatusOr<std::string /*access_parameters*/>)> cb)
       override;
+
+  void DoDeleteFile(base::StringPiece origin_path) override;
 
   // Called once authentication is finished (with token or failure status).
   void OnAccessTokenResult(

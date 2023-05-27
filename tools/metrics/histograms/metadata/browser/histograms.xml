@@ -26,6 +26,7 @@ chromium-metrics-reviews@google.com.
   <variant name="AboutThisSite"/>
   <variant name="Assistant"/>
   <variant name="Bookmarks"/>
+  <variant name="Companion"/>
   <variant name="CustomizeChrome"/>
   <variant name="Extension"/>
   <variant name="Feed"/>
@@ -47,16 +48,6 @@ chromium-metrics-reviews@google.com.
   <variant name=".WithSavedFrames"
       summary="Tab has a saved frame in the cache."/>
 </variants>
-
-<histogram name="Browser.AnyWindowHasName" enum="Boolean"
-    expires_after="2023-04-30">
-  <owner>ellyjones@chromium.org</owner>
-  <owner>lgrey@chromium.org</owner>
-  <summary>
-    Whether any browser window in the current session has a user-set name.
-    Logged once every histogram recording.
-  </summary>
-</histogram>
 
 <histogram name="Browser.BitmapFetcher.Decode" units="ms"
     expires_after="2022-09-18">
@@ -301,7 +292,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.CompressedOnDiskSize" units="KB"
-    expires_after="2023-05-27">
+    expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -312,7 +303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.NumberOfFramesCaptured"
-    units="units" expires_after="2023-05-27">
+    units="units" expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -322,7 +313,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.Success" enum="BooleanSuccess"
-    expires_after="2023-05-27">
+    expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -332,7 +323,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Capture.TotalCaptureDuration" units="ms"
-    expires_after="2023-07-30">
+    expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -343,7 +334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartedCorrectly"
-    enum="BooleanSuccess" expires_after="2023-07-30">
+    enum="BooleanSuccess" expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -353,7 +344,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.CompositorProcessStartupTime"
-    units="ms" expires_after="2023-07-30">
+    units="ms" expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -363,7 +354,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.LinkClicked" enum="BooleanSuccess"
-    expires_after="2023-07-30">
+    expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -371,7 +362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.TimeToFirstBitmap" units="ms"
-    expires_after="2023-07-30">
+    expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -382,7 +373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.CompositorFailureReason"
-    enum="TabbedPaintPreviewCompositorFailureReason" expires_after="2023-05-27">
+    enum="TabbedPaintPreviewCompositorFailureReason" expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -394,7 +385,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.ExitCause"
-    enum="TabbedPaintPreviewExitCause" expires_after="2023-07-30">
+    enum="TabbedPaintPreviewExitCause" expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -405,7 +396,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.FirstPaintBeforeTabLoad"
-    enum="Boolean" expires_after="2023-07-30">
+    enum="Boolean" expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -416,7 +407,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.HadCapture" enum="Boolean"
-    expires_after="2023-05-27">
+    expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -428,7 +419,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.SnackbarCount" units="units"
-    expires_after="2023-05-27">
+    expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -439,7 +430,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap"
-    units="ms" expires_after="2023-07-30">
+    units="ms" expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -451,7 +442,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Browser.PaintPreview.TabbedPlayer.UpTime{TabbedPaintPreviewPlayerUptime}"
-    units="ms" expires_after="2023-05-27">
+    units="ms" expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -478,7 +469,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabService.DiskUsageAtStartup" units="KB"
-    expires_after="2023-05-27">
+    expires_after="2023-11-27">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -518,108 +509,6 @@ chromium-metrics-reviews@google.com.
     reported across system sleep. More details @
     https://bit.ly/chrome-io-jank-metric
   </summary>
-</histogram>
-
-<histogram name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds2"
-    units="janks" expires_after="M98">
-  <obsolete>
-    Replaced by Browser.Responsiveness.JankyIntervalsPerThirtySeconds3
-  </obsolete>
-  <owner>gab@chromium.org</owner>
-  <owner>etienneb@chromium.org</owner>
-  <owner>fdoray@chromium.org</owner>
-  <summary>
-    This metric is emitted every 30 seconds after main message loop start, when
-    there is user activity. Each 30 second duration is divided into 100ms
-    intervals. This metric counts the number of these intervals that were
-    &quot;janky&quot;. An interval is janky if during it the UI or IO thread
-    executes an &quot;important&quot; task that was queued more than 100 ms ago,
-    or a non-important task or a native event handler that started executing
-    more than 100 ms ago. See
-    https://docs.google.com/document/d/1vDSGFvJblh7yJ3U3RVB_7qZLubyfTbQdQjuN1GoUNkc/edit
-    for more details.
-
-    Update (M82 March 2020): Stopped recording background intervals on Android.
-  </summary>
-</histogram>
-
-<histogram name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds3{Phase}"
-    units="janks" expires_after="M111">
-  <owner>etienneb@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
-  <owner>chrome-analysis-team@google.com</owner>
-  <summary>
-    Replaced by Browser.MainThreadsCongestion as a guardrail metric.
-
-    This metric is emitted every 30 seconds after main message loop start, when
-    there is user activity. Each 30 second duration is divided into 100ms
-    intervals. This metric counts the number of these intervals that were
-    &quot;janky&quot;. An interval is janky if during it the UI or IO thread
-    executes an &quot;important&quot; task that was queued more than 100 ms ago,
-    or a non-important task or a native event handler that started executing
-    more than 100 ms ago. See
-    https://docs.google.com/document/d/1vDSGFvJblh7yJ3U3RVB_7qZLubyfTbQdQjuN1GoUNkc/edit
-    for more details.
-
-    JankyIntervalsPerThirtySeconds3 differs from JankyIntervalsPerThirtySeconds2
-    in that it doesn't start recording until the first 30 seconds window *after*
-    the main message loop first reached idle. This avoids considering all tasks
-    queued during startup as janky and makes for a more accurate ongoing jank
-    metric. {Phase}
-  </summary>
-  <token key="Phase">
-    <variant name=""/>
-    <variant name=".Initial" summary="The first interval after OnFirstIdle()."/>
-    <variant name=".Periodic" summary="All intervals but .Initial"/>
-  </token>
-</histogram>
-
-<histogram name="Browser.Responsiveness.JankyIntervalsPerThirtySeconds{Phase}"
-    units="janks" expires_after="M111">
-  <owner>gab@chromium.org</owner>
-  <owner>etienneb@chromium.org</owner>
-  <owner>chrome-analysis-team@google.com</owner>
-  <summary>
-    Replaced by Browser.MainThreadsCongestion as a guardrail metric.
-    Browser.MainThreadsCongestion.RunningOnly still represents what this used
-    to.
-
-    This metric is emitted every 30 seconds [when there is user activity]. Each
-    30 second duration is divided into 100ms intervals. This metric counts the
-    number of these intervals that were &quot;janky&quot;. See
-    https://docs.google.com/document/d/1vDSGFvJblh7yJ3U3RVB_7qZLubyfTbQdQjuN1GoUNkc/edit
-    for more details.
-
-    On desktop platforms, this metric measures native events, as well as tasks
-    posted to the UI and IO threads of the browser process. On Android, this
-    metric only measures tasks posted to the UI and IO threads.
-
-    Update (October 27th 2019): The responsiveness::Watcher emitting this metric
-    previously started observation before the main message loop was running,
-    this resulted in the 99th percentile being mostly comprised of slow startups
-    (before the message loop gets to run). This was fixed and a fake-improvement
-    in the high percentiles is expected when the fix goes live.
-
-    Update (M82 March 2020): Stopped recording background intervals on Android.
-
-    Due to a bug, this metric does not measure long queueing time as jankiness.
-    It only measures jankiness as individual tasks taking a long time to run.
-    Given that it's a long-standing bug, this metric will not be modified. We
-    are testing a new metric
-    Browser.Responsiveness.JankyIntervalsPerThirtySeconds3 that correctly
-    accounts for queueing time. See
-    https://groups.google.com/a/google.com/forum/#!topic/chrome-scheduler/X32gKl6fW2A
-    for more details.
-
-    This histogram is of special interest to the chrome-analysis-team@. Do not
-    change its semantics or retire it without talking to them first. {Phase}
-  </summary>
-  <token key="Phase">
-    <variant name=""/>
-    <variant name=".Initial"
-        summary="The first 30 seconds interval after the message loop starts."/>
-    <variant name=".Periodic" summary="All intervals after OnFirstIdle()."/>
-  </token>
 </histogram>
 
 <histogram name="Browser.Tabs.SelectionToVisibilityRequestTime"
@@ -805,6 +694,10 @@ chromium-metrics-reviews@google.com.
 <histogram name="BrowserRenderProcessHost.RoutingIDSpaceUsed"
     units="% of routing ID space used for browser-allocated routing IDs"
     expires_after="2023-04-16">
+  <obsolete>
+    4/2023; the data has been collected, verifying that less than 1% of routing
+    ID space is used in practice.
+  </obsolete>
   <owner>alexmos@chromium.org</owner>
   <owner>dcheng@chromium.org</owner>
   <summary>
@@ -857,40 +750,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="BrowserServices.BrowsableIntentCheck" units="ms"
-    expires_after="M114">
-  <owner>peconn@chromium.org</owner>
-  <owner>peter@chromium.org</owner>
-  <summary>
-    Triggered when we check whether a Trusted Web Activity client app can handle
-    Browsable Intents. It measures how long consulting the Android
-    PackageManager takes.
-  </summary>
-</histogram>
-
-<histogram name="BrowserServices.ClientAppDataLoad" units="ms"
-    expires_after="M114">
-  <owner>peconn@chromium.org</owner>
-  <owner>peter@chromium.org</owner>
-  <summary>
-    Triggered when any Android app is uninstalled or has its data cleared. This
-    measures how long it takes to read data from Preferences to determine
-    whether we need to act.
-  </summary>
-</histogram>
-
-<histogram name="BrowserServices.ServiceTabResolveInfoQuery" units="ms"
-    expires_after="2023-04-23">
-  <owner>peconn@chromium.org</owner>
-  <owner>peter@chromium.org</owner>
-  <summary>
-    Triggered when an Android background service attempts to create a Tab. We
-    time how long the Android package manager queryIntentActivities call takes.
-  </summary>
-</histogram>
-
 <histogram name="BrowserServices.TwaOpenTime.V2" units="ms"
-    expires_after="M114">
+    expires_after="M120">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -931,7 +792,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.AlternativeBrowser" enum="BrowserType"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -943,7 +804,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.CacheFile.MkDirSuccess" enum="BooleanSuccess"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -953,7 +814,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.CacheFile.MkTempSuccess" enum="BooleanSuccess"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -964,7 +825,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.CacheFile.MoveSuccess" enum="BooleanSuccess"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -976,7 +837,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.Decision" enum="BooleanBrowserSwitch"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -988,7 +849,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.DecisionTime" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -999,7 +860,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.ExternalGreylistSize" units="rules"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1019,7 +880,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.GreylistSize" units="rules"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1029,7 +890,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.GreylistWildcard" enum="BooleanPresent"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1040,7 +901,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.IeemSitelistSize" units="rules"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1050,7 +911,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.LaunchSuccess" enum="BooleanSuccess"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1060,7 +921,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.LaunchTime" units="ms"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1070,7 +931,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.UrlListSize" units="rules"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1080,7 +941,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserSwitcher.UrlListWildcard" enum="BooleanPresent"
-    expires_after="2023-04-16">
+    expires_after="2023-10-16">
   <owner>nicolaso@chromium.org</owner>
   <owner>pastarmovj@chromium.org</owner>
   <summary>
@@ -1153,7 +1014,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SidePanel.OpenDuration" units="ms" expires_after="2023-08-08">
+<histogram name="SidePanel.OpenDuration" units="ms" expires_after="2023-10-08">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1165,7 +1026,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.OpenTrigger" enum="SidePanelOpenTrigger"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1174,7 +1035,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="SidePanel.ResizedWidth" units="px" expires_after="2023-08-08">
+<histogram name="SidePanel.ResizedWidth" units="px" expires_after="2024-02-01">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1184,7 +1045,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.ResizedWidthPercentage" units="% of window width"
-    expires_after="2023-08-08">
+    expires_after="2024-02-01">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1194,7 +1055,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.{SidePanelEntry}.ResizedWidth" units="px"
-    expires_after="2023-06-04">
+    expires_after="2024-02-01">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1205,7 +1066,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.{SidePanelEntry}.ResizedWidthPercentage"
-    units="% of window width" expires_after="2023-06-04">
+    units="% of window width" expires_after="2024-02-01">
   <owner>emshack@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1217,7 +1078,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.{SidePanelEntry}.ShownDuration" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2024-02-01">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -1229,7 +1090,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SidePanel.{SidePanelEntry}.ShowTriggered"
-    enum="SidePanelOpenTrigger" expires_after="2023-06-04">
+    enum="SidePanelOpenTrigger" expires_after="2024-02-01">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>

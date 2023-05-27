@@ -16,12 +16,13 @@ enum class OverviewStartAction {
   kExitHomeLauncher,
   kOverviewButton,
   kOverviewButtonLongPress,
-  kBentoBar,
+  kBentoBar_DEPRECATED,
   k3FingerVerticalScroll,
   kDevTools,
   kTests,
   kOverviewDeskSwitch,
-  kMaxValue = kOverviewDeskSwitch,
+  kDeskButton,
+  kMaxValue = kDeskButton,
 };
 void RecordOverviewStartAction(OverviewStartAction type);
 

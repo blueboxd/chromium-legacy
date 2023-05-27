@@ -23,6 +23,8 @@ source_set("content") {
     "navigation/content_navigation_manager.mm",
     "web_state/content_web_state.h",
     "web_state/content_web_state.mm",
+    "web_state/content_web_state_builder.h",
+    "web_state/content_web_state_builder.mm",
     "web_state/crc_web_view_proxy_impl.h",
     "web_state/crc_web_view_proxy_impl.mm",
   ]
@@ -40,5 +42,18 @@ source_set("content") {
     "//ios/web/public/security:security",
     "//ios/web/public/session:session",
     "//ios/web/text_fragments:text_fragments",
+  ]
+}
+
+source_set("threads") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "content_thread_impl.cc",
+    "content_thread_impl.h",
+  ]
+  deps = [
+    "//base",
+    "//content/public/browser",
+    "//ios/web/public/thread",
   ]
 }

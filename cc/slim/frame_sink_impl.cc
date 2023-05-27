@@ -15,6 +15,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/slim/constants.h"
+#include "cc/slim/delayed_scheduler.h"
 #include "cc/slim/frame_sink_impl_client.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -123,7 +124,12 @@ void FrameSinkImpl::SetNeedsBeginFrame(bool needs_begin_frame) {
     return;
   }
   needs_begin_frame_ = needs_begin_frame;
+  scheduler_->SetNeedsBeginFrame(needs_begin_frame);
   frame_sink_->SetNeedsBeginFrame(needs_begin_frame);
+}
+
+void FrameSinkImpl::MaybeCompositeNow() {
+  scheduler_->MaybeCompositeNow();
 }
 
 void FrameSinkImpl::UploadUIResource(cc::UIResourceId resource_id,
@@ -154,7 +160,7 @@ void FrameSinkImpl::UploadUIResource(cc::UIResourceId resource_id,
   uint32_t shared_image_usage = gpu::SHARED_IMAGE_USAGE_DISPLAY_READ;
   uploaded_resource.mailbox = sii->CreateSharedImage(
       format, resource_bitmap.GetSize(), color_space, kTopLeft_GrSurfaceOrigin,
-      kPremul_SkAlphaType, shared_image_usage,
+      kPremul_SkAlphaType, shared_image_usage, "SlimCompositorUIResource",
       base::span<const uint8_t>(resource_bitmap.GetPixels(),
                                 resource_bitmap.SizeInBytes()));
   gpu::SyncToken sync_token = sii->GenUnverifiedSyncToken();
@@ -163,7 +169,7 @@ void FrameSinkImpl::UploadUIResource(cc::UIResourceId resource_id,
       gfx::BufferUsage::SCANOUT, BufferFormat(format.resource_format()), caps);
   uploaded_resource.viz_resource_id = resource_provider_.ImportResource(
       viz::TransferableResource::MakeGpu(
-          uploaded_resource.mailbox, GL_LINEAR, texture_target, sync_token,
+          uploaded_resource.mailbox, texture_target, sync_token,
           resource_bitmap.GetSize(), format, /*is_overlay_candidate=*/false),
       base::BindOnce(&FrameSinkImpl::UIResourceReleased, base::Unretained(this),
                      resource_id));
@@ -229,6 +235,9 @@ void FrameSinkImpl::DidReceiveCompositorFrameAck(
   ReclaimResources(std::move(resources));
   DCHECK_GT(num_unacked_frames_, 0u);
   num_unacked_frames_--;
+  if (!num_unacked_frames_) {
+    scheduler_->SetIsSwapThrottled(false);
+  }
   client_->DidReceiveCompositorFrameAck();
 }
 
@@ -269,6 +278,7 @@ bool FrameSinkImpl::DoBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
     return false;
   }
 
+  TRACE_EVENT0("cc", "slim::FrameSinkImpl::DoBeginFrame");
   viz::CompositorFrame frame;
   base::flat_set<viz::ResourceId> viz_resource_ids;
   viz::HitTestRegionList hit_test_region_list;
@@ -298,19 +308,29 @@ bool FrameSinkImpl::DoBeginFrame(const viz::BeginFrameArgs& begin_frame_args) {
   }
 
   {
-    TRACE_EVENT0("cc", "SubmitCompositorFrame");
+    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                           TRACE_ID_GLOBAL(begin_frame_args.trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", "SubmitCompositorFrame");
     frame_sink_->SubmitCompositorFrame(
         local_surface_id_, std::move(frame),
         send_new_hit_test_region_list ? hit_test_region_list_ : absl::nullopt,
         0);
   }
   num_unacked_frames_++;
+  if (num_unacked_frames_ == 1) {
+    scheduler_->SetIsSwapThrottled(true);
+  }
   client_->DidSubmitCompositorFrame();
   return true;
 }
 
 void FrameSinkImpl::SendDidNotProduceFrame(
     const viz::BeginFrameArgs& begin_frame_args) {
+  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                         TRACE_ID_GLOBAL(begin_frame_args.trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "DidNotProduceFrame");
   frame_sink_->DidNotProduceFrame(viz::BeginFrameAck(begin_frame_args, false));
 }
 

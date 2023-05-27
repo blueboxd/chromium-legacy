@@ -39,11 +39,13 @@ AutofillSaveUpdateAddressProfileDelegateIOS::
   // If the user has navigated away without saving the modal, then the
   // |address_profile_save_prompt_callback_| is run here.
   if (!address_profile_save_prompt_callback_.is_null()) {
-    DCHECK(
-        user_decision_ !=
-            AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted &&
-        user_decision_ !=
-            AutofillClient::SaveAddressProfileOfferUserDecision::kEditAccepted);
+    DCHECK(user_decision_ !=
+               AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted &&
+           user_decision_ !=
+               AutofillClient::SaveAddressProfileOfferUserDecision::
+                   kEditAccepted &&
+           user_decision_ !=
+               AutofillClient::SaveAddressProfileOfferUserDecision::kNever);
     RunSaveAddressProfilePromptCallback();
   }
 }
@@ -76,10 +78,18 @@ std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::GetEmailAddress()
   return GetProfileInfo(EMAIL_ADDRESS);
 }
 
+std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::
+    GetProfileDescriptionForMigrationPrompt() const {
+  return ::autofill::GetProfileSummaryForMigrationPrompt(profile_, locale_);
+}
+
 std::u16string AutofillSaveUpdateAddressProfileDelegateIOS::GetDescription()
     const {
   if (is_migration_to_account_) {
-    DCHECK(profile_.source() != autofill::AutofillProfile::Source::kAccount);
+    return l10n_util::GetStringUTF16(
+        IDS_IOS_AUTOFILL_MIGRATE_ADDRESS_IN_ACCOUNT_MESSAGE_SUBTITLE);
+  }
+  if (IsProfileAnAccountProfile() && !original_profile_.has_value()) {
     DCHECK(syncing_user_email_);
     return l10n_util::GetStringFUTF16(
         IDS_IOS_AUTOFILL_SAVE_ADDRESS_IN_ACCOUNT_MESSAGE_SUBTITLE,
@@ -155,6 +165,12 @@ void AutofillSaveUpdateAddressProfileDelegateIOS::AutoDecline() {
       AutofillClient::SaveAddressProfileOfferUserDecision::kAutoDeclined);
 }
 
+bool AutofillSaveUpdateAddressProfileDelegateIOS::Never() {
+  SetUserDecision(AutofillClient::SaveAddressProfileOfferUserDecision::kNever);
+  RunSaveAddressProfilePromptCallback();
+  return true;
+}
+
 void AutofillSaveUpdateAddressProfileDelegateIOS::SetProfileInfo(
     const ServerFieldType& type,
     const std::u16string& value) {
@@ -168,6 +184,11 @@ void AutofillSaveUpdateAddressProfileDelegateIOS::SetProfileInfo(
 
   profile_.SetRawInfoWithVerificationStatus(type, value,
                                             VerificationStatus::kUserVerified);
+}
+
+void AutofillSaveUpdateAddressProfileDelegateIOS::SetProfile(
+    AutofillProfile* profile) {
+  profile_ = *profile;
 }
 
 bool AutofillSaveUpdateAddressProfileDelegateIOS::Accept() {
@@ -243,6 +264,9 @@ void AutofillSaveUpdateAddressProfileDelegateIOS::SetUserDecision(
     // |user_decision_| now.
     return;
   }
+
+  DCHECK(user_decision_ !=
+         AutofillClient::SaveAddressProfileOfferUserDecision::kNever);
   user_decision_ = user_decision;
 }
 

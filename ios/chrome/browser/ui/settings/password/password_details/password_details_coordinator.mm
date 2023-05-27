@@ -4,14 +4,11 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator.h"
 
-#import <set>
 #import <utility>
 #import <vector>
 
 #import "base/mac/foundation_util.h"
-#import "base/memory/raw_ptr.h"
 #import "base/memory/scoped_refptr.h"
-#import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/ui/affiliated_group.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
@@ -20,11 +17,11 @@
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/main/browser_list.h"
-#import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
+#import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
+#import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/credential_provider_promo_commands.h"
@@ -32,13 +29,12 @@
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_handler.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -50,71 +46,13 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-
-class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
- public:
-  explicit PasswordManagerClientProviderImpl(Browser* browser)
-      : browser_(browser) {}
-
-  ~PasswordManagerClientProviderImpl() override = default;
-
-  PasswordManagerClientProviderImpl(const PasswordManagerClientProviderImpl&) =
-      delete;
-  PasswordManagerClientProviderImpl& operator=(
-      const PasswordManagerClientProviderImpl&) = delete;
-
-  password_manager::PasswordManagerClient* GetAny() override {
-    web::WebState* active_tab_in_browser =
-        browser_->GetWebStateList()->GetActiveWebState();
-    if (active_tab_in_browser) {
-      return PasswordTabHelper::FromWebState(active_tab_in_browser)
-          ->GetPasswordManagerClient();
-    }
-
-    // PasswordDetailsCoordinator and other settings coordinators always receive
-    // a normal Browser, even if they are started from incognito. So if only
-    // incognito tabs are open, `active_tab_in_browser` is null, causing a crash
-    // (crbug.com/1431975).
-    // In that case, use an open tab in any Browser. It doesn't matter which
-    // one. This is a sad workaround for the fact that some PasswordManager
-    // layers depend on tabs unnecessarily.
-    BrowserList* browser_list =
-        BrowserListFactory::GetForBrowserState(browser_->GetBrowserState());
-    for (const std::set<Browser*>& browsers :
-         {browser_list->AllRegularBrowsers(),
-          browser_list->AllIncognitoBrowsers()}) {
-      for (Browser* other_browser : browsers) {
-        web::WebState* other_active_tab =
-            other_browser->GetWebStateList()->GetActiveWebState();
-        if (other_active_tab) {
-          return PasswordTabHelper::FromWebState(other_active_tab)
-              ->GetPasswordManagerClient();
-        }
-      }
-    }
-
-    // It's impossible to open PasswordDetailsCoordinator without an open tab.
-    NOTREACHED_NORETURN();
-  }
-
- private:
-  const raw_ptr<Browser> browser_;
-};
-
-}  // namespace
-
-@interface PasswordDetailsCoordinator () <PasswordDetailsHandler> {
+@interface PasswordDetailsCoordinator () <PasswordDetailsHandler,
+                                          PasswordDetailsMediatorDelegate> {
   password_manager::AffiliatedGroup _affiliatedGroup;
   password_manager::CredentialUIEntry _credential;
 
-  // Tells whether or not to support move to account option. If YES, move option
-  // will be supported, NO otherwise.
-  BOOL _supportMoveToAccount;
-
-  // See PasswordManagerClientProviderImpl docs.
-  std::unique_ptr<PasswordManagerClientProviderImpl>
-      _passwordManagerClientProvider;
+  // The context in which the password details are accessed.
+  DetailsContext _context;
 }
 
 // Main view controller for this coordinator.
@@ -125,7 +63,8 @@ class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
 
 // Module containing the reauthentication mechanism for viewing and copying
 // passwords.
-@property(nonatomic, weak) ReauthenticationModule* reauthenticationModule;
+// Has to be strong for password bottom sheet feature or else it becomes nil.
+@property(nonatomic, strong) ReauthenticationModule* reauthenticationModule;
 
 // Modal alert for interactions with password.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -147,7 +86,7 @@ class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
                               (const password_manager::CredentialUIEntry&)
                                   credential
                         reauthModule:(ReauthenticationModule*)reauthModule
-                supportMoveToAccount:(BOOL)supportMoveToAccount {
+                             context:(DetailsContext)context {
   self = [super initWithBaseViewController:navigationController
                                    browser:browser];
   if (self) {
@@ -156,7 +95,8 @@ class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
     _baseNavigationController = navigationController;
     _credential = credential;
     _reauthenticationModule = reauthModule;
-    _supportMoveToAccount = supportMoveToAccount;
+    _context = context;
+    _shouldDismissOnAllPasswordsGone = YES;
   }
   return self;
 }
@@ -168,7 +108,7 @@ class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
                      affiliatedGroup:(const password_manager::AffiliatedGroup&)
                                          affiliatedGroup
                         reauthModule:(ReauthenticationModule*)reauthModule
-                supportMoveToAccount:(BOOL)supportMoveToAccount {
+                             context:(DetailsContext)context {
   self = [super initWithBaseViewController:navigationController
                                    browser:browser];
   if (self) {
@@ -177,7 +117,8 @@ class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
     _baseNavigationController = navigationController;
     _affiliatedGroup = affiliatedGroup;
     _reauthenticationModule = reauthModule;
-    _supportMoveToAccount = supportMoveToAccount;
+    _context = context;
+    _shouldDismissOnAllPasswordsGone = YES;
   }
   return self;
 }
@@ -198,19 +139,16 @@ class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
   }
 
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
-  _passwordManagerClientProvider =
-      std::make_unique<PasswordManagerClientProviderImpl>(self.browser);
   self.mediator = [[PasswordDetailsMediator alloc]
-                  initWithPasswords:credentials
-                        displayName:displayName
-               passwordCheckManager:IOSChromePasswordCheckManagerFactory::
-                                        GetForBrowserState(browserState)
-                                            .get()
-                        prefService:browserState->GetPrefs()
-                        syncService:SyncServiceFactory::GetForBrowserState(
-                                        browserState)
-               supportMoveToAccount:_supportMoveToAccount
-      passwordManagerClientProvider:_passwordManagerClientProvider.get()];
+         initWithPasswords:credentials
+               displayName:displayName
+      passwordCheckManager:IOSChromePasswordCheckManagerFactory::
+                               GetForBrowserState(browserState)
+                                   .get()
+               prefService:browserState->GetPrefs()
+               syncService:SyncServiceFactory::GetForBrowserState(browserState)
+                   context:_context
+                  delegate:self];
   self.mediator.consumer = self.viewController;
   self.viewController.handler = self;
   self.viewController.delegate = self.mediator;
@@ -219,7 +157,9 @@ class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
   self.viewController.snackbarCommandsHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), SnackbarCommands);
   self.viewController.reauthModule = self.reauthenticationModule;
-
+  if (self.showCancelButton) {
+    [self.viewController setupLeftCancelButton];
+  }
   [self.baseNavigationController pushViewController:self.viewController
                                            animated:YES];
 }
@@ -232,7 +172,7 @@ class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
 
 #pragma mark - PasswordDetailsHandler
 
-- (void)passwordDetailsTableViewControllerDidDisappear {
+- (void)passwordDetailsTableViewControllerWasDismissed {
   [self.delegate passwordDetailsCoordinatorDidRemove:self];
 }
 
@@ -412,7 +352,41 @@ class PasswordManagerClientProviderImpl : public PasswordManagerClientProvider {
 - (void)onAllPasswordsDeleted {
   DCHECK_EQ(self.baseNavigationController.topViewController,
             self.viewController);
-  [self.baseNavigationController popViewControllerAnimated:YES];
+  if (_shouldDismissOnAllPasswordsGone) {
+    [self.baseNavigationController popViewControllerAnimated:YES];
+  }
+}
+
+#pragma mark - PasswordDetailsMediatorDelegate
+
+- (void)showDismissWarningDialogWithPasswordDetails:(PasswordDetails*)password {
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_DISMISS_WARNING_DIALOG_TITLE);
+  NSString* message =
+      l10n_util::GetNSString(IDS_IOS_DISMISS_WARNING_DIALOG_MESSAGE);
+  self.alertCoordinator =
+      [[AlertCoordinator alloc] initWithBaseViewController:self.viewController
+                                                   browser:self.browser
+                                                     title:title
+                                                   message:message];
+
+  NSString* cancelButtonText = l10n_util::GetNSString(IDS_CANCEL);
+  [self.alertCoordinator addItemWithTitle:cancelButtonText
+                                   action:nil
+                                    style:UIAlertActionStyleDefault];
+
+  NSString* dismissButtonText =
+      l10n_util::GetNSString(IDS_IOS_DISMISS_WARNING_DIALOG_DISMISS_BUTTON);
+  __weak __typeof(self.mediator) weakMediator = self.mediator;
+  [self.alertCoordinator
+      addItemWithTitle:dismissButtonText
+                action:^{
+                  [weakMediator didConfirmWarningDismissalForPassword:password];
+                }
+                 style:UIAlertActionStyleDefault
+             preferred:YES
+               enabled:YES];
+  [self.alertCoordinator start];
 }
 
 @end

@@ -10,6 +10,7 @@ import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//components/nacl/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
+import("//components/signin/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
@@ -50,7 +51,6 @@ buildflag_header("buildflags") {
     "ENABLE_WEBUI_CERTIFICATE_VIEWER=$enable_webui_certificate_viewer",
     "ENABLE_WEBUI_TAB_STRIP=$enable_webui_tab_strip",
     "OPTIMIZE_WEBUI=$optimize_webui",
-    "ENABLE_BOUND_SESSION_CREDENTIALS=$enable_bound_session_credentials",
   ]
 }
 
@@ -279,6 +279,8 @@ static_library("common_lib") {
 
   if (enable_extensions) {
     sources += [
+      "controlled_frame.cc",
+      "controlled_frame.h",
       "extensions/api/file_browser_handlers/file_browser_handler.cc",
       "extensions/api/file_browser_handlers/file_browser_handler.h",
       "extensions/api/notifications/notification_style.cc",
@@ -332,6 +334,7 @@ static_library("common_lib") {
     ]
     deps += [
       "//chrome/common/apps/platform_apps",
+      "//chrome/common/controlled_frame",
       "//components/app_constants",
     ]
     public_deps += [
@@ -490,6 +493,10 @@ static_library("common_lib") {
       "media/cdm_host_file_path.h",
     ]
     public_deps += [ "//chrome/common:version_header" ]
+  }
+
+  if (enable_bound_session_credentials) {
+    sources += [ "bound_session_request_throttled_listener.h" ]
   }
 }
 
@@ -776,6 +783,10 @@ mojom("mojo_bindings") {
 
   if (enable_plugins) {
     enabled_features += [ "enable_plugins" ]
+  }
+
+  if (enable_bound_session_credentials) {
+    enabled_features += [ "enable_bound_session_credentials" ]
   }
 }
 

@@ -23,11 +23,14 @@ MockShoppingService::MockShoppingService()
                                 nullptr,
                                 nullptr,
                                 nullptr,
+                                nullptr,
                                 nullptr) {
   // Set up some defaults so tests don't have to explicitly set up each.
   SetResponseForGetProductInfoForUrl(absl::nullopt);
   SetResponsesForGetUpdatedProductInfoForBookmarks(
       std::map<int64_t, ProductInfo>());
+  ON_CALL(*this, GetMaxProductBookmarkUpdatesPerBatch)
+      .WillByDefault(testing::Return(30));
   SetResponseForGetMerchantInfoForUrl(absl::nullopt);
   SetSubscribeCallbackValue(true);
   SetUnsubscribeCallbackValue(true);

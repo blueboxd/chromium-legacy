@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/style/basic_shapes.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/grid_area.h"
-#include "third_party/blink/renderer/core/style/grid_positions_resolver.h"
 #include "third_party/blink/renderer/core/style/named_grid_lines_map.h"
 #include "third_party/blink/renderer/core/style/ordered_named_grid_lines.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
@@ -140,7 +139,8 @@ class StyleBuilderConverter {
       const CSSValue& value);
   static FontDescription::Size ConvertFontSize(StyleResolverState&,
                                                const CSSValue&);
-  static float ConvertFontSizeAdjust(StyleResolverState&, const CSSValue&);
+  static FontSizeAdjust ConvertFontSizeAdjust(StyleResolverState&,
+                                              const CSSValue&);
 
   static FontSelectionValue ConvertFontStretch(StyleResolverState&,
                                                const CSSValue&);
@@ -312,6 +312,8 @@ class StyleBuilderConverter {
   static StyleAspectRatio ConvertAspectRatio(const StyleResolverState&,
                                              const CSSValue&);
 
+  static bool ConvertInternalAlignContentBlock(StyleResolverState& state,
+                                               const CSSValue& value);
   static bool ConvertInternalAlignSelfBlock(StyleResolverState& state,
                                             const CSSValue& value);
   static bool ConvertInternalEmptyLineHeight(StyleResolverState& state,
@@ -365,6 +367,9 @@ class StyleBuilderConverter {
 
   static Vector<TimelineAxis> ConvertViewTimelineAxis(StyleResolverState&,
                                                       const CSSValue&);
+  static Vector<TimelineAttachment> ConvertViewTimelineAttachment(
+      StyleResolverState&,
+      const CSSValue&);
   static Vector<TimelineInset> ConvertViewTimelineInset(StyleResolverState&,
                                                         const CSSValue&);
   static ScopedCSSNameList* ConvertViewTimelineName(StyleResolverState&,

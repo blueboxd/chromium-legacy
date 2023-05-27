@@ -30,7 +30,6 @@
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -43,6 +42,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "base/trace_event/trace_event.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "components/download/internal/common/download_job_impl.h"
 #include "components/download/internal/common/parallel_download_utils.h"
@@ -379,7 +379,7 @@ DownloadItemImpl::DownloadItemImpl(
   delegate_->Attach();
   DCHECK(state_ == COMPLETE_INTERNAL || state_ == INTERRUPTED_INTERNAL ||
          state_ == CANCELLED_INTERNAL);
-  DCHECK(base::IsValidGUID(guid_));
+  DCHECK(base::Uuid::ParseCaseInsensitive(guid_).is_valid());
 
   if (download_entry) {
     download_source_ = download_entry->download_source;
@@ -414,7 +414,9 @@ DownloadItemImpl::DownloadItemImpl(DownloadItemImplDelegate* delegate,
                     info.isolation_info,
                     info.save_info->range_request_from,
                     info.save_info->range_request_to),
-      guid_(info.guid.empty() ? base::GenerateGUID() : info.guid),
+      guid_(info.guid.empty()
+                ? base::Uuid::GenerateRandomV4().AsLowercaseString()
+                : info.guid),
       download_id_(download_id),
       response_headers_(info.response_headers),
       content_disposition_(info.content_disposition),
@@ -453,7 +455,7 @@ DownloadItemImpl::DownloadItemImpl(
     const std::string& mime_type,
     DownloadJob::CancelRequestCallback cancel_request_callback)
     : request_info_(url),
-      guid_(base::GenerateGUID()),
+      guid_(base::Uuid::GenerateRandomV4().AsLowercaseString()),
       download_id_(download_id),
       mime_type_(mime_type),
       original_mime_type_(mime_type),
@@ -617,7 +619,6 @@ void DownloadItemImpl::Pause() {
 void DownloadItemImpl::Resume(bool user_resume) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(20) << __func__ << "() download = " << DebugString(true);
-  RecordDownloadResumption(GetLastReason(), user_resume);
 
   switch (state_) {
     case CANCELLED_INTERNAL:  // Nothing to resume.
@@ -644,7 +645,6 @@ void DownloadItemImpl::Resume(bool user_resume) {
       UpdateResumptionInfo(paused_ || user_resume);
       paused_ = false;
       if (auto_resume_count_ >= kMaxAutoResumeAttempts) {
-        RecordAutoResumeCountLimitReached(GetLastReason());
         UpdateObservers();
         return;
       }
@@ -2465,9 +2465,6 @@ void DownloadItemImpl::ResumeInterruptedDownload(
       mode == ResumeMode::USER_RESTART) {
     LOG_IF(ERROR, !GetFullPath().empty())
         << "Download full path should be empty before resumption";
-    if (destination_info_.received_bytes > 0) {
-      RecordResumptionRestartReason(last_reason_);
-    }
     destination_info_.received_bytes = 0;
     last_modified_time_.clear();
     etag_.clear();
@@ -2764,31 +2761,6 @@ const char* DownloadItemImpl::DebugResumeModeString(ResumeMode mode) {
   }
   NOTREACHED() << "Unknown resume mode " << static_cast<int>(mode);
   return "unknown";
-}
-
-size_t DownloadItemImpl::GetApproximateMemoryUsage() const {
-  static size_t class_size = sizeof(DownloadItemImpl);
-  size_t size = class_size;
-
-  for (const GURL& url : GetUrlChain())
-    size += url.EstimateMemoryUsage();
-  size += GetReferrerUrl().EstimateMemoryUsage();
-  size += base::trace_event::EstimateMemoryUsage(
-      GetSerializedEmbedderDownloadData());
-  size += GetTabUrl().EstimateMemoryUsage();
-  size += GetTabReferrerUrl().EstimateMemoryUsage();
-  size += base::trace_event::EstimateMemoryUsage(GetSuggestedFilename());
-  size += base::trace_event::EstimateMemoryUsage(GetForcedFilePath().value());
-  size += base::trace_event::EstimateMemoryUsage(GetRemoteAddress());
-  size += base::trace_event::EstimateMemoryUsage(GetTargetFilePath().value());
-  size += base::trace_event::EstimateMemoryUsage(GetFullPath().value());
-  size += base::trace_event::EstimateMemoryUsage(GetHash());
-  size += base::trace_event::EstimateMemoryUsage(GetMimeType());
-  size += base::trace_event::EstimateMemoryUsage(GetOriginalMimeType());
-  size += base::trace_event::EstimateMemoryUsage(GetLastModifiedTime());
-  size += base::trace_event::EstimateMemoryUsage(GetETag());
-  size += base::trace_event::EstimateMemoryUsage(GetGuid());
-  return size;
 }
 
 std::pair<int64_t, int64_t> DownloadItemImpl::GetRangeRequestOffset() const {

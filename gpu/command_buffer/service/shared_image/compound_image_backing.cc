@@ -156,14 +156,16 @@ class WrappedGLTexturePassthroughCompoundImageRepresentation
   std::unique_ptr<GLTexturePassthroughImageRepresentation> wrapped_;
 };
 
-class WrappedSkiaCompoundImageRepresentation : public SkiaImageRepresentation {
+class WrappedSkiaGaneshCompoundImageRepresentation
+    : public SkiaGaneshImageRepresentation {
  public:
-  WrappedSkiaCompoundImageRepresentation(
+  WrappedSkiaGaneshCompoundImageRepresentation(
+      GrDirectContext* gr_context,
       SharedImageManager* manager,
       SharedImageBacking* backing,
       MemoryTypeTracker* tracker,
-      std::unique_ptr<SkiaImageRepresentation> wrapped)
-      : SkiaImageRepresentation(manager, backing, tracker),
+      std::unique_ptr<SkiaGaneshImageRepresentation> wrapped)
+      : SkiaGaneshImageRepresentation(gr_context, manager, backing, tracker),
         wrapped_(std::move(wrapped)) {
     DCHECK(wrapped_);
   }
@@ -213,7 +215,7 @@ class WrappedSkiaCompoundImageRepresentation : public SkiaImageRepresentation {
   void EndReadAccess() final { wrapped_->EndReadAccess(); }
 
  private:
-  std::unique_ptr<SkiaImageRepresentation> wrapped_;
+  std::unique_ptr<SkiaGaneshImageRepresentation> wrapped_;
 };
 
 class WrappedDawnCompoundImageRepresentation : public DawnImageRepresentation {
@@ -331,7 +333,8 @@ std::unique_ptr<SharedImageBacking> CompoundImageBacking::CreateSharedMemory(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage) {
+    uint32_t usage,
+    std::string debug_label) {
   DCHECK(IsValidSharedMemoryBufferFormat(size, format));
 
   SharedMemoryRegionWrapper shm_wrapper;
@@ -348,7 +351,7 @@ std::unique_ptr<SharedImageBacking> CompoundImageBacking::CreateSharedMemory(
 
   return base::WrapUnique(new CompoundImageBacking(
       mailbox, format, size, color_space, surface_origin, alpha_type, usage,
-      allow_shm_overlays, std::move(shm_backing),
+      std::move(debug_label), allow_shm_overlays, std::move(shm_backing),
       gpu_backing_factory->GetWeakPtr()));
 }
 
@@ -364,7 +367,8 @@ std::unique_ptr<SharedImageBacking> CompoundImageBacking::CreateSharedMemory(
     const gfx::ColorSpace& color_space,
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
-    uint32_t usage) {
+    uint32_t usage,
+    std::string debug_label) {
   DCHECK(IsValidSharedMemoryBufferFormat(size, format, plane));
 
   SharedMemoryRegionWrapper shm_wrapper;
@@ -384,8 +388,8 @@ std::unique_ptr<SharedImageBacking> CompoundImageBacking::CreateSharedMemory(
 
   return base::WrapUnique(new CompoundImageBacking(
       mailbox, plane_format, plane_size, color_space, surface_origin,
-      alpha_type, usage, allow_shm_overlays, std::move(shm_backing),
-      gpu_backing_factory->GetWeakPtr()));
+      alpha_type, usage, std::move(debug_label), allow_shm_overlays,
+      std::move(shm_backing), gpu_backing_factory->GetWeakPtr()));
 }
 
 CompoundImageBacking::CompoundImageBacking(
@@ -396,6 +400,7 @@ CompoundImageBacking::CompoundImageBacking(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
+    std::string debug_label,
     bool allow_shm_overlays,
     std::unique_ptr<SharedMemoryImageBacking> shm_backing,
     base::WeakPtr<SharedImageBackingFactory> gpu_backing_factory)
@@ -416,9 +421,9 @@ CompoundImageBacking::CompoundImageBacking(
     elements_[0].access_streams.Put(SharedImageAccessStream::kOverlay);
   elements_[0].content_id_ = latest_content_id_;
 
-  elements_[1].create_callback =
-      base::BindOnce(&CompoundImageBacking::LazyCreateBacking,
-                     base::Unretained(this), std::move(gpu_backing_factory));
+  elements_[1].create_callback = base::BindOnce(
+      &CompoundImageBacking::LazyCreateBacking, base::Unretained(this),
+      std::move(gpu_backing_factory), std::move(debug_label));
   elements_[1].access_streams =
       base::Difference(AccessStreamSet::All(), kMemoryStreamSet);
 }
@@ -550,7 +555,8 @@ CompoundImageBacking::ProduceGLTexturePassthrough(SharedImageManager* manager,
       manager, this, tracker, std::move(real_rep));
 }
 
-std::unique_ptr<SkiaImageRepresentation> CompoundImageBacking::ProduceSkia(
+std::unique_ptr<SkiaGaneshImageRepresentation>
+CompoundImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {
@@ -558,13 +564,13 @@ std::unique_ptr<SkiaImageRepresentation> CompoundImageBacking::ProduceSkia(
   if (!backing)
     return nullptr;
 
-  auto real_rep =
-      backing->ProduceSkia(manager, tracker, std::move(context_state));
+  auto real_rep = backing->ProduceSkiaGanesh(manager, tracker, context_state);
   if (!real_rep)
     return nullptr;
 
-  return std::make_unique<WrappedSkiaCompoundImageRepresentation>(
-      manager, this, tracker, std::move(real_rep));
+  auto* gr_context = context_state ? context_state->gr_context() : nullptr;
+  return std::make_unique<WrappedSkiaGaneshCompoundImageRepresentation>(
+      gr_context, manager, this, tracker, std::move(real_rep));
 }
 
 std::unique_ptr<OverlayImageRepresentation>
@@ -647,6 +653,7 @@ SharedImageBacking* CompoundImageBacking::GetBacking(
 
 void CompoundImageBacking::LazyCreateBacking(
     base::WeakPtr<SharedImageBackingFactory> factory,
+    std::string debug_label,
     std::unique_ptr<SharedImageBacking>& backing) {
   if (!factory) {
     DLOG(ERROR) << "Can't allocate backing after image has been destroyed";
@@ -656,7 +663,7 @@ void CompoundImageBacking::LazyCreateBacking(
   backing = factory->CreateSharedImage(
       mailbox(), format(), kNullSurfaceHandle, size(), color_space(),
       surface_origin(), alpha_type(), usage() | SHARED_IMAGE_USAGE_CPU_UPLOAD,
-      /*is_thread_safe=*/false);
+      std::move(debug_label), /*is_thread_safe=*/false);
   if (!backing) {
     DLOG(ERROR) << "Failed to allocate GPU backing";
     return;

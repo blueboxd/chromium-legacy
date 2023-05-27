@@ -5,20 +5,17 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.content.Context;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MenuItem;
 import android.view.View.OnClickListener;
 
+import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar.OnMenuItemClickListener;
+import androidx.core.view.MenuCompat;
 
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
-import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiState.BookmarkUiMode;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -29,7 +26,7 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectableListT
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 
 import java.util.List;
-
+import java.util.function.Function;
 /**
  * Main toolbar of bookmark UI. It is responsible for displaying title and buttons
  * associated with the current context.
@@ -48,30 +45,26 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
     // Whether the selection ui is currently showing. This isn't captured by an explicit
     // BookmarkUiMode.
     private boolean mIsSelectionUiShowing;
+    private boolean mSearchButtonVisible;
+    private boolean mEditButtonVisible;
 
     private Runnable mOpenSearchUiRunnable;
     private Callback<BookmarkId> mOpenFolderCallback;
+    private Function<Integer, Boolean> mMenuIdClickedFunction;
 
     public BookmarkToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
         setNavigationOnClickListener(this);
-        inflateMenu(R.menu.bookmark_toolbar_menu);
+
+        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
+            inflateMenu(R.menu.bookmark_toolbar_menu_improved);
+            MenuCompat.setGroupDividerEnabled(
+                    getMenu().findItem(R.id.normal_options_submenu).getSubMenu(), true);
+        } else {
+            inflateMenu(R.menu.bookmark_toolbar_menu);
+        }
+
         setOnMenuItemClickListener(this);
-
-        getMenu().findItem(R.id.selection_mode_edit_menu_id).setTitle(R.string.edit_bookmark);
-        getMenu()
-                .findItem(R.id.selection_mode_move_menu_id)
-                .setTitle(R.string.bookmark_toolbar_move);
-        getMenu()
-                .findItem(R.id.selection_mode_delete_menu_id)
-                .setTitle(R.string.bookmark_toolbar_delete);
-
-        getMenu()
-                .findItem(R.id.selection_open_in_incognito_tab_id)
-                .setTitle(R.string.contextmenu_open_in_incognito_tab);
-
-        // Wait to enable the selection mode group until the SelectionDelegate is set.
-        getMenu().setGroupEnabled(R.id.selection_mode_menu_group, false);
     }
 
     void setBookmarkModel(BookmarkModel bookmarkModel) {
@@ -90,9 +83,7 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
     void setBookmarkUiMode(@BookmarkUiMode int mode) {
         mBookmarkUiMode = mode;
         mIsSelectionUiShowing = false;
-        if (mBookmarkUiMode == BookmarkUiMode.LOADING) {
-            showLoadingUi();
-        } else {
+        if (mBookmarkUiMode != BookmarkUiMode.LOADING) {
             showNormalView();
         }
 
@@ -100,11 +91,6 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
             showSearchView(mSoftKeyboardVisible);
         } else {
             hideSearchView(/*notify=*/false);
-        }
-
-        if (mBookmarkUiMode == BookmarkUiMode.FOLDER && mCurrentFolder != null) {
-            // It's possible that the folder was renamed, so refresh the folder UI just in case.
-            setCurrentFolder(mCurrentFolder);
         }
     }
 
@@ -127,38 +113,32 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
         setOnMenuItemClickListener(dragEnabled ? null : this);
     }
 
-    /** Sets the current folder as a BookmarkId. */
-    // TODO(crbug.com/1413463): The individual title/nav state should be set manually instead of
-    // being derived from the BookmarkId.
-    void setCurrentFolder(BookmarkId folder) {
-        setCurrentFolder(mBookmarkModel.getBookmarkById(folder));
+    void setSearchButtonVisible(boolean visible) {
+        // The improved bookmarks experience embeds search in the list.
+        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) return;
+        mSearchButtonVisible = visible;
+        getMenu().findItem(R.id.search_menu_id).setVisible(visible);
     }
 
-    /** Sets the current folder as a BookmarkItem. */
-    void setCurrentFolder(BookmarkItem folder) {
-        mCurrentFolder = folder;
+    void setEditButtonVisible(boolean visible) {
+        mEditButtonVisible = visible;
+        getMenu().findItem(R.id.edit_menu_id).setVisible(visible);
+    }
 
-        getMenu().findItem(R.id.search_menu_id).setVisible(true);
-        getMenu().findItem(R.id.edit_menu_id).setVisible(mCurrentFolder.isEditable());
+    void setNavigationButtonState(@NavigationButton int navigationButtonState) {
+        setNavigationButton(navigationButtonState);
+    }
 
-        // If this is the root folder, we can't go up anymore.
-        if (folder.getId().equals(mBookmarkModel.getRootFolderId())) {
-            setTitle(R.string.bookmarks);
-            setNavigationButton(NAVIGATION_BUTTON_NONE);
-            return;
-        }
+    void setCheckedSortMenuId(@IdRes int id) {
+        getMenu().findItem(id).setChecked(true);
+    }
 
-        if (folder.getId().equals(BookmarkId.SHOPPING_FOLDER)) {
-            setTitle(R.string.price_tracking_bookmarks_filter_title);
-        } else if (mBookmarkModel.getTopLevelFolderParentIDs().contains(
-                           mCurrentFolder.getParentId())
-                && TextUtils.isEmpty(mCurrentFolder.getTitle())) {
-            setTitle(R.string.bookmarks);
-        } else {
-            setTitle(mCurrentFolder.getTitle());
-        }
+    void setCheckedViewMenuId(@IdRes int id) {
+        getMenu().findItem(id).setChecked(true);
+    }
 
-        setNavigationButton(NAVIGATION_BUTTON_BACK);
+    void setCurrentFolder(BookmarkId folder) {
+        mCurrentFolder = mBookmarkModel.getBookmarkById(folder);
     }
 
     void setOpenSearchUiRunnable(Runnable runnable) {
@@ -169,11 +149,8 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
         mOpenFolderCallback = openFolderCallback;
     }
 
-    void showLoadingUi() {
-        setTitle(null);
-        setNavigationButton(NAVIGATION_BUTTON_NONE);
-        getMenu().findItem(R.id.search_menu_id).setVisible(false);
-        getMenu().findItem(R.id.edit_menu_id).setVisible(false);
+    void setMenuIdClickedFunction(Function<Integer, Boolean> menuIdClickedFunction) {
+        mMenuIdClickedFunction = menuIdClickedFunction;
     }
 
     // OnMenuItemClickListener implementation.
@@ -181,77 +158,7 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
     @Override
     public boolean onMenuItemClick(MenuItem menuItem) {
         hideOverflowMenu();
-
-        if (menuItem.getItemId() == R.id.edit_menu_id) {
-            BookmarkAddEditFolderActivity.startEditFolderActivity(
-                    getContext(), mCurrentFolder.getId());
-            return true;
-        } else if (menuItem.getItemId() == R.id.close_menu_id) {
-            BookmarkUtils.finishActivityOnPhone(getContext());
-            return true;
-        } else if (menuItem.getItemId() == R.id.search_menu_id) {
-            mOpenSearchUiRunnable.run();
-            return true;
-        }
-
-        if (menuItem.getItemId() == R.id.selection_mode_edit_menu_id) {
-            List<BookmarkId> list = mSelectionDelegate.getSelectedItemsAsList();
-            assert list.size() == 1;
-            BookmarkItem item = mBookmarkModel.getBookmarkById(list.get(0));
-            if (item.isFolder()) {
-                BookmarkAddEditFolderActivity.startEditFolderActivity(getContext(), item.getId());
-            } else {
-                BookmarkUtils.startEditActivity(getContext(), item.getId());
-            }
-            return true;
-        } else if (menuItem.getItemId() == R.id.selection_mode_move_menu_id) {
-            List<BookmarkId> list = mSelectionDelegate.getSelectedItemsAsList();
-            if (list.size() >= 1) {
-                BookmarkFolderSelectActivity.startFolderSelectActivity(
-                        getContext(), list.toArray(new BookmarkId[0]));
-                RecordUserAction.record("MobileBookmarkManagerMoveToFolderBulk");
-            }
-            return true;
-        } else if (menuItem.getItemId() == R.id.selection_mode_delete_menu_id) {
-            List<BookmarkId> list = mSelectionDelegate.getSelectedItemsAsList();
-            if (list.size() >= 1) {
-                mBookmarkModel.deleteBookmarks(list.toArray(new BookmarkId[0]));
-                RecordUserAction.record("MobileBookmarkManagerDeleteBulk");
-            }
-            return true;
-        } else if (menuItem.getItemId() == R.id.selection_open_in_new_tab_id) {
-            RecordUserAction.record("MobileBookmarkManagerEntryOpenedInNewTab");
-            RecordHistogram.recordCount1000Histogram(
-                    "Bookmarks.Count.OpenInNewTab", mSelectionDelegate.getSelectedItems().size());
-            mBookmarkOpener.openBookmarksInNewTabs(
-                    mSelectionDelegate.getSelectedItemsAsList(), /*incognito=*/false);
-            return true;
-        } else if (menuItem.getItemId() == R.id.selection_open_in_incognito_tab_id) {
-            RecordUserAction.record("MobileBookmarkManagerEntryOpenedInIncognito");
-            RecordHistogram.recordCount1000Histogram("Bookmarks.Count.OpenInIncognito",
-                    mSelectionDelegate.getSelectedItems().size());
-            mBookmarkOpener.openBookmarksInNewTabs(
-                    mSelectionDelegate.getSelectedItemsAsList(), /*incognito=*/true);
-            return true;
-        } else if (menuItem.getItemId() == R.id.reading_list_mark_as_read_id
-                || menuItem.getItemId() == R.id.reading_list_mark_as_unread_id) {
-            // Handle the seclection "mark as" buttons in the same block because the behavior is
-            // the same other than one boolean flip.
-            for (int i = 0; i < mSelectionDelegate.getSelectedItemsAsList().size(); i++) {
-                BookmarkId bookmark =
-                        (BookmarkId) mSelectionDelegate.getSelectedItemsAsList().get(i);
-                if (bookmark.getType() != BookmarkType.READING_LIST) continue;
-
-                BookmarkItem bookmarkItem = mBookmarkModel.getBookmarkById(bookmark);
-                mBookmarkModel.setReadStatusForReadingList(bookmarkItem.getUrl(),
-                        /*read=*/menuItem.getItemId() == R.id.reading_list_mark_as_read_id);
-            }
-            mSelectionDelegate.clearSelection();
-            return true;
-        }
-
-        assert false : "Unhandled menu click.";
-        return false;
+        return mMenuIdClickedFunction.apply(menuItem.getItemId());
     }
 
     // SelectableListToolbar implementation.
@@ -263,6 +170,7 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
             return;
         }
 
+        // The navigation button shouldn't be visible unless the current folder is non-null.
         mOpenFolderCallback.onResult(mCurrentFolder.getParentId());
     }
 
@@ -270,12 +178,9 @@ public class BookmarkToolbar extends SelectableListToolbar<BookmarkId>
     protected void showNormalView() {
         super.showNormalView();
 
-        if (mCurrentFolder == null) {
-            getMenu().findItem(R.id.search_menu_id).setVisible(false);
-            getMenu().findItem(R.id.edit_menu_id).setVisible(false);
-        } else {
-            setCurrentFolder(mCurrentFolder);
-        }
+        // SelectableListToolbar will show/hide the entire group.
+        setSearchButtonVisible(mSearchButtonVisible);
+        setEditButtonVisible(mEditButtonVisible);
     }
 
     @Override

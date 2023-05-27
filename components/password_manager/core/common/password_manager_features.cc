@@ -30,6 +30,12 @@ BASE_FEATURE(kBiometricTouchToFill,
              "BiometricTouchToFill",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Disables fallback filling if the server or the autocomplete attribute says it
+// is a credit card field.
+BASE_FEATURE(kDisablePasswordsDropdownForCvcFields,
+             "DisablePasswordsDropdownForCvcFields",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the overwriting of prefilled username fields if the server predicted
 // the field to contain a placeholder value.
 BASE_FEATURE(kEnableOverwritingPlaceholderUsernames,
@@ -70,6 +76,13 @@ BASE_FEATURE(kFillingAcrossAffiliatedWebsites,
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
+
+// This flag enables password filling across grouped websites. Information about
+// website groups is provided by the affiliation service.
+BASE_FEATURE(kFillingAcrossGroupedSites,
+             "FillingAcrossGroupedSites",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the experiment for the password manager to only fill on account
 // selection, rather than autofilling on page load, with highlighting of fields.
 BASE_FEATURE(kFillOnAccountSelect,
@@ -104,11 +117,6 @@ BASE_FEATURE(kIOSPasswordUISplit,
              "IOSPasswordUISplit",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables password saving and filling in cross-origin iframes on IOS.
-BASE_FEATURE(kIOSPasswordManagerCrossOriginIframeSupport,
-             "IOSPasswordManagerCrossOriginIframeSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables displaying and managing compromised, weak and reused credentials in
 // the Password Manager.
 BASE_FEATURE(kIOSPasswordCheckup,
@@ -119,7 +127,7 @@ BASE_FEATURE(kIOSPasswordCheckup,
 // subtitle.
 BASE_FEATURE(kIOSShowPasswordStorageInSaveInfobar,
              "IOSShowPasswordStorageInSaveInfobar",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables password bottom sheet to be displayed (on iOS) when a user is
 // signed-in and taps on a username or password field on a website that has at
@@ -142,6 +150,13 @@ BASE_FEATURE(kNewRegexForOtpFields,
              "NewRegexForOtpFields",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Killswitch for changes regarding password issues in
+// `PasswordSpcificsMetadata`. Guards writing issues to metadata and preserving
+// the new notification field.
+BASE_FEATURE(kPasswordIssuesInSpecificsMetadata,
+             "PasswordIssuesInSpecificsMetadata",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables the new password viewing subpage.
 BASE_FEATURE(kPasswordViewPageInSettings,
              "PasswordViewPageInSettings",
@@ -162,20 +177,13 @@ BASE_FEATURE(kPasswordChangeWellKnown,
              "PasswordChangeWellKnown",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables import passwords flow from Chrome's settings page.
-BASE_FEATURE(kPasswordImport,
-             "PasswordImport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kPasswordsImportM2,
+             "PasswordsImportM2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 BASE_FEATURE(kPasswordManagerRedesign,
              "PasswordManagerRedesign",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-BASE_FEATURE(kPasswordsImportM2,
-             "PasswordsImportM2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -254,6 +262,11 @@ BASE_FEATURE(kUnifiedPasswordManagerErrorMessages,
              "UnifiedPasswordManagerErrorMessages",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables showing the warning about UPM migrating local passwords.
+BASE_FEATURE(kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
+             "UnifiedPasswordManagerLocalPasswordsMigrationWarning",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, the built-in sync functionality in PasswordSyncBridge becomes
 // unused, meaning that SyncService/SyncEngine will no longer download or
 // upload changes to/from the Sync server. Instead, an external Android-specific
@@ -261,12 +274,6 @@ BASE_FEATURE(kUnifiedPasswordManagerErrorMessages,
 BASE_FEATURE(kUnifiedPasswordManagerSyncUsingAndroidBackendOnly,
              "UnifiedPasswordManagerSyncUsingAndroidBackendOnly",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables automatic reenrollment into the Unified Password Manager for clients
-// that were previously evicted after experiencing errors.
-BASE_FEATURE(kUnifiedPasswordManagerReenrollment,
-             "UnifiedPasswordManagerReenrollment",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables all UI branding changes related to Unified Password Manager:
 // the strings containing 'Password Manager' and the password manager
@@ -290,6 +297,12 @@ BASE_FEATURE(kUsernameFirstFlowFallbackCrowdsourcing,
              "UsernameFirstFlowFallbackCrowdsourcing",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables suggesting username in the save/update prompt in the case of
+// autocomplete="username".
+BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
+             "UsernameFirstFlowHonorAutocomplete",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables previewing password generation suggestion in the target form in
 // cleartext.
 BASE_FEATURE(kPasswordGenerationPreviewOnHover,
@@ -301,17 +314,6 @@ BASE_FEATURE(kPasswordGenerationPreviewOnHover,
 // is lower than 'kMigrationVersion' passwords will be re-uploaded.
 extern const base::FeatureParam<int> kMigrationVersion = {
     &kUnifiedPasswordManagerAndroid, "migration_version", 1};
-
-// The maximum possible number of reenrollments into the UPM. Needed to avoid a
-// patchy experience for users who experience errors in communication with
-// Google Mobile Services on a regular basis.
-extern const base::FeatureParam<int> kMaxUPMReenrollments = {
-    &kUnifiedPasswordManagerReenrollment, "max_reenrollments", 0};
-
-// The maximum possible number of reenrollment migration attempts. Needed to
-// avoid wasting resources of users who have persistent errors.
-extern const base::FeatureParam<int> kMaxUPMReenrollmentAttempts = {
-    &kUnifiedPasswordManagerReenrollment, "max_reenrollment_attempts", 0};
 
 // Whether to ignore the 24h timeout in between auth error messages as
 // well as the 30 mins distance to sync error messages.

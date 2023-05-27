@@ -15,24 +15,28 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/ranges/algorithm.h"
 #import "base/strings/sys_string_conversions.h"
-#import "components/password_manager/core/browser/move_password_to_account_store_helper.h"
 #import "components/password_manager/core/browser/password_form.h"
-#import "components/password_manager/core/browser/password_manager_client.h"
 #import "components/password_manager/core/browser/password_manager_features_util.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
+#import "components/password_manager/core/common/password_manager_features.h"
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/sync/base/features.h"
 #import "components/sync/driver/sync_service.h"
 #import "ios/chrome/browser/passwords/password_check_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/password/account_storage_utils.h"
+#import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_consumer.h"
+#import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::SysNSStringToUTF16;
+using password_manager::CredentialUIEntry;
 
 namespace {
 
@@ -40,24 +44,45 @@ bool IsPasswordNotesWithBackupEnabled() {
   return base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup);
 }
 
-bool MatchesRealmUsernameAndPassword(
-    PasswordDetails* password,
-    const password_manager::CredentialUIEntry& credential) {
+bool MatchesRealmUsernameAndPassword(PasswordDetails* password,
+                                     const CredentialUIEntry& credential) {
   return base::SysNSStringToUTF8(password.signonRealm) ==
              credential.GetFirstSignonRealm() &&
          base::SysNSStringToUTF16(password.username) == credential.username &&
          base::SysNSStringToUTF16(password.password) == credential.password;
 }
 
-}  // namespace
+// Helper that determines if a credential should be displayed as compromised in
+// password details. Even if a credential is compromised, it is only displayed
+// as such when password details was opened from the password manager or the
+// compromised password issues page.
+bool ShouldDisplayCredentialAsCompromised(DetailsContext details_context,
+                                          const CredentialUIEntry& credential) {
+  switch (details_context) {
+    case DetailsContext::kGeneral:
+    case DetailsContext::kCompromisedIssues:
+      return password_manager::features::IsPasswordCheckupEnabled()
+                 ? IsCredentialUnmutedCompromised(credential)
+                 : IsCompromised(credential);
+    case DetailsContext::kReusedIssues:
+    case DetailsContext::kWeakIssues:
+    case DetailsContext::kDismissedWarnings:
+      return false;
+  }
+}
 
-using base::SysNSStringToUTF16;
+bool SupportsMuteOperation(password_manager::InsecureType insecure_type) {
+  return (insecure_type == password_manager::InsecureType::kLeaked ||
+          insecure_type == password_manager::InsecureType::kPhished);
+}
+
+}  // namespace
 
 @interface PasswordDetailsMediator () <
     PasswordCheckObserver,
     PasswordDetailsTableViewControllerDelegate> {
   // The credentials to be displayed in the page.
-  std::vector<password_manager::CredentialUIEntry> _credentials;
+  std::vector<CredentialUIEntry> _credentials;
 
   // Password Check manager.
   raw_ptr<IOSChromePasswordCheckManager> _manager;
@@ -65,18 +90,17 @@ using base::SysNSStringToUTF16;
   // Listens to compromised passwords changes.
   std::unique_ptr<PasswordCheckObserverBridge> _passwordCheckObserver;
 
-  // YES when move to account option is supported in password details page, NO
-  // otherwise.
-  BOOL _supportMoveToAccount;
-
-  // Password manager client provider.
-  raw_ptr<PasswordManagerClientProvider> _passwordManagerClientProvider;
+  // The context in which the password details are accessed.
+  DetailsContext _context;
 
   // The BrowserState pref service.
   raw_ptr<PrefService> _prefService;
 
   // The sync service.
   raw_ptr<syncer::SyncService> _syncService;
+
+  // Delegate for this mediator.
+  id<PasswordDetailsMediatorDelegate> _delegate;
 }
 
 // Dictionary of usernames of a same domain. Key: domain and value: NSSet of
@@ -92,18 +116,15 @@ using base::SysNSStringToUTF16;
 
 @implementation PasswordDetailsMediator
 
-- (instancetype)initWithPasswords:
-                    (const std::vector<password_manager::CredentialUIEntry>&)
-                        credentials
-                      displayName:(NSString*)displayName
-             passwordCheckManager:(IOSChromePasswordCheckManager*)manager
-                      prefService:(PrefService*)prefService
-                      syncService:(syncer::SyncService*)syncService
-             supportMoveToAccount:(BOOL)supportMoveToAccount
-    passwordManagerClientProvider:
-        (PasswordManagerClientProvider*)passwordManagerClientProvider {
+- (instancetype)
+       initWithPasswords:(const std::vector<CredentialUIEntry>&)credentials
+             displayName:(NSString*)displayName
+    passwordCheckManager:(IOSChromePasswordCheckManager*)manager
+             prefService:(PrefService*)prefService
+             syncService:(syncer::SyncService*)syncService
+                 context:(DetailsContext)context
+                delegate:(id<PasswordDetailsMediatorDelegate>)delegate {
   DCHECK(manager);
-  DCHECK(passwordManagerClientProvider);
   DCHECK(!credentials.empty());
 
   self = [super init];
@@ -116,10 +137,10 @@ using base::SysNSStringToUTF16;
   _displayName = displayName;
   _passwordCheckObserver =
       std::make_unique<PasswordCheckObserverBridge>(self, manager);
-  _supportMoveToAccount = supportMoveToAccount;
-  _passwordManagerClientProvider = passwordManagerClientProvider;
+  _context = context;
   _prefService = prefService;
   _syncService = syncService;
+  _delegate = delegate;
 
   // TODO(crbug.com/1400692): Improve saved passwords logic when helper is
   // available in SavedPasswordsPresenter.
@@ -187,8 +208,7 @@ using base::SysNSStringToUTF16;
 
   // Map from PasswordDetails to CredentialUIEntry. Should support blocklists.
   auto it = base::ranges::find_if(
-      _credentials,
-      [password](const password_manager::CredentialUIEntry& credential) {
+      _credentials, [password](const CredentialUIEntry& credential) {
         return MatchesRealmUsernameAndPassword(password, credential);
       });
   if (it == _credentials.end()) {
@@ -212,8 +232,7 @@ using base::SysNSStringToUTF16;
 - (void)moveCredentialToAccountStore:(PasswordDetails*)password {
   // Map from PasswordDetails to CredentialUIEntry.
   auto it = base::ranges::find_if(
-      _credentials,
-      [password](const password_manager::CredentialUIEntry& credential) {
+      _credentials, [password](const CredentialUIEntry& credential) {
         return MatchesRealmUsernameAndPassword(password, credential);
       });
 
@@ -222,22 +241,18 @@ using base::SysNSStringToUTF16;
   }
 
   it->stored_in = {password_manager::PasswordForm::Store::kAccountStore};
-  MovePasswordsToAccountStore(
-      _manager->GetSavedPasswordsPresenter()->GetCorrespondingPasswordForms(
-          *it),
-      _passwordManagerClientProvider->GetAny(),
-      password_manager::metrics_util::MoveToAccountStoreTrigger::
-          kExplicitlyTriggeredInSettings);
+  _manager->GetSavedPasswordsPresenter()->MoveCredentialsToAccount(
+      {*it}, password_manager::metrics_util::MoveToAccountStoreTrigger::
+                 kExplicitlyTriggeredInSettings);
   [self providePasswordsToConsumer];
 }
 
 - (void)moveCredentialToAccountStoreWithConflict:(PasswordDetails*)password {
   auto localCredential = base::ranges::find_if(
-      _credentials,
-      [password](const password_manager::CredentialUIEntry& credential) {
+      _credentials, [password](const CredentialUIEntry& credential) {
         return MatchesRealmUsernameAndPassword(password, credential);
       });
-  absl::optional<password_manager::CredentialUIEntry> accountCredential =
+  absl::optional<CredentialUIEntry> accountCredential =
       [self conflictingAccountPassword:password];
   DCHECK(localCredential != _credentials.end());
   DCHECK(accountCredential.has_value());
@@ -254,6 +269,37 @@ using base::SysNSStringToUTF16;
   return [self conflictingAccountPassword:password].has_value();
 }
 
+- (void)didConfirmWarningDismissalForPassword:(PasswordDetails*)password {
+  // Map from PasswordDetails to CredentialUIEntry.
+  auto it = base::ranges::find_if(
+      _credentials,
+      [password](const password_manager::CredentialUIEntry& credential) {
+        return MatchesRealmUsernameAndPassword(password, credential);
+      });
+
+  if (it == _credentials.end()) {
+    return;
+  }
+
+  _manager->MuteCredential(*it);
+
+  // TODO(crbug.com/1359392). Once kPasswordsGrouping launches, the mediator
+  // should update the passwords model and receive the updates via
+  // SavedPasswordsPresenterObserver, instead of replicating the updates to its
+  // own copy and calling [self providePasswordsToConsumer:]. Today when the
+  // flag is disabled and the password is edited, it's impossible to identify
+  // the new object to show (sign-on realm can't be used as an id, there might
+  // be multiple credentials; nor username/password since the values changed).
+  // The lines below should be removed once this is fixed.
+  for (auto& password_issue : it->password_issues) {
+    if (!password_issue.second.is_muted.value() &&
+        SupportsMuteOperation(password_issue.first)) {
+      password_issue.second.is_muted = password_manager::IsMuted(true);
+    }
+  }
+  [self providePasswordsToConsumer];
+}
+
 #pragma mark - PasswordDetailsTableViewControllerDelegate
 
 - (void)passwordDetailsViewController:
@@ -263,12 +309,11 @@ using base::SysNSStringToUTF16;
                           oldPassword:(NSString*)oldPassword
                               oldNote:(NSString*)oldNote {
   if ([password.password length] != 0) {
-    password_manager::CredentialUIEntry original_credential;
+    CredentialUIEntry original_credential;
 
     auto it = base::ranges::find_if(
-        _credentials,
-        [password, oldUsername, oldPassword,
-         oldNote](const password_manager::CredentialUIEntry& credential) {
+        _credentials, [password, oldUsername, oldPassword,
+                       oldNote](const CredentialUIEntry& credential) {
           return
               [password.signonRealm
                   isEqualToString:[NSString stringWithUTF8String:
@@ -288,8 +333,7 @@ using base::SysNSStringToUTF16;
     DCHECK(it != _credentials.end());
 
     original_credential = *it;
-    password_manager::CredentialUIEntry updated_credential =
-        original_credential;
+    CredentialUIEntry updated_credential = original_credential;
     updated_credential.username = SysNSStringToUTF16(password.username);
     updated_credential.password = SysNSStringToUTF16(password.password);
     if (IsPasswordNotesWithBackupEnabled()) {
@@ -355,6 +399,22 @@ using base::SysNSStringToUTF16;
       containsObject:newUsername];
 }
 
+- (void)dismissWarningForPassword:(PasswordDetails*)password {
+  // Show confirmation dialog.
+  [_delegate showDismissWarningDialogWithPasswordDetails:password];
+}
+
+- (void)restoreWarningForCurrentPassword {
+  // Restoring a warning is only available in the
+  // DetailsContext::kDismissedWarnings context, which is always showing only 1
+  // credential.
+  CHECK(_credentials.size() == 1);
+  password_manager::CredentialUIEntry credential = _credentials[0];
+  _manager->UnmuteCredential(credential);
+  base::Erase(_credentials, credential);
+  [self providePasswordsToConsumer];
+}
+
 #pragma mark - PasswordCheckObserver
 
 - (void)passwordCheckStateDidChange:(PasswordCheckState)state {
@@ -371,19 +431,19 @@ using base::SysNSStringToUTF16;
 // Pushes password details to the consumer.
 - (void)providePasswordsToConsumer {
   NSMutableArray<PasswordDetails*>* passwords = [NSMutableArray array];
-  std::vector<password_manager::CredentialUIEntry> insecureCredentials =
-      _manager->GetInsecureCredentials();
-  for (const password_manager::CredentialUIEntry& credential : _credentials) {
+  for (const CredentialUIEntry& credential : _credentials) {
     PasswordDetails* password =
         [[PasswordDetails alloc] initWithCredential:credential];
-    password.compromised = base::Contains(insecureCredentials, credential);
+    password.context = _context;
+    password.compromised =
+        ShouldDisplayCredentialAsCompromised(_context, credential);
     // Only offer moving to the account if all of these hold.
     // - The embedder of this page wants to support it.
     // - The entry was flagged as local only in the top-level view.
     // - The user is interested in saving passwords to the account, i.e. they
     // are opted in to account storage.
     password.shouldOfferToMoveToAccount =
-        _supportMoveToAccount &&
+        _context == DetailsContext::kGeneral &&
         password_manager::features_util::IsOptedInForAccountStorage(
             _prefService, _syncService) &&
         ShouldShowLocalOnlyIcon(credential, _syncService);
@@ -408,11 +468,15 @@ using base::SysNSStringToUTF16;
   }
 }
 
-- (absl::optional<password_manager::CredentialUIEntry>)
-    conflictingAccountPassword:(PasswordDetails*)password {
+// Returns a credential that a) is saved in the user account, and b) has the
+// same website/username as `password`, but a different password value.
+- (absl::optional<CredentialUIEntry>)conflictingAccountPassword:
+    (PasswordDetails*)password {
+  // All credentials for the same website are in `_credentials` due to password
+  // grouping. So it's enough to search that reduced list and not all saved
+  // passwords.
   auto it = base::ranges::find_if(
-      _credentials,
-      [password](const password_manager::CredentialUIEntry& credential) {
+      _credentials, [password](const CredentialUIEntry& credential) {
         return credential.stored_in.contains(
                    password_manager::PasswordForm::Store::kAccountStore) &&
                base::SysNSStringToUTF8(password.signonRealm) ==

@@ -17,6 +17,7 @@
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/barrier_closure.h"
+#include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/functional/bind.h"
@@ -91,9 +92,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_parameters.h"
 #include "chromeos/ash/components/cryptohome/cryptohome_util.h"
+#include "chromeos/ash/components/dbus/hiberman/hiberman_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
-#include "chromeos/ash/components/hibernate/buildflags.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/login/auth/public/auth_failure.h"
 #include "chromeos/ash/components/login/auth/public/key.h"
@@ -127,13 +128,11 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/user_activity/user_activity_detector.h"
+#include "ui/base/user_activity/user_activity_observer.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 #include "ui/views/widget/widget.h"
-
-#if BUILDFLAG(ENABLE_HIBERNATE)
-#include "chromeos/ash/components/dbus/hiberman/hiberman_client.h"  // nogncheck
-#endif
 
 // Enable VLOG level 1.
 #undef ENABLED_VLOG_LEVEL
@@ -383,6 +382,12 @@ ExistingUserController::ExistingUserController()
                           base::Unretained(this)));
 
   observed_user_manager_.Observe(user_manager::UserManager::Get());
+
+  if (ui::UserActivityDetector::Get()) {
+    ui::UserActivityDetector::Get()->AddObserver(this);
+  } else {
+    CHECK_IS_TEST();
+  }
 }
 
 void ExistingUserController::Init(const user_manager::UserList& users) {
@@ -457,8 +462,11 @@ void ExistingUserController::UpdateLoginDisplay(
   } else {
     sync_token_checkers_.reset();
   }
-  bool show_guest = user_manager->IsGuestSessionAllowed();
-  GetLoginDisplay()->Init(login_users, show_guest);
+  if (LoginScreen::Get()) {
+    LoginScreen::Get()->SetAllowLoginAsGuest(
+        user_manager->IsGuestSessionAllowed());
+  }
+  GetLoginDisplay()->Init(login_users);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -495,7 +503,12 @@ void ExistingUserController::Observe(
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, private:
 
-ExistingUserController::~ExistingUserController() = default;
+ExistingUserController::~ExistingUserController() {
+  ui::UserActivityDetector* activity_detector = ui::UserActivityDetector::Get();
+  if (activity_detector) {
+    activity_detector->RemoveObserver(this);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, LoginDisplay::Delegate implementation:
@@ -626,6 +639,7 @@ void ExistingUserController::PerformLogin(
 void ExistingUserController::ContinuePerformLogin(
     LoginPerformer::AuthorizationMode auth_mode,
     std::unique_ptr<UserContext> user_context) {
+  CHECK(login_performer_);
   login_performer_->LoginAuthenticated(std::move(user_context));
 }
 
@@ -696,6 +710,7 @@ void ExistingUserController::ShowKioskEnableScreen() {
 void ExistingUserController::ShowEncryptionMigrationScreen(
     std::unique_ptr<UserContext> user_context,
     EncryptionMigrationMode migration_mode) {
+  CHECK(login_performer_);
   GetLoginDisplayHost()->GetSigninUI()->StartEncryptionMigration(
       std::move(user_context), migration_mode,
       base::BindOnce(&ExistingUserController::ContinuePerformLogin,
@@ -710,6 +725,7 @@ void ExistingUserController::ShowTPMError() {
 
 void ExistingUserController::ShowPasswordChangedDialogLegacy(
     const UserContext& user_context) {
+  CHECK(login_performer_);
   VLOG(1) << "Show password changed dialog"
           << ", count=" << login_performer_->password_changed_callback_count();
 
@@ -804,6 +820,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
 
   // Login performer will be gone so cache this value to use
   // once profile is loaded.
+  CHECK(login_performer_);
   password_changed_ = login_performer_->password_changed();
   auth_mode_ = login_performer_->auth_mode();
 
@@ -843,6 +860,7 @@ void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
   //                          Regular        SAML
   //  /ServiceLogin              T            T
   //  /ChromeOsEmbeddedSetup     F            T
+  CHECK(login_performer_);
   const bool has_auth_cookies =
       login_performer_->auth_mode() ==
           LoginPerformer::AuthorizationMode::kExternal &&
@@ -1066,6 +1084,7 @@ void ExistingUserController::OnOldEncryptionDetected(
     bool has_incomplete_migration) {
   absl::optional<EncryptionMigrationMode> encryption_migration_mode =
       GetEncryptionMigrationMode(*user_context, has_incomplete_migration);
+  CHECK(login_performer_);
   if (!encryption_migration_mode.has_value()) {
     ContinuePerformLoginWithoutMigration(login_performer_->auth_mode(),
                                          std::move(user_context));
@@ -1183,6 +1202,7 @@ user_manager::UserList ExistingUserController::ExtractLoginUsers(
 
 void ExistingUserController::LoginAuthenticated(
     std::unique_ptr<UserContext> user_context) {
+  CHECK(login_performer_);
   login_performer_->LoginAuthenticated(std::move(user_context));
 }
 
@@ -1352,7 +1372,7 @@ void ExistingUserController::ConfigureAutoLogin() {
   }
 }
 
-void ExistingUserController::ResetAutoLoginTimer() {
+void ExistingUserController::OnUserActivity(const ui::Event* event) {
   // Only restart the auto-login timer if it's already running.
   if (auto_login_timer_ && auto_login_timer_->IsRunning()) {
     StopAutoLoginTimer();
@@ -1573,9 +1593,10 @@ void ExistingUserController::DoCompleteLogin(
   user_manager::KnownUser known_user(g_browser_process->local_state());
   std::string device_id = known_user.GetDeviceId(user_context.GetAccountId());
   if (device_id.empty()) {
-    bool is_ephemeral = ChromeUserManager::Get()->AreEphemeralUsersEnabled() &&
-                        user_context.GetAccountId() !=
-                            ChromeUserManager::Get()->GetOwnerAccountId();
+    const bool is_ephemeral = ChromeUserManager::Get()->IsEphemeralAccountId(
+                                  user_context.GetAccountId()) &&
+                              user_context.GetAccountId() !=
+                                  ChromeUserManager::Get()->GetOwnerAccountId();
     device_id = GenerateSigninScopedDeviceId(is_ephemeral);
   }
   user_context.SetDeviceId(device_id);

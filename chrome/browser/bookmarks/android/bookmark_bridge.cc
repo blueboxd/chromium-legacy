@@ -20,10 +20,10 @@
 #include "base/containers/stack.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/i18n/string_compare.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/uuid.h"
 #include "chrome/android/chrome_jni_headers/BookmarkBridge_jni.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/reading_list/reading_list_manager_factory.h"
@@ -260,11 +260,11 @@ void BookmarkBridge::LoadFakePartnerBookmarkShimForTesting(
       PartnerBookmarksReader::CreatePartnerBookmarksRootForTesting();
   BookmarkNode* partner_bookmark_a =
       root_partner_node->Add(std::make_unique<BookmarkNode>(
-          1, base::GUID::GenerateRandomV4(), GURL("http://www.a.com")));
+          1, base::Uuid::GenerateRandomV4(), GURL("http://www.a.com")));
   partner_bookmark_a->SetTitle(u"Partner Bookmark A");
   BookmarkNode* partner_bookmark_b =
       root_partner_node->Add(std::make_unique<BookmarkNode>(
-          2, base::GUID::GenerateRandomV4(), GURL("http://www.b.com")));
+          2, base::Uuid::GenerateRandomV4(), GURL("http://www.b.com")));
   partner_bookmark_b->SetTitle(u"Partner Bookmark B");
   partner_bookmarks_shim_->SetPartnerBookmarksRoot(
       std::move(root_partner_node));
@@ -272,7 +272,7 @@ void BookmarkBridge::LoadFakePartnerBookmarkShimForTesting(
   DCHECK(partner_bookmarks_shim_->IsLoaded());
 }
 
-ScopedJavaLocalRef<jobject> BookmarkBridge::GetBookmarkByID(
+ScopedJavaLocalRef<jobject> BookmarkBridge::GetBookmarkById(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jlong id,
@@ -289,7 +289,7 @@ bool BookmarkBridge::IsDoingExtensiveChanges(JNIEnv* env,
   return bookmark_model_->IsDoingExtensiveChanges();
 }
 
-void BookmarkBridge::GetTopLevelFolderParentIDs(
+void BookmarkBridge::GetTopLevelFolderParentIds(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_result_obj) {
@@ -299,7 +299,7 @@ void BookmarkBridge::GetTopLevelFolderParentIDs(
       GetBookmarkType(bookmark_model_->root_node()));
 }
 
-void BookmarkBridge::GetTopLevelFolderIDs(
+void BookmarkBridge::GetTopLevelFolderIds(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean get_special,
@@ -475,7 +475,7 @@ BookmarkBridge::GetBookmarkGuidByIdForTesting(
   const BookmarkNode* node = GetNodeByID(id, type);
   DCHECK(node) << "Bookmark with id " << id << " doesn't exist.";
   return base::android::ConvertUTF8ToJavaString(
-      env, node->guid().AsLowercaseString());
+      env, node->uuid().AsLowercaseString());
 }
 
 jint BookmarkBridge::GetChildCount(JNIEnv* env,
@@ -488,7 +488,7 @@ jint BookmarkBridge::GetChildCount(JNIEnv* env,
   return static_cast<jint>(node->children().size());
 }
 
-void BookmarkBridge::GetChildIDs(JNIEnv* env,
+void BookmarkBridge::GetChildIds(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
                                  jlong id,
                                  jint type,

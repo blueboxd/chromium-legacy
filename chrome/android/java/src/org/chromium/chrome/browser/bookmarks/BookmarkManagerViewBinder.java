@@ -5,11 +5,17 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.annotation.SuppressLint;
+import android.content.res.Resources;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.DimenRes;
+import androidx.recyclerview.widget.ItemTouchHelper;
+
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.bookmarks.BookmarkListEntry.SectionHeaderData;
 import org.chromium.chrome.browser.ui.signin.PersonalizedSigninPromoView;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter;
@@ -17,6 +23,7 @@ import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.Highl
 import org.chromium.components.browser_ui.widget.highlight.ViewHighlighter.HighlightShape;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter.ViewHolder;
 
 /** Responsible for binding views to their properties. */
 class BookmarkManagerViewBinder {
@@ -33,13 +40,16 @@ class BookmarkManagerViewBinder {
 
     static void bindSectionHeaderView(PropertyModel model, View view, PropertyKey key) {
         if (key == BookmarkManagerProperties.BOOKMARK_LIST_ENTRY) {
+            Resources resources = view.getResources();
             BookmarkListEntry bookmarkListEntry =
                     model.get(BookmarkManagerProperties.BOOKMARK_LIST_ENTRY);
-            TextView title = view.findViewById(org.chromium.chrome.R.id.title);
-            title.setText(bookmarkListEntry.getHeaderTitle());
-            if (bookmarkListEntry.getSectionHeaderData().topPadding > 0) {
+            TextView title = view.findViewById(R.id.title);
+            SectionHeaderData sectionHeaderData = bookmarkListEntry.getSectionHeaderData();
+            title.setText(resources.getText(sectionHeaderData.titleRes));
+            final @DimenRes int topPaddingRes = sectionHeaderData.topPaddingRes;
+            if (topPaddingRes != Resources.ID_NULL) {
                 title.setPaddingRelative(title.getPaddingStart(),
-                        bookmarkListEntry.getSectionHeaderData().topPadding, title.getPaddingEnd(),
+                        resources.getDimensionPixelSize(topPaddingRes), title.getPaddingEnd(),
                         title.getPaddingBottom());
             }
         }
@@ -66,17 +76,6 @@ class BookmarkManagerViewBinder {
             BookmarkId id = model.get(BookmarkManagerProperties.BOOKMARK_ID);
             row.setBookmarkId(id, model.get(BookmarkManagerProperties.LOCATION),
                     model.get(BookmarkManagerProperties.IS_FROM_FILTER_VIEW));
-        } else if (key == BookmarkManagerProperties.ITEM_TOUCH_HELPER) {
-            // Also uses BookmarkManagerProperties.VIEW_HOLDER.
-            BookmarkRow row = ((BookmarkRow) view);
-            row.setDragHandleOnTouchListener((v, event) -> {
-                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    model.get(BookmarkManagerProperties.ITEM_TOUCH_HELPER)
-                            .startDrag(model.get(BookmarkManagerProperties.VIEW_HOLDER));
-                }
-                // This callback consumed the click action (don't activate menu).
-                return true;
-            });
         } else if (key == BookmarkManagerProperties.IS_HIGHLIGHTED) {
             // Also uses key == BookmarkManagerProperties.CLEAR_HIGHLIGHT.
             // Turn on the highlight for the currently highlighted bookmark.
@@ -103,5 +102,16 @@ class BookmarkManagerViewBinder {
                         .onResult(BookmarkId.SHOPPING_FOLDER);
             });
         }
+    }
+
+    @SuppressWarnings("ClickableViewAccessibility")
+    static void bindDraggableViewHolder(ViewHolder viewHolder, ItemTouchHelper itemTouchHelper) {
+        BookmarkRow row = (BookmarkRow) viewHolder.itemView;
+        row.setDragHandleOnTouchListener((v, event) -> {
+            if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                itemTouchHelper.startDrag(viewHolder);
+            }
+            return true;
+        });
     }
 }

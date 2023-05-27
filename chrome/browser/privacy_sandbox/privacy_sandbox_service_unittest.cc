@@ -1197,6 +1197,11 @@ TEST_F(PrivacySandboxServiceTest, PromptActionsUMAActions) {
                    "Settings.PrivacySandbox.Notice.OpenedSettings"));
 
   privacy_sandbox_service()->PromptActionOccurred(
+      PrivacySandboxService::PromptAction::kRestrictedNoticeOpenSettings);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.RestrictedNotice.OpenedSettings"));
+
+  privacy_sandbox_service()->PromptActionOccurred(
       PrivacySandboxService::PromptAction::kNoticeAcknowledge);
   EXPECT_EQ(1, user_action_tester.GetActionCount(
                    "Settings.PrivacySandbox.Notice.Acknowledged"));
@@ -2375,6 +2380,9 @@ TEST_F(PrivacySandboxServiceTest, SampleFpsData) {
   EXPECT_EQ(u"google.com",
             privacy_sandbox_service()->GetFirstPartySetOwnerForDisplay(
                 GURL("https://youtube.com")));
+  EXPECT_EQ(u"münchen.de",
+            privacy_sandbox_service()->GetFirstPartySetOwnerForDisplay(
+                GURL("https://muenchen.de")));
   EXPECT_EQ(absl::nullopt,
             privacy_sandbox_service()->GetFirstPartySetOwnerForDisplay(
                 GURL("https://example.com")));
@@ -3633,6 +3641,42 @@ TEST_F(PrivacySandboxServiceM1DelayCreation,
                        prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate));
 }
 
+TEST_F(PrivacySandboxServiceM1DelayCreation,
+       PromptSuppressReasonClearedWhenRestrictedNoticeEnabled) {
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings4,
+      {{"restricted-notice", "true"}});
+
+  prefs()->SetInteger(
+      prefs::kPrivacySandboxM1PromptSuppressed,
+      static_cast<int>(
+          PrivacySandboxService::PromptSuppressedReason::kRestricted));
+
+  CreateService();
+
+  EXPECT_EQ(
+      static_cast<int>(PrivacySandboxService::PromptSuppressedReason::kNone),
+      prefs()->GetValue(prefs::kPrivacySandboxM1PromptSuppressed));
+}
+
+TEST_F(PrivacySandboxServiceM1DelayCreation,
+       PromptSuppressReasonNotClearedWhenRestrictedNoticeDisabled) {
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings4,
+      {{"restricted-notice", "false"}});
+
+  prefs()->SetInteger(
+      prefs::kPrivacySandboxM1PromptSuppressed,
+      static_cast<int>(
+          PrivacySandboxService::PromptSuppressedReason::kRestricted));
+
+  CreateService();
+
+  EXPECT_EQ(static_cast<int>(
+                PrivacySandboxService::PromptSuppressedReason::kRestricted),
+            prefs()->GetValue(prefs::kPrivacySandboxM1PromptSuppressed));
+}
+
 class PrivacySandboxServiceM1DelayCreationRestricted
     : public PrivacySandboxServiceM1DelayCreation {
  public:
@@ -3677,6 +3721,24 @@ TEST_F(PrivacySandboxServiceM1DelayCreationRestricted,
                     prefs::kPrivacySandboxTopicsConsentLastUpdateReason)));
   EXPECT_EQ("", prefs()->GetString(
                     prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate));
+}
+
+TEST_F(PrivacySandboxServiceM1DelayCreationRestricted,
+       RestrictedEnabledDoesntClearAdMeasurementPref) {
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings4,
+      {{"restricted-notice", "true"}});
+
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1TopicsEnabled, true);
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1FledgeEnabled, true);
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled, true);
+
+  CreateService();
+
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxM1TopicsEnabled));
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxM1FledgeEnabled));
+  EXPECT_TRUE(
+      prefs()->GetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled));
 }
 
 class PrivacySandboxServiceM1PromptTest : public PrivacySandboxServiceM1Test {

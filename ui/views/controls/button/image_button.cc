@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -15,7 +16,10 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/highlight_path_generator.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
@@ -36,6 +40,7 @@ ImageButton::ImageButton(PressedCallback callback)
   // implementation is flipped horizontally so that the button's images are
   // mirrored when the UI directionality is right-to-left.
   SetFlipCanvasOnPaintForRTLUI(true);
+  views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
 }
 
 ImageButton::~ImageButton() = default;
@@ -149,6 +154,67 @@ void ImageButton::OnThemeChanged() {
   SchedulePaint();
 }
 
+// static
+std::unique_ptr<ImageButton> ImageButton::CreateIconButton(
+    PressedCallback callback,
+    const gfx::VectorIcon& icon,
+    const std::u16string& accessible_name,
+    MaterialIconStyle icon_style) {
+  const int kSmallIconSize = 14;
+  const int kLargeIconSize = 20;
+  int icon_size = (icon_style == MaterialIconStyle::kLarge) ? kLargeIconSize
+                                                            : kSmallIconSize;
+  // Icon images have padding between the image and image border. To account
+  // for that padding, add a general padding value. This value might be
+  // incorrect depending on the icon image.
+  icon_size +=
+      LayoutProvider::Get()->GetDistanceMetric(DISTANCE_VECTOR_ICON_PADDING);
+
+  std::unique_ptr<ImageButton> icon_button =
+      std::make_unique<ImageButton>(callback);
+  icon_button->SetImageModel(
+      ButtonState::STATE_NORMAL,
+      ui::ImageModel::FromVectorIcon(icon, ui::kColorIcon, icon_size));
+  icon_button->SetImageModel(
+      ButtonState::STATE_HOVERED,
+      ui::ImageModel::FromVectorIcon(icon, ui::kColorIcon, icon_size));
+  icon_button->SetImageModel(
+      ButtonState::STATE_PRESSED,
+      ui::ImageModel::FromVectorIcon(icon, ui::kColorIcon, icon_size));
+  icon_button->SetImageModel(
+      ButtonState::STATE_DISABLED,
+      ui::ImageModel::FromVectorIcon(icon, ui::kColorIconDisabled, icon_size));
+
+  const gfx::Insets target_insets =
+      LayoutProvider::Get()->GetInsetsMetric(InsetsMetric::INSETS_ICON_BUTTON);
+  icon_button->SetBorder(views::CreateEmptyBorder(target_insets));
+
+  const int kSmallIconButtonSize = 24;
+  const int kLargeIconButtonSize = 32;
+  int button_size = (icon_style == MaterialIconStyle::kLarge)
+                        ? kLargeIconButtonSize
+                        : kSmallIconButtonSize;
+  const int highlight_radius = LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kMaximum, gfx::Size(button_size, button_size));
+  views::InstallRoundRectHighlightPathGenerator(
+      icon_button.get(), gfx::Insets(), highlight_radius);
+
+  InkDrop::Get(icon_button.get())->SetMode(views::InkDropHost::InkDropMode::ON);
+  icon_button->SetHasInkDropActionOnClick(true);
+  icon_button->SetShowInkDropWhenHotTracked(true);
+  InkDrop::Get(icon_button.get())
+      ->SetBaseColorCallback(base::BindRepeating(
+          [](ImageButton* host) {
+            return host->GetColorProvider()->GetColor(
+                ui::kColorSysOnSurfaceSubtle);
+          },
+          icon_button.get()));
+
+  icon_button->SetAccessibleName(accessible_name);
+
+  return icon_button;
+}
+
 void ImageButton::PaintButtonContents(gfx::Canvas* canvas) {
   // TODO(estade|tdanderson|bruthig): The ink drop layer should be positioned
   // behind the button's image which means the image needs to be painted to its
@@ -226,8 +292,7 @@ const gfx::Point ImageButton::ComputeImagePaintPosition(
 // ToggleImageButton, public:
 
 ToggleImageButton::ToggleImageButton(PressedCallback callback)
-    : ImageButton(std::move(callback)) {
-}
+    : ImageButton(std::move(callback)) {}
 
 ToggleImageButton::~ToggleImageButton() = default;
 
@@ -336,10 +401,11 @@ void ToggleImageButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (!toggled_)
     return;
 
-  if (!toggled_accessible_name_.empty())
+  if (!toggled_accessible_name_.empty()) {
     node_data->SetName(toggled_accessible_name_);
-  else if (!toggled_tooltip_text_.empty())
+  } else if (!toggled_tooltip_text_.empty()) {
     node_data->SetName(toggled_tooltip_text_);
+  }
 
   // Use the visual pressed image as a cue for making this control into an
   // accessible toggle button.

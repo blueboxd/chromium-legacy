@@ -8,16 +8,17 @@
 
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "base/guid.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_optimization_guide.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/field_filler.h"
@@ -129,6 +130,17 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
   for (auto& suggestion : suggestions) {
     suggestion.frontend_id = MakeFrontendIdFromBackendId(
         suggestion.GetPayload<Suggestion::BackendId>());
+
+    // Populate feature IPH for externally created account profiles.
+    const AutofillProfile* profile = personal_data_->GetProfileByGUID(
+        suggestion.GetPayload<Suggestion::BackendId>().value());
+    if (profile && profile->source() == AutofillProfile::Source::kAccount &&
+        profile->initial_creator_id() !=
+            AutofillProfile::kInitialCreatorOrModifierChrome) {
+      suggestion.feature_for_iph =
+          feature_engagement::
+              kIPHAutofillExternalAccountProfileSuggestionFeature.name;
+    }
   }
 
   return suggestions;
@@ -384,7 +396,8 @@ std::u16string AutofillSuggestionGenerator::GetDisplayNicknameForCreditCard(
   // prefer to use the nickname of a local card.
   std::vector<CreditCard*> candidates = personal_data_->GetCreditCards();
   for (CreditCard* candidate : candidates) {
-    if (candidate->guid() != card.guid() && candidate->HasSameNumberAs(card) &&
+    if (candidate->guid() != card.guid() &&
+        candidate->MatchingCardDetails(card) &&
         candidate->HasNonEmptyValidNickname()) {
       return candidate->nickname();
     }
@@ -395,7 +408,7 @@ std::u16string AutofillSuggestionGenerator::GetDisplayNicknameForCreditCard(
 
 int AutofillSuggestionGenerator::MakeFrontendIdFromBackendId(
     const Suggestion::BackendId& cc_or_address_backend_id) {
-  if (!base::IsValidGUID(*cc_or_address_backend_id)) {
+  if (!base::Uuid::ParseCaseInsensitive(*cc_or_address_backend_id).is_valid()) {
     return 0;
   }
 

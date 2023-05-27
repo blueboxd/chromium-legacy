@@ -17,15 +17,17 @@
 <translation id="1278833599417554002">Ponovo pokrenite da biste ažurirali &amp;Chrome</translation>
 <translation id="1302523850133262269">Pričekajte da Chrome instalira najnovija ažuriranja sustava.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> zahtijeva da pročitate i prihvatite sljedeće uvjete pružanja usluge prije upotrebe ovog uređaja. Ti uvjeti ne predstavljaju proširenje, izmjenu ili ograničenje uvjeta ChromeOS Flexa.</translation>
+<translation id="1341711321000856656">Možete se prebaciti da biste vidjeli zaporke s nekog drugog profila na Chromeu</translation>
 <translation id="1363996462118479832">Chrome OS nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
 <translation id="137466361146087520">Beta verzija preglednika Chrome</translation>
 <translation id="1399397803214730675">Na ovom računalu već postoji novija verzija programa Google Chrome. Ako softver ne radi, deinstalirajte Google Chrome i pokušajte ponovo.</translation>
 <translation id="139993653570221430">Uvijek se možete predomisliti i promijeniti postavke u Chromeu. Probe se prikazuju uz trenutačan način prikazivanja oglasa, stoga nećete odmah vidjeti promjene.</translation>
+<translation id="1425903838053942728">{COUNT,plural, =0{Chrome je ažuriran. Možete upotrijebiti najnoviju verziju čim ponovno pokrenete preglednik. Nakon toga vaše će se trenutačne kartice ponovno otvoriti.}=1{Chrome je ažuriran. Možete upotrijebiti najnoviju verziju čim ponovno pokrenete preglednik. Nakon toga vaše će se trenutačne kartice ponovno otvoriti. Anonimni se prozor neće ponovno otvoriti.}one{Chrome je ažuriran. Možete upotrijebiti najnoviju verziju čim ponovno pokrenete preglednik. Nakon toga vaše će se trenutačne kartice ponovno otvoriti. Vaš # anonimni prozor neće se ponovno otvoriti.}few{Chrome je ažuriran. Možete upotrijebiti najnoviju verziju čim ponovno pokrenete preglednik. Nakon toga vaše će se trenutačne kartice ponovno otvoriti. Vaša # anonimna prozora neće se ponovno otvoriti.}other{Chrome je ažuriran. Možete upotrijebiti najnoviju verziju čim ponovno pokrenete preglednik. Nakon toga vaše će se trenutačne kartice ponovno otvoriti. Vaših # anonimnih prozora neće se ponovno otvoriti.}}</translation>
 <translation id="1434626383986940139">Aplikacije kanala Chrome Canary</translation>
+<translation id="1492280395845991349">Ponovno pokrenite da biste dovršili ažuriranje Chromea</translation>
 <translation id="1507198376417198979">Prilagodite svoj novi profil u Chromeu</translation>
 <translation id="1516530951338665275">Google Chrome treba pristup Bluetoothu za nastavak 
  uparivanja. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
-<translation id="1535597783576881392">Ovaj vodič pruža vam uvid u vaše odabire kako bi Chrome funkcionirao kako želite</translation>
 <translation id="1547295885616600893">Chrome OS omogućen je dodatnim <ph name="BEGIN_LINK_CROS_OSS" />softverom utemeljenim na otvorenom izvornom kodu<ph name="END_LINK_CROS_OSS" />.</translation>
 <translation id="1553358976309200471">Ažuriraj Chrome</translation>
 <translation id="1583073672411044740">Korisnik <ph name="EXISTING_USER" /> već je prijavljen na taj profil u Chromeu. Izradit će se novi profil u Chromeu za <ph name="USER_EMAIL_ADDRESS" /></translation>
@@ -66,7 +68,6 @@
 <translation id="2131230230468101642">Da bismo zaštitili vašu privatnost, automatski brišemo vaše interese starije od četiri tjedna. Tijekom vašeg daljnjeg pregledavanja neki se interes može ponovo pojaviti na popisu. Možete i ukloniti interese za koje ne želite da ih Chrome razmatra.</translation>
 <translation id="2139300032719313227">Ponovo pokrenite Chrome OS</translation>
 <translation id="2151406531797534936">Sada ponovo pokrenite Chrome</translation>
-<translation id="2163996651553460171">Iskoristite sve prednosti Chromea</translation>
 <translation id="2174917724755363426">Instaliranje nije dovršeno. Jeste li sigurni da ga želite otkazati?</translation>
 <translation id="223889379102603431">informacije o tome kako Chrome upravlja korijenskim certifikatima</translation>
 <translation id="2258103955319320201">Da biste mogli pristupiti svojim sadržajima u pregledniku Chrome na svim svojim uređajima, prijavite se i zatim uključite sinkronizaciju.</translation>
@@ -93,6 +94,7 @@
 <translation id="2652691236519827073">Otvori vezu na novoj &amp;kartici Chromea</translation>
 <translation id="2665296953892887393">Pomognite nam poboljšati Google Chrome šaljući izvješća o rušenju programa i <ph name="UMA_LINK" /> Googleu</translation>
 <translation id="2689103672227170538">Ovo proširenje promijenilo je stranicu koja se prikazuje prilikom pokretanja Chromea.</translation>
+<translation id="2712234843277364121">Ponovno pokrenite da biste ažurirali – kartice će se ponovno otvoriti</translation>
 <translation id="2742320827292110288">Upozorenje: Google Chrome ne može onemogućiti proširenjima da bilježe vašu povijest pregledavanja. Da biste onemogućili to proširenje u anonimnom načinu, poništite odabir te opcije.</translation>
 <translation id="2765403129283291972">Chrome treba dopuštenje za pristup mikrofonu za ovu web-lokaciju</translation>
 <translation id="2770231113462710648">Promijeni zadani preglednik na:</translation>
@@ -124,7 +126,6 @@
 <translation id="3140883423282498090">Vaše izmjene stupit će na snagu sljedeći put kada se ponovo pokrene Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikacije sustava Chrome</translation>
 <translation id="3169523567916669830">Tijekom probi možete vidjeti i ukloniti teme koje web-lokacije koriste da bi vam prikazivale oglase. Chrome procjenjuje vaše interese na temelju vaše nedavne povijesti pregledavanja.</translation>
-<translation id="3211604354460514046">{NUM_DEVICES,plural, =1{Google Chrome povezan je s HID uređajem}one{Google Chrome povezan je s HID uređajima}few{Google Chrome povezan je s HID uređajima}other{Google Chrome povezan je s HID uređajima}}</translation>
 <translation id="3245429137663807393">Ako dijelite i izvješća o upotrebi Chromea, ta izvješća uključuju URL-ove koje posjećujete</translation>
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3286538390144397061">Ponovo pokreni sad</translation>
@@ -276,6 +277,7 @@
 <translation id="6365489425007284765">{COUNT,plural, =1{Kad se preglednik ne koristi jednu minutu, vaš administrator automatski briše podatke o pregledavanju. To može uključivati povijest, automatsko popunjavanje i preuzimanja. Vaše postojeće kartice ostat će otvorene.}one{Kad se preglednik ne koristi # minutu, vaš administrator automatski briše podatke o pregledavanju. To može uključivati povijest, automatsko popunjavanje i preuzimanja. Vaše postojeće kartice ostat će otvorene.}few{Kad se preglednik ne koristi # minute, vaš administrator automatski briše podatke o pregledavanju. To može uključivati povijest, automatsko popunjavanje i preuzimanja. Vaše postojeće kartice ostat će otvorene.}other{Kad se preglednik ne koristi # minuta, vaš administrator automatski briše podatke o pregledavanju. To može uključivati povijest, automatsko popunjavanje i preuzimanja. Vaše postojeće kartice ostat će otvorene.}}</translation>
 <translation id="6412673304250309937">Provjerava URL-ove s popisom nesigurnih web-lokacija pohranjenih u Chromeu. Ako neka web-lokacija pokuša ukrasti vašu zaporku ili ako preuzmete štetnu datoteku, Chrome također može poslati URL-ove, uključujući dijelove sadržaja web-stranice, Sigurnom pregledavanju.</translation>
 <translation id="6418662306461808273">Želite li prijeći na postojeći profil u Chromeu?</translation>
+<translation id="648319183876919572">Poboljšano sigurno pregledavanje pruža vam više zaštite od opasnih web-lokacija i preuzimanja</translation>
 <translation id="6493527311031785448">Google Chrome pokušava sljedeće: <ph name="AUTHENTICATION_PURPOSE" /></translation>
 <translation id="6506909944137591434">Chrome treba dopuštenje za fotoaparat kako bi mogao izraditi 3D kartu vašeg okruženja</translation>
 <translation id="6515495397637126556"><ph name="PAGE_TITLE" /> – Google Chrome Dev</translation>
@@ -406,8 +408,10 @@ Dopuštenja koja ste već dali web-lokacijama i aplikacijama mogu se primijeniti
 <translation id="8989968390305463310">Vaša povijest pregledavanja utječe na oglase koji vam se prikazuju i interese procijenjene u nastavku. Da bi zaštitio vašu privatnost, Chrome automatski kontinuirano briše vaše interese svakog mjeseca. Interesi se mogu osvježiti ako ih ne uklonite.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Dostupno je ažuriranje Chromea}=1{Dostupno je ažuriranje Chromea}one{Ažuriranje Chromea dostupno je # dana}few{Ažuriranje Chromea dostupno je # dana}other{Ažuriranje Chromea dostupno je # dana}}</translation>
 <translation id="9053892488859122171">Sustav ChromeOS Flex</translation>
+<translation id="9054037008353851982">Ponovno pokrenite da biste ažurirali – kartice će se ponovno otvoriti</translation>
 <translation id="911206726377975832">Izbrisati i podatke o pregledavanju?</translation>
 <translation id="9138603949443464873">Da bi se vaše promjene primijenile, ponovo pokrenite Chrome</translation>
+<translation id="9190003950176692491">{NUM_DEVICES,plural, =0{Google Chrome pristupao je HID uređaju}=1{Google Chrome pristupa HID uređaju}one{Google Chrome pristupa HID uređajima}few{Google Chrome pristupa HID uređajima}other{Google Chrome pristupa HID uređajima}}</translation>
 <translation id="9195993889682885387">Chrome može procijeniti vaše interese na temelju vaše povijesti pregledavanja iz posljednjih nekoliko tjedana. Te informacije ostaju na vašem uređaju.</translation>
 <translation id="919706545465235479">Ažurirajte Chrome da bi se pokrenula sinkronizacija</translation>
 <translation id="922152298093051471">Prilagodi Chrome</translation>

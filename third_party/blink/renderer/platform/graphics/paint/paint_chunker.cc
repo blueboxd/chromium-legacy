@@ -248,9 +248,13 @@ void PaintChunker::CreateScrollHitTestChunk(
     // composited scrolling and should not have a scroll offset node.
     DCHECK(!scroll_translation);
   } else if (id.type == DisplayItem::Type::kScrollHitTest) {
-    DCHECK(scroll_translation);
-    // The scroll offset transform node should have an associated scroll node.
-    DCHECK(scroll_translation->ScrollNode());
+    // We might not have a scroll_translation node.  This indicates that
+    // (due to complex pointer-events cases) we need to do main thread
+    // scroll hit testing for this scroller.
+    if (scroll_translation) {
+      // The scroll offset transform node should have an associated scroll node.
+      DCHECK(scroll_translation->ScrollNode());
+    }
   } else {
     NOTREACHED();
   }
@@ -265,11 +269,6 @@ void PaintChunker::CreateScrollHitTestChunk(
   auto& hit_test_data = chunk.EnsureHitTestData();
   hit_test_data.scroll_translation = scroll_translation;
   hit_test_data.scroll_hit_test_rect = rect;
-  if (id.type == DisplayItem::Type::kScrollbarHitTest ||
-      id.type == DisplayItem::Type::kResizerScrollHitTest) {
-    hit_test_data.touch_action_rects.push_back(
-        TouchActionRect{rect, TouchAction::kNone});
-  }
   SetWillForceNewChunk(true);
 }
 

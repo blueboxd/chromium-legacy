@@ -3,14 +3,16 @@
 // found in the LICENSE file.
 
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_view_controller.h"
+
+#import <algorithm>
+
 #import "base/check.h"
-#import "base/cxx17_backports.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/shared/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/shared/ui/util/attributed_string_util.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_constants.h"
 #import "ios/chrome/browser/ui/ntp/incognito/incognito_view.h"
 #import "ios/chrome/browser/ui/ntp/incognito/revamped_incognito_view.h"
@@ -340,7 +342,7 @@ const CGFloat kTitleLabelLineHeightMultiple = 1.3;
                           : kNavigationBarFadeInKeyFrame1;
   CGFloat opacity =
       (self.scrollViewContentOffsetY - keyFrame0) / (keyFrame1 - keyFrame0);
-  opacity = base::clamp(opacity, 0.0, 1.0, std::less_equal<>());
+  opacity = std::clamp(opacity, 0.0, 1.0, std::less_equal<>());
 
   UIColor* backgroundColor =
       [UIColor colorNamed:kGroupedPrimaryBackgroundColor];

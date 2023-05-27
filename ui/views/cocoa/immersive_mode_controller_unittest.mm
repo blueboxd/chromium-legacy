@@ -127,30 +127,6 @@ TEST_F(CocoaImmersiveModeControllerTest, ImmersiveModeController) {
   EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 2u);
 }
 
-// Test that child windows in immersive mode properly balance the titlebar lock
-// count.
-TEST_F(CocoaImmersiveModeControllerTest, ChildWindowTitlebarLock) {
-  // Controller under test.
-  auto immersive_mode_controller = std::make_unique<ImmersiveModeController>(
-      browser(), overlay(), base::DoNothing());
-  immersive_mode_controller->Enable();
-
-  // Create a popup.
-  CocoaTestHelperWindow* popup = [[CocoaTestHelperWindow alloc] init];
-  EXPECT_EQ(popup.isVisible, NO);
-  EXPECT_EQ(immersive_mode_controller->titlebar_lock_count(), 0);
-
-  // Add the popup as a child of overlay.
-  [overlay() addChildWindow:popup ordered:NSWindowAbove];
-  EXPECT_EQ(popup.isVisible, YES);
-  EXPECT_EQ(immersive_mode_controller->titlebar_lock_count(), 1);
-
-  // Make sure that closing the popup results in the titlebar lock count
-  // decrementing.
-  [popup close];
-  EXPECT_EQ(immersive_mode_controller->titlebar_lock_count(), 0);
-}
-
 // Test that reveal locks work as expected.
 TEST_F(CocoaImmersiveModeControllerTest, RevealLock) {
   // Controller under test.
@@ -193,59 +169,6 @@ TEST_F(CocoaImmersiveModeControllerTest, RevealLock) {
       browser()
           .titlebarAccessoryViewControllers.firstObject.fullScreenMinHeight,
       0);
-}
-
-// Test that child windows in immersive mode properly balance the titlebar lock
-// count.
-TEST_F(CocoaImmersiveModeControllerTest,
-       HiddenTitleBarAccessoryViewController) {
-  // Controller under test.
-  auto immersive_mode_controller = std::make_unique<ImmersiveModeController>(
-      browser(), overlay(), base::DoNothing());
-  immersive_mode_controller->Enable();
-
-  EXPECT_EQ(immersive_mode_controller->titlebar_lock_count(), 0);
-  immersive_mode_controller->TitlebarLock();
-  EXPECT_EQ(immersive_mode_controller->titlebar_lock_count(), 1);
-
-  // One controller for Top Chrome, one for an AppKit workaround
-  // (https://crbug.com/1369643).
-  // The titlebar is not fully visible, the pinning clear contoller should not
-  // be present.
-  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 2u);
-
-  immersive_mode_controller->SetTitlebarFullyVisibleForTesting(true);
-  immersive_mode_controller->TitlebarLock();
-  EXPECT_EQ(immersive_mode_controller->titlebar_lock_count(), 2);
-
-  // The titlebar is fully visible, the pinning clear contoller should now be
-  // present.
-  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 3u);
-
-  // Ensure the clear controller's view covers the browser view.
-  NSTitlebarAccessoryViewController* clear_controller =
-      browser().titlebarAccessoryViewControllers[2];
-  EXPECT_TRUE(clear_controller);
-
-  NSTitlebarAccessoryViewController* thin_controller =
-      browser().titlebarAccessoryViewControllers[1];
-  EXPECT_TRUE(thin_controller);
-
-  EXPECT_EQ(clear_controller.view.frame.size.height,
-            browser().contentView.frame.size.height -
-                thin_controller.view.frame.size.height);
-  EXPECT_EQ(clear_controller.view.frame.size.width,
-            browser().contentView.frame.size.width);
-
-  // There is still an outstanding lock, make sure we still have the clear
-  // controller.
-  immersive_mode_controller->TitlebarUnlock();
-  EXPECT_EQ(immersive_mode_controller->titlebar_lock_count(), 1);
-  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 3u);
-
-  immersive_mode_controller->TitlebarUnlock();
-  EXPECT_EQ(immersive_mode_controller->titlebar_lock_count(), 0);
-  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 2u);
 }
 
 // Test ImmersiveModeController titlebar frame KVO.
@@ -333,8 +256,9 @@ TEST_F(CocoaImmersiveModeControllerTest, TitlebarObserver) {
 // Test ImmersiveModeController toolbar visibility.
 TEST_F(CocoaImmersiveModeControllerTest, ToolbarVisibility) {
   // Controller under test.
-  auto immersive_mode_controller = std::make_unique<ImmersiveModeController>(
-      browser(), overlay(), base::DoNothing());
+  auto immersive_mode_controller =
+      std::make_unique<ImmersiveModeTabbedController>(
+          browser(), overlay(), tab_overlay(), base::DoNothing());
   immersive_mode_controller->Enable();
 
   // The controller will be hidden until the fullscreen transition is complete.
@@ -379,7 +303,7 @@ TEST_F(CocoaImmersiveModeControllerTest, Tabbed) {
   EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 2u);
 }
 
-// Test ImmersiveModeTabbedController construction and destruction.
+// Test ImmersiveModeTabbedController reveal lock tests.
 TEST_F(CocoaImmersiveModeControllerTest, TabbedRevealLock) {
   // Controller under test.
   auto immersive_mode_controller =
@@ -399,6 +323,48 @@ TEST_F(CocoaImmersiveModeControllerTest, TabbedRevealLock) {
   EXPECT_TRUE(browser().toolbar.visible);
   immersive_mode_controller->RevealUnlock();
   EXPECT_FALSE(browser().toolbar.visible);
+
+  // Make sure the visibility state doesn't change while a reveal lock is
+  // active.
+  immersive_mode_controller->UpdateToolbarVisibility(
+      mojom::ToolbarVisibilityStyle::kAlways);
+  EXPECT_TRUE(browser().toolbar.visible);
+  immersive_mode_controller->RevealLock();
+  immersive_mode_controller->UpdateToolbarVisibility(
+      mojom::ToolbarVisibilityStyle::kAutohide);
+  EXPECT_TRUE(browser().toolbar.visible);
+
+  // Make sure the visibility state updates after the last reveal lock has
+  // been released.
+  immersive_mode_controller->RevealUnlock();
+  EXPECT_FALSE(browser().toolbar.visible);
+}
+
+// Test ImmersiveModeTabbedController construction and destruction.
+TEST_F(CocoaImmersiveModeControllerTest, TabbedChildWindow) {
+  // Controller under test.
+  auto immersive_mode_controller =
+      std::make_unique<ImmersiveModeTabbedController>(
+          browser(), overlay(), tab_overlay(), base::DoNothing());
+  immersive_mode_controller->Enable();
+  immersive_mode_controller->FullscreenTransitionCompleted();
+
+  // Autohide top chrome.
+  immersive_mode_controller->UpdateToolbarVisibility(
+      mojom::ToolbarVisibilityStyle::kAutohide);
+
+  // Create a popup.
+  CocoaTestHelperWindow* popup = [[CocoaTestHelperWindow alloc] init];
+  EXPECT_EQ(immersive_mode_controller->reveal_lock_count(), 0);
+
+  // Add the popup as a child of tab_overlay.
+  [tab_overlay() addChildWindow:popup ordered:NSWindowAbove];
+  EXPECT_EQ(immersive_mode_controller->reveal_lock_count(), 1);
+
+  // Make sure that closing the popup results in the reveal lock count
+  // decrementing.
+  [popup close];
+  EXPECT_EQ(immersive_mode_controller->reveal_lock_count(), 0);
 }
 
 }  // namespace remote_cocoa

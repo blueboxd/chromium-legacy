@@ -574,10 +574,10 @@ int BrowserMainLoop::EarlyInitialization() {
   DCHECK(base::CurrentUIThread::IsSet());
   base::PlatformThread::SetCurrentThreadType(base::ThreadType::kCompositing);
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_ANDROID)
   // We use quite a few file descriptors for our IPC as well as disk the disk
-  // cache,and the default limit on the Mac is low (256), so bump it up.
+  // cache, and the default limit on Apple is low (256), so bump it up.
 
   // Same for Linux. The default various per distro, but it is 1024 on Fedora.
   // Low soft limits combined with liberal use of file descriptors means power
@@ -818,9 +818,10 @@ int BrowserMainLoop::PreCreateThreads() {
   // while avoiding doing so in unit tests by making it explicitly enabled here.
   GpuDataManagerImpl::GetInstance()->StartUmaTimer();
 
-#if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_IOS)
   // Single-process is an unsupported and not fully tested mode, so
-  // don't enable it for official Chrome builds (except on Android).
+  // don't enable it for official Chrome builds (except on Android and iOS).
   if (parsed_command_line_->HasSwitch(switches::kSingleProcess))
     RenderProcessHost::SetRunRendererInProcess(true);
 #endif

@@ -71,6 +71,11 @@ found in the LICENSE file.
     <!-- Sheet tab toolbar dimensions -->
     <dimen name="sheet_tab_toolbar_height">70dp</dimen>
 
+    <!-- Autofill address prompt dimensions -->
+    <dimen name="address_prompt_end_margin">16dp</dimen>
+    <dimen name="address_prompt_edit_button_size">48dp</dimen>
+    <dimen name="address_prompt_edit_button_padding">12dp</dimen>
+
     <!-- Autofill keyboard accessory dimensions -->
     <dimen name="keyboard_accessory_height_with_shadow">56dp</dimen>
     <dimen name="keyboard_accessory_sheet_height">330dp</dimen>
@@ -214,11 +219,13 @@ found in the LICENSE file.
     <dimen name="bookmark_list_view_padding_top">64dp</dimen>
     <dimen name="bookmark_dialog_toolbar_shadow_height">4dp</dimen>
     <dimen name="bookmark_reading_list_section_header_padding_top">15dp</dimen>
+    <!-- The size of the icon view, but not the size of the fetched image. -->
+    <dimen name="improved_bookmark_icon_size">48dp</dimen>
+    <!-- The size of the icon view and the size of the fetched image. -->
+    <dimen name="improved_bookmark_icon_visual_size">80dp</dimen>
 
     <!-- Bookmark visual refresh dimensions. -->
      <dimen name="bookmark_refresh_preferred_start_icon_size">32dp</dimen>
-     <!-- We intentionally use px to avoid showing fewer favicons in some UIs on higher density devices. -->
-     <dimen name="bookmark_refresh_min_start_icon_size" tools:ignore="PxUsage">32px</dimen>
      <dimen name="bookmark_refresh_circular_monogram_text_size">18dp</dimen>
 
     <!-- Bookmark widget dimensions -->
@@ -226,6 +233,9 @@ found in the LICENSE file.
     <dimen name="bookmark_widget_min_height">48dp</dimen>
 
     <!-- Custom Tabs dimensions -->
+    <dimen name="custom_tabs_drag_handle_padding_top">12dp</dimen>
+    <dimen name="custom_tabs_drag_handle_padding_bottom">32dp</dimen>
+    <dimen name="custom_tabs_drag_handle_padding_side">4dp</dimen>
     <dimen name="custom_tabs_toolbar_maxWidth">60dp</dimen>
     <dimen name="custom_tabs_toolbar_vertical_padding">16dp</dimen>
     <dimen name="custom_tabs_toolbar_horizontal_margin_no_start">8dp</dimen>

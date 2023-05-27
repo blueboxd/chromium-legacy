@@ -48,19 +48,22 @@ class CORE_EXPORT MathMLElement : public Element {
   enum class AllowPercentages { kYes, kNo };
   const CSSPrimitiveValue* ParseMathLength(
       const QualifiedName& attr_name,
-      AllowPercentages allow_percentages = AllowPercentages::kYes);
+      AllowPercentages allow_percentages = AllowPercentages::kYes,
+      CSSPrimitiveValue::ValueRange value_range =
+          CSSPrimitiveValue::ValueRange::kAll);
   absl::optional<Length> AddMathLengthToComputedStyle(
       const CSSToLengthConversionData&,
       const QualifiedName&,
-      AllowPercentages allow_percentages = AllowPercentages::kYes);
+      AllowPercentages allow_percentages = AllowPercentages::kYes,
+      CSSPrimitiveValue::ValueRange value_range =
+          CSSPrimitiveValue::ValueRange::kAll);
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
   // https://w3c.github.io/mathml-core/#dfn-boolean
   absl::optional<bool> BooleanAttribute(const QualifiedName& name) const;
 
-  LayoutObject* CreateLayoutObject(const ComputedStyle&,
-                                   LegacyLayout legacy) override;
+  LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 };
 
 template <typename T>

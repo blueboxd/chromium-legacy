@@ -46,6 +46,8 @@ class PropertyTreeManagerClient {
       bool needs_layer,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) = 0;
+  virtual bool NeedsCompositedScrolling(
+      const TransformPaintPropertyNode& scroll_translation) const = 0;
 };
 
 // Mutates a cc property tree to reflect Blink paint property tree
@@ -102,7 +104,7 @@ class PropertyTreeManager {
   int EnsureCompositorClipNode(const ClipPaintPropertyNode&);
   // Ensure the compositor scroll node using the associated scroll offset
   // translation.
-  int EnsureCompositorScrollNode(
+  int EnsureCompositorScrollAndTransformNode(
       const TransformPaintPropertyNode& scroll_offset_translation);
 
   // Same as above but marks the scroll nodes as being the viewport.
@@ -151,10 +153,14 @@ class PropertyTreeManager {
                                       CompositorElementId,
                                       const gfx::PointF&);
 
-  // Ensures a cc::ScrollNode for all scroll translations.
-  void EnsureCompositorScrollNodes(
-      const Vector<const TransformPaintPropertyNode*>&
-          scroll_translation_nodes);
+  static uint32_t GetMainThreadScrollingReasons(const cc::LayerTreeHost&,
+                                                const ScrollPaintPropertyNode&);
+  static bool UsesCompositedScrolling(const cc::LayerTreeHost&,
+                                      const ScrollPaintPropertyNode&);
+
+  // Ensures a cc::ScrollNode for a scroll translation transform node.
+  void EnsureCompositorScrollNode(const ScrollPaintPropertyNode&,
+                                  const TransformPaintPropertyNode&);
 
   // Updates conditional render surface reasons for all effect nodes in
   // |GetEffectTree|. Every effect is supposed to have render surface enabled
@@ -289,13 +295,6 @@ class PropertyTreeManager {
                              const EffectPaintPropertyNode&,
                              const ClipPaintPropertyNode&,
                              const TransformPaintPropertyNode&);
-
-  // Should only be called from EnsureCompositorTransformNode as part of
-  // creating the associated scroll offset transform node.
-  void CreateCompositorScrollNode(
-      const ScrollPaintPropertyNode&,
-      const cc::TransformNode& scroll_offset_translation,
-      bool is_composited);
 
   void UpdatePixelMovingFilterClipExpanders();
 

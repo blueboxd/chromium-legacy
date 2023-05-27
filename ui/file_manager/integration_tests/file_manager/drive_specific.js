@@ -872,6 +872,28 @@ testcase.driveOfflineInfoBanner = async () => {
 };
 
 /**
+ * Tests that the encryption badge appears next to the CSE file when a Drive
+ *  volume is opened.
+ */
+testcase.driveEncryptionBadge = async () => {
+  // Open Files app on Drive.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DRIVE, [], [ENTRIES.hello, ENTRIES.testCSEFile]);
+
+  // Check: non-encrypted file doesn't have a badge.
+  const plain = await remoteCall.waitForElementStyles(
+      appId, '#file-list [file-name="hello.txt"] .encryption-status',
+      ['display']);
+  chrome.test.assertEq('none', plain.styles.display);
+
+  // Check: encrypted file has a badge.
+  const encrypted = await remoteCall.waitForElementStyles(
+      appId, '#file-list [file-name="test-encrypted.txt"] .encryption-status',
+      ['display']);
+  chrome.test.assertEq('flex', encrypted.styles.display);
+};
+
+/**
  * Tests that the inline file sync "in progress" icon is displayed in Drive as
  * the file starts syncing then disappears as it finishes syncing.
  */
@@ -1261,61 +1283,4 @@ testcase.driveGoogleOneOfferBannerDismiss = async () => {
       ['google-one-offer-banner', 'educational-banner', '#dismiss-button']);
   chrome.test.assertEq(1, await getUserActionCount(userActionDismiss));
   await remoteCall.waitForElement(appId, 'google-one-offer-banner[hidden]');
-};
-
-/**
- * Test that when files get deleted locally, they get unpinned prior to being
- * deleted.
- */
-testcase.driveLocalDeleteUnpinsItem = async () => {
-  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
-
-  // Select test.txt which is already pinned.
-  await remoteCall.waitAndClickElement(
-      appId, '#file-list [file-name="test.txt"]');
-  await remoteCall.waitForElement(
-      appId, '[file-name="test.txt"][selected] xf-icon[type=offline]');
-
-  // Ensure the metadata for the file is set to pinned.
-  await remoteCall.expectDriveItemPinnedStatus(appId, '/root/test.txt', true);
-
-  // Delete the file and ensure it disappears from the file list.
-  await remoteCall.waitAndClickElement(
-      appId, '#delete-button:not([hidden]):not([disabled])');
-  // Check: the delete confirm dialog should appear.
-  await remoteCall.waitForElement(appId, '.cr-dialog-container.shown');
-
-  // Click the delete confirm dialog 'Delete' button.
-  const dialogDeleteButton =
-      await remoteCall.waitAndClickElement(appId, '.cr-dialog-ok');
-
-  await remoteCall.waitForElementLost(
-      appId, '#file-list [file-name="test.txt"]');
-
-  // Ensure the file was unpinned prior to deleting.
-  await remoteCall.expectDriveItemPinnedStatus(appId, '/root/test.txt', false);
-};
-
-/**
- * Test that when files get deleted in the cloud, they get unpinned after being
- * deleted.
- */
-testcase.driveCloudDeleteUnpinsItem = async () => {
-  const appId = await setupAndWaitUntilReady(RootPath.DRIVE);
-
-  // Select test.txt which is already pinned.
-  await remoteCall.waitAndClickElement(
-      appId, '#file-list [file-name="test.txt"]');
-  await remoteCall.waitForElement(
-      appId, '[file-name="test.txt"][selected] xf-icon[type=offline]');
-
-  // Ensure the metadata for the file is set to pinned.
-  await remoteCall.expectDriveItemPinnedStatus(appId, '/root/test.txt', true);
-
-  await remoteCall.sendDriveCloudDeleteEvent(appId, '/root/test.txt');
-  await remoteCall.waitForElementLost(
-      appId, '#file-list [file-name="test.txt"]');
-
-  // Ensure the file was unpinned prior to deleting.
-  await remoteCall.expectDriveItemPinnedStatus(appId, '/root/test.txt', false);
 };

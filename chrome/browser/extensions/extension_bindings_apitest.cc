@@ -188,13 +188,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, NoExportOverriding) {
                      "/extensions/api_test/bindings/override_exports.html")));
 
   // See chrome/test/data/extensions/api_test/bindings/override_exports.html.
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send("
-          "document.getElementById('status').textContent.trim());",
-      &result));
-  EXPECT_EQ("success", result);
+  EXPECT_EQ(
+      "success",
+      content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                      "document.getElementById('status').textContent.trim();"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, NoGinDefineOverriding) {
@@ -212,13 +209,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, NoGinDefineOverriding) {
       browser()->tab_strip_model()->GetActiveWebContents()->IsCrashed());
 
   // See chrome/test/data/extensions/api_test/bindings/override_gin_define.html.
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send("
-          "document.getElementById('status').textContent.trim());",
-      &result));
-  EXPECT_EQ("success", result);
+  EXPECT_EQ(
+      "success",
+      content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                      "document.getElementById('status').textContent.trim();"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, HandlerFunctionTypeChecking) {
@@ -230,13 +224,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, HandlerFunctionTypeChecking) {
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(web_contents->IsCrashed());
   // See handler_function_type_checking.html.
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send("
-          "document.getElementById('status').textContent.trim());",
-      &result));
-  EXPECT_EQ("success", result);
+  EXPECT_EQ(
+      "success",
+      content::EvalJs(web_contents,
+                      "document.getElementById('status').textContent.trim();"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
@@ -255,11 +246,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_FALSE(web_contents->IsCrashed());
   // See function_interceptions.html.
-  std::string result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents, "window.domAutomationController.send(window.testStatus);",
-      &result));
-  EXPECT_EQ("success", result);
+  EXPECT_EQ("success", content::EvalJs(web_contents, "window.testStatus;"));
 }
 
 class FramesExtensionBindingsApiTest : public ExtensionBindingsApiTest {
@@ -313,13 +300,11 @@ IN_PROC_BROWSER_TEST_F(FramesExtensionBindingsApiTest, FramesBeforeNavigation) {
   // then ask |receiver| for the total message count. It should be 1 since
   // |receiver| should not have received any impersonated messages.
   sender_ready.Reply(receiver->id());
-  int message_count = 0;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-      ProcessManager::Get(profile())
-          ->GetBackgroundHostForExtension(receiver->id())
-          ->host_contents(),
-      "getMessageCountAfterReceivingRealSenderMessage()", &message_count));
-  EXPECT_EQ(1, message_count);
+  EXPECT_EQ(
+      1, content::EvalJs(ProcessManager::Get(profile())
+                             ->GetBackgroundHostForExtension(receiver->id())
+                             ->host_contents(),
+                         "getMessageCountAfterReceivingRealSenderMessage()"));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, TestFreezingChrome) {
@@ -592,10 +577,8 @@ IN_PROC_BROWSER_TEST_F(
 
   // The extension should have been notified about the new tab, and have
   // recorded the result.
-  int result_tab_id = -1;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-      first_tab, "domAutomationController.send(window.tabEventId)",
-      &result_tab_id));
+  int result_tab_id =
+      content::EvalJs(first_tab, "window.tabEventId").ExtractInt();
   EXPECT_EQ(sessions::SessionTabHelper::IdForTab(new_tab).id(), result_tab_id);
 }
 
@@ -686,30 +669,26 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   constexpr char kScript[] =
-      R"(chrome.tabs.query({}, (tabs) => {
+      R"(
+          new Promise(resolve => {
+            chrome.tabs.query({}, resolve);
+          }).then((tabs) => {
            let message;
            if (chrome.runtime.lastError)
              message = 'Unexpected error: ' + chrome.runtime.lastError;
            else
              message = 'Has gesture: ' + chrome.test.isProcessingUserGesture();
-           domAutomationController.send(message);
+           return message;
          });)";
 
-  {
-    // Triggering an API without an active gesture shouldn't result in a
-    // gesture in the callback.
-    std::string message;
-    EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
-        tab, kScript, &message));
-    EXPECT_EQ("Has gesture: false", message);
-  }
-  {
-    // If there was an active gesture at the time of the API call, there should
-    // be an active gesture in the callback.
-    std::string message;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(tab, kScript, &message));
-    EXPECT_EQ("Has gesture: true", message);
-  }
+  // Triggering an API without an active gesture shouldn't result in a
+  // gesture in the callback.
+  EXPECT_EQ(
+      "Has gesture: false",
+      content::EvalJs(tab, kScript, content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  // If there was an active gesture at the time of the API call, there should
+  // be an active gesture in the callback.
+  EXPECT_EQ("Has gesture: true", content::EvalJs(tab, kScript));
 }
 
 // Tests that a web page can consume a user gesture after an extension sends and
@@ -891,12 +870,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
            message = 'Tabs not defined';
          else
            message = 'success';
-         domAutomationController.send(message);)";
-  std::string result;
-  // Note: Can't use EvalJs() because of CSP in extension pages.
-  EXPECT_TRUE(
-      content::ExecuteScriptAndExtractString(web_contents, kScript, &result));
-  EXPECT_EQ("success", result);
+         message;)";
+  EXPECT_EQ("success", content::EvalJs(web_contents, kScript));
 }
 
 // Tests the aliasing of chrome.extension methods to their chrome.runtime

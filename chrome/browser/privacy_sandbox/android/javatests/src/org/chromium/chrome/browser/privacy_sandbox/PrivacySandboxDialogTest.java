@@ -31,7 +31,6 @@ import androidx.test.filters.SmallTest;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,9 +46,11 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.privacy_sandbox.v4.AdMeasurementFragmentV4;
 import org.chromium.chrome.browser.privacy_sandbox.v4.PrivacySandboxDialogConsentEEAV4;
 import org.chromium.chrome.browser.privacy_sandbox.v4.PrivacySandboxDialogNoticeEEAV4;
 import org.chromium.chrome.browser.privacy_sandbox.v4.PrivacySandboxDialogNoticeROWV4;
+import org.chromium.chrome.browser.privacy_sandbox.v4.PrivacySandboxDialogNoticeRestrictedV4;
 import org.chromium.chrome.browser.privacy_sandbox.v4.PrivacySandboxSettingsFragmentV4;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -58,9 +59,7 @@ import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
-import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DisableAnimationsTestRule;
 import org.chromium.ui.test.util.RenderTestRule;
 
 import java.io.IOException;
@@ -70,9 +69,6 @@ import java.io.IOException;
 @Batch(Batch.PER_CLASS)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public final class PrivacySandboxDialogTest {
-    @ClassRule
-    public static DisableAnimationsTestRule disableAnimationsRule = new DisableAnimationsTestRule();
-
     @ClassRule
     public static final ChromeTabbedActivityTestRule sActivityTestRule =
             new ChromeTabbedActivityTestRule();
@@ -98,12 +94,6 @@ public final class PrivacySandboxDialogTest {
     private SettingsLauncher mSettingsLauncher;
 
     private Dialog mDialog;
-
-    @BeforeClass
-    public static void beforeClass() {
-        // Only needs to be loaded once and needs to be loaded before HistogramTestRule.
-        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
-    }
 
     @Before
     public void setUp() {
@@ -169,7 +159,8 @@ public final class PrivacySandboxDialogTest {
                     assertEquals("Last dialog action", PromptAction.CONSENT_MORE_BUTTON_CLICKED,
                             (int) mFakePrivacySandboxBridge.getLastPromptAction());
                 } else if (promptType == PromptType.M1_NOTICE_EEA
-                        || promptType == PromptType.M1_NOTICE_ROW) {
+                        || promptType == PromptType.M1_NOTICE_ROW
+                        || promptType == PromptType.M1_NOTICE_RESTRICTED) {
                     assertEquals("Last dialog action", PromptAction.NOTICE_MORE_BUTTON_CLICKED,
                             (int) mFakePrivacySandboxBridge.getLastPromptAction());
                 }
@@ -253,6 +244,19 @@ public final class PrivacySandboxDialogTest {
             mDialog.show();
         });
         renderViewWithId(R.id.privacy_sandbox_dialog, "privacy_sandbox_row_notice_dialog");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"RenderTest"})
+    public void testRenderRestrictedNotice() throws IOException {
+        PrivacySandboxDialogNotice notice = null;
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mDialog = new PrivacySandboxDialogNoticeRestrictedV4(
+                    sActivityTestRule.getActivity(), mSettingsLauncher);
+            mDialog.show();
+        });
+        renderViewWithId(R.id.privacy_sandbox_dialog, "privacy_sandbox_restricted_notice_dialog");
     }
 
     @Test
@@ -516,5 +520,31 @@ public final class PrivacySandboxDialogTest {
         Mockito.verify(mSettingsLauncher)
                 .launchSettingsActivity(any(Context.class),
                         eq(PrivacySandboxSettingsFragmentV4.class), any(Bundle.class));
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4)
+    public void testControllerShowsRestrictedNotice() throws IOException {
+        mFakePrivacySandboxBridge.setRequiredPromptType(PromptType.M1_NOTICE_RESTRICTED);
+        launchDialog();
+        // Verify that the restricted notice is shown
+        onViewWaiting(withId(R.id.privacy_sandbox_notice_title));
+        assertEquals("Last dialog action", PromptAction.NOTICE_SHOWN,
+                (int) mFakePrivacySandboxBridge.getLastPromptAction());
+        // Ack the notice and verify it worked correctly.
+        tryClickOn(withId(R.id.ack_button));
+        assertEquals("Last dialog action", PromptAction.RESTRICTED_NOTICE_ACKNOWLEDGE,
+                (int) mFakePrivacySandboxBridge.getLastPromptAction());
+        onView(withId(R.id.privacy_sandbox_notice_title)).check(doesNotExist());
+
+        // Click on the settings button and verify it worked correctly.
+        launchDialog();
+        tryClickOn(withId(R.id.settings_button));
+        assertEquals("Last dialog action", PromptAction.RESTRICTED_NOTICE_OPEN_SETTINGS,
+                (int) mFakePrivacySandboxBridge.getLastPromptAction());
+        onView(withId(R.id.privacy_sandbox_notice_title)).check(doesNotExist());
+        Mockito.verify(mSettingsLauncher)
+                .launchSettingsActivity(any(Context.class), eq(AdMeasurementFragmentV4.class));
     }
 }

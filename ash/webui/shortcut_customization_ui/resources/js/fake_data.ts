@@ -12,7 +12,7 @@ const fakeTimestamp: TimeTicks = {
   internalValue: BigInt(0),
 };
 
-const newTabAccelerator: MojoAcceleratorInfo = {
+const newTabAcceleratorInfo: MojoAcceleratorInfo = {
   type: AcceleratorType.kDefault,
   state: AcceleratorState.kEnabled,
   locked: true,
@@ -31,7 +31,7 @@ const newTabAccelerator: MojoAcceleratorInfo = {
   },
 };
 
-const cycleTabsAccelerator: MojoAcceleratorInfo = {
+const cycleTabsAcceleratorInfo: MojoAcceleratorInfo = {
   type: AcceleratorType.kDefault,
   state: AcceleratorState.kEnabled,
   locked: true,
@@ -66,7 +66,7 @@ const cycleTabsAccelerator: MojoAcceleratorInfo = {
 
 export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
   [AcceleratorSource.kAsh]: {
-    // Snap Window Left
+    // Snap Window Left: alt + [.
     [0]: [{
       type: AcceleratorType.kDefault,
       state: AcceleratorState.kEnabled,
@@ -84,7 +84,7 @@ export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
         textAccelerator: undefined,
       },
     }],
-    // Snap Window Right
+    // Snap Window Right: alt + ].
     [1]: [{
       type: AcceleratorType.kDefault,
       state: AcceleratorState.kEnabled,
@@ -101,9 +101,8 @@ export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
         },
         textAccelerator: undefined,
       },
-
     }],
-    // New Desk
+    // New Desk: search + shift + '+'.
     [2]: [{
       type: AcceleratorType.kDefault,
       state: AcceleratorState.kEnabled,
@@ -119,10 +118,9 @@ export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
           },
         },
         textAccelerator: undefined,
-
       },
     }],
-    // Remove Desk
+    // Remove Desk: search + shift + '-'.
     [3]: [{
       type: AcceleratorType.kDefault,
       state: AcceleratorState.kEnabled,
@@ -138,22 +136,94 @@ export const fakeAcceleratorConfig: MojoAcceleratorConfig = {
           },
         },
         textAccelerator: undefined,
-
       },
     }],
+    // Open Calculator app: 'LaunchApplication2' key.
+    [4]: [{
+      type: AcceleratorType.kDefault,
+      state: AcceleratorState.kDisabledByUnavailableKeys,
+      locked: false,
+      layoutProperties: {
+        standardAccelerator: {
+          keyDisplay: stringToMojoString16('LaunchApplication2'),
+          accelerator: {
+            modifiers: Modifier.NONE,
+            keyCode: 183,
+            keyState: 0,
+            timeStamp: fakeTimestamp,
+          },
+        },
+        textAccelerator: undefined,
+      },
+    }],
+    // Open Diagnostics app: search + ctrl + esc.
+    [5]: [{
+      type: AcceleratorType.kDefault,
+      state: AcceleratorState.kEnabled,
+      locked: false,
+      layoutProperties: {
+        standardAccelerator: {
+          keyDisplay: stringToMojoString16('esc'),
+          accelerator: {
+            modifiers: Modifier.COMMAND | Modifier.CONTROL,
+            keyCode: 27,
+            keyState: 0,
+            timeStamp: fakeTimestamp,
+          },
+        },
+        textAccelerator: undefined,
+      },
+    }],
+    // Open/close Google assistant: search + a or 'LaunchAssistant' key.
+    [6]: [
+      {
+        type: AcceleratorType.kDefault,
+        state: AcceleratorState.kEnabled,
+        locked: false,
+        layoutProperties: {
+          standardAccelerator: {
+            keyDisplay: stringToMojoString16('a'),
+            accelerator: {
+              modifiers: Modifier.COMMAND,
+              keyCode: 65,
+              keyState: 0,
+              timeStamp: fakeTimestamp,
+            },
+          },
+          textAccelerator: undefined,
+        },
+      },
+      {
+        type: AcceleratorType.kDefault,
+        state: AcceleratorState.kDisabledByUnavailableKeys,
+        locked: false,
+        layoutProperties: {
+          standardAccelerator: {
+            keyDisplay: stringToMojoString16('LaunchAssistant'),
+            accelerator: {
+              modifiers: Modifier.NONE,
+              keyCode: 153,
+              keyState: 0,
+              timeStamp: fakeTimestamp,
+            },
+          },
+          textAccelerator: undefined,
+        },
+      },
+    ],
   },
   // TODO(michaelcheco): Separate Browser and Ambient accelerators.
   [AcceleratorSource.kAmbient]: {
     // New Tab
-    [0]: [newTabAccelerator],
-    [1]: [cycleTabsAccelerator],
+    [0]: [newTabAcceleratorInfo],
+    [1]: [cycleTabsAcceleratorInfo],
   },
 };
 
 export const fakeAmbientConfig: MojoAcceleratorConfig = {
   [AcceleratorSource.kAmbient]: {
-    [0]: [newTabAccelerator],
-    [1]: [cycleTabsAccelerator],
+    [0]: [newTabAcceleratorInfo],
+    [1]: [cycleTabsAcceleratorInfo],
   },
 };
 
@@ -205,6 +275,30 @@ export const fakeLayoutInfo: MojoLayoutInfo[] = [
     style: LayoutStyle.kText,
     source: AcceleratorSource.kAmbient,
     action: 1,
+  },
+  {
+    category: AcceleratorCategory.kGeneral,
+    subCategory: AcceleratorSubcategory.kApps,
+    description: stringToMojoString16('Open Calculator app'),
+    style: LayoutStyle.kDefault,
+    source: AcceleratorSource.kAsh,
+    action: 4,
+  },
+  {
+    category: AcceleratorCategory.kGeneral,
+    subCategory: AcceleratorSubcategory.kApps,
+    description: stringToMojoString16('Open Diagnostic app'),
+    style: LayoutStyle.kDefault,
+    source: AcceleratorSource.kAsh,
+    action: 5,
+  },
+  {
+    category: AcceleratorCategory.kGeneral,
+    subCategory: AcceleratorSubcategory.kGeneralControls,
+    description: stringToMojoString16('Open/close Google assistant'),
+    style: LayoutStyle.kDefault,
+    source: AcceleratorSource.kAsh,
+    action: 6,
   },
 ];
 
@@ -298,41 +392,107 @@ export const fakeSearchResults: MojoSearchResult[] = [
 export const SnapWindowLeftSearchResult: MojoSearchResult =
     fakeSearchResults[0];
 
-// The following code is used to add fake accelerator entries for each icon.
-// When useFakeProvider is true, this will display all available icons for
-// the purposes of debugging.
-const createFakeMojoAccelInfo = (keyDisplay: string): MojoAcceleratorInfo => {
-  return {
-    type: AcceleratorType.kDefault,
-    state: AcceleratorState.kEnabled,
-    locked: true,
-    layoutProperties: {
-      standardAccelerator: {
-        keyDisplay: stringToMojoString16(keyDisplay),
-        accelerator: {
-          modifiers: 0,
-          keyCode: 0,
-          keyState: 0,
-          timeStamp: fakeTimestamp,
+export const TakeScreenshotSearchResult: MojoSearchResult = {
+  acceleratorLayoutInfo: {
+    category: AcceleratorCategory.kWindowsAndDesks,
+    subCategory: AcceleratorSubcategory.kDesks,
+    description:
+        stringToMojoString16('Take full screenshot or screen recording'),
+    style: LayoutStyle.kDefault,
+    source: AcceleratorSource.kAsh,
+    action: 2,
+  },
+  acceleratorInfos: [
+    {
+      type: AcceleratorType.kDefault,
+      state: AcceleratorState.kEnabled,
+      locked: false,
+      layoutProperties: {
+        standardAccelerator: {
+          keyDisplay: stringToMojoString16('LaunchApplication1'),  // overview
+          accelerator: {
+            modifiers: Modifier.CONTROL,
+            keyCode: 0,
+            keyState: 0,
+            timeStamp: fakeTimestamp,
+          },
         },
+        textAccelerator: undefined,
       },
-      textAccelerator: undefined,
     },
-  };
+    {
+      type: AcceleratorType.kDefault,
+      state: AcceleratorState.kEnabled,
+      locked: false,
+      layoutProperties: {
+        standardAccelerator: {
+          keyDisplay: stringToMojoString16('PrintScreen'),  // screenshot
+          accelerator: {
+            modifiers: 0,
+            keyCode: 0,
+            keyState: 0,
+            timeStamp: fakeTimestamp,
+          },
+        },
+        textAccelerator: undefined,
+      },
+    },
+  ],
+  relevanceScore: 0.95,
 };
 
-const createFakeMojoLayoutInfo =
-    (description: string, action: number): MojoLayoutInfo => {
+export const CycleTabsTextSearchResult: MojoSearchResult = {
+  acceleratorLayoutInfo: {
+    category: AcceleratorCategory.kGeneral,
+    subCategory: AcceleratorSubcategory.kApps,
+    description: stringToMojoString16('Click or tap shelf icons 1-8'),
+    style: LayoutStyle.kText,
+    source: AcceleratorSource.kAsh,
+    action: 1,
+  },
+  acceleratorInfos: [cycleTabsAcceleratorInfo],
+  relevanceScore: 0.95,
+};
+
+export const createFakeMojoAccelInfo =
+    (keyDisplay: string = 'a'): MojoAcceleratorInfo => {
       return {
-        category: AcceleratorCategory.kBrowser,
-        subCategory: AcceleratorSubcategory.kTabs,
-        description: stringToMojoString16(description),
-        style: LayoutStyle.kDefault,
-        source: AcceleratorSource.kAmbient,
-        action,
+        type: AcceleratorType.kDefault,
+        state: AcceleratorState.kEnabled,
+        locked: true,
+        layoutProperties: {
+          standardAccelerator: {
+            keyDisplay: stringToMojoString16(keyDisplay),
+            accelerator: {
+              modifiers: 0,
+              keyCode: 0,
+              keyState: 0,
+              timeStamp: fakeTimestamp,
+            },
+          },
+          textAccelerator: undefined,
+        },
       };
     };
 
+export const createFakeMojoLayoutInfo =
+    (description: string, action: number,
+     category: AcceleratorCategory = AcceleratorCategory.kBrowser,
+     source: AcceleratorSource = AcceleratorSource.kAmbient):
+        MojoLayoutInfo => {
+          return {
+            category,
+            subCategory: AcceleratorSubcategory.kTabs,
+            description: stringToMojoString16(description),
+            style: LayoutStyle.kDefault,
+            source,
+            action,
+          };
+        };
+
+// The following code is used to add fake accelerator entries for each icon.
+// When useFakeProvider is true, this will display all available icons for
+// the purposes of debugging.
 const icons = Object.keys(keyToIconNameMap);
 
 for (const [index, iconName] of icons.entries()) {

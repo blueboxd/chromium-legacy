@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/accessibility/live_caption/live_caption_controller_factory.h"
 #include "chrome/browser/ash/accessibility/live_caption/system_live_caption_service_factory.h"
 #include "chrome/browser/ash/login/session/user_session_initializer.h"
@@ -119,7 +120,7 @@ class SystemLiveCaptionServiceTest : public InProcessBrowserTest {
     const base::FilePath profile_path =
         profile_manager->GenerateNextProfileDirectoryPath();
     secondary_profile_ =
-        profiles::testing::CreateProfileSync(profile_manager, profile_path);
+        &profiles::testing::CreateProfileSync(profile_manager, profile_path);
     CHECK(secondary_profile_);
 
     // Replace our CrosSpeechRecognitionService with a fake one. We can pass a
@@ -182,9 +183,10 @@ class SystemLiveCaptionServiceTest : public InProcessBrowserTest {
   }
 
   // Unowned.
-  Profile* primary_profile_;
-  Profile* secondary_profile_;
-  speech::FakeSpeechRecognitionService* fake_speech_recognition_service_;
+  raw_ptr<Profile, ExperimentalAsh> primary_profile_;
+  raw_ptr<Profile, ExperimentalAsh> secondary_profile_;
+  raw_ptr<speech::FakeSpeechRecognitionService, ExperimentalAsh>
+      fake_speech_recognition_service_;
 
   base::test::ScopedFeatureList scoped_feature_list_;
 };

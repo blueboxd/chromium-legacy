@@ -17,6 +17,7 @@ import {Personality, QueueMode, TtsSpeechProperties} from '../common/tts_types.j
 import {ChromeVox} from './chromevox.js';
 import {CompositeTts} from './composite_tts.js';
 import {ConsoleTts} from './console_tts.js';
+import {Output} from './output/output.js';
 import {PrimaryTts} from './primary_tts.js';
 
 const Action = BridgeConstants.TtsBackground.Action;
@@ -81,9 +82,9 @@ export class TtsBackground {
     const rate = ChromeVox.tts.getDefaultProperty('rate');
     const pitch = ChromeVox.tts.getDefaultProperty('pitch');
     const volume = ChromeVox.tts.getDefaultProperty('volume');
-    chrome.settingsPrivate.setPref('settings.tts.speech_rate', rate);
-    chrome.settingsPrivate.setPref('settings.tts.speech_pitch', pitch);
-    chrome.settingsPrivate.setPref('settings.tts.speech_volume', volume);
+    ChromeVox.tts.setProperty('rate', rate ? rate : 1);
+    ChromeVox.tts.setProperty('pitch', pitch ? pitch : 1);
+    ChromeVox.tts.setProperty('volume', volume ? volume : 1);
     SettingsManager.set('voiceName', constants.SYSTEM_VOICE);
     TtsBackground.primary.updateVoice('', () => {
       // Ensure this announcement doesn't get cut off by speech triggered by
@@ -95,5 +96,11 @@ export class TtsBackground {
           Msgs.getMsg('announce_tts_default_settings'), QueueMode.FLUSH,
           new TtsSpeechProperties(speechProperties));
     });
+  }
+
+  /** Toggles speech on or off and announces the change. */
+  static toggleSpeechWithAnnouncement() {
+    const state = ChromeVox.tts.toggleSpeechOnOrOff();
+    new Output().format(state ? '@speech_on' : '@speech_off').go();
   }
 }

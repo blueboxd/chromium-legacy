@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 
+#include "base/cfi_buildflags.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -296,12 +297,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, NoScriptAccessAfterUnload) {
 
   // Open a same-site link in a new window.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickSameSiteTargetedLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickSameSiteTargetedLink();"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Wait for the navigation in the new window to finish, if it hasn't.
@@ -313,12 +309,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, NoScriptAccessAfterUnload) {
   EXPECT_EQ(orig_site_instance, new_shell->web_contents()->GetSiteInstance());
 
   // We should have access to the opened window's location.
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(testScriptAccessToWindow());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "testScriptAccessToWindow();"));
 
   // Now navigate the new window to a different site.
   EXPECT_TRUE(NavigateToURLInSameBrowsingInstance(
@@ -332,20 +323,11 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, NoScriptAccessAfterUnload) {
   }
 
   // We should no longer have script access to the opened window's location.
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(testScriptAccessToWindow());",
-      &success));
-  EXPECT_FALSE(success);
+  EXPECT_EQ(false, EvalJs(shell(), "testScriptAccessToWindow();"));
 
   // We now navigate the window to an about:blank page.
   TestNavigationObserver navigation_observer(new_shell->web_contents());
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "window.domAutomationController.send(clickBlankTargetedLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickBlankTargetedLink();"));
 
   // Wait for the navigation in the new window to finish.
   navigation_observer.Wait();
@@ -355,12 +337,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, NoScriptAccessAfterUnload) {
   EXPECT_EQ(orig_site_instance, new_shell->web_contents()->GetSiteInstance());
 
   // We should have access to the opened window's location.
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(testScriptAccessToWindow());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "testScriptAccessToWindow();"));
 }
 
 // Test for crbug.com/24447.  Following a cross-site link with rel=noreferrer
@@ -378,12 +355,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Test clicking a rel=noreferrer + target=blank link.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickNoRefTargetBlankLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickNoRefTargetBlankLink();"));
 
   // Wait for the window to open.
   Shell* new_shell = new_shell_observer.GetShell();
@@ -391,11 +363,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ("/title2.html", new_shell->web_contents()->GetVisibleURL().path());
 
   // Check that `window.opener` is not set.
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(window.opener == null);",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell, "window.opener == null;"));
 
   // Wait for the cross-site transition in the new tab to finish.
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -422,12 +390,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Test clicking a rel=noreferrer + target=blank link.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickNoOpenerTargetBlankLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickNoOpenerTargetBlankLink();"));
 
   // Wait for the window to open.
   Shell* new_shell = new_shell_observer.GetShell();
@@ -435,11 +398,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ("/title2.html", new_shell->web_contents()->GetVisibleURL().path());
 
   // Check that `window.opener` is not set.
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(window.opener == null);",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell, "window.opener == null;"));
 
   // Wait for the cross-site transition in the new tab to finish.
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -447,13 +406,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // Check that the referrer is set correctly.
   std::string expected_referrer =
       embedded_test_server()->GetURL("/").DeprecatedGetOriginAsURL().spec();
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell,
-      "window.domAutomationController.send(document.referrer == '" +
-          expected_referrer + "');",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell,
+                         "document.referrer == '" + expected_referrer + "';"));
 
   // Should have a new SiteInstance.
   scoped_refptr<SiteInstance> noopener_blank_site_instance(
@@ -477,15 +431,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Test opening a window with the 'noopener' feature.
   ShellAddedObserver new_shell_observer;
-  bool hasWindowReference = true;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send("
-      "    openWindowWithTargetAndFeatures('/title2.html', '', 'noopener')"
-      ");",
-      &hasWindowReference));
   // We should not get a reference to the opened window.
-  EXPECT_FALSE(hasWindowReference);
+  EXPECT_EQ(
+      false,
+      EvalJs(
+          shell(),
+          "openWindowWithTargetAndFeatures('/title2.html', '', 'noopener');"));
 
   // Wait for the window to open.
   Shell* new_shell = new_shell_observer.GetShell();
@@ -497,22 +448,13 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
             new_shell->web_contents()->GetLastCommittedURL().path());
 
   // Check that `window.opener` is not set.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(window.opener == null);",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell, "window.opener == null;"));
 
   // Check that the referrer is set correctly.
   std::string expected_referrer =
       embedded_test_server()->GetURL("/click-noreferrer-links.html").spec();
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell,
-      "window.domAutomationController.send(document.referrer == '" +
-          expected_referrer + "');",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell,
+                         "document.referrer == '" + expected_referrer + "';"));
 
   // Should have a new SiteInstance.
   scoped_refptr<SiteInstance> noopener_blank_site_instance(
@@ -539,12 +481,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Test clicking a same-site rel=noreferrer + target=foo link.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickSameSiteNoRefTargetedLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickSameSiteNoRefTargetedLink();"));
 
   // Wait for the window to open.
   Shell* new_shell = new_shell_observer.GetShell();
@@ -553,11 +490,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ("/title2.html", new_shell->web_contents()->GetVisibleURL().path());
 
   // Check that `window.opener` is not set.
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(window.opener == null);",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell, "window.opener == null;"));
 
   // Wait for the cross-site transition in the new tab to finish.
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -585,13 +518,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Test clicking a same-site rel=noopener + target=foo link.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell(),
-                                          "window.domAutomationController.send("
-                                          "clickSameSiteNoOpenerTargetedLink())"
-                                          ";",
-                                          &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickSameSiteNoOpenerTargetedLink();"));
 
   // Wait for the window to open.
   Shell* new_shell = new_shell_observer.GetShell();
@@ -600,11 +527,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_EQ("/title2.html", new_shell->web_contents()->GetVisibleURL().path());
 
   // Check that `window.opener` is not set.
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(window.opener == null);",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell, "window.opener == null;"));
 
   // Wait for the cross-site transition in the new tab to finish.
   EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -634,11 +557,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Test clicking a target=blank link.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "window.domAutomationController.send(clickTargetBlankLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickTargetBlankLink();"));
 
   // Wait for the window to open.
   Shell* new_shell = new_shell_observer.GetShell();
@@ -672,11 +591,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a rel=noreferrer link.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "window.domAutomationController.send(clickNoRefLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickNoRefLink();"));
 
   // Wait for the cross-site transition in the current tab to finish.
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -709,11 +624,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   EXPECT_TRUE(orig_site_instance.get() != nullptr);
 
   // Test clicking a rel=noreferrer link.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "window.domAutomationController.send(clickNoRefLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickNoRefLink();"));
 
   // Wait for the cross-site transition in the current tab to finish.
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
@@ -824,12 +735,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
 
   // Test clicking a target=_blank link.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickSameSiteTargetBlankLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickSameSiteTargetBlankLink();"));
   Shell* new_shell = new_shell_observer.GetShell();
   EXPECT_TRUE(new_shell->web_contents()->HasOpener());
 
@@ -862,20 +768,12 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
     new_shell->web_contents()->GetController().GoBack();
     back_nav_load_observer.Wait();
   }
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(window.opener == null);",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell, "window.opener == null;"));
   EXPECT_FALSE(new_shell->web_contents()->HasOpener());
 
   // Now navigate forward again (creating a new process) and check opener.
   EXPECT_TRUE(NavigateToURL(new_shell, cross_site_url));
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(window.opener == null);",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell, "window.opener == null;"));
   EXPECT_FALSE(new_shell->web_contents()->HasOpener());
 }
 
@@ -958,13 +856,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // Check that the new popup's window.opener has name "foo", which verifies
   // that new swapped-out RenderViews also propagate window.name.  This has to
   // be done via window.open, since window.name isn't readable cross-origin.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell2,
-      "window.domAutomationController.send("
-      "    window.opener === window.open('','foo'));",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true,
+            EvalJs(new_shell2, "window.opener === window.open('','foo');"));
 }
 
 // Test for crbug.com/99202.  PostMessage calls should still work after
@@ -1005,12 +898,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // First, a named target=foo window.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      opener_contents,
-      "window.domAutomationController.send(clickSameSiteTargetedLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(opener_contents, "clickSameSiteTargetedLink();"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Wait for the navigation in the new window to finish, if it hasn't, then
@@ -1030,11 +918,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Second, a target=_blank window.
   ShellAddedObserver new_shell_observer2;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickSameSiteTargetBlankLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickSameSiteTargetBlankLink();"));
 
   // Wait for the navigation in the new window to finish, if it hasn't, then
   // send it to post_message.html on the original site.
@@ -1068,12 +952,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // 2) Fail to post a message from the foo window to the opener if the target
   // origin is wrong.  We won't see an error, but we can check for the right
   // number of received messages below.
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      foo_contents,
-      "window.domAutomationController.send(postToOpener('msg',"
-      "    'http://google.com'));",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true,
+            EvalJs(foo_contents, "postToOpener('msg', 'http://google.com');"));
   ASSERT_FALSE(opener_manager->current_frame_host()
                    ->browsing_context_state()
                    ->GetRenderFrameProxyHost(
@@ -1084,11 +964,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // reply, causing the foo window to update its own title.
   std::u16string expected_title = u"msg";
   TitleWatcher title_watcher(foo_contents, expected_title);
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      foo_contents,
-      "window.domAutomationController.send(postToOpener('msg','*'));",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(foo_contents, "postToOpener('msg','*');"));
   ASSERT_FALSE(opener_manager->current_frame_host()
                    ->browsing_context_state()
                    ->GetRenderFrameProxyHost(
@@ -1098,28 +974,15 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // We should have received only 1 message in the opener and "foo" tabs,
   // and updated the title.
-  int opener_received_messages = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      opener_contents,
-      "window.domAutomationController.send(window.receivedMessages);",
-      &opener_received_messages));
-  int foo_received_messages = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      foo_contents,
-      "window.domAutomationController.send(window.receivedMessages);",
-      &foo_received_messages));
-  EXPECT_EQ(1, foo_received_messages);
-  EXPECT_EQ(1, opener_received_messages);
+  EXPECT_EQ(1, EvalJs(opener_contents, "window.receivedMessages;"));
+  EXPECT_EQ(1, EvalJs(foo_contents, "window.receivedMessages;"));
   EXPECT_EQ(u"msg", foo_contents->GetTitle());
 
   // 4) Now post a message from the _blank window to the foo window.  The
   // foo window will update its title and will not reply.
   expected_title = u"msg2";
   TitleWatcher title_watcher2(foo_contents, expected_title);
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_contents, "window.domAutomationController.send(postToFoo('msg2'));",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_contents, "postToFoo('msg2');"));
   ASSERT_EQ(expected_title, title_watcher2.WaitAndGetTitle());
 
   // This postMessage should have created a RenderFrameProxyHost for the new
@@ -1169,12 +1032,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // 1) Open a named target=foo window. We will later post a message between the
   // opener and the new window.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      opener_contents,
-      "window.domAutomationController.send(clickSameSiteTargetedLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(opener_contents, "clickSameSiteTargetedLink();"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Wait for the navigation in the new window to finish, if it hasn't, then
@@ -1204,10 +1062,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // to update its own title.
   std::u16string expected_title = u"msg-back-via-port";
   TitleWatcher title_observer(opener_contents, expected_title);
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      opener_contents,
-      "window.domAutomationController.send(postWithPortToFoo());", &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(opener_contents, "postWithPortToFoo();"));
   ASSERT_FALSE(opener_manager->current_frame_host()
                    ->browsing_context_state()
                    ->GetRenderFrameProxyHost(
@@ -1216,24 +1071,9 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   ASSERT_EQ(expected_title, title_observer.WaitAndGetTitle());
 
   // Check message counts.
-  int opener_received_messages_via_port = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      opener_contents,
-      "window.domAutomationController.send(window.receivedMessagesViaPort);",
-      &opener_received_messages_via_port));
-  int foo_received_messages = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      foo_contents,
-      "window.domAutomationController.send(window.receivedMessages);",
-      &foo_received_messages));
-  int foo_received_messages_with_port = 0;
-  EXPECT_TRUE(ExecuteScriptAndExtractInt(
-      foo_contents,
-      "window.domAutomationController.send(window.receivedMessagesWithPort);",
-      &foo_received_messages_with_port));
-  EXPECT_EQ(1, foo_received_messages);
-  EXPECT_EQ(1, foo_received_messages_with_port);
-  EXPECT_EQ(1, opener_received_messages_via_port);
+  EXPECT_EQ(1, EvalJs(opener_contents, "window.receivedMessagesViaPort;"));
+  EXPECT_EQ(1, EvalJs(foo_contents, "window.receivedMessages;"));
+  EXPECT_EQ(1, EvalJs(foo_contents, "window.receivedMessagesWithPort;"));
   EXPECT_EQ(u"msg-with-port", foo_contents->GetTitle());
   EXPECT_EQ(u"msg-back-via-port", opener_contents->GetTitle());
 }
@@ -1262,12 +1102,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      orig_contents,
-      "window.domAutomationController.send(clickSameSiteTargetedLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(orig_contents, "clickSameSiteTargetedLink();"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Wait for the navigation in the new window to finish, if it hasn't.
@@ -1289,10 +1124,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // The opened tab should be able to navigate the opener back to its process.
   TestNavigationObserver navigation_observer(orig_contents);
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      new_shell, "window.domAutomationController.send(navigateOpener());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(new_shell, "navigateOpener();"));
   navigation_observer.Wait();
 
   // Should have swapped back into this process.
@@ -1368,12 +1200,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickSameSiteTargetedLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickSameSiteTargetedLink();"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Wait for the navigation in the new window to finish, if it hasn't.
@@ -1747,12 +1574,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   TestNavigationManager second_navigation(shell()->web_contents(), second_url);
   shell()->LoadURL(second_url);
   ASSERT_TRUE(second_navigation.WaitForNavigationFinished());
-  const char kDiscardedStateJS[] =
-      "window.domAutomationController.send(window.document.wasDiscarded);";
-  bool discarded_result;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(shell(), kDiscardedStateJS,
-                                                   &discarded_result));
-  EXPECT_FALSE(discarded_result);
+  const char kDiscardedStateJS[] = "window.document.wasDiscarded;";
+  EXPECT_EQ(false, content::EvalJs(shell(), kDiscardedStateJS));
 }
 
 // Ensures that a pending navigation's URL  is no longer visible after the
@@ -2156,13 +1979,8 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   // By using an onclick handler that first creates the window, the slow
   // navigation is not considered an initial navigation.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(
-      ExecuteScriptAndExtractBool(orig_contents,
-                                  "window.domAutomationController.send("
-                                  "clickNoContentScriptedTargetedLink());",
-                                  &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true,
+            EvalJs(orig_contents, "clickNoContentScriptedTargetedLink();"));
 
   // Wait for the window to open.
   Shell* new_shell = new_shell_observer.GetShell();
@@ -2390,10 +2208,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Open a same-site page in a new window.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(), "window.domAutomationController.send(openWindow());", &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "openWindow();"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Wait for the navigation in the new window to finish, if it hasn't.
@@ -3189,12 +3004,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, UpdateOpener) {
   // bar. This is allowed since bar is same-origin with foo's opener.  Use
   // window.open with an empty URL, which should return a reference to the
   // target frame without navigating it.
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      bar_shell,
-      "window.domAutomationController.send(!!window.open('','foo'));",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(bar_shell, "!!window.open('','foo');"));
   EXPECT_FALSE(foo_shell->web_contents()->IsLoading());
   EXPECT_EQ(foo_url, foo_root->current_url());
 
@@ -3206,12 +3016,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, UpdateOpener) {
   // to the opener and check that the right window (bar_shell) receives it.
   std::u16string expected_title = u"opener-msg";
   TitleWatcher title_watcher(bar_shell->web_contents(), expected_title);
-  success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      foo_shell,
-      "window.domAutomationController.send(postToOpener('opener-msg', '*'));",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(foo_shell, "postToOpener('opener-msg', '*');"));
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 
   // Check that a non-null assignment to the opener doesn't change the opener
@@ -3233,12 +3038,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Click a target=foo link to open a popup.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickSameSiteTargetedLink());",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(), "clickSameSiteTargetedLink();"));
   Shell* new_shell = new_shell_observer.GetShell();
   EXPECT_TRUE(new_shell->web_contents()->HasOpener());
 
@@ -3610,12 +3410,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
   auto click_link_and_verify_popup = [this,
                                       root](std::string link_opening_script) {
     ShellAddedObserver new_shell_observer;
-    bool success = false;
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        root->child_at(0),
-        "window.domAutomationController.send(" + link_opening_script + ")",
-        &success));
-    EXPECT_TRUE(success);
+    EXPECT_EQ(true, EvalJs(root->child_at(0), link_opening_script));
 
     Shell* new_shell = new_shell_observer.GetShell();
     EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
@@ -3652,13 +3447,10 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 
   // Test clicking a target=foo link.
   ShellAddedObserver new_shell_observer;
-  bool success = false;
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send(clickSameSiteTargetedLink());"
-      "saveWindowReference();",
-      &success));
-  EXPECT_TRUE(success);
+  EXPECT_EQ(true, EvalJs(shell(),
+                         "const result = clickSameSiteTargetedLink();"
+                         "saveWindowReference();"
+                         "result;"));
   Shell* new_shell = new_shell_observer.GetShell();
 
   // Wait for the navigation in the new tab to finish, if it hasn't.
@@ -5967,9 +5759,11 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerUnloadBrowserTest,
 // its unload handler is able to send a postMessage to the parent frame.
 // See https://crbug.com/857274.
 // TODO(https://crbug.com/989704): Fix flake on Linux TSAN and ASAN.
+// TODO(https://crbug.com/1439710): Fix flake on Linux CFI.
 #if BUILDFLAG(IS_MAC) || (BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)) || \
     (BUILDFLAG(IS_LINUX) &&                                                   \
-     (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)))
+     (defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) ||              \
+      BUILDFLAG(CFI_ICALL_CHECK)))
 #define MAYBE_PostMessageToParentWhenSubframeNavigates \
   DISABLED_PostMessageToParentWhenSubframeNavigates
 #else
@@ -6454,7 +6248,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerDefaultProcessTest,
   url::ScopedSchemeRegistryForTests scheme_registry;
   url::AddEmptyDocumentScheme("siteless");
   GURL siteless_url("siteless://test");
-  EXPECT_FALSE(SiteInstanceImpl::ShouldAssignSiteForURL(siteless_url));
+  EXPECT_FALSE(SiteInstance::ShouldAssignSiteForURL(siteless_url));
 
   // Set up the work to be done after the renderer is asked to commit
   // |siteless_url|, but before the corresponding DidCommitProvisionalLoad IPC

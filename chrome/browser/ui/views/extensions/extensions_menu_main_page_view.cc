@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -51,10 +52,10 @@ std::u16string GetSiteSettingToggleText(bool is_on) {
   return l10n_util::GetStringUTF16(label_id);
 }
 
-// Converts a view to a ExtensionMenuItemView. This cannot
-// be used to *determine* if a view is an ExtensionMenuItemView (it
-// should only be used when the view is known to be one). It is only used as an
-// extra measure to prevent bad static casts.
+// Converts a view to a ExtensionMenuItemView. This cannot be used to
+// *determine* if a view is an ExtensionMenuItemView (it should only be used
+// when the view is known to be one). It is only used as an extra measure to
+// prevent bad static casts.
 ExtensionMenuItemView* GetAsMenuItem(views::View* view) {
   DCHECK(views::IsViewClass<ExtensionMenuItemView>(view));
   return views::AsViewClass<ExtensionMenuItemView>(view);
@@ -224,13 +225,19 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
 void ExtensionsMenuMainPageView::CreateAndInsertMenuItem(
     std::unique_ptr<ExtensionActionViewController> action_controller,
     extensions::ExtensionId extension_id,
-    bool allow_pinning,
+    ExtensionMenuItemView::SiteAccessToggleState site_access_toggle_state,
+    ExtensionMenuItemView::SitePermissionsButtonState
+        site_permissions_button_state,
     int index) {
   auto item = std::make_unique<ExtensionMenuItemView>(
-      browser_, std::move(action_controller), allow_pinning,
+      browser_, std::move(action_controller),
+      // TODO(crbug.com/1390952): Create callback that grants/withhelds site
+      // access when toggling the site access toggle.
+      base::RepeatingClosure(base::NullCallback()),
       base::BindRepeating(
           &ExtensionsMenuNavigationHandler::OpenSitePermissionsPage,
           base::Unretained(navigation_handler_), extension_id));
+  item->Update(site_access_toggle_state, site_permissions_button_state);
   menu_items_->AddChildViewAt(std::move(item), index);
 }
 
@@ -263,21 +270,10 @@ void ExtensionsMenuMainPageView::Update(std::u16string current_site,
       GetSiteSettingToggleText(is_site_settings_toggle_on));
   site_settings_toggle_->SetAccessibleName(
       GetSiteSettingToggleText(is_site_settings_toggle_on));
-
-  // Update menu items.
-  for (auto* view : menu_items_->children()) {
-    GetAsMenuItem(view)->Update();
-  }
 }
 
-void ExtensionsMenuMainPageView::UpdatePinButtons() {
-  for (views::View* view : menu_items_->children()) {
-    GetAsMenuItem(view)->UpdatePinButton();
-  }
-}
-
-std::vector<ExtensionMenuItemView*>
-ExtensionsMenuMainPageView::GetMenuItemsForTesting() const {
+std::vector<ExtensionMenuItemView*> ExtensionsMenuMainPageView::GetMenuItems()
+    const {
   std::vector<ExtensionMenuItemView*> menu_item_views;
   for (views::View* view : menu_items_->children()) {
     menu_item_views.push_back(GetAsMenuItem(view));

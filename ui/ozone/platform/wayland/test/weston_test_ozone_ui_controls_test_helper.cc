@@ -36,11 +36,8 @@ class WaylandGlobalEventWaiter : public WestonTestInputEmulate::Observer {
   };
 
   WaylandGlobalEventWaiter(WaylandEventType event_type,
-                           const gfx::Point& screen_point,
                            WestonTestInputEmulate* emulate)
-      : event_type_(event_type),
-        emulate_(emulate),
-        screen_point_(screen_point) {
+      : event_type_(event_type), emulate_(emulate) {
     Initialize();
   }
 
@@ -136,9 +133,6 @@ class WaylandGlobalEventWaiter : public WestonTestInputEmulate::Observer {
 
   const raw_ptr<WestonTestInputEmulate> emulate_;
 
-  // Expected pointer location on screen.
-  gfx::Point screen_point_;
-
   // Expected button or key.
   int button_or_key_ = -1;
 
@@ -153,6 +147,10 @@ WestonTestOzoneUIControlsTestHelper::WestonTestOzoneUIControlsTestHelper()
 
 WestonTestOzoneUIControlsTestHelper::~WestonTestOzoneUIControlsTestHelper() =
     default;
+
+void WestonTestOzoneUIControlsTestHelper::Reset() {
+  input_emulate_->Reset();
+}
 
 bool WestonTestOzoneUIControlsTestHelper::SupportsScreenCoordinates() const {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -188,13 +186,12 @@ void WestonTestOzoneUIControlsTestHelper::SendKeyEvents(
 void WestonTestOzoneUIControlsTestHelper::SendMouseMotionNotifyEvent(
     gfx::AcceleratedWidget widget,
     const gfx::Point& mouse_loc,
-    const gfx::Point& mouse_screen_loc_in_px,
+    const gfx::Point& mouse_screen_loc,
     base::OnceClosure closure) {
   WaylandGlobalEventWaiter waiter(
-      WaylandGlobalEventWaiter::WaylandEventType::kMotion, mouse_loc,
+      WaylandGlobalEventWaiter::WaylandEventType::kMotion,
       input_emulate_.get());
-  input_emulate_->EmulatePointerMotion(widget, mouse_loc,
-                                       mouse_screen_loc_in_px);
+  input_emulate_->EmulatePointerMotion(widget, mouse_loc, mouse_screen_loc);
   waiter.Wait();
 
   if (!closure.is_null()) {
@@ -210,7 +207,7 @@ void WestonTestOzoneUIControlsTestHelper::SendMouseEvent(
     int button_state,
     int accelerator_state,
     const gfx::Point& mouse_loc,
-    const gfx::Point& mouse_screen_loc_in_px,
+    const gfx::Point& mouse_screen_loc,
     base::OnceClosure closure) {
   uint32_t changed_button = 0;
   switch (type) {
@@ -227,7 +224,9 @@ void WestonTestOzoneUIControlsTestHelper::SendMouseEvent(
       NOTREACHED();
   }
 
-  SendMouseMotionNotifyEvent(widget, mouse_loc, mouse_screen_loc_in_px, {});
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+  SendMouseMotionNotifyEvent(widget, mouse_loc, mouse_screen_loc, {});
+#endif
 
   // Press accelerator keys.
   if (accelerator_state) {
@@ -288,8 +287,7 @@ void WestonTestOzoneUIControlsTestHelper::SendTouchEvent(
   }
 
   WaylandGlobalEventWaiter waiter(
-      WaylandGlobalEventWaiter::WaylandEventType::kTouch, touch_loc,
-      input_emulate_.get());
+      WaylandGlobalEventWaiter::WaylandEventType::kTouch, input_emulate_.get());
   input_emulate_->EmulateTouch(widget, event_type, id, touch_loc);
   waiter.Wait();
   if (!closure.is_null()) {

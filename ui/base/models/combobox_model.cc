@@ -52,13 +52,26 @@ void ComboboxModel::RemoveObserver(ComboboxModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-absl::optional<ui::ColorId> ComboboxModel::GetDropdownForegroundColorAt(
+absl::optional<ui::ColorId> ComboboxModel::GetDropdownForegroundColorIdAt(
     size_t index) const {
   return absl::nullopt;
 }
 
-absl::optional<ui::ColorId> ComboboxModel::GetDropdownBackgroundColorAt(
+absl::optional<ui::ColorId> ComboboxModel::GetDropdownBackgroundColorIdAt(
     size_t index) const {
+  return absl::nullopt;
+}
+
+absl::optional<ui::ColorId>
+ComboboxModel::GetDropdownSelectedBackgroundColorIdAt(size_t index) const {
+  return absl::nullopt;
+}
+
+std::vector<std::string> ComboboxModel::GetLabelFontNameAt(size_t index) {
+  return std::vector<std::string>();
+}
+
+absl::optional<int> ComboboxModel::GetLabelFontSize() {
   return absl::nullopt;
 }
 

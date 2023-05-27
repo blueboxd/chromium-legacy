@@ -83,6 +83,11 @@ const char kDeviceSwitcherUmaName[] = "DeviceSwitcher";
 const char kTabletProductivityUserKey[] = "tablet_productivity_user";
 const char kTabletProductivityUserUmaName[] = "TabletProductivityUser";
 
+// The key is used to decide whether the user should receive a web app
+// installation promotion.
+const char kWebAppInstallationPromoKey[] = "web_app_installation_promo";
+const char kWebAppInstallationPromoUmaName[] = "WebAppInstallationPromo";
+
 // Key for segment that tells in which tier the device used by the user belongs.
 const char kDeviceTierKey[] = "device_tier";
 const char kDeviceTierUmaName[] = "DeviceTier";
@@ -128,6 +133,8 @@ proto::Predictor::PredictorTypeCase GetClassifierType(
 const char kAdaptiveToolbarModelLabelNewTab[] = "NewTab";
 const char kAdaptiveToolbarModelLabelShare[] = "Share";
 const char kAdaptiveToolbarModelLabelVoice[] = "Voice";
+const char kAdaptiveToolbarModelLabelTranslate[] = "Translate";
+const char kAdaptiveToolbarModelLabelAddToBookmarks[] = "AddToBookmarks";
 
 // Labels for contextual page actions model.
 const char kContextualPageActionModelLabelPriceTracking[] = "price_tracking";
@@ -140,6 +147,21 @@ const char kSearchUserModelLabelNone[] = "None";
 const char kSearchUserModelLabelLow[] = "Low";
 const char kSearchUserModelLabelMedium[] = "Medium";
 const char kSearchUserModelLabelHigh[] = "High";
+
+// Labels for device tier model.
+// Any updates to these strings need to also update the field trials allowlist
+// in go/segmentation-field-trials-map.;
+const char kDeviceTierSegmentLabelNone[] = "None";
+const char kDeviceTierSegmentLabelLow[] = "Low";
+const char kDeviceTierSegmentLabelMedium[] = "Medium";
+const char kDeviceTierSegmentLabelHigh[] = "High";
+
+// Labels for tablet productivity user model.
+// Any updates to these strings need to also update the field trials allowlist
+// in go/segmentation-field-trials-map.;
+const char kTabletProductivityUserModelLabelNone[] = "None";
+const char kTabletProductivityUserModelLabelMedium[] = "Medium";
+const char kTabletProductivityUserModelLabelHigh[] = "High";
 
 // Custom inputs for contextual page actions model.
 const char kContextualPageActionModelInputPriceTracking[] = "can_track_price";

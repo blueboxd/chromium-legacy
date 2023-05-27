@@ -33,10 +33,8 @@ AmbientBadgeManager::AmbientBadgeManager(
     : web_contents_(web_contents->GetWeakPtr()),
       app_banner_manager_(app_banner_manager) {}
 
-AmbientBadgeManager::~AmbientBadgeManager() = default;
-
-AmbientBadgeManager::State AmbientBadgeManager::GetStatus() const {
-  return badge_state_;
+AmbientBadgeManager::~AmbientBadgeManager() {
+  RecordAmbientBadgeTeminateState(state_);
 }
 
 void AmbientBadgeManager::MaybeShow(
@@ -48,7 +46,17 @@ void AmbientBadgeManager::MaybeShow(
   app_name_ = app_name;
   a2hs_params_ = std::move(a2hs_params);
   show_banner_callback_ = std::move(show_banner_callback);
-  MaybeShowAmbientBadge();
+
+  if (!base::FeatureList::IsEnabled(
+          features::kInstallableAmbientBadgeInfoBar) &&
+      !base::FeatureList::IsEnabled(
+          features::kInstallableAmbientBadgeMessage)) {
+    return;
+  }
+
+  UpdateState(State::kActive);
+
+  MaybeShowAmbientBadgeLegacy();
 }
 
 void AmbientBadgeManager::AddToHomescreenFromBadge() {
@@ -63,7 +71,7 @@ void AmbientBadgeManager::BadgeDismissed() {
       AppBannerManager::GetCurrentTime());
 
   RecordAmbientBadgeDismissEvent(a2hs_params_->app_type);
-  UpdateState(State::DISMISSED);
+  UpdateState(State::kDismissed);
 }
 
 void AmbientBadgeManager::HideAmbientBadge() {
@@ -84,36 +92,21 @@ void AmbientBadgeManager::HideAmbientBadge() {
   }
 }
 
-void AmbientBadgeManager::OnWorkerCheckResult(const InstallableData& data) {
-  if (!data.NoBlockingErrors()) {
-    return;
-  }
-  passed_worker_check_ = true;
-
-  if (badge_state_ == State::PENDING_WORKER) {
-    CheckEngagementForAmbientBadge();
-  }
-}
-
 void AmbientBadgeManager::UpdateState(State state) {
-  badge_state_ = state;
+  state_ = state;
 }
 
-void AmbientBadgeManager::MaybeShowAmbientBadge() {
-  if (!base::FeatureList::IsEnabled(
-          features::kInstallableAmbientBadgeInfoBar) &&
-      !base::FeatureList::IsEnabled(
-          features::kInstallableAmbientBadgeMessage)) {
-    return;
-  }
-
-  UpdateState(State::ACTIVE);
-
+void AmbientBadgeManager::MaybeShowAmbientBadgeLegacy() {
   // Do not show the ambient badge if it was recently dismissed.
   if (AppBannerSettingsHelper::WasBannerRecentlyBlocked(
           web_contents_.get(), validated_url_, a2hs_params_->GetAppIdentifier(),
           AppBannerManager::GetCurrentTime())) {
-    UpdateState(State::BLOCKED);
+    UpdateState(State::kBlocked);
+    return;
+  }
+
+  if (ShouldSuppressAmbientBadgeOnFirstVisit()) {
+    UpdateState(State::kPendingEngagement);
     return;
   }
 
@@ -122,51 +115,15 @@ void AmbientBadgeManager::MaybeShowAmbientBadge() {
   if (a2hs_params_->app_type == AddToHomescreenParams::AppType::WEBAPK &&
       features::SkipServiceWorkerForInstallPromotion() &&
       !passed_worker_check_) {
-    UpdateState(State::PENDING_WORKER);
+    UpdateState(State::kPendingWorker);
     PerformWorkerCheckForAmbientBadge();
-    return;
-  }
-  CheckEngagementForAmbientBadge();
-}
-
-void AmbientBadgeManager::CheckEngagementForAmbientBadge() {
-  if (ShouldSuppressAmbientBadge()) {
-    UpdateState(State::PENDING_ENGAGEMENT);
-    return;
-  }
-
-  if (base::FeatureList::IsEnabled(features::kAmbientBadgeSiteEngagement) &&
-      !HasSufficientEngagementForAmbientBadge()) {
-    UpdateState(State::PENDING_ENGAGEMENT);
-    return;
-  }
-
-  infobars::ContentInfoBarManager* infobar_manager =
-      webapps::WebappsClient::Get()->GetInfoBarManagerForWebContents(
-          web_contents_.get());
-  bool infobar_visible =
-      infobar_manager &&
-      InstallableAmbientBadgeInfoBarDelegate::GetVisibleAmbientBadgeInfoBar(
-          infobar_manager);
-
-  if (infobar_visible || message_controller_.IsMessageEnqueued()) {
     return;
   }
 
   ShowAmbientBadge();
 }
 
-void AmbientBadgeManager::PerformWorkerCheckForAmbientBadge() {
-  // TODO(crbug/1425546): Move the worker check logic from AppBannerManager.
-  app_banner_manager_->PerformWorkerCheckForAmbientBadge();
-}
-
-bool AmbientBadgeManager::HasSufficientEngagementForAmbientBadge() {
-  // TODO(crbug/1425546): Move the check engagement logic from AppBannerManager.
-  return app_banner_manager_->HasSufficientEngagementForAmbientBadge();
-}
-
-bool AmbientBadgeManager::ShouldSuppressAmbientBadge() {
+bool AmbientBadgeManager::ShouldSuppressAmbientBadgeOnFirstVisit() {
   if (!base::FeatureList::IsEnabled(
           features::kAmbientBadgeSuppressFirstVisit)) {
     return false;
@@ -191,9 +148,37 @@ bool AmbientBadgeManager::ShouldSuppressAmbientBadge() {
   return AppBannerManager::GetCurrentTime() - *last_could_show_time > period;
 }
 
+void AmbientBadgeManager::PerformWorkerCheckForAmbientBadge() {
+  // TODO(crbug/1425546): Move the worker check logic from AppBannerManager.
+  app_banner_manager_->PerformWorkerCheckForAmbientBadge();
+}
+
+void AmbientBadgeManager::OnWorkerCheckResult(const InstallableData& data) {
+  if (!data.NoBlockingErrors()) {
+    return;
+  }
+  passed_worker_check_ = true;
+
+  if (state_ == State::kPendingWorker) {
+    ShowAmbientBadge();
+  }
+}
+
 void AmbientBadgeManager::ShowAmbientBadge() {
+  infobars::ContentInfoBarManager* infobar_manager =
+      webapps::WebappsClient::Get()->GetInfoBarManagerForWebContents(
+          web_contents_.get());
+  bool infobar_visible =
+      infobar_manager &&
+      InstallableAmbientBadgeInfoBarDelegate::GetVisibleAmbientBadgeInfoBar(
+          infobar_manager);
+
+  if (infobar_visible || message_controller_.IsMessageEnqueued()) {
+    return;
+  }
+
   RecordAmbientBadgeDisplayEvent(a2hs_params_->app_type);
-  UpdateState(State::SHOWING);
+  UpdateState(State::kShowing);
 
   WebappInstallSource install_source = InstallableMetrics::GetInstallSource(
       web_contents_.get(), InstallTrigger::AMBIENT_BADGE);

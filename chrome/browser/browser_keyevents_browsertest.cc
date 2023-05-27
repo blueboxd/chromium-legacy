@@ -33,20 +33,14 @@ namespace {
 const char kTestingPage[] = "/keyevents_test.html";
 const char kSuppressEventJS[] =
     "window.domAutomationController.send(setDefaultAction('%ls', %ls));";
-const char kGetResultJS[] =
-    "window.domAutomationController.send(keyEventResult[%d]);";
-const char kGetResultLengthJS[] =
-    "window.domAutomationController.send(keyEventResult.length);";
-const char kGetFocusedElementJS[] =
-    "window.domAutomationController.send(focusedElement);";
+const char kGetResultJS[] = "keyEventResult[%d];";
+const char kGetResultLengthJS[] = "keyEventResult.length;";
+const char kGetFocusedElementJS[] = "focusedElement;";
 const char kSetFocusedElementJS[] =
     "window.domAutomationController.send(setFocusedElement('%ls'));";
-const char kGetTextBoxValueJS[] =
-    "window.domAutomationController.send("
-    "    document.getElementById('%ls').value);";
+const char kGetTextBoxValueJS[] = "document.getElementById('%ls').value;";
 const char kSetTextBoxValueJS[] =
-    "window.domAutomationController.send("
-    "    document.getElementById('%ls').value = '%ls');";
+    "document.getElementById('%ls').value = '%ls';";
 const char kStartTestJS[] =
     "window.domAutomationController.send(startTest(%d));";
 
@@ -169,10 +163,10 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
   void GetResultLength(int tab_index, int* length) {
     ASSERT_LT(tab_index, browser()->tab_strip_model()->count());
-    ASSERT_TRUE(content::ExecuteScriptAndExtractInt(
-        browser()->tab_strip_model()->GetWebContentsAt(tab_index),
-        kGetResultLengthJS,
-        length));
+    *length = content::EvalJs(
+                  browser()->tab_strip_model()->GetWebContentsAt(tab_index),
+                  kGetResultLengthJS)
+                  .ExtractInt();
   }
 
   void CheckResult(int tab_index, int length, const char* const result[]) {
@@ -181,11 +175,11 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
     ASSERT_NO_FATAL_FAILURE(GetResultLength(tab_index, &actual_length));
     ASSERT_GE(actual_length, length);
     for (int i = 0; i < actual_length; ++i) {
-      std::string actual;
-      ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-          browser()->tab_strip_model()->GetWebContentsAt(tab_index),
-          base::StringPrintf(kGetResultJS, i),
-          &actual));
+      std::string actual =
+          content::EvalJs(
+              browser()->tab_strip_model()->GetWebContentsAt(tab_index),
+              base::StringPrintf(kGetResultJS, i))
+              .ExtractString();
 
       // If more events were received than expected, then the additional events
       // must be keyup events.
@@ -198,12 +192,10 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
 
   void CheckFocusedElement(int tab_index, const wchar_t* focused) {
     ASSERT_LT(tab_index, browser()->tab_strip_model()->count());
-    std::string actual;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetWebContentsAt(tab_index),
-        kGetFocusedElementJS,
-        &actual));
-    ASSERT_EQ(base::WideToUTF8(focused), actual);
+    ASSERT_EQ(base::WideToUTF8(focused),
+              content::EvalJs(
+                  browser()->tab_strip_model()->GetWebContentsAt(tab_index),
+                  kGetFocusedElementJS));
   }
 
   void SetFocusedElement(int tab_index, const wchar_t* focused) {
@@ -219,23 +211,19 @@ class BrowserKeyEventsTest : public InProcessBrowserTest {
   void CheckTextBoxValue(int tab_index, const wchar_t* id,
                          const wchar_t* value) {
     ASSERT_LT(tab_index, browser()->tab_strip_model()->count());
-    std::string actual;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetWebContentsAt(tab_index),
-        base::StringPrintf(kGetTextBoxValueJS, id),
-        &actual));
-    ASSERT_EQ(base::WideToUTF8(value), actual);
+    ASSERT_EQ(base::WideToUTF8(value),
+              content::EvalJs(
+                  browser()->tab_strip_model()->GetWebContentsAt(tab_index),
+                  base::StringPrintf(kGetTextBoxValueJS, id)));
   }
 
   void SetTextBoxValue(int tab_index, const wchar_t* id,
                        const wchar_t* value) {
     ASSERT_LT(tab_index, browser()->tab_strip_model()->count());
-    std::string actual;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetWebContentsAt(tab_index),
-        base::StringPrintf(kSetTextBoxValueJS, id, value),
-        &actual));
-    ASSERT_EQ(base::WideToUTF8(value), actual);
+    ASSERT_EQ(base::WideToUTF8(value),
+              content::EvalJs(
+                  browser()->tab_strip_model()->GetWebContentsAt(tab_index),
+                  base::StringPrintf(kSetTextBoxValueJS, id, value)));
   }
 
   void StartTest(int tab_index, int result_length) {

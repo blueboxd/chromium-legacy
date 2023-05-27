@@ -17,7 +17,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/services/storage/public/mojom/local_storage_control.mojom.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -36,6 +36,7 @@ class SiteDataCountingHelperTest : public testing::Test {
   }
 
   void TearDown() override {
+    base::RunLoop().RunUntilIdle();
     profile_.reset();
     base::RunLoop().RunUntilIdle();
   }

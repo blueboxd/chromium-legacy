@@ -83,6 +83,14 @@ void ParentAccessUI::SetUpResources() {
                           IDR_LOCAL_WEB_APPROVALS_AFTER_JS);
   source->AddResourcePath("flows/extension_approvals_disabled.js",
                           IDR_EXTENSION_APPROVALS_DISABLED_JS);
+  source->AddResourcePath("flows/extension_approvals_before.js",
+                          IDR_EXTENSION_APPROVALS_BEFORE_JS);
+  source->AddResourcePath("flows/extension_approvals_after.js",
+                          IDR_EXTENSION_APPROVALS_AFTER_JS);
+  source->AddResourcePath("flows/extension_permission.js",
+                          IDR_EXTENSION_APPROVALS_EXTENSION_PERMISSION_JS);
+  source->AddResourcePath("flows/extension_approvals_template.js",
+                          IDR_EXTENSION_APPROVALS_TEMPLATE_JS);
   source->AddResourcePath("parent_access_before.js",
                           IDR_PARENT_ACCESS_BEFORE_JS);
   source->AddResourcePath("parent_access_disabled.js",
@@ -91,6 +99,7 @@ void ParentAccessUI::SetUpResources() {
                           IDR_PARENT_ACCESS_UI_MOJOM_WEBUI_JS);
   source->AddResourcePath("webview_manager.js",
                           IDR_PARENT_ACCESS_WEBVIEW_MANAGER_JS);
+  source->AddResourcePath("utils.js", IDR_PARENT_ACCESS_UTILS_JS);
   source->AddResourcePath("parent_access_screen.js",
                           IDR_PARENT_ACCESS_SCREEN_JS);
   source->AddResourcePaths(
@@ -124,7 +133,20 @@ void ParentAccessUI::SetUpResources() {
       {"extensionApprovalsDisabledTitle",
        IDS_PARENT_ACCESS_EXTENSION_APPROVALS_DISABLED_TITLE},
       {"extensionApprovalsDisabledSubtitle",
-       IDS_PARENT_ACCESS_EXTENSION_APPROVALS_DISABLED_SUBTITLE}};
+       IDS_PARENT_ACCESS_EXTENSION_APPROVALS_DISABLED_SUBTITLE},
+      {"extensionApprovalsBeforeTitle",
+       IDS_PARENT_ACCESS_EXTENSION_APPROVALS_BEFORE_TITLE},
+      {"extensionApprovalsBeforeSubtitle",
+       IDS_PARENT_ACCESS_EXTENSION_APPROVALS_BEFORE_SUBTITLE},
+      {"extensionApprovalsAfterTitle",
+       IDS_PARENT_ACCESS_EXTENSION_APPROVALS_AFTER_TITLE},
+      {"extensionApprovalsPermissionsHeader",
+       IDS_PARENT_ACCESS_EXTENSION_PERMISSIONS_HEADER},
+      {"extensionApprovalsShowDetailsButton",
+       IDS_PARENT_ACCESS_EXTENSION_PERMISSION_SHOW_DETAILS},
+      {"extensionApprovalsHideDetailsButton",
+       IDS_PARENT_ACCESS_EXTENSION_PERMISSION_HIDE_DETAILS}};
+
   source->AddLocalizedStrings(kLocalizedStrings);
 
   // Enables use of test_loader.html

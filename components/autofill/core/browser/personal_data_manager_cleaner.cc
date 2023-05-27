@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/personal_data_manager_cleaner.h"
 
 #include "base/logging.h"
+#include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/data_model/autofill_profile_comparator.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -14,6 +15,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/features.h"
+#include "components/sync/base/user_selectable_type.h"
 
 namespace autofill {
 
@@ -53,15 +55,13 @@ void PersonalDataManagerCleaner::CleanupDataAndNotifyPersonalDataObservers() {
     return;
   }
 
-  // If sync is enabled for addresses, defer running cleanups until address
-  // sync has started; otherwise, do it now.
-  if (!personal_data_manager_->IsSyncEnabledFor(syncer::AUTOFILL_PROFILE))
+  // If sync is enabled for autofill, defer running cleanups until address
+  // sync and card sync have started; otherwise, do it now.
+  if (!personal_data_manager_->IsSyncEnabledFor(
+          syncer::UserSelectableType::kAutofill)) {
     ApplyAddressFixesAndCleanups();
-
-  // If sync is enabled for credit cards, defer running cleanups until card
-  // sync has started; otherwise, do it now.
-  if (!personal_data_manager_->IsSyncEnabledFor(syncer::AUTOFILL_WALLET_DATA))
     ApplyCardFixesAndCleanups();
+  }
 
   // Log address, credit card, offer, IBAN, and usage data startup metrics.
   personal_data_manager_->LogStoredDataMetrics();
@@ -96,12 +96,10 @@ void PersonalDataManagerCleaner::SyncStarted(syncer::ModelType model_type) {
   }
 
   // Run deferred autofill address profile startup code.
-  // See: PersonalDataManager::OnSyncServiceInitialized
   if (model_type == syncer::AUTOFILL_PROFILE)
     ApplyAddressFixesAndCleanups();
 
   // Run deferred credit card startup code.
-  // See: PersonalDataManager::OnSyncServiceInitialized
   if (model_type == syncer::AUTOFILL_WALLET_DATA)
     ApplyCardFixesAndCleanups();
 }
@@ -183,8 +181,13 @@ bool PersonalDataManagerCleaner::ApplyDedupingRoutine() {
   }
 
   const std::vector<AutofillProfile*>& profiles =
-      personal_data_manager_->GetProfilesFromSource(
-          AutofillProfile::Source::kLocalOrSyncable);
+      base::FeatureList::IsEnabled(
+          features::kAutofillAccountProfilesUnionView) &&
+              base::FeatureList::IsEnabled(
+                  features::kAutofillAccountProfileStorage)
+          ? personal_data_manager_->GetProfiles()
+          : personal_data_manager_->GetProfilesFromSource(
+                AutofillProfile::Source::kLocalOrSyncable);
 
   // No need to de-duplicate if there are less than two profiles.
   if (profiles.size() < 2) {
@@ -195,17 +198,15 @@ bool PersonalDataManagerCleaner::ApplyDedupingRoutine() {
   DVLOG(1) << "Starting autofill profile de-duplication.";
   std::unordered_set<std::string> profiles_to_delete;
   profiles_to_delete.reserve(profiles.size());
-
-  // Create the map used to update credit card's billing addresses after the
-  // dedupe.
+  // Used to update credit card's billing addresses after the dedupe.
   std::unordered_map<std::string, std::string> guids_merge_map;
 
-  // The changes can't happen directly on the profiles, but need to be
-  // updated in the database at first, and then updated on the profiles.
-  // Therefore, we need a copy of profiles to keep track of the changes.
+  // `profiles` contains pointers to the PDM's state. Modifying them directly
+  // won't update them in the database and calling `PDM:UpdateProfile()`
+  // would discard them as a duplicate.
   std::vector<std::unique_ptr<AutofillProfile>> new_profiles;
-  for (auto* it : profiles) {
-    new_profiles.push_back(std::make_unique<AutofillProfile>(*it));
+  for (AutofillProfile* profile : profiles) {
+    new_profiles.push_back(std::make_unique<AutofillProfile>(*profile));
   }
 
   DedupeProfiles(&new_profiles, &profiles_to_delete, &guids_merge_map);
@@ -214,10 +215,10 @@ bool PersonalDataManagerCleaner::ApplyDedupingRoutine() {
   for (const auto& profile : new_profiles) {
     // If the profile was set to be deleted, remove it from the database,
     // otherwise update it.
-    if (profiles_to_delete.count(profile->guid())) {
+    if (profiles_to_delete.contains(profile->guid())) {
       personal_data_manager_->RemoveProfileFromDB(profile->guid());
     } else {
-      personal_data_manager_->UpdateProfileInDB(*(profile.get()));
+      personal_data_manager_->UpdateProfileInDB(*profile);
     }
   }
 
@@ -245,70 +246,95 @@ void PersonalDataManagerCleaner::DedupeProfiles(
   // other profiles, so the loop can be stopped when we reach those. However
   // they need to be in the vector because an unverified profile trying to merge
   // into a similar verified profile will be discarded.
+  // Since profiles earlier in the list are merged into profiles later in the
+  // list, `kLocalOrSyncable` profiles are placed before `kAccount` profiles.
+  // This is because local profiles can be merged into account profiles, but not
+  // the other way around.
   // TODO(crbug.com/1411114): Remove code duplication for sorting profiles.
-  const base::Time comparison_time = AutofillClock::Now();
-  if (existing_profiles->size() > 1) {
-    std::sort(existing_profiles->begin(), existing_profiles->end(),
-              [comparison_time](const std::unique_ptr<AutofillProfile>& a,
-                                const std::unique_ptr<AutofillProfile>& b) {
-                if (a->IsVerified() != b->IsVerified()) {
-                  return !a->IsVerified();
-                }
-                return a->HasGreaterRankingThan(b.get(), comparison_time);
-              });
-  }
+  base::ranges::sort(
+      *existing_profiles, [comparison_time = AutofillClock::Now()](
+                              const std::unique_ptr<AutofillProfile>& a,
+                              const std::unique_ptr<AutofillProfile>& b) {
+        if (a->source() != b->source()) {
+          return a->source() == AutofillProfile::Source::kLocalOrSyncable;
+        }
+        return a->HasGreaterRankingThan(b.get(), comparison_time);
+      });
+  auto first_verified_profile = base::ranges::stable_partition(
+      *existing_profiles, [](const std::unique_ptr<AutofillProfile>& profile) {
+        return !profile->IsVerified();
+      });
 
   AutofillProfileComparator comparator(personal_data_manager_->app_locale());
+  for (auto i = existing_profiles->begin(); i != first_verified_profile; i++) {
+    AutofillProfile* profile_to_merge = i->get();
 
-  for (size_t i = 0; i < existing_profiles->size(); ++i) {
-    AutofillProfile* profile_to_merge = (*existing_profiles)[i].get();
-
-    // If the profile was set to be deleted, skip it. It has already been
-    // merged into another profile.
-    if (profiles_to_delete->count(profile_to_merge->guid()))
+    // If the profile was set to be deleted, skip it. This can happen because
+    // the loop below reassigns `profile_to_merge` to (effectively) `j->get()`.
+    if (profiles_to_delete->contains(profile_to_merge->guid())) {
       continue;
+    }
 
-    // If we have reached the verified profiles, stop trying to merge. Verified
-    // profiles do not get merged.
-    if (profile_to_merge->IsVerified())
-      break;
+    // Profiles in the account storage should not be silently deleted.
+    if (profile_to_merge->source() == AutofillProfile::Source::kAccount) {
+      continue;
+    }
 
-    // If we have not reached the last profile, try to merge |profile_to_merge|
-    // with all the less relevant |existing_profiles|.
-    for (size_t j = i + 1; j < existing_profiles->size(); ++j) {
-      AutofillProfile* existing_profile = (*existing_profiles)[j].get();
+    // Try to merge `profile_to_merge` with a less relevant `existing_profiles`.
+    for (auto j = i + 1; j < existing_profiles->end(); j++) {
+      AutofillProfile& existing_profile = **j;
 
-      // Don't try to merge a profile that was already set for deletion.
-      if (profiles_to_delete->count(existing_profile->guid()))
+      // Don't try to merge a profile that was already set for deletion or that
+      // cannot be merged.
+      if (profiles_to_delete->contains(existing_profile.guid()) ||
+          !comparator.AreMergeable(existing_profile, *profile_to_merge)) {
         continue;
+      }
 
-      // Move on if the profiles are not mergeable.
-      if (!comparator.AreMergeable(*existing_profile, *profile_to_merge))
+      // No new information should silently be introduced to the account
+      // storage. So for account profiles, only merge if the `kLocalOrSyncable`
+      // `profile_to_merge` is a subset.
+      if (existing_profile.source() == AutofillProfile::Source::kAccount &&
+          !profile_to_merge->IsSubsetOf(comparator, existing_profile)) {
         continue;
+      }
 
       // The profiles are found to be mergeable. Attempt to update the existing
       // profile. This returns true if the merge was successful, or if the
       // merge would have been successful but the existing profile IsVerified()
-      // and will not accept updates from profile_to_merge.
-      if (existing_profile->SaveAdditionalInfo(
+      // and will not accept updates from `profile_to_merge`.
+      if (existing_profile.SaveAdditionalInfo(
               *profile_to_merge, personal_data_manager_->app_locale())) {
-        // Keep track that a credit card using |profile_to_merge|'s GUID as its
-        // billing address id should replace it by |existing_profile|'s GUID.
         guids_merge_map->emplace(profile_to_merge->guid(),
-                                 existing_profile->guid());
-
-        // Since |profile_to_merge| was a duplicate of |existing_profile|
-        // and was merged successfully, it can now be deleted.
+                                 existing_profile.guid());
         profiles_to_delete->insert(profile_to_merge->guid());
+
+        // Account profiles track from which service they originate. This allows
+        // Autofill to distinguish between Chrome and non-Chrome account
+        // profiles and measure the added utility of non-Chrome profiles. Since
+        // the `existing_profile` matched the information that was already
+        // present in Autofill (`profile_to_merge`), the account profile doesn't
+        // provide any utility. To capture this in the metric, the merged
+        // profile is treated as a Chrome account profile.
+        if (existing_profile.source() == AutofillProfile::Source::kAccount) {
+          existing_profile.set_initial_creator_id(
+              AutofillProfile::kInitialCreatorOrModifierChrome);
+          existing_profile.set_last_modifier_id(
+              AutofillProfile::kInitialCreatorOrModifierChrome);
+        }
 
         // Now try to merge the new resulting profile with the rest of the
         // existing profiles.
-        profile_to_merge = existing_profile;
-
+        profile_to_merge = &existing_profile;
         // Verified profiles do not get merged. Save some time by not
-        // trying.
-        if (profile_to_merge->IsVerified())
+        // trying. Note that the `existing_profile` (now `profile_to_merge`)
+        // might be verified.
+        // Similarly, account profiles cannot be merged into other profiles,
+        // since that would delete them.
+        if (profile_to_merge->IsVerified() ||
+            profile_to_merge->source() == AutofillProfile::Source::kAccount) {
           break;
+        }
       }
     }
   }

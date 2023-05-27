@@ -52,17 +52,12 @@ void ActiveDirectoryPolicyManager::Init(SchemaRegistry* registry) {
   // Does nothing if |store_| hasn't yet initialized.
   PublishPolicy();
 
-  const base::TimeDelta fetch_interval =
-      ash::features::IsChromadAvailableEnabled()
-          ? kFetchIntervalChromadEnabled
-          : kFetchIntervalChromadDisabled;
-
   scheduler_ = std::make_unique<PolicyScheduler>(
       base::BindRepeating(&ActiveDirectoryPolicyManager::DoPolicyFetch,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ActiveDirectoryPolicyManager::OnPolicyFetched,
                           weak_ptr_factory_.GetWeakPtr()),
-      fetch_interval);
+      kFetchIntervalChromadDisabled);
 
   if (external_data_manager_) {
     // Use the system network context here instead of a context derived from the
@@ -332,16 +327,15 @@ void UserActiveDirectoryPolicyManager::CancelWaitForInitialPolicy() {
 
 void UserActiveDirectoryPolicyManager::OnPublishPolicy() {
   const em::PolicyData* policy_data = store()->policy();
-  if (!policy_data)
+  if (!policy_data) {
     return;
+  }
 
   // Update user affiliation IDs.
-  ash::AffiliationIDSet set_of_user_affiliation_ids(
-      policy_data->user_affiliation_ids().begin(),
-      policy_data->user_affiliation_ids().end());
-
   ash::ChromeUserManager::Get()->SetUserAffiliation(
-      account_id_, set_of_user_affiliation_ids);
+      account_id_,
+      base::flat_set<std::string>(policy_data->user_affiliation_ids().begin(),
+                                  policy_data->user_affiliation_ids().end()));
 }
 
 void UserActiveDirectoryPolicyManager::OnBlockingFetchTimeout() {

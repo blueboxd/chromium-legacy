@@ -1155,6 +1155,13 @@ void NavigationSimulatorImpl::BrowserInitiatedStartAndWaitBeforeUnload() {
   state_ = WAITING_BEFORE_UNLOAD;
 }
 
+void NavigationSimulatorImpl::RenderFrameDeleted(
+    RenderFrameHost* render_frame_host) {
+  if (initiator_frame_host_ == render_frame_host) {
+    initiator_frame_host_ = nullptr;
+  }
+}
+
 void NavigationSimulatorImpl::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   // Check if this navigation is the one we're simulating.
@@ -1336,7 +1343,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
               : blink::mojom::NavigationInitiatorActivationAndAdStatus::
                     kDidNotStartWithTransientActivation,
           false /* is_container_initiated */,
-          false /* is_fullscreen_requested */);
+          false /* is_fullscreen_requested */, false /* has_storage_access */);
   auto common_params = blink::CreateCommonNavigationParams();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->input_start = navigation_input_start_;
@@ -1554,6 +1561,9 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   }
 
   // This mirrors the calculation in
+  // RenderFrameImpl::MakeDidCommitProvisionalLoadParams.
+  // TODO(wjmaclean): If params->url is about:blank or about:srcdoc then we
+  // should also populate params->initiator_base_url in a manner similar to
   // RenderFrameImpl::MakeDidCommitProvisionalLoadParams.
   if (same_document) {
     params->origin = current_rfh->GetLastCommittedOrigin();

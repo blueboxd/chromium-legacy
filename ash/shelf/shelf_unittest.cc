@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_controller.h"
+#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_party_feature_pod_controller.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -21,6 +22,7 @@
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/test/ash_test_base.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
@@ -62,8 +64,8 @@ class ShelfTest : public AshTestBase {
   }
 
  private:
-  ShelfView* shelf_view_ = nullptr;
-  ShelfModel* shelf_model_ = nullptr;
+  raw_ptr<ShelfView, ExperimentalAsh> shelf_view_ = nullptr;
+  raw_ptr<ShelfModel, ExperimentalAsh> shelf_model_ = nullptr;
   std::unique_ptr<ShelfViewTestAPI> test_;
 };
 
@@ -140,6 +142,48 @@ TEST_F(ShelfTest, ToggleAutoHide) {
   EXPECT_EQ(ShelfAutoHideBehavior::kNever, shelf->auto_hide_behavior());
 }
 
+// Various assertions around disabling auto-hide.
+TEST_F(ShelfTest, DisableAutoHide) {
+  // Create and activate a `window`.
+  auto window = std::make_unique<aura::Window>(nullptr);
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  window->SetType(aura::client::WINDOW_TYPE_NORMAL);
+  window->Init(ui::LAYER_TEXTURED);
+  ParentWindowInPrimaryRootWindow(window.get());
+  window->Show();
+  wm::ActivateWindow(window.get());
+
+  // Set `shelf` to always auto-hide.
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+
+  // Verify `shelf` is auto-hidden.
+  ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
+  EXPECT_TRUE(shelf_layout_manager->is_shelf_auto_hidden());
+
+  {
+    // Verify that auto-hide can be disabled using `ScopedDisableAutoHide`.
+    Shelf::ScopedDisableAutoHide disable_auto_hide(shelf);
+    EXPECT_FALSE(shelf_layout_manager->is_shelf_auto_hidden());
+  }
+
+  // Verify `shelf` is auto-hidden.
+  EXPECT_TRUE(shelf_layout_manager->is_shelf_auto_hidden());
+
+  // Lock shelf in auto-hidden state.
+  Shelf::ScopedAutoHideLock auto_hide_lock(shelf);
+  EXPECT_TRUE(shelf_layout_manager->is_shelf_auto_hidden());
+
+  {
+    // Verify that auto-hide cannot be disabled using `ScopedDisableAutoHide`.
+    Shelf::ScopedDisableAutoHide disable_auto_hide(shelf);
+    EXPECT_TRUE(shelf_layout_manager->is_shelf_auto_hidden());
+  }
+
+  // Verify `shelf` is auto-hidden.
+  EXPECT_TRUE(shelf_layout_manager->is_shelf_auto_hidden());
+}
+
 // Tests if shelf is hidden on secondary display after the primary display is
 // changed.
 TEST_F(ShelfTest, ShelfHiddenOnScreenOnSecondaryDisplay) {
@@ -214,7 +258,7 @@ class ShelfPartyQsTileTest : public NoSessionAshTestBase {
   FeaturePodButton* qs_tile_button_view() { return qs_tile_button_view_.get(); }
 
  private:
-  ShelfModel* shelf_model_ = nullptr;
+  raw_ptr<ShelfModel, ExperimentalAsh> shelf_model_ = nullptr;
   std::unique_ptr<ShelfPartyFeaturePodController> qs_tile_controller_;
   std::unique_ptr<FeaturePodButton> qs_tile_button_view_;
 };

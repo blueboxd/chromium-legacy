@@ -129,7 +129,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ActiveScriptController.DeniedExtensions"
-    units="Extension Count" expires_after="2023-07-30">
+    units="Extension Count" expires_after="2023-10-01">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -158,7 +158,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.AppLaunch" enum="AppLaunch"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>benwells@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <owner>tapted@chromium.org</owner>
@@ -265,7 +265,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.BackgroundPageLoadTime2" units="ms"
-    expires_after="2023-08-08">
+    expires_after="2023-10-08">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>
@@ -304,8 +304,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Extensions.BadMessageFunctionName{IsKiosk}"
-    enum="ExtensionFunctions" expires_after="never">
+<histogram name="Extensions.BadMessageFunctionName" enum="ExtensionFunctions"
+    expires_after="never">
 <!-- expires-never: Monitoring core extension system health. -->
 
   <owner>rdevlin.cronin@chromium.org</owner>
@@ -314,14 +314,8 @@ chromium-metrics-reviews@google.com.
     The number of times each Extension function call sends a bad message,
     killing the renderer. This may indicate a bug in that API's implementation
     on the renderer. Note a similar, aggregate metric is BadMessageTerminate_EFD
-    which counts the number of bad messages that are sent overall. In M-102 this
-    histogram was split and events from kiosk extensions are recorded in the
-    separate Extensions.BadMessageFunctionName.Kiosk histogram.
+    which counts the number of bad messages that are sent overall.
   </summary>
-  <token key="IsKiosk">
-    <variant name="" summary="from non-kiosk extension"/>
-    <variant name=".Kiosk" summary="from kiosk extension"/>
-  </token>
 </histogram>
 
 <histogram name="Extensions.BadSyncDataReason" enum="BadSyncDataReason"
@@ -748,7 +742,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.DeclarativeNetRequest.ManifestEnabledRulesCount2"
-    units="rules" expires_after="2023-08-20">
+    units="rules" expires_after="2023-10-22">
   <owner>kelvinjiang@chromium.org</owner>
   <owner>src/extensions/OWNERS</owner>
   <summary>
@@ -1348,7 +1342,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ExtensionReenabledRemotely" units="count"
-    expires_after="2023-08-11">
+    expires_after="2023-10-15">
   <owner>anunoy@chromium.org</owner>
   <owner>chrome-counter-abuse-alerts@google.com</owner>
   <summary>
@@ -2204,7 +2198,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.GuestView.ChangeOwnerWebContentsOnAttach"
-    enum="Boolean" expires_after="2023-08-13">
+    enum="Boolean" expires_after="2023-10-15">
   <owner>mcnee@chromium.org</owner>
   <owner>src/components/guest_view/OWNERS</owner>
   <summary>
@@ -4005,7 +3999,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.ServiceWorkerBackground.StartWorkerStatus"
-    enum="Boolean" expires_after="2023-08-20">
+    enum="Boolean" expires_after="2023-10-22">
   <owner>lazyboy@chromium.org</owner>
   <owner>dbertoni@chromium.org</owner>
   <summary>
@@ -4158,7 +4152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Extensions.Toolbar.InvocationSource"
-    enum="ExtensionActionInvocationSource" expires_after="2023-08-08">
+    enum="ExtensionActionInvocationSource" expires_after="2023-10-08">
   <owner>rdevlin.cronin@chromium.org</owner>
   <owner>extensions-core@chromium.org</owner>
   <summary>

@@ -87,7 +87,11 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // This enum indicates whether a scroll animation was
   // interrupted by another scroll animation. We use this to decide
   // whether or not to fire scrollend.
-  enum class ScrollCompletionMode { kFinished, kInterruptedByScroll };
+  enum class ScrollCompletionMode {
+    kFinished,
+    kInterruptedByScroll,
+    kZeroDelta
+  };
   using ScrollCallback =
       base::OnceCallback<void(ScrollableArea::ScrollCompletionMode)>;
 
@@ -412,7 +416,6 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return false;
   }
   virtual bool ShouldScrollOnMainThread() const { return false; }
-  void MainThreadScrollingDidChange();
 
   // Overlay scrollbars can "fade-out" when inactive. This value should only be
   // updated if BlinkControlsOverlayVisibility is true in the
@@ -481,7 +484,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return mojom::blink::ScrollBehavior::kInstant;
   }
 
-  virtual mojom::blink::ColorScheme UsedColorScheme() const = 0;
+  virtual mojom::blink::ColorScheme UsedColorSchemeScrollbars() const = 0;
 
   // Subtracts space occupied by this ScrollableArea's scrollbars.
   // Does nothing if overlay scrollbars are enabled.
@@ -601,7 +604,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   // Resolves into un-zoomed physical pixels a scroll |delta| based on its
   // ScrollGranularity units.
-  ScrollOffset ResolveScrollDelta(ui::ScrollGranularity, const ScrollOffset& delta);
+  ScrollOffset ResolveScrollDelta(ui::ScrollGranularity,
+                                  const ScrollOffset& delta);
+
+  void MainThreadScrollingDidChange();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,

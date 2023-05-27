@@ -58,7 +58,7 @@ class ASH_EXPORT RoundedDisplayFrameFactory {
   // Note: This method is also used in unittests.
   static std::unique_ptr<RoundedDisplayUiResource> CreateUiResource(
       const gfx::Size& size,
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       UiSourceId ui_source_id,
       bool is_overlay);
 
@@ -74,9 +74,8 @@ class ASH_EXPORT RoundedDisplayFrameFactory {
  private:
   // Configures and appends a `TextureDrawQuad` to the `render_pass`.
   void AppendQuad(const viz::TransferableResource& resource,
-                  const gfx::Size& gutter_size,
-                  const gfx::Size& buffer_size,
                   const gfx::Transform& buffer_to_target_transform,
+                  const RoundedDisplayGutter& gutter,
                   viz::CompositorRenderPass& render_pass_out) const;
 
   // Get a UiResource for the `gutter`. We try to reuse any existing resources

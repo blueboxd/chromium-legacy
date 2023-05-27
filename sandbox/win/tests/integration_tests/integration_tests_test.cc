@@ -9,6 +9,7 @@
 
 #include <windows.h>
 
+#include "base/debug/alias.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -137,14 +138,37 @@ SBOX_TESTS_COMMAND int IntegrationTestsTest_event(int argc, wchar_t** argv) {
   return SBOX_TEST_SUCCEEDED;
 }
 
+// Sets the first inherited event, then allocates memory until it is killed.
+SBOX_TESTS_COMMAND int IntegrationTestsTest_memory(int argc, wchar_t** argv) {
+  if (argc < 1) {
+    return SBOX_TEST_INVALID_PARAMETER;
+  }
+
+  base::win::ScopedHandle handle_started(
+      reinterpret_cast<HANDLE>(wcstoul(argv[0], nullptr, 16)));
+  if (!handle_started.IsValid()) {
+    return SBOX_TEST_NOT_FOUND;
+  }
+
+  if (!::SetEvent(handle_started.Get())) {
+    return SBOX_TEST_FIRST_ERROR;
+  }
+
+  volatile void* ptr = nullptr;
+  do {
+    ptr = malloc(32 * 1000 * 1000);
+    base::debug::Alias(&ptr);
+  } while (ptr);
+
+  return SBOX_TEST_SECOND_ERROR;
+}
+
 // Creates a job and tries to run a process inside it. The function can be
-// called with up to two parameters. The first one if set to "none" means that
-// the child process should be run with the JobLevel::kNone JobLevel else it is
-// run with JobLevel::kLockdown level. The second if present specifies that the
-// JOB_OBJECT_LIMIT_BREAKAWAY_OK flag should be set on the job object created
-// in this function. The return value is either SBOX_TEST_SUCCEEDED if the test
-// has passed or a value between 0 and 4 indicating which part of the test has
-// failed.
+// called with up to two parameters. The process runs with JobLevel::kLockdown
+// level. If a parameter is provided then the JOB_OBJECT_LIMIT_BREAKAWAY_OK
+// flag should be set on the job object created in this function. The return
+// value is either SBOX_TEST_SUCCEEDED if the test has passed or a value between
+// 0 and 4 indicating which part of the test has failed.
 SBOX_TESTS_COMMAND int IntegrationTestsTest_job(int argc, wchar_t **argv) {
   HANDLE job = ::CreateJobObject(NULL, NULL);
   if (!job)
@@ -155,9 +179,9 @@ SBOX_TESTS_COMMAND int IntegrationTestsTest_job(int argc, wchar_t **argv) {
                                    &job_limits, sizeof(job_limits), NULL)) {
     return 1;
   }
-  // We cheat here and assume no 2-nd parameter means no breakaway flag and any
-  // value for the second param means with breakaway flag.
-  if (argc > 1) {
+  // We cheat here and assume no 1st parameter means no breakaway flag and any
+  // value for the first param means with breakaway flag.
+  if (argc > 0) {
     job_limits.BasicLimitInformation.LimitFlags |=
         JOB_OBJECT_LIMIT_BREAKAWAY_OK;
   } else {
@@ -171,11 +195,8 @@ SBOX_TESTS_COMMAND int IntegrationTestsTest_job(int argc, wchar_t **argv) {
   if (!::AssignProcessToJobObject(job, ::GetCurrentProcess()))
     return 3;
 
-  JobLevel job_level = JobLevel::kLockdown;
-  if (argc > 0 && wcscmp(argv[0], L"none") == 0)
-    job_level = JobLevel::kNone;
-
-  TestRunner runner(job_level, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  TestRunner runner(JobLevel::kLockdown, USER_RESTRICTED_SAME_ACCESS,
+                    USER_LOCKDOWN);
   runner.SetTimeout(TestTimeouts::action_timeout());
 
   if (1 != runner.RunTest(L"IntegrationTestsTest_args 1"))
@@ -235,115 +256,7 @@ TEST(IntegrationTestsTest, WaitForStuckChild) {
   runner.SetKillOnDestruction(false);
   ASSERT_EQ(SBOX_TEST_SUCCEEDED,
             runner.RunTest(L"IntegrationTestsTest_stuck 100"));
-  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
-}
-
-TEST(IntegrationTestsTest, NoWaitForStuckChildNoJob) {
-  TestRunner runner(JobLevel::kNone, USER_RESTRICTED_SAME_ACCESS,
-                    USER_LOCKDOWN);
-  runner.SetTimeout(TestTimeouts::action_timeout());
-  runner.SetAsynchronous(true);
-  runner.SetKillOnDestruction(false);
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"IntegrationTestsTest_stuck 2000"));
-  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
-  // In this case the processes are not tracked by the broker and should be
-  // still active.
-  DWORD exit_code;
-  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
-  ASSERT_EQ(STILL_ACTIVE, exit_code);
-  // Terminate the test process now.
-  ::TerminateProcess(runner.process(), 0);
-}
-
-TEST(IntegrationTestsTest, TwoStuckChildrenSecondOneHasNoJob) {
-  TestRunner runner;
-  runner.SetTimeout(TestTimeouts::action_timeout());
-  runner.SetAsynchronous(true);
-  runner.SetKillOnDestruction(false);
-  TestRunner runner2(JobLevel::kNone, USER_RESTRICTED_SAME_ACCESS,
-                     USER_LOCKDOWN);
-  runner2.SetTimeout(TestTimeouts::action_timeout());
-  runner2.SetAsynchronous(true);
-  runner2.SetKillOnDestruction(false);
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"IntegrationTestsTest_stuck 100"));
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner2.RunTest(L"IntegrationTestsTest_stuck 2000"));
-  // Actually both runners share the same singleton broker.
-  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
-  // In this case the processes are not tracked by the broker and should be
-  // still active.
-  DWORD exit_code;
-  // Checking the exit code for |runner| is flaky on the slow bots but at
-  // least we know that the wait above has succeeded if we are here.
-  ASSERT_TRUE(::GetExitCodeProcess(runner2.process(), &exit_code));
-  ASSERT_EQ(STILL_ACTIVE, exit_code);
-  // Terminate the test process now.
-  ::TerminateProcess(runner2.process(), 0);
-}
-
-TEST(IntegrationTestsTest, TwoStuckChildrenFirstOneHasNoJob) {
-  TestRunner runner;
-  runner.SetTimeout(TestTimeouts::action_timeout());
-  runner.SetAsynchronous(true);
-  runner.SetKillOnDestruction(false);
-  TestRunner runner2(JobLevel::kNone, USER_RESTRICTED_SAME_ACCESS,
-                     USER_LOCKDOWN);
-  runner2.SetTimeout(TestTimeouts::action_timeout());
-  runner2.SetAsynchronous(true);
-  runner2.SetKillOnDestruction(false);
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner2.RunTest(L"IntegrationTestsTest_stuck 2000"));
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"IntegrationTestsTest_stuck 100"));
-  // Actually both runners share the same singleton broker.
-  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
-  // In this case the processes are not tracked by the broker and should be
-  // still active.
-  DWORD exit_code;
-  // Checking the exit code for |runner| is flaky on the slow bots but at
-  // least we know that the wait above has succeeded if we are here.
-  ASSERT_TRUE(::GetExitCodeProcess(runner2.process(), &exit_code));
-  ASSERT_EQ(STILL_ACTIVE, exit_code);
-  // Terminate the test process now.
-  ::TerminateProcess(runner2.process(), 0);
-}
-
-std::unique_ptr<TestRunner> StuckChildrenRunner() {
-  auto runner = std::make_unique<TestRunner>(
-      JobLevel::kNone, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
-  runner->SetTimeout(TestTimeouts::action_timeout());
-  runner->SetAsynchronous(true);
-  runner->SetKillOnDestruction(false);
-  return runner;
-}
-
-TEST(IntegrationTestsTest, MultipleStuckChildrenSequential) {
-  auto runner = StuckChildrenRunner();
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner->RunTest(L"IntegrationTestsTest_stuck 100"));
-  // All runners share the same singleton broker.
-  auto* broker = runner->broker();
-  ASSERT_EQ(SBOX_ALL_OK, broker->WaitForAllTargets());
-
-  runner = StuckChildrenRunner();
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner->RunTest(L"IntegrationTestsTest_stuck 2000"));
-  ASSERT_EQ(SBOX_ALL_OK, broker->WaitForAllTargets());
-
-  DWORD exit_code;
-  // Checking the exit code for |runner| is flaky on the slow bots but at
-  // least we know that the wait above has succeeded if we are here.
-  ASSERT_TRUE(::GetExitCodeProcess(runner->process(), &exit_code));
-  ASSERT_EQ(STILL_ACTIVE, exit_code);
-  // Terminate the test process now.
-  ::TerminateProcess(runner->process(), 0);
-
-  runner = StuckChildrenRunner();
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner->RunTest(L"IntegrationTestsTest_stuck 100"));
-  ASSERT_EQ(SBOX_ALL_OK, broker->WaitForAllTargets());
+  ASSERT_TRUE(runner.WaitForAllTargets());
 }
 
 // Running from inside job that allows us to escape from it should be ok.
@@ -352,7 +265,7 @@ TEST(IntegrationTestsTest, RunChildFromInsideJob) {
   runner.SetUnsandboxed(true);
   runner.SetTimeout(TestTimeouts::action_timeout());
   ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"IntegrationTestsTest_job with_job escape_flag"));
+            runner.RunTest(L"IntegrationTestsTest_job escape_flag"));
 }
 
 // Running from inside job that doesn't allow us to escape from it should fail
@@ -361,18 +274,7 @@ TEST(IntegrationTestsTest, RunChildFromInsideJobNoEscape) {
   TestRunner runner;
   runner.SetUnsandboxed(true);
   runner.SetTimeout(TestTimeouts::action_timeout());
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"IntegrationTestsTest_job with_job"));
-}
-
-// Running without a job object should be ok regardless of the fact that we are
-// running inside an outer job.
-TEST(IntegrationTestsTest, RunJoblessChildFromInsideJob) {
-  TestRunner runner;
-  runner.SetUnsandboxed(true);
-  runner.SetTimeout(TestTimeouts::action_timeout());
-  ASSERT_EQ(SBOX_TEST_SUCCEEDED,
-            runner.RunTest(L"IntegrationTestsTest_job none"));
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"IntegrationTestsTest_job"));
 }
 
 // GetPolicyDiagnostics validation
@@ -419,7 +321,7 @@ TEST(IntegrationTestsTest, GetPolicyDiagnosticsReflectsActiveChildren) {
   }
 
   SetEvent(handle_done.Get());
-  ASSERT_EQ(SBOX_ALL_OK, runner.broker()->WaitForAllTargets());
+  ASSERT_TRUE(runner.WaitForAllTargets());
 
   // TODO(ajgo) WaitForAllTargets is satisfied when the final process
   // in a job exits but before the final job notification is received
@@ -434,6 +336,29 @@ TEST(IntegrationTestsTest, GetPolicyDiagnosticsReflectsActiveChildren) {
     auto policies = waiter->WaitForPolicies();
     ASSERT_EQ(policies->size(), 0U);
   }
+}
+
+// SetJobNotificationReceiver validation
+TEST(IntegrationTestsTest, JobMemoryLimitCounted) {
+  TestRunner runner;
+
+  runner.SetAsynchronous(true);
+  base::win::ScopedHandle handle_started(
+      CreateEventW(nullptr, true, false, nullptr));
+
+  runner.GetPolicy()->AddHandleToShare(handle_started.Get());
+  runner.GetPolicy()->GetConfig()->SetJobMemoryLimit(256 * 1000 * 1000);
+  auto cmd_line = base::StringPrintf(L"IntegrationTestsTest_memory %p",
+                                     handle_started.Get());
+
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(cmd_line.c_str()));
+  ASSERT_EQ(WAIT_OBJECT_0,
+            ::WaitForSingleObject(handle_started.Get(),
+                                  sandbox::SboxTestEventTimeout()));
+  ASSERT_TRUE(runner.WaitForAllTargets());
+  DWORD exit_code = 0;
+  ASSERT_TRUE(::GetExitCodeProcess(runner.process(), &exit_code));
+  ASSERT_EQ(DWORD{SBOX_FATAL_MEMORY_EXCEEDED}, exit_code);
 }
 
 }  // namespace sandbox

@@ -19,7 +19,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/test/browser_test.h"
@@ -38,8 +38,8 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/common/extensions/extension_test_util.h"
 #include "extensions/common/extensions_client.h"
-#include "extensions/common/features/features_test_utils.h"
 #endif
 
 using ChromeContentRendererClientSearchBoxTest = ChromeRenderViewTest;
@@ -211,9 +211,9 @@ IN_PROC_BROWSER_TEST_F(ChromeContentRendererClientBrowserTest,
   {
     const auto& map =
         extensions_client->GetFeatureDelegatedAvailabilityCheckMap();
-    EXPECT_EQ(6u, map.size());
-    for (const auto* feature : extensions::features_test_utils::
-             GetExpectedDelegatedFeaturesForTest()) {
+    EXPECT_EQ(5u, map.size());
+    for (const auto* feature :
+         extension_test_util::GetExpectedDelegatedFeaturesForTest()) {
       EXPECT_EQ(1u, map.count(feature));
     }
   }

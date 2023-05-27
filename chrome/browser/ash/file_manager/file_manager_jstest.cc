@@ -350,6 +350,14 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ReducerVolumes) {
   RunTestURL("state/reducers/volumes_unittest.js");
 }
 
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ReducerBulkPinning) {
+  RunTestURL("state/reducers/bulk_pinning_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, ReducerPreferences) {
+  RunTestURL("state/reducers/preferences_unittest.js");
+}
+
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, NudgeContainer) {
   RunTestURL("containers/nudge_container_unittest.js");
 }
@@ -400,4 +408,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, BreadcrumbContainer) {
 
 IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeContainer) {
   RunTestURL("containers/directory_tree_container_unittest.js");
+}
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, EntryUtils) {
+  RunTestURL("common/js/entry_utils_unittest.js");
 }

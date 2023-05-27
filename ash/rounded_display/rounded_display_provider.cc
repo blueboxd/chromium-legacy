@@ -5,7 +5,6 @@
 #include "ash/rounded_display/rounded_display_provider.h"
 
 #include <algorithm>
-#include <iterator>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -170,7 +169,7 @@ bool RoundedDisplayProvider::UpdateRoundedDisplaySurface() {
   host_->UpdateSurface(content_rect, damage_rect, /*synchronous_draw=*/true);
 
   current_device_scale_factor_ = display.device_scale_factor();
-  current_rotation_ = display.rotation();
+  current_logical_rotation_ = display.rotation();
 
   return true;
 }
@@ -178,15 +177,11 @@ bool RoundedDisplayProvider::UpdateRoundedDisplaySurface() {
 bool RoundedDisplayProvider::ShouldSubmitNewCompositorFrame(
     const display::Display& display) const {
   return display.device_scale_factor() != current_device_scale_factor_ ||
-         display.rotation() != current_rotation_;
+         display.rotation() != current_logical_rotation_;
 }
 
 void RoundedDisplayProvider::GetGuttersInDrawOrder(Gutters& gutters) const {
-  for (auto& gutter : overlay_gutters_) {
-    gutters.push_back(gutter.get());
-  }
-
-  for (auto& gutter : non_overlay_gutters_) {
+  for (const auto& gutter : overlay_gutters_) {
     gutters.push_back(gutter.get());
   }
 }
@@ -203,9 +198,6 @@ bool RoundedDisplayProvider::CreateGutters(
 
   overlay_gutters_ = gutter_factory_->CreateOverlayGutters(
       panel_size, panel_radii, create_vertical_gutters);
-
-  non_overlay_gutters_ =
-      gutter_factory_->CreateNonOverlayGutters(panel_size, panel_radii);
 
   return true;
 }

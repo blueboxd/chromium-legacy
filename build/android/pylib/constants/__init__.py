@@ -25,6 +25,7 @@ keyevent = devil.android.sdk.keyevent
 DIR_SOURCE_ROOT = os.environ.get('CHECKOUT_SOURCE_ROOT',
     os.path.abspath(os.path.join(os.path.dirname(__file__),
                                  os.pardir, os.pardir, os.pardir, os.pardir)))
+JAVA_HOME = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'jdk', 'current')
 
 PACKAGE_INFO = dict(chrome.PACKAGE_INFO)
 PACKAGE_INFO.update({
@@ -78,6 +79,11 @@ PACKAGE_INFO.update({
     chrome.PackageInfo('org.chromium.webview_ui_test',
                        'org.chromium.webview_ui_test.WebViewUiTestActivity',
                        'webview-command-line', None),
+    'weblayer_browsertests':
+    chrome.PackageInfo(
+        'org.chromium.weblayer_browsertests_apk',
+        'org.chromium.weblayer_browsertests_apk.WebLayerBrowserTestsActivity',
+        'chrome-native-tests-command-line', None),
 })
 
 

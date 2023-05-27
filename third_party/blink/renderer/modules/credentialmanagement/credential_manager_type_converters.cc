@@ -21,12 +21,12 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authentication_extensions_prf_values.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_authenticator_selection_criteria.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_cable_authentication_data.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_cable_registration_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_logout_r_ps_request.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_credential_request_options_context.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_provider_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_identity_user_info.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_login_hint.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_m_doc_element.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_m_doc_provider.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_creation_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_public_key_credential_parameters.h"
@@ -53,8 +53,6 @@ using blink::mojom::blink::AuthenticatorSelectionCriteriaPtr;
 using blink::mojom::blink::AuthenticatorTransport;
 using blink::mojom::blink::CableAuthentication;
 using blink::mojom::blink::CableAuthenticationPtr;
-using blink::mojom::blink::CableRegistration;
-using blink::mojom::blink::CableRegistrationPtr;
 using blink::mojom::blink::CredentialInfo;
 using blink::mojom::blink::CredentialInfoPtr;
 using blink::mojom::blink::CredentialType;
@@ -63,13 +61,14 @@ using blink::mojom::blink::DevicePublicKeyRequestPtr;
 using blink::mojom::blink::IdentityProvider;
 using blink::mojom::blink::IdentityProviderConfig;
 using blink::mojom::blink::IdentityProviderConfigPtr;
-using blink::mojom::blink::IdentityProviderLoginHint;
 using blink::mojom::blink::IdentityProviderPtr;
 using blink::mojom::blink::IdentityUserInfo;
 using blink::mojom::blink::IdentityUserInfoPtr;
 using blink::mojom::blink::LargeBlobSupport;
 using blink::mojom::blink::LogoutRpsRequest;
 using blink::mojom::blink::LogoutRpsRequestPtr;
+using blink::mojom::blink::MDocElement;
+using blink::mojom::blink::MDocElementPtr;
 using blink::mojom::blink::MDocProvider;
 using blink::mojom::blink::MDocProviderPtr;
 using blink::mojom::blink::PRFValues;
@@ -532,13 +531,6 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
     if (extensions->hasAppidExclude()) {
       mojo_options->appid_exclude = extensions->appidExclude();
     }
-    if (extensions->hasCableRegistration()) {
-      CableRegistrationPtr mojo_cable =
-          CableRegistration::From(*extensions->cableRegistration());
-      if (mojo_cable) {
-        mojo_options->cable_registration_data = std::move(mojo_cable);
-      }
-    }
     if (extensions->hasHmacCreateSecret()) {
       mojo_options->hmac_create_secret = extensions->hmacCreateSecret();
     }
@@ -629,20 +621,6 @@ TypeConverter<CableAuthenticationPtr, blink::CableAuthenticationData>::Convert(
       return nullptr;
   }
 
-  return entity;
-}
-
-// static
-CableRegistrationPtr
-TypeConverter<CableRegistrationPtr, blink::CableRegistrationData>::Convert(
-    const blink::CableRegistrationData& data) {
-  auto entity = CableRegistration::New();
-  entity->versions = data.versions();
-  entity->relying_party_public_key =
-      ConvertFixedSizeArray(data.rpPublicKey(), 65);
-  if (entity->relying_party_public_key.empty()) {
-    return nullptr;
-  }
   return entity;
 }
 
@@ -757,18 +735,28 @@ TypeConverter<IdentityProviderConfigPtr, blink::IdentityProviderConfig>::
   mojo_provider->config_url = blink::KURL(provider.configURL());
   mojo_provider->client_id = provider.clientId();
   mojo_provider->nonce = provider.getNonceOr("");
-  auto login_hint = IdentityProviderLoginHint::New();
-  if (blink::RuntimeEnabledFeatures::FedCmLoginHintEnabled() &&
-      provider.hasLoginHint()) {
-    login_hint->email = provider.loginHint()->getEmailOr("");
-    login_hint->id = provider.loginHint()->getIdOr("");
-    login_hint->is_required = provider.loginHint()->getIsRequiredOr(false);
+  if (blink::RuntimeEnabledFeatures::FedCmLoginHintEnabled()) {
+    mojo_provider->login_hint = provider.getLoginHintOr("");
   } else {
-    login_hint->email = "";
-    login_hint->id = "";
-    login_hint->is_required = false;
+    mojo_provider->login_hint = "";
   }
-  mojo_provider->login_hint = std::move(login_hint);
+
+  if (blink::RuntimeEnabledFeatures::FedCmAuthzEnabled()) {
+    if (provider.hasScope()) {
+      mojo_provider->scope = provider.scope();
+    }
+    if (provider.hasResponseType()) {
+      mojo_provider->responseType = provider.responseType();
+    }
+    if (provider.hasParams()) {
+      HashMap<String, String> params;
+      for (const auto& pair : provider.params()) {
+        params.Set(pair.first, pair.second);
+      }
+      mojo_provider->params = std::move(params);
+    }
+  }
+
   return mojo_provider;
 }
 
@@ -781,7 +769,15 @@ TypeConverter<IdentityProviderPtr, blink::IdentityProviderConfig>::Convert(
       // TODO(https://crbug.com/1416939): make sure the MDocs API
       // works well with the Multiple IdP API.
       !blink::RuntimeEnabledFeatures::FedCmMultipleIdentityProvidersEnabled()) {
-    auto mdoc = MDocProvider::New();
+    WTF::Vector<MDocElementPtr> requested_elements;
+    for (auto element : provider.mdoc()->requestedElements()) {
+      auto requested_element =
+          MDocElement::New(element->elementNamespace(), element->name());
+      requested_elements.push_back(std::move(requested_element));
+    }
+    auto mdoc = MDocProvider::New(provider.mdoc()->documentType(),
+                                  provider.mdoc()->readerPublicKey(),
+                                  std::move(requested_elements));
     return IdentityProvider::NewMdoc(std::move(mdoc));
   } else {
     auto config = IdentityProviderConfig::From(provider);

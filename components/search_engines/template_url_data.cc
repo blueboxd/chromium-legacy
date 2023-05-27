@@ -5,13 +5,13 @@
 #include "components/search_engines/template_url_data.h"
 
 #include "base/check.h"
-#include "base/guid.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "base/uuid.h"
 #include "base/values.h"
 
 namespace {
@@ -31,10 +31,10 @@ std::string GenerateGUID(int prepopulate_id, int starter_pack_id) {
     guid = base::StringPrintf("ec205736-edd7-4022-a9a3-b431fc%06d",
                               starter_pack_id);
   } else {
-    guid = base::GenerateGUID();
+    guid = base::Uuid::GenerateRandomV4().AsLowercaseString();
   }
 
-  DCHECK(base::IsValidGUID(guid));
+  DCHECK(base::Uuid::ParseCaseInsensitive(guid).is_valid());
   return guid;
 }
 
@@ -47,10 +47,11 @@ TemplateURLData::TemplateURLData()
       last_modified(base::Time::Now()),
       last_visited(base::Time()),
       created_by_policy(false),
+      enforced_by_policy(false),
       created_from_play_api(false),
       usage_count(0),
       prepopulate_id(0),
-      sync_guid(base::GenerateGUID()),
+      sync_guid(base::Uuid::GenerateRandomV4().AsLowercaseString()),
       keyword_(u"dummy"),
       url_("x") {}
 
@@ -109,6 +110,7 @@ TemplateURLData::TemplateURLData(
       date_created(base::Time()),
       last_modified(base::Time()),
       created_by_policy(false),
+      enforced_by_policy(false),
       created_from_play_api(false),
       usage_count(0),
       prepopulate_id(prepopulate_id),

@@ -15,7 +15,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_metrics.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/ash/components/proximity_auth/proximity_auth_pref_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 
@@ -55,8 +54,6 @@ proximity_auth::ScreenlockBridge::UserPodCustomIcon GetIconForState(
     case SmartLockState::kInactive:
     case SmartLockState::kDisabled:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE;
-    case SmartLockState::kPasswordReentryRequired:
-      return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED;
     case SmartLockState::kPrimaryUserAbsent:
       return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED;
   }
@@ -65,15 +62,12 @@ proximity_auth::ScreenlockBridge::UserPodCustomIcon GetIconForState(
   return proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_NONE;
 }
 
-bool HardlockOnClick(SmartLockState state) {
-  return state != SmartLockState::kInactive;
-}
-
 size_t GetTooltipResourceId(SmartLockState state) {
   switch (state) {
     case SmartLockState::kInactive:
     case SmartLockState::kDisabled:
     case SmartLockState::kConnectingToPhone:
+    case SmartLockState::kPhoneAuthenticated:
       return 0;
     case SmartLockState::kBluetoothDisabled:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_NO_BLUETOOTH;
@@ -89,10 +83,6 @@ size_t GetTooltipResourceId(SmartLockState state) {
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_RSSI_TOO_LOW;
     case SmartLockState::kPhoneFoundLockedAndDistant:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED_AND_RSSI_TOO_LOW;
-    case SmartLockState::kPhoneAuthenticated:
-      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS;
-    case SmartLockState::kPasswordReentryRequired:
-      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PASSWORD_REAUTH;
     case SmartLockState::kPrimaryUserAbsent:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PRIMARY_USER_ABSENT;
   }
@@ -119,14 +109,10 @@ bool IsLockedState(SmartLockState state) {
 
 SmartLockStateHandler::SmartLockStateHandler(
     const AccountId& account_id,
-    HardlockState initial_hardlock_state,
-    proximity_auth::ScreenlockBridge* screenlock_bridge,
-    proximity_auth::ProximityAuthPrefManager* pref_manager)
+    proximity_auth::ScreenlockBridge* screenlock_bridge)
     : state_(SmartLockState::kInactive),
       account_id_(account_id),
-      screenlock_bridge_(screenlock_bridge),
-      pref_manager_(pref_manager),
-      hardlock_state_(initial_hardlock_state) {
+      screenlock_bridge_(screenlock_bridge) {
   DCHECK(screenlock_bridge_);
   screenlock_bridge_->AddObserver(this);
 }
@@ -175,11 +161,6 @@ void SmartLockStateHandler::ChangeState(SmartLockState new_state) {
 
   // TODO(crbug.com/1233614): Return early if kSmartLockUIRevamp is enabled.
 
-  if (hardlock_state_ != NO_HARDLOCK) {
-    ShowHardlockUI();
-    return;
-  }
-
   proximity_auth::ScreenlockBridge::UserPodCustomIcon icon =
       GetIconForState(state_);
 
@@ -190,9 +171,6 @@ void SmartLockStateHandler::ChangeState(SmartLockState new_state) {
 
   proximity_auth::ScreenlockBridge::UserPodCustomIconInfo icon_info;
   icon_info.SetIcon(icon);
-
-  if (HardlockOnClick(state_))
-    icon_info.SetHardlockOnClick();
 
   UpdateTooltipOptions(&icon_info);
 
@@ -213,29 +191,6 @@ void SmartLockStateHandler::ChangeState(SmartLockState new_state) {
                                                             icon_info);
 }
 
-void SmartLockStateHandler::SetHardlockState(HardlockState new_state) {
-  if (hardlock_state_ == new_state)
-    return;
-
-  if (new_state == LOGIN_FAILED && hardlock_state_ != NO_HARDLOCK)
-    return;
-
-  hardlock_state_ = new_state;
-
-  // If hardlock_state_ was set to NO_HARDLOCK, this means the screen is about
-  // to get unlocked. No need to update it in this case.
-  if (hardlock_state_ != NO_HARDLOCK) {
-    hardlock_ui_shown_ = false;
-
-    RefreshSmartLockState();
-  }
-}
-
-void SmartLockStateHandler::MaybeShowHardlockUI() {
-  if (hardlock_state_ != NO_HARDLOCK)
-    ShowHardlockUI();
-}
-
 void SmartLockStateHandler::OnScreenDidLock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   did_see_locked_phone_ = IsLockedState(state_);
@@ -244,10 +199,6 @@ void SmartLockStateHandler::OnScreenDidLock(
 
 void SmartLockStateHandler::OnScreenDidUnlock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
-  if (hardlock_state_ == LOGIN_FAILED)
-    hardlock_state_ = NO_HARDLOCK;
-  hardlock_ui_shown_ = false;
-
   // Upon a successful unlock event, record whether the user's phone was locked
   // at any point while the lock screen was up.
   if (state_ == SmartLockState::kPhoneAuthenticated)
@@ -262,94 +213,6 @@ void SmartLockStateHandler::RefreshSmartLockState() {
   // This should force updating smart lock state.
   state_ = SmartLockState::kInactive;
   ChangeState(last_state);
-}
-
-void SmartLockStateHandler::ShowHardlockUI() {
-  DCHECK(hardlock_state_ != NO_HARDLOCK);
-
-  if (!screenlock_bridge_->IsLocked())
-    return;
-
-  // Do not override online signin.
-  const proximity_auth::mojom::AuthType existing_auth_type =
-      screenlock_bridge_->lock_handler()->GetAuthType(account_id_);
-  if (existing_auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN)
-    return;
-
-  if (existing_auth_type != proximity_auth::mojom::AuthType::OFFLINE_PASSWORD) {
-    screenlock_bridge_->lock_handler()->SetAuthType(
-        account_id_, proximity_auth::mojom::AuthType::OFFLINE_PASSWORD,
-        std::u16string());
-  }
-
-  if (hardlock_state_ == NO_PAIRING) {
-    screenlock_bridge_->lock_handler()->HideUserPodCustomIcon(account_id_);
-    hardlock_ui_shown_ = false;
-    return;
-  }
-
-  if (hardlock_ui_shown_)
-    return;
-
-  proximity_auth::ScreenlockBridge::UserPodCustomIconInfo icon_info;
-  if (hardlock_state_ == LOGIN_FAILED) {
-    icon_info.SetIcon(
-        proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED);
-  } else if (hardlock_state_ == PAIRING_CHANGED ||
-             hardlock_state_ == PAIRING_ADDED) {
-    icon_info.SetIcon(proximity_auth::ScreenlockBridge::
-                          USER_POD_CUSTOM_ICON_LOCKED_TO_BE_ACTIVATED);
-  } else {
-    icon_info.SetIcon(
-        proximity_auth::ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED);
-  }
-
-  std::u16string device_name = GetDeviceName();
-  std::u16string tooltip;
-  switch (hardlock_state_) {
-    case USER_HARDLOCK:
-      tooltip = l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_USER, device_name);
-      break;
-    case PAIRING_CHANGED:
-      tooltip = l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED,
-          device_name);
-      break;
-    case PAIRING_ADDED:
-      tooltip = l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED,
-          device_name);
-      break;
-    case LOGIN_FAILED:
-      tooltip = l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE);
-      break;
-    case LOGIN_DISABLED:
-      tooltip = l10n_util::GetStringUTF16(
-          IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_DISABLED);
-      break;
-    default:
-      LOG(ERROR) << "Unknown hardlock state: " << hardlock_state_;
-      NOTREACHED();
-  }
-
-  bool autoshow = true;
-  // TODO(crbug.com/1152491): Only call into SetHasShownLoginDisabledMessage()
-  // if this is a signin screen, not lock screen, context.
-  if (hardlock_state_ == LOGIN_DISABLED) {
-    // If Signin with Smart Lock is disabled, only automatically show the
-    // tooltip if it hasn't been shown yet. See https://crbug.com/848893 for
-    // details.
-    autoshow = !pref_manager_->HasShownLoginDisabledMessage();
-    pref_manager_->SetHasShownLoginDisabledMessage(true);
-  }
-
-  icon_info.SetTooltip(tooltip, autoshow);
-
-  screenlock_bridge_->lock_handler()->ShowUserPodCustomIcon(account_id_,
-                                                            icon_info);
-  hardlock_ui_shown_ = true;
 }
 
 void SmartLockStateHandler::UpdateTooltipOptions(
@@ -382,9 +245,6 @@ std::u16string SmartLockStateHandler::GetDeviceName() {
 }
 
 void SmartLockStateHandler::UpdateScreenlockAuthType() {
-  if (hardlock_state_ != NO_HARDLOCK)
-    return;
-
   // Do not override online signin.
   const proximity_auth::mojom::AuthType existing_auth_type =
       screenlock_bridge_->lock_handler()->GetAuthType(account_id_);

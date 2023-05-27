@@ -276,8 +276,7 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
     ScriptState* script_state,
     const ImageBitmapOptions* options)
     : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
-      loader_(std::make_unique<FileReaderLoader>(
-          FileReaderLoader::kReadAsArrayBuffer,
+      loader_(MakeGarbageCollected<FileReaderLoader>(
           this,
           GetExecutionContext()->GetTaskRunner(TaskType::kFileReading))),
       factory_(&factory),
@@ -299,7 +298,10 @@ void ImageBitmapFactories::ImageBitmapLoader::RejectPromise(
   ScriptState* resolver_script_state = resolver_->GetScriptState();
   if (!IsInParallelAlgorithmRunnable(resolver_->GetExecutionContext(),
                                      resolver_script_state)) {
-    loader_.reset();
+    if (loader_) {
+      loader_->Cancel();
+      loader_.Clear();
+    }
     factory_->DidFinishLoading(this);
     return;
   }
@@ -320,19 +322,25 @@ void ImageBitmapFactories::ImageBitmapLoader::RejectPromise(
     default:
       NOTREACHED();
   }
-  loader_.reset();
+  if (loader_) {
+    loader_->Cancel();
+    loader_.Clear();
+  }
   factory_->DidFinishLoading(this);
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::ContextDestroyed() {
-  if (loader_)
+  if (loader_) {
     factory_->DidFinishLoading(this);
-  loader_.reset();
+    loader_->Cancel();
+    loader_.Clear();
+  }
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::DidFinishLoading() {
-  auto contents = loader_->TakeContents();
-  loader_.reset();
+void ImageBitmapFactories::ImageBitmapLoader::DidFinishLoading(
+    FileReaderData data) {
+  auto contents = std::move(data).AsArrayBufferContents();
+  loader_.Clear();
   if (!contents.IsValid()) {
     RejectPromise(kAllocationFailureImageBitmapRejectionReason);
     return;
@@ -340,7 +348,9 @@ void ImageBitmapFactories::ImageBitmapLoader::DidFinishLoading() {
   ScheduleAsyncImageBitmapDecoding(std::move(contents));
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::DidFail(FileErrorCode) {
+void ImageBitmapFactories::ImageBitmapLoader::DidFail(
+    FileErrorCode error_code) {
+  FileReaderAccumulator::DidFail(error_code);
   RejectPromise(kUndecodableImageBitmapRejectionReason);
 }
 
@@ -419,9 +429,11 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
 
 void ImageBitmapFactories::ImageBitmapLoader::Trace(Visitor* visitor) const {
   ExecutionContextLifecycleObserver::Trace(visitor);
+  FileReaderAccumulator::Trace(visitor);
   visitor->Trace(factory_);
   visitor->Trace(resolver_);
   visitor->Trace(options_);
+  visitor->Trace(loader_);
 }
 
 }  // namespace blink

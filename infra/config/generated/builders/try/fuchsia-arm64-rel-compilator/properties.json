@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "fuchsia-arm64-rel",
-              "project": "chromium-m113"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -38,14 +38,14 @@
         {
           "bucket": "ci",
           "builder": "fuchsia-arm64-rel",
-          "project": "chromium-m113"
+          "project": "chromium"
         }
       ]
     }
   },
   "$build/reclient": {
     "instance": "rbe-chromium-untrusted",
-    "jobs": 300,
+    "jobs": 225,
     "metrics_project": "chromium-reclient-metrics"
   },
   "$recipe_engine/resultdb/test_presentation": {

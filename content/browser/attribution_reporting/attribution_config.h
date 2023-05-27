@@ -49,12 +49,12 @@ struct CONTENT_EXPORT AttributionConfig {
     uint64_t event_source_trigger_data_cardinality = 2;
 
     // Controls randomized response rates for the API: when a source is
-    // registered, these rates are used to determine whether any subsequent
-    // attributions for the source are handled truthfully, or whether the source
-    // is immediately attributed with zero or more fake reports and real
-    // attributions are dropped. Must be in the range [0, 1].
-    double navigation_source_randomized_response_rate = .0024;
-    double event_source_randomized_response_rate = .0000025;
+    // registered, this parameter is used to determine the probability that any
+    // subsequent attributions for the source are handled truthfully, or whether
+    // the source is immediately attributed with zero or more fake reports and
+    // real attributions are dropped. Must be non-negative and non-NaN, but may
+    // be infinite.
+    double randomized_response_epsilon = 14;
 
     // Controls how many reports can be in the storage per attribution
     // destination.
@@ -63,6 +63,18 @@ struct CONTENT_EXPORT AttributionConfig {
     // Controls how many times a single source can create an event-level report.
     int max_attributions_per_navigation_source = 3;
     int max_attributions_per_event_source = 1;
+
+    // Default constants for report window deadlines.
+    static constexpr base::TimeDelta kDefaultFirstReportWindowDeadline =
+        base::Days(2);
+    static constexpr base::TimeDelta kDefaultSecondReportWindowDeadline =
+        base::Days(7);
+
+    // Controls the report window deadlines for scheduling report times.
+    base::TimeDelta first_report_window_deadline =
+        kDefaultFirstReportWindowDeadline;
+    base::TimeDelta second_report_window_deadline =
+        kDefaultSecondReportWindowDeadline;
 
     // When adding new members, the corresponding `Validate()` definition and
     // `operator==()` definition in `attribution_interop_parser_unittest.cc`

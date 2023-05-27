@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/check_op.h"
 #include "base/functional/bind.h"
@@ -143,17 +144,14 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
 
   UpdateBorder();
 
-  // The combobox uses the ink drop on the TransparentButton, but the focus ring
-  // needs to be set on the combobox itself. To ensure that the ink drop fills
-  // the entire bounds of the combobox including the portion of the combobox
-  // bounds that the focus ring paints over, we need to install the focus ring
-  // first so that the focus ring is added as a child before the
-  // TransparentButton and therefore painted before the ink drop.
   FocusRing::Install(this);
+  views::FocusRing::Get(this)->SetOutsetFocusRingDisabled(true);
 
   arrow_button_ =
       AddChildView(std::make_unique<TransparentButton>(base::BindRepeating(
           &Combobox::ArrowButtonPressed, base::Unretained(this))));
+
+  UpdateFont();
 
   if (features::IsChromeRefresh2023()) {
     // TODO(crbug.com/1400024): This setter should be removed and the behavior
@@ -180,6 +178,11 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
     views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
                                                   GetCornerRadius());
   }
+
+  // `ax::mojom::Role::kComboBox` is for UI elements with a dropdown and
+  // an editable text field, which `views::Combobox` does not have. Use
+  // `ax::mojom::Role::kPopUpButton` to match an HTML <select> element.
+  SetAccessibilityProperties(ax::mojom::Role::kPopUpButton);
 }
 
 Combobox::~Combobox() {
@@ -190,7 +193,7 @@ Combobox::~Combobox() {
 }
 
 const gfx::FontList& Combobox::GetFontList() const {
-  return style::GetFont(text_context_, text_style_);
+  return font_list_;
 }
 
 void Combobox::SetSelectedIndex(absl::optional<size_t> index) {
@@ -203,6 +206,21 @@ void Combobox::SetSelectedIndex(absl::optional<size_t> index) {
   } else {
     content_size_ = GetContentSize();
     OnPropertyChanged(&selected_index_, kPropertyEffectsPreferredSizeChanged);
+  }
+}
+
+void Combobox::UpdateFont() {
+  // If the model uses a custom font, set the font to be the same as the font
+  // at the selected index.
+  if (GetModel() != nullptr && selected_index_.has_value()) {
+    std::vector<std::string> font_list =
+        GetModel()->GetLabelFontNameAt(selected_index_.value());
+    absl::optional<int> font_size = GetModel()->GetLabelFontSize();
+    font_list_ =
+        !font_list.empty() && font_size.has_value()
+            ? gfx::FontList(font_list, gfx::Font::FontStyle::NORMAL,
+                            font_size.value(), gfx::Font::Weight::NORMAL)
+            : style::GetFont(text_context_, text_style_);
   }
 }
 
@@ -482,17 +500,13 @@ void Combobox::OnBlur() {
 }
 
 void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  // ax::mojom::Role::kComboBox is for UI elements with a dropdown and
-  // an editable text field, which views::Combobox does not have. Use
-  // ax::mojom::Role::kPopUpButton to match an HTML <select> element.
-  node_data->role = ax::mojom::Role::kPopUpButton;
+  View::GetAccessibleNodeData(node_data);
   if (menu_runner_) {
     node_data->AddState(ax::mojom::State::kExpanded);
   } else {
     node_data->AddState(ax::mojom::State::kCollapsed);
   }
 
-  node_data->SetName(GetAccessibleName());
   node_data->SetValue(model_->GetItemAt(selected_index_.value()));
   if (GetEnabled()) {
     node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
@@ -553,7 +567,7 @@ void Combobox::UpdateBorder() {
         kBorderThickness, GetCornerRadius(),
         invalid_
             ? ui::kColorAlertHighSeverity
-            : border_color_id_.value_or(ui::kColorFocusableBorderUnfocused)));
+            : border_color_id_.value_or(ui::kColorComboboxContainerOutline)));
   } else {
     auto border = std::make_unique<FocusableBorder>();
     border->SetColorId(invalid_ ? ui::kColorAlertHighSeverity

@@ -8,8 +8,6 @@
 #include "base/memory/raw_ptr.h"
 #include "chromeos/ui/frame/caption_buttons/snap_controller.h"
 #include "chromeos/ui/frame/multitask_menu/multitask_menu_view.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
@@ -25,28 +23,22 @@ namespace chromeos {
 // MultitaskMenu is the window layout menu attached to frame size button.
 class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) MultitaskMenu
     : public views::BubbleDialogDelegateView,
-      public aura::WindowObserver,
       public display::DisplayObserver {
  public:
   METADATA_HEADER(MultitaskMenu);
 
-  MultitaskMenu(views::View* anchor, views::Widget* parent_widget);
+  MultitaskMenu(views::View* anchor,
+                views::Widget* parent_widget,
+                bool close_on_move_out);
   MultitaskMenu(const MultitaskMenu&) = delete;
   MultitaskMenu& operator=(const MultitaskMenu&) = delete;
   ~MultitaskMenu() override;
 
-  MultitaskMenuView* multitask_menu_view() {
+  MultitaskMenuView* multitask_menu_view_for_testing() {
     return multitask_menu_view_.get();
   }
 
   void HideBubble();
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* parent_window) override;
-  void OnWindowBoundsChanged(aura::Window* window,
-                             const gfx::Rect& old_bounds,
-                             const gfx::Rect& new_bounds,
-                             ui::PropertyChangeReason reason) override;
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
@@ -57,9 +49,6 @@ class COMPONENT_EXPORT(CHROMEOS_UI_FRAME) MultitaskMenu
   raw_ptr<views::Widget> bubble_widget_ = nullptr;
 
   raw_ptr<MultitaskMenuView> multitask_menu_view_ = nullptr;
-
-  base::ScopedObservation<aura::Window, aura::WindowObserver>
-      parent_window_observation_{this};
 
   absl::optional<display::ScopedDisplayObserver> display_observer_;
 };

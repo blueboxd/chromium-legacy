@@ -37,6 +37,8 @@ PaintImageBuilder::PaintImageBuilder(PaintImage image, bool clear_contents)
   }
 }
 PaintImageBuilder::PaintImageBuilder(PaintImageBuilder&& other) = default;
+PaintImageBuilder& PaintImageBuilder::operator=(PaintImageBuilder&& other) =
+    default;
 PaintImageBuilder::~PaintImageBuilder() = default;
 
 PaintImage PaintImageBuilder::TakePaintImage() {
@@ -68,6 +70,10 @@ PaintImage PaintImageBuilder::TakePaintImage() {
     DCHECK(!paint_image_.sk_image_);
     DCHECK(!paint_image_.paint_record_);
     DCHECK(!paint_image_.paint_image_generator_);
+  }
+
+  if (paint_image_.HasGainmap()) {
+    DCHECK(paint_image_.paint_image_generator_);
   }
 
   if (paint_image_.ShouldAnimate()) {

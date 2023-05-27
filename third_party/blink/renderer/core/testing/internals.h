@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/testing/color_scheme_helper.h"
+#include "third_party/blink/renderer/core/testing/internals_ukm_recorder.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -65,6 +66,7 @@ class HitTestLocation;
 class HitTestResult;
 class InternalRuntimeFlags;
 class InternalSettings;
+class InternalsUkmRecorder;
 class LocalDOMWindow;
 class LocalFrame;
 class Location;
@@ -185,6 +187,7 @@ class Internals final : public ScriptWrappable {
   DOMRectReadOnly* boundingBox(Element*);
 
   void setMarker(Document*, const Range*, const String&, ExceptionState&);
+  void removeMarker(Document*, const Range*, const String&, ExceptionState&);
   unsigned markerCountForNode(Text*, const String&, ExceptionState&);
   unsigned activeMarkerCountForNode(Text*);
   Range* markerRangeForNode(Text*,
@@ -322,7 +325,8 @@ class Internals final : public ScriptWrappable {
 
   // This is used to test rect based hit testing like what's done on touch
   // screens.
-  StaticNodeList* nodesFromRect(Document*,
+  StaticNodeList* nodesFromRect(ScriptState* script_state,
+                                Document*,
                                 int x,
                                 int y,
                                 int width,
@@ -628,6 +632,8 @@ class Internals final : public ScriptWrappable {
 
   void setAllowPerChunkTransferring(ReadableStream* stream);
   void setBackForwardCacheRestorationBufferSize(unsigned int maxSize);
+
+  InternalsUkmRecorder* initializeUKMRecorder();
 
  private:
   Document* ContextDocument() const;

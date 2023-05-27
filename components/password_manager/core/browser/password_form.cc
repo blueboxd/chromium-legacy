@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/password_form.h"
 
+#include <compare>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -104,12 +105,12 @@ std::string ToString(const T& obj) {
   return ostream.str();
 }
 
-std::u16string ValueElementVectorToString(
-    const ValueElementVector& value_element_pairs) {
+std::u16string AlternativeElementVectorToString(
+    const AlternativeElementVector& value_element_pairs) {
   std::vector<std::u16string> pairs(value_element_pairs.size());
   base::ranges::transform(
       value_element_pairs, pairs.begin(),
-      [](const ValueElementPair& p) { return p.first + u"+" + p.second; });
+      [](const AlternativeElement& p) { return p.value + u"+" + p.name; });
   return base::JoinString(pairs, u", ");
 }
 
@@ -123,6 +124,7 @@ void PasswordFormToJSON(const PasswordForm& form, base::Value::Dict& target) {
   target.Set("signon_realm", form.signon_realm);
   target.Set("is_public_suffix_match", form.is_public_suffix_match);
   target.Set("is_affiliation_based_match", form.is_affiliation_based_match);
+  target.Set("is_grouped_match", form.is_grouped_match);
   target.Set("url", form.url.possibly_invalid_spec());
   target.Set("action", form.action.possibly_invalid_spec());
   target.Set("submit_element", form.submit_element);
@@ -144,10 +146,10 @@ void PasswordFormToJSON(const PasswordForm& form, base::Value::Dict& target) {
   target.Set("confirmation_password_element_renderer_id",
              base::NumberToString(
                  form.confirmation_password_element_renderer_id.value()));
-  target.Set("all_possible_usernames",
-             ValueElementVectorToString(form.all_possible_usernames));
-  target.Set("all_possible_passwords",
-             ValueElementVectorToString(form.all_possible_passwords));
+  target.Set("all_alternative_usernames",
+             AlternativeElementVectorToString(form.all_alternative_usernames));
+  target.Set("all_alternative_passwords",
+             AlternativeElementVectorToString(form.all_alternative_passwords));
   target.Set("blocked_by_user", form.blocked_by_user);
   target.Set("date_last_used", form.date_last_used.ToDoubleT());
   target.Set("date_password_modified", form.date_password_modified.ToDoubleT());
@@ -211,14 +213,52 @@ void PasswordFormToJSON(const PasswordForm& form, base::Value::Dict& target) {
 
 }  // namespace
 
+AlternativeElement::AlternativeElement(const AlternativeElement::Value& value,
+                           autofill::FieldRendererId field_renderer_id,
+                           const AlternativeElement::Name& name)
+    : value(value), field_renderer_id(field_renderer_id), name(name) {}
+
+AlternativeElement::AlternativeElement(const AlternativeElement& rhs) = default;
+AlternativeElement::AlternativeElement(AlternativeElement&& rhs) = default;
+AlternativeElement& AlternativeElement::operator=(
+    const AlternativeElement& rhs) = default;
+AlternativeElement& AlternativeElement::operator=(AlternativeElement&& rhs) =
+    default;
+AlternativeElement::~AlternativeElement() = default;
+bool AlternativeElement::operator==(const AlternativeElement&) const = default;
+std::strong_ordering AlternativeElement::operator<=>(
+    const AlternativeElement&) const = default;
+
+std::ostream& operator<<(std::ostream& os, const AlternativeElement& element) {
+  base::Value::Dict element_json;
+  element_json.Set("value", element.value);
+  element_json.Set("field_renderer_id",
+                   base::NumberToString(element.field_renderer_id.value()));
+  element_json.Set("name", element.name);
+
+  std::string element_as_string;
+  base::JSONWriter::WriteWithOptions(
+      element_json, base::JSONWriter::OPTIONS_PRETTY_PRINT, &element_as_string);
+  base::TrimWhitespaceASCII(element_as_string, base::TRIM_ALL,
+                            &element_as_string);
+  return os << "AlternativeElement(" << element_as_string << ")";
+}
+
 InsecurityMetadata::InsecurityMetadata() = default;
-InsecurityMetadata::InsecurityMetadata(base::Time create_time, IsMuted is_muted)
-    : create_time(create_time), is_muted(is_muted) {}
+InsecurityMetadata::InsecurityMetadata(
+    base::Time create_time,
+    IsMuted is_muted,
+    TriggerBackendNotification trigger_notification_from_backend)
+    : create_time(create_time),
+      is_muted(is_muted),
+      trigger_notification_from_backend(trigger_notification_from_backend) {}
 InsecurityMetadata::InsecurityMetadata(const InsecurityMetadata& rhs) = default;
 InsecurityMetadata::~InsecurityMetadata() = default;
 
 bool operator==(const InsecurityMetadata& lhs, const InsecurityMetadata& rhs) {
-  return lhs.create_time == rhs.create_time && *lhs.is_muted == *rhs.is_muted;
+  return lhs.create_time == rhs.create_time && *lhs.is_muted == *rhs.is_muted &&
+         *lhs.trigger_notification_from_backend ==
+             *rhs.trigger_notification_from_backend;
 }
 
 PasswordNote::PasswordNote() = default;
@@ -354,8 +394,8 @@ bool operator==(const PasswordForm& lhs, const PasswordForm& rhs) {
          lhs.username_element == rhs.username_element &&
          lhs.username_element_renderer_id == rhs.username_element_renderer_id &&
          lhs.username_value == rhs.username_value &&
-         lhs.all_possible_usernames == rhs.all_possible_usernames &&
-         lhs.all_possible_passwords == rhs.all_possible_passwords &&
+         lhs.all_alternative_usernames == rhs.all_alternative_usernames &&
+         lhs.all_alternative_passwords == rhs.all_alternative_passwords &&
          lhs.form_has_autofilled_value == rhs.form_has_autofilled_value &&
          lhs.password_element == rhs.password_element &&
          lhs.password_element_renderer_id == rhs.password_element_renderer_id &&
@@ -383,6 +423,7 @@ bool operator==(const PasswordForm& lhs, const PasswordForm& rhs) {
              rhs.was_parsed_using_autofill_predictions &&
          lhs.is_public_suffix_match == rhs.is_public_suffix_match &&
          lhs.is_affiliation_based_match == rhs.is_affiliation_based_match &&
+         lhs.is_grouped_match == rhs.is_grouped_match &&
          lhs.affiliated_web_realm == rhs.affiliated_web_realm &&
          lhs.app_display_name == rhs.app_display_name &&
          lhs.app_icon_url == rhs.app_icon_url &&

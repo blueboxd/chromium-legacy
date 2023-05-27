@@ -13,6 +13,14 @@
   </dist:module>  # DIFF-ANCHOR: 2805007f
   <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="33"/>
   <application>
+    <activity  # DIFF-ANCHOR: 28dc9019
+        android:name="com.google.ar.core.InstallActivity"
+        android:configChanges="keyboardHidden|orientation|screenSize"
+        android:excludeFromRecents="true"
+        android:exported="false"
+        android:launchMode="singleTop"
+        android:theme="@android:style/Theme.Material.Light.Dialog.Alert">
+    </activity>  # DIFF-ANCHOR: 28dc9019
     <activity  # DIFF-ANCHOR: 93d41352
         android:name="org.chromium.chrome.browser.BrowserRestartActivity"
         android:excludeFromRecents="true"
@@ -813,6 +821,14 @@
       </intent-filter>  # DIFF-ANCHOR: 4ed161a4
       <meta-data android:name="android.appwidget.provider" android:resource="@xml/quick_action_search_widget_small_info"/>
     </receiver>  # DIFF-ANCHOR: 5a0b9536
+    <receiver  # DIFF-ANCHOR: 8d506dab
+        android:name="org.chromium.chrome.browser.safe_browsing.PasswordProtectionBroadcastReceiver"
+        android:exported="true"
+        android:permission="com.google.android.gms.permission.INTERNAL_BROADCAST">
+      <intent-filter>  # DIFF-ANCHOR: 84a815d3
+        <action android:name="com.android.chrome.safe_browsing.LOGIN"/>
+      </intent-filter>  # DIFF-ANCHOR: 84a815d3
+    </receiver>  # DIFF-ANCHOR: 8d506dab
     <receiver  # DIFF-ANCHOR: a0d83ae5
         android:name="org.chromium.chrome.browser.searchwidget.SearchWidgetProvider"
         android:exported="true"

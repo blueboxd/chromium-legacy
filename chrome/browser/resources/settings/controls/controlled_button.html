@@ -1,4 +1,8 @@
-<style include="settings-shared">
+<style
+<if expr="chromeos_ash">
+  include="cros-color-overrides"
+</if>
+>
   :host {
     --justify-margin: 8px;
     align-items: center;
@@ -30,7 +34,7 @@
 </style>
 
 <cr-button class$="[[actionClass_]]"
-  disabled="[[!buttonEnabled_(enforced_, disabled)]]">
+    disabled="[[!buttonEnabled_(enforced_, disabled)]]">
   [[label]]
 </cr-button>
 

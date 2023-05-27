@@ -5,8 +5,6 @@
 #ifndef ASH_WM_DESKS_DESKS_TEST_API_H_
 #define ASH_WM_DESKS_DESKS_TEST_API_H_
 
-#include <vector>
-
 #include "base/time/clock.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -30,13 +28,11 @@ namespace ash {
 class Desk;
 class DeskActionContextMenu;
 class DeskMiniView;
-class PersistentDesksBarContextMenu;
-class PersistentDesksBarDeskButton;
 class ScrollArrowButton;
 
 // Helper class used by tests to access desks' internal elements. Including
-// elements of multiple different objects of desks. E.g, DesksBarView, Desk,
-// PersistentDesksBarView.
+// elements of multiple different objects of desks. E.g, LegacyDeskBarView,
+// Desk.
 class DesksTestApi {
  public:
   // Don't instantiate, just use the static helpers below.
@@ -47,10 +43,6 @@ class DesksTestApi {
   static ScrollArrowButton* GetDesksBarRightScrollButton();
   static views::ScrollView* GetDesksBarScrollView();
   static const DeskMiniView* GetDesksBarDragView();
-  static PersistentDesksBarContextMenu* GetDesksBarContextMenu();
-  static PersistentDesksBarContextMenu* GetPersistentDesksBarContextMenu();
-  static const std::vector<PersistentDesksBarDeskButton*>
-  GetPersistentDesksBarDeskButtons();
   static DeskActionContextMenu* GetContextMenuForDesk(int index);
   static views::LabelButton* GetCloseAllUndoToastDismissButton();
   static const ui::SimpleMenuModel& GetContextMenuModelForDesk(int index);

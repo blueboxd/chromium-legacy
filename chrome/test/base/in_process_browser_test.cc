@@ -86,6 +86,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_features.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -142,16 +143,14 @@
 #include "base/base_switches.h"
 #include "base/environment.h"
 #include "base/files/file_path_watcher.h"
-#include "base/guid.h"
 #include "base/process/launch.h"
+#include "base/uuid.h"
 #include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"  // nogncheck
 #include "components/account_manager_core/chromeos/fake_account_manager_ui.h"  // nogncheck
 #include "components/variations/variations_switches.h"
 #include "content/public/test/network_connection_change_simulator.h"
-#include "ui/aura/test/ui_controls_factory_aura.h"
-#include "ui/base/test/ui_controls.h"
 #endif
 
 namespace {
@@ -352,6 +351,8 @@ InProcessBrowserTest::~InProcessBrowserTest() = default;
 void InProcessBrowserTest::SetUp() {
   // Browser tests will create their own g_browser_process later.
   DCHECK(!g_browser_process);
+
+  ui_controls::ResetUIControlsIfEnabled();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -716,10 +717,10 @@ Browser* InProcessBrowserTest::CreateGuestBrowser() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath guest_path = profile_manager->GetGuestProfilePath();
 
-  Profile* guest_profile =
+  Profile& guest_profile =
       profiles::testing::CreateProfileSync(profile_manager, guest_path);
   Profile* guest_profile_otr =
-      guest_profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+      guest_profile.GetPrimaryOTRProfile(/*create_if_needed=*/true);
 
   // Create browser and add tab.
   Browser* browser =
@@ -895,7 +896,7 @@ void InProcessBrowserTest::StartUniqueAshChrome(
   base::Environment::Create()->SetVar(
       "WAYLAND_DISPLAY",
       base::JoinString({"unique_wayland",
-                        base::GUID::GenerateRandomV4().AsLowercaseString()},
+                        base::Uuid::GenerateRandomV4().AsLowercaseString()},
                        "_"));
 
   base::FilePath ash_chrome_path =
@@ -916,7 +917,8 @@ void InProcessBrowserTest::StartUniqueAshChrome(
 
   std::vector<std::string> all_enabled_features = {
       "LacrosSupport", "LacrosPrimary", "LacrosOnly"};
-  all_enabled_features.insert(enabled_features.end(), enabled_features.begin(),
+  all_enabled_features.insert(all_enabled_features.end(),
+                              enabled_features.begin(),
                               enabled_features.end());
   ash_cmdline.AppendSwitchASCII(switches::kEnableFeatures,
                                 base::JoinString(all_enabled_features, ","));

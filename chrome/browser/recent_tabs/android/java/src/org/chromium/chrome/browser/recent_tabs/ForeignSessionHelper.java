@@ -4,10 +4,17 @@
 
 package org.chromium.chrome.browser.recent_tabs;
 
+import androidx.annotation.VisibleForTesting;
+
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
+import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
@@ -45,9 +52,16 @@ public class ForeignSessionHelper {
         public final List<ForeignSessionWindow> windows = new ArrayList<ForeignSessionWindow>();
 
         private ForeignSession(String tag, String name, long modifiedTime) {
+            this(tag, name, modifiedTime, new ArrayList<>());
+        }
+
+        @VisibleForTesting
+        public ForeignSession(
+                String tag, String name, long modifiedTime, List<ForeignSessionWindow> windows) {
             this.tag = tag;
             this.name = name;
             this.modifiedTime = modifiedTime;
+            this.windows.addAll(windows);
         }
     }
 
@@ -61,8 +75,14 @@ public class ForeignSessionHelper {
         public final List<ForeignSessionTab> tabs = new ArrayList<ForeignSessionTab>();
 
         private ForeignSessionWindow(long timestamp, int sessionId) {
+            this(timestamp, sessionId, new ArrayList<>());
+        }
+
+        @VisibleForTesting
+        public ForeignSessionWindow(long timestamp, int sessionId, List<ForeignSessionTab> tabs) {
             this.timestamp = timestamp;
             this.sessionId = sessionId;
+            this.tabs.addAll(tabs);
         }
     }
 
@@ -75,7 +95,8 @@ public class ForeignSessionHelper {
         public final long timestamp;
         public final int id;
 
-        private ForeignSessionTab(GURL url, String title, long timestamp, int id) {
+        @VisibleForTesting
+        public ForeignSessionTab(GURL url, String title, long timestamp, int id) {
             this.url = url;
             this.title = title;
             this.timestamp = timestamp;
@@ -165,6 +186,24 @@ public class ForeignSessionHelper {
     }
 
     /**
+     * @return The list of synced foreign sessions that are from a mobile or tablet device. If it
+     * fails to get them for some reason will return an empty list.
+     */
+    public List<ForeignSession> getMobileAndTabletForeignSessions() {
+        if (!isTabSyncEnabled()) {
+            return Collections.emptyList();
+        }
+        List<ForeignSession> result = new ArrayList<ForeignSession>();
+        boolean received = ForeignSessionHelperJni.get().getMobileAndTabletForeignSessions(
+                mNativeForeignSessionHelper, result);
+        if (!received) {
+            result = Collections.emptyList();
+        }
+
+        return result;
+    }
+
+    /**
      * Opens the given foreign tab in a new tab.
      * @param tab Tab to load the session into.
      * @param session Session that the target tab belongs to.
@@ -198,6 +237,32 @@ public class ForeignSessionHelper {
                 mNativeForeignSessionHelper, enabled);
     }
 
+    /**
+     * Lazily instantiate a list of tabs as background tabs.
+     * @param sessionTabs List of target tabs to open.
+     * @param session Foreign session that holds the list of target tabs to open.
+     * @param tabCreatorManager Tab creator manager to create a new foreground tab for tab restore.
+     * @return The number of tabs that were successfully restored.
+     */
+    public int openForeignSessionTabsAsBackgroundTabs(List<ForeignSessionTab> sessionTabs,
+            ForeignSession session, TabCreatorManager tabCreatorManager) {
+        List<Integer> tabIds = new ArrayList<>();
+        Tab newForegroundTab = tabCreatorManager.getTabCreator(false).createNewTab(
+                new LoadUrlParams(ContentUrlConstants.ABOUT_BLANK_URL),
+                TabLaunchType.FROM_RESTORE_TABS_UI, null);
+
+        for (ForeignSessionTab tab : sessionTabs) {
+            tabIds.add(tab.id);
+        }
+        if (tabIds.size() == 0) {
+            return 0;
+        }
+
+        return ForeignSessionHelperJni.get().openForeignSessionTabsAsBackgroundTabs(
+                mNativeForeignSessionHelper, newForegroundTab,
+                CollectionUtil.integerListToIntArray(tabIds), session.tag);
+    }
+
     @NativeMethods
     interface Natives {
         long init(Profile profile);
@@ -208,9 +273,13 @@ public class ForeignSessionHelper {
                 long nativeForeignSessionHelper, ForeignSessionCallback callback);
         boolean getForeignSessions(
                 long nativeForeignSessionHelper, List<ForeignSession> resultSessions);
+        boolean getMobileAndTabletForeignSessions(
+                long nativeForeignSessionHelper, List<ForeignSession> resultSessions);
         boolean openForeignSessionTab(long nativeForeignSessionHelper, Tab tab, String sessionTag,
                 int tabId, int disposition);
         void deleteForeignSession(long nativeForeignSessionHelper, String sessionTag);
         void setInvalidationsForSessionsEnabled(long nativeForeignSessionHelper, boolean enabled);
+        int openForeignSessionTabsAsBackgroundTabs(
+                long nativeForeignSessionHelper, Tab tab, int[] tabIds, String sessionTag);
     }
 }

@@ -5,7 +5,9 @@
 #ifndef ASH_SYSTEM_TRAY_SYSTEM_NUDGE_LABEL_H_
 #define ASH_SYSTEM_TRAY_SYSTEM_NUDGE_LABEL_H_
 
+#include "ash/ash_export.h"
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/view.h"
@@ -14,7 +16,7 @@ namespace ash {
 
 // A label for system nudges which automatically updates text color on theme
 // changes and supports inline embedding of custom views.
-class SystemNudgeLabel : public views::View {
+class ASH_EXPORT SystemNudgeLabel : public views::View {
  public:
   SystemNudgeLabel(std::u16string text, int fixed_width);
 
@@ -37,7 +39,7 @@ class SystemNudgeLabel : public views::View {
   void OnThemeChanged() override;
 
  private:
-  views::StyledLabel* const styled_label_;
+  const raw_ptr<views::StyledLabel, ExperimentalAsh> styled_label_;
   base::flat_map<size_t, views::StyledLabel::RangeStyleInfo>
       custom_view_styles_by_offset_;
   int font_size_delta_ = 0;

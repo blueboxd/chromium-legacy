@@ -175,17 +175,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPermuteTLSExtensions);
 // Enables Kyber-based post-quantum key-agreements in TLS 1.3 connections.
 NET_EXPORT BASE_DECLARE_FEATURE(kPostQuantumKyber);
 
-// Enables CECPQ2, a post-quantum key-agreement, in TLS 1.3 connections.
-// Ineffective if kPostQuantumKyber is enabled.
-NET_EXPORT BASE_DECLARE_FEATURE(kPostQuantumCECPQ2);
-
-// Enables CECPQ2, a post-quantum key-agreement, in TLS 1.3 connections for a
-// subset of domains. (This is intended as Finch kill-switch. For testing
-// compatibility with large ClientHello messages, use |kPostQuantumCECPQ2|.)
-NET_EXPORT BASE_DECLARE_FEATURE(kPostQuantumCECPQ2SomeDomains);
-NET_EXPORT extern const base::FeatureParam<std::string>
-    kPostQuantumCECPQ2Prefix;
-
 // Changes the timeout after which unused sockets idle sockets are cleaned up.
 NET_EXPORT BASE_DECLARE_FEATURE(kNetUnusedIdleSocketTimeout);
 
@@ -375,6 +364,18 @@ NET_EXPORT extern const base::FeatureParam<std::string> kIpPrivacyProxyServer;
 // Sets the allow list for the IP protection proxy.
 NET_EXPORT extern const base::FeatureParam<std::string>
     kIpPrivacyProxyAllowlist;
+
+// Whether QuicParams::migrate_sessions_on_network_change_v2 defaults to true or
+// false. This is needed as a workaround to set this value to true on Android
+// but not on WebView (until crbug.com/1430082 has been fixed).
+NET_EXPORT BASE_DECLARE_FEATURE(kMigrateSessionsOnNetworkChangeV2);
+
+#if BUILDFLAG(IS_LINUX)
+// AddressTrackerLinux will not run inside the network service in this
+// configuration, which will improve the Linux network service sandbox.
+// TODO(crbug.com/1312226): remove this.
+NET_EXPORT BASE_DECLARE_FEATURE(kAddressTrackerLinuxIsProxied);
+#endif  // BUILDFLAG(IS_LINUX)
 
 }  // namespace net::features
 

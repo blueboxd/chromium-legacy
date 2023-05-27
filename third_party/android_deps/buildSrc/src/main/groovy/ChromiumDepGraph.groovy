@@ -116,11 +116,6 @@ class ChromiumDepGraph {
             url: 'https://github.com/bcgit/bc-java',
             licensePath: 'licenses/Bouncy_Castle-2015.txt',
             licenseName: 'MIT'),
-        org_bouncycastle_bcprov_jdk18on: new PropertyOverride(
-            cpePrefix: 'cpe:/a:bouncycastle:legion-of-the-bouncy-castle:1.68',
-            url: 'https://github.com/bcgit/bc-java',
-            licensePath: 'licenses/Bouncy_Castle-2015.txt',
-            licenseName: 'MIT'),
         org_codehaus_mojo_animal_sniffer_annotations: new PropertyOverride(
             url: 'http://www.mojohaus.org/animal-sniffer/animal-sniffer-annotations/',
             description: 'Animal Sniffer Annotations allow marking methods which Animal Sniffer should ignore ' +
@@ -162,10 +157,6 @@ class ChromiumDepGraph {
             url: 'https://github.com/raphw/byte-buddy',
             licenseUrl: 'https://raw.githubusercontent.com/raphw/byte-buddy/master/LICENSE',
             licenseName: 'Apache 2.0'),
-        net_sf_kxml_kxml2: new PropertyOverride(
-            url: 'https://github.com/kobjects/kxml2',
-            licenseUrl: 'https://raw.githubusercontent.com/kobjects/kxml2/master/license.txt',
-            licenseName: 'The MIT License'),
         org_checkerframework_checker_compat_qual: new PropertyOverride(
             licenseUrl: 'https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt',
             licenseName: 'GPL v2 with the classpath exception'),
@@ -228,9 +219,6 @@ class ChromiumDepGraph {
         org_robolectric_nativeruntime: new PropertyOverride(
             licensePath: 'licenses/Codehaus_License-2009.txt',
             licenseName: 'MIT'),
-        org_robolectric_nativeruntime_dist_compat: new PropertyOverride(
-            licensePath: 'licenses/Codehaus_License-2009.txt',
-            licenseName: 'MIT'),
         org_robolectric_pluginapi: new PropertyOverride(
             licensePath: 'licenses/Codehaus_License-2009.txt',
             licenseName: 'MIT'),
@@ -264,17 +252,20 @@ class ChromiumDepGraph {
             licenseName: 'MIT'),
         // Prevent version changing ~weekly. https://crbug.com/1257197
         org_jetbrains_kotlinx_kotlinx_coroutines_core_jvm: new PropertyOverride(
-            resolveVersion: '1.6.1'),
+            resolveVersion: '1.6.4'),
         org_jetbrains_kotlinx_kotlinx_coroutines_android: new PropertyOverride(
-            resolveVersion: '1.6.1'),
+            resolveVersion: '1.6.4'),
+        org_jetbrains_kotlinx_kotlinx_coroutines_guava: new PropertyOverride(
+            resolveVersion: '1.6.4',
+            overrideLatest: true),
         org_jetbrains_kotlin_kotlin_stdlib_jdk8: new PropertyOverride(
-            resolveVersion: '1.6.20'),
+            resolveVersion: '1.8.20'),
         org_jetbrains_kotlin_kotlin_stdlib_jdk7: new PropertyOverride(
-            resolveVersion: '1.6.20'),
+            resolveVersion: '1.8.20'),
         org_jetbrains_kotlin_kotlin_stdlib: new PropertyOverride(
-            resolveVersion: '1.7.10'),
+            resolveVersion: '1.8.20'),
         org_jetbrains_kotlin_kotlin_stdlib_common: new PropertyOverride(
-            resolveVersion: '1.7.10'),
+            resolveVersion: '1.8.20'),
         io_grpc_grpc_binder: new PropertyOverride(
             licenseUrl: 'https://www.apache.org/licenses/LICENSE-2.0.txt',
             licenseName: 'Apache 2.0'),

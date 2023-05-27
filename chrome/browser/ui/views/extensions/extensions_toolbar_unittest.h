@@ -62,12 +62,18 @@ class ExtensionsToolbarUnitTest : public TestWithBrowserView {
       const std::string& name,
       const std::vector<std::string>& permissions);
 
-  // Adds the specified `extension` with the given `host_permissions` and
-  // `permissions`.
+  scoped_refptr<const extensions::Extension> InstallEnterpriseExtension(
+      const std::string& name,
+      const std::vector<std::string>& host_permissions);
+
+  // Adds the specified `extension` with the given `host_permissions`,
+  // `permissions` and `location`.
   scoped_refptr<const extensions::Extension> InstallExtension(
       const std::string& name,
       const std::vector<std::string>& permissions,
-      const std::vector<std::string>& host_permissions);
+      const std::vector<std::string>& host_permissions,
+      extensions::mojom::ManifestLocation location =
+          extensions::mojom::ManifestLocation::kUnpacked);
 
   // Reloads the extension of the given `extension_id`.
   void ReloadExtension(const extensions::ExtensionId& extension_id);
@@ -86,6 +92,18 @@ class ExtensionsToolbarUnitTest : public TestWithBrowserView {
 
   // Triggers the press and release event of the given `button`.
   void ClickButton(views::Button* button) const;
+
+  // Updates the user's site access for `extension` on `web_contents` to
+  // `site_access`.
+  void UpdateUserSiteAccess(
+      const extensions::Extension& extension,
+      content::WebContents* web_contents,
+      extensions::PermissionsManager::UserSiteAccess site_access);
+
+  // Updates the user's site setting to `site_setting` for `url`.
+  void UpdateUserSiteSetting(
+      extensions::PermissionsManager::UserSiteSetting site_setting,
+      const GURL& url);
 
   // Returns the user's site setting for `url`.
   extensions::PermissionsManager::UserSiteSetting GetUserSiteSetting(

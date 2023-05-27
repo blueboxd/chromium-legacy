@@ -21,6 +21,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -187,7 +188,7 @@ class PerfettoProtoAppender
 
  private:
   std::vector<protozero::ContiguousMemoryRange> ranges_;
-  perfetto::protos::pbzero::DebugAnnotation* annotation_proto_;
+  raw_ptr<perfetto::protos::pbzero::DebugAnnotation> annotation_proto_;
 };
 
 void AddConvertableToTraceFormat(
@@ -450,7 +451,8 @@ class TraceLog::OptionalAutoLock {
   }
 
  private:
-  Lock* lock_;
+  // This field is not a raw_ptr<> because it is needed for lock annotations.
+  RAW_PTR_EXCLUSION Lock* lock_;
   bool locked_ = false;
 };
 
@@ -968,6 +970,7 @@ void TraceLog::InitializePerfettoIfNeeded() {
   perfetto::TracingInitArgs init_args;
   init_args.backends = perfetto::BackendType::kInProcessBackend;
   init_args.platform = perfetto_platform;
+  init_args.disallow_merging_with_system_tracks = true;
   perfetto::Tracing::Initialize(init_args);
   TrackEvent::Register();
 }
@@ -1779,16 +1782,11 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamps(
                          bind_id, args, flags);
     }
 
-#if BUILDFLAG(IS_ANDROID)
-      trace_event->SendToATrace();
-#endif
-
-      if (trace_options() & kInternalEchoToConsole) {
-        console_message = EventToConsoleMessage(
-            phase == TRACE_EVENT_PHASE_COMPLETE ? TRACE_EVENT_PHASE_BEGIN
-                                                : phase,
-            timestamp, trace_event);
-      }
+    if (trace_options() & kInternalEchoToConsole) {
+      console_message = EventToConsoleMessage(
+          phase == TRACE_EVENT_PHASE_COMPLETE ? TRACE_EVENT_PHASE_BEGIN : phase,
+          timestamp, trace_event);
+    }
   }
 
   if (!console_message.empty())
@@ -1923,9 +1921,6 @@ void TraceLog::UpdateTraceEventDurationExplicit(
       DCHECK(trace_event->phase() == TRACE_EVENT_PHASE_COMPLETE);
 
       trace_event->UpdateDuration(now, thread_now);
-#if BUILDFLAG(IS_ANDROID)
-      trace_event->SendToATrace();
-#endif
     }
 
     if (trace_options() & kInternalEchoToConsole) {

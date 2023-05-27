@@ -4,11 +4,11 @@
 
 #include "pdf/pdfium/pdfium_font_linux.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/i18n/encoding_detection.h"
 #include "base/i18n/icu_string_conversions.h"
@@ -49,15 +49,15 @@ class BlinkFontMapper {
     // defaults to the direct interface, which is not suitable, as it does not
     // provide MatchFontWithFallback(). This only happens in unit tests, so just
     // refuse to map fonts there.
-    auto* fci = SkFontConfigInterface::RefGlobal().get();
-    if (fci == SkFontConfigInterface::GetSingletonDirectInterface())
+    sk_sp<SkFontConfigInterface> fci = SkFontConfigInterface::RefGlobal();
+    if (fci.get() == SkFontConfigInterface::GetSingletonDirectInterface())
       return nullptr;
 
     auto font_file = std::make_unique<base::File>();
     // In RendererBlinkPlatform, SkFontConfigInterface::SetGlobal() only ever
     // sets the global to a FontLoader. Thus it is safe to assume the returned
     // result is just that.
-    auto* font_loader = reinterpret_cast<font_service::FontLoader*>(fci);
+    auto* font_loader = reinterpret_cast<font_service::FontLoader*>(fci.get());
     font_loader->MatchFontWithFallback(
         desc.family.Utf8(),
         desc.weight >= blink::WebFontDescription::kWeightBold, desc.italic,
@@ -115,7 +115,7 @@ blink::WebFontDescription::Weight WeightToBlinkWeight(int weight) {
   static_assert(blink::WebFontDescription::kWeight900 == 8, "Blink Weight max");
   constexpr int kMinimumWeight = 100;
   constexpr int kMaximumWeight = 900;
-  int normalized_weight = base::clamp(weight, kMinimumWeight, kMaximumWeight);
+  int normalized_weight = std::clamp(weight, kMinimumWeight, kMaximumWeight);
   normalized_weight = (normalized_weight / 100) - 1;
   return static_cast<blink::WebFontDescription::Weight>(normalized_weight);
 }

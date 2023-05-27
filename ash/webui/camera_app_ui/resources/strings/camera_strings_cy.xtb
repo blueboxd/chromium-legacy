@@ -27,9 +27,7 @@
 <translation id="199526504800285197">Mae recordio wedi'i stopio</translation>
 <translation id="1995951722691075581">Stopiodd eich recordio oherwydd lle storio dyfais isel. I recordio rhagor o fideos, mae angen i chi ryddhau le storio ar eich dyfais.</translation>
 <translation id="2036868001356139588">Hyd yr amserydd</translation>
-<translation id="2050339315714019657">Fertigol</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> gweithredol</translation>
-<translation id="2128052519899549250">Recordio fideo treigl amser</translation>
 <translation id="2134029355740465625">Gosodiadau fideo</translation>
 <translation id="2144806332417375165">Personoli paramedrau fideo</translation>
 <translation id="2175927920773552910">Cod QR</translation>
@@ -82,6 +80,7 @@
 <translation id="4864143361253542638">Rhestr o dudalennau sydd wedi'u sganio</translation>
 <translation id="4890010094662541459">3 x 3</translation>
 <translation id="491895758387112773">Recordiad fideo aml-ffrwd</translation>
+<translation id="495170559598752135">Gweithrediadau</translation>
 <translation id="4984613436295737187">Quad HD (1440p)</translation>
 <translation id="5034763830503483128">Cymhareb agwedd llun</translation>
 <translation id="5057360777601936059">Nid yw'ch camera ar gael ar hyn o bryd.
@@ -92,7 +91,6 @@
 <translation id="5317780077021120954">Cadw</translation>
 <translation id="5320594929574852403">Yn symud i'r cyfeiriad chwith</translation>
 <translation id="5374917190292010970">4K (2160p)</translation>
-<translation id="5577251651370645658">Treigl amser</translation>
 <translation id="5662366948659129155">Wrthi'n sganio tudalen <ph name="COUNT" /></translation>
 <translation id="5671277269877808209">Sgwâr</translation>
 <translation id="5746169159649715125">Cadw fel PDF</translation>
@@ -122,6 +120,7 @@ Os yw'ch adborth yn ymwneud ag ansawdd lluniau neu fideos, atodwch lun neu fideo
 <translation id="6888362557094394345">Yn symud i'r cyfeiriad isaf</translation>
 <translation id="695140971690006676">Ailosod popeth</translation>
 <translation id="6965382102122355670">Iawn</translation>
+<translation id="6965830616442491568">Fertigol</translation>
 <translation id="698156982839284926">3 eiliad</translation>
 <translation id="7134221860976209830">Amserydd 10 eiliad</translation>
 <translation id="7191890674911603392">Math o recordio</translation>
@@ -137,6 +136,7 @@ Os yw'ch adborth yn ymwneud ag ansawdd lluniau neu fideos, atodwch lun neu fideo
 <translation id="7658239707568436148">Canslo</translation>
 <translation id="7670511624014457267">60 FPS</translation>
 <translation id="7671804233658741790">Cornel dde isaf y ddogfen</translation>
+<translation id="7684446460490665873">Recordio fideo treigl amser</translation>
 <translation id="7692090236657809299">Galluogwch panio/gogwyddo/chwyddo</translation>
 <translation id="7726641833034062494">Recordio fideo normal</translation>
 <translation id="7748344063862150053">Cornel dde uchaf y ddogfen</translation>
@@ -162,6 +162,7 @@ Os yw'ch adborth yn ymwneud ag ansawdd lluniau neu fideos, atodwch lun neu fideo
 <translation id="9045010116236796332">Rhowch holl ymylon y ddogfen o fewn y ffrâm</translation>
 <translation id="9045155556724273246">10 eiliad</translation>
 <translation id="906331135292332864">Wrthi'n prosesu llun...</translation>
+<translation id="9161584225258678723">Treigl Amser</translation>
 <translation id="922762992951083513">Adlewyrchu wedi'i droi ymlaen</translation>
 <translation id="945522503751344254">Danfon adborth</translation>
 </translationbundle>

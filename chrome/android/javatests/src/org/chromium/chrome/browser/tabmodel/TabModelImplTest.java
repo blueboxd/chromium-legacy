@@ -9,8 +9,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import android.support.test.InstrumentationRegistry;
-
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
@@ -23,7 +22,6 @@ import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -134,7 +132,6 @@ public class TabModelImplTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1182156")
     public void validIndexAfterRestored_FromPreviousActivity_WithIncognitoTabs() {
         createTabs(1, true, mTestUrl);
 
@@ -154,7 +151,6 @@ public class TabModelImplTest {
     @Test
     @SmallTest
     @EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
-    @DisabledTest(message = "https://crbug.com/1190854")
     public void hasOtherRelatedTabs_detectMergedTabs() throws Exception {
         createTabs(3, false, mTestUrl);
 

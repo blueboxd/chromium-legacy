@@ -40,6 +40,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_fixer.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "third_party/omnibox_proto/groups.pb.h"
@@ -51,6 +52,7 @@
 namespace {
 
 using ShortcutMatch = ShortcutsProvider::ShortcutMatch;
+using ScoringSignals = ::metrics::OmniboxEventProto::Suggestion::ScoringSignals;
 
 class DestinationURLEqualsURL {
  public:
@@ -136,13 +138,14 @@ int CalculateScoreFromFactors(size_t typed_length,
 // Populate scoring signals from the shortcut match to ACMatch.
 void PopulateScoringSignals(const ShortcutMatch& shortcut_match,
                             AutocompleteMatch* match) {
-  match->scoring_signals.set_shortcut_visit_count(
+  match->scoring_signals = absl::make_optional<ScoringSignals>();
+  match->scoring_signals->set_shortcut_visit_count(
       shortcut_match.aggregate_number_of_hits);
-  match->scoring_signals.set_shortest_shortcut_len(
+  match->scoring_signals->set_shortest_shortcut_len(
       shortcut_match.shortest_text_length);
-  match->scoring_signals.set_elapsed_time_last_shortcut_visit_sec(
+  match->scoring_signals->set_elapsed_time_last_shortcut_visit_sec(
       (base::Time::Now() - shortcut_match.most_recent_access_time).InSeconds());
-  match->scoring_signals.set_length_of_url(
+  match->scoring_signals->set_length_of_url(
       match->destination_url.spec().length());
 }
 
@@ -313,7 +316,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input,
                           : OmniboxFieldTrial::kShortcutBoostUrlScore.Get();
     if (boost_score > best_match->relevance) {
       client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
-          OmniboxTriggeredFeatureService::Feature::kShortcutBoost);
+          metrics::OmniboxEventProto_Feature_SHORTCUT_BOOST);
       if (!OmniboxFieldTrial::kShortcutBoostCounterfactual.Get()) {
         max_relevance = boost_score;
         best_match->relevance = max_relevance;

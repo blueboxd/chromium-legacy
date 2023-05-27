@@ -112,6 +112,7 @@ interface CoreProbes {
   void WillDispatchEventSourceEvent(ExecutionContext*, uint64_t identifier, const AtomicString& event_name, const AtomicString& event_id, const String& data);
   void WillLoadXHR([Keep] ExecutionContext*, const AtomicString& method, const KURL& url, bool async, const HTTPHeaderMap& headers, bool include_credentials);
   void DidFinishXHR(ExecutionContext*, XMLHttpRequest* xhr);
+  void DidFinishSyncXHR(ExecutionContext* context, const base::TimeDelta blocking_time);
   void ScriptImported(ExecutionContext*, uint64_t identifier, const String& source_string);
   void ScriptExecutionBlockedByCSP(ExecutionContext*, const String& directive_text);
   void DidReceiveScriptResponse(ExecutionContext*, uint64_t identifier);
@@ -167,7 +168,9 @@ interface CoreProbes {
   CompileAndRunScript([Keep] ExecutionContext* context, const blink::Script* script);
 
   CallFunction([Keep] ExecutionContext* context, const v8::Local<v8::Context>& v8_context, v8::Local<v8::Function> function, int depth = 0);
-  UserCallback([Keep] ExecutionContext* context, const char* class_like_name, const char* name, const AtomicString& atomic_name, bool recurring, EventTarget* event_target = nullptr, Event* event = nullptr);
+  UserCallback([Keep] ExecutionContext* context, const char* name, const AtomicString& atomic_name, bool recurring, EventTarget* event_target = nullptr, Event* event = nullptr, EventListener* listener = nullptr);
+  InvokeCallback([Keep] ExecutionContext* context, const char* name, CallbackFunctionBase* callback, v8::MaybeLocal<v8::Value> function = v8::MaybeLocal<v8::Value>());
+  InvokeEventHandler([Keep] ExecutionContext* context, EventTarget* event_target = nullptr, Event* event = nullptr, EventListener* listener = nullptr);
   V8Compile([Keep] ExecutionContext* context, const String& file_name, int line, int column);
   ParseHTML(Document* document, HTMLDocumentParser* parser);
   void ForcePseudoState([Keep] Element* element, CSSSelector::PseudoType pseudo_state, bool* result);

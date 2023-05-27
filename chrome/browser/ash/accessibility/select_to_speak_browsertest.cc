@@ -196,13 +196,6 @@ class SelectToSpeakTest : public InProcessBrowserTest {
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  void RunJavaScriptInSelectToSpeakBackgroundPage(const std::string& script) {
-    extensions::browsertest_util::ExecuteScriptInBackgroundPage(
-        /*context=*/browser()->profile(),
-        /*extension_id=*/extension_misc::kSelectToSpeakExtensionId,
-        /*script=*/script);
-  }
-
   content::WebContents* GetWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
@@ -218,21 +211,20 @@ class SelectToSpeakTest : public InProcessBrowserTest {
       (async function() {
         let module = await import('./select_to_speak_main.js');
         module.selectToSpeak.setOnLoadDesktopCallbackForTest(() => {
-            window.domAutomationController.send('ready');
+            chrome.test.sendScriptResult('ready');
           });
         // Set enhanced network voices dialog as shown, because the pref
         // change takes some time to propagate.
         module.selectToSpeak.prefsManager_.enhancedVoicesDialogShown_ = true;
       })();
     )JS");
-    std::string result =
+    base::Value result =
         extensions::browsertest_util::ExecuteScriptInBackgroundPage(
             browser()->profile(), extension_misc::kSelectToSpeakExtensionId,
             script);
     ASSERT_EQ("ready", result);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<base::RunLoop> loop_runner_;
   std::unique_ptr<base::RunLoop> highlights_runner_;
   std::unique_ptr<base::RunLoop> tray_loop_runner_;
@@ -686,13 +678,13 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTest,
   // Open tray bubble menu.
   tray_test_api_->ShowBubble();
 
-  // Search key + click the avatar button.
+  // Search key + click the settings button.
   generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
-  tray_test_api_->ClickBubbleView(ViewID::VIEW_ID_QS_USER_AVATAR_BUTTON);
+  tray_test_api_->ClickBubbleView(ViewID::VIEW_ID_QS_SETTINGS_BUTTON);
   generator_->ReleaseKey(ui::VKEY_LWIN, 0 /* flags */);
 
   // Should read out text.
-  sm_.ExpectSpeechPattern("*stub-user@example.com*");
+  sm_.ExpectSpeechPattern("*Settings*");
   sm_.Replay();
 
   // Tray bubble menu should remain open.

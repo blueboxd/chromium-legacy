@@ -9,6 +9,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -250,23 +251,26 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
             maybeAddQrCodeFirstPartyOption();
             return;
         }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEBNOTES_STYLIZE)) {
-            mOrderedFirstPartyOptions.add(createWebNotesStylizeFirstPartyOption());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_SHEET_CUSTOM_ACTIONS_POLISH)) {
+            mOrderedFirstPartyOptions.add(createCopyLinkFirstPartyOption());
+            maybeAddCopyFirstPartyOption();
+            maybeAddLongScreenshotFirstPartyOption();
+            maybeAddPrintFirstPartyOption();
+            maybeAddSendTabToSelfFirstPartyOption();
+            maybeAddQrCodeFirstPartyOption();
+        } else {
+            maybeAddWebStyleNotesFirstPartyOption();
+            maybeAddScreenshotFirstPartyOption();
+            maybeAddLongScreenshotFirstPartyOption();
+            // Always show the copy link option as some entries does not offer the change for copy
+            // (e.g. feed card)
+            mOrderedFirstPartyOptions.add(createCopyLinkFirstPartyOption());
+            maybeAddCopyFirstPartyOption();
+            maybeAddSendTabToSelfFirstPartyOption();
+            maybeAddQrCodeFirstPartyOption();
+            maybeAddPrintFirstPartyOption();
+            maybeAddDownloadImageFirstPartyOption();
         }
-        maybeAddScreenshotFirstPartyOption();
-        maybeAddLongScreenshotFirstPartyOption();
-
-        mOrderedFirstPartyOptions.add(createCopyLinkFirstPartyOption());
-        mOrderedFirstPartyOptions.add(createCopyGifFirstPartyOption());
-        mOrderedFirstPartyOptions.add(createCopyImageFirstPartyOption());
-        mOrderedFirstPartyOptions.add(createCopyFirstPartyOption());
-        mOrderedFirstPartyOptions.add(createCopyTextFirstPartyOption());
-        maybeAddSendTabToSelfFirstPartyOption();
-        maybeAddQrCodeFirstPartyOption();
-        if (mTabProvider.hasValue() && UserPrefs.get(mProfile).getBoolean(Pref.PRINTING_ENABLED)) {
-            mOrderedFirstPartyOptions.add(createPrintingFirstPartyOption());
-        }
-        mOrderedFirstPartyOptions.add(createSaveImageFirstPartyOption());
     }
 
     private void maybeAddSendTabToSelfFirstPartyOption() {
@@ -279,7 +283,7 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
     }
 
     private void maybeAddQrCodeFirstPartyOption() {
-        if (!mIsIncognito) {
+        if (!mIsIncognito && !TextUtils.isEmpty(mUrl)) {
             mOrderedFirstPartyOptions.add(createQrCodeFirstPartyOption());
         }
     }
@@ -301,11 +305,40 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
         }
     }
 
+    private void maybeAddPrintFirstPartyOption() {
+        if (mTabProvider.hasValue() && UserPrefs.get(mProfile).getBoolean(Pref.PRINTING_ENABLED)) {
+            mOrderedFirstPartyOptions.add(createPrintingFirstPartyOption());
+        }
+    }
+
+    protected void maybeAddWebStyleNotesFirstPartyOption() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.WEBNOTES_STYLIZE)) {
+            mOrderedFirstPartyOptions.add(createWebNotesStylizeFirstPartyOption());
+        }
+    }
+
+    protected void maybeAddCopyFirstPartyOption() {
+        mOrderedFirstPartyOptions.add(createCopyGifFirstPartyOption());
+        mOrderedFirstPartyOptions.add(createCopyImageFirstPartyOption());
+        mOrderedFirstPartyOptions.add(createCopyFirstPartyOption());
+        mOrderedFirstPartyOptions.add(createCopyTextFirstPartyOption());
+    }
+
+    protected void maybeAddDownloadImageFirstPartyOption() {
+        mOrderedFirstPartyOptions.add(createSaveImageFirstPartyOption());
+    }
+
     private FirstPartyOption createCopyLinkFirstPartyOption() {
-        return new FirstPartyOptionBuilder(
-                ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE)
-                .setContentTypesToDisableFor(ContentType.LINK_AND_TEXT)
-                .setIcon(R.drawable.ic_content_copy_black, R.string.sharing_copy_url)
+        FirstPartyOptionBuilder builder = new FirstPartyOptionBuilder(
+                ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_SHEET_CUSTOM_ACTIONS_POLISH)) {
+            builder.setContentTypesToDisableFor(
+                    ContentType.LINK_AND_TEXT, ContentType.IMAGE_AND_LINK);
+        } else {
+            builder.setContentTypesToDisableFor(ContentType.LINK_AND_TEXT);
+        }
+
+        return builder.setIcon(R.drawable.ic_content_copy_black, R.string.sharing_copy_url)
                 .setFeatureNameForMetrics(USER_ACTION_COPY_URL_SELECTED)
                 .setOnClickCallback((view) -> {
                     ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(
@@ -433,7 +466,7 @@ public abstract class ChromeProvidedSharingOptionsProviderBase {
                 .build();
     }
 
-    protected FirstPartyOption createWebNotesStylizeFirstPartyOption() {
+    private FirstPartyOption createWebNotesStylizeFirstPartyOption() {
         String title = mShareParams.getTitle();
         return new FirstPartyOptionBuilder(ContentType.HIGHLIGHTED_TEXT)
                 .setIcon(R.drawable.webnote, R.string.sharing_webnotes_create_card)

@@ -91,6 +91,7 @@ generate_jni("jni_headers") {
 }
 
 android_library("test_support_java") {
+  resources_package = "org.chromium.components.media_router"
   testonly = true
   sources = [
     "java/src/org/chromium/components/media_router/TestMediaRouterClient.java",
@@ -100,6 +101,7 @@ android_library("test_support_java") {
 
   deps = [
     ":java",
+    ":java_resources",
     ":test_jni_headers",
     "//base:base_java",
     "//base:base_java_test_support",
@@ -136,6 +138,8 @@ robolectric_library("junit") {
     "junit/src/org/chromium/components/media_router/caf/ShadowCastContext.java",
     "junit/src/org/chromium/components/media_router/caf/ShadowCastMediaSource.java",
     "junit/src/org/chromium/components/media_router/caf/ShadowMediaRouter.java",
+    "junit/src/org/chromium/components/media_router/caf/remoting/CafRemotingMediaRouteProviderTest.java",
+    "junit/src/org/chromium/components/media_router/caf/remoting/RemotingSessionControllerTest.java",
   ]
 
   deps = [

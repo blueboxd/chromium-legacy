@@ -9,17 +9,19 @@
 
   #container {
     align-items: center;
-    border-radius: 8px;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--cr-realbox-icon-border-radius, 8px);
     display: flex;
-    height: 32px;
     justify-content: center;
     overflow: hidden;
-    width: 32px;
+    position: relative;
+    width: 100%;
   }
 
   /* Entities may feature a dominant color background until image loads. */
   :host-context(cr-realbox-match[has-image]) #container {
-    background-color: var(--container-bg-color);
+    background-color: var(--cr-realbox-icon-container-bg-color,
+        var(--container-bg-color));
   }
 
   /* Calculator answer and suggestion answer icons feature a blue background. */
@@ -32,8 +34,9 @@
 
   #image {
     display: none;
-    max-height: 32px;
-    max-width: 32px;
+    height: 100%;
+    object-fit: contain;
+    width: 100%;
   }
 
   :host-context(cr-realbox-match[has-image]) #image {
@@ -43,6 +46,22 @@
   :host([is-answer]) #image {
     max-height: 24px;
     max-width: 24px;
+  }
+
+  #imageOverlay {
+    display: none;
+  }
+
+  /* Put a black scrim over the image for entity suggestions in case the images
+   * have a background color that matches the background color of the dropdown.
+   * This makes it clearer where the boundary of the image is. */
+  :host-context(cr-realbox-match[is-entity-suggestion][has-image])
+      #imageOverlay {
+    background: black;
+    display: block;
+    inset: 0;
+    opacity: .05;
+    position: absolute;
   }
 
   #icon {
@@ -76,6 +95,7 @@
 <div id="container" style="--container-bg-color:
     [[containerBgColor_(match.imageDominantColor, imageLoading_)]];">
   <img id="image" src="[[imageSrc_]]" on-load="onImageLoad_"></img>
+  <div id="imageOverlay"></div>
   <!--Note: Do not remove the '$' in '$=' below, otherwise the 'style' attribute
       is erroneously removed by the HTML minifier. -->
   <div id="icon" style$="[[iconStyle_]]"></div>

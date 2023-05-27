@@ -116,9 +116,14 @@ void DownloadBubbleUIController::OnDownloadItemRemoved(
 
 void DownloadBubbleUIController::OnOfflineItemUpdated(const OfflineItem& item) {
   OfflineItemModel model(offline_manager_, item);
-  display_controller_->OnUpdatedItem(
-      model.IsDone(), IsPendingDeepScanning(&model),
-      browser_ == chrome::FindLastActiveWithProfile(profile_.get()));
+  bool may_show_details =
+      model.ShouldShowInBubble() &&
+      (browser_ == chrome::FindLastActiveWithProfile(profile_.get()));
+  // Consider dangerous in-progress downloads to be completed.
+  bool is_done = model.IsDone() ||
+                 (model.GetState() == download::DownloadItem::IN_PROGRESS &&
+                  !IsModelInProgress(&model));
+  display_controller_->OnUpdatedItem(is_done, may_show_details);
 }
 
 void DownloadBubbleUIController::OnDownloadItemUpdated(
@@ -127,8 +132,11 @@ void DownloadBubbleUIController::OnDownloadItemUpdated(
   bool may_show_details =
       model.ShouldShowInBubble() &&
       (browser_ == chrome::FindLastActiveWithProfile(profile_.get()));
-  display_controller_->OnUpdatedItem(
-      item->IsDone(), IsPendingDeepScanning(&model), may_show_details);
+  // Consider dangerous in-progress downloads to be completed.
+  bool is_done = item->IsDone() ||
+                 (item->GetState() == download::DownloadItem::IN_PROGRESS &&
+                  !IsItemInProgress(item));
+  display_controller_->OnUpdatedItem(is_done, may_show_details);
 }
 
 std::vector<DownloadUIModelPtr> DownloadBubbleUIController::GetDownloadUIModels(
@@ -173,9 +181,14 @@ std::vector<DownloadUIModelPtr> DownloadBubbleUIController::GetPartialView() {
       now - *last_partial_view_shown_time_ < kShowPartialViewMinInterval) {
     return {};
   }
-  last_partial_view_shown_time_ = absl::make_optional(now);
+  if (!download::IsDownloadBubblePartialViewEnabled(profile_)) {
+    return {};
+  }
   std::vector<DownloadUIModelPtr> list =
       GetDownloadUIModels(/*is_main_view=*/false);
+  if (!list.empty()) {
+    last_partial_view_shown_time_ = absl::make_optional(now);
+  }
   base::UmaHistogramCounts100("Download.Bubble.PartialViewSize", list.size());
   return list;
 }

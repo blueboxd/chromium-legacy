@@ -141,7 +141,10 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageLabels) {
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   content::WebContents* const web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(0);
-  ASSERT_EQ(ui::AXMode(), web_contents->GetAccessibilityMode());
+  auto accessibility_mode = web_contents->GetAccessibilityMode();
+  // Strip off kNativeAPIs, which may be set in some situations.
+  accessibility_mode.set_mode(ui::AXMode::kNativeAPIs, false);
+  ASSERT_EQ(ui::AXMode(), accessibility_mode);
 
   // Enable automation.
   base::FilePath extension_path =
@@ -153,7 +156,10 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageLabels) {
   // Now the AXMode should include kLabelImages.
   ui::AXMode expected_mode = ui::kAXModeWebContentsOnly;
   expected_mode.set_mode(ui::AXMode::kLabelImages, true);
-  EXPECT_EQ(expected_mode, web_contents->GetAccessibilityMode());
+  accessibility_mode = web_contents->GetAccessibilityMode();
+  // Strip off kNativeAPIs, which may be set in some situations.
+  accessibility_mode.set_mode(ui::AXMode::kNativeAPIs, false);
+  EXPECT_EQ(expected_mode, accessibility_mode);
 }
 
 // Flaky on Mac: crbug.com/1248445
@@ -421,16 +427,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotSupported) {
 #endif  // !defined(USE_AURA)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-class AutomationApiFencedFrameTest
-    : public AutomationApiTest,
-      public testing::WithParamInterface<bool /* shadow_dom_fenced_frame */> {
+class AutomationApiFencedFrameTest : public AutomationApiTest {
  protected:
   AutomationApiFencedFrameTest() {
     feature_list_.InitWithFeaturesAndParameters(
-        /*enabled_features=*/{{blink::features::kFencedFrames,
-                               {{"implementation_type",
-                                 GetParam() ? "shadow_dom" : "mparch"}}},
-                              {features::kPrivacySandboxAdsAPIsOverride, {}}},
+        /*enabled_features=*/{{blink::features::kFencedFrames, {}},
+                              {features::kPrivacySandboxAdsAPIsOverride, {}},
+                              {blink::features::kFencedFramesAPIChanges, {}}},
         /*disabled_features=*/{features::kSpareRendererForSitePerProcess});
   }
 
@@ -442,11 +445,7 @@ class AutomationApiFencedFrameTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-INSTANTIATE_TEST_SUITE_P(AutomationApiFencedFrameTest,
-                         AutomationApiFencedFrameTest,
-                         testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(AutomationApiFencedFrameTest, DesktopFindInFencedframe) {
+IN_PROC_BROWSER_TEST_F(AutomationApiFencedFrameTest, DesktopFindInFencedframe) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionTest("automation/tests/desktop/fencedframe",
                                {.extension_url = "focus_fencedframe.html"}))

@@ -22,11 +22,12 @@ namespace ash {
 // for the first time and ends when the `Finalize` method is called.
 class AmbientUiLauncher {
  public:
+  using InitializationCallback = base::OnceCallback<void(bool success)>;
   virtual ~AmbientUiLauncher() = default;
 
   // Do any asynchronous initialization before launching the UI. This method is
   // only expected to be run once per ambient UI session.
-  virtual void Initialize(base::OnceClosure on_done) = 0;
+  virtual void Initialize(InitializationCallback on_done) = 0;
 
   // After Initialize() is complete, we call this method to create the view,
   // this can be called multiple times during an ambient UI session in case
@@ -43,6 +44,12 @@ class AmbientUiLauncher {
 
   // Returns whether an ambient UI session is active.
   virtual bool IsActive() = 0;
+
+  // Returns whether an ambient UI session is ready to be started and the
+  // `Intiailize` method can be called. Note: This can potentially disable
+  // ambient mode until the next lock/unlock event if this is false on the lock
+  // screen.
+  virtual bool IsReady() = 0;
 };
 
 }  // namespace ash

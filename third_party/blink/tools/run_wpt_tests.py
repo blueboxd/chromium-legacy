@@ -14,6 +14,7 @@ import multiprocessing
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import warnings
@@ -64,22 +65,53 @@ except ImportError:
     _IOS_ENABLED = False
 
 
-def _make_log_enabled_grouping_formatter():
-    # Make a grouping log formatter that shows regular log messages:
-    #   WARNING Unsupported test type wdspec for product content_shell
-    #
-    # Activating logs dynamically with:
-    #   StructuredLogger.send_message('show_logs', 'on')
-    # appears buggy. This factory exists as a workaround.
-    grouping_formatter = mozlog.formatters.GroupingFormatter()
-    grouping_formatter.message_handler.handle_message('show_logs', 'on')
-    return grouping_formatter
+class GroupingFormatter(mozlog.formatters.GroupingFormatter):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Enable informative log messages, which look like:
+        #   WARNING Unsupported test type wdspec for product content_shell
+        #
+        # Activating logs dynamically with:
+        #   StructuredLogger.send_message('show_logs', 'on')
+        # appears buggy. This default exists as a workaround.
+        self.show_logs = True
+
+    def suite_start(self, data) -> str:
+        self.completed_tests = 0
+        self.running_tests.clear()
+        self.test_output.clear()
+        self.subtest_failures.clear()
+        self.tests_with_failing_subtests.clear()
+        for status in self.expected:
+            self.expected[status] = 0
+        for tests in self.unexpected_tests.values():
+            tests.clear()
+        return super().suite_start(data)
+
+    def suite_end(self, data) -> str:
+        # Do not show test failures again in noninteractive mode. THey are
+        # already shown during the run.
+        self.test_failure_text = ''
+        return super().suite_end(data)
 
 
-mozlog.commandline.log_formatters['grouped'] = (
-    _make_log_enabled_grouping_formatter,
-    mozlog.commandline.log_formatters['grouped'][1],
-)
+class MachFormatter(mozlog.formatters.MachFormatter):
+    def __init__(self, *args, reset_before_suite: bool = True, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.reset_before_suite = reset_before_suite
+
+    def suite_start(self, data) -> str:
+        output = super().suite_start(data)
+        if self.reset_before_suite:
+            for counts in self.summary.current['counts'].values():
+                counts['count'] = 0
+                counts['expected'].clear()
+                counts['unexpected'].clear()
+                counts['known_intermittent'].clear()
+            self.summary.current['unexpected_logs'].clear()
+            self.summary.current['intermittent_logs'].clear()
+            self.summary.current['harness_errors'].clear()
+        return output
 
 
 class StructuredLogAdapter(logging.Handler):
@@ -397,6 +429,7 @@ class WPTAdapter:
             # '--run-by-dir=0' so that tests can be more evenly distributed
             # among workers.
             options.fail_on_unexpected_pass = False
+            options.restart_on_unexpected = False
             options.restart_on_new_group = False
             options.run_by_dir = 0
 
@@ -686,6 +719,15 @@ class WPTAdapter:
                            action='count',
                            default=0,
                            help='Increase verbosity')
+        # Install customized versions of `mozlog` formatters.
+        for name, formatter in [
+            ('grouped', GroupingFormatter),
+            ('mach', MachFormatter),
+        ]:
+            mozlog.commandline.log_formatters[name] = (
+                formatter,
+                mozlog.commandline.log_formatters[name][1],
+            )
         return group
 
     def add_android_arguments(self, parser):
@@ -744,6 +786,15 @@ class IsolatedScriptTestFilterAction(argparse.Action):
                 include.extend(extra_include)
                 exclude.extend(extra_exclude)
         namespace.include, namespace.exclude = include, exclude
+        # The `chromium_tests` recipe passes `--isolated-script-test-filter` to
+        # retry failed tests without the patch. Because the patch may have added
+        # the failed tests (common for imported tests),
+        #  1. `run_wpt_tests.py --isolated-script-test-filter` must tolerate
+        #     test IDs that don't exist.
+        #  2. When all tests retried don't exist without the patch, wptrunner
+        #     must run zero tests and exit successfully instead of interpreting
+        #     the lack of explicit tests as running all tests.
+        namespace.default_exclude = True
 
     def _resolve_tests(self, test_filter: str) -> Tuple[List[str], List[str]]:
         """Resolve an isolated script-style filter string into lists of tests.
@@ -789,7 +840,7 @@ def _load_entry_point(tools_root: str):
     if tools_root not in sys.path:
         sys.path.insert(0, tools_root)
     # Remove current cached modules to force a reload.
-    module_pattern = re.compile(r'\bwpt(runner|serve)?\b')
+    module_pattern = re.compile(r'^(tools|wpt(runner|serve)?)\b')
     for name in list(sys.modules):
         if module_pattern.search(name):
             del sys.modules[name]
@@ -938,6 +989,15 @@ class ChromeiOS(Product):
     def test_env(self):
         with super().test_env():
             self.update_options()
+            # Set up xcode log output dir.
+            output_dir = self._host.filesystem.join(
+                self._host.filesystem.dirname(
+                    self._options.log_chromium[0].name), "xcode-output")
+            self._options.webdriver_args.extend([
+                '--out-dir=' + output_dir,
+            ])
+
+            # Install xcode.
             if self._options.xcode_build_version:
                 try:
                     runtime_cache_folder = xcode.construct_runtime_cache_folder(
@@ -1209,6 +1269,16 @@ def _parse_environ_int(name: str) -> Optional[int]:
     return None
 
 
+def handle_interrupt_signals():
+    def termination_handler(_signum, _unused_frame):
+        raise KeyboardInterrupt()
+
+    if sys.platform == "win32":
+        signal.signal(signal.SIGBREAK, termination_handler)
+    else:
+        signal.signal(signal.SIGTERM, termination_handler)
+
+
 def main() -> int:
     # Force log output in utf-8 instead of a locale-dependent encoding. On
     # Windows, this can be cp1252. See: crbug.com/1371195.
@@ -1217,11 +1287,17 @@ def main() -> int:
         sys.stderr.reconfigure(encoding='utf-8')
     # Also apply utf-8 mode to python subprocesses.
     os.environ['PYTHONUTF8'] = '1'
+    # Convert SIGTERM to be handled as KeyboardInterrupt to handle early termination
+    # Same handle is declared later on in wptrunner
+    # See: https://github.com/web-platform-tests/wpt/blob/25cd6eb086db5977ac51f7dee7faafe6772dc9d7/tools/wptrunner/wptrunner/wptrunner.py
+    # This early declaration allow graceful exit when Chromium swarming kill process before wpt starts
+    handle_interrupt_signals()
     try:
         adapter = WPTAdapter()
         options = adapter.parse_arguments()
         return adapter.run_tests(options)
     except KeyboardInterrupt:
+        logger.critical("Harness exited after signal interrupt")
         return exit_codes.INTERRUPTED_EXIT_STATUS
 
 

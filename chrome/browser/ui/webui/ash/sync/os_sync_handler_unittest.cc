@@ -7,11 +7,14 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/cpp/test/test_new_window_delegate.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/webui/settings/ash/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -22,6 +25,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::TestWebUI;
@@ -100,6 +104,15 @@ class TestWebUIProvider
   }
 };
 
+class MockNewWindowDelegate : public testing::NiceMock<TestNewWindowDelegate> {
+ public:
+  // TestNewWindowDelegate:
+  MOCK_METHOD(void,
+              OpenUrl,
+              (const GURL& url, OpenUrlFrom from, Disposition disposition),
+              (override));
+};
+
 class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
  protected:
   OsSyncHandlerTest() = default;
@@ -119,13 +132,23 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
             profile(), base::BindRepeating(&BuildTestSyncService)));
     user_settings_ = sync_service_->GetUserSettings();
 
-    handler_ = std::make_unique<OSSyncHandler>(profile());
-    handler_->SetWebUIForTest(&web_ui_);
-    web_ui_.set_web_contents(web_contents());
+    auto handler = std::make_unique<OSSyncHandler>(profile());
+    handler_ = handler.get();
+    web_ui_ = std::make_unique<content::TestWebUI>();
+    web_ui_->AddMessageHandler(std::move(handler));
+    web_ui_->set_web_contents(web_contents());
+
+    // Initialize NewWindowDelegate things.
+    auto instance = std::make_unique<MockNewWindowDelegate>();
+    auto primary = std::make_unique<MockNewWindowDelegate>();
+    new_window_delegate_primary_ = primary.get();
+    new_window_provider_ = std::make_unique<TestNewWindowDelegateProvider>(
+        std::move(instance), std::move(primary));
   }
 
   void TearDown() override {
-    handler_.reset();
+    new_window_provider_.reset();
+    web_ui_.reset();
     identity_test_env_adaptor_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -138,7 +161,7 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
   // Expects that an "os-sync-prefs-changed" event was sent to the WebUI and
   // returns the data passed to that event.
   base::Value::Dict ExpectOsSyncPrefsSent() {
-    const TestWebUI::CallData& call_data = *web_ui_.call_data().back();
+    const TestWebUI::CallData& call_data = *web_ui_->call_data().back();
     EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
 
     EXPECT_TRUE(call_data.arg1());
@@ -152,8 +175,6 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
     return dict->Clone();
   }
 
-  void NotifySyncStateChanged() { handler_->OnStateChanged(sync_service_); }
-
   bool GetWallperEnabledPref() {
     return profile()->GetPrefs()->GetBoolean(settings::prefs::kSyncOsWallpaper);
   }
@@ -163,21 +184,23 @@ class OsSyncHandlerTest : public ChromeRenderViewHostTestHarness {
                                              enabled);
   }
 
-  syncer::TestSyncService* sync_service_ = nullptr;
-  syncer::SyncUserSettings* user_settings_ = nullptr;
+  raw_ptr<syncer::TestSyncService, ExperimentalAsh> sync_service_ = nullptr;
+  raw_ptr<syncer::SyncUserSettings, ExperimentalAsh> user_settings_ = nullptr;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;
-  TestWebUI web_ui_;
+  std::unique_ptr<TestWebUI> web_ui_;
   TestWebUIProvider test_web_ui_provider_;
   std::unique_ptr<TestChromeWebUIControllerFactory> test_web_ui_factory_;
-  std::unique_ptr<OSSyncHandler> handler_;
+  raw_ptr<OSSyncHandler, ExperimentalAsh> handler_;
+  raw_ptr<MockNewWindowDelegate, ExperimentalAsh> new_window_delegate_primary_;
+  std::unique_ptr<TestNewWindowDelegateProvider> new_window_provider_;
 };
 
 TEST_F(OsSyncHandlerTest, OsSyncPrefsSentOnNavigateToPage) {
   handler_->HandleDidNavigateToOsSyncPage(base::Value::List());
 
-  ASSERT_EQ(1U, web_ui_.call_data().size());
-  const TestWebUI::CallData& call_data = *web_ui_.call_data().back();
+  ASSERT_EQ(1U, web_ui_->call_data().size());
+  const TestWebUI::CallData& call_data = *web_ui_->call_data().back();
 
   std::string event_name = call_data.arg1()->GetString();
   EXPECT_EQ(event_name, "os-sync-prefs-changed");
@@ -191,27 +214,18 @@ TEST_F(OsSyncHandlerTest, OpenConfigPageBeforeSyncEngineInitialized) {
   handler_->HandleDidNavigateToOsSyncPage(base::Value::List());
 
   // No data is sent yet, because the engine is not initialized.
-  EXPECT_EQ(0U, web_ui_.call_data().size());
+  EXPECT_EQ(0U, web_ui_->call_data().size());
 
   // Now, act as if the SyncService has started up.
   sync_service_->SetTransportState(SyncService::TransportState::ACTIVE);
-  NotifySyncStateChanged();
+  handler_->OnStateChanged(sync_service_);
 
   // Update for sync prefs is sent.
-  ASSERT_EQ(1U, web_ui_.call_data().size());
-  const TestWebUI::CallData& call_data = *web_ui_.call_data().back();
+  ASSERT_EQ(1U, web_ui_->call_data().size());
+  const TestWebUI::CallData& call_data = *web_ui_->call_data().back();
 
   std::string event_name = call_data.arg1()->GetString();
   EXPECT_EQ(event_name, "os-sync-prefs-changed");
-}
-
-// Tests that transport state signals not related to user intention to
-// configure sync don't trigger sync engine start.
-TEST_F(OsSyncHandlerTest, OnlyStartEngineWhenConfiguringSync) {
-  user_settings_->SetSyncRequested(false);
-  sync_service_->SetTransportState(SyncService::TransportState::INITIALIZING);
-  NotifySyncStateChanged();
-  EXPECT_FALSE(user_settings_->IsSyncRequested());
 }
 
 TEST_F(OsSyncHandlerTest, TestSyncEverything) {
@@ -304,6 +318,17 @@ TEST_F(OsSyncHandlerTest, ShowSetupSyncForAllTypesIndividually) {
   base::Value::Dict dictionary = ExpectOsSyncPrefsSent();
   CheckConfigDataTypeArguments(dictionary, CHOOSE_WHAT_TO_SYNC, /*types=*/{},
                                /*wallpaper_enabled=*/true);
+}
+
+TEST_F(OsSyncHandlerTest, OpenBrowserSyncSettings) {
+  EXPECT_CALL(
+      *new_window_delegate_primary_,
+      OpenUrl(
+          GURL(chrome::kChromeUISettingsURL).Resolve(chrome::kSyncSetupSubPage),
+          ash::NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+          ash::NewWindowDelegate::Disposition::kSwitchToTab));
+  base::Value::List empty_args;
+  web_ui_->HandleReceivedMessage("OpenBrowserSyncSettings", empty_args);
 }
 
 }  // namespace

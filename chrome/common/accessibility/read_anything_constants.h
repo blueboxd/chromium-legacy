@@ -11,7 +11,6 @@
 namespace string_constants {
 
 extern const char kReadAnythingDefaultFontName[];
-extern const char kReadAnythingDefaultFontSyle[];
 extern const char kLetterSpacingHistogramName[];
 extern const char kLineSpacingHistogramName[];
 extern const char kColorHistogramName[];
@@ -26,6 +25,9 @@ namespace {
 const ui::AXMode kReadAnythingAXMode =
     ui::AXMode::kWebContents | ui::AXMode::kHTML | ui::AXMode::kScreenReader;
 
+// Group id for the toolbar
+const int kToolbarGroupId = 0;
+
 // Visual constants for Read Anything feature.
 const int kInternalInsets = 8;
 const int kSeparatorTopBottomPadding = 4;
@@ -35,6 +37,7 @@ const int kButtonPadding = 2;
 const int kIconSize = 16;
 const int kColorsIconSize = 24;
 const int kSpacingIconSize = 20;
+const int kMenuLabelFontSizePx = 15;
 
 // Font size in em
 const double kReadAnythingDefaultFontScale = 1;

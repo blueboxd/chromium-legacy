@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.app.appmenu;
 import static org.junit.Assert.assertEquals;
 
 import android.content.res.Configuration;
-import android.support.test.InstrumentationRegistry;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ListView;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SmallTest;
 
@@ -33,7 +33,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.commerce.ShoppingFeatures;
@@ -50,6 +49,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuItemProperties;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuTestSupport;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -460,10 +460,8 @@ public class TabbedAppMenuTest {
     @EnableFeatures({ChromeFeatureList.QUICK_DELETE_FOR_ANDROID})
     public void testQuickDeleteMenu_entryFromMenuItemHistogram() throws IOException {
         HistogramWatcher histogramWatcher =
-                HistogramWatcher.newBuilder()
-                        .expectIntRecords("Privacy.QuickDelete",
-                                QuickDeleteMetricsDelegate.PrivacyQuickDelete.MENU_ITEM_CLICKED, 1)
-                        .build();
+                HistogramWatcher.newSingleRecordWatcher("Privacy.QuickDelete",
+                                QuickDeleteMetricsDelegate.QuickDeleteAction.MENU_ITEM_CLICKED);
 
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.quick_delete_menu_id);
@@ -475,9 +473,11 @@ public class TabbedAppMenuTest {
     @LargeTest
     @Feature({"Browser", "Main", "QuickDelete"})
     @EnableFeatures({ChromeFeatureList.QUICK_DELETE_FOR_ANDROID})
-    public void testQuickDeleteMenu_NotShownInIncognito() throws IOException {
-        mActivityTestRule.newIncognitoTabFromMenu();
+    public void testQuickDeleteMenu_NotShownInIncognito() {
+        // Hide first any shown app menu as it can interfere with this test.
+        hitEnterAndAssertAppMenuDismissed();
 
+        mActivityTestRule.newIncognitoTabFromMenu();
         showAppMenuAndAssertMenuShown();
         assertEquals(-1,
                 AppMenuTestSupport.findIndexOfMenuItemById(

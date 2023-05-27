@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/bubble/bubble_utils.h"
+#include "ash/public/cpp/ash_view_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/icon_button.h"
@@ -22,6 +23,7 @@
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/types/event_type.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -33,11 +35,11 @@ namespace ash {
 namespace {
 
 // The insets for the calendar up next and event list item views.
-constexpr int kCalendarUpNextViewStartEndMargin = 14;
+constexpr int kCalendarUpNextViewStartEndMargin = 8;
 constexpr gfx::Insets kContainerInsets =
     gfx::Insets::TLBR(4,
                       kCalendarUpNextViewStartEndMargin,
-                      12,
+                      kCalendarUpNextViewStartEndMargin,
                       kCalendarUpNextViewStartEndMargin);
 // Combined total margin to the left and right (start and end) of the up next
 // and event list item views added together. Used in subtracting to calculate
@@ -48,15 +50,14 @@ constexpr int kCombinedViewMargin =
 // At full width (displaying a single event) the label should be the tray width
 // and so have no max applied.
 constexpr int kLabelFullWidth = 0;
-// UI spec is a fixed 240 width for the whole up next event list item view, if
+// UI spec is a fixed width for the whole up next event list item view, if
 // there's more than 1 being shown. Given we're achieving this using
 // `SizeToFit()` on a label, the label will need to account for the
 // `kCombinedViewMargin` so we reduce those off the size.
-constexpr int kLabelCappedWidth = 240 - kCombinedViewMargin;
-constexpr gfx::Insets kHeaderInsets = gfx::Insets::TLBR(0, 0, 6, 0);
-constexpr int kHeaderBetweenChildSpacing = 14;
-constexpr int kHeaderButtonsBetweenChildSpacing = 28;
-constexpr gfx::Insets kButtonContainerInsets = gfx::Insets::TLBR(0, 0, 0, 12);
+constexpr int kLabelCappedWidth = 170 - kCombinedViewMargin;
+constexpr gfx::Insets kHeaderInsets = gfx::Insets::TLBR(0, 12, 8, 0);
+constexpr int kHeaderBetweenChildSpacing = 16;
+constexpr int kScrollViewportCornerRadius = 18;
 
 // Helper class for managing scrolling animations.
 class ScrollingAnimation : public gfx::LinearAnimation,
@@ -118,8 +119,9 @@ std::unique_ptr<views::Button> CreateTodaysEventsButton(
 std::unique_ptr<views::Label> CreateHeaderLabel() {
   return views::Builder<views::Label>(
              bubble_utils::CreateLabel(
-                 TypographyToken::kCrosButton2,
-                 l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_UP_NEXT)))
+                 TypographyToken::kCrosHeadline1,
+                 l10n_util::GetStringUTF16(IDS_ASH_CALENDAR_UP_NEXT),
+                 cros_tokens::kCrosSysOnSurface))
       .SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT)
       .Build();
 }
@@ -149,12 +151,16 @@ int GetFirstVisibleChildIndex(std::vector<views::View*> event_views,
   return 0;
 }
 
-// Checks if both lists contain the same events by comparing their event IDs.
-// The event IDs should be the same (unique per Calendar) and in the same order.
-bool SameEventIds(const std::list<google_apis::calendar::CalendarEvent>& a,
-                  const std::list<google_apis::calendar::CalendarEvent>& b) {
-  auto proj = &google_apis::calendar::CalendarEvent::id;
-  return base::ranges::equal(a, b, base::ranges::equal_to(), proj, proj);
+// Checks if both lists contain the same events by comparing first their event
+// IDs and then that they start and end at the same time. The event IDs should
+// be the same (unique per Calendar) and in the same order.
+bool SameEvents(const std::list<google_apis::calendar::CalendarEvent>& a,
+                const std::list<google_apis::calendar::CalendarEvent>& b) {
+  return base::ranges::equal(a, b, [](const auto& a, const auto& b) {
+    return a.id() == b.id() &&
+           a.start_time().date_time() == b.start_time().date_time() &&
+           a.end_time().date_time() == b.start_time().date_time();
+  });
 }
 
 }  // namespace
@@ -207,21 +213,21 @@ CalendarUpNextView::CalendarUpNextView(
   auto button_container =
       views::Builder<views::View>()
           .SetLayoutManager(std::make_unique<views::BoxLayout>(
-              views::BoxLayout::Orientation::kHorizontal,
-              kButtonContainerInsets, kHeaderButtonsBetweenChildSpacing))
+              views::BoxLayout::Orientation::kHorizontal, gfx::Insets(),
+              kHeaderBetweenChildSpacing))
           .Build();
   left_scroll_button_ =
       button_container->AddChildView(std::make_unique<IconButton>(
           base::BindRepeating(&CalendarUpNextView::OnScrollLeftButtonPressed,
                               base::Unretained(this)),
-          IconButton::Type::kXSmallFloating, &kCaretLeftIcon,
+          IconButton::Type::kMediumFloating, &kCaretLeftIcon,
           IDS_ASH_CALENDAR_UP_NEXT_SCROLL_LEFT_BUTTON));
   left_scroll_button_->SetFocusBehavior(FocusBehavior::NEVER);
   right_scroll_button_ =
       button_container->AddChildView(std::make_unique<IconButton>(
           base::BindRepeating(&CalendarUpNextView::OnScrollRightButtonPressed,
                               base::Unretained(this)),
-          IconButton::Type::kXSmallFloating, &kCaretRightIcon,
+          IconButton::Type::kMediumFloating, &kCaretRightIcon,
           IDS_ASH_CALENDAR_UP_NEXT_SCROLL_RIGHT_BUTTON));
   right_scroll_button_->SetFocusBehavior(FocusBehavior::NEVER);
   header_view_->AddChildView(std::move(button_container));
@@ -230,6 +236,8 @@ CalendarUpNextView::CalendarUpNextView(
   scroll_view_->SetAllowKeyboardScrolling(false);
   scroll_view_->SetBackgroundColor(absl::nullopt);
   scroll_view_->SetDrawOverflowIndicator(false);
+  scroll_view_->SetViewportRoundedCornerRadius(
+      gfx::RoundedCornersF(kScrollViewportCornerRadius));
   scroll_view_->SetHorizontalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
   scroll_view_->SetTreatAllScrollEventsAsHorizontal(true);
@@ -279,7 +287,7 @@ void CalendarUpNextView::Layout() {
 
 void CalendarUpNextView::UpdateEvents(
     const std::list<google_apis::calendar::CalendarEvent>& events) {
-  if (SameEventIds(displayed_events_, events)) {
+  if (SameEvents(displayed_events_, events)) {
     return;
   }
 

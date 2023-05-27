@@ -38,7 +38,7 @@
 #elif BUILDFLAG(IS_APPLE)
 #include "net/base/network_change_notifier_mac.h"
 #elif BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-#include "net/base/network_change_notifier_posix.h"
+#include "net/base/network_change_notifier_passive.h"
 #elif BUILDFLAG(IS_FUCHSIA)
 #include "net/base/network_change_notifier_fuchsia.h"
 #endif
@@ -302,8 +302,10 @@ std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::CreateIfNeeded(
       return nullptr;
   }
 
-  if (g_network_change_notifier_factory)
-    return g_network_change_notifier_factory->CreateInstance();
+  if (g_network_change_notifier_factory) {
+    return g_network_change_notifier_factory->CreateInstanceWithInitialTypes(
+        initial_type, initial_subtype);
+  }
 
 #if BUILDFLAG(IS_WIN)
   std::unique_ptr<NetworkChangeNotifierWin> network_change_notifier =
@@ -311,14 +313,14 @@ std::unique_ptr<NetworkChangeNotifier> NetworkChangeNotifier::CreateIfNeeded(
   network_change_notifier->WatchForAddressChange();
   return network_change_notifier;
 #elif BUILDFLAG(IS_ANDROID)
-  // Fallback to use NetworkChangeNotifierPosix if NetworkChangeNotifierFactory
-  // is not set. Currently used for tests and when running network
-  // service in a separate process.
-  return std::make_unique<NetworkChangeNotifierPosix>(initial_type,
-                                                      initial_subtype);
+  // Fallback to use NetworkChangeNotifierPassive if
+  // NetworkChangeNotifierFactory is not set. Currently used for tests and when
+  // running network service in a separate process.
+  return std::make_unique<NetworkChangeNotifierPassive>(initial_type,
+                                                        initial_subtype);
 #elif BUILDFLAG(IS_CHROMEOS)
-  return std::make_unique<NetworkChangeNotifierPosix>(initial_type,
-                                                      initial_subtype);
+  return std::make_unique<NetworkChangeNotifierPassive>(initial_type,
+                                                        initial_subtype);
 #elif BUILDFLAG(IS_LINUX)
   return std::make_unique<NetworkChangeNotifierLinux>(
       std::unordered_set<std::string>());
@@ -520,10 +522,9 @@ const char* NetworkChangeNotifier::ConnectionTypeToString(
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 // static
-const internal::AddressTrackerLinux*
-NetworkChangeNotifier::GetAddressTracker() {
+AddressMapOwnerLinux* NetworkChangeNotifier::GetAddressMapOwner() {
   return g_network_change_notifier
-             ? g_network_change_notifier->GetAddressTrackerInternal()
+             ? g_network_change_notifier->GetAddressMapOwnerInternal()
              : nullptr;
 }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -874,8 +875,7 @@ NetworkChangeNotifier::NetworkChangeNotifier(
 }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-const internal::AddressTrackerLinux*
-NetworkChangeNotifier::GetAddressTrackerInternal() const {
+AddressMapOwnerLinux* NetworkChangeNotifier::GetAddressMapOwnerInternal() {
   return nullptr;
 }
 #endif

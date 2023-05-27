@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/overview_grid.h"
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -23,12 +24,14 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/cros_next_default_desk_button.h"
 #include "ash/wm/desks/cros_next_desk_icon_button.h"
+#include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
-#include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
+#include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/templates/saved_desk_animations.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
 #include "ash/wm/desks/templates/saved_desk_library_view.h"
@@ -60,8 +63,8 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/containers/adapters.h"
-#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -269,7 +272,7 @@ class ShutdownAnimationMetricsTrackerObserver : public OverviewObserver,
   }
 
  private:
-  ui::Compositor* compositor_;
+  raw_ptr<ui::Compositor, ExperimentalAsh> compositor_;
   OverviewExitMetricsTracker metrics_tracker_;
 };
 
@@ -303,7 +306,7 @@ class DropTargetView : public views::View {
   }
 
  private:
-  views::View* background_view_ = nullptr;
+  raw_ptr<views::View, ExperimentalAsh> background_view_ = nullptr;
 };
 
 BEGIN_METADATA(DropTargetView, views::View)
@@ -832,6 +835,8 @@ void OverviewGrid::AddDropTargetForDraggingFromThisGrid(
   drop_target_widget_ =
       CreateDropTargetWidget(root_window_, dragged_item->GetWindow());
   const size_t position = GetOverviewItemIndex(dragged_item) + 1u;
+  // TODO(b/277979324): Consider avoid creating overview item for drop target
+  // widget.
   overview_session_->AddItem(drop_target_widget_->GetNativeWindow(),
                              /*reposition=*/true, /*animate=*/false,
                              /*ignored_items=*/{dragged_item}, position);
@@ -850,6 +855,8 @@ void OverviewGrid::AddDropTargetNotForDraggingFromThisGrid(
     drop_target_widget_->SetOpacity(1.f);
   }
   const size_t position = FindInsertionIndex(dragged_window);
+  // TODO(b/277979324): Consider avoid creating overview item for drop target
+  // widget.
   overview_session_->AddItem(drop_target_window, /*reposition=*/true, animate,
                              /*ignored_items=*/{}, position);
 }
@@ -1378,7 +1385,7 @@ void OverviewGrid::UpdateNudge(OverviewItem* item, double value) {
 
     OverviewItem* nudged_item = window_list_[data.index].get();
     double nudge_param = value * value / 30.0;
-    nudge_param = base::clamp(nudge_param, 0.0, 1.0);
+    nudge_param = std::clamp(nudge_param, 0.0, 1.0);
     gfx::RectF bounds =
         gfx::Tween::RectFValueBetween(nudge_param, data.src, data.dst);
     nudged_item->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
@@ -1451,7 +1458,7 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
   const bool dragged_window_is_visible_on_all_desks =
       dragged_window &&
       desks_util::IsWindowVisibleOnAllWorkspaces(dragged_window);
-  // End the drag for the DesksBarView.
+  // End the drag for the LegacyDeskBarView.
   if (!IntersectsWithDesksBar(screen_location,
                               /*update_desks_bar_drag_details=*/
                               !dragged_window_is_visible_on_all_desks,
@@ -1570,7 +1577,7 @@ void OverviewGrid::StartScroll() {
 bool OverviewGrid::UpdateScrollOffset(float delta) {
   float new_scroll_offset = scroll_offset_;
   new_scroll_offset += delta;
-  new_scroll_offset = base::clamp(new_scroll_offset, scroll_offset_min_, 0.f);
+  new_scroll_offset = std::clamp(new_scroll_offset, scroll_offset_min_, 0.f);
 
   // For flings, we want to return false if we hit one of the edges, which is
   // when |new_scroll_offset| is exactly 0.f or |scroll_offset_min_|.
@@ -1747,8 +1754,11 @@ void OverviewGrid::ShowSavedDeskLibrary() {
     // bar. `GetGridEffectiveBounds` will not be the correct bounds for the
     // library if we are currently in the zero state mode.
     gfx::Rect library_bounds = bounds_;
-    library_bounds.Inset(gfx::Insets::TLBR(
-        DesksBarView::GetExpandedBarHeight(root_window_), 0, 0, 0));
+    library_bounds.Inset(
+        gfx::Insets::TLBR(LegacyDeskBarView::GetPreferredBarHeight(
+                              root_window_, LegacyDeskBarView::Type::kOverview,
+                              LegacyDeskBarView::State::kExpanded),
+                          0, 0, 0));
 
     saved_desk_library_widget_->SetBounds(library_bounds);
   }
@@ -2182,15 +2192,15 @@ void OverviewGrid::MaybeInitDesksWidget() {
   if (!desks_util::ShouldDesksBarBeCreated() || desks_widget_)
     return;
 
-  desks_widget_ =
-      DesksBarView::CreateDesksWidget(root_window_, GetDesksWidgetBounds());
+  desks_widget_ = DeskBarViewBase::CreateDeskWidget(
+      root_window_, GetDesksWidgetBounds(), DeskBarViewBase::Type::kOverview);
 
   // The following order of function calls is significant: SetContentsView()
-  // must be called before DesksBarView:: Init(). This is needed because the
-  // desks mini views need to access the widget to get the root window in order
-  // to know how to layout themselves.
+  // must be called before LegacyDeskBarView:: Init(). This is needed because
+  // the desks mini views need to access the widget to get the root window in
+  // order to know how to layout themselves.
   desks_bar_view_ =
-      desks_widget_->SetContentsView(std::make_unique<DesksBarView>(this));
+      desks_widget_->SetContentsView(std::make_unique<LegacyDeskBarView>(this));
   desks_bar_view_->Init();
 
   desks_widget_->Show();
@@ -2328,13 +2338,13 @@ std::vector<gfx::RectF> OverviewGrid::GetWindowRectsForTabletModeLayout(
   // `rightmost_window_right` may have been modified by an earlier scroll.
   // `scroll_offset_` is added to adjust for that. If `rightmost_window_right`
   // is less than `total_bounds.right()`, the grid cannot be scrolled. Set
-  // `scroll_offset_min_` to 0 so that `base::clamp()` is happy.
+  // `scroll_offset_min_` to 0 so that `std::clamp()` is happy.
   rightmost_window_right -= scroll_offset_;
   scroll_offset_min_ = total_bounds.right() - rightmost_window_right;
   if (scroll_offset_min_ > 0.f)
     scroll_offset_min_ = 0.f;
 
-  scroll_offset_ = base::clamp(scroll_offset_, scroll_offset_min_, 0.f);
+  scroll_offset_ = std::clamp(scroll_offset_, scroll_offset_min_, 0.f);
 
   // Map which contains up to |kTabletLayoutRow| entries with information on the
   // last items right bound per row. Used so we can place the next item directly
@@ -2572,9 +2582,9 @@ void OverviewGrid::UpdateNumSavedDeskUnsupportedWindows(aura::Window* window,
                                    ->disable_app_id_check_for_saved_desks() ||
                                !full_restore::GetAppId(window).empty());
   int addend = increment ? 1 : -1;
-  if (!DeskTemplate::IsAppTypeSupported(window) || !has_restore_id)
+  if (!DeskTemplate::IsAppTypeSupported(window) || !has_restore_id) {
     num_unsupported_windows_ += addend;
-  else if (Shell::Get()->saved_desk_delegate()->IsIncognitoWindow(window)) {
+  } else if (Shell::Get()->saved_desk_delegate()->IsIncognitoWindow(window)) {
     num_incognito_windows_ += addend;
   }
 
@@ -2583,14 +2593,12 @@ void OverviewGrid::UpdateNumSavedDeskUnsupportedWindows(aura::Window* window,
 }
 
 int OverviewGrid::GetDesksBarHeight() const {
-  const bool should_show_zero_state_desks_bar =
-      desks_bar_view_ ? desks_bar_view_->IsZeroState()
-                      : !IsShowingSavedDeskLibrary() &&
-                            DesksController::Get()->GetNumberOfDesks() == 1;
-
-  return should_show_zero_state_desks_bar
-             ? DesksBarView::kZeroStateBarHeight
-             : DesksBarView::GetExpandedBarHeight(root_window_);
+  DeskBarViewBase::State state = desks_bar_view_
+                                     ? desks_bar_view_->state()
+                                     : LegacyDeskBarView::GetPerferredState(
+                                           LegacyDeskBarView::Type::kOverview);
+  return LegacyDeskBarView::GetPreferredBarHeight(
+      root_window_, LegacyDeskBarView::Type::kOverview, state);
 }
 
 }  // namespace ash

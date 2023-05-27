@@ -104,12 +104,17 @@ ui::MenuModel* ComboboxMenuModel::GetSubmenuModelAt(size_t index) const {
   return nullptr;
 }
 
-absl::optional<ui::ColorId> ComboboxMenuModel::GetForegroundColor(
+absl::optional<ui::ColorId> ComboboxMenuModel::GetForegroundColorId(
     size_t index) {
-  return model_->GetDropdownForegroundColorAt(index);
+  return model_->GetDropdownForegroundColorIdAt(index);
 }
 
-absl::optional<ui::ColorId> ComboboxMenuModel::GetSubmenuBackgroundColor(
+absl::optional<ui::ColorId> ComboboxMenuModel::GetSubmenuBackgroundColorId(
     size_t index) {
-  return model_->GetDropdownBackgroundColorAt(index);
+  return model_->GetDropdownBackgroundColorIdAt(index);
+}
+
+absl::optional<ui::ColorId> ComboboxMenuModel::GetSelectedBackgroundColorId(
+    size_t index) {
+  return model_->GetDropdownSelectedBackgroundColorIdAt(index);
 }

@@ -9,6 +9,7 @@
 #include "ash/public/cpp/session/session_observer.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/throughput_tracker.h"
@@ -77,10 +78,15 @@ class ASH_EXPORT PrivacyIndicatorsTrayItemView : public TrayItemView,
   views::ImageView* camera_icon() { return camera_icon_; }
   views::ImageView* microphone_icon() { return microphone_icon_; }
 
-  // Update the view according to the state of camara/microphone access.
-  void Update(const std::string& app_id,
-              bool is_camera_used,
-              bool is_microphone_used);
+  // Called by `PrivacyIndicatorsController` to update the view according to the
+  // new state of camara/microphone access. `is_new_app`, `was_camera_in_use`,
+  // and `was_microphone_in_use` are the information used to determine if we
+  // should perform an animation.
+  void OnCameraAndMicrophoneAccessStateChanged(bool is_camera_used,
+                                               bool is_microphone_used,
+                                               bool is_new_app,
+                                               bool was_camera_in_use,
+                                               bool was_microphone_in_use);
 
   // Update the view according to the state of screen sharing.
   void UpdateScreenShareStatus(bool is_screen_sharing);
@@ -90,6 +96,10 @@ class ASH_EXPORT PrivacyIndicatorsTrayItemView : public TrayItemView,
 
   // TrayItemView:
   std::u16string GetTooltipText(const gfx::Point& point) const override;
+
+  // Update the view's visibility based on camera/mic access and screen sharing
+  // state.
+  void UpdateVisibility();
 
  private:
   friend class PrivacyIndicatorsTrayItemViewTest;
@@ -114,10 +124,6 @@ class ASH_EXPORT PrivacyIndicatorsTrayItemView : public TrayItemView,
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
 
-  // Specify whether camera/microphone is in used.
-  bool IsCameraUsed() const;
-  bool IsMicrophoneUsed() const;
-
   // Update the icons for the children views.
   void UpdateIcons();
 
@@ -132,15 +138,6 @@ class ASH_EXPORT PrivacyIndicatorsTrayItemView : public TrayItemView,
   // Calculate the length of the longer size, based on `is_screen_sharing_`.
   int GetLongerSideLengthInExpandedMode() const;
 
-  // Update the access status of `app_id` for the given `access_set`.
-  void UpdateAccessStatus(const std::string& app_id,
-                          bool is_accessed,
-                          base::flat_set<std::string>& access_set);
-
-  // Update the view's visibility based on camera/mic access and screen sharing
-  // state.
-  void UpdateVisibility();
-
   // End all 3 animations contained in this class.
   void EndAllAnimations();
 
@@ -150,16 +147,12 @@ class ASH_EXPORT PrivacyIndicatorsTrayItemView : public TrayItemView,
   // Record repeated shows metric when the timer is stop.
   void RecordRepeatedShows();
 
-  views::BoxLayout* layout_manager_ = nullptr;
+  raw_ptr<views::BoxLayout, ExperimentalAsh> layout_manager_ = nullptr;
 
   // Owned by the views hierarchy.
-  views::ImageView* camera_icon_ = nullptr;
-  views::ImageView* microphone_icon_ = nullptr;
-  views::ImageView* screen_share_icon_ = nullptr;
-
-  // Store the app_id(s) that are currently accessing camera/microphone.
-  base::flat_set<std::string> use_camera_apps_;
-  base::flat_set<std::string> use_microphone_apps_;
+  raw_ptr<views::ImageView, ExperimentalAsh> camera_icon_ = nullptr;
+  raw_ptr<views::ImageView, ExperimentalAsh> microphone_icon_ = nullptr;
+  raw_ptr<views::ImageView, ExperimentalAsh> screen_share_icon_ = nullptr;
 
   // Keep track of the current screen sharing state.
   bool is_screen_sharing_ = false;

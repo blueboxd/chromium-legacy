@@ -138,7 +138,8 @@ bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
                                         const gfx::ColorSpace& color_space,
                                         GrSurfaceOrigin surface_origin,
                                         SkAlphaType alpha_type,
-                                        uint32_t usage) {
+                                        uint32_t usage,
+                                        std::string debug_label) {
   TRACE_EVENT2("gpu", "SharedImageStub::CreateSharedImage", "width",
                size.width(), "height", size.height());
   if (!mailbox.IsSharedImage()) {
@@ -151,9 +152,10 @@ bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
     OnError();
     return false;
   }
+
   if (!factory_->CreateSharedImage(mailbox, std::move(handle), format, plane,
                                    size, color_space, surface_origin,
-                                   alpha_type, usage)) {
+                                   alpha_type, usage, GetLabel(debug_label))) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image";
     OnError();
     return false;
@@ -168,7 +170,8 @@ bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
                                         const gfx::ColorSpace& color_space,
                                         GrSurfaceOrigin surface_origin,
                                         SkAlphaType alpha_type,
-                                        uint32_t usage) {
+                                        uint32_t usage,
+                                        std::string debug_label) {
   TRACE_EVENT2("gpu", "SharedImageStub::CreateSharedImage", "width",
                size.width(), "height", size.height());
   // TODO(kylechar): Add support for single-planar formats and remove this.
@@ -187,9 +190,10 @@ bool SharedImageStub::CreateSharedImage(const Mailbox& mailbox,
     OnError();
     return false;
   }
+
   if (!factory_->CreateSharedImage(mailbox, format, size, color_space,
                                    surface_origin, alpha_type, usage,
-                                   std::move(handle))) {
+                                   GetLabel(debug_label), std::move(handle))) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image with "
                   "multiplanar format";
     OnError();
@@ -240,10 +244,10 @@ void SharedImageStub::OnCreateSharedImage(
     return;
   }
 
-  if (!factory_->CreateSharedImage(params->mailbox, params->format,
-                                   params->size, params->color_space,
-                                   params->surface_origin, params->alpha_type,
-                                   gpu::kNullSurfaceHandle, params->usage)) {
+  if (!factory_->CreateSharedImage(
+          params->mailbox, params->format, params->size, params->color_space,
+          params->surface_origin, params->alpha_type, gpu::kNullSurfaceHandle,
+          params->usage, GetLabel(params->debug_label))) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image";
     OnError();
     return;
@@ -291,7 +295,8 @@ void SharedImageStub::OnCreateSharedImageWithData(
 
   if (!factory_->CreateSharedImage(
           params->mailbox, params->format, params->size, params->color_space,
-          params->surface_origin, params->alpha_type, params->usage, subspan)) {
+          params->surface_origin, params->alpha_type, params->usage,
+          GetLabel(params->debug_label), subspan)) {
     LOG(ERROR) << "SharedImageStub: Unable to create shared image";
     OnError();
     return;
@@ -313,7 +318,7 @@ void SharedImageStub::OnCreateSharedImageWithBuffer(
   if (!CreateSharedImage(params->mailbox, std::move(params->buffer_handle),
                          params->format, params->size, params->color_space,
                          params->surface_origin, params->alpha_type,
-                         params->usage)) {
+                         params->usage, GetLabel(params->debug_label))) {
     return;
   }
 
@@ -327,7 +332,8 @@ void SharedImageStub::OnCreateGMBSharedImage(
   if (!CreateSharedImage(params->mailbox, std::move(params->buffer_handle),
                          params->format, params->plane, params->size,
                          params->color_space, params->surface_origin,
-                         params->alpha_type, params->usage)) {
+                         params->alpha_type, params->usage,
+                         GetLabel(params->debug_label))) {
     return;
   }
 
@@ -587,6 +593,13 @@ void SharedImageStub::DestroySharedImage(const Mailbox& mailbox,
   channel_->scheduler()->ScheduleTask(
       gpu::Scheduler::Task(sequence_, std::move(done_cb),
                            std::vector<gpu::SyncToken>({sync_token})));
+}
+
+std::string SharedImageStub::GetLabel(const std::string& debug_label) const {
+  // For cross process shared images, compose the label from the client id and
+  // client pid for easier identification in debug tools.
+  return debug_label + "_Cid:" + base::NumberToString(channel_->client_id()) +
+         "_Pid:" + base::NumberToString(channel_->client_pid());
 }
 
 }  // namespace gpu

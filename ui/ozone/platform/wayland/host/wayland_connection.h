@@ -301,6 +301,29 @@ class WaylandConnection {
     surface_submission_in_pixel_coordinates_ = enabled;
   }
 
+  bool supports_viewporter_surface_scaling() const {
+    return supports_viewporter_surface_scaling_;
+  }
+
+  void set_supports_viewporter_surface_scaling(bool enabled) {
+    supports_viewporter_surface_scaling_ = enabled;
+  }
+
+  bool UseViewporterSurfaceScaling() {
+    return supports_viewporter_surface_scaling_ &&
+           !surface_submission_in_pixel_coordinates_;
+  }
+
+  bool overlay_delegation_disabled() const {
+    return overlay_delegation_disabled_;
+  }
+
+  void set_overlay_delegation_disabled(bool disabled) {
+    overlay_delegation_disabled_ = disabled;
+  }
+
+  bool ShouldUseOverlayDelegation() const;
+
   wl::SerialTracker& serial_tracker() { return serial_tracker_; }
 
   void set_tablet_layout_state(display::TabletState tablet_layout_state) {
@@ -478,6 +501,13 @@ class WaylandConnection {
   // applied. The server will be responsible to scale the buffers to the right
   // sizes.
   bool surface_submission_in_pixel_coordinates_ = false;
+
+  // This is set if wp_viewporter may be used to instruct the compositor to
+  // properly scale fractional scaled surfaces.
+  bool supports_viewporter_surface_scaling_ = false;
+
+  // This is set if delegated composition should not be used.
+  bool overlay_delegation_disabled_ = false;
 
   wl::SerialTracker serial_tracker_;
 

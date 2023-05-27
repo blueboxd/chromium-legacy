@@ -58,6 +58,7 @@ source_set("browser_tests_filters") {
     "//testing/buildbot/filters/chromeos.msan.browser_tests.oobe_positive.filter",
     "//testing/buildbot/filters/code_coverage.browser_tests.filter",
     "//testing/buildbot/filters/fuchsia.browser_tests.filter",
+    "//testing/buildbot/filters/linux-chromeos.browser_tests.pixel_tests.filter",
     "//testing/buildbot/filters/linux-chromeos.browser_tests.require_lacros.filter",
     "//testing/buildbot/filters/linux-lacros.browser_tests.filter",
     "//testing/buildbot/filters/linux.linux-rel-cft.browser_tests.filter",
@@ -73,12 +74,6 @@ source_set("browser_tests_filters") {
   ]
 }
 
-source_set("chrome_junit_tests_filters") {
-  testonly = true
-
-  data = [ "//testing/buildbot/filters/android.nougat-x86-rel.chrome_junit_tests.filter" ]
-}
-
 source_set("chrome_public_test_apk_filters") {
   testonly = true
 
@@ -86,6 +81,8 @@ source_set("chrome_public_test_apk_filters") {
     "//testing/buildbot/filters/android.pie_arm64_rel.chrome_public_test_apk.filter",
     "//testing/buildbot/filters/android.emulator_11.chrome_public_test_apk.filter",
     "//testing/buildbot/filters/android.emulator_12.chrome_public_test_apk.filter",
+    "//testing/buildbot/filters/android.emulator_12l.chrome_public_test_apk.filter",
+    "//testing/buildbot/filters/android.emulator_13.chrome_public_test_apk.filter",
     "//testing/buildbot/filters/android.emulator_n.chrome_public_test_apk.filter",
     "//testing/buildbot/filters/android.emulator_p.chrome_public_test_apk.filter",
   ]
@@ -291,6 +288,11 @@ source_set("interactive_ui_tests_filters") {
   data = [
     "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter",
     "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
+
+    # TODO(crbug.com/1429632): Remove these filters.
+    "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.beta.filter",
+    "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.dev.filter",
+    "//testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.stable.filter",
     "//testing/buildbot/filters/linux.linux-rel-cft.interactive_ui_tests.filter",
     "//testing/buildbot/filters/mac.mac11-arm64-rel.interactive_ui_tests.filter",
     "//testing/buildbot/filters/mac.mac-rel-cft.interactive_ui_tests.filter",

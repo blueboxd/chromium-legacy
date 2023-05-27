@@ -20,7 +20,8 @@ import finalize_apk
 
 from util import build_utils
 from util import diff_utils
-from util import zipalign
+import action_helpers  # build_utils adds //build to sys.path.
+import zip_helpers
 
 
 # Taken from aapt's Package.cpp:
@@ -33,8 +34,9 @@ _NO_COMPRESS_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif', '.wav', '.mp2',
 
 def _ParseArgs(args):
   parser = argparse.ArgumentParser()
-  build_utils.AddDepfileOption(parser)
+  action_helpers.add_depfile_arg(parser)
   parser.add_argument('--assets',
+                      action='append',
                       help='GYP-list of files to add as assets in the form '
                       '"srcPath:zipPath", where ":zipPath" is optional.')
   parser.add_argument(
@@ -114,18 +116,18 @@ def _ParseArgs(args):
                       help='Treat all warnings as errors.')
   diff_utils.AddCommandLineFlags(parser)
   options = parser.parse_args(args)
-  options.assets = build_utils.ParseGnList(options.assets)
-  options.uncompressed_assets = build_utils.ParseGnList(
+  options.assets = action_helpers.parse_gn_list(options.assets)
+  options.uncompressed_assets = action_helpers.parse_gn_list(
       options.uncompressed_assets)
-  options.native_lib_placeholders = build_utils.ParseGnList(
+  options.native_lib_placeholders = action_helpers.parse_gn_list(
       options.native_lib_placeholders)
-  options.secondary_native_lib_placeholders = build_utils.ParseGnList(
+  options.secondary_native_lib_placeholders = action_helpers.parse_gn_list(
       options.secondary_native_lib_placeholders)
-  options.java_resources = build_utils.ParseGnList(options.java_resources)
-  options.native_libs = build_utils.ParseGnList(options.native_libs)
-  options.secondary_native_libs = build_utils.ParseGnList(
+  options.java_resources = action_helpers.parse_gn_list(options.java_resources)
+  options.native_libs = action_helpers.parse_gn_list(options.native_libs)
+  options.secondary_native_libs = action_helpers.parse_gn_list(
       options.secondary_native_libs)
-  options.library_always_compress = build_utils.ParseGnList(
+  options.library_always_compress = action_helpers.parse_gn_list(
       options.library_always_compress)
 
   if not options.android_abi and (options.native_libs or
@@ -203,7 +205,7 @@ def _GetAssetsToAdd(path_tuples,
           os.path.splitext(src_path)[1] not in _NO_COMPRESS_EXTENSIONS)
 
       if target_compress == compress:
-        # AddToZipHermetic() uses this logic to avoid growing small files.
+        # add_to_zip_hermetic() uses this logic to avoid growing small files.
         # We need it here in order to set alignment correctly.
         if allow_reads and compress and os.path.getsize(src_path) < 16:
           compress = False
@@ -235,12 +237,11 @@ def _AddFiles(apk, details):
       raise Exception(
           'Multiple targets specified the asset path: %s' % apk_path)
     except KeyError:
-      zipalign.AddToZipHermetic(
-          apk,
-          apk_path,
-          src_path=src_path,
-          compress=compress,
-          alignment=alignment)
+      zip_helpers.add_to_zip_hermetic(apk,
+                                      apk_path,
+                                      src_path=src_path,
+                                      compress=compress,
+                                      alignment=alignment)
 
 
 def _GetNativeLibrariesToAdd(native_libs, android_abi, fast_align,
@@ -386,9 +387,9 @@ def main(args):
 
     if options.only_verify_expectations:
       if options.depfile:
-        build_utils.WriteDepfile(options.depfile,
-                                 options.actual_file,
-                                 inputs=depfile_deps)
+        action_helpers.write_depfile(options.depfile,
+                                     options.actual_file,
+                                     inputs=depfile_deps)
       return
 
   # If we are past this point, we are going to actually create the final apk so
@@ -398,12 +399,13 @@ def main(args):
       assets, uncompressed_assets, fast_align, allow_reads=True)
 
   # Targets generally do not depend on apks, so no need for only_if_changed.
-  with build_utils.AtomicOutput(options.output_apk, only_if_changed=False) as f:
+  with action_helpers.atomic_output(options.output_apk,
+                                    only_if_changed=False) as f:
     with zipfile.ZipFile(options.resource_apk) as resource_apk, \
          zipfile.ZipFile(f, 'w') as out_apk:
 
       def add_to_zip(zip_path, data, compress=True, alignment=4):
-        zipalign.AddToZipHermetic(
+        zip_helpers.add_to_zip_hermetic(
             out_apk,
             zip_path,
             data=data,
@@ -522,9 +524,9 @@ def main(args):
     logging.debug('Moving file into place')
 
     if options.depfile:
-      build_utils.WriteDepfile(options.depfile,
-                               options.output_apk,
-                               inputs=depfile_deps)
+      action_helpers.write_depfile(options.depfile,
+                                   options.output_apk,
+                                   inputs=depfile_deps)
 
 
 if __name__ == '__main__':

@@ -13,7 +13,6 @@
 #include "base/check_deref.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/path_service.h"
@@ -28,6 +27,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
@@ -809,8 +809,9 @@ bool WebPageReplayServerWrapper::RunWebPageReplayCmd(
 // ProfileDataController ------------------------------------------------------
 ProfileDataController::ProfileDataController()
     : profile_(autofill::test::GetIncompleteProfile2()),
-      card_(autofill::CreditCard(base::GenerateGUID(),
-                                 "http://www.example.com")) {
+      card_(autofill::CreditCard(
+          base::Uuid::GenerateRandomV4().AsLowercaseString(),
+          "http://www.example.com")) {
   for (size_t i = autofill::NO_SERVER_DATA; i < autofill::MAX_VALID_FIELD_TYPE;
        ++i) {
     autofill::ServerFieldType field_type =
@@ -1229,6 +1230,8 @@ bool TestRecipeReplayer::ReplayRecordedActions(
     } else if (base::CompareCaseInsensitiveASCII(*type, "waitFor") == 0) {
       if (!ExecuteWaitForStateAction(std::move(action)))
         return false;
+    } else if (base::CompareCaseInsensitiveASCII(*type, "breakpoint") == 0) {
+      execution_state.limit = execution_state.index + 1;
     } else {
       ADD_FAILURE() << "Unrecognized action type: " << *type;
     }
@@ -2066,21 +2069,21 @@ bool TestRecipeReplayer::GetElementProperty(
     const std::string& element_xpath,
     const std::string& get_property_function_body,
     std::string* property) {
-  return ExecuteScriptAndExtractString(
-      frame,
-      base::StringPrintf(
-          "window.domAutomationController.send("
-          "    (function() {"
-          "      try {"
-          "        var element = function() {"
-          "          return automation_helper.getElementByXpath(`%s`);"
-          "        }();"
-          "        return function(target){%s}(element);"
-          "      } catch (ex) {}"
-          "      return 'Exception encountered';"
-          "    })());",
-          element_xpath.c_str(), get_property_function_body.c_str()),
-      property);
+  *property =
+      content::EvalJs(
+          frame, base::StringPrintf(
+                     "(function() {"
+                     "  try {"
+                     "    var element = function() {"
+                     "      return automation_helper.getElementByXpath(`%s`);"
+                     "    }();"
+                     "    return function(target){%s}(element);"
+                     "  } catch (ex) {}"
+                     "  return 'Exception encountered';"
+                     "})();",
+                     element_xpath.c_str(), get_property_function_body.c_str()))
+          .ExtractString();
+  return true;
 }
 
 bool TestRecipeReplayer::ExpectElementPropertyEqualsAnyOf(
@@ -2192,28 +2195,22 @@ bool TestRecipeReplayer::GetBoundingRectOfTargetElement(
     const std::string& target_element_xpath,
     content::RenderFrameHost* frame,
     gfx::Rect* output_rect) {
-  std::string rect_str;
   const std::string get_element_bounding_rect_js(base::StringPrintf(
-      "window.domAutomationController.send("
-      "    (function() {"
-      "       try {"
-      "         const element = automation_helper.getElementByXpath(`%s`);"
-      "         const rect = element.getBoundingClientRect();"
-      "         return Math.round(rect.left) + ',' + "
-      "                Math.round(rect.top) + ',' + "
-      "                Math.round(rect.width) + ',' + "
-      "                Math.round(rect.height);"
-      "       } catch(ex) {}"
-      "       return '';"
-      "    })());",
+      "(function() {"
+      "   try {"
+      "     const element = automation_helper.getElementByXpath(`%s`);"
+      "     const rect = element.getBoundingClientRect();"
+      "     return Math.round(rect.left) + ',' + "
+      "            Math.round(rect.top) + ',' + "
+      "            Math.round(rect.width) + ',' + "
+      "            Math.round(rect.height);"
+      "   } catch(ex) {}"
+      "   return '';"
+      "})();",
       target_element_xpath.c_str()));
 
-  if (!content::ExecuteScriptAndExtractString(
-          frame, get_element_bounding_rect_js, &rect_str)) {
-    ADD_FAILURE()
-        << "Failed to run script to extract target element's bounding rect!";
-    return false;
-  }
+  std::string rect_str =
+      content::EvalJs(frame, get_element_bounding_rect_js).ExtractString();
 
   if (rect_str.empty()) {
     ADD_FAILURE() << "Failed to extract target element's bounding rect!";

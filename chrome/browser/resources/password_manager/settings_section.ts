@@ -1,12 +1,14 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import './shared_style.css.js';
 import './prefs/pref_toggle_button.js';
+import './user_utils_mixin.js';
+import '/shared/settings/controls/extension_controlled_indicator.js';
 
+import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
@@ -15,10 +17,15 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+// <if expr="is_win or is_macosx">
+import {PasskeysBrowserProxyImpl} from './passkeys_browser_proxy.js';
+// </if>
 import {BlockedSite, BlockedSitesListChangedListener, CredentialsChangedListener, PasswordManagerImpl} from './password_manager_proxy.js';
 import {PrefToggleButtonElement} from './prefs/pref_toggle_button.js';
+import {Route, RouteObserverMixin, Router, UrlParam} from './router.js';
 import {getTemplate} from './settings_section.html.js';
 import {SyncBrowserProxyImpl, TrustedVaultBannerState} from './sync_browser_proxy.js';
+import {UserUtilMixin} from './user_utils_mixin.js';
 
 export interface SettingsSectionElement {
   $: {
@@ -29,8 +36,8 @@ export interface SettingsSectionElement {
   };
 }
 
-const SettingsSectionElementBase =
-    WebUiListenerMixin(I18nMixin(PolymerElement));
+const SettingsSectionElementBase = RouteObserverMixin(
+    PrefsMixin(UserUtilMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))));
 
 export class SettingsSectionElement extends SettingsSectionElementBase {
   static get is() {
@@ -49,13 +56,6 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
         value: () => [],
       },
 
-      isPasswordManagerShortcutInstalled_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('isPasswordManagerShortcutInstalled');
-        },
-      },
-
       // <if expr="is_win or is_macosx">
       isBiometricAuthenticationForFillingToggleVisible_: {
         type: Boolean,
@@ -71,24 +71,51 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
         value: false,
       },
 
+      hasPasskeys_: {
+        type: Boolean,
+        value: false,
+      },
+
+      passwordManagerDisabled_: {
+        type: Boolean,
+        computed: 'computePasswordManagerDisabled_(' +
+            'prefs.credentials_enable_service.enforcement, ' +
+            'prefs.credentials_enable_service.value)',
+      },
+
       /** The visibility state of the trusted vault banner. */
       trustedVaultBannerState_: {
         type: Object,
         value: TrustedVaultBannerState.NOT_SHOWN,
       },
+
+      canAddShortcut_: {
+        type: Boolean,
+        value() {
+          return loadTimeData.getBoolean('canAddShortcut');
+        },
+      },
     };
   }
 
   private blockedSites_: BlockedSite[];
+  private hasPasskeys_: boolean;
+  private hasPasswordsToExport_: boolean;
+  private showPasswordsImporter_: boolean;
+  private trustedVaultBannerState_: TrustedVaultBannerState;
 
   private setBlockedSitesListListener_: BlockedSitesListChangedListener|null =
       null;
   private setCredentialsChangedListener_: CredentialsChangedListener|null =
       null;
 
-  private hasPasswordsToExport_: boolean;
+  override ready() {
+    super.ready();
 
-  private trustedVaultBannerState_: TrustedVaultBannerState;
+    chrome.metricsPrivate.recordBoolean(
+        'PasswordManager.OpenedAsShortcut',
+        window.matchMedia('(display-mode: standalone)').matches);
+  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -117,6 +144,12 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
         trustedVaultStateChanged);
     this.addWebUiListener(
         'trusted-vault-banner-state-changed', trustedVaultStateChanged);
+
+    // <if expr="is_win or is_macosx">
+    PasskeysBrowserProxyImpl.getInstance().hasPasskeys().then(hasPasskeys => {
+      this.hasPasskeys_ = hasPasskeys;
+    });
+    // </if>
   }
 
   override disconnectedCallback() {
@@ -130,6 +163,17 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
     PasswordManagerImpl.getInstance().removeSavedPasswordListChangedListener(
         this.setCredentialsChangedListener_);
     this.setCredentialsChangedListener_ = null;
+  }
+
+  override currentRouteChanged(route: Route): void {
+    const param = route.queryParameters.get(UrlParam.START_IMPORT) || '';
+    if (param === 'true') {
+      const importer = this.shadowRoot!.querySelector('passwords-importer');
+      assert(importer);
+      importer.launchImport();
+      const params = new URLSearchParams();
+      Router.getInstance().updateRouterParams(params);
+    }
   }
 
   private getBlockedSitesDescription_() {
@@ -161,11 +205,6 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
     PasswordManagerImpl.getInstance().switchBiometricAuthBeforeFillingState();
   }
   // </if>
-
-  private getShortcutBannerDescription_(): string {
-    return this.i18n(
-        'addShortcutDescription', this.i18n('localPasswordManager'));
-  }
 
   private onTrustedVaultBannerClick_() {
     switch (this.trustedVaultBannerState_) {
@@ -216,6 +255,27 @@ export class SettingsSectionElement extends SettingsSectionElementBase {
   private getAriaLabelForBlockedSite_(
       blockedSite: chrome.passwordsPrivate.ExceptionEntry): string {
     return this.i18n('removeBlockedAriaDescription', blockedSite.urls.shown);
+  }
+
+  private changeAccountStorageOptIn_() {
+    if (this.isOptedInForAccountStorage) {
+      this.optOutFromAccountStorage();
+    } else {
+      this.optInForAccountStorage();
+    }
+  }
+
+  private onManagePasskeysClick_() {
+    // In the future this may, e.g., open System Settings on macOS for iCloud
+    // Keychain, or open Control Panel on Windows for Hello. Currently passkey
+    // management is filled in via Chrome settings.
+    OpenWindowProxyImpl.getInstance().openUrl('chrome://settings/passkeys');
+  }
+
+  private computePasswordManagerDisabled_(): boolean {
+    const pref = this.getPref('credentials_enable_service');
+    return pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED &&
+        !pref.value;
   }
 }
 

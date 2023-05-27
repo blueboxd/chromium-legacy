@@ -58,9 +58,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(SkRegion,
                                    kSystemGestureExclusionKey,
                                    nullptr)
-DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*,
-                             kTabDraggingSourceWindowKey,
-                             nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPositionManagedTypeKey, false)
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPipTypeKey, false)
@@ -70,5 +67,6 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
 DEFINE_UI_CLASS_PROPERTY_KEY(ResizeShadowType,
                              kResizeShadowTypeKey,
                              ResizeShadowType::kUnlock)
+DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kDeskGuidKey, nullptr)
 
 }  // namespace ash

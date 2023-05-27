@@ -9,12 +9,13 @@
  */
 
 import 'chrome://resources/cr_elements/cr_lottie/cr_lottie.js';
+import 'chrome://resources/polymer/v3_0/iron-media-query/iron-media-query.js';
 import '/shared/nearby_page_template.js';
 import '/shared/nearby_device.js';
 import '/shared/nearby_preview.js';
 import '/shared/nearby_progress.js';
 
-import {ShareTarget, TransferStatus} from '/shared/mojo/nearby_share.mojom-webui.js';
+import {ShareTarget, TransferStatus} from '/shared/nearby_share.mojom-webui.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -32,7 +33,8 @@ const PROGRESS_BAR_URL_DARK: string = 'nearby_share_progress_bar_dark.json';
 
 const NearbyShareConfirmPageElementBase = I18nMixin(PolymerElement);
 
-class NearbyShareConfirmPageElement extends NearbyShareConfirmPageElementBase {
+export class NearbyShareConfirmPageElement extends
+    NearbyShareConfirmPageElementBase {
   static get is() {
     return 'nearby-share-confirm-page' as const;
   }

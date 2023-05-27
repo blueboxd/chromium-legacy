@@ -11,13 +11,14 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/performance_controls/high_efficiency_bubble_delegate.h"
 #include "chrome/browser/ui/performance_controls/high_efficiency_bubble_observer.h"
-#include "chrome/browser/ui/performance_controls/tab_discard_tab_helper.h"
+#include "chrome/browser/ui/performance_controls/high_efficiency_chip_tab_helper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/google_chrome_strings.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/interaction/element_identifier.h"
@@ -75,8 +76,9 @@ views::BubbleDialogModelHost* HighEfficiencyBubbleView::ShowBubble(
                        .SetLabel(l10n_util::GetStringUTF16(IDS_OK))
                        .SetId(kHighEfficiencyDialogOkButton));
 
-  TabDiscardTabHelper* const tab_helper = TabDiscardTabHelper::FromWebContents(
-      browser->tab_strip_model()->GetActiveWebContents());
+  HighEfficiencyChipTabHelper* const tab_helper =
+      HighEfficiencyChipTabHelper::FromWebContents(
+          browser->tab_strip_model()->GetActiveWebContents());
   const uint64_t memory_savings = tab_helper->GetMemorySavingsInBytes();
 
   ui::DialogModelLabel::TextReplacement memory_savings_text =
@@ -86,7 +88,7 @@ views::BubbleDialogModelHost* HighEfficiencyBubbleView::ShowBubble(
   const bool is_guest = profile->IsGuestSession();
   const bool is_forced_incognito =
       IncognitoModePrefs::GetAvailability(profile->GetPrefs()) ==
-      IncognitoModePrefs::Availability::kForced;
+      policy::IncognitoModeAvailability::kForced;
 
   // Show bubble without Performance Settings Page Link since guest users or
   // forced incognito users are not allowed to navigate to the performance

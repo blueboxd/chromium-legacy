@@ -19,7 +19,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/abseil_string_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -29,11 +28,11 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_usage_estimator.h"
-#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "net/base/features.h"
 #include "net/base/proxy_server.h"
 #include "net/base/proxy_string_util.h"
+#include "net/base/tracing.h"
 #include "net/base/url_util.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_verify_result.h"
@@ -149,7 +148,7 @@ enum PushedStreamVaryResponseHeaderValues ParseVaryInPushedResponse(
   spdy::Http2HeaderBlock::iterator it = headers.find(kVary);
   if (it == headers.end())
     return kNoVaryHeader;
-  base::StringPiece value = base::StringViewToStringPiece(it->second);
+  base::StringPiece value = it->second;
   if (value.empty())
     return kVaryIsEmpty;
   if (value == kStar)
@@ -224,6 +223,7 @@ bool IsSpdySettingAtDefaultInitialValue(spdy::SpdySettingsId setting_id,
   }
 }
 
+// This method always returns false.  TODO(https://crbug.com/1426477): Remove.
 bool IsPushEnabled(const spdy::SettingsMap& initial_settings) {
   const auto it = initial_settings.find(spdy::SETTINGS_ENABLE_PUSH);
 
@@ -1002,7 +1002,7 @@ SpdySession::~SpdySession() {
 int SpdySession::GetPushedStream(const GURL& url,
                                  spdy::SpdyStreamId pushed_stream_id,
                                  RequestPriority priority,
-                                 SpdyStream** stream) {
+                                 raw_ptr<SpdyStream>* stream) {
   CHECK(!in_io_loop_);
   // |pushed_stream_id| must be valid.
   DCHECK_NE(pushed_stream_id, kNoPushedStreamFound);

@@ -14,6 +14,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/sequenced_task_runner.h"
@@ -239,7 +240,8 @@ class SyncEngineImplTest : public testing::Test {
     params.host = &mock_host_;
     params.http_factory_getter = base::BindOnce(&CreateHttpBridgeFactory);
     params.authenticated_account_info.gaia = gaia_id;
-    params.authenticated_account_info.account_id = CoreAccountId("account_id");
+    params.authenticated_account_info.account_id =
+        CoreAccountId::FromGaiaId("gaia_id");
     params.sync_manager_factory = std::move(fake_manager_factory_);
 
     EXPECT_CALL(mock_host_, OnEngineInitialized(expect_success, _))
@@ -317,7 +319,9 @@ class SyncEngineImplTest : public testing::Test {
       sync_transport_data_cleared_cb_;
   std::unique_ptr<SyncEngineImpl> backend_;
   std::unique_ptr<FakeSyncManagerFactory> fake_manager_factory_;
-  FakeSyncManager* fake_manager_ = nullptr;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION FakeSyncManager* fake_manager_ = nullptr;
   ModelTypeSet engine_types_;
   ModelTypeSet enabled_types_;
   base::OnceClosure quit_loop_;
@@ -327,12 +331,13 @@ class SyncEngineImplTest : public testing::Test {
   base::WeakPtrFactory<SyncEngineImplTest> weak_ptr_factory_{this};
 };
 
+// TODO(crbug.com/1404927): remove the test once feature toogles are cleaned up.
 class SyncEngineImplWithSyncInvalidationsTest : public SyncEngineImplTest {
  public:
   SyncEngineImplWithSyncInvalidationsTest() {
     override_features_.InitWithFeatures(
         /*enabled_features=*/{kUseSyncInvalidations},
-        /*disabled_features=*/{});
+        /*disabled_features=*/{kUseSyncInvalidationsForWalletAndOffer});
   }
 
  protected:
@@ -592,8 +597,13 @@ TEST_F(SyncEngineImplTest, ModelTypeConnectorValidDuringShutdown) {
   backend_.reset();
 }
 
+// TODO(crbug.com/1404927): remove the test once old invalidations are not used
+// in sync anymore.
 TEST_F(SyncEngineImplTest,
        NoisyDataTypesInvalidationAreDiscardedByDefaultOnAndroid) {
+  base::test::ScopedFeatureList feature_overrides;
+  feature_overrides.InitAndDisableFeature(syncer::kUseSyncInvalidations);
+
   // Making sure that the noisy types we're interested in are in the
   // |enabled_types_|.
   enabled_types_.Put(SESSIONS);
@@ -620,7 +630,12 @@ TEST_F(SyncEngineImplTest,
   ShutdownBackend(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
 }
 
+// TODO(crbug.com/1404927): remove the test once old invalidations are not used
+// in sync anymore.
 TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabled) {
+  base::test::ScopedFeatureList feature_overrides;
+  feature_overrides.InitAndDisableFeature(syncer::kUseSyncInvalidations);
+
   // Tests that noisy types aren't used for registration if they're disabled,
   // hence removing noisy datatypes from |enabled_types_|.
   enabled_types_.Remove(SESSIONS);
@@ -638,8 +653,13 @@ TEST_F(SyncEngineImplTest, WhenEnabledTypesStayDisabled) {
   ShutdownBackend(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
 }
 
+// TODO(crbug.com/1404927): remove the test once old invalidations are not used
+// in sync anymore.
 TEST_F(SyncEngineImplTest,
        EnabledTypesChangesWhenSetInvalidationsForSessionsCalled) {
+  base::test::ScopedFeatureList feature_overrides;
+  feature_overrides.InitAndDisableFeature(syncer::kUseSyncInvalidations);
+
   // Making sure that the noisy types we're interested in are in the
   // |enabled_types_|.
   enabled_types_.Put(SESSIONS);
@@ -668,7 +688,7 @@ TEST_F(SyncEngineImplTest,
   ShutdownBackend(ShutdownReason::STOP_SYNC_AND_KEEP_DATA);
 }
 
-TEST_F(SyncEngineImplWithSyncInvalidationsTest,
+TEST_F(SyncEngineImplWithSyncInvalidationsForWalletAndOfferTest,
        ShouldInvalidateDataTypesOnIncomingInvalidation) {
   enabled_types_.PutAll({syncer::BOOKMARKS, syncer::PREFERENCES});
 
@@ -694,7 +714,7 @@ TEST_F(SyncEngineImplWithSyncInvalidationsTest,
   EXPECT_EQ(1, fake_manager_->GetInvalidationCount(ModelType::PREFERENCES));
 }
 
-TEST_F(SyncEngineImplWithSyncInvalidationsTest,
+TEST_F(SyncEngineImplWithSyncInvalidationsForWalletAndOfferTest,
        ShouldInvalidateOnlyEnabledDataTypes) {
   enabled_types_.Remove(syncer::BOOKMARKS);
   enabled_types_.Put(syncer::PREFERENCES);

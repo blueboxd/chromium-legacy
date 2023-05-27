@@ -28,10 +28,6 @@ namespace gfx {
 class FontList;
 }  // namespace gfx
 
-namespace ui {
-struct AXNodeData;
-}
-
 namespace views {
 class AXVirtualView;
 class ImageView;
@@ -53,6 +49,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
     // e.g. nearby text items.  By default, the IconLabelBubbleView will use
     // this as its foreground color, separator, and ink drop base color.
     virtual SkColor GetIconLabelBubbleSurroundingForegroundColor() const = 0;
+
+    // Returns the alpha to use when computing the color of the separator.
+    virtual SkAlpha GetIconLabelBubbleSeparatorAlpha() const;
 
     // Returns the base color for ink drops.  If not overridden, this returns
     // GetIconLabelBubbleSurroundingForegroundColor().
@@ -134,10 +133,13 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void UpdateLabelColors();
 
   // Update the icon label's background if necessary.
-  void UpdateBackground();
+  virtual void UpdateBackground();
 
   // Returns true when the separator should be visible.
   virtual bool ShouldShowSeparator() const;
+
+  // Returns true when the label should be shown on animation ended.
+  virtual bool ShouldShowLabelAfterAnimation() const;
 
   // Gets the current width based on |slide_animation_| and given bounds.
   // Virtual for testing.
@@ -169,7 +171,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationCanceled(const gfx::Animation* animation) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   const gfx::FontList& font_list() const { return label()->font_list(); }
 
@@ -179,6 +180,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   void SetImageModel(const ui::ImageModel& image);
 
   gfx::Size GetSizeForLabelWidth(int label_width) const;
+
+  // Sets the border padding around this view.
+  virtual void UpdateBorder();
 
   // Set up for icons that animate their labels in. Animating out is initiated
   // manually.
@@ -211,19 +215,19 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // the animation is set to fully shown or fully hidden.
   void ResetSlideAnimation(bool show);
 
-  // Slide animation for label.
-  gfx::SlideAnimation slide_animation_{this};
-
- private:
-  class HighlightPathGenerator;
-
   // Spacing between the image and the label.
-  int GetInternalSpacing() const;
+  virtual int GetInternalSpacing() const;
 
   // Subclasses that want extra spacing added to the internal spacing can
   // override this method. This may be used when we want to align the label text
   // to the suggestion text, like in the SelectedKeywordView.
   virtual int GetExtraInternalSpacing() const;
+
+  // Slide animation for label.
+  gfx::SlideAnimation slide_animation_{this};
+
+ private:
+  class HighlightPathGenerator;
 
   // Returns the width after the icon and before the separator. If the
   // separator is not shown, and ShouldShowExtraEndSpace() is false, this
@@ -245,9 +249,6 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Gets the highlight path for ink drops and focus rings using the current
   // bounds and separator visibility.
   SkPath GetHighlightPath() const;
-
-  // Sets the border padding around this view.
-  void UpdateBorder();
 
   raw_ptr<Delegate, DanglingUntriaged> delegate_;
 

@@ -211,11 +211,20 @@
 // out of bounds or does other scary things with memory.
 // NOTE: GCC supports AddressSanitizer(asan) since 4.8.
 // https://gcc.gnu.org/gcc-4.8/changes.html
-#if ABSL_HAVE_ATTRIBUTE(no_sanitize_address)
+#if defined(ABSL_HAVE_ADDRESS_SANITIZER) && \
+    ABSL_HAVE_ATTRIBUTE(no_sanitize_address)
 #define ABSL_ATTRIBUTE_NO_SANITIZE_ADDRESS __attribute__((no_sanitize_address))
-#elif defined(_MSC_VER) && _MSC_VER >= 1928
+#elif defined(ABSL_HAVE_ADDRESS_SANITIZER) && defined(_MSC_VER) && \
+    _MSC_VER >= 1928
 // https://docs.microsoft.com/en-us/cpp/cpp/no-sanitize-address
 #define ABSL_ATTRIBUTE_NO_SANITIZE_ADDRESS __declspec(no_sanitize_address)
+#elif defined(ABSL_HAVE_HWADDRESS_SANITIZER) && ABSL_HAVE_ATTRIBUTE(no_sanitize)
+// HWAddressSanitizer is a sanitizer similar to AddressSanitizer, which uses CPU
+// features to detect similar bugs with less CPU and memory overhead.
+// NOTE: GCC supports HWAddressSanitizer(hwasan) since 11.
+// https://gcc.gnu.org/gcc-11/changes.html
+#define ABSL_ATTRIBUTE_NO_SANITIZE_ADDRESS \
+  __attribute__((no_sanitize("hwaddress")))
 #else
 #define ABSL_ATTRIBUTE_NO_SANITIZE_ADDRESS
 #endif
@@ -787,7 +796,15 @@
 // For code that is assured to only build with C++20 or later, prefer using
 // the standard attribute `[[no_unique_address]]` directly instead of this
 // macro.
-#if ABSL_HAVE_CPP_ATTRIBUTE(no_unique_address)
+//
+// https://devblogs.microsoft.com/cppblog/msvc-cpp20-and-the-std-cpp20-switch/#c20-no_unique_address
+// Current versions of MSVC have disabled `[[no_unique_address]]` since it
+// breaks ABI compatibility, but offers `[[msvc::no_unique_address]]` for
+// situations when it can be assured that it is desired. Since Abseil does not
+// claim ABI compatibility in mixed builds, we can offer it unconditionally.
+#if defined(_MSC_VER) && _MSC_VER >= 1929
+#define ABSL_ATTRIBUTE_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#elif ABSL_HAVE_CPP_ATTRIBUTE(no_unique_address)
 #define ABSL_ATTRIBUTE_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #else
 #define ABSL_ATTRIBUTE_NO_UNIQUE_ADDRESS

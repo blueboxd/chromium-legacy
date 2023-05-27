@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
+#include "base/uuid.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
@@ -660,6 +661,10 @@ class TabDragController : public views::WidgetObserver,
   // The group that is being dragged. Only set if the drag originated from a
   // group header, indicating that the entire group is being dragged together.
   absl::optional<tab_groups::TabGroupId> group_;
+
+  // The GUID of the saved tab group whose tracking is paused between paired
+  // Detach() and Attach() calls, if dragging a saved tab group between windows.
+  absl::optional<base::Uuid> paused_saved_group_id_;
 
   // True until MoveAttached() is first invoked.
   bool initial_move_;

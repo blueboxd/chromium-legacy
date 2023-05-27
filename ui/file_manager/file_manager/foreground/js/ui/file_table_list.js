@@ -258,7 +258,7 @@ export class FileTableList extends TableList {
    * @param {number} y Y coordinate value.
    * @param {number=} opt_width Width of the coordinate.
    * @param {number=} opt_height Height of the coordinate.
-   * @return {Array<number>} Index list of hit elements.
+   * @return {!Array<number>} Index list of hit elements.
    */
   getHitElements(x, y, opt_width, opt_height) {
     const fileListModel = /** @type {FileListModel} */ (this.dataModel);
@@ -474,7 +474,25 @@ filelist.renderFileNameLabel = (doc, entry, locationInfo) => {
 };
 
 /**
+ * Renders the drive encryption status (CSE files) in the detail table.
+ * @param {!Document} doc Owner document.
+ * @return {!HTMLDivElement} Created element.
+ */
+filelist.renderEncryptionStatus = (doc) => {
+  const box = /** @type {!HTMLDivElement} */ (doc.createElement('div'));
+  box.className = 'encryption-status';
+
+  const encryptedIcon = doc.createElement('xf-icon');
+  encryptedIcon.size = 'extra_small';
+  encryptedIcon.type = 'encrypted';
+  box.appendChild(encryptedIcon);
+
+  return box;
+};
+
+/**
  * Renders the drive inline status in the detail table.
+ * @param {!Document} doc Owner document.
  * @return {!HTMLDivElement} Created element.
  */
 filelist.renderInlineStatus = (doc) => {
@@ -519,6 +537,9 @@ filelist.updateListItemExternalProps =
       }
 
       li.classList.toggle('pinned', externalProps.pinned);
+      li.classList.toggle(
+          'encrypted',
+          FileType.isEncrypted(entry, externalProps.contentMimeType));
 
       const iconDiv = li.querySelector('.detail-icon');
       if (!iconDiv) {

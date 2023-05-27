@@ -13,19 +13,21 @@
 #include "base/containers/span.h"
 #include "base/functional/callback_forward.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_trigger_source.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/risk_data_loader.h"
+#include "components/autofill/core/browser/ui/fast_checkout_client.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
-#include "components/autofill/core/browser/ui/touch_to_fill_delegate.h"
 #include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_interactions_flow.h"
 #include "components/autofill/core/common/unique_ids.h"
+#include "components/device_reauth/device_authenticator.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_state/core/security_state.h"
 #include "components/translate/core/browser/language_state.h"
@@ -67,7 +69,6 @@ class AutofillAblationStudy;
 class AutofillDriver;
 class AutofillDownloadManager;
 struct AutofillErrorDialogContext;
-class AutofillManager;
 class AutofillOfferData;
 class AutofillOfferManager;
 class AutofillOptimizationGuide;
@@ -94,6 +95,7 @@ class PersonalDataManager;
 class SingleFieldFormFillRouter;
 class StrikeDatabase;
 struct Suggestion;
+class TouchToFillDelegate;
 struct VirtualCardEnrollmentFields;
 class VirtualCardEnrollmentManager;
 struct VirtualCardManualFallbackBubbleOptions;
@@ -192,24 +194,25 @@ class AutofillClient : public RiskDataLoader {
     kUndefined,
     // No prompt is shown and no decision is needed to proceed with the process.
     kUserNotAsked,
-    // The user accepted the save/update flow from the initial prompt.
+    // The user accepted the save/update/migration flow from the initial prompt.
     kAccepted,
-    // The user declined the save/update flow from the initial prompt.
+    // The user declined the save/update/migration flow from the initial prompt.
     kDeclined,
-    // The user accepted the save/update flow from the edit dialog.
+    // The user accepted the save/update/migration flow from the edit dialog.
     kEditAccepted,
-    // The user declined the save/update flow from the edit dialog.
+    // The user declined the save/update/migration flow from the edit dialog.
     kEditDeclined,
-    // The user selected to never save a new profile on a given domain or update
-    // a specific profile (currently not supported).
+    // The user selected to never migrate a `kLocalOrSyncable` profile to the
+    // account storage.
+    // Currently unused for new profile and update prompts.
     kNever,
     // The user ignored the prompt.
     kIgnored,
-    // The save/update message timed out before the user interacted. This is
-    // only relevant on mobile.
+    // The save/update/migration message timed out before the user interacted.
+    // This is only relevant on mobile.
     kMessageTimeout,
-    // The user swipes away the save/update Message. This is only relevant on
-    // mobile.
+    // The user swipes away the save/update/migration message. This is only
+    // relevant on mobile.
     kMessageDeclined,
     // The prompt is suppressed most likely because there is already another
     // prompt shown on the same tab.
@@ -439,6 +442,9 @@ class AutofillClient : public RiskDataLoader {
   // Returns the profile type of the session.
   virtual profile_metrics::BrowserProfileType GetProfileType() const;
 
+  // Gets a FastCheckoutClient instance (can be null for unsupported platforms).
+  virtual FastCheckoutClient* GetFastCheckoutClient();
+
 #if !BUILDFLAG(IS_IOS)
   // Creates the appropriate implementation of InternalAuthenticator. May be
   // null for platforms that don't support this, in which case standard CVC
@@ -452,7 +458,7 @@ class AutofillClient : public RiskDataLoader {
 
   // Show the OTP unmask dialog to accept user-input OTP value.
   virtual void ShowCardUnmaskOtpInputDialog(
-      const size_t& otp_length,
+      const CardUnmaskChallengeOption& challenge_option,
       base::WeakPtr<OtpUnmaskDelegate> delegate);
 
   // Invoked when we receive the server response of the OTP unmask request.
@@ -646,34 +652,6 @@ class AutofillClient : public RiskDataLoader {
   // HasCreditCardScanFeature() returns true.
   virtual void ScanCreditCard(CreditCardScanCallback callback) = 0;
 
-  // Checks whether Fast Checkout is supported in the current situation. The
-  // checks are performed by `FastCheckoutTriggerValidator` and are more
-  // extensive than `IsFastCheckoutSupported()`.
-  // If it is, shows the FastCheckout surface (for autofilling information
-  // during the checkout flow) and returns `true` on success.
-  virtual bool TryToShowFastCheckout(
-      const FormData& form,
-      const FormFieldData& field,
-      base::WeakPtr<AutofillManager> autofill_manager) = 0;
-
-  // Hides the Fast Checkout surface (for autofilling information during the
-  // checkout flow) if one is currently shown.
-  // The internal UI state has to be reset by setting parameter
-  // `allow_further_runs = true` before a second Fast Checkout run can be
-  // started successfully.
-  virtual void HideFastCheckout(bool allow_further_runs) = 0;
-
-  // Returns true if the Fast Checkout feature is both supported by platform and
-  // enabled.
-  // TODO(crbug.com/1379149): Remove once bug is resolved.
-  virtual bool IsFastCheckoutSupported(
-      const FormData& form,
-      const FormFieldData& field,
-      const AutofillManager& autofill_manager) = 0;
-
-  // Returns whether the FC surface is currently being shown.
-  virtual bool IsShowingFastCheckoutUI() = 0;
-
   // Returns true if the Touch To Fill feature is both supported by platform and
   // enabled. Should be called before |ShowTouchToFillCreditCard| or
   // |HideTouchToFillCreditCard|.
@@ -810,6 +788,11 @@ class AutofillClient : public RiskDataLoader {
   // calls in the next 20 minutes. Afterwards a new GUID is set and the pattern
   // repeated.
   virtual FormInteractionsFlowId GetCurrentFormInteractionsFlowId() = 0;
+
+  // Returns a pointer to a DeviceAuthenticator. Might be nullptr if the given
+  // platform is not supported.
+  virtual scoped_refptr<device_reauth::DeviceAuthenticator>
+  GetDeviceAuthenticator() const;
 };
 
 }  // namespace autofill

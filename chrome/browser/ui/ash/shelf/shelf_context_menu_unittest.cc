@@ -16,6 +16,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -55,6 +56,7 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "components/exo/shell_surface_util.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/test/test_gpu_service_holder.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -252,7 +254,8 @@ class ShelfContextMenuTest : public ChromeAshTestBase {
   std::unique_ptr<ash::ShelfModel> model_;
   std::unique_ptr<ChromeShelfItemFactory> shelf_item_factory_;
   std::unique_ptr<ChromeShelfController> shelf_controller_;
-  extensions::ExtensionService* extension_service_ = nullptr;
+  raw_ptr<extensions::ExtensionService, ExperimentalAsh> extension_service_ =
+      nullptr;
 };
 
 // Verifies that "New Incognito window" menu item in the launcher context
@@ -271,7 +274,7 @@ TEST_F(ShelfContextMenuTest,
 
   // Disable Incognito mode.
   IncognitoModePrefs::SetAvailability(
-      profile()->GetPrefs(), IncognitoModePrefs::Availability::kDisabled);
+      profile()->GetPrefs(), policy::IncognitoModeAvailability::kDisabled);
   shelf_context_menu =
       CreateShelfContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
   menu = GetMenuModel(shelf_context_menu.get());
@@ -297,7 +300,7 @@ TEST_F(ShelfContextMenuTest, NewWindowMenuIsDisabledWhenIncognitoModeForced) {
 
   // Disable Incognito mode.
   IncognitoModePrefs::SetAvailability(
-      profile()->GetPrefs(), IncognitoModePrefs::Availability::kForced);
+      profile()->GetPrefs(), policy::IncognitoModeAvailability::kForced);
   shelf_context_menu =
       CreateShelfContextMenu(ash::TYPE_BROWSER_SHORTCUT, display_id);
   menu = GetMenuModel(shelf_context_menu.get());

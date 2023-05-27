@@ -17,6 +17,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/crl_set.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/cert/trial_comparison_cert_verifier_util.h"
 #include "net/cert/x509_util.h"
@@ -86,15 +87,6 @@ class TrialComparisonCertVerifier::Job {
 
   // Called when the initial trial comparison is completed.
   void OnTrialJobCompleted(int result);
-
-#if BUILDFLAG(IS_APPLE)
-  // On some versions of macOS, revocation checking is always force-enabled
-  // for the system. For comparing with the built-in verifier to rule out
-  // "expected" differences, it's necessary to retry verification with
-  // revocation checking enabled, to match the (effective) configuration of
-  // the system verifier.
-  void OnMacRevCheckingReverificationJobCompleted(int result);
-#endif
 
   // The primary (system) and trial (built-in) verifiers may both construct
   // valid chains, but they use different paths. If that happens, a second
@@ -368,33 +360,6 @@ void TrialComparisonCertVerifier::Job::OnTrialJobCompleted(int result) {
     return;
   }
 
-#if BUILDFLAG(IS_APPLE)
-  if (primary_error_ == ERR_CERT_REVOKED && !config_.enable_rev_checking &&
-      !(primary_result_.cert_status & CERT_STATUS_REV_CHECKING_ENABLED) &&
-      !(trial_result_.cert_status &
-        (CERT_STATUS_REVOKED | CERT_STATUS_REV_CHECKING_ENABLED))) {
-    if (config_changed_) {
-      // Note: Will delete |this|.
-      FinishSuccess(TrialComparisonResult::kIgnoredConfigurationChanged);
-      return;
-    }
-
-    // CertVerifyProcMac does some revocation checking even if we didn't want
-    // it. Try verifying with the trial verifier with revocation checking
-    // enabled, see if it then returns REVOKED.
-    int rv = parent_->revocation_trial_verifier()->Verify(
-        params_, &reverification_result_,
-        base::BindOnce(&Job::OnMacRevCheckingReverificationJobCompleted,
-                       base::Unretained(this)),
-        &reverification_request_, net_log_);
-    if (rv != ERR_IO_PENDING) {
-      // Note: May delete |this|.
-      OnMacRevCheckingReverificationJobCompleted(rv);
-    }
-    return;
-  }
-#endif
-
   TrialComparisonResult ignorable_difference =
       IsSynchronouslyIgnorableDifference(primary_error_, primary_result_,
                                          trial_error_, trial_result_,
@@ -434,19 +399,6 @@ void TrialComparisonCertVerifier::Job::OnTrialJobCompleted(int result) {
 
   FinishWithError();  // Note: Will delete |this|.
 }
-
-#if BUILDFLAG(IS_APPLE)
-void TrialComparisonCertVerifier::Job::
-    OnMacRevCheckingReverificationJobCompleted(int result) {
-  if (result == ERR_CERT_REVOKED) {
-    // Will delete |this|.
-    FinishSuccess(
-        TrialComparisonResult::kIgnoredMacUndesiredRevocationChecking);
-    return;
-  }
-  FinishWithError();  // Note: Will delete |this|.
-}
-#endif
 
 void TrialComparisonCertVerifier::Job::
     OnPrimaryReverifyWithSecondaryChainCompleted(int result) {
@@ -516,30 +468,39 @@ void TrialComparisonCertVerifier::Job::Request::OnJobAborted() {
 }
 
 TrialComparisonCertVerifier::TrialComparisonCertVerifier(
-    scoped_refptr<CertVerifyProc> primary_verify_proc,
-    scoped_refptr<CertVerifyProcFactory> primary_verify_proc_factory,
-    scoped_refptr<CertVerifyProc> trial_verify_proc,
-    scoped_refptr<CertVerifyProcFactory> trial_verify_proc_factory,
+    scoped_refptr<CertVerifyProcFactory> verify_proc_factory,
+    scoped_refptr<CertNetFetcher> cert_net_fetcher,
+    const CertVerifyProcFactory::ImplParams& impl_params,
     ReportCallback report_callback)
-    : report_callback_(std::move(report_callback)),
-      primary_verifier_(std::make_unique<MultiThreadedCertVerifier>(
-          primary_verify_proc,
-          primary_verify_proc_factory)),
-      primary_reverifier_(std::make_unique<MultiThreadedCertVerifier>(
-          primary_verify_proc,
-          primary_verify_proc_factory)),
-      trial_verifier_(std::make_unique<MultiThreadedCertVerifier>(
-          trial_verify_proc,
-          trial_verify_proc_factory)),
-      revocation_trial_verifier_(std::make_unique<MultiThreadedCertVerifier>(
-          trial_verify_proc,
-          trial_verify_proc_factory)) {
-  CertVerifier::Config config;
-  config.enable_rev_checking = true;
-  revocation_trial_verifier_->SetConfig(config);
+    : report_callback_(std::move(report_callback)) {
+  auto [primary_impl_params, trial_impl_params] =
+      ProcessImplParams(impl_params);
+
+  primary_verifier_ = std::make_unique<MultiThreadedCertVerifier>(
+      verify_proc_factory->CreateCertVerifyProc(cert_net_fetcher,
+                                                primary_impl_params),
+      verify_proc_factory);
+
+  primary_reverifier_ = std::make_unique<MultiThreadedCertVerifier>(
+      verify_proc_factory->CreateCertVerifyProc(cert_net_fetcher,
+                                                primary_impl_params),
+      verify_proc_factory);
+
+  trial_verifier_ = std::make_unique<MultiThreadedCertVerifier>(
+      verify_proc_factory->CreateCertVerifyProc(cert_net_fetcher,
+                                                trial_impl_params),
+      verify_proc_factory);
+
+  primary_verifier_->AddObserver(this);
+  primary_reverifier_->AddObserver(this);
+  trial_verifier_->AddObserver(this);
 }
 
-TrialComparisonCertVerifier::~TrialComparisonCertVerifier() = default;
+TrialComparisonCertVerifier::~TrialComparisonCertVerifier() {
+  primary_verifier_->RemoveObserver(this);
+  primary_reverifier_->RemoveObserver(this);
+  trial_verifier_->RemoveObserver(this);
+}
 
 int TrialComparisonCertVerifier::Verify(const RequestParams& params,
                                         CertVerifyResult* verify_result,
@@ -548,9 +509,18 @@ int TrialComparisonCertVerifier::Verify(const RequestParams& params,
                                         const NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (!trial_allowed()) {
-    return primary_verifier_->Verify(params, verify_result, std::move(callback),
+  // Technically, the trial could still be active when
+  // actual_use_chrome_root_store_=true, just by reversing everything. (Doing
+  // the trial verifier first and returning that result, then doing the primary
+  // verifier and comparing.) Probably not worth the trouble though.
+  if (!trial_allowed() || actual_use_chrome_root_store_) {
+    if (actual_use_chrome_root_store_) {
+      return trial_verifier_->Verify(params, verify_result, std::move(callback),
                                      out_req, net_log);
+    } else {
+      return primary_verifier_->Verify(params, verify_result,
+                                       std::move(callback), out_req, net_log);
+    }
   }
 
   std::unique_ptr<Job> job =
@@ -568,31 +538,58 @@ void TrialComparisonCertVerifier::SetConfig(const Config& config) {
   primary_reverifier_->SetConfig(config);
   trial_verifier_->SetConfig(config);
 
-  // Always enable revocation checking for the revocation trial verifier.
-  CertVerifier::Config config_with_revocation = config;
-  config_with_revocation.enable_rev_checking = true;
-  revocation_trial_verifier_->SetConfig(config_with_revocation);
-
   // Notify all in-process jobs that the underlying configuration has changed.
-  for (auto& job : jobs_) {
-    job->OnConfigChanged();
-  }
+  NotifyJobsOfConfigChange();
 }
 
-void TrialComparisonCertVerifier::UpdateChromeRootStoreData(
+void TrialComparisonCertVerifier::AddObserver(
+    CertVerifier::Observer* observer) {
+  // Delegate the notifications to the wrapped verifiers. We add the observer
+  // to both `primary_verifier_` and `trial_verifier_` since either one might
+  // be the one that matters depending on the configuration at the time. This
+  // does mean the caller will get double notified, but shouldn't really matter
+  // that much. It would be possible to avoid this by making a notification
+  // proxy that only forwards notifications from the verifier that is currently
+  // the "main" one, but it's probably not worth the trouble.
+  //
+  // Also this assumes that there is never a case where the
+  // TrialComparisonCertVerifier itself would change something without the
+  // wrapped verifiers also generating a notification.
+  primary_verifier_->AddObserver(observer);
+  trial_verifier_->AddObserver(observer);
+}
+
+void TrialComparisonCertVerifier::RemoveObserver(
+    CertVerifier::Observer* observer) {
+  trial_verifier_->RemoveObserver(observer);
+  primary_verifier_->RemoveObserver(observer);
+}
+
+void TrialComparisonCertVerifier::UpdateVerifyProcData(
     scoped_refptr<CertNetFetcher> cert_net_fetcher,
-    const ChromeRootStoreData* root_store_data) {
-  primary_verifier_->UpdateChromeRootStoreData(cert_net_fetcher,
-                                               root_store_data);
-  primary_reverifier_->UpdateChromeRootStoreData(cert_net_fetcher,
-                                                 root_store_data);
-  trial_verifier_->UpdateChromeRootStoreData(cert_net_fetcher, root_store_data);
-  revocation_trial_verifier_->UpdateChromeRootStoreData(
-      std::move(cert_net_fetcher), root_store_data);
-  // Treat a possible proc change as a configuration change. Notify all
-  // in-process jobs that the underlying configuration has changed.
-  for (auto& job : jobs_) {
-    job->OnConfigChanged();
+    const CertVerifyProcFactory::ImplParams& impl_params) {
+  bool previous_actual_use_chrome_root_store = actual_use_chrome_root_store_;
+  auto [primary_impl_params, trial_impl_params] =
+      ProcessImplParams(impl_params);
+
+  // If the only change in the params was to switch the
+  // `actual_use_chrome_root_store_` value, updating the underlying verifiers
+  // is unnecessary, but it's probably not worth the trouble to try to avoid
+  // it.
+  primary_verifier_->UpdateVerifyProcData(cert_net_fetcher,
+                                          primary_impl_params);
+  primary_reverifier_->UpdateVerifyProcData(cert_net_fetcher,
+                                            primary_impl_params);
+
+  trial_verifier_->UpdateVerifyProcData(cert_net_fetcher, trial_impl_params);
+
+  // The TrialComparisonCertVerifier is registered as an observer of the
+  // underlying verifiers, and so the OnCertVerifierChanged method should be
+  // triggered to call NotifyJobsOfConfigChange, so it isn't explicitly called
+  // here for cases other than the `actual_use_chrome_root_store_` changing.
+
+  if (previous_actual_use_chrome_root_store != actual_use_chrome_root_store_) {
+    NotifyJobsOfConfigChange();
   }
 }
 
@@ -602,6 +599,28 @@ void TrialComparisonCertVerifier::RemoveJob(Job* job_ptr) {
   auto it = jobs_.find(job_ptr);
   DCHECK(it != jobs_.end());
   jobs_.erase(it);
+}
+
+std::tuple<CertVerifyProcFactory::ImplParams, CertVerifyProcFactory::ImplParams>
+TrialComparisonCertVerifier::ProcessImplParams(
+    const CertVerifyProcFactory::ImplParams& impl_params) {
+  actual_use_chrome_root_store_ = impl_params.use_chrome_root_store;
+
+  CertVerifyProcFactory::ImplParams primary_impl_params(impl_params);
+  primary_impl_params.use_chrome_root_store = false;
+  CertVerifyProcFactory::ImplParams trial_impl_params(impl_params);
+  trial_impl_params.use_chrome_root_store = true;
+  return {std::move(primary_impl_params), std::move(trial_impl_params)};
+}
+
+void TrialComparisonCertVerifier::NotifyJobsOfConfigChange() {
+  for (auto& job : jobs_) {
+    job->OnConfigChanged();
+  }
+}
+
+void TrialComparisonCertVerifier::OnCertVerifierChanged() {
+  NotifyJobsOfConfigChange();
 }
 
 }  // namespace net

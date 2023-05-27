@@ -16,7 +16,7 @@ try_.defaults.set(
     builderless = True,
     os = os.MAC_ANY,
     ssd = True,
-    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    compilator_reclient_jobs = reclient.jobs.MID_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
@@ -52,7 +52,6 @@ try_.builder(
 try_.builder(
     name = "mac-osxbeta-rel",
     mirrors = [
-        "ci/Mac Builder (dbg)",
         "ci/mac-osxbeta-rel",
     ],
     builderless = False,
@@ -71,6 +70,17 @@ try_.builder(
         "ci/Mac Retina Release (AMD)",
     ],
     os = os.MAC_DEFAULT,
+)
+
+try_.builder(
+    name = "mac-intel-on-arm64-rel",
+    mirrors = [
+        "ci/mac-intel-on-arm64-rel",
+    ],
+    builderless = False,
+    os = os.MAC_DEFAULT,
+    cpu = cpu.ARM64,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
@@ -108,9 +118,7 @@ try_.orchestrator_builder(
         "ci/Mac12 Tests",
         "ci/GPU Mac Builder",
         "ci/Mac Release (Intel)",
-        # TODO(crbug.com/1380184) Once the GPU test capacity situation is
-        # resolved, restore this mirror.
-        # "ci/Mac Retina Release (AMD)",
+        "ci/Mac Retina Release (AMD)",
     ],
     try_settings = builder_config.try_settings(
         rts_config = builder_config.rts_config(
@@ -122,6 +130,8 @@ try_.orchestrator_builder(
     coverage_test_types = ["overall", "unit"],
     experiments = {
         "chromium_rts.inverted_rts": 100,
+        # go/nplus1shardsproposal
+        "chromium.add_one_test_shard": 5,
     },
     main_list_view = "try",
     tryjob = try_.job(),
@@ -317,14 +327,28 @@ try_.builder(
 
 try_.builder(
     name = "mac_upload_clang",
-    executable = "recipe:chromium_upload_clang",
+    executable = "recipe:chromium_toolchain/package_clang",
     builderless = False,
     execution_timeout = 8 * time.hour,
 )
 
 try_.builder(
     name = "mac_upload_clang_arm",
-    executable = "recipe:chromium_upload_clang",
+    executable = "recipe:chromium_toolchain/package_clang",
+    builderless = False,
+    execution_timeout = 8 * time.hour,
+)
+
+try_.builder(
+    name = "mac_upload_rust",
+    executable = "recipe:chromium_toolchain/package_rust",
+    builderless = False,
+    execution_timeout = 8 * time.hour,
+)
+
+try_.builder(
+    name = "mac_upload_rust_arm",
+    executable = "recipe:chromium_toolchain/package_rust",
     builderless = False,
     execution_timeout = 8 * time.hour,
 )
@@ -403,6 +427,10 @@ try_.orchestrator_builder(
     compilator = "ios-simulator-compilator",
     coverage_exclude_sources = "ios_test_files_and_test_utils",
     coverage_test_types = ["overall", "unit"],
+    experiments = {
+        # go/nplus1shardsproposal
+        "chromium.add_one_test_shard": 5,
+    },
     main_list_view = "try",
     tryjob = try_.job(),
     use_clang_coverage = True,
@@ -497,6 +525,7 @@ ios_builder(
     name = "ios15-sdk-simulator",
     mirrors = ["ci/ios15-sdk-simulator"],
     os = os.MAC_13,
+    cpu = cpu.ARM64,
 )
 
 ios_builder(

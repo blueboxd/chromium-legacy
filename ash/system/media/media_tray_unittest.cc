@@ -12,6 +12,7 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/test/ash_test_base.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/media_message_center/media_notification_view_impl.h"
 #include "media/base/media_switches.h"
@@ -31,9 +32,10 @@ class MockMediaNotificationProvider : public MediaNotificationProvider {
       : old_provider_(MediaNotificationProvider::Get()) {
     MediaNotificationProvider::Set(this);
 
-    ON_CALL(*this, GetMediaNotificationListView(_, _))
-        .WillByDefault(
-            [](auto, auto) { return std::make_unique<views::View>(); });
+    ON_CALL(*this, GetMediaNotificationListView(_, _, _))
+        .WillByDefault([](auto, auto, const auto&) {
+          return std::make_unique<views::View>();
+        });
   }
 
   ~MockMediaNotificationProvider() override {
@@ -43,7 +45,7 @@ class MockMediaNotificationProvider : public MediaNotificationProvider {
   // Medianotificationprovider implementations.
   MOCK_METHOD((std::unique_ptr<views::View>),
               GetMediaNotificationListView,
-              (int, bool));
+              (int, bool, const std::string&));
   MOCK_METHOD((std::unique_ptr<views::View>),
               GetActiveMediaNotificationView,
               ());
@@ -69,7 +71,7 @@ class MockMediaNotificationProvider : public MediaNotificationProvider {
  private:
   bool has_active_notifications_ = false;
   bool has_frozen_notifications_ = false;
-  MediaNotificationProvider* const old_provider_;
+  const raw_ptr<MediaNotificationProvider, ExperimentalAsh> old_provider_;
 };
 
 // Mock tray button used to test media tray bubble's anchor update.
@@ -166,7 +168,7 @@ class MediaTrayTest : public AshTestBase {
 
  private:
   std::unique_ptr<MockMediaNotificationProvider> provider_;
-  MediaTray* media_tray_;
+  raw_ptr<MediaTray, ExperimentalAsh> media_tray_;
   std::unique_ptr<MockTrayBackgroundView> mock_tray_;
 
   base::test::ScopedFeatureList feature_list_;
@@ -222,7 +224,7 @@ TEST_F(MediaTrayTest, ShowAndHideBubbleTest) {
   // be active. GetMediaNotificationlistview also should be called for
   // getting active notifications.
   EXPECT_CALL(*provider(),
-              GetMediaNotificationListView(_, /*should_clip_height=*/true));
+              GetMediaNotificationListView(_, /*should_clip_height=*/true, _));
   SimulateTapOnMediaTray();
   EXPECT_NE(GetBubbleWrapper(), nullptr);
   EXPECT_TRUE(media_tray()->is_active());
@@ -408,6 +410,25 @@ TEST_F(MediaTrayTest, DialogAnchor) {
 
   SimulateMockTrayVisibilityChanged(false);
   EXPECT_EQ(initial_bounds, GetBubbleBounds());
+}
+
+TEST_F(MediaTrayTest, ShowBubble) {
+  // We start with no bubble view.
+  EXPECT_EQ(nullptr, media_tray()->GetBubbleView());
+
+  EXPECT_CALL(*provider(), GetMediaNotificationListView(_, _, ""));
+  media_tray()->ShowBubble();
+  EXPECT_NE(nullptr, media_tray()->GetBubbleView());
+}
+
+TEST_F(MediaTrayTest, ShowBubbleWithItem) {
+  // We start with no bubble view.
+  EXPECT_EQ(nullptr, media_tray()->GetBubbleView());
+
+  const std::string item_id = "my-item-id";
+  EXPECT_CALL(*provider(), GetMediaNotificationListView(_, _, item_id));
+  media_tray()->ShowBubbleWithItem(item_id);
+  EXPECT_NE(nullptr, media_tray()->GetBubbleView());
 }
 
 class MediaTrayPinnedParamTest : public AshTestBase {

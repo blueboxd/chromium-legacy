@@ -645,8 +645,9 @@ FontDescription::Size StyleBuilderConverter::ConvertFontSize(
       value, state.FontSizeConversionData(), parent_size, &state.GetDocument());
 }
 
-float StyleBuilderConverter::ConvertFontSizeAdjust(StyleResolverState& state,
-                                                   const CSSValue& value) {
+FontSizeAdjust StyleBuilderConverter::ConvertFontSizeAdjust(
+    StyleResolverState& state,
+    const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone) {
     return FontBuilder::InitialSizeAdjust();
@@ -658,7 +659,7 @@ float StyleBuilderConverter::ConvertFontSizeAdjust(StyleResolverState& state,
 
   const auto& primitive_value = To<CSSPrimitiveValue>(value);
   DCHECK(primitive_value.IsNumber());
-  return primitive_value.GetFloatValue();
+  return FontSizeAdjust(primitive_value.GetFloatValue());
 }
 
 FontSelectionValue StyleBuilderConverterBase::ConvertFontStretch(
@@ -1286,10 +1287,12 @@ void StyleBuilderConverter::ConvertGridTrackList(
       computed_grid_track_list.auto_repeat_track_sizes;
 
   wtf_size_t current_named_grid_line = 0;
-  auto ConvertLineNameOrTrackSize = [&](const CSSValue& curr_value,
-                                        bool is_in_repeat = false,
-                                        bool is_first_repeat = false) {
+  auto ConvertLineNameOrTrackSize =
+      [&](const CSSValue& curr_value, bool is_in_repeat = false,
+          bool is_first_repeat = false) -> wtf_size_t {
+    wtf_size_t line_name_indices_count = 0;
     if (curr_value.IsGridLineNamesValue()) {
+      ++line_name_indices_count;
       ConvertGridLineNamesList(
           curr_value, current_named_grid_line,
           computed_grid_track_list.named_grid_lines,
@@ -1306,10 +1309,12 @@ void StyleBuilderConverter::ConvertGridTrackList(
       track_sizes.LegacyTrackList().push_back(
           ConvertGridTrackSize(state, curr_value));
     }
+    return line_name_indices_count;
   };
 
   const auto& values = To<CSSValueList>(value);
   auto* curr_value = values.begin();
+  bool is_subgrid = false;
 
   if (RuntimeEnabledFeatures::LayoutNGSubgridEnabled()) {
     auto* identifier_value = DynamicTo<CSSIdentifierValue>(curr_value->Get());
@@ -1317,6 +1322,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
         identifier_value->GetValueID() == CSSValueID::kSubgrid) {
       computed_grid_track_list.axis_type = GridAxisType::kSubgriddedAxis;
       track_list.SetAxisType(GridAxisType::kSubgriddedAxis);
+      is_subgrid = true;
       ++curr_value;
     }
   }
@@ -1326,6 +1332,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
             DynamicTo<cssvalue::CSSGridAutoRepeatValue>(curr_value->Get())) {
       Vector<GridTrackSize, 1> repeated_track_sizes;
       wtf_size_t auto_repeat_index = 0;
+      wtf_size_t line_name_indices_count = 0;
       CSSValueID auto_repeat_id = grid_auto_repeat_value->AutoRepeatID();
       DCHECK(auto_repeat_id == CSSValueID::kAutoFill ||
              auto_repeat_id == CSSValueID::kAutoFit);
@@ -1334,6 +1341,7 @@ void StyleBuilderConverter::ConvertGridTrackList(
                                                     : AutoRepeatType::kAutoFit;
       for (const CSSValue* auto_repeat_value : To<CSSValueList>(**curr_value)) {
         if (auto_repeat_value->IsGridLineNamesValue()) {
+          ++line_name_indices_count;
           ConvertGridLineNamesList(
               *auto_repeat_value, auto_repeat_index,
               computed_grid_track_list.auto_repeat_named_grid_lines,
@@ -1351,7 +1359,8 @@ void StyleBuilderConverter::ConvertGridTrackList(
                              static_cast<NGGridTrackRepeater::RepeatType>(
                                  computed_grid_track_list.auto_repeat_type),
                              /* repeat_count */ 1,
-                             /* repeat_number_of_lines */ auto_repeat_index);
+                             /* repeat_number_of_lines */ auto_repeat_index,
+                             line_name_indices_count);
       DCHECK(auto_repeat_track_sizes.empty());
       auto_repeat_track_sizes = std::move(repeated_track_sizes);
       computed_grid_track_list.auto_repeat_insertion_point =
@@ -1362,33 +1371,49 @@ void StyleBuilderConverter::ConvertGridTrackList(
     if (auto* grid_integer_repeat_value =
             DynamicTo<cssvalue::CSSGridIntegerRepeatValue>(curr_value->Get())) {
       const wtf_size_t repetitions = grid_integer_repeat_value->Repetitions();
+      wtf_size_t line_name_indices_count = 0;
 
       for (wtf_size_t i = 0; i < repetitions; ++i) {
+        const bool is_first_repeat = i == 0;
         for (auto integer_repeat_value : *grid_integer_repeat_value) {
-          ConvertLineNameOrTrackSize(*integer_repeat_value,
-                                     /* is_inside_repeat */ true,
-                                     /* is_first_repeat */ i == 0);
+          wtf_size_t current_line_name_indices_count =
+              ConvertLineNameOrTrackSize(*integer_repeat_value,
+                                         /* is_inside_repeat */ true,
+                                         is_first_repeat);
+          // Only add to `line_name_indices_count` on the first iteration so it
+          // doesn't need to be divided by `repetitions`.
+          if (is_first_repeat) {
+            line_name_indices_count += current_line_name_indices_count;
+          }
         }
       }
 
+      Vector<GridTrackSize, 1> repeater_track_sizes;
       if (computed_grid_track_list.axis_type == GridAxisType::kStandaloneAxis) {
-        Vector<GridTrackSize, 1> repeater_track_sizes;
         for (auto integer_repeat_value : *grid_integer_repeat_value) {
           if (!integer_repeat_value->IsGridLineNamesValue()) {
             repeater_track_sizes.push_back(
                 ConvertGridTrackSize(state, *integer_repeat_value));
           }
         }
-        track_list.AddRepeater(repeater_track_sizes,
-                               NGGridTrackRepeater::RepeatType::kInteger,
-                               repetitions);
       }
+      track_list.AddRepeater(repeater_track_sizes,
+                             NGGridTrackRepeater::RepeatType::kInteger,
+                             repetitions, /* repeat_number_of_lines */ 1u,
+                             line_name_indices_count);
       continue;
     }
 
-    ConvertLineNameOrTrackSize(**curr_value);
+    wtf_size_t line_name_indices_count =
+        ConvertLineNameOrTrackSize(**curr_value);
     if (!curr_value->Get()->IsGridLineNamesValue()) {
       track_list.AddRepeater({ConvertGridTrackSize(state, **curr_value)});
+    } else if (is_subgrid) {
+      track_list.AddRepeater(/* repeater_track_sizes */ {},
+                             NGGridTrackRepeater::RepeatType::kNoRepeat,
+                             /* repeat_count */ 1,
+                             /* repeat_number_of_lines */ 1u,
+                             line_name_indices_count);
     }
   }
 
@@ -2465,20 +2490,16 @@ static const CSSValue& ComputeRegisteredPropertyValue(
       return *CSSPrimitiveValue::CreateFromLength(length, 1);
     }
 
-    // If we encounter a calculated number that was not resolved during
-    // parsing, it means that a calc()-expression was allowed in place of
-    // an integer. Such calc()-for-integers must be rounded at computed value
-    // time.
+    // Clamp/round calc() values according to the permitted range.
+    //
     // https://drafts.csswg.org/css-values-4/#calc-type-checking
-    if (primitive_value->IsCalculated()) {
+    if (primitive_value->IsNumber() && primitive_value->IsCalculated()) {
       const CSSMathFunctionValue& math_value =
           To<CSSMathFunctionValue>(*primitive_value);
-      if (math_value.IsNumber()) {
-        double double_value = math_value.GetDoubleValue();
-        auto unit_type = CSSPrimitiveValue::UnitType::kInteger;
-        return *CSSNumericLiteralValue::Create(std::round(double_value),
-                                               unit_type);
-      }
+      // Note that GetDoubleValue automatically clamps according to the
+      // permitted range.
+      return *CSSNumericLiteralValue::Create(
+          math_value.GetDoubleValue(), CSSPrimitiveValue::UnitType::kNumber);
     }
 
     if (primitive_value->IsAngle()) {
@@ -2569,7 +2590,7 @@ StyleBuilderConverter::ConvertRegisteredPropertyVariableData(
     bool is_animation_tainted) {
   // TODO(andruud): Produce tokens directly from CSSValue.
   return CSSVariableData::Create(value.CssText(), is_animation_tainted,
-                                 /*needs_variable_resolution=*/false);
+                                 /* needs_variable_resolution */ false);
 }
 
 namespace {
@@ -2618,6 +2639,14 @@ StyleAspectRatio StyleBuilderConverter::ConvertAspectRatio(
       has_auto ? EAspectRatioType::kAutoAndRatio : EAspectRatioType::kRatio;
   gfx::SizeF ratio = GetRatioFromList(list);
   return StyleAspectRatio(type, ratio);
+}
+
+bool StyleBuilderConverter::ConvertInternalAlignContentBlock(
+    StyleResolverState&,
+    const CSSValue& value) {
+  auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
+  return identifier_value &&
+         identifier_value->GetValueID() == CSSValueID::kCenter;
 }
 
 bool StyleBuilderConverter::ConvertInternalAlignSelfBlock(
@@ -3026,6 +3055,17 @@ Vector<TimelineAxis> StyleBuilderConverter::ConvertViewTimelineAxis(
     axes.push_back(To<CSSIdentifierValue>(*item).ConvertTo<TimelineAxis>());
   }
   return axes;
+}
+
+Vector<TimelineAttachment> StyleBuilderConverter::ConvertViewTimelineAttachment(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  Vector<TimelineAttachment> attachments;
+  for (const Member<const CSSValue>& item : To<CSSValueList>(value)) {
+    attachments.push_back(
+        To<CSSIdentifierValue>(*item).ConvertTo<TimelineAttachment>());
+  }
+  return attachments;
 }
 
 TimelineInset StyleBuilderConverter::ConvertSingleTimelineInset(

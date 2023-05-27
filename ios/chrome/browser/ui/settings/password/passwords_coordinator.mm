@@ -17,14 +17,14 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
+#import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
+#import "ios/chrome/browser/shared/coordinator/alert/alert_coordinator.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_coordinator.h"
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_utils.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/add_password_coordinator.h"
@@ -150,8 +150,6 @@ using password_manager::WarningType;
                   syncSetupService:SyncSetupServiceFactory::GetForBrowserState(
                                        browserState)
                      faviconLoader:faviconLoader
-                   identityManager:IdentityManagerFactory::GetForBrowserState(
-                                       browserState)
                        syncService:SyncServiceFactory::GetForBrowserState(
                                        browserState)];
   self.reauthModule = [[ReauthenticationModule alloc]
@@ -211,7 +209,8 @@ using password_manager::WarningType;
   DCHECK(!self.passwordCheckupCoordinator);
   self.passwordCheckupCoordinator = [[PasswordCheckupCoordinator alloc]
       initWithBaseNavigationController:self.baseNavigationController
-                               browser:self.browser];
+                               browser:self.browser
+                          reauthModule:self.reauthModule];
   self.passwordCheckupCoordinator.delegate = self;
   [self.passwordCheckupCoordinator start];
 }
@@ -235,7 +234,7 @@ using password_manager::WarningType;
                                browser:self.browser
                             credential:credential
                           reauthModule:self.reauthModule
-                  supportMoveToAccount:YES];
+                               context:DetailsContext::kGeneral];
   self.passwordDetailsCoordinator.delegate = self;
   [self.passwordDetailsCoordinator start];
 }
@@ -248,7 +247,7 @@ using password_manager::WarningType;
                                browser:self.browser
                        affiliatedGroup:affiliatedGroup
                           reauthModule:self.reauthModule
-                  supportMoveToAccount:YES];
+                               context:DetailsContext::kGeneral];
   self.passwordDetailsCoordinator.delegate = self;
   [self.passwordDetailsCoordinator start];
 }
@@ -261,16 +260,6 @@ using password_manager::WarningType;
                     reauthModule:self.reauthModule];
   self.addPasswordCoordinator.delegate = self;
   [self.addPasswordCoordinator start];
-}
-
-- (void)showPasswordsInOtherAppsPromo {
-  DCHECK(!self.passwordsInOtherAppsCoordinator);
-  self.passwordsInOtherAppsCoordinator =
-      [[PasswordsInOtherAppsCoordinator alloc]
-          initWithBaseNavigationController:self.baseNavigationController
-                                   browser:self.browser];
-  self.passwordsInOtherAppsCoordinator.delegate = self;
-  [self.passwordsInOtherAppsCoordinator start];
 }
 
 - (void)showPasswordDeleteDialogWithOrigins:(NSArray<NSString*>*)origins

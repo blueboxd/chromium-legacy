@@ -10,6 +10,7 @@
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -27,6 +28,7 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_state_type.h"
@@ -36,6 +38,7 @@
 #include "chromeos/ui/wm/features.h"
 #include "chromeos/ui/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -185,7 +188,7 @@ class ClientControlledStateTest : public AshTestBase {
     params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
         desks_util::GetActiveDeskContainerId());
     params.bounds = kInitialBounds;
-    params.delegate = widget_delegate_;
+    params.delegate = widget_delegate_.get();
 
     widget_ = std::make_unique<views::Widget>();
     widget_->Init(std::move(params));
@@ -234,10 +237,13 @@ class ClientControlledStateTest : public AshTestBase {
   }
 
  private:
-  ClientControlledState* state_ = nullptr;
-  TestClientControlledStateDelegate* state_delegate_ = nullptr;
-  TestWidgetDelegate* widget_delegate_ = nullptr;  // owned by itself.
-  TestWindowStateDelegate* window_state_delegate_ = nullptr;
+  raw_ptr<ClientControlledState, ExperimentalAsh> state_ = nullptr;
+  raw_ptr<TestClientControlledStateDelegate, ExperimentalAsh> state_delegate_ =
+      nullptr;
+  raw_ptr<TestWidgetDelegate, ExperimentalAsh> widget_delegate_ =
+      nullptr;  // owned by itself.
+  raw_ptr<TestWindowStateDelegate, ExperimentalAsh> window_state_delegate_ =
+      nullptr;
   std::unique_ptr<views::Widget> widget_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -915,12 +921,71 @@ TEST_F(ClientControlledStateTest, FlingFloatedWindowInTabletMode) {
             gfx::Rect(gfx::Point(padding, padding), initial_bounds.size()));
 }
 
-TEST_P(ClientControlledStateTestClamshellAndTablet, MoveFloatedWindow) {
+TEST_F(ClientControlledStateTest, TuckAndUntuckFloatedWindowInTabletMode) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  auto* const float_controller = Shell::Get()->float_controller();
+
   // The AppType must be set to any except `AppType::NON_APP` (default value) to
   // make it floatable.
   window()->SetProperty(aura::client::kAppType,
                         static_cast<int>(AppType::ARC_APP));
   widget_delegate()->EnableFloat();
+  ASSERT_TRUE(chromeos::wm::CanFloatWindow(window()));
+
+  // Enter tablet mode
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ASSERT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+
+  // Float window.
+  const WMEvent float_event(WM_EVENT_FLOAT);
+  window_state()->OnWMEvent(&float_event);
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_TRUE(window_state()->IsFloated());
+  EXPECT_EQ(kShellWindowId_FloatContainer, window()->parent()->GetId());
+
+  // Test tucking.
+  // Start dragging in the center of the header and fling it to offscreen.
+  auto* const header_view = GetHeaderView();
+  auto* const event_generator = GetEventGenerator();
+  const gfx::Point start = header_view->GetBoundsInScreen().CenterPoint();
+  const gfx::Vector2d offset(10, 10);
+
+  event_generator->GestureScrollSequence(start, start + offset,
+                                         base::Milliseconds(10), /*steps=*/1);
+
+  // Bounds change should be blocked while animating.
+  const auto start_bounds = window()->GetBoundsInScreen();
+  state()->set_bounds_locally(true);
+  widget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+  state()->set_bounds_locally(false);
+  EXPECT_EQ(window()->GetBoundsInScreen(), start_bounds);
+
+  EXPECT_TRUE(window()->IsVisible());
+  ShellTestApi().WaitForWindowFinishAnimating(window());
+  EXPECT_FALSE(window()->IsVisible());
+  EXPECT_TRUE(float_controller->IsFloatedWindowTuckedForTablet(window()));
+
+  // Test untucking.
+  float_controller->MaybeUntuckFloatedWindowForTablet(window());
+  ShellTestApi().WaitForWindowFinishAnimating(window());
+  EXPECT_TRUE(window()->IsVisible());
+  EXPECT_FALSE(float_controller->IsFloatedWindowTuckedForTablet(window()));
+  EXPECT_EQ(FloatController::GetPreferredFloatWindowTabletBounds(window()),
+            delegate()->requested_bounds());
+}
+
+TEST_P(ClientControlledStateTestClamshellAndTablet, MoveFloatedWindow) {
+  // The AppType must be set to any except `AppType::NON_APP` (default value) to
+  // make it floatable.
+  window()->SetProperty(aura::client::kAppType,
+                        static_cast<int>(AppType::ARC_APP));
+  if (InTabletMode()) {
+    // Resizing must be enabled in tablet mode to float.
+    widget_delegate()->EnableFloat();
+  }
   ASSERT_TRUE(chromeos::wm::CanFloatWindow(window()));
 
   // Float window.
@@ -931,11 +996,17 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, MoveFloatedWindow) {
   EXPECT_TRUE(window_state()->IsFloated());
   EXPECT_EQ(kShellWindowId_FloatContainer, window()->parent()->GetId());
 
-  // Start dragging in the center of the header.
+  // Start dragging on the left of the minimize button.
   auto* const header_view = GetHeaderView();
   auto* const event_generator = GetEventGenerator();
+
+  chromeos::FrameCaptionButtonContainerView::TestApi test_api(
+      header_view->caption_button_container());
   event_generator->set_current_screen_location(
-      header_view->GetBoundsInScreen().CenterPoint());
+      gfx::Point(test_api.minimize_button()->GetBoundsInScreen().x() - 5,
+                 // Minimize button y coordinate is at the top of the header, so
+                 // use the center point of the header instead.
+                 header_view->GetBoundsInScreen().CenterPoint().y()));
   event_generator->PressLeftButton();
   EXPECT_TRUE(window_state_delegate()->drag_in_progress());
 
@@ -975,21 +1046,14 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, FloatWindow) {
   // make it floatable.
   window()->SetProperty(aura::client::kAppType,
                         static_cast<int>(AppType::ARC_APP));
-
-  // Float disabled.
-  ASSERT_FALSE(chromeos::wm::CanFloatWindow(window()));
-
-  // The event should be ignored.
-  const WMEvent float_event(WM_EVENT_FLOAT);
-  window_state()->OnWMEvent(&float_event);
-  EXPECT_TRUE(delegate()->requested_bounds().IsEmpty());
-  EXPECT_EQ(WindowStateType::kDefault, delegate()->new_state());
-
-  // Float enabled.
-  widget_delegate()->EnableFloat();
+  if (InTabletMode()) {
+    // Resizing must be enabled in tablet mode to float.
+    widget_delegate()->EnableFloat();
+  }
   ASSERT_TRUE(chromeos::wm::CanFloatWindow(window()));
 
   // Test float.
+  const WMEvent float_event(WM_EVENT_FLOAT);
   window_state()->OnWMEvent(&float_event);
   EXPECT_EQ(
       InTabletMode()
@@ -999,6 +1063,41 @@ TEST_P(ClientControlledStateTestClamshellAndTablet, FloatWindow) {
   EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
   EXPECT_EQ(WindowStateType::kFloated, delegate()->new_state());
 
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_TRUE(window_state()->IsFloated());
+  EXPECT_EQ(kShellWindowId_FloatContainer, window()->parent()->GetId());
+
+  // Test rotate.
+  ASSERT_TRUE(chromeos::wm::IsLandscapeOrientationForWindow(window()));
+  Shell::Get()->display_manager()->SetDisplayRotation(
+      display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+      display::Display::ROTATE_90, display::Display::RotationSource::USER);
+  ASSERT_FALSE(chromeos::wm::IsLandscapeOrientationForWindow(window()));
+  EXPECT_EQ(
+      InTabletMode()
+          ? FloatController::GetPreferredFloatWindowTabletBounds(window())
+          : FloatController::GetPreferredFloatWindowClamshellBounds(window()),
+      delegate()->requested_bounds());
+
+  // Test minimize.
+  const WMEvent minimize_event(WM_EVENT_MINIMIZE);
+  window_state()->OnWMEvent(&minimize_event);
+  EXPECT_EQ(WindowStateType::kFloated, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kMinimized, delegate()->new_state());
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_TRUE(window_state()->IsMinimized());
+  EXPECT_FALSE(window()->IsVisible());
+
+  // Test unminimize.
+  const WMEvent unminimize_event(WM_EVENT_RESTORE);
+  window_state()->OnWMEvent(&unminimize_event);
+  EXPECT_EQ(
+      InTabletMode()
+          ? FloatController::GetPreferredFloatWindowTabletBounds(window())
+          : FloatController::GetPreferredFloatWindowClamshellBounds(window()),
+      delegate()->requested_bounds());
+  EXPECT_EQ(WindowStateType::kMinimized, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kFloated, delegate()->new_state());
   state()->EnterNextState(window_state(), delegate()->new_state());
   EXPECT_TRUE(window_state()->IsFloated());
   EXPECT_EQ(kShellWindowId_FloatContainer, window()->parent()->GetId());

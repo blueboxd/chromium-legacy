@@ -54,11 +54,17 @@ namespace web {
 
 #pragma mark - WebStateImpl::RealizedWebState public methods
 
-WebStateImpl::RealizedWebState::RealizedWebState(WebStateImpl* owner)
+WebStateImpl::RealizedWebState::RealizedWebState(WebStateImpl* owner,
+                                                 NSString* stable_identifier,
+                                                 SessionID unique_identifier)
     : owner_(owner),
       interface_binder_(owner),
-      user_agent_type_(UserAgentType::AUTOMATIC) {
+      user_agent_type_(UserAgentType::AUTOMATIC),
+      stable_identifier_([stable_identifier copy]),
+      unique_identifier_(unique_identifier) {
   DCHECK(owner_);
+  DCHECK(stable_identifier_.length);
+  DCHECK(unique_identifier_.is_valid());
 }
 
 WebStateImpl::RealizedWebState::~RealizedWebState() = default;
@@ -96,10 +102,6 @@ void WebStateImpl::RealizedWebState::Init(const CreateParams& params,
     certificate_policy_cache_->UpdateCertificatePolicyCache(
         web::BrowserState::GetCertificatePolicyCache(params.browser_state));
 
-    // Load the stable identifier. Must not be empty or nil.
-    DCHECK(session_storage.stableIdentifier.length);
-    stable_identifier_ = [session_storage.stableIdentifier copy];
-
     // Restore the last active time, even if it is null, as that would mean
     // the session predates M-99 (when the last active time started to be
     // saved in CRWSessionStorage) and thus the WebState can be considered
@@ -115,9 +117,6 @@ void WebStateImpl::RealizedWebState::Init(const CreateParams& params,
     certificate_policy_cache_ =
         std::make_unique<SessionCertificatePolicyCacheImpl>(
             params.browser_state);
-
-    // Generate a random stable identifier. Ensure it is immutable.
-    stable_identifier_ = [[[NSUUID UUID] UUIDString] copy];
 
     creation_time_ = base::Time::Now();
   }
@@ -571,6 +570,10 @@ NSString* WebStateImpl::RealizedWebState::GetStableIdentifier() const {
   return [stable_identifier_ copy];
 }
 
+SessionID WebStateImpl::RealizedWebState::GetUniqueIdentifier() const {
+  return unique_identifier_;
+}
+
 void WebStateImpl::RealizedWebState::OpenURL(
     const WebState::OpenURLParams& params) {
   DCHECK(Configured());
@@ -822,11 +825,6 @@ NSData* WebStateImpl::RealizedWebState::SessionStateData() const {
   return [web_controller_ sessionStateData];
 }
 
-void WebStateImpl::RealizedWebState::SetSwipeRecognizerProvider(
-    id<CRWSwipeRecognizerProvider> delegate) {
-  web_controller_.swipeRecognizerProvider = delegate;
-}
-
 PermissionState WebStateImpl::RealizedWebState::GetStateForPermission(
     Permission permission) const {
   return [web_controller_ stateForPermission:permission];
@@ -853,17 +851,24 @@ void WebStateImpl::RealizedWebState::OnStateChangedForPermission(
 void WebStateImpl::RealizedWebState::RequestPermissionsWithDecisionHandler(
     NSArray<NSNumber*>* permissions,
     PermissionDecisionHandler web_view_decision_handler) {
-  bool delegate_can_handle_decision = false;
   if (delegate_) {
     WebStatePermissionDecisionHandler web_state_decision_handler =
-        ^(BOOL allowed) {
-          allowed ? web_view_decision_handler(WKPermissionDecisionGrant)
-                  : web_view_decision_handler(WKPermissionDecisionDeny);
+        ^(PermissionDecision decision) {
+          switch (decision) {
+            case PermissionDecisionShowDefaultPrompt:
+              web_view_decision_handler(WKPermissionDecisionPrompt);
+              break;
+            case PermissionDecisionGrant:
+              web_view_decision_handler(WKPermissionDecisionGrant);
+              break;
+            case PermissionDecisionDeny:
+              web_view_decision_handler(WKPermissionDecisionDeny);
+              break;
+          }
         };
-    delegate_can_handle_decision = delegate_->HandlePermissionsDecisionRequest(
-        owner_, permissions, web_state_decision_handler);
-  }
-  if (!delegate_can_handle_decision) {
+    delegate_->HandlePermissionsDecisionRequest(owner_, permissions,
+                                                web_state_decision_handler);
+  } else {
     web_view_decision_handler(WKPermissionDecisionPrompt);
   }
 }

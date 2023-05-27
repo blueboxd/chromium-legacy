@@ -32,7 +32,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/line/line_box_list.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_span.h"
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
@@ -40,9 +40,8 @@
 
 namespace blink {
 
-class AbstractInlineTextBox;
 class ContentCaptureManager;
-class InlineTextBox;
+class NGAbstractInlineTextBox;
 struct NGInlineItemsData;
 struct NGInlineItemSpan;
 class NGOffsetMapping;
@@ -66,11 +65,6 @@ enum class OnlyWhitespaceOrNbsp : unsigned { kUnknown = 0, kNo = 1, kYes = 2 };
 // LayoutBlockFlow::LayoutInlineChildren.
 //
 //
-// ***** LINE BOXES OWNERSHIP *****
-// InlineTextBox in text_boxes_ are not owned by LayoutText but are pointers
-// into the enclosing inline / block (see LayoutInline's and LayoutBlockFlow's
-// line_boxes_).
-//
 // This class implements the preferred logical widths computation
 // for its underlying text. The widths are stored into min_width_
 // and max_width_. They are computed lazily based on
@@ -83,23 +77,26 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // FIXME: If the node argument is not a Text node or the string argument is
   // not the content of the Text node, updating text-transform property
   // doesn't re-transform the string.
-  LayoutText(Node*, scoped_refptr<StringImpl>);
+  LayoutText(Node*, String);
 
   void Trace(Visitor*) const override;
 
   static LayoutText* CreateEmptyAnonymous(Document&,
-                                          scoped_refptr<const ComputedStyle>,
-                                          LegacyLayout);
+                                          scoped_refptr<const ComputedStyle>);
 
   static LayoutText* CreateAnonymousForFormattedText(
       Document&,
       scoped_refptr<const ComputedStyle>,
-      scoped_refptr<StringImpl>,
-      LegacyLayout legacy);
+      String);
 
   const char* GetName() const override {
     NOT_DESTROYED();
     return "LayoutText";
+  }
+
+  bool IsLayoutNGObject() const override {
+    NOT_DESTROYED();
+    return true;
   }
 
   bool IsTextFragment() const {
@@ -108,11 +105,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   }
   virtual bool IsWordBreak() const;
 
-  virtual scoped_refptr<StringImpl> OriginalText() const;
-
-  void ExtractTextBox(InlineTextBox*);
-  void AttachTextBox(InlineTextBox*);
-  void RemoveTextBox(InlineTextBox*);
+  virtual String OriginalText() const;
 
   bool HasInlineFragments() const final;
   wtf_size_t FirstInlineFragmentItemIndex() const final;
@@ -135,7 +128,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     return nullptr;
   }
 
-  InlineTextBox* CreateInlineTextBox(int start, uint16_t length);
   void DirtyOrDeleteLineBoxesIfNeeded(bool full_layout);
   void DirtyLineBoxes();
 
@@ -158,11 +150,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   }
   const LChar* Characters8() const {
     NOT_DESTROYED();
-    return text_.Impl()->Characters8();
+    return text_.Characters8();
   }
   const UChar* Characters16() const {
     NOT_DESTROYED();
-    return text_.Impl()->Characters16();
+    return text_.Characters16();
   }
   bool HasEmptyText() const {
     NOT_DESTROYED();
@@ -187,42 +179,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   UChar32 FirstCharacterAfterWhitespaceCollapsing() const;
   UChar32 LastCharacterAfterWhitespaceCollapsing() const;
 
-  void PositionLineBox(InlineBox*);
-
-  virtual float Width(unsigned from,
-                      unsigned len,
-                      const Font&,
-                      LayoutUnit x_pos,
-                      TextDirection,
-                      HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
-                      gfx::RectF* glyph_bounds = nullptr,
-                      float expansion = 0) const;
-  virtual float Width(unsigned from,
-                      unsigned len,
-                      LayoutUnit x_pos,
-                      TextDirection,
-                      bool first_line = false,
-                      HashSet<const SimpleFontData*>* fallback_fonts = nullptr,
-                      gfx::RectF* glyph_bounds = nullptr,
-                      float expansion = 0) const;
-
-  float MinLogicalWidth() const;
-  float MaxLogicalWidth() const;
-
-  void TrimmedPrefWidths(LayoutUnit lead_width,
-                         LayoutUnit& first_line_min_width,
-                         bool& has_breakable_start,
-                         LayoutUnit& last_line_min_width,
-                         bool& has_breakable_end,
-                         bool& has_breakable_char,
-                         bool& has_break,
-                         LayoutUnit& first_line_max_width,
-                         LayoutUnit& last_line_max_width,
-                         LayoutUnit& min_width,
-                         LayoutUnit& max_width,
-                         bool& strip_front_spaces,
-                         TextDirection);
-
   virtual PhysicalRect PhysicalLinesBoundingBox() const;
 
   // Returns the bounding box of visual overflow rects of all line boxes,
@@ -233,47 +189,17 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   PhysicalOffset FirstLineBoxTopLeft() const;
 
-  void SetTextIfNeeded(scoped_refptr<StringImpl>);
-  void ForceSetText(scoped_refptr<StringImpl>);
-  void SetTextWithOffset(scoped_refptr<StringImpl>,
-                         unsigned offset,
-                         unsigned len);
-  void SetTextInternal(scoped_refptr<StringImpl>);
+  void SetTextIfNeeded(String);
+  void ForceSetText(String);
+  void SetTextWithOffset(String, unsigned offset, unsigned len);
+  void SetTextInternal(String);
 
   virtual void TransformText();
 
   PhysicalRect LocalSelectionVisualRect() const final;
   LayoutRect LocalCaretRect(
-      const InlineBox*,
       int caret_offset,
       LayoutUnit* extra_width_to_end_of_line = nullptr) const override;
-
-  // TextBoxes() and FirstInlineFragment() are mutually exclusive,
-  // depends on IsInLayoutNGInlineFormattingContext().
-  const InlineTextBoxList& TextBoxes() const {
-    NOT_DESTROYED();
-    return IsInLayoutNGInlineFormattingContext() ? InlineTextBoxList::Empty()
-                                                 : text_boxes_;
-  }
-
-  // Returns first |InlineTextBox| produces for associated |Node|.
-  // Note: When |this| is remaining part of ::first-letter, this function
-  // returns first-letter part of |InlineTextBox| instead of remaining part.
-  InlineTextBox* FirstTextBox() const {
-    NOT_DESTROYED();
-    return TextBoxes().First();
-  }
-  InlineTextBox* LastTextBox() const {
-    NOT_DESTROYED();
-    return TextBoxes().Last();
-  }
-
-  // TODO(layoutng) Legacy-only implementation of HasTextBoxes.
-  // All callers should call HasTextBoxes instead, and take NG into account.
-  bool HasLegacyTextBoxes() const {
-    NOT_DESTROYED();
-    return FirstTextBox();
-  }
 
   // Compute the rect and offset of text boxes for this LayoutText.
   struct TextBoxInfo {
@@ -329,7 +255,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void RemoveAndDestroyTextBoxes();
 
-  scoped_refptr<AbstractInlineTextBox> FirstAbstractInlineTextBox();
+  scoped_refptr<NGAbstractInlineTextBox> FirstAbstractInlineTextBox();
 
   bool HasAbstractInlineTextBox() const {
     NOT_DESTROYED();
@@ -340,8 +266,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     NOT_DESTROYED();
     has_abstract_inline_text_box_ = true;
   }
-
-  float HyphenWidth(const Font&, TextDirection);
 
   PhysicalRect DebugRect() const override;
 
@@ -375,7 +299,9 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     return node_id_ != kInvalidDOMNodeId;
   }
 
-  void SetInlineItems(NGInlineItemsData* data, size_t begin, size_t size);
+  void SetInlineItems(NGInlineItemsData* data,
+                      wtf_size_t begin,
+                      wtf_size_t size);
   void ClearInlineItems();
   bool HasValidInlineItems() const {
     NOT_DESTROYED();
@@ -402,13 +328,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
     has_bidi_control_items_ = false;
   }
 
-  virtual const NGInlineItemSpan* GetNGInlineItems() const {
+  const NGInlineItemSpan* GetNGInlineItems() const {
     NOT_DESTROYED();
-    return nullptr;
+    return &inline_items_;
   }
-  virtual NGInlineItemSpan* GetNGInlineItems() {
+  NGInlineItemSpan* GetNGInlineItems() {
     NOT_DESTROYED();
-    return nullptr;
+    return &inline_items_;
   }
 
   void InvalidateSubtreeLayoutForFontUpdates() override;
@@ -453,9 +379,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   virtual void TextDidChange();
 
-  virtual InlineTextBox* CreateTextBox(int start,
-                                       uint16_t length);  // Subclassed by SVG.
-
   void InvalidatePaint(const PaintInvalidatorContext&) const final;
   void InvalidateDisplayItemClients(PaintInvalidationReason) const final;
 
@@ -470,8 +393,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
       LayoutInvalidationReasonForTracing reason);
 
  private:
-  InlineTextBoxList& MutableTextBoxes();
-
   void TextDidChangeWithoutInvalidation();
 
   // PhysicalRectCollector should be like a function:
@@ -479,12 +400,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   template <typename PhysicalRectCollector>
   void CollectLineBoxRects(const PhysicalRectCollector&,
                            ClippingOption option = kNoClipping) const;
-
-  void ComputePreferredLogicalWidths(float lead_width);
-  void ComputePreferredLogicalWidths(
-      float lead_width,
-      HashSet<const SimpleFontData*>& fallback_fonts,
-      gfx::RectF& glyph_bounds);
 
   // Make length() private so that callers that have a LayoutText*
   // will use the more efficient textLength() instead, while
@@ -513,15 +428,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   }
 
   void DeleteTextBoxes();
-  float WidthFromFont(const Font&,
-                      int start,
-                      int len,
-                      float lead_width,
-                      float text_width_so_far,
-                      TextDirection,
-                      HashSet<const SimpleFontData*>* fallback_fonts,
-                      gfx::RectF* glyph_bounds_accumulation,
-                      float expansion = 0) const;
 
   void ApplyTextTransform();
   void SecureText(UChar mask);
@@ -530,9 +436,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   bool IsText() const = delete;
 
   PhysicalRect LocalVisualRectIgnoringVisibility() const final;
-
-  bool CanOptimizeSetText() const;
-  void SetFirstTextBoxLogicalLeft(float text_width) const;
 
   const DisplayItemClient* GetSelectionDisplayItemClient() const final;
 
@@ -554,14 +457,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // inserted or removed).
   unsigned lines_dirty_ : 1;
 
-  // Used by LayoutNGText. Whether the NGInlineItems associated with this
-  // object are valid. Set after layout and cleared whenever the LayoutText is
-  // modified.
+  // Whether the NGInlineItems associated with this object are valid. Set after
+  // layout and cleared whenever the LayoutText is modified.
   // Functionally the inverse equivalent of lines_dirty_ for LayoutNG.
   unsigned valid_ng_items_ : 1;
 
-  // Used by LayoutNGText. Whether there is any BidiControl type NGInlineItem
-  // associated with this object. Set after layout when associating items.
+  // Whether there is any BidiControl type NGInlineItem associated with this
+  // object. Set after layout when associating items.
   unsigned has_bidi_control_items_ : 1;
 
   unsigned contains_reversed_text_ : 1;
@@ -591,21 +493,13 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   mutable LogicalOffset previous_logical_starting_point_ =
       UninitializedLogicalStartingPoint();
 
-  // The line boxes associated with this object.
-  // Read the LINE BOXES OWNERSHIP section in the class header comment.
-  // Valid only when !IsInLayoutNGInlineFormattingContext().
-  InlineTextBoxList text_boxes_;
+  NGInlineItemSpan inline_items_;
 
   // The index of the first fragment item associated with this object in
   // |NGFragmentItems::Items()|. Zero means there are no such item.
   // Valid only when IsInLayoutNGInlineFormattingContext().
   wtf_size_t first_fragment_item_index_ = 0u;
 };
-
-inline InlineTextBoxList& LayoutText::MutableTextBoxes() {
-  CHECK(!IsInLayoutNGInlineFormattingContext());
-  return text_boxes_;
-}
 
 inline wtf_size_t LayoutText::FirstInlineFragmentItemIndex() const {
   if (!IsInLayoutNGInlineFormattingContext())
@@ -633,13 +527,6 @@ inline UChar32 LayoutText::CodepointAt(unsigned i) const {
   UChar32 c;
   U16_GET(Characters16(), 0, i, TextLength(), c);
   return c;
-}
-
-inline float LayoutText::HyphenWidth(const Font& font,
-                                     TextDirection direction) {
-  const ComputedStyle& style = StyleRef();
-  return font.Width(ConstructTextRun(font, style.HyphenString().GetString(),
-                                     style, direction));
 }
 
 inline void LayoutText::DetachAbstractInlineTextBoxesIfNeeded() {

@@ -64,8 +64,8 @@
 #include "components/feed/feed_feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/grit/components_scaled_resources.h"
-#include "components/image_service/image_service.h"
-#include "components/image_service/image_service_handler.h"
+#include "components/page_image_service/image_service.h"
+#include "components/page_image_service/image_service_handler.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search/ntp_features.h"
@@ -490,6 +490,7 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_HISTORY_CLUSTERS_BOOKMARKED},
       {"modulesJourneysOpenAllInNewTabGroupButtonText",
        IDS_NTP_MODULES_HISTORY_CLUSTERS_OPEN_ALL_IN_NEW_TAB_GROUP_BUTTON_TEXT},
+      {"modulesJourneysCartAnnotation", IDS_NTP_MODULES_QUEST_CART_ANNOTATION},
 
       // Middle slot promo.
       {"undoDismissPromoButtonToast", IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST},
@@ -548,6 +549,10 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
 
   source->AddBoolean("removeScrim", base::FeatureList::IsEnabled(
                                         ntp_features::kNtpRemoveScrim));
+
+  source->AddBoolean("modulesChromeCartInHistoryClustersModuleEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpChromeCartInHistoryClusterModule));
 
   RealboxHandler::SetupWebUIDataSource(source, profile);
 
@@ -798,15 +803,17 @@ void NewTabPageUI::BindInterface(
 }
 
 void NewTabPageUI::BindInterface(
-    mojo::PendingReceiver<image_service::mojom::ImageServiceHandler>
+    mojo::PendingReceiver<page_image_service::mojom::PageImageServiceHandler>
         pending_page_handler) {
-  base::WeakPtr<image_service::ImageService> image_service_weak;
+  base::WeakPtr<page_image_service::ImageService> image_service_weak;
   if (auto* image_service =
-          image_service::ImageServiceFactory::GetForBrowserContext(profile_)) {
+          page_image_service::ImageServiceFactory::GetForBrowserContext(
+              profile_)) {
     image_service_weak = image_service->GetWeakPtr();
   }
-  image_service_handler_ = std::make_unique<image_service::ImageServiceHandler>(
-      std::move(pending_page_handler), std::move(image_service_weak));
+  image_service_handler_ =
+      std::make_unique<page_image_service::ImageServiceHandler>(
+          std::move(pending_page_handler), std::move(image_service_weak));
 }
 
 void NewTabPageUI::BindInterface(

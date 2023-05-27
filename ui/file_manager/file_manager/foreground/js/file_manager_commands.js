@@ -20,13 +20,11 @@ import {CommandHandlerDeps} from '../../externs/command_handler_deps.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
-import {XfDlpRestrictionDetailsDialog} from '../../widgets/xf_dlp_restriction_details_dialog.js';
 
 import {ActionsModel} from './actions_model.js';
 import {constants} from './constants.js';
 import {DirectoryModel} from './directory_model.js';
 import {FileSelection, FileSelectionHandler} from './file_selection.js';
-import {TaskPickerType} from './file_tasks.js';
 import {HoldingSpaceUtil} from './holding_space_util.js';
 import {PathComponent} from './path_component.js';
 import {Command} from './ui/command.js';
@@ -417,6 +415,21 @@ CommandUtil.isDriveEntries = (entries, volumeManager) => {
   }
 
   return false;
+};
+
+/**
+ * Returns true if the current root is Trash. Items in Trash are a fake
+ * representation of a file + its metadata. Some actions are infeasible and
+ * items should be restored to enable these actions.
+ * @param {!CommandHandlerDeps} fileManager file manager command handler.
+ * @returns {boolean}
+ */
+CommandUtil.isOnTrashRoot = fileManager => {
+  const currentRootType = fileManager.directoryModel.getCurrentRootType();
+  if (!currentRootType) {
+    return false;
+  }
+  return util.isTrashRootType(currentRootType);
 };
 
 
@@ -883,6 +896,9 @@ CommandHandler.COMMANDS_['new-folder'] = new (class extends FilesCommand {
   }
 
   execute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      return;
+    }
     let targetDirectory;
     let executedFromDirectoryTree;
 
@@ -977,6 +993,11 @@ CommandHandler.COMMANDS_['new-folder'] = new (class extends FilesCommand {
 
   /** @override */
   canExecute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
     if (event.target instanceof DirectoryItem ||
         event.target instanceof DirectoryTree) {
       const entry = CommandUtil.getCommandEntry(fileManager, event.target);
@@ -1467,11 +1488,20 @@ CommandHandler.COMMANDS_['empty-trash'] = new (class extends FilesCommand {
  */
 CommandHandler.COMMANDS_['paste'] = new (class extends FilesCommand {
   execute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      return;
+    }
     fileManager.document.execCommand(event.command.id);
   }
 
   /** @override */
   canExecute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
     const fileTransferController = fileManager.fileTransferController;
 
     event.canExecute = !!fileTransferController &&
@@ -1510,6 +1540,9 @@ CommandHandler.COMMANDS_['paste-into-current-folder'] =
 CommandHandler.COMMANDS_['paste-into-folder'] =
     new (class extends FilesCommand {
       execute(event, fileManager) {
+        if (CommandUtil.isOnTrashRoot(fileManager)) {
+          return;
+        }
         const entries =
             CommandUtil.getCommandEntries(fileManager, event.target);
         if (entries.length !== 1 || !entries[0].isDirectory ||
@@ -1531,6 +1564,11 @@ CommandHandler.COMMANDS_['paste-into-folder'] =
 
       /** @override */
       canExecute(event, fileManager) {
+        if (CommandUtil.isOnTrashRoot(fileManager)) {
+          event.canExecute = false;
+          event.command.setHidden(true);
+          return;
+        }
         const entries =
             CommandUtil.getCommandEntries(fileManager, event.target);
 
@@ -1558,6 +1596,9 @@ CommandHandler.COMMANDS_['paste-into-folder'] =
  */
 CommandHandler.cutCopyCommand_ = new (class extends FilesCommand {
   execute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      return;
+    }
     // Cancel check-select-mode on cut/copy.  Any further selection of a dir
     // should start a new selection rather than add to the existing selection.
     fileManager.directoryModel.getFileListSelection().setCheckSelectMode(false);
@@ -1576,8 +1617,15 @@ CommandHandler.cutCopyCommand_ = new (class extends FilesCommand {
     }
 
     const command = event.command;
-    const target = event.target;
     const isMove = command.id === 'cut';
+    // Disable Copy command in Trash.
+    if (!isMove && CommandUtil.isOnTrashRoot(fileManager)) {
+      event.command.setHidden(true);
+      event.canExecute = false;
+      return;
+    }
+
+    const target = event.target;
     const volumeManager = fileManager.volumeManager;
     command.setHidden(false);
 
@@ -1666,8 +1714,7 @@ CommandHandler.COMMANDS_['rename'] = new (class extends FilesCommand {
     if (util.isNonModifiable(fileManager.volumeManager, entry)) {
       return;
     }
-    const currentRootType = fileManager.directoryModel.getCurrentRootType();
-    if (currentRootType === VolumeManagerCommon.RootType.TRASH) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
       return;
     }
     let isRemovableRoot = false;
@@ -1710,11 +1757,7 @@ CommandHandler.COMMANDS_['rename'] = new (class extends FilesCommand {
       }
     }
 
-    // Items in Trash are a fake representation of a file + it's metadata. These
-    // items can't be renamed whilst in Trash and should be restored to enable
-    // renaming.
-    const currentRootType = fileManager.directoryModel.getCurrentRootType();
-    if (currentRootType === VolumeManagerCommon.RootType.TRASH) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
       event.canExecute = false;
       event.command.setHidden(true);
       return;
@@ -1777,6 +1820,20 @@ CommandHandler.COMMANDS_['rename'] = new (class extends FilesCommand {
         !isRecentArcEntry &&
         CommandUtil.hasCapability(fileManager, entries, 'canRename');
     event.command.setHidden(false);
+  }
+})();
+
+/**
+ * Opens settings/files sub page.
+ */
+CommandHandler.COMMANDS_['files-settings'] = new (class extends FilesCommand {
+  execute(event, fileManager) {
+    chrome.fileManagerPrivate.openSettingsSubpage('files');
+  }
+
+  /** @override */
+  canExecute(event, fileManager) {
+    event.canExecute = true;
   }
 })();
 
@@ -2294,6 +2351,9 @@ CommandHandler.COMMANDS_['toggle-pinned'] = new (class extends FilesCommand {
  */
 CommandHandler.COMMANDS_['extract-all'] = new (class extends FilesCommand {
   execute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      return;
+    }
     let dirEntry = fileManager.getCurrentDirectoryEntry();
     if (!dirEntry ||
         !fileManager.getSelection().entries.every(
@@ -2315,7 +2375,8 @@ CommandHandler.COMMANDS_['extract-all'] = new (class extends FilesCommand {
     const dirEntry = fileManager.getCurrentDirectoryEntry();
     const selection = fileManager.getSelection();
 
-    if (!dirEntry || !selection || selection.totalCount === 0) {
+    if (CommandUtil.isOnTrashRoot(fileManager) || !dirEntry || !selection ||
+        selection.totalCount === 0) {
       event.command.setHidden(true);
       event.canExecute = false;
     } else {
@@ -2339,6 +2400,9 @@ CommandHandler.COMMANDS_['extract-all'] = new (class extends FilesCommand {
  */
 CommandHandler.COMMANDS_['zip-selection'] = new (class extends FilesCommand {
   execute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      return;
+    }
     const dirEntry = fileManager.getCurrentDirectoryEntry();
     if (!dirEntry ||
         !fileManager.getSelection().entries.every(
@@ -2355,6 +2419,12 @@ CommandHandler.COMMANDS_['zip-selection'] = new (class extends FilesCommand {
 
   /** @override */
   canExecute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
     const dirEntry = fileManager.getCurrentDirectoryEntry();
     const selection = fileManager.getSelection();
 
@@ -3074,6 +3144,9 @@ CommandHandler.COMMANDS_['refresh'] = new (class extends FilesCommand {
  */
 CommandHandler.COMMANDS_['set-wallpaper'] = new (class extends FilesCommand {
   execute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      return;
+    }
     const entry = fileManager.getSelection().entries[0];
     new Promise((resolve, reject) => {
       entry.file(resolve, reject);
@@ -3115,6 +3188,11 @@ CommandHandler.COMMANDS_['set-wallpaper'] = new (class extends FilesCommand {
 
   /** @override */
   canExecute(event, fileManager) {
+    if (CommandUtil.isOnTrashRoot(fileManager)) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
     const entries = fileManager.getSelection().entries;
     if (entries.length === 0) {
       event.canExecute = false;

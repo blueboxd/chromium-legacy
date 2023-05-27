@@ -20,6 +20,7 @@
 #include "base/functional/overloaded.h"
 #include "base/json/json_reader.h"
 #include "base/memory/raw_ptr.h"
+#include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
@@ -103,6 +104,9 @@ struct AttributionReportJsonConverter {
               report_body.Remove("aggregation_service_payloads");
               report_body.Remove("source_registration_time");
 
+              // The aggregation coordinator may be platform specific.
+              report_body.Remove("aggregation_coordinator_identifier");
+
               base::Value::List list;
               for (const auto& contribution : aggregatable_data.contributions) {
                 base::Value::Dict dict;
@@ -117,8 +121,11 @@ struct AttributionReportJsonConverter {
             },
             [&](const AttributionReport::EventLevelData&) {
               bool ok = AdjustScheduledReportTime(report_body,
-                                                  report.OriginalReportTime());
+                                                  report.initial_report_time());
               DCHECK(ok);
+            },
+            [](const AttributionReport::NullAggregatableData&) {
+              NOTREACHED();
             },
         },
         report.data());
@@ -317,6 +324,9 @@ class AttributionEventHandler : public AttributionObserver {
         reports = is_debug_report ? &debug_aggregatable_reports_
                                   : &aggregatable_reports_;
         break;
+      case AttributionReport::Type::kNullAggregatable:
+        // TODO(linnan): Consider supporting null reports in interop tests.
+        return;
     }
 
     reports->Append(json_converter_.ToJson(report, is_debug_report));

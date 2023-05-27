@@ -55,9 +55,11 @@ import static org.chromium.content.browser.accessibility.AccessibilityHistogramR
 import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.ONE_HUNDRED_PERCENT_HISTOGRAM;
 import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC;
 import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE;
+import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_FORM_CONTROLS;
 import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.PERCENTAGE_DROPPED_HISTOGRAM;
 import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC;
 import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE;
+import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_FORM_CONTROLS;
 import static org.chromium.content.browser.accessibility.AccessibilityNodeInfoBuilder.EXTRAS_DATA_REQUEST_IMAGE_DATA_KEY;
 import static org.chromium.content.browser.accessibility.AccessibilityNodeInfoBuilder.EXTRAS_KEY_CHROME_ROLE;
 import static org.chromium.content.browser.accessibility.AccessibilityNodeInfoBuilder.EXTRAS_KEY_IMAGE_DATA;
@@ -89,11 +91,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.FeatureList;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.ContentFeatureList;
@@ -154,9 +156,9 @@ public class WebContentsAccessibilityTest {
             "Expected focus to be on a different node than it is.";
 
     // ContentFeatureList maps used for various tests.
-    private static final Map<String, Boolean> ON_DEMAND_ON_COMPUTE_ON =
+    private static final Map<String, Boolean> ON_DEMAND_ON_AXMODES_ON =
             Map.of(ContentFeatureList.ON_DEMAND_ACCESSIBILITY_EVENTS, true,
-                    ContentFeatureList.COMPUTE_AX_MODE, true);
+                    ContentFeatureList.ACCESSIBILITY_AX_MODES, true);
 
     // Constant values for unit tests
     private static final int UNSUPPRESSED_EXPECTED_COUNT = 15;
@@ -378,7 +380,7 @@ public class WebContentsAccessibilityTest {
     }
 
     /**
-     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode complete.
+     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode Complete.
      */
     @Test
     @SmallTest
@@ -388,36 +390,69 @@ public class WebContentsAccessibilityTest {
                 + "<p>This is a test 2</p>\n"
                 + "<p>This is a test 3</p>");
 
-        // Set the relevant features and screen reader state.
-        FeatureList.setTestFeatures(ON_DEMAND_ON_COMPUTE_ON);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> AccessibilityState.setScreenReaderModeForTesting(true));
+        // Set the relevant features and accessibility state.
+        FeatureList.setTestFeatures(ON_DEMAND_ON_AXMODES_ON);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AccessibilityState.setScreenReaderEnabledForTesting(true);
+            AccessibilityState.setOnlyPasswordManagersEnabledForTesting(false);
+        });
 
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM, 0)
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE, 0)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_FORM_CONTROLS)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC)
+                        .expectIntRecord(EVENTS_DROPPED_HISTOGRAM, 0)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_FORM_CONTROLS)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC)
+                        .build();
         performHistogramActions();
 
-        // Verify results were recorded in histograms.
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(PERCENTAGE_DROPPED_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(EVENTS_DROPPED_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(ONE_HUNDRED_PERCENT_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC));
+        histogramWatcher.assertExpected();
     }
 
     /**
-     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode basic.
+     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode Form Controls.
+     */
+    @Test
+    @SmallTest
+    public void testUMAHistograms_OnDemand_AXModeFormControls() throws Throwable {
+        // Build a simple web page with a few nodes to traverse.
+        setupTestWithHTML("<p>This is a test 1</p>\n"
+                + "<p>This is a test 2</p>\n"
+                + "<p>This is a test 3</p>");
+
+        // Set the relevant features and accessibility state.
+        FeatureList.setTestFeatures(ON_DEMAND_ON_AXMODES_ON);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AccessibilityState.setScreenReaderEnabledForTesting(false);
+            AccessibilityState.setOnlyPasswordManagersEnabledForTesting(true);
+
+        });
+
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM, 0)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE)
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_FORM_CONTROLS, 0)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC)
+                        .expectIntRecord(EVENTS_DROPPED_HISTOGRAM, 0)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_FORM_CONTROLS)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC)
+                        .build();
+
+        performHistogramActions();
+
+        histogramWatcher.assertExpected();
+    }
+
+    /**
+     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode Basic.
      */
     @Test
     @SmallTest
@@ -428,40 +463,36 @@ public class WebContentsAccessibilityTest {
                 + "<p>This is a test 3</p>");
 
         // Set the relevant features and screen reader state.
-        FeatureList.setTestFeatures(ON_DEMAND_ON_COMPUTE_ON);
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> AccessibilityState.setScreenReaderModeForTesting(false));
+        FeatureList.setTestFeatures(ON_DEMAND_ON_AXMODES_ON);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AccessibilityState.setScreenReaderEnabledForTesting(false);
+            AccessibilityState.setOnlyPasswordManagersEnabledForTesting(false);
+        });
+
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM, 0)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_FORM_CONTROLS)
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC, 0)
+                        .expectIntRecord(EVENTS_DROPPED_HISTOGRAM, 0)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_FORM_CONTROLS)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC)
+                        .build();
 
         performHistogramActions();
 
-        // Verify results were recorded in histograms.
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(PERCENTAGE_DROPPED_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(EVENTS_DROPPED_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(ONE_HUNDRED_PERCENT_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC));
+        histogramWatcher.assertExpected();
     }
 
     /**
-     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode complete
+     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode Complete
      * when 100% of events are dropped.
      */
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1360513")
     public void testUMAHistograms_OnDemand_AXModeComplete_100Percent() throws Throwable {
         // Build a simple web page with a few nodes to traverse.
         setupTestWithHTML("<p>This is a test 1</p>\n"
@@ -469,37 +500,71 @@ public class WebContentsAccessibilityTest {
                 + "<p>This is a test 3</p>");
 
         // Set the relevant features and screen reader state, set event type masks to empty.
-        FeatureList.setTestFeatures(ON_DEMAND_ON_COMPUTE_ON);
+        FeatureList.setTestFeatures(ON_DEMAND_ON_AXMODES_ON);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccessibilityState.setEventTypeMaskForTesting(EVENT_TYPE_MASK_NONE);
-            AccessibilityState.setScreenReaderModeForTesting(true);
+            AccessibilityState.setScreenReaderEnabledForTesting(true);
+            AccessibilityState.setOnlyPasswordManagersEnabledForTesting(false);
         });
+
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM, 100)
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE, 100)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_FORM_CONTROLS)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC)
+                        .expectIntRecord(EVENTS_DROPPED_HISTOGRAM, 3)
+                        .expectIntRecord(ONE_HUNDRED_PERCENT_HISTOGRAM, 3)
+                        .expectIntRecord(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE, 3)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_FORM_CONTROLS)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC)
+                        .build();
 
         performHistogramActions();
 
-        // Verify results were recorded in histograms.
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(PERCENTAGE_DROPPED_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(EVENTS_DROPPED_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(ONE_HUNDRED_PERCENT_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC));
+        histogramWatcher.assertExpected();
     }
 
     /**
-     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode basic
+     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode Form Controls
+     * when 100% of events are dropped.
+     */
+    @Test
+    @SmallTest
+    public void testUMAHistograms_OnDemand_AXModeFormControls_100Percent() throws Throwable {
+        // Build a simple web page with a few nodes to traverse.
+        setupTestWithHTML("<p>This is a test 1</p>\n"
+                + "<p>This is a test 2</p>\n"
+                + "<p>This is a test 3</p>");
+
+        // Set the relevant features and screen reader state, set event type masks to empty.
+        FeatureList.setTestFeatures(ON_DEMAND_ON_AXMODES_ON);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AccessibilityState.setEventTypeMaskForTesting(EVENT_TYPE_MASK_NONE);
+            AccessibilityState.setScreenReaderEnabledForTesting(false);
+            AccessibilityState.setOnlyPasswordManagersEnabledForTesting(true);
+        });
+
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM, 100)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE)
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_FORM_CONTROLS, 100)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC)
+                        .expectIntRecord(EVENTS_DROPPED_HISTOGRAM, 3)
+                        .expectIntRecord(ONE_HUNDRED_PERCENT_HISTOGRAM, 3)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE)
+                        .expectIntRecord(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_FORM_CONTROLS, 3)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC)
+                        .build();
+
+        performHistogramActions();
+
+        histogramWatcher.assertExpected();
+    }
+
+    /**
+     * Test that UMA histograms are recorded for the OnDemand AT feature and AX Mode Basic
      * when 100% of events are dropped.
      */
     @Test
@@ -511,33 +576,29 @@ public class WebContentsAccessibilityTest {
                 + "<p>This is a test 3</p>");
 
         // Set the relevant features and screen reader state, set event type masks to empty.
-        FeatureList.setTestFeatures(ON_DEMAND_ON_COMPUTE_ON);
+        FeatureList.setTestFeatures(ON_DEMAND_ON_AXMODES_ON);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             AccessibilityState.setEventTypeMaskForTesting(EVENT_TYPE_MASK_NONE);
-            AccessibilityState.setScreenReaderModeForTesting(false);
+            AccessibilityState.setScreenReaderEnabledForTesting(false);
+            AccessibilityState.setOnlyPasswordManagersEnabledForTesting(false);
         });
+
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM, 100)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE)
+                        .expectNoRecords(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_FORM_CONTROLS)
+                        .expectIntRecord(PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC, 100)
+                        .expectIntRecord(EVENTS_DROPPED_HISTOGRAM, 3)
+                        .expectIntRecord(ONE_HUNDRED_PERCENT_HISTOGRAM, 3)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE)
+                        .expectNoRecords(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_FORM_CONTROLS)
+                        .expectIntRecord(ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC, 3)
+                        .build();
 
         performHistogramActions();
 
-        // Verify results were recorded in histograms.
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(PERCENTAGE_DROPPED_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(EVENTS_DROPPED_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(ONE_HUNDRED_PERCENT_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 0,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_COMPLETE));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        ONE_HUNDRED_PERCENT_HISTOGRAM_AXMODE_BASIC));
+        histogramWatcher.assertExpected();
     }
 
     /**
@@ -552,14 +613,15 @@ public class WebContentsAccessibilityTest {
                 + "<p>This is a test 2</p>\n"
                 + "<p>This is a test 3</p>");
 
+        var histogramWatcher =
+                HistogramWatcher.newBuilder()
+                        .expectIntRecord(CACHE_MAX_NODES_HISTOGRAM, 3)
+                        .expectAnyRecord(CACHE_PERCENTAGE_RETRIEVED_FROM_CACHE_HISTOGRAM)
+                        .build();
+
         performHistogramActions();
 
-        // Verify results were recorded in histograms.
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(CACHE_MAX_NODES_HISTOGRAM));
-        Assert.assertEquals(UMA_HISTOGRAM_ERROR, 1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        CACHE_PERCENTAGE_RETRIEVED_FROM_CACHE_HISTOGRAM));
+        histogramWatcher.assertExpected();
     }
 
     /**

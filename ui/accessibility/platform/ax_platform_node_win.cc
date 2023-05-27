@@ -2558,7 +2558,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Collapse() {
     return UIA_E_INVALIDOPERATION;
 
   AXActionData action_data;
-  action_data.action = ax::mojom::Action::kDoDefault;
+  action_data.action = ax::mojom::Action::kCollapse;
   if (GetDelegate()->AccessibilityPerformAction(action_data))
     return S_OK;
   return E_FAIL;
@@ -2574,7 +2574,7 @@ IFACEMETHODIMP AXPlatformNodeWin::Expand() {
     return UIA_E_INVALIDOPERATION;
 
   AXActionData action_data;
-  action_data.action = ax::mojom::Action::kDoDefault;
+  action_data.action = ax::mojom::Action::kExpand;
   if (GetDelegate()->AccessibilityPerformAction(action_data))
     return S_OK;
   return E_FAIL;
@@ -6173,7 +6173,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_GRAPHIC;
 
     case ax::mojom::Role::kCaption:
-      return ROLE_SYSTEM_TEXT;
+      return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kCaret:
       return ROLE_SYSTEM_CARET;
@@ -6604,8 +6604,10 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kCode:
     case ax::mojom::Role::kEmphasis:
     case ax::mojom::Role::kStrong:
-    case ax::mojom::Role::kTime:
       return ROLE_SYSTEM_TEXT;
+
+    case ax::mojom::Role::kTime:
+      return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kTimer:
       return ROLE_SYSTEM_CLOCK;

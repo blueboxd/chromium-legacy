@@ -13,6 +13,7 @@
 
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/ash/file_system_provider/icon_set.h"
@@ -37,6 +38,10 @@ class RenderFrameHost;
 
 namespace drive {
 class EventLogger;
+}
+
+namespace drivefs::pinning {
+struct Progress;
 }
 
 namespace extensions {
@@ -98,7 +103,7 @@ class SingleEntryPropertiesGetterForDriveFs {
   // Given parameters.
   ResultCallback callback_;
   const storage::FileSystemURL file_system_url_;
-  Profile* const running_profile_;
+  const raw_ptr<Profile, ExperimentalAsh> running_profile_;
   // Note: when empty, all properties are returned.
   const std::set<extensions::api::file_manager_private::EntryPropertyName>
       requested_properties_;
@@ -176,6 +181,11 @@ CreateMountableGuestList(Profile* profile);
 bool ToRecentSourceFileType(
     extensions::api::file_manager_private::FileCategory input_category,
     ash::RecentSource::FileType* output_type);
+
+// Converts the given |progress| struct containing the progress of Drive's bulk
+// pinning to its file manager private equivalent.
+extensions::api::file_manager_private::BulkPinProgress BulkPinProgressToJs(
+    const drivefs::pinning::Progress& progress);
 
 }  // namespace util
 }  // namespace file_manager

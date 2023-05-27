@@ -50,17 +50,23 @@ class BASE_EXPORT HistogramSamples {
   // acquire/release operations to guarantee ordering with outside values.
   union BASE_EXPORT AtomicSingleSample {
     AtomicSingleSample() : as_atomic(0) {}
-    AtomicSingleSample(subtle::Atomic32 rhs) : as_atomic(rhs) {}
+    explicit AtomicSingleSample(subtle::Atomic32 rhs) : as_atomic(rhs) {}
 
     // Returns the single sample in an atomic manner. This in an "acquire"
     // load. The returned sample isn't shared and thus its fields can be safely
-    // accessed.
+    // accessed. If this object is disabled, this will return an empty sample
+    // (bucket count set to 0).
     SingleSample Load() const;
 
-    // Extracts the single sample in an atomic manner. If |disable| is true
-    // then this object will be set so it will never accumulate another value.
-    // This is "no barrier" so doesn't enforce ordering with other atomic ops.
-    SingleSample Extract(bool disable);
+    // Extracts and returns the single sample and changes it to |new_value| in
+    // an atomic manner. If this object is disabled, this will return an empty
+    // sample (bucket count set to 0).
+    SingleSample Extract(AtomicSingleSample new_value = AtomicSingleSample(0));
+
+    // Like Extract() above, but also disables this object so that it will
+    // never accumulate another value. If this object is already disabled, this
+    // will return an empty sample (bucket count set to 0).
+    SingleSample ExtractAndDisable();
 
     // Adds a given count to the held bucket. If not possible, it returns false
     // and leaves the parts unchanged. Once extracted/disabled, this always
@@ -146,7 +152,19 @@ class BASE_EXPORT HistogramSamples {
 
   void Subtract(const HistogramSamples& other);
 
+  // Adds the samples from |other| while also resetting |other|'s sample counts
+  // to 0.
+  void Extract(HistogramSamples& other);
+
+  // Returns an iterator to read the sample counts.
   virtual std::unique_ptr<SampleCountIterator> Iterator() const = 0;
+
+  // Returns a special kind of iterator that resets the underlying sample count
+  // to 0 when Get() is called. The returned iterator must be consumed
+  // completely before being destroyed, otherwise samples may be lost (this is
+  // enforced by a DCHECK in the destructor).
+  virtual std::unique_ptr<SampleCountIterator> ExtractingIterator() = 0;
+
   void Serialize(Pickle* pickle) const;
 
   // Returns ASCII representation of histograms data for histogram samples.
@@ -271,11 +289,9 @@ class BASE_EXPORT SingleSampleIterator : public SampleCountIterator {
  public:
   SingleSampleIterator(HistogramBase::Sample min,
                        int64_t max,
-                       HistogramBase::Count count);
-  SingleSampleIterator(HistogramBase::Sample min,
-                       int64_t max,
                        HistogramBase::Count count,
-                       size_t bucket_index);
+                       size_t bucket_index,
+                       bool value_was_extracted);
   ~SingleSampleIterator() override;
 
   // SampleCountIterator:
@@ -294,6 +310,10 @@ class BASE_EXPORT SingleSampleIterator : public SampleCountIterator {
   const int64_t max_;
   const size_t bucket_index_;
   HistogramBase::Count count_;
+
+  // Whether the value that this iterator holds was extracted from the
+  // underlying data (i.e., reset to 0).
+  const bool value_was_extracted_;
 };
 
 }  // namespace base

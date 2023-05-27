@@ -1819,13 +1819,13 @@ TileManager::ActivationStateAsValue() {
 }
 
 void TileManager::ActivationStateAsValueInto(
-    base::trace_event::TracedValue* state) {
+    base::trace_event::TracedValue* state) const {
   state->SetString("tree_priority",
                    TreePriorityToString(global_state_.tree_priority));
   state->SetInteger("soft_memory_limit",
                     global_state_.soft_memory_limit_in_bytes);
   state->SetInteger("hard_memory_limit",
-                    global_state_.soft_memory_limit_in_bytes);
+                    global_state_.hard_memory_limit_in_bytes);
   state->SetInteger("pending_required_for_activation_callback_id",
                     pending_required_for_activation_callback_id_);
   state->SetInteger("current_memory_usage",
@@ -1879,6 +1879,12 @@ void TileManager::ActivationStateAsValueInto(
 bool TileManager::ShouldRasterOccludedTiles() const {
   return (global_state_.memory_limit_policy != ALLOW_NOTHING &&
           global_state_.memory_limit_policy != ALLOW_ABSOLUTE_MINIMUM);
+}
+
+std::string TileManager::GetHungCommitDebugInfo() const {
+  base::trace_event::TracedValueJSON value;
+  ActivationStateAsValueInto(&value);
+  return value.ToJSON();
 }
 
 TileManager::MemoryUsage::MemoryUsage()

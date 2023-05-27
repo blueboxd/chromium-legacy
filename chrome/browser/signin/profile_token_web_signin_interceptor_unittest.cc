@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/profile_token_web_signin_interceptor.h"
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -62,7 +63,7 @@ class ProfileTokenWebSigninInterceptorTest : public BrowserWithTestWindowTest {
 
  protected:
   std::unique_ptr<ProfileTokenWebSigninInterceptor> interceptor_;
-  MockDelegate* delegate_ = nullptr;  // Owned by `interceptor_`
+  raw_ptr<MockDelegate> delegate_ = nullptr;  // Owned by `interceptor_`
 };
 
 TEST_F(ProfileTokenWebSigninInterceptorTest, NoInterceptionWithInvalidToken) {
@@ -156,11 +157,11 @@ TEST_F(ProfileTokenWebSigninInterceptorTest,
 TEST_F(ProfileTokenWebSigninInterceptorTest,
        InterceptionSwitchesToExistingProfileIfAccepted) {
   auto* profile_manager = g_browser_process->profile_manager();
-  auto* new_profile = profiles::testing::CreateProfileSync(
+  Profile& new_profile = profiles::testing::CreateProfileSync(
       profile_manager, profile_manager->GenerateNextProfileDirectoryPath());
 
   auto* entry = profile_manager->GetProfileAttributesStorage()
-                    .GetProfileAttributesWithPath(new_profile->GetPath());
+                    .GetProfileAttributesWithPath(new_profile.GetPath());
   entry->SetProfileManagementId("id");
   entry->SetProfileManagementEnrollmentToken("token");
 

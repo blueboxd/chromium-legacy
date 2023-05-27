@@ -5,10 +5,9 @@
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
-#include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -215,98 +214,6 @@ void BackgroundImageGeometry::UseFixedAttachment(
   phase_ += fixed_adjustment;
 }
 
-enum ColumnGroupDirection { kColumnGroupStart, kColumnGroupEnd };
-
-static void ExpandToTableColumnGroup(const LayoutTableCell& cell,
-                                     const LayoutTableCol& column_group,
-                                     LayoutUnit& value,
-                                     ColumnGroupDirection column_direction) {
-  auto sibling_cell = column_direction == kColumnGroupStart
-                          ? &LayoutTableCell::PreviousCell
-                          : &LayoutTableCell::NextCell;
-  for (const auto* sibling = (cell.*sibling_cell)(); sibling;
-       sibling = (sibling->*sibling_cell)()) {
-    LayoutTableCol* innermost_col =
-        cell.Table()
-            ->ColElementAtAbsoluteColumn(sibling->AbsoluteColumnIndex())
-            .InnermostColOrColGroup();
-    if (!innermost_col || innermost_col->EnclosingColumnGroup() != column_group)
-      break;
-    value += sibling->Size().Width();
-  }
-}
-
-PhysicalOffset BackgroundImageGeometry::GetPositioningOffsetForCell(
-    const LayoutTableCell& cell,
-    const LayoutBox& positioning_box) {
-  LayoutUnit h_border_spacing(cell.Table()->HBorderSpacing());
-  LayoutUnit v_border_spacing(cell.Table()->VBorderSpacing());
-  // TODO(layout-ng): It looks incorrect to use Location() in this function.
-  if (positioning_box.IsTableSection()) {
-    return PhysicalOffset(cell.Location().X() - h_border_spacing,
-                          cell.Location().Y() - v_border_spacing);
-  }
-  if (positioning_box.IsLegacyTableRow()) {
-    return PhysicalOffset(cell.Location().X() - h_border_spacing, LayoutUnit());
-  }
-
-  PhysicalRect sections_rect(PhysicalOffset(), cell.Table()->Size());
-  cell.Table()->SubtractCaptionRect(sections_rect);
-  LayoutUnit height_of_captions =
-      cell.Table()->Size().Height() - sections_rect.Height();
-  PhysicalOffset offset_in_background = PhysicalOffset(
-      LayoutUnit(), (cell.Section()->Location().Y() -
-                     cell.Table()->BorderBefore() - height_of_captions) +
-                        cell.Location().Y());
-
-  const auto& table_col = To<LayoutTableCol>(positioning_box);
-  if (table_col.IsTableColumn()) {
-    offset_in_background.top -= v_border_spacing;
-    return offset_in_background;
-  }
-
-  DCHECK(table_col.IsTableColumnGroup());
-  LayoutUnit offset = offset_in_background.left;
-  ExpandToTableColumnGroup(cell, table_col, offset, kColumnGroupStart);
-  offset_in_background.left += offset;
-  offset_in_background.top -= v_border_spacing;
-  return offset_in_background;
-}
-
-PhysicalSize BackgroundImageGeometry::GetBackgroundObjectDimensions(
-    const LayoutTableCell& cell,
-    const LayoutBox& positioning_box) {
-  PhysicalSize border_spacing(LayoutUnit(cell.Table()->HBorderSpacing()),
-                              LayoutUnit(cell.Table()->VBorderSpacing()));
-  if (positioning_box.IsTableSection()) {
-    return PhysicalSizeToBeNoop(positioning_box.Size()) - border_spacing -
-           border_spacing;
-  }
-
-  if (positioning_box.IsTableRow()) {
-    return PhysicalSizeToBeNoop(positioning_box.Size()) -
-           PhysicalSize(border_spacing.width, LayoutUnit()) -
-           PhysicalSize(border_spacing.width, LayoutUnit());
-  }
-
-  DCHECK(positioning_box.IsLayoutTableCol());
-  PhysicalRect sections_rect(PhysicalOffset(), cell.Table()->Size());
-  cell.Table()->SubtractCaptionRect(sections_rect);
-  LayoutUnit column_height = sections_rect.Height() -
-                             cell.Table()->BorderBefore() -
-                             border_spacing.height - border_spacing.height;
-  const auto& table_col = To<LayoutTableCol>(positioning_box);
-  if (table_col.IsTableColumn())
-    return PhysicalSize(cell.Size().Width(), column_height);
-
-  DCHECK(table_col.IsTableColumnGroup());
-  LayoutUnit width = cell.Size().Width();
-  ExpandToTableColumnGroup(cell, table_col, width, kColumnGroupStart);
-  ExpandToTableColumnGroup(cell, table_col, width, kColumnGroupEnd);
-
-  return PhysicalSize(width, column_height);
-}
-
 bool BackgroundImageGeometry::ShouldUseFixedAttachment(
     const FillLayer& fill_layer) const {
   // Only backgrounds fixed to viewport should be treated as fixed attachment.
@@ -317,25 +224,35 @@ bool BackgroundImageGeometry::ShouldUseFixedAttachment(
          fill_layer.Attachment() == EFillAttachment::kFixed;
 }
 
-namespace {
+bool BackgroundImageGeometry::CanCompositeBackgroundAttachmentFixed() const {
+  return !painting_view_ && has_background_fixed_to_viewport_ &&
+         positioning_box_->CanCompositeBackgroundAttachmentFixed();
+}
 
-PhysicalRect FixedAttachmentPositioningArea(const PaintInfo& paint_info,
-                                            const LayoutBoxModelObject& obj) {
-  DCHECK(obj.View());
+PhysicalRect BackgroundImageGeometry::FixedAttachmentPositioningArea(
+    const PaintInfo& paint_info) const {
+  const ScrollableArea* layout_viewport =
+      box_->GetFrameView()->LayoutViewport();
+  DCHECK(layout_viewport);
+  PhysicalSize size(layout_viewport->VisibleContentRect().size());
+  if (CanCompositeBackgroundAttachmentFixed()) {
+    // The caller should have adjusted paint chunk properties to be in the
+    // viewport space.
+    return PhysicalRect(PhysicalOffset(), size);
+  }
   gfx::PointF viewport_origin_in_local_space =
       GeometryMapper::SourceToDestinationProjection(
-          obj.View()->FirstFragment().LocalBorderBoxProperties().Transform(),
+          box_->View()->FirstFragment().LocalBorderBoxProperties().Transform(),
           paint_info.context.GetPaintController()
               .CurrentPaintChunkProperties()
               .Transform())
           .MapPoint(gfx::PointF());
-  DCHECK(obj.GetFrameView());
-  const ScrollableArea* layout_viewport = obj.GetFrameView()->LayoutViewport();
-  DCHECK(layout_viewport);
   return PhysicalRect(
       PhysicalOffset::FromPointFRound(viewport_origin_in_local_space),
       PhysicalSize(layout_viewport->VisibleContentRect().size()));
 }
+
+namespace {
 
 // Computes the stitched table-grid rect relative to the current fragment.
 PhysicalRect ComputeStitchedTableGridRect(
@@ -376,8 +293,7 @@ BackgroundImageGeometry::BackgroundImageGeometry(
     const LayoutView& view,
     const PhysicalOffset& element_positioning_area_offset)
     : box_(&view), positioning_box_(&view.RootBox()) {
-  has_background_fixed_to_viewport_ =
-      view.StyleRef().HasFixedAttachmentBackgroundImage();
+  has_background_fixed_to_viewport_ = view.IsBackgroundAttachmentFixedObject();
   painting_view_ = true;
   // The background of the box generated by the root element covers the
   // entire canvas and will be painted by the view object, but the we should
@@ -390,25 +306,6 @@ BackgroundImageGeometry::BackgroundImageGeometry(
 BackgroundImageGeometry::BackgroundImageGeometry(
     const LayoutBoxModelObject& obj)
     : BackgroundImageGeometry(&obj, &obj) {}
-
-BackgroundImageGeometry::BackgroundImageGeometry(
-    const LayoutTableCell& cell,
-    const LayoutObject* background_object)
-    : BackgroundImageGeometry(
-          &cell,
-          background_object && !background_object->IsTableCell()
-              ? &To<LayoutBoxModelObject>(*background_object)
-              : &cell) {
-  painting_table_cell_ = true;
-  cell_using_container_background_ =
-      background_object && !background_object->IsTableCell();
-  if (cell_using_container_background_) {
-    element_positioning_area_offset_ =
-        GetPositioningOffsetForCell(cell, To<LayoutBox>(*background_object));
-    positioning_size_override_ =
-        GetBackgroundObjectDimensions(cell, To<LayoutBox>(*background_object));
-  }
-}
 
 // TablesNG background painting.
 BackgroundImageGeometry::BackgroundImageGeometry(const LayoutNGTableCell& cell,
@@ -447,39 +344,46 @@ BackgroundImageGeometry::BackgroundImageGeometry(
 BackgroundImageGeometry::BackgroundImageGeometry(
     const LayoutBoxModelObject* box,
     const LayoutBoxModelObject* positioning_box)
-    : box_(box), positioning_box_(positioning_box) {
+    : box_(box),
+      positioning_box_(positioning_box),
+      has_background_fixed_to_viewport_(
+          HasBackgroundFixedToViewport(*positioning_box)) {
   // Specialized constructor should be used for LayoutView.
   DCHECK(!IsA<LayoutView>(box));
   DCHECK(box);
   DCHECK(positioning_box);
-  if (positioning_box->StyleRef().HasFixedAttachmentBackgroundImage()) {
-    has_background_fixed_to_viewport_ = true;
-    // https://www.w3.org/TR/css-transforms-1/#transform-rendering
-    // Fixed backgrounds on the root element are affected by any transform
-    // specified for that element. For all other elements that are effected
-    // by a transform, a value of fixed for the background-attachment property
-    // is treated as if it had a value of scroll.
-    for (const PaintLayer* layer = box->EnclosingLayer();
-         layer && !layer->IsRootLayer(); layer = layer->Parent()) {
-      // Check LayoutObject::HasTransformRelatedProperty() first to exclude
-      // non-applicable transforms and will-change: transform.
-      LayoutObject& object = layer->GetLayoutObject();
-      if (object.HasTransformRelatedProperty() &&
-          (layer->Transform() ||
-           object.StyleRef().HasWillChangeHintForAnyTransformProperty())) {
-        has_background_fixed_to_viewport_ = false;
-        break;
-      }
+}
+
+bool BackgroundImageGeometry::HasBackgroundFixedToViewport(
+    const LayoutBoxModelObject& object) {
+  if (!object.IsBackgroundAttachmentFixedObject()) {
+    return false;
+  }
+  // https://www.w3.org/TR/css-transforms-1/#transform-rendering
+  // Fixed backgrounds on the root element are affected by any transform
+  // specified for that element. For all other elements that are effected
+  // by a transform, a value of fixed for the background-attachment property
+  // is treated as if it had a value of scroll.
+  for (const PaintLayer* layer = object.EnclosingLayer();
+       layer && !layer->IsRootLayer(); layer = layer->Parent()) {
+    // Check LayoutObject::HasTransformRelatedProperty() first to exclude
+    // non-applicable transforms and will-change: transform.
+    LayoutObject& ancestor = layer->GetLayoutObject();
+    if (ancestor.HasTransformRelatedProperty() &&
+        (layer->Transform() ||
+         ancestor.StyleRef().HasWillChangeHintForAnyTransformProperty())) {
+      return false;
     }
   }
+  return true;
 }
 
 void BackgroundImageGeometry::ComputeDestRectAdjustments(
     const FillLayer& fill_layer,
     const PhysicalRect& unsnapped_positioning_area,
     bool disallow_border_derived_adjustment,
-    LayoutRectOutsets& unsnapped_dest_adjust,
-    LayoutRectOutsets& snapped_dest_adjust) const {
+    NGPhysicalBoxStrut& unsnapped_dest_adjust,
+    NGPhysicalBoxStrut& snapped_dest_adjust) const {
   switch (fill_layer.Clip()) {
     case EFillBox::kContent:
       // If the PaddingOutsets are zero then this is equivalent to
@@ -508,14 +412,14 @@ void BackgroundImageGeometry::ComputeDestRectAdjustments(
             RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
                 positioning_box_->StyleRef(), unsnapped_positioning_area)
                 .Rect();
-        snapped_dest_adjust.SetLeft(LayoutUnit(inner_border_rect.x()) -
-                                    unsnapped_dest_rect_.X());
-        snapped_dest_adjust.SetTop(LayoutUnit(inner_border_rect.y()) -
-                                   unsnapped_dest_rect_.Y());
-        snapped_dest_adjust.SetRight(unsnapped_dest_rect_.Right() -
-                                     LayoutUnit(inner_border_rect.right()));
-        snapped_dest_adjust.SetBottom(unsnapped_dest_rect_.Bottom() -
-                                      LayoutUnit(inner_border_rect.bottom()));
+        snapped_dest_adjust.left =
+            LayoutUnit(inner_border_rect.x()) - unsnapped_dest_rect_.X();
+        snapped_dest_adjust.top =
+            LayoutUnit(inner_border_rect.y()) - unsnapped_dest_rect_.Y();
+        snapped_dest_adjust.right = unsnapped_dest_rect_.Right() -
+                                    LayoutUnit(inner_border_rect.right());
+        snapped_dest_adjust.bottom = unsnapped_dest_rect_.Bottom() -
+                                     LayoutUnit(inner_border_rect.bottom());
       }
       return;
     case EFillBox::kBorder: {
@@ -542,26 +446,26 @@ void BackgroundImageGeometry::ComputeDestRectAdjustments(
           RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
               positioning_box_->StyleRef(), unsnapped_positioning_area)
               .Rect();
-      LayoutRectOutsets box_outsets = positioning_box_->BorderBoxOutsets();
+      NGPhysicalBoxStrut box_outsets = positioning_box_->BorderBoxOutsets();
       if (edges[static_cast<unsigned>(BoxSide::kTop)].ObscuresBackground()) {
-        snapped_dest_adjust.SetTop(LayoutUnit(inner_border_rect.y()) -
-                                   unsnapped_dest_rect_.Y());
-        unsnapped_dest_adjust.SetTop(box_outsets.Top());
+        snapped_dest_adjust.top =
+            LayoutUnit(inner_border_rect.y()) - unsnapped_dest_rect_.Y();
+        unsnapped_dest_adjust.top = box_outsets.top;
       }
       if (edges[static_cast<unsigned>(BoxSide::kRight)].ObscuresBackground()) {
-        snapped_dest_adjust.SetRight(unsnapped_dest_rect_.Right() -
-                                     LayoutUnit(inner_border_rect.right()));
-        unsnapped_dest_adjust.SetRight(box_outsets.Right());
+        snapped_dest_adjust.right = unsnapped_dest_rect_.Right() -
+                                    LayoutUnit(inner_border_rect.right());
+        unsnapped_dest_adjust.right = box_outsets.right;
       }
       if (edges[static_cast<unsigned>(BoxSide::kBottom)].ObscuresBackground()) {
-        snapped_dest_adjust.SetBottom(unsnapped_dest_rect_.Bottom() -
-                                      LayoutUnit(inner_border_rect.bottom()));
-        unsnapped_dest_adjust.SetBottom(box_outsets.Bottom());
+        snapped_dest_adjust.bottom = unsnapped_dest_rect_.Bottom() -
+                                     LayoutUnit(inner_border_rect.bottom());
+        unsnapped_dest_adjust.bottom = box_outsets.bottom;
       }
       if (edges[static_cast<unsigned>(BoxSide::kLeft)].ObscuresBackground()) {
-        snapped_dest_adjust.SetLeft(LayoutUnit(inner_border_rect.x()) -
-                                    unsnapped_dest_rect_.X());
-        unsnapped_dest_adjust.SetLeft(box_outsets.Left());
+        snapped_dest_adjust.left =
+            LayoutUnit(inner_border_rect.x()) - unsnapped_dest_rect_.X();
+        unsnapped_dest_adjust.left = box_outsets.left;
       }
     }
       return;
@@ -574,8 +478,8 @@ void BackgroundImageGeometry::ComputePositioningAreaAdjustments(
     const FillLayer& fill_layer,
     const PhysicalRect& unsnapped_positioning_area,
     bool disallow_border_derived_adjustment,
-    LayoutRectOutsets& unsnapped_box_outset,
-    LayoutRectOutsets& snapped_box_outset) const {
+    NGPhysicalBoxStrut& unsnapped_box_outset,
+    NGPhysicalBoxStrut& snapped_box_outset) const {
   switch (fill_layer.Origin()) {
     case EFillBox::kContent:
       // If the PaddingOutsets are zero then this is equivalent to
@@ -604,19 +508,19 @@ void BackgroundImageGeometry::ComputePositioningAreaAdjustments(
             RoundedBorderGeometry::PixelSnappedRoundedInnerBorder(
                 positioning_box_->StyleRef(), unsnapped_positioning_area)
                 .Rect();
-        snapped_box_outset.SetLeft(LayoutUnit(inner_border_rect.x()) -
-                                   unsnapped_positioning_area.X());
-        snapped_box_outset.SetTop(LayoutUnit(inner_border_rect.y()) -
-                                  unsnapped_positioning_area.Y());
-        snapped_box_outset.SetRight(unsnapped_positioning_area.Right() -
-                                    LayoutUnit(inner_border_rect.right()));
-        snapped_box_outset.SetBottom(unsnapped_positioning_area.Bottom() -
-                                     LayoutUnit(inner_border_rect.bottom()));
+        snapped_box_outset.left =
+            LayoutUnit(inner_border_rect.x()) - unsnapped_positioning_area.X();
+        snapped_box_outset.top =
+            LayoutUnit(inner_border_rect.y()) - unsnapped_positioning_area.Y();
+        snapped_box_outset.right = unsnapped_positioning_area.Right() -
+                                   LayoutUnit(inner_border_rect.right());
+        snapped_box_outset.bottom = unsnapped_positioning_area.Bottom() -
+                                    LayoutUnit(inner_border_rect.bottom());
       }
       return;
     case EFillBox::kBorder:
       // All adjustments remain 0.
-      snapped_box_outset = unsnapped_box_outset = LayoutRectOutsets(0, 0, 0, 0);
+      snapped_box_outset = unsnapped_box_outset = NGPhysicalBoxStrut();
       return;
     case EFillBox::kText:
       return;
@@ -633,8 +537,7 @@ void BackgroundImageGeometry::ComputePositioningArea(
     PhysicalOffset& snapped_box_offset) {
   if (ShouldUseFixedAttachment(fill_layer)) {
     // No snapping for fixed attachment.
-    unsnapped_positioning_area =
-        FixedAttachmentPositioningArea(paint_info, *box_);
+    unsnapped_positioning_area = FixedAttachmentPositioningArea(paint_info);
     unsnapped_dest_rect_ = snapped_dest_rect_ = snapped_positioning_area =
         unsnapped_positioning_area;
   } else {
@@ -678,13 +581,13 @@ void BackgroundImageGeometry::ComputePositioningArea(
 
     // Compute all the outsets we need to apply to the rectangles. These
     // outsets also include the snapping behavior.
-    LayoutRectOutsets unsnapped_dest_adjust;
-    LayoutRectOutsets snapped_dest_adjust;
+    NGPhysicalBoxStrut unsnapped_dest_adjust;
+    NGPhysicalBoxStrut snapped_dest_adjust;
     ComputeDestRectAdjustments(fill_layer, unsnapped_positioning_area,
                                disallow_border_derived_adjustment,
                                unsnapped_dest_adjust, snapped_dest_adjust);
-    LayoutRectOutsets unsnapped_box_outset;
-    LayoutRectOutsets snapped_box_outset;
+    NGPhysicalBoxStrut unsnapped_box_outset;
+    NGPhysicalBoxStrut snapped_box_outset;
     ComputePositioningAreaAdjustments(fill_layer, unsnapped_positioning_area,
                                       disallow_border_derived_adjustment,
                                       unsnapped_box_outset, snapped_box_outset);
@@ -704,14 +607,13 @@ void BackgroundImageGeometry::ComputePositioningArea(
     unsnapped_positioning_area.Contract(unsnapped_box_outset);
     unsnapped_positioning_area.size.ClampNegativeToZero();
 
-    // Offset of the positioning area from the corner of the
-    // positioning_box_->
-    unsnapped_box_offset = PhysicalOffset(
-        unsnapped_box_outset.Left() - unsnapped_dest_adjust.Left(),
-        unsnapped_box_outset.Top() - unsnapped_dest_adjust.Top());
+    // Offset of the positioning area from the corner of positioning_box_.
+    unsnapped_box_offset =
+        PhysicalOffset(unsnapped_box_outset.left - unsnapped_dest_adjust.left,
+                       unsnapped_box_outset.top - unsnapped_dest_adjust.top);
     snapped_box_offset =
-        PhysicalOffset(snapped_box_outset.Left() - snapped_dest_adjust.Left(),
-                       snapped_box_outset.Top() - snapped_dest_adjust.Top());
+        PhysicalOffset(snapped_box_outset.left - snapped_dest_adjust.left,
+                       snapped_box_outset.top - snapped_dest_adjust.top);
   }
 }
 

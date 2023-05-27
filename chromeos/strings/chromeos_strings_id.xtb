@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">Merekam video</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Keberadaan DNS Resolver</translation>
+<translation id="1708602061922134366">Warna biru Google</translation>
 <translation id="1710499924611012470">Navigasi aksesibilitas</translation>
 <translation id="1715359911173058521">Terjadi error saat menghubungkan ke pemindai. Periksa koneksi jaringan atau USB, lalu coba lagi.</translation>
 <translation id="1717874160321062422">Dikelola oleh <ph name="FIRST_MANAGER" /> dan <ph name="SECOND_MANAGER" /></translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">Jenis autentikasi</translation>
+<translation id="1776228893584526149">Warna wallpaper</translation>
 <translation id="1782199038061388045">terjemahan</translation>
 <translation id="1790209694022261219">Jendela dan Desktop</translation>
 <translation id="1792647875738159689">Membatalkan pemindaian</translation>
@@ -123,6 +125,7 @@
 <translation id="1904932688895783618">Berikut beberapa referensi berguna lainnya:</translation>
 <translation id="1905710495812624430">Melebihi batas percobaan maksimum yang diizinkan.</translation>
 <translation id="1908234395526491708">Kegagalan permintaan UDP</translation>
+<translation id="1923388006036088459">Warna aksen</translation>
 <translation id="1947737735496445907">Tercetak</translation>
 <translation id="1951012854035635156">Asisten</translation>
 <translation id="1962550982027027473">APN default diperlukan</translation>
@@ -140,6 +143,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Setelan lain</translation>
 <translation id="2085089206770112532">Kurangi kecerahan layar</translation>
+<translation id="209751264101900360">Fajar ke petang - Aliran Awan</translation>
 <translation id="2102231663024125441">Pengeditan teks</translation>
 <translation id="2105810540595158374">Perangkat adalah pengontrol game.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versi <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +335,7 @@
 <translation id="3967822245660637423">Download selesai</translation>
 <translation id="3969602104473960991">Sandi ChromeOS diperbarui</translation>
 <translation id="397105322502079400">Menghitung...</translation>
+<translation id="3974175076798940554">Aset Chromebook Plus eksklusif kini tersedia</translation>
 <translation id="39823212440917567">Tugas pencetakan yang sudah lebih dari <ph name="NUMBER_OF_DAYS" /> hari akan dihapus</translation>
 <translation id="3993704782688964914"><ph name="DEVICE_NAME" /> Anda sekarang sudah diupdate</translation>
 <translation id="4003384961948020559">Gagal - Baki hasil cetak penuh</translation>
@@ -370,6 +375,7 @@
 <translation id="4275663329226226506">Media</translation>
 <translation id="4289540628985791613">Ringkasan</translation>
 <translation id="4289849978083912975">Slideshow</translation>
+<translation id="4293621540182258188">Fajar ke petang - Aliran Bumi</translation>
 <translation id="4297501883039923494">Dihentikan - Error tidak diketahui</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> Gambar</translation>
 <translation id="4311195029067684288">Penuh</translation>
@@ -479,6 +485,7 @@
 <translation id="5166918508782100047">Setelan jawaban instan</translation>
 <translation id="5168185087976003268">Kesehatan baterai</translation>
 <translation id="5170568018924773124">Tampilkan dalam folder</translation>
+<translation id="5180712487038406644">Ekspresif</translation>
 <translation id="5190187232518914472">Hidupkan kembali memori favorit Anda. Untuk menambahkan atau mengedit album, buka <ph name="LINK_BEGIN" />Google Foto<ph name="LINK_END" />.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Logout</translation>
@@ -513,6 +520,7 @@
 <translation id="5423849171846380976">Diaktifkan</translation>
 <translation id="5430931332414098647">Tethering Instan</translation>
 <translation id="5431318178759467895">Warna</translation>
+<translation id="5456936324019847994">Tidak dapat terhubung ke APN khusus yang diaktifkan. Hubungi operator seluler Anda untuk mengetahui informasi selengkapnya.</translation>
 <translation id="5457599981699367932">Login sebagai Tamu</translation>
 <translation id="54609108002486618">Terkelola</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} kesempatan lagi}other{{0} kesempatan lagi}}</translation>
@@ -544,6 +552,7 @@
 <translation id="576835345334454681">Tingkatkan kecerahan layar</translation>
 <translation id="57838592816432529">Bisukan</translation>
 <translation id="5784136236926853061">Latensi HTTP tinggi</translation>
+<translation id="5809090008577139505">Aurora</translation>
 <translation id="5826644637650799838">Tentang karya seni</translation>
 <translation id="5832805196449965646">Tambahkan Pengguna</translation>
 <translation id="583281660410589416">Tidak dikenal</translation>
@@ -562,10 +571,12 @@
 <translation id="5907649332524363701">warna tombol</translation>
 <translation id="5916084858004523819">Terlarang</translation>
 <translation id="5916664084637901428">Aktif</translation>
+<translation id="5918201491776799918">Pilih karya seni khusus Chromebook Plus</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{File Anda berhasil dipindai dan disimpan ke <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{File Anda berhasil dipindai dan disimpan ke <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">File tidak ditemukan</translation>
 <translation id="5939518447894949180">Reset</translation>
 <translation id="594552776027197022">Buat pasangan kunci acak</translation>
+<translation id="5946538341867151940">Anda belum terhubung. Jika operator seluler Anda merekomendasikan APN khusus, masukkan informasi APN dengan memilih "+ APN Baru"</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Wallpaper Default</translation>
 <translation id="6017514345406065928">Hijau</translation>
@@ -640,6 +651,7 @@
 <translation id="6527081081771465939">Protokol keamanan Wi-Fi tidak dikenal</translation>
 <translation id="6535178685492749208">Anda sedang offline. Masukan akan dikirim nanti.</translation>
 <translation id="65587193855025101">Flatbed</translation>
+<translation id="6560196641871357166">Warna cerah</translation>
 <translation id="6564646048574748301">Gagal - Printer tidak dapat dijangkau</translation>
 <translation id="6566314079205407217">Pemindaian multi-halaman</translation>
 <translation id="6574762126505704998">Isi</translation>
@@ -721,6 +733,7 @@
 <translation id="7281657306185710294">Rasakan angin sepoi-sepoi</translation>
 <translation id="7287310195820267359">Koleksi Wallpaper</translation>
 <translation id="7297226631177386107">Tidak dapat terhubung melewati firewall ke situs HTTPS</translation>
+<translation id="7297726121602187087">Hijau tua</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Tanya pakar di forum bantuan Chromebook</translation>
@@ -755,12 +768,14 @@
 <translation id="7570674786725311828">Layar sentuh USB</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> lagi</translation>
 <translation id="7613724632293948900">Ubah posisi dengan tombol mouse atau panah.</translation>
+<translation id="7618774594543487847">Netral</translation>
 <translation id="7620771111601174153">Pelajari lebih lanjut di Pusat Bantuan</translation>
 <translation id="763165478673169849">Waktu Reset Terakhir</translation>
 <translation id="7648838807254605802">Latensi HTTPS tinggi</translation>
 <translation id="7656388927906093505">Perangkat adalah mouse.</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7665800271478495366">Ubah avatar</translation>
+<translation id="7675241868020048622">Aurora (eksklusif Plus)</translation>
 <translation id="7690294790491645610">Konfirmasi sandi baru</translation>
 <translation id="7701040980221191251">Tidak ada</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +832,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Pilih <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Developer Tools</translation>
+<translation id="8153923300383192510">Khusus Chromebook Plus</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Lampirkan</translation>
 <translation id="8206859287963243715">Seluler</translation>
@@ -839,6 +855,7 @@
 <translation id="8352772353338965963">Tambahkan akun ke fitur masuk banyak akun. Semua akun yang masuk dapat diakses tanpa menggunakan sandi, sebaiknya hanya gunakan akun ini dengan akun tepercaya.</translation>
 <translation id="8364946094152050673">Server nama kosong</translation>
 <translation id="8372477600026034341">Host tambahan</translation>
+<translation id="8373046809163484087">Gunakan kumpulan warna yang cocok dengan wallpaper Anda</translation>
 <translation id="8380114448424469341">Kaitkan jendela di paruh <ph name="DIRECTION" /> layar</translation>
 <translation id="8395584934117017006"><ph name="DEVICE_TYPE" /> ini dikelola perusahaan</translation>
 <translation id="8398927464629426868">Kecepatan pengisian atau pemakaian daya perangkat saat ini</translation>
@@ -858,11 +875,13 @@
 <translation id="8503813439785031346">Nama Pengguna</translation>
 <translation id="8503836310948963452">Tinggal beberapa menit lagi...</translation>
 <translation id="8508640263392900755">Detail APN</translation>
+<translation id="8522687886059337719">Sekarang Anda memiliki akses ke <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />wallpaper<ph name="END_LINK_WALLPAPER_SUBPAGE" /> dan <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />screensaver<ph name="END_LINK_SCREENSAVER_SUBPAGE" /> baru</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Operator Anda mungkin memerlukan opsi ini untuk terhubung ke jaringan. Hubungi operator untuk mengetahui detailnya.</translation>
 <translation id="8576249514688522074">Tidak diinisialisasi</translation>
 <translation id="8620617069779373398">Status roaming</translation>
+<translation id="86356131183441916">Ungu muda</translation>
 <translation id="8655295600908251630">Saluran</translation>
 <translation id="8655828773034788261">Bagikan URL:</translation>
 <translation id="8660881923941176839">pound</translation>
@@ -947,6 +966,7 @@
 <translation id="945522503751344254">Kirim masukan</translation>
 <translation id="952992212772159698">Tidak diaktifkan</translation>
 <translation id="960719561871045870">Kode operator</translation>
+<translation id="979450713603643090">Merah muda terang</translation>
 <translation id="982713511914535780">Jalankan pengujian Pengosongan Daya Baterai</translation>
 <translation id="987264212798334818">Umum</translation>
 </translationbundle>

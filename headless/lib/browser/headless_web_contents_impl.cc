@@ -41,7 +41,6 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
-#include "headless/lib/browser/headless_devtools_agent_host_client.h"
 #include "headless/lib/browser/protocol/headless_handler.h"
 #include "printing/buildflags/buildflags.h"
 #include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
@@ -350,8 +349,6 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
 }
 
 HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
-  for (auto& observer : observers_)
-    observer.HeadlessWebContentsDestroyed();
   agent_host_->RemoveObserver(this);
   if (render_process_host_)
     render_process_host_->RemoveObserver(this);
@@ -359,23 +356,6 @@ HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
   // in the destructor of ui::Compositor.
   base::SequencedTaskRunner::GetCurrentDefault()->DeleteSoon(
       FROM_HERE, std::move(window_tree_host_));
-}
-
-void HeadlessWebContentsImpl::RenderFrameCreated(
-    content::RenderFrameHost* render_frame_host) {
-  browser_context_->SetDevToolsFrameToken(
-      render_frame_host->GetProcess()->GetID(),
-      render_frame_host->GetRoutingID(),
-      render_frame_host->GetDevToolsFrameToken(),
-      render_frame_host->GetFrameTreeNodeId());
-}
-
-void HeadlessWebContentsImpl::RenderFrameDeleted(
-    content::RenderFrameHost* render_frame_host) {
-  browser_context_->RemoveDevToolsFrameToken(
-      render_frame_host->GetProcess()->GetID(),
-      render_frame_host->GetRoutingID(),
-      render_frame_host->GetFrameTreeNodeId());
 }
 
 void HeadlessWebContentsImpl::RenderViewReady() {
@@ -388,27 +368,6 @@ void HeadlessWebContentsImpl::RenderViewReady() {
     observer.DevToolsTargetReady();
 
   devtools_target_ready_notification_sent_ = true;
-}
-
-int HeadlessWebContentsImpl::GetMainFrameRenderProcessId() const {
-  if (!web_contents() || !web_contents()->GetPrimaryMainFrame())
-    return -1;
-  return web_contents()->GetPrimaryMainFrame()->GetProcess()->GetID();
-}
-
-int HeadlessWebContentsImpl::GetMainFrameTreeNodeId() const {
-  if (!web_contents() || !web_contents()->GetPrimaryMainFrame())
-    return -1;
-  return web_contents()->GetPrimaryMainFrame()->GetFrameTreeNodeId();
-}
-
-std::string HeadlessWebContentsImpl::GetMainFrameDevToolsId() const {
-  if (!web_contents() || !web_contents()->GetPrimaryMainFrame())
-    return "";
-  return web_contents()
-      ->GetPrimaryMainFrame()
-      ->GetDevToolsFrameToken()
-      .ToString();
 }
 
 bool HeadlessWebContentsImpl::OpenURL(const GURL& url) {
@@ -440,23 +399,10 @@ void HeadlessWebContentsImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void HeadlessWebContentsImpl::DevToolsAgentHostAttached(
-    content::DevToolsAgentHost* agent_host) {
-  for (auto& observer : observers_)
-    observer.DevToolsClientAttached();
-}
-
-void HeadlessWebContentsImpl::DevToolsAgentHostDetached(
-    content::DevToolsAgentHost* agent_host) {
-  for (auto& observer : observers_)
-    observer.DevToolsClientDetached();
-}
-
 void HeadlessWebContentsImpl::RenderProcessExited(
     content::RenderProcessHost* host,
     const content::ChildProcessTerminationInfo& info) {
   DCHECK_EQ(render_process_host_, host);
-  render_process_exited_ = true;
   for (auto& observer : observers_)
     observer.RenderProcessExited(info.status, info.exit_code);
 }
@@ -466,30 +412,6 @@ void HeadlessWebContentsImpl::RenderProcessHostDestroyed(
   DCHECK_EQ(render_process_host_, host);
   render_process_host_->RemoveObserver(this);
   render_process_host_ = nullptr;
-}
-
-HeadlessDevToolsTarget* HeadlessWebContentsImpl::GetDevToolsTarget() {
-  return web_contents()->GetPrimaryMainFrame()->IsRenderFrameLive() ? this
-                                                                    : nullptr;
-}
-
-std::unique_ptr<HeadlessDevToolsChannel>
-HeadlessWebContentsImpl::CreateDevToolsChannel() {
-  DCHECK(agent_host_);
-  return std::make_unique<HeadlessDevToolsAgentHostClient>(agent_host_);
-}
-
-void HeadlessWebContentsImpl::AttachClient(HeadlessDevToolsClient* client) {
-  client->AttachToChannel(CreateDevToolsChannel());
-}
-
-void HeadlessWebContentsImpl::DetachClient(HeadlessDevToolsClient* client) {
-  client->DetachFromChannel();
-}
-
-bool HeadlessWebContentsImpl::IsAttached() {
-  DCHECK(agent_host_);
-  return agent_host_->IsAttached();
 }
 
 content::WebContents* HeadlessWebContentsImpl::web_contents() const {

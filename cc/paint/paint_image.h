@@ -20,6 +20,7 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkYUVAPixmaps.h"
+#include "third_party/skia/include/private/SkGainmapInfo.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -40,6 +41,28 @@ class PaintWorkletInput;
 class TextureBacking;
 
 enum class ImageType { kPNG, kJPEG, kWEBP, kGIF, kICO, kBMP, kAVIF, kInvalid };
+
+enum class AuxImage : size_t { kDefault = 0, kGainmap = 1 };
+static constexpr std::array<AuxImage, 2> kAllAuxImages = {AuxImage::kDefault,
+                                                          AuxImage::kGainmap};
+constexpr size_t AuxImageIndex(AuxImage aux_image) {
+  return static_cast<size_t>(aux_image);
+}
+static constexpr size_t kAuxImageCount = 2;
+static constexpr size_t kAuxImageIndexDefault =
+    AuxImageIndex(AuxImage::kDefault);
+static constexpr size_t kAuxImageIndexGainmap =
+    AuxImageIndex(AuxImage::kGainmap);
+constexpr const char* AuxImageName(AuxImage aux_image) {
+  switch (aux_image) {
+    case AuxImage::kDefault:
+      return "default";
+      break;
+    case AuxImage::kGainmap:
+      return "gainmap";
+      break;
+  }
+}
 
 enum class YUVSubsampling { k410, k411, k420, k422, k440, k444, kUnknown };
 
@@ -209,13 +232,15 @@ class CC_PAINT_EXPORT PaintImage {
   // guaranteed to be stable. That is,
   // GetSupportedDecodeSize(GetSupportedDecodeSize(size)) is guaranteed to be
   // GetSupportedDecodeSize(size).
-  SkISize GetSupportedDecodeSize(const SkISize& requested_size) const;
+  SkISize GetSupportedDecodeSize(const SkISize& requested_size,
+                                 AuxImage aux_image = AuxImage::kDefault) const;
 
   // Decode the image into RGBX into the pixels of the specified SkPixmap.
   // Returns true on success and false on failure. Note that for non-lazy images
   // this will do a copy or readback if the image is texture backed.
   bool Decode(SkPixmap pixmap,
               size_t frame_index,
+              AuxImage aux_image,
               GeneratorClientId client_id) const;
 
   // Decode the image into YUV into |pixmaps|.
@@ -227,6 +252,7 @@ class CC_PAINT_EXPORT PaintImage {
   //    needs a separate YUV frame buffer cache.
   bool DecodeYuv(const SkYUVAPixmaps& pixmaps,
                  size_t frame_index,
+                 AuxImage aux_image,
                  GeneratorClientId client_id) const;
 
   // Returns the SkImage associated with this PaintImage. If PaintImage is
@@ -247,7 +273,7 @@ class CC_PAINT_EXPORT PaintImage {
   gpu::Mailbox GetMailbox() const;
 
   Id stable_id() const { return id_; }
-  SkImageInfo GetSkImageInfo() const;
+  SkImageInfo GetSkImageInfo(AuxImage aux_image = AuxImage::kDefault) const;
   AnimationType animation_type() const { return animation_type_; }
   CompletionState completion_state() const { return completion_state_; }
   bool is_multipart() const { return is_multipart_; }
@@ -276,6 +302,10 @@ class CC_PAINT_EXPORT PaintImage {
   SkColorSpace* color_space() const {
     return paint_worklet_input_ ? nullptr : GetSkImageInfo().colorSpace();
   }
+  gfx::Size GetSize(AuxImage aux_image) const;
+  SkISize GetSkISize(AuxImage aux_image) const {
+    return GetSkImageInfo(aux_image).dimensions();
+  }
 
   gfx::ContentColorUsage GetContentColorUsage(bool* is_hlg = nullptr) const;
 
@@ -285,6 +315,7 @@ class CC_PAINT_EXPORT PaintImage {
   // SkPixmaps to pass DecodeYuv() and render with the correct YUV->RGB
   // transformation.
   bool IsYuv(const SkYUVAPixmapInfo::SupportedDataTypes& supported_data_types,
+             AuxImage aux_image,
              SkYUVAPixmapInfo* info = nullptr) const;
 
   // Get metadata associated with this image.
@@ -316,6 +347,15 @@ class CC_PAINT_EXPORT PaintImage {
   }
 
   bool IsOpaque() const;
+  bool HasGainmap() const {
+    DCHECK_EQ(gainmap_paint_image_generator_ != nullptr,
+              gainmap_info_.has_value());
+    return gainmap_paint_image_generator_.get();
+  }
+  const SkGainmapInfo& GetGainmapInfo() const {
+    DCHECK(HasGainmap());
+    return gainmap_info_.value();
+  }
 
   std::string ToString() const;
 
@@ -339,9 +379,6 @@ class CC_PAINT_EXPORT PaintImage {
   friend class PaintShader;
   friend class blink::VideoFrame;
 
-  bool DecodeFromGenerator(SkPixmap pixmap,
-                           size_t frame_index,
-                           GeneratorClientId client_id) const;
   bool DecodeFromSkImage(SkPixmap pixmap,
                          size_t frame_index,
                          GeneratorClientId client_id) const;
@@ -361,6 +398,9 @@ class CC_PAINT_EXPORT PaintImage {
   ContentId content_id_ = kInvalidContentId;
 
   sk_sp<PaintImageGenerator> paint_image_generator_;
+  sk_sp<PaintImageGenerator> gainmap_paint_image_generator_;
+  absl::optional<SkGainmapInfo> gainmap_info_;
+
   sk_sp<TextureBacking> texture_backing_;
 
   Id id_ = 0;

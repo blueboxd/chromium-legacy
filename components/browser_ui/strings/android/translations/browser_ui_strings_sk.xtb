@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Dekodér obrázkov</translation>
 <translation id="1785415724048343560">Odporúčané pre najlepší dojem</translation>
 <translation id="1818308510395330587">Fotoaparát zapnite aj v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />, aby mohla aplikácia <ph name="APP_NAME" /> používať RR.</translation>
-<translation id="1864927262126810325">Zdroj: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Súvisiacim webom sa zobrazuje vaša aktivita v skupine</translation>
 <translation id="1887786770086287077">Prístup k polohe je v tomto zariadení vypnutý. Zapnite ho v <ph name="BEGIN_LINK" />Nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="1915307458270490472">Zložiť</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Sťahovanie bolo dokončené <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Funkcie na niektorých weboch nemusia byť v režime inkognito k dispozícii</translation>
 <translation id="2442870161001914531">Vždy požadovať web pre počítače</translation>
+<translation id="2479148705183875116">Prejsť do Nastavení</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
 <translation id="2485422356828889247">Odinštalovať</translation>
 <translation id="2490684707762498678">Spravuje <ph name="APP_NAME" /></translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">E‑mailové adresy</translation>
 <translation id="2750481671343847896">Weby môžu zobrazovať výzvy na prihlásenie od služieb identity.</translation>
 <translation id="2822354292072154809">Naozaj chcete resetovať všetky povolenia webu pre <ph name="CHOSEN_OBJECT_NAME" />?</translation>
+<translation id="2850913818900871965">Požadovať zobrazenie v mobile</translation>
 <translation id="2870560284913253234">Web</translation>
 <translation id="2874939134665556319">Predchádzajúca skladba</translation>
 <translation id="2891975107962658722">Blokovanie ukladania údajov webom vo vašom zariadení</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Weby môžu pomocou súborov cookie zlepšovať vaše prostredie prehliadania, napríklad zabrániť odhláseniu alebo zapamätať si položky vo vašom nákupnom košíku</translation>
 <translation id="3165022941318558018">Povoľte webu používať súbory cookie tretej strany</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> uložených dát</translation>
-<translation id="3203366800380907218">Z webu</translation>
 <translation id="321187648315454507">Ak chcete povoliť aplikácii <ph name="APP_NAME" /> odosielať vám upozornenia, zapnite ich aj v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="3227137524299004712">Mikrofón</translation>
 <translation id="3248611290851046188">Tento web definuje záujmy, na základe ktorých vám môžu ostatné weby zobrazovať reklamy. Chrome poskytne tomuto webu aj vaše záujmy, aby vám mohol zobrazovať relevantnejšie reklamy.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Požadovať zobrazenie v počítači</translation>
 <translation id="5100237604440890931">Zbalená (rozbalíte ju kliknutím)</translation>
 <translation id="5123685120097942451">Karta inkognito</translation>
-<translation id="5134599672855298214">Požadovať zobrazenie v mobile (odporúčané)</translation>
 <translation id="5186036860380548585">Možnosť je k dispozícii v hornej časti obrazovky</translation>
 <translation id="5197729504361054390">Vybrané kontakty budú zdieľané s webom <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
 <translation id="5216942107514965959">Naposledy navštívený dnes</translation>

@@ -49,7 +49,7 @@
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
-#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/test/browser_task_environment.h"
 #include "crypto/sha2.h"
@@ -543,11 +543,11 @@ TEST_F(DeepScanningRequestAllFeaturesEnabledTest,
 
 class DeepScanningAPPRequestTest : public DeepScanningRequestTest {};
 
-TEST_F(DeepScanningAPPRequestTest, GeneratesCorrectRequestForAPP) {
+TEST_F(DeepScanningAPPRequestTest, GeneratesCorrectRequestForConsumer) {
   enterprise_connectors::AnalysisSettings settings;
   settings.tags = {{"malware", enterprise_connectors::TagSettings()}};
   DeepScanningRequest request(
-      &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_APP_PROMPT,
+      &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_CONSUMER_PROMPT,
       DownloadCheckResult::SAFE, base::DoNothing(),
       &download_protection_service_, std::move(settings));
   request.Start();

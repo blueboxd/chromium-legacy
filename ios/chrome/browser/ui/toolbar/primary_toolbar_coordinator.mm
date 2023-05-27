@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
+#import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/find_in_page_commands.h"
@@ -27,7 +28,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
-#import "ios/chrome/browser/ui/main/layout_guide_util.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/orchestrator/omnibox_focus_orchestrator.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_coordinator+subclassing.h"
@@ -55,8 +55,6 @@
 @property(nonatomic, strong) PrimaryToolbarMediator* primaryToolbarMediator;
 // Redefined as PrimaryToolbarViewController.
 @property(nonatomic, strong) PrimaryToolbarViewController* viewController;
-// The coordinator for the location bar in the toolbar.
-@property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
 // Orchestrator for the expansion animation.
 @property(nonatomic, strong) OmniboxFocusOrchestrator* orchestrator;
 // Whether the omnibox focusing should happen with animation.
@@ -69,8 +67,6 @@
 @implementation PrimaryToolbarCoordinator
 
 @dynamic viewController;
-@synthesize popupPresenterDelegate = _popupPresenterDelegate;
-@synthesize delegate = _delegate;
 
 #pragma mark - ChromeCoordinator
 
@@ -88,10 +84,6 @@
   self.primaryToolbarMediator = [[PrimaryToolbarMediator alloc]
       initWithWebStateList:self.browser->GetWebStateList()];
   self.primaryToolbarMediator.delegate = self;
-
-  // LocationBarCoordinator dispatches OmniboxCommands therefore Location Bar
-  // setup should be done before using OmniboxCommands handler (below).
-  [self setUpLocationBar];
 
   self.viewController = [[PrimaryToolbarViewController alloc] init];
   self.viewController.shouldHideOmniboxOnNTP =
@@ -135,7 +127,6 @@
   self.primaryToolbarMediator.delegate = nil;
   [self.primaryToolbarMediator disconnect];
   [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
-  [self.locationBarCoordinator stop];
   _fullscreenUIUpdater = nullptr;
   self.started = NO;
 }
@@ -148,14 +139,6 @@
 
 - (void)showPrerenderingAnimation {
   [self.viewController showPrerenderingAnimation];
-}
-
-- (BOOL)isOmniboxFirstResponder {
-  return [self.locationBarCoordinator isOmniboxFirstResponder];
-}
-
-- (BOOL)showingOmniboxPopup {
-  return [self.locationBarCoordinator showingOmniboxPopup];
 }
 
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
@@ -316,19 +299,6 @@
 - (void)resetToolbarAfterSideSwipeSnapshot {
   [super resetToolbarAfterSideSwipeSnapshot];
   [self.locationBarCoordinator.locationBarViewController.view setHidden:NO];
-}
-
-#pragma mark - Private
-
-// Sets the location bar up.
-- (void)setUpLocationBar {
-  self.locationBarCoordinator =
-      [[LocationBarCoordinator alloc] initWithBaseViewController:nil
-                                                         browser:self.browser];
-  self.locationBarCoordinator.delegate = self.delegate;
-  self.locationBarCoordinator.popupPresenterDelegate =
-      self.popupPresenterDelegate;
-  [self.locationBarCoordinator start];
 }
 
 @end

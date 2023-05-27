@@ -7,25 +7,49 @@
 
 #import <Foundation/Foundation.h>
 
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_image_data_source.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
 
-@class SnapshotCache;
+@protocol InactiveTabsCommands;
+@protocol InactiveTabsInfoConsumer;
+class PrefService;
+class SnapshotBrowserAgent;
+class SessionRestorationBrowserAgent;
 @protocol TabCollectionConsumer;
 class WebStateList;
 
+namespace sessions {
+class TabRestoreService;
+}  // namespace sessions
+
 // This mediator provides data to the Inactive Tabs grid and handles
 // interactions.
-@interface InactiveTabsMediator : NSObject <GridImageDataSource>
+@interface InactiveTabsMediator : NSObject <GridCommands>
 
-// Initializer with `consumer` as the receiver of `webStateList` updates.
-- (instancetype)initWithConsumer:(id<TabCollectionConsumer>)consumer
+// Initializer with:
+// `consumer` as the receiver of `webStateList` updates.
+// `prefService` the preference service from the application context.
+// `sessionRestorationAgent` the session restoration browser agent from the
+// inactive browser. `snapshotAgent` the snapshot browser agent from the
+// inactive browser. `tabRestoreService` the service that holds the recently
+// closed tabs.
+- (instancetype)initWithConsumer:
+                    (id<TabCollectionConsumer, InactiveTabsInfoConsumer>)
+                        consumer
+                  commandHandler:(id<InactiveTabsCommands>)commandHandler
                     webStateList:(WebStateList*)webStateList
-                   snapshotCache:(SnapshotCache*)snapshotCache
+                     prefService:(PrefService*)prefService
+         sessionRestorationAgent:
+             (SessionRestorationBrowserAgent*)sessionRestorationAgent
+                   snapshotAgent:(SnapshotBrowserAgent*)snapshotAgent
+               tabRestoreService:(sessions::TabRestoreService*)tabRestoreService
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
-// Tells the receiver to close the item with the `itemID` identifier.
-- (void)closeItemWithID:(NSString*)itemID;
+// Returns the number of items pushed to the consumer.
+- (NSInteger)numberOfItems;
+
+// Disconnects the mediator.
+- (void)disconnect;
 
 @end
 

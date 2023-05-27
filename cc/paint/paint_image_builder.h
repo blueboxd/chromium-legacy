@@ -33,6 +33,7 @@ class CC_PAINT_EXPORT PaintImageBuilder {
   static PaintImageBuilder WithProperties(PaintImage image);
 
   PaintImageBuilder(PaintImageBuilder&& other);
+  PaintImageBuilder& operator=(PaintImageBuilder&& other);
   ~PaintImageBuilder();
 
   PaintImageBuilder&& set_id(PaintImage::Id id) {
@@ -73,6 +74,15 @@ class CC_PAINT_EXPORT PaintImageBuilder {
   }
   PaintImageBuilder&& set_animation_type(PaintImage::AnimationType type) {
     paint_image_.animation_type_ = type;
+    return std::move(*this);
+  }
+  PaintImageBuilder&& set_gainmap_paint_image_generator(
+      sk_sp<PaintImageGenerator> generator,
+      const SkGainmapInfo& gainmap_info) {
+    // Setting SkGainmapInfo with no gainmap image is an error.
+    DCHECK(generator);
+    paint_image_.gainmap_paint_image_generator_ = std::move(generator);
+    paint_image_.gainmap_info_ = gainmap_info;
     return std::move(*this);
   }
   PaintImageBuilder&& set_completion_state(PaintImage::CompletionState state) {

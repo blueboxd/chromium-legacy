@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -129,39 +130,39 @@ class NetworkServiceBrowserTest : public ContentBrowserTest {
   NetworkServiceBrowserTest& operator=(const NetworkServiceBrowserTest&) =
       delete;
 
-  bool ExecuteScript(const std::string& script) {
-    bool xhr_result = false;
-    // The JS call will fail if disallowed because the process will be killed.
-    bool execute_result =
-        ExecuteScriptAndExtractBool(shell(), script, &xhr_result);
-    return xhr_result && execute_result;
-  }
-
-  bool FetchResource(const GURL& url, bool synchronous = false) {
+  bool FetchResource(const GURL& url,
+                     bool synchronous = false,
+                     bool expect_disallowed = false) {
     if (!url.is_valid())
       return false;
     std::string script = JsReplace(
         "var xhr = new XMLHttpRequest();"
         "xhr.open('GET', $1, $2);"
-        "xhr.onload = function (e) {"
-        "  if (xhr.readyState === 4) {"
-        "    window.domAutomationController.send(xhr.status === 200);"
+        "new Promise(resolve => {"
+        "  xhr.onload = function (e) {"
+        "    if (xhr.readyState === 4) {"
+        "      resolve(xhr.status === 200);"
+        "    }"
+        "  };"
+        "  xhr.onerror = function () {"
+        "    resolve(false);"
+        "  };"
+        "  try {"
+        "    xhr.send(null);"
+        "  } catch (error) {"
+        "    resolve(false);"
         "  }"
-        "};"
-        "xhr.onerror = function () {"
-        "  window.domAutomationController.send(false);"
-        "};"
-        "try {"
-        "  xhr.send(null);"
-        "} catch (error) {"
-        "  window.domAutomationController.send(false);"
-        "}",
+        "});",
         url, !synchronous);
-    return ExecuteScript(script);
+    // EvalJs assumes that the script executes successfully, so if we expect the
+    // JS to be disallowed, we must use ExecJs instead.
+    return expect_disallowed ? ExecJs(shell(), script)
+                             : EvalJs(shell(), script).ExtractBool();
   }
 
-  bool CheckCanLoadHttp() {
-    return FetchResource(embedded_test_server()->GetURL("/echo"));
+  bool CheckCanLoadHttp(bool expect_disallowed = false) {
+    return FetchResource(embedded_test_server()->GetURL("/echo"),
+                         /*synchronous=*/false, expect_disallowed);
   }
 
   void SetUpOnMainThread() override {
@@ -218,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, WebUIBindingsNoHttp) {
   EXPECT_TRUE(NavigateToURL(shell(), test_url));
   RenderProcessHostBadIpcMessageWaiter kill_waiter(
       shell()->web_contents()->GetPrimaryMainFrame()->GetProcess());
-  ASSERT_FALSE(CheckCanLoadHttp());
+  ASSERT_FALSE(CheckCanLoadHttp(/*expect_disallowed=*/true));
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
@@ -316,7 +317,9 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   EXPECT_GT(base::ComputeDirectorySize(GetCacheIndexDirectory()),
             directory_size);
 }
+#endif  // BUILDFLAG(IS_ANDROID)
 
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
 class NetworkConnectionObserver
     : public network::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
@@ -357,7 +360,24 @@ class NetworkConnectionObserver
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 
-IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
+class NetworkServiceConnectionTypeSyncedBrowserTest
+    : public NetworkServiceBrowserTest {
+ public:
+  NetworkServiceConnectionTypeSyncedBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+#if BUILDFLAG(IS_LINUX)
+        {net::features::kAddressTrackerLinuxIsProxied},
+#else
+        {},
+#endif
+        {features::kNetworkServiceInProcess});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(NetworkServiceConnectionTypeSyncedBrowserTest,
                        ConnectionTypeChangeSyncedToNetworkProcess) {
   NetworkConnectionObserver observer;
   net::NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
@@ -370,13 +390,21 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
   observer.WaitForConnectionType(
       network::mojom::ConnectionType::CONNECTION_ETHERNET);
 }
-#endif
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
 
-IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
+class NetworkServiceOutOfProcessBrowserTest : public NetworkServiceBrowserTest {
+ public:
+  NetworkServiceOutOfProcessBrowserTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        features::kNetworkServiceInProcess);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(NetworkServiceOutOfProcessBrowserTest,
                        MemoryPressureSentToNetworkProcess) {
-  if (IsInProcessNetworkService())
-    return;
-
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
   GetNetworkService()->BindTestInterfaceForTesting(
       network_service_test.BindNewPipeAndPassReceiver());
@@ -402,10 +430,7 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest,
 }
 
 // Verifies that sync XHRs don't hang if the network service crashes.
-IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncXHROnCrash) {
-  if (IsInProcessNetworkService())
-    return;
-
+IN_PROC_BROWSER_TEST_F(NetworkServiceOutOfProcessBrowserTest, SyncXHROnCrash) {
   net::EmbeddedTestServer http_server;
   http_server.AddDefaultHandlers(GetTestDataFilePath());
   http_server.RegisterRequestMonitor(base::BindLambdaForTesting(
@@ -426,10 +451,8 @@ IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncXHROnCrash) {
 }
 
 // Verifies that sync cookie calls don't hang if the network service crashes.
-IN_PROC_BROWSER_TEST_F(NetworkServiceBrowserTest, SyncCookieGetOnCrash) {
-  if (IsInProcessNetworkService())
-    return;
-
+IN_PROC_BROWSER_TEST_F(NetworkServiceOutOfProcessBrowserTest,
+                       SyncCookieGetOnCrash) {
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
   GetNetworkService()->BindTestInterfaceForTesting(
       network_service_test.BindNewPipeAndPassReceiver());

@@ -455,8 +455,8 @@ VideoImageReaderImageBacking::ProduceGLTexturePassthrough(
       manager, this, tracker, std::move(texture), GetDrDcLock());
 }
 
-std::unique_ptr<SkiaImageRepresentation>
-VideoImageReaderImageBacking::ProduceSkia(
+std::unique_ptr<SkiaGaneshImageRepresentation>
+VideoImageReaderImageBacking::ProduceSkiaGanesh(
     SharedImageManager* manager,
     MemoryTypeTracker* tracker,
     scoped_refptr<SharedContextState> context_state) {

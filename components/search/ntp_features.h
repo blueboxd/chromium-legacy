@@ -32,6 +32,7 @@ BASE_DECLARE_FEATURE(kRealboxMatchOmniboxTheme);
 BASE_DECLARE_FEATURE(kRealboxMatchSearchboxTheme);
 BASE_DECLARE_FEATURE(kRealboxRoundedCorners);
 BASE_DECLARE_FEATURE(kRealboxUseGoogleGIcon);
+BASE_DECLARE_FEATURE(kNtpAlphaBackgroundCollections);
 BASE_DECLARE_FEATURE(kNtpChromeCartModule);
 BASE_DECLARE_FEATURE(kNtpDriveModule);
 #if !defined(OFFICIAL_BUILD)
@@ -73,6 +74,7 @@ BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleCategories);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleLoad);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleMaxClusters);
 BASE_DECLARE_FEATURE(kNtpModulesHeaderIcon);
+BASE_DECLARE_FEATURE(kNtpChromeCartInHistoryClusterModule);
 
 // Parameter for controlling the luminosity difference for NTP elements on light
 // backgrounds.
@@ -114,9 +116,12 @@ extern const char kNtpDriveModuleCacheMaxAgeSParam[];
 // Parameter for communicating the experiment group of the Drive module
 // experiment.
 extern const char kNtpDriveModuleExperimentGroupParam[];
-// Parameter determining the fake data data to request to surface a particular
+// Parameter determining the fake data to request to surface a particular
 // visual layout.
 extern const char kNtpHistoryClustersModuleDataParam[];
+// Parameter determining the fake data to request to surface a particular
+// cart tile layout in history cluster module.
+extern const char kNtpChromeCartInHistoryClustersModuleDataParam[];
 // Parameter determining the type of middle slot promo data to render.
 extern const char kNtpMiddleSlotPromoDismissalParam[];
 // Parameter determining the modules that are eligigle for HATS.

@@ -187,7 +187,8 @@ void CacheStorage::OpenImpl(const String& cache_name,
               resolver->Resolve(MakeGarbageCollected<Cache>(
                   fetcher, blob_client_list, std::move(result->get_cache()),
                   resolver->GetExecutionContext()->GetTaskRunner(
-                      blink::TaskType::kMiscPlatformAPI)));
+                      blink::TaskType::kMiscPlatformAPI),
+                  resolver->GetExecutionContext()));
             }
           },
           WrapPersistent(scoped_fetcher_.Get()),
@@ -535,7 +536,8 @@ CacheStorage::CacheStorage(
     ExecutionContext* context,
     GlobalFetch::ScopedFetcher* fetcher,
     mojo::PendingRemote<mojom::blink::CacheStorage> pending_remote)
-    : ExecutionContextClient(context),
+    : ActiveScriptWrappable<CacheStorage>({}),
+      ExecutionContextClient(context),
       scoped_fetcher_(fetcher),
       blob_client_list_(MakeGarbageCollected<CacheStorageBlobClientList>()),
       cache_storage_remote_(context) {

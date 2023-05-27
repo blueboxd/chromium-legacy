@@ -7,10 +7,10 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
-#include "third_party/blink/renderer/core/page/named_pages_mapper.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -115,16 +115,9 @@ TEST_F(LayoutViewTest, NamedPages) {
   EXPECT_EQ(view->NamedPageAtIndex(7), AtomicString());
   EXPECT_EQ(view->NamedPageAtIndex(8), "yksi");
 
-  if (RuntimeEnabledFeatures::LayoutNGPrintingEnabled()) {
-    // LayoutNGPrinting doesn't provide a name for pages that don't exist.
-    EXPECT_EQ(view->NamedPageAtIndex(9), AtomicString());
-    EXPECT_EQ(view->NamedPageAtIndex(100), AtomicString());
-  } else {
-    // The legacy API, on the other hand, has no clue about how many pages we
-    // have, so it will just return the last page name, for good measure.
-    EXPECT_EQ(view->NamedPageAtIndex(9), "yksi");
-    EXPECT_EQ(view->NamedPageAtIndex(100), "yksi");
-  }
+  // We don't provide a name for pages that don't exist.
+  EXPECT_EQ(view->NamedPageAtIndex(9), AtomicString());
+  EXPECT_EQ(view->NamedPageAtIndex(100), AtomicString());
 }
 
 TEST_F(LayoutViewTest, NamedPagesAbsPos) {

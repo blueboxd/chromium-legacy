@@ -16,7 +16,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_shadow_root_init.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
-#include "third_party/blink/renderer/core/animation/css/css_scroll_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/cascade_layer.h"
 #include "third_party/blink/renderer/core/css/cascade_layer_map.h"
@@ -61,7 +60,6 @@
 #include "third_party/blink/renderer/core/html/html_style_element.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_custom_scrollbar_part.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/list_marker.h"
@@ -136,11 +134,6 @@ class StyleEngineTest : public PageTestBase {
 
   String GetListMarkerText(LayoutObject* list_item) {
     LayoutObject* marker = ListMarker::MarkerFromListItem(list_item);
-    if (auto* legacy_marker = DynamicTo<LayoutListMarker>(marker)) {
-      const CounterStyle& counter_style = legacy_marker->GetCounterStyle();
-      return counter_style.GetPrefix() + legacy_marker->GetText() +
-             counter_style.GetSuffix();
-    }
     return ListMarker::Get(marker)->GetTextChild(*marker).GetText();
   }
 
@@ -5980,7 +5973,7 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
     const CSSPropertyValueSet* set =
         css_test_helpers::ParseDeclarationBlock(css);
     ASSERT_TRUE(set);
-    EXPECT_EQ(9u, set->PropertyCount());
+    EXPECT_EQ(11u, set->PropertyCount());
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDuration));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimingFunction));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelay));
@@ -5990,6 +5983,8 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationPlayState));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationName));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimeline));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeStart));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeEnd));
   }
   {
     ScopedCSSScrollTimelineForTest scroll_timeline_enabled(true);
@@ -5997,7 +5992,7 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
     const CSSPropertyValueSet* set =
         css_test_helpers::ParseDeclarationBlock(css);
     ASSERT_TRUE(set);
-    EXPECT_EQ(10u, set->PropertyCount());
+    EXPECT_EQ(12u, set->PropertyCount());
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDuration));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimingFunction));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationDelayStart));
@@ -6008,6 +6003,8 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationPlayState));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationName));
     EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationTimeline));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeStart));
+    EXPECT_TRUE(set->HasProperty(CSSPropertyID::kAnimationRangeEnd));
   }
   // Note that the combination CSSScrollTimeline=false and
   // CSSAnimationDelayStartEnd=true is not supported, via 'depends_on'
@@ -6019,8 +6016,10 @@ TEST_F(StyleEngineTest, AnimationShorthandFlags) {
 TEST_F(StyleEngineTest, InitialStyle_Recalc) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
-      #target { background-color: green; }
-      #target:initial { background-color: red; }
+      #target {
+        background-color: green;
+        @initial { background-color: red; }
+      }
     </style>
     <div id="target"></div>
   )HTML");
@@ -6037,12 +6036,12 @@ TEST_F(StyleEngineTest, InitialStyle_Recalc) {
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(GetStyleEngine().StyleForElementCount() - before_count, 1u)
-      << "The style recalc should not do a separate :initial pass since the "
+      << "The style recalc should not do a separate @initial pass since the "
          "element already has a style";
   EXPECT_EQ(target->ComputedStyleRef().VisitedDependentColor(
                 GetCSSPropertyBackgroundColor()),
             green)
-      << "Make sure :initial does not match for the second pass";
+      << "Make sure @initial rules do not apply for the second pass";
   EXPECT_EQ(
       target->ComputedStyleRef().VisitedDependentColor(GetCSSPropertyColor()),
       lime)
@@ -6052,8 +6051,10 @@ TEST_F(StyleEngineTest, InitialStyle_Recalc) {
 TEST_F(StyleEngineTest, InitialStyle_FromDisplayNone) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
-      #target { background-color: green; }
-      #target:initial { background-color: red; }
+      #target {
+        background-color: green;
+        @initial { background-color: red; }
+      }
     </style>
     <div id="target" style="display:none"></div>
   )HTML");
@@ -6070,11 +6071,11 @@ TEST_F(StyleEngineTest, InitialStyle_FromDisplayNone) {
 
   EXPECT_EQ(GetStyleEngine().StyleForElementCount() - before_count, 2u)
       << "The style recalc needs to do two passes because the element was "
-         "display:none and :initial styles are matching";
+         "display:none and @initial styles are matching";
   EXPECT_EQ(target->ComputedStyleRef().VisitedDependentColor(
                 GetCSSPropertyBackgroundColor()),
             green)
-      << "Make sure :initial does not match for the second pass";
+      << "Make sure @initial do not apply for the second pass";
 }
 
 TEST_F(StyleEngineTest, InitialStyleCount_EnsureComputedStyle) {
@@ -6083,8 +6084,8 @@ TEST_F(StyleEngineTest, InitialStyleCount_EnsureComputedStyle) {
       #target {
         background-color: green;
         transition: background-color 100s step-end;
+        @initial { background-color: red; }
       }
-      #target:initial { background-color: red; }
     </style>
     <div id="target" style="display:none"></div>
   )HTML");
@@ -6103,12 +6104,12 @@ TEST_F(StyleEngineTest, InitialStyleCount_EnsureComputedStyle) {
   ASSERT_TRUE(none_style);
 
   EXPECT_EQ(GetStyleEngine().StyleForElementCount() - before_count, 1u)
-      << "No :initial pass for EnsureComputedStyle";
+      << "No @initial pass for EnsureComputedStyle";
 
   EXPECT_EQ(target->ComputedStyleRef().VisitedDependentColor(
                 GetCSSPropertyBackgroundColor()),
             green)
-      << "Transitions are not started and :initial does not apply in "
+      << "Transitions are not started and @initial does not apply in "
          "display:none";
 }
 

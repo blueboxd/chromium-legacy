@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -39,6 +38,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
+#include "skia/buildflags.h"
 #include "third_party/blink/public/common/switches.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gl/gl_switches.h"
@@ -220,6 +220,13 @@ const GpuFeatureData GetGpuFeatureData(
      DisableInfo::Problem(
          "WebGPU has been disabled via blocklist or the command line."),
      false},
+#if BUILDFLAG(ENABLE_SKIA_GRAPHITE)
+    {"skia_graphite",
+     SafeGetFeatureStatus(gpu_feature_info,
+                          gpu::GPU_FEATURE_TYPE_SKIA_GRAPHITE),
+     !base::FeatureList::IsEnabled(features::kSkiaGraphite),
+     DisableInfo::NotProblem(), false},
+#endif  // BUILDFLAG(ENABLE_SKIA_GRAPHITE)
   };
   DCHECK(index < std::size(kGpuFeatureData));
   *eof = (index == std::size(kGpuFeatureData) - 1);
@@ -285,8 +292,9 @@ base::Value GetFeatureStatusImpl(GpuFeatureInfoType type) {
       if (gpu_feature_data.name == "multiple_raster_threads") {
         const base::CommandLine& command_line =
             *base::CommandLine::ForCurrentProcess();
-        if (command_line.HasSwitch(blink::switches::kNumRasterThreads))
+        if (command_line.HasSwitch(cc::switches::kNumRasterThreads)) {
           status += "_force";
+        }
         status += "_on";
       }
       if (gpu_feature_data.name == "opengl" ||
@@ -423,17 +431,16 @@ int NumberOfRendererRasterThreads() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-  if (command_line.HasSwitch(blink::switches::kNumRasterThreads)) {
+  if (command_line.HasSwitch(cc::switches::kNumRasterThreads)) {
     std::string string_value =
-        command_line.GetSwitchValueASCII(blink::switches::kNumRasterThreads);
+        command_line.GetSwitchValueASCII(cc::switches::kNumRasterThreads);
     if (!base::StringToInt(string_value, &num_raster_threads)) {
       DLOG(WARNING) << "Failed to parse switch "
-                    << blink::switches::kNumRasterThreads << ": "
-                    << string_value;
+                    << cc::switches::kNumRasterThreads << ": " << string_value;
     }
   }
 
-  return base::clamp(num_raster_threads, kMinRasterThreads, kMaxRasterThreads);
+  return std::clamp(num_raster_threads, kMinRasterThreads, kMaxRasterThreads);
 }
 
 bool IsZeroCopyUploadEnabled() {

@@ -7,7 +7,6 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_clock.h"
-#include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
 
@@ -25,24 +24,7 @@ ACTION_P(QuitMessageLoop, loop) {
 PersonalDataLoadedObserverMock::PersonalDataLoadedObserverMock() = default;
 PersonalDataLoadedObserverMock::~PersonalDataLoadedObserverMock() = default;
 
-// static
-std::vector<base::test::FeatureRef>
-PersonalDataManagerTestBase::GetDefaultEnabledFeatures() {
-  // Enable account storage by default, some tests will override this to be
-  // false.
-  return {features::kAutofillEnableAccountWalletStorage};
-}
-
-PersonalDataManagerTestBase::PersonalDataManagerTestBase(
-    const std::vector<base::test::FeatureRef>& additional_enabled_features)
-    : identity_test_env_(&test_url_loader_factory_) {
-  std::vector<base::test::FeatureRef> all_enabled_features(
-      PersonalDataManagerTestBase::GetDefaultEnabledFeatures());
-  base::ranges::copy(additional_enabled_features,
-                     std::back_inserter(all_enabled_features));
-  scoped_features_.InitWithFeatures(all_enabled_features,
-                                    /*disabled_features=*/{});
-}
+PersonalDataManagerTestBase::PersonalDataManagerTestBase() = default;
 
 PersonalDataManagerTestBase::~PersonalDataManagerTestBase() = default;
 
@@ -93,17 +75,6 @@ void PersonalDataManagerTestBase::ResetPersonalDataManager(
     bool is_incognito,
     bool use_sync_transport_mode,
     PersonalDataManager* personal_data) {
-  personal_data->Init(
-      scoped_refptr<AutofillWebDataService>(profile_database_service_),
-      base::FeatureList::IsEnabled(
-          features::kAutofillEnableAccountWalletStorage)
-          ? scoped_refptr<AutofillWebDataService>(account_database_service_)
-          : nullptr,
-      prefs_.get(), prefs_.get(), identity_test_env_.identity_manager(),
-      /*history_service=*/nullptr, strike_database_.get(),
-      /*image_fetcher=*/nullptr, is_incognito);
-
-  personal_data->AddObserver(&personal_data_observer_);
   std::string email = use_sync_transport_mode ? kSyncTransportAccountEmail
                                               : kPrimaryAccountEmail;
   // Set the account in both IdentityManager and SyncService.
@@ -129,7 +100,14 @@ void PersonalDataManagerTestBase::ResetPersonalDataManager(
 #endif
   sync_service_.SetAccountInfo(account_info);
   sync_service_.SetHasSyncConsent(!use_sync_transport_mode);
-  personal_data->OnSyncServiceInitialized(&sync_service_);
+
+  personal_data->Init(
+      profile_database_service_, account_database_service_, prefs_.get(),
+      prefs_.get(), identity_test_env_.identity_manager(),
+      /*history_service=*/nullptr, &sync_service_, strike_database_.get(),
+      /*image_fetcher=*/nullptr, is_incognito);
+
+  personal_data->AddObserver(&personal_data_observer_);
   personal_data->OnStateChanged(&sync_service_);
 
   WaitForOnPersonalDataChangedRepeatedly();

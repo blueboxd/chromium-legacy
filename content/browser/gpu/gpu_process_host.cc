@@ -14,7 +14,6 @@
 #include "base/base64.h"
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -89,7 +88,9 @@
 #include "ui/latency/janky_duration_tracker.h"
 #include "ui/latency/latency_info.h"
 
-#if !BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/application_status_listener.h"
+#else
 #include "components/metrics/stability_metrics_helper.h"
 #endif
 
@@ -144,7 +145,6 @@ const char* GetProcessLifetimeUmaName(gpu::GpuMode gpu_mode) {
       NOTREACHED();
       return nullptr;
     case gpu::GpuMode::HARDWARE_GL:
-    case gpu::GpuMode::HARDWARE_METAL:
     case gpu::GpuMode::HARDWARE_VULKAN:
       return kProcessLifetimeEventsHardwareAccelerated;
     case gpu::GpuMode::SWIFTSHADER:
@@ -759,7 +759,7 @@ GpuProcessHost::~GpuProcessHost() {
       UMA_HISTOGRAM_ENUMERATION("GPU.GPUProcessTerminationStatus2",
                                 ConvertToGpuTerminationStatus(info.status),
                                 GpuTerminationStatus::MAX_ENUM);
-      int exit_code = base::clamp(info.exit_code, 0, 100);
+      int exit_code = std::clamp(info.exit_code, 0, 100);
 #if !BUILDFLAG(IS_ANDROID)
       if (info.status != base::TERMINATION_STATUS_NORMAL_TERMINATION &&
           info.status != base::TERMINATION_STATUS_STILL_RUNNING &&
@@ -1280,18 +1280,33 @@ void GpuProcessHost::SendOutstandingReplies() {
     gpu_host_->SendOutstandingReplies();
 }
 
-void GpuProcessHost::RecordProcessCrash() {
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+int GpuProcessHost::GetFallbackCrashLimit() const {
+#if BUILDFLAG(IS_ANDROID)
+  // If there is fallback (so it doesn't crash the browser) and app is
+  // foreground (meaning crash is less liekly to be due to android OS
+  // killing the GPU process arbitrarily to free memory), then use the normal
+  // limit.
+  if (GpuDataManagerImpl::GetInstance()->CanFallback() &&
+      base::android::ApplicationStatusListener::HasVisibleActivities()) {
+    return 3;
+  } else {
+    // Otherwise use a larger maximum crash count limit here to account for
+    // Android OS killing the GPU process arbitrarily and fallback may crash the
+    // browser process.
+    return 6;
+  }
+#elif BUILDFLAG(IS_CHROMEOS)
+  // Chrome OS does not use software compositing and fallback crashes the
+  // browser process. So use larger maximum crash count limit.
+  return 6;
+#else
   // Maximum number of times the GPU process can crash before we try something
   // different, like disabling hardware acceleration or all GL.
-  constexpr int kGpuFallbackCrashCount = 3;
-#else
-  // Android and Chrome OS switch to software compositing and fallback crashes
-  // the browser process. For Android the OS can also kill the GPU process
-  // arbitrarily. Use a larger maximum crash count here.
-  constexpr int kGpuFallbackCrashCount = 6;
+  return 3;
 #endif
+}
 
+void GpuProcessHost::RecordProcessCrash() {
   // Ending only acts as a failure if the GPU process was actually started and
   // was intended for actual rendering (and not just checking caps or other
   // options).
@@ -1321,8 +1336,9 @@ void GpuProcessHost::RecordProcessCrash() {
 
   // GPU process crashed too many times, fallback on a different GPU process
   // mode.
-  if (recent_crash_count_ >= kGpuFallbackCrashCount && !disable_crash_limit)
+  if (recent_crash_count_ >= GetFallbackCrashLimit() && !disable_crash_limit) {
     GpuDataManagerImpl::GetInstance()->FallBackToNextGpuMode();
+  }
 }
 
 viz::mojom::GpuService* GpuProcessHost::gpu_service() {

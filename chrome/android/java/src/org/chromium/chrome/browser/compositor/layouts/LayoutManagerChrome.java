@@ -8,12 +8,10 @@ import android.content.Context;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
-import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
@@ -33,7 +31,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate;
-import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
+import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegateProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
@@ -99,7 +97,6 @@ public class LayoutManagerChrome
      *         otherwise will use the accessibility overview layout.
      * @param tabContentManagerSupplier Supplier of the {@link TabContentManager} instance.
      * @param topUiThemeColorProvider {@link ThemeColorProvider} for top UI.
-     * @param jankTracker Tracker for surface jank.
      * @param tabSwitcherScrimAnchor {@link ViewGroup} used by tab switcher layout to show scrim
      *         when overview is visible.
      * @param scrimCoordinator {@link ScrimCoordinator} to show/hide scrim.
@@ -107,7 +104,7 @@ public class LayoutManagerChrome
     public LayoutManagerChrome(LayoutManagerHost host, ViewGroup contentContainer,
             Supplier<StartSurface> startSurfaceSupplier, Supplier<TabSwitcher> tabSwitcherSupplier,
             ObservableSupplier<TabContentManager> tabContentManagerSupplier,
-            Supplier<TopUiThemeColorProvider> topUiThemeColorProvider, JankTracker jankTracker,
+            Supplier<TopUiThemeColorProvider> topUiThemeColorProvider,
             ViewGroup tabSwitcherScrimAnchor, ScrimCoordinator scrimCoordinator) {
         super(host, contentContainer, tabContentManagerSupplier, topUiThemeColorProvider);
 
@@ -136,11 +133,11 @@ public class LayoutManagerChrome
         if (ReturnToChromeUtil.isStartSurfaceRefactorEnabled(context)) {
             if (startSurfaceSupplier.hasValue() || tabSwitcherSupplier.hasValue()) {
                 createOverviewLayout(startSurfaceSupplier.get(), tabSwitcherSupplier.get(),
-                        jankTracker, scrimCoordinator, tabSwitcherScrimAnchor);
+                        scrimCoordinator, tabSwitcherScrimAnchor);
             }
         } else if (startSurfaceSupplier.hasValue()) {
-            createOverviewLayout(startSurfaceSupplier.get(), /*tabSwitcher=*/null, jankTracker,
-                    scrimCoordinator, tabSwitcherScrimAnchor);
+            createOverviewLayout(startSurfaceSupplier.get(), /*tabSwitcher=*/null, scrimCoordinator,
+                    tabSwitcherScrimAnchor);
         }
     }
 
@@ -150,13 +147,12 @@ public class LayoutManagerChrome
      *         is disabled.
      * @param tabSwitcher An interface to talk to the Grid Tab Switcher when Start surface refactor
      *         is enabled.
-     * @param jankTracker Jank tracker.
      * @param scrimCoordinator scrim coordinator for GTS
      * @param tabSwitcherScrimAnchor scrim anchor view for GTS
      */
     protected void createOverviewLayout(@Nullable StartSurface startSurface,
-            @Nullable TabSwitcher tabSwitcher, @NonNull JankTracker jankTracker,
-            ScrimCoordinator scrimCoordinator, ViewGroup tabSwitcherScrimAnchor) {
+            @Nullable TabSwitcher tabSwitcher, ScrimCoordinator scrimCoordinator,
+            ViewGroup tabSwitcherScrimAnchor) {
         assert mOverviewLayout == null && mTabSwitcherLayout == null
                 && mStartSurfaceHomeLayout == null
                 && TabUiFeatureUtilities.isGridTabSwitcherEnabled(mHost.getContext());
@@ -168,11 +164,12 @@ public class LayoutManagerChrome
 
         if (isRefactorEnabled) {
             assert tabSwitcher != null;
-            TabManagementDelegate tabManagementDelegate = TabManagementModuleProvider.getDelegate();
+            TabManagementDelegate tabManagementDelegate =
+                    TabManagementDelegateProvider.getDelegate();
             assert tabManagementDelegate != null;
 
             mTabSwitcherLayout = tabManagementDelegate.createTabSwitcherLayout(context, this,
-                    renderHost, tabSwitcher, jankTracker, tabSwitcherScrimAnchor, scrimCoordinator);
+                    renderHost, tabSwitcher, tabSwitcherScrimAnchor, scrimCoordinator);
 
             if (startSurface != null) {
                 mStartSurfaceHomeLayout = StartSurfaceDelegate.createStartSurfaceHomeLayout(
@@ -181,8 +178,7 @@ public class LayoutManagerChrome
         } else {
             assert startSurface != null;
             mOverviewLayout = StartSurfaceDelegate.createTabSwitcherAndStartSurfaceLayout(context,
-                    this, renderHost, startSurface, jankTracker, tabSwitcherScrimAnchor,
-                    scrimCoordinator);
+                    this, renderHost, startSurface, tabSwitcherScrimAnchor, scrimCoordinator);
         }
 
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(mHost.getContext())) {
@@ -538,7 +534,7 @@ public class LayoutManagerChrome
             mScrollDirection = computeScrollDirection(dx, dy);
             if (mScrollDirection == ScrollDirection.UNKNOWN) return;
 
-            if (mSupportSwipeDown && (mOverviewLayout != null || mTabSwitcherLayout != null)
+            if (mSupportSwipeDown && isTabSwitcherReady()
                     && mScrollDirection == ScrollDirection.DOWN) {
                 RecordUserAction.record("MobileToolbarSwipeOpenStackView");
                 showLayout(LayoutType.TAB_SWITCHER, true);
@@ -603,10 +599,19 @@ public class LayoutManagerChrome
 
             if (direction == ScrollDirection.DOWN) {
                 boolean isAccessibility = ChromeAccessibilityUtil.get().isAccessibilityEnabled();
-                return (mOverviewLayout != null || mTabSwitcherLayout != null) && !isAccessibility;
+                return isTabSwitcherReady() && !isAccessibility;
             }
 
             return direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT;
+        }
+
+        /**
+         * @return Whether or not we are ready to show the GTS layout.
+         */
+        private boolean isTabSwitcherReady() {
+            // On tablets, attempting to show the GTS while it's null will trigger its creation.
+            return mOverviewLayout != null || mTabSwitcherLayout != null
+                    || DeviceFormFactor.isNonMultiDisplayContextOnTablet(mHost.getContext());
         }
     }
 

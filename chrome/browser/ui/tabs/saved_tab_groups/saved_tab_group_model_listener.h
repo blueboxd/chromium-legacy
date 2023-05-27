@@ -19,13 +19,6 @@ class SavedTabGroupModel;
 class TabStripModel;
 class Profile;
 
-struct TabGroupIdHash {
- public:
-  size_t operator()(const tab_groups::TabGroupId& group_id) const {
-    return base::TokenHash()(group_id.token());
-  }
-};
-
 // Serves to maintain and listen to browsers who contain saved tab groups and
 // update the model if a saved tab group was changed.
 class SavedTabGroupModelListener : public BrowserListObserver,
@@ -40,13 +33,17 @@ class SavedTabGroupModelListener : public BrowserListObserver,
       const SavedTabGroupModelListener& other) = delete;
   ~SavedTabGroupModelListener() override;
 
-  Browser* GetBrowserWithTabGroupId(tab_groups::TabGroupId group_id) const;
+  // Start ignoring tab added/removed notifications that pertain to this group.
+  void PauseTrackingLocalTabGroup(const tab_groups::TabGroupId& group_id);
+
+  // Stop ignoring tab added/removed notifications that pertain to this group.
+  void ResumeTrackingLocalTabGroup(const tab_groups::TabGroupId& group_id);
 
   // Start keeping `saved_tab_group` up to date with changes to its
   // corresponding local group.
   void ConnectToLocalTabGroup(
       const SavedTabGroup& saved_tab_group,
-      std::vector<std::pair<content::WebContents*, base::GUID>> mapping);
+      std::vector<std::pair<content::WebContents*, base::Uuid>> mapping);
 
   // Stop updating the saved group corresponding to the local group with id
   // `tab_group_id` when the local group changes.
@@ -66,7 +63,7 @@ class SavedTabGroupModelListener : public BrowserListObserver,
   // Testing Accessors.
   std::unordered_map<tab_groups::TabGroupId,
                      LocalTabGroupListener,
-                     TabGroupIdHash>&
+                     tab_groups::TabGroupIdHash>&
   GetLocalTabGroupListenerMapForTesting() {
     return local_tab_group_listeners_;
   }
@@ -75,10 +72,13 @@ class SavedTabGroupModelListener : public BrowserListObserver,
   // The LocalTabGroupListeners for each saved tab group that's currently open.
   std::unordered_map<tab_groups::TabGroupId,
                      LocalTabGroupListener,
-                     TabGroupIdHash>
+                     tab_groups::TabGroupIdHash>
       local_tab_group_listeners_;
   raw_ptr<SavedTabGroupModel> model_ = nullptr;
   raw_ptr<Profile> profile_;
+
+  // Use to prevent double-observation. See https://crbug.com/1426389.
+  std::unordered_set<Browser*> observed_browsers_;
 };
 
 #endif  // CHROME_BROWSER_UI_TABS_SAVED_TAB_GROUPS_SAVED_TAB_GROUP_MODEL_LISTENER_H_

@@ -228,11 +228,11 @@ ContrastInfo InspectorContrast::GetContrast(Element* top_element) {
   Color text_color =
       static_cast<const cssvalue::CSSColor*>(text_color_value)->Value();
 
-  text_color = text_color.CombineWithAlpha(text_opacity);
+  text_color.SetAlpha(text_opacity * text_color.FloatAlpha());
 
   float contrast_ratio = color_utils::GetContrastRatio(
-      bgcolors.at(0).Blend(text_color).ToSkColorDeprecated(),
-      bgcolors.at(0).ToSkColorDeprecated());
+      bgcolors.at(0).Blend(text_color).toSkColor4f(),
+      bgcolors.at(0).toSkColor4f());
 
   auto text_info = GetTextInfo(top_element);
   bool is_large_font = IsLargeFont(text_info);
@@ -338,8 +338,8 @@ bool InspectorContrast::GetColorsFromRect(PhysicalRect rect,
 
     // Opacity applies to the entire element so mix it with the alpha channel.
     if (style->HasOpacity()) {
-      background_color = background_color.CombineWithAlpha(
-          background_color.Alpha() / 255 * style->Opacity());
+      background_color.SetAlpha(background_color.FloatAlpha() *
+                                style->Opacity());
       // If the background element is the ancestor of the top element or is the
       // top element, the opacity affects the text color of the top element.
       if (element == top_element ||

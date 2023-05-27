@@ -17,7 +17,6 @@ class AXSerializableTree;
 class AXTreeObserver;
 }  // namespace ui
 
-class ReadAnythingAppControllerTest;
 // A class that holds state for the ReadAnythingAppController for the Read
 // Anything WebUI app.
 class ReadAnythingAppModel {
@@ -27,6 +26,7 @@ class ReadAnythingAppModel {
   ReadAnythingAppModel(const ReadAnythingAppModel& other) = delete;
   ReadAnythingAppModel& operator=(const ReadAnythingAppModel&) = delete;
 
+  // TODO(b/1266555): Ensure there is proper test coverage for all methods.
   // Theme
   const std::string& font_name() const { return font_name_; }
   float font_size() const { return font_size_; }
@@ -49,15 +49,6 @@ class ReadAnythingAppModel {
   }
   const ui::AXTreeID& active_tree_id() const { return active_tree_id_; }
 
-  void SetDistillationInProgress(bool distillation) {
-    distillation_in_progress_ = distillation;
-  }
-  void SetLoading(bool loading) { loading_ = loading; }
-  void SetActiveUkmSourceId(ukm::SourceId source_id) {
-    active_ukm_source_id_ = source_id;
-  }
-  void SetActiveTreeId(ui::AXTreeID tree_id) { active_tree_id_ = tree_id; }
-
   const std::vector<ui::AXNodeID>& content_node_ids() const {
     return content_node_ids_;
   }
@@ -68,16 +59,35 @@ class ReadAnythingAppModel {
     return selection_node_ids_;
   }
 
+  void SetDistillationInProgress(bool distillation) {
+    distillation_in_progress_ = distillation;
+  }
+  void SetLoading(bool loading) { loading_ = loading; }
+  void SetActiveUkmSourceId(ukm::SourceId source_id) {
+    active_ukm_source_id_ = source_id;
+  }
+  void SetActiveTreeId(ui::AXTreeID tree_id) { active_tree_id_ = tree_id; }
+
   ui::AXNode* GetAXNode(ui::AXNodeID ax_node_id) const;
   bool IsNodeIgnoredForReadAnything(ui::AXNodeID ax_node_id) const;
   bool NodeIsContentNode(ui::AXNodeID ax_node_id) const;
   void OnThemeChanged(read_anything::mojom::ReadAnythingThemePtr new_theme);
 
-  void InsertDisplayNode(ui::AXNodeID node);
-  void InsertSelectionNode(ui::AXNodeID node);
   void Reset(const std::vector<ui::AXNodeID>& content_node_ids);
-  void UpdateSelection();
-  bool SelectionInsideDisplayNodes();
+  bool PostProcessSelection();
+  // Helper functions for the rendering algorithm. Post-process the AXTree and
+  // cache values before sending an `updateContent` notification to the Read
+  // Anything app.ts.
+  // ComputeDisplayNodeIdsForDistilledTree computes display nodes from the
+  // content nodes. These display nodes will be displayed in Read Anything
+  // app.ts by default.
+  // ComputeSelectionNodeIds computes selection nodes from
+  // the user's selection. The selection nodes list is only populated when the
+  // user's selection contains nodes outside of the display nodes list. By
+  // keeping two separate lists of nodes, we can switch back to displaying the
+  // default distilled content without recomputing the nodes when the user
+  // clears their selection or selects content inside the distilled content.
+  void ComputeDisplayNodeIdsForDistilledTree();
 
   const std::unique_ptr<ui::AXSerializableTree>& GetTreeFromId(
       ui::AXTreeID tree_id) const;
@@ -85,8 +95,6 @@ class ReadAnythingAppModel {
                std::unique_ptr<ui::AXSerializableTree> tree);
 
   bool ContainsTree(ui::AXTreeID tree_id) const;
-
-  void EraseTree(ui::AXTreeID tree_id);
 
   void UnserializePendingUpdates(ui::AXTreeID tree_id);
 
@@ -96,14 +104,30 @@ class ReadAnythingAppModel {
                                   const std::vector<ui::AXTreeUpdate>& updates,
                                   ui::AXTreeObserver* tree_observer);
 
+  void OnAXTreeDestroyed(const ui::AXTreeID& tree_id);
+
+  std::map<ui::AXTreeID, std::vector<ui::AXTreeUpdate>>&
+  GetPendingUpdatesForTesting();
+
+  std::map<ui::AXTreeID, std::unique_ptr<ui::AXSerializableTree>>*
+  GetTreesForTesting();
+
+  void EraseTreeForTesting(ui::AXTreeID tree_id);
+
  private:
-  friend ReadAnythingAppControllerTest;
+  void EraseTree(ui::AXTreeID tree_id);
+
   double GetLetterSpacingValue(
       read_anything::mojom::LetterSpacing letter_spacing) const;
   double GetLineSpacingValue(
       read_anything::mojom::LineSpacing line_spacing) const;
 
+  void InsertDisplayNode(ui::AXNodeID node);
   void ResetSelection();
+  void InsertSelectionNode(ui::AXNodeID node);
+  void UpdateSelection();
+  void ComputeSelectionNodeIds();
+  bool SelectionInsideDisplayNodes();
 
   void AddPendingUpdates(const ui::AXTreeID tree_id,
                          const std::vector<ui::AXTreeUpdate>& updates);

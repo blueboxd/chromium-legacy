@@ -71,6 +71,10 @@ std::string SanitizeUrl(const std::string& url) {
 
 void MaybeLogDocumentMetrics(const std::string& request_data,
                              DownloadCheckResultReason reason) {
+  if (request_data.empty()) {
+    return;
+  }
+
   ClientDownloadRequest request;
   if (!request.ParseFromString(request_data))
     return;
@@ -434,10 +438,8 @@ void CheckClientDownloadRequestBase::SendRequest() {
               "from dangerous sites' under Privacy. This feature is enabled by "
               "default."
             chrome_policy {
-              subProto1 {
-                RealTimeDownloadProtectionRequestAllowed {
-                  RealTimeDownloadProtectionRequestAllowed: false
-                }
+              RealTimeDownloadProtectionRequestAllowed {
+                RealTimeDownloadProtectionRequestAllowed: false
               }
             }
             chrome_policy {
@@ -577,7 +579,9 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
         ShouldPromptForDeepScanning(response.request_deep_scan());
     if (should_prompt) {
       result = DownloadCheckResult::PROMPT_FOR_SCANNING;
-      reason = DownloadCheckResultReason::REASON_ADVANCED_PROTECTION_PROMPT;
+      reason = DownloadCheckResultReason::REASON_DEEP_SCAN_PROMPT;
+      base::UmaHistogramEnumeration("SBClientDownload.DeepScanEvent",
+                                    DeepScanEvent::kPromptShown);
     }
 
     // Only record the UMA metric if we're in a population that potentially

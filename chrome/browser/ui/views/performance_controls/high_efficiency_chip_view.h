@@ -9,6 +9,7 @@
 #include "chrome/browser/performance_manager/public/user_tuning/user_performance_tuning_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/performance_controls/high_efficiency_bubble_observer.h"
+#include "chrome/browser/ui/performance_controls/high_efficiency_chip_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -52,15 +53,15 @@ class HighEfficiencyChipView : public PageActionIconView,
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   views::BubbleDialogDelegate* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
-  std::u16string GetTextForTooltipAndAccessibleName() const override;
 
  private:
-  void MaybeShowIPH();
-  void OnIPHClosed();
-
   // performance_manager::user_tuning::UserPerformanceTuningManager::Observer:
   // Checks whether high efficiency mode is currently enabled.
   void OnHighEfficiencyModeChanged() override;
+
+  bool ShouldHighlightMemorySavingsWithExpandedChip(
+      HighEfficiencyChipTabHelper* high_efficiency_tab_helper,
+      PrefService* pref_service);
 
   const raw_ptr<Browser> browser_;
   base::OneShotTimer timer_;

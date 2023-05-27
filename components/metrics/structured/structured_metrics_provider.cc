@@ -4,6 +4,7 @@
 
 #include "components/metrics/structured/structured_metrics_provider.h"
 
+#include <sstream>
 #include <utility>
 
 #include "base/feature_list.h"
@@ -11,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/task/current_thread.h"
 #include "components/metrics/structured/enums.h"
 #include "components/metrics/structured/external_metrics.h"
@@ -53,7 +55,7 @@ char StructuredMetricsProvider::kDeviceKeyDataPath[] =
 char StructuredMetricsProvider::kUnsentLogsPath[] = "structured_metrics/events";
 
 StructuredMetricsProvider::StructuredMetricsProvider(
-    base::raw_ptr<metrics::MetricsProvider> system_profile_provider)
+    metrics::MetricsProvider* system_profile_provider)
     : StructuredMetricsProvider(base::FilePath(kDeviceKeyDataPath),
                                 base::Milliseconds(kSaveDelayMs),
                                 kMinIndependentMetricsInterval,
@@ -63,7 +65,7 @@ StructuredMetricsProvider::StructuredMetricsProvider(
     const base::FilePath& device_key_path,
     base::TimeDelta min_independent_metrics_interval,
     base::TimeDelta write_delay,
-    base::raw_ptr<metrics::MetricsProvider> system_profile_provider)
+    metrics::MetricsProvider* system_profile_provider)
     : device_key_path_(device_key_path),
       write_delay_(write_delay),
       min_independent_metrics_interval_(min_independent_metrics_interval),
@@ -131,6 +133,11 @@ void StructuredMetricsProvider::OnExternalMetricsCollected(
     events_.get()->get()->mutable_uma_events()->MergeFrom(events.uma_events());
     events_.get()->get()->mutable_non_uma_events()->MergeFrom(
         events.non_uma_events());
+
+    // Only increment if new events were add.
+    if (events.uma_events_size() || events.non_uma_events_size()) {
+      external_metrics_scans_ += 1;
+    }
   }
 }
 
@@ -200,8 +207,6 @@ void StructuredMetricsProvider::OnEventRecord(const Event& event) {
     LogEventRecordingState(EventRecordingState::kProviderUninitialized);
     RecordEventBeforeInitialization(event);
     return;
-  } else {
-    LogEventRecordingState(EventRecordingState::kRecorded);
   }
 
   DCHECK(profile_key_data_->is_initialized());
@@ -236,11 +241,15 @@ void StructuredMetricsProvider::OnRecordingEnabled() {
   DCHECK(base::CurrentUIThread::IsSet());
   // Enable recording only if structured metrics' feature flag is enabled.
   recording_enabled_ = base::FeatureList::IsEnabled(kStructuredMetrics);
+  if (recording_enabled_) {
+    CacheDisallowedProjectsSet();
+  }
 }
 
 void StructuredMetricsProvider::OnRecordingDisabled() {
   DCHECK(base::CurrentUIThread::IsSet());
   recording_enabled_ = false;
+  disallowed_projects_.clear();
 }
 
 void StructuredMetricsProvider::OnReportingStateChanged(bool enabled) {
@@ -285,11 +294,6 @@ void StructuredMetricsProvider::ProvideCurrentSessionData(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(kDelayUploadUntilHwid) &&
-      !system_profile_initialized_) {
-    return;
-  }
-
   LogNumEventsInUpload(events_.get()->get()->uma_events_size());
 
   auto* structured_data = uma_proto->mutable_structured_data();
@@ -297,6 +301,8 @@ void StructuredMetricsProvider::ProvideCurrentSessionData(
       events_.get()->get()->mutable_uma_events());
   events_.get()->get()->clear_uma_events();
   events_->StartWrite();
+
+  LogUploadSizeBytes(structured_data->ByteSizeLong());
 }
 
 bool StructuredMetricsProvider::HasIndependentMetrics() {
@@ -313,11 +319,6 @@ bool StructuredMetricsProvider::HasIndependentMetrics() {
     return false;
   }
 
-  if (base::FeatureList::IsEnabled(kDelayUploadUntilHwid) &&
-      !system_profile_initialized_) {
-    return false;
-  }
-
   return events_.get()->get()->non_uma_events_size() != 0;
 }
 
@@ -327,12 +328,6 @@ void StructuredMetricsProvider::ProvideIndependentMetrics(
     base::HistogramSnapshotManager*) {
   DCHECK(base::CurrentUIThread::IsSet());
   if (!recording_enabled_ || init_state_ != InitState::kInitialized) {
-    std::move(done_callback).Run(false);
-    return;
-  }
-
-  if (base::FeatureList::IsEnabled(kDelayUploadUntilHwid) &&
-      !system_profile_initialized_) {
     std::move(done_callback).Run(false);
     return;
   }
@@ -352,6 +347,10 @@ void StructuredMetricsProvider::ProvideIndependentMetrics(
   events_.get()->get()->clear_non_uma_events();
   events_->StartWrite();
 
+  LogUploadSizeBytes(structured_data->ByteSizeLong());
+  LogExternalMetricsScanInUpload(external_metrics_scans_);
+  external_metrics_scans_ = 0;
+
   // Independent events should not be associated with the client_id, so clear
   // it.
   uma_proto->clear_client_id();
@@ -366,9 +365,9 @@ void StructuredMetricsProvider::ProvideIndependentMetrics(
 
 void StructuredMetricsProvider::ProvideSystemProfile(
     SystemProfileProto* system_profile) {
-  // Populate the proto if the system profile has been intiailzed and
-  // have a system profile provider.
-  // The field may be populated if ChromeOSMetricsProvider has already run.
+  // Populate the proto if the system profile has been initialized and
+  // has a system profile provider. The field may be populated if
+  // ChromeOSMetricsProvider has already run.
   if (system_profile_initialized_) {
     system_profile_provider_->ProvideSystemProfileMetrics(system_profile);
   }
@@ -411,6 +410,13 @@ void StructuredMetricsProvider::RecordEvent(const Event& event) {
     return;
   }
   const auto* event_validator = maybe_event_validator.value();
+
+  if (!CanUploadProject(project_validator->project_hash())) {
+    LogEventRecordingState(EventRecordingState::kProjectDisallowed);
+    return;
+  }
+
+  LogEventRecordingState(EventRecordingState::kRecorded);
 
   // The |events_| persistent proto contains two repeated fields, uma_events
   // and non_uma_events. uma_events is added to the ChromeUserMetricsExtension
@@ -558,6 +564,9 @@ void StructuredMetricsProvider::RecordEvent(const Event& event) {
       case Event::MetricType::kBoolean:
         break;
     }
+
+    // Log size information about the event.
+    LogEventSerializedSizeBytes(event_proto->ByteSizeLong());
   }
 }
 
@@ -568,6 +577,33 @@ void StructuredMetricsProvider::HashUnhashedEventsAndPersist() {
     RecordEvent(unhashed_events_.front());
     unhashed_events_.pop_front();
   }
+}
+
+bool StructuredMetricsProvider::CanUploadProject(
+    uint64_t project_name_hash) const {
+  return !disallowed_projects_.contains(project_name_hash);
+}
+
+void StructuredMetricsProvider::CacheDisallowedProjectsSet() {
+  const std::string& disallowed_list = GetDisabledProjects();
+  if (disallowed_list.empty()) {
+    return;
+  }
+
+  for (const auto& value :
+       base::SplitString(disallowed_list, ",", base::TRIM_WHITESPACE,
+                         base::SPLIT_WANT_NONEMPTY)) {
+    uint64_t project_name_hash;
+    // Parse the string and keep only perfect conversions.
+    if (base::StringToUint64(value, &project_name_hash)) {
+      disallowed_projects_.insert(project_name_hash);
+    }
+  }
+}
+
+void StructuredMetricsProvider::AddDisallowedProjectForTest(
+    uint64_t project_name_hash) {
+  disallowed_projects_.insert(project_name_hash);
 }
 
 }  // namespace metrics::structured

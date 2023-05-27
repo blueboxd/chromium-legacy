@@ -40,7 +40,6 @@
 <translation id="1779089405699405702">Сүрөттү дешифрлегич</translation>
 <translation id="1785415724048343560">Мыкты тажрыйба үчүн сунушталат</translation>
 <translation id="1818308510395330587"><ph name="APP_NAME" /> колдонмосуна AR'ди колдоонуусуна уруксат берүү үчүн камераны <ph name="BEGIN_LINK" />Android параметрлеринен<ph name="END_LINK" /> күйгүзүңүз.</translation>
-<translation id="1864927262126810325">Төмөнкүдөн: <ph name="SOURCE_NAME" /></translation>
 <translation id="187227595286001730">Окшош сайттар топтогу аракеттериңизди көрө алышат</translation>
 <translation id="1887786770086287077">Жайгашкан жерди аныктоо жөндөөсү бул түзмөктө өчүрүлгөн. Аны <ph name="BEGIN_LINK" />Android параметрлерине<ph name="END_LINK" /> өтүп, күйгүзүңүз.</translation>
 <translation id="1915307458270490472">Жогоруда кадоо</translation>
@@ -83,6 +82,7 @@
 <translation id="2434158240863470628">Жүктөлүп алынды: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="244264527810019436">Айрым сайттардагы функциялар Жашыруун режимде иштебеши мүмкүн</translation>
 <translation id="2442870161001914531">Иш такта сайты ар дайым суралсын</translation>
+<translation id="2479148705183875116">Жөндөөлөргө өтүү</translation>
 <translation id="2482878487686419369">Билдирмелер</translation>
 <translation id="2485422356828889247">Орнотуудан чыгаруу</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> тарабынан башкарылат</translation>
@@ -103,6 +103,7 @@
 <translation id="2717722538473713889">Электрондук почта даректери</translation>
 <translation id="2750481671343847896">Сайттар идентификациялык кызматтарда кирүү сурамдарын көрсөтүшү мүмкүн.</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> үчүн сайттагы бардык уруксаттар баштапкы абалга келтирилсинби?</translation>
+<translation id="2850913818900871965">Мобилдик версияны көрсөтүүнү сурануу</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2874939134665556319">Мурунку трек</translation>
 <translation id="2891975107962658722">Сайттын түзмөгүңүзгө маалымат сактоо аракетин бөгөттөө</translation>
@@ -124,7 +125,6 @@
 <translation id="3162899666601560689">Серептөөнү ыңгайлаштыруу, мисалы, аккаунттан чыгарбоо же арабадагы сатып алган нерселериңизди эстеп калуу үчүн сайттар cookie файлдарын колдоно алышат</translation>
 <translation id="3165022941318558018">Сайтка үчүнчү тараптын cookie файлдарын колдонууга уруксат бериңиз</translation>
 <translation id="3198916472715691905"><ph name="STORAGE_AMOUNT" /> сакталган дайындар</translation>
-<translation id="3203366800380907218">Интернеттен алынды</translation>
 <translation id="321187648315454507"><ph name="APP_NAME" /> колдонмосуна билдирмелерди жөнөтүүгө уруксат берүү үчүн, <ph name="BEGIN_LINK" />Android Параметрлеринен<ph name="END_LINK" /> билдирмелерди күйгүзүңүз.</translation>
 <translation id="3227137524299004712">Микрофон</translation>
 <translation id="3248611290851046188">Бул сайт кызыккан нерселериңизди аныктап, ал аркылуу башка сайттар сизге ылайыктуу жарнамаларды көрсөтө алат. Ошондой эле, бул сайт Сhrome'дон кызыккан нерселериңиз тууралуу маалымат алып, сизге ылайыктуу жарнамаларды көрсөтүп турат.</translation>
@@ -222,7 +222,6 @@
 <translation id="509133520954049755">Компьютердик версиясын сурануу</translation>
 <translation id="5100237604440890931">Жыйналган – жайып көрсөтүү үчүн чыкылдатыңыз.</translation>
 <translation id="5123685120097942451">Жашыруун өтмөк</translation>
-<translation id="5134599672855298214">Мобилдик версиясын сурануу (сунушталат)</translation>
 <translation id="5186036860380548585">Параметр экрандын жогору жагында берилген</translation>
 <translation id="5197729504361054390">Сиз тандаган байланыштар <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> менен бөлүшүлөт.</translation>
 <translation id="5216942107514965959">Бүгүн акыркы жолу кирген</translation>

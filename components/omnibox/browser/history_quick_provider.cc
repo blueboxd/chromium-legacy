@@ -37,6 +37,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_focus_type.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/page_transition_types.h"
@@ -160,7 +161,7 @@ void HistoryQuickProvider::DoAutocomplete() {
     //  suggestions to distinguish them in metrics.
     if (!host_matches.empty()) {
       client()->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
-          OmniboxTriggeredFeatureService::Feature::kDomainSuggestions);
+          metrics::OmniboxEventProto_Feature_DOMAIN_SUGGESTIONS);
       static const bool counterfactual =
           OmniboxFieldTrial::kDomainSuggestionsCounterfactual.Get();
       if (!counterfactual)
@@ -365,8 +366,9 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
     // is constructed, rather than in ScoredHistoryMatch. We have to propagate
     // that signal to `scoring_signals` in addition to all signals calculated in
     // the ScoredHistoryMatch.
+    DCHECK(history_match.scoring_signals.has_value());
     match.scoring_signals = history_match.scoring_signals;
-    match.scoring_signals.set_allowed_to_be_default_match(
+    match.scoring_signals->set_allowed_to_be_default_match(
         match.allowed_to_be_default_match);
   }
   match.RecordAdditionalInfo("typed count", info.typed_count());

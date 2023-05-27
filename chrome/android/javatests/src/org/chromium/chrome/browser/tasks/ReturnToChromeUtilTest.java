@@ -13,9 +13,9 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.c
 
 import android.app.Activity;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 
+import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -51,6 +51,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.features.start_surface.StartSurfaceTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ChromeApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -211,8 +212,7 @@ public class ReturnToChromeUtilTest {
         assertEquals(10, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
         assertEquals(9, mActivityTestRule.getActivity().getCurrentTabModel().index());
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
-        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
-                                       org.chromium.chrome.tab_ui.R.id.tab_list_view),
+        mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(R.id.tab_list_view),
                 "10_web_tabs-select_last");
     }
 
@@ -255,7 +255,10 @@ public class ReturnToChromeUtilTest {
                 ()
                         -> new ReturnToChromeBackPressHandler(
                                 mActivityTestRule.getActivity().getActivityTabProvider(),
-                                () -> {}));
+                                ()
+                                        -> {},
+                                mActivityTestRule.getActivity()::getActivityTab,
+                                mActivityTestRule.getActivity()::getLayoutManager));
     }
 
     private void waitTabModelRestoration() {

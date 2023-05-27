@@ -58,6 +58,12 @@ struct CORE_EXPORT GridItemData {
 
   bool IsBaselineAlignedForDirection(
       GridTrackSizingDirection track_direction) const {
+    // TODO(ethavar): Baseline alignment for subgrids is dependent on
+    // accumulating the baseline in `ComputeSubgridContributionSize`.
+    if (has_subgridded_columns || has_subgridded_rows ||
+        is_subgridded_to_parent_grid) {
+      return false;
+    }
     return (track_direction == kForColumns)
                ? (InlineAxisAlignment() == AxisEdge::kFirstBaseline ||
                   InlineAxisAlignment() == AxisEdge::kLastBaseline)
@@ -67,6 +73,12 @@ struct CORE_EXPORT GridItemData {
 
   bool IsBaselineSpecifiedForDirection(
       GridTrackSizingDirection track_direction) const {
+    // TODO(ethavar): Baseline alignment for subgrids is dependent on
+    // accumulating the baseline in `ComputeSubgridContributionSize`.
+    if (has_subgridded_columns || has_subgridded_rows ||
+        is_subgridded_to_parent_grid) {
+      return false;
+    }
     return (track_direction == kForColumns)
                ? (inline_axis_alignment == AxisEdge::kFirstBaseline ||
                   inline_axis_alignment == AxisEdge::kLastBaseline)
@@ -138,13 +150,12 @@ struct CORE_EXPORT GridItemData {
     return resolved_position.SpanSize(track_direction);
   }
 
-  // This item is considered a subgrid if it has at least one subgridded axis.
-  // However, for the purpose of iterating over the subgrids of a grid we don't
-  // want to consider subgridded items since they should be iterated over by
-  // their parent grid, otherwise they'll appear twice in the sizing tree.
   bool IsSubgrid() const {
-    return !is_subgridded_to_parent_grid &&
-           (has_subgridded_columns || has_subgridded_rows);
+    return has_subgridded_columns || has_subgridded_rows;
+  }
+
+  bool HasStandaloneAndSubgriddedAxis() const {
+    return has_subgridded_columns != has_subgridded_rows;
   }
 
   bool IsConsideredForSizing(GridTrackSizingDirection track_direction) const {

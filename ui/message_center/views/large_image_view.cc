@@ -12,6 +12,10 @@
 #include "ui/message_center/views/notification_view_base.h"
 #include "ui/views/background.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/constants/chromeos_features.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 namespace message_center {
 namespace {
 
@@ -19,12 +23,12 @@ namespace {
 // if rounded corners are not required.
 absl::optional<SkScalar> GetLargeImageCornerRadius() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::features::IsNotificationsRefreshEnabled()) {
-    return SkIntToScalar(kImageCornerRadius);
-  }
-#endif  // IS_CHROMEOS_ASH
-
+  return SkIntToScalar(chromeos::features::IsJellyEnabled()
+                           ? kJellyImageCornerRadius
+                           : kImageCornerRadius);
+#else
   return absl::nullopt;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace
@@ -33,14 +37,10 @@ LargeImageView::LargeImageView(const gfx::Size& max_size)
     : max_size_(max_size), min_size_(max_size_.width(), /*height=*/0) {
   SetID(NotificationViewBase::kLargeImageView);
 
-  bool set_background = true;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  set_background = !ash::features::IsNotificationsRefreshEnabled();
-#endif  // IS_CHROMEOS_ASH
-  if (set_background) {
-    SetBackground(views::CreateThemedSolidBackground(
-        ui::kColorNotificationImageBackground));
-  }
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  SetBackground(views::CreateThemedSolidBackground(
+      ui::kColorNotificationImageBackground));
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 LargeImageView::~LargeImageView() = default;

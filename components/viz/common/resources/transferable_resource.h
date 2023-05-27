@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/resources/shared_image_format.h"
@@ -44,6 +43,24 @@ struct VIZ_COMMON_EXPORT TransferableResource {
     kReleaseFence,
   };
 
+  static TransferableResource MakeSoftware(const SharedBitmapId& id,
+                                           const gfx::Size& size,
+                                           SharedImageFormat format);
+  static TransferableResource MakeGpu(const gpu::Mailbox& mailbox,
+                                      uint32_t texture_target,
+                                      const gpu::SyncToken& sync_token,
+                                      const gfx::Size& size,
+                                      SharedImageFormat format,
+                                      bool is_overlay_candidate);
+  // TODO(kylechar): Delete after all callers are updated to not pass filter.
+  static TransferableResource MakeGpu(const gpu::Mailbox& mailbox,
+                                      uint32_t filter,
+                                      uint32_t texture_target,
+                                      const gpu::SyncToken& sync_token,
+                                      const gfx::Size& size,
+                                      SharedImageFormat format,
+                                      bool is_overlay_candidate);
+
   TransferableResource();
   ~TransferableResource();
 
@@ -54,52 +71,6 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   static std::vector<ReturnedResource> ReturnResources(
       const std::vector<TransferableResource>& input);
   bool is_null() const { return mailbox_holder.mailbox.IsZero(); }
-
-  static TransferableResource MakeSoftware(const SharedBitmapId& id,
-                                           const gfx::Size& size,
-                                           ResourceFormat format) {
-    return MakeSoftware(id, size, SharedImageFormat::SinglePlane(format));
-  }
-  static TransferableResource MakeGpu(const gpu::Mailbox& mailbox,
-                                      uint32_t filter,
-                                      uint32_t texture_target,
-                                      const gpu::SyncToken& sync_token,
-                                      const gfx::Size& size,
-                                      ResourceFormat format,
-                                      bool is_overlay_candidate) {
-    return MakeGpu(mailbox, filter, texture_target, sync_token, size,
-                   SharedImageFormat::SinglePlane(format),
-                   is_overlay_candidate);
-  }
-
-  static TransferableResource MakeSoftware(const SharedBitmapId& id,
-                                           const gfx::Size& size,
-                                           SharedImageFormat format) {
-    TransferableResource r;
-    r.is_software = true;
-    r.mailbox_holder.mailbox = id;
-    r.size = size;
-    r.format = format;
-    return r;
-  }
-  static TransferableResource MakeGpu(const gpu::Mailbox& mailbox,
-                                      uint32_t filter,
-                                      uint32_t texture_target,
-                                      const gpu::SyncToken& sync_token,
-                                      const gfx::Size& size,
-                                      SharedImageFormat format,
-                                      bool is_overlay_candidate) {
-    TransferableResource r;
-    r.is_software = false;
-    r.filter = filter;
-    r.mailbox_holder.mailbox = mailbox;
-    r.mailbox_holder.texture_target = texture_target;
-    r.mailbox_holder.sync_token = sync_token;
-    r.size = size;
-    r.format = format;
-    r.is_overlay_candidate = is_overlay_candidate;
-    return r;
-  }
 
   // TODO(danakj): Some of these fields are only GL, some are only Software,
   // some are both but used for different purposes (like the mailbox name).
@@ -158,10 +129,6 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   // A gpu resource may be possible to use directly in an overlay if this is
   // true.
   bool is_overlay_candidate = false;
-  // For a gpu resource, the filter to use when scaling the resource when
-  // drawing it. Typically GL_LINEAR, or GL_NEAREST if no anti-aliasing
-  // during scaling is desired.
-  uint32_t filter = 0;
 
   // This defines when the display compositor returns resources. Clients may use
   // different synchronization types based on their needs.
@@ -196,7 +163,6 @@ struct VIZ_COMMON_EXPORT TransferableResource {
            mailbox_holder.texture_target == o.mailbox_holder.texture_target &&
            color_space == o.color_space && hdr_metadata == o.hdr_metadata &&
            is_overlay_candidate == o.is_overlay_candidate &&
-           filter == o.filter &&
 #if BUILDFLAG(IS_ANDROID)
            is_backed_by_surface_texture == o.is_backed_by_surface_texture &&
            wants_promotion_hint == o.wants_promotion_hint &&

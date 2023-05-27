@@ -48,6 +48,9 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ash/user_education/user_education_class_properties.h"
+#include "ash/user_education/user_education_constants.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -62,6 +65,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -90,8 +94,8 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
 
   MessageCenterUiController* ui_controller() { return ui_controller_.get(); }
 
-  void SetTrayBubbleHeight(int height) {
-    message_popup_collection_->SetTrayBubbleHeight(height);
+  void NotifySecondaryBubbleHeight(int height) {
+    message_popup_collection_->SetBaselineOffset(height);
   }
 
   message_center::MessagePopupView* GetPopupViewForNotificationID(
@@ -112,7 +116,7 @@ class UnifiedSystemTray::UiDelegate : public MessageCenterUiDelegate {
   std::unique_ptr<MessageCenterUiController> const ui_controller_;
   std::unique_ptr<AshMessagePopupCollection> message_popup_collection_;
 
-  UnifiedSystemTray* const owner_;
+  const raw_ptr<UnifiedSystemTray, ExperimentalAsh> owner_;
 
   std::unique_ptr<NotificationGroupingController> grouping_controller_;
 };
@@ -124,15 +128,12 @@ UnifiedSystemTray::UiDelegate::UiDelegate(UnifiedSystemTray* owner)
     : ui_controller_(std::make_unique<MessageCenterUiController>(this)),
       message_popup_collection_(
           std::make_unique<AshMessagePopupCollection>(owner->shelf())),
-      owner_(owner) {
-  if (features::IsNotificationsRefreshEnabled()) {
-    grouping_controller_ = std::make_unique<NotificationGroupingController>(
-        /*unified_system_tray=*/owner,
-        /*notification_center_tray=*/owner->shelf()
-            ->status_area_widget()
-            ->notification_center_tray());
-  }
-
+      owner_(owner),
+      grouping_controller_(std::make_unique<NotificationGroupingController>(
+          /*unified_system_tray=*/owner,
+          /*notification_center_tray=*/owner->shelf()
+              ->status_area_widget()
+              ->notification_center_tray())) {
   ui_controller_->set_hide_on_last_notification(false);
 
   display::Screen* screen = display::Screen::GetScreen();
@@ -160,7 +161,7 @@ bool UnifiedSystemTray::UiDelegate::ShowPopups() {
 }
 
 void UnifiedSystemTray::UiDelegate::HidePopups() {
-  message_popup_collection_->SetTrayBubbleHeight(0);
+  message_popup_collection_->SetBaselineOffset(0);
 }
 
 bool UnifiedSystemTray::UiDelegate::ShowMessageCenter() {
@@ -191,6 +192,14 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
                                                               model_.get())) {
   SetPressedCallback(base::BindRepeating(&UnifiedSystemTray::OnButtonPressed,
                                          base::Unretained(this)));
+
+  if (features::IsUserEducationEnabled()) {
+    // NOTE: Set `kHelpBubbleContextKey` before `views::kElementIdentifierKey`
+    // in case registration causes a help bubble to be created synchronously.
+    SetProperty(kHelpBubbleContextKey, HelpBubbleContext::kAsh);
+    SetProperty(views::kElementIdentifierKey, kUnifiedSystemTrayElementId);
+  }
+
   if (media::ShouldEnableAutoFraming()) {
     autozoom_toast_controller_ = std::make_unique<AutozoomToastController>(
         this, std::make_unique<AutozoomToastController::Delegate>());
@@ -261,11 +270,9 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
             shelf, Shell::Get()->shell_delegate()->GetChannel()));
   }
 
-  // Do not show this indicator if video conference feature is enabled since
-  // privacy indicator is already shown there. We also do not show this here in
-  // the new Quick Settings UI.
+  // We do not show privacy indicators here in the new Quick Settings UI.
   if (features::IsPrivacyIndicatorsEnabled() &&
-      !features::IsVideoConferenceEnabled() && !features::IsQsRevampEnabled()) {
+      !features::IsQsRevampEnabled()) {
     privacy_indicators_view_ = AddTrayItemToContainer(
         std::make_unique<PrivacyIndicatorsTrayItemView>(shelf));
   }
@@ -319,6 +326,10 @@ bool UnifiedSystemTray::IsBubbleShown() const {
 
 bool UnifiedSystemTray::IsSliderBubbleShown() const {
   return slider_bubble_controller_->IsBubbleShown();
+}
+
+int UnifiedSystemTray::GetSliderBubbleHeight() const {
+  return slider_bubble_controller_->GetBubbleHeight();
 }
 
 bool UnifiedSystemTray::IsMessageCenterBubbleShown() const {
@@ -397,8 +408,11 @@ void UnifiedSystemTray::ShowNetworkDetailedViewBubble() {
   bubble_->ShowNetworkDetailedView(true /* force */);
 }
 
-void UnifiedSystemTray::SetTrayBubbleHeight(int height) {
-  ui_delegate_->SetTrayBubbleHeight(height);
+void UnifiedSystemTray::NotifySecondaryBubbleHeight(int height) {
+  ui_delegate_->NotifySecondaryBubbleHeight(height);
+  for (auto& observer : observers_) {
+    observer.OnSliderBubbleHeightChanged();
+  }
 }
 
 bool UnifiedSystemTray::FocusMessageCenter(bool reverse,
@@ -571,9 +585,8 @@ bool UnifiedSystemTray::IsShowingCalendarView() const {
 }
 
 bool UnifiedSystemTray::ShouldChannelIndicatorBeShown() const {
-  return features::IsReleaseTrackUiEnabled() &&
-         channel_indicator_utils::IsDisplayableChannel(
-             Shell::Get()->shell_delegate()->GetChannel());
+  return channel_indicator_utils::IsDisplayableChannel(
+      Shell::Get()->shell_delegate()->GetChannel());
 }
 
 void UnifiedSystemTray::SetTrayEnabled(bool enabled) {

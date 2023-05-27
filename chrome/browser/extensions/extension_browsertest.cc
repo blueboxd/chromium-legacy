@@ -299,8 +299,8 @@ ExtensionBrowserTest::ExtensionBrowserTest(ContextType context_type)
       set_chromeos_user_(true),
 #endif
       context_type_(context_type),
-      // Default channel is STABLE but override with UNKNOWN so that unlaunched
-      // or incomplete APIs can write tests.
+      // TODO(crbug/1427323): Move this ScopedCurrentChannel down into tests
+      // that specifically require it.
       current_channel_(version_info::Channel::UNKNOWN),
       override_prompt_for_external_extensions_(
           FeatureSwitch::prompt_for_external_extensions(),
@@ -847,11 +847,19 @@ ExtensionHost* ExtensionBrowserTest::FindHostWithPath(ProcessManager* manager,
   return result_host;
 }
 
-std::string ExtensionBrowserTest::ExecuteScriptInBackgroundPage(
+base::Value ExtensionBrowserTest::ExecuteScriptInBackgroundPage(
     const std::string& extension_id,
     const std::string& script,
     browsertest_util::ScriptUserActivation script_user_activation) {
   return browsertest_util::ExecuteScriptInBackgroundPage(
+      profile(), extension_id, script, script_user_activation);
+}
+
+std::string ExtensionBrowserTest::ExecuteScriptInBackgroundPageDeprecated(
+    const std::string& extension_id,
+    const std::string& script,
+    browsertest_util::ScriptUserActivation script_user_activation) {
+  return browsertest_util::ExecuteScriptInBackgroundPageDeprecated(
       profile(), extension_id, script, script_user_activation);
 }
 

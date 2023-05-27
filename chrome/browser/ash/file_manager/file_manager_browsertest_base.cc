@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
+#include "base/memory/raw_ptr.h"
 
 #include <stddef.h>
 
@@ -19,7 +20,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/webui/file_manager/url_constants.h"
@@ -114,6 +114,7 @@
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/ash/components/smbfs/smbfs_host.h"
 #include "chromeos/ash/components/smbfs/smbfs_mounter.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
@@ -199,7 +200,7 @@ class WebContentCapturingObserver : public content::TestNavigationObserver {
   }
 
  private:
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents, ExperimentalAsh> web_contents_;
 };
 
 // During test, the test extensions can send a list of entries (directories
@@ -288,36 +289,37 @@ struct AddEntriesMessage {
   // Maps |value| to TargetVolume. Returns true on success.
   static bool MapStringToTargetVolume(base::StringPiece value,
                                       TargetVolume* volume) {
-    if (value == "local")
+    if (value == "local") {
       *volume = LOCAL_VOLUME;
-    else if (value == "drive")
+    } else if (value == "drive") {
       *volume = DRIVE_VOLUME;
-    else if (value == "crostini")
+    } else if (value == "crostini") {
       *volume = CROSTINI_VOLUME;
-    else if (value == "guest_os_0")
+    } else if (value == "guest_os_0") {
       *volume = GUEST_OS_VOLUME_0;
-    else if (value == "usb")
+    } else if (value == "usb") {
       *volume = USB_VOLUME;
-    else if (value == "android_files")
+    } else if (value == "android_files") {
       *volume = ANDROID_FILES_VOLUME;
-    else if (value == "documents_provider")
+    } else if (value == "documents_provider") {
       *volume = GENERIC_DOCUMENTS_PROVIDER_VOLUME;
-    else if (value == "photos_documents_provider")
+    } else if (value == "photos_documents_provider") {
       *volume = PHOTOS_DOCUMENTS_PROVIDER_VOLUME;
-    else if (value == "media_view_audio")
+    } else if (value == "media_view_audio") {
       *volume = MEDIA_VIEW_AUDIO;
-    else if (value == "media_view_images")
+    } else if (value == "media_view_images") {
       *volume = MEDIA_VIEW_IMAGES;
-    else if (value == "media_view_videos")
+    } else if (value == "media_view_videos") {
       *volume = MEDIA_VIEW_VIDEOS;
-    else if (value == "media_view_documents")
+    } else if (value == "media_view_documents") {
       *volume = MEDIA_VIEW_DOCUMENTS;
-    else if (value == "smbfs")
+    } else if (value == "smbfs") {
       *volume = SMBFS_VOLUME;
-    else if (value == "mtp")
+    } else if (value == "mtp") {
       *volume = MTP_VOLUME;
-    else
+    } else {
       return false;
+    }
     return true;
   }
 
@@ -518,34 +520,36 @@ struct AddEntriesMessage {
 
     // Maps |value| to an EntryType. Returns true on success.
     static bool MapStringToEntryType(base::StringPiece value, EntryType* type) {
-      if (value == "file")
+      if (value == "file") {
         *type = FILE;
-      else if (value == "directory")
+      } else if (value == "directory") {
         *type = DIRECTORY;
-      else if (value == "link")
+      } else if (value == "link") {
         *type = LINK;
-      else if (value == "team_drive")
+      } else if (value == "team_drive") {
         *type = TEAM_DRIVE;
-      else if (value == "Computer")
+      } else if (value == "Computer") {
         *type = COMPUTER;
-      else
+      } else {
         return false;
+      }
       return true;
     }
 
     // Maps |value| to SharedOption. Returns true on success.
     static bool MapStringToSharedOption(base::StringPiece value,
                                         SharedOption* option) {
-      if (value == "shared")
+      if (value == "shared") {
         *option = SHARED;
-      else if (value == "sharedWithMe")
+      } else if (value == "sharedWithMe") {
         *option = SHARED_WITH_ME;
-      else if (value == "nestedSharedWithMe")
+      } else if (value == "nestedSharedWithMe") {
         *option = NESTED_SHARED_WITH_ME;
-      else if (value == "none")
+      } else if (value == "none") {
         *option = NONE;
-      else
+      } else {
         return false;
+      }
       return true;
     }
 
@@ -643,8 +647,9 @@ class TestVolume {
   virtual ~TestVolume() = default;
 
   bool CreateRootDirectory(const Profile* profile) {
-    if (root_initialized_)
+    if (root_initialized_) {
       return true;
+    }
     root_ = profile->GetPath().Append(name_);
     base::ScopedAllowBlockingForTesting allow_blocking;
     root_initialized_ = base::CreateDirectory(root_);
@@ -887,8 +892,9 @@ std::ostream& operator<<(std::ostream& out,
   const FileManagerBrowserTestBase::Options defaults;
 
   // Print guest mode first, followed by boolean members in lexicographic order.
-  if (options.guest_mode != defaults.guest_mode)
+  if (options.guest_mode != defaults.guest_mode) {
     out << sep() << options.guest_mode;
+  }
 
 #define PRINT_IF_NOT_DEFAULT(N) \
   if (options.N != defaults.N)  \
@@ -954,8 +960,9 @@ class LocalTestVolume : public TestVolume {
   void InsertEntryOnMap(const AddEntriesMessage::TestEntryInfo& entry,
                         const base::FilePath& target_path) {
     const auto it = entries_.find(target_path);
-    if (it == entries_.end())
+    if (it == entries_.end()) {
       entries_.insert(std::make_pair(target_path, entry));
+    }
   }
 
   void CreateEntryImpl(const AddEntriesMessage::TestEntryInfo& entry,
@@ -1008,8 +1015,9 @@ class LocalTestVolume : public TestVolume {
     // also affected by the update of child items.
     if (path.DirName() != root_path()) {
       const auto& it = entries_.find(path.DirName());
-      if (it == entries_.end())
+      if (it == entries_.end()) {
         return false;
+      }
       return UpdateModifiedTime(it->second, path.DirName());
     }
 
@@ -1034,8 +1042,9 @@ class DownloadsTestVolume : public LocalTestVolume {
     auto downloads_folder = root_path().Append("Downloads");
     auto downloads_entry = AddEntriesMessage::TestEntryInfo(
         AddEntriesMessage::DIRECTORY, "", "Downloads");
-    if (!base::PathExists(downloads_folder))
+    if (!base::PathExists(downloads_folder)) {
       CreateEntryImpl(downloads_entry, downloads_folder);
+    }
 
     // Make sure that Downloads exists in the local entries_ map, in case the
     // folder in the FS has been created by a PRE_ routine.
@@ -1048,8 +1057,9 @@ class DownloadsTestVolume : public LocalTestVolume {
   base::FilePath base_path() const { return root_path().Append("Downloads"); }
 
   bool Mount(Profile* profile) override {
-    if (!CreateRootDirectory(profile))
+    if (!CreateRootDirectory(profile)) {
       return false;
+    }
     EnsureDownloadsFolderExists();
     auto* volume = VolumeManager::Get(profile);
     return volume->RegisterDownloadsDirectoryForTesting(root_path());
@@ -1092,7 +1102,8 @@ class AndroidFilesTestVolume : public LocalTestVolume {
 // CrostiniTestVolume: local test volume for the "Linux files" directory.
 class CrostiniTestVolume : public LocalTestVolume {
  public:
-  CrostiniTestVolume() : LocalTestVolume("Crostini") {}
+  explicit CrostiniTestVolume(const std::string& source_path)
+      : LocalTestVolume("Crostini"), source_path_(source_path) {}
 
   CrostiniTestVolume(const CrostiniTestVolume&) = delete;
   CrostiniTestVolume& operator=(const CrostiniTestVolume&) = delete;
@@ -1109,6 +1120,11 @@ class CrostiniTestVolume : public LocalTestVolume {
   }
 
   const base::FilePath& mount_path() const { return root_path(); }
+
+  const std::string& source_path() const { return source_path_; }
+
+ private:
+  std::string source_path_;
 };
 
 // FakeTestVolume: local test volume with a given volume and device type.
@@ -1128,8 +1144,9 @@ class FakeTestVolume : public LocalTestVolume {
 
   // Add the fake test volume entries.
   bool PrepareTestEntries(Profile* profile) {
-    if (!CreateRootDirectory(profile))
+    if (!CreateRootDirectory(profile)) {
       return false;
+    }
 
     // Note: must be kept in sync with BASIC_FAKE_ENTRY_SET defined in the
     // integration_tests/file_manager JS code.
@@ -1143,8 +1160,9 @@ class FakeTestVolume : public LocalTestVolume {
   }
 
   bool PrepareDcimTestEntries(Profile* profile) {
-    if (!CreateRootDirectory(profile))
+    if (!CreateRootDirectory(profile)) {
       return false;
+    }
 
     CreateEntry(AddEntriesMessage::TestEntryInfo(AddEntriesMessage::DIRECTORY,
                                                  "", "DCIM"));
@@ -1162,8 +1180,9 @@ class FakeTestVolume : public LocalTestVolume {
   }
 
   bool Mount(Profile* profile) override {
-    if (!MountSetup(profile))
+    if (!MountSetup(profile)) {
       return false;
+    }
 
     // Expose the mount point with the given volume and device type.
     VolumeManager::Get(profile)->AddVolumeForTesting(root_path(), volume_type_,
@@ -1183,16 +1202,18 @@ class FakeTestVolume : public LocalTestVolume {
   }
 
   bool MountSetup(Profile* profile) {
-    if (!CreateRootDirectory(profile))
+    if (!CreateRootDirectory(profile)) {
       return false;
+    }
 
     // Revoke name() mount point first, then re-add its mount point.
     GetMountPoints()->RevokeFileSystem(name());
     const bool added = GetMountPoints()->RegisterFileSystem(
         name(), storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
         root_path());
-    if (!added)
+    if (!added) {
       return false;
+    }
 
     return true;
   }
@@ -1222,8 +1243,9 @@ class RemovableTestVolume : public FakeTestVolume {
   ~RemovableTestVolume() override = default;
 
   bool Mount(Profile* profile) override {
-    if (!MountSetup(profile))
+    if (!MountSetup(profile)) {
       return false;
+    }
 
     // Expose the mount point with the given volume and device type.
     VolumeManager::Get(profile)->AddVolumeForTesting(
@@ -1258,8 +1280,9 @@ class DriveFsTestVolume : public TestVolume {
 
   drive::DriveIntegrationService* CreateDriveIntegrationService(
       Profile* profile) {
-    if (!CreateRootDirectory(profile))
+    if (!CreateRootDirectory(profile)) {
       return nullptr;
+    }
 
     EXPECT_FALSE(profile_);
     profile_ = profile;
@@ -1273,11 +1296,13 @@ class DriveFsTestVolume : public TestVolume {
   }
 
   bool Mount(Profile* profile) {
-    if (profile != profile_)
+    if (profile != profile_) {
       return false;
+    }
 
-    if (!integration_service_)
+    if (!integration_service_) {
       return false;
+    }
 
     integration_service_->SetEnabled(true);
     CreateDriveFsBootstrapListener();
@@ -1416,8 +1441,9 @@ class DriveFsTestVolume : public TestVolume {
         path.DirName() != GetMyDrivePath() &&
         path.DirName() != GetSharedWithMePath()) {
       const auto it = entries_.find(path.DirName());
-      if (it == entries_.end())
+      if (it == entries_.end()) {
         return false;
+      }
       return UpdateModifiedTime(it->second);
     }
 
@@ -1428,8 +1454,9 @@ class DriveFsTestVolume : public TestVolume {
       const AddEntriesMessage::TestEntryInfo& entry) {
     const base::FilePath target_path =
         GetTargetBasePathForTestEntry(entry).Append(entry.target_path);
-    if (entry.name_text != entry.target_path)
+    if (entry.name_text != entry.target_path) {
       return target_path.DirName().Append(entry.name_text);
+    }
     return target_path;
   }
 
@@ -1487,11 +1514,12 @@ class DriveFsTestVolume : public TestVolume {
   absl::optional<drivefs::mojom::DialogResult> last_dialog_result_;
 
   // Profile associated with this volume: not owned.
-  Profile* profile_ = nullptr;
+  raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
   // Integration service used for testing: not owned.
-  drive::DriveIntegrationService* integration_service_ = nullptr;
+  raw_ptr<drive::DriveIntegrationService, ExperimentalAsh>
+      integration_service_ = nullptr;
 
-  Profile* const original_profile_;
+  const raw_ptr<Profile, ExperimentalAsh> original_profile_;
   std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
   std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
 };
@@ -1537,8 +1565,9 @@ class DocumentsProviderTestVolume : public TestVolume {
         !entry.thumbnail_file_name.empty());
     file_system_instance_->AddDocument(document);
 
-    if (entry.entry_type != AddEntriesMessage::FILE)
+    if (entry.entry_type != AddEntriesMessage::FILE) {
       return;
+    }
 
     // arc::FakeFileSystemInstance has a dedicated method AddRecentDocument(),
     // to make the newly added file entry work with Recents view, we need to
@@ -1571,7 +1600,8 @@ class DocumentsProviderTestVolume : public TestVolume {
   }
 
  protected:
-  arc::FakeFileSystemInstance* const file_system_instance_;
+  const raw_ptr<arc::FakeFileSystemInstance, ExperimentalAsh>
+      file_system_instance_;
   const std::string authority_;
   const std::string root_document_id_;
   const bool read_only_;
@@ -1584,8 +1614,9 @@ class DocumentsProviderTestVolume : public TestVolume {
 
  private:
   int64_t GetFileSize(const AddEntriesMessage::TestEntryInfo& entry) {
-    if (entry.entry_type != AddEntriesMessage::FILE)
+    if (entry.entry_type != AddEntriesMessage::FILE) {
       return 0;
+    }
 
     int64_t file_size = 0;
     const base::FilePath source_path =
@@ -1652,8 +1683,9 @@ class HiddenTestVolume : public FakeTestVolume {
   HiddenTestVolume& operator=(const HiddenTestVolume&) = delete;
 
   bool Mount(Profile* profile) override {
-    if (!MountSetup(profile))
+    if (!MountSetup(profile)) {
       return false;
+    }
 
     // Expose the mount point with the given volume and device type.
     VolumeManager::Get(profile)->AddVolumeForTesting(
@@ -1835,7 +1867,7 @@ class MockGuestOsMountProvider : public guest_os::GuestOsMountProvider {
   int cid_;
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile, ExperimentalAsh> profile_;
   std::string name_;
   guest_os::VmType vm_type_;
 };
@@ -1859,7 +1891,7 @@ class GuestOsTestVolume : public LocalTestVolume {
 
   const base::FilePath& mount_path() const { return root_path(); }
 
-  MockGuestOsMountProvider* provider_;
+  raw_ptr<MockGuestOsMountProvider, ExperimentalAsh> provider_;
 };
 
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
@@ -1870,8 +1902,9 @@ static bool ShouldInspect(content::DevToolsAgentHost* host) {
   // TODO(crbug.com/v8/10820): Add background_page back in once
   // coverage can be collected when a background_page and app
   // share the same v8 isolate.
-  if (host->GetTitle() == "Files" && host->GetType() == "app")
+  if (host->GetTitle() == "Files" && host->GetType() == "app") {
     return true;
+  }
 
   return false;
 }
@@ -1904,8 +1937,9 @@ void FileManagerBrowserTestBase::DevToolsAgentHostAttached(
 
 void FileManagerBrowserTestBase::DevToolsAgentHostNavigated(
     content::DevToolsAgentHost* host) {
-  if (devtools_agent_.find(host) == devtools_agent_.end())
+  if (devtools_agent_.find(host) == devtools_agent_.end()) {
     return;
+  }
 
   if (ShouldInspect(host)) {
     LOG(INFO) << coverage::DevToolsListener::HostString(host, __FUNCTION__);
@@ -1921,8 +1955,9 @@ void FileManagerBrowserTestBase::DevToolsAgentHostDetached(
 void FileManagerBrowserTestBase::DevToolsAgentHostCrashed(
     content::DevToolsAgentHost* host,
     base::TerminationStatus status) {
-  if (devtools_agent_.find(host) == devtools_agent_.end())
+  if (devtools_agent_.find(host) == devtools_agent_.end()) {
     return;
+  }
   NOTREACHED();
 }
 
@@ -2025,9 +2060,9 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   }
 
   if (options.enable_upload_office_to_cloud) {
-    enabled_features.push_back(ash::features::kUploadOfficeToCloud);
+    enabled_features.push_back(chromeos::features::kUploadOfficeToCloud);
   } else {
-    disabled_features.push_back(ash::features::kUploadOfficeToCloud);
+    disabled_features.push_back(chromeos::features::kUploadOfficeToCloud);
   }
 
   if (command_line->HasSwitch(switches::kDevtoolsCodeCoverage) &&
@@ -2090,8 +2125,9 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 }
 
 bool FileManagerBrowserTestBase::SetUpUserDataDirectory() {
-  if (GetOptions().guest_mode == IN_GUEST_MODE)
+  if (GetOptions().guest_mode == IN_GUEST_MODE) {
     return true;
+  }
 
   return extensions::MixinBasedExtensionApiTest::SetUpUserDataDirectory() &&
          drive::SetUpUserDataDirectoryForDriveFsTest(GetAccountId());
@@ -2108,8 +2144,9 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 
   local_volume_ = std::make_unique<DownloadsTestVolume>();
 
-  if (GetOptions().guest_mode == IN_GUEST_MODE)
+  if (GetOptions().guest_mode == IN_GUEST_MODE) {
     return;
+  }
 
   create_drive_integration_service_ = base::BindRepeating(
       &FileManagerBrowserTestBase::CreateDriveIntegrationService,
@@ -2158,7 +2195,6 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
 
     // Init crostini.  Set VM and container running for testing, and register
     // CustomMountPointCallback.
-    crostini_volume_ = std::make_unique<CrostiniTestVolume>();
     if (options.guest_mode != IN_INCOGNITO) {
       crostini_features_.set_is_allowed_now(true);
       crostini_features_.set_enabled(true);
@@ -2169,12 +2205,15 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
         crostini::CrostiniManager::GetForProfile(
             profile()->GetOriginalProfile());
     crostini_manager->set_skip_restart_for_testing();
-    crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName);
+    crostini_manager->AddRunningVmForTesting(crostini::kCrostiniDefaultVmName,
+                                             3);
     crostini_manager->AddRunningContainerForTesting(
         crostini::kCrostiniDefaultVmName,
         crostini::ContainerInfo(crostini::kCrostiniDefaultContainerName,
-                                "testuser", "/home/testuser",
-                                "PLACEHOLDER_IP"));
+                                "testuser", "/home/testuser", "PLACEHOLDER_IP",
+                                1234));
+    crostini_volume_ = std::make_unique<CrostiniTestVolume>("sftp://3:1234");
+
     guest_os::GuestOsSharePath::GetForProfile(profile()->GetOriginalProfile())
         ->RegisterGuest(crostini::DefaultContainerId());
     static_cast<ash::FakeCrosDisksClient*>(ash::CrosDisksClient::Get())
@@ -2246,8 +2285,9 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
       std::make_unique<NotificationDisplayServiceTester>(profile());
 
   process_id_ = base::GetUniqueIdForProcess().GetUnsafeValue();
-  if (!devtools_code_coverage_dir_.empty())
+  if (!devtools_code_coverage_dir_.empty()) {
     content::DevToolsAgentHost::AddObserver(this);
+  }
 
   content::NetworkConnectionChangeSimulator network_change_simulator;
   network_change_simulator.SetConnectionType(
@@ -2290,8 +2330,9 @@ void FileManagerBrowserTestBase::StartTest() {
   LaunchExtension(test_extension_dir, GetTestExtensionManifestName());
   RunTestMessageLoop();
 
-  if (devtools_code_coverage_dir_.empty())
+  if (devtools_code_coverage_dir_.empty()) {
     return;
+  }
 
   content::DevToolsAgentHost::RemoveObserver(this);
   content::RunAllTasksUntilIdle();
@@ -2304,8 +2345,9 @@ void FileManagerBrowserTestBase::StartTest() {
 
   for (auto& agent : devtools_agent_) {
     auto* host = agent.first;
-    if (agent.second->HasCoverage(host))
+    if (agent.second->HasCoverage(host)) {
       agent.second->GetCoverage(host, store, full_test_name);
+    }
     agent.second->Detach(host);
   }
 
@@ -2448,12 +2490,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   if (name == "launchFileManager") {
     const std::string* launch_dir = value.FindString("launchDir");
     base::Value::Dict arg_value;
-    if (launch_dir)
+    if (launch_dir) {
       arg_value.Set("currentDirectoryURL", *launch_dir);
+    }
 
     const std::string* type = value.FindString("type");
-    if (type)
+    if (type) {
       arg_value.Set("type", *type);
+    }
 
     const base::Value::List* volume_filter = value.FindList("volumeFilter");
     if (volume_filter) {
@@ -2611,8 +2655,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
             }
             return content::RenderFrameHost::FrameIterationAction::kContinue;
           });
-      if (found)
+      if (found) {
         return;
+      }
     }
     // Fail the test if the chrome-untrusted:// frame wasn't found.
     NOTREACHED();
@@ -2676,8 +2721,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     const GURL url = embedded_test_server()->GetURL(
         "/chromeos/file_manager/cws_container_mock/index.html");
     std::string origin = url.DeprecatedGetOriginAsURL().spec();
-    if (*origin.rbegin() == '/')  // Strip origin trailing '/'.
+    if (*origin.rbegin() == '/') {  // Strip origin trailing '/'.
       origin.resize(origin.length() - 1);
+    }
 
     base::Value::Dict dictionary;
     dictionary.Set("url", url.spec());
@@ -2802,10 +2848,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         "fake-usb", VOLUME_TYPE_REMOVABLE_DISK_PARTITION, ash::DeviceType::kUSB,
         base::FilePath(), "FAKEUSB", file_system);
 
-    if (name == "mountFakeUsb")
+    if (name == "mountFakeUsb") {
       ASSERT_TRUE(usb_volume_->PrepareTestEntries(profile()));
-    else if (name == "mountFakeUsbDcim")
+    } else if (name == "mountFakeUsbDcim") {
       ASSERT_TRUE(usb_volume_->PrepareDcimTestEntries(profile()));
+    }
 
     ASSERT_TRUE(usb_volume_->Mount(profile()));
     return;
@@ -2882,8 +2929,9 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     mtp_volume_ = std::make_unique<FakeTestVolume>("fake-mtp", VOLUME_TYPE_MTP,
                                                    ash::DeviceType::kUnknown);
 
-    if (name == "mountFakeMtp")
+    if (name == "mountFakeMtp") {
       ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
+    }
 
     ASSERT_TRUE(mtp_volume_->Mount(profile()));
     return;
@@ -3090,8 +3138,12 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     CHECK(base::Contains(swa_web_contents_, *app_id))
         << "Couldn't find the SWA WebContents for appId: " << *app_id;
     web_contents = swa_web_contents_[*app_id];
-    SimulateMouseClickAt(web_contents, 0 /* modifiers */,
-                         blink::WebMouseEvent::Button::kLeft,
+
+    absl::optional<bool> leftClick = value.FindBool("leftClick");
+    ASSERT_TRUE(leftClick.has_value());
+    auto button = leftClick.value() ? blink::WebMouseEvent::Button::kLeft
+                                    : blink::WebMouseEvent::Button::kRight;
+    SimulateMouseClickAt(web_contents, 0 /* modifiers */, button,
                          gfx::Point(*click_x, *click_y));
     return;
   }
@@ -3164,7 +3216,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "isDarkModeEnabled") {
-    ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
     *output = ash::DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()
                   ? "true"
                   : "false";
@@ -3460,7 +3511,10 @@ base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
     const std::vector<std::string>& mount_options) {
   GURL source_url(source_path);
   DCHECK(source_url.is_valid());
-  if (source_url.scheme() != "sshfs") {
+  if (source_url.scheme() != "sftp") {
+    return {};
+  }
+  if (source_path != crostini_volume_->source_path()) {
     return {};
   }
   CHECK(crostini_volume_->Mount(profile()));
@@ -3520,14 +3574,17 @@ FileManagerBrowserTestBase::GetAllWebContents() {
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* rwh = widgets->GetNextHost()) {
     content::RenderViewHost* rvh = content::RenderViewHost::From(rwh);
-    if (!rvh)
+    if (!rvh) {
       continue;
+    }
     content::WebContents* web_contents =
         content::WebContents::FromRenderViewHost(rvh);
-    if (!web_contents)
+    if (!web_contents) {
       continue;
-    if (web_contents->GetPrimaryMainFrame()->GetRenderViewHost() != rvh)
+    }
+    if (web_contents->GetPrimaryMainFrame()->GetRenderViewHost() != rvh) {
       continue;
+    }
     // Because a WebContents can only have one current RVH at a time, there will
     // be no duplicate WebContents here.
     result.push_back(web_contents);

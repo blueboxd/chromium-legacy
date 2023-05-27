@@ -101,6 +101,7 @@ namespace ash {
   E_CPONLY(kColorAshInkDrop) \
   E_CPONLY(kColorAshInkDropOpaqueColor) \
   /* Colors for Google Assistant */ \
+  E_CPONLY(kColorAshAssistantBgPlate) \
   E_CPONLY(kColorAshAssistantGreetingEnabled) \
   E_CPONLY(kColorAshSuggestionChipViewTextView) \
   E_CPONLY(kColorAshAssistantQueryHighConfidenceLabel) \
@@ -126,7 +127,9 @@ namespace ash {
   /* Color for feature tile small circle */ \
   E_CPONLY(kColorAshTileSmallCircle) \
   /* Color for the background of the app count indicator on a folder */ \
-  E_CPONLY(kColorAshFolderItemCountBackgroundColor)
+  E_CPONLY(kColorAshFolderItemCountBackgroundColor) \
+  /* Color for the background of the phantom window */ \
+  E_CPONLY(kColorAshPhantomWindowBackgroundColor)
 
 #include "ui/color/color_id_macros.inc"
 

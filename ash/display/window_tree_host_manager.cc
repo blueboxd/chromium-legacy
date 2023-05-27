@@ -29,6 +29,7 @@
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -99,6 +100,16 @@ void SetDisplayPropertiesOnHost(AshWindowTreeHost* ash_host,
 
   host->SetDisplayTransformHint(
       display::DisplayRotationToOverlayTransform(effective_rotation));
+
+  const display::ManagedDisplayInfo& display_info =
+      GetDisplayManager()->GetDisplayInfo(display.id());
+  absl::optional<base::TimeDelta> max_vrr_interval = absl::nullopt;
+  if (display_info.variable_refresh_rate_state() == display::kVrrEnabled &&
+      display_info.vsync_rate_min().has_value() &&
+      display_info.vsync_rate_min() > 0) {
+    max_vrr_interval = base::Hertz(display_info.vsync_rate_min().value());
+  }
+  host->compositor()->SetMaxVrrInterval(max_vrr_interval);
 
   // Just moving the display requires the full redraw.
   // chrome-os-partner:33558.
@@ -218,12 +229,12 @@ class FocusActivationStore {
   }
 
  private:
-  ::wm::ActivationClient* activation_client_;
-  aura::client::CaptureClient* capture_client_;
-  aura::client::FocusClient* focus_client_;
+  raw_ptr<::wm::ActivationClient, ExperimentalAsh> activation_client_;
+  raw_ptr<aura::client::CaptureClient, ExperimentalAsh> capture_client_;
+  raw_ptr<aura::client::FocusClient, ExperimentalAsh> focus_client_;
   aura::WindowTracker tracker_;
-  aura::Window* focused_;
-  aura::Window* active_;
+  raw_ptr<aura::Window, ExperimentalAsh> focused_;
+  raw_ptr<aura::Window, ExperimentalAsh> active_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -683,7 +694,7 @@ void WindowTreeHostManager::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
   if (!(metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION |
-                   DISPLAY_METRIC_DEVICE_SCALE_FACTOR))) {
+                   DISPLAY_METRIC_DEVICE_SCALE_FACTOR | DISPLAY_METRIC_VRR))) {
     return;
   }
 

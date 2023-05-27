@@ -107,9 +107,9 @@ ExternalSource GetExternalSourceFromExternalImage(
         external_source.external_texture_source = external_texture_source;
         DCHECK(external_texture_source.media_video_frame);
         external_source.width = static_cast<uint32_t>(
-            external_texture_source.media_video_frame->visible_rect().width());
+            external_texture_source.media_video_frame->natural_size().width());
         external_source.height = static_cast<uint32_t>(
-            external_texture_source.media_video_frame->visible_rect().height());
+            external_texture_source.media_video_frame->natural_size().height());
         external_source.valid = true;
       }
       return external_source;
@@ -154,12 +154,13 @@ ExternalSource GetExternalSourceFromExternalImage(
     return external_source;
   }
 
-  if (canvas && !(canvas->IsWebGL() || canvas->IsRenderingContext2D() ||
-                  canvas->IsWebGPU())) {
+  if (canvas &&
+      !(canvas->IsWebGL() || canvas->IsRenderingContext2D() ||
+        canvas->IsWebGPU() || canvas->IsImageBitmapRenderingContext())) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kOperationError,
-        "CopyExternalImageToTexture doesn't support canvas without 2d, webgl,"
-        " webgl2 or webgpu context");
+        "CopyExternalImageToTexture doesn't support canvas without rendering "
+        "context");
     return external_source;
   }
 
@@ -578,10 +579,11 @@ void GPUQueue::copyExternalImageToTexture(
   }
 
   if (source.external_texture_source.valid) {
-    CopyFromVideoElement(source.external_texture_source,
-                         origin_in_external_image, dawn_copy_size,
-                         dawn_destination, destination->premultipliedAlpha(),
-                         color_space, copyImage->flipY());
+    WGPUExtent2D video_frame_natural_size = {source.width, source.height};
+    CopyFromVideoElement(
+        source.external_texture_source, video_frame_natural_size,
+        origin_in_external_image, dawn_copy_size, dawn_destination,
+        destination->premultipliedAlpha(), color_space, copyImage->flipY());
     return;
   }
 
@@ -598,13 +600,15 @@ void GPUQueue::copyExternalImageToTexture(
   }
 }
 
-void GPUQueue::CopyFromVideoElement(const ExternalTextureSource source,
-                                    const WGPUOrigin2D& origin,
-                                    const WGPUExtent3D& copy_size,
-                                    const WGPUImageCopyTexture& destination,
-                                    bool dst_premultiplied_alpha,
-                                    PredefinedColorSpace dst_color_space,
-                                    bool flipY) {
+void GPUQueue::CopyFromVideoElement(
+    const ExternalTextureSource source,
+    const WGPUExtent2D& video_frame_natural_size,
+    const WGPUOrigin2D& origin,
+    const WGPUExtent3D& copy_size,
+    const WGPUImageCopyTexture& destination,
+    bool dst_premultiplied_alpha,
+    PredefinedColorSpace dst_color_space,
+    bool flipY) {
   DCHECK(source.valid);
 
   // Import GPUExternalTexture to sRGB color space always.
@@ -651,6 +655,7 @@ void GPUQueue::CopyFromVideoElement(const ExternalTextureSource source,
   WGPUImageCopyExternalTexture src = {};
   src.externalTexture = external_texture.wgpu_external_texture;
   src.origin = {origin.x, origin.y, 0};
+  src.naturalSize = video_frame_natural_size;
 
   GetProcs().queueCopyExternalTextureForBrowser(GetHandle(), &src, &destination,
                                                 &copy_size, &options);
@@ -674,18 +679,18 @@ bool GPUQueue::CopyFromCanvasSourceImage(
 // platform requires interop supported. According to the bug, this change will
 // be a long time task. So disable using webgpu mailbox texture uploading path
 // on linux platform.
-// TODO(crbug.com/1424119): using a webgpu mailbox texture on the OpenGLES
-// backend is failing for unknown reasons.
 #if BUILDFLAG(IS_LINUX)
-  bool forceReadback = true;
-#else
-  bool forceReadback =
-      device()->adapter()->backendType() == WGPUBackendType_OpenGLES;
+  use_webgpu_mailbox_texture = false;
+  unaccelerated_image = image->MakeUnaccelerated();
+  image = unaccelerated_image.get();
 #endif  // BUILDFLAG(IS_LINUX)
-  if (forceReadback) {
+
+  // TODO(crbug.com/1424119):
+  // Using a webgpu mailbox texture to upload a cpu-backed resource on OpenGLES uploads all
+  // zeros. Disable that upload path if the image is not texture-backed.
+  auto backendType = device()->adapter()->backendType();
+  if (backendType == WGPUBackendType_OpenGLES && !image->IsTextureBacked()) {
     use_webgpu_mailbox_texture = false;
-    unaccelerated_image = image->MakeUnaccelerated();
-    image = unaccelerated_image.get();
   }
 
   // TODO(crbug.com/1426666): If disable OOP-R, using webgpu mailbox to upload

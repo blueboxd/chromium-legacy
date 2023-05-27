@@ -8,18 +8,11 @@
 
 namespace web_app {
 
-ScopeExtensionInfo::ScopeExtensionInfo(const url::Origin& origin)
-    : origin(origin) {}
-
-ScopeExtensionInfo::ScopeExtensionInfo(const url::Origin& origin,
-                                       bool has_origin_wildcard)
-    : origin(origin), has_origin_wildcard(has_origin_wildcard) {}
-
 base::Value ScopeExtensionInfo::AsDebugValue() const {
-  base::Value root(base::Value::Type::DICT);
-  root.SetStringKey("origin", origin.GetDebugString());
-  root.SetBoolKey("has_origin_wildcard", has_origin_wildcard);
-  return root;
+  base::Value::Dict root = base::Value::Dict()
+                               .Set("origin", origin.GetDebugString())
+                               .Set("has_origin_wildcard", has_origin_wildcard);
+  return base::Value(std::move(root));
 }
 
 void ScopeExtensionInfo::Reset() {

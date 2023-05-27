@@ -1672,16 +1672,8 @@
         "name": "dummy_benchmark.stable_benchmark_1/dummy_page.html"
     },
     {
-        "duration": "175.0",
-        "name": "jetstream/JetStream"
-    },
-    {
         "duration": "155.0",
         "name": "jetstream2/JetStream2"
-    },
-    {
-        "duration": "24.0",
-        "name": "kraken/http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html"
     },
     {
         "duration": "19.0",
@@ -3728,10 +3720,6 @@
         "name": "speedometer2-future/Speedometer2"
     },
     {
-        "duration": "65.0",
-        "name": "speedometer2-pcscan/Speedometer2"
-    },
-    {
         "duration": "62.0",
         "name": "speedometer2/Speedometer2"
     },
@@ -4382,10 +4370,6 @@
     {
         "duration": "40.0",
         "name": "system_health.memory_desktop/play:media:soundcloud:2018"
-    },
-    {
-        "duration": "0.0",
-        "name": "system_health.pcscan/browse:news:cnn:2021"
     },
     {
         "duration": "0.0",

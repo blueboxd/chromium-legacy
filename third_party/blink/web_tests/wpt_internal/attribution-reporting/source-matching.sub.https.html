@@ -6,23 +6,23 @@
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/helpers.js"></script>
 <script>
-
 const source_matching_promise_test = (testCase) => {
   attribution_reporting_promise_test(async t => {
-    await registerAttributionSrc(t, {
-      source: {
-        destination: testCase.sourceDestination,
+    registerAttributionSrcByImg(createRedirectChain([
+      {
+        reportingOrigin: testCase.sourceReportingOrigin,
+        source: {
+          destination: testCase.sourceDestination,
+        },
       },
-      reportingOrigin: testCase.sourceReportingOrigin,
-    });
-
-    await registerAttributionSrc(t, {
-      trigger: {
-        event_trigger_data: [{}],
-        debug_reporting: true,
+      {
+        cookie: attributionDebugCookie,
+        trigger: {
+          event_trigger_data: [{}],
+          debug_reporting: true,
+        },
       },
-      cookie: attributionDebugCookie,
-    });
+    ]));
 
     if (testCase.expectMatched) {
       const payload = await pollEventLevelReports();

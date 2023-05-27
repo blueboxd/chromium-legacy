@@ -80,7 +80,11 @@ xiaohuic@chromium.org
 # chrome
 tbansal@chromium.org
 # commerce
-wychen@chromium.org
+ayman@chromium.org
+# companion
+mcrouse@chromium.org
+shaktisahu@chromium.org
+tbansal@chromium.org
 # compositing
 schenney@chromium.org
 jonross@chromium.org
@@ -173,6 +177,7 @@ ajuma@chromium.org
 olivierrobin@chromium.org
 sebsg@chromium.org
 # language
+perrier@chromium.org
 curranmax@chromium.org
 mcrouse@chromium.org
 # leveldb_proto
@@ -377,6 +382,7 @@ joenotcharles@google.com
 olivierli@chromium.org
 dfried@chromium.org
 # translate
+perrier@chromium.org
 curranmax@chromium.org
 tbansal@chromium.org
 toyoshim@chromium.org

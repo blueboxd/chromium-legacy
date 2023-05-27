@@ -22,9 +22,12 @@ BASE_FEATURE(kClosedTabCache,
 
 // Destroy profiles when their last browser window is closed, instead of when
 // the browser exits.
+// On Lacros the feature is enabled only for secondary profiles, check the
+// implementation of `ProfileManager::ProfileInfo::FromUnownedProfile()`.
 BASE_FEATURE(kDestroyProfileOnBrowserClose,
              "DestroyProfileOnBrowserClose",
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
              base::FEATURE_ENABLED_BY_DEFAULT);
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -189,7 +192,7 @@ const base::FeatureParam<int> kLargeFaviconFromGoogleSizeInDip{
 // See https://bit.ly/chromium-startup-no-guest-profile.
 BASE_FEATURE(kObserverBasedPostProfileInit,
              "ObserverBasedPostProfileInit",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the static key pinning list can be updated via component
 // updater.
@@ -209,6 +212,12 @@ BASE_FEATURE(kRestartNetworkServiceUnsandboxedForFailedLaunch,
 BASE_FEATURE(kAppBoundEncryptionMetrics,
              "AppBoundEncryptionMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables locking the cookie database for profiles.
+// TODO(crbug.com/1430226): Remove after fully launched.
+BASE_FEATURE(kLockProfileCookieDatabase,
+             "LockProfileCookieDatabase",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Enables showing the email of the flex org admin that setup CBCM in the
@@ -236,6 +245,54 @@ BASE_FEATURE(kFedCmWithoutThirdPartyCookies,
 // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/Notifications/notifications_actions_customization.md
 BASE_FEATURE(kIncomingCallNotifications,
              "IncomingCallNotifications",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables omnibox trigger prerendering.
+BASE_FEATURE(kOmniboxTriggerForPrerender2,
+             "OmniboxTriggerForPrerender2",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables bookmark trigger prerendering.
+BASE_FEATURE(kBookmarkTriggerForPrerender2,
+             "BookmarkTriggerForPrerender2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSupportSearchSuggestionForPrerender2,
+             "SupportSearchSuggestionForPrerender2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<SearchSuggestionPrerenderImplementationType>::Option
+    search_suggestion_implementation_types[] = {
+        {SearchSuggestionPrerenderImplementationType::kUsePrefetch,
+         "use_prefetch"},
+        {SearchSuggestionPrerenderImplementationType::kIgnorePrefetch,
+         "ignore_prefetch"}};
+const base::FeatureParam<SearchSuggestionPrerenderImplementationType>
+    kSearchSuggestionPrerenderImplementationTypeParam{
+        &kSupportSearchSuggestionForPrerender2, "implementation_type",
+        SearchSuggestionPrerenderImplementationType::kIgnorePrefetch,
+        &search_suggestion_implementation_types};
+
+const base::FeatureParam<SearchPreloadShareableCacheType>::Option
+    search_preload_shareable_cache_types[] = {
+        {SearchPreloadShareableCacheType::kEnabled, "enabled"},
+        {SearchPreloadShareableCacheType::kDisabled, "disabled"}};
+const base::FeatureParam<SearchPreloadShareableCacheType>
+    kSearchPreloadShareableCacheTypeParam{
+        &kSupportSearchSuggestionForPrerender2, "shareable_cache",
+        SearchPreloadShareableCacheType::kEnabled,
+        &search_preload_shareable_cache_types};
+
+BASE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff,
+             "AutocompleteActionPredictorConfidenceCutoff",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables omnibox trigger no state prefetch. Only one of
+// kOmniboxTriggerForPrerender2 or kOmniboxTriggerForNoStatePrefetch can be
+// enabled in the experiment. If both are enabled, only
+// kOmniboxTriggerForPrerender2 takes effect.
+// TODO(crbug.com/1267731): Remove this flag once the experiments are completed.
+BASE_FEATURE(kOmniboxTriggerForNoStatePrefetch,
+             "OmniboxTriggerForNoStatePrefetch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

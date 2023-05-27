@@ -9,6 +9,7 @@ import os
 import shutil
 import subprocess
 
+import mac_util
 import test_runner_errors
 
 LOGGER = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ XcodeIOSSimulatorDefaultRuntimeFilename = 'iOS.simruntime'
 XcodeIOSSimulatorRuntimeRelPath = ('Contents/Developer/Platforms/'
                                    'iPhoneOS.platform/Library/Developer/'
                                    'CoreSimulator/Profiles/Runtimes')
+XcodeCipdFiles = ['.cipd', '.xcode_versions']
 
 
 def _using_new_mac_toolchain(mac_toolchain):
@@ -62,6 +64,7 @@ def _is_legacy_xcode_package(xcode_app_path):
   runtimes_in_xcode = glob.glob(
       os.path.join(xcode_app_path, XcodeIOSSimulatorRuntimeRelPath,
                    '*.simruntime'))
+
   is_legacy = len(runtimes_in_xcode) >= 2
   if not is_legacy:
     for runtime in runtimes_in_xcode:
@@ -88,7 +91,7 @@ def _install_runtime(mac_toolchain, install_path, xcode_build_version,
   # status folders, so mac_toolchain(underlying CIPD) will work to download a
   # new one.
   if len(existing_runtimes) == 0:
-    for dir_name in ['.cipd', '.xcode_versions']:
+    for dir_name in XcodeCipdFiles:
       dir_path = os.path.join(install_path, dir_name)
       if os.path.exists(dir_path):
         LOGGER.warning('Removing %s in runtime cache folder.', dir_path)
@@ -258,6 +261,8 @@ def install(mac_toolchain, xcode_build_version, xcode_app_path, **runtime_args):
 
   If using legacy mac_toolchain, install the whole legacy Xcode package. (Will
   raise if the Xcode package isn't legacy.)
+  UPDATE: all MacOS13+ bots will also install the whole legacy Xcode package due
+  to the new codesign restrictions in crbug/1406204
 
   If using new mac_toolchain, first install the Xcode package:
   * If installed Xcode is legacy one (with runtimes bundled), return.
@@ -286,9 +291,29 @@ def install(mac_toolchain, xcode_build_version, xcode_app_path, **runtime_args):
   """
   using_new_mac_toolchain = _using_new_mac_toolchain(mac_toolchain)
 
+  # (crbug/1406204): for MacOS13+, cipd files are automatically removed in
+  # mac_toolchain prior to runFirstLaunch because they will cause codesign
+  # check failures. If the cached Xcode still contains cipd files, it means
+  # that something went wrong during the install process, and the Xcode should
+  # be re-installed.
+  if mac_util.is_macos_13_or_higher():
+    LOGGER.debug('checking if the cached Xcode is corruputed...')
+    for dir_name in XcodeCipdFiles:
+      dir_path = os.path.join(xcode_app_path, dir_name)
+      if os.path.exists(dir_path):
+        LOGGER.debug('Xcode cache will be re-created because it contains %s' %
+                     dir_path)
+        shutil.rmtree(xcode_app_path)
+        os.mkdir(xcode_app_path)
+        break
+
   _install_xcode(mac_toolchain, xcode_build_version, xcode_app_path,
                  using_new_mac_toolchain)
-  is_legacy_xcode_package = _is_legacy_xcode_package(xcode_app_path)
+
+  # (crbug/1406204): for MacOS13+, we are using Xcode fat upload/download again,
+  # so runtime should not be installed separately.
+  is_legacy_xcode_package = mac_util.is_macos_13_or_higher(
+  ) or _is_legacy_xcode_package(xcode_app_path)
 
   if not using_new_mac_toolchain and not is_legacy_xcode_package:
     # Legacy mac_toolchain can't handle the situation when no runtime is in

@@ -135,6 +135,8 @@ viz_component("service") {
     "display_embedder/skia_output_surface_impl.h",
     "display_embedder/skia_output_surface_impl_on_gpu.cc",
     "display_embedder/skia_output_surface_impl_on_gpu.h",
+    "display_embedder/skia_output_surface_impl_on_gpu_debug_capture.cc",
+    "display_embedder/skia_output_surface_impl_on_gpu_debug_capture.h",
     "display_embedder/skia_render_copy_results.cc",
     "display_embedder/skia_render_copy_results.h",
     "display_embedder/software_output_surface.cc",
@@ -189,6 +191,8 @@ viz_component("service") {
     "hit_test/hit_test_aggregator_delegate.h",
     "hit_test/hit_test_manager.cc",
     "hit_test/hit_test_manager.h",
+    "layers/layer_context_impl.cc",
+    "layers/layer_context_impl.h",
     "performance_hint/hint_session.cc",
     "performance_hint/hint_session.h",
     "performance_hint/utils.cc",
@@ -246,6 +250,7 @@ viz_component("service") {
     "//media",
     "//media/capture:capture_lib",
     "//media/mojo/services",
+    "//services/metrics/public/mojom",
     "//services/tracing/public/cpp:cpp",
     "//services/viz/privileged/mojom",
     "//skia",
@@ -257,6 +262,8 @@ viz_component("service") {
 
   public_deps = [
     "//base",
+    "//cc",
+    "//cc/animation",
     "//cc/debug",
     "//components/viz/common",
     "//gpu/command_buffer/service:gles2",
@@ -264,6 +271,7 @@ viz_component("service") {
     "//gpu/vulkan:buildflags",
     "//media/gpu/ipc/service",
     "//media/mojo/services",
+    "//services/metrics/public/cpp:metrics_cpp",
     "//services/viz/privileged/mojom/compositing",
     "//services/viz/privileged/mojom/gl",
     "//services/viz/public/mojom",
@@ -549,6 +557,7 @@ viz_source_set("unit_tests") {
     sources += [
       "display/overlay_combination_cache_unittest.cc",
       "display/overlay_processor_ozone_unittest.cc",
+      "display/overlay_proposed_candidate_unittest.cc",
       "display/overlay_unittest.cc",
       "display_embedder/software_output_device_ozone_unittest.cc",
     ]
@@ -589,6 +598,7 @@ viz_source_set("unit_tests") {
     sources += [
       "display/overlay_combination_cache_unittest.cc",
       "display/overlay_processor_surface_control_unittest.cc",
+      "display/overlay_proposed_candidate_unittest.cc",
       "display/overlay_unittest.cc",
       "frame_sinks/external_begin_frame_source_android_unittest.cc",
     ]

@@ -6,8 +6,10 @@
 
 #include <memory>
 
+#include "ash/components/arc/mojom/net.mojom.h"
 #include "ash/components/arc/net/browser_url_opener.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -40,10 +42,17 @@ class PasspointDialogViewTest : public views::ViewsTestBase {
 
     widget_ = CreateTestWidget();
     widget_->SetBounds(gfx::Rect(800, 800));
+
+    mojom::PasspointApprovalRequestPtr request =
+        mojom::PasspointApprovalRequest::New(
+            /*package_name=*/std::string(), /*app_name=*/std::string(),
+            /*friendly_name=*/std::string(),
+            /*subscription_expiration_time_ms=*/0);
     dialog_view_ =
         widget_->SetContentsView(std::make_unique<PasspointDialogView>(
-            /*app_name=*/"", base::BindOnce(&PasspointDialogViewTest::OnClicked,
-                                            base::Unretained(this))));
+            std::move(request),
+            base::BindOnce(&PasspointDialogViewTest::OnClicked,
+                           base::Unretained(this))));
     widget_->Show();
   }
 
@@ -96,7 +105,7 @@ class PasspointDialogViewTest : public views::ViewsTestBase {
   // Handles URL open.
   std::unique_ptr<TestBrowserUrlOpener> browser_delegate_;
 
-  PasspointDialogView* dialog_view_;
+  raw_ptr<PasspointDialogView, ExperimentalAsh> dialog_view_;
   std::unique_ptr<views::Widget> widget_;
 };
 

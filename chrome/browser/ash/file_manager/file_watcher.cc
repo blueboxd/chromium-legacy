@@ -33,8 +33,9 @@ base::FilePathWatcher* CreateAndStartFilePathWatcher(
 
   std::unique_ptr<base::FilePathWatcher> watcher(new base::FilePathWatcher);
   if (!watcher->Watch(watch_path, base::FilePathWatcher::Type::kNonRecursive,
-                      callback))
+                      callback)) {
     return nullptr;
+  }
 
   return watcher.release();
 }
@@ -82,7 +83,7 @@ FileWatcher::FileWatcher(const base::FilePath& virtual_path)
 FileWatcher::~FileWatcher() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  sequenced_task_runner_->DeleteSoon(FROM_HERE, local_file_watcher_);
+  sequenced_task_runner_->DeleteSoon(FROM_HERE, local_file_watcher_.get());
 }
 
 void FileWatcher::AddListener(const url::Origin& listener) {
@@ -102,8 +103,9 @@ void FileWatcher::RemoveListener(const url::Origin& listener) {
 
   // If entry found - decrease it's count and remove if necessary
   --it->second;
-  if (it->second == 0)
+  if (it->second == 0) {
     origins_.erase(it);
+  }
 }
 
 std::vector<url::Origin> FileWatcher::GetListeners() const {

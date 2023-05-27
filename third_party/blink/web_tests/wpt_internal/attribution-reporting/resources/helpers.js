@@ -2,18 +2,29 @@
  * Helper functions for attribution reporting API tests.
  */
 
-const blankURL = (base = location.origin) => new URL('/wpt_internal/attribution-reporting/resources/empty.py', base);
+const blankURL = (base = location.origin) => new URL('/wpt_internal/attribution-reporting/resources/reporting_origin.py', base);
 
 const attribution_reporting_promise_test = (f, name) =>
     promise_test(async t => {
-      t.add_cleanup(() => internals.resetAttributionReporting());
-      t.add_cleanup(() => resetAttributionReports(eventLevelReportsUrl));
-      t.add_cleanup(() => resetAttributionReports(aggregatableReportsUrl));
-      t.add_cleanup(() => resetAttributionReports(eventLevelDebugReportsUrl));
-      t.add_cleanup(() => resetAttributionReports(aggregatableDebugReportsUrl));
-      t.add_cleanup(() => resetAttributionReports(verboseDebugReportsUrl));
+      await Promise.all([
+        internals.resetAttributionReporting(),
+        resetWptServer(),
+      ]);
+
       return f(t);
     }, name);
+
+const resetWptServer = () =>
+    Promise
+        .all([
+          resetAttributionReports(eventLevelReportsUrl),
+          resetAttributionReports(aggregatableReportsUrl),
+          resetAttributionReports(eventLevelDebugReportsUrl),
+          resetAttributionReports(aggregatableDebugReportsUrl),
+          resetAttributionReports(verboseDebugReportsUrl),
+          resetRegisteredSources(),
+          clearCookies(),
+        ]);
 
 const eventLevelReportsUrl =
     '/.well-known/attribution-reporting/report-event-attribution';
@@ -27,20 +38,6 @@ const verboseDebugReportsUrl =
     '/.well-known/attribution-reporting/debug/verbose';
 
 const attributionDebugCookie = 'ar_debug=1;Secure;HttpOnly;SameSite=None;Path=/';
-
-/**
- * Method to clear the stash. Takes the URL as parameter. This could be for
- * event-level or aggregatable reports.
- */
-const resetAttributionReports = url => {
-  // The view of the stash is path-specific (https://web-platform-tests.org/tools/wptserve/docs/stash.html),
-  // therefore the origin doesn't need to be specified.
-  url = `${url}?clear_stash=true`;
-  const options = {
-    method: 'POST',
-  };
-  return fetch(url, options);
-};
 
 const pipeHeaderPattern = /[,)]/g;
 
@@ -61,6 +58,44 @@ const blankURLWithHeaders = (headers, origin, status) => {
   }
 
   return url;
+};
+
+/**
+ * Clears the source registration stash.
+ */
+const resetRegisteredSources = () => {
+  return fetch(`${blankURL()}?clear-stash=true`);
+}
+
+const clearCookies = async () => {
+  const headers = [{ name: 'Clear-Site-Data', value: '"cookies"'}];
+  await fetch(blankURLWithHeaders(headers, location.origin));
+
+  // If the test isn't configured to get a cross origin (does not import
+  // get-host-info.js), there is no need or way to clear its cookies.
+  if (typeof get_host_info != "function") {
+    return;
+  }
+
+  const crossOrigin = get_host_info().HTTPS_REMOTE_ORIGIN;
+  const params = getFetchParams(crossOrigin);
+  return fetch(
+      blankURLWithHeaders(params.headers.concat(headers), crossOrigin),
+      {credentials: params.credentials});
+}
+
+/**
+ * Method to clear the stash. Takes the URL as parameter. This could be for
+ * event-level or aggregatable reports.
+ */
+const resetAttributionReports = url => {
+  // The view of the stash is path-specific (https://web-platform-tests.org/tools/wptserve/docs/stash.html),
+  // therefore the origin doesn't need to be specified.
+  url = `${url}?clear_stash=true`;
+  const options = {
+    method: 'POST',
+  };
+  return fetch(url, options);
 };
 
 const getFetchParams = (origin, cookie) => {
@@ -88,7 +123,7 @@ const getFetchParams = (origin, cookie) => {
     });
     headers.push({
       name: allowHeadersHeader,
-      value: 'Attribution-Reporting-Eligible, Attribution-Reporting-Support',
+      value: `${eligibleHeader}`,
     })
   } else {
     headers.push({
@@ -109,10 +144,52 @@ const getDefaultReportingOrigin = () => {
   return crossOrigin === null ? location.origin : get_host_info().HTTPS_REMOTE_ORIGIN;
 };
 
-const eligibleHeader = 'Attribution-Reporting-Eligible';
-const supportHeader = 'Attribution-Reporting-Support';
+const createRedirectChain = (redirects) => {
+  let redirectTo;
 
-const registerAttributionSrc = async (t, {
+  for (let i = redirects.length - 1; i >= 0; i--) {
+    const {source, trigger, cookie, reportingOrigin} = redirects[i];
+    const headers = [];
+
+    if (source) {
+      headers.push({
+        name: 'Attribution-Reporting-Register-Source',
+        value: JSON.stringify(source),
+      });
+    }
+
+    if (trigger) {
+      headers.push({
+        name: 'Attribution-Reporting-Register-Trigger',
+        value: JSON.stringify(trigger),
+      });
+    }
+
+    if (cookie) {
+      headers.push({name: 'Set-Cookie', value: cookie});
+    }
+
+    let status;
+    if (redirectTo) {
+      headers.push({name: 'Location', value: redirectTo.toString()});
+      status = '302';
+    }
+
+    redirectTo = blankURLWithHeaders(
+        headers, reportingOrigin || getDefaultReportingOrigin(), status);
+  }
+
+  return redirectTo;
+};
+
+const registerAttributionSrcByImg = (attributionSrc) => {
+  const element = document.createElement('img');
+  element.attributionSrc = attributionSrc;
+};
+
+const eligibleHeader = 'Attribution-Reporting-Eligible';
+
+const registerAttributionSrc = async ({
   source,
   trigger,
   cookie,
@@ -128,7 +205,6 @@ const registerAttributionSrc = async (t, {
 
   const eligible = searchParams.get('eligible');
 
-  let status;
   let headers = [];
 
   if (source) {
@@ -148,21 +224,8 @@ const registerAttributionSrc = async (t, {
   if (cookie) {
     const name = 'Set-Cookie';
     headers.push({name, value: cookie});
-
-    // Delete the cookie at the end of the test.
-    const params = getFetchParams(reportingOrigin, cookie);
-    t.add_cleanup(() => fetch(blankURLWithHeaders(params.headers.concat([{
-                    name,
-                    value: `${cookie};Max-Age=0`,
-                  }]), reportingOrigin), {credentials: params.credentials}));
   }
 
-  // a and open with valueless attributionsrc support registrations on all
-  // but the last request in a redirect chain, so add a no-op redirect.
-  if (eligible !== null && (method === 'a' || method === 'open')) {
-    headers.push({name: 'Location', value: blankURL().toString()});
-    status = '302';
-  }
 
   let credentials;
   if (method === 'fetch') {
@@ -171,7 +234,7 @@ const registerAttributionSrc = async (t, {
     headers = headers.concat(params.headers);
   }
 
-  const url = blankURLWithHeaders(headers, reportingOrigin, status);
+  const url = blankURLWithHeaders(headers, reportingOrigin);
 
   Object.entries(extraQueryParams)
       .forEach(([key, value]) => url.searchParams.set(key, value));
@@ -237,10 +300,6 @@ const registerAttributionSrc = async (t, {
       if (eligible !== null) {
         headers[eligibleHeader] = eligible;
       }
-      const support = searchParams.get('support');
-      if (support !== null) {
-        headers[supportHeader] = support;
-      }
       await fetch(url, {headers, credentials});
       return 'event';
     case 'xhr':
@@ -260,35 +319,54 @@ const registerAttributionSrc = async (t, {
   }
 };
 
+
+/**
+ * Generates a random pseudo-unique source event id.
+ */
+const generateSourceEventId = () => {
+  return `${Math.round(Math.random() * 10000000000000)}`;
+}
+
 /**
  * Delay method that waits for prescribed number of milliseconds.
  */
 const delay = ms => new Promise(resolve => step_timeout(resolve, ms));
 
 /**
- * Method that polls a particular URL every interval for reports. Once reports
+ * Method that polls a particular URL for reports. Once reports
  * are received, returns the payload as promise.
  */
-const pollAttributionReports = async (url, origin = location.origin, interval = 100) => {
-  const resp = await fetch(new URL(url, origin));
-  const payload = await resp.json();
-  if (payload.reports.length === 0) {
-    await delay(interval);
-    return pollAttributionReports(url, origin, interval);
+const pollAttributionReports = async (url, origin = location.origin) => {
+  while (true) {
+    const resp = await fetch(new URL(url, origin));
+    const payload = await resp.json();
+    if (payload.reports.length > 0) {
+      return payload;
+    }
+    await delay(/*ms=*/ 100);
   }
-  return new Promise(resolve => resolve(payload));
 };
 
-const pollEventLevelReports = (origin, interval) =>
-    pollAttributionReports(eventLevelReportsUrl, origin, interval);
-const pollEventLevelDebugReports = (origin, interval) =>
-    pollAttributionReports(eventLevelDebugReportsUrl, origin, interval);
-const pollAggregatableReports = (origin, interval) =>
-    pollAttributionReports(aggregatableReportsUrl, origin, interval);
-const pollAggregatableDebugReports = (origin, interval) =>
-    pollAttributionReports(aggregatableDebugReportsUrl, origin, interval);
-const pollVerboseDebugReports = (origin, interval) =>
-    pollAttributionReports(verboseDebugReportsUrl, origin, interval);
+// Verbose debug reporting must have been enabled on the source registration for this to work.
+const waitForSourceToBeRegistered = async (sourceId, reportingOrigin) => {
+  const debugReportPayload = await pollVerboseDebugReports(reportingOrigin);
+  assert_equals(debugReportPayload.reports.length, 1);
+  const debugReport = JSON.parse(debugReportPayload.reports[0].body);
+  assert_equals(debugReport.length, 1);
+  assert_equals(debugReport[0].type, 'source-success');
+  assert_equals(debugReport[0].body.source_event_id, sourceId);
+};
+
+const pollEventLevelReports = (origin) =>
+    pollAttributionReports(eventLevelReportsUrl, origin);
+const pollEventLevelDebugReports = (origin) =>
+    pollAttributionReports(eventLevelDebugReportsUrl, origin);
+const pollAggregatableReports = (origin) =>
+    pollAttributionReports(aggregatableReportsUrl, origin);
+const pollAggregatableDebugReports = (origin) =>
+    pollAttributionReports(aggregatableDebugReportsUrl, origin);
+const pollVerboseDebugReports = (origin) =>
+    pollAttributionReports(verboseDebugReportsUrl, origin);
 
 const validateReportHeaders = headers => {
   assert_array_equals(headers['content-type'], ['application/json']);

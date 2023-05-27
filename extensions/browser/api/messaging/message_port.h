@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/values.h"
+#include "extensions/browser/activity.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
@@ -19,6 +20,7 @@ class RenderFrameHost;
 }
 
 namespace extensions {
+enum class ChannelType;
 struct Message;
 struct MessagingEndpoint;
 struct PortId;
@@ -64,6 +66,7 @@ class MessagePort {
 
   // Notifies the port that the channel has been opened.
   virtual void DispatchOnConnect(
+      ChannelType channel_type,
       const std::string& channel_name,
       absl::optional<base::Value::Dict> source_tab,
       const ExtensionApiFrameIdMap::FrameData& source_frame,
@@ -89,16 +92,23 @@ class MessagePort {
 
   // MessagePorts that target extensions will need to adjust their keepalive
   // counts for their lazy background page.
-  virtual void IncrementLazyKeepaliveCount();
-  virtual void DecrementLazyKeepaliveCount();
+  virtual void IncrementLazyKeepaliveCount(Activity::Type activity_type);
+  virtual void DecrementLazyKeepaliveCount(Activity::Type activity_type);
 
   // Notifies the message port that one of the receivers intents to respond
   // later.
   virtual void NotifyResponsePending();
 
-  bool should_have_strong_keepalive() { return should_have_strong_keepalive_; }
+  bool should_have_strong_keepalive() const {
+    return should_have_strong_keepalive_;
+  }
+  bool is_for_onetime_channel() const { return is_for_onetime_channel_; }
+
   void set_should_have_strong_keepalive(bool should_have_strong_keepalive) {
     should_have_strong_keepalive_ = should_have_strong_keepalive;
+  }
+  void set_is_for_onetime_channel(bool is_for_onetime_channel) {
+    is_for_onetime_channel_ = is_for_onetime_channel;
   }
 
  protected:
@@ -107,6 +117,9 @@ class MessagePort {
  private:
   // This port should keep the service worker alive while it is open.
   bool should_have_strong_keepalive_ = false;
+
+  // This port was created for one-time messaging channel.
+  bool is_for_onetime_channel_ = false;
 };
 
 }  // namespace extensions

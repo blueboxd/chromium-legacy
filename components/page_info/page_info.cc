@@ -342,6 +342,8 @@ PageInfo::PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
     controller_ = delegate_->CreateCookieControlsController();
     observation_.Observe(controller_.get());
 
+    // TODO(crbug.com/1430440): SetCookiesInfo is called twice, once from here
+    // and once from InitializeUiState. This should be cleaned up.
     controller_->Update(web_contents);
   }
 #endif
@@ -472,11 +474,6 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
         .SetActionTaken(action)
         .Record(ukm::UkmRecorder::Get());
   }
-
-  base::UmaHistogramEnumeration(
-      security_state::GetSafetyTipHistogramName(
-          "Security.SafetyTips.PageInfo.Action", safety_tip_info_.status),
-      action);
 
   auto* settings = GetPageSpecificContentSettings();
   if (!settings)

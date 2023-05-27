@@ -18,6 +18,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
@@ -56,6 +57,8 @@ const size_t VisitedLinkWriter::kFileHeaderSize =
 // This value should also be the same as the smallest size in the lookup
 // table in NewTableSizeForCount (prime number).
 const unsigned VisitedLinkWriter::kDefaultTableSize = 16381;
+
+bool VisitedLinkWriter::fail_table_creation_for_testing_ = false;
 
 namespace {
 
@@ -116,6 +119,16 @@ void AsyncTruncate(base::ScopedFILE* file) {
     base::IgnoreResult(base::TruncateFile(file->get()));
   }
 }
+
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "AddFingerprint" in tools/metrics/histograms/enums.xml.
+enum class AddFingerprint {
+  kNewVisit = 0,
+  kAlreadyVisited = 1,
+  kTableError = 2,
+  kMaxValue = kTableError,
+};
 
 }  // namespace
 
@@ -201,7 +214,7 @@ class VisitedLinkWriter::TableBuilder
   void OnCompleteMainThread();
 
   // Owner of this object. MAY ONLY BE ACCESSED ON THE MAIN THREAD!
-  raw_ptr<VisitedLinkWriter> writer_;
+  raw_ptr<VisitedLinkWriter, DanglingUntriaged> writer_;
 
   // Indicates whether the operation has failed or not.
   bool success_;
@@ -290,6 +303,8 @@ bool VisitedLinkWriter::Init() {
 
 void VisitedLinkWriter::AddURL(const GURL& url, bool update_file) {
   TRACE_EVENT0("browser", "VisitedLinkWriter::AddURL");
+  UMA_HISTOGRAM_COUNTS_10M("History.VisitedLinks.HashTableUsageOnLinkAdded",
+                           used_items_);
   Hash index = TryToAddURL(url);
   if (!table_builder_ && !table_is_loading_from_file_ && index != null_hash_) {
     // Not rebuilding, so we want to keep the file on disk up to date.
@@ -446,6 +461,8 @@ VisitedLinkWriter::Hash VisitedLinkWriter::AddFingerprint(
     Fingerprint fingerprint,
     bool send_notifications) {
   if (!hash_table_ || table_length_ == 0) {
+    UMA_HISTOGRAM_ENUMERATION("History.VisitedLinks.TryToAddFingerprint",
+                              AddFingerprint::kTableError);
     NOTREACHED();  // Not initialized.
     return null_hash_;
   }
@@ -454,8 +471,11 @@ VisitedLinkWriter::Hash VisitedLinkWriter::AddFingerprint(
   Hash first_hash = cur_hash;
   while (true) {
     Fingerprint cur_fingerprint = FingerprintAt(cur_hash);
-    if (cur_fingerprint == fingerprint)
+    if (cur_fingerprint == fingerprint) {
+      UMA_HISTOGRAM_ENUMERATION("History.VisitedLinks.TryToAddFingerprint",
+                                AddFingerprint::kAlreadyVisited);
       return null_hash_;  // This fingerprint is already in there, do nothing.
+    }
 
     if (cur_fingerprint == null_fingerprint_) {
       // End of probe sequence found, insert here.
@@ -464,6 +484,8 @@ VisitedLinkWriter::Hash VisitedLinkWriter::AddFingerprint(
       // If allowed, notify listener that a new visited link was added.
       if (send_notifications)
         listener_->Add(fingerprint);
+      UMA_HISTOGRAM_ENUMERATION("History.VisitedLinks.TryToAddFingerprint",
+                                AddFingerprint::kNewVisit);
       return cur_hash;
     }
 
@@ -473,6 +495,8 @@ VisitedLinkWriter::Hash VisitedLinkWriter::AddFingerprint(
       // This means that we've wrapped around and are about to go into an
       // infinite loop. Something was wrong with the hashtable resizing
       // logic, so stop here.
+      UMA_HISTOGRAM_ENUMERATION("History.VisitedLinks.TryToAddFingerprint",
+                                AddFingerprint::kTableError);
       NOTREACHED();
       return null_hash_;
     }
@@ -844,7 +868,8 @@ bool VisitedLinkWriter::GetDatabaseFileName(base::FilePath* filename) {
 // in so that it can be written to the shared memory
 bool VisitedLinkWriter::CreateURLTable(int32_t num_entries) {
   base::MappedReadOnlyRegion table_memory;
-  if (CreateApartURLTable(num_entries, salt_, &table_memory)) {
+  if (!VisitedLinkWriter::fail_table_creation_for_testing_ &&
+      CreateApartURLTable(num_entries, salt_, &table_memory)) {
     mapped_table_memory_ = std::move(table_memory);
     hash_table_ = GetHashTableFromMapping(mapped_table_memory_.mapping);
     table_length_ = num_entries;
@@ -866,6 +891,8 @@ bool VisitedLinkWriter::CreateApartURLTable(
   // The table is the size of the table followed by the entries.
   uint32_t alloc_size =
       num_entries * sizeof(Fingerprint) + sizeof(SharedHeader);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("History.VisitedLinks.HashTableSizeOnTableCreate",
+                              alloc_size / 1024 / 1024, 1, 10000, 100);
 
   // Create the shared memory object.
   *memory = base::ReadOnlySharedMemoryRegion::Create(alloc_size);
@@ -878,24 +905,6 @@ bool VisitedLinkWriter::CreateApartURLTable(
   SharedHeader* header = static_cast<SharedHeader*>(memory->mapping.memory());
   header->length = num_entries;
   memcpy(header->salt, salt, LINK_SALT_LENGTH);
-
-  return true;
-}
-
-bool VisitedLinkWriter::BeginReplaceURLTable(int32_t num_entries) {
-  base::MappedReadOnlyRegion old_memory = std::move(mapped_table_memory_);
-  int32_t old_table_length = table_length_;
-  if (!CreateURLTable(num_entries)) {
-    // Try to put back the old state.
-    mapped_table_memory_ = std::move(old_memory);
-    hash_table_ = GetHashTableFromMapping(mapped_table_memory_.mapping);
-    table_length_ = old_table_length;
-    return false;
-  }
-
-#ifndef NDEBUG
-  DebugValidate();
-#endif
 
   return true;
 }
@@ -938,7 +947,6 @@ bool VisitedLinkWriter::ResizeTableIfNecessary() {
 void VisitedLinkWriter::ResizeTable(int32_t new_size) {
   DCHECK(mapped_table_memory_.region.IsValid() &&
          mapped_table_memory_.mapping.IsValid());
-  shared_memory_serial_++;
 
 #ifndef NDEBUG
   DebugValidate();
@@ -946,11 +954,14 @@ void VisitedLinkWriter::ResizeTable(int32_t new_size) {
 
   auto old_hash_table_mapping = std::move(mapped_table_memory_.mapping);
   int32_t old_table_length = table_length_;
-  if (!BeginReplaceURLTable(new_size)) {
+  if (!CreateURLTable(new_size)) {
+    // Restore modified members.
     mapped_table_memory_.mapping = std::move(old_hash_table_mapping);
-    hash_table_ = GetHashTableFromMapping(mapped_table_memory_.mapping);
     return;
   }
+
+  shared_memory_serial_++;
+
   {
     Fingerprint* old_hash_table =
         GetHashTableFromMapping(old_hash_table_mapping);
@@ -1035,7 +1046,7 @@ void VisitedLinkWriter::OnTableRebuildComplete(
 
     int new_table_size = NewTableSizeForCount(
         static_cast<int>(fingerprints.size() + added_since_rebuild_.size()));
-    if (BeginReplaceURLTable(new_table_size)) {
+    if (CreateURLTable(new_table_size)) {
       // Add the stored fingerprints to the hash table.
       for (const auto& fingerprint : fingerprints)
         AddFingerprint(fingerprint, false);

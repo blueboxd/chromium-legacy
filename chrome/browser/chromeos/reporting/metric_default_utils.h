@@ -42,6 +42,9 @@ constexpr base::TimeDelta kDefaultReportUploadFrequencyForTesting =
 // Initial metric reporting upload delay.
 constexpr base::TimeDelta kInitialUploadDelay = base::Minutes(3);
 
+// Minimum usage time threshold for app usage reporting.
+constexpr base::TimeDelta kMinimumAppUsageTime = base::Milliseconds(1);
+
 // Default value for reporting device activity heartbeats.
 constexpr bool kDeviceActivityHeartbeatEnabledDefaultValue = false;
 
@@ -50,6 +53,9 @@ constexpr bool kReportDeviceAudioStatusDefaultValue = true;
 
 // Default value for reporting device network status.
 constexpr bool kReportDeviceNetworkStatusDefaultValue = true;
+
+// Default value for reporting device network events.
+constexpr bool kDeviceReportNetworkEventsDefaultValue = false;
 
 // Default value for reporting device peripheral status.
 constexpr bool kReportDevicePeripheralsDefaultValue = false;

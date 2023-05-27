@@ -79,7 +79,6 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="2928420929544864228">A telepítés befejeződött.</translation>
 <translation id="2977470724722393594">A Chromium naprakész</translation>
 <translation id="2977506796191543575">Ha valamelyik webhely megpróbálja ellopni az Ön jelszavát, illetve ha Ön kártékony fájlt tölt le, akkor a Chromium elküldheti az URL-eket is (az oldal tartalmának részeivel együtt) a Biztonságos Böngészésnek.</translation>
-<translation id="3021964162552004083">{NUM_DEVICES,plural, =1{A Chromium HID-eszközhöz csatlakozik}other{A Chromium HID-eszközökhöz csatlakozik}}</translation>
 <translation id="3032706164202344641">A Chromium nem tudja ellenőrizni a jelszavait. Próbálkozzon később.</translation>
 <translation id="3032787606318309379">Hozzáadás a Chromiumhoz...</translation>
 <translation id="3038232873781883849">Várakozás a telepítésre…</translation>
@@ -94,7 +93,6 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="3258596308407688501">A Chromium nem tudja olvasni és írni az adatkönyvtárát:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
-<translation id="3259037713047794342">Ez az útmutató segít megérteni a választható lehetőségeket, hogy a Chromium az Ön által kívánt módon működhessen</translation>
 <translation id="3283186697780795848">A Chromium <ph name="PRODUCT_VERSION" /> verziója telepítve van</translation>
 <translation id="3286538390144397061">Újraindítás most</translation>
 <translation id="328888136576916638">Hiányoznak Google API-kulcsok. A Chromium egyes funkciói kikapcsolnak.</translation>
@@ -246,8 +244,10 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="6442900851116057561">A ChromiumOS újraindítása</translation>
 <translation id="6455857529632101747">Üdvözöljük a Chromium-profilokban!</translation>
 <translation id="6475912303565314141">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor.</translation>
+<translation id="648319183876919572">A Biztonságos Böngészés fokozott védelemmel funkció többet tesz a veszélyes webhelyekkel és letöltésekkel szembeni védekezésért</translation>
 <translation id="6510925080656968729">Chromium eltávolítása</translation>
 <translation id="6542839706527980775">Minden profil saját Chromium-adatokat (például könyvjelzőket, előzményeket, jelszavakat és egyebeket) tárol.</translation>
+<translation id="656935081669708576">Átválthat másik Chromium-profilra, ha meg szeretné nézni annak jelszavait</translation>
 <translation id="6570579332384693436">A nyelvtani hibák javítása érdekében a Chromium elküldi a szövegmezőkbe gépelt szöveget a Google-nak</translation>
 <translation id="6598877126913850652">A Chromium értesítési beállításainak megnyitása</translation>
 <translation id="6613594504749178791">Módosításai a Chromium újraindítása után lépnek érvénybe.</translation>
@@ -381,7 +381,6 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="924957577793602335">Tegye sajátjává a Chromiumot</translation>
 <translation id="93478295209880648">Előfordulhat, hogy a Chromium nem működik majd megfelelően, mert a továbbiakban már nem támogatja a következő rendszereket: Windows XP és Windows Vista</translation>
 <translation id="942598560705308788">A Chromium által kezelt tanúsítványok</translation>
-<translation id="959579472876010517">Hozza ki a legtöbbet a Chromiumból</translation>
 <translation id="965162752251293939">Ki használja a Chromiumot?</translation>
 <translation id="967427899662692980">Állítsa be a Chromium legerősebb védelmét</translation>
 <translation id="9792300276217204">Mindig törölje a webhelyadatokat az eszközről a Chromium bezárásakor</translation>

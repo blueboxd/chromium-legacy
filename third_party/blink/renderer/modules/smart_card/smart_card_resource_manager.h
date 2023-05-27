@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SMART_CARD_SMART_CARD_RESOURCE_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SMART_CARD_SMART_CARD_RESOURCE_MANAGER_H_
 
-#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/smart_card/smart_card.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -15,8 +14,10 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
+#include "third_party/blink/renderer/platform/wtf/gc_plugin.h"
 
 namespace blink {
 
@@ -32,7 +33,6 @@ class MODULES_EXPORT SmartCardResourceManager final
 
  public:
   using SmartCardReaderInfoPtr = mojom::blink::SmartCardReaderInfoPtr;
-  using SmartCardResponseCode = mojom::blink::SmartCardResponseCode;
 
   static const char kSupplementName[];
 
@@ -57,7 +57,13 @@ class MODULES_EXPORT SmartCardResourceManager final
   void ReaderAdded(SmartCardReaderInfoPtr reader_info) override;
   void ReaderRemoved(SmartCardReaderInfoPtr reader_info) override;
   void ReaderChanged(SmartCardReaderInfoPtr reader_info) override;
-  void Error(SmartCardResponseCode response_code) override;
+  void Error(device::mojom::blink::SmartCardError error) override;
+
+  // Used by SmarCardReader::connect
+  void Connect(const String& reader_name,
+               device::mojom::blink::SmartCardShareMode share_mode,
+               device::mojom::blink::SmartCardProtocolsPtr preferred_protocols,
+               mojom::blink::SmartCardService::ConnectCallback callback);
 
  private:
   SmartCardReader* GetOrCreateReader(SmartCardReaderInfoPtr info);
@@ -73,8 +79,9 @@ class MODULES_EXPORT SmartCardResourceManager final
   SmartCardReaderPresenceObserver* GetOrCreatePresenceObserver();
 
   HeapMojoRemote<mojom::blink::SmartCardService> service_;
-  mojo::AssociatedReceiver<mojom::blink::SmartCardServiceClient> receiver_{
-      this};
+  HeapMojoAssociatedReceiver<mojom::blink::SmartCardServiceClient,
+                             SmartCardResourceManager>
+      receiver_;
   HeapHashSet<Member<ScriptPromiseResolver>> get_readers_promises_;
   HeapHashSet<Member<ScriptPromiseResolver>> watch_for_readers_promises_;
   bool tracking_started_ = false;

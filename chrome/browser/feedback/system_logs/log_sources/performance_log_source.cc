@@ -44,15 +44,8 @@ std::string BatterySaverModeStateToString(BatterySaverModeState state) {
 }  // namespace
 
 PerformanceLogSource::PerformanceLogSource() : SystemLogsSource("Performance") {
-  memory_saver_available_ = base::FeatureList::IsEnabled(
-      performance_manager::features::kHighEfficiencyModeAvailable);
-  battery_saver_available_ = base::FeatureList::IsEnabled(
-      performance_manager::features::kBatterySaverModeAvailable);
-
-  if (memory_saver_available_ || battery_saver_available_) {
-    tuning_manager_ = performance_manager::user_tuning::
-        UserPerformanceTuningManager::GetInstance();
-  }
+  tuning_manager_ = performance_manager::user_tuning::
+      UserPerformanceTuningManager::GetInstance();
 }
 
 PerformanceLogSource::~PerformanceLogSource() = default;
@@ -62,52 +55,45 @@ void PerformanceLogSource::Fetch(SysLogsSourceCallback callback) {
   DCHECK(!callback.is_null());
 
   auto response = std::make_unique<SystemLogsResponse>();
-  if (tuning_manager_ != nullptr) {
-    PopulatePerformanceSettingLogs(response.get());
-    PopulateBatteryDetailLogs(response.get());
-  }
+  CHECK(tuning_manager_);
+  PopulatePerformanceSettingLogs(response.get());
+  PopulateBatteryDetailLogs(response.get());
 
   std::move(callback).Run(std::move(response));
 }
 
 void PerformanceLogSource::PopulatePerformanceSettingLogs(
     SystemLogsResponse* response) {
-  if (memory_saver_available_) {
-    response->emplace(
-        "high_efficiency_mode_active",
-        BoolToString(tuning_manager_->IsHighEfficiencyModeActive()));
-  }
+  response->emplace(
+      "high_efficiency_mode_active",
+      BoolToString(tuning_manager_->IsHighEfficiencyModeActive()));
 
-  if (battery_saver_available_) {
-    PrefService* local_prefs = g_browser_process->local_state();
-    int battery_saver_state = local_prefs->GetInteger(kBatterySaverModeState);
-    bool is_battery_saver_active = tuning_manager_->IsBatterySaverActive();
-    bool is_battery_saver_disabled_for_session =
-        tuning_manager_->IsBatterySaverModeDisabledForSession();
+  PrefService* local_prefs = g_browser_process->local_state();
+  int battery_saver_state = local_prefs->GetInteger(kBatterySaverModeState);
+  bool is_battery_saver_active = tuning_manager_->IsBatterySaverActive();
+  bool is_battery_saver_disabled_for_session =
+      tuning_manager_->IsBatterySaverModeDisabledForSession();
 
-    response->emplace(
-        "battery_saver_state",
-        BatterySaverModeStateToString(
-            static_cast<BatterySaverModeState>(battery_saver_state)));
-    response->emplace("battery_saver_mode_active",
-                      BoolToString(is_battery_saver_active));
-    response->emplace("battery_saver_disabled_for_session",
-                      BoolToString(is_battery_saver_disabled_for_session));
-  }
+  response->emplace(
+      "battery_saver_state",
+      BatterySaverModeStateToString(
+          static_cast<BatterySaverModeState>(battery_saver_state)));
+  response->emplace("battery_saver_mode_active",
+                    BoolToString(is_battery_saver_active));
+  response->emplace("battery_saver_disabled_for_session",
+                    BoolToString(is_battery_saver_disabled_for_session));
 }
 
 void PerformanceLogSource::PopulateBatteryDetailLogs(
     SystemLogsResponse* response) {
-  if (battery_saver_available_) {
-    bool has_battery = tuning_manager_->DeviceHasBattery();
-    bool is_using_battery_power = tuning_manager_->IsUsingBatteryPower();
-    int battery_percentage = tuning_manager_->SampledBatteryPercentage();
+  bool has_battery = tuning_manager_->DeviceHasBattery();
+  bool is_using_battery_power = tuning_manager_->IsUsingBatteryPower();
+  int battery_percentage = tuning_manager_->SampledBatteryPercentage();
 
-    response->emplace("device_has_battery", BoolToString(has_battery));
-    response->emplace("device_using_battery_power",
-                      BoolToString(is_using_battery_power));
-    response->emplace("device_battery_percentage",
-                      base::NumberToString(battery_percentage));
-  }
+  response->emplace("device_has_battery", BoolToString(has_battery));
+  response->emplace("device_using_battery_power",
+                    BoolToString(is_using_battery_power));
+  response->emplace("device_battery_percentage",
+                    base::NumberToString(battery_percentage));
 }
 }  // namespace system_logs

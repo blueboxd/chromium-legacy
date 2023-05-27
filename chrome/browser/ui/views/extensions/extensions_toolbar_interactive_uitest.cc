@@ -7,6 +7,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -171,6 +172,22 @@ ExtensionsToolbarUITest::GetVisibleToolbarActionViews() const {
   auto views = GetToolbarActionViews();
   base::EraseIf(views, [](views::View* view) { return !view->GetVisible(); });
   return views;
+}
+
+ExtensionsToolbarButton* ExtensionsToolbarUITest::extensions_button() {
+  return GetExtensionsToolbarContainer()->GetExtensionsButton();
+}
+
+ExtensionsMenuCoordinator* ExtensionsToolbarUITest::menu_coordinator() {
+  return GetExtensionsToolbarContainer()
+      ->GetExtensionsMenuCoordinatorForTesting();
+}
+
+bool ExtensionsToolbarUITest::DidInjectScript(
+    content::WebContents* web_contents) {
+  return extensions::browsertest_util::DidChangeTitle(
+      *web_contents, /*original_title=*/u"OK",
+      /*changed_title=*/u"success");
 }
 
 void ExtensionsToolbarUITest::ClickButton(views::Button* button) const {

@@ -53,7 +53,6 @@
 #include "chrome/browser/ash/crosapi/field_trial_service_ash.h"
 #include "chrome/browser/ash/crosapi/file_manager_ash.h"
 #include "chrome/browser/ash/crosapi/file_system_provider_service_ash.h"
-#include "chrome/browser/ash/crosapi/firewall_hole_ash.h"
 #include "chrome/browser/ash/crosapi/force_installed_tracker_ash.h"
 #include "chrome/browser/ash/crosapi/fullscreen_controller_ash.h"
 #include "chrome/browser/ash/crosapi/geolocation_service_ash.h"
@@ -215,7 +214,6 @@ CrosapiAsh::CrosapiAsh(CrosapiDependencyRegistry* registry)
       file_manager_ash_(std::make_unique<FileManagerAsh>()),
       file_system_provider_service_ash_(
           std::make_unique<FileSystemProviderServiceAsh>()),
-      firewall_hole_service_ash_(std::make_unique<FirewallHoleServiceAsh>()),
       force_installed_tracker_ash_(
           std::make_unique<ForceInstalledTrackerAsh>()),
       fullscreen_controller_ash_(std::make_unique<FullscreenControllerAsh>()),
@@ -512,11 +510,6 @@ void CrosapiAsh::BindFileSystemProviderService(
   file_system_provider_service_ash_->BindReceiver(std::move(receiver));
 }
 
-void CrosapiAsh::BindFirewallHoleService(
-    mojo::PendingReceiver<crosapi::mojom::FirewallHoleService> receiver) {
-  firewall_hole_service_ash_->BindReceiver(std::move(receiver));
-}
-
 void CrosapiAsh::BindForceInstalledTracker(
     mojo::PendingReceiver<crosapi::mojom::ForceInstalledTracker> receiver) {
   force_installed_tracker_ash_->BindReceiver(std::move(receiver));
@@ -771,13 +764,11 @@ void CrosapiAsh::BindSpeechRecognition(
 void CrosapiAsh::BindStableVideoDecoderFactory(
     mojo::GenericPendingReceiver receiver) {
 #if BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
-  // TODO(b/171813538): if launching out-of-process video decoding for LaCrOS
-  // with Finch, we may need to tell LaCrOS somehow if this feature is enabled
-  // in ash-chrome. Otherwise, we may run into a situation in which the feature
-  // is enabled for LaCrOS but not for ash-chrome.
   auto r = receiver.As<media::stable::mojom::StableVideoDecoderFactory>();
-  if (r && base::FeatureList::IsEnabled(media::kUseOutOfProcessVideoDecoding))
+  if (r && base::FeatureList::IsEnabled(
+               media::kExposeOutOfProcessVideoDecodingToLacros)) {
     content::LaunchStableVideoDecoderFactory(std::move(r));
+  }
 #endif  // BUILDFLAG(USE_VAAPI) || BUILDFLAG(USE_V4L2_CODEC)
 }
 
@@ -893,6 +884,12 @@ void CrosapiAsh::OnBrowserStartup(mojom::BrowserInfoPtr browser_info) {
 
 void CrosapiAsh::REMOVED_29(
     mojo::PendingReceiver<mojom::SystemDisplayDeprecated> receiver) {
+  NOTIMPLEMENTED();
+}
+
+void CrosapiAsh::REMOVED_105(
+    mojo::PendingReceiver<crosapi::mojom::FirewallHoleServiceDeprecated>
+        receiver) {
   NOTIMPLEMENTED();
 }
 

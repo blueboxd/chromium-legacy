@@ -47,6 +47,8 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/grit/cros_styles_resources.h"  // nogncheck crbug.com/1113869
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -119,6 +121,14 @@ void ThemeSource::StartDataRequest(
     SendColorsCss(url, wc_getter, std::move(callback));
     return;
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  constexpr char kTypographyCssPath[] = "typography.css";
+  if (parsed_path == kTypographyCssPath) {
+    SendTypographyCss(std::move(callback));
+    return;
+  }
+#endif
 
   int resource_id = -1;
   if (parsed_path == "current-channel-logo") {
@@ -251,6 +261,13 @@ void ThemeSource::SendColorsCss(
 
   std::string sets_param;
   std::vector<base::StringPiece> color_id_sets;
+  bool generate_rgb_vars = false;
+  std::string generate_rgb_vars_query_value;
+  if (net::GetValueForKeyInQuery(url, "generate_rgb_vars",
+                                 &generate_rgb_vars_query_value)) {
+    generate_rgb_vars =
+        base::ToLowerASCII(generate_rgb_vars_query_value) == "true";
+  }
   if (!net::GetValueForKeyInQuery(url, "sets", &sets_param)) {
     LOG(ERROR)
         << "colors.css requires a 'sets' query parameter to specify the color "
@@ -262,7 +279,8 @@ void ThemeSource::SendColorsCss(
                                          base::SPLIT_WANT_ALL);
 
   using ColorIdCSSCallback = base::RepeatingCallback<std::string(ui::ColorId)>;
-  auto generate_color_mapping = [&color_id_sets, &color_provider](
+  auto generate_color_mapping = [&color_id_sets, &color_provider,
+                                 &generate_rgb_vars](
                                     std::string set_name, ui::ColorId start,
                                     ui::ColorId end,
                                     ColorIdCSSCallback color_css_name) {
@@ -279,6 +297,16 @@ void ThemeSource::SendColorsCss(
           base::StringPrintf("%s:%s;", color_css_name.Run(id).c_str(),
                              ui::ConvertSkColorToCSSColor(color).c_str());
       base::StrAppend(&css_string, {css_id_to_color_mapping});
+      if (generate_rgb_vars) {
+        // Also generate a r,g,b string for each color so apps can construct
+        // colors with their own opacities in css.
+        const std::string css_rgb_color_str =
+            color_utils::SkColorToRgbaString(color);
+        const std::string css_id_to_rgb_color_mapping =
+            base::StringPrintf("%s-rgb:%s;", color_css_name.Run(id).c_str(),
+                               css_rgb_color_str.c_str());
+        base::StrAppend(&css_string, {css_id_to_rgb_color_mapping});
+      }
     }
     return css_string;
   };
@@ -343,6 +371,22 @@ std::string ThemeSource::GetAccessControlAllowOriginForOrigin(
 
   return content::URLDataSource::GetAccessControlAllowOriginForOrigin(origin);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void ThemeSource::SendTypographyCss(
+    content::URLDataSource::GotDataCallback callback) {
+  if (!chromeos::features::IsJellyEnabled()) {
+    std::move(callback).Run(base::MakeRefCounted<base::RefCountedString>(
+        std::string("/* This file is intentionally blank */")));
+    return;
+  }
+
+  const ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  std::move(callback).Run(rb.LoadDataResourceBytesForScale(
+      IDR_CROS_STYLES_UI_CHROMEOS_STYLES_CROS_TYPOGRAPHY_CSS,
+      ui::kScaleFactorNone));
+}
+#endif
 
 std::string ThemeSource::GetContentSecurityPolicy(
     network::mojom::CSPDirectiveName directive) {

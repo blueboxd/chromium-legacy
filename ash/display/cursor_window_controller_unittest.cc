@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/display/cursor_window_controller.h"
+#include "base/memory/raw_ptr.h"
 
 #include <utility>
 
@@ -104,7 +105,7 @@ class CursorWindowControllerTest : public AshTestBase {
 
  private:
   // Not owned.
-  CursorWindowController* cursor_window_controller_;
+  raw_ptr<CursorWindowController, ExperimentalAsh> cursor_window_controller_;
 };
 
 // Test that the composited cursor moves to another display when the real cursor
@@ -267,8 +268,7 @@ TEST_F(CursorWindowControllerTest, ScaleUsesCorrectAssets) {
 // Test different properties of the composited cursor with different device
 // scale factors and zoom levels.
 TEST_F(CursorWindowControllerTest, DSF) {
-  auto* const cursor_shape_client = aura::client::GetCursorShapeClient();
-  DCHECK(cursor_shape_client);
+  const auto& cursor_shape_client = aura::client::GetCursorShapeClient();
 
   auto cursor_test = [&](ui::Cursor cursor, float size, float cursor_scale) {
     const float dsf =
@@ -278,7 +278,7 @@ TEST_F(CursorWindowControllerTest, DSF) {
 
     cursor_window_controller()->SetCursor(cursor);
     const absl::optional<ui::CursorData> cursor_data =
-        cursor_shape_client->GetCursorData(cursor);
+        cursor_shape_client.GetCursorData(cursor);
     DCHECK(cursor_data);
 
     // Software cursors look blurry if they are resized by the window they are

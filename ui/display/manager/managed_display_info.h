@@ -321,6 +321,21 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
     rounded_corners_radii_ = radii;
   }
 
+  VariableRefreshRateState variable_refresh_rate_state() const {
+    return variable_refresh_rate_state_;
+  }
+  void set_variable_refresh_rate_state(
+      VariableRefreshRateState variable_refresh_rate_state) {
+    variable_refresh_rate_state_ = variable_refresh_rate_state;
+  }
+
+  const absl::optional<uint16_t>& vsync_rate_min() const {
+    return vsync_rate_min_;
+  }
+  void set_vsync_rate_min(const absl::optional<uint16_t>& vsync_rate_min) {
+    vsync_rate_min_ = vsync_rate_min;
+  }
+
   // Returns a string representation of the ManagedDisplayInfo, excluding
   // display modes.
   std::string ToString() const;
@@ -435,8 +450,15 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
 
   DrmFormatsAndModifiers drm_formats_and_modifiers_;
 
+  VariableRefreshRateState variable_refresh_rate_state_;
+  absl::optional<uint16_t> vsync_rate_min_;
+
   // If you add a new member, you need to update Copy().
 };
+
+// Creates a managed display info for testing purposes only.
+ManagedDisplayInfo DISPLAY_MANAGER_EXPORT
+CreateDisplayInfo(int64_t id, const gfx::Rect& bounds);
 
 // Resets the synthesized display id for testing. This
 // is necessary to avoid overflowing the output index.

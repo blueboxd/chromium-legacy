@@ -9,9 +9,12 @@ source_set("public") {
     "browser_list.h",
     "browser_list_factory.h",
     "browser_list_observer.h",
+    "browser_list_observer.mm",
     "browser_observer.h",
     "browser_observer_bridge.h",
     "browser_observer_bridge.mm",
+    "browser_provider.h",
+    "browser_provider_interface.h",
     "browser_user_data.h",
   ]
   deps = [
@@ -56,6 +59,7 @@ source_set("main") {
     "//ios/chrome/browser/metrics:metrics_browser_agent",
     "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/policy",
+    "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/send_tab_to_self",
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sessions:restoration_agent",
@@ -65,11 +69,13 @@ source_set("main") {
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/sync:sync_error_browser_agent",
     "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/tabs:features",
     "//ios/chrome/browser/ui/start_surface",
     "//ios/chrome/browser/upgrade",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/web",
     "//ios/chrome/browser/web:delegate",
+    "//ios/chrome/browser/web:page_placeholder",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/browser/web_state_list:agents",
     "//ios/chrome/browser/web_state_list:session_metrics",
@@ -115,6 +121,8 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/sessions:fake",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/web_state_list",
@@ -122,6 +130,7 @@ source_set("unit_tests") {
     "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",
+    "//ui/base:test_support",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

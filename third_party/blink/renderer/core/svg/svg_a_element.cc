@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_inline.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_text.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_transformable_container.h"
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
@@ -97,8 +96,7 @@ void SVGAElement::SvgAttributeChanged(const SvgAttributeChangedParams& params) {
   SVGGraphicsElement::SvgAttributeChanged(params);
 }
 
-LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&,
-                                              LegacyLayout) {
+LayoutObject* SVGAElement::CreateLayoutObject(const ComputedStyle&) {
   auto* svg_element = DynamicTo<SVGElement>(parentNode());
   if (svg_element && svg_element->IsTextContent())
     return MakeGarbageCollected<LayoutSVGInline>(this);

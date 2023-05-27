@@ -29,35 +29,24 @@ class TabletModeMultitaskMenuEventHandler : public ui::EventHandler {
   static bool CanShowMenu(aura::Window* window);
 
   TabletModeMultitaskMenu* multitask_menu() { return multitask_menu_.get(); }
+  TabletModeMultitaskCue* multitask_cue() { return multitask_cue_.get(); }
 
   // Creates and shows the menu.
   void ShowMultitaskMenu(aura::Window* window);
 
-  // Destroys the multitask menu.
+  // Destroys the multitask menu and resets the position of the cue if it is
+  // visible.
   void ResetMultitaskMenu();
 
   // ui::EventHandler:
-  void OnTouchEvent(ui::TouchEvent* event) override;
-
-  TabletModeMultitaskCue* multitask_cue_for_testing() {
-    return multitask_cue_.get();
-  }
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  // Drag data needed to process menu events. `initial_location` is the initial
-  // touch in screen coordinates, and `is_drag` indicates whether this was
-  // actually a drag, since the touch may have pressed and released immediately.
-  struct InitialDragData {
-    gfx::PointF initial_location;
-    bool is_drag;
-  };
-
-  bool CanProcessEvent(aura::Window* window) const;
-
   void MaybeCreateMultitaskMenu(aura::Window* active_window);
 
-  // Valid if we may need to handle the event.
-  absl::optional<InitialDragData> initial_drag_data_;
+  // True while a drag to open or close the menu is in progress. Needed since a
+  // drag may go outside menu bounds, during which we still handle events.
+  bool is_drag_active_ = false;
 
   // Creates a draggable bar when app windows are activated.
   std::unique_ptr<TabletModeMultitaskCue> multitask_cue_;

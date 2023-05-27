@@ -578,13 +578,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void UpdateStyleAndLayoutTreeForContainer(Element& container,
                                             const LogicalSize&,
                                             LogicalAxes contained_axes);
-  void RecalcStyleForNonLayoutNGContainerDescendants(Element& container);
+  // To be called from layout-tree building for subtree skipped for style
+  // recalcs when we found out the container is eligible for size containment
+  // after all.
+  void UpdateStyleForNonEligibleContainer(Element& container);
   void RecalcStyle();
 
   void ClearEnsuredDescendantStyles(Element& element);
-  enum class RebuildTransitionPseudoTree { kYes, kNo };
-  void RebuildLayoutTree(
-      RebuildTransitionPseudoTree rebuild_transition_pseudo_tree);
+  void RebuildLayoutTree(Element* size_container = nullptr);
   bool InRebuildLayoutTree() const { return in_layout_tree_rebuild_; }
   bool InDOMRemoval() const { return in_dom_removal_; }
   bool InContainerQueryStyleRecalc() const {
@@ -658,10 +659,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   const ActiveStyleSheetVector& ActiveUserStyleSheetsForDebug() const {
     return active_user_style_sheets_;
   }
-
-  // Report a warning to the console that we are combining legacy layout and
-  // container queries.
-  void ReportUseOfLegacyLayoutWithContainerQueries();
 
  private:
   // FontSelectorClient implementation.
@@ -800,7 +797,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   // removal which caused a layout subtree to be detached.
   void MarkForLayoutTreeChangesAfterDetach();
 
-  void RebuildLayoutTreeForTraversalRootAncestors(Element* parent);
+  void RebuildLayoutTreeForTraversalRootAncestors(Element* parent,
+                                                  Element* container_parent);
 
   // Separate path for layout tree rebuild for re-attaching children of a
   // fieldset size query container, or a size query container which must use
@@ -895,10 +893,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   // Set to true if we are allowed to skip recalc for a size container subtree.
   bool allow_skip_style_recalc_{false};
-
-  // Set to true if we have detected an element which is a size query container
-  // rendered in legacy layout.
-  bool legacy_layout_query_container_{false};
 
   // See enum ViewportUnitFlag.
   unsigned viewport_unit_dirty_flags_{0};
@@ -1019,12 +1013,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   HeapHashMap<AtomicString, Member<const CSSValue>>
       fill_or_clip_path_uri_value_cache_;
 };
-
-// Helper function for checking if we need to handle legacy fragmentation cases
-// for container queries.
-inline bool HasFullNGFragmentationSupport() {
-  return RuntimeEnabledFeatures::LayoutNGPrintingEnabled();
-}
 
 void PossiblyScheduleNthPseudoInvalidations(Node& node);
 

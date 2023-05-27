@@ -23,6 +23,7 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
@@ -209,7 +210,7 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
                        mojo::ScopedMessagePipeHandle server_pipe);
 
   // Owned by ArcServiceManager.
-  ArcBridgeService* const arc_bridge_service_;
+  const raw_ptr<ArcBridgeService, ExperimentalAsh> arc_bridge_service_;
 
   const version_info::Channel channel_;
 
@@ -464,8 +465,8 @@ void ArcSessionImpl::DoStartMiniInstance(size_t num_cores_disabled) {
           arc::kKeyboardShortcutHelperIntegrationFeature);
   params.lcd_density = lcd_density_;
   params.num_cores_disabled = num_cores_disabled;
-  params.enable_notifications_refresh =
-      ash::features::IsNotificationsRefreshEnabled();
+  // TODO(b/278121256): Remove pre-NotificationsRefresh code from ARC.
+  params.enable_notifications_refresh = true;
   params.enable_tts_caching = true;
   params.enable_consumer_auto_update_toggle = base::FeatureList::IsEnabled(
       ash::features::kConsumerAutoUpdateToggleAllowed);
@@ -700,7 +701,7 @@ void ArcSessionImpl::OnMojoConnected(
   state_ = State::RUNNING_FULL_INSTANCE;
 
   // Some memory parameters may be changed when ARC is launched.
-  ash::UpdateMemoryParameters();
+  ash::UpdateMemoryParameters(arc::IsArcAvailable());
 }
 
 void ArcSessionImpl::Stop() {

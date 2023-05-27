@@ -5,6 +5,9 @@
 package org.chromium.chrome.browser.quick_delete;
 
 import android.content.Context;
+import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 
 import androidx.annotation.NonNull;
 
@@ -12,6 +15,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutType;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -24,27 +28,33 @@ public class QuickDeleteController {
     private static final MutableFlagWithSafeDefault sQuickDeleteForAndroidFlag =
             new MutableFlagWithSafeDefault(ChromeFeatureList.QUICK_DELETE_FOR_ANDROID, false);
 
-    private final @NonNull QuickDeleteDialogDelegate mQuickDeleteDialogDelegate;
-    private final @NonNull SnackbarManager mSnackbarManager;
     private final @NonNull Context mContext;
+    private final @NonNull QuickDeleteDelegate mDelegate;
+    private final @NonNull QuickDeleteDialogDelegate mDialogDelegate;
+    private final @NonNull SnackbarManager mSnackbarManager;
     private final @NonNull LayoutManager mLayoutManager;
 
     /**
      * Constructor for the QuickDeleteController with a dialog and confirmation snackbar.
      *
      * @param context The associated {@link Context}.
+     * @param delegate A {@link QuickDeleteDelegate} to perform the quick delete.
      * @param modalDialogManager A {@link ModalDialogManager} to show the quick delete modal dialog.
      * @param snackbarManager A {@link SnackbarManager} to show the quick delete snackbar.
      * @param layoutManager {@link LayoutManager} to use for showing the regular overview mode.
+     * @param tabModelSelector {@link TabModelSelector} to use for opening the links in search
+     *         history disambiguation notice.
      */
-    public QuickDeleteController(@NonNull Context context,
+    public QuickDeleteController(@NonNull Context context, @NonNull QuickDeleteDelegate delegate,
             @NonNull ModalDialogManager modalDialogManager,
-            @NonNull SnackbarManager snackbarManager, @NonNull LayoutManager layoutManager) {
+            @NonNull SnackbarManager snackbarManager, @NonNull LayoutManager layoutManager,
+            @NonNull TabModelSelector tabModelSelector) {
         mContext = context;
+        mDelegate = delegate;
         mSnackbarManager = snackbarManager;
         mLayoutManager = layoutManager;
-        mQuickDeleteDialogDelegate =
-                new QuickDeleteDialogDelegate(context, modalDialogManager, this::onDialogDismissed);
+        mDialogDelegate = new QuickDeleteDialogDelegate(
+                context, modalDialogManager, this::onDialogDismissed, tabModelSelector);
     }
 
     /**
@@ -58,7 +68,7 @@ public class QuickDeleteController {
      * A method responsible for triggering the quick delete flow.
      */
     public void triggerQuickDeleteFlow() {
-        mQuickDeleteDialogDelegate.showDialog();
+        mDialogDelegate.showDialog();
     }
 
     /**
@@ -70,19 +80,25 @@ public class QuickDeleteController {
         switch (dismissalCause) {
             case DialogDismissalCause.POSITIVE_BUTTON_CLICKED:
                 QuickDeleteMetricsDelegate.recordHistogram(
-                        QuickDeleteMetricsDelegate.PrivacyQuickDelete.DELETE_CLICKED);
-                navigateToTabSwitcher();
-                showSnackbar();
+                        QuickDeleteMetricsDelegate.QuickDeleteAction.DELETE_CLICKED);
+                mDelegate.performQuickDelete(this::onQuickDeleteFinished);
                 break;
             case DialogDismissalCause.NEGATIVE_BUTTON_CLICKED:
                 QuickDeleteMetricsDelegate.recordHistogram(
-                        QuickDeleteMetricsDelegate.PrivacyQuickDelete.CANCEL_CLICKED);
+                        QuickDeleteMetricsDelegate.QuickDeleteAction.CANCEL_CLICKED);
                 break;
             default:
                 QuickDeleteMetricsDelegate.recordHistogram(
-                        QuickDeleteMetricsDelegate.PrivacyQuickDelete.DIALOG_DISMISSED_IMPLICITLY);
+                        QuickDeleteMetricsDelegate.QuickDeleteAction.DIALOG_DISMISSED_IMPLICITLY);
                 break;
         }
+    }
+
+    private void onQuickDeleteFinished() {
+        navigateToTabSwitcher();
+        triggerHapticFeedback();
+        // TODO(crbug.com/1412087): Show post-delete animation.
+        showSnackbar();
     }
 
     /**
@@ -91,6 +107,17 @@ public class QuickDeleteController {
     private void navigateToTabSwitcher() {
         if (mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER)) return;
         mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, /*animate=*/true);
+    }
+
+    private void triggerHapticFeedback() {
+        Vibrator v = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
+        final long duration = 50;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            // Deprecated in API 26.
+            v.vibrate(duration);
+        }
     }
 
     /**

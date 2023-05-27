@@ -6,16 +6,17 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <iterator>
 #include <list>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
@@ -65,6 +66,8 @@
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_tab.h"
 #include "chrome/browser/ui/startup/startup_types.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
+#include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -662,8 +665,6 @@ class SessionRestoreImpl : public BrowserListObserver {
       // but unminimized.
       base::flat_map<tab_groups::TabGroupId, tab_groups::TabGroupId>
           new_group_ids;
-      // TODO(https://crbug.com/1378744): did_show_browser is for tracking
-      // down a bug.
       bool did_show_browser = false;
       RestoreTabsToBrowser(*(*i), browser, initial_tab_count, created_contents,
                            &new_group_ids, did_show_browser);
@@ -674,32 +675,9 @@ class SessionRestoreImpl : public BrowserListObserver {
       (*tab_count) += (static_cast<int>(browser->tab_strip_model()->count()) -
                        initial_tab_count);
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-#if BUILDFLAG(IS_MAC)
-      // On the mac, app visibility is asynchronously available, so we can't
-      // rely on a particular value here.
-      const bool is_visibility_async =
-          browser->type() == Browser::Type::TYPE_APP;
-#else
-      const bool is_visibility_async = false;
-#endif  // BUILDFLAG(IS_MAC)
-
-      DCHECK(is_visibility_async || browser->window()->IsVisible() ||
-             browser->window()->IsMinimized());
-
-#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
-
       // 6. Tabs will be grouped appropriately in RestoreTabsToBrowser. Now
       //    restore the groups' visual data.
-      if (browser->tab_strip_model()->SupportsTabGroups()) {
-        TabGroupModel* group_model = browser->tab_strip_model()->group_model();
-        for (auto& session_tab_group : (*i)->tab_groups) {
-          TabGroup* model_tab_group =
-              group_model->GetTabGroup(new_group_ids.at(session_tab_group->id));
-          DCHECK(model_tab_group);
-          model_tab_group->SetVisualData(session_tab_group->visual_data);
-        }
-      }
+      RestoreTabGroupMetadata(browser, new_group_ids, (*i)->tab_groups);
 
       // 7. Notify SessionService of restored tabs, so they can be saved to the
       //    current session.
@@ -794,8 +772,9 @@ class SessionRestoreImpl : public BrowserListObserver {
     // each tab where the most recent tab will have its time set to |now|
     // and the rest of the tabs will have theirs set earlier by the same
     // delta as they originally had.
-    for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
-      const sessions::SessionTab& tab = *(window.tabs[i]);
+    for (const std::unique_ptr<sessions::SessionTab>& session_tab :
+         window.tabs) {
+      const sessions::SessionTab& tab = *session_tab;
       if (tab.last_active_time > latest_last_active_time)
         latest_last_active_time = tab.last_active_time;
     }
@@ -805,7 +784,7 @@ class SessionRestoreImpl : public BrowserListObserver {
     // yet due the ordering of TabStripModelObserver notifications in an edge
     // case.
 
-    const int selected_tab_index = base::clamp(
+    const int selected_tab_index = std::clamp(
         window.selected_tab_index, 0, static_cast<int>(window.tabs.size() - 1));
 
     for (int i = 0; i < static_cast<int>(window.tabs.size()); ++i) {
@@ -897,6 +876,40 @@ class SessionRestoreImpl : public BrowserListObserver {
       did_show_browser = true;
     ShowBrowser(browser, browser->tab_strip_model()->GetIndexOfWebContents(
                              web_contents));
+  }
+
+  void RestoreTabGroupMetadata(
+      const Browser* browser,
+      const base::flat_map<tab_groups::TabGroupId, tab_groups::TabGroupId>&
+          new_group_ids,
+      const std::vector<std::unique_ptr<sessions::SessionTabGroup>>&
+          tab_groups) {
+    if (!browser->tab_strip_model()->SupportsTabGroups()) {
+      return;
+    }
+
+    TabGroupModel* group_model = browser->tab_strip_model()->group_model();
+    SavedTabGroupKeyedService* const saved_tab_group_keyed_service =
+        base::FeatureList::IsEnabled(features::kTabGroupsSave)
+            ? SavedTabGroupServiceFactory::GetForProfile(browser->profile())
+            : nullptr;
+
+    for (const std::unique_ptr<sessions::SessionTabGroup>& session_tab_group :
+         tab_groups) {
+      if (session_tab_group->saved_guid.has_value() &&
+          saved_tab_group_keyed_service) {
+        const base::Uuid& saved_guid =
+            base::Uuid::ParseLowercase(session_tab_group->saved_guid.value());
+
+        saved_tab_group_keyed_service->StoreLocalToSavedId(
+            saved_guid, new_group_ids.at(session_tab_group->id));
+      }
+
+      TabGroup* model_tab_group =
+          group_model->GetTabGroup(new_group_ids.at(session_tab_group->id));
+      CHECK(model_tab_group);
+      model_tab_group->SetVisualData(session_tab_group->visual_data);
+    }
   }
 
   Browser* CreateRestoredBrowser(
@@ -1203,7 +1216,8 @@ std::vector<Browser*> SessionRestore::RestoreForeignSessionWindows(
 WebContents* SessionRestore::RestoreForeignSessionTab(
     content::WebContents* source_web_contents,
     const sessions::SessionTab& tab,
-    WindowOpenDisposition disposition) {
+    WindowOpenDisposition disposition,
+    bool skip_renderer_creation) {
   Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents);
   Profile* profile = browser->profile();
   StartupTabs startup_tabs;
@@ -1218,10 +1232,11 @@ WebContents* SessionRestore::RestoreForeignSessionTab(
 bool SessionRestore::IsRestoring(const Profile* profile) {
   if (active_session_restorers == nullptr)
     return false;
-  for (auto it = active_session_restorers->begin();
-       it != active_session_restorers->end(); ++it) {
-    if ((*it)->profile() == profile)
+  for (SessionRestoreImpl* const active_session_restorer :
+       *active_session_restorers) {
+    if (active_session_restorer->profile() == profile) {
       return true;
+    }
   }
   return false;
 }
@@ -1230,10 +1245,11 @@ bool SessionRestore::IsRestoring(const Profile* profile) {
 bool SessionRestore::IsRestoringSynchronously() {
   if (!active_session_restorers)
     return false;
-  for (auto it = active_session_restorers->begin();
-       it != active_session_restorers->end(); ++it) {
-    if ((*it)->synchronous())
+  for (const SessionRestoreImpl* const active_session_restorer :
+       *active_session_restorers) {
+    if (active_session_restorer->synchronous()) {
       return true;
+    }
   }
   return false;
 }

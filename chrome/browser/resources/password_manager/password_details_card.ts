@@ -10,6 +10,7 @@ import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import './shared_style.css.js';
 import './dialogs/edit_password_dialog.js';
+import './dialogs/multi_store_delete_password_dialog.js';
 
 import {CrToastElement} from '//resources/cr_elements/cr_toast/cr_toast.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
@@ -19,7 +20,7 @@ import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './password_details_card.html.js';
-import {PasswordManagerImpl} from './password_manager_proxy.js';
+import {PasswordManagerImpl, PasswordViewPageInteractions} from './password_manager_proxy.js';
 import {ShowPasswordMixin} from './show_password_mixin.js';
 
 export type PasswordRemovedEvent =
@@ -36,6 +37,7 @@ export interface PasswordDetailsCardElement {
     copyPasswordButton: CrIconButtonElement,
     copyUsernameButton: CrIconButtonElement,
     deleteButton: CrButtonElement,
+    domainLabel: HTMLElement,
     editButton: CrButtonElement,
     noteValue: HTMLElement,
     passwordValue: CrInputElement,
@@ -66,6 +68,7 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
       showNoteFully_: Boolean,
 
       showEditPasswordDialog_: Boolean,
+      showDeletePasswordDialog_: Boolean,
     };
   }
 
@@ -74,6 +77,7 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
   private noteRows_: number;
   private showNoteFully_: boolean;
   private showEditPasswordDialog_: boolean;
+  private showDeletePasswordDialog_: boolean;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -109,17 +113,32 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
         .then(() => this.showToast_(this.i18n('passwordCopiedToClipboard')))
         .catch(() => {});
     this.extendAuthValidity_();
+    PasswordManagerImpl.getInstance().recordPasswordViewInteraction(
+        PasswordViewPageInteractions.PASSWORD_COPY_BUTTON_CLICKED);
+  }
+
+  private onShowPasswordClick_() {
+    this.onShowHidePasswordButtonClick();
+    PasswordManagerImpl.getInstance().recordPasswordViewInteraction(
+        PasswordViewPageInteractions.PASSWORD_SHOW_BUTTON_CLICKED);
   }
 
   private onCopyUsernameClick_() {
     navigator.clipboard.writeText(this.password.username);
     this.showToast_(this.i18n('usernameCopiedToClipboard'));
     this.extendAuthValidity_();
+    PasswordManagerImpl.getInstance().recordPasswordViewInteraction(
+        PasswordViewPageInteractions.USERNAME_COPY_BUTTON_CLICKED);
   }
 
   private onDeleteClick_() {
-    // TODO(crbug.com/1350947): Show delete dialog if credential is present in
-    // both stores.
+    PasswordManagerImpl.getInstance().recordPasswordViewInteraction(
+        PasswordViewPageInteractions.PASSWORD_DELETE_BUTTON_CLICKED);
+    if (this.password.storedIn ===
+        chrome.passwordsPrivate.PasswordStoreSet.DEVICE_AND_ACCOUNT) {
+      this.showDeletePasswordDialog_ = true;
+      return;
+    }
     PasswordManagerImpl.getInstance().removeSavedPassword(
         this.password.id, this.password.storedIn);
     this.dispatchEvent(new CustomEvent('password-removed', {
@@ -139,10 +158,20 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
   private onEditClicked_() {
     this.showEditPasswordDialog_ = true;
     this.extendAuthValidity_();
+    PasswordManagerImpl.getInstance().recordPasswordViewInteraction(
+        PasswordViewPageInteractions.PASSWORD_EDIT_BUTTON_CLICKED);
   }
 
   private onEditPasswordDialogClosed_() {
+    // Only note is notified because updating username or password triggers
+    // recomputing of an id which updates the whole list of displayed passwords.
+    this.notifyPath('password.note');
     this.showEditPasswordDialog_ = false;
+    this.extendAuthValidity_();
+  }
+
+  private onDeletePasswordDialogClosed_() {
+    this.showDeletePasswordDialog_ = false;
     this.extendAuthValidity_();
   }
 
@@ -163,6 +192,17 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
 
   private extendAuthValidity_() {
     PasswordManagerImpl.getInstance().extendAuthValidity();
+  }
+
+  private getDomainLabel_(): string {
+    const hasApps = this.password.affiliatedDomains?.some(
+        domain => domain.signonRealm.startsWith('android://'));
+    const hasSites = this.password.affiliatedDomains?.some(
+        domain => !domain.signonRealm.startsWith('android://'));
+    if (hasApps && hasSites) {
+      return this.i18n('sitesAndAppsLabel');
+    }
+    return hasApps ? this.i18n('appsLabel') : this.i18n('sitesLabel');
   }
 }
 

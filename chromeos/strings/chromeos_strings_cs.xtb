@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">Pořizování videa</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Přítomnost resolveru DNS</translation>
+<translation id="1708602061922134366">Modrá (Google)</translation>
 <translation id="1710499924611012470">Navigace pro usnadnění přístupu</translation>
 <translation id="1715359911173058521">Při komunikaci se skenerem došlo k problému. Zkontrolujte připojení k síti nebo připojení USB a zkuste to znovu.</translation>
 <translation id="1717874160321062422">Spravuje <ph name="FIRST_MANAGER" /> a <ph name="SECOND_MANAGER" /></translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">Typ ověření</translation>
+<translation id="1776228893584526149">Tón tapety</translation>
 <translation id="1782199038061388045">překlad</translation>
 <translation id="1790209694022261219">Okna a plochy</translation>
 <translation id="1792647875738159689">Rušení skenování</translation>
@@ -123,6 +125,7 @@
 <translation id="1904932688895783618">Další užitečné zdroje:</translation>
 <translation id="1905710495812624430">Byl překročen maximální povolený počet pokusů.</translation>
 <translation id="1908234395526491708">Selhání požadavků UDP</translation>
+<translation id="1923388006036088459">Barvy zvýraznění</translation>
 <translation id="1947737735496445907">Vytištěno</translation>
 <translation id="1951012854035635156">Asistent</translation>
 <translation id="1962550982027027473">Výchozí APN je povinný</translation>
@@ -140,6 +143,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">Další nastavení</translation>
 <translation id="2085089206770112532">Snížit jas displeje</translation>
+<translation id="209751264101900360">Od úsvitu do setmění – plynoucí oblaka</translation>
 <translation id="2102231663024125441">Úprava textu</translation>
 <translation id="2105810540595158374">Zařízení je herní ovladač.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, verze <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +335,7 @@
 <translation id="3967822245660637423">Stahování bylo dokončeno</translation>
 <translation id="3969602104473960991">Heslo ChromeOS byla aktualizováno</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
+<translation id="3974175076798940554">Jsou k dispozici exkluzivní položky pro Chromebooky Plus</translation>
 <translation id="39823212440917567">Tiskové úlohy starší než <ph name="NUMBER_OF_DAYS" /> dní budou odstraněny</translation>
 <translation id="3993704782688964914">Zařízení <ph name="DEVICE_NAME" /> je aktualizované</translation>
 <translation id="4003384961948020559">Tisk selhal – výstupní zásobník je plný</translation>
@@ -370,6 +375,7 @@
 <translation id="4275663329226226506">Média</translation>
 <translation id="4289540628985791613">Přehled</translation>
 <translation id="4289849978083912975">Prezentace</translation>
+<translation id="4293621540182258188">Od úsvitu do setmění – plynoucí Země</translation>
 <translation id="4297501883039923494">Zastaveno – neznámá chyba</translation>
 <translation id="4300073214558989">Počet obrázků: <ph name="IMAGE_COUNT" /></translation>
 <translation id="4311195029067684288">Plné</translation>
@@ -479,6 +485,7 @@
 <translation id="5166918508782100047">Nastavení rychlých odpovědí</translation>
 <translation id="5168185087976003268">Opotřebení baterie</translation>
 <translation id="5170568018924773124">Zobrazit ve složce</translation>
+<translation id="5180712487038406644">Výrazná</translation>
 <translation id="5190187232518914472">Oživte své oblíbené vzpomínky. Alba můžete přidat a upravit ve <ph name="LINK_BEGIN" />Fotkách Google<ph name="LINK_END" />.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
@@ -513,6 +520,7 @@
 <translation id="5423849171846380976">Aktivováno</translation>
 <translation id="5430931332414098647">Dynamický tethering</translation>
 <translation id="5431318178759467895">Barevně</translation>
+<translation id="5456936324019847994">Nelze se připojit k žádnému povolenému vlastnímu APN. Další informace vám sdělí mobilní operátor.</translation>
 <translation id="5457599981699367932">Použít jako host</translation>
 <translation id="54609108002486618">Spravovaný</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Zbývá {0} pokus}few{Zbývají {0} pokusy}many{Zbývá {0} pokusu}other{Zbývá {0} pokusů}}</translation>
@@ -544,6 +552,7 @@
 <translation id="576835345334454681">Zvýšit jas displeje</translation>
 <translation id="57838592816432529">Ztlumit</translation>
 <translation id="5784136236926853061">Vysoká latence požadavků HTTP</translation>
+<translation id="5809090008577139505">Polární záře</translation>
 <translation id="5826644637650799838">O tomto uměleckém dílu</translation>
 <translation id="5832805196449965646">Přidat uživatele</translation>
 <translation id="583281660410589416">Neznámé</translation>
@@ -562,10 +571,12 @@
 <translation id="5907649332524363701">barva klíče</translation>
 <translation id="5916084858004523819">Zakázáno</translation>
 <translation id="5916664084637901428">Zapnuto</translation>
+<translation id="5918201491776799918">Vybrat umělecké dílo dostupné pouze na Chromeboocích Plus</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Soubor byl úspěšně naskenován a uložen do složky <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}few{Soubory byly úspěšně naskenovány a uloženy do složky <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}many{Soubory byly úspěšně naskenovány a uloženy do složky <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Soubory byly úspěšně naskenovány a uloženy do složky <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Soubor nebyl nalezen</translation>
 <translation id="5939518447894949180">Resetovat</translation>
 <translation id="594552776027197022">Vygenerovat náhodnou dvojici klíčů</translation>
+<translation id="5946538341867151940">Ještě nejste připojeni. Pokud váš mobilní operátor doporučuje vlastní APN, zadejte informace o APN výběrem možnost „+ Nový přístupový bod (APN)“</translation>
 <translation id="5972388717451707488">Modul aktualizací</translation>
 <translation id="5984145644188835034">Výchozí tapeta</translation>
 <translation id="6017514345406065928">Zelená</translation>
@@ -640,6 +651,7 @@
 <translation id="6527081081771465939">Neznámý bezpečnostní protokol Wi-Fi</translation>
 <translation id="6535178685492749208">Jste offline. Zpětná vazba se odešle později.</translation>
 <translation id="65587193855025101">Předlohové sklo</translation>
+<translation id="6560196641871357166">Živá</translation>
 <translation id="6564646048574748301">Tisk selhal – tiskárna není dostupná</translation>
 <translation id="6566314079205407217">Skenování několika stránek</translation>
 <translation id="6574762126505704998">Vyplnit</translation>
@@ -721,6 +733,7 @@
 <translation id="7281657306185710294">Šňůra</translation>
 <translation id="7287310195820267359">Sbírky tapet</translation>
 <translation id="7297226631177386107">Přes firewall se nelze připojit k webům HTTPS</translation>
+<translation id="7297726121602187087">Tmavě zelená</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Zeptejte se odborníků ve fóru nápovědy pro Chromebooky</translation>
@@ -755,12 +768,14 @@
 <translation id="7570674786725311828">Dotyková obrazovka USB</translation>
 <translation id="7595982850646262331">Zbývá <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Přemístěte pomocí myši nebo kláves se šipkami.</translation>
+<translation id="7618774594543487847">Neutrální</translation>
 <translation id="7620771111601174153">Další informace v centru nápovědy</translation>
 <translation id="763165478673169849">Čas posledního resetování</translation>
 <translation id="7648838807254605802">Vysoká latence HTTPS</translation>
 <translation id="7656388927906093505">Zařízení je myš.</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7665800271478495366">Změnit avatara</translation>
+<translation id="7675241868020048622">Aurora (Plus exclusive)</translation>
 <translation id="7690294790491645610">Potvrďte nové heslo</translation>
 <translation id="7701040980221191251">Žádné</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +832,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Vybrat možnost <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Nástroje pro vývojáře</translation>
+<translation id="8153923300383192510">Exkluzivně na Chromeboocích Plus</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Připojit</translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -839,6 +855,7 @@
 <translation id="8352772353338965963">Přidat účet do vícenásobného přihlášení. Ke všem přihlášeným účtům lze přistupovat bez zadání hesla, proto byste tuto funkci měli používat pouze s důvěryhodnými účty.</translation>
 <translation id="8364946094152050673">Prázdné názvové servery</translation>
 <translation id="8372477600026034341">Extra hostitelské servery</translation>
+<translation id="8373046809163484087">Použijte sady barev odpovídající vaší tapetě</translation>
 <translation id="8380114448424469341">Ukotvit okno na polovinu obrazovky <ph name="DIRECTION" /></translation>
 <translation id="8395584934117017006">Toto zařízení <ph name="DEVICE_TYPE" /> spravuje podnik</translation>
 <translation id="8398927464629426868">Rychlost, s jakou se zařízení momentálně nabíjí nebo vybíjí</translation>
@@ -858,11 +875,13 @@
 <translation id="8503813439785031346">Uživatelské jméno</translation>
 <translation id="8503836310948963452">Ještě pár minut…</translation>
 <translation id="8508640263392900755">Podrobnosti o APN</translation>
+<translation id="8522687886059337719">Nyní máte přístup k novým <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />tapetám<ph name="END_LINK_WALLPAPER_SUBPAGE" /> a <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />spořiči obrazovky<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Někteří operátoři k připojení k síti vyžadují tuto možnost. Na podrobnosti se zeptejte mobilního operátora.</translation>
 <translation id="8576249514688522074">Neinicializováno</translation>
 <translation id="8620617069779373398">Stav roamingu</translation>
+<translation id="86356131183441916">Světle fialová</translation>
 <translation id="8655295600908251630">Kanál</translation>
 <translation id="8655828773034788261">Sdílet adresu URL:</translation>
 <translation id="8660881923941176839">libry</translation>
@@ -947,6 +966,7 @@
 <translation id="945522503751344254">Odeslat zpětnou vazbu</translation>
 <translation id="952992212772159698">Není aktivováno</translation>
 <translation id="960719561871045870">Kód operátora</translation>
+<translation id="979450713603643090">Světle růžová</translation>
 <translation id="982713511914535780">Spustit test vybíjení</translation>
 <translation id="987264212798334818">Všeobecné</translation>
 </translationbundle>

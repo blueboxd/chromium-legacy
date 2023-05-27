@@ -4,7 +4,7 @@
 
 /** @fileoverview Test implementation of PasswordManagerProxy. */
 
-import {AccountStorageOptInStateChangedListener, BlockedSite, BlockedSitesListChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckStatusChangedListener, PasswordManagerAuthTimeoutListener, PasswordManagerProxy, PasswordsFileExportProgressListener} from 'chrome://password-manager/password_manager.js';
+import {AccountStorageOptInStateChangedListener, BlockedSite, BlockedSitesListChangedListener, CredentialsChangedListener, PasswordCheckInteraction, PasswordCheckStatusChangedListener, PasswordManagerAuthTimeoutListener, PasswordManagerProxy, PasswordsFileExportProgressListener, PasswordViewPageInteractions} from 'chrome://password-manager/password_manager.js';
 import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
 
 import {makePasswordCheckStatus} from './test_util.js';
@@ -21,6 +21,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     groups: chrome.passwordsPrivate.CredentialGroup[],
     insecureCredentials: chrome.passwordsPrivate.PasswordUiEntry[],
     isOptedInAccountStorage: boolean,
+    isAccountStorageDefault: boolean,
     passwords: chrome.passwordsPrivate.PasswordUiEntry[],
   };
 
@@ -39,13 +40,23 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
   private requestCredentialsDetailsResponse_:
       chrome.passwordsPrivate.PasswordUiEntry[]|null = null;
 
+  private importResults_: chrome.passwordsPrivate.ImportResults = {
+    status: chrome.passwordsPrivate.ImportResultsStatus.SUCCESS,
+    numberImported: 0,
+    displayedEntries: [],
+    fileName: '',
+  };
+
   constructor() {
     super([
       'addPassword',
       'cancelExportPasswords',
       'changeSavedPassword',
+      'continueImport',
       'exportPasswords',
       'extendAuthValidity',
+      'importPasswords',
+      'isAccountStoreDefault',
       'isOptedInForAccountStorage',
       'getBlockedSitesList',
       'getCredentialGroups',
@@ -54,10 +65,14 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       'getPasswordCheckStatus',
       'getSavedPasswordList',
       'getUrlCollection',
+      'movePasswordsToAccount',
       'muteInsecureCredential',
+      'optInForAccountStorage',
       'recordPasswordCheckInteraction',
+      'recordPasswordViewInteraction',
       'removeBlockedSite',
       'removeSavedPassword',
+      'resetImporter',
       'requestCredentialsDetails',
       'requestExportProgressStatus',
       'requestPlaintextPassword',
@@ -77,6 +92,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       groups: [],
       insecureCredentials: [],
       isOptedInAccountStorage: false,
+      isAccountStorageDefault: false,
       passwords: [],
     };
 
@@ -169,6 +185,10 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
 
   recordPasswordCheckInteraction(interaction: PasswordCheckInteraction) {
     this.methodCalled('recordPasswordCheckInteraction', interaction);
+  }
+
+  recordPasswordViewInteraction(interaction: PasswordViewPageInteractions) {
+    this.methodCalled('recordPasswordViewInteraction', interaction);
   }
 
   muteInsecureCredential(insecureCredential:
@@ -298,8 +318,44 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     this.listeners.accountStorageOptInStateListener = null;
   }
 
+  /**
+   * Sets the value to be returned by importPasswords.
+   */
+  setImportResults(results: chrome.passwordsPrivate.ImportResults) {
+    this.importResults_ = results;
+  }
+
+  importPasswords(toStore: chrome.passwordsPrivate.PasswordStoreSet) {
+    this.methodCalled('importPasswords', toStore);
+    return Promise.resolve(this.importResults_);
+  }
+
+  continueImport(selectedIds: number[]) {
+    this.methodCalled('continueImport', selectedIds);
+    return Promise.resolve(this.importResults_);
+  }
+
+  resetImporter(deleteFile: boolean) {
+    this.methodCalled('resetImporter', deleteFile);
+    return Promise.resolve();
+  }
+
   isOptedInForAccountStorage() {
     this.methodCalled('isOptedInForAccountStorage');
     return Promise.resolve(this.data.isOptedInAccountStorage);
+  }
+
+  optInForAccountStorage(optIn: boolean) {
+    this.methodCalled('optInForAccountStorage');
+    this.data.isOptedInAccountStorage = optIn;
+  }
+
+  isAccountStoreDefault() {
+    this.methodCalled('isAccountStoreDefault');
+    return Promise.resolve(this.data.isAccountStorageDefault);
+  }
+
+  movePasswordsToAccount(ids: number[]) {
+    this.methodCalled('movePasswordsToAccount', ids);
   }
 }

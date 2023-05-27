@@ -22,6 +22,7 @@
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer_chromeos.h"
 #include "chrome/browser/ui/webui/settings/accessibility_main_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/accessibility_handler.h"
+#include "chrome/browser/ui/webui/settings/ash/pdf_ocr_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/settings/ash/select_to_speak_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/switch_access_handler.h"
@@ -42,7 +43,7 @@
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/events/ash/keyboard_layout_util.h"
 
 namespace ash::settings {
 
@@ -601,6 +602,32 @@ void AccessibilitySection::AddLoadTimeData(
       {"chromeVoxBrailleWordWrap", IDS_SETTINGS_CHROMEVOX_BRAILLE_WORD_WRAP},
       {"chromeVoxMenuBrailleCommands",
        IDS_SETTINGS_CHROMEVOX_MENU_BRAILLE_COMMANDS},
+      {"chromeVoxBluetoothBrailleDisplayConnect",
+       IDS_SETTINGS_CHROMEVOX_BLUETOOTH_BRAILLE_DISPLAY_CONNECT},
+      {"chromeVoxBluetoothBrailleDisplayDisconnect",
+       IDS_SETTINGS_CHROMEVOX_BLUETOOTH_BRAILLE_DISPLAY_DISCONNECT},
+      {"chromeVoxBluetoothBrailleDisplayConnecting",
+       IDS_SETTINGS_CHROMEVOX_BLUETOOTH_BRAILLE_DISPLAY_CONNECTING},
+      {"chromeVoxBluetoothBrailleDisplayForget",
+       IDS_SETTINGS_CHROMEVOX_BLUETOOTH_BRAILLE_DISPLAY_FORGET},
+      {"chromeVoxBluetoothBrailleDisplayPincodeLabel",
+       IDS_SETTINGS_CHROMEVOX_BLUETOOTH_BRAILLE_DISPLAY_PINCODE_LABEL},
+      {"chromeVoxBluetoothBrailleDisplaySelectLabel",
+       IDS_SETTINGS_CHROMEVOX_BLUETOOTH_BRAILLE_DISPLAY_SELECT_LABEL},
+      {"chromeVoxVirtualBrailleDisplay",
+       IDS_SETTINGS_CHROMEVOX_VIRTUAL_BRAILLE_DISPLAY},
+      {"chromeVoxVirtualBrailleDisplayDetails",
+       IDS_SETTINGS_CHROMEVOX_VIRTUAL_BRAILLE_DISPLAY_DETAILS},
+      {"chromeVoxVirtualBrailleDisplayRows",
+       IDS_SETTINGS_CHROMEVOX_VIRTUAL_BRAILLE_DISPLAY_ROWS},
+      {"chromeVoxVirtualBrailleDisplayColumns",
+       IDS_SETTINGS_CHROMEVOX_VIRTUAL_BRAILLE_DISPLAY_COLUMNS},
+      {"chromeVoxVirtualBrailleDisplayStyleLabel",
+       IDS_SETTINGS_CHROMEVOX_VIRTUAL_BRAILLE_DISPLAY_STYLE_LABEL},
+      {"chromeVoxVirtualBrailleDisplayStyleInterleave",
+       IDS_SETTINGS_CHROMEVOX_VIRTUAL_BRAILLE_DISPLAY_STYLE_INTERLEAVE},
+      {"chromeVoxVirtualBrailleDisplayStyleSideBySide",
+       IDS_SETTINGS_CHROMEVOX_VIRTUAL_BRAILLE_DISPLAY_STYLE_SIDE_BY_SIDE},
       {"chromeVoxEventLogLink", IDS_SETTINGS_CHROMEVOX_EVENT_LOG_LINK},
       {"chromeVoxEventLogDescription",
        IDS_SETTINGS_CHROMEVOX_EVENT_LOG_DESCRIPTION},
@@ -612,6 +639,10 @@ void AccessibilitySection::AddLoadTimeData(
        IDS_SETTINGS_CHROMEVOX_MENU_ENABLE_BRAILLE_LOGGING},
       {"chromeVoxEnableEventStreamLogging",
        IDS_SETTINGS_CHROMEVOX_MENU_ENABLE_EVENT_STREAM_LOGGING},
+      {"chromeVoxBrailleTableDescription",
+       IDS_SETTINGS_CHROMEVOX_BRAILLE_TABLE_DESCRIPTION},
+      {"chromeVoxBrailleTable6Dot", IDS_SETTINGS_CHROMEVOX_BRAILLE_TABLE_6_DOT},
+      {"chromeVoxBrailleTable8Dot", IDS_SETTINGS_CHROMEVOX_BRAILLE_TABLE_8_DOT},
       {"chromeVoxTutorialLabel", IDS_SETTINGS_CHROMEVOX_TUTORIAL_LABEL},
       {"clickOnStopDescription", IDS_SETTINGS_CLICK_ON_STOP_DESCRIPTION},
       {"clickOnStopLabel", IDS_SETTINGS_CLICK_ON_STOP_LABEL},
@@ -745,6 +776,10 @@ void AccessibilitySection::AddLoadTimeData(
       {"onScreenKeyboardLabel", IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL},
       {"optionsInMenuDescription", IDS_SETTINGS_OPTIONS_IN_MENU_DESCRIPTION},
       {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
+      {"pdfOcrDownloadCompleteLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_COMPLETE},
+      {"pdfOcrDownloadErrorLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_ERROR},
+      {"pdfOcrDownloadProgressLabel", IDS_SETTINGS_PDF_OCR_DOWNLOAD_PROGRESS},
+      {"pdfOcrDownloadingLabel", IDS_SETTINGS_PDF_OCR_DOWNLOADING},
       {"pdfOcrSubtitle", IDS_SETTINGS_PDF_OCR_SUBTITLE},
       {"pdfOcrTitle", IDS_SETTINGS_PDF_OCR_TITLE},
       {"percentage", IDS_SETTINGS_PERCENTAGE},
@@ -1050,6 +1085,9 @@ void AccessibilitySection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::FontHandler>(profile()));
   web_ui->AddMessageHandler(
       std::make_unique<::settings::CaptionsHandler>(profile()->GetPrefs()));
+  if (base::FeatureList::IsEnabled(::features::kPdfOcr)) {
+    web_ui->AddMessageHandler(std::make_unique<::settings::PdfOcrHandler>());
+  }
 }
 
 int AccessibilitySection::GetSectionNameMessageId() const {

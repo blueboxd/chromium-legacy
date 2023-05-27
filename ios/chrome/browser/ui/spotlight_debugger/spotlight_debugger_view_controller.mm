@@ -9,11 +9,12 @@
 #import "base/time/time.h"
 #import "ios/chrome/app/spotlight/bookmarks_spotlight_manager.h"
 #import "ios/chrome/app/spotlight/reading_list_spotlight_manager.h"
+#import "ios/chrome/app/spotlight/spotlight_interface.h"
 #import "ios/chrome/app/spotlight/spotlight_logger.h"
 #import "ios/chrome/app/spotlight/spotlight_util.h"
+#import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/elements/highlight_button.h"
 #import "ios/chrome/common/ui/util/button_util.h"
@@ -47,6 +48,8 @@ typedef NS_ENUM(NSUInteger, DebugCommandsRows) {
 
 @property(nonatomic, strong) UIActivityIndicatorView* spinner;
 
+@property(nonatomic, readonly) SpotlightInterface* spotlightInterface;
+
 @end
 
 @implementation SpotlightDebuggerViewController
@@ -57,6 +60,7 @@ typedef NS_ENUM(NSUInteger, DebugCommandsRows) {
     _spinner = [[UIActivityIndicatorView alloc]
         initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleLarge];
     _spinner.translatesAutoresizingMaskIntoConstraints = NO;
+    _spotlightInterface = [SpotlightInterface defaultInterface];
   }
   return self;
 }
@@ -210,7 +214,8 @@ typedef NS_ENUM(NSUInteger, DebugCommandsRows) {
 
 - (void)clearAllSpotlightEntries {
   [self showSpinner];
-  spotlight::ClearSpotlightIndexWithCompletion(^(NSError* error) {
+  [self.spotlightInterface deleteAllSearchableItemsWithCompletionHandler:^(
+                               NSError* error) {
     dispatch_async(dispatch_get_main_queue(), ^{
       UIAlertController* controller = [UIAlertController
           alertControllerWithTitle:@"Clear Entries"
@@ -226,7 +231,7 @@ typedef NS_ENUM(NSUInteger, DebugCommandsRows) {
       [self removeSpinner];
       [self.tableView reloadData];
     });
-  });
+  }];
 }
 
 - (void)clearAndReindexBookmarks {

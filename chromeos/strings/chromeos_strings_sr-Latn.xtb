@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">Snima se video</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Prisutan je DNS razrešivač</translation>
+<translation id="1708602061922134366">Google plavo</translation>
 <translation id="1710499924611012470">Kretanje kroz pristupačnost</translation>
 <translation id="1715359911173058521">Došlo je do problema u komunikaciji sa skenerom. Proverite mrežnu ili USB vezu i probajte ponovo.</translation>
 <translation id="1717874160321062422">Upravljaju <ph name="FIRST_MANAGER" /> i <ph name="SECOND_MANAGER" /></translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">Tip potvrde identiteta</translation>
+<translation id="1776228893584526149">Ton pozadine</translation>
 <translation id="1782199038061388045">prevod</translation>
 <translation id="1790209694022261219">Prozori i radne površine</translation>
 <translation id="1792647875738159689">Otkazuje se skeniranje</translation>
@@ -123,6 +125,7 @@
 <translation id="1904932688895783618">Evo još nekih korisnih resursa:</translation>
 <translation id="1905710495812624430">Premašen je maksimalni broj pokušaja.</translation>
 <translation id="1908234395526491708">Neuspeli UDP zahtevi</translation>
+<translation id="1923388006036088459">Boje za naglašavanje</translation>
 <translation id="1947737735496445907">Odštampano</translation>
 <translation id="1951012854035635156">Pomoćnik</translation>
 <translation id="1962550982027027473">Podrazumevani naziv pristupne tačke je obavezan</translation>
@@ -140,6 +143,7 @@
 <translation id="2056550196601855911">IPv4 ili IPv6</translation>
 <translation id="2080070583977670716">Više podešavanja</translation>
 <translation id="2085089206770112532">Smanjite osvetljenost ekrana</translation>
+<translation id="209751264101900360">Od zore do mraka – tok oblaka</translation>
 <translation id="2102231663024125441">Uređivanje teksta</translation>
 <translation id="2105810540595158374">Uređaj je kontroler za igre.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, verzija <ph name="MILESTONE_VERSION" /></translation>
@@ -331,6 +335,7 @@
 <translation id="3967822245660637423">Preuzimanje je dovršeno</translation>
 <translation id="3969602104473960991">Chrome OS lozinka je ažurirana</translation>
 <translation id="397105322502079400">Izračunavanje...</translation>
+<translation id="3974175076798940554">Sada su dostupni ekskluzivni elementi za Chromebook Plus</translation>
 <translation id="39823212440917567">Zadaci štampanja stariji od <ph name="NUMBER_OF_DAYS" /> dana se uklanjaju</translation>
 <translation id="3993704782688964914">Uređaj <ph name="DEVICE_NAME" /> je ažuriran</translation>
 <translation id="4003384961948020559">Nije uspelo – izlaz je pun</translation>
@@ -370,6 +375,7 @@
 <translation id="4275663329226226506">Mediji</translation>
 <translation id="4289540628985791613">Pregled</translation>
 <translation id="4289849978083912975">Projekcija slajdova</translation>
+<translation id="4293621540182258188">Od zore do mraka – tok Zemlje</translation>
 <translation id="4297501883039923494">Zaustavljeno – nepoznata greška</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> slika</translation>
 <translation id="4311195029067684288">Potpuno</translation>
@@ -479,6 +485,7 @@
 <translation id="5166918508782100047">Podešavanja brzih odgovora</translation>
 <translation id="5168185087976003268">Stanje baterije</translation>
 <translation id="5170568018924773124">Prikaži u direktorijumu</translation>
+<translation id="5180712487038406644">Izražajno</translation>
 <translation id="5190187232518914472">Ponovo proživite omiljene uspomene. Da biste dodali ili izmenili albume, idite u <ph name="LINK_BEGIN" />Google slike<ph name="LINK_END" />.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Odjavi me</translation>
@@ -513,6 +520,7 @@
 <translation id="5423849171846380976">Aktivirano</translation>
 <translation id="5430931332414098647">Trenutno privezivanje</translation>
 <translation id="5431318178759467895">U boji</translation>
+<translation id="5456936324019847994">Povezivanje sa omogućenim prilagođenim nazivima pristupnih tačaka nije uspelo. Zatražite više informacija od mobilnog operatera.</translation>
 <translation id="5457599981699367932">Pregledajte kao gost</translation>
 <translation id="54609108002486618">Upravljani</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Preostaje {0} pokušaj}one{Preostaje {0} pokušaj}few{Preostaju {0} pokušaja}other{Preostaje {0} pokušaja}}</translation>
@@ -544,6 +552,7 @@
 <translation id="576835345334454681">Povećajte osvetljenost ekrana</translation>
 <translation id="57838592816432529">Isključi zvuk</translation>
 <translation id="5784136236926853061">Veliko HTTP kašnjenje</translation>
+<translation id="5809090008577139505">Aurora</translation>
 <translation id="5826644637650799838">O pozadini</translation>
 <translation id="5832805196449965646">Dodaj osobu</translation>
 <translation id="583281660410589416">Nepoznato</translation>
@@ -562,10 +571,12 @@
 <translation id="5907649332524363701">boja ključa</translation>
 <translation id="5916084858004523819">Zabranjeno</translation>
 <translation id="5916664084637901428">Uključeno</translation>
+<translation id="5918201491776799918">Izaberite ekskluzivna umetnička dela za Chromebook Plus</translation>
 <translation id="5921506667911082617">{COUNT,plural, =1{Fajl je skeniran i sačuvan u folderu <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}one{Fajlovi su skenirani i sačuvani u folderu <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}few{Fajlovi su skenirani i sačuvani u folderu <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}other{Fajlovi su skenirani i sačuvani u folderu <ph name="LINK_BEGIN" /><ph name="FOLDER_NAME" /><ph name="LINK_END" />.}}</translation>
 <translation id="5931523347251946569">Fajl nije pronađen</translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="594552776027197022">Generišite nasumični par ključeva</translation>
+<translation id="5946538341867151940">Još uvek niste povezani. Ako mobilni operater preporučuje prilagođeni naziv pristupne tačke, unesite ga tako što ćete izabrati „+ Novi naziv pristupne tačke“</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Podrazumevana pozadina</translation>
 <translation id="6017514345406065928">Zelena</translation>
@@ -640,6 +651,7 @@
 <translation id="6527081081771465939">Nepoznat bezbednosni protokol za WiFi</translation>
 <translation id="6535178685492749208">Oflajn ste. Povratne informacije će biti poslate kasnije.</translation>
 <translation id="65587193855025101">Položeno</translation>
+<translation id="6560196641871357166">Živopisno</translation>
 <translation id="6564646048574748301">Nije uspelo – štampač nije dostupan</translation>
 <translation id="6566314079205407217">Skeniranje više stranica</translation>
 <translation id="6574762126505704998">Popuni</translation>
@@ -721,6 +733,7 @@
 <translation id="7281657306185710294">Osetite povetarac</translation>
 <translation id="7287310195820267359">Kolekcije pozadina</translation>
 <translation id="7297226631177386107">Ne možete da se povežete sa HTTPS veb-sajtovima kroz zaštitni zid</translation>
+<translation id="7297726121602187087">Tamnozelena</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Pitajte stručnjake na Chromebook forumu pomoći</translation>
@@ -755,12 +768,14 @@
 <translation id="7570674786725311828">USB dodirni ekran</translation>
 <translation id="7595982850646262331">Još <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Promenite položaj pomoću tastera miša ili tastera sa strelicama.</translation>
+<translation id="7618774594543487847">Neutralno</translation>
 <translation id="7620771111601174153">Saznajte više u Centru za pomoć</translation>
 <translation id="763165478673169849">Vreme poslednjeg resetovanja</translation>
 <translation id="7648838807254605802">Veliko HTTPS kašnjenje</translation>
 <translation id="7656388927906093505">Uređaj je miš.</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7665800271478495366">Promenite avatar</translation>
+<translation id="7675241868020048622">Polarna svetlost (plus ekskluzivna)</translation>
 <translation id="7690294790491645610">Potvrdite novu lozinku</translation>
 <translation id="7701040980221191251">Ništa</translation>
 <translation id="7705524343798198388">VPN</translation>
@@ -817,6 +832,7 @@
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Izaberite <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8151185429379586178">Alatke za programere</translation>
+<translation id="8153923300383192510">Samo za Chromebook Plus</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">Prilog</translation>
 <translation id="8206859287963243715">Mobilni uređaj</translation>
@@ -839,6 +855,7 @@
 <translation id="8352772353338965963">Dodajte nalog za višestruko prijavljivanje. Svim prijavljenim nalozima se može pristupiti bez lozinke, pa ovu funkciju treba koristiti samo sa pouzdanim nalozima.</translation>
 <translation id="8364946094152050673">Prazni serveri za imena</translation>
 <translation id="8372477600026034341">Dodatni hostovi</translation>
+<translation id="8373046809163484087">Koristite skupove boja koji se podudaraju sa pozadinom</translation>
 <translation id="8380114448424469341">Fiksirajte prozor na polovini ekrana (<ph name="DIRECTION" />)</translation>
 <translation id="8395584934117017006">Preduzeće upravlja ovim <ph name="DEVICE_TYPE" /> uređajem</translation>
 <translation id="8398927464629426868">Stopa po kojoj se uređaj trenutno puni ili prazni</translation>
@@ -858,11 +875,13 @@
 <translation id="8503813439785031346">Korisničko ime</translation>
 <translation id="8503836310948963452">Još samo par minuta…</translation>
 <translation id="8508640263392900755">Detalji naziva pristupne tačke</translation>
+<translation id="8522687886059337719">Sada imate pristup novim <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />pozadinama<ph name="END_LINK_WALLPAPER_SUBPAGE" /> i <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />čuvaru ekrana<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Mobilni operater može da zatraži ovu opciju radi povezivanja na mrežu. Obratite se mobilnom operateru za detalje.</translation>
 <translation id="8576249514688522074">Nije pokrenuto</translation>
 <translation id="8620617069779373398">Status rominga</translation>
+<translation id="86356131183441916">Svetloljubičasto</translation>
 <translation id="8655295600908251630">Kanal</translation>
 <translation id="8655828773034788261">Deli URL:</translation>
 <translation id="8660881923941176839">funte</translation>
@@ -947,6 +966,7 @@
 <translation id="945522503751344254">Pošalji povratne informacije</translation>
 <translation id="952992212772159698">Nije aktivirano</translation>
 <translation id="960719561871045870">Kôd mobilnog operatera</translation>
+<translation id="979450713603643090">Svetloroze</translation>
 <translation id="982713511914535780">Pokreni test pražnjenja</translation>
 <translation id="987264212798334818">Opšte</translation>
 </translationbundle>

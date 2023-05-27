@@ -81,6 +81,50 @@
 
 namespace blink {
 
+namespace {
+
+class DummyFrameOwner final : public GarbageCollected<DummyFrameOwner>,
+                              public FrameOwner {
+ public:
+  void Trace(Visitor* visitor) const override { FrameOwner::Trace(visitor); }
+
+  // FrameOwner overrides:
+  Frame* ContentFrame() const override { return nullptr; }
+  void SetContentFrame(Frame&) override {}
+  void ClearContentFrame() override {}
+  const FramePolicy& GetFramePolicy() const override {
+    DEFINE_STATIC_LOCAL(FramePolicy, frame_policy, ());
+    return frame_policy;
+  }
+  void AddResourceTiming(mojom::blink::ResourceTimingInfoPtr) override {}
+  void DispatchLoad() override {}
+  void IntrinsicSizingInfoChanged() override {}
+  void SetNeedsOcclusionTracking(bool) override {}
+  AtomicString BrowsingContextContainerName() const override {
+    return AtomicString();
+  }
+  mojom::blink::ScrollbarMode ScrollbarMode() const override {
+    return mojom::blink::ScrollbarMode::kAuto;
+  }
+  int MarginWidth() const override { return -1; }
+  int MarginHeight() const override { return -1; }
+  bool AllowFullscreen() const override { return false; }
+  bool AllowPaymentRequest() const override { return false; }
+  bool IsDisplayNone() const override { return false; }
+  mojom::blink::ColorScheme GetColorScheme() const override {
+    return mojom::blink::ColorScheme::kLight;
+  }
+  bool ShouldLazyLoadChildren() const override { return false; }
+
+ private:
+  // Intentionally private to prevent redundant checks when the type is
+  // already DummyFrameOwner.
+  bool IsLocal() const override { return false; }
+  bool IsRemote() const override { return false; }
+};
+
+}  // namespace
+
 using Checkpoint = testing::StrictMock<testing::MockFunction<void(int)>>;
 
 class FrameFetchContextMockLocalFrameClient : public EmptyLocalFrameClient {
@@ -565,10 +609,9 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest,
                     float width = 0) {
     SCOPED_TRACE(testing::Message() << header_name);
 
-    FetchParameters::ResourceWidth resource_width;
+    absl::optional<float> resource_width;
     if (width > 0) {
-      resource_width.width = width;
-      resource_width.is_set = true;
+      resource_width = width;
     }
 
     const KURL input_url(input);
@@ -594,11 +637,10 @@ class FrameFetchContextHintsTest : public FrameFetchContextTest,
   }
 
   String GetHeaderValue(const char* input, const char* header_name) {
-    FetchParameters::ResourceWidth resource_width;
     const KURL input_url(input);
     ResourceRequest resource_request(input_url);
-    GetFetchContext()->AddClientHintsIfNecessary(resource_width,
-                                                 resource_request);
+    GetFetchContext()->AddClientHintsIfNecessary(
+        absl::nullopt /* resource_width */, resource_request);
     return resource_request.HttpHeaderField(header_name);
   }
 
@@ -1416,7 +1458,6 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
   const KURL url("https://www.example.com/");
   ResourceRequest request(url);
 
-  FetchParameters::ResourceWidth resource_width;
   ResourceLoaderOptions options(nullptr /* world */);
 
   document->GetFrame()->GetClientHintsPreferences().SetShouldSend(
@@ -1438,8 +1479,8 @@ TEST_F(FrameFetchContextTest, PopulateResourceRequestWhenDetached) {
 
   dummy_page_holder = nullptr;
 
-  GetFetchContext()->PopulateResourceRequest(ResourceType::kRaw, resource_width,
-                                             request, options);
+  GetFetchContext()->PopulateResourceRequest(
+      ResourceType::kRaw, absl::nullopt /* resource_width */, request, options);
   // Should not crash.
 }
 
@@ -1555,7 +1596,6 @@ class FrameFetchContextDisableReduceAcceptLanguageTest
 
  protected:
   void SetupForAcceptLanguageTest(bool is_detached, ResourceRequest& request) {
-    FetchParameters::ResourceWidth resource_width;
     ResourceLoaderOptions options(/*world=*/nullptr);
 
     document->GetFrame()->SetReducedAcceptLanguage("en-GB");
@@ -1564,7 +1604,8 @@ class FrameFetchContextDisableReduceAcceptLanguageTest
       dummy_page_holder = nullptr;
 
     GetFetchContext()->PopulateResourceRequest(
-        ResourceType::kRaw, resource_width, request, options);
+        ResourceType::kRaw, absl::nullopt /* resource_width */, request,
+        options);
   }
 
  private:

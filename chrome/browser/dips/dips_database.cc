@@ -125,10 +125,10 @@ void DIPSDatabase::DatabaseErrorCallback(int extended_error,
 
   if (sql::IsErrorCatastrophic(extended_error)) {
     // Normally this will poison the database, causing any subsequent operations
-    // to silently fail without any side effects. However, if RazeAndClose() is
+    // to silently fail without any side effects. However, if RazeAndPoison() is
     // called from the error callback in response to an error raised from within
     // sql::Database::Open, opening the now-razed database will be retried.
-    db_->RazeAndClose();
+    db_->RazeAndPoison();
   }
 
   // The default handling is to assert on debug and to ignore on release.
@@ -543,7 +543,8 @@ std::vector<std::string> DIPSDatabase::GetAllSitesForTesting() {
   return sites;
 }
 
-std::vector<std::string> DIPSDatabase::GetSitesThatBounced() {
+std::vector<std::string> DIPSDatabase::GetSitesThatBounced(
+    const base::TimeDelta& grace_period) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!CheckDBInit()) {
     return {};
@@ -556,7 +557,7 @@ std::vector<std::string> DIPSDatabase::GetSitesThatBounced() {
         "ORDER BY site";  // clang-format on
   DCHECK(db_->IsSQLValid(kBounceSql));
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kBounceSql));
-  statement.BindTime(0, clock_->Now() - dips::kGracePeriod.Get());
+  statement.BindTime(0, clock_->Now() - grace_period);
 
   std::vector<std::string> sites;
   while (statement.Step()) {
@@ -565,7 +566,8 @@ std::vector<std::string> DIPSDatabase::GetSitesThatBounced() {
   return sites;
 }
 
-std::vector<std::string> DIPSDatabase::GetSitesThatBouncedWithState() {
+std::vector<std::string> DIPSDatabase::GetSitesThatBouncedWithState(
+    const base::TimeDelta& grace_period) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!CheckDBInit()) {
     return {};
@@ -579,7 +581,7 @@ std::vector<std::string> DIPSDatabase::GetSitesThatBouncedWithState() {
   DCHECK(db_->IsSQLValid(kStatefulBounceSql));
   sql::Statement statement(
       db_->GetCachedStatement(SQL_FROM_HERE, kStatefulBounceSql));
-  statement.BindTime(0, clock_->Now() - dips::kGracePeriod.Get());
+  statement.BindTime(0, clock_->Now() - grace_period);
 
   std::vector<std::string> sites;
   while (statement.Step()) {
@@ -588,7 +590,8 @@ std::vector<std::string> DIPSDatabase::GetSitesThatBouncedWithState() {
   return sites;
 }
 
-std::vector<std::string> DIPSDatabase::GetSitesThatUsedStorage() {
+std::vector<std::string> DIPSDatabase::GetSitesThatUsedStorage(
+    const base::TimeDelta& grace_period) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!CheckDBInit()) {
     return {};
@@ -601,13 +604,43 @@ std::vector<std::string> DIPSDatabase::GetSitesThatUsedStorage() {
       "ORDER BY site";  // clang-format on
   DCHECK(db_->IsSQLValid(kStorageSql));
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kStorageSql));
-  statement.BindTime(0, clock_->Now() - dips::kGracePeriod.Get());
+  statement.BindTime(0, clock_->Now() - grace_period);
 
   std::vector<std::string> sites;
   while (statement.Step()) {
     sites.push_back(statement.ColumnString(0));
   }
   return sites;
+}
+
+std::set<std::string> DIPSDatabase::FilterSitesWithInteraction(
+    const std::set<std::string>& sites) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!CheckDBInit()) {
+    return {};
+  }
+  ClearRowsWithExpiredInteractions();
+  sql::Statement s_interactions(db_->GetUniqueStatement(
+      base::StrCat({"SELECT site,last_user_interaction_time FROM bounces "
+                    "WHERE site IN(",
+                    base::JoinString(
+                        std::vector<base::StringPiece>(sites.size(), "?"), ","),
+                    ")"})
+          .c_str()));
+
+  int i = 0;
+  for (const auto& site : sites) {
+    s_interactions.BindString(i, site);
+    i++;
+  }
+
+  std::set<std::string> interacted_sites;
+  while (s_interactions.Step()) {
+    if (ColumnOptionalTime(&s_interactions, 1).has_value()) {
+      interacted_sites.insert(s_interactions.ColumnString(0));
+    }
+  }
+  return interacted_sites;
 }
 
 size_t DIPSDatabase::ClearRowsWithExpiredInteractions() {
@@ -658,11 +691,11 @@ bool DIPSDatabase::RemoveRows(const std::vector<std::string>& sites) {
   }
 
   sql::Statement s_remove_rows(db_->GetUniqueStatement(
-      base::StrCat(
-          {"DELETE FROM bounces "
-           "WHERE site IN(",
-           base::JoinString(std::vector<std::string>(sites.size(), "?"), ","),
-           ")"})
+      base::StrCat({"DELETE FROM bounces "
+                    "WHERE site IN(",
+                    base::JoinString(
+                        std::vector<base::StringPiece>(sites.size(), "?"), ","),
+                    ")"})
           .c_str()));
 
   for (size_t i = 0; i < sites.size(); i++) {
@@ -985,7 +1018,7 @@ bool DIPSDatabase::ClearTimestampsBySite(bool preserve,
     return true;
 
   std::string placeholders =
-      base::JoinString(std::vector<std::string>(sites.size(), "?"), ",");
+      base::JoinString(std::vector<base::StringPiece>(sites.size(), "?"), ",");
 
   if ((type & DIPSEventRemovalType::kStorage) ==
       DIPSEventRemovalType::kStorage) {

@@ -103,6 +103,13 @@ BASE_FEATURE(kDnsOverHttpsUpgrade,
 #endif
 );
 
+// When enabled, the requests in a third party context to domains included in
+// the Masked Domain List Component will use the Privacy Proxy to shield the
+// client's IP.
+BASE_FEATURE(kMaskedDomainList,
+             "MaskedDomainList",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If this feature is enabled, the mDNS responder service responds to queries
 // for TXT records associated with
 // "Generated-Names._mdns_name_generator._udp.local" with a list of generated
@@ -142,6 +149,12 @@ BASE_FEATURE(kOpaqueResponseBlockingV02,
 // https://github.com/WICG/attribution-reporting-api/blob/main/trigger_attestation.md)
 BASE_FEATURE(kAttributionReportingTriggerAttestation,
              "AttributionReportingTriggerAttestation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Gate access to Attribution Reporting cross app and web APIs that allow
+// registering with a native attribution API.
+BASE_FEATURE(kAttributionReportingCrossAppWeb,
+             "AttributionReportingCrossAppWeb",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables preprocessing requests with the Private State Tokens API Fetch flags
@@ -333,10 +346,6 @@ BASE_FEATURE(kAccessControlAllowMethodsInCORSPreflightSpecConformant,
 
 BASE_FEATURE(kPrefetchNoVarySearch,
              "PrefetchNoVarySearch",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kPrerender2ContentSecurityPolicyExtensions,
-             "Prerender2ContentSecurityPolicyExtensions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kLessChattyNetworkService,

@@ -43,6 +43,7 @@
 #include "gpu/config/gpu_preferences.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/vulkan/buildflags.h"
+#include "skia/buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/extension_set.h"
 #include "ui/gl/buildflags.h"
@@ -133,22 +134,6 @@ GpuFeatureStatus GetAndroidSurfaceControlFeatureStatus(
 
   DCHECK(gfx::SurfaceControl::IsSupported());
   return kGpuFeatureStatusEnabled;
-#endif
-}
-
-GpuFeatureStatus GetMetalFeatureStatus(
-    const std::set<int>& blocklisted_features,
-    const GpuPreferences& gpu_preferences) {
-#if BUILDFLAG(IS_APPLE)
-  if (blocklisted_features.count(GPU_FEATURE_TYPE_METAL))
-    return kGpuFeatureStatusBlocklisted;
-
-  if (!gpu_preferences.enable_metal)
-    return kGpuFeatureStatusDisabled;
-
-  return kGpuFeatureStatusEnabled;
-#else
-  return kGpuFeatureStatusDisabled;
 #endif
 }
 
@@ -309,6 +294,31 @@ GpuFeatureStatus GetGLFeatureStatus(const std::set<int>& blocklisted_features,
   return kGpuFeatureStatusEnabled;
 }
 
+GpuFeatureStatus GetSkiaGraphiteFeatureStatus(
+    const std::set<int>& blocklisted_features,
+    const GpuPreferences& gpu_preferences,
+    bool use_swift_shader) {
+#if BUILDFLAG(ENABLE_SKIA_GRAPHITE)
+  if (use_swift_shader) {
+    return kGpuFeatureStatusDisabled;
+  }
+  if (blocklisted_features.count(GPU_FEATURE_TYPE_SKIA_GRAPHITE)) {
+    return kGpuFeatureStatusDisabled;
+  }
+#if BUILDFLAG(SKIA_USE_DAWN)
+  if (gpu_preferences.gr_context_type == GrContextType::kGraphiteDawn) {
+    return kGpuFeatureStatusEnabled;
+  }
+#endif  // BUILDFLAG(SKIA_USE_DAWN)
+#if BUILDFLAG(SKIA_USE_METAL)
+  if (gpu_preferences.gr_context_type == GrContextType::kGraphiteMetal) {
+    return kGpuFeatureStatusEnabled;
+  }
+#endif  // BUILDFLAG(SKIA_USE_METAL)
+#endif  // BUILDFLAG(ENABLE_SKIA_GRAPHITE)
+  return kGpuFeatureStatusDisabled;
+}
+
 void SetProcessGlWorkaroundsFromGpuFeatures(
     const GpuFeatureInfo& gpu_feature_info) {
   const auto is_enabled =
@@ -318,6 +328,7 @@ void SetProcessGlWorkaroundsFromGpuFeatures(
 
   gl::GlWorkarounds workarounds = {
     .disable_d3d11 = is_enabled(DISABLE_D3D11),
+    .disable_metal = is_enabled(DISABLE_METAL),
     .disable_es3gl_context = is_enabled(DISABLE_ES3_GL_CONTEXT),
     .disable_es3gl_context_for_testing =
         is_enabled(DISABLE_ES3_GL_CONTEXT_FOR_TESTING),
@@ -437,14 +448,14 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithHardwareAccelerationDisabled() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] =
       kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGPU] =
       kGpuFeatureStatusSoftware;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_SKIA_GRAPHITE] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -471,14 +482,14 @@ GpuFeatureInfo ComputeGpuFeatureInfoWithNoGpu() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] =
       kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGPU] =
       kGpuFeatureStatusSoftware;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_SKIA_GRAPHITE] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -505,14 +516,14 @@ GpuFeatureInfo ComputeGpuFeatureInfoForSwiftShader() {
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] =
       kGpuFeatureStatusDisabled;
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
-      kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_CANVAS_OOP_RASTERIZATION] =
       kGpuFeatureStatusDisabled;
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGPU] =
       kGpuFeatureStatusSoftware;
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_SKIA_GRAPHITE] =
+      kGpuFeatureStatusDisabled;
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);
@@ -617,10 +628,11 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
                                             gpu_preferences);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_GL] =
       GetGLFeatureStatus(blocklisted_features, use_swift_shader);
-  gpu_feature_info.status_values[GPU_FEATURE_TYPE_METAL] =
-      GetMetalFeatureStatus(blocklisted_features, gpu_preferences);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_VULKAN] =
       GetVulkanFeatureStatus(blocklisted_features, gpu_preferences);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_SKIA_GRAPHITE] =
+      GetSkiaGraphiteFeatureStatus(blocklisted_features, gpu_preferences,
+                                   use_swift_shader);
 #if DCHECK_IS_ON()
   for (int ii = 0; ii < NUMBER_OF_GPU_FEATURE_TYPES; ++ii) {
     DCHECK_NE(kGpuFeatureStatusUndefined, gpu_feature_info.status_values[ii]);

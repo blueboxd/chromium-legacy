@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
@@ -30,7 +31,6 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -53,6 +53,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
+#include "net/base/network_change_notifier.h"
 #include "net/first_party_sets/global_first_party_sets.h"
 #include "net/log/net_log_util.h"
 #include "sandbox/policy/features.h"
@@ -64,6 +65,7 @@
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_interface_change_listener.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/public/mojom/socket_broker.mojom.h"
@@ -79,6 +81,12 @@
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "content/browser/system_dns_resolution/system_dns_resolver.h"
 #include "services/network/public/mojom/system_dns_resolution.mojom-forward.h"
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+#include "net/base/address_map_linux.h"
+#include "net/base/address_tracker_linux.h"
+#include "services/network/public/mojom/network_interface_change_listener.mojom.h"
 #endif
 
 namespace content {
@@ -151,12 +159,8 @@ static NetworkServiceClient* g_client = nullptr;
 
 void CreateInProcessNetworkServiceOnThread(
     mojo::PendingReceiver<network::mojom::NetworkService> receiver) {
-  // The test interface doesn't need to be implemented in the in-process case.
-  auto registry = std::make_unique<service_manager::BinderRegistry>();
-  registry->AddInterface(base::BindRepeating(
-      [](mojo::PendingReceiver<network::mojom::NetworkServiceTest>) {}));
   g_in_process_instance = new network::NetworkService(
-      std::move(registry), std::move(receiver),
+      nullptr /* registry */, std::move(receiver),
       true /* delay_initialization_until_set_client */);
 }
 
@@ -377,6 +381,20 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
   network_service_params->first_party_sets_enabled =
       GetContentClient()->browser()->IsFirstPartySetsEnabled();
 
+#if BUILDFLAG(IS_LINUX)
+  if (base::FeatureList::IsEnabled(
+          net::features::kAddressTrackerLinuxIsProxied) &&
+      IsOutOfProcessNetworkService()) {
+    auto [address_map, online_links] =
+        net::NetworkChangeNotifier::GetAddressMapOwner()
+            ->GetAddressTrackerLinux()
+            ->GetInitialDataAndStartRecordingDiffs();
+    network_service_params->initial_address_map =
+        network::mojom::InitialAddressMap::New(std::move(address_map),
+                                               std::move(online_links));
+  }
+#endif  // BUILDFLAG(IS_LINUX)
+
 #if BUILDFLAG(IS_POSIX)
   // Send Kerberos environment variables to the network service.
   if (IsOutOfProcessNetworkService()) {
@@ -408,8 +426,7 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
   if (GetContentClient()
           ->browser()
           ->ShouldRunOutOfProcessSystemDnsResolution() &&
-      IsOutOfProcessNetworkService() &&
-      !g_force_create_network_service_directly) {
+      IsOutOfProcessNetworkService()) {
     mojo::PendingRemote<network::mojom::SystemDnsResolver> dns_remote;
     mojo::MakeSelfOwnedReceiver(
         std::make_unique<content::SystemDnsResolverMojoImpl>(),
@@ -545,6 +562,9 @@ network::mojom::NetworkService* GetNetworkService() {
                                          .Pass());
         }
       } else {
+        DCHECK(IsInProcessNetworkService())
+            << "If the network service is created directly, the test must not "
+               "request an out of process network service.";
         // This should only be reached in unit tests.
         if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
           CreateNetworkServiceOnIOForTesting(
@@ -565,8 +585,6 @@ network::mojom::NetworkService* GetNetworkService() {
       delete g_client;  // In case we're recreating the network service.
       g_client = new NetworkServiceClient();
 
-      // Call SetClient before creating NetworkServiceClient, as the latter
-      // might make requests to NetworkService that depend on initialization.
       (*g_network_service_remote)->SetParams(CreateNetworkServiceParams());
       g_client->OnNetworkServiceInitialized(g_network_service_remote->get());
 
@@ -715,6 +733,7 @@ const scoped_refptr<base::SequencedTaskRunner>& GetNetworkTaskRunner() {
 }
 
 void ForceCreateNetworkServiceDirectlyForTesting() {
+  ForceInProcessNetworkService(true);
   g_force_create_network_service_directly = true;
 }
 
@@ -734,56 +753,12 @@ void ShutDownNetworkService() {
   GetNetworkTaskRunnerStorage().reset();
 }
 
-NetworkServiceAvailability GetNetworkServiceAvailability() {
-  if (!g_network_service_remote)
-    return NetworkServiceAvailability::NOT_CREATED;
-  else if (!g_network_service_remote->is_bound())
-    return NetworkServiceAvailability::NOT_BOUND;
-  else if (!g_network_service_remote->is_connected())
-    return NetworkServiceAvailability::ENCOUNTERED_ERROR;
-  else if (!g_network_service_is_responding)
-    return NetworkServiceAvailability::NOT_RESPONDING;
-  else
-    return NetworkServiceAvailability::AVAILABLE;
-}
-
-base::TimeDelta GetTimeSinceLastNetworkServiceCrash() {
-  if (g_last_network_service_crash.is_null())
-    return base::TimeDelta();
-  return base::Time::Now() - g_last_network_service_crash;
-}
-
-void PingNetworkService(base::OnceClosure closure) {
-  GetNetworkService();
-  // Unfortunately, QueryVersion requires a RepeatingCallback.
-  g_network_service_remote->QueryVersion(base::BindOnce(
-      [](base::OnceClosure closure, uint32_t) {
-        if (closure)
-          std::move(closure).Run();
-      },
-      std::move(closure)));
-}
-
 namespace {
 
 cert_verifier::mojom::CertVerifierServiceFactory*
     g_cert_verifier_service_factory_for_testing = nullptr;
 
-mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
-GetNewCertVerifierServiceRemote(
-    cert_verifier::mojom::CertVerifierServiceFactory*
-        cert_verifier_service_factory,
-    cert_verifier::mojom::CertVerifierCreationParamsPtr creation_params) {
-  mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
-      cert_verifier_remote;
-  cert_verifier_service_factory->GetNewCertVerifier(
-      cert_verifier_remote.InitWithNewPipeAndPassReceiver(),
-      std::move(creation_params));
-  return cert_verifier_remote;
-}
-
 void RunInProcessCertVerifierServiceFactory(
-    cert_verifier::mojom::CertVerifierServiceParamsPtr params,
     mojo::PendingReceiver<cert_verifier::mojom::CertVerifierServiceFactory>
         receiver) {
 #if BUILDFLAG(IS_CHROMEOS)
@@ -800,7 +775,7 @@ void RunInProcessCertVerifierServiceFactory(
       service_factory_slot;
   service_factory_slot.GetOrCreateValue() =
       std::make_unique<cert_verifier::CertVerifierServiceFactoryImpl>(
-          std::move(params), std::move(receiver));
+          std::move(receiver));
 }
 
 // Owns the CertVerifierServiceFactory used by the browser.
@@ -827,8 +802,6 @@ GetCertVerifierServiceFactory() {
       factory_remote_storage = GetCertVerifierServiceFactoryRemoteStorage();
   if (!factory_remote_storage.is_bound() ||
       !factory_remote_storage.is_connected()) {
-    cert_verifier::mojom::CertVerifierServiceParamsPtr service_params =
-        GetContentClient()->browser()->GetCertVerifierServiceParams();
     factory_remote_storage.reset();
 #if BUILDFLAG(IS_CHROMEOS)
     // In-process CertVerifierService in Ash and Lacros should run on the IO
@@ -838,24 +811,41 @@ GetCertVerifierServiceFactory() {
     GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&RunInProcessCertVerifierServiceFactory,
-                       std::move(service_params),
                        factory_remote_storage.BindNewPipeAndPassReceiver()));
 #else
     RunInProcessCertVerifierServiceFactory(
-        std::move(service_params),
         factory_remote_storage.BindNewPipeAndPassReceiver());
 #endif
   }
   return factory_remote_storage.get();
 }
 
+mojo::Remote<cert_verifier::mojom::CertVerifierServiceFactory>&
+GetCertVerifierServiceFactoryRemoteForTesting() {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // The Remote isn't used if g_cert_verifier_service_factory_for_testing is
+  // registered, so any test trying to do both is doing something wrong.
+  CHECK(!g_cert_verifier_service_factory_for_testing);
+
+  return GetCertVerifierServiceFactoryRemoteStorage();
+}
+
 network::mojom::CertVerifierServiceRemoteParamsPtr GetCertVerifierParams(
     cert_verifier::mojom::CertVerifierCreationParamsPtr
         cert_verifier_creation_params) {
+  mojo::PendingRemote<cert_verifier::mojom::CertVerifierService>
+      cert_verifier_remote;
+  mojo::PendingReceiver<cert_verifier::mojom::CertVerifierServiceClient>
+      cert_verifier_client;
+
+  GetCertVerifierServiceFactory()->GetNewCertVerifier(
+      cert_verifier_remote.InitWithNewPipeAndPassReceiver(),
+      cert_verifier_client.InitWithNewPipeAndPassRemote(),
+      std::move(cert_verifier_creation_params));
+
   return network::mojom::CertVerifierServiceRemoteParams::New(
-      GetNewCertVerifierServiceRemote(
-          GetCertVerifierServiceFactory(),
-          std::move(cert_verifier_creation_params)));
+      std::move(cert_verifier_remote), std::move(cert_verifier_client));
 }
 
 void SetCertVerifierServiceFactoryForTesting(

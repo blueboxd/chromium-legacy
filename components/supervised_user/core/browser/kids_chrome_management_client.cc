@@ -8,6 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/escape.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -29,7 +30,6 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -38,8 +38,25 @@ enum class RequestMethod {
   kClassifyUrl,
 };
 
+// Corresponds to tools/metrics/histograms/enums.xml counterpart. Do not
+// renumber entries as this breaks Uma metrics.
+enum class KidsChromeManagementClientParsingResult {
+  kSuccess = 0,
+  kResponseDictionaryFailure = 1,
+  kDisplayClassificationFailure = 2,
+  kInvalidDisplayClassification = 3,
+  kMaxValue = kInvalidDisplayClassification,
+};
+
 constexpr char kClassifyUrlDataContentType[] =
     "application/x-www-form-urlencoded";
+
+constexpr char kClassifyUrlAuthErrorMetric[] =
+    "FamilyLinkUser.ClassifyUrlRequest.AuthError";
+constexpr char kClassifyUrlNetOrHttpStatusMetric[] =
+    "FamilyLinkUser.ClassifyUrlRequest.NetOrHttpStatus";
+constexpr char kClassifyUrlParsingResultMetric[] =
+    "FamilyLinkUser.ClassifyUrlRequest.ParsingResult";
 
 // Constants for ClassifyURL.
 constexpr char kClassifyUrlOauthConsumerName[] = "kids_url_classifier";
@@ -76,6 +93,9 @@ GetClassifyURLResponseProto(const std::string& response) {
   if (!dict) {
     DLOG(WARNING)
         << "GetClassifyURLResponseProto failed to parse response dictionary";
+    base::UmaHistogramEnumeration(
+        kClassifyUrlParsingResultMetric,
+        KidsChromeManagementClientParsingResult::kResponseDictionaryFailure);
     response_proto->set_display_classification(
         kids_chrome_management::ClassifyUrlResponse::
             UNKNOWN_DISPLAY_CLASSIFICATION);
@@ -87,6 +107,9 @@ GetClassifyURLResponseProto(const std::string& response) {
   if (!maybe_classification_string) {
     DLOG(WARNING)
         << "GetClassifyURLResponseProto failed to parse displayClassification";
+    base::UmaHistogramEnumeration(
+        kClassifyUrlParsingResultMetric,
+        KidsChromeManagementClientParsingResult::kDisplayClassificationFailure);
     response_proto->set_display_classification(
         kids_chrome_management::ClassifyUrlResponse::
             UNKNOWN_DISPLAY_CLASSIFICATION);
@@ -103,11 +126,17 @@ GetClassifyURLResponseProto(const std::string& response) {
   } else {
     DLOG(WARNING)
         << "GetClassifyURLResponseProto expected a valid displayClassification";
+    base::UmaHistogramEnumeration(
+        kClassifyUrlParsingResultMetric,
+        KidsChromeManagementClientParsingResult::kInvalidDisplayClassification);
     response_proto->set_display_classification(
         kids_chrome_management::ClassifyUrlResponse::
             UNKNOWN_DISPLAY_CLASSIFICATION);
   }
 
+  base::UmaHistogramEnumeration(
+      kClassifyUrlParsingResultMetric,
+      KidsChromeManagementClientParsingResult::kSuccess);
   return response_proto;
 }
 
@@ -253,7 +282,8 @@ void KidsChromeManagementClient::OnAccessTokenFetchComplete(
     signin::AccessTokenInfo token_info) {
   if (error.state() != GoogleServiceAuthError::NONE) {
     DLOG(WARNING) << "Token error: " << error.ToString();
-
+    base::UmaHistogramEnumeration(kClassifyUrlAuthErrorMetric, error.state(),
+                                  GoogleServiceAuthError::NUM_STATES);
     std::unique_ptr<google::protobuf::MessageLite> response_proto;
     DispatchResult(it, std::move(response_proto),
                    KidsChromeManagementClient::ErrorCode::kTokenError);
@@ -313,6 +343,7 @@ void KidsChromeManagementClient::OnSimpleLoaderComplete(
     // restarting the request from the beginning (fetching access token).
     if (response_code == net::HTTP_UNAUTHORIZED && !req->access_token_expired) {
       DLOG(WARNING) << "Access token expired:\n" << token_info.token;
+      // Do not record metrics in here to avoid double-counting.
       req->access_token_expired = true;
       signin::ScopeSet scopes{req->scope};
       identity_manager_->RemoveAccessTokenFromCache(
@@ -329,6 +360,7 @@ void KidsChromeManagementClient::OnSimpleLoaderComplete(
 
   if (net_error != net::OK) {
     DLOG(WARNING) << "Network error " << net_error;
+    base::UmaHistogramSparse(kClassifyUrlNetOrHttpStatusMetric, net_error);
     DispatchResult(it, std::move(response_proto),
                    KidsChromeManagementClient::ErrorCode::kNetworkError);
     return;
@@ -336,6 +368,7 @@ void KidsChromeManagementClient::OnSimpleLoaderComplete(
 
   if (response_code != net::HTTP_OK) {
     DLOG(WARNING) << "Response: " << response_body.get();
+    base::UmaHistogramSparse(kClassifyUrlNetOrHttpStatusMetric, response_code);
     DispatchResult(it, std::move(response_proto),
                    KidsChromeManagementClient::ErrorCode::kHttpError);
     return;

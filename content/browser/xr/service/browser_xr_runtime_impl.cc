@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/containers/contains.h"
-#include "base/cxx17_backports.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
@@ -113,10 +112,10 @@ device::mojom::XRViewPtr ValidateXRView(const device::mojom::XRView* view) {
   DCHECK_GT(view->viewport.width() + view->viewport.x(), kMinSize);
   DCHECK_GT(view->viewport.height() + view->viewport.y(), kMinSize);
   ret->viewport =
-      gfx::Rect(base::clamp(view->viewport.x(), 0, kMaxSize),
-                base::clamp(view->viewport.y(), 0, kMaxSize),
-                base::clamp(view->viewport.width(), kMinSize, kMaxSize),
-                base::clamp(view->viewport.height(), kMinSize, kMaxSize));
+      gfx::Rect(std::clamp(view->viewport.x(), 0, kMaxSize),
+                std::clamp(view->viewport.y(), 0, kMaxSize),
+                std::clamp(view->viewport.width(), kMinSize, kMaxSize),
+                std::clamp(view->viewport.height(), kMinSize, kMaxSize));
   return ret;
 }
 
@@ -188,11 +187,15 @@ bool BrowserXRRuntimeImpl::SupportsAllFeatures(
 
 bool BrowserXRRuntimeImpl::SupportsCustomIPD() const {
   switch (id_) {
-    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
     case device::mojom::XRDeviceId::WEB_TEST_DEVICE_ID:
     case device::mojom::XRDeviceId::FAKE_DEVICE_ID:
     case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
+#if BUILDFLAG(ENABLE_ARCORE)
+    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
+#endif  // ENABLE_ARCORE
+#if BUILDFLAG(ENABLE_GVR_SERVICES)
     case device::mojom::XRDeviceId::GVR_DEVICE_ID:
+#endif  // ENABLE_GVR_SERVICES
 #if BUILDFLAG(ENABLE_CARDBOARD)
     case device::mojom::XRDeviceId::CARDBOARD_DEVICE_ID:
 #endif  // ENABLE_CARDBOARD
@@ -208,19 +211,25 @@ bool BrowserXRRuntimeImpl::SupportsCustomIPD() const {
 
 bool BrowserXRRuntimeImpl::SupportsNonEmulatedHeight() const {
   switch (id_) {
-    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
     case device::mojom::XRDeviceId::WEB_TEST_DEVICE_ID:
     case device::mojom::XRDeviceId::FAKE_DEVICE_ID:
     case device::mojom::XRDeviceId::ORIENTATION_DEVICE_ID:
+#if BUILDFLAG(ENABLE_ARCORE)
+    case device::mojom::XRDeviceId::ARCORE_DEVICE_ID:
+#endif  // ENABLE_ARCORE
       return false;
+#if BUILDFLAG(ENABLE_GVR_SERVICES)
     case device::mojom::XRDeviceId::GVR_DEVICE_ID:
+      return true;
+#endif  // ENABLE_GVR_SERVICES
 #if BUILDFLAG(ENABLE_CARDBOARD)
     case device::mojom::XRDeviceId::CARDBOARD_DEVICE_ID:
+      return true;
 #endif  // ENABLE_CARDBOARD
 #if BUILDFLAG(ENABLE_OPENXR)
     case device::mojom::XRDeviceId::OPENXR_DEVICE_ID:
-#endif
       return true;
+#endif  // ENABLE_OPENXR
   }
 
   NOTREACHED();

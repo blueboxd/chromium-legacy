@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.share.link_to_text;
 
+import android.text.TextUtils;
+
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
@@ -101,8 +103,9 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
     }
 
     @VisibleForTesting
-    void onSelectorReady(String selector) {
-        mShareLinkParams = selector.isEmpty()
+    public void onSelectorReady(String selector) {
+        boolean isSelectorEmpty = TextUtils.isEmpty(selector);
+        mShareLinkParams = isSelectorEmpty
                 ? null
                 : new ShareParams
                           .Builder(mTab.getWindowAndroid(), mTab.getTitle(),
@@ -114,10 +117,10 @@ public class LinkToTextCoordinator extends EmptyTabObserver {
         mShareTextParams =
                 new ShareParams.Builder(mTab.getWindowAndroid(), mTab.getTitle(), /*url=*/"")
                         .setText(mSelectedText)
-                        .setLinkToTextSuccessful(!selector.isEmpty())
+                        .setLinkToTextSuccessful(!isSelectorEmpty)
                         .build();
         mChromeOptionShareCallback.showShareSheet(
-                getShareParams(selector.isEmpty() ? LinkToggleState.NO_LINK : LinkToggleState.LINK),
+                getShareParams(isSelectorEmpty ? LinkToggleState.NO_LINK : LinkToggleState.LINK),
                 mChromeShareExtras, mShareStartTime);
     }
 

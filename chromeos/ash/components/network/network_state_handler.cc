@@ -113,7 +113,8 @@ class NetworkStateHandler::ActiveNetworkState {
         activation_state_(network->activation_state()),
         connect_requested_(network->connect_requested()),
         signal_strength_(network->signal_strength()),
-        network_technology_(network->network_technology()) {}
+        network_technology_(network->network_technology()),
+        portal_state_(network->GetPortalState()) {}
 
   bool MatchesNetworkState(const NetworkState* network) {
     return guid_ == network->guid() &&
@@ -122,7 +123,8 @@ class NetworkStateHandler::ActiveNetworkState {
            connect_requested_ == network->connect_requested() &&
            (abs(signal_strength_ - network->signal_strength()) <
             NetworkState::kSignalStrengthChangeThreshold) &&
-           network_technology_ == network->network_technology();
+           network_technology_ == network->network_technology() &&
+           portal_state_ == network->GetPortalState();
   }
 
  private:
@@ -141,6 +143,9 @@ class NetworkStateHandler::ActiveNetworkState {
   // Network technology is indicated in network icons in the UI, so we need to
   // track changes to this value.
   const std::string network_technology_;
+  // Portal state changes affects the network connection state. We want to make
+  // sure the network state gets updated each time the portal state changes.
+  const NetworkState::PortalState portal_state_;
 };
 
 const char NetworkStateHandler::kDefaultCheckPortalList[] =
@@ -1014,10 +1019,13 @@ void NetworkStateHandler::SetTetherNetworkStateConnected(
     const std::string& guid) {
   // Being connected implies that AssociateTetherNetworkStateWithWifiNetwork()
   // was already called, so ensure that the association is still intact.
+  // TODO(b/278966899): Promote this to a CHECK.
   DCHECK(GetNetworkStateFromGuid(GetNetworkStateFromGuid(guid)->tether_guid())
              ->tether_guid() == guid);
 
   // At this point, there should be a default network set.
+  // TODO(b/279047073): We can hit this due to a race between
+  // `SetTetherNetworkStateConnected` and `DefaultNetworkServiceChange`.
   DCHECK(!default_network_path_.empty());
 
   SetTetherNetworkStateConnectionState(guid, shill::kStateOnline);
@@ -1729,7 +1737,6 @@ void NetworkStateHandler::ManagedStateListChanged(
     case ManagedState::MANAGED_TYPE_NETWORK:
       AddOrRemoveStubCellularNetworks();
       SortNetworkList();
-      UpdateNetworkStats();
       NotifyIfActiveNetworksChanged();
       NotifyNetworkListChanged();
       UpdateBlockedCellularNetworks();
@@ -1804,25 +1811,6 @@ void NetworkStateHandler::SortNetworkList() {
   std::move(new_networks.begin(), new_networks.end(),
             std::back_inserter(network_list_));
   network_list_sorted_ = true;
-}
-
-void NetworkStateHandler::UpdateNetworkStats() {
-  size_t shared = 0, unshared = 0, visible = 0;
-  for (ManagedStateList::iterator iter = network_list_.begin();
-       iter != network_list_.end(); ++iter) {
-    const NetworkState* network = (*iter)->AsNetworkState();
-    if (network->visible())
-      ++visible;
-    if (network->IsInProfile()) {
-      if (network->IsPrivate())
-        ++unshared;
-      else
-        ++shared;
-    }
-  }
-  base::UmaHistogramCounts100("Networks.Visible", visible);
-  base::UmaHistogramCounts100("Networks.RememberedShared", shared);
-  base::UmaHistogramCounts100("Networks.RememberedUnshared", unshared);
 }
 
 void NetworkStateHandler::DefaultNetworkServiceChanged(

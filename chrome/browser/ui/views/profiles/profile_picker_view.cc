@@ -341,12 +341,9 @@ void ProfilePickerForceSigninDialog::DisplayErrorMessage() {
 // ProfilePickerView::NavigationFinishedObserver ------------------------------
 
 ProfilePickerView::NavigationFinishedObserver::NavigationFinishedObserver(
-    const GURL& url,
     base::OnceClosure closure,
     content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      url_(url),
-      closure_(std::move(closure)) {}
+    : content::WebContentsObserver(contents), closure_(std::move(closure)) {}
 
 ProfilePickerView::NavigationFinishedObserver::~NavigationFinishedObserver() =
     default;
@@ -416,7 +413,6 @@ void ProfilePickerView::ShowScreen(
   // observer gets destroyed here or later in ShowScreenFinished(). This is okay
   // as all the previous values get replaced by the new values.
   show_screen_finished_observer_ = std::make_unique<NavigationFinishedObserver>(
-      url,
       base::BindOnce(&ProfilePickerView::ShowScreenFinished,
                      base::Unretained(this), contents,
                      std::move(navigation_finished_closure)),
@@ -930,12 +926,8 @@ ProfilePickerFlowController* ProfilePickerView::GetProfilePickerFlowController()
 }
 
 ClearHostClosure ProfilePickerView::GetClearClosure() {
-  return ClearHostClosure(base::BindOnce(
-      &ProfilePickerView::Clear,
-      // The method contract indicates that it is the responsibility of the
-      // callers to make sure `this` is valid. As the callers are all owned by
-      // `this`, it should be a reasonable assumption.
-      base::Unretained(this)));
+  return ClearHostClosure(base::BindOnce(&ProfilePickerView::Clear,
+                                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

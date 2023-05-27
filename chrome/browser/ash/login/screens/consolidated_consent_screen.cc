@@ -5,7 +5,6 @@
 #include "chrome/browser/ash/login/screens/consolidated_consent_screen.h"
 
 #include "ash/components/arc/arc_prefs.h"
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -150,8 +149,7 @@ ConsolidatedConsentScreen::~ConsolidatedConsentScreen() {
 
 bool ConsolidatedConsentScreen::MaybeSkip(WizardContext& context) {
   if (context.skip_post_login_screens_for_tests) {
-    if (features::IsOobeConsolidatedConsentEnabled())
-      StartupUtils::MarkEulaAccepted();
+    StartupUtils::MarkEulaAccepted();
 
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
@@ -423,6 +421,12 @@ void ConsolidatedConsentScreen::ReportUsageOptIn(bool is_enabled) {
   // If user is not eligible for per-user, this will no-op. See details at
   // chrome/browser/metrics/per_user_state_manager_chromeos.h.
   metrics_service->UpdateCurrentUserMetricsConsent(is_enabled);
+}
+
+void ConsolidatedConsentScreen::NotifyConsolidatedConsentAcceptForTesting() {
+  for (auto& observer : observer_list_) {
+    observer.OnConsolidatedConsentAccept();
+  }
 }
 
 void ConsolidatedConsentScreen::OnAccept(bool enable_stats_usage,

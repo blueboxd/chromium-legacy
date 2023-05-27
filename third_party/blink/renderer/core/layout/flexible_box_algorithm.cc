@@ -32,7 +32,6 @@
 
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
-#include "third_party/blink/renderer/core/layout/layout_flexible_box.h"
 #include "third_party/blink/renderer/core/layout/min_max_sizes.h"
 #include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_line.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -77,7 +76,6 @@ ContentDistributionType BoxPackToContentDistribution(EBoxPack box_pack) {
 }  // namespace
 
 FlexItem::FlexItem(const FlexLayoutAlgorithm* algorithm,
-                   LayoutBox* box,
                    const ComputedStyle& style,
                    LayoutUnit flex_base_content_size,
                    MinMaxSizes min_max_main_sizes,
@@ -91,7 +89,6 @@ FlexItem::FlexItem(const FlexLayoutAlgorithm* algorithm,
                    bool depends_on_min_max_sizes)
     : algorithm_(algorithm),
       line_number_(0),
-      box_(box),
       style_(style),
       flex_base_content_size_(flex_base_content_size),
       min_max_main_sizes_(min_max_main_sizes),
@@ -182,13 +179,6 @@ LayoutUnit FlexItem::CrossAxisMarginExtent() const {
 
 LayoutUnit FlexItem::MarginBoxAscent(bool is_last_baseline,
                                      bool is_wrap_reverse) const {
-  if (box_) {
-    LayoutUnit ascent(box_->FirstLineBoxBaseline());
-    if (ascent == -1)
-      ascent = cross_axis_size_;
-    return ascent + FlowAwareMarginBefore();
-  }
-
   DCHECK(layout_result_);
   NGBoxFragment baseline_fragment(
       baseline_writing_direction_,
@@ -294,17 +284,6 @@ void FlexItem::ComputeStretchedSize() {
   LayoutUnit stretched_size =
       std::max(cross_axis_border_padding_,
                Line()->cross_axis_extent_ - CrossAxisMarginExtent());
-  if (box_) {
-    if (MainAxisIsInlineAxis() && style_.LogicalHeight().IsAuto()) {
-      cross_axis_size_ = box_->ConstrainLogicalHeightByMinMax(
-          stretched_size, box_->IntrinsicContentLogicalHeight());
-    } else if (!MainAxisIsInlineAxis() && style_.LogicalWidth().IsAuto()) {
-      const auto* flexbox = To<LayoutFlexibleBox>(box_->Parent());
-      cross_axis_size_ = box_->ConstrainLogicalWidthByMinMax(
-          stretched_size, flexbox->CrossAxisContentExtent(), flexbox);
-    }
-    return;
-  }
 
   if ((MainAxisIsInlineAxis() && style_.LogicalHeight().IsAuto()) ||
       (!MainAxisIsInlineAxis() && style_.LogicalWidth().IsAuto())) {
@@ -314,7 +293,6 @@ void FlexItem::ComputeStretchedSize() {
 }
 
 void FlexItem::Trace(Visitor* visitor) const {
-  visitor->Trace(box_);
   visitor->Trace(ng_input_node_);
   visitor->Trace(layout_result_);
 }
@@ -545,24 +523,14 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
           is_reversed);
   LayoutUnit main_axis_offset = initial_position + main_axis_start_offset;
 
-  bool should_flip_main_axis;
-  if (algorithm_->IsNGFlexBox()) {
-    should_flip_main_axis = style.ResolvedIsRowReverseFlexDirection();
-
-    if (is_webkit_box && available_free_space < 0 &&
-        (style.ResolvedIsRowReverseFlexDirection() ==
-         style.IsLeftToRightDirection()))
-      main_axis_offset += available_free_space;
-  } else {
-    should_flip_main_axis = !style.ResolvedIsColumnFlexDirection() &&
-                            !algorithm_->IsLeftToRightFlow();
-
-    // When a -webkit-box has negative available-space it always places that
-    // overflow to the line-right. (Even if we have "direction: rtl" or
-    // "-webkit-box-direction: reverse"). In the future it will hopefully be
-    // possible to remove this quirk.
-    if (should_flip_main_axis && is_webkit_box && available_free_space < 0)
-      main_axis_offset += available_free_space;
+  // When a -webkit-box has negative available-space it always places that
+  // overflow to the line-right. (Even if we have "direction: rtl" or
+  // "-webkit-box-direction: reverse"). In the future it will hopefully be
+  // possible to remove this quirk.
+  if (is_webkit_box && available_free_space < 0 &&
+      (style.ResolvedIsRowReverseFlexDirection() ==
+       style.IsLeftToRightDirection())) {
+    main_axis_offset += available_free_space;
   }
 
   LayoutUnit max_major_descent;
@@ -608,7 +576,7 @@ void FlexLine::ComputeLineItemsPosition(LayoutUnit main_axis_start_offset,
     // on the left. This will be fixed later in
     // LayoutFlexibleBox::FlipForRightToLeftColumn.
     *flex_item.offset_ = FlexOffset(
-        should_flip_main_axis
+        style.ResolvedIsRowReverseFlexDirection()
             ? container_logical_width_ - main_axis_offset - child_main_extent
             : main_axis_offset,
         cross_axis_offset + flex_item.FlowAwareMarginBefore());
@@ -794,8 +762,8 @@ FlexLayoutAlgorithm::ContentAlignmentNormalBehavior() {
 bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
     const LayoutBox& child) const {
   // css-flexbox section 4.5
-  const Length& min = IsHorizontalFlow() ? child.StyleRef().MinWidth()
-                                         : child.StyleRef().MinHeight();
+  const Length& min = IsHorizontalFlow() ? child.StyleRef().UsedMinWidth()
+                                         : child.StyleRef().UsedMinHeight();
   bool main_axis_is_childs_block_axis =
       IsHorizontalFlow() != child.StyleRef().IsHorizontalWritingMode();
   bool intrinsic_in_childs_block_axis =
@@ -1224,10 +1192,6 @@ void FlexLayoutAlgorithm::LayoutColumnReverse(
     LayoutUnit border_scrollbar_padding_before) {
   DCHECK(IsColumnFlow());
   DCHECK(Style()->ResolvedIsColumnReverseFlexDirection());
-  DCHECK(all_items_.empty() || IsNGFlexBox())
-      << "This method relies on NG having passed in 0 for initial main axis "
-         "offset for column-reverse flex boxes. That needs to be fixed if this "
-         "method is to be used in legacy.";
   for (FlexLine& line_context : FlexLines()) {
     for (wtf_size_t child_number = 0;
          child_number < line_context.line_items_.size(); ++child_number) {
@@ -1246,14 +1210,6 @@ void FlexLayoutAlgorithm::LayoutColumnReverse(
           margins.block_end + margins.block_start;
     }
   }
-}
-
-bool FlexLayoutAlgorithm::IsNGFlexBox() const {
-  DCHECK(!all_items_.empty())
-      << "You can't call IsNGFlexBox before adding items.";
-  // The FlexItems created by legacy will have an empty ng_input_node. An NG
-  // FlexItem's ng_input_node will have a LayoutBox.
-  return all_items_.at(0).ng_input_node_.GetLayoutBox();
 }
 
 FlexItem* FlexLayoutAlgorithm::FlexItemAtIndex(wtf_size_t line_index,

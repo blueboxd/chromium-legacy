@@ -12,7 +12,8 @@ import static org.chromium.chrome.browser.customtabs.CustomTabsIntentTestUtils.c
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.support.test.InstrumentationRegistry;
+
+import androidx.test.InstrumentationRegistry;
 
 import org.hamcrest.Matchers;
 
@@ -66,6 +67,10 @@ public class IncognitoDataTestUtils {
         }
     }
 
+    /**
+     * A class providing test parameters encapsulating different Activity type pairs spliced on
+     * regular and Incognito mode. This is used for tests which check leakages to/from Incognito.
+     */
     public static class TestParams {
         private static List<ParameterSet> getParameters(
                 boolean firstIncognito, boolean secondIncognito) {
@@ -92,6 +97,11 @@ public class IncognitoDataTestUtils {
             return tests;
         }
 
+        /**
+         * A class providing test parameters encapsulating different Activity type pairs where
+         * the Activity from which we check the leak from is Regular mode, and the leak to is
+         * Incognito mode.
+         */
         public static class RegularToIncognito implements ParameterProvider {
             @Override
             public List<ParameterSet> getParameters() {
@@ -99,6 +109,11 @@ public class IncognitoDataTestUtils {
             }
         }
 
+        /**
+         * A class providing test parameters encapsulating different Activity type pairs where
+         * the Activity from which we check the leak from is Incognito mode, and the leak to is
+         * Regular mode.
+         */
         public static class IncognitoToRegular implements ParameterProvider {
             @Override
             public List<ParameterSet> getParameters() {
@@ -106,6 +121,11 @@ public class IncognitoDataTestUtils {
             }
         }
 
+        /**
+         * A class providing test parameters encapsulating different Activity type pairs where
+         * the Activity from which we check the leak from is Incognito mode, and the leak to is
+         * also Incognito mode.
+         */
         public static class IncognitoToIncognito implements ParameterProvider {
             @Override
             public List<ParameterSet> getParameters() {
@@ -113,6 +133,11 @@ public class IncognitoDataTestUtils {
             }
         }
 
+        /**
+         * A class providing test parameters encapsulating different Activity type pairs where
+         * the Activity from which we check the leak from is Regular mode, and the leak to is
+         * also Regular mode.
+         */
         public static class RegularToRegular implements ParameterProvider {
             @Override
             public List<ParameterSet> getParameters() {
@@ -120,6 +145,10 @@ public class IncognitoDataTestUtils {
             }
         }
 
+        /**
+         * A general class providing test parameters encapsulating different Activity type pairs
+         * spliced on Regular and Incognito mod between whom we want to test leakage.
+         */
         public static class AllTypesToAllTypes implements ParameterProvider {
             @Override
             public List<ParameterSet> getParameters() {

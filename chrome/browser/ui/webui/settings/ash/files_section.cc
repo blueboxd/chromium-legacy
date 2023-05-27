@@ -7,6 +7,7 @@
 #include "ash/constants/ash_features.h"
 #include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_handler.h"
@@ -106,16 +107,37 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"googleDriveEnabledLabel", IDS_SETTINGS_GOOGLE_DRIVE_ENABLED},
       {"googleDriveDisabledLabel", IDS_SETTINGS_GOOGLE_DRIVE_DISABLED},
       {"googleDriveDisconnectLabel", IDS_SETTINGS_GOOGLE_DRIVE_DISCONNECT},
-      {"googleDriveSignedInAs", IDS_SETTINGS_GOOGLE_DRIVE_SIGNED_IN_AS},
+      {"googleDriveConnectLabel", IDS_SETTINGS_GOOGLE_DRIVE_CONNECT},
       {"googleDriveOfflineTitle", IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_TITLE},
       {"googleDriveOfflineSubtitle",
        IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_SUBTITLE},
-      {"googleDriveOfflineClearTitle",
-       IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_TITLE},
-      {"googleDriveOfflineClearSubtitle",
-       IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_SUBTITLE},
+      {"googleDriveOfflineStorageTitle",
+       IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_STORAGE_TITLE},
+      {"googleDriveOfflineSpaceSubtitle",
+       IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_STORAGE_REQUIRED_SUBTITLE},
+      {"googleDriveOfflineClearCalculatingSubtitle",
+       IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_CALCULATING_SUBTITLE},
+      {"googleDriveOfflineClearErrorSubtitle",
+       IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_ERROR_SUBTITLE},
       {"googleDriveOfflineClearAction",
        IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_ACTION},
+      {"googleDriveOfflineClearDialogTitle",
+       IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_DIALOG_TITLE},
+      {"googleDriveOfflineClearDialogBody",
+       IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_DIALOG_BODY},
+      {"googleDriveTurnOffLabel",
+       IDS_SETTINGS_GOOGLE_DRIVE_TURN_OFF_BUTTON_LABEL},
+      {"googleDriveTurnOffTitle",
+       IDS_SETTINGS_GOOGLE_DRIVE_TURN_OFF_TITLE_TEXT},
+      {"googleDriveNotEnoughSpaceTitle",
+       IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_NOT_ENOUGH_SPACE_TITLE_TEXT},
+      {"googleDriveNotEnoughSpaceBody",
+       IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_NOT_ENOUGH_SPACE_BODY_TEXT},
+      {"googleDriveUnexpectedErrorTitle",
+       IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_UNEXPECTED_ERROR_TITLE_TEXT},
+      {"googleDriveUnexpectedErrorBody",
+       IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_UNEXPECTED_ERROR_BODY_TEXT},
+      {"googleDriveTurnOffBody", IDS_SETTINGS_GOOGLE_DRIVE_TURN_OFF_BODY_TEXT},
       {"filesPageTitle", IDS_OS_SETTINGS_FILES},
       {"smbSharesTitle", IDS_SETTINGS_DOWNLOADS_SMB_SHARES},
       {"smbSharesLearnMoreLabel",
@@ -139,6 +161,12 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_URL_MESSAGE},
       {"smbShareAddedInvalidSSOURLMessage",
        IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_INVALID_SSO_URL_MESSAGE},
+      {"officeLabel", IDS_SETTINGS_OFFICE_LABEL},
+      {"officeSubpageTitle", IDS_SETTINGS_OFFICE_SUBPAGE_TITLE},
+      {"alwaysMoveToDrivePreferenceLabel",
+       IDS_SETTINGS_ALWAYS_MOVE_OFFICE_TO_DRIVE_PREFERENCE_LABEL},
+      {"alwaysMoveToOneDrivePreferenceLabel",
+       IDS_SETTINGS_ALWAYS_MOVE_OFFICE_TO_ONEDRIVE_PREFERENCE_LABEL},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -155,6 +183,19 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       ProfileHelper::Get()->GetUserByProfile(profile());
   html_source->AddBoolean("isActiveDirectoryUser",
                           user && user->IsActiveDirectoryUser());
+
+  if (user && user->GetAccountId().is_valid()) {
+    html_source->AddString(
+        "googleDriveSignedInAs",
+        l10n_util::GetStringFUTF16(
+            IDS_SETTINGS_GOOGLE_DRIVE_SIGNED_IN_AS,
+            base::ASCIIToUTF16(user->GetAccountId().GetUserEmail())));
+    html_source->AddString(
+        "googleDriveDisconnectedFrom",
+        l10n_util::GetStringFUTF16(
+            IDS_SETTINGS_GOOGLE_DRIVE_DISCONNECTED_FROM,
+            base::ASCIIToUTF16(user->GetAccountId().GetUserEmail())));
+  }
 
   html_source->AddBoolean("enableDriveFsBulkPinning",
                           features::IsDriveFsBulkPinningEnabled());

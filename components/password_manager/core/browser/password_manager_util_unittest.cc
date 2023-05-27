@@ -232,20 +232,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               (override));
   MOCK_METHOD(bool, HasCreditCardScanFeature, (), (override));
   MOCK_METHOD(void, ScanCreditCard, (CreditCardScanCallback), (override));
-  MOCK_METHOD(bool,
-              IsFastCheckoutSupported,
-              (const autofill::FormData&,
-               const autofill::FormFieldData&,
-               const autofill::AutofillManager&),
-              (override));
-  MOCK_METHOD(bool,
-              TryToShowFastCheckout,
-              (const autofill::FormData&,
-               const autofill::FormFieldData&,
-               base::WeakPtr<autofill::AutofillManager>),
-              (override));
-  MOCK_METHOD(void, HideFastCheckout, (bool), (override));
-  MOCK_METHOD(bool, IsShowingFastCheckoutUI, (), (override));
   MOCK_METHOD(bool, IsTouchToFillCreditCardSupported, (), (override));
   MOCK_METHOD(bool,
               ShowTouchToFillCreditCard,
@@ -906,16 +892,12 @@ TEST_F(PasswordManagerUtilTest, CanUseBiometricAuth) {
   EXPECT_CALL(*(mock_client_.GetPasswordFeatureManager()),
               IsBiometricAuthenticationBeforeFillingEnabled)
       .WillOnce(Return(false));
-  EXPECT_FALSE(CanUseBiometricAuth(
-      authenticator_.get(),
-      device_reauth::DeviceAuthRequester::kAutofillSuggestion, &mock_client_));
+  EXPECT_FALSE(CanUseBiometricAuth(authenticator_.get(), &mock_client_));
 
   EXPECT_CALL(*(mock_client_.GetPasswordFeatureManager()),
               IsBiometricAuthenticationBeforeFillingEnabled)
       .WillOnce(Return(true));
-  EXPECT_TRUE(CanUseBiometricAuth(
-      authenticator_.get(),
-      device_reauth::DeviceAuthRequester::kAutofillSuggestion, &mock_client_));
+  EXPECT_TRUE(CanUseBiometricAuth(authenticator_.get(), &mock_client_));
 }
 
 TEST_F(PasswordManagerUtilTest, BiometricsUnavailable) {

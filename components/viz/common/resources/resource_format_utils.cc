@@ -293,9 +293,9 @@ bool HasEquivalentBufferFormat(SharedImageFormat format) {
     return HasEquivalentBufferFormat(format.resource_format());
   }
 
-  return format == MultiPlaneFormat::kYVU_420 ||
-         format == MultiPlaneFormat::kYUV_420_BIPLANAR ||
-         format == MultiPlaneFormat::kYUVA_420_TRIPLANAR ||
+  return format == MultiPlaneFormat::kYV12 ||
+         format == MultiPlaneFormat::kNV12 ||
+         format == MultiPlaneFormat::kNV12A ||
          format == MultiPlaneFormat::kP010;
 }
 
@@ -686,6 +686,13 @@ SkColorType ToClosestSkColorType(bool gpu_compositing,
                                  : kR16G16_float_SkColorType;
     }
   }
+}
+
+SkColorType ToClosestSkColorType(bool gpu_compositing,
+                                 SharedImageFormat format) {
+  CHECK(format.is_single_plane());
+  return ResourceFormatToClosestSkColorType(gpu_compositing,
+                                            format.resource_format());
 }
 
 }  // namespace viz

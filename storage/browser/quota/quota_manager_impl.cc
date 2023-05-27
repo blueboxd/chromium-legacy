@@ -818,17 +818,14 @@ class QuotaManagerImpl::BucketSetDataDeleter {
  private:
   void DidGetBuckets(QuotaErrorOr<std::set<BucketInfo>> result) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!result.has_value()) {
-      Complete(/*success=*/false);
-      return;
+    if (result.has_value()) {
+      buckets_ = BucketInfosToBucketLocators(result.value());
+      if (!buckets_.empty()) {
+        ScheduleBucketsDeletion();
+        return;
+      }
     }
-
-    buckets_ = BucketInfosToBucketLocators(result.value());
-    if (!buckets_.empty()) {
-      ScheduleBucketsDeletion();
-      return;
-    }
-    Complete(/*success=*/true);
+    Complete(/*success=*/result.has_value());
   }
 
   void ScheduleBucketsDeletion() {
@@ -1046,6 +1043,8 @@ void QuotaManagerImpl::UpdateOrCreateBucket(
     return;
   }
 
+  last_opened_bucket_site_ = bucket_params.storage_key;
+
   // The default bucket skips the quota check.
   if (bucket_params.name == kDefaultBucketName) {
     PostTaskAndReplyWithResultForDBThread(
@@ -1120,7 +1119,7 @@ void QuotaManagerImpl::CreateBucketForTesting(
                      std::move(callback)));
 }
 
-void QuotaManagerImpl::GetBucketForTesting(
+void QuotaManagerImpl::GetBucketByNameUnsafe(
     const StorageKey& storage_key,
     const std::string& bucket_name,
     blink::mojom::StorageType type,
@@ -1354,26 +1353,10 @@ void QuotaManagerImpl::GetBucketUsageAndQuota(BucketId id,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void QuotaManagerImpl::NotifyWriteFailed(const StorageKey& storage_key) {
+void QuotaManagerImpl::OnClientWriteFailed(const StorageKey& storage_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  auto age_of_disk_stats = base::TimeTicks::Now() -
-                           std::get<0>(cached_disk_stats_for_storage_pressure_);
-
-  // Avoid polling for free disk space if disk stats have been recently
-  // queried.
-  if (age_of_disk_stats < kStoragePressureCheckDiskStatsInterval) {
-    int64_t total_space = std::get<1>(cached_disk_stats_for_storage_pressure_);
-    int64_t available_space =
-        std::get<2>(cached_disk_stats_for_storage_pressure_);
-    MaybeRunStoragePressureCallback(storage_key, total_space, available_space);
-  }
-
-  GetStorageCapacity(
-      base::BindOnce(&QuotaManagerImpl::MaybeRunStoragePressureCallback,
-                     weak_factory_.GetWeakPtr(), storage_key));
+  OnFullDiskError(storage_key);
 }
-
 void QuotaManagerImpl::SetUsageCacheEnabled(QuotaClientType client_id,
                                             const StorageKey& storage_key,
                                             StorageType type,
@@ -1773,9 +1756,9 @@ void QuotaManagerImpl::EnsureDatabaseOpened() {
                                                             : profile_path_);
 
   // Start the storage eviction routine on a full disk error.
-  database_->SetOnFullDiskErrorCallback(
-      base::BindPostTaskToCurrentDefault(base::BindRepeating(
-          &QuotaManagerImpl::StartEviction, weak_factory_.GetWeakPtr())));
+  database_->SetOnFullDiskErrorCallback(base::BindPostTaskToCurrentDefault(
+      base::BindRepeating(&QuotaManagerImpl::OnFullDiskError,
+                          weak_factory_.GetWeakPtr(), absl::nullopt)));
 
   temporary_usage_tracker_ = std::make_unique<UsageTracker>(
       this, client_types_[StorageType::kTemporary], StorageType::kTemporary,
@@ -2049,6 +2032,43 @@ void QuotaManagerImpl::AddBucketTableEntry(
   std::move(barrier_callback).Run(std::move(entry));
 }
 
+void QuotaManagerImpl::OnFullDiskError(absl::optional<StorageKey> storage_key) {
+  if ((base::TimeTicks::Now() - last_full_disk_eviction_time_) >
+      base::Minutes(15)) {
+    last_full_disk_eviction_time_ = base::TimeTicks::Now();
+    StartEviction();
+  }
+
+  // We may already be evicting, either due to the above or just by chance. In
+  // either case, do nothing more for now.
+  if (temporary_storage_evictor_ && temporary_storage_evictor_->in_round()) {
+    return;
+  }
+
+  if (storage_key) {
+    NotifyWriteFailed(*storage_key);
+  } else if (last_opened_bucket_site_) {
+    NotifyWriteFailed(*last_opened_bucket_site_);
+  }
+}
+
+void QuotaManagerImpl::NotifyWriteFailed(const blink::StorageKey& storage_key) {
+  auto [time_of_last_stats, total_space, available_space] =
+      cached_disk_stats_for_storage_pressure_;
+  auto age_of_disk_stats = base::TimeTicks::Now() - time_of_last_stats;
+
+  // Avoid polling for free disk space if disk stats have been recently
+  // queried.
+  if (age_of_disk_stats < kStoragePressureCheckDiskStatsInterval) {
+    MaybeRunStoragePressureCallback(storage_key, total_space, available_space);
+    return;
+  }
+
+  GetStorageCapacity(
+      base::BindOnce(&QuotaManagerImpl::MaybeRunStoragePressureCallback,
+                     weak_factory_.GetWeakPtr(), storage_key));
+}
+
 void QuotaManagerImpl::StartEviction() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -2239,7 +2259,8 @@ void QuotaManagerImpl::DetermineStoragePressure(int64_t total_space,
 }
 
 void QuotaManagerImpl::SetStoragePressureCallback(
-    base::RepeatingCallback<void(StorageKey)> storage_pressure_callback) {
+    base::RepeatingCallback<void(const StorageKey&)>
+        storage_pressure_callback) {
   storage_pressure_callback_ = storage_pressure_callback;
   if (storage_key_for_pending_storage_pressure_callback_.has_value()) {
     storage_pressure_callback_.Run(
@@ -2556,12 +2577,9 @@ void QuotaManagerImpl::DidGetLruEvictableBucket(
   DidDatabaseWork(result.has_value() ||
                   result.error() != QuotaError::kDatabaseError);
 
-  if (result.has_value()) {
-    std::move(lru_bucket_callback_)
-        .Run(absl::make_optional(std::move(result.value())));
-  } else {
-    std::move(lru_bucket_callback_).Run(absl::nullopt);
-  }
+  std::move(lru_bucket_callback_)
+      .Run(result.has_value() ? absl::make_optional(std::move(result.value()))
+                              : absl::nullopt);
 }
 
 void QuotaManagerImpl::GetQuotaSettings(QuotaSettingsCallback callback) {
@@ -2906,11 +2924,7 @@ void QuotaManagerImpl::DidGetStorageKeys(
 
   DidDatabaseWork(result.has_value() ||
                   result.error() != QuotaError::kDatabaseError);
-  if (!result.has_value()) {
-    std::move(callback).Run(std::set<StorageKey>());
-    return;
-  }
-  std::move(callback).Run(std::move(result.value()));
+  std::move(callback).Run(result.value_or(std::set<StorageKey>()));
 }
 
 void QuotaManagerImpl::DidGetBuckets(
@@ -2975,11 +2989,7 @@ void QuotaManagerImpl::DidGetModifiedBetween(
 
   DidDatabaseWork(result.has_value() ||
                   result.error() != QuotaError::kDatabaseError);
-  if (!result.has_value()) {
-    std::move(callback).Run(std::set<BucketLocator>());
-    return;
-  }
-  std::move(callback).Run(result.value());
+  std::move(callback).Run(result.value_or(std::set<BucketLocator>()));
 }
 
 template <typename ValueType>

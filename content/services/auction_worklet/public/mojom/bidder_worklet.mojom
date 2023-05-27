@@ -95,6 +95,9 @@ struct BidderWorkletBid {
   // Offered bid value. Always greater than 0.
   double bid;
 
+  // Currency for the bid.
+  blink.mojom.AdCurrency? bid_currency;
+
   // 'adCost' returned by generateBid, if any.
   double? ad_cost;
 
@@ -110,6 +113,9 @@ struct BidderWorkletBid {
   // be null if the InterestGroup making this bid has a null `ad_components`
   // field.
   array<blink.mojom.AdDescriptor>? ad_component_descriptors;
+
+  // `modelingSignals` returned by generateBid, if any.
+  uint16? modeling_signals;
 
   // How long it took to run the generateBid() script.
   mojo_base.mojom.TimeDelta bid_duration;
@@ -243,6 +249,7 @@ interface GenerateBidClient {
       bool has_set_priority,
       map<string, PrioritySignalsDouble?> update_priority_signals_overrides,
       array<PrivateAggregationRequest> pa_requests,
+      array<PrivateAggregationRequest> non_kanon_pa_requests,
       mojo_base.mojom.TimeDelta bidding_latency,
       array<string> errors);
 };
@@ -264,6 +271,8 @@ interface GenerateBidFinalizer {
   //  publisher page and provided to all interest groups with the same owner
   //  as the one specified `interest_group`.
   //
+  // `expected_buyer_currency` Currency restriction specified for this buyer.
+  //
   // `per_buyer_timeout` Restrict the runtime of particular buyer's bidding
   //  scripts. Any timeout higher than 500 ms will be clamped to 500 ms before
   //  passing in as `per_buyer_timeout`. Null if not provided by the publisher
@@ -276,6 +285,7 @@ interface GenerateBidFinalizer {
       string? auction_signals_json,
       string? per_buyer_signals_json,
       mojo_base.mojom.TimeDelta? per_buyer_timeout,
+      blink.mojom.AdCurrency? expected_buyer_currency,
       url.mojom.Url? direct_from_seller_per_buyer_signals,
       url.mojom.Url? direct_from_seller_auction_signals);
 };
@@ -419,10 +429,22 @@ interface BidderWorklet {
   //  BidderWorklet's generateBid() method, invoked as part of BidderWorklet
   //  creation.
   //
-  // `browser_signal_bid` The numeric value of the winning bid.
+  // `browser_signal_bid` The numeric value of the winning bid. This is always
+  //  in the bidder's own currency.
+  //
+  // `browser_signal_bid_currency` Currency for the winning bid.
+  //  The client should redact the currency if it's not guaranteed by the
+  //  auction configuration to avoid leaking information.
   //
   // `browser_signal_highest_scoring_other_bid` The numeric value of the bid
-  //  that got the second highest score.
+  //  that got the second highest score, or 0 if it's not available, either
+  //  because there is no such thing or because sellerCurrency is enabled, and
+  //  the relevant bid was in a different currency without scoreAd providing
+  //  a conversion for it.
+  //
+  // `browser_signal_highest_scoring_other_bid_currency` The currency associated
+  //  with `browser_signal_highest_scoring_other_bid`. If a concrete value is
+  //  provided, it's always the sellerCurrency for the auction.
   //
   // `browser_signal_made_highest_scoring_other_bid` True only if owner of
   //  the interest group that ReportWin() is being invoked on behalf of made
@@ -430,6 +452,10 @@ interface BidderWorklet {
   //
   // `browser_signal_ad_cost` The numeric value of the adCost associated with
   //  the winning bid, if specified by `generateBid()`.
+  //
+  //  `browser_signal_modeling_signals` The masked and noised numeric value of
+  //  the modelingSignals associated with the winning bid, if specified by
+  //  `generateBid()`.
   //
   // `browser_signal_seller_origin` The origin of the seller script running
   //  the auction. Typically a valid, non-opaque HTTPS origin.
@@ -472,9 +498,14 @@ interface BidderWorklet {
       string seller_signals_json,
       url.mojom.Url browser_signal_render_url,
       double browser_signal_bid,
+      blink.mojom.AdCurrency? browser_signal_bid_currency,
       double browser_signal_highest_scoring_other_bid,
+      blink.mojom.AdCurrency? browser_signal_highest_scoring_other_bid_currency,
       bool browser_signal_made_highest_scoring_other_bid,
       double? browser_signal_ad_cost,
+      uint16? browser_signal_modeling_signals,
+      uint8 browser_signal_join_count,
+      uint8 browser_signal_recency,
       url.mojom.Origin browser_signal_seller_origin,
       url.mojom.Origin? browser_signal_top_level_seller_origin,
       uint32 bidding_signals_data_version,

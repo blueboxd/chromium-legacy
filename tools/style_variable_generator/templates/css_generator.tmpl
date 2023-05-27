@@ -14,8 +14,10 @@
 }
 {% macro render_variables_for_mode(mode) -%}
 {%- for model_name, color in colors[mode].items() %}
+  {%- if needs_rgb_variant(color) %}
   {{model_name | to_css_var_name}}-rgb: {{color | css_color_rgb}};
-  {{model_name | to_css_var_name}}: {{css_color_var(model_name, color)}};
+  {%- endif %}
+  {{model_name | to_css_var_name}}: {{css_color_var(model_name, color, mode)}};
 {% endfor %}
 
 {%- for name, value in opacities[mode].items() %}
@@ -31,12 +33,15 @@ Chrome OS pages.
 html:not(body) {
 {{- render_variables_for_mode(Modes.DEFAULT) -}}
 
+{%- for name, value in legacy_mappings.items() %}
+  {{name | to_css_var_name_unscoped}}: {{value | process_simple_ref}};
+{%  endfor -%}
 
 }
 
-{%- if font_families %}
-
+{%- if font_families or typefaces %}
 html {
+{%- if font_families %}
   /* font families */
 {%-   for name, value in font_families.items() %}
   {{name | to_css_var_name}}: {{value}};
@@ -55,6 +60,7 @@ html {
   {{name | to_css_var_name}}-line-height: {{typeface.line_height}}px;
 
 {%   endfor -%}
+{%- endif %}
 }
 {%- endif %}
 

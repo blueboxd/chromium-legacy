@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/overlay/overlay_window_image_button.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -27,6 +28,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event_observer.h"
 #include "ui/gfx/animation/animation_container.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/compositor_animation_runner.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/layout/animating_layout_manager.h"
@@ -245,6 +247,13 @@ PictureInPictureBrowserFrameView::PictureInPictureBrowserFrameView(
                                     gfx::Tween::Type::ZERO,
                                     0.0,
                                     0.0)}) {
+  // We create our own top container, so we hide the one created by default (and
+  // its children) from the user and accessibility tools.
+  browser_view->top_container()->SetVisible(false);
+  browser_view->top_container()->SetEnabled(false);
+  browser_view->top_container()->GetViewAccessibility().OverrideIsIgnored(true);
+  browser_view->top_container()->GetViewAccessibility().OverrideIsLeaf(true);
+
   location_bar_model_ = std::make_unique<LocationBarModelImpl>(
       this, content::kMaxURLDisplayChars);
 
@@ -447,8 +456,10 @@ void PictureInPictureBrowserFrameView::UpdateWindowIcon() {
   window_title_->SetText(location_bar_model_->GetURLForDisplay());
 }
 
+// Minimum size refers to the minimum size for the window inner bounds.
 gfx::Size PictureInPictureBrowserFrameView::GetMinimumSize() const {
-  return PictureInPictureWindowManager::GetMinimumWindowSize();
+  return PictureInPictureWindowManager::GetMinimumInnerWindowSize() +
+         GetNonClientViewAreaSize();
 }
 
 gfx::Size PictureInPictureBrowserFrameView::GetMaximumSize() const {
@@ -870,6 +881,14 @@ int PictureInPictureBrowserFrameView::GetTopAreaHeight() const {
   return FrameBorderInsets().top() + kTopControlsHeight;
 }
 
+gfx::Size PictureInPictureBrowserFrameView::GetNonClientViewAreaSize() const {
+  const auto border_thickness = FrameBorderInsets();
+  const int top_height = GetTopAreaHeight();
+
+  return gfx::Size(border_thickness.width(),
+                   top_height + border_thickness.bottom());
+}
+
 #if BUILDFLAG(IS_LINUX)
 void PictureInPictureBrowserFrameView::SetWindowFrameProvider(
     ui::WindowFrameProvider* window_frame_provider) {
@@ -915,6 +934,10 @@ views::View* PictureInPictureBrowserFrameView::GetBackToTabButtonForTesting() {
 
 views::View* PictureInPictureBrowserFrameView::GetCloseButtonForTesting() {
   return close_image_button_;
+}
+
+views::Label* PictureInPictureBrowserFrameView::GetWindowTitleForTesting() {
+  return window_title_;
 }
 
 void PictureInPictureBrowserFrameView::OnMouseEnteredOrExitedWindow(

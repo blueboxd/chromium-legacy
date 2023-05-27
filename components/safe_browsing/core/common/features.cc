@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <utility>
 #include "base/feature_list.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/system/sys_info.h"
 #include "base/values.h"
@@ -146,6 +147,10 @@ BASE_FEATURE(kExtensionTelemetryCookiesGetSignal,
              "SafeBrowsingExtensionTelemetryCookiesGetSignal",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal,
+             "SafeBrowsingExtensionTelemetryDeclarativeNetRequestSignal",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kFileTypePoliciesTag,
              "FileTypePoliciesTag",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -249,6 +254,10 @@ BASE_FEATURE(kTailoredSecurityIntegration,
 #endif
 );
 
+BASE_FEATURE(kTailoredSecurityUpdatedMessages,
+             "TailoredSecurityUpdatedMessages",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kThreatDomDetailsTagAndAttributeFeature,
              "ThreatDomDetailsTagAttributes",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -271,14 +280,16 @@ BASE_FEATURE(kSafeBrowsingDailyPhishingReportsLimit,
 
 constexpr base::FeatureParam<int> kSafeBrowsingDailyPhishingReportsLimitESB{
     &kSafeBrowsingDailyPhishingReportsLimit,
-    /*name=*/"kMaxReportsPerIntervalESB", /*default_value=*/20};
+    /*name=*/"kMaxReportsPerIntervalESB", /*default_value=*/3};
 
 namespace {
 // List of Safe Browsing features. Boolean value for each list member should
 // be set to true if the experiment state should be listed on
 // chrome://safe-browsing. Features should be listed in alphabetical order.
 constexpr struct {
-  const base::Feature* feature;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #global-scope, #constexpr-var-initializer
+  RAW_PTR_EXCLUSION const base::Feature* feature;
   // True if the feature's state should be listed on chrome://safe-browsing.
   bool show_state;
 } kExperimentalFeatures[]{
@@ -296,6 +307,7 @@ constexpr struct {
     {&kExtensionTelemetry, true},
     {&kExtensionTelemetryCookiesGetAllSignal, true},
     {&kExtensionTelemetryCookiesGetSignal, true},
+    {&kExtensionTelemetryDeclarativeNetRequestSignal, true},
     {&kExtensionTelemetryPersistence, true},
     {&kExtensionTelemetryPotentialPasswordTheft, true},
     {&kExtensionTelemetryReportContactedHosts, true},

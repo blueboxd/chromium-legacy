@@ -28,7 +28,9 @@ class ScopedServer;
 class IntegrationTestCommands
     : public base::RefCountedThreadSafe<IntegrationTestCommands> {
  public:
-  virtual void EnterTestMode(const GURL& url) const = 0;
+  virtual void EnterTestMode(const GURL& update_url,
+                             const GURL& crash_upload_url,
+                             const GURL& device_management_url) const = 0;
   virtual void ExitTestMode() const = 0;
   virtual void SetGroupPolicies(const base::Value::Dict& values) const = 0;
   virtual void Clean() const = 0;
@@ -41,6 +43,7 @@ class IntegrationTestCommands
   virtual void ExpectActive(const std::string& app_id) const = 0;
   virtual void ExpectNotActive(const std::string& app_id) const = 0;
   virtual void ExpectSelfUpdateSequence(ScopedServer* test_server) const = 0;
+  virtual void ExpectUninstallPing(ScopedServer* test_server) const = 0;
   virtual void ExpectUpdateCheckSequence(
       ScopedServer* test_server,
       const std::string& app_id,
@@ -63,6 +66,7 @@ class IntegrationTestCommands
   virtual void ExpectVersionNotActive(const std::string& version) const = 0;
   virtual void Uninstall() const = 0;
   virtual void InstallApp(const std::string& app_id) const = 0;
+  virtual void ExpectNoCrashes() const = 0;
   virtual void CopyLog() const = 0;
   virtual void SetupFakeUpdaterHigherVersion() const = 0;
   virtual void SetupFakeUpdaterLowerVersion() const = 0;
@@ -79,6 +83,7 @@ class IntegrationTestCommands
   virtual void RunWake(int exit_code) const = 0;
   virtual void RunWakeAll() const = 0;
   virtual void RunWakeActive(int exit_code) const = 0;
+  virtual void RunCrashMe() const = 0;
 
   virtual void CheckForUpdate(const std::string& app_id) const = 0;
   virtual void Update(const std::string& app_id,
@@ -115,6 +120,9 @@ class IntegrationTestCommands
                                      policy_same_version_update) const = 0;
 
   virtual void SetupFakeLegacyUpdater() const = 0;
+#if BUILDFLAG(IS_WIN)
+  virtual void RunFakeLegacyUpdater() const = 0;
+#endif  // BUILDFLAG(IS_WIN)
   virtual void ExpectLegacyUpdaterMigrated() const = 0;
   virtual void RunRecoveryComponent(const std::string& app_id,
                                     const base::Version& version) const = 0;

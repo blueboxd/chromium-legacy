@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/lazy_instance.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/values.h"
 #include "chromeos/ash/components/proximity_auth/public/mojom/auth_type.mojom.h"
@@ -29,7 +30,6 @@ class ScreenlockBridge {
   // User pod icons supported by lock screen / signin screen UI.
   enum UserPodCustomIcon {
     USER_POD_CUSTOM_ICON_NONE,
-    USER_POD_CUSTOM_ICON_HARDLOCKED,
     USER_POD_CUSTOM_ICON_LOCKED,
     USER_POD_CUSTOM_ICON_LOCKED_TO_BE_ACTIVATED,
     // TODO(isherman): The "locked with proximity hint" icon is currently the
@@ -66,10 +66,6 @@ class ScreenlockBridge {
     // provided, then the tooltip will be used.
     void SetAriaLabel(const std::u16string& aria_label);
 
-    // If hardlock on click is set, clicking the icon in the screenlock will
-    // go to state where password is required for unlock.
-    void SetHardlockOnClick();
-
     std::string GetIDString() const;
 
     UserPodCustomIcon icon() const { return icon_; }
@@ -80,8 +76,6 @@ class ScreenlockBridge {
 
     const std::u16string aria_label() const { return aria_label_; }
 
-    bool hardlock_on_click() const { return hardlock_on_click_; }
-
    private:
     UserPodCustomIcon icon_;
 
@@ -89,8 +83,6 @@ class ScreenlockBridge {
     bool autoshow_tooltip_ = false;
 
     std::u16string aria_label_;
-
-    bool hardlock_on_click_ = false;
   };
 
   class LockHandler {
@@ -185,7 +177,7 @@ class ScreenlockBridge {
   ScreenlockBridge();
   ~ScreenlockBridge();
 
-  LockHandler* lock_handler_ = nullptr;  // Not owned
+  raw_ptr<LockHandler, ExperimentalAsh> lock_handler_ = nullptr;  // Not owned
 
   // The last focused user's id.
   AccountId focused_account_id_;

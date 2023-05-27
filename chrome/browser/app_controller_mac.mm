@@ -1112,13 +1112,13 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
 
   std::vector<Profile*> added_profiles;
-  for (Profile* p : profiles) {
-    for (Profile* otr : p->GetAllOffTheRecordProfiles())
+  for (Profile* profile : profiles) {
+    for (Profile* otr : profile->GetAllOffTheRecordProfiles())
       added_profiles.push_back(otr);
   }
   profiles.insert(profiles.end(), added_profiles.begin(), added_profiles.end());
 
-  for (size_t i = 0; i < profiles.size(); ++i) {
+  for (Profile* profile : profiles) {
     DownloadCoreService* download_core_service =
         DownloadCoreServiceFactory::GetForBrowserContext(profile);
     // `DownloadCoreService` can be nullptr for some irregular profiles, e.g.
@@ -1133,9 +1133,9 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
       if ([self userWillWaitForInProgressDownloads:downloadCount]) {
         // Create a new browser window (if necessary) and navigate to the
         // downloads page if the user chooses to wait.
-        Browser* browser = chrome::FindBrowserWithProfile(profiles[i]);
+        Browser* browser = chrome::FindBrowserWithProfile(profile);
         if (!browser) {
-          browser = Browser::Create(Browser::CreateParams(profiles[i], true));
+          browser = Browser::Create(Browser::CreateParams(profile, true));
           browser->window()->Show();
         }
         DCHECK(browser);

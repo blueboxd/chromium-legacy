@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -107,14 +108,6 @@ bool CanShare() {
       [item setEnabled:canShare];
       [menu addItem:item];
     }
-    base::scoped_nsobject<NSMenuItem> moreItem([[NSMenuItem alloc]
-        initWithTitle:l10n_util::GetNSString(IDS_SHARING_MORE_MAC)
-               action:@selector(openSharingPrefs:)
-        keyEquivalent:@""]);
-    [moreItem setTarget:self];
-    [moreItem setImage:[self moreImage]];
-    [menu addItem:moreItem];
-    
     NSMenuItem* moreItem = [[NSMenuItem alloc]
         initWithTitle:l10n_util::GetNSString(IDS_SHARING_MORE_MAC)
                action:@selector(openSharingPrefs:)
@@ -194,13 +187,18 @@ bool CanShare() {
 
 // Performs the share action using the sharing service represented by |sender|.
 - (void)performShare:(NSMenuItem*)sender {
-  static NSString* const* NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static NSString* const* NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
 
   if (NSUserActivityTypeBrowsingWebStr) {
     DCHECK(CanShare());
     Browser* browser = chrome::FindLastActive();
     DCHECK(browser);
     [self saveTransitionDataFromBrowser:browser];
+
+    content::WebContents* contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    NSURL* url = net::NSURLWithGURL(contents->GetLastCommittedURL());
+    NSString* title = base::SysUTF16ToNSString(contents->GetTitle());
 
     NSSharingService* service =
         base::mac::ObjCCastStrict<NSSharingService>([sender representedObject]);
@@ -218,7 +216,7 @@ bool CanShare() {
   
     if ([[service name] isEqual:kRemindersSharingServiceName]) {
       _activity = [[NSUserActivity alloc]
-          initWithActivityType:NSUserActivityTypeBrowsingWeb];
+          initWithActivityType:*NSUserActivityTypeBrowsingWebStr];
       // webpageURL must be http or https or an exception is thrown.
       if ([url.scheme hasPrefix:@"http"]) {
         [_activity setWebpageURL:url];

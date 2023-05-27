@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/apple/bridging.h"
 #include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -254,7 +255,7 @@ base::scoped_nsobject<NSPasteboardItem> WriteSimplifiedBookmarkTypes(
   }
 
   [item setString:[toplevel_string_data componentsJoinedByString:@"\n"]
-          forType:base::mac::CFToNSCast(kUTTypeUTF8PlainText)];
+          forType:base::apple::CFToNSPtrCast(kUTTypeUTF8PlainText)];
   return item;
 }
 

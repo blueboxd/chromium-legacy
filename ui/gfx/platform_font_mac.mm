@@ -595,7 +595,9 @@ base::ScopedCFTypeRef<CTFontRef> PlatformFontMac::CTFontWithSpec(
     font = [NSFont systemFontOfSize:font_spec.size];
     if (font_spec.weight >= Weight::BOLD)
       traits |= NSBoldFontMask;
-    return [font_manager convertFont:font toHaveTrait:traits];
+    font = [font_manager convertFont:font toHaveTrait:traits];
+      return base::ScopedCFTypeRef<CTFontRef>(
+          base::apple::NSToCFOwnershipCast(font));
   }
 }
 

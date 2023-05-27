@@ -328,7 +328,9 @@ void SetCurrentThreadTypeImpl(ThreadType thread_type,
       break;
     case ThreadType::kUtility:
       priority = ThreadPriorityForTest::kUtility;
-      pthread_set_qos_class_self_np(QOS_CLASS_UTILITY, 0);
+      if (pthread_set_qos_class_self_np_FuncPtr) {
+        pthread_set_qos_class_self_np_FuncPtr(QOS_CLASS_UTILITY, 0);
+      }
       break;
     case ThreadType::kResourceEfficient:
       if (pthread_set_qos_class_self_np_FuncPtr) {
@@ -347,10 +349,14 @@ void SetCurrentThreadTypeImpl(ThreadType thread_type,
     case ThreadType::kCompositing:
       if (g_user_interactive_compositing.load(std::memory_order_relaxed)) {
         priority = ThreadPriorityForTest::kDisplay;
-        pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+        if (pthread_set_qos_class_self_np_FuncPtr){
+          pthread_set_qos_class_self_np_FuncPtr(QOS_CLASS_USER_INTERACTIVE, 0);
+        }
       } else {
         priority = ThreadPriorityForTest::kNormal;
-        pthread_set_qos_class_self_np(QOS_CLASS_USER_INITIATED, 0);
+        if (pthread_set_qos_class_self_np_FuncPtr){
+          pthread_set_qos_class_self_np_FuncPtr(QOS_CLASS_USER_INITIATED, 0);
+        }
       }
       break;
     case ThreadType::kDisplayCritical: {

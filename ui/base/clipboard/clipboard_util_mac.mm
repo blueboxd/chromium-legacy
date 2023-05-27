@@ -56,9 +56,8 @@ NSString* const kWebURLsWithTitlesPboardType = @"WebURLsWithTitlesPboardType";
 // base::ScopedCFTypeRef<CFStringRef>, since the methods on NSPasteboardItem
 // require an NSString*.
 NSString* UTIFromPboardType(NSString* type) {
-  return [base::mac::CFToNSCast(UTTypeCreatePreferredIdentifierForTag(
-      kUTTagClassNSPboardType, base::mac::NSToCFCast(type), kUTTypeData))
-      autorelease];
+  return base::apple::CFToNSPtrCast(UTTypeCreatePreferredIdentifierForTag(
+      kUTTagClassNSPboardType, base::apple::NSToCFPtrCast(type), kUTTypeData));
 }
 
 bool ReadWebURLsWithTitlesPboardType(NSPasteboard* pboard,
@@ -105,7 +104,7 @@ bool ReadURLItemsWithTitles(NSPasteboard* pboard,
 
   NSArray* items = [pboard pasteboardItems];
   for (NSPasteboardItem* item : items) {
-    NSString* url = [item stringForType:base::mac::CFToNSCast(kUTTypeURL)];
+    NSString* url = [item stringForType:base::apple::CFToNSPtrCast(kUTTypeURL)];
     NSString* title = [item stringForType:kUTTypeURLName];
 
     if (url) {
@@ -133,14 +132,6 @@ UniquePasteboard::UniquePasteboard()
 
 UniquePasteboard::~UniquePasteboard() {
   [pasteboard_ releaseGlobally];
-
-  if (base::mac::IsOS10_12()) {
-    // On 10.12, move ownership to the autorelease pool rather than possibly
-    // triggering -[NSPasteboard dealloc] here. This is a speculative workaround
-    // for https://crbug.com/877979 where a call to __CFPasteboardDeallocate
-    // from here is triggering "Semaphore object deallocated while in use".
-    pasteboard_.autorelease();
-  }
 }
 
 // static
@@ -178,7 +169,7 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
   }
 
   [item setString:urlString forType:NSPasteboardTypeString];
-  [item setString:urlString forType:base::mac::CFToNSCast(kUTTypeURL)];
+  [item setString:urlString forType:base::apple::CFToNSPtrCast(kUTTypeURL)];
   [item setString:title forType:kUTTypeURLName];
   return item;
 }
@@ -212,7 +203,7 @@ NSString* ClipboardUtil::GetTitleFromPasteboardURL(NSPasteboard* pboard) {
 
 //static
 NSString* ClipboardUtil::GetURLFromPasteboardURL(NSPasteboard* pboard) {
-  return [pboard stringForType:base::mac::CFToNSCast(kUTTypeURL)];
+  return [pboard stringForType:base::apple::CFToNSPtrCast(kUTTypeURL)];
 }
 
 // static
@@ -274,8 +265,8 @@ NSString* ClipboardUtil::GetHTMLFromRTFOnPasteboard(NSPasteboard* pboard) {
     return nil;
 
   NSAttributedString* attributed =
-      [[[NSAttributedString alloc] initWithRTF:rtfData
-                            documentAttributes:nil] autorelease];
+      [[NSAttributedString alloc] initWithRTF:rtfData
+                            documentAttributes:nil];
   NSData* htmlData =
       [attributed dataFromRange:NSMakeRange(0, [attributed length])
              documentAttributes:@{
@@ -284,8 +275,8 @@ NSString* ClipboardUtil::GetHTMLFromRTFOnPasteboard(NSPasteboard* pboard) {
                           error:nil];
 
   // According to the docs, NSHTMLTextDocumentType is UTF8.
-  return [[[NSString alloc] initWithData:htmlData
-                                encoding:NSUTF8StringEncoding] autorelease];
+  return [[NSString alloc] initWithData:htmlData
+                                encoding:NSUTF8StringEncoding];
 }
 
 }  // namespace ui

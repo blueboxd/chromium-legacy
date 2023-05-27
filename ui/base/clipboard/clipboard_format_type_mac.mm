@@ -27,16 +27,15 @@ namespace ui {
 ClipboardFormatType::ClipboardFormatType() : data_(nil) {}
 
 ClipboardFormatType::ClipboardFormatType(NSString* native_format)
-    : data_([native_format retain]) {}
+    : data_(native_format) {}
 
 ClipboardFormatType::ClipboardFormatType(const ClipboardFormatType& other)
-    : data_([other.data_ retain]) {}
+    : data_(other.data_) {}
 
 ClipboardFormatType& ClipboardFormatType::operator=(
     const ClipboardFormatType& other) {
   if (this != &other) {
-    [data_ release];
-    data_ = [other.data_ retain];
+    data_ = other.data_;
   }
   return *this;
 }
@@ -46,7 +45,6 @@ bool ClipboardFormatType::operator==(const ClipboardFormatType& other) const {
 }
 
 ClipboardFormatType::~ClipboardFormatType() {
-  [data_ release];
 }
 
 std::string ClipboardFormatType::Serialize() const {

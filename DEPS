@@ -289,7 +289,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '12eb5cefe966d14acca1b268a1d76ee7f9f02b18',
+  'v8_revision': '68903e142b1a554df821a78a420b7777aadb9cc9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
@@ -412,7 +412,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '73d303d941c897d3f63d5834c51b690d42a192d8',
+  'dawn_revision': '86628784160b0644a7ffebd1c647e18e2314485c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -782,7 +782,7 @@ deps = {
 
   'src/clank': {
     'url': Var('chrome_git') + '/clank/internal/apps.git' + '@' +
-    '818c2112fecd2bf52f27065f67cc5f5a302ca60c',
+    '3b7f21cfe850226688d30d18239759c7e42e55d6',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -1212,7 +1212,7 @@ deps = {
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/devtools-frontend-internal': {
-      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + 'c7c42cc3977ad19909d976a077d411b7c713c357',
+      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + '82092d7a40652d8d1b1c507c0481c7b553e5fcc9',
     'condition': 'checkout_src_internal',
   },
 
@@ -1962,7 +1962,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': Var('chrome_git') + '/chrome/src-internal.git@0ac77018b7e679672160fa12964d6e77b4c9895b',
+    'url': Var('chrome_git') + '/chrome/src-internal.git@f60d404c785efa7eb0fbbf5ebbf57294f68af374',
     'condition': 'checkout_src_internal',
   },
 

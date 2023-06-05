@@ -1865,7 +1865,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2532144599248877204">Memperpanjang masa pakai baterai dengan menjaga dayanya di tingkat sekitar 80%. Daya baterai akan diisi penuh sebelum Anda biasanya mencabut perangkat dari sumber listrik.</translation>
 <translation id="2532198298278778531">Kelola DNS aman di setelan ChromeOS Flex</translation>
 <translation id="2532589005999780174">Mode kontras tinggi</translation>
-<translation id="2533649878691950253">Situs ini diblokir agar tidak mengetahui lokasi akurat karena Anda biasanya tidak mengizinkan ini</translation>
+<translation id="2533649878691950253">Situs ini diblokir agar tidak mengetahui lokasi presisi karena Anda biasanya tidak mengizinkan ini</translation>
 <translation id="253434972992662860">&amp;Jeda</translation>
 <translation id="253498598929009420">Situs ini akan dapat melihat konten layar Anda</translation>
 <translation id="253557089021624350">Jumlah aktivitas yang tetap aktif</translation>
@@ -2672,7 +2672,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="3262986719682892278">Terlalu besar</translation>
 <translation id="3264544094376351444">Font Sans-serif</translation>
 <translation id="3264582393905923483">Konteks</translation>
-<translation id="3265032511221679826">Aktifkan akses lokasi akurat?</translation>
+<translation id="3265032511221679826">Aktifkan akses lokasi presisi?</translation>
 <translation id="3265459715026181080">Tutup Jendela</translation>
 <translation id="3266022278425892773">Lingkungan pengembangan Linux</translation>
 <translation id="3266274118485960573">Pemeriksaan keamanan sedang berjalan.</translation>
@@ -4981,7 +4981,7 @@ Gunakan Ctrl + Alt + Kurangi kecerahan untuk memperkecil.</translation>
 <translation id="5302932258331363306">Tampilkan Substitusi</translation>
 <translation id="5305145881844743843">Akun ini dikelola oleh <ph name="BEGIN_LINK" /><ph name="DOMAIN" /><ph name="END_LINK" /></translation>
 <translation id="5307030433605830021">Sumber tidak didukung</translation>
-<translation id="5307386115243749078">Sambungkan tombol Bluetooth</translation>
+<translation id="5307386115243749078">Sambungkan tombol akses Bluetooth</translation>
 <translation id="5307958609248661362">Waktu tunggu Pengelola Sandi Google habis</translation>
 <translation id="5308380583665731573">Hubungkan</translation>
 <translation id="5309418307557605830">Asisten Google juga berfungsi di sini</translation>

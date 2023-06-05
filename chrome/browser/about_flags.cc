@@ -4791,16 +4791,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsDetailedInstallDialogName,
      flag_descriptions::kDesktopPWAsDetailedInstallDialogDescription, kOsAll,
      FEATURE_VALUE_TYPE(webapps::features::kDesktopPWAsDetailedInstallDialog)},
-    {"enable-skip-service-worker-check-install-only",
-     flag_descriptions::kSkipServiceWorkerCheckInstallOnlyName,
-     flag_descriptions::kSkipServiceWorkerCheckInstallOnlyDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(webapps::features::kSkipServiceWorkerCheckInstallOnly)},
-    {"enable-skip-service-worker-check-install-for-promotion",
-     flag_descriptions::kSkipServiceWorkerForInstallPromptName,
-     flag_descriptions::kSkipServiceWorkerForInstallPromptDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(webapps::features::kSkipServiceWorkerForInstallPrompt)},
     {"record-web-app-debug-info", flag_descriptions::kRecordWebAppDebugInfoName,
      flag_descriptions::kRecordWebAppDebugInfoDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kRecordWebAppDebugInfo)},
@@ -10390,6 +10380,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrosWebAppShortcutUiUpdateDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrosWebAppShortcutUiUpdate)},
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"use-gpu-scheduler-dfs", flag_descriptions::kUseGpuSchedulerDfsName,
+     flag_descriptions::kUseGpuSchedulerDfsDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kUseGpuSchedulerDfs)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

@@ -754,6 +754,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/commerce/merchant_viewer/android:java",
       "//chrome/browser/content_creation/notes/internal/android:java",
       "//chrome/browser/download/internal/android:java",
+      "//chrome/browser/mandatory_reauth/android/internal:java",
       "//chrome/browser/password_check:internal_java",
       "//chrome/browser/password_edit_dialog/android:java",
       "//chrome/browser/password_entry_edit/android/internal:java",
@@ -2710,6 +2711,7 @@ if (current_toolchain == default_toolchain) {
       "//chrome/browser/password_manager/android/pwd_migration:javatests",
       "//chrome/browser/subresource_filter:subresource_filter_javatests",
       "//chrome/browser/touch_to_fill/android:test_java",
+      "//chrome/browser/touch_to_fill/password_generation/android/internal:javatests",
       "//chrome/browser/touch_to_fill/payments/android/internal:javatests",
       "//chrome/browser/ui/android/fast_checkout/internal:javatests",
       "//chrome/browser/ui/android/omnibox:javatests",
@@ -3271,6 +3273,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill/SaveUpdateAddressProfilePromptController.java",
     "java/src/org/chromium/chrome/browser/autofill/settings/AutofillPaymentMethodsDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill/settings/AutofillProfileBridge.java",
+    "java/src/org/chromium/chrome/browser/autofill/settings/SettingsLauncherHelper.java",
     "java/src/org/chromium/chrome/browser/autofill/settings/VirtualCardEnrollmentFields.java",
     "java/src/org/chromium/chrome/browser/auxiliary_search/AuxiliarySearchBridge.java",
     "java/src/org/chromium/chrome/browser/background_sync/BackgroundSyncBackgroundTask.java",
@@ -3485,6 +3488,7 @@ group("jni_headers") {
     "//chrome/browser/image_descriptions:jni_headers",
     "//chrome/browser/incognito:jni_headers",
     "//chrome/browser/locale:jni_headers",
+    "//chrome/browser/mandatory_reauth/android:jni_headers",
     "//chrome/browser/preferences:jni_headers",
     "//chrome/browser/privacy:jni_headers",
     "//chrome/browser/profiles/android:jni_headers",
@@ -3515,9 +3519,6 @@ template("libchrome_impl") {
   chrome_common_shared_library(target_name) {
     sources = [ "../browser/android/chrome_entry_point.cc" ]
     deps = []
-    if (allow_jni_multiplexing) {
-      enable_jni_multiplexing = true
-    }
     if (defined(invoker.deps)) {
       deps += invoker.deps
     }
@@ -3617,9 +3618,6 @@ template("libmonochrome_apk_or_bundle_tmpl") {
       deps += [ "//weblayer:weblayer_lib" ]
     }
 
-    if (allow_jni_multiplexing) {
-      enable_jni_multiplexing = true
-    }
     if (android_64bit_target_cpu) {
       java_targets = [ "//chrome/android:monochrome_64_public_bundle" ]
     } else {

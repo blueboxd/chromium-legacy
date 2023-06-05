@@ -4737,7 +4737,7 @@
   {
       "name": "iph-price-notifications-while-browsing",
       "owners": [ "danieltwhite", "ajuma" ],
-      "expiry_milestone": 114
+      "expiry_milestone": 118
   },
   {
     "name": "isolate-origins",
@@ -7464,6 +7464,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "use-gpu-scheduler-dfs",
+    "owners": [ "vikassoni", "sunnyps" ],
+    "expiry_milestone": 125
+  },
+  {
     "name": "use-hdr-transfer-function",
     "owners": [ "mcasas", "chromeos-gfx@google.com" ],
     "expiry_milestone": 125
@@ -7830,6 +7835,11 @@
     "name": "whats-new-ios",
     "owners": [ "cheickcisse@google.com", "bling-flags@google.com" ],
     "expiry_milestone": 111
+  },
+  {
+    "name": "whats-new-ios-m116",
+    "owners": [ "cheickcisse@google.com", "bling-flags@google.com" ],
+    "expiry_milestone": 122
   },
   {
     "name": "wifi-connect-mac-address-randomization",

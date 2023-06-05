@@ -102,7 +102,7 @@
 #include "url/origin.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/android/preferences/autofill/autofill_profile_bridge.h"
+#include "chrome/browser/android/preferences/autofill/settings_launcher_helper.h"
 #include "chrome/browser/android/signin/signin_bridge.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
@@ -1079,9 +1079,9 @@ bool ChromeAutofillClient::IsContextSecure() const {
          security_level != security_state::DANGEROUS;
 }
 
-void ChromeAutofillClient::ExecuteCommand(Suggestion::FrontendId id) {
+void ChromeAutofillClient::ExecuteCommand(PopupItemId popup_item_id) {
 #if BUILDFLAG(IS_ANDROID)
-  if (id.as_popup_item_id() == PopupItemId::kCreditCardSigninPromo) {
+  if (popup_item_id == PopupItemId::kCreditCardSigninPromo) {
     auto* window = web_contents()->GetNativeView()->GetWindowAndroid();
     if (window) {
       SigninBridge::LaunchSigninActivity(

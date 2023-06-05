@@ -90,9 +90,6 @@ class AppBannerManager : public content::WebContentsObserver,
     // engagement to trigger the banner.
     PENDING_ENGAGEMENT,
 
-    // The pipeline is waiting for service worker install to trigger the banner.
-    PENDING_WORKER,
-
     // The beforeinstallprompt event has been sent and the pipeline is waiting
     // for the response.
     SENDING_EVENT,
@@ -310,11 +307,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // overwritten with a new app install for the current page.
   virtual bool ShouldAllowWebAppReplacementInstall();
 
-  // Possibly retries the installable manager request given the current state
-  // and the result. Returns |true| if the request was restarted.
-  // Currently only called during requests to InstallationManager
-  bool DidRetryInstallableManagerRequest(const InstallableData& result);
-
   // Callback invoked by the InstallableManager once it has fetched the page's
   // manifest.
   virtual void OnDidGetManifest(const InstallableData& data);
@@ -322,10 +314,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns an InstallableParams object that requests all checks
   // necessary for a web app banner.
   virtual InstallableParams ParamsToPerformInstallableWebAppCheck();
-
-  // Returns an InstallableParams object that requests service worker check
-  // only.
-  virtual InstallableParams ParamsToPerformWorkerCheck();
 
   // Run at the conclusion of OnDidGetManifest. For web app banners, this calls
   // back to the InstallableManager to continue checking criteria. For native
@@ -339,15 +327,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Callback invoked by the InstallableManager once it has finished checking
   // all other installable properties.
   virtual void OnDidPerformInstallableWebAppCheck(const InstallableData& data);
-
-  // Run at the conclusion of OnDidPerformInstallableWebAppCheck. This calls
-  // back to the InstallableManager to continue checking service worker criteria
-  // for web app banners.
-  virtual void PerformServiceWorkerCheck();
-
-  // Callback invoked by the InstallableManager once it has finished checking
-  // service worker.
-  virtual void OnDidPerformWorkerCheck(const InstallableData& data);
 
   // Records that a banner was shown.
   void RecordDidShowBanner();
@@ -469,9 +448,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Called when Blink has prevented a banner from being shown, and is now
   // requesting that it be shown later.
   void DisplayAppBanner() override;
-
-  // Returns a status code indicating whether a banner should be shown.
-  InstallableStatusCode ShouldShowBannerCode();
 
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;

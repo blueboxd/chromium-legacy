@@ -564,12 +564,6 @@ extern const char kDesktopPWAsBorderlessDescription[];
 extern const char kDesktopPWAsDetailedInstallDialogName[];
 extern const char kDesktopPWAsDetailedInstallDialogDescription[];
 
-extern const char kSkipServiceWorkerCheckInstallOnlyName[];
-extern const char kSkipServiceWorkerCheckInstallOnlyDescription[];
-
-extern const char kSkipServiceWorkerForInstallPromptName[];
-extern const char kSkipServiceWorkerForInstallPromptDescription[];
-
 extern const char kDeviceForceScheduledRebootName[];
 extern const char kDeviceForceScheduledRebootDescription[];
 
@@ -2035,6 +2029,9 @@ extern const char kSkipServiceWorkerFetchHandlerDescription[];
 
 extern const char kWebSQLAccessName[];
 extern const char kWebSQLAccessDescription[];
+
+extern const char kUseGpuSchedulerDfsName[];
+extern const char kUseGpuSchedulerDfsDescription[];
 
 extern const char kUseIDNA2008NonTransitionalName[];
 extern const char kUseIDNA2008NonTransitionalDescription[];

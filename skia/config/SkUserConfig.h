@@ -235,7 +235,9 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #define SK_USE_LEGACY_DROPSHADOW_IMAGEFILTER
 
-#define SK_USE_LEGACY_BLEND_IMAGEFILTER
+#define SK_USE_LEGACY_DISPLACEMENT_MAP_IMAGEFILTER
+
+#define SK_USE_LEGACY_MORPHOLOGY_IMAGEFILTER
 
 // Use the original std::vector based serializer
 // Remove when new streaming support operations has been verified.

@@ -36,7 +36,6 @@
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
-#include "components/sync/base/command_line_switches.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/loopback_server/loopback_server_entity.h"
@@ -45,6 +44,7 @@
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/test/fake_server_nigori_helper.h"
 #include "components/sync/test/nigori_test_utils.h"
+#include "components/trusted_vault/command_line_switches.h"
 #include "components/trusted_vault/securebox.h"
 #include "components/trusted_vault/test/fake_security_domains_server.h"
 #include "components/trusted_vault/trusted_vault_connection.h"
@@ -732,7 +732,7 @@ class SingleClientNigoriWithWebApiTest : public SyncTest {
     const GURL& base_url = embedded_test_server()->base_url();
     command_line->AppendSwitchASCII(switches::kGaiaUrl, base_url.spec());
     command_line->AppendSwitchASCII(
-        syncer::kTrustedVaultServiceURL,
+        trusted_vault::kTrustedVaultServiceURLSwitch,
         trusted_vault::FakeSecurityDomainsServer::GetServerURL(
             embedded_test_server()->base_url())
             .spec());
@@ -1263,7 +1263,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     SingleClientNigoriWithWebApiTest,
-    ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorShown) {
+    ShouldRecordTrustedVaultErrorShownOnStartupWhenErrorShown) {
   // 4 days is an arbitrary value between 3 days and 7 days to allow testing
   // histogram suffixes.
   const base::Time migration_time = base::Time::Now() - base::Days(4);
@@ -1323,7 +1323,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     SingleClientNigoriWithWebApiTest,
-    PRE_ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
+    PRE_ShouldRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
   ASSERT_TRUE(SetupClients());
 
   // There needs to be an existing tab for the second tab (the retrieval flow)
@@ -1348,7 +1348,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(
     SingleClientNigoriWithWebApiTest,
-    ShoudRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
+    ShouldRecordTrustedVaultErrorShownOnStartupWhenErrorNotShown) {
   // Mimic the account being already using a trusted vault passphrase.
   SetNigoriInFakeServer(BuildTrustedVaultNigoriSpecifics({kTestEncryptionKey}),
                         GetFakeServer());

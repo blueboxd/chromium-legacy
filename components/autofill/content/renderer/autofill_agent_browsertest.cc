@@ -101,8 +101,7 @@ class MockAutofillDriver : public mojom::AutofillDriver {
               (const FormData& form,
                const FormFieldData& field,
                const gfx::RectF& bounding_box,
-               AutoselectFirstSuggestion autoselect_first_suggestion,
-               FormElementWasClicked form_element_was_clicked),
+               AutofillSuggestionTriggerSource trigger_source),
               (override));
   MOCK_METHOD(void, HidePopup, (), (override));
   MOCK_METHOD(void,
@@ -209,14 +208,11 @@ class AutofillAgentTest : public content::RenderViewTest {
   std::unique_ptr<PasswordGenerationAgent> password_generation_;
 };
 
-// Enables AutofillAcrossIframes.
 class AutofillAgentTestWithFeatures : public AutofillAgentTest {
  public:
   AutofillAgentTestWithFeatures() {
     scoped_features_.InitWithFeatures(
-        {features::kAutofillAcrossIframes,
-         blink::features::kAutofillDetectRemovedFormControls},
-        {});
+        {blink::features::kAutofillDetectRemovedFormControls}, {});
   }
 
  private:

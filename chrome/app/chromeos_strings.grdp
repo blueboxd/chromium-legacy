@@ -6091,9 +6091,6 @@ Permissions you've already given to websites and apps may apply to this account.
   <message name="IDS_BOREALIS_DISALLOWED_ADMIN" desc="Message shown to the user when Steam on Chromebook is blocked by their admin">
     Please contact your administrator
   </message>
-  <message name="IDS_BOREALIS_DISALLOWED_CHANNEL" desc="Message shown to the user when they try to install Steam on Chromebook on stable channel before it's available">
-    Steam is coming to Chromebook soon. Check for updates to see if Steam is available.
-  </message>
   <message name="IDS_BOREALIS_DISALLOWED_FLAG" desc="Message shown to the user when Steam on Chromebook doesn't have the correct chrome://flags setting enabled">
     #borealis-enabled must be enabled in chrome://flags
   </message>
@@ -6101,7 +6098,7 @@ Permissions you've already given to websites and apps may apply to this account.
     Got it
   </message>
   <message name="IDS_BOREALIS_INSTALLER_APP_NAME" desc="Name of a utility which is used to install the Steam application (Steam is a video game distribution service)">
-    Steam Installer
+    Steam installer
   </message>
   <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_TITLE" desc="Title for installer for Steam (noun, name of app).">
     Welcome to Steam on Chromebook
@@ -6166,25 +6163,27 @@ Permissions you've already given to websites and apps may apply to this account.
   <message name="IDS_BOREALIS_INSTALLER_ERROR_RETRY" desc="Button for Steam (noun, name of app) installer to retry after failing.">
     Retry
   </message>
+  <message name="IDS_BOREALIS_BETA_BADGE" desc="Badge text indicating that borealis (steam on chromeos) is a beta product, i.e. it is still under development.">
+    Beta
+  </message>
   <message name="IDS_BOREALIS_CLIENT_UNINSTALL_CONFIRM_BODY" desc="Confirmation dialog for uninstalling Steam (name of app).">
       Any games and apps installed via Steam will also be removed from this device
   </message>
   <message name="IDS_BOREALIS_APPLICATION_UNINSTALL_CONFIRM_BODY" desc="Confirmation dialog for uninstalling a game.">
       Data associated with this app may be removed from this device
   </message>
-  <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_TITLE" desc="Title shown in notification that prompts users for feedback">
-    How was your gameplay experience?
-  </message>
-  <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_MESSAGE" desc="Message shown in notification that prompts users for feedback">
-    Help us improve gaming on Chromebooks
-  </message>
-  <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_SOURCE" desc="Source of notification that prompts users for feedback">
-    Chromebook Gaming
+  <message name="IDS_BOREALIS_SPLASHSCREEN_TITLE" desc="Title on splashscreen when starting Steam on Chrome OS. 'Steam for Chromebook' is the name of the product.">
+    Steam for Chromebook
   </message>
   <message name="IDS_BOREALIS_SPLASHSCREEN_MESSAGE" desc="Message on splashscreen when starting Steam on Chrome OS.">
-    starting up...
+    Loading...
   </message>
-
+  <message name="IDS_BOREALIS_HATS_TITLE" desc="Title for HaTS notification requesting feedback. It will appear occasionally when a user closes a Steam game. Clicking it will show a satisfaction survey to the user.">
+    Help us improve Steam for Chromebook
+  </message>
+  <message name="IDS_BOREALIS_HATS_BODY" desc="Message on HaTS notification requesting feedback. It will appear occasionally when a user closes a Steam game. Clicking it will show a satisfaction survey to the user.">
+    Tell us about your recent gameplay
+  </message>
   <!-- TPM firmware auto-update notifications -->
   <message name="IDS_TPM_AUTO_UPDATE_PLANNED_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted.">
     Your local data will soon be deleted
@@ -6615,24 +6614,20 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
 
   <!-- Touchpad Scroll -->
-  <!-- TODO(b/265107054): Remove translateable tags when strings are finalized. -->
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TITLE" desc="Title of the touchpad scroll direction screen." translateable="false">
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TITLE" desc="Title of the touchpad scroll direction screen.">
     Change touchpad scrolling direction
   </message>
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_DESCRIPTION" desc="Description of the touchpad scroll direction screen." translateable="false">
-    Try it out. Turn the setting on or off, then scroll with two fingers on your touchpad in the test area.
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_DESCRIPTION" desc="Description of the touchpad scroll direction screen.">
+    Try it out. Turn the setting on or off, then scroll with two fingers on your touchpad in the test area. You can also find this later in Settings > Device > Mouse and touchpad.
   </message>
-   <message name="IDS_OOBE_TOUCHPAD_SCROLL_DESCRIPTION_ADDITIONAL" desc="Additional description of the touchpad scroll direction screen." translateable="false">
-    You can also find this later in Settings > Device > Mouse and touchpad.
-  </message>
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_TITLE" desc="Title for a toggle that allows reversing the scrolling directions." translateable="false">
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_TITLE" desc="Title for a toggle that allows reversing the scrolling directions.">
     Reverse scrolling
   </message>
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_DESC" desc="Description for a toggle that allows reversing the scrolling directions" translateable="false">
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_TOGGLE_DESC" desc="Description for a toggle that allows reversing the scrolling directions">
     Swipe up to move the page down
   </message>
-  <message name="IDS_OOBE_TOUCHPAD_SCROLL_AREA_DESC" desc="Description for a scroll area that allows user to try the selected scrolling directions" translateable="false">
-    Scroll with two fingers on your touchpad in this area
+  <message name="IDS_OOBE_TOUCHPAD_SCROLL_AREA_DESC" desc="Description for a scroll area that allows user to try the selected scrolling directions">
+    Preview
   </message>
 
   <!-- Display Size -->
@@ -6672,6 +6667,12 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <message name="IDS_OOBE_DISPLAY_SIZE_VALUE" desc="The currently selected display size percentage.">
     <ph name="DISPLAY_ZOOM">$1<ex>120</ex></ph>%
   </message>
+  <message name="IDS_OOBE_DISPLAY_SIZE_POSITIVE_BUTTON_ARIA" desc="The message to be announced by ChromeVox in the display size screen when the button to increase the size is focused" translateable="false">
+    Increase display and text size
+  </message>
+  <message name="IDS_OOBE_DISPLAY_SIZE_NEGATIVE_BUTTON_ARIA" desc="The message to be announced by ChromeVox in the display size screen when the button to decrease the size is focused" translateable="false">
+    Decrease display and text size
+  </message>
 
   <!-- Drive Offline-->
   <!-- TODO(b/278024582): Remove translateable tags when strings are finalized. -->
@@ -6708,25 +6709,42 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <!-- CHOOBE Screen -->
   <!-- TODO(b/258503542): Remove translateable tags when strings are finalized. -->
   <message name="IDS_OOBE_CHOOBE_TITLE" desc="Title of the CHOOBE screen." translateable="false">
-    Select features you want to set up next
+    Choose more features to set up
   </message>
   <message name="IDS_OOBE_CHOOBE_DESCRIPTION" desc="Subitle of the CHOOBE screen." translateable="false">
-    Or you can click Done for now and find them later in system Settings
+    You can also find these options in Settings after you finish setting up your Chromebook
   </message>
   <message name="IDS_OOBE_CHOOBE_SKIP_BUTTON" desc="Skip button for the CHOOBE screen" translateable="false">
-    Remind me later
+    Skip
   </message>
 
   <!-- CHOOBE Tiles -->
   <!-- TODO(b/258503542): Remove translateable tags when strings are finalized. -->
   <message name="IDS_OOBE_CHOOBE_THEME_SELECTION_TILE_TITLE" desc="Title of the theme selection tile in the CHOOBE screen." translateable="false">
-    Select dark/light theme
+    Select light or dark theme
   </message>
   <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_TILE_TITLE" desc="Title of the touchpad scroll tile in the CHOOBE screen." translateable="false">
     Change touchpad scrolling direction
   </message>
   <message name="IDS_OOBE_CHOOBE_DISPLAY_SIZE_TILE_TITLE" desc="Title of the display size tile in the CHOOBE screen." translateable="false">
-    Display size
+    Change display and text size
+  </message>
+  <message name="IDS_OOBE_CHOOBE_RETURN_BUTTON" desc="Label for the return button shown in the last optional screen selected by the user if there still exists more features thaat the user can select." translateable="false">
+    Save and see more
+  </message>
+  <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_SUBTITLE_ENABLED" desc="Subtitle of the touchpad scroll tile in the CHOOBE screen if reverse scroll enabled." translateable="false">
+    Reverse scrolling enabled
+  </message>
+  <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_SUBTITLE_DISABLED" desc="Subtitle of the touchpad scroll tile in the CHOOBE screen if reverse scroll disabled." translateable="false">
+    Reverse scrolling disabled
+  </message>
+
+  <!-- CHOOBE Tiles Accessibility -->
+  <message name="IDS_OOBE_CHOOBE_TILE_SYNCED" desc="message will be announced by the chromevox if the tile is synced and contain the sync icons." translateable="false">
+    Setting synced from your previous device.
+  </message>
+  <message name="IDS_OOBE_CHOOBE_TILE_VISITED" desc="message will be announced by the chromevox if the tile is visited." translateable="false">
+    Visited
   </message>
 
   <!-- Strings for the office fallback dialog -->
@@ -6759,6 +6777,26 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
   <message name="IDS_OFFICE_FALLBACK_INSTRUCTIONS_DRIVE_UNAVAILABLE" desc="Office Fallback dialog instructions for when Google Drive is not available in Files app and the user should try to enable it." translateable="false">
     Try enabling Google Drive in Settings.
+  </message>
+
+  <!-- Office setup and move dialogs -->
+  <message name="IDS_CONNECT_TO_ONEDRIVE_TITLE" desc="Title for a dialog which allows the user to connect Files app and Microsoft OneDrive storage.">
+    Connect to Microsoft OneDrive
+  </message>
+  <message name="IDS_CONNECT_TO_ONEDRIVE_BODY_TEXT" desc="Explanation text for a dialog which allows the user to connect Files app and Microsoft OneDrive storage.">
+    Connect OneDrive to the Files app to manage your stored documents from your Chromebook. You'll need to sign in with your Microsoft account.
+  </message>
+  <message name="IDS_CANT_CONNECT_ONEDRIVE" desc="Error message text displayed when the user has tried to connect to OneDrive storage, but failed for any reason.">
+    Can't connect to OneDrive. Try again.
+  </message>
+  <message name="IDS_CONNECT_ONEDRIVE" desc="Text for a button which triggers a UI flow to connect the user to OneDrive storage.">
+    Connect to OneDrive
+  </message>
+  <message name="IDS_ONEDRIVE_CONNECTED_TITLE" desc="Text for a button which triggers a UI flow to connect the user to OneDrive storage.">
+    Microsoft OneDrive connected
+  </message>
+  <message name="IDS_ONEDRIVE_CONNECTED_BODY_TEXT" desc="Text for a button which triggers a UI flow to connect the user to OneDrive storage.">
+    OneDrive will now appear in the Files app
   </message>
 
   <!-- security curtain -->

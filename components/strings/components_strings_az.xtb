@@ -1239,6 +1239,7 @@
 <translation id="4031179711345676612">Mikrofona icazə verildi</translation>
 <translation id="4040350669425716613">Kollec və universitetlər</translation>
 <translation id="4047351652147966654">18 x 24 düym</translation>
+<translation id="404831776305217138">"<ph name="EXTENSION_ID" />" ID-li artırma üçün güncəllənmə URL-i yanlışdır, yaxud sxemi dəstəklənmir. Dəstəklənən sxemlər: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> və <ph name="FILE_SCHEME" />.</translation>
 <translation id="4050392779074832022">Onu Google məhsullarında istifadə edə biləcəksiniz</translation>
 <translation id="405399507749852140">Hər hansı bir saytda qiymət enərsə, bildiriş alın</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -2288,6 +2289,8 @@
 <translation id="6569060085658103619">Artırma səhifəsinə baxırsınız</translation>
 <translation id="6569366777234823130">Dram filmləri</translation>
 <translation id="6573200754375280815">Sağdan qoşa deşik açın</translation>
+<translation id="6576181918031900030">Yayıma başlayın</translation>
+<translation id="6578434528542148658">Yanlış artırma ID-si.</translation>
 <translation id="657902945730878902">Rəsm və boyama</translation>
 <translation id="6579630537141957243">MIDI cihazı qoşulsun?</translation>
 <translation id="6579990219486187401">Açıq-çəhrayı</translation>
@@ -3027,7 +3030,6 @@
 <translation id="8298115750975731693">İstifadə etdiyiniz Wi-Fi (<ph name="WIFI_NAME" />) <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> səhifəsinə daxil olmağınızı tələb edə bilər.</translation>
 <translation id="8303854710873047864">"<ph name="SECTION" />" bölməsi göstərilir</translation>
 <translation id="830498451218851433">Yarımçıq qatlayın</translation>
-<translation id="8307888238279532626">Quraşdırılmış tətbiqlər və nə zaman istifadə edildikləri</translation>
 <translation id="831997045666694187">Axşam</translation>
 <translation id="8321476692217554900">bildirişlər</translation>
 <translation id="8329068931308448247">Zərf #14</translation>

@@ -78,6 +78,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
+#include "chromeos/components/kiosk/kiosk_utils.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/cpp/lacros_startup_state.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom-shared.h"
@@ -477,7 +478,7 @@ void WaitForDeviceOwnerFetchedAndThen(base::OnceClosure cb,
     return;
   }
 
-  if (!launching_at_login_screen) {
+  if (launching_at_login_screen) {
     std::move(cb).Run();
     return;
   }
@@ -487,6 +488,12 @@ void WaitForDeviceOwnerFetchedAndThen(base::OnceClosure cb,
   // This just ensures the owner id has been set.
   user_manager::UserManager::Get()->GetOwnerAccountIdAsync(
       base::IgnoreArgs<const AccountId&>(std::move(cb)));
+}
+
+bool IsPreparingKiosk() {
+  return (session_manager::SessionManager::Get()->session_state() ==
+          session_manager::SessionState::LOGGED_IN_NOT_ACTIVE) &&
+         chromeos::IsKioskSession();
 }
 
 // The delegate keeps track of the most recent lacros-chrome binary version
@@ -760,12 +767,7 @@ void BrowserManager::CreateBrowserWithRestoredData(
 }
 
 void BrowserManager::InitializeAndStartIfNeeded() {
-  // If we already tried to load Lacros but for some reason it wasn't available
-  // (for example, in some tests), then we should return here to avoid failure.
-  if (state_ == State::UNAVAILABLE) {
-    return;
-  }
-  DCHECK_EQ(state_, State::NOT_INITIALIZED);
+  DCHECK(state_ == State::NOT_INITIALIZED || state_ == State::RELOADING);
 
   // Ensure this isn't run multiple times.
   session_manager::SessionManager::Get()->RemoveObserver(this);
@@ -1161,9 +1163,12 @@ void BrowserManager::StartWithLogFile(bool launching_at_login_screen,
           command_line->GetSwitchValueASCII(switches::kLoggingLevel).c_str()));
     }
 
-    // TODO(crbug.com/1423163): Remove after root causing the issue.
-    argv.push_back(
-        "--vmodule=command_storage_backend=1,session_service_commands=1");
+    argv.push_back(std::string("--vmodule=")
+                   // TODO(crbug.com/1423163): Remove after fix.
+                   + "command_storage_backend=1,session_service_commands=1"
+                   // TODO(crbug.com/1371493): Remove after fix.
+                   + ",wayland_window_drag_controller=1,wayland_data_source=1" +
+                   ",tab_drag_controller=1");
 
     if (launching_at_login_screen &&
         !command_line->HasSwitch(switches::kDisableLoggingRedirect)) {
@@ -1386,6 +1391,23 @@ void BrowserManager::HandleLacrosChromeTermination(base::TimeDelta timeout) {
   SetState(State::TERMINATING);
 }
 
+void BrowserManager::HandleReload() {
+  DCHECK(reload_requested_);
+  DCHECK(!relaunch_requested_);
+  DCHECK(!unload_requested_);
+  DCHECK_EQ(state_, State::STOPPED);
+
+  // Reset BrowserManager's state.
+  reload_requested_ = false;
+  lacros_process_ = base::Process();
+  is_initial_lacros_launch_after_reboot_ = true;
+  should_attempt_update_ = true;
+  SetState(State::RELOADING);
+
+  // Reload and possibly relaunch Lacros.
+  InitializeAndStartIfNeeded();
+}
+
 void BrowserManager::OnLacrosChromeTerminated() {
   DCHECK_EQ(state_, State::TERMINATING);
   LOG(WARNING) << "Lacros-chrome is terminated";
@@ -1396,19 +1418,29 @@ void BrowserManager::OnLacrosChromeTerminated() {
   // abnormally (e.g. crashes). For now, assume the user meant to close it.
   // Relaunch lacros-chrome if it was closed due to ash shutting down.
   // Note that this only matters for side-by-side lacros.
-  SetLaunchOnLoginPref(shutdown_requested_);
+  if (!reload_requested_) {
+    SetLaunchOnLoginPref(shutdown_requested_);
+  }
+
+  if (reload_requested_) {
+    LOG(WARNING) << "Reloading Lacros-chrome";
+    HandleReload();
+    return;
+  }
+
+  if (unload_requested_) {
+    LOG(WARNING) << "Unloading Lacros-chrome";
+    DCHECK(!relaunch_requested_);
+    SetState(State::UNAVAILABLE);
+    browser_loader_->Unload();
+    return;
+  }
 
   if (relaunch_requested_) {
     pending_actions_.Push(
         BrowserAction::OpenForFullRestore(/*skip_crash_restore=*/true));
   }
   StartIfNeeded();
-
-  if (unload_requested_) {
-    LOG(WARNING) << "Unloading Lacros-chrome";
-    SetState(State::UNAVAILABLE);
-    browser_loader_->Unload();
-  }
 }
 
 void BrowserManager::OnLoginPromptVisible() {
@@ -1428,17 +1460,17 @@ void BrowserManager::OnSessionStateChanged() {
     return;
   }
 
-  // Wait for session to become active.
-  auto* session_manager = session_manager::SessionManager::Get();
-  if (session_manager->session_state() !=
-      session_manager::SessionState::ACTIVE) {
+  // Wait for the user to log in.
+  auto session_state = session_manager::SessionManager::Get()->session_state();
+  if (session_state != session_manager::SessionState::ACTIVE &&
+      !IsPreparingKiosk()) {
     return;
   }
 
   if (state_ == State::PRE_LAUNCHED) {
     // Resume Lacros launch after login, if it was pre-launched.
     ResumeLaunch();
-  } else {
+  } else if (state_ == State::NOT_INITIALIZED) {
     // Otherwise, just start Lacros normally, if appropriate.
     InitializeAndStartIfNeeded();
   }
@@ -1535,8 +1567,9 @@ void BrowserManager::ResumeLaunch() {
   // executed in |InitializeAndStartIfNeeded| (we call |PrelaunchAtLoginScreen|
   // instead) and |StartWithLogFile|, because they required the user to be
   // logged in.
-  DCHECK_EQ(session_manager::SessionManager::Get()->session_state(),
-            session_manager::SessionState::ACTIVE);
+  auto session_state = session_manager::SessionManager::Get()->session_state();
+  DCHECK(session_state == session_manager::SessionState::ACTIVE ||
+         session_state == session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
   DCHECK(user_manager::UserManager::Get()->IsUserLoggedIn());
   DCHECK_EQ(state_, State::PRE_LAUNCHED);
 
@@ -1546,9 +1579,27 @@ void BrowserManager::ResumeLaunch() {
   // If Lacros is not enabled for the user, terminate it now.
   const bool is_lacros_enabled = browser_util::IsLacrosEnabled();
   if (!is_lacros_enabled) {
-    LOG(WARNING) << "Lacros is not enabled for the current user. Terminating "
-                    "pre-launched instance";
+    LOG(WARNING) << "Lacros is not enabled for the current user. "
+                    "Terminating pre-launched instance";
     unload_requested_ = true;
+    if (lacros_process_.IsValid()) {
+      lacros_process_.Terminate(/*exit_code=*/0, /*wait=*/false);
+    }
+    return;
+  }
+
+  // If Lacros selection (rootfs/stateful) for this user is forced to a
+  // different value than the Lacros that was launched at login screen,
+  // we need to reload and relaunch the correct version of Lacros.
+  auto user_lacros_selection = browser_util::DetermineLacrosSelection();
+  if (user_lacros_selection.has_value() &&
+      lacros_selection_ != user_lacros_selection) {
+    LOG(WARNING)
+        << "Mismatching Lacros selection between login screen and user. "
+           "User selection: "
+        << static_cast<int>(user_lacros_selection.value()) << ". "
+        << "Terminating pre-launched instance";
+    reload_requested_ = true;
     lacros_process_.Terminate(/*exit_code=*/0, /*wait=*/false);
     return;
   }
@@ -1823,6 +1874,7 @@ void BrowserManager::PerformOrEnqueue(std::unique_ptr<BrowserAction> action) {
       return;
 
     case State::NOT_INITIALIZED:
+    case State::RELOADING:
     case State::MOUNTING:
       LOG(WARNING) << "lacros component image not yet available";
       pending_actions_.PushOrCancel(std::move(action));

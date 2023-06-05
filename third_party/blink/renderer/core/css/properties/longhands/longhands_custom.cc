@@ -2486,9 +2486,7 @@ void Content::ApplyValue(StyleResolverState& state,
         builder.SetHasAttrContent();
         // TODO: Can a namespace be specified for an attr(foo)?
         QualifiedName attr(
-            g_null_atom,
-            To<CSSCustomIdentValue>(function_value->Item(0)).Value(),
-            g_null_atom);
+            To<CSSCustomIdentValue>(function_value->Item(0)).Value());
         const AtomicString& attr_value = state.GetElement().getAttribute(attr);
         string = attr_value.IsNull() ? g_empty_string : attr_value.GetString();
       } else {
@@ -5684,6 +5682,9 @@ const CSSValue* OffsetPosition::ParseSingleValue(
   if (id == CSSValueID::kAuto) {
     return css_parsing_utils::ConsumeIdent(range);
   }
+  if (id == CSSValueID::kNormal) {
+    return css_parsing_utils::ConsumeIdent(range);
+  }
   CSSValue* value = css_parsing_utils::ConsumePosition(
       range, context, css_parsing_utils::UnitlessQuirk::kForbid,
       absl::optional<WebFeature>());
@@ -8563,7 +8564,10 @@ const CSSValue* Translate::ParseSingleValue(
     if (translate_z && translate_z->IsZero()) {
       translate_z = nullptr;
     }
-    if (translate_y->IsZero() && !translate_z) {
+    if (translate_y->IsZero() &&
+        (!translate_y->HasPercentage() ||
+         !RuntimeEnabledFeatures::CSSTranslatePreserveYPercentEnabled()) &&
+        !translate_z) {
       return list;
     }
 
@@ -8589,17 +8593,23 @@ const CSSValue* Translate::CSSValueFromComputedStyleInternal(
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
 
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      style.Translate()->X(), style));
+  const Length& x = style.Translate()->X();
+  const Length& y = style.Translate()->Y();
+  double z = style.Translate()->Z();
 
-  if (!style.Translate()->Y().IsZero() || style.Translate()->Z() != 0) {
-    list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-        style.Translate()->Y(), style));
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(x, style));
+
+  if (!y.IsZero() ||
+      (y.IsPercentOrCalc() &&
+       RuntimeEnabledFeatures::CSSTranslatePreserveYPercentEnabled()) ||
+      z != 0) {
+    list->Append(
+        *ComputedStyleUtils::ZoomAdjustedPixelValueForLength(y, style));
   }
 
-  if (style.Translate()->Z() != 0) {
-    list->Append(*ZoomAdjustedPixelValue(style.Translate()->Z(), style));
+  if (z != 0) {
+    list->Append(*ZoomAdjustedPixelValue(z, style));
   }
 
   return list;
@@ -10350,6 +10360,45 @@ void WillChange::ApplyValue(StyleResolverState& state,
       will_change_contents || state.ParentStyle()->SubtreeWillChangeContents());
 }
 
+const CSSValue* WordBoundaryDetection::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ParseWordBoundaryDetection(range, context);
+}
+
+const CSSValue* WordBoundaryDetection::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  switch (style.GetWordBoundaryDetection()) {
+    case blink::WordBoundaryDetection::kNormal:
+      return CSSIdentifierValue::Create(CSSValueID::kNormal);
+    case blink::WordBoundaryDetection::kAuto:
+      return css_parsing_utils::CreateWordBoundaryDetectionValue();
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
+void WordBoundaryDetection::ApplyValue(StyleResolverState& state,
+                                       const CSSValue& value,
+                                       ValueMode) const {
+  if (value.IsIdentifierValue()) {
+    DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNormal);
+    state.StyleBuilder().SetWordBoundaryDetection(
+        ComputedStyleInitialValues::InitialWordBoundaryDetection());
+    return;
+  }
+  if (value.IsFunctionValue()) {
+    DCHECK_EQ(To<CSSFunctionValue>(value).FunctionType(), CSSValueID::kAuto);
+    state.StyleBuilder().SetWordBoundaryDetection(
+        blink::WordBoundaryDetection::kAuto);
+    return;
+  }
+  NOTREACHED();
+}
+
 const CSSValue* WordBreak::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
@@ -10488,14 +10537,6 @@ void Zoom::ApplyValue(StyleResolverState& state,
                       const CSSValue& value,
                       ValueMode) const {
   state.SetZoom(StyleBuilderConverter::ConvertZoom(state, value));
-}
-
-const CSSValue* InternalAlignSelfBlock::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext&,
-    const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeIdent<CSSValueID::kCenter,
-                                         CSSValueID::kNormal>(range);
 }
 
 const CSSValue* InternalAlignContentBlock::ParseSingleValue(

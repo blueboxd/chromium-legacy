@@ -4,21 +4,37 @@
 
 #include "components/sync/nigori/pending_local_nigori_commit.h"
 
+#include <utility>
+
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "components/sync/base/features.h"
 #include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/nigori/nigori.h"
+#include "components/sync/engine/nigori/public_key.h"
+#include "components/sync/engine/nigori/public_private_key_pair.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/keystore_keys_cryptographer.h"
 #include "components/sync/nigori/nigori_state.h"
+#include "components/sync/protocol/nigori_specifics.pb.h"
 
 namespace syncer {
 
 namespace {
 
 using sync_pb::NigoriSpecifics;
+
+void InitKeyPair(NigoriState* state) {
+  if (state->public_key.has_value()) {
+    return;
+  }
+  PublicPrivateKeyPair key_pair = PublicPrivateKeyPair::GenerateNewKeyPair();
+  state->public_key = PublicKey::CreateByImport(key_pair.GetRawPublicKey());
+  state->key_pair_version = 0;
+  state->cryptographer->EmplaceKeyPair(std::move(key_pair), 0);
+}
 
 class CustomPassphraseSetter : public PendingLocalNigoriCommit {
  public:
@@ -116,6 +132,10 @@ class KeystoreInitializer : public PendingLocalNigoriCommit {
     state->cryptographer->EmplaceKeysAndSelectDefaultKeyFrom(*cryptographer);
     state->passphrase_type = NigoriSpecifics::KEYSTORE_PASSPHRASE;
     state->keystore_migration_time = base::Time::Now();
+
+    if (base::FeatureList::IsEnabled(kSharingOfferKeyPairBootstrap)) {
+      InitKeyPair(state);
+    }
     return true;
   }
 
@@ -160,6 +180,38 @@ class KeystoreReencryptor : public PendingLocalNigoriCommit {
   void OnFailure(SyncEncryptionHandler::Observer* observer) override {}
 };
 
+class PublicPrivateKeyInitializer : public PendingLocalNigoriCommit {
+ public:
+  PublicPrivateKeyInitializer() = default;
+
+  PublicPrivateKeyInitializer(const PublicPrivateKeyInitializer&) = delete;
+  PublicPrivateKeyInitializer& operator=(const PublicPrivateKeyInitializer&) =
+      delete;
+
+  ~PublicPrivateKeyInitializer() override = default;
+
+  bool TryApply(NigoriState* state) const override {
+    // It is not safe to commit while we have pending keys.
+    // Also, there is no work to do if a public-key already exists.
+    if (state->pending_keys.has_value() || state->public_key.has_value()) {
+      return false;
+    }
+    InitKeyPair(state);
+    return true;
+  }
+
+  void OnSuccess(const NigoriState& state,
+                 SyncEncryptionHandler::Observer* observer) override {
+    observer->OnCryptographerStateChanged(state.cryptographer.get(),
+                                          /*has_pending_keys=*/false);
+  }
+
+  void OnFailure(SyncEncryptionHandler::Observer* observer) override {
+    // TODO(crbug.com/1445056): handle rejection of Public-private key, can be
+    // due to already existing key.
+  }
+};
+
 }  // namespace
 
 // static
@@ -181,6 +233,12 @@ PendingLocalNigoriCommit::ForKeystoreInitialization() {
 std::unique_ptr<PendingLocalNigoriCommit>
 PendingLocalNigoriCommit::ForKeystoreReencryption() {
   return std::make_unique<KeystoreReencryptor>();
+}
+
+// static
+std::unique_ptr<PendingLocalNigoriCommit>
+PendingLocalNigoriCommit::ForPublicPrivateKeyInitialization() {
+  return std::make_unique<PublicPrivateKeyInitializer>();
 }
 
 }  // namespace syncer

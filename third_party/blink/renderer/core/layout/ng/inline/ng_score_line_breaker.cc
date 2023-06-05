@@ -36,13 +36,12 @@ void NGScoreLineBreaker::OptimalBreakPoints(NGScoreLineBreakContext& context) {
 
   // Compute line breaks and cache the results (`NGLineInfo`) up to
   // `NGLineInfoList::kCapacity` lines.
-  NGExclusionSpace empty_exclusion_space;
   NGPositionedFloatVector empty_leading_floats;
   NGLineBreaker line_breaker(
       node_, NGLineBreakerMode::kContent, ConstraintSpace(), line_opportunity_,
       empty_leading_floats,
       /* handled_leading_floats_index */ 0u, break_token_,
-      /* column_spanner_path */ nullptr, &empty_exclusion_space);
+      /* column_spanner_path */ nullptr, exclusion_space_);
   for (;;) {
     NGLineInfo& line_info = line_info_list.Append();
     line_breaker.NextLine(&line_info);
@@ -73,6 +72,11 @@ void NGScoreLineBreaker::OptimalBreakPoints(NGScoreLineBreakContext& context) {
     if (last_line.Width() >= last_line.AvailableWidth() / 3) {
       // The optimization benefit is most visible when the last line is short.
       // Otherwise, the improvement is not worth the performance impact.
+      return;
+    }
+    if (line_breaker.CanBreakInside(last_line)) {
+      // Similarly, optimize only when the last line has a single word; i.e.,
+      // has no break opportunities.
       return;
     }
   }

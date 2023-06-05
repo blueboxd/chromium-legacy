@@ -123,10 +123,15 @@ class AutofillBrowserTestEnvironment : public AutofillTestEnvironment {
       const Options& options = {.disable_server_communication = false});
 };
 
-// Creates non-empty LocalFrameToken. If `randomize` is false, the
-// LocalFrameToken is stable across multiple calls.
+// Creates non-empty LocalFrameToken.
+//
+// If `randomize` is true, the LocalFrameToken changes for successive calls.
+// Within each unit test, the generated values are deterministically predictable
+// (because the test's AutofillTestEnvironment restarts the generation).
+//
+// If `randomize` is false, the LocalFrameToken is stable across multiple calls.
 LocalFrameToken MakeLocalFrameToken(
-    RandomizeFrame randomize = RandomizeFrame(false));
+    RandomizeFrame randomize = RandomizeFrame(true));
 
 // Creates new, pairwise distinct FormRendererIds.
 inline FormRendererId MakeFormRendererId() {
@@ -142,14 +147,14 @@ inline FieldRendererId MakeFieldRendererId() {
 // LocalFrameToken is generated randomly, otherwise it is stable across multiple
 // calls.
 inline FormGlobalId MakeFormGlobalId(
-    RandomizeFrame randomize = RandomizeFrame(false)) {
+    RandomizeFrame randomize = RandomizeFrame(true)) {
   return {MakeLocalFrameToken(randomize), MakeFormRendererId()};
 }
 
 // Creates new, pairwise distinct FieldGlobalIds. If `randomize` is true, the
 // LocalFrameToken is generated randomly, otherwise it is stable.
 inline FieldGlobalId MakeFieldGlobalId(
-    RandomizeFrame randomize = RandomizeFrame(false)) {
+    RandomizeFrame randomize = RandomizeFrame(true)) {
   return {MakeLocalFrameToken(randomize), MakeFieldRendererId()};
 }
 
@@ -510,11 +515,7 @@ void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate);
 
 std::string ObfuscatedCardDigitsAsUTF8(const std::string& str,
-#if BUILDFLAG(IS_ANDROID)
-                                       int obfuscation_length = 2);
-#else
-                                       int obfuscation_length = 4);
-#endif
+                                       int obfuscation_length);
 
 // Returns 2-digit month string, like "02", "10".
 std::string NextMonth();

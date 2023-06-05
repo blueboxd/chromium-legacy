@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 
+#import "base/debug/dump_without_crashing.h"
 #import "components/sessions/core/tab_restore_service.h"
 #import "components/sync_sessions/open_tabs_ui_delegate.h"
 #import "components/sync_sessions/session_sync_service.h"
@@ -12,7 +13,7 @@
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/browser/all_web_state_list_observation_registrar.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -30,10 +31,14 @@
 
 @interface RecentTabsMediator () <SyncedSessionsObserver,
                                   WebStateListObserving> {
+  std::unique_ptr<AllWebStateListObservationRegistrar> _registrar;
   std::unique_ptr<synced_sessions::SyncedSessionsObserverBridge>
       _syncedSessionsObserver;
   std::unique_ptr<recent_tabs::ClosedTabsObserverBridge> _closedTabsObserver;
   SessionsSyncUserState _userState;
+  // The list of web state list currently processing batch operations (e.g.
+  // Closing All, or Undoing a Close All).
+  std::set<WebStateList*> _webStateListsWithBatchOperations;
 }
 
 // Return the user's current sign-in and chrome-sync state.
@@ -46,22 +51,34 @@
 - (BOOL)isSyncCompleted;
 // Reload the panel.
 - (void)refreshSessionsView;
-// YES if Tabs are being updated in batch. (e.g. Closing All, or Undoing a Close
-// All).
-@property(nonatomic, assign) BOOL processingBatchOperation;
+@property(nonatomic, assign)
+    sync_sessions::SessionSyncService* sessionSyncService;
+@property(nonatomic, assign) signin::IdentityManager* identityManager;
+@property(nonatomic, assign) sessions::TabRestoreService* restoreService;
+@property(nonatomic, assign) FaviconLoader* faviconLoader;
+@property(nonatomic, assign) SyncSetupService* syncSetupService;
+@property(nonatomic, assign) BrowserList* browserList;
 
 @end
 
-@implementation RecentTabsMediator {
-  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
-}
-@synthesize browserState = _browserState;
-@synthesize consumer = _consumer;
+@implementation RecentTabsMediator
 
-- (instancetype)init {
+- (instancetype)
+    initWithSessionSyncService:
+        (sync_sessions::SessionSyncService*)sessionSyncService
+               identityManager:(signin::IdentityManager*)identityManager
+                restoreService:(sessions::TabRestoreService*)restoreService
+                 faviconLoader:(FaviconLoader*)faviconLoader
+              syncSetupService:(SyncSetupService*)syncSetupService
+                   browserList:(BrowserList*)browserList {
   self = [super init];
   if (self) {
-    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+    _sessionSyncService = sessionSyncService;
+    _identityManager = identityManager;
+    _restoreService = restoreService;
+    _faviconLoader = faviconLoader;
+    _syncSetupService = syncSetupService;
+    _browserList = browserList;
   }
   return self;
 }
@@ -69,42 +86,40 @@
 #pragma mark - Public Interface
 
 - (void)initObservers {
+  if (!_registrar) {
+    _registrar = std::make_unique<AllWebStateListObservationRegistrar>(
+        _browserList, std::make_unique<WebStateListObserverBridge>(self),
+        AllWebStateListObservationRegistrar::Mode::REGULAR);
+  }
   if (!_syncedSessionsObserver) {
-    signin::IdentityManager* identityManager =
-        IdentityManagerFactory::GetForBrowserState(_browserState);
-    sync_sessions::SessionSyncService* syncService =
-        SessionSyncServiceFactory::GetForBrowserState(_browserState);
     _syncedSessionsObserver =
         std::make_unique<synced_sessions::SyncedSessionsObserverBridge>(
-            self, identityManager, syncService);
+            self, self.identityManager, self.sessionSyncService);
   }
   if (!_closedTabsObserver) {
     _closedTabsObserver =
         std::make_unique<recent_tabs::ClosedTabsObserverBridge>(self);
-    sessions::TabRestoreService* restoreService =
-        IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
-    if (restoreService)
-      restoreService->AddObserver(_closedTabsObserver.get());
-    [self.consumer setTabRestoreService:restoreService];
+    if (self.restoreService) {
+      self.restoreService->AddObserver(_closedTabsObserver.get());
+    }
+    [self.consumer setTabRestoreService:self.restoreService];
   }
 }
 
 - (void)disconnect {
+  _registrar.reset();
   _syncedSessionsObserver.reset();
 
-  if (_webStateList) {
-    _webStateList->RemoveObserver(_webStateListObserver.get());
-    _webStateListObserver.reset();
-    _webStateList = nullptr;
-  }
-
   if (_closedTabsObserver) {
-    sessions::TabRestoreService* restoreService =
-        IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
-    if (restoreService) {
-      restoreService->RemoveObserver(_closedTabsObserver.get());
+    if (self.restoreService) {
+      self.restoreService->RemoveObserver(_closedTabsObserver.get());
     }
     _closedTabsObserver.reset();
+    _sessionSyncService = nullptr;
+    _identityManager = nullptr;
+    _restoreService = nullptr;
+    _faviconLoader = nullptr;
+    _syncSetupService = nullptr;
   }
 }
 
@@ -125,18 +140,17 @@
 #pragma mark - ClosedTabsObserving
 
 - (void)tabRestoreServiceChanged:(sessions::TabRestoreService*)service {
-  sessions::TabRestoreService* restoreService =
-      IOSChromeTabRestoreServiceFactory::GetForBrowserState(_browserState);
-  restoreService->LoadTabsFromLastSession();
+  self.restoreService->LoadTabsFromLastSession();
   // A WebStateList batch operation can result in batch changes to the
   // TabRestoreService (e.g., closing or restoring all tabs). To properly batch
-  // process TabRestoreService changes, those changes must be executed inside
-  // the WebStateList batch operation callback. This allows RecentTabs to ignore
-  // individual tabRestoreServiceChanged calls that correspond to the
-  // WebStateList batch operation. The consumer is updated once after the batch
-  // operation is completed.
-  if (!self.processingBatchOperation)
+  // process TabRestoreService changes, those changes must be executed after the
+  // WebStateList batch operation ended. This allows RecentTabs to ignore
+  // individual tabRestoreServiceChanged calls that correspond to a WebStateList
+  // batch operation. The consumer is updated once after all batch operations
+  // have completed.
+  if (_webStateListsWithBatchOperations.empty()) {
     [self.consumer refreshRecentlyClosedTabs];
+  }
 }
 
 - (void)tabRestoreServiceDestroyed:(sessions::TabRestoreService*)service {
@@ -146,43 +160,46 @@
 #pragma mark - WebStateListObserving
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
-  self.processingBatchOperation = YES;
+  _webStateListsWithBatchOperations.insert(webStateList);
 }
 
 - (void)webStateListBatchOperationEnded:(WebStateList*)webStateList {
-  self.processingBatchOperation = NO;
+  _webStateListsWithBatchOperations.erase(webStateList);
   // A WebStateList batch operation can result in batch changes to the
   // TabRestoreService (e.g., closing or restoring all tabs). Individual
   // TabRestoreService updates are ignored between
   // `-webStateListWillBeginBatchOperation:` and
-  // `-webStateListBatchOperationEnded:`. The consumer is updated once after the
-  // batch operation is complete.
-  [self.consumer refreshRecentlyClosedTabs];
+  // `-webStateListBatchOperationEnded:` for all observed WebStateLists. The
+  // consumer is updated once after all batch operations have completed.
+  if (_webStateListsWithBatchOperations.empty()) {
+    [self.consumer refreshRecentlyClosedTabs];
+  }
+}
+
+- (void)webStateListDestroyed:(WebStateList*)webStateList {
+  if (_webStateListsWithBatchOperations.contains(webStateList)) {
+    // This means a WebStateList was in a batch operation (received
+    // `-webStateListWillBeginBatchOperation:`) that didn't finish (didn't
+    // receive `-webStateListBatchOperationEnded:`). This is not supposed to
+    // happen, but if it did, handle it by removing the web state list from the
+    // set and dump without crashing.
+    base::debug::DumpWithoutCrashing();
+    _webStateListsWithBatchOperations.erase(webStateList);
+    if (_webStateListsWithBatchOperations.empty()) {
+      [self.consumer refreshRecentlyClosedTabs];
+    }
+  }
 }
 
 #pragma mark - TableViewFaviconDataSource
 
 - (void)faviconForPageURL:(CrURL*)URL
                completion:(void (^)(FaviconAttributes*))completion {
-  FaviconLoader* faviconLoader =
-      IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
-  faviconLoader->FaviconForPageUrl(
+  self.faviconLoader->FaviconForPageUrl(
       URL.gurl, kDesiredSmallFaviconSizePt, kMinFaviconSizePt,
       /*fallback_to_google_server=*/false, ^(FaviconAttributes* attributes) {
         completion(attributes);
       });
-}
-
-#pragma mark - Setters/Getters
-
-- (void)setWebStateList:(WebStateList*)webStateList {
-  if (_webStateList)
-    _webStateList->RemoveObserver(_webStateListObserver.get());
-
-  _webStateList = webStateList;
-
-  if (_webStateList)
-    _webStateList->AddObserver(_webStateListObserver.get());
 }
 
 #pragma mark - Private
@@ -193,9 +210,7 @@
 
 - (BOOL)isSyncTabsEnabled {
   DCHECK([self hasSyncConsent]);
-  SyncSetupService* service =
-      SyncSetupServiceFactory::GetForBrowserState(_browserState);
-  return !service->UserActionIsRequiredToHaveTabSyncWork();
+  return !self.syncSetupService->UserActionIsRequiredToHaveTabSyncWork();
 }
 
 // Returns whether this profile has any foreign sessions to sync.
@@ -212,18 +227,14 @@
 }
 
 - (BOOL)isSyncCompleted {
-  sync_sessions::SessionSyncService* service =
-      SessionSyncServiceFactory::GetForBrowserState(_browserState);
-  DCHECK(service);
-  return service->GetOpenTabsUIDelegate() != nullptr;
+  DCHECK(self.sessionSyncService);
+  return self.sessionSyncService->GetOpenTabsUIDelegate() != nullptr;
 }
 
 - (BOOL)hasForeignSessions {
-  sync_sessions::SessionSyncService* service =
-      SessionSyncServiceFactory::GetForBrowserState(_browserState);
-  DCHECK(service);
+  DCHECK(self.sessionSyncService);
   sync_sessions::OpenTabsUIDelegate* openTabs =
-      service->GetOpenTabsUIDelegate();
+      self.sessionSyncService->GetOpenTabsUIDelegate();
   DCHECK(openTabs);
   std::vector<const sync_sessions::SyncedSession*> sessions;
   return openTabs->GetAllForeignSessions(&sessions);

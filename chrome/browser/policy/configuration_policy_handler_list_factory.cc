@@ -318,6 +318,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDataUrlInSvgUseEnabled,
     prefs::kDataUrlInSvgUseEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kPolicyTestPageEnabled,
+    policy_prefs::kPolicyTestPageEnabled,
+    base::Value::Type::BOOLEAN},
 // Policies for all platforms - End
 #if BUILDFLAG(IS_ANDROID)
   { key::kAuthAndroidNegotiateAccountType,
@@ -1842,9 +1845,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
 #endif
   { key::kAccessControlAllowMethodsInCORSPreflightSpecConformant,
     prefs::kAccessControlAllowMethodsInCORSPreflightSpecConformant,
-    base::Value::Type::BOOLEAN},
-  { key::kEventPathEnabled,
-    policy_prefs::kEventPathEnabled,
     base::Value::Type::BOOLEAN},
   { key::kOffsetParentNewSpecBehaviorEnabled,
     policy_prefs::kOffsetParentNewSpecBehaviorEnabled,

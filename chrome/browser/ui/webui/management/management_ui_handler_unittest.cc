@@ -224,7 +224,14 @@ class TestManagementUIHandler : public ManagementUIHandler {
     return GetContextualManagedData(profile);
   }
 
-  base::Value::List GetExtensionReportingInfo() {
+  base::Value::List GetExtensionReportingInfo(bool can_collect_signals = true) {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+    EXPECT_CALL(mock_user_permission_service_, CanCollectSignals())
+        .WillOnce(
+            Return((can_collect_signals)
+                       ? device_signals::UserPermission::kGranted
+                       : device_signals::UserPermission::kMissingConsent));
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
     base::Value::List report_sources;
     AddReportingInfo(&report_sources);
     return report_sources;
@@ -242,12 +249,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   device_signals::UserPermissionService* GetUserPermissionService() override {
-    return user_permission_service_;
-  }
-
-  void SetUserPermissionService(
-      device_signals::UserPermissionService* user_permission_service) {
-    user_permission_service_ = user_permission_service;
+    return &mock_user_permission_service_;
   }
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
@@ -267,7 +269,7 @@ class TestManagementUIHandler : public ManagementUIHandler {
   bool update_required_eol_ = false;
   std::string device_domain = "devicedomain.com";
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-  raw_ptr<device_signals::UserPermissionService> user_permission_service_;
+  device_signals::MockUserPermissionService mock_user_permission_service_;
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 };
 
@@ -333,8 +335,9 @@ class ManagementUIHandlerTests : public TestingBaseClass {
   std::u16string ExtractPathFromDict(const base::Value::Dict& data,
                                      const std::string path) {
     const std::string* buf = data.FindStringByDottedPath(path);
-    if (!buf)
+    if (!buf) {
       return std::u16string();
+    }
     return base::UTF8ToUTF16(*buf);
   }
 
@@ -529,9 +532,6 @@ class ManagementUIHandlerTests : public TestingBaseClass {
     base::Value::Dict data =
         handler_.GetContextualManagedDataForTesting(profile_.get());
     ExtractContextualSourceUpdate(data);
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-    handler_.SetUserPermissionService(&mock_user_permission_service_);
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   }
 
   bool GetManaged() const { return extracted_.managed; }
@@ -640,9 +640,6 @@ class ManagementUIHandlerTests : public TestingBaseClass {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   chromeos::ScopedLacrosServiceTestHelper scoped_lacros_test_helper_;
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-  device_signals::MockUserPermissionService mock_user_permission_service_;
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   TestManagementUIHandler handler_;
 };
 
@@ -1241,6 +1238,25 @@ TEST_F(ManagementUIHandlerTests,
   EXPECT_TRUE(GetShowMonitoredNetworkPrivacyDisclosure());
 }
 
+TEST_F(ManagementUIHandlerTests,
+       ShowPrivacyDisclosureForDeviceReportXDREvents) {
+  ResetTestConfig();
+
+  policy::PolicyMap chrome_policies;
+  const policy::PolicyNamespace chrome_policies_namespace =
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+  EXPECT_CALL(policy_service_, GetPolicies(chrome_policies_namespace))
+      .WillRepeatedly(ReturnRef(chrome_policies));
+  SetPolicyValue(policy::key::kDeviceReportXDREvents, true, chrome_policies);
+
+  base::RunLoop().RunUntilIdle();
+
+  GetTestConfig().managed_device = true;
+  SetUpProfileAndHandler();
+
+  EXPECT_TRUE(GetShowMonitoredNetworkPrivacyDisclosure());
+}
+
 TEST_F(ManagementUIHandlerTests, ShowPrivacyDisclosureForActiveProxy) {
   ResetTestConfig();
   // Set pref to use a proxy.
@@ -1307,16 +1323,12 @@ TEST_F(ManagementUIHandlerTests, HideProxyServerDisclosureForDirectProxy) {
 #endif
 
 TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoNoPolicySetNoMessage) {
-  auto reporting_info = handler_.GetExtensionReportingInfo();
+  auto reporting_info =
+      handler_.GetExtensionReportingInfo(/*can_collect_signals=*/false);
   EXPECT_EQ(reporting_info.size(), 0u);
 }
 
 TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-  SetUpProfileAndHandler();
-  EXPECT_CALL(mock_user_permission_service_, CanCollectSignals())
-      .WillOnce(Return(device_signals::UserPermission::kGranted));
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   policy::PolicyMap chrome_policies;
   const policy::PolicyNamespace chrome_policies_namespace =
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
@@ -1334,6 +1346,27 @@ TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
   ASSERT_PRED_FORMAT2(MessagesToBeEQ, handler_.GetExtensionReportingInfo(),
                       expected_messages);
 }
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+TEST_F(ManagementUIHandlerTests,
+       CloudReportingPolicyWithoutDeviceSignalsConsent) {
+  policy::PolicyMap chrome_policies;
+  const policy::PolicyNamespace chrome_policies_namespace =
+      policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
+  EXPECT_CALL(policy_service_, GetPolicies(_))
+      .WillRepeatedly(ReturnRef(chrome_policies));
+  SetPolicyValue(policy::key::kCloudReportingEnabled, true, chrome_policies);
+
+  std::set<std::string> expected_messages = {
+      kManagementExtensionReportMachineName, kManagementExtensionReportUsername,
+      kManagementExtensionReportVersion,
+      kManagementExtensionReportExtensionsPlugin};
+  ASSERT_PRED_FORMAT2(
+      MessagesToBeEQ,
+      handler_.GetExtensionReportingInfo(/*can_collect_signals=*/false),
+      expected_messages);
+}
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
   policy::PolicyMap on_prem_reporting_extension_beta_policies;
@@ -1386,8 +1419,10 @@ TEST_F(ManagementUIHandlerTests, ExtensionReportingInfoPoliciesMerge) {
       kManagementExtensionReportUserBrowsingData,
       kManagementExtensionReportPerfCrash};
 
-  ASSERT_PRED_FORMAT2(MessagesToBeEQ, handler_.GetExtensionReportingInfo(),
-                      expected_messages);
+  ASSERT_PRED_FORMAT2(
+      MessagesToBeEQ,
+      handler_.GetExtensionReportingInfo(/*can_collect_signals=*/false),
+      expected_messages);
 }
 
 TEST_F(ManagementUIHandlerTests, ManagedWebsitiesInfoNoPolicySet) {

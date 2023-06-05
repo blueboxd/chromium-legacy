@@ -46,6 +46,7 @@
 <translation id="1080116354587839789">Ietilpināt pēc platuma</translation>
 <translation id="1081061862829655580">19. paplāte</translation>
 <translation id="1089439967362294234">Nomainīt paroli</translation>
+<translation id="1094777233105318927">Informācija par jūsu pārlūku, OS, ierīci, instalēto programmatūru un failiem</translation>
 <translation id="1096545575934602868">Šajā laukā drīkst būt ne vairāk kā <ph name="MAX_ITEMS_LIMIT" /> ierakstu. Visi turpmākie ieraksti tiks atmesti.</translation>
 <translation id="1100782917270858593">Poga Atsākt meklēšanas ceļu. Lai atsāktu meklēšanas ceļu un skatītu atbilstošās darbības savā Chrome vēsturē, nospiediet taustiņu Enter.</translation>
 <translation id="1101672080107056897">Darbība pēc kļūdas konstatēšanas</translation>
@@ -1133,6 +1134,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="3740319564441798148">Tālsatiksmes autobusi un vilcieni</translation>
 <translation id="3743765582345153106">Vienmēr pieprasīt apstiprināšanu, kad tiek izmantota automātiskā aizpilde</translation>
 <translation id="3744111561329211289">Sinhronizācija fonā</translation>
+<translation id="3744212718085287312">Vai vēlaties nākamreiz uzlabot drošību, izmantojot virtuālo karti?</translation>
 <translation id="3744286742364977428">Jūsu lejupielādētie faili tiek nosūtīti uz Google mākoni vai trešajām pusēm, lai veiktu analīzi. Piemēram, saturs var tikt pārmeklēts, lai konstatētu, vai tajā nav ietverti sensitīvi dati vai ļaunprātīga programmatūra, un tas var tikt saglabāts saskaņā ar uzņēmuma politikām.</translation>
 <translation id="3744899669254331632">Pašlaik jūs nevarat apmeklēt vietni <ph name="SITE" />, jo šī vietne nosūtīja kodētus akreditācijas datus, kurus Chromium nevar apstrādāt. Tā kā tīkla kļūdas un uzbrukumi parasti ir īslaicīga problēma, iespējams, vēlāk šī lapa atkal darbosies.</translation>
 <translation id="3748148204939282805">Uzbrucēji vietnē <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> var mudināt jūs veikt bīstamas darbības, piemēram, instalēt programmatūru vai atklāt personas informāciju (piemēram, paroles, tālruņa numurus vai kredītkaršu datus). <ph name="BEGIN_LEARN_MORE_LINK" />Uzziniet vairāk<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -1241,6 +1243,7 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="4031179711345676612">Mikrofona lietošana ir atļauta</translation>
 <translation id="4040350669425716613">Koledžas un universitātes</translation>
 <translation id="4047351652147966654">18 x 24 collas</translation>
+<translation id="404831776305217138">Paplašinājuma ar ID “<ph name="EXTENSION_ID" />” atjaunināšanas vietrādis URL nav derīgs vai satur neatbalstītu shēmu. Atbalstītās shēmas ir <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> un <ph name="FILE_SCHEME" />.</translation>
 <translation id="4050392779074832022">Jūs varēsiet izmantot šo adresi Google produktos.</translation>
 <translation id="405399507749852140">Saņemiet paziņojumus, ja kādā vietnē tiek konstatēts cenas kritums.</translation>
 <translation id="4056223980640387499">Sēpija</translation>
@@ -2290,6 +2293,8 @@ Pretējā gadījumā šī iespēja būtu liegta saskaņā ar jūsu konfidenciali
 <translation id="6569060085658103619">Jūs skatāt paplašinājumu lapu.</translation>
 <translation id="6569366777234823130">Drāmas</translation>
 <translation id="6573200754375280815">Divi caurumi labajā pusē</translation>
+<translation id="6576181918031900030">Sākt apraidi</translation>
+<translation id="6578434528542148658">Nederīgs paplašinājuma ID.</translation>
 <translation id="657902945730878902">Zīmēšana un krāsošana</translation>
 <translation id="6579630537141957243">Vai izveidot savienojumu ar MIDI ierīci?</translation>
 <translation id="6579990219486187401">Gaiši rozā</translation>
@@ -3029,7 +3034,6 @@ Papildu informācija:
 <translation id="8298115750975731693">Iespējams, izmantotajā Wi-Fi tīklā (<ph name="WIFI_NAME" />) tiks pieprasīts apmeklēt vietni <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8303854710873047864">Tiek rādīta sadaļa “<ph name="SECTION" />”</translation>
 <translation id="830498451218851433">Locījums uz pusēm</translation>
-<translation id="8307888238279532626">Instalētās lietotnes un to izmantošanas biežums</translation>
 <translation id="831997045666694187">Vakarā</translation>
 <translation id="8321476692217554900">paziņojumi</translation>
 <translation id="8329068931308448247">Aploksne 14</translation>

@@ -1842,6 +1842,12 @@ StyleOffsetRotation StyleBuilderConverter::ConvertOffsetRotate(
     const CSSValue& value) {
   StyleOffsetRotation result(0, OffsetRotationType::kFixed);
 
+  if (auto* identifier = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK_EQ(identifier->GetValueID(), CSSValueID::kAuto);
+    result.type = OffsetRotationType::kAuto;
+    return result;
+  }
+
   const auto& list = To<CSSValueList>(value);
   DCHECK(list.length() == 1 || list.length() == 2);
   for (const auto& item : list) {
@@ -1881,6 +1887,18 @@ LengthPoint StyleBuilderConverter::ConvertPositionOrAuto(
   }
   DCHECK(To<CSSIdentifierValue>(value).GetValueID() == CSSValueID::kAuto);
   return LengthPoint(Length::Auto(), Length::Auto());
+}
+
+LengthPoint StyleBuilderConverter::ConvertOffsetPosition(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  if (value.IsValuePair()) {
+    return ConvertPosition(state, value);
+  }
+  if (To<CSSIdentifierValue>(value).GetValueID() == CSSValueID::kAuto) {
+    return LengthPoint(Length::Auto(), Length::Auto());
+  }
+  return LengthPoint(Length::None(), Length::None());
 }
 
 static float ConvertPerspectiveLength(

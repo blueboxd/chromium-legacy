@@ -46,6 +46,7 @@
 <translation id="1080116354587839789">Pas volgens wydte</translation>
 <translation id="1081061862829655580">Laai 19</translation>
 <translation id="1089439967362294234">Verander wagwoord</translation>
+<translation id="1094777233105318927">Inligting oor jou blaaier, bedryfstelsel, toestel, geïnstalleerde sagteware, en lêers</translation>
 <translation id="1096545575934602868">Hierdie veld moenie meer as <ph name="MAX_ITEMS_LIMIT" /> inskrywings hê nie. Alle verdere inskrywings sal weggegooi word.</translation>
 <translation id="1100782917270858593">Knoppie om jou reis te hervat. Druk Enter om jou reis te hervat en relevante aktiwiteit in jou Chrome-geskiedenis te sien</translation>
 <translation id="1101672080107056897">Fouthandeling</translation>
@@ -1243,6 +1244,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="4031179711345676612">Mikrofoon word toegelaat</translation>
 <translation id="4040350669425716613">Kolleges en universiteite</translation>
 <translation id="4047351652147966654">18x24 dm.</translation>
+<translation id="404831776305217138">Opdatering-URL vir uitbreiding met ID “<ph name="EXTENSION_ID" />” is ongeldig of gebruik ’n ongesteunde skema. Gesteunde skemas is: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> en <ph name="FILE_SCHEME" />.</translation>
 <translation id="4050392779074832022">Jy sal dit in alle Google-produkte kan gebruik</translation>
 <translation id="405399507749852140">Kry kennisgewings as die prys op enige werf daal</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -2293,6 +2295,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6569366777234823130">Dramaflieks</translation>
 <translation id="6573200754375280815">Dubbelpons regs</translation>
 <translation id="6576181918031900030">Begin uitsaai</translation>
+<translation id="6578434528542148658">Ongeldige uitbreiding-ID.</translation>
 <translation id="657902945730878902">Skets en inkleur</translation>
 <translation id="6579630537141957243">Koppel MIDI-toestel?</translation>
 <translation id="6579990219486187401">Ligpienk</translation>
@@ -3032,7 +3035,6 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="8298115750975731693">Die Wi-Fi wat jy gebruik (<ph name="WIFI_NAME" />), kan vereis dat jy <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> besoek.</translation>
 <translation id="8303854710873047864">"<ph name="SECTION" />"-afdeling is gewys</translation>
 <translation id="830498451218851433">Halfgevou</translation>
-<translation id="8307888238279532626">Programme wat geïnstalleer is en hoe gereeld hulle gebruik word</translation>
 <translation id="831997045666694187">Aand</translation>
 <translation id="8321476692217554900">kennisgewings</translation>
 <translation id="8329068931308448247">Koevert #14</translation>

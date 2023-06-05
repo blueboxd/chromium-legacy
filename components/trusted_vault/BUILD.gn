@@ -5,10 +5,16 @@
 if (!is_android) {
   static_library("trusted_vault") {
     sources = [
+      "command_line_switches.cc",
+      "command_line_switches.h",
       "download_keys_response_handler.cc",
       "download_keys_response_handler.h",
+      "features.cc",
+      "features.h",
       "proto_string_bytes_conversion.cc",
       "proto_string_bytes_conversion.h",
+      "proto_time_conversion.cc",
+      "proto_time_conversion.h",
       "securebox.cc",
       "securebox.h",
       "standalone_trusted_vault_backend.cc",
@@ -20,6 +26,7 @@ if (!is_android) {
       "trusted_vault_access_token_fetcher_frontend.h",
       "trusted_vault_access_token_fetcher_impl.cc",
       "trusted_vault_access_token_fetcher_impl.h",
+      "trusted_vault_client.h",
       "trusted_vault_connection.cc",
       "trusted_vault_connection.h",
       "trusted_vault_connection_impl.cc",
@@ -37,14 +44,10 @@ if (!is_android) {
       "trusted_vault_server_constants.cc",
       "trusted_vault_server_constants.h",
     ]
-    public_deps = [
-      "//base",
-      "//components/sync/service",
-    ]
+    public_deps = [ "//base" ]
     deps = [
       "//components/os_crypt/sync",
       "//components/signin/public/identity_manager",
-      "//components/sync/base",
       "//components/trusted_vault/proto",
       "//crypto",
       "//google_apis",
@@ -59,6 +62,7 @@ if (!is_android) {
     sources = [
       "download_keys_response_handler_unittest.cc",
       "proto_string_bytes_conversion_unittest.cc",
+      "proto_time_conversion_unittest.cc",
       "securebox_unittest.cc",
       "standalone_trusted_vault_backend_unittest.cc",
       "trusted_vault_access_token_fetcher_frontend_unittest.cc",
@@ -100,5 +104,13 @@ if (!is_android) {
     ]
 
     deps = [ ":trusted_vault" ]
+  }
+}
+if (is_android) {
+  # TODO(crbug.com/1423343): move trusted_vault_client.h to a dedicated build
+  # target shared across platforms.
+  static_library("trusted_vault") {
+    sources = [ "trusted_vault_client.h" ]
+    public_deps = [ "//base" ]
   }
 }

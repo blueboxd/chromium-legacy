@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
+#include "chrome/browser/ui/views/web_apps/pwa_confirmation_bubble_view.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
 #include "chrome/browser/ui/webui/password_manager/password_manager_ui.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_ui.h"
@@ -354,6 +355,16 @@ void MaybeRegisterChromeFeaturePromos(
       IDS_PASSWORD_MANAGER_IPH_MANAGEMENT_BUBBLE_DURING_SIGNIN_SCREENREADER,
       FeaturePromoSpecification::AcceleratorInfo()));
 
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForTutorialPromo(
+          feature_engagement::kIPHPasswordManagerShortcutFeature,
+          kPasswordsOmniboxKeyIconElementId,
+          IDS_PASSWORD_MANAGER_IPH_CREATE_SHORTCUT_BODY,
+          kPasswordManagerTutorialId)
+          .SetBubbleArrow(HelpBubbleArrow::kBottomRight)
+          .SetBubbleIcon(&vector_icons::kLightbulbOutlineIcon)
+          .SetBubbleTitleText(IDS_PASSWORD_MANAGER_IPH_CREATE_SHORTCUT_TITLE)));
+
   // kIPHPowerBookmarksSidePanelFeature:
   registry.RegisterFeature(FeaturePromoSpecification::CreateForSnoozePromo(
       feature_engagement::kIPHPowerBookmarksSidePanelFeature,
@@ -482,9 +493,11 @@ void MaybeRegisterChromeFeaturePromos(
 
   // kIPHDownloadToolbarButtonFeature:
   registry.RegisterFeature(
-      std::move(FeaturePromoSpecification::CreateForSnoozePromo(
+      std::move(FeaturePromoSpecification::CreateForToastPromo(
                     feature_engagement::kIPHDownloadToolbarButtonFeature,
-                    kDownloadToolbarButtonElementId, IDS_DOWNLOAD_BUBBLE_PROMO)
+                    kDownloadToolbarButtonElementId, IDS_DOWNLOAD_BUBBLE_PROMO,
+                    IDS_DOWNLOAD_BUBBLE_PROMO_SCREENREADER,
+                    FeaturePromoSpecification::AcceleratorInfo())
                     .SetBubbleArrow(HelpBubbleArrow::kTopRight)
                     .SetBubbleTitleText(IDS_DOWNLOAD_BUBBLE_PROMO_TITLE)));
 
@@ -893,6 +906,17 @@ void MaybeRegisterChromeTutorials(
             // Event step - Click on "Add shortcut"
             TutorialDescription::EventStep(
                 PasswordManagerUI::kAddShortcutCustomEventId)
+                .InSameContext(),
+
+            // Bubble step - "Install" row
+            TutorialDescription::BubbleStep(
+                PWAConfirmationBubbleView::kInstallButton)
+                .SetBubbleBodyText(IDS_TUTORIAL_PASSWORD_MANAGER_CLICK_INSTALL)
+                .SetBubbleArrow(HelpBubbleArrow::kTopRight),
+
+            // Event step - Click on "Add shortcut"
+            TutorialDescription::EventStep(
+                PWAConfirmationBubbleView::kInstalledPWAEventId)
                 .InSameContext(),
 
             // Completion of the tutorial.

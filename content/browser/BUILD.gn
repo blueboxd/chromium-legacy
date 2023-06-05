@@ -375,8 +375,6 @@ source_set("browser") {
     "accessibility/one_shot_accessibility_tree_search.h",
     "accessibility/render_accessibility_host.cc",
     "accessibility/render_accessibility_host.h",
-    "accessibility/touch_passthrough_manager.cc",
-    "accessibility/touch_passthrough_manager.h",
     "accessibility/web_ax_platform_tree_manager_delegate.h",
     "accessibility/web_contents_accessibility.h",
     "after_startup_task_utils.cc",
@@ -1371,6 +1369,8 @@ source_set("browser") {
     "network/network_errors_listing_ui.h",
     "network/network_quality_observer_impl.cc",
     "network/network_quality_observer_impl.h",
+    "network/network_service_util_internal.cc",
+    "network/network_service_util_internal.h",
     "network/reporting_service_proxy.cc",
     "network/reporting_service_proxy.h",
     "network/shared_dictionary_util.cc",
@@ -2090,6 +2090,8 @@ source_set("browser") {
     "shared_storage/shared_storage_document_service_impl.h",
     "shared_storage/shared_storage_event_params.cc",
     "shared_storage/shared_storage_event_params.h",
+    "shared_storage/shared_storage_header_observer.cc",
+    "shared_storage/shared_storage_header_observer.h",
     "shared_storage/shared_storage_render_thread_worklet_driver.cc",
     "shared_storage/shared_storage_render_thread_worklet_driver.h",
     "shared_storage/shared_storage_url_loader_factory_proxy.cc",
@@ -2429,10 +2431,6 @@ source_set("browser") {
       "lock_screen/lock_screen_storage_impl.h",
       "ml/ml_service_impl_cros.cc",
       "ml/ml_service_impl_cros.h",
-      "smart_card/smart_card_reader_tracker.cc",
-      "smart_card/smart_card_reader_tracker.h",
-      "smart_card/smart_card_reader_tracker_impl.cc",
-      "smart_card/smart_card_reader_tracker_impl.h",
       "smart_card/smart_card_service.cc",
       "smart_card/smart_card_service.h",
     ]
@@ -2649,10 +2647,16 @@ source_set("browser") {
       "renderer_host/browser_compositor_ios.mm",
       "renderer_host/delegated_frame_host_client_ios.cc",
       "renderer_host/delegated_frame_host_client_ios.h",
+      "renderer_host/input/synthetic_gesture_target_ios.h",
+      "renderer_host/input/synthetic_gesture_target_ios.mm",
+      "renderer_host/input/web_input_event_builders_ios.h",
+      "renderer_host/input/web_input_event_builders_ios.mm",
+      "renderer_host/native_web_keyboard_event_ios.mm",
       "renderer_host/popup_menu_helper_ios.h",
       "renderer_host/popup_menu_helper_ios.mm",
       "renderer_host/render_widget_host_view_ios.h",
       "renderer_host/render_widget_host_view_ios.mm",
+      "speech/tts_ios.mm",
       "web_contents/web_contents_view_ios.h",
       "web_contents/web_contents_view_ios.mm",
     ]
@@ -2951,15 +2955,6 @@ source_set("browser") {
     configs += [ "//build/config/linux/pangocairo" ]
   }
 
-  if (is_ios) {
-    sources += [
-      "renderer_host/input/web_input_event_builders_ios.h",
-      "renderer_host/input/web_input_event_builders_ios.mm",
-      "renderer_host/native_web_keyboard_event_ios.mm",
-      "speech/tts_ios.mm",
-    ]
-  }
-
   if (is_android) {
     sources += [
       "accessibility/accessibility_tree_formatter_android.cc",
@@ -2988,7 +2983,7 @@ source_set("browser") {
       "android/browser_startup_controller.cc",
       "android/browser_startup_controller.h",
       "android/client_data_json_android.cc",
-      "android/content_feature_list.cc",
+      "android/content_feature_map.cc",
       "android/content_startup_flags.cc",
       "android/content_startup_flags.h",
       "android/content_ui_event_handler.cc",

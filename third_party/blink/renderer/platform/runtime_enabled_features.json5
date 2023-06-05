@@ -240,12 +240,6 @@
       base_feature: "none",
     },
     {
-      name: "AccessibilityAriaTouchPassthrough",
-      status: "experimental",
-      base_feature: "none",
-      origin_trial_feature_name: "AccessibilityAriaTouchPassthrough",
-    },
-    {
       name: "AccessibilityAriaVirtualContent",
       public: true,
       status: "experimental",
@@ -341,11 +335,6 @@
     {
       name: "AOMAriaRelationshipProperties",
       public: true,
-      status: "experimental",
-      base_feature: "none",
-    },
-    {
-      name: "AriaTouchPassthrough",
       status: "experimental",
       base_feature: "none",
     },
@@ -523,6 +512,10 @@
       name: "BrowserVerifiedUserActivationMouse",
       base_feature: "none",
       public: true,
+    },
+    {
+      name: "ByobFetch",
+      status: "experimental",
     },
     {
       name: "CacheStorageCodeCacheHint",
@@ -1177,6 +1170,12 @@
       status: "experimental",
     },
     {
+      // A kill switch for the fix for part of https://crbug.com/1180387 .
+      // Should be removed after M116 has been stable for a few weeks.
+      name: "CSSTranslatePreserveYPercent",
+      status: "stable",
+    },
+    {
       // Support for tree-scoped [1] timeline names (e.g. produced by
       // scroll-timeline).
       //
@@ -1229,6 +1228,10 @@
       name: "CSSWhiteSpaceShorthand",
       status: "stable",
       depends_on: ["CSSTextWrap"],
+    },
+    {
+      name: "CSSWordBoundaryDetection",
+      status: "test",
     },
     {
       name: "CSSZoom",
@@ -1410,6 +1413,11 @@
       base_feature: "none",
     },
     {
+      name: "DocumentOpenOriginAliasRemoval",
+      status: "experimental",
+      copied_from_base_feature_if: "overridden",
+    },
+    {
       name: "DocumentOpenSandboxInheritanceRemoval",
       status: "experimental",
       copied_from_base_feature_if: "overridden",
@@ -1488,11 +1496,6 @@
       // See: crbug.com/1175016
       name: "EscapeLtGtInAttributes",
       status: "experimental",
-    },
-    {
-      // Non-standard API Event.path. Should be replaced by Event.composedPath.
-      name: "EventPath",
-      public: true,
     },
     {
       name: "EventTimingInteractionCount",
@@ -1670,6 +1673,12 @@
       origin_trial_allows_third_party: true,
       base_feature_status: "enabled",
       copied_from_base_feature_if: "enabled_or_overridden",
+    },
+    {
+      name: "FencedFramesDefaultMode",
+      base_feature_status: "disabled",
+      copied_from_base_feature_if: "enabled_or_overridden",
+      public: true,
     },
     {
       name: "FetchUploadStreaming",
@@ -2041,6 +2050,9 @@
       status: "experimental",
     },
     {
+      "name": "IntersectionOptimization",
+    },
+    {
       name: "KeyboardAccessibleTooltip",
       status: "experimental",
       base_feature: "none",
@@ -2053,14 +2065,6 @@
       name: "LangAttributeAwareFormControlUI",
       base_feature: "none",
       settable_from_internals: true,
-    },
-    {
-      name: "LayoutDisableBrokenFloatInvalidation",
-      status: "stable",
-    },
-    {
-      name: "LayoutDisableBrokenIntrinsicSize",
-      status: "stable",
     },
     {
       name: "LayoutDisableWebkitBoxSafeAlignment",
@@ -2079,34 +2083,13 @@
       status: "stable",
     },
     {
-      // crbug.com/1425520. Enabled since M113.
-      name: "LayoutMediaChildPaintContainment",
-      status: "stable",
-    },
-    {
-      name: "LayoutNewFormCentering",
-      status: "stable",
-    },
-    {
-      name: "LayoutNewSubtreeRoot",
-      status: "stable",
-    },
-    {
-      name: "LayoutNewSVGForeignObjectEntry",
-      status: "stable",
-    },
-    {
-      name: "LayoutNewSVGTextEntry",
-      status: "stable",
-    },
-    {
       name: "LayoutNewTextAreaScrollbar",
       status: "stable",
     },
     {
       // crbug.com/1353190
       name: "LayoutNGNoCopyBack",
-      depends_on: ["RemoveConvertToLayerCoords"],
+      depends_on: ["RemoveConvertToLayerCoords", "ScrollableAreaNoSnapping"],
       status: "test",
     },
     {
@@ -2389,7 +2372,7 @@
     {
       name: "NonComposedEnterLeaveEvents",
       public: true,
-      status: "experimental",
+      status: "stable",
     },
     {
       // Kill switch for crbug.com/1427047 fix.
@@ -3088,8 +3071,12 @@
       base_feature: "none",
     },
     {
+      name: "ScrollableAreaNoSnapping",
+      status: "stable",
+    },
+    {
       name: "ScrollbarColor",
-      status: "experimental",
+      status: "test",
     },
     {
       name: "ScrollbarWidth",
@@ -3524,6 +3511,13 @@
       public: true,
     },
     {
+      name: "TopicsDocumentAPI",
+      base_feature: "none",
+      origin_trial_feature_name: "PrivacySandboxAdsAPIs",
+      origin_trial_allows_third_party: true,
+      public: true,
+    },
+    {
       name: "TopicsXHR",
       base_feature: "none",
       origin_trial_feature_name: "PrivacySandboxAdsAPIs",
@@ -3608,11 +3602,6 @@
       base_feature: "none",
       origin_trial_feature_name: "UnrestrictedSharedArrayBuffer",
       origin_trial_os: ["win", "mac", "linux", "fuchsia", "chromeos"],
-    },
-    {
-      // A kill switch for crbug.com/1410332.
-      // This was introduced in M113.
-      name: "UpdateVideoIntrinsicSizeDuringLayout",
     },
     {
       name: "URLPatternCompareComponent",

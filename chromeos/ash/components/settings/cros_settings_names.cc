@@ -14,6 +14,11 @@ const char kAccountsPrefAllowNewUser[] = "cros.accounts.allowGuest";
 const char kAccountsPrefShowUserNamesOnSignIn[] =
     "cros.accounts.showUserNamesOnSignIn";
 const char kAccountsPrefUsers[] = "cros.accounts.users";
+// Only `ChromeUserManagerImpl` is allowed to directly use this setting. All
+// other clients have to use `UserManager::IsEphemeralAccountId()` function to
+// get ephemeral mode for account ID. Such rule is needed because there are
+// new policies(e.g.kiosk ephemeral mode) that overrides behaviour of
+// the current setting for some accounts.
 const char kAccountsPrefEphemeralUsersEnabled[] =
     "cros.accounts.ephemeralUsersEnabled";
 const char kAccountsPrefDeviceLocalAccounts[] =
@@ -298,6 +303,7 @@ const char kFeatureFlags[] = "cros.feature_flags";
 const char kVariationsRestrictParameter[] =
     "cros.variations_restrict_parameter";
 
+// TODO(b/285556135): Remove this pref together with AttestationEnabledForDevice
 // A boolean pref that indicates whether enterprise attestation is enabled for
 // the device.
 const char kDeviceAttestationEnabled[] = "cros.device.attestation_enabled";

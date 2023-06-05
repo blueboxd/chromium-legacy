@@ -404,58 +404,58 @@ public class CriticalPersistedTabDataTest {
     @UiThreadTest
     @SmallTest
     @Test
-    public void testUrlSavedWhenNecessary() {
+    public void testUrlDoesntTriggerSave() {
         try (StrictModeContext ignored = StrictModeContext.allowAllThreadPolicies()) {
             CriticalPersistedTabData spyCriticalPersistedTabData =
                     spy(CriticalPersistedTabData.from(mockTab(TAB_ID, false)));
             spyCriticalPersistedTabData.setUrl(URL_A);
             assertEquals(URL_A, spyCriticalPersistedTabData.getUrl());
-            verify(spyCriticalPersistedTabData, times(1)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
 
             spyCriticalPersistedTabData.setUrl(URL_A);
             assertEquals(URL_A, spyCriticalPersistedTabData.getUrl());
-            verify(spyCriticalPersistedTabData, times(1)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
 
             spyCriticalPersistedTabData.setUrl(URL_B);
             assertEquals(URL_B, spyCriticalPersistedTabData.getUrl());
-            verify(spyCriticalPersistedTabData, times(2)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
 
             spyCriticalPersistedTabData.setUrl(URL_A);
             assertEquals(URL_A, spyCriticalPersistedTabData.getUrl());
-            verify(spyCriticalPersistedTabData, times(3)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
 
             spyCriticalPersistedTabData.setUrl(null);
             Assert.assertNull(spyCriticalPersistedTabData.getUrl());
-            verify(spyCriticalPersistedTabData, times(4)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
         }
     }
 
     @UiThreadTest
     @SmallTest
     @Test
-    public void testTitleSavedWhenNecessary() {
+    public void testChangeInTitleDoesntTriggerSave() {
         try (StrictModeContext ignored = StrictModeContext.allowAllThreadPolicies()) {
             CriticalPersistedTabData spyCriticalPersistedTabData =
                     spy(CriticalPersistedTabData.from(mockTab(TAB_ID, false)));
             spyCriticalPersistedTabData.setTitle(TITLE_A);
             assertEquals(TITLE_A, spyCriticalPersistedTabData.getTitle());
-            verify(spyCriticalPersistedTabData, times(1)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
 
             spyCriticalPersistedTabData.setTitle(TITLE_A);
             assertEquals(TITLE_A, spyCriticalPersistedTabData.getTitle());
-            verify(spyCriticalPersistedTabData, times(1)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
 
             spyCriticalPersistedTabData.setTitle(TITLE_B);
             assertEquals(TITLE_B, spyCriticalPersistedTabData.getTitle());
-            verify(spyCriticalPersistedTabData, times(2)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
 
             spyCriticalPersistedTabData.setTitle(TITLE_A);
             assertEquals(TITLE_A, spyCriticalPersistedTabData.getTitle());
-            verify(spyCriticalPersistedTabData, times(3)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
 
             spyCriticalPersistedTabData.setTitle(null);
             Assert.assertNull(spyCriticalPersistedTabData.getTitle());
-            verify(spyCriticalPersistedTabData, times(4)).save();
+            verify(spyCriticalPersistedTabData, times(0)).save();
         }
     }
 
@@ -762,7 +762,12 @@ public class CriticalPersistedTabDataTest {
             CriticalPersistedTabData criticalPersistedTabData =
                     new CriticalPersistedTabData(tab, spyStorage, MOCK_DATA_ID);
             criticalPersistedTabData.setUrl(URL_A);
-            tab = MockTab.initializeWithCriticalPersistedTabData(tab, criticalPersistedTabData);
+            // LIVE_IN_BACKGROUND ensures shouldSave is not set to true - see TabStateAttributes
+            // initialization.
+            tab.initialize(null, TabCreationState.LIVE_IN_BACKGROUND, null, null, null, false, null,
+                    false);
+            tab.getUserDataHost().setUserData(
+                    CriticalPersistedTabData.class, criticalPersistedTabData);
             tab.registerTabSaving();
             tab.setIsTabSaveEnabled(true);
 

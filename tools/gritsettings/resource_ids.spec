@@ -100,6 +100,10 @@
   "chrome/browser/recent_tabs/internal/android/java/strings/android_restore_tabs_strings.grd": {
     "messages": [2260],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/accessibility/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [2270],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/feedback/resources.grd": {
     "META": {"sizes": {"includes": [30],}},
     "includes": [2280],
@@ -119,6 +123,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/browser_switch/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [2360],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/certificate_viewer/resources.grd": {
+    "META": {"sizes": {"includes": [5],}},
+    "includes": [2370],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/arc_account_picker/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
@@ -314,6 +322,10 @@
     "META": {"sizes": {"includes": [45],}},
     "includes": [3360],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/commerce/resources.grd": {
+    "META": {"sizes": {"includes": [5],}},
+    "includes": [3370],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/side_panel/companion/resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [3380],
@@ -386,7 +398,7 @@
     "includes": [3700],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/webui_gallery/resources.grd": {
-    "META": {"sizes": {"includes": [70]}},
+    "META": {"sizes": {"includes": [90]}},
     "includes": [3720],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/web_app_internals/resources.grd": {
@@ -439,6 +451,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/components/commerce/core/internals/resources/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [3960],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/components/flags_ui/resources/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [3970],
   },
   "<(SHARED_INTERMEDIATE_DIR)/components/history_clusters/history_clusters_internals/resources/resources.grd": {
     "META": {"sizes": {"includes": [10]}},

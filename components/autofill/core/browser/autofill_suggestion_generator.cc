@@ -74,9 +74,19 @@ std::map<std::string, AutofillOfferData*> GetCardLinkedOffers(
 }
 
 int GetObfuscationLength() {
-  // The obfuscation length is 2 for the Android keyboard accessory. It is 4 for
-  // other platforms.
+#if BUILDFLAG(IS_ANDROID)
+  // On Android, the obfuscation length is 2 when the Android keyboard
+  // accessory is enabled (though this length applies to all Suggestions
+  // created for Android).
   return IsKeyboardAccessoryEnabled() ? 2 : 4;
+#elif BUILDFLAG(IS_IOS)
+  return base::FeatureList::IsEnabled(
+             features::kAutofillUseTwoDotsForLastFourDigits)
+             ? 2
+             : 4;
+#else
+  return 4;
+#endif
 }
 
 bool ShouldSplitCardNameAndLastFourDigits() {
@@ -103,9 +113,12 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
     const FormFieldData& field,
     const AutofillField& autofill_field,
     const std::string& app_locale) {
-  std::vector<ServerFieldType> field_types(form.field_count());
-  for (size_t i = 0; i < form.field_count(); ++i) {
-    field_types.push_back(form.field(i)->Type().GetStorableType());
+  std::vector<ServerFieldType> field_types;
+  field_types.reserve(form.field_count());
+  for (const std::unique_ptr<AutofillField>& form_field : form) {
+    if (!form_field->ShouldSuppressSuggestionsAndFillingByDefault()) {
+      field_types.push_back(form_field->Type().GetStorableType());
+    }
   }
 
   std::vector<Suggestion> suggestions = personal_data_->GetProfileSuggestions(
@@ -592,7 +605,8 @@ AutofillSuggestionGenerator::GetSuggestionLabelsForCard(
   }
 
 #if BUILDFLAG(IS_IOS)
-  // On iOS, the label is formatted as "••••1234".
+  // On iOS, the label is formatted as either "••••1234" or "••1234", depending
+  // on the obfuscation length.
   return {
       Suggestion::Text(credit_card.ObfuscatedNumberWithVisibleLastFourDigits(
           GetObfuscationLength()))};

@@ -53,6 +53,10 @@ BASE_FEATURE(kComponentUpdaterAndroidProtegoAllowlist,
              "SafeBrowsingComponentUpdaterAndroidProtegoAllowlist",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDeepScanningUpdatedUX,
+             "SafeBrowsingDeepScanningUpdatedUX",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kDelayedWarnings,
              "SafeBrowsingDelayedWarnings",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -215,6 +219,10 @@ BASE_FEATURE(kSafeBrowsingOnUIThread,
              "SafeBrowsingOnUIThread",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kSafeBrowsingReferrerChainWithCopyPasteNavigation,
+             "SafeBrowsingReferrerChainWithCopyPasteNavigation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSafeBrowsingRemoveCookiesInAuthRequests,
              "SafeBrowsingRemoveCookiesInAuthRequests",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -280,7 +288,7 @@ BASE_FEATURE(kClientSideDetectionModelOptimizationGuide,
 
 BASE_FEATURE(kSafeBrowsingPhishingClassificationESBThreshold,
              "SafeBrowsingPhishingClassificationESBThreshold",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSafeBrowsingDailyPhishingReportsLimit,
              "SafeBrowsingDailyPhishingReportsLimit",

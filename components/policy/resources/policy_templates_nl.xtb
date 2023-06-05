@@ -214,6 +214,7 @@ Op <ph name="MS_WIN_NAME" />, <ph name="MAC_OS_NAME" /> en <ph name="LINUX_OS_NA
 <translation id="1198183996903759302">Als je het beleid instelt op True (of <ph name="HARDWARE_ACCELERATION_MODE_ENABLED_POLICY_NAME" /> instelt op False), hebben webpagina's geen toegang tot de WebGL API en kunnen plug-ins de Pepper 3D API niet gebruiken.
 
       Als je het beleid instelt op False of niet instelt, kunnen webpagina's de WebGL API gebruiken en kunnen plug-ins de Pepper 3D API gebruiken, maar kan in de standaardinstellingen van de browser nog steeds zijn ingesteld dat er opdrachtregelargumenten nodig zijn om deze API's te gebruiken.</translation>
+<translation id="1198458955128279215">Standaardgedrag van het functie-uitrolplan gebruiken</translation>
 <translation id="1202216683470826356">Kaarten tonen op de pagina Nieuw tabblad</translation>
 <translation id="120314092766637918">Als je dit beleid toepast of niet instelt, wordt bescherming tegen phishing aan de clientzijde beheerd door <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /> voor <ph name="PRODUCT_NAME" />. Als <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /> is ingesteld op <ph name="SAFE_BROWSING_PROTECTION_LEVEL_VALUE_STANDARD" /> of <ph name="SAFE_BROWSING_PROTECTION_LEVEL_VALUE_ENHANCED" />, voert de bescherming tegen phishing aan de clientzijde een lokaal model uit om te checken of een pagina phishing is. Als het model denkt dat de pagina phishing is, stuurt <ph name="PRODUCT_NAME" /> een verzoek naar Google om een definitieve beoordeling te krijgen.
 Als je dit beleid niet toepast, is bescherming tegen phishing aan de clientzijde niet actief en worden er geen gegevens naar Google gestuurd voor beoordelingen.</translation>
@@ -840,6 +841,7 @@ Het veld <ph name="PROXY_SERVER_MODE_PROXY_SETTINGS_FIELD" /> is beëindigd ten 
 <translation id="1768225118528727376">Het recht voor vensterbeheer toestaan voor deze sites</translation>
 <translation id="1770071413238151235">12-uurs klok</translation>
 <translation id="1771024053220392089">Ondersteuning voor oudere browsers uitzetten</translation>
+<translation id="1781225230395284182">Annuleringsdialoogvenster tonen wanneer beforeunload-gebeurtenis .preventDefault() wordt aangeroepen.</translation>
 <translation id="1781356041596378058">Met dit beleid wordt ook de toegang tot de ontwikkelaarsopties van Android beheerd. Als je dit beleid instelt op 'True', hebben gebruikers geen toegang tot ontwikkelaarsopties. Als je dit beleid instelt op 'False' of niet instelt, hebben gebruikers toegang tot ontwikkelaarsopties door zeven keer op het buildnummer te tikken in de app Instellingen van Android.</translation>
 <translation id="1787790976045065845">Dit beleid is alleen van kracht als het beleid <ph name="SECURITY_TOKEN_SESSION_BEHAVIOR_POLICY_NAME" /> is ingesteld op <ph name="SECURITY_TOKEN_SESSION_BEHAVIOR_LOCK" /> of <ph name="SECURITY_TOKEN_SESSION_BEHAVIOR_LOGOUT" /> en een gebruiker die verificatie via een smartcard uitvoert, die smartcard verwijdert. Dit beleid geeft dan aan hoelang (in seconden) een melding wordt getoond waarin de gebruiker wordt geïnformeerd over de komende actie. Deze melding blokkeert het scherm. De actie wordt pas uitgevoerd nadat de melding is verlopen. De gebruiker kan voorkomen dat de actie wordt uitgevoerd door de smartcard terug te plaatsen voordat de melding verloopt. Als dit beleid is ingesteld op nul, wordt er geen melding getoond en wordt de actie meteen uitgevoerd.</translation>
 <translation id="1793346220873697538">Afdrukken met pincode standaard uitzetten</translation>
@@ -1923,6 +1925,7 @@ Als je het beleid niet instelt, staat de stroom voor piekuren aanvankelijk uit. 
 <translation id="2787774054174244402">Als je het beleid instelt op 'True', kunnen gebruikers niets naar externe opslagapparaten schrijven.
 
       Als je 'ExternalStorageReadOnly' instelt op 'False' of niet instelt, kunnen gebruikers bestanden voor externe opslagapparaten met schrijffunctie maken en wijzigen, tenzij de externe opslag is geblokkeerd. (Je kunt externe opslag blokkeren door 'ExternalStorageDisable' in te stellen op 'True'.)</translation>
+<translation id="2788443040242264100">Het annuleringsdialoogvenster niet tonen als beforeunload-gebeurtenis .prevent.Default() wordt aangeroepen.</translation>
 <translation id="2789742777235177478">Beperken hoelang een gebruiker die via GAIA zonder SAML is geverifieerd offline kan inloggen op het vergrendelscherm</translation>
 <translation id="2796714419743648316">Toelatingslijst voor tijdslimieten per app</translation>
 <translation id="2801065672151277034">Instellingen voor certificaatbeheer</translation>
@@ -2702,6 +2705,18 @@ Apparaten kunnen tijdens de opgegeven perioden niet automatisch controleren op u
       Als dit beleid niet is ingesteld of geen tijdsintervallen bevat:
 Er worden geen automatische updatecontroles geblokkeerd door dit beleid, maar deze kunnen wel worden geblokkeerd door andere beleidsregels.
       Tot M88 is dit beleid alleen toegepast op <ph name="PRODUCT_OS_NAME" />-apparaten die zijn ingesteld als kiosken die automatisch worden gestart. Andere apparaten worden niet beperkt door dit beleid. Vanaf M89 is dit beleid echter toegepast op alle <ph name="PRODUCT_OS_NAME" />-apparaten.</translation>
+<translation id="3457921137261127955">De X.509-sleutelgebruiksextensie definieert hoe de sleutel in een certificaat kan worden gebruikt. Zulke instructies zorgen ervoor dat certificaten niet worden gebruikt in een onbedoelde context, wat bescherming biedt tegen een klasse van cross-protocol-aanvallen op HTTPS en andere protocollen. Hiervoor moeten HTTPS-clients nagaan of de servercertificaten overeenkomen met de TLS-parameters van de verbinding.
+
+Als je dit beleid toepast, voert <ph name="PRODUCT_NAME" /> deze controle uit.
+Zo wordt voorkomen dat aanvallers de browser manipuleren om een sleutel te interpreteren op een manier die de eigenaar van het certificaat niet bedoelde.
+
+Als je dit beleid niet toepast, slaat <ph name="PRODUCT_NAME" /> deze controle over voor HTTPS-verbindingen die zowel via TLS 1.2 onderhandelen als een RSA-certificaat gebruiken dat is gekoppeld aan een lokaal vertrouwensanker. Voorbeelden van lokale vertrouwensankers zijn door het beleid geleverde of door de gebruiker geïnstalleerde rootcertificaten. In alle andere gevallen wordt de controle onafhankelijk van de instelling van dit beleid uitgevoerd.
+
+Als het beleid niet is ingesteld, gedraagt <ph name="PRODUCT_NAME" /> zich alsof het beleid niet wordt toegepast.
+
+Dit beleid is beschikbaar voor beheerders om een voorbeeld van het gedrag van een toekomstige release weer te geven. Hierdoor wordt deze controle standaard aangezet. Vanaf dat moment blijft dit beleid tijdelijk beschikbaar voor beheerders die meer tijd nodig hebben om te updaten.
+
+Verbindingen die niet door deze controle komen, krijgen de fout ERR_SSL_KEY_USAGE_INCOMPATIBLE. Sites met deze fout hebben waarschijnlijk een verkeerd ingesteld certificaat. Moderne ECDHE_RSA cipher suites gebruiken de sleutelgebruiksoptie 'digitalSignature', terwijl verouderde cipher suites voor RSA-ontsleuteling de sleutelgebruiksoptie 'keyEncipherment' gebruiken. Als beheerders niet zeker weten welke wordt gebruikt, moeten ze beide opnemen in RSA-certificaten die zijn bedoeld voor HTTPS.</translation>
 <translation id="3459509316159669723">Afdrukken</translation>
 <translation id="3461279434465463233">Voedingsstatus rapporteren</translation>
 <translation id="3478024346823118645">Gebruikersgegevens wissen bij uitloggen</translation>
@@ -3225,6 +3240,7 @@ Dit beleid is een tijdelijke oplossing en wordt na bepaalde tijd verwijderd (de 
 <translation id="3918339829588313389">Toestaan dat gebruikers een zwakke pincode instellen</translation>
 <translation id="3924506460382372403">Rapportage voor grafische status van apparaat uitzetten</translation>
 <translation id="3925377537407648234">Schermresolutie en schaalfactor instellen</translation>
+<translation id="3926681471685211524">RSA-sleutelgebruik checken voor servercertificaten die zijn uitgegeven door lokale vertrouwensankers</translation>
 <translation id="3927137827189017535">Zet de toegankelijkheidsfunctie voor plaktoetsen op het inlogscherm aan.
 
           Als dit beleid is ingesteld op True, staan de plaktoetsen altijd aan op het inlogscherm.
@@ -3459,6 +3475,14 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen s
       Als je het beleid niet instelt of leeg laat, wordt de standaardpagina 'Nieuw tabblad' gebruikt.
 
       In <ph name="MS_WIN_NAME" /> is deze functionaliteit alleen beschikbaar voor instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein, worden uitgevoerd in Windows 10 Pro of zijn ingeschreven voor <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />. In <ph name="MAC_OS_NAME" /> is deze functionaliteit alleen beschikbaar voor instanties die via MDM worden beheerd of via MCX aan een domein zijn gekoppeld.</translation>
+<translation id="4164511138197196839">Als je dit beleid toepast, worden extensies waarvan de publicatie ongedaan is gemaakt in de Chrome Web Store uitgezet in <ph name="PRODUCT_NAME" />.
+Dit beleid geldt alleen voor extensies die zijn geïnstalleerd en geüpdatet via de Chrome Web Store.
+
+Extensies van buiten de Chrome Web Store, zoals uitgepakte extensies die zijn geïnstalleerd via de ontwikkelaarsmodus en extensies die zijn geïnstalleerd met de opdrachtregelschakelaar, worden genegeerd.
+Afgedwongen geïnstalleerde extensies die zelf worden gehost, worden genegeerd. Alle vastgezette extensies worden ook genegeerd.
+
+Als je het beleid instelt op <ph name="ALLOW_UNPUBLISHED" /> (0) of niet instelt, zijn extensies toegestaan waarvan de publicatie ongedaan is gemaakt in de Chrome Web Store.
+Als je het beleid instelt op <ph name="DISABLE_UNPUBLISHED" /> (1), worden extensies uitgezet waarvan de publicatie ongedaan is gemaakt in de Chrome Web Store.</translation>
 <translation id="4165986682804962316">Site-instellingen</translation>
 <translation id="4166174702671320480">Als je het beleid toepast, worden beleidsregels van een atomische groep genegeerd die niet dezelfde bron met de hoogste prioriteit van die groep hebben.
 
@@ -3717,16 +3741,6 @@ Dit beleid geldt per frame en is niet alleen gebaseerd op de oorspronkelijke URL
 <translation id="441686537793821907">Installatie van externe extensies blokkeren</translation>
 <translation id="4423597592074154136">Proxyinstellingen handmatig specificeren</translation>
 <translation id="4424004842303301809">Rapportage van gebeurtenissen ter voorkoming van datalekken uitzetten</translation>
-<translation id="4426288704078471820"><ph name="WEBVIEW_TAG_NAME" /> voor Chrome-apps maakt gedrag mogelijk dat momenteel wordt verwijderd uit <ph name="PRODUCT_NAME" />.
-
-Bij het vorige gedrag werd een interstitial-pagina getoond als een <ph name="WEBVIEW_TAG_NAME" /> naar een pagina met een ongeldig SSL-certificaat navigeert. Met deze interstitial kan de gebruiker onveilig doorgaan. Bij het nieuwe gedrag wordt een foutpagina getoond zonder de optie om onveilig door te gaan.
-
-Bij het vorige gedrag is ook de gebeurtenis <ph name="WEBVIEW_TAG_NAME" /> <ph name="NEWWINDOW_EVENT_NAME" /> (https://developer.chrome.com/docs/extensions/reference/webviewTag/#event-newwindow) toegestaan. Hiermee wordt het nieuwe venster in een ander app-venster dan de oorspronkelijke <ph name="WEBVIEW_TAG_NAME" /> gekoppeld aan een <ph name="WEBVIEW_TAG_NAME" />-element. Met het nieuwe gedrag is deze koppeling nog steeds toegestaan, maar wordt de vensterverwijzing die van de <ph name="WINDOW_OPEN_NAME" />-aanroep wordt geretourneerd in de oorspronkelijke <ph name="WEBVIEW_TAG_NAME" /> ongeldig gemaakt.
-
-Als je het beleid toepast, wordt het vorige gedrag gebruikt.
-Als je het beleid niet toepast of niet instelt, wordt de gedragswijziging van kracht als deze is uitgerold via het releaseproces van <ph name="PRODUCT_NAME" />.
-
-Dit beleid is een tijdelijke oplossing voor bedrijven die problemen ondervinden vanwege deze wijzigingen. Dit beleid wordt verwijderd in versie 117.</translation>
 <translation id="4426601693403743089">Dogfood-versie van Screencast uitzetten voor gebruikers van Family Link</translation>
 <translation id="4427173305799125784">Er kunnen geen annotaties in pdf's worden gemaakt met de pdf-viewer</translation>
 <translation id="4432762137771104529">Uitgebreide rapportage van Safe Browsing aanzetten</translation>
@@ -5196,6 +5210,21 @@ Dit gedrag wordt niet geactiveerd als Safe Browsing is uitgezet (door het beleid
 <translation id="583627479140113555">Import van opgeslagen wachtwoorden bij eerste uitvoering aanzetten</translation>
 <translation id="5838452040629810808">Cursormarkering aanzetten</translation>
 <translation id="5842283830553218200">Standaard wordt het nieuwe gedrag voor de verzending van gebeurtenissen voor uitgezette bedieningselementen op formulieren gebruikt.</translation>
+<translation id="5844880038533636588">Als je het beleid instelt, wordt een lijst met apps en extensies gespecificeerd die op de achtergrond worden geïnstalleerd zonder interactie met de gebruiker en die niet kunnen worden verwijderd of uitgezet door gebruikers. Rechten worden impliciet verleend, waaronder voor de extensie-API's enterprise.deviceAttributes en enterprise.platformKeys. (Deze 2 API's zijn niet beschikbaar voor apps en extensies die niet afgedwongen zijn geïnstalleerd.)
+
+Als je dit beleid niet instelt, worden apps of extensies niet automatisch geïnstalleerd en kunnen gebruikers elke app of extensie in <ph name="PRODUCT_NAME" /> verwijderen.
+
+Dit beleid vervangt het beleid <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />. Als een eerder afgedwongen geïnstalleerde app of extensie wordt verwijderd uit deze lijst, verwijdert <ph name="PRODUCT_NAME" /> de app of extensie automatisch.
+
+Voor <ph name="MS_WIN_NAME" />-instanties kunnen apps en extensies van buiten de Chrome Web Store alleen afgedwongen worden geïnstalleerd als de instantie is gekoppeld aan een <ph name="MS_AD_NAME" />-domein, <ph name="MS_AAD_NAME" /> of is ingeschreven voor <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />.
+
+Voor <ph name="MAC_OS_NAME" />-instanties kunnen apps en extensies van buiten de Chrome Web Store alleen afgedwongen worden geïnstalleerd als de instantie wordt beheerd via MDM, aan een domein is gekoppeld via MCX of is ingeschreven voor <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />.
+
+Gebruikers kunnen de broncode van een extensie wijzigen via de ontwikkelaarstools, waardoor de extensie mogelijk niet meer functioneert. Als je je hierover zorgen maakt, moet je het beleid <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" /> instellen.
+
+Elk lijstitem van het beleid is een tekenreeks die een extensie-ID en optioneel een update-URL bevat, gescheiden door een puntkomma (;). De extensie-ID is de tekenreeks van 32 letters die bijvoorbeeld op chrome://extensions kan worden gevonden als de ontwikkelaarsmodus actief is. De update-URL, indien opgegeven, moet verwijzen naar een XML-updatedocument voor het manifest (https://developer.chrome.com/extensions/autoupdate). De update-URL moet een van de volgende schema's gebruiken: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> of <ph name="FILE_SCHEME" />. Standaard wordt de update-URL van de Chrome Web Store gebruikt. De update-URL die in dit beleid is ingesteld, wordt alleen voor de eerste installatie gebruikt. Daaropvolgende updates van de extensie gebruiken de update-URL die in het manifest van de extensie wordt aangegeven.
+
+Opmerking: Dit beleid is niet van toepassing op de incognitomodus. Lees meer informatie over het hosten van extensies (https://developer.chrome.com/extensions/hosting).</translation>
 <translation id="5847509620317822100">Deze functie is verwijderd in Chrome 100.
 
       Als je dit beleid activeert, worden aanbevelingen gedaan voor apps die de gebruiker eerder heeft geïnstalleerd op andere apparaten. Deze aanbevelingen worden in de Launcher getoond na de aanbevelingen voor lokale apps als er geen zoektekst is ingevoerd.
@@ -5911,6 +5940,7 @@ Zie ook het beleid <ph name="HTTPS_ONLY_MODE_POLICY_NAME" />.</translation>
 
       Opmerking: Als de huidige invoermethode niet wordt ondersteund, wordt de invoermethode overgeschakeld naar het hardwaretoetsenbord (indien toegestaan) of het eerste geldige item in deze lijst. Ongeldige of niet-ondersteunde methoden worden genegeerd.</translation>
 <translation id="6483115462650732746">Zwevend toegankelijkheidsmenu tonen in de kioskmodus</translation>
+<translation id="6485036313708130232">Het nieuwe gedrag beheren voor een beforeunload-gebeurtenis met een bevestigingsdialoogvenster voor annuleren als preventDefault wordt aangeroepen</translation>
 <translation id="6489084406497912050">Bepaalt of gebruikers Kerberos-accounts mogen toevoegen.
 
           Als je dit beleid toepast of niet instelt, mogen gebruikers Kerberos-accounts toevoegen via de instellingen voor Kerberos-accounts op de pagina Kerberos-instellingen. Gebruikers hebben het volledige beheer over accounts die ze hebben toegevoegd en kunnen deze aanpassen of verwijderen.
@@ -6326,6 +6356,14 @@ Als je het beleid niet toepast, wordt het icoon voor experimentele browserfuncti
 <translation id="6819838337315703072">Als app-support voor <ph name="LINUX_OS_NAME" /> aanstaat en je dit beleid toepast, wordt de informatie over het gebruik van <ph name="LINUX_OS_NAME" />-apps teruggestuurd naar de server.
 
       Als je het beleid niet toepast of niet instelt, wordt er geen gebruiksinformatie gerapporteerd.</translation>
+<translation id="6821870597514407499"><ph name="WEBVIEW_TAG_NAME" /> voor Chrome-apps maakt gedrag mogelijk dat op dit moment wordt verwijderd uit <ph name="PRODUCT_NAME" />.
+
+Bij het vorige gedrag is ook de gebeurtenis <ph name="WEBVIEW_TAG_NAME" /> <ph name="NEWWINDOW_EVENT_NAME" /> (https://developer.chrome.com/docs/extensions/reference/webviewTag/#event-newwindow) toegestaan. Hiermee wordt het nieuwe venster in een ander app-venster dan de oorspronkelijke <ph name="WEBVIEW_TAG_NAME" /> gekoppeld aan een <ph name="WEBVIEW_TAG_NAME" />-element. Met het nieuwe gedrag is deze koppeling nog steeds toegestaan, maar wordt de vensterverwijzing die van de <ph name="WINDOW_OPEN_NAME" />-aanroep wordt geretourneerd in de oorspronkelijke <ph name="WEBVIEW_TAG_NAME" /> ongeldig gemaakt.
+
+Als je het beleid toepast, wordt het vorige gedrag gebruikt.
+Als je het beleid niet toepast of niet instelt, wordt de gedragswijziging van kracht als deze is uitgerold via het releaseproces van <ph name="PRODUCT_NAME" />.
+
+Dit beleid is een tijdelijke oplossing voor bedrijven die problemen ondervinden vanwege deze wijziging. Dit beleid wordt verwijderd in versie 122.</translation>
 <translation id="6823711520976094072">Als je het beleid instelt op een waarde lager dan 1 MB of als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_OS_NAME" /> de standaardgrootte van 256 MB voor het cachen van apps en extensies voor installaties door meerdere gebruikers van één apparaat. Hierdoor is het niet nodig om elke app of extensie voor elke gebruiker opnieuw te downloaden.</translation>
 <translation id="6828729771894228555">Hiermee kun je een lijst met URL-patronen opgeven van oorsprongen op het hoogste niveau (de URL in de adresbalk van het tabblad) die partitionering van opslag door derden blokkeren (partitionering van cross-origin iframe-opslag).
           Als je dit beleid niet instelt of als de oorsprong op het hoogste niveau niet overeenkomt, wordt de waarde van <ph name="DEFAULT_THIRD_PARTY_STORAGE_PARTITIONING_SETTING_POLICY_NAME" /> gebruikt.
@@ -7188,6 +7226,13 @@ Met name als dit beleid wordt ingesteld op <ph name="DISALLOW" />, werken de opt
 <translation id="7613115815080726221">De tijdsduur zonder gebruikersinvoer waarna de actie voor inactiviteit wordt ondernomen (in milliseconden)</translation>
 <translation id="7614663184588396421">Lijst met uitgezette protocolschema's</translation>
 <translation id="7616631530432070402">3DES cipher suites worden aangezet in TLS</translation>
+<translation id="7617710923960807616">Met dit beleid kun je bepalen of het bevestigingsdialoogvenster wordt getoond als een pagina preventDefault aanroept voor een beforeunload-gebeurtenis. In het verleden werden deze dialoogvensters niet getoond in <ph name="PRODUCT_NAME" />, maar het standaardgedrag wordt gewijzigd. Dit beleid is een tijdelijke ontsnappingsroute, bedoeld voor bedrijven waarvan de websites niet meer werken vanwege het nieuwe gedrag en waarbij het even kan duren voordat ze worden gecorrigeerd.
+
+Als je dit beleid toepast, wordt het bevestigingsdialoogvenster voor annuleren getoond als een pagina preventDefault aanroept voor een beforeunload-gebeurtenis.
+
+Als je dit beleid niet toepast, wordt er geen bevestigingsdialoogvenster voor annuleren getoond als een pagina preventDefault aanroept voor een beforeunload-gebeurtenis.
+
+Als je dit beleid niet instelt, wordt het standaardgedrag gebruikt volgens het functie-uitrolplan van <ph name="PRODUCT_NAME" />.</translation>
 <translation id="761788785484453836">Site-isolatie vereisen voor alle websites</translation>
 <translation id="7620869951155758729">Dit beleid specificeert de configuratie die wordt gebruikt om de toegangscode voor ouders te genereren en te verifiëren.
 
@@ -7975,6 +8020,7 @@ Voor meer informatie over een beveiligde context ga je naar https://www.w3.org/T
       De beleidswaarde moet worden opgegeven in milliseconden.</translation>
 <translation id="8330437518362176921">Alleen de door het beleid geleverde update-URL gebruiken als Chrome-kiosk-apps worden gedownload en geüpdatet</translation>
 <translation id="8331479227794770304">Plaktoetsen aanzetten</translation>
+<translation id="8332822245414537447">Controle van RSA-sleutelgebruik uitzetten</translation>
 <translation id="8337114537412769126">Als <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> is aangezet en je <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME" /> instelt, worden de parameters gespecificeerd tijdens voorgestelde zoekopdrachten met POST. Deze bestaan uit door komma's gescheiden naam/waarde-paren. Als een waarde een templateparameter is (zoals <ph name="SEARCH_TERM_MARKER" />), wordt deze vervangen door de echte zoektermen.
 
       Als je <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME" /> niet instelt, worden voorgestelde zoekopdrachten gestuurd met de GET-methode.</translation>
@@ -8261,6 +8307,7 @@ Als je dit beleid instelt, moet je het beleid <ph name="PRIVACY_SANDBOX_PROMPT_E
 <translation id="8623672932476443039">Als je het beleid toepast, hebben gebruikers toegang tot de ontwikkelaarsmodus voor geïsoleerde apps.
       Als je het beleid niet toepast, hebben gebruikers geen toegang tot deze mogelijkheden.
       Als je dit beleid niet instelt, geldt de standaardwaarde 'niet toegestaan' voor beheerde zakelijke gebruikers op Chrome OS en 'toegestaan' voor alle andere gebruikers en besturingssystemen.</translation>
+<translation id="862621549134406761">Controle van RSA-sleutelgebruik aanzetten</translation>
 <translation id="8626826495474944836">Site-isolatie verplichten voor elke site</translation>
 <translation id="8631314130868563649">Stroombeheer voor piekuren uitzetten</translation>
 <translation id="8631434304112909927">tot versie <ph name="UNTIL_VERSION" /></translation>
@@ -8512,6 +8559,7 @@ Als je het beleid niet instelt of niet toepast, worden de gegevens van deze zoek
 
 Als je dit beleid niet toepast, is <ph name="PRODUCT_NAME" /> op geen enkele webpagina beschikbaar.</translation>
 <translation id="8864975621965365890">Hiermee onderdruk je de prompt die je ziet als een site wordt weergegeven door <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8865404058177794289">De standaardinstelling gebruiken voor controle van het RSA-sleutelgebruik</translation>
 <translation id="8866430022832109569">Rapportage van app-voorraad</translation>
 <translation id="886645881209114007">Gebruikers toestaan een <ph name="PLUGIN_VM_NAME" /> te gebruiken op <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="8867894831390233044">Bepaalt of gebruikers foutopsporing op afstand mogen toevoegen.

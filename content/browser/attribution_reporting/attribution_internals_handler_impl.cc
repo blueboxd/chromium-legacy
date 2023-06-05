@@ -53,7 +53,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/net_errors.h"
-#include "services/network/public/cpp/attribution_utils.h"
 #include "services/network/public/mojom/attribution.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -255,9 +254,8 @@ void AttributionInternalsHandlerImpl::IsAttributionReportingEnabled(
           /*destination_origin=*/nullptr, /*reporting_origin=*/nullptr);
   bool debug_mode = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAttributionReportingDebugMode);
-  std::move(callback).Run(
-      attribution_reporting_enabled, debug_mode,
-      network::GetAttributionSupportHeader(AttributionManager::GetSupport()));
+  std::move(callback).Run(attribution_reporting_enabled, debug_mode,
+                          AttributionManager::GetSupport());
 }
 
 void AttributionInternalsHandlerImpl::GetActiveSources(
@@ -373,7 +371,8 @@ void AttributionInternalsHandlerImpl::OnReportSent(
       status = ReportStatus::NewNetworkError(
           net::ErrorToShortString(info.network_error));
       break;
-    case SendResult::Status::kFailedToAssemble:
+    case SendResult::Status::kAssemblyFailure:
+    case SendResult::Status::kTransientAssemblyFailure:
       status = ReportStatus::NewFailedToAssemble(Empty::New());
       break;
   }
@@ -536,7 +535,7 @@ void AttributionInternalsHandlerImpl::OnTriggerHandled(
       GetWebUITriggerStatus(result.event_level_status());
   web_ui_trigger->aggregatable_status =
       GetWebUITriggerStatus(result.aggregatable_status());
-  web_ui_trigger->verification = trigger.verification();
+  web_ui_trigger->verifications = trigger.verifications();
 
   observer_->OnTriggerHandled(std::move(web_ui_trigger));
 

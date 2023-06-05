@@ -4,7 +4,7 @@
 <translation id="1014750484722996375">Desktop</translation>
 <translation id="1018219910092211213">Tidak dapat me-resolve DNS</translation>
 <translation id="1018656279737460067">Dibatalkan</translation>
-<translation id="1022433422498218992">Kontrol Umum</translation>
+<translation id="1020274983236703756">Aset <ph name="PRODUCT_NAME" /> eksklusif kini tersedia</translation>
 <translation id="1022628058306505708">Aliran Bumi</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> thread, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">Fitur baru tersedia, gunakan tombol Panah atas untuk mempelajari lebih lanjut.</translation>
@@ -58,6 +58,7 @@
 <translation id="1423591390236870726">Tombol <ph name="KEY_NAME" /> tidak ditekan</translation>
 <translation id="1435763214710588005">Otomatis mereset penggunaan data setiap bulan pada tanggal yang dipilih</translation>
 <translation id="1442433966118452622">Sumber gambar</translation>
+<translation id="1449035143498573192">Buka di Google Penelusuran</translation>
 <translation id="1451536289672181509">Perangkat adalah keyboard.</translation>
 <translation id="1459693405370120464">Cuaca</translation>
 <translation id="1468664791493211953">Penawaran</translation>
@@ -113,7 +114,6 @@
 <translation id="1768959921651994223">Jenis autentikasi</translation>
 <translation id="1776228893584526149">Warna wallpaper</translation>
 <translation id="1782199038061388045">terjemahan</translation>
-<translation id="1790209694022261219">Jendela dan Desktop</translation>
 <translation id="1792647875738159689">Membatalkan pemindaian</translation>
 <translation id="1801418420130173017">Nonaktifkan tema gelap</translation>
 <translation id="1807246157184219062">Terang</translation>
@@ -244,7 +244,6 @@
 <translation id="3008341117444806826">PERBARUI</translation>
 <translation id="3009958530611748826">Pilih folder untuk menyimpan</translation>
 <translation id="3017079585324758401">Latar belakang</translation>
-<translation id="3020183492814296499">Pintasan</translation>
 <translation id="3027578600144895987">Tutup kamera</translation>
 <translation id="3031560714565892478">Perangkat adalah kamera video.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> mA</translation>
@@ -271,6 +270,7 @@
 <translation id="3226405216343213872">Mencari pemindai</translation>
 <translation id="3226657629376379887">Menu tindakan tata letak</translation>
 <translation id="3246869037381808805">Tugas pencetakan yang sudah lebih dari 1 hari akan dihapus</translation>
+<translation id="3248223063252096240">Eksklusif untuk <ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">Gagal - Tutup terbuka</translation>
 <translation id="3275729367986477355">Gambar avatar</translation>
 <translation id="3283504360622356314">{0,plural, =1{Edit file}other{Edit file}}</translation>
@@ -323,6 +323,7 @@
 <translation id="3632579075709132555">Beralih layar privasi</translation>
 <translation id="3639846061339007994">atas</translation>
 <translation id="3651050199673793219">Pilih satuan suhu</translation>
+<translation id="3663574643422533538">Pilih karya seni <ph name="PRODUCT_NAME" /> eksklusif</translation>
 <translation id="3689839747745352263">Uji <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Memuat...</translation>
 <translation id="3708186454126126312">Terhubung sebelumnya</translation>
@@ -372,6 +373,7 @@
 <translation id="4095829376260267438">WPA2/WPA3</translation>
 <translation id="4110686435123617899">Pilih album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Touchpad USB</translation>
+<translation id="4113067922640381334">Anda kini memiliki akses ke <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />wallpaper<ph name="END_LINK_WALLPAPER_SUBPAGE" /> baru</translation>
 <translation id="4117637339509843559">Mode gelap</translation>
 <translation id="4130035430755296270">Terus gerakkan kursor untuk melihat opsi tata letak lainnya</translation>
 <translation id="4131410914670010031">Hitam dan putih</translation>
@@ -611,6 +613,7 @@
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Wallpaper Default</translation>
 <translation id="6017514345406065928">Hijau</translation>
+<translation id="6019566113895157499">Pintasan Keyboard</translation>
 <translation id="6034694447310538551">Aktifkan reset bulanan otomatis</translation>
 <translation id="6037291330010597344">Pengumpan dokumen pemindai kosong. Tambahkan dokumen, lalu coba lagi.</translation>
 <translation id="6040143037577758943">Tutup</translation>
@@ -857,6 +860,7 @@
 <translation id="7953669802889559161">Input</translation>
 <translation id="7955587717700691983">Keyboard Bluetooth</translation>
 <translation id="7960831585769876809">Suhu</translation>
+<translation id="7971535376154084247">Kontrol umum</translation>
 <translation id="7977800524392185497">Untuk bergabung ke jaringan <ph name="NETWORK_NAME" />, buka Setelan</translation>
 <translation id="7978412674231730200">Kunci pribadi</translation>
 <translation id="7994702968232966508">Metode EAP</translation>
@@ -920,6 +924,7 @@
 <translation id="8461329675984532579">Nama penyedia rumah</translation>
 <translation id="8475690821716466388">Jaringan Wi-Fi diamankan dengan protokol WEP PSK yang lemah</translation>
 <translation id="8476242415522716722">lampu latar keyboard</translation>
+<translation id="8476942730579767658">Jendela dan desktop</translation>
 <translation id="8477551185774834963">Latensi DNS sedikit melebihi ambang batas yang diizinkan</translation>
 <translation id="8483248364096924578">Alamat IP</translation>
 <translation id="8491311378305535241">Tidak dapat terhubung melewati firewall ke situs HTTP dari aplikasi Android</translation>
@@ -934,6 +939,7 @@
 <translation id="8576249514688522074">Tidak diinisialisasi</translation>
 <translation id="8593058461203131755">jeda media</translation>
 <translation id="8620617069779373398">Status roaming</translation>
+<translation id="8626489604350149811">Tindakan lainnya untuk <ph name="APN_NAME" /></translation>
 <translation id="86356131183441916">Ungu muda</translation>
 <translation id="8651481478098336970">membisukan volume</translation>
 <translation id="8655295600908251630">Saluran</translation>

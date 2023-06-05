@@ -57,11 +57,18 @@ class ASH_EXPORT NotificationIconTrayItemView : public TrayItemView {
   void HandleLocaleChange() override;
   const char* GetClassName() const override;
   void OnThemeChanged() override;
+  void UpdateLabelOrImageViewColor(bool active) override;
 
  private:
+  void UpdateImageViewColor();
+
   // Store the id to make sure we still have it when notification is removed and
   // goes out of scope.
   std::string notification_id_;
+
+  // Stores the notification to update its icon color based on the active state
+  // of this tray.
+  std::unique_ptr<message_center::Notification> notification_;
 
   const raw_ptr<NotificationIconsController,
                 DanglingUntriaged | ExperimentalAsh>
@@ -101,6 +108,10 @@ class ASH_EXPORT NotificationIconsController
   // Returns a string describing the current state for accessibility.
   std::u16string GetAccessibleNameString() const;
 
+  // Iterate through the notifications in message center and update the icons
+  // shown accordingly.
+  void UpdateNotificationIcons();
+
   // Update notification indicators, including counters and quiet mode view.
   void UpdateNotificationIndicators();
 
@@ -135,10 +146,6 @@ class ASH_EXPORT NotificationIconsController
   QuietModeView* quiet_mode_view() { return quiet_mode_view_; }
 
   bool icons_view_visible() const { return icons_view_visible_; }
-
-  // Iterate through the notifications in message center and update the icons
-  // shown accordingly.
-  void UpdateNotificationIcons();
 
  private:
   friend class NotificationIconsControllerTest;
@@ -181,11 +188,6 @@ class ASH_EXPORT NotificationIconsController
       nullptr;
   raw_ptr<QuietModeView, ExperimentalAsh> quiet_mode_view_ = nullptr;
   raw_ptr<SeparatorTrayItemView, ExperimentalAsh> separator_ = nullptr;
-
-  // True when `notification_center_tray_` is currently updating, false
-  // otherwise. This is used to avoid updating notification icons/indicators
-  // when we know that such an update is already in the pipeline.
-  bool is_notification_center_tray_updating_ = false;
 
   base::ScopedObservation<UnifiedSystemTrayModel,
                           UnifiedSystemTrayModel::Observer>

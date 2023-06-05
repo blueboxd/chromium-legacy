@@ -25,6 +25,7 @@
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
+#include "third_party/skia/include/gpu/mock/GrMockTypes.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
@@ -615,7 +616,8 @@ void SharedContextState::MarkContextLost(error::ContextLostReason reason) {
     // Notify |context_lost_callback_| and |context_lost_observers_| first,
     // since maybe they still need the GrDirectContext for releasing some skia
     // resources.
-    std::move(context_lost_callback_).Run(!device_needs_reset_);
+    std::move(context_lost_callback_)
+        .Run(!device_needs_reset_, context_lost_reason_.value());
     for (auto& observer : context_lost_observers_)
       observer.OnContextLost();
 

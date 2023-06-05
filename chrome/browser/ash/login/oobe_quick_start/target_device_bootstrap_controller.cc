@@ -80,8 +80,7 @@ void TargetDeviceBootstrapController::GetFeatureSupportStatusAsync(
 }
 
 std::string TargetDeviceBootstrapController::GetPhoneInstanceId() {
-  // TODO(b/234655072): Get the ID from the Gaia credentials exchange.
-  return "";
+  return authenticated_connection_->get_phone_instance_id();
 }
 
 base::WeakPtr<TargetDeviceBootstrapController>
@@ -108,9 +107,6 @@ void TargetDeviceBootstrapController::StartAdvertising() {
 }
 
 void TargetDeviceBootstrapController::StopAdvertising() {
-  // No pending requests.
-  DCHECK(!weak_ptr_factory_.HasWeakPtrs());
-
   // Connection broker ignores the request if not advertising.
   connection_broker_->StopAdvertising(
       base::BindOnce(&TargetDeviceBootstrapController::OnStopAdvertising,

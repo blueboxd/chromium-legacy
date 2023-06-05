@@ -142,6 +142,7 @@ Když smažete historii prohlížení (celou nebo na určitém webu), smažou se
 <translation id="1750259112639922169">Skupina karet – počet karet: <ph name="TAB_COUNT" /></translation>
 <translation id="17513872634828108">Otevřené karty</translation>
 <translation id="1754404134430936718">Text byl zkopírován</translation>
+<translation id="1757620656501361327">Oznámení Správce hesel Google</translation>
 <translation id="1778457539567749232">Označit jako nepřečtené</translation>
 <translation id="1779766957982586368">Zavřít okno</translation>
 <translation id="1791662854739702043">Nainstalováno</translation>
@@ -426,6 +427,7 @@ Tokeny soukromého stavu zvyšují ochranu soukromí na webu a nelze pomocí ni
 <translation id="3290249595466894471">Odesílá také malý vzorek stránek, stažených souborů, rozšíření, aktivity a informací o systému a pomáhá tak odhalovat nové hrozby</translation>
 <translation id="3293181007446299124">Vaše historie prohlížení zůstává soukromá ve vašem zařízení a přehledy se z důvodu ochrany vaší totožnosti odesílají se zpožděním.</translation>
 <translation id="3303414029551471755">Chcete pokračovat ke stažení obsahu?</translation>
+<translation id="3305130791745726624">Poslat do zařízení</translation>
 <translation id="3305795716056605962">Stránky přeložíte pomocí tlačítka Další možnosti</translation>
 <translation id="3319664549618064419">Pokud chcete získat lepší zobrazení tohoto webu, přepněte na web pro počítače</translation>
 <translation id="3334729583274622784">Změnit příponu souboru?</translation>
@@ -753,6 +755,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="504456571576643789">Co je třeba zvážit</translation>
 <translation id="5054455334322721892"><ph name="BEGIN_LINK1" />Další typy aktivity<ph name="END_LINK1" /> se mohou ukládat do vašeho účtu Google, když jste přihlášeni. Můžete je kdykoli smazat.</translation>
 <translation id="506254248375231072">Žádné karty</translation>
+<translation id="5062960805900435602">Oznámení o sloučení hesel je zavřeno</translation>
 <translation id="5091199029769593641">Brzy se vám po otevření nové karty začnou zobrazovat články z webu <ph name="SITE_NAME" />. Weby, které sledujete, se ukládají do vašeho účtu Google. Můžete je spravovat v nastavení funkce Objevit.</translation>
 <translation id="5091249083535528968">Rozšířené údaje o využití</translation>
 <translation id="509429900233858213">Došlo k chybě.</translation>
@@ -802,6 +805,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5361107212971249203">text</translation>
 <translation id="5368227114232678694">Pokud na tomto zařízení chcete procházet internet v soukromí, vyzkoušejte anonymní režim</translation>
 <translation id="5375577065097716013">Vyhledat obrázek pomocí Google Lens <ph name="BEGIN_NEW" />Novinka<ph name="END_NEW" /></translation>
+<translation id="539881862970320163">Bylo navrženo silné heslo. Klávesnice je skrytá.</translation>
 <translation id="5401851137404501592">Aby bylo možné pokračovat, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> bude s tímto webem sdílet vaše jméno, e‑mailovou adresu a profilový obrázek.</translation>
 <translation id="5409881200985013443">Odeslat v klientu <ph name="CLIENT_NAME" /> kód <ph name="ONE_TIME_CODE" />?</translation>
 <translation id="5414836363063783498">Ověřování…</translation>
@@ -942,7 +946,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="6138832295072039549">Tady můžete změnit nastavení webu</translation>
 <translation id="6140709049082532940">Vylepšená ochrana:</translation>
 <translation id="6140912465461743537">Země/Region</translation>
-<translation id="6148266338772765473">Nezahrnovat odkaz</translation>
 <translation id="6150320133806434356">Záložka uložena</translation>
 <translation id="6154478581116148741">Chcete-li z tohoto zařízení exportovat svá hesla, zapněte v Nastavení zámek obrazovky</translation>
 <translation id="6159729262978459665">Vymaže historii ze všech synchronizovaných zařízení.</translation>
@@ -1160,6 +1163,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7217781228893594884">Když Chrome opustíte, anonymní karty se uzamknou</translation>
 <translation id="7222235798733126207">Omezené sdílení mezi weby</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 nevyřízené stahování}few{# nevyřízená stahování}many{# nevyřízeného stahování}other{# nevyřízených stahování}}</translation>
+<translation id="72415438529550637">Návrh hesla je zavřen.</translation>
 <translation id="7242755609445462077">Stylizované zvýraznění <ph name="CURRENT_DATE" /></translation>
 <translation id="7248069434667874558">Zkontrolujte, zda je v Chromu na zařízení <ph name="TARGET_DEVICE_NAME" /> zapnutá synchronizace</translation>
 <translation id="7252076891734325316">Umístěte telefon k počítači</translation>
@@ -1174,6 +1178,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7304072650267745798">Zařízení Android může obsahovat podobné nastavení. Pokud je toto nastavení zapnuto v Chromu a na vašem zařízení Android, společnosti mohou měřit efektivitu reklamy na webech, které navštěvujete, a v aplikacích, které používáte.</translation>
 <translation id="7304873321153398381">Offline. Chrome nemůže zkontrolovat vaše hesla.</translation>
 <translation id="7313188324932846546">Klepnutím nastavíte synchronizaci</translation>
+<translation id="7324354302972299151">Odesílat požadavek Do Not Track</translation>
 <translation id="7332075081379534664">Přihlášení proběhlo úspěšně</translation>
 <translation id="7333232495927792353">Pokud chcete získat nejrelevantnější obsah z Googlu, zapněte synchronizaci</translation>
 <translation id="7339898014177206373">Nové okno</translation>

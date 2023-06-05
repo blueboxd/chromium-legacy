@@ -614,6 +614,7 @@ data/accessibility/aria/aria-details-expected-blink.txt
 data/accessibility/aria/aria-details-expected-mac.txt
 data/accessibility/aria/aria-details-expected-win.txt
 data/accessibility/aria/aria-details-multiple-expected-android-external.txt
+data/accessibility/aria/aria-details-multiple-expected-auralinux.txt
 data/accessibility/aria/aria-details-multiple-expected-blink.txt
 data/accessibility/aria/aria-details-multiple-expected-mac.txt
 data/accessibility/aria/aria-details-multiple-expected-uia-win.txt
@@ -1495,8 +1496,6 @@ data/accessibility/aria/aria-tooltip-expected-mac-before-11.txt
 data/accessibility/aria/aria-tooltip-expected-mac.txt
 data/accessibility/aria/aria-tooltip-expected-win.txt
 data/accessibility/aria/aria-tooltip.html
-data/accessibility/aria/aria-touchpassthrough-expected-blink.txt
-data/accessibility/aria/aria-touchpassthrough.html
 data/accessibility/aria/aria-tree-discontinuous-expected-android-external.txt
 data/accessibility/aria/aria-tree-discontinuous-expected-android.txt
 data/accessibility/aria/aria-tree-discontinuous-expected-auralinux.txt
@@ -2452,7 +2451,6 @@ data/accessibility/form-controls/role-group-expected-blink.txt
 data/accessibility/form-controls/role-group.html
 data/accessibility/fullscreen/iframe.html
 data/accessibility/fullscreen/links.html
-data/accessibility/hit_testing/aria_touchpassthrough_key.html
 data/accessibility/hit_testing/input-color-with-popup-open.html
 data/accessibility/hit_testing/simple_rectangles.html
 data/accessibility/hit_testing/simple_rectangles_iframe.html
@@ -4260,6 +4258,8 @@ data/accessibility/html/selectmenu-open-expected-win.txt
 data/accessibility/html/selectmenu-open.html
 data/accessibility/html/selectmenu.html
 data/accessibility/html/sfx.mp3
+data/accessibility/html/shadow-dom-first-child-expected-blink.txt
+data/accessibility/html/shadow-dom-first-child.html
 data/accessibility/html/simple_spans-expected-android-external.txt
 data/accessibility/html/simple_spans.html
 data/accessibility/html/slot-display-contents-expected-auralinux.txt
@@ -5144,6 +5144,7 @@ data/attribution_reporting/interop/most_recent_source.json
 data/attribution_reporting/interop/multiple_destinations.json
 data/attribution_reporting/interop/rate_limit_max_attribution_reporting_endpoints.json
 data/attribution_reporting/interop/rate_limit_max_attributions.json
+data/attribution_reporting/interop/rate_limit_max_reporting_origins_per_source_reporting_site.json
 data/attribution_reporting/interop/rate_limit_max_source_registration_reporting_origin_endpoints.json
 data/attribution_reporting/interop/same_destination_site.json
 data/attribution_reporting/interop/same_reporting_origin.json
@@ -5476,6 +5477,8 @@ data/fenced_frames/basic.html
 data/fenced_frames/basic.html.mock-http-headers
 data/fenced_frames/basic_fenced_frame_src.html
 data/fenced_frames/basic_fenced_frame_src_navigate_on_click.html
+data/fenced_frames/basic_iframe.html
+data/fenced_frames/basic_iframe.html.mock-http-headers
 data/fenced_frames/empty.html
 data/fenced_frames/empty.html.mock-http-headers
 data/fenced_frames/empty404.html
@@ -5873,13 +5876,19 @@ data/gpu/webgl-domain-unblocking.html
 data/gpu/webgl-high-perf.html
 data/gpu/webgl-overly-large-uniform.html
 data/gpu/webgl.html
+data/gpu/webgl1_conformance_android_runtimes.json
+data/gpu/webgl1_conformance_linux_runtimes.json
+data/gpu/webgl1_conformance_mac_runtimes.json
+data/gpu/webgl1_conformance_win_runtimes.json
 data/gpu/webgl2-context-blocked.html
 data/gpu/webgl2-multisampling-high-power-switch-does-not-crash.html
 data/gpu/webgl2-multisampling-high-power-switch-loses-context.html
 data/gpu/webgl2-preserve-db-high-power-switch-loses-context.html
 data/gpu/webgl2-unpack-image-height.html
-data/gpu/webgl2_conformance_tests_output.json
-data/gpu/webgl_conformance_tests_output.json
+data/gpu/webgl2_conformance_android_runtimes.json
+data/gpu/webgl2_conformance_linux_runtimes.json
+data/gpu/webgl2_conformance_mac_runtimes.json
+data/gpu/webgl2_conformance_win_runtimes.json
 data/gpu/webgl_extension_test.html
 data/gpu/webgl_test_page.html
 data/gpu/webgl_with_select_element.html

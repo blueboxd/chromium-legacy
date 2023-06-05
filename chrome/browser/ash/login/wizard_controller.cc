@@ -200,6 +200,7 @@
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/update_engine/update_engine_client.h"
 #include "chromeos/ash/components/geolocation/simple_geolocation_provider.h"
+#include "chromeos/ash/components/language_packs/language_pack_manager.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
@@ -281,6 +282,10 @@ const StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
     WrongHWIDScreenView::kScreenId,
     LocalStateErrorScreenView::kScreenId,
 };
+
+std::string GetApplicationLocale() {
+  return g_browser_process->GetApplicationLocale();
+}
 
 bool IsResumableOobeScreen(OobeScreenId screen_id) {
   for (const auto& resumable_screen : kResumableOobeScreens) {
@@ -1590,9 +1595,17 @@ void WizardController::OnDisplaySizeScreenExit(
   switch (result) {
     case DisplaySizeScreen::Result::kNotApplicable:
     case DisplaySizeScreen::Result::kNext:
-      choobe_flow_controller_.reset();
-      ShowMarketingOptInScreen();
-      break;
+      if (wizard_context_->return_to_choobe_screen) {
+        wizard_context_->return_to_choobe_screen = false;
+        ShowChoobeScreen();
+      } else {
+        if (choobe_flow_controller_) {
+          choobe_flow_controller_->OnChoobeFlowExit();
+          choobe_flow_controller_.reset();
+        }
+        ShowMarketingOptInScreen();
+        break;
+      }
   }
 }
 
@@ -1759,6 +1772,13 @@ void WizardController::OnUpdateScreenExit(UpdateScreen::Result result) {
 }
 
 void WizardController::OnUpdateCompleted() {
+  // Install language packs based on the user selected language.
+  if (ash::features::IsLanguagePacksInOobeEnabled()) {
+    const std::string locale = GetApplicationLocale();
+    language_packs::LanguagePackManager::GetInstance()->UpdatePacksForOobe(
+        locale);
+  }
+
   if (demo_setup_controller_) {
     ShowConsolidatedConsentScreen();
     return;
@@ -2477,6 +2497,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowDrivePinningScreen();
   } else if (screen_id == DisplaySizeScreenView::kScreenId) {
     ShowDisplaySizeScreen();
+  } else if (screen_id == ChoobeScreenView::kScreenId) {
+    ShowChoobeScreen();
   } else if (screen_id == TpmErrorView::kScreenId ||
              screen_id == GaiaPasswordChangedView::kScreenId ||
              screen_id == FamilyLinkNoticeView::kScreenId ||

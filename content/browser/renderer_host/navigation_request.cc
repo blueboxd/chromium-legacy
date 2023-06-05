@@ -109,6 +109,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/network_service_util.h"
 #include "content/public/browser/origin_trials_controller_delegate.h"
 #include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/reduce_accept_language_controller_delegate.h"
@@ -119,7 +120,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/network_service_util.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
@@ -138,6 +138,7 @@
 #include "services/network/public/cpp/client_hints.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "services/network/public/cpp/cross_origin_opener_policy.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
@@ -1065,48 +1066,11 @@ absl::optional<std::string> GetTopicsHeaderValueForNavigationRequest(
     return absl::nullopt;
   }
 
-  return DeriveTopicsHeaderValue(topics);
-}
+  int num_versions_in_epochs =
+      GetContentClient()->browser()->NumVersionsInTopicsEpochs(
+          rfh->GetMainFrame());
 
-// Support logging OriginAgentClusterEndResult with VLOG.
-std::ostream& operator<<(
-    std::ostream& out,
-    NavigationRequest::OriginAgentClusterEndResult result) {
-  using OriginAgentClusterEndResult =
-      NavigationRequest::OriginAgentClusterEndResult;
-  switch (result) {
-    case OriginAgentClusterEndResult::kNotRequestedAndNotOriginKeyed:
-      out << "kNotRequestedAndNotOriginKeyed";
-      break;
-    case OriginAgentClusterEndResult::kNotRequestedButOriginKeyed:
-      out << "kNotRequestedButOriginKeyed";
-      break;
-    case OriginAgentClusterEndResult::kRequestedButNotOriginKeyed:
-      out << "kRequestedButNotOriginKeyed";
-      break;
-    case OriginAgentClusterEndResult::kRequestedAndOriginKeyed:
-      out << "kRequestedAndOriginKeyed";
-      break;
-    case OriginAgentClusterEndResult::kExplicitlyNotRequestedAndNotOriginKeyed:
-      out << "kExplicitlyNotRequestedAndNotOriginKeyed";
-      break;
-    case OriginAgentClusterEndResult::kExplicitlyNotRequestedButOriginKeyed:
-      out << "kExplicitlyNotRequestedButOriginKeyed";
-      break;
-    case OriginAgentClusterEndResult::kExplicitlyRequestedButNotOriginKeyed:
-      out << "kExplicitlyRequestedButNotOriginKeyed";
-      break;
-    case OriginAgentClusterEndResult::kExplicitlyRequestedAndOriginKeyed:
-      out << "kExplicitlyRequestedAndOriginKeyed";
-      break;
-    case OriginAgentClusterEndResult::kNotExplicitlyRequestedButNotOriginKeyed:
-      out << "kNotExplicitlyRequestedButNotOriginKeyed";
-      break;
-    case OriginAgentClusterEndResult::kNotExplicitlyRequestedAndOriginKeyed:
-      out << "kNotExplicitlyRequestedAndOriginKeyed";
-      break;
-  }
-  return out;
+  return DeriveTopicsHeaderValue(topics, num_versions_in_epochs);
 }
 
 }  // namespace
@@ -1355,7 +1319,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
           /*not_restored_reasons=*/nullptr,
-          /*load_with_storage_access=*/load_with_storage_access);
+          /*load_with_storage_access=*/load_with_storage_access,
+          /*browsing_context_group_info=*/absl::nullopt);
 
   commit_params->navigation_timing->system_entropy_at_navigation_start =
       SystemEntropyUtils::ComputeSystemEntropyForFrameTreeNode(
@@ -1497,7 +1462,8 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           base::flat_map<::blink::mojom::RuntimeFeatureState, bool>(),
           /*fenced_frame_properties=*/absl::nullopt,
           /*not_restored_reasons=*/nullptr,
-          /*load_with_storage_access=*/false);
+          /*load_with_storage_access=*/false,
+          /*browsing_context_group_info=*/absl::nullopt);
   blink::mojom::BeginNavigationParamsPtr begin_params =
       blink::mojom::BeginNavigationParams::New();
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
@@ -2610,6 +2576,13 @@ void NavigationRequest::BeginNavigationImpl() {
       // MHTML iframe, before selecting the RenderFrameHost.
       const url::Origin origin = GetOriginForURLLoaderFactoryUnchecked(this);
       const net::SchemefulSite site = net::SchemefulSite(origin);
+      absl::optional<url::Origin>& coop_origin =
+          policy_container_builder_->GetPolicyContainerHost()
+              ->cross_origin_opener_policy()
+              .origin;
+      if (!coop_origin.has_value()) {
+        coop_origin = origin;
+      }
       coop_status_.EnforceCOOP(
           policy_container_builder_->FinalPolicies().cross_origin_opener_policy,
           origin, net::NetworkAnonymizationKey::CreateSameSite(site));
@@ -3176,9 +3149,10 @@ void NavigationRequest::OnRequestRedirected(
     return;
   }
   const url::Origin origin = GetOriginForURLLoaderFactoryUnchecked(this);
-  coop_status_.EnforceCOOP(
-      response()->parsed_headers->cross_origin_opener_policy, origin,
-      network_anonymization_key);
+  network::CrossOriginOpenerPolicy& coop =
+      response()->parsed_headers->cross_origin_opener_policy;
+  coop.origin = origin;
+  coop_status_.EnforceCOOP(coop, origin, network_anonymization_key);
 
   const absl::optional<network::mojom::BlockedByResponseReason>
       coep_requires_blocking = EnforceCOEP();
@@ -3497,20 +3471,20 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult() {
                                                  requested_isolation_state)
           .is_origin_agent_cluster();
 
-  bool are_origin_agent_clusters_enabled_by_default =
-      SiteIsolationPolicy::AreOriginAgentClustersEnabledByDefault(
-          frame_tree_node_->navigator().controller().GetBrowserContext());
-  // When OAC is enabled by default, report enum values that distinguish
-  // between explicitly requesting OAC (on or off) and having no related
-  // header.
-  bool was_explicitly_requested =
-      response_head_ && response_head_->parsed_headers->origin_agent_cluster ==
-                            network::mojom::OriginAgentClusterValue::kTrue;
-  bool was_explicitly_not_requested =
-      response_head_ && response_head_->parsed_headers->origin_agent_cluster ==
-                            network::mojom::OriginAgentClusterValue::kFalse;
+  if (SiteIsolationPolicy::AreOriginAgentClustersEnabledByDefault(
+          frame_tree_node_->navigator().controller().GetBrowserContext())) {
+    // When OAC is enabled by default, report enum values that distinguish
+    // between explicitly requesting OAC (on or off) and having no related
+    // header.
+    bool was_explicitly_requested =
+        response_head_ &&
+        response_head_->parsed_headers->origin_agent_cluster ==
+            network::mojom::OriginAgentClusterValue::kTrue;
+    bool was_explicitly_not_requested =
+        response_head_ &&
+        response_head_->parsed_headers->origin_agent_cluster ==
+            network::mojom::OriginAgentClusterValue::kFalse;
 
-  if (are_origin_agent_clusters_enabled_by_default) {
     if (got_origin_agent_cluster) {
       if (was_explicitly_requested) {
         origin_agent_cluster_end_result_ =
@@ -3573,37 +3547,6 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult() {
   commit_params_->origin_agent_cluster_left_as_default =
       !response_head_ || response_head_->parsed_headers->origin_agent_cluster ==
                              network::mojom::OriginAgentClusterValue::kAbsent;
-
-  // TODO(vogelheim): Support debugging crbug.com/1429587: Log the
-  // origin-agent clustering decision at VLOG(2), plus the variables
-  // that inform this decision. Revert this change once crbug.com/1429587
-  // is fixed.
-  VLOG(2) << __func__ << ": "
-          << "url = " << GetURL().spec() << "\n"
-          << "\torigin_agent_cluster_end_result_ = "
-          << origin_agent_cluster_end_result_ << "\n"
-          << "\tcommit_params_->origin_agent_cluster = "
-          << commit_params_->origin_agent_cluster << "\n"
-          << "\tcommit_params_->origin_agent_cluster_left_as_default = "
-          << commit_params_->origin_agent_cluster_left_as_default << "\n"
-          << "\tis_opaque_origin_because_sandbox = "
-          << is_opaque_origin_because_sandbox << "\n"
-          << "\tis_requested = " << is_requested << "\n"
-          << "\texpects_origin_agent_cluster = " << expects_origin_agent_cluster
-          << "\n"
-          << "\trequires_origin_keyed_process = "
-          << requires_origin_keyed_process << "\n"
-          << "\trequested_isolation_state = "
-          << "(is_origin_agent_cluster="
-          << requested_isolation_state.is_origin_agent_cluster()
-          << ",requires_origin_keyed_process="
-          << requested_isolation_state.requires_origin_keyed_process() << ")\n"
-          << "\tgot_origin_agent_cluster = " << got_origin_agent_cluster << "\n"
-          << "\tare_origin_agent_clusters_enabled_by_default = "
-          << are_origin_agent_clusters_enabled_by_default << "\n"
-          << "\twas_explicitly_requested = " << was_explicitly_requested << "\n"
-          << "\twas_explicitly_not_requested = " << was_explicitly_not_requested
-          << "\n";
 }
 
 void NavigationRequest::ProcessOriginAgentClusterEndResult() {
@@ -4036,12 +3979,14 @@ void NavigationRequest::OnResponseStarted(
   // can be determined. This is needed for enforcing COOP below.
 
   {
-    const PolicyContainerPolicies& policies =
-        policy_container_builder_->FinalPolicies();
-    const url::Origin origin =
-        GetOriginForURLLoaderFactoryBeforeResponse(policies.sandbox_flags);
-    coop_status_.EnforceCOOP(policies.cross_origin_opener_policy, origin,
-                             network_anonymization_key);
+    const url::Origin origin = GetOriginForURLLoaderFactoryBeforeResponse(
+        policy_container_builder_->FinalPolicies().sandbox_flags);
+    policy_container_builder_->GetPolicyContainerHost()
+        ->cross_origin_opener_policy()
+        .origin = origin;
+    coop_status_.EnforceCOOP(
+        policy_container_builder_->FinalPolicies().cross_origin_opener_policy,
+        origin, network_anonymization_key);
   }
 
   // The navigation may have encountered a header that requests isolation for
@@ -4612,9 +4557,13 @@ void NavigationRequest::OnRequestFailedInternal(
   // define our own flags, preferably the strictest ones instead.
   ComputePoliciesToCommitForError();
 
+  const auto origin = url::Origin();
+  policy_container_builder_->GetPolicyContainerHost()
+      ->cross_origin_opener_policy()
+      .origin = origin;
   coop_status_.EnforceCOOP(
       policy_container_builder_->FinalPolicies().cross_origin_opener_policy,
-      url::Origin(), net::NetworkAnonymizationKey::CreateTransient());
+      origin, net::NetworkAnonymizationKey::CreateTransient());
 
   SelectFrameHostForOnRequestFailedInternal(status.exists_in_cache,
                                             skip_throttles, error_page_content);
@@ -8503,9 +8452,11 @@ NavigationControllerImpl* NavigationRequest::GetNavigationController() {
 }
 
 PrerenderHostRegistry& NavigationRequest::GetPrerenderHostRegistry() {
-  return *frame_tree_node_->current_frame_host()
-              ->delegate()
-              ->GetPrerenderHostRegistry();
+  PrerenderHostRegistry* registry = frame_tree_node_->current_frame_host()
+                                        ->delegate()
+                                        ->GetPrerenderHostRegistry();
+  CHECK(registry);
+  return *registry;
 }
 
 mojo::PendingRemote<network::mojom::CookieAccessObserver>
@@ -9110,11 +9061,10 @@ NavigationRequest::ComputeWebExposedIsolationInfo() {
     return WebExposedIsolationInfo::CreateNonIsolated();
   }
 
-  // TODO(https://crbug.com/1385827): This is technically incorrect, because it
-  // does not take into account sandbox flags. Find how address this,
-  // potentially reusing COOP's origin once we have a COOP+origin bundle.
+  CHECK(coop_status().current_coop().origin.has_value());
+
   const GURL& url = common_params().url;
-  url::Origin origin = url::Origin::Create(url);
+  const url::Origin& origin = *coop_status().current_coop().origin;
 
   return SiteIsolationPolicy::ShouldUrlUseApplicationIsolationLevel(
              GetNavigationController()->GetBrowserContext(), url)
@@ -9157,11 +9107,7 @@ absl::optional<url::Origin> NavigationRequest::ComputeCommonCoopOrigin() {
       return GetTentativeOriginAtRequestTime();
     }
 
-    // TODO(https://crbug.com/1385827): This is technically incorrect, because
-    // it does not take into account sandbox flags. See how this can be
-    // addressed, potentially reusing COOP's origin once we have a COOP+origin
-    // bundle.
-    return url::Origin::Create(common_params().url);
+    return coop_status().current_coop().origin;
   }
 
   return absl::nullopt;

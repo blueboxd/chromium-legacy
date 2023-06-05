@@ -97,7 +97,8 @@ StructuredMetricsService::StructuredMetricsService(
   }
 
   // Setup the reporting service.
-  const reporting::StorageLimits storage_limits = GetLogStoreLimits();
+  const UnsentLogStore::UnsentLogStoreLimits storage_limits =
+      GetLogStoreLimits();
 
   reporting_service_ =
       std::make_unique<reporting::StructuredMetricsReportingService>(
@@ -123,7 +124,11 @@ base::TimeDelta StructuredMetricsService::GetUploadTimeInterval() {
 
 void StructuredMetricsService::RotateLogsAndSend() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (recorder_->events()->non_uma_events_size() == 0) {
+
+  // Verify that the recorder has been initialized and can be providing metrics.
+  // And if it is, then see if there are any events ready to be uploaded.
+  if (!recorder_->can_provide_metrics() ||
+      recorder_->events()->non_uma_events_size() == 0) {
     return;
   }
 
@@ -175,11 +180,12 @@ void StructuredMetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   reporting::StructuredMetricsReportingService::RegisterPrefs(registry);
 }
 
-reporting::StorageLimits StructuredMetricsService::GetLogStoreLimits() {
-  return reporting::StorageLimits{
-      .min_log_queue_count = static_cast<size_t>(kMinLogQueueCount.Get()),
-      .min_log_queue_size = static_cast<size_t>(kMinLogQueueSizeBytes.Get()),
-      .max_log_size = static_cast<size_t>(kMaxLogSizeBytes.Get()),
+UnsentLogStore::UnsentLogStoreLimits
+StructuredMetricsService::GetLogStoreLimits() {
+  return UnsentLogStore::UnsentLogStoreLimits{
+      .min_log_count = static_cast<size_t>(kMinLogQueueCount.Get()),
+      .min_queue_size_bytes = static_cast<size_t>(kMinLogQueueSizeBytes.Get()),
+      .max_log_size_bytes = static_cast<size_t>(kMaxLogSizeBytes.Get()),
   };
 }
 

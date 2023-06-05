@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/circular_deque.h"
+#include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/preloading/prefetch/no_vary_search_helper.h"
 #include "content/browser/preloading/prefetch/prefetch_type.h"
@@ -34,6 +35,8 @@ class CONTENT_EXPORT PrefetchDocumentManager
     : public DocumentUserData<PrefetchDocumentManager>,
       public WebContentsObserver {
  public:
+  using PrefetchEvictionCallback = base::RepeatingCallback<void(const GURL&)>;
+
   ~PrefetchDocumentManager() override;
 
   PrefetchDocumentManager(const PrefetchDocumentManager&) = delete;
@@ -48,6 +51,12 @@ class CONTENT_EXPORT PrefetchDocumentManager
   // |candidates|, and a prefetch for the URL of the candidate is started.
   void ProcessCandidates(
       std::vector<blink::mojom::SpeculationCandidatePtr>& candidates,
+      base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer);
+
+  // Attempts to prefetch the given candidate. Returns true if a new prefetch
+  // for the candidate's URL is started.
+  bool MaybePrefetch(
+      blink::mojom::SpeculationCandidatePtr candidate,
       base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer);
 
   // Starts the process to prefetch |url| with the given |prefetch_type|.
@@ -108,6 +117,9 @@ class CONTENT_EXPORT PrefetchDocumentManager
   // decision.
   bool CanPrefetchNow(PrefetchContainer* next_prefetch);
 
+  // See documentation for |prefetch_eviction_callback_|.
+  void SetPrefetchEvictionCallback(PrefetchEvictionCallback callback);
+
   base::WeakPtr<PrefetchDocumentManager> GetWeakPtr() {
     return weak_method_factory_.GetWeakPtr();
   }
@@ -154,6 +166,10 @@ class CONTENT_EXPORT PrefetchDocumentManager
   scoped_refptr<NoVarySearchHelper> no_vary_search_helper_;
 
   bool no_vary_search_support_enabled_ = false;
+
+  // Callback that is run after a prefetch started by this document is
+  // evicted.
+  PrefetchEvictionCallback prefetch_eviction_callback_;
 
   base::WeakPtrFactory<PrefetchDocumentManager> weak_method_factory_{this};
 

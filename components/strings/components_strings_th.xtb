@@ -46,6 +46,7 @@
 <translation id="1080116354587839789">พอดีกับความกว้าง</translation>
 <translation id="1081061862829655580">ถาด 19</translation>
 <translation id="1089439967362294234">เปลี่ยนรหัสผ่าน</translation>
+<translation id="1094777233105318927">ข้อมูลเกี่ยวกับเบราว์เซอร์ ระบบปฏิบัติการ อุปกรณ์ ซอฟต์แวร์ที่ติดตั้ง และไฟล์</translation>
 <translation id="1096545575934602868">ช่องนี้ต้องมีข้อมูลไม่เกิน <ph name="MAX_ITEMS_LIMIT" /> รายการ ระบบจะทิ้งรายการอื่นๆ ทั้งหมด</translation>
 <translation id="1100782917270858593">ปุ่มสำรวจต่อ กด Enter เพื่อสำรวจต่อและดูกิจกรรมที่เกี่ยวข้องในประวัติการเข้าชมใน Chrome</translation>
 <translation id="1101672080107056897">การดำเนินการผิดพลาด</translation>
@@ -1242,6 +1243,7 @@
 <translation id="4031179711345676612">อนุญาตให้ใช้ไมโครโฟน</translation>
 <translation id="4040350669425716613">วิทยาลัยและมหาวิทยาลัย</translation>
 <translation id="4047351652147966654">18 x 24 นิ้ว</translation>
+<translation id="404831776305217138">อัปเดต URL สําหรับส่วนขยายที่มีรหัส "<ph name="EXTENSION_ID" />" ไม่ถูกต้องหรือใช้รูปแบบที่ไม่รองรับ รูปแบบที่รองรับ ได้แก่ <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> และ <ph name="FILE_SCHEME" /></translation>
 <translation id="4050392779074832022">คุณจะใช้ที่อยู่นี้ในผลิตภัณฑ์ต่างๆ ของ Google ได้</translation>
 <translation id="405399507749852140">รับการแจ้งเตือนหากราคาลดลงในเว็บไซต์ใดก็ตาม</translation>
 <translation id="4056223980640387499">ซีเปีย</translation>
@@ -2288,9 +2290,12 @@
 <translation id="6554732001434021288">เข้าชมล่าสุด <ph name="NUM_DAYS" /> วันที่ผ่านมา</translation>
 <translation id="6556866813142980365">ทำซ้ำ</translation>
 <translation id="6557715786897013164">14 x 17 นิ้ว</translation>
+<translation id="6560786330438719938">แอปที่ติดตั้งหรือถอนการติดตั้ง และความถี่ในการใช้งาน</translation>
 <translation id="6569060085658103619">คุณกำลังดูหน้าส่วนขยาย</translation>
 <translation id="6569366777234823130">ภาพยนตร์ดราม่า</translation>
 <translation id="6573200754375280815">เจาะรูด้านขวา 2 รู</translation>
+<translation id="6576181918031900030">เริ่มแคสต์</translation>
+<translation id="6578434528542148658">รหัสส่วนขยายไม่ถูกต้อง</translation>
 <translation id="657902945730878902">การวาดภาพและระบายสี</translation>
 <translation id="6579630537141957243">เชื่อมต่ออุปกรณ์ MIDI ไหม</translation>
 <translation id="6579990219486187401">ชมพูอ่อน</translation>
@@ -3030,7 +3035,6 @@
 <translation id="8298115750975731693">Wi-Fi ที่คุณใช้ (<ph name="WIFI_NAME" />) อาจต้องการให้คุณไปที่ <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /></translation>
 <translation id="8303854710873047864">แสดงส่วน "<ph name="SECTION" />"</translation>
 <translation id="830498451218851433">พับครึ่ง</translation>
-<translation id="8307888238279532626">แอปที่ติดตั้งและความถี่ในการใช้</translation>
 <translation id="831997045666694187">ตอนเย็น</translation>
 <translation id="8321476692217554900">การแจ้งเตือน</translation>
 <translation id="8329068931308448247">Envelope #14</translation>
@@ -3255,6 +3259,7 @@
 <translation id="890493561996401738">ปุ่ม "นำคำแนะนำออก" กด Enter เพื่อนำออก <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910898109640902752">8 x 10 นิ้ว</translation>
 <translation id="8913778647360618320">ปุ่มจัดการวิธีการชำระเงิน กด Enter เพื่อจัดการการชำระเงินและข้อมูลบัตรเครดิตในการตั้งค่า Chrome</translation>
+<translation id="8919895429178014996">ซ่อนรายการทั้งหมด</translation>
 <translation id="8922013791253848639">อนุญาตโฆษณาในไซต์นี้เสมอ</translation>
 <translation id="892588693504540538">เจาะรูด้านขวาบน</translation>
 <translation id="8930330541574156305">อสังหาริมทรัพย์</translation>

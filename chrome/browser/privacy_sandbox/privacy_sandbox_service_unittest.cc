@@ -1003,7 +1003,8 @@ class PrivacySandboxServiceTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   TestInterestGroupManager test_interest_group_manager_;
   browsing_topics::MockBrowsingTopicsService mock_browsing_topics_service_;
-  raw_ptr<privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>
+  raw_ptr<privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate,
+          DanglingUntriaged>
       mock_delegate_;
 
   first_party_sets::ScopedMockFirstPartySetsHandler
@@ -4496,6 +4497,32 @@ TEST_F(PrivacySandboxServiceM1RestrictedNoticeUserCurrentlyUnrestricted,
                 kWaitingForGraduationRestrictedNoticeFlowCompleted),
         /*expected_count=*/1);
   }
+}
+
+TEST_F(
+    PrivacySandboxServiceM1RestrictedNoticeUserCurrentlyUnrestricted,
+    RecordPrivacySandbox4StartupMetrics_GraduationFlowWhenNoticeShownToGuardian) {
+  const std::string privacy_sandbox_prompt_startup_histogram =
+      "Settings.PrivacySandbox.PromptStartupState";
+
+  base::HistogramTester histogram_tester;
+
+  // User was reported restricted
+  prefs()->SetBoolean(prefs::kPrivacySandboxM1Restricted, true);
+
+  // Prompt is suppressed because direct notice was shown to guardian
+  prefs()->SetInteger(
+      prefs::kPrivacySandboxM1PromptSuppressed,
+      static_cast<int>(PrivacySandboxService::PromptSuppressedReason::
+                           kNoticeShownToGuardian));
+
+  privacy_sandbox_service()->RecordPrivacySandbox4StartupMetrics();
+  histogram_tester.ExpectBucketCount(
+      privacy_sandbox_prompt_startup_histogram,
+      static_cast<int>(
+          PrivacySandboxService::PromptStartupState::
+              kWaitingForGraduationRestrictedNoticeFlowNotCompleted),
+      /*expected_count=*/1);
 }
 
 class PrivacySandboxServiceM1RestrictedNoticeUserCurrentlyRestricted

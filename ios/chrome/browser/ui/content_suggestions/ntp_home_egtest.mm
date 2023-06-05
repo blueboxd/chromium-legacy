@@ -464,8 +464,8 @@ id<GREYMatcher> notPracticallyVisible() {
   [self focusFakebox];
   // Tap on a space in the collectionView that is not a Feed card.
   [[EarlGrey
-      selectElementWithMatcher:
-          grey_accessibilityID(ntp_home::DiscoverHeaderTitleAccessibilityID())]
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kContentSuggestionsCollectionIdentifier)]
       performAction:grey_tap()];
 
   [ChromeEarlGreyUI waitForAppToIdle];
@@ -1520,7 +1520,9 @@ id<GREYMatcher> notPracticallyVisible() {
 // Unfocus the omnibox.
 - (void)unfocusFakeBox {
   if ([ChromeEarlGrey isIPadIdiom]) {
-    [ChromeEarlGrey simulatePhysicalKeyboardEvent:UIKeyInputEscape flags:0];
+    // "escape" is a hardcoded key string in hardware_keyboard_util that maps to
+    // a HIDUsageCode.
+    [ChromeEarlGrey simulatePhysicalKeyboardEvent:@"escape" flags:0];
   } else {
     id<GREYMatcher> cancelButton =
         grey_accessibilityID(kToolbarCancelOmniboxEditButtonIdentifier);

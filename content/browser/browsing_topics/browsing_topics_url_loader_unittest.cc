@@ -29,9 +29,14 @@ namespace {
 using FollowRedirectParams =
     network::TestURLLoaderFactory::TestURLLoader::FollowRedirectParams;
 
-constexpr char kExpectedHeaderForOrigin1[] = "1;v=\"chrome.1:1:2\"";
+constexpr char kExpectedHeaderForEmptyTopics[] =
+    "();p=P0000000000000000000000000000000";
 
-constexpr char kExpectedHeaderForOrigin2[] = "2;v=\"chrome.3:4:5\"";
+constexpr char kExpectedHeaderForOrigin1[] =
+    "(1);v=chrome.1:1:2, ();p=P00000000000";
+
+constexpr char kExpectedHeaderForOrigin2[] =
+    "(2);v=chrome.1:1:2, ();p=P00000000000";
 
 class TopicsInterceptingContentBrowserClient : public ContentBrowserClient {
  public:
@@ -61,15 +66,20 @@ class TopicsInterceptingContentBrowserClient : public ContentBrowserClient {
         blink::mojom::EpochTopicPtr result_topic =
             blink::mojom::EpochTopic::New();
         result_topic->topic = 2;
-        result_topic->config_version = "chrome.3";
-        result_topic->taxonomy_version = "4";
-        result_topic->model_version = "5";
-        result_topic->version = "chrome.3:4:5";
+        result_topic->config_version = "chrome.1";
+        result_topic->taxonomy_version = "1";
+        result_topic->model_version = "2";
+        result_topic->version = "chrome.1:1:2";
         topics.push_back(std::move(result_topic));
       }
     }
 
     return true;
+  }
+
+  int NumVersionsInTopicsEpochs(
+      content::RenderFrameHost* main_frame) const override {
+    return 1;
   }
 
   size_t handle_topics_web_api_count() const {
@@ -156,15 +166,14 @@ class BrowsingTopicsURLLoaderTest : public RenderViewHostTestHarness {
     policy.emplace_back(
         blink::mojom::PermissionsPolicyFeature::kBrowsingTopics,
         /*allowed_origins=*/
-        std::vector<blink::OriginWithPossibleWildcards>{
-            blink::OriginWithPossibleWildcards::FromOrigin(
-                url::Origin::Create(GURL("https://google.com"))),
-            blink::OriginWithPossibleWildcards::FromOrigin(
-                url::Origin::Create(GURL("https://foo1.com"))),
-            blink::OriginWithPossibleWildcards::FromOrigin(
-                url::Origin::Create(GURL("https://foo2.com"))),
-            blink::OriginWithPossibleWildcards::FromOrigin(
-                url::Origin::Create(GURL("https://foo3.com")))},
+        std::vector{*blink::OriginWithPossibleWildcards::FromOrigin(
+                        url::Origin::Create(GURL("https://google.com"))),
+                    *blink::OriginWithPossibleWildcards::FromOrigin(
+                        url::Origin::Create(GURL("https://foo1.com"))),
+                    *blink::OriginWithPossibleWildcards::FromOrigin(
+                        url::Origin::Create(GURL("https://foo2.com"))),
+                    *blink::OriginWithPossibleWildcards::FromOrigin(
+                        url::Origin::Create(GURL("https://foo3.com")))},
         /*self_if_matches=*/absl::nullopt,
         /*matches_all_origins=*/false,
         /*matches_opaque_src=*/false);
@@ -438,7 +447,7 @@ TEST_F(BrowsingTopicsURLLoaderTest, EmptyTopics) {
   bool has_topics_header = pending_request->request.headers.GetHeader(
       "Sec-Browsing-Topics", &topics_header_value);
   EXPECT_TRUE(has_topics_header);
-  EXPECT_TRUE(topics_header_value.empty());
+  EXPECT_EQ(topics_header_value, kExpectedHeaderForEmptyTopics);
 
   EXPECT_EQ(browser_client().handle_topics_web_api_count(), 1u);
 

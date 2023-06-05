@@ -210,6 +210,7 @@ class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
         << " in test " << test.test_case_name() << "." << test.name();
     DCHECK_EQ(thread_pool_set_before_test_, ThreadPoolInstance::Get())
         << " in test " << test.test_case_name() << "." << test.name();
+    feature_list_set_before_test_ = nullptr;
   }
 
   // Check for leaks in test cases (consisting of one or more tests).
@@ -222,10 +223,12 @@ class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
         << " in case " << test_case.name();
     DCHECK_EQ(thread_pool_set_before_case_, ThreadPoolInstance::Get())
         << " in case " << test_case.name();
+    feature_list_set_before_case_ = nullptr;
   }
 
  private:
-  raw_ptr<FeatureList> feature_list_set_before_test_ = nullptr;
+  raw_ptr<FeatureList, DanglingUntriaged> feature_list_set_before_test_ =
+      nullptr;
   raw_ptr<FeatureList> feature_list_set_before_case_ = nullptr;
   raw_ptr<ThreadPoolInstance> thread_pool_set_before_test_ = nullptr;
   raw_ptr<ThreadPoolInstance> thread_pool_set_before_case_ = nullptr;

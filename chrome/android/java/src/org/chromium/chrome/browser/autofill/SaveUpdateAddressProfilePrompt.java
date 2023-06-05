@@ -19,8 +19,9 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.autofill.editors.EditorDialog;
 import org.chromium.chrome.browser.autofill.settings.AddressEditor;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -77,7 +78,8 @@ public class SaveUpdateAddressProfilePrompt {
                         .with(ModalDialogProperties.CUSTOM_VIEW, mDialogView);
         mDialogModel = builder.build();
 
-        mEditorDialog = new EditorDialog(activity, /*deleteRunnable=*/null, browserProfile);
+        mEditorDialog = new EditorDialog(activity, /*deleteRunnable=*/null,
+                HelpAndFeedbackLauncherImpl.getForProfile(browserProfile));
         mEditorDialog.setShouldTriggerDoneCallbackBeforeCloseAnimation(true);
         AddressEditor.Delegate delegate = new AddressEditor.Delegate() {
             @Override
@@ -85,7 +87,7 @@ public class SaveUpdateAddressProfilePrompt {
                 onEdited(address);
             }
         };
-        mAddressEditor = new AddressEditor(mEditorDialog, delegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, delegate, browserProfile,
                 new AutofillAddress(activity, autofillProfile),
                 /*saveToDisk=*/false, isUpdate, isMigrationToAccount);
         mDialogView.findViewById(R.id.edit_button).setOnClickListener(v -> {

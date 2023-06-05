@@ -6,7 +6,8 @@ found in the LICENSE file.
 <style include="oobe-dialog-host-styles cros-color-overrides">
 </style>
 
-<oobe-adaptive-dialog id="displaySizeDialog">
+<oobe-adaptive-dialog id="displaySizeDialog" role="presentation"
+    for-step="overview">
   <iron-icon slot="icon" icon="oobe-32:display"></iron-icon>
   <h1 slot="title" id="display-size-title">
     [[i18nDynamic(locale, 'displaySizeTitle')]]
@@ -29,6 +30,9 @@ found in the LICENSE file.
   </div>
 
   <div slot="bottom-buttons">
+    <oobe-text-button id="returnButton" text-key="choobeReturnButton"
+      hidden="[[!shouldShowReturn_]]" on-click="onReturnClicked_">
+    </oobe-text-button>
     <oobe-next-button id="nextButton" class="focus-on-show"
       on-click="onNextClicked_">
     </oobe-next-button>

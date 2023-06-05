@@ -116,7 +116,7 @@ component("gpu") {
     ]
   }
 
-  if (is_mac) {
+  if (is_apple) {
     public_deps += [ "//media/gpu/mac" ]
   }
 
@@ -232,6 +232,8 @@ component("gpu") {
       "windows/d3d11_video_decoder_client.h",
       "windows/d3d11_video_decoder_impl.cc",
       "windows/d3d11_video_decoder_impl.h",
+      "windows/d3d11_video_decoder_wrapper.cc",
+      "windows/d3d11_video_decoder_wrapper.h",
       "windows/d3d11_video_device_format_support.cc",
       "windows/d3d11_video_device_format_support.h",
       "windows/d3d11_video_processor_proxy.cc",
@@ -242,19 +244,15 @@ component("gpu") {
       "windows/d3d11_vp9_picture.h",
       "windows/d3d_accelerator.cc",
       "windows/d3d_accelerator.h",
-      "windows/dxva_picture_buffer_win.cc",
-      "windows/dxva_picture_buffer_win.h",
-      "windows/dxva_video_decode_accelerator_win.cc",
-      "windows/dxva_video_decode_accelerator_win.h",
-      "windows/gl_image_egl_stream.cc",
-      "windows/gl_image_egl_stream.h",
-      "windows/gl_image_pbuffer.cc",
-      "windows/gl_image_pbuffer.h",
+      "windows/d3d_video_decoder_wrapper.cc",
+      "windows/d3d_video_decoder_wrapper.h",
       "windows/init_guid.cc",
       "windows/media_foundation_video_encode_accelerator_win.cc",
       "windows/media_foundation_video_encode_accelerator_win.h",
       "windows/mf_audio_encoder.cc",
       "windows/mf_audio_encoder.h",
+      "windows/scoped_d3d_buffers.cc",
+      "windows/scoped_d3d_buffers.h",
       "windows/supported_profile_helpers.cc",
       "windows/supported_profile_helpers.h",
       "windows/video_rate_control_wrapper.h",
@@ -624,6 +622,7 @@ source_set("unit_tests") {
       "windows/d3d11_video_decoder_unittest.cc",
       "windows/d3d11_video_device_format_support_unittest.cc",
       "windows/d3d11_video_processor_proxy_unittest.cc",
+      "windows/scoped_d3d_buffers_unittest.cc",
       "windows/supported_profile_helpers_unittest.cc",
     ]
     libs = [ "dxguid.lib" ]

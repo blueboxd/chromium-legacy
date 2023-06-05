@@ -110,7 +110,8 @@ class ChromeWebAuthnCredentialsDelegateTest
         main_rfh(), creds, /*is_conditional_request=*/true,
         base::BindRepeating(
             &ChromeWebAuthnCredentialsDelegateTest::OnAccountSelected,
-            base::Unretained(this)));
+            base::Unretained(this)),
+        /*hybrid_callback=*/base::RepeatingClosure());
 #endif
   }
 
@@ -131,7 +132,8 @@ class ChromeWebAuthnCredentialsDelegateTest
 #endif
 
  protected:
-  raw_ptr<ChromeWebAuthnCredentialsDelegate> credentials_delegate_;
+  raw_ptr<ChromeWebAuthnCredentialsDelegate, DanglingUntriaged>
+      credentials_delegate_;
 #if !BUILDFLAG(IS_ANDROID)
   std::unique_ptr<ChromeAuthenticatorRequestDelegate>
       authenticator_request_delegate_;

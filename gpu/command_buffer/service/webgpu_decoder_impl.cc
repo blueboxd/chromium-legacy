@@ -51,6 +51,7 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
+#include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <dawn/native/D3D11Backend.h>
@@ -254,20 +255,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                           int num_entries,
                           int* entries_processed) override;
   base::StringPiece GetLogPrefix() override { return "WebGPUDecoderImpl"; }
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-  void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
-                                              uint32_t texture_target,
-                                              gl::GLImage* image) override {
-    NOTREACHED();
-  }
-#elif !BUILDFLAG(IS_ANDROID)
-  void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
-                                             uint32_t texture_target,
-                                             gl::GLImage* image) override {
-    NOTREACHED();
-  }
-#endif
-
   gles2::ContextGroup* GetContextGroup() override { return nullptr; }
   gles2::ErrorState* GetErrorState() override {
     NOTREACHED();
@@ -616,7 +603,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       DCHECK(buffer_size);
 
       base::CheckedNumeric<uint32_t> checked_bytes_per_row(
-          BitsPerPixel(format) / 8);
+          format.BitsPerPixel() / 8);
       checked_bytes_per_row *= size.width();
 
       uint32_t packed_bytes_per_row;
@@ -857,7 +844,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
       // It's ok to pass in empty GrFlushInfo here since SignalSemaphores()
       // will populate it with semaphores and call GrDirectContext::flush.
-      surface->flush();
+      skgpu::ganesh::Flush(surface);
       // Transition the image back to the desired end state. This is used for
       // transitioning the image to the external queue for Vulkan/GL interop.
       scoped_write_access->ApplyBackendSurfaceEndState();

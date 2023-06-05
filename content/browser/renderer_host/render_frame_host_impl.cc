@@ -170,6 +170,7 @@
 #include "content/public/browser/document_service_internal.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/network_service_util.h"
 #include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -186,7 +187,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/extra_mojo_js_features.mojom.h"
 #include "content/public/common/isolated_world_ids.h"
-#include "content/public/common/network_service_util.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/page_visibility_state.h"
 #include "content/public/common/referrer.h"
@@ -1110,7 +1110,7 @@ void RecordIdentifiabilityDocumentCreatedMetrics(
   }
 }
 
-bool PopupInheritCOOP(const RenderFrameHostImpl* opener) {
+bool IsOpenerSameOriginFrame(const RenderFrameHostImpl* opener) {
   return opener->GetLastCommittedOrigin() ==
          opener->GetMainFrame()->GetLastCommittedOrigin();
 }
@@ -1142,7 +1142,7 @@ bool CoopSuppressOpener(const RenderFrameHostImpl* opener) {
 
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin:
     case network::mojom::CrossOriginOpenerPolicyValue::kSameOriginPlusCoep:
-      return !PopupInheritCOOP(opener);
+      return !IsOpenerSameOriginFrame(opener);
   }
 }
 
@@ -1805,10 +1805,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // a speculative RFH.  So, a speculative main frame being deleted will always
   // pass this condition as well.
   if (was_created && render_view_host_->GetMainRenderFrameHost() != this) {
-    CHECK(IsPendingDeletion() || IsInBackForwardCache() ||
-          lifecycle_state() == LifecycleStateImpl::kPrerendering ||
-          lifecycle_state() == LifecycleStateImpl::kSpeculative)
-        << lifecycle_state();
+    CHECK_NE(lifecycle_state(), LifecycleStateImpl::kActive);
   }
 
   GetAgentSchedulingGroup().RemoveRoute(routing_id_);
@@ -4857,7 +4854,8 @@ void RenderFrameHostImpl::ResetOwnedNavigationRequests(
     // yet.
     DCHECK(same_document_navigation_requests_.empty());
 
-    if (ShouldQueueNavigationsWhenPendingCommitRFHExists()) {
+    if (ShouldQueueNavigationsWhenPendingCommitRFHExists() &&
+        HasPendingCommitForCrossDocumentNavigation()) {
       // With navigation queueing, pending commit navigations shouldn't get
       // canceled, unless the FrameTreeNode or renderer process
       // is gone/will be gone soon.
@@ -7940,13 +7938,16 @@ void RenderFrameHostImpl::CreateNewWindow(
 
   // COOP and COOP reporter are inherited from the opener to the popup's initial
   // empty document.
-  if (PopupInheritCOOP(/*opener=*/this) &&
+  if (IsOpenerSameOriginFrame(/*opener=*/this) &&
       GetMainFrame()->coop_access_report_manager()->coop_reporter()) {
     new_main_rfh->SetCrossOriginOpenerPolicyReporter(
         std::make_unique<CrossOriginOpenerPolicyReporter>(
             GetProcess()->GetStoragePartition(), GetLastCommittedURL(),
-            params->referrer->url, new_main_rfh->cross_origin_opener_policy(),
-            GetReportingSource(), isolation_info_.network_anonymization_key()));
+            params->referrer->url,
+            // TODO(https://crbug.com/1385827): See if we need to send the
+            // origin to reporters as well.
+            new_main_rfh->cross_origin_opener_policy(), GetReportingSource(),
+            isolation_info_.network_anonymization_key()));
   }
 
   mojo::PendingAssociatedRemote<mojom::Frame> pending_frame_remote;
@@ -8259,7 +8260,8 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeacon(
        destinations) {
     SendFencedFrameReportingBeaconInternal(
         event_data, event_type, destination,
-        /*from_renderer=*/true, attribution_reporting_runtime_features);
+        /*from_renderer=*/true, attribution_reporting_runtime_features,
+        GetFrameTreeNodeId());
   }
 }
 
@@ -8271,14 +8273,6 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
     return;
   }
 
-  // Automatic beacons can only be sent if the initiating frame had transient
-  // user activation when it navigated.
-  if (navigation_request.GetNavigationInitiatorActivationAndAdStatus() ==
-      blink::mojom::NavigationInitiatorActivationAndAdStatus::
-          kDidNotStartWithTransientActivation) {
-    return;
-  }
-
   if (!navigation_request.GetInitiatorFrameToken().has_value()) {
     return;
   }
@@ -8286,6 +8280,8 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
   // Treat the automatic beacon as if it's being sent by the document that
   // initiated the top-level navigation. (You can think of it like a
   // reportEvent call from that document.)
+  // TODO(crbug.com/1450281): initiator_rfh may be null for some navigations on
+  // Android.
   RenderFrameHostImpl* initiator_rfh = RenderFrameHostImpl::FromFrameToken(
       navigation_request.GetInitiatorProcessID(),
       navigation_request.GetInitiatorFrameToken().value());
@@ -8293,10 +8289,30 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
     return;
   }
 
+  // Automatic beacons can only be sent if the initiating frame had transient
+  // user activation when it navigated. For navigations originating from the
+  // contextual menu (i.e. "Open Link in X"), the navigation initiator
+  // activation status will not be set, so we check the initiator frame's user
+  // activation directly.
+  // For navigations originating from clicking a link directly, the navigation
+  // initiator will be set, but the initiator frame's transient user activation
+  // might have been consumed by navigation commit time, so we check the
+  // navigation request's initiator navigation status.
+  // It is safe to check both values at once. If one is not properly set, it
+  // will always be set to a false negative and not a false positive, so there
+  // is no way for that to cause an accidental beacon to be sent.
+  if (navigation_request.GetNavigationInitiatorActivationAndAdStatus() ==
+          blink::mojom::NavigationInitiatorActivationAndAdStatus::
+              kDidNotStartWithTransientActivation &&
+      !initiator_rfh->HasTransientUserActivation()) {
+    return;
+  }
+
   // Beacons can only be sent from inside a fenced frame/urn iframe tree, where
   // there is a fenced frame reporter.
   const absl::optional<FencedFrameProperties>& properties =
-      initiator_rfh->frame_tree_node()->GetFencedFrameProperties();
+      initiator_rfh->frame_tree_node()->GetFencedFrameProperties(
+          /*force_tree_traversal=*/true);
   if (!properties.has_value() || !properties->fenced_frame_reporter_) {
     return;
   }
@@ -8322,7 +8338,7 @@ void RenderFrameHostImpl::MaybeSendFencedFrameReportingBeacon(
     initiator_rfh->SendFencedFrameReportingBeaconInternal(
         info->data, blink::kFencedFrameTopNavigationBeaconType, destination,
         /*from_renderer=*/false, info->attribution_reporting_runtime_features,
-        navigation_request.GetNavigationId());
+        GetFrameTreeNodeId(), navigation_request.GetNavigationId());
   }
 }
 
@@ -8333,6 +8349,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconInternal(
     bool from_renderer,
     network::AttributionReportingRuntimeFeatures
         attribution_reporting_runtime_features,
+    int initiator_frame_tree_node_id,
     absl::optional<int64_t> navigation_id) {
   if (!IsActive()) {
     // reportEvent is not allowed when this RenderFrameHost or one of its
@@ -8342,7 +8359,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconInternal(
 
   // Get the reporting metadata associated with the fenced frame.
   const absl::optional<FencedFrameProperties>& fenced_frame_properties =
-      frame_tree_node_->GetFencedFrameProperties();
+      frame_tree_node_->GetFencedFrameProperties(/*force_tree_traversal=*/true);
   if (fenced_frame_properties.has_value() &&
       fenced_frame_properties->is_ad_component_) {
     if (from_renderer) {
@@ -8392,7 +8409,7 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconInternal(
           event_type, event_data, destination,
           /*request_initiator_frame=*/this,
           attribution_reporting_runtime_features, error_message,
-          navigation_id)) {
+          initiator_frame_tree_node_id, navigation_id)) {
     AddMessageToConsole(blink::mojom::ConsoleMessageLevel::kError,
                         error_message);
   }
@@ -9739,7 +9756,8 @@ void RenderFrameHostImpl::CommitNavigation(
           subresource_loader_factories_config.ukm_source_id(),
           &factory_receiver, /*header_client=*/nullptr,
           /*bypass_redirect_checks=*/nullptr,
-          /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr);
+          /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr,
+          /*navigation_response_task_runner=*/nullptr);
       mojo::Remote<network::mojom::URLLoaderFactory> direct_factory_for_webui(
           CreateWebUIURLLoaderFactory(this, effective_scheme, {}));
       direct_factory_for_webui->Clone(std::move(factory_receiver));
@@ -10831,7 +10849,7 @@ void RenderFrameHostImpl::WillCreateURLLoaderFactory(
       ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
       request_initiator, /*navigation_id=*/absl::nullopt, ukm_source_id,
       factory_receiver, header_client, bypass_redirect_checks,
-      disable_secure_dns, factory_override);
+      disable_secure_dns, factory_override, /*navigation_task_runner=*/nullptr);
 
   // Keep DevTools proxy last, i.e. closest to the network.
   devtools_instrumentation::WillCreateURLLoaderFactory(
@@ -11192,8 +11210,16 @@ bool RenderFrameHostImpl::CancelPrerendering(
   // frame tree before accessing `GetPrerenderHostRegistry()`. Non-prerendered
   // frames may outlive the PrerenderHostRegistry during WebContents
   // destruction.
-  if (outermost_frame->GetFrameType() != FrameType::kPrerenderMainFrame)
+  if (outermost_frame->GetFrameType() != FrameType::kPrerenderMainFrame) {
     return false;
+  }
+
+  // If this runs during the WebContents destruction, PrerenderHostRegistry was
+  // already destroyed and bound prerenderings are already cancelled.
+  // We can check the FrameTree status as the tree's shutdown runs first.
+  if (outermost_frame->frame_tree().IsBeingDestroyed()) {
+    return false;
+  }
 
   return delegate_->GetPrerenderHostRegistry()->CancelHost(
       outermost_frame->frame_tree_node_id(), reason);
@@ -12728,6 +12754,11 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   // possible because we need the origin for the computation. The linked bug
   // moves the origin computation earlier in the navigation request, which will
   // enable the move to |NavigationRequest::ComputePoliciesToCommit|.
+
+  // TODO(https://crbug.com/1385827): See if the above is possible after we
+  // bundle the COOP origin.
+  // TODO(https://crbug.com/1442535): Make cross-origin iframes inherit
+  // Cross-Origin-Opener-Policy: same-origin-allow-popups.
   if (parent_) {
     if (GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
             params.origin)) {
@@ -13087,6 +13118,20 @@ void RenderFrameHostImpl::SendCommitNavigation(
   //    otherwise).
   MaybeSendFencedFrameReportingBeacon(*navigation_request);
 
+  // If this commit is for a main frame in another browsing context group, warn
+  // the renderer that it should update the browsing context group information
+  // of the page if this frame successfully commits. Note that the
+  // BrowsingContextGroupInfo in the params should only be populated at commit
+  // time, and only in the case of a swap.
+  CHECK(!commit_params->browsing_context_group_info.has_value());
+  if (is_main_frame() &&
+      navigation_request->browsing_context_group_swap().ShouldSwap()) {
+    commit_params->browsing_context_group_info =
+        blink::BrowsingContextGroupInfo(
+            GetSiteInstance()->browsing_instance_token(),
+            GetSiteInstance()->coop_related_group_token());
+  }
+
   commit_params->commit_sent = base::TimeTicks::Now();
   navigation_client->CommitNavigation(
       std::move(common_params), std::move(commit_params),
@@ -13126,6 +13171,20 @@ void RenderFrameHostImpl::SendCommitFailedNavigation(
   DCHECK_NE(GURL(), common_params->url);
   DCHECK_NE(net::OK, error_code);
   IncreaseCommitNavigationCounter();
+
+  // If this commit is for a main frame in another browsing context group, warn
+  // the renderer that it should update the browsing context group information
+  // of the page. Note that the BrowsingContextGroupInfo in the params should
+  // only be populated at commit time, and only in the case of a swap.
+  CHECK(!commit_params->browsing_context_group_info.has_value());
+  if (is_main_frame() &&
+      navigation_request->browsing_context_group_swap().ShouldSwap()) {
+    commit_params->browsing_context_group_info =
+        blink::BrowsingContextGroupInfo(
+            GetSiteInstance()->browsing_instance_token(),
+            GetSiteInstance()->coop_related_group_token());
+  }
+
   navigation_client->CommitFailedNavigation(
       std::move(common_params), std::move(commit_params),
       has_stale_copy_in_cache, error_code, extended_error_code,

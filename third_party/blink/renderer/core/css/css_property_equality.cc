@@ -877,6 +877,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.AccentColor() == b.AccentColor();
     case CSSPropertyID::kTextEmphasisColor:
       return a.TextEmphasisColor() == b.TextEmphasisColor();
+    case CSSPropertyID::kWordBoundaryDetection:
+      return a.GetWordBoundaryDetection() == b.GetWordBoundaryDetection();
     case CSSPropertyID::kZoom:
       return a.Zoom() == b.Zoom();
 
@@ -1118,7 +1120,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
 
     // No transitions on internal properties:
     case CSSPropertyID::kInternalAlignContentBlock:
-    case CSSPropertyID::kInternalAlignSelfBlock:
     case CSSPropertyID::kInternalEmptyLineHeight:
     case CSSPropertyID::kInternalFontSizeDelta:
     case CSSPropertyID::kInternalForcedBackgroundColor:

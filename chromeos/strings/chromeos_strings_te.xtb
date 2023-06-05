@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">DNSను పరిష్కరించడం సాధ్యం కాదు</translation>
 <translation id="1018656279737460067">రద్దయింది</translation>
 <translation id="1020274983236703756">ప్రత్యేకించి <ph name="PRODUCT_NAME" />‌లో మాత్రమే ఉండే అస్సెట్‌లు ఇప్పుడు అందుబాటులో ఉన్నాయి</translation>
-<translation id="1022433422498218992">జనరల్ కంట్రోల్స్</translation>
 <translation id="1022628058306505708">ఎర్త్ ఫ్లో</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> థ్రెడ్‌లు, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">కొత్త ఫీచర్ అందుబాటులో ఉంది, మరింత తెలుసుకోవడానికి పై వైపు బాణం కీని ఉపయోగించండి.</translation>
@@ -59,6 +58,7 @@
 <translation id="1423591390236870726"><ph name="KEY_NAME" /> కీని నొక్కలేదు</translation>
 <translation id="1435763214710588005">ప్రతి నెలా ఎంచుకున్న రోజున డేటా వినియోగాన్ని ఆటోమేటిక్‌గా రీసెట్ చేస్తుంది</translation>
 <translation id="1442433966118452622">ఇమేజ్ సోర్స్</translation>
+<translation id="1449035143498573192">Google Searchలో తెరవండి</translation>
 <translation id="1451536289672181509">పరికర రకం కీబోర్డ్.</translation>
 <translation id="1459693405370120464">వాతావరణం</translation>
 <translation id="1468664791493211953">ఆఫర్‌లు</translation>
@@ -114,7 +114,6 @@
 <translation id="1768959921651994223">ప్రామాణీకరణ రకం</translation>
 <translation id="1776228893584526149">వాల్‌పేపర్ రంగు</translation>
 <translation id="1782199038061388045">అనువాదం</translation>
-<translation id="1790209694022261219">విండోలు, డెస్క్‌లు</translation>
 <translation id="1792647875738159689">స్కానింగ్ రద్దు అవుతోంది</translation>
 <translation id="1801418420130173017">ముదురు రంగు రూపాన్ని డిజేబుల్ చేయండి</translation>
 <translation id="1807246157184219062">లేత</translation>
@@ -245,7 +244,6 @@
 <translation id="3008341117444806826">రిఫ్రెష్ చేయండి</translation>
 <translation id="3009958530611748826">దీనిలో సేవ్ చేయడానికి ఫోల్డర్‌ను ఎంచుకోండి</translation>
 <translation id="3017079585324758401">నేపథ్యం</translation>
-<translation id="3020183492814296499">షార్ట్‌కట్‌లు</translation>
 <translation id="3027578600144895987">కెమెరాను మూసివేయండి</translation>
 <translation id="3031560714565892478">పరికర రకం వీడియో కెమెరా.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -615,6 +613,7 @@
 <translation id="5972388717451707488">ఇంజిన్‌ను అప్‌డేట్ చేయండి</translation>
 <translation id="5984145644188835034">ఆటోమేటిక్ వాల్‌పేపర్</translation>
 <translation id="6017514345406065928">ఆకుపచ్చ</translation>
+<translation id="6019566113895157499">కీ షార్ట్‌కట్‌లు</translation>
 <translation id="6034694447310538551">ఆటోమేటిక్ నెలవారీ రీసెట్‌ను ఎనేబుల్ చేయండి</translation>
 <translation id="6037291330010597344">స్కానర్ డాక్యుమెంట్ ఫీడర్ ఖాలీగా ఉంది. డాక్యుమెంట్‌లను జోడించి, మళ్లీ ట్రై చేయండి.</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
@@ -861,6 +860,7 @@
 <translation id="7953669802889559161">ఇన్‌పుట్‌లు</translation>
 <translation id="7955587717700691983">బ్లూటూత్ కీబోర్డ్</translation>
 <translation id="7960831585769876809">ఉష్ణోగ్రత</translation>
+<translation id="7971535376154084247">సాధారణ కంట్రోల్స్</translation>
 <translation id="7977800524392185497"><ph name="NETWORK_NAME" /> నెట్‌వర్క్‌లో చేరడానికి, సెట్టింగ్‌లకు వెళ్లండి</translation>
 <translation id="7978412674231730200">వ్యక్తిగత కీ</translation>
 <translation id="7994702968232966508">EAP పద్ధతి</translation>
@@ -924,6 +924,7 @@
 <translation id="8461329675984532579">స్వస్థల నెట్‌వర్క్ ప్రదాత పేరు</translation>
 <translation id="8475690821716466388">బలహీనమైన ప్రోటోకాల్ WEP PSKతో Wi-Fi నెట్‌వర్క్ సురక్షితం చేయబడింది</translation>
 <translation id="8476242415522716722">కీబోర్డ్ బ్రైట్‌నెస్ మరింత తక్కువగా ఉంది</translation>
+<translation id="8476942730579767658">విండోలు, డెస్క్‌లు</translation>
 <translation id="8477551185774834963">DNS ప్రతిస్పందన సమయం అనుమతించదగిన పరిమితికి కొద్దిగా మించి ఉంది</translation>
 <translation id="8483248364096924578">IP అడ్రస్‌</translation>
 <translation id="8491311378305535241">Android యాప్‌ల నుండి HTTP వెబ్‌సైట్‌లకు ఫైర్‌వాల్ ద్వారా కనెక్ట్ చేయడం సాధ్యపడదు</translation>

@@ -217,7 +217,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.DirectoryListLoad.{RootType}.{NumFiles}"
-    units="ms" expires_after="2023-06-27">
+    units="ms" expires_after="2024-06-27">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -1135,6 +1135,7 @@ chromium-metrics-reviews@google.com.
     ChromeOS File Browser: The time it took to complete user search request.
   </summary>
   <token key="Source">
+    <variant name="DocumentsProvider"/>
     <variant name="Drive"/>
     <variant name="Local"/>
     <variant name="Removable"/>
@@ -1235,7 +1236,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.UpdateAvailableApps.{NumApps}" units="ms"
-    expires_after="2023-06-27">
+    expires_after="2024-06-27">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>

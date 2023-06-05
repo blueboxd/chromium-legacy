@@ -46,6 +46,7 @@
 <translation id="1080116354587839789">Dopasuj do szerokości</translation>
 <translation id="1081061862829655580">Taca 19</translation>
 <translation id="1089439967362294234">Zmień hasło</translation>
+<translation id="1094777233105318927">Informacje o przeglądarce, systemie operacyjnym, urządzeniu, zainstalowanym oprogramowaniu i plikach</translation>
 <translation id="1096545575934602868">Maksymalna liczba wpisów w tym polu to <ph name="MAX_ITEMS_LIMIT" />. Kolejne wpisy zostaną odrzucone.</translation>
 <translation id="1100782917270858593">Przycisk wznawiania serii czynności; aby wznowić serię czynności i zobaczyć odpowiednią aktywność w historii Chrome, naciśnij Enter</translation>
 <translation id="1101672080107056897">Działanie w razie wystąpienia błędu</translation>
@@ -1243,6 +1244,7 @@ Uruchamianie aplikacji może potrwać dłużej niż zwykle.</translation>
 <translation id="4031179711345676612">Zezwolono na dostęp do mikrofonu</translation>
 <translation id="4040350669425716613">Szkoły wyższe</translation>
 <translation id="4047351652147966654">18 x 24 cale</translation>
+<translation id="404831776305217138">URL aktualizacji rozszerzenia o identyfikatorze „<ph name="EXTENSION_ID" />” jest nieprawidłowy lub używa nieobsługiwanego schematu. Obsługiwane schematy to: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> i <ph name="FILE_SCHEME" />.</translation>
 <translation id="4050392779074832022">Będziesz mieć możliwość używania go w różnych usługach Google</translation>
 <translation id="405399507749852140">Jeśli na którejkolwiek stronie produkt stanieje, otrzymasz alert</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -2289,9 +2291,12 @@ Uruchamianie aplikacji może potrwać dłużej niż zwykle.</translation>
 <translation id="6554732001434021288">Ostatnio używano <ph name="NUM_DAYS" /> dni temu</translation>
 <translation id="6556866813142980365">Ponów</translation>
 <translation id="6557715786897013164">14 x 17 cali</translation>
+<translation id="6560786330438719938">Zainstalowane lub odinstalowane aplikacje i częstotliwość ich używania</translation>
 <translation id="6569060085658103619">Przeglądasz stronę rozszerzenia</translation>
 <translation id="6569366777234823130">Dramaty filmowe</translation>
 <translation id="6573200754375280815">Dwa otwory po prawej</translation>
+<translation id="6576181918031900030">Rozpocznij przesyłanie</translation>
+<translation id="6578434528542148658">Nieprawidłowy identyfikator rozszerzenia.</translation>
 <translation id="657902945730878902">Rysowanie i kolorowanie</translation>
 <translation id="6579630537141957243">Podłączyć urządzenie MIDI?</translation>
 <translation id="6579990219486187401">Jasnoróżowy</translation>
@@ -3031,7 +3036,6 @@ Dodatkowe informacje:
 <translation id="8298115750975731693">Sieć Wi-Fi (<ph name="WIFI_NAME" />), której używasz, może wymagać otwarcia strony <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8303854710873047864">Wyświetlam sekcję „<ph name="SECTION" />”</translation>
 <translation id="830498451218851433">Składanie w połowie</translation>
-<translation id="8307888238279532626">Zainstalowane aplikacje i częstotliwość ich użycia</translation>
 <translation id="831997045666694187">Wieczorem</translation>
 <translation id="8321476692217554900">powiadomienia</translation>
 <translation id="8329068931308448247">Koperta nr 14</translation>
@@ -3255,6 +3259,7 @@ Dodatkowe informacje:
 <translation id="890493561996401738">Usuń przycisk sugestii. Naciśnij Enter, by usunąć, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910898109640902752">8 x 10 cali</translation>
 <translation id="8913778647360618320">Przycisk zarządzania formami płatności. Naciśnij Enter, by zarządzać informacjami o płatnościach i danymi kart kredytowych w ustawieniach Chrome.</translation>
+<translation id="8919895429178014996">Ukryj wszystkie elementy</translation>
 <translation id="8922013791253848639">Zawsze zezwalaj na wyświetlanie reklam na tej stronie</translation>
 <translation id="892588693504540538">Otwór w prawym górnym rogu</translation>
 <translation id="8930330541574156305">Nieruchomości</translation>

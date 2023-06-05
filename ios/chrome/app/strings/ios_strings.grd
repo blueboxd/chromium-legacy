@@ -862,9 +862,6 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_DEFAULT_BROWSER_HALF_SCREEN_PROMO_SECONDARY_BUTTON_TEXT" desc="Text of button that will dismiss the half screen default browser promo [iOS only]">
         No, Thanks
       </message>
-      <message name="IDS_IOS_DEFAULT_BROWSER_REMIND_ME_LATER_BUTTON_TEXT" desc="Text of button that will show the default browser modal promo UI again at a later time.  [iOS only]">
-        Remind Me Later
-      </message>
       <message name="IDS_IOS_DEFAULT_BROWSER_SECONDARY_BUTTON_TEXT" desc="Text of secondary button that will dismiss the default browser modal promo UI [iOS only]">
         No Thanks
       </message>
@@ -1060,6 +1057,9 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_FEED_MANAGEMENT_FOLLOWING_TEXT" desc="The 'Following' row title in the feed management UI.">
         Following
       </message>
+      <message name="IDS_IOS_FEED_MANAGEMENT_FOLLOWING_DETAIL" desc="The explanation of the 'Following' row title in the feed management UI.">
+        Manage the sites you follow
+      </message>
       <message name="IDS_IOS_FEED_MANAGEMENT_INTERESTS_DETAIL" desc="The explanation of the 'Interests' row in the feed management UI.">
         See and edit the topics you're interested in
       </message>
@@ -1230,6 +1230,16 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Sync. [Length: 26em] [iOS only]">
         Sync
+      </message>
+      <!-- TODO(crbug.com/1449220): Introduce final strings. -->
+      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TITLE" desc="Title for the view in the Settings for account features management UI. [Length: 26em] [iOS only]">
+        **Account**
+      </message>
+      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_HEADER" desc="Title for the types list in the account features management UI. [Length: 26em] [iOS only]">
+        **In Your Google Account**
+      </message>
+      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION" desc="Description of what happens when switching a type in the types list in the account features management UI. [Length: 26em] [iOS only]">
+        **When on, data is saved in your Google Account. When off, data is saved only to this device.**
       </message>
       <message name="IDS_IOS_SYNC_SETTINGS_TITLE" desc="Title for the navigation item in Advanced Settings. [Length: 26em] [iOS only]">
         Sync
@@ -2934,6 +2944,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_CHECKUP" desc="Title for the item in Settings for Password Checkup feature." meaning="Label tells the user about status of Password Checkup [CHAR_LIMIT=25] [iOS only]">
         Password Checkup
       </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_SAFE_STATE_ACCESSIBILITY_LABEL" is_accessibility_with_no_ui="true" desc="Addition to the accessibility label for the Password Checkup cell in the Password Manager page when the Password Checkup resulted with no insecure passwords. Meaning that all saved passwords are safe. [iOS only]">
+        No issues found
+      </message>
       <message name="IDS_IOS_PASSWORD_CHECKUP_ONGOING" desc="In Title Case: Title for the item in Settings for Password Checkup feature while the checks are running. [CHAR_LIMIT=25] [iOS only]" meaning="In Title Case.">
         Checking Passwords…
       </message>
@@ -3024,7 +3037,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Entered on a deceptive site and found in a data breach
       </message>
       <message name="IDS_IOS_COMPROMISED_PASSWORD_ISSUES_DISMISSED_WARNINGS_BUTTON_TITLE" desc="Text of the button presenting the password manager screen displaying compromised credential issues dismissed by the user. [iOS only]">
-        Dismissed Warnings (<ph name="COUNT">$1<ex>2</ex></ph>)
+        Dismissed Warnings
       </message>
       <message name="IDS_IOS_CHANGE_COMPROMISED_PASSWORD" desc="Button which is shown on Password Details Screen when password is compromised. [iOS only]" meaning="Telling user to change password on a website since it is compromised.">
         Change Password on Website

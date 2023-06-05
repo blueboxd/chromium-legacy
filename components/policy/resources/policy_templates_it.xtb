@@ -215,6 +215,7 @@ Tieni presente che su <ph name="MS_WIN_NAME" />, <ph name="MAC_OS_NAME" /> e <ph
 <translation id="1198183996903759302">Se il criterio è impostato su true (o se <ph name="HARDWARE_ACCELERATION_MODE_ENABLED_POLICY_NAME" /> è impostato su false), le pagine web non possono accedere all'API WebGL e i plug-in non possono usare l'API Pepper 3D.
 
       Se il criterio è impostato su false o non viene configurato, le pagine web possono usare l'API WebGL e i plug-in possono usare l'API Pepper 3D, ma le impostazioni predefinite del browser potrebbero comunque richiedere argomenti della riga di comando per usare queste API.</translation>
+<translation id="1198458955128279215">Utilizza il comportamento predefinito del piano di implementazione delle funzionalità.</translation>
 <translation id="1202216683470826356">Mostra schede nella pagina Nuova scheda</translation>
 <translation id="120314092766637918">Se questo criterio viene attivato o se non viene configurato, la protezione contro il phishing lato client verrà controllata da <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /> per <ph name="PRODUCT_NAME" />. Se <ph name="SAFE_BROWSING_PROTECTION_LEVEL_POLICY_NAME" /> è impostato su <ph name="SAFE_BROWSING_PROTECTION_LEVEL_VALUE_STANDARD" /> o <ph name="SAFE_BROWSING_PROTECTION_LEVEL_VALUE_ENHANCED" />, la protezione dal phishing lato client esegue un modello locale per verificare se si tratta di una pagina come phishing. Se il modello ritiene che la pagina sia di phishing, <ph name="PRODUCT_NAME" /> invia a Google una richiesta di esito finale.
 Se questo criterio viene disattivato, la protezione contro il phishing lato client non esegue alcuna protezione e non invia dati a Google per esiti.</translation>
@@ -835,6 +836,7 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 <translation id="1768225118528727376">Concedi l'autorizzazione per la gestione delle finestre su questi siti</translation>
 <translation id="1770071413238151235">Formato dell'orologio di 12 ore</translation>
 <translation id="1771024053220392089">Disattiva Supporto dei browser precedenti</translation>
+<translation id="1781225230395284182">Mostra la finestra di dialogo di annullamento prima dell'unload della chiamata di event.preventDefault().</translation>
 <translation id="1781356041596378058">Questa norma controlla anche l'accesso alle Opzioni sviluppatore di Android. Se la norma viene impostata su true, gli utenti non possono accedere alle Opzioni sviluppatore. Se la norma viene impostata su false o non viene impostata, gli utenti possono accedere alle Opzioni sviluppatore toccando sette volte il numero di build nell'app Impostazioni di Android.</translation>
 <translation id="1787790976045065845">Questo criterio viene applicato soltanto se il criterio <ph name="SECURITY_TOKEN_SESSION_BEHAVIOR_POLICY_NAME" /> è impostato su <ph name="SECURITY_TOKEN_SESSION_BEHAVIOR_LOCK" /> o <ph name="SECURITY_TOKEN_SESSION_BEHAVIOR_LOGOUT" /> e un utente che effettua l'autenticazione tramite smart card rimuove quest'ultima. Consente inoltre di specificare per quanti secondi viene visualizzata una notifica che informa l'utente dell'azione imminente. Questa notifica blocca lo schermo. L'azione viene compiuta soltanto allo scadere della notifica. L'utente può impedire l'azione inserendo di nuovo la smart card prima della scadenza della notifica. Se questo criterio viene impostato su 0, non viene visualizzata alcuna notifica e l'azione viene compiuta immediatamente.</translation>
 <translation id="1793346220873697538">Disattiva la stampa PIN per impostazione predefinita</translation>
@@ -1920,6 +1922,7 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 <translation id="2787774054174244402">L'impostazione del criterio su True impedisce agli utenti di scrivere su dispositivi di archiviazione esterni.
 
       A meno che lo spazio di archiviazione esterno non sia bloccato, se imposti ExternalStorageReadOnly su False o non lo imposti, gli utenti possono creare e modificare i file dei dispositivi di archiviazione esterni fisicamente scrivibili. Puoi bloccare lo spazio di archiviazione esterno impostando ExternalStorageDisable su True.</translation>
+<translation id="2788443040242264100">Non mostrare la finestra di dialogo di annullamento prima dell'unload della chiamata di event.preventDefault().</translation>
 <translation id="2789742777235177478">Limita il tempo per cui un utente autenticato tramite GAIA senza SAML può accedere offline nella schermata di blocco</translation>
 <translation id="2796714419743648316">Lista consentita limiti di utilizzo per app</translation>
 <translation id="2801065672151277034">Impostazioni di gestione dei certificati</translation>
@@ -2715,6 +2718,18 @@ in concomitanza con la rimozione del supporto per l'utilizzo dello strumento di 
       Quando la norma non viene impostata o non contiene intervalli di tempo:
       Le verifiche automatiche degli aggiornamenti non verranno bloccate da questa norma, ma potrebbero essere bloccate da altre norme.
       Fino a M88, questa funzionalità è attiva solo sui dispositivi <ph name="PRODUCT_OS_NAME" /> configurati come kiosk ad avvio automatico. Gli altri dispositivi non risulteranno limitati da questa norma. Tuttavia, a partire da M89, questa norma è attiva su tutti i dispositivi <ph name="PRODUCT_OS_NAME" />.</translation>
+<translation id="3457921137261127955">L'estensione di utilizzo della chiave X.509 dichiara come può essere utilizzata la chiave in un certificato. Queste istruzioni assicurano che i certificati non vengano utilizzati in un contesto imprevisto, che protegge da una classe di attacchi multiprotocollo su HTTPS e su altri protocolli. Affinché questo comando funzioni, i client HTTPS devono verificare che i certificati del server corrispondano ai parametri TLS della connessione.
+
+Se questo criterio viene impostato su Attivato, <ph name="PRODUCT_NAME" /> eseguirà questo controllo.
+In questo modo è possibile evitare attacchi in cui un utente malintenzionato manipola il browser per interpretare una chiave in modo non intenzionale dal proprietario del certificato.
+
+Se questo criterio viene impostato su Disabled, <ph name="PRODUCT_NAME" /> ignorerà questo controllo nelle connessioni HTTPS che negoziano TLS 1.2 e utilizzano un certificato RSA che si collega a un anchor trust locale. Esempi di anchor trust locali includono i certificati radice forniti dall'utente o forniti dai criteri. In tutti gli altri casi, il controllo viene eseguito indipendentemente dall'impostazione di questo criterio.
+
+Se il criterio non viene configurato, <ph name="PRODUCT_NAME" /> si comporterà come se il criterio fosse disattivato.
+
+Questo criterio è disponibile per gli amministratori per visualizzare in anteprima il comportamento di una release futura che attiverà il controllo per impostazione predefinita. A quel punto, questo criterio rimarrà temporaneamente disponibile per gli amministratori che hanno bisogno di più tempo per eseguire l'aggiornamento.
+
+Le connessioni che non superano il controllo non andranno a buon fine con l'errore ERR_SSL_KEY_USAGE_INCOMPATIBLE. I siti che non superano questo errore hanno probabilmente un certificato configurato in modo errato. Le moderne suite di crittografia ECDHE_RSA utilizzano l'opzione di utilizzo della chiave "digitalSignature", mentre le suite di crittografia di decrittografia precedenti utilizzano l'opzione di utilizzo della chiave "keyEncipherment". In caso di dubbi, gli amministratori devono includere entrambi i certificati RSA destinati a HTTPS.</translation>
 <translation id="3459509316159669723">Stampa</translation>
 <translation id="3461279434465463233">Segnala lo stato dell'alimentazione</translation>
 <translation id="3478024346823118645">Cancella dati utente all'uscita</translation>
@@ -3238,6 +3253,7 @@ Questo criterio è una soluzione alternativa temporanea e verrà rimosso dopo il
 <translation id="3918339829588313389">Consenti agli utenti di impostare un PIN inefficace</translation>
 <translation id="3924506460382372403">Disattiva i report sullo stato della scheda grafica del dispositivo</translation>
 <translation id="3925377537407648234">Imposta fattore di scala e risoluzione del display</translation>
+<translation id="3926681471685211524">Controlla l'utilizzo delle chiavi RSA per i certificati server emessi da trust anchor locali</translation>
 <translation id="3927137827189017535">Consente di attivare la funzione di accessibilità dei tasti permanenti nella schermata di accesso.
 
           Se questo criterio viene impostato su true, i tasti permanenti saranno sempre attivi nella schermata di accesso.
@@ -3351,6 +3367,11 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4052529125939620019">Carica l'estensione del componente CryptoToken all'avvio</translation>
 <translation id="4053157306171963473">Disattiva i report sul tempo di attività del dispositivo</translation>
 <translation id="4053612967614057854">Disattiva tastiera sullo schermo</translation>
+<translation id="4055758693679485627">Consente di configurare un elenco dei tipi di dati di navigazione che dovrebbero essere eliminati alla chiusura di tutte le finestre del browser da parte dell'utente. Tra i tipi di dati disponibili ci sono: cronologia di navigazione (<ph name="DATA_TYPE_BROWSING_HISTORY" />), cronologia dei download (<ph name="DATA_TYPE_DOWNLOAD_HISTORY" />), cookie (<ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />), cache <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />, compilazione automatica (<ph name="DATA_TYPE_AUTOFILL" />), password (<ph name="DATA_TYPE_PASSWORD" />), impostazioni sito (<ph name="DATA_TYPE_SITE_SETTINGS" />) e dati di app ospitate (<ph name="DATA_TYPE_HOSTED_APP_DATA" />). Questo criterio non ha la precedenza su <ph name="ALLOW_DELETING_BROWSER_HISTORY_POLICY_NAME" />.
+
+Fino a Chrome 114, questo criterio richiedeva l'impostazione del criterio <ph name="SYNC_DISABLED_POLICY_NAME" /> su true. A partire da Chrome 115, la configurazione di questo criterio disattiva la sincronizzazione per i rispettivi tipi di dati se "<ph name="CHROME_SYNC_NAME" />" non viene disattivato impostando il criterio <ph name="SYNC_DISABLED_POLICY_NAME" /> e non viene disattivato <ph name="BROWSER_SIGNIN_POLICY_NAME" />.
+
+      Se <ph name="PRODUCT_NAME" /> non si chiude correttamente (ad esempio, in caso di arresto anomalo del browser o del sistema operativo), i dati di navigazione verranno cancellati al successivo caricamento del profilo.</translation>
 <translation id="4056910949759281379">Disabilita protocollo SPDY</translation>
 <translation id="4061107397839125009">La configurazione del criterio consente di impostare un elenco di pattern URL che specificano i siti che non possono mostrare notifiche.
 
@@ -3467,6 +3488,18 @@ Se questo criterio viene impostato su Falso, <ph name="PRODUCT_NAME" /> non util
       Se il criterio non viene impostato o viene lasciato vuoto, viene usata la pagina Nuova scheda predefinita.
 
       Su <ph name="MS_WIN_NAME" />, questa funzionalità è disponibile soltanto nelle istanze che fanno parte di un dominio <ph name="MS_AD_NAME" />, sono in esecuzione su Windows 10 Pro o sono registrate in <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />. Su <ph name="MAC_OS_NAME" />, questa funzionalità è disponibile soltanto nelle istanze gestite tramite MDM o aggiunte a un dominio tramite MCX.</translation>
+<translation id="4164511138197196839">Se questo criterio viene attivato, le estensioni non pubblicate sul Chrome Web
+Store verranno disattivate su <ph name="PRODUCT_NAME" />.
+Questo criterio viene applicato solo alle estensioni installate e aggiornate dal
+Chrome Web Store.
+
+Le estensioni esterne al negozio, come le estensioni non pacchettizzate
+installate utilizzando la modalità sviluppatore e le estensioni installate tramite l'opzione della riga di comando,
+vengono ignorate.
+Le estensioni con installazione forzata e ospitate autonomamente vengono ignorate. Vengono ignorate anche tutte le estensioni con blocco della versione.
+
+Se il criterio viene impostato su <ph name="ALLOW_UNPUBLISHED" /> (0) o se non viene configurato, le estensioni non pubblicate sul Chrome Web Store sono consentite.
+Se il criterio viene impostato su <ph name="DISABLE_UNPUBLISHED" /> (1), le estensioni non pubblicate sul Chrome Web Store vengono disattivate.</translation>
 <translation id="4165986682804962316">Impostazioni sito</translation>
 <translation id="4166174702671320480">Se il criterio viene impostato su Attivato, i criteri relativi a un gruppo atomico che non condividono l'origine con la priorità massima di quel gruppo vengono ignorati.
 
@@ -3725,19 +3758,18 @@ Questo criterio è stato rimosso nella versione M112.</translation>
 <translation id="441686537793821907">Blocca l'installazione di estensioni esterne</translation>
 <translation id="4423597592074154136">Specifica manualmente le impostazioni proxy</translation>
 <translation id="4424004842303301809">Disattiva la generazione di rapporti sugli eventi di prevenzione di fughe di dati</translation>
-<translation id="4426288704078471820">L'elemento <ph name="WEBVIEW_TAG_NAME" /> delle app di Chrome consente un comportamento che verrà rimosso da <ph name="PRODUCT_NAME" />.
-
-Il comportamento precedente mostrerebbe una pagina interstitial se un elemento <ph name="WEBVIEW_TAG_NAME" /> dovesse accedere a una pagina con un certificato SSL non valido. Questa pagina interstitial offre all'utente l'opzione per procedere in modo non sicuro. Il nuovo comportamento mostra una pagina di errore senza l'opzione per procedere in modo non sicuro.
-
-Il comportamento precedente consente inoltre all'evento <ph name="NEWWINDOW_EVENT_NAME" /> dell'elemento <ph name="WEBVIEW_TAG_NAME" /> (https://developer.chrome.com/docs/extensions/reference/webviewTag/#event-newwindow) di aggiungere la nuova finestra a un elemento <ph name="WEBVIEW_TAG_NAME" /> in una finestra dell'app separata da quella dell'elemento <ph name="WEBVIEW_TAG_NAME" /> originario. Con il nuovo comportamento, questa aggiunta è ancora consentita, ma il riferimento alla finestra restituito dalla chiamata a <ph name="WINDOW_OPEN_NAME" /> nell'elemento <ph name="WEBVIEW_TAG_NAME" /> originario non è più valido.
-
-Se il criterio viene attivato, viene utilizzato il comportamento precedente.
-Se il criterio viene disattivato o se non viene configurato, la modifica del comportamento viene applicata a mano a mano che viene implementata tramite il processo di rilascio di <ph name="PRODUCT_NAME" />.
-
-Questo criterio è una soluzione alternativa temporanea qualora le aziende riscontrino danni a causa di queste modifiche. Questo criterio verrà rimosso nella versione 117.</translation>
 <translation id="4426601693403743089">Disattiva la versione sperimentale di Registra schermo per gli utenti di Family Link</translation>
 <translation id="4427173305799125784">Il visualizzatore PDF non può aggiungere annotazioni nei PDF</translation>
 <translation id="4432762137771104529">Attiva rapporti estesi su Navigazione sicura</translation>
+<translation id="4434531680131327140">Consente di configurare le impostazioni del periodo di validità dei dati di navigazione per <ph name="PRODUCT_NAME" />. Questo criterio consente agli amministratori di configurare (in base al tipo di dati) quando il browser dovrà eliminare i dati. Questa funzionalità è utile per i clienti che gestiscono dati dei clienti sensibili.
+
+      I tipi di dati disponibili sono i seguenti: <ph name="DATA_TYPE_BROWSING_HISTORY" />, <ph name="DATA_TYPE_DOWNLOAD_HISTORY" />, <ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />, <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />, <ph name="DATA_TYPE_PASSWORD" />, <ph name="DATA_TYPE_AUTOFILL" />, <ph name="DATA_TYPE_SITE_SETTINGS" /> e <ph name="DATA_TYPE_HOSTED_APP_DATA" />. <ph name="DATA_TYPE_DOWNLOAD_HISTORY" /> e <ph name="DATA_TYPE_HOSTED_APP_DATA" /> non sono supportati su Android.
+
+      Il browser rimuoverà automaticamente i dati dei tipi selezionati che sono antecedenti al periodo indicato (<ph name="TIME_TO_LIVE_IN_HOURS" />). Il valore minimo impostabile è 1 ora.
+
+      I dati scaduti vengono eliminati 15 secondi dopo l'avvio del browser, dopodiché ogni 30 minuti mentre il browser è in esecuzione.
+
+      Fino a Chrome 114, questo criterio richiedeva l'impostazione del criterio <ph name="SYNC_DISABLED_POLICY_NAME" /> su true. A partire da Chrome 115, la configurazione di questo criterio disattiva la sincronizzazione per i rispettivi tipi di dati se "<ph name="CHROME_SYNC_NAME" />" non viene disattivato impostando il criterio <ph name="SYNC_DISABLED_POLICY_NAME" /> e non viene disattivato <ph name="BROWSER_SIGNIN_POLICY_NAME" />.</translation>
 <translation id="443454694385851356">Precedente (non sicuro)</translation>
 <translation id="4435032708588431506">Consenti QUIC</translation>
 <translation id="443665821428652897">Cancella i dati del sito alla chiusura del browser (obsoleta)</translation>
@@ -5219,6 +5251,21 @@ Se questo criterio viene disattivato, la protezione delle estensioni di <ph name
 <translation id="583627479140113555">Abilita l'importazione delle password salvate alla prima esecuzione</translation>
 <translation id="5838452040629810808">Attiva l'evidenziazione del puntatore</translation>
 <translation id="5842283830553218200">Per impostazione predefinita verrà utilizzato il nuovo comportamento per l'esecuzione di eventi sui controlli dei moduli disattivati.</translation>
+<translation id="5844880038533636588">La configurazione del criterio consente di specificare un elenco di app ed estensioni installate automaticamente, senza interazione dell'utente, e che non possono essere disinstallate o disattivate dagli utenti. Le autorizzazioni vengono concesse implicitamente, anche quelle relative alle API delle estensioni enterprise.deviceAttributes ed enterprise.platformKeys. Queste due API non sono disponibili per le app e le estensioni senza installazione forzata.
+
+      Se il criterio non viene configurato, nessuna app o estensione viene installata automaticamente e gli utenti possono disinstallare qualsiasi app o estensione in <ph name="PRODUCT_NAME" />.
+
+      Questo criterio prevale sul criterio <ph name="EXTENSION_INSTALL_BLOCKLIST_POLICY_NAME" />. Se un'app o un estensione di cui è stata precedentemente forzata l'installazione viene rimossa da questo elenco, queste app o estensioni vengono disinstallate automaticamente da <ph name="PRODUCT_NAME" />.
+
+      Sulle istanze di <ph name="MS_WIN_NAME" />, è possibile forzare l'installazione di app ed estensioni che non fanno parte del Chrome Web Store soltanto se l'istanza fa parte di un dominio <ph name="MS_AD_NAME" />, è in esecuzione su "<ph name="MS_AAD_NAME" />" o è registrata in "<ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />".
+
+      Sulle istanze di <ph name="MAC_OS_NAME" />, è possibile forzare l'installazione di app ed estensioni che non fanno parte del Chrome Web Store soltanto se l'istanza viene gestita tramite MDM, aggiunta a un dominio tramite MCX o è registrata in "<ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />".
+
+      Il codice sorgente di qualsiasi estensione può essere modificato dagli utenti tramite lo strumento per sviluppatori, causando potenzialmente il malfunzionamento dell'estensione. Per evitare un problema di questo tipo, imposta il criterio <ph name="DEVELOPER_TOOLS_DISABLED_POLICY_NAME" />.
+
+      Ogni elemento nell'elenco del criterio è una stringa contenente un ID estensione e, facoltativamente, un URL di aggiornamento separati da punto e virgola (;). L'ID estensione è la stringa di 32 lettere che si trova, ad esempio, all'indirizzo chrome://extensions quando è attiva la modalità sviluppatore. Se specificato, l'URL "di aggiornamento" deve indirizzare a un documento XML manifest di aggiornamento (https://developer.chrome.com/extensions/autoupdate). L'URL di aggiornamento deve utilizzare uno dei seguenti schemi: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> o <ph name="FILE_SCHEME" />. Per impostazione predefinita, viene utilizzato l'URL di aggiornamento del Chrome Web Store. L'URL di aggiornamento impostato in questo criterio viene utilizzato esclusivamente per l'installazione iniziale; per i successivi aggiornamenti dell'estensione viene utilizzato l'URL di aggiornamento nel file manifest dell'estensione.
+
+       Nota: questo criterio non viene applicato alla Modalità di navigazione in incognito. Leggi ulteriori informazioni sull'hosting delle estensioni (https://developer.chrome.com/extensions/hosting).</translation>
 <translation id="5847509620317822100">Questa funzionalità è stata rimossa in Chrome 100.
 
       Se il criterio viene impostato su Enabled, vengono visualizzati dei consigli per le app precedentemente installate dall'utente su altri dispositivi. Questi consigli vengono visualizzati in Avvio app dopo i consigli sulle app locali, se non viene inserito alcun testo di ricerca.
@@ -5941,6 +5988,7 @@ Vedi anche il criterio <ph name="HTTPS_ONLY_MODE_POLICY_NAME" />.</translation>
 
       Nota: se il metodo di immissione corrente non è supportato, il criterio passa automaticamente al layout della tastiera hardware (se consentito) o alla prima voce valida in questo elenco. I metodi non supportati o non validi vengono ignorati.</translation>
 <translation id="6483115462650732746">Mostra il menu Accessibilità mobile in modalità kiosk</translation>
+<translation id="6485036313708130232">Gestisci il nuovo comportamento prima dell'unload che mostra la finestra di dialogo di conferma dell'annullamento quando viene richiamato il valore preventDefault.</translation>
 <translation id="6489084406497912050">Consente di stabilire se gli utenti possono o meno aggiungere account Kerberos.
 
           Se questo criterio viene attivato o se non viene configurato, gli utenti possono aggiungere account Kerberos tramite le impostazioni relative agli account Kerberos nella pagina di impostazioni Kerberos. Gli utenti hanno il controllo completo degli account che hanno aggiunto e possono modificarli o rimuoverli.
@@ -6357,6 +6405,14 @@ Il criterio verrà rimosso da <ph name="PRODUCT_NAME" /> in futuro.</translation
 <translation id="6819838337315703072">Se le app <ph name="LINUX_OS_NAME" /> sono supportate, l'impostazione del criterio su Attivato consente di inviare al server le informazioni relative all'utilizzo delle app <ph name="LINUX_OS_NAME" />.
 
       Se il criterio viene impostato su Disattivato o se non viene configurato, non viene inviata alcuna informazione relativa all'utilizzo.</translation>
+<translation id="6821870597514407499">L'elemento <ph name="WEBVIEW_TAG_NAME" /> delle app di Chrome consente un comportamento che verrà rimosso da <ph name="PRODUCT_NAME" />.
+
+Il comportamento precedente consente all'evento <ph name="NEWWINDOW_EVENT_NAME" /> dell'elemento <ph name="WEBVIEW_TAG_NAME" /> (https://developer.chrome.com/docs/extensions/reference/webviewTag/#event-newwindow) di aggiungere la nuova finestra a un elemento <ph name="WEBVIEW_TAG_NAME" /> in una finestra dell'app separata da quella dell'elemento <ph name="WEBVIEW_TAG_NAME" /> originario. Con il nuovo comportamento, questa aggiunta è ancora consentita, ma il riferimento alla finestra restituito dalla chiamata a <ph name="WINDOW_OPEN_NAME" /> nell'elemento <ph name="WEBVIEW_TAG_NAME" /> originario non è più valido.
+
+Se il criterio viene attivato, viene utilizzato il comportamento precedente.
+Se il criterio viene disattivato o se non viene configurato, la modifica del comportamento viene applicata a mano a mano che viene implementata tramite il processo di rilascio di <ph name="PRODUCT_NAME" />.
+
+Questo criterio è una soluzione alternativa temporanea qualora le aziende riscontrino danni a causa di questa modifica. Questo criterio verrà rimosso nella versione 122.</translation>
 <translation id="6823711520976094072">La mancata configurazione o l'impostazione del criterio su valori inferiori a 1 MB implica l'utilizzo da parte di <ph name="PRODUCT_OS_NAME" /> della dimensione predefinita, corrispondente a 256 MiB, per le estensioni e le app di memorizzazione nella cache per l'installazione da parte di più utenti di un singolo dispositivo. In questo modo, non è necessario scaricare nuovamente tutte le app o estensioni per ogni utente.</translation>
 <translation id="6828729771894228555">Consente di impostare un elenco di pattern URL che specificano origini di primo livello (l'URL nella barra degli indirizzi della scheda) che bloccano il partizionamento dello spazio di archiviazione di terze parti (partizionamento dello spazio di archiviazione di iframe multiorigine).
           Se questo criterio non viene configurato o se non esiste un'origine di primo livello corrispondente, verrà utilizzato il valore del criterio <ph name="DEFAULT_THIRD_PARTY_STORAGE_PARTITIONING_SETTING_POLICY_NAME" />.
@@ -7219,6 +7275,13 @@ AVVISO: fai attenzione quando modifichi questa impostazione perché potrebbe vio
 <translation id="7613115815080726221">Il periodo di tempo, in millisecondi, senza input dell'utente trascorso il quale viene compiuta l'azione stabilita per l'inattività.</translation>
 <translation id="7614663184588396421">Elenco degli schemi di protocollo disabilitati</translation>
 <translation id="7616631530432070402">Le suite di crittografia 3DES saranno attivate in TLS</translation>
+<translation id="7617710923960807616">Questo criterio consente di controllare se viene mostrata una finestra di dialogo di conferma quando una pagina chiama preventDefault prima dell'unload. In passato, <ph name="PRODUCT_NAME" /> non mostrava queste finestre di dialogo, ma il comportamento predefinito è in fase di modifica. Questo criterio è un'alternativa temporanea, destinata alle aziende i cui siti web si sono rotti a causa del nuovo comportamento e che hanno bisogno di un po' di tempo per essere risolte.
+
+Se questo criterio viene attivato, la finestra di dialogo di conferma dell'annullamento viene visualizzata quando una pagina chiama preventDefault prima dell'unload.
+
+Se questo criterio viene disattivato, non viene mostrata alcuna finestra di dialogo di conferma dell'annullamento quando una pagina chiama preventDefault prima dell'unload.
+
+Se questo criterio non viene configurato, verrà utilizzato il comportamento predefinito, in base al piano di implementazione delle funzionalità di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="761788785484453836">Richiedi l'isolamento dei siti per tutti i siti web</translation>
 <translation id="7620869951155758729">Questa norma consente di specificare la configurazione utilizzata per generare e verificare il codice di accesso genitori.
 
@@ -8002,6 +8065,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
       Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="8330437518362176921">Utilizza solo l'URL di aggiornamento fornito dal criterio durante il download e l'aggiornamento delle app di Chrome Kiosk</translation>
 <translation id="8331479227794770304">Attiva tasti permanenti</translation>
+<translation id="8332822245414537447">Disattiva il controllo dell'utilizzo delle chiavi RSA</translation>
 <translation id="8337114537412769126">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'assegnazione di un valore al criterio <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME" /> consente di specificare i parametri durante la ricerca di suggerimenti con POST. Si tratta di coppie di tipo nome-valore separate da virgole. Se un valore è il parametro di un modello, ad esempio <ph name="SEARCH_TERM_MARKER" />, viene sostituito con i dati dei termini di ricerca reali.
 
       Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_SUGGEST_URL_POST_PARAMS_POLICY_NAME" /> non viene configurato, le richieste di ricerca di suggerimenti vengono inviate utilizzando il metodo Get.</translation>
@@ -8288,6 +8352,7 @@ Se configuri questo criterio, il criterio <ph name="PRIVACY_SANDBOX_PROMPT_ENABL
 <translation id="8623672932476443039">Se il criterio viene impostato su enabled, gli utenti possono accedere alla modalità sviluppatore per le app isolate.
       Se viene impostato su disabled, gli utenti non possono accedere a queste funzionalità.
       Se non viene configurato, per impostazione predefinita le funzionalità non sono consentite per gli utenti gestiti a livello aziendale su ChromeOS, mentre sono consentite per tutti gli altri utenti e sistemi operativi.</translation>
+<translation id="862621549134406761">Attiva il controllo dell'utilizzo delle chiavi RSA</translation>
 <translation id="8626826495474944836">Richiedi isolamento dei siti per ogni sito</translation>
 <translation id="8631314130868563649">Disattiva la gestione della variazione dei picchi energetici</translation>
 <translation id="8631434304112909927">fino alla versione <ph name="UNTIL_VERSION" /></translation>
@@ -8540,6 +8605,7 @@ Se il criterio non viene configurato o se viene disattivato, i dati dell'utente 
 
 Se viene impostato su Disattivato, <ph name="PRODUCT_NAME" /> non è disponibile in nessuna pagina web.</translation>
 <translation id="8864975621965365890">Consente di eliminare il messaggio di richiesta di turndown che compare quando un sito viene visualizzato da <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="8865404058177794289">Utilizza l'impostazione predefinita per il controllo dell'utilizzo delle chiavi RSA</translation>
 <translation id="8866430022832109569">Generazione di report sull'inventario per app</translation>
 <translation id="886645881209114007">Consenti agli utenti di usare un <ph name="PLUGIN_VM_NAME" /> su <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="8867894831390233044">Consente di stabilire se gli utenti possono o meno usare il debug remoto.

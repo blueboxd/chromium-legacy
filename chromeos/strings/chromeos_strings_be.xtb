@@ -4,7 +4,7 @@
 <translation id="1014750484722996375">Працоўныя сталы</translation>
 <translation id="1018219910092211213">Не ўдалося ажыццявіць DNS-пераўтварэнне</translation>
 <translation id="1018656279737460067">Скасавана</translation>
-<translation id="1022433422498218992">Агульныя налады</translation>
+<translation id="1020274983236703756">Цяпер даступны эксклюзіўныя аб'екты <ph name="PRODUCT_NAME" /></translation>
 <translation id="1022628058306505708">Рух Зямлі</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (патокаў: <ph name="THREAD_COUNT" />, <ph name="CPU_MAX_CLOCK_SPEED" /> ГГц)</translation>
 <translation id="1047773237499189053">З'явілася новая функцыя, націсніце стрэлку ўверх, каб даведацца больш.</translation>
@@ -113,7 +113,6 @@
 <translation id="1768959921651994223">Тып аўтэнтыфікацыі</translation>
 <translation id="1776228893584526149">Колер шпалер</translation>
 <translation id="1782199038061388045">пераклад</translation>
-<translation id="1790209694022261219">Вокны і працоўныя сталы</translation>
 <translation id="1792647875738159689">Сканіраванне скасоўваецца</translation>
 <translation id="1801418420130173017">Адключыць цёмную тэму</translation>
 <translation id="1807246157184219062">Светлая</translation>
@@ -244,7 +243,6 @@
 <translation id="3008341117444806826">АБНАВІЦЬ</translation>
 <translation id="3009958530611748826">Выберыце папку для захавання</translation>
 <translation id="3017079585324758401">Фон</translation>
-<translation id="3020183492814296499">Спалучэнні клавіш</translation>
 <translation id="3027578600144895987">Закрыць камеру</translation>
 <translation id="3031560714565892478">Гэта відэакамера.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> мА</translation>
@@ -271,6 +269,7 @@
 <translation id="3226405216343213872">Ідзе пошук сканераў</translation>
 <translation id="3226657629376379887">Меню дзеянняў з макетам</translation>
 <translation id="3246869037381808805">Заданні друку, старэйшыя за 1 дзень, будуць выдалены</translation>
+<translation id="3248223063252096240">Эксклюзіўнае змесціва <ph name="PRODUCT_NAME" /></translation>
 <translation id="3268178239013324452">Збой: дзверцы прынтара адкрыты</translation>
 <translation id="3275729367986477355">Відарыс аватара</translation>
 <translation id="3283504360622356314">{0,plural, =1{Змяніць файл}one{Змяніць файлы}few{Змяніць файлы}many{Змяніць файлы}other{Змяніць файлы}}</translation>
@@ -323,6 +322,7 @@
 <translation id="3632579075709132555">Пераключэнне экрана прыватнасці</translation>
 <translation id="3639846061339007994">зверху</translation>
 <translation id="3651050199673793219">Выберыце адзінку вымярэння тэмпературы</translation>
+<translation id="3663574643422533538">Выбраць эксклюзіўную анімацыю для прылады <ph name="PRODUCT_NAME" /></translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> (праверка)</translation>
 <translation id="370665806235115550">Загрузка…</translation>
 <translation id="3708186454126126312">Падключаныя раней прылады</translation>
@@ -372,6 +372,7 @@
 <translation id="4095829376260267438">WPA2/WPA3</translation>
 <translation id="4110686435123617899">Выберыце альбом "<ph name="TITLE" />" (<ph name="DESC" />)</translation>
 <translation id="4111761024568264522">Сэнсарная панэль з USB</translation>
+<translation id="4113067922640381334">Цяпер у вас ёсць доступ да новых <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />шпалер<ph name="END_LINK_WALLPAPER_SUBPAGE" /></translation>
 <translation id="4117637339509843559">Цёмны рэжым</translation>
 <translation id="4130035430755296270">Навядзіце і ўтрымлівайце курсор, каб убачыць іншыя параметры макета</translation>
 <translation id="4131410914670010031">Чорна-белы друк</translation>
@@ -611,6 +612,7 @@
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Стандартныя шпалеры</translation>
 <translation id="6017514345406065928">Зялёны</translation>
+<translation id="6019566113895157499">Спалучэнні клавіш</translation>
 <translation id="6034694447310538551">Уключыць аўтаматычны штомесячны скід</translation>
 <translation id="6037291330010597344">Прыстасаванне сканера для падачы дакументаў не загружана. Пакладзіце ў яго дакументы і паўтарыце спробу.</translation>
 <translation id="6040143037577758943">Закрыць</translation>
@@ -934,6 +936,7 @@
 <translation id="8576249514688522074">Неініцыялізаваная</translation>
 <translation id="8593058461203131755">прыпыніць медыязмесціва</translation>
 <translation id="8620617069779373398">Стан роўмінгу</translation>
+<translation id="8626489604350149811">Іншыя дзеянні з прыладай "<ph name="APN_NAME" />"</translation>
 <translation id="86356131183441916">Светла-фіялетавы</translation>
 <translation id="8651481478098336970">выключэнне гуку</translation>
 <translation id="8655295600908251630">Версія</translation>

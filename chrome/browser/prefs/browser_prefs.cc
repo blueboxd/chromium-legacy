@@ -84,6 +84,7 @@
 #include "chrome/browser/ui/webui/bookmarks/bookmark_prefs.h"
 #include "chrome/browser/ui/webui/flags/flags_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
+#include "chrome/browser/ui/webui/policy/policy_ui.h"
 #include "chrome/browser/ui/webui/print_preview/policy_settings.h"
 #include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
@@ -855,6 +856,24 @@ const char kEventRemappedToRightClick[] =
     "ash.settings.event_remapped_to_right_click";
 #endif
 
+// Deprecated 05/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+constexpr char kSupervisedUserSyncId[] = "ManagedUserSyncId";
+constexpr char kSupervisedUserManagers[] = "ManagedUserManagers";
+constexpr char kSupervisedUserManagerNames[] = "ManagedUserManagerNames";
+constexpr char kSupervisedUserManagerDisplayEmails[] =
+    "ManagedUserManagerDisplayEmails";
+constexpr char kSupervisedUsersFirstRun[] = "LocallyManagedUsersFirstRun";
+constexpr char kSupervisedUserPasswordSchema[] = "SupervisedUserPasswordSchema";
+constexpr char kSupervisedUserPasswordSalt[] = "SupervisedUserPasswordSalt";
+constexpr char kSupervisedUserPasswordRevision[] =
+    "SupervisedUserPasswordRevision";
+constexpr char kSupervisedUserNeedPasswordUpdate[] =
+    "SupervisedUserNeedPasswordUpdate";
+constexpr char kSupervisedUserIncompleteKey[] =
+    "SupervisedUserHasIncompleteKey";
+#endif
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -964,6 +983,22 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_ANDROID)
   registry->RegisterTimePref(kWeeklyStatsReportingTimestamp, base::Time());
 #endif  // BUILDFLAG(IS_ANDROID)
+
+// Deprecated 05/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterListPref(kSupervisedUsersFirstRun);
+  registry->RegisterDictionaryPref(kSupervisedUserSyncId);
+  registry->RegisterDictionaryPref(kSupervisedUserManagers);
+  registry->RegisterDictionaryPref(kSupervisedUserManagerNames);
+  registry->RegisterDictionaryPref(kSupervisedUserManagerDisplayEmails);
+
+  registry->RegisterDictionaryPref(kSupervisedUserPasswordSchema);
+  registry->RegisterDictionaryPref(kSupervisedUserPasswordSalt);
+  registry->RegisterDictionaryPref(kSupervisedUserPasswordRevision);
+
+  registry->RegisterDictionaryPref(kSupervisedUserNeedPasswordUpdate);
+  registry->RegisterDictionaryPref(kSupervisedUserIncompleteKey);
+#endif
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1498,6 +1533,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(registry);
   PlatformNotificationServiceImpl::RegisterProfilePrefs(registry);
   policy::URLBlocklistManager::RegisterProfilePrefs(registry);
+  PolicyUI::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   prefetch::RegisterPredictionOptionsProfilePrefs(registry);
   PrefetchOriginDecider::RegisterPrefs(registry);
@@ -1982,6 +2018,22 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 // Added 05/2023
 #if BUILDFLAG(IS_ANDROID)
   local_state->ClearPref(kWeeklyStatsReportingTimestamp);
+#endif
+
+// Added 05/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  local_state->ClearPref(kSupervisedUsersFirstRun);
+  local_state->ClearPref(kSupervisedUserSyncId);
+  local_state->ClearPref(kSupervisedUserManagers);
+  local_state->ClearPref(kSupervisedUserManagerNames);
+  local_state->ClearPref(kSupervisedUserManagerDisplayEmails);
+
+  local_state->ClearPref(kSupervisedUserPasswordSchema);
+  local_state->ClearPref(kSupervisedUserPasswordSalt);
+  local_state->ClearPref(kSupervisedUserPasswordRevision);
+
+  local_state->ClearPref(kSupervisedUserNeedPasswordUpdate);
+  local_state->ClearPref(kSupervisedUserIncompleteKey);
 #endif
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.

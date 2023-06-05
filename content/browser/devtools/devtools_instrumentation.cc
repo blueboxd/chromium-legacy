@@ -43,6 +43,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_package/signed_exchange_envelope.h"
 #include "content/public/browser/browser_context.h"
+#include "devtools_agent_host_impl.h"
 #include "devtools_instrumentation.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -92,6 +93,23 @@ void DispatchToAgents(int frame_tree_node_id,
   FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   if (ftn)
     DispatchToAgents(ftn, method, std::forward<Args>(args)...);
+}
+
+template <typename Handler, typename... MethodArgs, typename... Args>
+void DispatchToAgents(WebContents* web_contents,
+                      void (Handler::*method)(MethodArgs...),
+                      Args&&... args) {
+  auto agent_host = DevToolsAgentHost::GetForTab(web_contents);
+  if (agent_host) {
+    DispatchToAgents(static_cast<DevToolsAgentHostImpl*>(agent_host.get()),
+                     method, std::forward<Args>(args)...);
+  }
+  if (content::DevToolsAgentHost::HasFor(web_contents)) {
+    DispatchToAgents(
+        static_cast<DevToolsAgentHostImpl*>(
+            content::DevToolsAgentHost::GetOrCreateFor(web_contents).get()),
+        method, std::forward<Args>(args)...);
+  }
 }
 
 std::unique_ptr<protocol::Audits::InspectorIssue> BuildHeavyAdIssue(
@@ -235,6 +253,9 @@ std::string FederatedAuthRequestResultToProtocol(
     }
     case FederatedAuthRequestResult::kErrorSilentMediationFailure: {
       return FederatedAuthRequestIssueReasonEnum::SilentMediationFailure;
+    }
+    case FederatedAuthRequestResult::kErrorThirdPartyCookiesBlocked: {
+      return FederatedAuthRequestIssueReasonEnum::ThirdPartyCookiesBlocked;
     }
     case FederatedAuthRequestResult::kSuccess: {
       DCHECK(false);
@@ -1268,10 +1289,11 @@ void DidCreateProcessForAuctionWorklet(RenderFrameHostImpl* owner,
   // TracingHandler lives on the very root, not local root.
   // TODO(morlovich): This may not be right for fenced frames, though
   // that should not currently matter.
-  FrameTreeNode* node = owner->GetMainFrame()->frame_tree_node();
-  if (!node)
+  WebContents* web_contents = WebContents::FromRenderFrameHost(owner);
+  if (!web_contents) {
     return;
-  DispatchToAgents(node, &protocol::TracingHandler::AddProcess, pid);
+  }
+  DispatchToAgents(web_contents, &protocol::TracingHandler::AddProcess, pid);
 }
 
 void WillStartDragging(FrameTreeNode* main_frame_tree_node,
@@ -1916,6 +1938,46 @@ void OnFedCmAccountsDialogShown(RenderFrameHost* render_frame_host) {
     return;
   }
   DispatchToAgents(ftn, &protocol::FedCmHandler::OnDialogShown);
+}
+
+void OnFencedFrameReportRequestSent(int initiator_frame_tree_node_id,
+                                    const std::string& devtools_request_id,
+                                    network::ResourceRequest& request) {
+  const net::HttpRequestHeaders& headers = request.headers;
+  network::mojom::URLRequestDevToolsInfoPtr request_info =
+      network::ExtractDevToolsInfo(request);
+
+  DispatchToAgents(initiator_frame_tree_node_id,
+                   &protocol::NetworkHandler::RequestSent,
+                   /*request_id=*/devtools_request_id,
+                   /*loader_id=*/devtools_request_id, headers, *request_info,
+                   protocol::Network::Initiator::TypeEnum::Other,
+                   /*initiator_url=*/absl::nullopt,
+                   /*initiator_devtools_request_id=*/devtools_request_id,
+                   base::TimeTicks::Now());
+}
+
+void OnFencedFrameReportResponseReceived(
+    int initiator_frame_tree_node_id,
+    const std::string& devtools_request_id,
+    const GURL& final_url,
+    scoped_refptr<net::HttpResponseHeaders> headers) {
+  network::mojom::URLResponseHeadDevToolsInfoPtr response_info =
+      network::mojom::URLResponseHeadDevToolsInfo::New();
+  response_info->headers = headers;
+
+  DispatchToAgents(initiator_frame_tree_node_id,
+                   &protocol::NetworkHandler::ResponseReceived,
+                   /*request_id=*/devtools_request_id,
+                   /*loader_id=*/devtools_request_id, final_url,
+                   protocol::Network::ResourceTypeEnum::Other, *response_info,
+                   /*frame_id=*/protocol::Maybe<std::string>());
+
+  DispatchToAgents(initiator_frame_tree_node_id,
+                   &protocol::NetworkHandler::LoadingComplete,
+                   /*request_id=*/devtools_request_id,
+                   protocol::Network::Initiator::TypeEnum::Other,
+                   network::URLLoaderCompletionStatus(net::OK));
 }
 
 }  // namespace devtools_instrumentation

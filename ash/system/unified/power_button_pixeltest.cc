@@ -61,8 +61,8 @@ class PowerButtonPixelTest : public NoSessionAshTestBase {
 
 TEST_F(PowerButtonPixelTest, NoSession) {
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "check_button",
-      /*revision_number=*/1, GetPowerButton()));
+      "check_power_button",
+      /*revision_number=*/2, GetPowerButton()));
 
   SimulatePowerButtonPress();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
@@ -70,7 +70,8 @@ TEST_F(PowerButtonPixelTest, NoSession) {
       /*revision_number=*/0, GetMenuView()));
 }
 
-TEST_F(PowerButtonPixelTest, LoginSession) {
+// TODO(crbug.com/1451244): Re-enable this test
+TEST_F(PowerButtonPixelTest, DISABLED_LoginSession) {
   CreateUserSessions(1);
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
@@ -80,10 +81,11 @@ TEST_F(PowerButtonPixelTest, LoginSession) {
   SimulatePowerButtonPress();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_menu",
-      /*revision_number=*/0, GetMenuView()));
+      /*revision_number=*/1, GetMenuView()));
 }
 
-TEST_F(PowerButtonPixelTest, LockScreenSession) {
+// TODO(crbug.com/1451244): Re-enable this test
+TEST_F(PowerButtonPixelTest, DISABLED_LockScreenSession) {
   CreateUserSessions(1);
   BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
 
@@ -94,7 +96,7 @@ TEST_F(PowerButtonPixelTest, LockScreenSession) {
   SimulatePowerButtonPress();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "check_menu",
-      /*revision_number=*/0, GetMenuView()));
+      /*revision_number=*/1, GetMenuView()));
 }
 
 TEST_F(PowerButtonPixelTest, GuestMode) {

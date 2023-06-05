@@ -61,6 +61,7 @@ source_set("promos_manager") {
     "//ios/chrome/browser/promos_manager:features",
     "//ios/chrome/browser/promos_manager:types",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
+    "//ios/public/provider/chrome/browser/signin:choice_api",
     "//third_party/abseil-cpp:absl",
   ]
   deps = [
@@ -69,6 +70,7 @@ source_set("promos_manager") {
     "//ios/chrome/browser/credential_provider_promo:features",
     "//ios/chrome/browser/default_browser:utils",
     "//ios/chrome/browser/flags:system_flags",
+    "//ios/chrome/browser/ntp:features",
     "//ios/chrome/browser/promos_manager:constants",
     "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser",

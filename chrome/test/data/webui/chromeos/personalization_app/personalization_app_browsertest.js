@@ -493,7 +493,10 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
           DEFAULT_WALLPAPER_NAME, imageTitle.textContent.trim(),
           'default wallpaper is shown at first');
 
-      wallpaperSelected.shadowRoot.getElementById('dailyRefresh').click();
+      const dailyRefreshButton = await waitUntil(
+          () => wallpaperSelected.shadowRoot.getElementById('dailyRefresh'),
+          'failed to find daily refresh button');
+      dailyRefreshButton.click();
 
       const sharedAlbumDialog = await waitUntil(
           () => getSharedAlbumDialog(),
@@ -568,16 +571,23 @@ TEST_F(
         return staticColor;
       }
 
-      function setDynamicColorToggle(checkedState) {
+      async function setDynamicColorToggle(checkedState) {
         const toggle = getDynamicColorToggle();
         if (checkedState !== toggle.checked) {
+          const toggleDescription =
+              getDynamicColorElement().shadowRoot.getElementById(
+                  'dynamicColorToggleDescription');
+          const originalColor = getComputedStyle(toggleDescription).color;
           toggle.click();
+          await waitUntil(
+              () => originalColor !== getComputedStyle(toggleDescription).color,
+              'toggle failed to update colors');
         }
       }
 
       setup(async () => {
         // Reset to default state before each test to reduce dependencies.
-        setDynamicColorToggle(/* checkedState= */ true);
+        await setDynamicColorToggle(/* checkedState= */ true);
         const colorSchemeButtons =
             Array.from(getColorSchemeSelector().querySelectorAll('cr-button'));
         colorSchemeButtons[0].click();
@@ -590,8 +600,23 @@ TEST_F(
           assertTrue(!!getStaticColorSelector());
         });
 
-        test('shows color scheme options', () => {
-          setDynamicColorToggle(true);
+        test('clicks toggle', async () => {
+          const toggleDescription =
+              getDynamicColorElement().shadowRoot.getElementById(
+                  'dynamicColorToggleDescription');
+          const toggle = getDynamicColorToggle();
+          const checkedState = toggle.checked;
+          const originalColor = getComputedStyle(toggleDescription).color;
+
+          await setDynamicColorToggle(!checkedState);
+
+          await waitUntil(
+              () => originalColor !== getComputedStyle(toggleDescription).color,
+              'failed to update colors');
+        });
+
+        test('shows color scheme options', async () => {
+          await setDynamicColorToggle(true);
 
           assertTrue(getDynamicColorToggle().checked);
           assertTrue(getStaticColorSelector().hidden);
@@ -602,7 +627,7 @@ TEST_F(
           const toggleDescription =
               getDynamicColorElement().shadowRoot.getElementById(
                   'dynamicColorToggleDescription');
-          setDynamicColorToggle(true);
+          await setDynamicColorToggle(true);
 
           // Click all of the color scheme buttons and save the text color of
           // the toggle description to a set.
@@ -629,10 +654,10 @@ TEST_F(
               'Each color should be unique');
         });
 
-        test('shows static color options', () => {
+        test('shows static color options', async () => {
           const toggleButton = getDynamicColorToggle();
 
-          setDynamicColorToggle(false);
+          await setDynamicColorToggle(false);
 
           assertFalse(toggleButton.checked);
           assertFalse(getStaticColorSelector().hidden);
@@ -650,7 +675,7 @@ TEST_F(
               'failed to switch to light mode', /* intervalMs= */ 200,
               /* timeoutMs= */ 3000);
           assertEquals('true', lightButton.getAttribute('aria-checked'));
-          setDynamicColorToggle(false);
+          await setDynamicColorToggle(false);
 
           // Click all of the static color buttons and save the background color
           // of the light mode button to a set.

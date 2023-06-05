@@ -50,12 +50,13 @@
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
-#include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/embedder_support/origin_trials/origin_trials_settings_storage.h"
 #include "components/embedder_support/switches.h"
@@ -299,8 +300,6 @@ void AwContentBrowserClient::RenderProcessWillLaunch(
       host->GetID(), url::kContentScheme);
 
   host->AddFilter(new AwContentsMessageFilter(host->GetID()));
-  // WebView always allows persisting data.
-  host->AddFilter(new cdm::CdmMessageFilterAndroid(true, false));
 }
 
 bool AwContentBrowserClient::IsExplicitNavigation(
@@ -687,17 +686,12 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
   // WebView Classic lets app override only top level about:blank navigations.
   // So we filter out non-top about:blank navigations here.
   //
-  // The uuid-in-package scheme is used for subframe navigation with WebBundles
-  // (https://github.com/WICG/webpackage/blob/main/explainers/subresource-loading-opaque-origin-iframes.md),
-  // so treat it in the same way as http(s).
-  //
   // Note: about:blank navigations are not received in this path at the moment,
   // they use the old SYNC IPC path as they are not handled by network stack.
   // However, the old path should be removed in future.
   if (!is_outermost_main_frame &&
       (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
-       gurl.SchemeIs(url::kAboutScheme) ||
-       gurl.SchemeIs(url::kUuidInPackageScheme))) {
+       gurl.SchemeIs(url::kAboutScheme))) {
     return true;
   }
 
@@ -899,7 +893,8 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
         header_client,
     bool* bypass_redirect_checks,
     bool* disable_secure_dns,
-    network::mojom::URLLoaderFactoryOverridePtr* factory_override) {
+    network::mojom::URLLoaderFactoryOverridePtr* factory_override,
+    scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> proxied_receiver;

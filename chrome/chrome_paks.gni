@@ -108,6 +108,7 @@ template("chrome_extra_paks") {
       "$root_gen_dir/chrome/segmentation_internals_resources.pak",
       "$root_gen_dir/components/autofill/core/browser/autofill_address_rewriter_resources.pak",
       "$root_gen_dir/components/components_resources.pak",
+      "$root_gen_dir/components/flags_ui_resources.pak",
       "$root_gen_dir/content/aggregation_service_internals_resources.pak",
       "$root_gen_dir/content/attribution_internals_resources.pak",
       "$root_gen_dir/content/content_resources.pak",
@@ -175,6 +176,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/chrome/profile_internals_resources.pak",
         "$root_gen_dir/chrome/settings_resources.pak",
         "$root_gen_dir/chrome/side_panel_bookmarks_resources.pak",
+        "$root_gen_dir/chrome/side_panel_commerce_resources.pak",
         "$root_gen_dir/chrome/side_panel_companion_resources.pak",
         "$root_gen_dir/chrome/side_panel_customize_chrome_resources.pak",
         "$root_gen_dir/chrome/side_panel_history_clusters_resources.pak",
@@ -216,6 +218,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/profile_internals:resources",
         "//chrome/browser/resources/settings:resources",
         "//chrome/browser/resources/side_panel/bookmarks:resources",
+        "//chrome/browser/resources/side_panel/commerce:resources",
         "//chrome/browser/resources/side_panel/companion:resources",
         "//chrome/browser/resources/side_panel/customize_chrome:resources",
         "//chrome/browser/resources/side_panel/history_clusters:resources",
@@ -517,6 +520,11 @@ template("chrome_extra_paks") {
     if (headless_enable_commands && !is_android) {
       sources += [ "$root_gen_dir/components/headless/command_handler/headless_command_resources.pak" ]
       deps += [ "//components/headless/command_handler" ]
+    }
+
+    if (enable_webui_certificate_viewer) {
+      sources += [ "$root_gen_dir/chrome/certificate_viewer_resources.pak" ]
+      deps += [ "//chrome/browser/resources/certificate_viewer:resources" ]
     }
   }
 }

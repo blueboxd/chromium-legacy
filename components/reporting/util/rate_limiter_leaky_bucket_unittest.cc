@@ -43,7 +43,7 @@ TEST_F(RateLimiterLeakyBucketTest, SingularEvent) {
 TEST_F(RateLimiterLeakyBucketTest, SteadyEventsStream) {
   // Let the bucket fill in.
   task_environment_.FastForwardBy(kFillingTime);
-  // Drop one event every `kFillingTime / kMaxLevel` sec,
+  // Drop one event every `kFillingPeriod` sec,
   // allowing one event through and no more.
   for (size_t i = 0; i < kEventCount; ++i) {
     ASSERT_TRUE(rate_limiter_.Acquire(1u));
@@ -56,7 +56,7 @@ TEST_F(RateLimiterLeakyBucketTest, SteadyEventsStream) {
 TEST_F(RateLimiterLeakyBucketTest, RandomizedEventsStream) {
   // Let the bucket fill in.
   task_environment_.FastForwardBy(kFillingTime);
-  // Drop one event every `kFillingTime / kMaxLevel + random` sec,
+  // Drop one event every `kFillingPeriod + random` sec,
   // allowing one event through and no more.
   for (size_t i = 0; i < kEventCount; ++i) {
     ASSERT_TRUE(rate_limiter_.Acquire(1u));
@@ -70,12 +70,13 @@ TEST_F(RateLimiterLeakyBucketTest, RandomizedEventsStream) {
 TEST_F(RateLimiterLeakyBucketTest, LargeEventsStream) {
   // Let the bucket fill in.
   task_environment_.FastForwardBy(kFillingTime);
-  // Drop one event every `kFillingTime / kMaxLevel` sec,
+  // Drop one event every `kFillingTime` sec,
   // allowing one event through and no more.
   for (size_t i = 0; i < kEventCount; ++i) {
+    // See that it was enough for maximum event size, but no more.
     ASSERT_TRUE(rate_limiter_.Acquire(kMaxLevel));
     ASSERT_FALSE(rate_limiter_.Acquire(1u));
-    // kFillingPeriod is not sufficient now.
+    // `kFillingPeriod` is not sufficient now.
     task_environment_.FastForwardBy(kFillingPeriod);
     ASSERT_FALSE(rate_limiter_.Acquire(1u));
     // Let the bucket fill in.

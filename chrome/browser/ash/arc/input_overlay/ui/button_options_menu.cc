@@ -17,6 +17,7 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/edit_labels.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/ui_utils.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -100,9 +101,13 @@ ButtonOptionsMenu* ButtonOptionsMenu::Show(DisplayOverlayController* controller,
 
 ButtonOptionsMenu::ButtonOptionsMenu(DisplayOverlayController* controller,
                                      Action* action)
-    : display_overlay_controller_(controller), action_(action) {}
+    : TouchInjectorObserver(), controller_(controller), action_(action) {
+  controller_->AddTouchInjectorObserver(this);
+}
 
-ButtonOptionsMenu::~ButtonOptionsMenu() = default;
+ButtonOptionsMenu::~ButtonOptionsMenu() {
+  controller_->RemoveTouchInjectorObserver(this);
+}
 
 void ButtonOptionsMenu::Init() {
   SetUseDefaultFillLayout(true);
@@ -257,16 +262,8 @@ void ButtonOptionsMenu::AddActionEdit() {
 
   // TODO(b/274690042): Replace placeholder text with localized strings.
   container->AddChildView(CreateNameTag(u"Selected key", u"Key"));
-  switch (action_->GetType()) {
-    case ActionType::TAP:
-      container->AddChildView(CreateActionTapEditForKeyboard(action_));
-      break;
-    case ActionType::MOVE:
-      container->AddChildView(CreateActionMoveEditForKeyboard(action_));
-      break;
-    default:
-      NOTREACHED();
-  }
+  labels_view_ = container->AddChildView(
+      EditLabels::CreateEditLabels(controller_, action_));
 }
 
 void ButtonOptionsMenu::AddActionNameLabel() {
@@ -302,8 +299,7 @@ void ButtonOptionsMenu::CalculatePosition() {
   auto position = action_->GetUICenterPosition();
   auto x = position.x();
   auto y = position.y();
-  auto parent_size =
-      display_overlay_controller_->GetOverlayWidgetContentsView()->size();
+  auto parent_size = controller_->GetOverlayWidgetContentsView()->size();
 
   // Set the menu at the middle if there is not enough margin on the right
   // or left side.
@@ -322,12 +318,12 @@ void ButtonOptionsMenu::CalculatePosition() {
 
 void ButtonOptionsMenu::OnTrashButtonPressed() {
   // TODO(b/270969760): Implement close menu functionality.
-  display_overlay_controller_->RemoveButtonOptionsMenu();
+  controller_->RemoveButtonOptionsMenu();
 }
 
 void ButtonOptionsMenu::OnDoneButtonPressed() {
   // TODO(b/270969760): Implement save menu functionality.
-  display_overlay_controller_->RemoveButtonOptionsMenu();
+  controller_->RemoveButtonOptionsMenu();
 }
 
 void ButtonOptionsMenu::OnTapButtonPressed() {
@@ -362,6 +358,19 @@ void ButtonOptionsMenu::OnPaintBackground(gfx::Canvas* canvas) {
 gfx::Size ButtonOptionsMenu::CalculatePreferredSize() const {
   // TODO(b/270969760): Dynamically calculate height based on action selection.
   return gfx::Size(kMenuWidth, GetHeightForWidth(kMenuWidth));
+}
+
+void ButtonOptionsMenu::OnActionRemoved(const Action& action) {
+  NOTIMPLEMENTED();
+}
+
+void ButtonOptionsMenu::OnActionTypeChanged(const Action& action,
+                                            const Action& new_action) {
+  NOTIMPLEMENTED();
+}
+
+void ButtonOptionsMenu::OnActionUpdated(const Action& action) {
+  NOTIMPLEMENTED();
 }
 
 }  // namespace arc::input_overlay

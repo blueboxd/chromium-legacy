@@ -6,7 +6,9 @@
 #define ASH_SYSTEM_VIDEO_CONFERENCE_VIDEO_CONFERENCE_TRAY_CONTROLLER_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/session/session_observer.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shell_observer.h"
 #include "ash/system/video_conference/effects/video_conference_tray_effects_manager.h"
 #include "ash/system/video_conference/video_conference_common.h"
 #include "base/observer_list_types.h"
@@ -22,6 +24,8 @@ class UnguessableToken;
 
 namespace ash {
 
+class VideoConferenceTray;
+
 using MediaApps = std::vector<crosapi::mojom::VideoConferenceMediaAppInfoPtr>;
 
 // Controller that will act as a "bridge" between VC apps management and the VC
@@ -31,7 +35,9 @@ using MediaApps = std::vector<crosapi::mojom::VideoConferenceMediaAppInfoPtr>;
 // any use-after-free bugs.
 class ASH_EXPORT VideoConferenceTrayController
     : public media::CameraPrivacySwitchObserver,
-      public CrasAudioHandler::AudioObserver {
+      public CrasAudioHandler::AudioObserver,
+      public SessionObserver,
+      public ShellObserver {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -84,6 +90,18 @@ class ASH_EXPORT VideoConferenceTrayController
 
   // Whether the tray should be shown.
   bool ShouldShowTray() const;
+
+  // Attempts showing the speak-on-mute opt-in nudge.
+  void MaybeShowSpeakOnMuteOptInNudge(
+      VideoConferenceTray* video_conference_tray);
+
+  // Callbacks to update prefs whenever a user opts in or out of the
+  // speak-on-mute feature.
+  void OnSpeakOnMuteNudgeOptIn();
+  void OnSpeakOnMuteNudgeOptOut();
+
+  // Closes all nudges that are shown anchored to the VC tray, if any.
+  void CloseAllVcNudges();
 
   // Returns whether `state_` indicates permissions are granted for different
   // mediums.
@@ -143,6 +161,12 @@ class ASH_EXPORT VideoConferenceTrayController
   // CrasAudioHandler::AudioObserver:
   // Pop up a toast when speaking on mute is detected.
   void OnSpeakOnMuteDetected() override;
+
+  // SessionObserver:
+  void OnUserSessionAdded(const AccountId& account_id) override;
+
+  // ShellObserver:
+  void OnShellDestroying() override;
 
   // Gets `disable_shelf_autohide_timer_`, used for testing.
   base::OneShotTimer& GetShelfAutoHideTimerForTest();

@@ -3265,7 +3265,7 @@ void Element::RecalcStyle(const StyleRecalcChange change,
   // relative units changed. It are not guaranteed to reach RecalcOwnStyle for
   // the container, so this update happens here instead.
   if (ContainerQueryEvaluator* evaluator = GetContainerQueryEvaluator()) {
-    evaluator->UpdateValuesIfNeeded(GetDocument(), *this, child_change);
+    evaluator->UpdateContainerValuesFromUnitChanges(child_change);
   }
 
   // We're done with self style, notify the display lock.
@@ -3312,10 +3312,10 @@ void Element::RecalcStyle(const StyleRecalcChange change,
         // the subtree during style recalc, retrieve the StyleRecalcChange
         // which was the current change for the skipped subtree and combine
         // it with any current container flags.
-        auto* cq_data = GetContainerQueryData();
+        ContainerQueryData* cq_data = GetContainerQueryData();
         // Should be guaranteed to have ContainerQueryData here since we at
         // least have a ContainerQueryEvaluator at this point.
-        DCHECK(cq_data);
+        CHECK(cq_data);
         if (cq_data->SkippedStyleRecalc()) {
           child_change =
               cq_data->ClearAndReturnRecalcChangeForChildren().Combine(
@@ -3428,20 +3428,11 @@ scoped_refptr<const ComputedStyle> Element::PropagateInheritedProperties() {
   return builder.TakeStyle();
 }
 
-static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
-    Element& element,
-    const ComputedStyle* old_style,
+static bool NeedsContainerQueryEvaluator(
+    const ContainerQueryEvaluator& evaluator,
     const ComputedStyle& new_style) {
-  ContainerQueryEvaluator* evaluator = element.GetContainerQueryEvaluator();
-  if (!evaluator || !evaluator->DependsOnStyle()) {
-    if (!new_style.IsContainerForSizeContainerQueries()) {
-      return nullptr;
-    }
-  }
-  if (evaluator) {
-    return evaluator;
-  }
-  return MakeGarbageCollected<ContainerQueryEvaluator>();
+  return evaluator.DependsOnStyle() ||
+         new_style.IsContainerForSizeContainerQueries();
 }
 
 static const StyleRecalcChange ApplyComputedStyleDiff(
@@ -3735,31 +3726,30 @@ StyleRecalcChange Element::RecalcOwnStyle(
         old_style->HasChildDependentFlags()) {
       new_style->CopyChildDependentFlagsFrom(*old_style);
     }
-    auto* evaluator =
-        ComputeContainerQueryEvaluator(*this, old_style.get(), *new_style);
-    if (evaluator != GetContainerQueryEvaluator()) {
-      EnsureElementRareData()
-          .EnsureContainerQueryData()
-          .SetContainerQueryEvaluator(evaluator);
-    } else if (evaluator) {
-      DCHECK(old_style);
-      evaluator->MarkFontDirtyIfNeeded(*old_style, *new_style);
-      if (RuntimeEnabledFeatures::CSSStyleQueriesEnabled()) {
-        if (diff != ComputedStyle::Difference::kEqual &&
-            (!base::ValuesEquivalent(old_style->InheritedVariables(),
-                                     new_style->InheritedVariables()) ||
-             !base::ValuesEquivalent(old_style->NonInheritedVariables(),
-                                     new_style->NonInheritedVariables()))) {
-          switch (evaluator->StyleContainerChanged()) {
-            case ContainerQueryEvaluator::Change::kNone:
-              break;
-            case ContainerQueryEvaluator::Change::kNearestContainer:
-              child_change = child_change.ForceRecalcStyleContainerChildren();
-              break;
-            case ContainerQueryEvaluator::Change::kDescendantContainers:
-              child_change =
-                  child_change.ForceRecalcStyleContainerDescendants();
-              break;
+    if (ContainerQueryEvaluator* evaluator = GetContainerQueryEvaluator()) {
+      if (!NeedsContainerQueryEvaluator(*evaluator, *new_style)) {
+        EnsureElementRareData()
+            .EnsureContainerQueryData()
+            .SetContainerQueryEvaluator(nullptr);
+      } else if (old_style) {
+        evaluator->MarkFontDirtyIfNeeded(*old_style, *new_style);
+        if (RuntimeEnabledFeatures::CSSStyleQueriesEnabled()) {
+          if (diff != ComputedStyle::Difference::kEqual &&
+              (!base::ValuesEquivalent(old_style->InheritedVariables(),
+                                       new_style->InheritedVariables()) ||
+               !base::ValuesEquivalent(old_style->NonInheritedVariables(),
+                                       new_style->NonInheritedVariables()))) {
+            switch (evaluator->StyleContainerChanged()) {
+              case ContainerQueryEvaluator::Change::kNone:
+                break;
+              case ContainerQueryEvaluator::Change::kNearestContainer:
+                child_change = child_change.ForceRecalcStyleContainerChildren();
+                break;
+              case ContainerQueryEvaluator::Change::kDescendantContainers:
+                child_change =
+                    child_change.ForceRecalcStyleContainerDescendants();
+                break;
+            }
           }
         }
       }
@@ -4780,14 +4770,15 @@ void Element::ParseAttribute(const AttributeModificationParams& params) {
   }
 }
 
-bool Element::ParseAttributeName(QualifiedName& out,
-                                 const AtomicString& namespace_uri,
-                                 const AtomicString& qualified_name,
-                                 ExceptionState& exception_state) {
+// static
+absl::optional<QualifiedName> Element::ParseAttributeName(
+    const AtomicString& namespace_uri,
+    const AtomicString& qualified_name,
+    ExceptionState& exception_state) {
   AtomicString prefix, local_name;
   if (!Document::ParseQualifiedName(qualified_name, prefix, local_name,
                                     exception_state)) {
-    return false;
+    return absl::nullopt;
   }
   DCHECK(!exception_state.HadException());
 
@@ -4797,51 +4788,49 @@ bool Element::ParseAttributeName(QualifiedName& out,
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNamespaceError,
         "'" + namespace_uri + "' is an invalid namespace for attributes.");
-    return false;
+    return absl::nullopt;
   }
-
-  out = q_name;
-  return true;
+  return q_name;
 }
 
 void Element::setAttributeNS(const AtomicString& namespace_uri,
                              const AtomicString& qualified_name,
                              String value,
                              ExceptionState& exception_state) {
-  QualifiedName parsed_name = g_any_name;
-  if (!ParseAttributeName(parsed_name, namespace_uri, qualified_name,
-                          exception_state)) {
+  absl::optional<QualifiedName> parsed_name =
+      ParseAttributeName(namespace_uri, qualified_name, exception_state);
+  if (!parsed_name) {
     return;
   }
 
   AtomicString trusted_value(TrustedTypesCheckFor(
-      ExpectedTrustedTypeForAttribute(parsed_name), std::move(value),
+      ExpectedTrustedTypeForAttribute(*parsed_name), std::move(value),
       GetExecutionContext(), exception_state));
   if (exception_state.HadException()) {
     return;
   }
 
-  setAttribute(parsed_name, trusted_value);
+  setAttribute(*parsed_name, trusted_value);
 }
 
 void Element::setAttributeNS(const AtomicString& namespace_uri,
                              const AtomicString& qualified_name,
                              const V8TrustedType* trusted_string,
                              ExceptionState& exception_state) {
-  QualifiedName parsed_name = g_any_name;
-  if (!ParseAttributeName(parsed_name, namespace_uri, qualified_name,
-                          exception_state)) {
+  absl::optional<QualifiedName> parsed_name =
+      ParseAttributeName(namespace_uri, qualified_name, exception_state);
+  if (!parsed_name) {
     return;
   }
 
   AtomicString value(TrustedTypesCheckFor(
-      ExpectedTrustedTypeForAttribute(parsed_name), trusted_string,
+      ExpectedTrustedTypeForAttribute(*parsed_name), trusted_string,
       GetExecutionContext(), exception_state));
   if (exception_state.HadException()) {
     return;
   }
 
-  setAttribute(parsed_name, value);
+  setAttribute(*parsed_name, value);
 }
 
 void Element::RemoveAttributeInternal(wtf_size_t index,
@@ -5887,7 +5876,7 @@ ContainerQueryData* Element::GetContainerQueryData() const {
 }
 
 ContainerQueryEvaluator* Element::GetContainerQueryEvaluator() const {
-  if (const auto* cq_data = GetContainerQueryData()) {
+  if (const ContainerQueryData* cq_data = GetContainerQueryData()) {
     return cq_data->GetContainerQueryEvaluator();
   }
   return nullptr;
@@ -5897,14 +5886,14 @@ ContainerQueryEvaluator& Element::EnsureContainerQueryEvaluator() {
   ContainerQueryData& data = EnsureElementRareData().EnsureContainerQueryData();
   ContainerQueryEvaluator* evaluator = data.GetContainerQueryEvaluator();
   if (!evaluator) {
-    evaluator = MakeGarbageCollected<ContainerQueryEvaluator>();
+    evaluator = MakeGarbageCollected<ContainerQueryEvaluator>(*this);
     data.SetContainerQueryEvaluator(evaluator);
   }
   return *evaluator;
 }
 
 bool Element::SkippedContainerStyleRecalc() const {
-  if (const auto* cq_data = GetContainerQueryData()) {
+  if (const ContainerQueryData* cq_data = GetContainerQueryData()) {
     return cq_data->SkippedStyleRecalc();
   }
   return false;
@@ -8427,8 +8416,7 @@ void Element::SynchronizeAttributeHinted(
     // if Element::SynchronizeAttribute() is called on all attributes,
     // svg_attributes_are_dirty_ remains true. This information is available in
     // the attribute->property map in SVGElement.
-    To<SVGElement>(this)->SynchronizeSVGAttribute(
-        QualifiedName(g_null_atom, local_name, g_null_atom));
+    To<SVGElement>(this)->SynchronizeSVGAttribute(QualifiedName(local_name));
   }
 }
 
@@ -8450,20 +8438,16 @@ std::pair<wtf_size_t, const QualifiedName> Element::LookupAttributeQNameHinted(
     AtomicString name,
     WTF::AtomicStringTable::WeakResult hint) const {
   if (!HasElementData()) {
-    return std::make_pair(
-        kNotFound,
-        QualifiedName(g_null_atom, LowercaseIfNecessary(std::move(name)),
-                      g_null_atom));
+    return std::make_pair(kNotFound,
+                          QualifiedName(LowercaseIfNecessary(std::move(name))));
   }
 
   AttributeCollection attributes = GetElementData()->Attributes();
   wtf_size_t index = attributes.FindIndexHinted(name, hint);
   return std::make_pair(
-      index,
-      index != kNotFound
-          ? attributes[index].GetName()
-          : QualifiedName(g_null_atom, LowercaseIfNecessary(std::move(name)),
-                          g_null_atom));
+      index, index != kNotFound
+                 ? attributes[index].GetName()
+                 : QualifiedName(LowercaseIfNecessary(std::move(name))));
 }
 
 void Element::setAttribute(const QualifiedName& name,

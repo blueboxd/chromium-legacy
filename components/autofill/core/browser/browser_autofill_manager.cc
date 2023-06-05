@@ -1092,8 +1092,7 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
     const FormData& form,
     const FormFieldData& field,
     const gfx::RectF& transformed_box,
-    AutoselectFirstSuggestion autoselect_first_suggestion,
-    FormElementWasClicked form_element_was_clicked) {
+    AutofillSuggestionTriggerSource trigger_source) {
   if (base::FeatureList::IsEnabled(features::kAutofillDisableFilling)) {
     return;
   }
@@ -1104,6 +1103,13 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
   std::vector<Suggestion> suggestions;
   SuggestionsContext context;
   GetAvailableSuggestions(form, field, &suggestions, &context);
+
+  const AutoselectFirstSuggestion autoselect_first_suggestion(
+      trigger_source ==
+      AutofillSuggestionTriggerSource::kTextFieldDidReceiveKeyDown);
+  const bool form_element_was_clicked =
+      trigger_source ==
+      AutofillSuggestionTriggerSource::kFormControlElementClicked;
 
   if (context.is_autofill_available) {
     switch (context.suppress_reason) {
@@ -2289,16 +2295,12 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
       continue;
     }
 
-    // If `kAutofillFillAndImportFromMoreFields` is enabled, predictions are
-    // generated for autocomplete=unrecognized fields. The fields are only
-    // filled when the `kAutofillFillAutocompleteUnrecognized` parameter is
-    // enabled.
-    if (form_structure->field(i)
-            ->HasPredictionDespiteUnrecognizedAutocompleteAttribute() &&
-        !features::kAutofillFillAutocompleteUnrecognized.Get()) {
-      LOG_AF(buffer)
-          << Tr{}
-          << "Skipped: kAutofillFillAutocompleteUnrecognized not enabled";
+    // Address fields with unrecognized autocomplete attribute have a type, but
+    // are not filled.
+    // TODO(crbug.com/1446318): Fill them.
+    if (autofill_field->ShouldSuppressSuggestionsAndFillingByDefault()) {
+      LOG_AF(buffer) << Tr{} << "Skipped: Unrecognized autocomplete attribute";
+      LogSkippedStatusIfFill(SkipStatus::kUnrecognizedAutocompleteAttribute);
       continue;
     }
 
@@ -3198,8 +3200,7 @@ void BrowserAutofillManager::GetAvailableSuggestions(
   // Do not offer suggestions for fields that have an unrecognized autocomplete
   // attribute, unless those are credit card fields.
   if (context->focused_field &&
-      context->focused_field
-          ->HasPredictionDespiteUnrecognizedAutocompleteAttribute()) {
+      context->focused_field->ShouldSuppressSuggestionsAndFillingByDefault()) {
     context->suppress_reason = SuppressReason::kAutocompleteUnrecognized;
     suggestions->clear();
     return;

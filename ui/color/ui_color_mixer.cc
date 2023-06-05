@@ -48,8 +48,9 @@ void AddUiColorMixer(ColorProvider* provider,
       kColorSubtleEmphasisBackground};
   mixer[kColorButtonBackgroundProminentFocused] = {
       kColorButtonBackgroundProminent};
-  mixer[kColorButtonBackgroundTonal] = {kColorSysPrimaryContainer};
-  mixer[kColorButtonBackgroundTonalDisabled] = {kColorSubtleEmphasisBackground};
+  mixer[kColorButtonBackgroundTonal] = {kColorSysTonalContainer};
+  mixer[kColorButtonBackgroundTonalDisabled] = {
+      kColorSysStateDisabledContainer};
   mixer[kColorButtonBackgroundTonalFocused] = {kColorButtonBackgroundTonal};
   mixer[kColorButtonBorder] = {kColorMidground};
   mixer[kColorButtonBorderDisabled] = {kColorSubtleEmphasisBackground};
@@ -59,7 +60,7 @@ void AddUiColorMixer(ColorProvider* provider,
   mixer[kColorButtonForegroundDisabled] = {kColorDisabledForeground};
   mixer[kColorButtonForegroundProminent] =
       GetColorWithMaxContrast(kColorButtonBackgroundProminent);
-  mixer[kColorButtonForegroundTonal] = {kColorSysOnPrimaryContainer};
+  mixer[kColorButtonForegroundTonal] = {kColorSysOnTonalContainer};
   mixer[kColorButtonHoverBackgroundText] = {kColorSysStateHoverOnSubtle};
   mixer[kColorCheckboxForegroundUnchecked] = {kColorSecondaryForeground};
   mixer[kColorCheckboxForegroundChecked] = {kColorButtonForeground};
@@ -91,10 +92,20 @@ void AddUiColorMixer(ColorProvider* provider,
   mixer[kColorLabelSelectionBackground] = {kColorTextSelectionBackground};
   mixer[kColorLabelSelectionForeground] = {kColorTextSelectionForeground};
   mixer[kColorLinkForeground] =
-      PickGoogleColor(kColorAccent, kColorDialogBackground,
+      PickGoogleColor(kColorLinkForegroundDefault, kColorDialogBackground,
+                      color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorLinkForegroundDefault] = {kColorAccent};
+  mixer[kColorLinkForegroundOnBubbleFooter] =
+      PickGoogleColor(kColorLinkForegroundDefault, kColorBubbleFooterBackground,
                       color_utils::kMinimumReadableContrastRatio);
   mixer[kColorLinkForegroundDisabled] = {kColorDisabledForeground};
-  mixer[kColorLinkForegroundPressed] = {kColorLinkForeground};
+  mixer[kColorLinkForegroundPressed] = PickGoogleColor(
+      kColorLinkForegroundPressedDefault, kColorDialogBackground,
+      color_utils::kMinimumReadableContrastRatio);
+  mixer[kColorLinkForegroundPressedDefault] = {kColorLinkForegroundDefault};
+  mixer[kColorLinkForegroundPressedOnBubbleFooter] = PickGoogleColor(
+      kColorLinkForegroundPressedDefault, kColorBubbleFooterBackground,
+      color_utils::kMinimumReadableContrastRatio);
   mixer[kColorLiveCaptionBubbleBackgroundDefault] = {
       SkColorSetA(gfx::kGoogleGrey900, 0xE6)};
   mixer[kColorLiveCaptionBubbleButtonIcon] =

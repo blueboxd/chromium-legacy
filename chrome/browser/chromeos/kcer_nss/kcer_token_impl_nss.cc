@@ -335,9 +335,11 @@ void ListCertsOnWorkerThread(
 
   net::ScopedCERTCertificateList result;
 
-  for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
-       !CERT_LIST_END(node, cert_list); node = CERT_LIST_NEXT(node)) {
-    result.push_back(net::x509_util::DupCERTCertificate(node->cert));
+  if (cert_list) {
+    for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
+         !CERT_LIST_END(node, cert_list); node = CERT_LIST_NEXT(node)) {
+      result.push_back(net::x509_util::DupCERTCertificate(node->cert));
+    }
   }
 
   std::move(callback).Run(std::move(result));
@@ -1413,15 +1415,15 @@ base::OnceClosure KcerTokenImplNss::BlockQueueGetUnblocker() {
   CHECK(!is_blocked_);
   is_blocked_ = true;
 
-  // `unblocker` is executed either manually or on destruction.
-  base::ScopedClosureRunner unblocker(
+  auto unblock_on_io = base::BindPostTask(
+      content::GetIOThreadTaskRunner({}),
       base::BindOnce(&KcerTokenImplNss::UnblockQueueProcessNextTask,
                      weak_factory_.GetWeakPtr()));
-  // Pack `unblocker` into an IO thread bound closure, so it can be attached
-  // to a callback.
-  return base::BindPostTask(
-      content::GetIOThreadTaskRunner({}),
-      base::BindOnce(&RunUnblocker, std::move(unblocker)));
+
+  // `unblocker` is executed either manually or on destruction.
+  base::ScopedClosureRunner unblocker(std::move(unblock_on_io));
+  // Pack `unblocker` into a closure, so it can be attached to a callback.
+  return base::BindOnce(&RunUnblocker, std::move(unblocker));
 }
 
 void KcerTokenImplNss::UnblockQueueProcessNextTask() {
@@ -1495,6 +1497,7 @@ void KcerTokenImplNss::UpdateCacheWithCerts(
 template <typename T>
 void KcerTokenImplNss::HandleInitializationFailed(
     base::OnceCallback<void(base::expected<T, Error>)> callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::move(callback).Run(base::unexpected(Error::kTokenInitializationFailed));
   // Multiple tasks might be handled in a row, schedule the next task
   // asynchronously to not overload the stack and not occupy the thread for

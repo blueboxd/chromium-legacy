@@ -734,6 +734,8 @@ class HTMLFastPathParser {
           UNLIKELY(*pos_ == '\0')) {
         return Fail(HtmlFastPathResult::kFailedParsingCharacterReference);
       }
+      // Note: the fast path will only parse `;`-terminated character
+      // references, and will fail (above) on others, e.g. `A&ampB`.
       if (ConsumeNext() == ';') {
         break;
       }
@@ -900,11 +902,8 @@ class HTMLFastPathParser {
     QualifiedName name = LookupHTMLAttributeName(
         name_span.data(), static_cast<unsigned>(name_span.size()));
     if (name == g_null_name) {
-      name =
-          QualifiedName(g_null_atom,
-                        AtomicString(name_span.data(),
-                                     static_cast<unsigned>(name_span.size())),
-                        g_null_atom);
+      name = QualifiedName(AtomicString(
+          name_span.data(), static_cast<unsigned>(name_span.size())));
     }
 
     AtomicString value;

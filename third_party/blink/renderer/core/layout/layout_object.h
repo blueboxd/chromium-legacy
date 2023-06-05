@@ -453,7 +453,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // LayoutObject.
   LayoutBox* EnclosingBox() const;
 
-  LayoutBox* EnclosingScrollableBox() const;
+  // This is deprecated because it doesn't meet the requirement of its only
+  // caller IntersectionObservation::CanUseCachedRects() because this doesn't
+  // handle programmatically-only scrollable scrollers. Another problem is
+  // that it may return wrong results for out-of-flow positioned objects.
+  LayoutBox* DeprecatedEnclosingScrollableBox() const;
 
   // Return the NG |LayoutBlockFlow| that will have any |NGFragmentItems| for
   // |this|, or nullptr if the containing block isn't an NG inline formatting
@@ -2272,8 +2276,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       UpdateLayout();
   }
 
-  void ForceLayout();
-
   // Used for element state updates that cannot be fixed with a paint
   // invalidation and do not need a relayout.
   virtual void UpdateFromElement() { NOT_DESTROYED(); }
@@ -3699,12 +3701,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
       bool ignore_scroll_offset) const;
   PhysicalOffset OffsetFromScrollableContainer(const LayoutObject*,
                                                bool ignore_scroll_offset) const;
-
-  void NotifyDisplayLockDidLayoutChildren() {
-    NOT_DESTROYED();
-    if (auto* context = GetDisplayLockContext())
-      context->DidLayoutChildren();
-  }
 
   bool BackgroundIsKnownToBeObscured() const {
     NOT_DESTROYED();

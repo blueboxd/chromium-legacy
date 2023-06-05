@@ -391,6 +391,7 @@ BubbleDialogModelHost::BubbleDialogModelHost(
     if (ok_button->style(GetPassKey())) {
       SetButtonStyle(ui::DIALOG_BUTTON_OK, ok_button->style(GetPassKey()));
     }
+    SetButtonEnabled(ui::DIALOG_BUTTON_OK, ok_button->is_enabled(GetPassKey()));
   }
 
   auto* cancel_button = model_->cancel_button(GetPassKey());
@@ -404,6 +405,8 @@ BubbleDialogModelHost::BubbleDialogModelHost(
       SetButtonStyle(ui::DIALOG_BUTTON_CANCEL,
                      cancel_button->style(GetPassKey()));
     }
+    SetButtonEnabled(ui::DIALOG_BUTTON_CANCEL,
+                     cancel_button->is_enabled(GetPassKey()));
   }
 
   // TODO(pbos): Consider refactoring ::SetExtraView() so it can be called after
@@ -420,6 +423,7 @@ BubbleDialogModelHost::BubbleDialogModelHost(
     if (extra_button->style(GetPassKey())) {
       builder.SetStyle(extra_button->style(GetPassKey()).value());
     }
+    builder.SetEnabled(extra_button->is_enabled(GetPassKey()));
     SetExtraView(std::move(builder).Build());
   } else if (ui::DialogModelLabel::TextReplacement* extra_link =
                  model_->extra_link(GetPassKey())) {
@@ -634,6 +638,15 @@ void BubbleDialogModelHost::UpdateSpacingAndMargins() {
       layout_provider->GetInsetsMetric(InsetsMetric::INSETS_DIALOG);
   dialog_side_insets.set_top(0);
   dialog_side_insets.set_bottom(0);
+
+  // If there is a Main Image, the left dialog inset value is no longer the
+  // correct metric. Use the related control metric instead.
+  // TODO(kylixrd): Investigate whether this should be a unique distance metric
+  // or if the related control metric is valid.
+  if (!GetMainImage().IsEmpty()) {
+    dialog_side_insets.set_left(layout_provider->GetDistanceMetric(
+        DISTANCE_RELATED_CONTROL_HORIZONTAL));
+  }
 
   ui::DialogModelField* first_field = nullptr;
   ui::DialogModelField* last_field = nullptr;

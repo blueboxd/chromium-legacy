@@ -1209,8 +1209,8 @@ CSSRule* InspectorStyleSheet::SetStyleText(const SourceRange& range,
   CSSStyleDeclaration* style = nullptr;
   if (auto* style_rule = DynamicTo<CSSStyleRule>(rule)) {
     style = style_rule->style();
-  } else if (IsA<CSSTryRule>(rule)) {
-    style = To<CSSTryRule>(rule)->style();
+  } else if (auto* try_rule = DynamicTo<CSSTryRule>(rule)) {
+    style = try_rule->style();
   } else {
     style = To<CSSKeyframeRule>(rule)->style();
   }
@@ -2390,7 +2390,8 @@ bool InspectorStyleSheetForInlineStyle::SetText(
   {
     InspectorCSSAgent::InlineStyleOverrideScope override_scope(
         element_->GetExecutionContext());
-    element_->setAttribute("style", AtomicString(text), exception_state);
+    element_->setAttribute(html_names::kStyleAttr, AtomicString(text),
+                           exception_state);
   }
   if (!exception_state.HadException())
     OnStyleSheetTextChanged();
@@ -2437,7 +2438,7 @@ CSSStyleDeclaration* InspectorStyleSheetForInlineStyle::InlineStyle() {
 }
 
 const String& InspectorStyleSheetForInlineStyle::ElementStyleText() {
-  return element_->getAttribute("style").GetString();
+  return element_->getAttribute(html_names::kStyleAttr).GetString();
 }
 
 void InspectorStyleSheetForInlineStyle::Trace(Visitor* visitor) const {

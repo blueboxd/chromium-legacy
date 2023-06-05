@@ -144,6 +144,7 @@
 #include "chrome/browser/ui/webui/app_service_internals/app_service_internals_ui.h"
 #include "chrome/browser/ui/webui/bookmarks/bookmarks_ui.h"
 #include "chrome/browser/ui/webui/commander/commander_ui.h"
+#include "chrome/browser/ui/webui/commerce/shopping_insights_side_panel_ui.h"
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/downloads/downloads_ui.h"
 #include "chrome/browser/ui/webui/feedback/feedback_ui.h"
@@ -608,6 +609,9 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ReadingListUI>;
   if (url.host_piece() == chrome::kChromeUIBookmarksSidePanelHost)
     return &NewWebUI<BookmarksSidePanelUI>;
+  if (url.host_piece() == commerce::kChromeUIShoppingInsightsSidePanelHost) {
+    return &NewWebUI<ShoppingInsightsSidePanelUI>;
+  }
   if (url.host_piece() == chrome::kChromeUICustomizeChromeSidePanelHost &&
       customize_chrome::IsSidePanelEnabled()) {
     return &NewWebUI<CustomizeChromeUI>;
@@ -744,11 +748,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUIPrintHost) {
     if (profile->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled))
       return nullptr;
-    // Filter out iframes that just display the preview PDF. Ideally, this would
-    // filter out anything other than chrome://print/, but that does not work
-    // for PrintPreviewUI tests that inject test_loader.html.
-    if (url.path() == "/pdf/index.html")
+    // Filter out everything except chrome://print/ and test_loader.html.
+    if (url.path() != "/" && url.path() != "/test_loader.html") {
       return nullptr;
+    }
     return &NewWebUI<printing::PrintPreviewUI>;
   }
 #endif
@@ -978,7 +981,8 @@ void ChromeWebUIControllerFactory::GetFaviconForURL(
 
 // static
 ChromeWebUIControllerFactory* ChromeWebUIControllerFactory::GetInstance() {
-  return base::Singleton<ChromeWebUIControllerFactory>::get();
+  static base::NoDestructor<ChromeWebUIControllerFactory> instance;
+  return instance.get();
 }
 
 // static

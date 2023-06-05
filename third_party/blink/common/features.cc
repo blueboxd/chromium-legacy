@@ -295,11 +295,6 @@ constexpr base::FeatureParam<bool>
                                                   "fledge_extensions_enabled",
                                                   /*default_value=*/true};
 
-// Maximum budget allowed to be claimed per-origin per-day per-API. See
-// `content::PrivateAggregationBudgeter` for more detail.
-constexpr base::FeatureParam<int> kPrivateAggregationApiMaxBudgetPerScope{
-    &kPrivateAggregationApi, "max_budget_per_scope", /*default_value=*/65536};
-
 // Enable the shared storage API. Note that enabling this feature does not
 // automatically expose this API to the web, it only allows the element to be
 // enabled by the runtime enabled feature, for origin trials.
@@ -799,11 +794,18 @@ BASE_FEATURE(
 // Whether to losslessly compress the resulting image after canvas hibernation.
 BASE_FEATURE(kCanvasCompressHibernatedImage,
              "CanvasCompressHibernatedImage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether to aggressively free resources for canvases in background pages.
 BASE_FEATURE(kCanvasFreeMemoryWhenHidden,
              "CanvasFreeMemoryWhenHidden",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Whether to use 'TexImage2D' instead of 'TexStorage2DEXT' when creating a
+// staging texture for |DrawingBuffer|. This is a killswitch; remove when
+// launched.
+BASE_FEATURE(kUseImageInsteadOfStorageForStagingBuffer,
+             "UseImageInsteadOfStorageForStagingBuffer",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, add a new option, {imageOrientation: 'none'}, to
@@ -881,7 +883,14 @@ BASE_FEATURE(kResamplingScrollEvents,
 
 BASE_FEATURE(kFilteringScrollPrediction,
              "FilteringScrollPrediction",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             // TODO(b/284271126): Run the experiment on desktop and enable if
+             // positive.
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 BASE_FEATURE(kKalmanHeuristics,
              "KalmanHeuristics",
@@ -1075,6 +1084,8 @@ BASE_FEATURE(kAdInterestGroupAPIRestrictedPolicyByDefault,
 
 // See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
 // Feature flag to enable debug reporting APIs.
+// Due to an issue in how prevWins were stored this flag should not be enabled
+// until July 2023.
 BASE_FEATURE(kBiddingAndScoringDebugReportingAPI,
              "BiddingAndScoringDebugReportingAPI",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1152,12 +1163,13 @@ const base::FeatureParam<int>
 // multiple configurations as long as they are compatible (from both Chrome's
 // and users/websites' perspective). For a configuration that's incompatible
 // with previous ones, a new dedicated version number should be used.
-const base::FeatureParam<int> kBrowsingTopicsConfigVersion{&kBrowsingTopics,
-                                                           "config_version", 1};
+const base::FeatureParam<int> kBrowsingTopicsConfigVersion{
+    &kBrowsingTopics, "config_version", kBrowsingTopicsConfigVersionDefault};
 // The taxonomy version. This only affects the topics classification that occurs
 // during this browser session, and doesn't affect the pre-existing epochs.
 const base::FeatureParam<int> kBrowsingTopicsTaxonomyVersion{
-    &kBrowsingTopics, "taxonomy_version", 1};
+    &kBrowsingTopics, "taxonomy_version",
+    kBrowsingTopicsTaxonomyVersionDefault};
 
 const base::FeatureParam<std::string> kBrowsingTopicsDisabledTopicsList{
     &kBrowsingTopics, "browsing_topics_disabled_topics_list", ""};
@@ -1169,6 +1181,15 @@ const base::FeatureParam<std::string> kBrowsingTopicsDisabledTopicsList{
 BASE_FEATURE(kBrowsingTopicsXHR,
              "BrowsingTopicsXHR",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables calling the Topics API through Javascript (i.e.
+// document.browsingTopics()). For this feature to take effect, the main Topics
+// feature has to be enabled first (i.e. `kBrowsingTopics` is enabled, and,
+// either a valid Origin Trial token exists or `kPrivacySandboxAdsAPIsOverride`
+// is enabled.)
+BASE_FEATURE(kBrowsingTopicsDocumentAPI,
+             "BrowsingTopicsDocumentAPI",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the check for whether the IP address is publicly routable will be
 // bypassed when determining the eligibility for a page to be included in topics
@@ -1593,7 +1614,7 @@ BASE_FEATURE(kStylusPointerAdjustment,
 
 BASE_FEATURE(kHiddenSelectionBounds,
              "HiddenSelectionBounds",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDisableArrayBufferSizeLimitsForTesting,
              "DisableArrayBufferSizeLimitsForTesting",
@@ -1651,10 +1672,6 @@ BASE_FEATURE(kFastPathPaintPropertyUpdates,
              "FastPathPaintPropertyUpdates",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kThrottleOffscreenAnimatingSvgImages,
-             "ThrottleOffscreenAnimatingSvgImages",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kThreadedBodyLoader,
              "ThreadedBodyLoader",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1708,7 +1725,7 @@ BASE_FEATURE(
 
 BASE_FEATURE(kWebRtcCombinedNetworkAndWorkerThread,
              "WebRtcCombinedNetworkAndWorkerThread",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kVSyncDecoding,
              "VSyncDecoding",
@@ -1754,6 +1771,10 @@ BASE_FEATURE(kSSVTrailerEnforceExposureAssertion,
 BASE_FEATURE(kForceHighPerformanceGPUForWebGL,
              "ForceHighPerformanceGPUForWebGL",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCorrectFloatExtensionTestForWebGL,
+             "CorrectFloatExtensionTestForWebGL",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSplitUserMediaQueues,
              "SplitUserMediaQueues",
@@ -1888,6 +1909,10 @@ BASE_FEATURE(kMainThreadHighPriorityImageLoading,
 
 BASE_FEATURE(kDirectCompositorThreadIpc,
              "DirectCompositorThreadIpc",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCSPWildcardsInPermissionsPolicies,
+             "CSPWildcardsInPermissionsPolicies",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

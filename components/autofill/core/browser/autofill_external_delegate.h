@@ -48,9 +48,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   void OnPopupShown() override;
   void OnPopupHidden() override;
   void OnPopupSuppressed() override;
-  void DidSelectSuggestion(const std::u16string& value,
-                           Suggestion::FrontendId frontend_id,
-                           const Suggestion::BackendId& backend_id) override;
+  void DidSelectSuggestion(const Suggestion& suggestion) override;
   void DidAcceptSuggestion(const Suggestion& suggestion, int position) override;
   bool GetDeletionConfirmationText(const std::u16string& value,
                                    Suggestion::FrontendId frontend_id,
@@ -164,7 +162,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
 
   // Provides driver-level context to the shared code of the component. Must
   // outlive this object.
-  const raw_ptr<AutofillDriver> driver_;  // weak
+  const raw_ptr<AutofillDriver, DanglingUntriaged> driver_;  // weak
 
   // The current form and field selected by Autofill.
   FormData query_form_;

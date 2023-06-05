@@ -16,7 +16,6 @@ import {AspectRatioSet, Facing, FpsRange, Resolution} from './type.js';
  * @param params Size of the canvas.
  * @param params.width Width of the canvas.
  * @param params.height Height of the canvas.
- * @return Returns canvas element and the context for 2D drawing.
  */
 export function newDrawingCanvas(
     {width, height}: {width: number, height: number}):
@@ -115,7 +114,6 @@ export type KeyboardShortcut =
 /**
  * Returns a shortcut string, such as Ctrl-Alt-A.
  *
- * @param event Keyboard event.
  * @return Shortcut identifier.
  */
 export function getKeyboardShortcut(event: KeyboardEvent): KeyboardShortcut {

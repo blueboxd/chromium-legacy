@@ -29,7 +29,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_handler_for_content_attribute.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_union_stringtreatnullasemptystring_trustedscript.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_stringlegacynulltoemptystring_trustedscript.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -370,12 +370,12 @@ void HTMLElement::CollectStyleForPresentationAttribute(
     }
   } else if (name == html_names::kDraggableAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kDraggableAttribute);
-    if (EqualIgnoringASCIICase(value, "true")) {
+    if (EqualIgnoringASCIICase(value, keywords::kTrue)) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserDrag, CSSValueID::kElement);
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kUserSelect,
                                               CSSValueID::kNone);
-    } else if (EqualIgnoringASCIICase(value, "false")) {
+    } else if (EqualIgnoringASCIICase(value, keywords::kFalse)) {
       AddPropertyToPresentationAttributeStyle(
           style, CSSPropertyID::kWebkitUserDrag, CSSValueID::kNone);
     }
@@ -731,8 +731,6 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        kNoEvent, nullptr},
       {html_names::kAriaSortAttr, WebFeature::kARIASortAttribute, kNoEvent,
        nullptr},
-      {html_names::kAriaTouchpassthroughAttr,
-       WebFeature::kARIATouchpassthroughAttribute, kNoEvent, nullptr},
       {html_names::kAriaValuemaxAttr, WebFeature::kARIAValueMaxAttribute,
        kNoEvent, nullptr},
       {html_names::kAriaValueminAttr, WebFeature::kARIAValueMinAttribute,
@@ -899,23 +897,23 @@ DocumentFragment* HTMLElement::TextToFragment(const String& text,
   return fragment;
 }
 
-V8UnionStringTreatNullAsEmptyStringOrTrustedScript*
+V8UnionStringLegacyNullToEmptyStringOrTrustedScript*
 HTMLElement::innerTextForBinding() {
   return MakeGarbageCollected<
-      V8UnionStringTreatNullAsEmptyStringOrTrustedScript>(innerText());
+      V8UnionStringLegacyNullToEmptyStringOrTrustedScript>(innerText());
 }
 
 void HTMLElement::setInnerTextForBinding(
-    const V8UnionStringTreatNullAsEmptyStringOrTrustedScript*
+    const V8UnionStringLegacyNullToEmptyStringOrTrustedScript*
         string_or_trusted_script,
     ExceptionState& exception_state) {
   String value;
   switch (string_or_trusted_script->GetContentType()) {
-    case V8UnionStringTreatNullAsEmptyStringOrTrustedScript::ContentType::
-        kStringTreatNullAsEmptyString:
-      value = string_or_trusted_script->GetAsStringTreatNullAsEmptyString();
+    case V8UnionStringLegacyNullToEmptyStringOrTrustedScript::ContentType::
+        kStringLegacyNullToEmptyString:
+      value = string_or_trusted_script->GetAsStringLegacyNullToEmptyString();
       break;
-    case V8UnionStringTreatNullAsEmptyStringOrTrustedScript::ContentType::
+    case V8UnionStringLegacyNullToEmptyStringOrTrustedScript::ContentType::
         kTrustedScript:
       value = string_or_trusted_script->GetAsTrustedScript()->toString();
       break;
@@ -1151,7 +1149,7 @@ void HTMLElement::setHidden(
   switch (value->GetContentType()) {
     case V8UnionBooleanOrStringOrUnrestrictedDouble::ContentType::kBoolean:
       if (value->GetAsBoolean()) {
-        setAttribute(html_names::kHiddenAttr, "");
+        setAttribute(html_names::kHiddenAttr, g_empty_atom);
       } else {
         removeAttribute(html_names::kHiddenAttr);
       }
@@ -1160,18 +1158,18 @@ void HTMLElement::setHidden(
       if (RuntimeEnabledFeatures::BeforeMatchEventEnabled(
               GetExecutionContext()) &&
           EqualIgnoringASCIICase(value->GetAsString(), "until-found")) {
-        setAttribute(html_names::kHiddenAttr, "until-found");
+        setAttribute(html_names::kHiddenAttr, AtomicString("until-found"));
       } else if (value->GetAsString() == "") {
         removeAttribute(html_names::kHiddenAttr);
       } else {
-        setAttribute(html_names::kHiddenAttr, "");
+        setAttribute(html_names::kHiddenAttr, g_empty_atom);
       }
       break;
     case V8UnionBooleanOrStringOrUnrestrictedDouble::ContentType::
         kUnrestrictedDouble:
       double double_value = value->GetAsUnrestrictedDouble();
       if (double_value && !std::isnan(double_value)) {
-        setAttribute(html_names::kHiddenAttr, "");
+        setAttribute(html_names::kHiddenAttr, g_empty_atom);
       } else {
         removeAttribute(html_names::kHiddenAttr);
       }
@@ -2310,7 +2308,8 @@ bool HTMLElement::draggable() const {
 }
 
 void HTMLElement::setDraggable(bool value) {
-  setAttribute(html_names::kDraggableAttr, value ? "true" : "false");
+  setAttribute(html_names::kDraggableAttr,
+               value ? keywords::kTrue : keywords::kFalse);
 }
 
 bool HTMLElement::spellcheck() const {
@@ -2318,7 +2317,8 @@ bool HTMLElement::spellcheck() const {
 }
 
 void HTMLElement::setSpellcheck(bool enable) {
-  setAttribute(html_names::kSpellcheckAttr, enable ? "true" : "false");
+  setAttribute(html_names::kSpellcheckAttr,
+               enable ? keywords::kTrue : keywords::kFalse);
 }
 
 void HTMLElement::click() {
@@ -2365,7 +2365,7 @@ bool HTMLElement::translate() const {
 }
 
 void HTMLElement::setTranslate(bool enable) {
-  setAttribute(html_names::kTranslateAttr, enable ? "yes" : "no");
+  setAttribute(html_names::kTranslateAttr, AtomicString(enable ? "yes" : "no"));
 }
 
 // Returns the conforming 'dir' value associated with the state the attribute is

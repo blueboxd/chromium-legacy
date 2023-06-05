@@ -142,6 +142,19 @@ const FeatureEntry::Choice
         {"5000", signin::kWaitThresholdMillisecondsForCapabilitiesApi, "5000"},
 };
 
+// Uses int values from DefaultPromoType enum.
+const FeatureEntry::Choice kDefaultBrowserPromoForceShowPromoChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {"Show generic promo", "default-browser-promo-force-show-promo", "0"},
+    {"Show tailored stay safe promo", "default-browser-promo-force-show-promo",
+     "1"},
+    {"Show tailored made for ios promo",
+     "default-browser-promo-force-show-promo", "2"},
+    {"Show tailored all tabs promo", "default-browser-promo-force-show-promo",
+     "3"},
+    {"Show video promo", "default-browser-promo-force-show-promo", "4"},
+};
+
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
     {OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam, "3"}};
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches4[] = {
@@ -238,16 +251,6 @@ const FeatureEntry::FeatureVariation
          std::size(kAutofillUseMobileLabelDisambiguationShowAll), nullptr},
         {"(show one)", kAutofillUseMobileLabelDisambiguationShowOne,
          std::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
-
-const FeatureEntry::FeatureParam
-    kDefaultBrowserFullscreenPromoExperimentRemindMeLater[] = {
-        {kDefaultBrowserFullscreenPromoExperimentRemindMeGroupParam, "true"}};
-const FeatureEntry::FeatureVariation
-    kDefaultBrowserFullscreenPromoExperimentVariations[] = {
-        {"Remind me later",
-         kDefaultBrowserFullscreenPromoExperimentRemindMeLater,
-         std::size(kDefaultBrowserFullscreenPromoExperimentRemindMeLater),
-         nullptr}};
 
 // Uses int values from SigninPromoViewStyle enum.
 const FeatureEntry::FeatureParam kDiscoverFeedTopSyncPromoStandard[] = {
@@ -835,14 +838,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"record-snapshot-size", flag_descriptions::kRecordSnapshotSizeName,
      flag_descriptions::kRecordSnapshotSizeDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kRecordSnapshotSize)},
-    {"default-browser-fullscreen-promo-experiment",
-     flag_descriptions::kDefaultBrowserFullscreenPromoExperimentName,
-     flag_descriptions::kDefaultBrowserFullscreenPromoExperimentDescription,
-     flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         kDefaultBrowserFullscreenPromoExperiment,
-         kDefaultBrowserFullscreenPromoExperimentVariations,
-         "IOSDefaultBrowserFullscreenPromoExperiment")},
     {"ios-shared-highlighting-color-change",
      flag_descriptions::kIOSSharedHighlightingColorChangeName,
      flag_descriptions::kIOSSharedHighlightingColorChangeDescription,
@@ -1129,6 +1124,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSPasswordBottomSheetName,
      flag_descriptions::kIOSPasswordBottomSheetDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordBottomSheet)},
+    {"ios-payments-bottom-sheet",
+     flag_descriptions::kIOSPaymentsBottomSheetName,
+     flag_descriptions::kIOSPaymentsBottomSheetDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSPaymentsBottomSheet)},
     {"ios-new-tab-page-retention", flag_descriptions::kNewTabPageFieldTrialName,
      flag_descriptions::kNewTabPageFieldTrialDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_tiles::kNewTabPageFieldTrial,
@@ -1209,6 +1208,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kDefaultBrowserVideoPromo,
                                     kDefaultBrowserVideoPromoVariations,
                                     "DefaultBrowserVideoPromoVariations")},
+    {"default-browser-promo-force-show-promo",
+     flag_descriptions::kDefaultBrowserPromoForceShowPromoName,
+     flag_descriptions::kDefaultBrowserPromoForceShowPromoDescription,
+     flags_ui::kOsIos,
+     MULTI_VALUE_TYPE(kDefaultBrowserPromoForceShowPromoChoices)},
 #if BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
     {"feed-background-refresh-ios",
      flag_descriptions::kFeedBackgroundRefreshName,
@@ -1536,7 +1540,8 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"replace-sync-promos-with-sign-in-promos",
      flag_descriptions::kReplaceSyncPromosWithSignInPromosName,
      flag_descriptions::kReplaceSyncPromosWithSignInPromosDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kReplaceSyncPromosWithSignInPromos)},
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(syncer::kReplaceSyncPromosWithSignInPromos)},
     {"hide-content-suggestions-tiles",
      flag_descriptions::kHideContentSuggestionTilesName,
      flag_descriptions::kHideContentSuggestionTilesDescription,
@@ -1549,6 +1554,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableSignedOutViewDemotionName,
      flag_descriptions::kEnableSignedOutViewDemotionDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kEnableSignedOutViewDemotion)},
+    {"autofill-use-two-dots-for-last-four-digits",
+     flag_descriptions::kAutofillUseTwoDotsForLastFourDigitsName,
+     flag_descriptions::kAutofillUseTwoDotsForLastFourDigitsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillUseTwoDotsForLastFourDigits)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

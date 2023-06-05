@@ -134,6 +134,12 @@ extern const char kAutofillUseMobileLabelDisambiguationDescription[];
 extern const char kAutofillUseRendererIDsName[];
 extern const char kAutofillUseRendererIDsDescription[];
 
+// Title and description for the flag that controls whether Autofill uses
+// two or four '•' characters when displaying the last four digits of a credit
+// card.
+extern const char kAutofillUseTwoDotsForLastFourDigitsName[];
+extern const char kAutofillUseTwoDotsForLastFourDigitsDescription[];
+
 // Title and description for the flag that moves the omnibox to the bottom in
 // the steady state.
 extern const char kBottomOmniboxSteadyStateName[];
@@ -207,7 +213,13 @@ extern const char kDefaultBrowserIntentsShowSettingsDescription[];
 extern const char kDefaultBrowserRefactoringPromoManagerName[];
 extern const char kDefaultBrowserRefactoringPromoManagerDescription[];
 
-// Title and description for the flag to enable the default browser video promo.
+// Title and description for the flag to enable skipping the default browser
+// promo.
+extern const char kDefaultBrowserPromoForceShowPromoName[];
+extern const char kDefaultBrowserPromoForceShowPromoDescription[];
+
+// Title and description for the flag to enable the flag that skips the
+// triggering criteria default browser promo skip.
 extern const char kDefaultBrowserVideoPromoName[];
 extern const char kDefaultBrowserVideoPromoDescription[];
 
@@ -495,6 +507,10 @@ extern const char kIOSSetUpListDescription[];
 // Title and description for the flag to enable password bottom sheet on IOS.
 extern const char kIOSPasswordBottomSheetName[];
 extern const char kIOSPasswordBottomSheetDescription[];
+
+// Title and description for the flag to enable payments bottom sheet on IOS.
+extern const char kIOSPaymentsBottomSheetName[];
+extern const char kIOSPaymentsBottomSheetDescription[];
 
 // Title and description of the flag to enable client side new tab page
 // experiments aimed at improving user retention.

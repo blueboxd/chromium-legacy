@@ -28,28 +28,17 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthCrosPlatformAuthenticator);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_ANDROID)
+// Enable UI options to explicitly invoke hybrid CTAP authentication on
+// Android.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnAndroidHybridClientUi);
+#endif  // BUILDFLAG(IS_ANDROID)
+
 // Feature flag for the Google-internal
 // `WebAuthenticationAllowGoogleCorpRemoteRequestProxying` enterprise policy.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnGoogleCorpRemoteDesktopClientPrivilege);
-
-// Enable some experimental UI changes
-COMPONENT_EXPORT(DEVICE_FIDO) BASE_DECLARE_FEATURE(kWebAuthPasskeysUI);
-
-// Support optional UV for new credentials in the macOS platform authenticator.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnMacPlatformAuthenticatorOptionalUv);
-
-// Show a "Use the passkey from your phone" sheet instead of the mechanism
-// selection screen if we are confident a request can be resolved using an
-// already paired phone.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnPhoneConfirmationSheet);
-
-// Use the new implementation of mechanism priorities in
-// AuthenticatorRequestDialogModel.
-COMPONENT_EXPORT(DEVICE_FIDO)
-BASE_DECLARE_FEATURE(kWebAuthnNewPrioritiesImpl);
 
 // Use the Android 14 Credential Manager API.
 COMPONENT_EXPORT(DEVICE_FIDO)

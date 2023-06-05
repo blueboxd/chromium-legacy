@@ -51,7 +51,9 @@ bool operator==(const AttributionConfig::RateLimitConfig& a,
   const auto tie = [](const AttributionConfig::RateLimitConfig& config) {
     return std::make_tuple(
         config.time_window, config.max_source_registration_reporting_origins,
-        config.max_attribution_reporting_origins, config.max_attributions);
+        config.max_attribution_reporting_origins, config.max_attributions,
+        config.max_reporting_origins_per_source_reporting_site,
+        config.origins_per_site_window);
   };
   return tie(a) == tie(b);
 }
@@ -238,7 +240,7 @@ TEST(AttributionInteropParserTest, ValidTriggerParses) {
             *SuitableOrigin::Deserialize("https://a.r.test"));
   EXPECT_EQ(trigger->destination_origin(),
             *SuitableOrigin::Deserialize("https://b.d.test"));
-  EXPECT_EQ(trigger->verification(), absl::nullopt);
+  EXPECT_THAT(trigger->verifications(), IsEmpty());
   EXPECT_FALSE(trigger->is_within_fenced_frame());
   EXPECT_TRUE(result->front().debug_permission);
 }
@@ -596,17 +598,34 @@ TEST(AttributionInteropParserTest, ValidConfig) {
        AttributionConfig{.max_destinations_per_source_site_reporting_site =
                              100}},
       {R"json({"rate_limit_time_window":"30"})json", false,
-       AttributionConfig{.rate_limit = {.time_window = base::Days(30)}}},
+       AttributionConfig{.rate_limit = RateLimitWith(
+                             [](AttributionConfig::RateLimitConfig& r) {
+                               r.time_window = base::Days(30);
+                             })}},
       {R"json({"rate_limit_max_source_registration_reporting_origins":"10"})json",
        false,
-       AttributionConfig{
-           .rate_limit = {.max_source_registration_reporting_origins = 10}}},
+       AttributionConfig{.rate_limit = RateLimitWith(
+                             [](AttributionConfig::RateLimitConfig& r) {
+                               r.max_source_registration_reporting_origins = 10;
+                             })}},
       {R"json({"rate_limit_max_attribution_reporting_origins":"10"})json",
        false,
-       AttributionConfig{
-           .rate_limit = {.max_attribution_reporting_origins = 10}}},
+       AttributionConfig{.rate_limit = RateLimitWith(
+                             [](AttributionConfig::RateLimitConfig& r) {
+                               r.max_attribution_reporting_origins = 10;
+                             })}},
       {R"json({"rate_limit_max_attributions":"10"})json", false,
-       AttributionConfig{.rate_limit = {.max_attributions = 10}}},
+       AttributionConfig{.rate_limit = RateLimitWith(
+                             [](AttributionConfig::RateLimitConfig& r) {
+                               r.max_attributions = 10;
+                             })}},
+      {R"json({"rate_limit_max_reporting_origins_per_source_reporting_site":"2"})json",
+       false,
+       AttributionConfig{
+           .rate_limit =
+               RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
+                 r.max_reporting_origins_per_source_reporting_site = 2;
+               })}},
       {R"json({"navigation_source_trigger_data_cardinality":"10"})json", false,
        AttributionConfig{.event_level_limit = EventLevelLimitWith(
                              [](AttributionConfig::EventLevelLimit& e) {
@@ -656,6 +675,7 @@ TEST(AttributionInteropParserTest, ValidConfig) {
         "rate_limit_max_source_registration_reporting_origins":"20",
         "rate_limit_max_attribution_reporting_origins":"15",
         "rate_limit_max_attributions":"10",
+        "rate_limit_max_reporting_origins_per_source_reporting_site":"5",
         "navigation_source_trigger_data_cardinality":"100",
         "event_source_trigger_data_cardinality":"10",
         "randomized_response_epsilon":"0.2",
@@ -671,10 +691,14 @@ TEST(AttributionInteropParserTest, ValidConfig) {
        AttributionConfig{
            .max_sources_per_origin = 10,
            .max_destinations_per_source_site_reporting_site = 10,
-           .rate_limit = {.time_window = base::Days(10),
-                          .max_source_registration_reporting_origins = 20,
-                          .max_attribution_reporting_origins = 15,
-                          .max_attributions = 10},
+           .rate_limit =
+               RateLimitWith([](AttributionConfig::RateLimitConfig& r) {
+                 r.time_window = base::Days(10);
+                 r.max_source_registration_reporting_origins = 20;
+                 r.max_attribution_reporting_origins = 15;
+                 r.max_attributions = 10;
+                 r.max_reporting_origins_per_source_reporting_site = 5;
+               }),
            .event_level_limit =
                EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
                  e.navigation_source_trigger_data_cardinality = 100;
@@ -712,6 +736,7 @@ TEST(AttributionInteropParserTest, InvalidConfigPositiveIntegers) {
       "rate_limit_max_source_registration_reporting_origins",
       "rate_limit_max_attribution_reporting_origins",
       "rate_limit_max_attributions",
+      "rate_limit_max_reporting_origins_per_source_reporting_site",
       "navigation_source_trigger_data_cardinality",
       "event_source_trigger_data_cardinality",
       "max_event_level_reports_per_destination",

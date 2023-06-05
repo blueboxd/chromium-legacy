@@ -137,8 +137,95 @@ SkColorType ToClosestSkColorType(bool gpu_compositing,
 
 SharedImageFormat SkColorTypeToSinglePlaneSharedImageFormat(
     SkColorType color_type) {
-  return SharedImageFormat::SinglePlane(
-      SkColorTypeToResourceFormat(color_type));
+  switch (color_type) {
+    case kARGB_4444_SkColorType:
+      return SinglePlaneFormat::kRGBA_4444;
+    case kBGRA_8888_SkColorType:
+      return SinglePlaneFormat::kBGRA_8888;
+    case kRGBA_8888_SkColorType:
+      return SinglePlaneFormat::kRGBA_8888;
+    case kRGBA_F16_SkColorType:
+      return SinglePlaneFormat::kRGBA_F16;
+    case kAlpha_8_SkColorType:
+      return SinglePlaneFormat::kALPHA_8;
+    case kRGB_565_SkColorType:
+      return SinglePlaneFormat::kRGB_565;
+    case kGray_8_SkColorType:
+      return SinglePlaneFormat::kLUMINANCE_8;
+    case kRGB_888x_SkColorType:
+      return SinglePlaneFormat::kRGBX_8888;
+    case kRGBA_1010102_SkColorType:
+      return SinglePlaneFormat::kRGBA_1010102;
+    case kBGRA_1010102_SkColorType:
+      return SinglePlaneFormat::kBGRA_1010102;
+    // These colortypes are just for reading from - not to render to.
+    case kR8G8_unorm_SkColorType:
+    case kA16_float_SkColorType:
+    case kR16G16_float_SkColorType:
+    case kA16_unorm_SkColorType:
+    case kR16G16_unorm_SkColorType:
+    case kR16G16B16A16_unorm_SkColorType:
+    case kUnknown_SkColorType:
+    // These colortypes are don't have an equivalent in SharedImageFormat.
+    case kRGB_101010x_SkColorType:
+    case kBGR_101010x_SkColorType:
+    case kRGBA_F16Norm_SkColorType:
+    case kRGBA_F32_SkColorType:
+    case kSRGBA_8888_SkColorType:
+    // Default case is for new color types added to Skia.
+    default:
+      break;
+  }
+  NOTREACHED_NORETURN();
+}
+
+bool CanCreateGpuMemoryBufferForSinglePlaneSharedImageFormat(
+    SharedImageFormat format) {
+  CHECK(format.is_single_plane());
+  switch (format.resource_format()) {
+    case BGRA_8888:
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+    // TODO(crbug.com/1307837): On ARM devices LaCrOS can't create RED_8
+    // GpuMemoryBuffer Objects with GBM device. This capability should be
+    // plumbed and known by clients requesting shared images as overlay
+    // candidate.
+    case RED_8:
+#endif
+#if BUILDFLAG(IS_APPLE)
+    case BGRX_8888:
+    case RGBX_8888:
+#endif
+    case R16_EXT:
+    case RGBA_4444:
+    case RGBA_8888:
+    case RGBA_1010102:
+    case BGRA_1010102:
+    case RGBA_F16:
+      return true;
+    // These formats have no BufferFormat equivalent or are only used
+    // for external textures, or have no GL equivalent formats.
+    case ETC1:
+    case ALPHA_8:
+    case LUMINANCE_8:
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    case RED_8:
+#endif
+#if !BUILDFLAG(IS_APPLE)
+    case BGRX_8888:
+    case RGBX_8888:
+#endif
+    case RGB_565:
+    case LUMINANCE_F16:
+    case BGR_565:
+    case RG_88:
+    case RG16_EXT:
+    case YVU_420:
+    case YUV_420_BIPLANAR:
+    case YUVA_420_TRIPLANAR:
+    case P010:
+      return false;
+  }
+  NOTREACHED_NORETURN();
 }
 
 bool HasEquivalentBufferFormat(SharedImageFormat format) {
@@ -180,7 +267,51 @@ bool HasEquivalentBufferFormat(SharedImageFormat format) {
 gfx::BufferFormat SinglePlaneSharedImageFormatToBufferFormat(
     SharedImageFormat format) {
   CHECK(format.is_single_plane());
-  return BufferFormat(format.resource_format());
+  switch (format.resource_format()) {
+    case BGRA_8888:
+      return gfx::BufferFormat::BGRA_8888;
+    case RED_8:
+      return gfx::BufferFormat::R_8;
+    case R16_EXT:
+      return gfx::BufferFormat::R_16;
+    case RG16_EXT:
+      return gfx::BufferFormat::RG_1616;
+    case RGBA_4444:
+      return gfx::BufferFormat::RGBA_4444;
+    case RGBA_8888:
+      return gfx::BufferFormat::RGBA_8888;
+    case RGBA_F16:
+      return gfx::BufferFormat::RGBA_F16;
+    case BGR_565:
+      return gfx::BufferFormat::BGR_565;
+    case RG_88:
+      return gfx::BufferFormat::RG_88;
+    case RGBX_8888:
+      return gfx::BufferFormat::RGBX_8888;
+    case BGRX_8888:
+      return gfx::BufferFormat::BGRX_8888;
+    case RGBA_1010102:
+      return gfx::BufferFormat::RGBA_1010102;
+    case BGRA_1010102:
+      return gfx::BufferFormat::BGRA_1010102;
+    case YVU_420:
+      return gfx::BufferFormat::YVU_420;
+    case YUV_420_BIPLANAR:
+      return gfx::BufferFormat::YUV_420_BIPLANAR;
+    case YUVA_420_TRIPLANAR:
+      return gfx::BufferFormat::YUVA_420_TRIPLANAR;
+    case P010:
+      return gfx::BufferFormat::P010;
+    case ETC1:
+    case ALPHA_8:
+    case LUMINANCE_8:
+    case RGB_565:
+    case LUMINANCE_F16:
+      // CanCreateGpuMemoryBufferForSinglePlaneSharedImageFormat() returns
+      // false for these types, so give a default value that will not be used.
+      break;
+  }
+  return gfx::BufferFormat::RGBA_8888;
 }
 
 SharedImageFormat GetSharedImageFormat(gfx::BufferFormat format) {

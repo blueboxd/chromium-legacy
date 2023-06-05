@@ -9,6 +9,7 @@
 #include "ash/style/rounded_container.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
+#include "chrome/browser/ash/arc/input_overlay/touch_injector_observer.h"
 #include "ui/color/color_id.h"
 #include "ui/events/event.h"
 #include "ui/views/view.h"
@@ -17,6 +18,7 @@ namespace arc::input_overlay {
 
 class Action;
 class DisplayOverlayController;
+class EditLabels;
 
 // ButtonOptionsMenu displays action's type, input binding(s) and name and it
 // can modify these information. It shows up upon clicking an action's touch
@@ -37,14 +39,12 @@ class DisplayOverlayController;
 // ||"Button label"                 > |
 // ||"Unassigned"                     |
 // +----------------------------------+
-class ButtonOptionsMenu : public views::View {
+class ButtonOptionsMenu : public views::View, public TouchInjectorObserver {
  public:
-  static ButtonOptionsMenu* Show(
-      DisplayOverlayController* display_overlay_controller,
-      Action* action);
+  static ButtonOptionsMenu* Show(DisplayOverlayController* controller,
+                                 Action* action);
 
-  ButtonOptionsMenu(DisplayOverlayController* display_overlay_controller,
-                    Action* action);
+  ButtonOptionsMenu(DisplayOverlayController* controller, Action* action);
   ButtonOptionsMenu(const ButtonOptionsMenu&) = delete;
   ButtonOptionsMenu& operator=(const ButtonOptionsMenu&) = delete;
   ~ButtonOptionsMenu() override;
@@ -75,9 +75,17 @@ class ButtonOptionsMenu : public views::View {
   void OnPaintBackground(gfx::Canvas* canvas) override;
   gfx::Size CalculatePreferredSize() const override;
 
+  // TouchInjectorObserver:
+  void OnActionRemoved(const Action& action) override;
+  void OnActionTypeChanged(const Action& action,
+                           const Action& new_action) override;
+  void OnActionUpdated(const Action& action) override;
+
   // DisplayOverlayController owns this class, no need to deallocate.
-  const raw_ptr<DisplayOverlayController> display_overlay_controller_ = nullptr;
+  const raw_ptr<DisplayOverlayController> controller_ = nullptr;
   const raw_ptr<Action> action_ = nullptr;
+
+  raw_ptr<EditLabels> labels_view_ = nullptr;
 };
 
 }  // namespace arc::input_overlay

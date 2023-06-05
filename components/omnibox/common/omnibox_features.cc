@@ -93,9 +93,11 @@ BASE_FEATURE(kPreferNonShortcutMatchesWhenDeduping,
 
 // Determines which are culled when both tail and history cluster suggestions
 // are available. See `MaybeCullTailSuggestions()`.
+// TODO(manukh): Enabled by default 6/1/23 m116. Clean up feature code 8/15 when
+//   m116 reaches stable.
 BASE_FEATURE(kPreferTailOverHistoryClusterSuggestions,
              "OmniboxPreferTailOverHistoryClusterSuggestions",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When disabled, when providers update their matches, the new set of matches
 // are sorted and culled, then merged with the old matches, then sorted and
@@ -254,13 +256,11 @@ BASE_FEATURE(kOnDeviceHeadProviderIncognito,
 BASE_FEATURE(kOnDeviceHeadProviderNonIncognito,
              "OmniboxOnDeviceHeadProviderNonIncognito",
              base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kOnDeviceHeadProviderKorean,
+             "OmniboxOnDeviceHeadProviderKorean",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kOnDeviceTailModel,
              "OmniboxOnDeviceTailModel",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, suggestions from a cgi param name match are scored to 0.
-BASE_FEATURE(kDisableCGIParamMatching,
-             "OmniboxDisableCGIParamMatching",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the shortcut provider is more aggressive in scoring. The exact
@@ -590,12 +590,6 @@ BASE_FEATURE(kClosePopupWithEscape,
 BASE_FEATURE(kOmniboxModernizeVisualUpdate,
              "OmniboxModernizeVisualUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, adds a "starter pack" of @history, @bookmarks, and @settings
-// scopes to Site Search/Keyword Mode.
-BASE_FEATURE(kSiteSearchStarterPack,
-             "OmniboxSiteSearchStarterPack",
-             enabled_by_default_desktop_only);
 
 // Experiment to introduce new security indicators for HTTPS.
 BASE_FEATURE(kUpdatedConnectionSecurityIndicators,

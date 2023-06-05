@@ -4832,15 +4832,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Media.Session.RequestAudioFocusResult" enum="BooleanSuccess"
-    expires_after="2022-05-01">
-  <owner>steimel@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    Indicate whether the native requestAudioFocus() call was successful.
-  </summary>
-</histogram>
-
 <histogram name="Media.Session.Stop" enum="MediaSessionActionSource"
     expires_after="2022-02-06">
   <owner>steimel@chromium.org</owner>
@@ -4858,26 +4849,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     The number of times a media session is suspended and why it has been
     suspended.
-  </summary>
-</histogram>
-
-<histogram name="Media.Session.UserAction" enum="MediaSessionUserAction"
-    expires_after="2020-02-02">
-  <owner>beccahughes@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    The number of times user interacts with MediaSession sorted by action type.
-  </summary>
-</histogram>
-
-<histogram name="Media.Session.UserAction.Focus" enum="BooleanFocused"
-    expires_after="2020-02-02">
-  <owner>steimel@chromium.org</owner>
-  <owner>media-dev@chromium.org</owner>
-  <summary>
-    The focused state of the WebContents associated with the MediaSession that
-    the user is interacting with. Recorded when the user interacts with a
-    MediaSession (e.g. by pressing the play/pause key on their keyboard).
   </summary>
 </histogram>
 
@@ -4980,6 +4951,22 @@ chromium-metrics-reviews@google.com.
     which is displayed following a call to getDisplayMedia where
     preferCurrentTab was specified.
   </summary>
+</histogram>
+
+<histogram name="Media.Ui.GetDisplayMedia.{Flow}.DialogDuration" units="ms"
+    expires_after="2024-05-29">
+  <owner>tovep@chromium.org</owner>
+  <owner>eladalon@chromium.org</owner>
+  <summary>
+    The time-duration the DesktopMediaPickerDialog is opened when
+    getDisplayMedia is called with the preferCurrentTab constraint either set to
+    true (PreferCurrentTabFlow) or unspecified/false (BasicFlow). The duration
+    is recorded each time the dialog is closed.
+  </summary>
+  <token key="Flow">
+    <variant name="BasicFlow"/>
+    <variant name="PreferCurrentTabFlow"/>
+  </token>
 </histogram>
 
 <histogram base="true" name="Media.UnderflowDuration2" units="ms"

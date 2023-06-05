@@ -57,6 +57,7 @@ bool ReadAnythingAppModel::PostProcessSelection() {
   DCHECK_NE(active_tree_id_, ui::AXTreeIDUnknown());
   DCHECK(ContainsTree(active_tree_id_));
 
+  bool was_empty = is_empty();
   requires_post_process_selection_ = false;
 
   // If the previous selection was inside the distilled content, that means we
@@ -71,6 +72,12 @@ bool ReadAnythingAppModel::PostProcessSelection() {
 
   // Save the current selection
   UpdateSelection();
+
+  if (has_selection_ && was_empty) {
+    base::UmaHistogramEnumeration(
+        string_constants::kEmptyStateHistogramName,
+        ReadAnythingEmptyState::kSelectionAfterEmptyStateShown);
+  }
 
   // If the main panel selection contains content outside of the distilled
   // content, we need to find the selected nodes to display instead of the
@@ -156,7 +163,7 @@ void ReadAnythingAppModel::ComputeSelectionNodeIds() {
   ui::AXNode* first_sibling_node =
       start_parent->GetFirstUnignoredChildCrossingTreeBoundary();
   ui::AXNode* last_sibling_node =
-      end_parent->GetLastUnignoredChildCrossingTreeBoundary();
+      end_parent->GetDeepestLastUnignoredChildCrossingTreeBoundary();
 
   // If the last sibling node is null, selection is invalid and we should
   // return early.
@@ -189,10 +196,15 @@ ui::AXNode* ReadAnythingAppModel::GetParentForSelection(ui::AXNode* node) {
   // node has an "inline" display but the parent we want would have a "block"
   // display role, so in order to get the common parent of
   // all sibling nodes, the grandparent should be used.
+  // Displays of type "list-item" is an exception to the "inline" display rule
+  // so that all siblings in a list can be shown correctly to avoid
+  //  misnumbering.
   while (parent && parent->GetUnignoredParentCrossingTreeBoundary() &&
          parent->HasStringAttribute(ax::mojom::StringAttribute::kDisplay) &&
-         parent->GetStringAttribute(ax::mojom::StringAttribute::kDisplay)
-                 .find("inline") != std::string::npos) {
+         ((parent->GetStringAttribute(ax::mojom::StringAttribute::kDisplay)
+               .find("inline") != std::string::npos) ||
+          (parent->GetStringAttribute(ax::mojom::StringAttribute::kDisplay)
+               .find("list-item") != std::string::npos))) {
     parent = parent->GetUnignoredParentCrossingTreeBoundary();
   }
 

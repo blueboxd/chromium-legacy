@@ -542,7 +542,7 @@ Chỉ những người có cụm mật khẩu mới đọc được dữ liệu 
 <translation id="4587589328781138893">Trang web</translation>
 <translation id="4588014171431912783">Chế độ cài đặt đồng bộ hoá sẽ được khôi phục dựa trên lần sao lưu gần đây nhất. <ph name="BEGIN_LINK" />Xem những nội dung bạn có thể đồng bộ hoá<ph name="END_LINK" /></translation>
 <translation id="4592368184551360546">Bàn phím</translation>
-<translation id="4606247758155004938">Tổ chức của bạn quản lý trình duyệt này.</translation>
+<translation id="4606247758155004938">Trình duyệt này do tổ chức của bạn quản lý.</translation>
 <translation id="461440297010471931">Tìm kiếm bằng Google</translation>
 <translation id="4616391354457235490">Huỷ</translation>
 <translation id="4619564267100705184">Xác minh danh tính của bạn</translation>
@@ -1072,6 +1072,7 @@ Hãy cố gắng sử dụng một mật khẩu riêng cho mỗi trang web.</tra
 <translation id="7887198238286927132">Để bảo vệ quyền riêng tư của bạn, Chrome sẽ không tự động điền trường này.</translation>
 <translation id="7911190106180361398">Tổ chức của bạn không cho phép bạn đồng bộ hóa mọi thứ.</translation>
 <translation id="7920949005883349320">Quyền riêng tư và bảo mật</translation>
+<translation id="792357691529995513">Không phát hiện thấy sự cố nào</translation>
 <translation id="7930998711684428189">Cảnh báo bạn nếu mật khẩu bị lộ trong một sự cố rò rỉ dữ liệu.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Xuất mật khẩu...</translation>

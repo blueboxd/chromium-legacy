@@ -40,6 +40,10 @@
         {
           "builder": "linux-js-code-coverage",
           "group": "tryserver.chromium.linux"
+        },
+        {
+          "builder": "linux-js-coverage-rel",
+          "group": "tryserver.chromium.linux"
         }
       ]
     }

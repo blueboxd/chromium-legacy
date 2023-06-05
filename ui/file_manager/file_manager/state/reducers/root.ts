@@ -14,7 +14,7 @@ import {refreshNavigationRoots, updateNavigationEntry} from './navigation.js';
 import {updatePreferences} from './preferences.js';
 import {search} from './search.js';
 import {addUiEntry, removeUiEntry} from './ui_entries.js';
-import {addVolume, removeVolume} from './volumes.js';
+import {addVolume, removeVolume, updateIsInteractiveVolume} from './volumes.js';
 
 /**
  * Root reducer for the State for Files app.
@@ -28,6 +28,12 @@ export function rootReducer(currentState: State, action: Action): State {
   // Before any actual Reducer, we cache the entries, so the reducers can just
   // use any entry from `allEntries`.
   const state = cacheEntries(currentState, action);
+
+  if (window.DEBUG_STORE) {
+    console.groupCollapsed(`Action: ${action.type}`);
+    console.dir(action.payload);
+    console.groupEnd();
+  }
 
   switch (action.type) {
     case ActionType.CHANGE_DIRECTORY:
@@ -70,6 +76,8 @@ export function rootReducer(currentState: State, action: Action): State {
       return updateBulkPinning(currentState, action);
     case ActionType.UPDATE_PREFERENCES:
       return updatePreferences(currentState, action);
+    case ActionType.UPDATE_IS_INTERACTIVE_VOLUME:
+      return updateIsInteractiveVolume(currentState, action);
     default:
       console.error(`invalid action type: ${(action as any)?.type} action: ${
           JSON.stringify(action)}`);

@@ -51,8 +51,7 @@
   }
 
   .text-container {
-    align-items: center;
-    display: flex;
+    display: block;
     flex-direction: column;
     justify-content: center;
     margin-inline-end: 16px;
@@ -123,20 +122,31 @@
 </style>
 <div id="screensList">
   <template is="dom-repeat" items="{{screensList_}}" as="screen">
-    <cr-button visited$="[[isScreenVisited(screen.selected , screen.is_completed)]]"
+    <cr-button id="[[getScreenID(screen.screenID)]]"
+        visited$="[[isScreenVisited(screen.selected , screen.is_completed)]]"
         disabled="[[isScreenDisabled(screen.is_revisitable , screen.is_completed)]]"
         class="screen-item"
+        role="checkbox"
+        aria-checked="[[screen.selected]]"
+        aria-label$="[[getAriaLabelToggleButtons_(locale,
+                  screen.title ,
+                  screen.subtitle ,
+                  screen.is_synced ,
+                  screen.is_completed,
+                  screen.screenID)]]"
         on-click="onClick_">
       <div class="flex horizontal layout">
         <div class="icon">
           <iron-icon class="screen-icon" icon="[[screen.icon]]"></iron-icon>
         </div>
-        <div class="text-container">
+        <div class="text-container" aria-hidden="true">
           <div class="screen-title"> [[i18nDynamic(locale, screen.title)]]</div>
-          <div class="screen-subtitle">[[getSubtitile_(locale)]]</div>
+          <div class="screen-subtitle">[[getSubtitle_(locale, screen.subtitle,
+                                              screen.screenID )]]</div>
         </div>
-        <div class="info-icon">
+        <div class="info-icon" aria-hidden="true">
           <iron-icon hidden="[[isSyncedIconHidden(screen.is_synced ,
+                                            screen.is_completed ,
                                             screen.selected)]]"
               id="sync" icon="oobe-20:sync"></iron-icon>
           <iron-icon hidden="[[!screen.selected]]"

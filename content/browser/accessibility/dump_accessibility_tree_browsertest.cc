@@ -1408,11 +1408,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityAriaTouchPassthrough) {
-  RunAriaTest(FILE_PATH_LITERAL("aria-touchpassthrough.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        DISABLED_AccessibilityAriaTextboxWithSelection) {
   RunAriaTest(FILE_PATH_LITERAL("aria-textbox-with-selection.html"));
 }
@@ -2039,10 +2034,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 class DumpAccessibilityTreeFencedFrameTest : public DumpAccessibilityTreeTest {
  protected:
   DumpAccessibilityTreeFencedFrameTest() {
-    feature_list_.InitWithFeatures({{blink::features::kFencedFrames},
-                                    {features::kPrivacySandboxAdsAPIsOverride},
-                                    {blink::features::kFencedFramesAPIChanges}},
-                                   {/* disabled_features */});
+    feature_list_.InitWithFeatures(
+        {{blink::features::kFencedFrames},
+         {features::kPrivacySandboxAdsAPIsOverride},
+         {blink::features::kFencedFramesAPIChanges},
+         {blink::features::kFencedFramesDefaultMode}},
+        {/* disabled_features */});
 
     UseHttpsTestServer();
   }
@@ -3557,6 +3554,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathMLUnknown) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MalformedMap) {
   RunHtmlTest(FILE_PATH_LITERAL("malformed-map.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, ShadowDomFirstChild) {
+  RunHtmlTest(FILE_PATH_LITERAL("shadow-dom-first-child.html"));
 }
 
 //

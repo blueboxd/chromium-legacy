@@ -1472,6 +1472,8 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::ErrorDocument;
     case Reason::kFencedFramesEmbedder:
       return Page::BackForwardCacheNotRestoredReasonEnum::FencedFramesEmbedder;
+    case Reason::kCookieDisabled:
+      return Page::BackForwardCacheNotRestoredReasonEnum::CookieDisabled;
     case Reason::kBlocklistedFeatures:
       // Blocklisted features should be handled separately and be broken down
       // into sub reasons.
@@ -1594,6 +1596,10 @@ Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
       return Page::BackForwardCacheNotRestoredReasonEnum::Dummy;
     case WebSchedulerTrackedFeature::kAuthorizationHeader:
       return Page::BackForwardCacheNotRestoredReasonEnum::AuthorizationHeader;
+    case WebSchedulerTrackedFeature::kWebSerial:
+      // Currently we add WebSchedulerTrackedFeature::kWebSerial only for
+      // disabling aggressive throttling.
+      NOTREACHED_NORETURN();
   }
 }
 
@@ -1739,6 +1745,7 @@ Page::BackForwardCacheNotRestoredReasonType MapNotRestoredReasonToType(
     case Reason::kNoResponseHead:
     case Reason::kErrorDocument:
     case Reason::kFencedFramesEmbedder:
+    case Reason::kCookieDisabled:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
     case Reason::kCacheControlNoStore:
     case Reason::kCacheControlNoStoreCookieModified:
@@ -1806,6 +1813,8 @@ Page::BackForwardCacheNotRestoredReasonType MapBlocklistedFeatureToType(
     case WebSchedulerTrackedFeature::kDummy:
     case WebSchedulerTrackedFeature::kAuthorizationHeader:
       return Page::BackForwardCacheNotRestoredReasonTypeEnum::Circumstantial;
+    case WebSchedulerTrackedFeature::kWebSerial:
+      NOTREACHED_NORETURN();
   }
 }
 

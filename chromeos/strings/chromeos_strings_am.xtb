@@ -4,7 +4,7 @@
 <translation id="1014750484722996375">ዴስኮች</translation>
 <translation id="1018219910092211213">ዲኤንኤስን መፍታት አልተቻለም</translation>
 <translation id="1018656279737460067">ተሰርዟል</translation>
-<translation id="1022433422498218992">አጠቃላይ መቆጣጠሪያዎች</translation>
+<translation id="1020274983236703756">ለሚመለከተው የተወሰኑ የ<ph name="PRODUCT_NAME" /> ንብረቶች አሁን ይገኛሉ</translation>
 <translation id="1022628058306505708">የዓለም ፍሰት</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> ተከታታይ፣ <ph name="CPU_MAX_CLOCK_SPEED" />ጊኸ)</translation>
 <translation id="1047773237499189053">አዲስ ባህሪ ይገኛል፣ የበለጠ ለመረዳት የላይ ቀስት ቁልፍን ይጠቀሙ።</translation>
@@ -58,6 +58,7 @@
 <translation id="1423591390236870726">የ<ph name="KEY_NAME" /> ቁልፍ አልተጫነም</translation>
 <translation id="1435763214710588005">በተመረጠው ቀን በየወሩ የውሂብ አጠቃቀምን በራስሰር ዳግም ያስጀምራል</translation>
 <translation id="1442433966118452622">የምስል ምንጭ</translation>
+<translation id="1449035143498573192">በGoogle ፍለጋ ውስጥ ክፈት</translation>
 <translation id="1451536289672181509">መሣሪያ ቁልፍ ሰሌዳ ነው።</translation>
 <translation id="1459693405370120464">የአየር ሁኔታ</translation>
 <translation id="1468664791493211953">ቅናሽ</translation>
@@ -113,7 +114,6 @@
 <translation id="1768959921651994223">የማረጋገጫ ዓይነት</translation>
 <translation id="1776228893584526149">የልጣፍ ቀለም</translation>
 <translation id="1782199038061388045">ትርጉም</translation>
-<translation id="1790209694022261219">መስኮቶች እና ዴስኮች</translation>
 <translation id="1792647875738159689">መቃኘትን በመሰረዝ ላይ</translation>
 <translation id="1801418420130173017">ጠቆር ያለ ገጽታን አሰናክል</translation>
 <translation id="1807246157184219062">ብርሃን</translation>
@@ -244,7 +244,6 @@
 <translation id="3008341117444806826">አድስ</translation>
 <translation id="3009958530611748826">የሚያስቀምጡበትን አቃፊ ይምረጡ</translation>
 <translation id="3017079585324758401">ጀርባ</translation>
-<translation id="3020183492814296499">አቋራጮች</translation>
 <translation id="3027578600144895987">ካሜራን ዝጋ</translation>
 <translation id="3031560714565892478">መሣሪያ የቪዲዮ ካሜራ ነው።</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" /> ሚአ</translation>
@@ -271,6 +270,7 @@
 <translation id="3226405216343213872">ቃኚዎችን በመፈለግ ላይ</translation>
 <translation id="3226657629376379887">የአቀማመጥ እርምጃዎች ምናሌ</translation>
 <translation id="3246869037381808805">ከ1 ቀን በላይ ዕድሜ ያላቸው የህትመት ሥራዎች ይወገዳሉ</translation>
+<translation id="3248223063252096240"><ph name="PRODUCT_NAME" /> ለሚመለከተው የተወሰነ</translation>
 <translation id="3268178239013324452">አልተሳካም - በር ክፍት ነው</translation>
 <translation id="3275729367986477355">የአምሳያ ምስል</translation>
 <translation id="3283504360622356314">{0,plural, =1{ፋይል አርትዕ ያድርጉ}one{ፋይሎችን አርትዕ ያድርጉ}other{ፋይሎችን አርትዕ ያድርጉ}}</translation>
@@ -323,6 +323,7 @@
 <translation id="3632579075709132555">የግላዊነት ማያ ገፅ መቀየሪያ</translation>
 <translation id="3639846061339007994">ከፍተኛ</translation>
 <translation id="3651050199673793219">የሙቀት መጠን አሃድ ይምረጡ</translation>
+<translation id="3663574643422533538"><ph name="PRODUCT_NAME" /> ለሚመለከተው የተወሰነ ሥነ ጥበብ ይምረጡ</translation>
 <translation id="3689839747745352263">የ<ph name="TEST_NAME" /> ሙከራ</translation>
 <translation id="370665806235115550">በመጫን ላይ…</translation>
 <translation id="3708186454126126312">ከዚህ ቀደም የተገናኘ</translation>
@@ -372,6 +373,7 @@
 <translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" />ን አልበም ይምረጡ</translation>
 <translation id="4111761024568264522">የዩኤስቢ መዳሰሻ ሰሌዳ</translation>
+<translation id="4113067922640381334">እርስዎ አሁን ለአዲስ <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />ልጣፎች<ph name="END_LINK_WALLPAPER_SUBPAGE" /> መዳረሻ አለዎት</translation>
 <translation id="4117637339509843559">የጨለማ ሁነታ</translation>
 <translation id="4130035430755296270">ለተጨማሪ የአቀማመጥ አማራጮች ማንዣበብዎን ይቀጥሉ</translation>
 <translation id="4131410914670010031">ጥቁር እና ነጭ</translation>
@@ -611,6 +613,7 @@
 <translation id="5972388717451707488">Engine አዘምን</translation>
 <translation id="5984145644188835034">ነባሪ ልጣፍ</translation>
 <translation id="6017514345406065928">አረንጓዴ</translation>
+<translation id="6019566113895157499">የቁልፍ አቋራጮች</translation>
 <translation id="6034694447310538551">ራስ-ሰር ወርሃዊ ዳግም ማስጀመርን አንቃ</translation>
 <translation id="6037291330010597344">የቃኚው ሰነድ መጋቢ ባዶ ነው። ሰነዶችን ያክሉ እና እንደገና ይሞክሩ።</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
@@ -857,6 +860,7 @@
 <translation id="7953669802889559161">ግቤቶች</translation>
 <translation id="7955587717700691983">የብሉቱዝ ቁልፍ ሰሌዳ</translation>
 <translation id="7960831585769876809">የሙቀት መጠን</translation>
+<translation id="7971535376154084247">አጠቃላይ መቆጣጠሪያዎች</translation>
 <translation id="7977800524392185497"><ph name="NETWORK_NAME" /> አውታረ መረብን ለመቀላቀል ወደ ቅንብሮች ይሂዱ</translation>
 <translation id="7978412674231730200">የግል ቁልፍ</translation>
 <translation id="7994702968232966508">የEAP ስልት</translation>
@@ -920,6 +924,7 @@
 <translation id="8461329675984532579">የመነሻ አቅራቢ ስም</translation>
 <translation id="8475690821716466388">የWiFi አውታረ መረብ ደህንነት በደካማ ፕሮቶኮል WEP PSK የተጠበቀ ነው</translation>
 <translation id="8476242415522716722">የቁልፍ ሰሌዳ የስር መብራት</translation>
+<translation id="8476942730579767658">መስኮቶች እና ዴስኮች</translation>
 <translation id="8477551185774834963">የዲኤንኤስ ስርዓተ ምላሽ ጊዜ ከሚፈቀደው ገደብ በትንሹ ይበልጣል</translation>
 <translation id="8483248364096924578">የአይፒ አድራሻ</translation>
 <translation id="8491311378305535241">ከAndroid መተግበሪያዎች በኬላ በኩል ወደ ኤችቲቲፒ ድር ጣቢያዎች መገናኘት አይቻልም</translation>
@@ -934,6 +939,7 @@
 <translation id="8576249514688522074">ያልተጀመረ</translation>
 <translation id="8593058461203131755">ሚዲያን ባለበት ማቆሚያ</translation>
 <translation id="8620617069779373398">የውሂብ ዝውውር ሁኔታ</translation>
+<translation id="8626489604350149811">ለ<ph name="APN_NAME" /> ተጨማሪ እርምጃዎች</translation>
 <translation id="86356131183441916">ፈዛዛ ወይን ጠጅ</translation>
 <translation id="8651481478098336970">ድምፅ ዝጋ</translation>
 <translation id="8655295600908251630">ሰርጥ</translation>

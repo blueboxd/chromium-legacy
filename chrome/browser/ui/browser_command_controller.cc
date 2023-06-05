@@ -113,6 +113,12 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
+// TODO(crbug.com/1424800): Remove once the restore issue has been resolved.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+#endif
+
 #if BUILDFLAG(IS_LINUX)
 #include "ui/linux/linux_ui.h"
 #endif
@@ -237,8 +243,11 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
       TabRestoreServiceFactory::GetForProfile(profile());
   if (tab_restore_service) {
     tab_restore_service->AddObserver(this);
-    if (!tab_restore_service->IsLoaded())
+    if (!tab_restore_service->IsLoaded()) {
+      VLOG(1) << "BrowserCommandController::BrowserCommandController, loading "
+                 "tabs from last session.";
       tab_restore_service->LoadTabsFromLastSession();
+    }
   }
 }
 
@@ -801,6 +810,10 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_CARET_BROWSING_TOGGLE:
       ToggleCaretBrowsing(browser_);
       break;
+    case IDC_RECENT_TABS_LOGIN_FOR_DEVICE_TABS:
+      ShowSettingsSubPage(browser_->GetBrowserForOpeningWebUi(),
+                          chrome::kPeopleSubPage);
+      break;
     case IDC_SHOW_BOOKMARK_MANAGER:
       ShowBookmarkManager(browser_->GetBrowserForOpeningWebUi());
       break;
@@ -1221,6 +1234,10 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(
       IDC_RECENT_TABS_MENU, (!guest_session && !profile()->IsSystemProfile() &&
                              !profile()->IsIncognitoProfile()));
+  command_updater_.UpdateCommandEnabled(
+      IDC_RECENT_TABS_LOGIN_FOR_DEVICE_TABS,
+      (!guest_session && !profile()->IsSystemProfile() &&
+       !profile()->IsIncognitoProfile()));
 
   if (profile()->IsIncognitoProfile()) {
     command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, true);

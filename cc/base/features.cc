@@ -77,6 +77,10 @@ BASE_FEATURE(kNonBlockingCommit,
              "NonBlockingCommit",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kNoPreserveLastMutation,
+             "NoPreserveLastMutation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSlidingWindowForDroppedFrameCounter,
              "SlidingWindowForDroppedFrameCounter",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -109,6 +113,10 @@ BASE_FEATURE(kReclaimResourcesFlushInBackground,
              "ReclaimResourcesFlushInBackground",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kReclaimResourcesDelayedFlushInBackground,
+             "ReclaimResourcesDelayedFlushInBackground",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kMoreAggressiveSolidColorDetection,
              "MoreAggressiveSolidColorDetection",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -116,4 +124,9 @@ BASE_FEATURE(kMoreAggressiveSolidColorDetection,
 BASE_FEATURE(kReducedFrameRateEstimation,
              "kReducedFrameRateEstimation",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDetectHiDpiForMsaa,
+             "DetectHiDpiForMsaa",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 }  // namespace features

@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/shared/ui/table_view/chrome_table_view_controller.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_constants.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_delegate.h"
 #import "ios/chrome/browser/ui/passwords/bottom_sheet/password_suggestion_bottom_sheet_handler.h"
 #import "ios/chrome/browser/ui/settings/password/branded_navigation_item_title_view.h"
@@ -86,10 +87,10 @@ CGFloat const kLandscapeTableViewWidthMultiplier = 0.65;
   // The current's page domain. This is used for the password bottom sheet
   // description label.
   NSString* _domain;
-
-  // The password controller handler used to open the password manager.
-  id<PasswordSuggestionBottomSheetHandler> _handler;
 }
+
+// The password controller handler used to open the password manager.
+@property(nonatomic, weak) id<PasswordSuggestionBottomSheetHandler> handler;
 
 @end
 
@@ -99,7 +100,7 @@ CGFloat const kLandscapeTableViewWidthMultiplier = 0.65;
     (id<PasswordSuggestionBottomSheetHandler>)handler {
   self = [super init];
   if (self) {
-    _handler = handler;
+    self.handler = handler;
   }
   return self;
 }
@@ -123,6 +124,8 @@ CGFloat const kLandscapeTableViewWidthMultiplier = 0.65;
   self.topAlignedLayout = YES;
   self.actionHandler = self;
   self.scrollEnabled = NO;
+
+  [self updateCustomGradientViewHeight:0];
 
   self.primaryActionString =
       l10n_util::GetNSString(IDS_IOS_PASSWORD_BOTTOM_SHEET_USE_PASSWORD);
@@ -181,7 +184,11 @@ CGFloat const kLandscapeTableViewWidthMultiplier = 0.65;
 }
 
 - (void)dismiss {
-  [self dismissViewControllerAnimated:NO completion:NULL];
+  __weak __typeof(self) weakSelf = self;
+  [self dismissViewControllerAnimated:NO
+                           completion:^{
+                             [weakSelf.handler stop];
+                           }];
 }
 
 #pragma mark - UITableViewDelegate
@@ -379,6 +386,9 @@ CGFloat const kLandscapeTableViewWidthMultiplier = 0.65;
   _tableView.showsVerticalScrollIndicator = NO;
   _tableView.delegate = self;
   _tableView.dataSource = self;
+  _tableView.isAccessibilityElement = YES;
+  _tableView.accessibilityIdentifier =
+      kPasswordSuggestionBottomSheetTableViewId;
   [_tableView registerClass:TableViewURLCell.class
       forCellReuseIdentifier:@"cell"];
 
@@ -458,7 +468,7 @@ CGFloat const kLandscapeTableViewWidthMultiplier = 0.65;
   for (UIView* subview in self.view.subviews) {
     subviewsHeight += CGRectGetHeight(subview.frame);
   }
-  return subviewsHeight;
+  return subviewsHeight + [self getScrollViewHeightPadding];
 }
 
 // Returns the initial height of the bottom sheet while showing a single row.
@@ -495,6 +505,11 @@ CGFloat const kLandscapeTableViewWidthMultiplier = 0.65;
 - (void)setTableViewScrollEnabled:(BOOL)enabled {
   _tableView.scrollEnabled = enabled;
   self.scrollEnabled = enabled;
+
+  // Add gradient view to show that the user can scroll.
+  if (enabled) {
+    [self updateCustomGradientViewHeight:16];
+  }
 }
 
 // Performs the expand bottom sheet animation.
@@ -533,24 +548,13 @@ CGFloat const kLandscapeTableViewWidthMultiplier = 0.65;
   }
 }
 
-// Opens the password manager settings page.
-- (void)displayPasswordManager {
-  [_handler displayPasswordManager];
-}
-
-// Opens the password details for form suggestion.
-- (void)displayPasswordDetailsForFormSuggestion:
-    (FormSuggestion*)formSuggestion {
-  [_handler displayPasswordDetailsForFormSuggestion:formSuggestion];
-}
-
 // Creates the UI action used to open the password manager.
 - (UIAction*)openPasswordManagerAction {
   __weak __typeof(self) weakSelf = self;
   void (^passwordManagerButtonTapHandler)(UIAction*) = ^(UIAction* action) {
     // Open Password Manager.
     [weakSelf.delegate disableRefocus];
-    [weakSelf displayPasswordManager];
+    [weakSelf.handler displayPasswordManager];
   };
   UIImage* keyIcon =
       CustomSymbolWithPointSize(kPasswordSymbol, kSymbolActionPointSize);
@@ -570,7 +574,7 @@ CGFloat const kLandscapeTableViewWidthMultiplier = 0.65;
   void (^showDetailsButtonTapHandler)(UIAction*) = ^(UIAction* action) {
     // Open Password Details.
     [weakSelf.delegate disableRefocus];
-    [weakSelf displayPasswordDetailsForFormSuggestion:formSuggestion];
+    [weakSelf.handler displayPasswordDetailsForFormSuggestion:formSuggestion];
   };
 
   UIImage* infoIcon =

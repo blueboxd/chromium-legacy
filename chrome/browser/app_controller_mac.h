@@ -21,24 +21,13 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "components/prefs/pref_change_registrar.h"
 
-class AppControllerProfileObserver;
-class AppControllerNativeThemeObserver;
-@class AppShimMenuController;
 class BookmarkMenuBridge;
-class CommandUpdater;
 class GURL;
-@class HandoffManager;
 class HistoryMenuBridge;
-class HandoffObserver;
 class Profile;
-@class ProfileMenuController;
-class QuitWithAppsController;
-class ScopedKeepAlive;
-@class ShareMenuController;
 class TabMenuBridge;
 
 namespace ui {
@@ -52,10 +41,7 @@ class ColorProvider;
     : NSObject <NSUserInterfaceValidations,
                 NSMenuDelegate,
                 NSApplicationDelegate,
-                ASWebAuthenticationSessionWebBrowserSessionHandling> {
- @private
-  // Manages the state of the command menu items.
-  std::unique_ptr<CommandUpdater> _menuState;
+                ASWebAuthenticationSessionWebBrowserSessionHandling>
 
   // The profile last used by a Browser. It is this profile that was used to
   // build the user-data specific main menu items.

@@ -142,30 +142,10 @@ TEST_F('OSSettingsOsBluetoothSavedDevicesListTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-var OSSettingsAppManagementAppDetailsTest =
-    class extends OSSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/app_management/app_details_item_test.js';
-  }
-
-  /** @override */
-  get featureList() {
-    return {
-      enabled: super.featureList.enabled.concat(
-          ['features::kAppManagementAppDetails']),
-    };
-  }
-};
-
 function crostiniTestGenPreamble() {
   GEN('crostini::FakeCrostiniFeatures fake_crostini_features;');
   GEN('fake_crostini_features.SetAll(true);');
 }
-
-TEST_F('OSSettingsAppManagementAppDetailsTest', 'AllJsTests', () => {
-  mocha.run();
-});
 
 var OSSettingsCrostiniPageTest = class extends OSSettingsBrowserTest {
   /** @override */
@@ -208,22 +188,15 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ],
  ['AppsPage', 'apps_page_test.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
- ['AppManagementAppDetailsItem', 'app_management/app_details_item_test.js'],
- ['AppManagementArcDetailView', 'app_management/arc_detail_view_test.js'],
- [
-   'AppManagementBorealisDetailView',
-   'app_management/borealis_detail_view_test.js',
- ],
  ['AppManagementDomSwitch', 'app_management/dom_switch_test.js'],
  ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
- ['AppManagementManagedApp', 'app_management/managed_apps_test.js'],
+ ['AppManagementManagedApps', 'app_management/managed_apps_test.js'],
  ['AppManagementPage', 'app_management/app_management_page_tests.js'],
  ['AppManagementPinToShelfItem', 'app_management/pin_to_shelf_item_test.js'],
  [
    'AppManagementPluginVmDetailView',
    'app_management/plugin_vm_detail_view_test.js',
  ],
- ['AppManagementPwaDetailView', 'app_management/pwa_detail_view_test.js'],
  ['AppManagementReducers', 'app_management/reducers_test.js'],
  ['AppManagementResizeLockItem', 'app_management/resize_lock_item_test.js'],
  [
@@ -412,7 +385,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ],
  [
    'MultidevicePageMultideviceSubPage',
-   'multidevice_page/multidevice_subpage_tests.js'
+   'multidevice_page/multidevice_subpage_test.js'
  ],
  [
    'MultiDevicePageMultideviceCombinedSetupItem',
@@ -501,6 +474,11 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'os_a11y_page/tts_voice_subpage_test.js',
  ],
  [
+   'OsAppsPageAppManagementPageAppDetailsItem',
+   'os_apps_page/app_management_page/app_details_item_test.js',
+   {enabled: ['features::kAppManagementAppDetails']},
+ ],
+ [
    'OsAppsPageAppManagementPageAppDetailView',
    'os_apps_page/app_management_page/app_detail_view_test.js'
  ],
@@ -509,12 +487,24 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'os_apps_page/app_management_page/app_item_test.js'
  ],
  [
+   'OsAppsPageAppManagementPageArcDetailView',
+   'os_apps_page/app_management_page/arc_detail_view_test.js'
+ ],
+ [
+   'OsAppsPageAppManagementPageBorealisDetailView',
+   'os_apps_page/app_management_page/borealis_detail_view_test.js',
+ ],
+ [
    'OsAppsPageAppManagementPageChromeAppDetailView',
    'os_apps_page/app_management_page/chrome_app_detail_view_test.js',
  ],
  [
    'OsAppsPageAppManagementPageMainView',
    'os_apps_page/app_management_page/main_view_test.js'
+ ],
+ [
+   'OsAppsPageAppManagementPagePwaDetailView',
+   'os_apps_page/app_management_page/pwa_detail_view_test.js'
  ],
  ['OsBluetoothPage', 'os_bluetooth_page/os_bluetooth_page_tests.js'],
  [
@@ -540,6 +530,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ['OsEditDictionaryPage', 'os_edit_dictionary_page_test.js'],
  ['OsFilesPage', 'os_files_page/os_files_page_test.js'],
  ['OsFilesPageGoogleDrivePage', 'os_files_page/google_drive_page_test.js'],
+ ['OsFilesPageOneDrivePage', 'os_files_page/one_drive_page_test.js'],
  ['OsFilesPageOfficePage', 'os_files_page/office_page_test.js'],
  ['OsFilesPageSmbSharesPage', 'os_files_page/smb_shares_page_test.js'],
  [
@@ -602,6 +593,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'OsSettingsUiPageAvailability',
    'os_settings_ui/os_settings_ui_page_availability_test.js',
+ ],
+ [
+   'OsSettingsUiPageVisibility',
+   'os_settings_ui/os_settings_ui_page_visibility_test.js',
  ],
  ['OsSettingsUiToolbar', 'os_settings_ui/os_settings_ui_toolbar_test.js'],
  [

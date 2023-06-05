@@ -28,6 +28,7 @@ namespace reporting {
 // are allowed to go through the bucket. `filling_period` indicates how often do
 // we want to update the level (the more frequently we do it, the fewer tokens
 // we add each time).
+//
 // When a new event arrives, its size is released from the bucket, but only if
 // the bucket is full, otherwise the event is rejected. After that the bucket
 // resumes filling in at the prescribed rate - the time it takes is proportional

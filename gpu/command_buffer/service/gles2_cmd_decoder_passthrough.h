@@ -64,7 +64,7 @@ struct MappedBuffer {
   GLsizeiptr size;
   GLbitfield original_access;
   GLbitfield filtered_access;
-  raw_ptr<uint8_t, AllowPtrArithmetic> map_ptr;
+  raw_ptr<uint8_t, DanglingUntriaged | AllowPtrArithmetic> map_ptr;
   int32_t data_shm_id;
   uint32_t data_shm_offset;
 };
@@ -210,10 +210,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   // The decoder should not be used until a new surface is set.
   void ReleaseSurface() override;
 
-  void TakeFrontBuffer(const Mailbox& mailbox) override;
-
-  void ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) override;
-
   void SetDefaultFramebufferSharedImage(const Mailbox& mailbox,
                                         int samples,
                                         bool preserve,
@@ -267,8 +263,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
 
   void SetIgnoreCachedStateForTest(bool ignore) override;
   void SetForceShaderNameHashingForTest(bool force) override;
-  size_t GetSavedBackTextureCountForTest() override;
-  size_t GetCreatedBackTextureCountForTest() override;
 
   // Gets the QueryManager for this context.
   QueryManager* GetQueryManager() override;
@@ -396,16 +390,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   const ContextState* GetContextState() override;
   scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-  void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
-                                              uint32_t texture_target,
-                                              gl::GLImage* image) override;
-#elif !BUILDFLAG(IS_ANDROID)
-  void AttachImageToTextureWithClientBinding(uint32_t client_texture_id,
-                                             uint32_t texture_target,
-                                             gl::GLImage* image) override;
-#endif
-
   void OnDebugMessage(GLenum source,
                       GLenum type,
                       GLuint id,
@@ -440,18 +424,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
  private:
   // Allow unittests to inspect internal state tracking
   friend class GLES2DecoderPassthroughTestBase;
-
-#if !BUILDFLAG(IS_ANDROID)
-  // Attaches |image| to the texture referred to by |client_texture_id|, marking
-  // the image as needing on-demand binding by the decoder if
-  // |can_bind_to_sampler| is false and as not needing on-demand binding by the
-  // decoder otherwise. |can_bind_to_sampler| is always false on Mac/Win and
-  // always true on all other platforms.
-  void BindImageInternal(uint32_t client_texture_id,
-                         uint32_t texture_target,
-                         gl::GLImage* image,
-                         bool can_bind_to_sampler);
-#endif
 
   const char* GetCommandName(unsigned int command_id) const;
 
@@ -943,12 +915,6 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl
   };
   EmulatedDefaultFramebufferFormat emulated_default_framebuffer_format_;
   std::unique_ptr<EmulatedDefaultFramebuffer> emulated_back_buffer_;
-  std::unique_ptr<EmulatedColorBuffer> emulated_front_buffer_;
-  bool offscreen_single_buffer_;
-  bool offscreen_target_buffer_preserved_;
-  std::vector<std::unique_ptr<EmulatedColorBuffer>> in_use_color_textures_;
-  std::vector<std::unique_ptr<EmulatedColorBuffer>> available_color_textures_;
-  size_t create_color_buffer_count_for_test_ = 0;
   std::unique_ptr<GLES2ExternalFramebuffer> external_default_framebuffer_;
 
   // Maximum 2D resource sizes for limiting offscreen framebuffer sizes

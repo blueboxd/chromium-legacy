@@ -11661,16 +11661,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="IOS.DefaultBrowserFullscreenPromo.RemindMeTapped">
-  <owner>thegreenfrog@chromium.org</owner>
-  <owner>rohitrao@chromium.org</owner>
-  <description>
-    The user tapped the &quot;Remind Me Later&quot; button in the default
-    browser fullscreen promo modal that takes the user to the Settings app. iOS
-    only.
-  </description>
-</action>
-
 <action name="IOS.DefaultBrowserNTPPromoTapped">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>rohitrao@chromium.org</owner>
@@ -30006,6 +29996,17 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.SafetyCheck.ShownExtensionsReviewRow">
+  <owner>psarouthakis@google.com</owner>
+  <owner>anunoy@chromium.org</owner>
+  <description>
+    The user has been shown the Safety Check Extensions Review Row on the
+    chrome://settings/privacy page. This row encourages navigation to the main
+    Safety Check Extensions Review panel on chrome://extensions. This row is
+    shown when the user has at least one extension that needs a safety review.
+  </description>
+</action>
+
 <action name="Settings.SafetyCheck.Start">
   <owner>rainhard@chromium.org</owner>
   <owner>andzaytsev@google.com</owner>
@@ -31214,8 +31215,7 @@ should be able to be added at any place in this file.
   <description>Recorded when the add account dialog is opened.</description>
 </action>
 
-<action name="Signin_AddAccountToDevice_DismissedWithError"
-    not_user_triggered="true">
+<action name="Signin_AddAccountToDevice_DismissedWithError">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
@@ -31259,7 +31259,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_BottomSheet_ClosedByCancel" not_user_triggered="true">
+<action name="Signin_BottomSheet_ClosedByCancel">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
@@ -31267,7 +31267,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_BottomSheet_ClosedByInterrupt" not_user_triggered="true">
+<action name="Signin_BottomSheet_ClosedByInterrupt">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
@@ -31276,7 +31276,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_BottomSheet_ClosedBySignIn" not_user_triggered="true">
+<action name="Signin_BottomSheet_ClosedBySignIn">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
@@ -31303,7 +31303,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Signin_BottomSheet_Opened" not_user_triggered="true">
+<action name="Signin_BottomSheet_Opened">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <description>
@@ -37703,6 +37703,8 @@ should be able to be added at any place in this file.
   <suffix name="ChromeReengagementNotification3"
       label="For ChromeReengagementNotification3 feature."/>
   <suffix name="CompanionSidePanel" label="For companion side panel feature."/>
+  <suffix name="CompanionSidePanelRegionSearch"
+      label="For companion side panel region search feature."/>
   <suffix name="ContextualPageActions_PriceTracking"
       label="For Contextual page actions price tracking feature."/>
   <suffix name="ContextualPageActions_PriceTrackingActionChip"
@@ -37860,6 +37862,8 @@ should be able to be added at any place in this file.
   <suffix name="PageInfo" label="In product help for opening PageInfo."/>
   <suffix name="PageInfoStoreInfo" label="For PageInfoStoreInfo feature."/>
   <suffix name="PageZoom" label="For Page Zoom feature."/>
+  <suffix name="PasswordManagerShortcut"
+      label="For password manager shortcut feature."/>
   <suffix name="PasswordsAccountStorage"
       label="For PasswordsAccountStorage feature."/>
   <suffix name="PasswordsManagementBubbleAfterSave"

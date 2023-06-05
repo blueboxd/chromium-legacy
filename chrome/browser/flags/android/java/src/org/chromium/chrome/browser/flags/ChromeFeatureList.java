@@ -111,7 +111,6 @@ public abstract class ChromeFeatureList {
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
     public static final String ANDROID_IMPROVED_BOOKMARKS = "AndroidImprovedBookmarks";
-    public static final String ANDROID_WIDGET_FULLSCREEN_TOAST = "AndroidWidgetFullscreenToast";
     public static final String ANIMATED_IMAGE_DRAG_SHADOW = "AnimatedImageDragShadow";
     public static final String APP_LANGUAGE_PROMPT = "AppLanguagePrompt";
     public static final String APP_LANGUAGE_PROMPT_ULP = "AppLanguagePromptULP";
@@ -134,8 +133,9 @@ public abstract class ChromeFeatureList {
             "AutofillEnableUpdateVirtualCardEnrollment";
     public static final String AUTOFILL_ENABLE_VIRTUAL_CARD_METADATA =
             "AutofillEnableVirtualCardMetadata";
-    public static final String AUTOFILL_KEYBOARD_ACCESSORY = "AutofillKeyboardAccessory";
-    public static final String AUTOFILL_MANUAL_FALLBACK_ANDROID = "AutofillManualFallbackAndroid";
+    public static final String AUTOFILL_KEYBOARD_ACCESSORY = "AutofillKeyboardAccessory_LAUNCHED";
+    public static final String AUTOFILL_MANUAL_FALLBACK_ANDROID =
+            "AutofillManualFallbackAndroid_LAUNCHED";
     public static final String AUTOFILL_TOUCH_TO_FILL_FOR_CREDIT_CARDS_ANDROID =
             "AutofillTouchToFillForCreditCardsAndroid";
     public static final String BACKGROUND_THREAD_POOL = "BackgroundThreadPool";
@@ -189,8 +189,6 @@ public abstract class ChromeFeatureList {
             "CCTTextFragmentLookupApiEnabled";
     public static final String CCT_TOOLBAR_CUSTOMIZATIONS = "CCTToolbarCustomizations";
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
-    public static final String CHROME_SHARING_HUB_LAUNCH_ADJACENT =
-            "ChromeSharingHubLaunchAdjacent";
     public static final String CHROME_SURVEY_NEXT_ANDROID = "ChromeSurveyNextAndroid";
     public static final String CLEAR_OMNIBOX_FOCUS_AFTER_NAVIGATION =
             "ClearOmniboxFocusAfterNavigation";
@@ -357,7 +355,6 @@ public abstract class ChromeFeatureList {
             "PushMessagingDisallowSenderIDs";
     public static final String PWA_DEFAULT_OFFLINE_PAGE = "PWAsDefaultOfflinePage";
     public static final String PWA_UPDATE_DIALOG_FOR_ICON = "PwaUpdateDialogForIcon";
-    public static final String PWA_UPDATE_DIALOG_FOR_NAME = "PwaUpdateDialogForName";
     public static final String QUERY_TILES = "QueryTiles";
     public static final String QUERY_TILES_IN_NTP = "QueryTilesInNTP";
     public static final String QUERY_TILES_ON_START = "QueryTilesOnStart";
@@ -368,7 +365,8 @@ public abstract class ChromeFeatureList {
     public static final String REACHED_CODE_PROFILER = "ReachedCodeProfiler";
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String RECORD_SUPPRESSION_METRICS = "RecordSuppressionMetrics";
-    public static final String RECOVER_FROM_NEVER_SAVE_ANDROID = "RecoverFromNeverSaveAndroid";
+    public static final String RECOVER_FROM_NEVER_SAVE_ANDROID =
+            "RecoverFromNeverSaveAndroid_LAUNCHED";
     public static final String REDUCE_TOOLBAR_UPDATES_FOR_SAME_DOC_NAVIGATIONS =
             "ReduceToolbarUpdatesForSameDocNavigations";
     public static final String REENGAGEMENT_NOTIFICATION = "ReengagementNotification";
@@ -422,6 +420,7 @@ public abstract class ChromeFeatureList {
     public static final String STORE_HOURS = "StoreHoursAndroid";
     public static final String SUGGESTION_ANSWERS_COLOR_REVERSE = "SuggestionAnswersColorReverse";
     public static final String SUPPRESS_TOOLBAR_CAPTURES = "SuppressToolbarCaptures";
+    public static final String SURFACE_POLISH = "SurfacePolish";
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "SwapPixelFormatToFixConvertFromTranslucent";
     public static final String SYNC_ANDROID_LIMIT_NTP_PROMO_IMPRESSIONS =
@@ -449,7 +448,8 @@ public abstract class ChromeFeatureList {
     public static final String TRANSLATE_MESSAGE_UI = "TranslateMessageUI";
     public static final String TRANSLATE_TFLITE = "TFLiteLanguageDetectionEnabled";
     public static final String TRUSTED_WEB_ACTIVITY_POST_MESSAGE = "TrustedWebActivityPostMessage";
-    public static final String UNIFIED_PASSWORD_MANAGER_ANDROID = "UnifiedPasswordManagerAndroid";
+    public static final String UNIFIED_PASSWORD_MANAGER_ANDROID =
+            "UnifiedPasswordManagerAndroid_LAUNCHED";
     public static final String UNIFIED_PASSWORD_MANAGER_ANDROID_BRANDING =
             "UnifiedPasswordManagerAndroidBranding";
     public static final String USE_CHIME_ANDROID_SDK = "UseChimeAndroidSdk";
@@ -564,6 +564,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sStartSurfaceWithAccessibility =
             new CachedFlag(START_SURFACE_WITH_ACCESSIBILITY, false);
     public static final CachedFlag sStoreHoursAndroid = new CachedFlag(STORE_HOURS, false);
+    public static final CachedFlag sSurfacePolish = new CachedFlag(SURFACE_POLISH, false);
     public static final CachedFlag sSwapPixelFormatToFixConvertFromTranslucent = new CachedFlag(
             SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
             ChromePreferenceKeys.FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
@@ -646,6 +647,7 @@ public abstract class ChromeFeatureList {
         sStartSurfaceReturnTime,
         sStartSurfaceWithAccessibility,
         sStoreHoursAndroid,
+        sSurfacePolish,
         sSwapPixelFormatToFixConvertFromTranslucent,
         sTabGridLayoutAndroid,
         sTabGroupsAndroid,

@@ -233,27 +233,26 @@ const char* ClientNameForVerboseLog() {
 class LayerTreeHostImpl::ImageDecodeCacheHolder {
  public:
   ImageDecodeCacheHolder(bool enable_shared_image_cache_for_gpu,
-                         bool use_gpu_rasterization,
+                         const RasterCapabilities& raster_caps,
                          bool gpu_compositing,
                          scoped_refptr<RasterContextProviderWrapper>
                              worker_context_provider_wrapper,
                          viz::SharedImageFormat tile_format,
                          size_t decoded_image_working_set_budget_bytes,
-                         int max_texture_size,
                          RasterDarkModeFilter* dark_mode_filter) {
-    if (use_gpu_rasterization) {
+    if (raster_caps.use_gpu_rasterization) {
       auto color_type = viz::ToClosestSkColorType(
           /*gpu_compositing=*/true, tile_format);
       if (enable_shared_image_cache_for_gpu) {
         image_decode_cache_ptr_ =
             &worker_context_provider_wrapper->GetGpuImageDecodeCache(
-                color_type);
+                color_type, raster_caps);
       } else {
         image_decode_cache_ = std::make_unique<GpuImageDecodeCache>(
             worker_context_provider_wrapper->GetContext().get(),
             /*use_transfer_cache=*/true, color_type,
-            decoded_image_working_set_budget_bytes, max_texture_size,
-            dark_mode_filter);
+            decoded_image_working_set_budget_bytes,
+            raster_caps.max_texture_size, dark_mode_filter);
       }
     } else {
       image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
@@ -730,22 +729,12 @@ void LayerTreeHostImpl::PullLayerTreeHostPropertiesFrom(
 }
 
 void LayerTreeHostImpl::RecordGpuRasterizationHistogram() {
-  bool gpu_rasterization_enabled = false;
-  if (layer_tree_frame_sink()) {
-    viz::ContextProvider* compositor_context_provider =
-        layer_tree_frame_sink()->context_provider();
-    if (compositor_context_provider) {
-      gpu_rasterization_enabled =
-          compositor_context_provider->ContextCapabilities().gpu_rasterization;
-    }
-  }
-
   // Record how widely gpu rasterization is enabled.
   // This number takes device/gpu allowlist/denylist into account.
   // Note that we do not consider the forced gpu rasterization mode, which is
   // mostly used for debugging purposes.
   UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationEnabled",
-                        gpu_rasterization_enabled);
+                        raster_caps().use_gpu_rasterization);
 }
 
 void LayerTreeHostImpl::CommitComplete() {
@@ -1575,8 +1564,10 @@ void LayerTreeHostImpl::InvalidateContentOnImplSide() {
   DCHECK(impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME ||
          settings_.using_synchronous_renderer_compositor);
 
-  if (!CommitToActiveTree())
+  if (!CommitToActiveTree()) {
     CreatePendingTree();
+    AnimatePendingTreeAfterCommit();
+  }
 
   UpdateSyncTreeAfterCommitOrImplSideInvalidation();
 }
@@ -2212,13 +2203,42 @@ void LayerTreeHostImpl::ReclaimResources(
   // If we're not visible, we likely released resources, so we want to
   // aggressively flush here to make sure those DeleteSharedImage() calls make
   // it to the GPU process to free up the memory.
-  if (!visible_ && layer_tree_frame_sink_->context_provider()) {
-    if (base::FeatureList::IsEnabled(
-            features::kReclaimResourcesFlushInBackground)) {
-      auto* compositor_context = layer_tree_frame_sink_->context_provider();
-      compositor_context->ContextSupport()->FlushPendingWork();
-    }
+  MaybeFlushPendingWork();
+
+  if (base::FeatureList::IsEnabled(
+          features::kReclaimResourcesDelayedFlushInBackground)) {
+    // There are cases where the release callbacks executed from the call above
+    // don't actually free the GPU resource from this thread. For instance, for
+    // TextureLayer,
+    // TextureLayer::TransferableResourceHolder::~TransferableResourceHolder()
+    // posts a task to the main thread, and so flushing here is not sufficient.
+    //
+    // Ideally, we would not rely on a time-based delay, but given layering,
+    // threading and possibly unknown cases where the release can jump from
+    // thread to thread, this is likely a more practical solution. See
+    // crbug.com/1449271 for an example.
+    GetTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&LayerTreeHostImpl::MaybeFlushPendingWork,
+                       weak_factory_.GetWeakPtr()),
+        base::Seconds(1));
   }
+}
+
+void LayerTreeHostImpl::MaybeFlushPendingWork() {
+  // If we're not in background, delayed work will be flushed "at some point",
+  // and we also may have something better to do.
+  if (visible_ || !has_valid_layer_tree_frame_sink_ ||
+      !base::FeatureList::IsEnabled(
+          features::kReclaimResourcesFlushInBackground)) {
+    return;
+  }
+
+  auto* compositor_context = layer_tree_frame_sink_->context_provider();
+  if (!compositor_context || !compositor_context->ContextSupport()) {
+    return;
+  }
+  compositor_context->ContextSupport()->FlushPendingWork();
 }
 
 void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
@@ -2833,6 +2853,22 @@ int LayerTreeHostImpl::RequestedMSAASampleCount() const {
     float device_scale_factor = pending_tree_
                                     ? pending_tree_->device_scale_factor()
                                     : active_tree_->device_scale_factor();
+
+    // Note: this feature ensures that we correctly report the device scale
+    // factor. As of June 2023, without this feature, the vast majority (or
+    // possibly all?) high-dpi screens are incorrectly considered normal DPI
+    // ones here. See the UMA histogram
+    // "Gpu.Rasterization.Raster.MSAASampleCountLog2", which almost always
+    // report "3", i.e. 8xMSAA on macOS, where High-DPI screens are prevalent.
+    if (base::FeatureList::IsEnabled(features::kDetectHiDpiForMsaa)) {
+      float painted_device_scale_factor =
+          pending_tree_ ? pending_tree_->painted_device_scale_factor()
+                        : active_tree_->painted_device_scale_factor();
+      DCHECK(painted_device_scale_factor == 1 || device_scale_factor == 1);
+
+      device_scale_factor *= painted_device_scale_factor;
+    }
+
     return device_scale_factor >= 2.0f ? 4 : 8;
   }
 
@@ -2840,15 +2876,7 @@ int LayerTreeHostImpl::RequestedMSAASampleCount() const {
 }
 
 void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
-    bool* gpu_rasterization_enabled,
-    bool* gpu_rasterization_supported,
-    bool* can_use_msaa,
-    bool* supports_disable_msaa) {
-  *gpu_rasterization_enabled = false;
-  *gpu_rasterization_supported = false;
-  *can_use_msaa = false;
-  *supports_disable_msaa = false;
-
+    RasterCapabilities& gpu_raster_caps) {
   if (settings_.gpu_rasterization_disabled)
     return;
 
@@ -2863,14 +2891,15 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
       context_provider);
 
   const auto& caps = context_provider->ContextCapabilities();
-  *gpu_rasterization_enabled = caps.gpu_rasterization;
-  if (!*gpu_rasterization_enabled)
+  gpu_raster_caps.use_gpu_rasterization = caps.gpu_rasterization;
+  if (!gpu_raster_caps.use_gpu_rasterization) {
     return;
+  }
 
   DCHECK(caps.supports_oop_raster);
-  *gpu_rasterization_supported = true;
-  *can_use_msaa = !caps.msaa_is_slow && !caps.avoid_stencil_buffers;
-  *supports_disable_msaa = caps.multisample_compatibility;
+  gpu_raster_caps.can_use_msaa =
+      !caps.msaa_is_slow && !caps.avoid_stencil_buffers;
+  gpu_raster_caps.supports_disable_msaa = caps.multisample_compatibility;
 }
 
 bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
@@ -2886,39 +2915,16 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   if (!layer_tree_frame_sink_)
     return false;
 
-  bool gpu_rasterization_enabled = false;
-  bool gpu_rasterization_supported = false;
-  bool can_use_msaa = false;
-  bool supports_disable_msaa = false;
-  GetGpuRasterizationCapabilities(&gpu_rasterization_enabled,
-                                  &gpu_rasterization_supported, &can_use_msaa,
-                                  &supports_disable_msaa);
+  RasterCapabilities gpu_raster_caps;
+  GetGpuRasterizationCapabilities(gpu_raster_caps);
 
   bool use_gpu = false;
 
-  if (!gpu_rasterization_enabled) {
-    if (gpu_rasterization_supported)
-      raster_caps_.gpu_rasterization_status =
-          GpuRasterizationStatus::OFF_FORCED;
-    else
-      raster_caps_.gpu_rasterization_status =
-          GpuRasterizationStatus::OFF_DEVICE;
+  if (!gpu_raster_caps.use_gpu_rasterization) {
+    raster_caps_.gpu_rasterization_status = GpuRasterizationStatus::OFF_DEVICE;
   } else {
     use_gpu = true;
     raster_caps_.gpu_rasterization_status = GpuRasterizationStatus::ON;
-  }
-
-  if (use_gpu && !raster_caps().use_gpu_rasterization) {
-    if (!gpu_rasterization_supported) {
-      // If GPU rasterization is unusable, e.g. if GlContext could not
-      // be created due to losing the GL context, force use of software
-      // raster.
-      use_gpu = false;
-      raster_caps_.can_use_msaa = false;
-      raster_caps_.supports_disable_msaa = false;
-      raster_caps_.gpu_rasterization_status =
-          GpuRasterizationStatus::OFF_DEVICE;
-    }
   }
 
   // Changes in MSAA settings require that we re-raster resources for the
@@ -2926,14 +2932,15 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   // invalidation in this case since these settings change only if the context
   // changed. In this case we already re-allocate and re-raster all resources.
   if (use_gpu == raster_caps().use_gpu_rasterization &&
-      can_use_msaa == raster_caps().can_use_msaa &&
-      supports_disable_msaa == raster_caps().supports_disable_msaa) {
+      gpu_raster_caps.can_use_msaa == raster_caps().can_use_msaa &&
+      gpu_raster_caps.supports_disable_msaa ==
+          raster_caps().supports_disable_msaa) {
     return false;
   }
 
   raster_caps_.use_gpu_rasterization = use_gpu;
-  raster_caps_.can_use_msaa = can_use_msaa;
-  raster_caps_.supports_disable_msaa = supports_disable_msaa;
+  raster_caps_.can_use_msaa = gpu_raster_caps.can_use_msaa;
+  raster_caps_.supports_disable_msaa = gpu_raster_caps.supports_disable_msaa;
   return true;
 }
 
@@ -3633,11 +3640,10 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
 
   const bool gpu_compositing = !!layer_tree_frame_sink_->context_provider();
   image_decode_cache_holder_ = std::make_unique<ImageDecodeCacheHolder>(
-      settings_.enable_shared_image_cache_for_gpu,
-      raster_caps().use_gpu_rasterization, gpu_compositing,
+      settings_.enable_shared_image_cache_for_gpu, raster_caps(),
+      gpu_compositing,
       layer_tree_frame_sink_->worker_context_provider_wrapper(), tile_format,
-      settings_.decoded_image_working_set_budget_bytes,
-      raster_caps().max_texture_size, dark_mode_filter_);
+      settings_.decoded_image_working_set_budget_bytes, dark_mode_filter_);
 
   if (raster_caps().use_gpu_rasterization) {
     pending_raster_queries_ = std::make_unique<RasterQueryQueue>(
@@ -4666,12 +4672,12 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     overlay_candidate =
         settings_.resource_settings.use_gpu_memory_buffer_resources &&
         caps.supports_scanout_shared_images &&
-        viz::IsGpuMemoryBufferFormatSupported(format.resource_format());
+        viz::CanCreateGpuMemoryBufferForSinglePlaneSharedImageFormat(format);
     if (overlay_candidate) {
       shared_image_usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
       texture_target = gpu::GetBufferTextureTarget(
-          gfx::BufferUsage::SCANOUT, BufferFormat(format.resource_format()),
-          caps);
+          gfx::BufferUsage::SCANOUT,
+          viz::SinglePlaneSharedImageFormatToBufferFormat(format), caps);
     }
   } else {
     shm = viz::bitmap_allocation::AllocateSharedBitmap(upload_size, format);

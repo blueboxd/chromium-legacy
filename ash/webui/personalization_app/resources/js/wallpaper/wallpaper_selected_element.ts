@@ -92,41 +92,36 @@ export class WallpaperSelected extends WithPersonalizationStore {
         computed: 'computeHasError_(image_, isLoading_, error_)',
       },
 
-      shouldShowDailyRefreshConfirmationDialog_: Boolean,
+      showDailyRefreshConfirmationDialog_: Boolean,
 
       showImage_: {
         type: Boolean,
         computed: 'computeShowImage_(image_, isLoading_)',
       },
 
-      shouldShowLayoutOptions_: {
+      showLayoutOptions_: {
         type: Boolean,
         computed:
-            'computeShouldShowLayoutOptions_(image_, path, googlePhotosAlbumId)',
+            'computeShowLayoutOptions_(image_, path, googlePhotosAlbumId)',
       },
 
-      shouldShowDescriptionButton_: {
+      showDescriptionButton_: {
         type: Boolean,
-        computed: 'computeShouldShowDescriptionButton_(image_)',
+        computed: 'computeShowDescriptionButton_(image_)',
       },
 
-      shouldShowDescriptionDialog_: Boolean,
-
-      showCollectionOptions_: {
-        type: Boolean,
-        computed: 'computeShowCollectionOptions_(path)',
-      },
+      showDescriptionDialog_: Boolean,
 
       showDailyRefreshButton_: {
         type: Boolean,
         computed:
-            'isDailyRefreshable_(collectionId, path,googlePhotosAlbumId,photosByAlbumId_)',
+            'computeShowDailyRefreshButton_(path,collectionId,googlePhotosAlbumId,photosByAlbumId_)',
       },
 
       showRefreshButton_: {
         type: Boolean,
         computed:
-            'computeShowRefreshButton_(collectionId,googlePhotosAlbumId,dailyRefreshState_)',
+            'computeShowRefreshButton_(path,collectionId,googlePhotosAlbumId,dailyRefreshState_)',
       },
 
       dailyRefreshIcon_: {
@@ -178,12 +173,12 @@ export class WallpaperSelected extends WithPersonalizationStore {
   private dailyRefreshState_: DailyRefreshState|null;
   private isLoading_: boolean;
   private hasError_: boolean;
-  private shouldShowDailyRefreshConfirmationDialog_: boolean;
+  private showDailyRefreshConfirmationDialog_: boolean;
   private showImage_: boolean;
-  private shouldShowLayoutOptions_: boolean;
-  private shouldShowDescriptionButton_: boolean;
-  private shouldShowDescriptionDialog_: boolean;
-  private showCollectionOptions_: boolean;
+  private showLayoutOptions_: boolean;
+  private showDescriptionButton_: boolean;
+  private showDescriptionDialog_: boolean;
+  private showDailyRefreshButton_: boolean;
   private showRefreshButton_: boolean;
   private dailyRefreshIcon_: string;
   private ariaPressed_: string;
@@ -261,7 +256,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
     return [];
   }
 
-  private computeShouldShowLayoutOptions_(
+  private computeShowLayoutOptions_(
       image: CurrentWallpaper|null, path: string,
       googlePhotosAlbumId: string): boolean {
     return !!image &&
@@ -271,20 +266,43 @@ export class WallpaperSelected extends WithPersonalizationStore {
            path === Paths.GOOGLE_PHOTOS_COLLECTION && !googlePhotosAlbumId)));
   }
 
-  private computeShouldShowDescriptionButton_(image: CurrentWallpaper|null) {
+  private computeShowDescriptionButton_(image: CurrentWallpaper|null) {
     // Only show the description dialog if title and content exist.
     return isPersonalizationJellyEnabled() && image?.descriptionContent &&
         image?.descriptionTitle;
   }
 
-  private computeShowCollectionOptions_(path: string): boolean {
+  private isCollectionPath_(path: string): boolean {
     return path === Paths.COLLECTION_IMAGES ||
         path === Paths.GOOGLE_PHOTOS_COLLECTION;
   }
 
+  private computeShowDailyRefreshButton_(
+      path: string, collectionId: string, googlePhotosAlbumId: string|undefined,
+      photosByAlbumId: Record<string, GooglePhotosPhoto[]|null|undefined>) {
+    if (!this.isCollectionPath_(path)) {
+      return false;
+    }
+    // Special collection where daily refresh is disabled.
+    if (collectionId ===
+        loadTimeData.getString('timeOfDayWallpaperCollectionId')) {
+      return false;
+    }
+    const isNonEmptyGooglePhotosAlbum = !!googlePhotosAlbumId &&
+        !!photosByAlbumId &&
+        isNonEmptyArray(photosByAlbumId[googlePhotosAlbumId]);
+    return path === Paths.COLLECTION_IMAGES ||
+        (path === Paths.GOOGLE_PHOTOS_COLLECTION &&
+         isNonEmptyGooglePhotosAlbum);
+  }
+
   private computeShowRefreshButton_(
-      collectionId: string|undefined, googlePhotosAlbumId: string|undefined,
+      path: string, collectionId: string|undefined,
+      googlePhotosAlbumId: string|undefined,
       dailyRefreshState: DailyRefreshState|null) {
+    if (!this.isCollectionPath_(path)) {
+      return false;
+    }
     return (!collectionId && !googlePhotosAlbumId) ?
         false :
         this.isDailyRefreshId_(
@@ -354,22 +372,6 @@ export class WallpaperSelected extends WithPersonalizationStore {
     }
   }
 
-  private isDailyRefreshable_(
-      collectionId: string, path: string, googlePhotosAlbumId: string|undefined,
-      photosByAlbumId: Record<string, GooglePhotosPhoto[]|null|undefined>) {
-    // Special collection where daily refresh is disabled.
-    if (collectionId ===
-        loadTimeData.getString('timeOfDayWallpaperCollectionId')) {
-      return false;
-    }
-    const isNonEmptyGooglePhotosAlbum = !!googlePhotosAlbumId &&
-        !!photosByAlbumId &&
-        isNonEmptyArray(photosByAlbumId[googlePhotosAlbumId]);
-    return path === Paths.COLLECTION_IMAGES ||
-        (path === Paths.GOOGLE_PHOTOS_COLLECTION &&
-         isNonEmptyGooglePhotosAlbum);
-  }
-
   /**
    * Determine the current collection view belongs to the collection that is
    * enabled with daily refresh. If true, highlight the toggle and display the
@@ -397,7 +399,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
       assert(!this.collectionId);
       if (this.googlePhotosSharedAlbumsEnabled_ &&
           this.isGooglePhotosAlbumShared) {
-        this.shouldShowDailyRefreshConfirmationDialog_ = true;
+        this.showDailyRefreshConfirmationDialog_ = true;
       } else {
         this.enableGooglePhotosAlbumDailyRefresh_();
       }
@@ -412,22 +414,22 @@ export class WallpaperSelected extends WithPersonalizationStore {
         this.googlePhotosAlbumId!, getWallpaperProvider(), this.getStore());
   }
 
-  private showDescriptionDialog_() {
+  private onClickShowDescription_() {
     assert(
         isPersonalizationJellyEnabled(),
         'description dialog only available if personalization jelly enabled');
     assert(
-        this.shouldShowDescriptionButton_,
+        this.showDescriptionButton_,
         'description dialog can only be opened if button is visible');
-    this.shouldShowDescriptionDialog_ = true;
+    this.showDescriptionDialog_ = true;
   }
 
   private closeDescriptionDialog_() {
-    this.shouldShowDescriptionDialog_ = false;
+    this.showDescriptionDialog_ = false;
   }
 
   private closeDailyRefreshConfirmationDialog_() {
-    this.shouldShowDailyRefreshConfirmationDialog_ = false;
+    this.showDailyRefreshConfirmationDialog_ = false;
     this.shadowRoot!.getElementById('dailyRefresh')?.focus();
   }
 

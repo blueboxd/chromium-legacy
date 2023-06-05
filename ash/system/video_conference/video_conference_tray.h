@@ -128,6 +128,7 @@ class ASH_EXPORT VideoConferenceTray
   void ClickedOutsideBubble() override;
   void HandleLocaleChange() override;
   void AnchorUpdated() override;
+  void OnAnimationEnded() override;
 
   // VideoConferenceTrayController::Observer:
   void OnHasMediaAppStateChange() override;
@@ -155,6 +156,7 @@ class ASH_EXPORT VideoConferenceTray
   friend class video_conference::ReturnToAppPanelTest;
   friend class video_conference::ResourceDependencyTest;
   friend class video_conference::ToggleEffectsViewTest;
+  friend class VideoConferenceTrayControllerTest;
   friend class VideoConferenceTrayTest;
 
   // SessionObserver:
@@ -167,11 +169,6 @@ class ASH_EXPORT VideoConferenceTray
   void OnCameraButtonClicked(const ui::Event& event);
   void OnAudioButtonClicked(const ui::Event& event);
   void OnScreenShareButtonClicked(const ui::Event& event);
-
-  // Callback function for the settings buttons or the speak-on-mute toast when
-  // being clicked. Opens the the Privacy Hub settings page with speak-on-mute
-  // switch focused.
-  static void OpenSpeakOnMuteDetectionSettingsPage();
 
   // Owned by the views hierarchy.
   raw_ptr<VideoConferenceTrayButton, ExperimentalAsh> audio_icon_ = nullptr;

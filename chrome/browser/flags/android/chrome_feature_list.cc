@@ -115,7 +115,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kPrivacyGuideAndroid,
     &features::kPushMessagingDisallowSenderIDs,
     &features::kPwaUpdateDialogForIcon,
-    &features::kPwaUpdateDialogForName,
     &features::kQuietNotificationPrompts,
     &features::kToolbarUseHardwareBitmapDraw,
     &features::kWebNfc,
@@ -160,7 +159,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAllowNewIncognitoTabIntents,
     &kAndroidAppIntegration,
     &kAndroidSearchEngineChoiceNotification,
-    &kAndroidWidgetFullscreenToast,
     &kAndroidImprovedBookmarks,
     &kAnimatedImageDragShadow,
     &kAppMenuMobileSiteOption,
@@ -205,7 +203,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCacheDeprecatedSystemLocationSetting,
     &kChromeNewDownloadTab,
     &kChromeSharingHub,
-    &kChromeSharingHubLaunchAdjacent,
     &kChromeSurveyNextAndroid,
     &kCommandLineOnNonRooted,
     &kContextMenuEnableLensShoppingAllowlist,
@@ -317,6 +314,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kStartSurfaceSpareTab,
     &kStartSurfaceDisabledFeedImprovement,
     &kStartSurfaceWithAccessibility,
+    &kSurfacePolish,
     &kUmaBackgroundSessions,
     &kUpdateNotificationScheduleServiceImmediateShowOption,
     &kUseLibunwindstackNativeUnwinderAndroid,
@@ -365,6 +363,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kUnifiedPasswordManagerAndroid,
     &password_manager::features::kUnifiedPasswordManagerAndroidBranding,
     &password_manager::features::kPasswordEditDialogWithDetails,
+    &permissions::features::kBlockMidiByDefault,
     &privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
     &privacy_sandbox::kPrivacySandboxSettings3,
     &privacy_sandbox::kPrivacySandboxSettings4,
@@ -378,7 +377,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &segmentation_platform::features::kContextualPageActionShareModel,
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
-    &share::kCrowLaunchTab,
     &share::kScreenshotsForAndroidV2,
     &supervised_user::kLocalWebApprovals,
     &supervised_user::kSynchronousSignInChecking,
@@ -453,10 +451,6 @@ BASE_FEATURE(kAndroidSearchEngineChoiceNotification,
 BASE_FEATURE(kAndroidImprovedBookmarks,
              "AndroidImprovedBookmarks",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kAndroidWidgetFullscreenToast,
-             "AndroidWidgetFullscreenToast",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAnimatedImageDragShadow,
              "AnimatedImageDragShadow",
@@ -616,10 +610,6 @@ BASE_FEATURE(kChromeNewDownloadTab,
 BASE_FEATURE(kChromeSharingHub,
              "ChromeSharingHub",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kChromeSharingHubLaunchAdjacent,
-             "ChromeSharingHubLaunchAdjacent",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kChromeSurveyNextAndroid,
              "ChromeSurveyNextAndroid",
@@ -803,7 +793,7 @@ BASE_FEATURE(kOmniboxAdaptiveSuggestionsVisibleGroupEligibilityUpdate,
 
 BASE_FEATURE(kOmniboxAdaptNarrowTabletWindows,
              "OmniboxAdaptNarrowTabletWindows",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOmniboxCacheSuggestionResources,
              "OmniboxCacheSuggestionResources",
@@ -927,7 +917,7 @@ BASE_FEATURE(kRequestDesktopSitePerSiteIph,
 
 BASE_FEATURE(kSafeModeForCachedFlags,
              "SafeModeForCachedFlags",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,
              "ShowScrollableMVTOnNTPAndroid",
@@ -1081,6 +1071,10 @@ BASE_FEATURE(kStartSurfaceDisabledFeedImprovement,
 
 BASE_FEATURE(kStartSurfaceWithAccessibility,
              "StartSurfaceWithAccessibility",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSurfacePolish,
+             "SurfacePolish",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, keep logging and reporting UMA while chrome is backgrounded.

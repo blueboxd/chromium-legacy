@@ -2647,7 +2647,11 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_PROMO"
                desc="Text for the in-product-help bubble shown for the download bubble.">
-        Manage files as they download, and open them when they’re done
+        Manage files as they download, and open them when they're done
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_PROMO_SCREENREADER"
+               desc="Text read by the screenreader when the in-product-help bubble is shown for the download bubble.">
+        Downloads are now in the toolbar
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_PROMO_TITLE"
                desc="Title for the in-product-help bubble shown for the download bubble.">
@@ -2670,6 +2674,10 @@ are declared in tools/grit/grit_rule.gni.
         Done
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_DONE"
+               desc="When a download has finished deep scanning and the result is safe, let the user know.">
+        Done, no issues found
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_DONE_UPDATED"
                desc="When a download has finished deep scanning and the result is safe, let the user know.">
         Scan is done
       </message>
@@ -2707,9 +2715,17 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_SCAN"
                desc="Label for the button prompting for Deep Scanning">
-        Scan for malware
+        Scan
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_OPEN"
+               desc="Label for the button prompting to bypass Deep Scanning">
+        Open
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SCAN_UPDATED"
+               desc="Label for the button prompting for Deep Scanning">
+        Scan for malware
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_OPEN_UPDATED"
                desc="Label for the button prompting to bypass Deep Scanning">
         Open anyway
       </message>
@@ -2849,7 +2865,7 @@ are declared in tools/grit/grit_rule.gni.
                desc="Subpage summary of warning for a file blocked for being too large.">
         Your organization blocked this file because it is too big for a security check. You can open files up to 50 MB.
       </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT"
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_DEEP_SCANNING_PROMPT_UPDATED"
                desc="Subpage summary of warning for a file where we recommend sending the file for deep scanning.">
         This file might be a virus or malware.
 
@@ -2868,6 +2884,10 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
         Try again
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_PROMPT"
+               desc="Prompt for Deep Scanning of a download">
+        Scan before opening
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DEEP_SCANNING_PROMPT_UPDATED"
                desc="Prompt for Deep Scanning of a download">
         Scan for malware
       </message>
@@ -5326,6 +5346,12 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_LEARN_MORE" desc="The label in an extension's context menu that the user can click to learn more about site access (sentence case).">
             Learn more about site access
           </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_PIN_TO_TOOLBAR" desc="The label in an extension's context menu that the user can click to pin the extension to the toolbar (sentence case).">
+            Pin to toolbar
+          </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_UNPIN_FROM_TOOLBAR" desc="The label in an extension's context menu that the user can click to unpin the extension from the toolbar (sentence case).">
+            Unpin from toolbar
+          </message>
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (sentence case).">
             Options
           </message>
@@ -5396,6 +5422,12 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
           </message>
           <message name="IDS_EXTENSIONS_CONTEXT_MENU_PAGE_ACCESS_LEARN_MORE" desc="The label in an extension's context menu that the user can click to learn more about site access (title case).">
             Learn More About Site Access
+          </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_PIN_TO_TOOLBAR" desc="The label in an extension's context menu that the user can click to pin the extension to the toolbar (title case).">
+            Pin to Toolbar
+          </message>
+          <message name="IDS_EXTENSIONS_CONTEXT_MENU_UNPIN_FROM_TOOLBAR" desc="The label in an extension's context menu that the user can click to unpin the extension from the toolbar (sentence case).">
+            Unpin from Toolbar
           </message>
           <message name="IDS_EXTENSIONS_OPTIONS_MENU_ITEM" desc="The text for the options menu item in context menus (title case).">
             Options
@@ -5840,11 +5872,23 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_USER_BLOCKED_ACCESS_TEXT" desc="Text of the message section when the user blocked access to this site to all extensions.">
         Extensions are blocked on this site
       </message>
+      <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_USER_CUSTOMIZED_ACCESS_TEXT" desc="Text of the message section when the user can customize access to this site by extensions.">
+        Extensions can request access to this site
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_DESCRIPTION_TEXT" desc="Text of the message section when the user has to reload the page to apply the updated user site settings.">
+        To apply your updated settings to this site, reload this page
+      </message>
+       <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TEXT" desc="Text of the button in the message section to reload the page when the user has to reload the page to apply the updated user site settings.">
+        Reload
+      </message>
       <message name="IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_TITLE" desc="Title of the requests access section that lists the extensions requesting site access">
         Requests access
       </message>
       <message name="IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_ALLOW_BUTTON_TEXT" desc="Title on the allow button for each extension in the requests access section that grants site access to such extension.">
         Allow
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_DISMISS_BUTTON_TEXT" desc="Title on the dismiss button for each extension in the requests access section that dismiss the extensions's access requests on this tab's current origin.">
+        Dismiss
       </message>
       <message name="IDS_EXTENSIONS_MENU_EXTENSION_SITE_ACCESS_TOGGLE_ON_TOOLTIP" desc="Tooltip text for the site access toggle of an extensions menu item when is on.">
         Allowed to request access
@@ -8491,6 +8535,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TUTORIAL_PASSWORD_MANAGER_ADD_SHORTCUT" desc="The description of the 'add shortcut' step in password manager tutorial">
         Click “Add Shortcut”
       </message>
+      <message name="IDS_TUTORIAL_PASSWORD_MANAGER_CLICK_INSTALL" desc="The description of the 'click install' step in password manager tutorial">
+        Click “Install”
+      </message>
       <message name="IDS_TUTORIAL_PASSWORD_MANAGER_SUCCESS_BODY" desc="The description of the body text in the 'success' step in password manager tutorial">
         Use your shortcut to quickly get to the Google Password Manager. You can move your shortcut to your computer's home screen or app launcher.
       </message>
@@ -8675,6 +8722,12 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_PASSWORD_MANAGER_IPH_MANAGEMENT_BUBBLE_AFTER_SAVE_SCREENREADER" desc="Text announced with the in Product Help after saving a password informing the user about the password management bubble">
           To view your password or add a note about it, select manage your passwords in the search and address bar
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_IPH_CREATE_SHORTCUT_TITLE" desc="Body of the in Product Help shown after successfully logging into a website telling user about how to create a shortcut">
+          Get to your saved passwords quicker
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_IPH_CREATE_SHORTCUT_BODY" desc="Body of the in Product Help shown after successfully logging into a website telling user about how to create a shortcut">
+          Add a shortcut to Google Password Manager
         </message>
         <message name="IDS_PASSWORD_MANAGER_IPH_MANAGEMENT_BUBBLE_DURING_SIGNIN" desc="Body of the in Product Help shown during sign-in flows informing the user about the password management bubble">
           You saved a note for a password on this site. To view it, click the key icon.
@@ -10926,6 +10979,13 @@ Device signals can include information about your browser, OS, device, installed
 
 If you choose not to share signals, this profile will be closed.
         </message>
+        <message name="IDS_DEVICE_SIGNALS_CONSENT_DIALOG_DEFAULT_BODY_TEXT" desc="Default message for device signals consent dialog when we are unable to retrieve the name of the managing organization.">
+        This profile is managed by your organization. To continue using this managed profile, your organization requires you to share your device signals.
+
+Device signals can include information about your browser, OS, device, installed software, and files.
+
+If you choose not to share signals, this profile will be closed.
+        </message>
       </if>
 
       <!--  Sync Confirmation section of the tab modal signin flow -->
@@ -11264,6 +11324,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="In Title Case: The label in the Recent Tabs menu in the wrench menu when there's no tabs from other devices.">
           No Tabs From Other Devices
         </message>
+        <message name="IDS_RECENT_TABS_LOGIN_FOR_DEVICE_TABS" desc="In Title Case: The label in the Recent Tabs menu in the wrench menu to suggest logging in to see tabs from other devices.">
+          Sign In To See Tabs From Other Devices
+        </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_RECENT_TABS_MENU" desc="The title of the Recent Tabs menu in the wrench menu.">
@@ -11280,6 +11343,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_RECENT_TABS_NO_DEVICE_TABS" desc="The label in the Recent Tabs menu in the wrench menu when there's no tabs from other devices.">
           No tabs from other devices
+        </message>
+        <message name="IDS_RECENT_TABS_LOGIN_FOR_DEVICE_TABS" desc="The label in the Recent Tabs menu in the wrench menu to suggest logging in to see tabs from other devices.">
+          Sign in to see tabs from other devices
         </message>
       </if>
 
@@ -14895,16 +14961,16 @@ Please help our engineers fix this problem. Tell us what happened right before y
         Tab active again
       </message>
       <message name="IDS_HIGH_EFFICIENCY_CHIP_WITH_SAVINGS_ACCNAME" desc="Accessible label for the memory savings shown on the Memory Saver dialog to provide context to the raw number.">
-        <ph name="MEMORY_VALUE">$1<ex>175MB</ex></ph> of memory saved
+        Memory savings summary, <ph name="MEMORY_VALUE">$1<ex>175MB</ex></ph> freed up
       </message>
       <if expr="use_titlecase">
         <message name="IDS_HIGH_EFFICIENCY_CHIP_SAVINGS_LABEL" desc="In Title Case: Label for a page action chip that highlights the savings from Memory Saver mode">
-          <ph name="MEMORY_SAVINGS">$1<ex>300 MB</ex></ph> Saved
+          <ph name="MEMORY_SAVINGS">$1<ex>300 MB</ex></ph> Freed Up
         </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_HIGH_EFFICIENCY_CHIP_SAVINGS_LABEL" desc="Label for a page action chip that highlights the savings from Memory Saver mode">
-          <ph name="MEMORY_SAVINGS">$1<ex>300 MB</ex></ph> saved
+          <ph name="MEMORY_SAVINGS">$1<ex>300 MB</ex></ph> freed up
         </message>
       </if>
       <message name="IDS_HIGH_EFFICIENCY_DIALOG_TITLE_V2" desc="Title text for a dialog with information about Memory Saver mode.">
@@ -14912,9 +14978,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_HIGH_EFFICIENCY_DIALOG_BODY" desc="Body text for a dialog describing that Memory Saver mode will use less memory from inactive tabs and that this is a setting the user can control.">
         While this tab was inactive, Memory Saver freed up memory for other tasks. You can change this anytime in <ph name="SETTINGS_LINK">$1<ex>Settings</ex></ph>.
-      </message>
-      <message name="IDS_HIGH_EFFICIENCY_DIALOG_BODY_V2" desc="Body text for a dialog describing that Memory Saver mode will use less memory.">
-        While this tab was inactive, Memory Saver freed up memory for other tasks.
       </message>
       <message name="IDS_HIGH_EFFICIENCY_DIALOG_BODY_WITHOUT_LINK" desc="Body text for a dialog describing that Memory Saver mode will use less memory.">
         While this tab was inactive, Memory Saver freed up memory for other tasks.
@@ -14933,12 +14996,12 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <if expr="use_titlecase">
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_BUTTON_ADD_TO_EXCLUSION_LIST" desc="In Title Case: Label for a button on the page action chip that adds the current active site to the exclusion list when clicked">
-          Keep Site Active
+          Exclude Site
         </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_BUTTON_ADD_TO_EXCLUSION_LIST" desc="Label for a button on a dialog that adds the current active site to the exclusion list when clicked">
-          Keep site active
+          Exclude site
         </message>
       </if>
       <if expr="use_titlecase">
@@ -14953,43 +15016,43 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
       <if expr="use_titlecase">
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_SMALL_SAVINGS_LABEL" desc="In Title Case: Label below a chart showing the small memory savings from Memory Saver mode.">
-          Small Memory Savings
+          Small Savings
         </message>
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_MEDIUM_SAVINGS_LABEL" desc="In Title Case: Label below a chart showing the medium memory savings from Memory Saver mode.">
-          Medium Memory Savings
+          Medium Savings
         </message>
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_LARGE_SAVINGS_LABEL" desc="In Title Case: Label below a chart showing the large memory savings from Memory Saver mode.">
-          Large Memory Savings
+          Large Savings
         </message>
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_VERY_LARGE_SAVINGS_LABEL" desc="In Title Case: Label below a chart showing the very large memory savings from Memory Saver mode.">
-          Very Large Memory Savings
+          Huge Savings
         </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_SMALL_SAVINGS_LABEL" desc="Label below a chart showing the small memory savings from Memory Saver mode.">
-          Small memory savings
+          Small savings
         </message>
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_MEDIUM_SAVINGS_LABEL" desc="Label below a chart showing the medium memory savings from Memory Saver mode.">
-          Medium memory savings
+          Medium savings
         </message>
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_LARGE_SAVINGS_LABEL" desc="Label below a chart showing the large memory savings from Memory Saver mode.">
-          Large memory savings
+          Large savings
         </message>
         <message name="IDS_HIGH_EFFICIENCY_DIALOG_VERY_LARGE_SAVINGS_LABEL" desc="Label below a chart showing the very large memory savings from Memory Saver mode.">
-          Very Large memory savings
+          Huge savings
         </message>
       </if>
     </if>
     <!-- Performance hovercard strings -->
     <if expr="not is_android">
       <message name="IDS_HOVERCARD_TAB_MEMORY_USAGE" desc="Text at the bottom of a hovercard that shows how much memory a specific tab is using.">
-        This tab is using <ph name="MEMORY_USAGE">$1<ex>300 MB</ex></ph>
+        Memory usage: <ph name="MEMORY_USAGE">$1<ex>300 MB</ex></ph>
       </message>
       <message name="IDS_HOVERCARD_TAB_HIGH_MEMORY_USAGE" desc="Text at the bottom of a hovercard that indicates a tab is experiencing high memory usage.">
         High memory usage: <ph name="MEMORY_USAGE">$1<ex>300 MB</ex></ph>
       </message>
       <message name="IDS_HOVERCARD_INACTIVE_TAB_MEMORY_SAVINGS" desc="Text at the bottom of a hovercard indicating how much memory has been saved when a tab was made inactive.">
-        Inactive tab savings: <ph name="MEMORY_SAVINGS">$1<ex>300 MB</ex></ph>
+        Inactive tab: <ph name="MEMORY_SAVINGS">$1<ex>300 MB</ex></ph> freed up
       </message>
       <message name="IDS_HOVERCARD_INACTIVE_TAB" desc="Text at the bottom of a hovercard indicating that a tab is inactive.">
         Inactive tab

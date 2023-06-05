@@ -46,6 +46,7 @@
 <translation id="1080116354587839789">चौडाइमा फिट गर्नुहोस्</translation>
 <translation id="1081061862829655580">ट्रे १९</translation>
 <translation id="1089439967362294234">पासवर्ड परिवर्तन गर्नुहोस्</translation>
+<translation id="1094777233105318927">तपाईंको ब्राउजर, OS, डिभाइस, इन्स्टल गरिएका सफ्टवेयर र फाइलहरूसम्बन्धी जानकारी</translation>
 <translation id="1096545575934602868">यो फिल्डमा <ph name="MAX_ITEMS_LIMIT" /> भन्दा धेरै प्रविष्टिहरू हुनु हुँदैन। थप सबै प्रविष्टिहरू खारेज गरिने छन्।</translation>
 <translation id="1100782917270858593">"खोज्ने क्रम सुचारु गर्नुहोस्" नामक बटन, तपाईं खोज्ने क्रम सुचारु गर्न र Chrome को ब्राउजिङ इतिहासमा सान्दर्भिक गतिविधि हेर्न चाहनुहुन्छ भने इन्टर थिच्नुहोस्</translation>
 <translation id="1101672080107056897">त्रुटिसम्बन्धी कार्य</translation>
@@ -1240,6 +1241,8 @@
 <translation id="4031179711345676612">माइक्रोफोन प्रयोग गर्ने अनुमति छ</translation>
 <translation id="4040350669425716613">कलेज तथा विश्वविद्यालयहरू</translation>
 <translation id="4047351652147966654">१८ x २४ इन्च</translation>
+<translation id="404831776305217138">ID "<ph name="EXTENSION_ID" />" भएको एक्स्टेन्सनको अपडेट URL अवैध छ वा 
+वा त्यसमा प्रयोग गर्न नमिल्ने स्किम प्रयोग गरिएको छ। प्रयोग गर्न मिल्ने स्किमहरू: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> र <ph name="FILE_SCHEME" /> हुन्।</translation>
 <translation id="4050392779074832022">तपाईं यो ठेगाना Google का विभिन्न उत्पादनहरूमा प्रयोग गर्न सक्नु हुने छ</translation>
 <translation id="405399507749852140">कुनै साइटमा मूल्य घटेका खण्डमा अलर्ट प्राप्त गर्नुहोस्</translation>
 <translation id="4056223980640387499">सेपिया</translation>
@@ -2289,6 +2292,8 @@
 <translation id="6569060085658103619">तपाईं एउटा विस्तार सम्बन्धी पृष्ठ हेर्दै हुनुहुन्छ</translation>
 <translation id="6569366777234823130">नाट्य चलचित्रहरू</translation>
 <translation id="6573200754375280815">दायाँपट्टि दुई प्वाल</translation>
+<translation id="6576181918031900030">कास्ट गर्न थाल्नुहोस्</translation>
+<translation id="6578434528542148658">एक्स्टेन्सनको अवैध ID।</translation>
 <translation id="657902945730878902">चित्र कोर्ने तथा रङ भर्ने काम</translation>
 <translation id="6579630537141957243">MIDI डिभाइस कनेक्ट गर्ने हो?</translation>
 <translation id="6579990219486187401">हल्का गुलाबी</translation>
@@ -3028,7 +3033,6 @@
 <translation id="8298115750975731693">तपाईँले प्रयोग गरिरहनु भएको Wi-Fi (<ph name="WIFI_NAME" />) लाई <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> भ्रमण गर्ने आवश्यकता हुन सक्छ।</translation>
 <translation id="8303854710873047864">"<ph name="SECTION" />" नामक खण्ड देखाइएको छ</translation>
 <translation id="830498451218851433">आधा फोल्ड</translation>
-<translation id="8307888238279532626">इन्स्टल गरिएका एप र ती एप प्रयोग गरिने अन्तराल</translation>
 <translation id="831997045666694187">साँझ</translation>
 <translation id="8321476692217554900">सूचनाहरू</translation>
 <translation id="8329068931308448247">Envelope #14</translation>

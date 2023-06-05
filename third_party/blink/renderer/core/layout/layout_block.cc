@@ -105,7 +105,6 @@ TrackedContainerMap& GetPositionedContainerMap() {
 
 LayoutBlock::LayoutBlock(ContainerNode* node)
     : LayoutBox(node),
-      descendants_with_floats_marked_for_layout_(false),
       has_positioned_objects_(false),
       has_svg_text_descendants_(false) {
   // LayoutBlockFlow calls setChildrenInline(true).
@@ -359,13 +358,6 @@ void LayoutBlock::RemoveLeftoverAnonymousBlock(LayoutBlock* child) {
 
 void LayoutBlock::UpdateLayout() {
   NOT_DESTROYED();
-  DCHECK(!GetScrollableArea() || GetScrollableArea()->GetScrollAnchor());
-
-  bool needs_scroll_anchoring =
-      IsScrollContainer() &&
-      GetScrollableArea()->ShouldPerformScrollAnchoring();
-  if (needs_scroll_anchoring)
-    GetScrollableArea()->GetScrollAnchor()->NotifyBeforeLayout();
 
   UpdateBlockLayout();
 

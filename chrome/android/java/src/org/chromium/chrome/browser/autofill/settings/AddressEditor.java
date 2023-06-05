@@ -4,16 +4,16 @@
 
 package org.chromium.chrome.browser.autofill.settings;
 
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.ALL_KEYS;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.CANCEL_RUNNABLE;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.CUSTOM_DONE_BUTTON_TEXT;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.DELETE_CONFIRMATION_TEXT;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.DELETE_CONFIRMATION_TITLE;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.DONE_RUNNABLE;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.EDITOR_FIELDS;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.EDITOR_TITLE;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.FOOTER_MESSAGE;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.SHOW_REQUIRED_INDICATOR;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ALL_KEYS;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.CANCEL_RUNNABLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.CUSTOM_DONE_BUTTON_TEXT;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELETE_CONFIRMATION_TEXT;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELETE_CONFIRMATION_TITLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DONE_RUNNABLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_FIELDS;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_TITLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FOOTER_MESSAGE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.SHOW_REQUIRED_INDICATOR;
 
 import android.content.Context;
 import android.os.Handler;
@@ -28,15 +28,18 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.autofill.Source;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.autofill.editors.EditorDialog;
+import org.chromium.chrome.browser.autofill.editors.EditorFieldModel;
+import org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownKeyValue;
+import org.chromium.chrome.browser.autofill.editors.EditorProperties.EditorFieldValidator;
+import org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.AddressField;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.AddressUiComponent;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.AutofillAddress;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.SyncService;
-import org.chromium.components.autofill.prefeditor.EditorFieldModel;
-import org.chromium.components.autofill.prefeditor.EditorFieldModel.EditorFieldValidator;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -58,9 +61,10 @@ import java.util.UUID;
 public class AddressEditor {
     private final Handler mHandler = new Handler();
     private final Map<Integer, EditorFieldModel> mAddressFields = new HashMap<>();
-    private final Set<CharSequence> mPhoneNumbers = new HashSet<>();
+    private final Set<String> mPhoneNumbers = new HashSet<>();
     private final EditorDialog mEditorDialog;
     private final Delegate mDelegate;
+    private final Profile mProfile;
     private final Context mContext;
     private final AutofillProfile mProfileToEdit;
     private final AutofillAddress mAddressToEdit;
@@ -102,7 +106,7 @@ public class AddressEditor {
     private static Map<Integer, EditorFieldModel> getAddressFields() {
         Map<Integer, EditorFieldModel> addressFields = new HashMap<>();
 
-        // Don't use INPUT_TYPE_HINT_REGION to avoid capitalizing all characters.
+        // Don't use REGION_INPUT to avoid capitalizing all characters.
         addressFields.put(AddressField.ADMIN_AREA, EditorFieldModel.createTextInput());
 
         // City, dependent locality, and organization don't have any special formatting hints.
@@ -113,26 +117,25 @@ public class AddressEditor {
         // Sorting code and postal code (a.k.a. ZIP code) should show both letters and digits on
         // the keyboard, if possible.
         addressFields.put(AddressField.SORTING_CODE,
-                EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC));
+                EditorFieldModel.createTextInput(TextInputType.ALPHA_NUMERIC_INPUT));
         addressFields.put(AddressField.POSTAL_CODE,
-                EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC));
+                EditorFieldModel.createTextInput(TextInputType.ALPHA_NUMERIC_INPUT));
 
         // Street line field can contain \n to indicate line breaks.
         addressFields.put(AddressField.STREET_ADDRESS,
-                EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_STREET_LINES));
+                EditorFieldModel.createTextInput(TextInputType.STREET_ADDRESS_INPUT));
 
         // Android has special formatting rules for names.
         addressFields.put(AddressField.RECIPIENT,
-                EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME));
+                EditorFieldModel.createTextInput(TextInputType.PERSON_NAME_INPUT));
 
         return addressFields;
     }
 
     // TODO(crbug.com/1432505): remove temporary unsupported countries filtering.
-    private static List<EditorFieldModel.DropdownKeyValue> getSupportedCountries(
+    private static List<DropdownKeyValue> getSupportedCountries(
             boolean filterOutUnsupportedCountries) {
-        List<EditorFieldModel.DropdownKeyValue> supportedCountries =
-                AutofillProfileBridge.getSupportedCountries();
+        List<DropdownKeyValue> supportedCountries = AutofillProfileBridge.getSupportedCountries();
         if (filterOutUnsupportedCountries) {
             PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
             supportedCountries.removeIf(entry
@@ -147,14 +150,15 @@ public class AddressEditor {
      *
      * @param editorDialog Editor's view displayed to the user.
      * @param delegate Delegate to react to users interactions with the editor.
+     * @param profile Current user's profile.
      * @param saveToDisk Whether to save changes to disk after editing.
      * @param isUpdate Whether an existing address profile is being edited.
      * @param isMigrationToAccount Whether this editor is shown during address profile migration to
      *         Google account.
      */
-    public AddressEditor(EditorDialog editorDialog, Delegate delegate, boolean saveToDisk,
-            boolean isUpdate, boolean isMigrationToAccount) {
-        this(editorDialog, delegate,
+    public AddressEditor(EditorDialog editorDialog, Delegate delegate, Profile profile,
+            boolean saveToDisk, boolean isUpdate, boolean isMigrationToAccount) {
+        this(editorDialog, delegate, profile,
                 new AutofillAddress(editorDialog.getContext(), AutofillProfile.builder().build()),
                 saveToDisk, isUpdate, isMigrationToAccount, true);
     }
@@ -164,17 +168,18 @@ public class AddressEditor {
      *
      * @param editorDialog Editor's view displayed to the user.
      * @param delegate Delegate to react to users interactions with the editor.
+     * @param profile Current user's profile.
      * @param addressToEdit Address the user wants to modify.
      * @param saveToDisk Whether to save changes to disk after editing.
      * @param isUpdate Whether an existing address profile is being edited.
      * @param isMigrationToAccount Whether this editor is shown during address profile migration to
      *         Google account.
      */
-    public AddressEditor(EditorDialog editorDialog, Delegate delegate,
+    public AddressEditor(EditorDialog editorDialog, Delegate delegate, Profile profile,
             AutofillAddress addressToEdit, boolean saveToDisk, boolean isUpdate,
             boolean isMigrationToAccount) {
-        this(editorDialog, delegate, addressToEdit, saveToDisk, isUpdate, isMigrationToAccount,
-                false);
+        this(editorDialog, delegate, profile, addressToEdit, saveToDisk, isUpdate,
+                isMigrationToAccount, false);
     }
 
     /**
@@ -182,6 +187,7 @@ public class AddressEditor {
      *
      * @param editorDialog Editor's view displayed to the user.
      * @param delegate Delegate to react to users interactions with the editor.
+     * @param profile Current user's profile.
      * @param addressToEdit Address the user wants to modify.
      * @param saveToDisk Whether to save changes to disk after editing.
      * @param isUpdate Whether an existing address profile is being edited.
@@ -189,11 +195,12 @@ public class AddressEditor {
      *         Google account.
      * @param isProfileNew whether the user intends to create a new address.
      */
-    private AddressEditor(EditorDialog editorDialog, Delegate delegate,
+    private AddressEditor(EditorDialog editorDialog, Delegate delegate, Profile profile,
             AutofillAddress addressToEdit, boolean saveToDisk, boolean isUpdate,
             boolean isMigrationToAccount, boolean isProfileNew) {
         mEditorDialog = editorDialog;
         mDelegate = delegate;
+        mProfile = profile;
         mContext = editorDialog.getContext();
         mProfileToEdit = addressToEdit.getProfile();
         mAddressToEdit = addressToEdit;
@@ -229,14 +236,14 @@ public class AddressEditor {
         mAddressFields.putAll(getAddressFields());
 
         // Phone number is present for all countries.
-        mPhoneField = EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PHONE,
+        mPhoneField = EditorFieldModel.createTextInput(TextInputType.PHONE_NUMBER_INPUT,
                 mContext.getString(R.string.autofill_profile_editor_phone_number), mPhoneNumbers,
                 mPhoneFormatter, mPhoneValidator, /* requiredErrorMessage */ null,
                 mContext.getString(R.string.payments_phone_invalid_validation_message),
                 EditorFieldModel.LENGTH_COUNTER_LIMIT_NONE, null /* value */);
 
         // Phone number is present for all countries.
-        mEmailField = EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_EMAIL,
+        mEmailField = EditorFieldModel.createTextInput(TextInputType.EMAIL_ADDRESS_INPUT,
                 mContext.getString(R.string.autofill_profile_editor_email_address),
                 null /* suggestions */, null /* formatter */, null /* validator */,
                 null /* requiredErrorMessage */,
@@ -256,8 +263,8 @@ public class AddressEditor {
         setAddressFieldValues();
 
         assert mCountryField.getValue() != null;
-        mPhoneValidator.setCountryCode(mCountryField.getValue().toString());
-        mPhoneFormatter.setCountryCode(mCountryField.getValue().toString());
+        mPhoneValidator.setCountryCode(mCountryField.getValue());
+        mPhoneFormatter.setCountryCode(mCountryField.getValue());
     }
 
     private void setAddressFieldValues() {
@@ -344,7 +351,7 @@ public class AddressEditor {
 
     /** Saves the edited profile on disk. */
     private void commitChanges(AutofillProfile profile) {
-        String country = mCountryField.getValue().toString();
+        String country = mCountryField.getValue();
         if (willBeSavedInAccount() && mIsProfileNew
                 && PersonalDataManager.getInstance().isCountryEligibleForAccountStorage(country)) {
             profile.setSource(Source.ACCOUNT);
@@ -352,10 +359,10 @@ public class AddressEditor {
         // Country code and phone number are always required and are always collected from the
         // editor model.
         profile.setCountryCode(country);
-        if (mPhoneField != null) profile.setPhoneNumber(mPhoneField.getValue().toString());
-        if (mEmailField != null) profile.setEmailAddress(mEmailField.getValue().toString());
+        if (mPhoneField != null) profile.setPhoneNumber(mPhoneField.getValue());
+        if (mEmailField != null) profile.setEmailAddress(mEmailField.getValue());
         if (mHonorificField != null) {
-            profile.setHonorificPrefix(mHonorificField.getValue().toString());
+            profile.setHonorificPrefix(mHonorificField.getValue());
         }
 
         // Autofill profile bridge normalizes the language code for the autofill profile.
@@ -397,7 +404,7 @@ public class AddressEditor {
 
     /** Writes the given value into the specified autofill profile field. */
     private static void setProfileField(
-            AutofillProfile profile, int field, @Nullable CharSequence value) {
+            AutofillProfile profile, int field, @Nullable String value) {
         assert profile != null;
         switch (field) {
             case AddressField.COUNTRY:
@@ -432,8 +439,8 @@ public class AddressEditor {
         assert false;
     }
 
-    private static String ensureNotNull(@Nullable CharSequence value) {
-        return value == null ? "" : value.toString();
+    private static String ensureNotNull(@Nullable String value) {
+        return value == null ? "" : value;
     }
 
     private String getEditorTitle() {
@@ -444,7 +451,7 @@ public class AddressEditor {
     @Nullable
     private String getUserEmail() {
         final IdentityManager identityManager =
-                IdentityServicesProvider.get().getIdentityManager(mEditorDialog.getProfile());
+                IdentityServicesProvider.get().getIdentityManager(mProfile);
         CoreAccountInfo accountInfo = identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
         return CoreAccountInfo.getEmailFrom(accountInfo);
     }
@@ -629,16 +636,15 @@ public class AddressEditor {
         }
 
         @Override
-        public boolean isValid(@Nullable CharSequence value) {
+        public boolean isValid(@Nullable String value) {
             // Note that isPossibleNumber is used since the metadata in libphonenumber has to be
             // updated frequently (daily) to do more strict validation.
-            return TextUtils.isEmpty(value)
-                    ? mAllowEmptyValue
-                    : PhoneNumberUtil.isPossibleNumber(value.toString(), mCountryCode);
+            return TextUtils.isEmpty(value) ? mAllowEmptyValue
+                                            : PhoneNumberUtil.isPossibleNumber(value, mCountryCode);
         }
 
         @Override
-        public boolean isLengthMaximum(@Nullable CharSequence value) {
+        public boolean isLengthMaximum(@Nullable String value) {
             return false;
         }
     }

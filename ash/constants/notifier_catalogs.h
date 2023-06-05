@@ -204,7 +204,8 @@ enum class NudgeCatalogName {
   kClipboardHistoryZeroState = 7,
   kClipboardHistoryOnboarding = 8,
   kDisableDiacritics = 9,
-  kMaxValue = kDisableDiacritics,
+  kClipboardHistoryDuplicateCopy = 10,
+  kMaxValue = kClipboardHistoryDuplicateCopy,
 };
 
 // A living catalog that registers toasts.
@@ -267,7 +268,8 @@ enum class AnchoredNudgeCatalogName {
   kTest = 0,
   kVideoConferenceTraySpeakOnMuteDetected = 1,
   kVideoConferenceTrayUseWhileDisabled = 2,
-  kMaxValue = kVideoConferenceTrayUseWhileDisabled
+  kVideoConferenceTraySpeakOnMuteOptIn = 3,
+  kMaxValue = kVideoConferenceTraySpeakOnMuteOptIn
 };
 
 }  // namespace ash

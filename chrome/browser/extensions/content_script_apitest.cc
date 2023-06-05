@@ -1774,6 +1774,7 @@ IN_PROC_BROWSER_TEST_F(ContentScriptRelatedFrameTest,
 
   // Now, navigate the iframe to an about:blank URL.
   NavigateIframe(tab->GetPrimaryMainFrame(), "frames[0]", about_blank());
+  child_frame = content::ChildFrameAt(tab->GetPrimaryMainFrame(), 0);
 
   // Unlike match_origin_as_fallback, match_about_blank will attempt to climb
   // the frame tree to find an ancestor with path. This results in finding the
@@ -2210,7 +2211,8 @@ class ContentScriptApiFencedFrameTest : public ContentScriptApiTest {
     feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kFencedFrames, {{"implementation_type", "mparch"}}},
          {features::kPrivacySandboxAdsAPIsOverride, {}},
-         {blink::features::kFencedFramesAPIChanges, {}}},
+         {blink::features::kFencedFramesAPIChanges, {}},
+         {blink::features::kFencedFramesDefaultMode, {}}},
         {/* disabled_features */});
     UseHttpsTestServer();
   }

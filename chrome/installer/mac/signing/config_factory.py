@@ -20,3 +20,18 @@ def get_class():
             raise e
 
     return config_class
+
+
+def get_invoker_class():
+    """Returns the subclass of |invoker.Interface| to use."""
+    try:
+        from signing.internal_invoker import Invoker
+        return Invoker
+    except ImportError as e:
+        # If the build specified Google Chrome as the product, then the
+        # internal invoker has to be available.
+        if get_class().is_chrome_branded():
+            raise e
+
+    from signing.standard_invoker import Invoker
+    return Invoker

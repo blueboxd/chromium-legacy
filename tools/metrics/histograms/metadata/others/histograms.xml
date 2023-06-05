@@ -3995,6 +3995,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Conversions.ReportVerification.ReportHasVerification"
     enum="Boolean" expires_after="M117">
+  <obsolete>
+    Metric no longer relevant/needed considering null reports generation.
+  </obsolete>
   <owner>anthonygarant@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
   <summary>
@@ -4019,25 +4022,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.SourceRegistration.NavigationType.{RequestType}"
-    enum="AttributionNavigationType" expires_after="M117">
-  <owner>csharrison@chromium.org</owner>
-  <owner>apaseltiner@chromium.org</owner>
-  <owner>measurement-api-dev+metrics@google.com</owner>
-  <summary>
-    For any successfully registered {RequestType} navigation sources, records
-    the API surface that initiated the navigation.
-  </summary>
-  <token key="RequestType">
-    <variant name="Background" summary="background"/>
-    <variant name="Foreground" summary="foreground"/>
-  </token>
-</histogram>
-
-<histogram name="Conversions.SourceRegistrationError2"
+<histogram name="Conversions.SourceRegistrationError3"
     enum="ConversionSourceRegistrationError" expires_after="2023-11-12">
+  <owner>tquintanilla@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
-  <owner>johnidel@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
   <summary>
     Measures how often source registration parsing failed and why. Recorded only
@@ -4123,10 +4111,10 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Conversions.TriggerRegistrationError5"
+<histogram name="Conversions.TriggerRegistrationError6"
     enum="ConversionTriggerRegistrationError" expires_after="2023-11-12">
+  <owner>tquintanilla@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
-  <owner>johnidel@chromium.org</owner>
   <owner>measurement-api-dev+metrics@google.com</owner>
   <summary>
     Measures how often trigger registration parsing failed and why. Recorded
@@ -5117,15 +5105,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Indicates whether or not creating a snapshot of the user data dir succeeded
     or failed.
-  </summary>
-</histogram>
-
-<histogram name="Downgrade.Type" enum="UserDataDowngradeType"
-    expires_after="2021-08-09">
-  <owner>grt@chromium.org</owner>
-  <summary>
-    The type of User Data downgrade detected, if any. The &quot;none&quot;
-    bucket is not reported.
   </summary>
 </histogram>
 
@@ -8428,18 +8407,18 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OAuth2Login.SessionRestoreTimeToFailure" units="ms"
-    expires_after="2023-06-25">
+    expires_after="2023-10-31">
   <owner>anastasiian@chromium.org</owner>
   <owner>sinhak@chromium.org</owner>
   <summary>How long it takes for the session restore to fail.</summary>
 </histogram>
 
 <histogram name="OAuth2Login.SessionRestoreTimeToSuccess" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-10-31">
   <owner>anastasiian@chromium.org</owner>
   <owner>sinhak@chromium.org</owner>
   <summary>
-    How long it takes for the session restore to finish succeessfully.
+    How long it takes for the session restore to finish successfully.
   </summary>
 </histogram>
 
@@ -8886,26 +8865,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Ozone.NeuralStylusReport.FingerAgeBeforeStylus"
-    units="duration" expires_after="2023-06-30">
-  <owner>napper@chromium.org</owner>
-  <owner>robsc@chromium.org</owner>
-  <summary>
-    The time between a finger and a stylus touch. The finger may or may not
-    still be on the touchscreen.
-  </summary>
-</histogram>
-
-<histogram name="Ozone.NeuralStylusReport.PalmAgeBeforeStylus" units="duration"
-    expires_after="2023-06-30">
-  <owner>napper@chromium.org</owner>
-  <owner>robsc@chromium.org</owner>
-  <summary>
-    The time between a palm and a stylus touch. The palm may or may not still be
-    on the touchscreen.
-  </summary>
-</histogram>
-
 <histogram name="Ozone.TouchEventConverterEvdev.HoldCountAtCancel"
     units="touch event" expires_after="2023-09-03">
   <owner>robsc@chromium.org</owner>
@@ -8923,6 +8882,120 @@ chromium-metrics-reviews@google.com.
     The count of the number of held events released at once for a stroke when we
     decide to release. Only reported if events have been held, and will be
     positive. Events are only held from PalmDetectionFilter.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.PalmTouchCount"
+    enum="BooleanDetected" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    The count of the number of detected palm touches. Reported when a new palm
+    touch is detected by either the firmware or the software palm detection.
+    Consecutive palm touch events will be considered as the same palm touch.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.RepeatedTouchCount"
+    units="BooleanDetected" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    Whether a repeated touch is detected soon after palm rejection. Reported
+    when users repeated a touch action within 2 seconds after we rejected the
+    first action as palm. This only emits true when we detect a repeated touch
+    but never emits false.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.StylusSessionCount"
+    units="BooleanDetected" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    The count of the number of stylus sessions. A stylus session is a series of
+    stylus events with no more than 5 seconds between them. Reported when a
+    stylus session is concluded.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.StylusSessionLength"
+    units="duration" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    The length of stylus sessions. A stylus session is a series of stylus events
+    with no more than 5 seconds between them. Reported when a stylus session is
+    concluded.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.TouchGapAfterStylus"
+    units="duration" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    The time between a stylus touch and the first finger touch after it. The
+    finger touch may or may not be detected as a palm. If the first touch after
+    a stylus touch is another stylus touch (i.e. no finger touch between them),
+    record a maximum time (10 seconds) instead. Reported when first new touch is
+    reported after a stylus touch finishes.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.TouchGapBeforeStylus"
+    units="duration" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    The time between a stylus touch and the last finger touch before it. The
+    finger touch may or may not still be on the touchscreen, and may or may not
+    be detected as a palm. Reported when a stylus touch is started on the
+    touchscreen.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.TouchSessionCount"
+    units="BooleanDetected" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    The count of the number of touch sessions. A touch session is a series of
+    touch events with no more than 5 seconds between them. Reported when a touch
+    session is concluded.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.TouchSessionLength"
+    units="duration" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    The length of touch sessions. A touch session is a series of touch events
+    with no more than 5 seconds between them. Reported when a touch session is
+    concluded.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.TouchTypeAfterStylus"
+    enum="TouchType" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    The type of the first finger touch within 500ms before a stylus touch. It
+    could be finger, palm or none (no touch within 500ms). Reported when a
+    stylus touch is started on the touchscreen.
+  </summary>
+</histogram>
+
+<histogram name="Ozone.TouchEventConverterEvdev.TouchTypeBeforeStylus"
+    enum="TouchType" expires_after="2024-06-01">
+  <owner>jiwan@chromium.org</owner>
+  <owner>robsc@chromium.org</owner>
+  <summary>
+    The type of the last finger touch within 500ms before a stylus touch. It
+    could be finger, palm or none (no touch within 500ms). Reported when first
+    new touch is reported after a stylus touch finishes.
   </summary>
 </histogram>
 
@@ -14160,22 +14233,6 @@ regressions. -->
   <token key="Target" variants="VoiceIntentTargetVariant"/>
 </histogram>
 
-<histogram name="Web.CurrentOriginEqualsLastCommittedOrigin"
-    enum="BooleanEqual" expires_after="2023-11-17">
-  <owner>ajuma@chromium.org</owner>
-  <owner>gambard@chromium.org</owner>
-  <summary>
-    [iOS] Reports URL matches between the return value from the WebState's
-    GetLastCommittedURL and GetCurrentURL methods. It is expected the origins
-    will be equal to confirm that GetCurrentURL can now be replaced with
-    GetLastCommittedURL. This will be called each time WebStateImpl::
-    GetCurrentURL(URLVerificationTrustLevel* trust_level) is called, which is an
-    old method of obtaining the url and trust level. The trust level was only
-    relevant with UIWebView, so this method is only called from code which has
-    not yet been updated since UIWebView was removed.
-  </summary>
-</histogram>
-
 <histogram name="WebContentsObserver.{Method}" units="ms"
     expires_after="2023-07-28">
   <owner>cduvall@chromium.org</owner>
@@ -14813,13 +14870,73 @@ regressions. -->
   </summary>
 </histogram>
 
-<histogram name="WrenchMenu.TimeToAction" units="units"
+<histogram name="WrenchMenu.TimeToAction.{Action}" units="units"
     expires_after="2023-10-01">
   <owner>ainslie@chromium.org</owner>
   <owner>edwardjung@chromium.org</owner>
   <summary>
     The time a user takes to select a menu item after opening the menu.
   </summary>
+  <token key="Action">
+    <variant name="About"/>
+    <variant name="AppInfo"/>
+    <variant name="BetaForum"/>
+    <variant name="BookmarkAllTabs"/>
+    <variant name="BookmarkPage"/>
+    <variant name="Cast"/>
+    <variant name="ChromeOSRestart"/>
+    <variant name="ChromeTips"/>
+    <variant name="ClearBrowsingData"/>
+    <variant name="Copy"/>
+    <variant name="CopyUrl"/>
+    <variant name="CreateHostedApp"/>
+    <variant name="CreateQrCode"/>
+    <variant name="Cut"/>
+    <variant name="DevTools"/>
+    <variant name="DevToolsConsole"/>
+    <variant name="DevToolsDevices"/>
+    <variant name="DistillPage"/>
+    <variant name="EnterFullScreen"/>
+    <variant name="Exit"/>
+    <variant name="Feedback"/>
+    <variant name="Find"/>
+    <variant name="HelpPage"/>
+    <variant name="ImportSettings"/>
+    <variant name="InstallPwa"/>
+    <variant name="LoginForDeviceTabs"/>
+    <variant name="ManageExtensions"/>
+    <variant name="NewIncognitoWindow"/>
+    <variant name="NewTab"/>
+    <variant name="NewWindow"/>
+    <variant name="OpenBookmark"/>
+    <variant name="OpenInChrome"/>
+    <variant name="OpenInPwaWindow"/>
+    <variant name="OpenRecentTab"/>
+    <variant name="PasswordManager"/>
+    <variant name="Paste"/>
+    <variant name="Print"/>
+    <variant name="ProfilingEnabled"/>
+    <variant name="RequestTabletSite"/>
+    <variant name="RestoreTab"/>
+    <variant name="SavePage"/>
+    <variant name="SendToDevices"/>
+    <variant name="Settings"/>
+    <variant name="ShowBookmarkBar"/>
+    <variant name="ShowBookmarkMgr"/>
+    <variant name="ShowChromeLabs"/>
+    <variant name="ShowDownloads"/>
+    <variant name="ShowHistory"/>
+    <variant name="ShowKaleidoscope"/>
+    <variant name="ShowSyncSetup"/>
+    <variant name="SiteSettings"/>
+    <variant name="TaskManager"/>
+    <variant name="ViewSource"/>
+    <variant name="VisitChromeWebStore"/>
+    <variant name="Win8MetroRestart"/>
+    <variant name="WinDesktopRestart"/>
+    <variant name="ZoomMinus"/>
+    <variant name="ZoomPlus"/>
+  </token>
 </histogram>
 
 <histogram name="WrenchMenu.TouchDuration" units="ms" expires_after="M85">

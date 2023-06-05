@@ -44,15 +44,13 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
     // NV12 format planes. This is intended to be used internally within the VIZ
     // component to support video capture. When requesting this format, results
     // can only be delivered on the same task runner sequence that runs the
-    // DirectRenderer implementation. For now, NV12 format can be requested only
-    // for system memory.
+    // DirectRenderer implementation.
     NV12_PLANES,
     // An NV12 image associated with a single mailbox via
     // MultiplanarSharedImage. This is intended to be used internally within the
     // VIZ component to support video capture. When requesting this format,
     // results can only be delivered on the same task runner sequence that runs
-    // the DirectRenderer implementation. For now, NV12 format can be requested
-    // only for system memory.
+    // the DirectRenderer implementation.
     NV12_MULTIPLANE,
   };
 
@@ -125,11 +123,12 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
   // case of a failed reply, in which case IsEmpty() would report true.
   struct VIZ_COMMON_EXPORT TextureResult {
     // |texture_target| is guaranteed to be GL_TEXTURE_2D for each returned
-    // plane. The planes are placed continuously from the beginning of the array
-    // - i.e. if k planes are valid, indices from 0 (inclusive), to k
+    // mailbox. The mailboxes are placed continuously from the beginning of the
+    // array
+    // - i.e. if k mailboxes are valid, indices from 0 (inclusive), to k
     // (exclusive) will contain the data. If the result is not empty, at least
-    // one plane must be filled out (non-zero).
-    std::array<gpu::MailboxHolder, kMaxPlanes> planes;
+    // one mailbox must be filled out (non-zero).
+    std::array<gpu::MailboxHolder, kMaxPlanes> mailbox_holders;
 
     gfx::ColorSpace color_space;
 
@@ -139,8 +138,9 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
                   const gfx::ColorSpace& color_space);
 
     // General purpose variant:
-    TextureResult(const std::array<gpu::MailboxHolder, kMaxPlanes>& planes,
-                  const gfx::ColorSpace& color_space);
+    TextureResult(
+        const std::array<gpu::MailboxHolder, kMaxPlanes>& mailbox_holders,
+        const gfx::ColorSpace& color_space);
 
     TextureResult(const TextureResult& other);
     TextureResult& operator=(const TextureResult& other);
@@ -148,12 +148,12 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
   virtual const TextureResult* GetTextureResult() const;
 
   using ReleaseCallbacks = std::vector<ReleaseCallback>;
-  // Returns a vector of release callbacks for the textures in |planes| array of
-  // TextureResult. `i`th element in this collection is a release callback for
-  // the `i`th element in |planes| array.
-  // The size of the collection must match the number of valid entries in
-  // |planes| array. The vector will be empty iff the CopyOutputResult
-  // |IsEmpty()| is true.
+  // Returns a vector of release callbacks for the textures in |mailbox_holders|
+  // array of TextureResult. `i`th element in this collection is a release
+  // callback for the `i`th element in |mailbox_holders| array. The size of the
+  // collection must match the number of valid entries in |mailbox_holders|
+  // array. The vector will be empty iff the CopyOutputResult |IsEmpty()| is
+  // true.
   virtual ReleaseCallbacks TakeTextureOwnership();
 
   //

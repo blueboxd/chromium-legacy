@@ -9,7 +9,7 @@ import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
-import {TriggerVerification} from './attribution.mojom-webui.js';
+import {AttributionSupport, TriggerVerification} from './attribution.mojom-webui.js';
 import {Factory, HandlerInterface, HandlerRemote, ObserverInterface, ObserverReceiver, ReportID, SourceStatus, WebUIDebugReport, WebUIOsRegistration, WebUIRegistration, WebUIReport, WebUISource, WebUISource_Attributability, WebUISourceRegistration, WebUITrigger, WebUITrigger_Status} from './attribution_internals.mojom-webui.js';
 import {AttributionInternalsTableElement} from './attribution_internals_table.js';
 import {OsRegistrationResult, OsRegistrationType} from './attribution_reporting.mojom-webui.js';
@@ -390,13 +390,13 @@ class RegistrationTableModel<T extends Registration> extends TableModel<T> {
 class Trigger extends Registration {
   readonly eventLevelStatus: string;
   readonly aggregatableStatus: string;
-  readonly verification?: TriggerVerification;
+  readonly verifications: TriggerVerification[];
 
   constructor(mojo: WebUITrigger) {
     super(mojo.registration);
     this.eventLevelStatus = triggerStatusToText(mojo.eventLevelStatus);
     this.aggregatableStatus = triggerStatusToText(mojo.aggregatableStatus);
-    this.verification = mojo.verification;
+    this.verifications = mojo.verifications;
   }
 }
 
@@ -412,9 +412,9 @@ class ReportVerificationColumn implements Column<Trigger> {
   }
 
   render(td: HTMLElement, row: Trigger) {
-    if (row.verification) {
-      renderDL(td, row.verification, VERIFICATION_COLS);
-    }
+      row.verifications.forEach(verification => {
+        renderDL(td, verification, VERIFICATION_COLS);
+      });
   }
 }
 
@@ -1190,7 +1190,22 @@ class AttributionInternals implements ObserverInterface {
       }
 
       const attributionSupport = document.querySelector<HTMLElement>('#attribution-support')!;
-      attributionSupport.innerText = response.attributionSupport;
+      switch (response.attributionSupport) {
+        case AttributionSupport.kWeb:
+          attributionSupport.innerText = 'web';
+          break;
+        case AttributionSupport.kWebAndOs:
+          attributionSupport.innerText = 'os, web';
+          break;
+        case AttributionSupport.kOs:
+          attributionSupport.innerText = 'os';
+          break;
+        case AttributionSupport.kNone:
+          attributionSupport.innerText = '';
+          break;
+        default:
+          assertNotReached();
+      }
     });
 
     this.updateSources();

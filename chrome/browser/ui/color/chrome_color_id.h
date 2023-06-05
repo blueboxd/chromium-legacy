@@ -25,6 +25,8 @@
   E_CPONLY(kColorAppMenuChipInkDropHover) \
   E_CPONLY(kColorAppMenuChipInkDropRipple) \
   /* Avatar colors. */ \
+  /* TODO(crbug.com/1422119): Refactor the Avatar Button colors as Profile */ \
+  /* Menu Button colors. */ \
   E_CPONLY(kColorAvatarButtonHighlightNormal) \
   E_CPONLY(kColorAvatarButtonHighlightSyncError) \
   E_CPONLY(kColorAvatarButtonHighlightSyncPaused) \
@@ -227,6 +229,8 @@
   E_CPONLY(kColorOmniboxChipBackground) \
   E_CPONLY(kColorOmniboxChipForegroundLowVisibility) \
   E_CPONLY(kColorOmniboxChipForegroundNormalVisibility) \
+  E_CPONLY(kColorOmniboxChipInkDropHover) \
+  E_CPONLY(kColorOmniboxChipInkDropRipple) \
   E_CPONLY(kColorOmniboxKeywordSelected) \
   E_CPONLY(kColorOmniboxKeywordSeparator) \
   E_CPONLY(kColorOmniboxResultsBackground) \
@@ -291,6 +295,12 @@
   E_CPONLY(kColorPipWindowHangUpButtonForeground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBackground) \
   E_CPONLY(kColorPipWindowSkipAdButtonBorder) \
+  /* Profile Menu colors. */ \
+  E_CPONLY(kColorProfileMenuHeaderBackground) \
+  E_CPONLY(kColorProfileMenuHeaderLabel) \
+  E_CPONLY(kColorProfileMenuIconButton) \
+  E_CPONLY(kColorProfileMenuIconButtonBackground) \
+  E_CPONLY(kColorProfileMenuIconButtonBackgroundHovered) \
   /* Profiles colors. */ \
   E_CPONLY(kColorProfilesReauthDialogBorder) \
   /* PWA colors. */ \
@@ -356,6 +366,7 @@
   E_CPONLY(kColorSidePanelCustomizeChromeThemeBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeThemeCheckmarkBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeThemeCheckmarkForeground) \
+  E_CPONLY(kColorSidePanelCustomizeChromeThemeSnapshotBackground) \
   E_CPONLY(kColorSidePanelCustomizeChromeWebStoreOptionBorder) \
   E_CPONLY(kColorSidePanelDivider) \
   E_CPONLY(kColorSidePanelEditFooterBorder) \

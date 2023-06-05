@@ -158,6 +158,12 @@ const char kAutofillUseRendererIDsDescription[] =
     "When enabled, Autofill logic uses unique numeric renderer IDs instead "
     "of string form and field identifiers in form filling logic.";
 
+const char kAutofillUseTwoDotsForLastFourDigitsName[] =
+    "Autofill uses two '•' instead of four";
+const char kAutofillUseTwoDotsForLastFourDigitsDescription[] =
+    "When enabled, Autofill surfaces will show two '•' characters instead of "
+    "four when displaying the last four digits of a card number";
+
 const char kBottomOmniboxSteadyStateName[] = "Bottom Omnibox (Steady)";
 const char kBottomOmniboxSteadyStateDescription[] =
     "Move the omnibox to the bottom in steady state";
@@ -247,6 +253,15 @@ const char kDefaultBrowserRefactoringPromoManagerName[] =
 const char kDefaultBrowserRefactoringPromoManagerDescription[] =
     "When enabled, the full screen default browser promos will be be included "
     "and managed in the promo manager";
+
+const char kDefaultBrowserPromoForceShowPromoName[] =
+    "Skip default browser promo triggering criteria";
+const char kDefaultBrowserPromoForceShowPromoDescription[] =
+    "When enabled, the user will be able to chose which default browser promo "
+    "will skip the triggering criteria. For this flag to effectively force a "
+    "default browser promo, either enable kPromosManagerUsesFET and "
+    "IPH_iOSPromoDefaultBrowser, or disable kPromosManagerUsesFET and enable "
+    "Force Promo (Default Browser) in the system settings experimental flags.";
 
 const char kDefaultBrowserVideoPromoName[] =
     "Enable default browser video promo";
@@ -573,6 +588,10 @@ const char kIOSSetUpListDescription[] =
 const char kIOSPasswordBottomSheetName[] = "IOS Password Manager Bottom Sheet";
 const char kIOSPasswordBottomSheetDescription[] =
     "Enables the display of the password bottom sheet on IOS.";
+
+const char kIOSPaymentsBottomSheetName[] = "IOS Payments Manager Bottom Sheet";
+const char kIOSPaymentsBottomSheetDescription[] =
+    "Enables the display of the payments bottom sheet on IOS.";
 
 const char kNewTabPageFieldTrialName[] =
     "New tab page features that target new users";

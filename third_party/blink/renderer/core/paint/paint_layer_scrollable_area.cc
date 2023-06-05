@@ -620,6 +620,11 @@ gfx::Vector2d PaintLayerScrollableArea::MaximumScrollOffsetInt() const {
   gfx::Size visible_size;
   if (this == controller.RootScrollerArea()) {
     visible_size = controller.RootScrollerVisibleArea();
+  } else if (RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()) {
+    visible_size = ToRoundedSize(
+        GetLayoutBox()
+            ->OverflowClipRect(PhysicalOffset(), kIgnoreOverlayScrollbarSize)
+            .size);
   } else {
     visible_size = ToPixelSnappedRect(GetLayoutBox()->OverflowClipRect(
                                           GetLayoutBox()->Location(),
@@ -663,9 +668,12 @@ gfx::Rect PaintLayerScrollableArea::VisibleContentRect(
   PhysicalRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
   // TODO(szager): It's not clear that Floor() is the right thing to do here;
   // what is the correct behavior for fractional scroll offsets?
-  return gfx::Rect(ToFlooredPoint(layout_content_rect.offset),
-                   ToPixelSnappedSize(layout_content_rect.size.ToLayoutSize(),
-                                      GetLayoutBox()->Location()));
+  gfx::Size size =
+      RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()
+          ? ToRoundedSize(layout_content_rect.size)
+          : ToPixelSnappedSize(layout_content_rect.size.ToLayoutSize(),
+                               GetLayoutBox()->Location());
+  return gfx::Rect(ToFlooredPoint(layout_content_rect.offset), size);
 }
 
 PhysicalRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
@@ -687,7 +695,13 @@ PhysicalRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
 }
 
 gfx::Size PaintLayerScrollableArea::ContentsSize() const {
-  LayoutPoint location = GetLayoutBox()->Location();
+  LayoutPoint location =
+      RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()
+          ? LayoutPoint()
+          : GetLayoutBox()->Location();
+  // We need to take into account of ClientLeft and ClientTop even if
+  // ScrollableAreaNoSnappingEnabled, for PaintLayerScrollableAreaTest
+  // .NotScrollsOverflowWithScrollableScrollbar.
   PhysicalOffset offset(GetLayoutBox()->ClientLeft() + location.X(),
                         GetLayoutBox()->ClientTop() + location.Y());
   // TODO(crbug.com/962299): The pixel snapping is incorrect in some cases.
@@ -995,7 +1009,7 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
 
   bool needs_horizontal_scrollbar;
   bool needs_vertical_scrollbar;
-  ComputeScrollbarExistence(kLayout, needs_horizontal_scrollbar,
+  ComputeScrollbarExistence(needs_horizontal_scrollbar,
                             needs_vertical_scrollbar);
 
   if (!is_horizontal_scrollbar_frozen && !is_vertical_scrollbar_frozen &&
@@ -1147,7 +1161,7 @@ void PaintLayerScrollableArea::DidChangeGlobalRootScroller() {
       GetLayoutBox()->GetFrame()->GetSettings()->GetViewportEnabled()) {
     bool needs_horizontal_scrollbar;
     bool needs_vertical_scrollbar;
-    ComputeScrollbarExistence(kRootScrollerChange, needs_horizontal_scrollbar,
+    ComputeScrollbarExistence(needs_horizontal_scrollbar,
                               needs_vertical_scrollbar);
     SetHasHorizontalScrollbar(needs_horizontal_scrollbar);
     SetHasVerticalScrollbar(needs_vertical_scrollbar);
@@ -1226,6 +1240,9 @@ bool PaintLayerScrollableArea::HasHorizontalOverflow() const {
                             VerticalScrollbarWidth(kIgnoreOverlayScrollbarSize);
   if (NeedsRelayout() && !HadVerticalScrollbarBeforeRelayout())
     client_width += VerticalScrollbarWidth();
+  if (RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()) {
+    return ScrollWidth().Round() > client_width.Round();
+  }
   LayoutUnit scroll_width(ScrollWidth());
   LayoutUnit box_x = GetLayoutBox()->Location().X();
   return SnapSizeToPixel(scroll_width, box_x) >
@@ -1236,6 +1253,9 @@ bool PaintLayerScrollableArea::HasVerticalOverflow() const {
   LayoutUnit client_height =
       LayoutContentRect(kIncludeScrollbars).Height() -
       HorizontalScrollbarHeight(kIgnoreOverlayScrollbarSize);
+  if (RuntimeEnabledFeatures::ScrollableAreaNoSnappingEnabled()) {
+    return ScrollHeight().Round() > client_height.Round();
+  }
   LayoutUnit scroll_height(ScrollHeight());
   LayoutUnit box_y = GetLayoutBox()->Location().Y();
   return SnapSizeToPixel(scroll_height, box_y) >
@@ -1267,7 +1287,7 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
 
   bool needs_horizontal_scrollbar;
   bool needs_vertical_scrollbar;
-  ComputeScrollbarExistence(kStyleChange, needs_horizontal_scrollbar,
+  ComputeScrollbarExistence(needs_horizontal_scrollbar,
                             needs_vertical_scrollbar, kOverflowIndependent);
 
   // Avoid some unnecessary computation if there were and will be no scrollbars.
@@ -1302,7 +1322,7 @@ void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
 
   bool needs_horizontal_scrollbar;
   bool needs_vertical_scrollbar;
-  ComputeScrollbarExistence(kOverflowRecalc, needs_horizontal_scrollbar,
+  ComputeScrollbarExistence(needs_horizontal_scrollbar,
                             needs_vertical_scrollbar);
 
   bool horizontal_scrollbar_should_change =
@@ -1522,7 +1542,6 @@ bool PaintLayerScrollableArea::NeedsScrollbarReconstruction() const {
 }
 
 void PaintLayerScrollableArea::ComputeScrollbarExistence(
-    ComputeScrollbarExistenceReason reason,
     bool& needs_horizontal_scrollbar,
     bool& needs_vertical_scrollbar,
     ComputeScrollbarExistenceOption option) const {
@@ -1535,10 +1554,6 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
       GetLayoutBox()->StyleRef().ScrollbarWidth() == EScrollbarWidth::kNone) {
     needs_horizontal_scrollbar = false;
     needs_vertical_scrollbar = false;
-    TraceComputeScrollbarExistence(
-        reason, needs_horizontal_scrollbar, needs_vertical_scrollbar, option,
-        true /* early_exit */, mojom::blink::ScrollbarMode::kAuto,
-        mojom::blink::ScrollbarMode::kAuto);
     return;
   }
 
@@ -1607,9 +1622,6 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
   // If this is being performed before layout, we want to only update scrollbar
   // existence if its based on purely style based reasons.
   if (option == kOverflowIndependent) {
-    TraceComputeScrollbarExistence(reason, needs_horizontal_scrollbar,
-                                   needs_vertical_scrollbar, option,
-                                   false /* early_exit */, h_mode, v_mode);
     return;
   }
 
@@ -1628,9 +1640,6 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
                                  VisibleContentRect(kIncludeScrollbars).width();
     }
   }
-  TraceComputeScrollbarExistence(reason, needs_horizontal_scrollbar,
-                                 needs_vertical_scrollbar, option,
-                                 false /* early_exit */, h_mode, v_mode);
 }
 
 bool PaintLayerScrollableArea::TryRemovingAutoScrollbars(
@@ -3088,32 +3097,6 @@ DOMNodeId PaintLayerScrollableArea::ScrollCornerDisplayItemClient::OwnerNodeId()
     const {
   return static_cast<const DisplayItemClient*>(scrollable_area_->GetLayoutBox())
       ->OwnerNodeId();
-}
-
-void PaintLayerScrollableArea::TraceComputeScrollbarExistence(
-    ComputeScrollbarExistenceReason reason,
-    bool needs_horizontal_scrollbar,
-    bool needs_vertical_scrollbar,
-    ComputeScrollbarExistenceOption option,
-    bool early_exit,
-    mojom::blink::ScrollbarMode h_mode,
-    mojom::blink::ScrollbarMode v_mode) const {
-  TRACE_EVENT_INSTANT(
-      TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.scrollbars"),
-      "ComputeScrollbarExistence", [&](perfetto::EventContext ctx) {
-        ctx.AddDebugAnnotation("reason", reason);
-        ctx.AddDebugAnnotation("needs_horizontal", needs_horizontal_scrollbar);
-        ctx.AddDebugAnnotation("needs_vertical", needs_vertical_scrollbar);
-        ctx.AddDebugAnnotation("option", option);
-        ctx.AddDebugAnnotation("early_exit", early_exit);
-        ctx.AddDebugAnnotation("h_mode", static_cast<int>(h_mode));
-        ctx.AddDebugAnnotation("v_mode", static_cast<int>(v_mode));
-        ctx.AddDebugAnnotation("layer_size", Size().ToString());
-        ctx.AddDebugAnnotation("overflow_rect", overflow_rect_.ToString());
-        ctx.AddDebugAnnotation("is_root", Layer()->IsRootLayer());
-        ctx.AddDebugAnnotation("is_main_frame",
-                               GetLayoutBox()->GetFrame()->IsMainFrame());
-      });
 }
 
 }  // namespace blink

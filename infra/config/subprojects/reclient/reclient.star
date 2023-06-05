@@ -71,7 +71,7 @@ def fyi_reclient_staging_builder(
 
     reclient_rewrapper_env = kwargs.pop("reclient_rewrapper_env", {})
     reclient_rewrapper_env.update({
-        "RBE_exec_timeout": "15m",
+        "RBE_exec_timeout": "2m",
     })
     return [
         ci.builder(
@@ -205,7 +205,7 @@ fyi_reclient_staging_builder(
         ),
     ),
     builderless = True,
-    cores = None,
+    cores = 12,
     os = os.MAC_DEFAULT,
     console_view_category = "mac",
     priority = 35,
@@ -345,7 +345,7 @@ fyi_reclient_test_builder(
         ),
     ),
     builderless = True,
-    cores = None,
+    cores = 12,
     os = os.MAC_DEFAULT,
     console_view_category = "ios",
     priority = 35,
@@ -371,7 +371,7 @@ fyi_reclient_staging_builder(
         ),
     ),
     builderless = True,
-    cores = None,
+    cores = 12,
     os = os.MAC_DEFAULT,
     console_view_category = "ios",
     priority = 35,
@@ -397,7 +397,7 @@ fyi_reclient_staging_builder(
         ),
     ),
     builderless = True,
-    cores = None,
+    cores = 12,
     os = os.MAC_DEFAULT,
     console_view_category = "mac",
     priority = 35,
@@ -422,7 +422,7 @@ fyi_reclient_test_builder(
         ),
     ),
     builderless = True,
-    cores = None,
+    cores = 12,
     os = os.MAC_DEFAULT,
     console_view_category = "mac",
     priority = 35,

@@ -1632,8 +1632,6 @@ component("platform") {
     sources += [
       "fonts/win/dwrite_font_format_support.cc",
       "fonts/win/dwrite_font_format_support.h",
-      "fonts/win/fallback_family_style_cache_win.cc",
-      "fonts/win/fallback_family_style_cache_win.h",
       "fonts/win/font_cache_skia_win.cc",
       "fonts/win/font_fallback_win.cc",
       "fonts/win/font_fallback_win.h",
@@ -1741,7 +1739,7 @@ component("platform") {
   ]
 
   if (is_android) {
-    deps += [ "//third_party/android_ndk:cpu_features" ]
+    deps += [ "//third_party/cpu_features:ndk_compat" ]
     sources += [
       "theme/web_theme_engine_android.cc",
       "theme/web_theme_engine_android.h",
@@ -2044,6 +2042,7 @@ source_set("blink_platform_unittests_sources") {
     "fonts/font_palette_test.cc",
     "fonts/font_platform_data_test.cc",
     "fonts/font_selection_types_test.cc",
+    "fonts/font_size_adjust_test.cc",
     "fonts/font_test.cc",
     "fonts/font_test_utilities.cc",
     "fonts/generic_font_family_settings_test.cc",
@@ -2247,10 +2246,7 @@ source_set("blink_platform_unittests_sources") {
   if (is_android) {
     sources += [ "fonts/android/font_cache_android_test.cc" ]
   } else if (is_win) {
-    sources += [
-      "fonts/win/fallback_lru_cache_win_test.cc",
-      "text/locale_win_test.cc",
-    ]
+    sources += [ "text/locale_win_test.cc" ]
   } else if (is_mac) {
     sources += [
       "fonts/mac/font_matcher_mac_test.mm",

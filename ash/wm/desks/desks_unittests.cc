@@ -51,6 +51,7 @@
 #include "ash/wm/desks/desk_animation_base.h"
 #include "ash/wm/desks/desk_bar_controller.h"
 #include "ash/wm/desks/desk_bar_view_base.h"
+#include "ash/wm/desks/desk_button/desk_button.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
@@ -88,6 +89,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/functional/callback_forward.h"
+#include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
@@ -285,10 +287,11 @@ class TestObserver : public DesksController::Observer {
   // DesksController::Observer:
   void OnDeskAdded(const Desk* desk) override {
     const size_t new_desk_index = DesksController::Get()->GetDeskIndex(desk);
-    if (new_desk_index > desks_.size())
+    if (new_desk_index > desks_.size()) {
       desks_.emplace_back(desk);
-    else
+    } else {
       desks_.insert(desks_.begin() + new_desk_index, desk);
+    }
     EXPECT_TRUE(DesksController::Get()->AreDesksBeingModified());
   }
   void OnDeskRemoved(const Desk* desk) override {
@@ -404,23 +407,10 @@ class DesksTest : public AshTestBase,
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kUseFirstDisplayAsInternal);
 
-    std::vector<base::test::FeatureRef> enabled_features;
-    std::vector<base::test::FeatureRef> disabled_features;
-
-    enabled_features.push_back(features::kDeskButton);
-
-    if (GetParam().use_16_desks) {
-      enabled_features.push_back(features::kFeatureManagement16Desks);
-    } else {
-      disabled_features.push_back(features::kFeatureManagement16Desks);
-    }
-
-    if (GetParam().enable_jellyroll) {
-      enabled_features.push_back(chromeos::features::kJellyroll);
-    } else {
-      disabled_features.push_back(chromeos::features::kJellyroll);
-    }
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    scoped_feature_list_.InitWithFeatureStates(
+        {{features::kDeskButton, true},
+         {features::kFeatureManagement16Desks, GetParam().use_16_desks},
+         {chromeos::features::kJellyroll, GetParam().enable_jellyroll}});
 
     AshTestBase::SetUp();
     SetVirtualKeyboardEnabled(true);
@@ -630,8 +620,9 @@ TEST_P(DesksTest, DesksCreationAndRemoval) {
   EXPECT_TRUE(controller->CanCreateDesks());
 
   // Add desks until no longer possible.
-  while (controller->CanCreateDesks())
+  while (controller->CanCreateDesks()) {
     NewDesk();
+  }
 
   // Expect we've reached the max number of desks, and we've been notified only
   // with the newly created desks.
@@ -641,8 +632,9 @@ TEST_P(DesksTest, DesksCreationAndRemoval) {
 
   // Remove all desks until no longer possible, and expect that there's always
   // one default desk remaining.
-  while (controller->CanRemoveDesks())
+  while (controller->CanRemoveDesks()) {
     RemoveDesk(observer.desks().back());
+  }
 
   EXPECT_EQ(1u, controller->desks().size());
   EXPECT_FALSE(controller->CanRemoveDesks());
@@ -2828,8 +2820,9 @@ class DesksBarVisibilityObserver : public aura::WindowObserver {
   void Wait() { run_loop_.Run(); }
 
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
-    if (visible && window->GetId() == kShellWindowId_DesksBarWindow)
+    if (visible && window->GetId() == kShellWindowId_DesksBarWindow) {
       run_loop_.Quit();
+    }
   }
 
  private:
@@ -2904,8 +2897,9 @@ void VerifyDesksRestoreData(PrefService* user_prefs,
   ASSERT_EQ(desks_names.size(), desks_restore_names.size());
 
   size_t index = 0;
-  for (const auto& value : desks_restore_names)
+  for (const auto& value : desks_restore_names) {
     EXPECT_EQ(desks_names[index++], value.GetString());
+  }
 }
 
 // Returns the GUIDs in the given `user_prefs`.
@@ -3214,8 +3208,10 @@ class WindowVisibilityObserver : public aura::WindowObserver {
 
   // aura::WindowObserver:
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
-    if (observer_.IsObservingSource(window) && on_visibility_changed_callback_)
+    if (observer_.IsObservingSource(window) &&
+        on_visibility_changed_callback_) {
       std::move(on_visibility_changed_callback_).Run();
+    }
   }
 
   void OnWindowDestroying(aura::Window* window) override {
@@ -4032,8 +4028,9 @@ TEST_P(DesksTest, AutohiddenShelfAnimatesAfterDeskSwitch) {
   EXPECT_EQ(shelf_widget->GetWindowBoundsInScreen(), shown_shelf_bounds);
 
   // Let's wait until the shelf animates to a fully shown state.
-  while (shelf_widget->GetLayer()->transform() != gfx::Transform())
+  while (shelf_widget->GetLayer()->transform() != gfx::Transform()) {
     WaitForMilliseconds(200);
+  }
 
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 }
@@ -4219,13 +4216,16 @@ TEST_P(DesksTest, RemoveDeskPreservesOverviewClipping) {
 struct PerDeskZOrderTestCase {
   std::string test_name;
 
-  // Numerical identifiers of windows on desk 1 and 2. Windows will be stacked
-  // in the order they appear, with .back() at top.
-  std::vector<int> desk_1_windows;
-  std::vector<int> desk_2_windows;
+  // True when we want to run the test with multiple displays.
+  bool multi_display;
+
+  // Numerical identifiers of windows on desk 1 and 2, grouped by root window.
+  // Windows will be stacked in the order they appear, with .back() at top.
+  std::vector<std::vector<int>> desk_1_windows;
+  std::vector<std::vector<int>> desk_2_windows;
 
   // Numerical identifiers of all-desk windows. Entries must match windows in
-  // desk_1_windows.
+  // `desk_1_windows`.
   std::set<int> adw_windows;
 
   // Windows to activate in order.
@@ -4233,9 +4233,9 @@ struct PerDeskZOrderTestCase {
 
   // Once windows have been created and (some) promoted to all-desk, we start
   // the test by switching to desk 2. This is the list of windows that we expect
-  // to find on desk 1/2.
-  std::vector<int> expected_desk_1_windows_before;
-  std::vector<int> expected_desk_2_windows_before;
+  // to find on desk 1/2, grouped by root window.
+  std::vector<std::vector<int>> expected_desk_1_windows_before;
+  std::vector<std::vector<int>> expected_desk_2_windows_before;
 
   // We can then move some set of windows from desk 2 to desk 1. This must be a
   // subset of `desk_2_windows` and cannot contain entries from `adw_windows`
@@ -4247,240 +4247,586 @@ struct PerDeskZOrderTestCase {
   // Windows to close while on the second desk. Can include any windows.
   std::vector<int> close_windows;
 
-  // We then switch back to desk 1 and expect to find windows in this order.
-  std::vector<int> expected_desk_1_windows_after;
-  std::vector<int> expected_desk_2_windows_after;
+  // We then switch back to desk 1 and expect to find windows in this order,
+  // grouped by root window.
+  std::vector<std::vector<int>> expected_desk_1_windows_after;
+  std::vector<std::vector<int>> expected_desk_2_windows_after;
+
+  // This is the window we expect to be active after we switch back to desk 1.
+  int expected_desk_1_final_active_window;
 };
 
-TEST_P(DesksTest, PerDeskZOrder) {
-  const PerDeskZOrderTestCase tests[] = {
+class DesksPerDeskZOrderTest : public AshTestBase {
+ public:
+  DesksPerDeskZOrderTest() = default;
+  ~DesksPerDeskZOrderTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kEnablePerDeskZOrder);
+
+    AshTestBase::SetUp();
+
+    // Start the test with two desks.
+    NewDesk();
+  }
+
+  void TearDown() override {
+    AshTestBase::TearDown();
+    scoped_feature_list_.Reset();
+  }
+
+  void RunTests(const std::vector<const PerDeskZOrderTestCase>& tests) {
+    auto* controller = DesksController::Get();
+    auto* desk_1 = controller->desks()[0].get();
+    auto* desk_2 = controller->desks()[1].get();
+
+    for (const auto& test : tests) {
+      SCOPED_TRACE(test.test_name);
+
+      if (test.multi_display) {
+        UpdateDisplay("700x600,400x500");
+      } else {
+        UpdateDisplay("700x600");
+      }
+
+      std::map<int, std::unique_ptr<aura::Window>> id_to_window;
+      std::map<aura::Window*, int> window_to_id;
+
+      auto populate_desk =
+          [&](Desk* desk, const std::vector<std::vector<int>>& desk_windows) {
+            SCOPED_TRACE("Create windows for " +
+                         base::UTF16ToUTF8(desk->name()));
+
+            // Verify we are on the correct desk.
+            ASSERT_TRUE(desk->is_active());
+
+            int offset = 0;
+            for (const auto& window_ids : desk_windows) {
+              for (int id : window_ids) {
+                auto window =
+                    CreateAppWindow(gfx::Rect(offset + id, 0 + id, 100, 100));
+                window_to_id[window.get()] = id;
+                id_to_window[id] = std::move(window);
+              }
+              // Increment the offset to ensure that the window will be created
+              // on the next root window.
+              offset += 700;
+            }
+          };
+
+      // Populate each of the desks with the desired windows.
+      populate_desk(desk_1, test.desk_1_windows);
+      ActivateDesk(desk_2);
+      populate_desk(desk_2, test.desk_2_windows);
+      ActivateDesk(desk_1);
+
+      // Mark windows as awd.
+      for (int id : test.adw_windows) {
+        views::Widget::GetWidgetForNativeWindow(id_to_window.at(id).get())
+            ->SetVisibleOnAllWorkspaces(true);
+      }
+
+      for (int id : test.activate_windows) {
+        wm::ActivateWindow(id_to_window.at(id).get());
+      }
+
+      // Verifies that the desk preview for the given root window is consistent
+      // with the expected per-desk Z-order. Since the layers are mirrored
+      // instead of the same instances, we verify by layer bounds here.
+      auto verify_desk_preview_mirrored_layer_tree =
+          [&](Desk* desk, aura::Window* root,
+              const std::vector<int>& expected_windows,
+              const std::string& debug_info) {
+            SCOPED_TRACE("Verify " + base::UTF16ToUTF8(desk->name()) + " " +
+                         root->GetName() + " " + debug_info);
+            ToggleOverview();
+
+            // Retrieves the mirrored layers `mirrored_layers` of application
+            // windows for `desk`. The root of `layer_tree_owner` is a layer
+            // that has only one child, and the only child acts as the parent of
+            // all the mirrored layers of application windows.
+            const ui::LayerTreeOwner* layer_tree_owner =
+                DesksTestApi::GetMirroredContentsLayerTreeForRootAndDesk(root,
+                                                                         desk);
+            const std::vector<ui::Layer*> mirrored_layers =
+                layer_tree_owner->root()->children().front()->children();
+
+            // Tests that `mirrored_layers` and `expected_windows` are sync'ed.
+            ASSERT_EQ(expected_windows.size(), mirrored_layers.size());
+            for (size_t i = 0; i < expected_windows.size(); i++) {
+              EXPECT_EQ(id_to_window[expected_windows[i]]->layer()->bounds(),
+                        mirrored_layers[i]->bounds());
+            }
+
+            ToggleOverview();
+          };
+
+      // Verifies that windows on the given desk and root window are found in
+      // the expected order. Any windows that have not been created by the test
+      // will be ignored.
+      auto verify_windows = [&](Desk* desk, aura::Window* root,
+                                const std::vector<int>& expected_windows,
+                                const std::string& debug_info) {
+        SCOPED_TRACE("Verify " + base::UTF16ToUTF8(desk->name()) + " " +
+                     root->GetName() + " " + debug_info);
+        aura::Window* container = desk->GetDeskContainerForRoot(root);
+
+        // Collect any test windows present on the desk.
+        std::vector<int> actual_windows;
+        for (aura::Window* child : container->children()) {
+          auto it = window_to_id.find(child);
+          if (it != window_to_id.end()) {
+            actual_windows.push_back(it->second);
+          }
+        }
+
+        ASSERT_EQ(expected_windows.size(), actual_windows.size());
+        EXPECT_EQ(expected_windows, actual_windows);
+      };
+
+      auto root_windows = Shell::GetAllRootWindows();
+      ASSERT_EQ(test.multi_display ? 2u : 1u, root_windows.size());
+
+      // Now we are ready to actually execute the test.
+      ActivateDesk(desk_2);
+      for (size_t i = 0; i < root_windows.size(); i++) {
+        verify_windows(desk_2, root_windows[i],
+                       test.expected_desk_2_windows_before[i], "before");
+        verify_desk_preview_mirrored_layer_tree(
+            desk_1, root_windows[i], test.expected_desk_1_windows_before[i],
+            "before");
+        verify_desk_preview_mirrored_layer_tree(
+            desk_2, root_windows[i], test.expected_desk_2_windows_before[i],
+            "before");
+      }
+
+      // Move specified windows to desk 1.
+      for (int id : test.move_windows) {
+        const auto& window = id_to_window.at(id);
+        wm::ActivateWindow(window.get());
+        ASSERT_TRUE(controller->MoveWindowFromActiveDeskTo(
+            window.get(), desk_1, window.get()->GetRootWindow(),
+            DesksMoveWindowFromActiveDeskSource::kShortcut));
+      }
+
+      // Close specified windows.
+      for (int id : test.close_windows) {
+        auto it = id_to_window.find(id);
+        ASSERT_NE(it, id_to_window.end()) << "Test setup error";
+        window_to_id.erase(it->second.get());
+        id_to_window.erase(it);
+      }
+
+      ActivateDesk(desk_1);
+      for (size_t i = 0; i < root_windows.size(); i++) {
+        verify_windows(desk_1, root_windows[i],
+                       test.expected_desk_1_windows_after[i], "after");
+        verify_desk_preview_mirrored_layer_tree(
+            desk_1, root_windows[i], test.expected_desk_1_windows_after[i],
+            "after");
+        verify_desk_preview_mirrored_layer_tree(
+            desk_2, root_windows[i], test.expected_desk_2_windows_after[i],
+            "after");
+      }
+
+      // Verify that the correct window is activated. This is particularly
+      // important for when we have all desk windows and multiple displays.
+      // Please refer to b/274110274.
+      EXPECT_EQ(id_to_window[test.expected_desk_1_final_active_window].get(),
+                window_util::GetActiveWindow());
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(DesksPerDeskZOrderTest, SingleDisplay) {
+  RunTests(std::vector<const PerDeskZOrderTestCase>{
       {.test_name = "Single adw window 1",
-       .desk_1_windows = {1},
-       .desk_2_windows = {},
+       .desk_1_windows = {{1}},
+       .desk_2_windows = {{}},
        .adw_windows = {1},
-       .expected_desk_1_windows_before = {1},
-       .expected_desk_2_windows_before = {1},
+       .expected_desk_1_windows_before = {{1}},
+       .expected_desk_2_windows_before = {{1}},
        .move_windows = {},
        .close_windows = {},
-       .expected_desk_1_windows_after = {1},
-       .expected_desk_2_windows_after = {1}},
+       .expected_desk_1_windows_after = {{1}},
+       .expected_desk_2_windows_after = {{1}},
+       .expected_desk_1_final_active_window = 1},
       {.test_name = "Single adw window 2",
-       .desk_1_windows = {1, 2, 3},
-       .desk_2_windows = {5, 4},
+       .desk_1_windows = {{1, 2, 3}},
+       .desk_2_windows = {{5, 4}},
        .adw_windows = {1},
-       .expected_desk_1_windows_before = {1, 2, 3},
-       .expected_desk_2_windows_before = {5, 4, 1},
+       .expected_desk_1_windows_before = {{1, 2, 3}},
+       .expected_desk_2_windows_before = {{5, 4, 1}},
        .move_windows = {},
        .close_windows = {},
-       .expected_desk_1_windows_after = {1, 2, 3},
-       .expected_desk_2_windows_after = {5, 4, 1}},
+       .expected_desk_1_windows_after = {{1, 2, 3}},
+       .expected_desk_2_windows_after = {{5, 4, 1}},
+       .expected_desk_1_final_active_window = 3},
       {.test_name = "Single adw window 3",
-       .desk_1_windows = {1, 2, 3},
-       .desk_2_windows = {5, 4},
+       .desk_1_windows = {{1, 2, 3}},
+       .desk_2_windows = {{5, 4}},
        .adw_windows = {1},
-       .expected_desk_1_windows_before = {1, 2, 3},
-       .expected_desk_2_windows_before = {5, 4, 1},
+       .expected_desk_1_windows_before = {{1, 2, 3}},
+       .expected_desk_2_windows_before = {{5, 4, 1}},
        .move_windows = {5},
        .close_windows = {},
-       .expected_desk_1_windows_after = {1, 2, 3, 5},
-       .expected_desk_2_windows_after = {4, 1}},
+       .expected_desk_1_windows_after = {{1, 2, 3, 5}},
+       .expected_desk_2_windows_after = {{4, 1}},
+       .expected_desk_1_final_active_window = 5},
       {.test_name = "Single adw window 4",
-       .desk_1_windows = {1, 2, 3},
-       .desk_2_windows = {5, 4},
+       .desk_1_windows = {{1, 2, 3}},
+       .desk_2_windows = {{5, 4}},
        .adw_windows = {2},
-       .expected_desk_1_windows_before = {1, 2, 3},
-       .expected_desk_2_windows_before = {5, 4, 2},
+       .expected_desk_1_windows_before = {{1, 2, 3}},
+       .expected_desk_2_windows_before = {{5, 4, 2}},
        .move_windows = {5},
        .close_windows = {1},
-       .expected_desk_1_windows_after = {2, 3, 5},
-       .expected_desk_2_windows_after = {4, 2}},
+       .expected_desk_1_windows_after = {{2, 3, 5}},
+       .expected_desk_2_windows_after = {{4, 2}},
+       .expected_desk_1_final_active_window = 5},
       {.test_name = "Single adw window 5",
-       .desk_1_windows = {1, 2, 3, 4, 5},
-       .desk_2_windows = {6},
+       .desk_1_windows = {{1, 2, 3, 4, 5}},
+       .desk_2_windows = {{6}},
        .adw_windows = {3},
-       .expected_desk_1_windows_before = {1, 2, 3, 4, 5},
-       .expected_desk_2_windows_before = {6, 3},
+       .expected_desk_1_windows_before = {{1, 2, 3, 4, 5}},
+       .expected_desk_2_windows_before = {{6, 3}},
        .move_windows = {6},
        .close_windows = {1, 2},
-       .expected_desk_1_windows_after = {3, 4, 5, 6},
-       .expected_desk_2_windows_after = {3}},
+       .expected_desk_1_windows_after = {{3, 4, 5, 6}},
+       .expected_desk_2_windows_after = {{3}},
+       .expected_desk_1_final_active_window = 6},
       {.test_name = "Multiple adw windows 1",
-       .desk_1_windows = {1, 2, 3, 4, 5},
-       .desk_2_windows = {6, 7},
+       .desk_1_windows = {{1, 2, 3, 4, 5}},
+       .desk_2_windows = {{6, 7}},
        .adw_windows = {2, 4},
-       .expected_desk_1_windows_before = {1, 2, 3, 4, 5},
-       .expected_desk_2_windows_before = {6, 7, 2, 4},
+       .expected_desk_1_windows_before = {{1, 2, 3, 4, 5}},
+       .expected_desk_2_windows_before = {{6, 7, 2, 4}},
        .move_windows = {},
        .close_windows = {},
-       .expected_desk_1_windows_after = {1, 2, 3, 4, 5},
-       .expected_desk_2_windows_after = {6, 7, 2, 4}},
+       .expected_desk_1_windows_after = {{1, 2, 3, 4, 5}},
+       .expected_desk_2_windows_after = {{6, 7, 2, 4}},
+       .expected_desk_1_final_active_window = 5},
       {.test_name = "Multiple adw windows 2",
-       .desk_1_windows = {1, 2, 3, 4, 5},
-       .desk_2_windows = {6, 7},
+       .desk_1_windows = {{1, 2, 3, 4, 5}},
+       .desk_2_windows = {{6, 7}},
        .adw_windows = {1, 3, 5},
-       .expected_desk_1_windows_before = {1, 2, 3, 4, 5},
-       .expected_desk_2_windows_before = {6, 7, 1, 3, 5},
+       .expected_desk_1_windows_before = {{1, 2, 3, 4, 5}},
+       .expected_desk_2_windows_before = {{6, 7, 1, 3, 5}},
        .move_windows = {},
        .close_windows = {},
-       .expected_desk_1_windows_after = {1, 2, 3, 4, 5},
-       .expected_desk_2_windows_after = {6, 7, 1, 3, 5}},
+       .expected_desk_1_windows_after = {{1, 2, 3, 4, 5}},
+       .expected_desk_2_windows_after = {{6, 7, 1, 3, 5}},
+       .expected_desk_1_final_active_window = 5},
       {.test_name = "Multiple adw windows 3",
-       .desk_1_windows = {1, 2},
-       .desk_2_windows = {},
+       .desk_1_windows = {{1, 2}},
+       .desk_2_windows = {{}},
        .adw_windows = {1, 2},
-       .expected_desk_1_windows_before = {1, 2},
-       .expected_desk_2_windows_before = {1, 2},
+       .expected_desk_1_windows_before = {{1, 2}},
+       .expected_desk_2_windows_before = {{1, 2}},
        .move_windows = {},
        .close_windows = {},
-       .expected_desk_1_windows_after = {1, 2},
-       .expected_desk_2_windows_after = {1, 2}},
+       .expected_desk_1_windows_after = {{1, 2}},
+       .expected_desk_2_windows_after = {{1, 2}},
+       .expected_desk_1_final_active_window = 2},
       {.test_name = "Multiple adw windows 4",
-       .desk_1_windows = {1, 2, 3, 4},
-       .desk_2_windows = {},
+       .desk_1_windows = {{1, 2, 3, 4}},
+       .desk_2_windows = {{}},
        .adw_windows = {1, 4},
        .activate_windows = {4, 3, 2, 1},
-       .expected_desk_1_windows_before = {4, 3, 2, 1},
-       .expected_desk_2_windows_before = {1, 4},
+       .expected_desk_1_windows_before = {{4, 3, 2, 1}},
+       .expected_desk_2_windows_before = {{1, 4}},
        .move_windows = {},
        .close_windows = {},
-       .expected_desk_1_windows_after = {4, 3, 2, 1},
-       .expected_desk_2_windows_after = {1, 4}},
+       .expected_desk_1_windows_after = {{4, 3, 2, 1}},
+       .expected_desk_2_windows_after = {{1, 4}},
+       .expected_desk_1_final_active_window = 1},
       {.test_name = "Multiple adw windows 5",
-       .desk_1_windows = {1, 2, 3, 4},
-       .desk_2_windows = {5},
+       .desk_1_windows = {{1, 2, 3, 4}},
+       .desk_2_windows = {{5}},
        .adw_windows = {1, 3},
        .activate_windows = {1, 2, 3, 4},
-       .expected_desk_1_windows_before = {1, 2, 3, 4},
-       .expected_desk_2_windows_before = {5, 1, 3},
+       .expected_desk_1_windows_before = {{1, 2, 3, 4}},
+       .expected_desk_2_windows_before = {{5, 1, 3}},
        .move_windows = {},
        .close_windows = {},
-       .expected_desk_1_windows_after = {1, 2, 3, 4},
-       .expected_desk_2_windows_after = {5, 1, 3}},
-  };
+       .expected_desk_1_windows_after = {{1, 2, 3, 4}},
+       .expected_desk_2_windows_after = {{5, 1, 3}},
+       .expected_desk_1_final_active_window = 4},
+  });
+}
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatureState(features::kEnablePerDeskZOrder,
-                                           true);
+TEST_F(DesksPerDeskZOrderTest, MultiDisplaySingleADW) {
+  RunTests(std::vector<const PerDeskZOrderTestCase>{
+      {.test_name = "Multiple displays single adw 1",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1},
+       .activate_windows = {1, 2, 3, 4},
+       .expected_desk_1_windows_before = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_before = {{1}, {5}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_after = {{1}, {5}},
+       .expected_desk_1_final_active_window = 4},
+      {.test_name = "Multiple displays single adw 2",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1},
+       .activate_windows = {1, 2, 3, 4},
+       .expected_desk_1_windows_before = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_before = {{1}, {5}},
+       .move_windows = {},
+       .close_windows = {1},
+       .expected_desk_1_windows_after = {{}, {2, 3, 4}},
+       .expected_desk_2_windows_after = {{}, {5}},
+       .expected_desk_1_final_active_window = 4},
+      {.test_name = "Multiple displays single adw 3",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_before = {{1}, {5}},
+       .move_windows = {},
+       .close_windows = {1},
+       .expected_desk_1_windows_after = {{}, {4, 3, 2}},
+       .expected_desk_2_windows_after = {{}, {5}},
+       .expected_desk_1_final_active_window = 2},
+      {.test_name = "Multiple displays single adw 4",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_before = {{1}, {5}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_after = {{1}, {5}},
+       .expected_desk_1_final_active_window = 1},
+      {.test_name = "Multiple displays single adw 5",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {4},
+       .activate_windows = {1, 2, 4, 3},
+       .expected_desk_1_windows_before = {{1}, {2, 4, 3}},
+       .expected_desk_2_windows_before = {{}, {5, 4}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {2, 4, 3}},
+       .expected_desk_2_windows_after = {{}, {5, 4}},
+       .expected_desk_1_final_active_window = 3},
+      {.test_name = "Multiple displays single adw 6",
+       .multi_display = true,
+       .desk_1_windows = {{1, 2}, {3, 4}},
+       .desk_2_windows = {{5}, {6}},
+       .adw_windows = {3},
+       .activate_windows = {1, 2, 3, 4},
+       .expected_desk_1_windows_before = {{1, 2}, {3, 4}},
+       .expected_desk_2_windows_before = {{5}, {6, 3}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1, 2}, {3, 4}},
+       .expected_desk_2_windows_after = {{5}, {6, 3}},
+       .expected_desk_1_final_active_window = 4},
+      {.test_name = "Multiple displays single adw 7",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_before = {{1}, {5}},
+       .move_windows = {5},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {4, 3, 2, 5}},
+       .expected_desk_2_windows_after = {{1}, {}},
+       .expected_desk_1_final_active_window = 5},
+      {.test_name = "Multiple displays single adw 8",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{5}, {}},
+       .adw_windows = {1},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_before = {{5, 1}, {}},
+       .move_windows = {5},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1, 5}, {4, 3, 2}},
+       .expected_desk_2_windows_after = {{1}, {}},
+       .expected_desk_1_final_active_window = 5},
+  });
+}
 
-  NewDesk();
-  auto* controller = DesksController::Get();
-  auto* desk_1 = controller->desks()[0].get();
-  auto* desk_2 = controller->desks()[1].get();
-
-  for (const auto& test : tests) {
-    SCOPED_TRACE(test.test_name);
-
-    std::map<int, std::unique_ptr<aura::Window>> id_to_window;
-    std::map<aura::Window*, int> window_to_id;
-
-    for (auto* window_ids : {&test.desk_1_windows, &test.desk_2_windows}) {
-      for (int id : *window_ids) {
-        auto window = CreateAppWindow(gfx::Rect(0 + id, 0 + id, 100, 100));
-        window_to_id[window.get()] = id;
-        id_to_window[id] = std::move(window);
-      }
-
-      if (!desk_2->is_active())
-        ActivateDesk(desk_2);
-    }
-    ActivateDesk(desk_1);
-
-    // Mark windows as awd.
-    for (int id : test.adw_windows) {
-      views::Widget::GetWidgetForNativeWindow(id_to_window.at(id).get())
-          ->SetVisibleOnAllWorkspaces(true);
-    }
-
-    for (int id : test.activate_windows) {
-      wm::ActivateWindow(id_to_window.at(id).get());
-    }
-
-    aura::Window* root = window_to_id.begin()->first->GetRootWindow();
-
-    // Verifies that the desk preview is consistent with the expected per-desk
-    // Z-order. Since the layers are mirrored instead of the same instances, we
-    // verify by layer bounds here.
-    auto verify_desk_preview_mirrored_layer_tree =
-        [&](Desk* desk, const std::vector<int>& expected_windows,
-            const std::string& debug_info) {
-          SCOPED_TRACE("Verify " + base::UTF16ToUTF8(desk->name()) + " " +
-                       debug_info);
-          ToggleOverview();
-
-          // Retrieves the mirrored layers `mirrored_layers` of application
-          // windows for `desk`. The root of `layer_tree_owner` is a layer that
-          // has only one child, and the only child acts as the parent of all
-          // the mirrored layers of application windows.
-          const ui::LayerTreeOwner* layer_tree_owner =
-              DesksTestApi::GetMirroredContentsLayerTreeForRootAndDesk(root,
-                                                                       desk);
-          const std::vector<ui::Layer*> mirrored_layers =
-              layer_tree_owner->root()->children().front()->children();
-
-          // Tests that `mirrored_layers` and `expected_windows` are sync'ed.
-          ASSERT_EQ(expected_windows.size(), mirrored_layers.size());
-          for (size_t i = 0; i < expected_windows.size(); i++) {
-            EXPECT_EQ(id_to_window[expected_windows[i]]->layer()->bounds(),
-                      mirrored_layers[i]->bounds());
-          }
-
-          ToggleOverview();
-        };
-
-    // Verifies that windows on the given desk are found in the expected
-    // order. Any windows that have not been created by the test will be
-    // ignored.
-    auto verify_windows = [&](Desk* desk,
-                              const std::vector<int>& expected_windows,
-                              const std::string& debug_info) {
-      SCOPED_TRACE("Verify " + base::UTF16ToUTF8(desk->name()) + " " +
-                   debug_info);
-      aura::Window* container = desk->GetDeskContainerForRoot(root);
-
-      // Collect any test windows present on the desk.
-      std::vector<int> actual_windows;
-      for (aura::Window* child : container->children()) {
-        auto it = window_to_id.find(child);
-        if (it != window_to_id.end())
-          actual_windows.push_back(it->second);
-      }
-
-      ASSERT_EQ(expected_windows.size(), actual_windows.size());
-      EXPECT_EQ(expected_windows, actual_windows);
-    };
-
-    // Now we are ready to actually execute the test.
-    ActivateDesk(desk_2);
-    verify_windows(desk_2, test.expected_desk_2_windows_before, "before");
-    verify_desk_preview_mirrored_layer_tree(
-        desk_1, test.expected_desk_1_windows_before, "before");
-    verify_desk_preview_mirrored_layer_tree(
-        desk_2, test.expected_desk_2_windows_before, "before");
-
-    // Move specified windows to desk 1.
-    for (int id : test.move_windows) {
-      const auto& window = id_to_window.at(id);
-      wm::ActivateWindow(window.get());
-      ASSERT_TRUE(controller->MoveWindowFromActiveDeskTo(
-          window.get(), desk_1, window.get()->GetRootWindow(),
-          DesksMoveWindowFromActiveDeskSource::kShortcut));
-    }
-
-    // Close specified windows.
-    for (int id : test.close_windows) {
-      auto it = id_to_window.find(id);
-      ASSERT_NE(it, id_to_window.end()) << "Test setup error";
-      window_to_id.erase(it->second.get());
-      id_to_window.erase(it);
-    }
-
-    ActivateDesk(desk_1);
-    verify_windows(desk_1, test.expected_desk_1_windows_after, "after");
-    verify_desk_preview_mirrored_layer_tree(
-        desk_1, test.expected_desk_1_windows_after, "after");
-    verify_desk_preview_mirrored_layer_tree(
-        desk_2, test.expected_desk_2_windows_after, "after");
-  }
+TEST_F(DesksPerDeskZOrderTest, MultiDisplayMultipleADW) {
+  RunTests(std::vector<const PerDeskZOrderTestCase>{
+      {.test_name = "Multiple displays multiple adw 1",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1, 4},
+       .activate_windows = {1, 2, 3, 4},
+       .expected_desk_1_windows_before = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_before = {{1}, {5, 4}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_after = {{1}, {5, 4}},
+       .expected_desk_1_final_active_window = 4},
+      {.test_name = "Multiple displays multiple adw 2",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1, 4},
+       .activate_windows = {2, 3, 4, 1},
+       .expected_desk_1_windows_before = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_before = {{1}, {5, 4}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_after = {{1}, {5, 4}},
+       .expected_desk_1_final_active_window = 1},
+      {.test_name = "Multiple displays multiple adw 3",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1, 4},
+       .activate_windows = {1, 2, 3, 4},
+       .expected_desk_1_windows_before = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_before = {{1}, {5, 4}},
+       .move_windows = {},
+       .close_windows = {1},
+       .expected_desk_1_windows_after = {{}, {2, 3, 4}},
+       .expected_desk_2_windows_after = {{}, {5, 4}},
+       .expected_desk_1_final_active_window = 4},
+      {.test_name = "Multiple displays multiple adw 4",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1, 4},
+       .activate_windows = {2, 3, 4, 1},
+       .expected_desk_1_windows_before = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_before = {{1}, {5, 4}},
+       .move_windows = {},
+       .close_windows = {1},
+       .expected_desk_1_windows_after = {{}, {2, 3, 4}},
+       .expected_desk_2_windows_after = {{}, {5, 4}},
+       .expected_desk_1_final_active_window = 4},
+      {.test_name = "Multiple displays multiple adw 5",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1, 4},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_before = {{1}, {5, 4}},
+       .move_windows = {},
+       .close_windows = {4},
+       .expected_desk_1_windows_after = {{1}, {3, 2}},
+       .expected_desk_2_windows_after = {{1}, {5}},
+       .expected_desk_1_final_active_window = 1},
+      {.test_name = "Multiple displays multiple adw 6",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1, 4},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_before = {{1}, {5, 4}},
+       .move_windows = {5},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {4, 3, 2, 5}},
+       .expected_desk_2_windows_after = {{1}, {4}},
+       .expected_desk_1_final_active_window = 5},
+      {.test_name = "Multiple displays multiple adw 7",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1, 4},
+       .activate_windows = {1, 2, 3, 4},
+       .expected_desk_1_windows_before = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_before = {{1}, {5, 4}},
+       .move_windows = {5},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {2, 3, 4, 5}},
+       .expected_desk_2_windows_after = {{1}, {4}},
+       .expected_desk_1_final_active_window = 5},
+      {.test_name = "Multiple displays multiple adw 8",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{5}, {}},
+       .adw_windows = {1, 4},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_before = {{5, 1}, {4}},
+       .move_windows = {5},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1, 5}, {4, 3, 2}},
+       .expected_desk_2_windows_after = {{1}, {4}},
+       .expected_desk_1_final_active_window = 5},
+      {.test_name = "Multiple displays multiple adw 9",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{5}, {}},
+       .adw_windows = {1, 4},
+       .activate_windows = {1, 2, 3, 4},
+       .expected_desk_1_windows_before = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_before = {{5, 1}, {4}},
+       .move_windows = {5},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1, 5}, {2, 3, 4}},
+       .expected_desk_2_windows_after = {{1}, {4}},
+       .expected_desk_1_final_active_window = 5},
+      {.test_name = "Multiple displays multiple adw on same root 1",
+       .multi_display = true,
+       .desk_1_windows = {{1, 2}, {3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1, 2},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{2, 1}, {4, 3}},
+       .expected_desk_2_windows_before = {{1, 2}, {5}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{2, 1}, {4, 3}},
+       .expected_desk_2_windows_after = {{1, 2}, {5}},
+       .expected_desk_1_final_active_window = 1},
+      {.test_name = "Multiple displays multiple adw on same root 2",
+       .multi_display = true,
+       .desk_1_windows = {{1, 2}, {3, 4}},
+       .desk_2_windows = {{5}, {}},
+       .adw_windows = {1, 2},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{2, 1}, {4, 3}},
+       .expected_desk_2_windows_before = {{5, 1, 2}, {}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{2, 1}, {4, 3}},
+       .expected_desk_2_windows_after = {{5, 1, 2}, {}},
+       .expected_desk_1_final_active_window = 1},
+      {.test_name = "Multiple displays multiple adw on same root 3",
+       .multi_display = true,
+       .desk_1_windows = {{1, 2}, {3, 4}},
+       .desk_2_windows = {{}, {5}},
+       .adw_windows = {1, 2},
+       .activate_windows = {4, 3, 2, 1},
+       .expected_desk_1_windows_before = {{2, 1}, {4, 3}},
+       .expected_desk_2_windows_before = {{1, 2}, {5}},
+       .move_windows = {5},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{2, 1}, {4, 3, 5}},
+       .expected_desk_2_windows_after = {{1, 2}, {}},
+       .expected_desk_1_final_active_window = 5},
+  });
 }
 
 namespace {
@@ -4573,8 +4919,9 @@ class DesksMultiUserTest : public NoSessionAshTestBase,
     ScopedListPrefUpdate update(prefs, prefs::kDesksNamesList);
     base::Value::List& pref_data = update.Get();
     ASSERT_TRUE(pref_data.empty());
-    for (auto desk_name : desk_names)
+    for (auto desk_name : desk_names) {
       pref_data.Append(desk_name);
+    }
   }
 
   void SimulateUserLogin(const AccountId& account_id) {
@@ -5201,8 +5548,9 @@ TEST_P(DesksAcceleratorsTest, MoveWindowLeftRightDeskOverview) {
   ASSERT_TRUE(overview_session);
   // It's possible to move the highlighted window. |Move()| will cycle through
   // the desk items first, so call it until we are highlighting an OverviewItem.
-  while (!overview_session->GetHighlightedWindow())
+  while (!overview_session->GetHighlightedWindow()) {
     MoveOverviewHighlighter(overview_session);
+  }
   EXPECT_EQ(win0.get(), overview_session->GetHighlightedWindow());
   SendAccelerator(ui::VKEY_OEM_6, flags);
   EXPECT_FALSE(DoesActiveDeskContainWindow(win0.get()));
@@ -5611,10 +5959,11 @@ TEST_P(PerDeskShelfTest, ShelfViewTransformUpdatedForScrollWhenSwitchingDesks) {
   // Switch desks.
   NewDesk();
   ActivateDesk(DesksController::Get()->desks()[1].get());
-  if (IsPerDeskShelfEnabled())
+  if (IsPerDeskShelfEnabled()) {
     EXPECT_TRUE(shelf_view->GetTransform().IsIdentity());
-  else
+  } else {
     EXPECT_EQ(scrolled_transform, shelf_view->GetTransform());
+  }
 }
 
 // Tests desks name nudges, i.e. when a user creates a new desk, focus + clear
@@ -5818,8 +6167,9 @@ TEST_P(DesksTest, ScrollableDesks) {
 // corresponding scroll button.
 TEST_P(DesksTest, ScrollButtonsVisibility) {
   UpdateDisplay("501x600");
-  for (size_t i = 1; i < desks_util::GetMaxNumberOfDesks(); i++)
+  for (size_t i = 1; i < desks_util::GetMaxNumberOfDesks(); i++) {
     NewDesk();
+  }
 
   EXPECT_EQ(DesksController::Get()->desks().size(),
             desks_util::GetMaxNumberOfDesks());
@@ -5892,8 +6242,9 @@ TEST_P(DesksTest, GradientsVisibility) {
   // bar with maximum number of desks.
   UpdateDisplay("800x150");
   const size_t max_desks_size = desks_util::GetMaxNumberOfDesks();
-  for (size_t i = 1; i < max_desks_size; i++)
+  for (size_t i = 1; i < max_desks_size; i++) {
     NewDesk();
+  }
 
   EnterOverview();
   auto* desks_bar =
@@ -5972,8 +6323,9 @@ TEST_P(DesksTest, GradientsVisibility) {
       DeskBarViewBase::Type::kOverview));
 
   // Only the left gradient should be shown at the last page.
-  while (right_button->GetVisible())
+  while (right_button->GetVisible()) {
     ClickOnView(right_button, event_generator);
+  }
 
   EXPECT_EQ(scroll_view->contents()->bounds().width() - scroll_view->width(),
             scroll_view->GetVisibleRect().x());
@@ -5990,8 +6342,9 @@ TEST_P(DesksTest, ContinueScrollBar) {
   // Make a flat long window to generate multiple pages on desks bar.
   UpdateDisplay("800x150");
   const size_t max_desks_size = desks_util::GetMaxNumberOfDesks();
-  for (size_t i = 1; i < max_desks_size; i++)
+  for (size_t i = 1; i < max_desks_size; i++) {
     NewDesk();
+  }
 
   auto* desks_controller = DesksController::Get();
   EXPECT_EQ(desks_controller->desks().size(), max_desks_size);
@@ -6008,8 +6361,9 @@ TEST_P(DesksTest, ContinueScrollBar) {
   int desks_in_one_page = page_size / mini_view_width;
   float fractional_page = static_cast<float>(page_size % mini_view_width) /
                           static_cast<float>(mini_view_width);
-  if (fractional_page > 0.5)
+  if (fractional_page > 0.5) {
     desks_in_one_page++;
+  }
 
   int current_index = 0;
   ScrollArrowButton* left_button = DesksTestApi::GetDeskBarLeftScrollButton(
@@ -6056,8 +6410,9 @@ TEST_P(DesksTest, ContinueScrollBar) {
 
   // Release and click a few times to make sure we end up at the maximum offset.
   event_generator->ReleaseLeftButton();
-  for (int i = 0; i != 3; ++i)
+  for (int i = 0; i != 3; ++i) {
     event_generator->ClickLeftButton();
+  }
 
   EXPECT_EQ(scroll_view->GetVisibleRect().x(),
             scroll_view->contents()->width() - page_size);
@@ -6101,8 +6456,9 @@ TEST_P(DesksTest, ContinueScrollBar) {
 // the focused mini view inside the visible bounds.
 TEST_P(DesksTest, FocusedMiniViewIsVisible) {
   UpdateDisplay("501x600");
-  for (size_t i = 1; i < desks_util::GetMaxNumberOfDesks(); i++)
+  for (size_t i = 1; i < desks_util::GetMaxNumberOfDesks(); i++) {
     NewDesk();
+  }
 
   EXPECT_EQ(DesksController::Get()->desks().size(),
             desks_util::GetMaxNumberOfDesks());
@@ -7060,8 +7416,9 @@ TEST_P(DesksTest, ScrollBarByDraggedDesk) {
   int desks_in_one_page = page_size / mini_view_width;
   float fractional_page = static_cast<float>(page_size % mini_view_width) /
                           static_cast<float>(mini_view_width);
-  if (fractional_page > 0.5)
+  if (fractional_page > 0.5) {
     desks_in_one_page++;
+  }
 
   int current_index = 0;
   ScrollArrowButton* left_button = DesksTestApi::GetDeskBarLeftScrollButton(
@@ -7652,8 +8009,9 @@ class WindowHolder : public aura::WindowObserver {
   WindowHolder& operator=(const WindowHolder&) = delete;
 
   ~WindowHolder() override {
-    if (window_)
+    if (window_) {
       window_->RemoveObserver(this);
+    }
     // `window_` is destroyed automatically here through the unique pointer.
   }
 
@@ -8556,8 +8914,9 @@ TEST_P(DesksCloseAllTest, CanUndoDeskClosureThroughKeyboardNavigation) {
 // before the toast asking if the user would like to undo goes away.
 TEST_P(DesksCloseAllTest, CanAddLastDeskWhileUndoToastIsBeingDisplayed) {
   auto* controller = DesksController::Get();
-  while (controller->desks().size() < desks_util::GetMaxNumberOfDesks())
+  while (controller->desks().size() < desks_util::GetMaxNumberOfDesks()) {
     NewDesk();
+  }
   ASSERT_EQ(desks_util::GetMaxNumberOfDesks(), controller->desks().size());
 
   // Create a window to ensure that closing windows after removing the last desk
@@ -8584,8 +8943,9 @@ TEST_P(DesksCloseAllTest, CanAddLastDeskWhileUndoToastIsBeingDisplayed) {
   auto* event_generator = GetEventGenerator();
   auto* scroll_right_button = DesksTestApi::GetDeskBarRightScrollButton(
       DeskBarViewBase::Type::kOverview);
-  for (int i = 0; i != 3; ++i)
+  for (int i = 0; i != 3; ++i) {
     ClickOnView(scroll_right_button, event_generator);
+  }
 
   // If we click on the `new_desk_button`, we should create a new desk and
   // destroy the previously removed desk and the window inside of it.
@@ -8781,10 +9141,10 @@ TEST_P(DesksCloseAllTest, InteractingWithShelfClosesToast) {
   EXPECT_FALSE(window.is_valid());
 }
 
-using DeskButtonTest = DesksTest;
+using DeskBarBasicTest = DesksTest;
 
 // Tests that `DeskTextfield` can be used outside overview.
-TEST_P(DeskButtonTest, DeskTextfieldOutsideOverview) {
+TEST_P(DeskBarBasicTest, DeskTextfieldOutsideOverview) {
   auto widget =
       TestWidgetBuilder()
           .SetDelegate(nullptr)
@@ -8825,7 +9185,7 @@ struct DeskButtonDeskBarTestCase {
 
 // Tests that desk button desk bar can show outside of overview with expected
 // bounds for different shelf alignments.
-TEST_P(DeskButtonTest, DeskBarBasic) {
+TEST_P(DeskBarBasicTest, DeskBarBasic) {
   UpdateDisplay("800x600");
 
   const DeskButtonDeskBarTestCase tests[] = {
@@ -8848,14 +9208,14 @@ TEST_P(DeskButtonTest, DeskBarBasic) {
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kLeft,
        .has_saved_desks = true,
-       .bar_widget_bounds_expected = {56, 248, 744, 98},
+       .bar_widget_bounds_expected = {56, 254, 744, 98},
        .bar_view_bounds_expected = {0, 0, 744, 98}},
       {.test_name = "single desk + right shelf + saved desks",
        .desks = {0},
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kRight,
        .has_saved_desks = true,
-       .bar_widget_bounds_expected = {0, 248, 744, 98},
+       .bar_widget_bounds_expected = {0, 254, 744, 98},
        .bar_view_bounds_expected = {0, 0, 744, 98}},
       {.test_name = "multiple desks + bottom shelf + saved desks",
        .desks = {0, 1, 2},
@@ -8926,7 +9286,7 @@ TEST_P(DeskButtonTest, DeskBarBasic) {
 
 // Tests that desk button desk bar shows the scroll arrow buttons when overflow
 // happens.
-TEST_P(DeskButtonTest, DeskBarScrollLayout) {
+TEST_P(DeskBarBasicTest, DeskBarScrollLayout) {
   UpdateDisplay("600x400");
 
   auto* desks_controller = DesksController::Get();
@@ -8956,7 +9316,7 @@ TEST_P(DeskButtonTest, DeskBarScrollLayout) {
   CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
 }
 
-TEST_P(DeskButtonTest, DeskBarHoverBasic) {
+TEST_P(DeskBarBasicTest, DeskBarHoverBasic) {
   auto window_1 = CreateAppWindow(gfx::Rect(0, 0, 100, 100));
   auto window_2 = CreateAppWindow(gfx::Rect(0, 0, 100, 100));
 
@@ -8985,7 +9345,7 @@ TEST_P(DeskButtonTest, DeskBarHoverBasic) {
 }
 
 // Tests that clicking on new desk button does the expected thing.
-TEST_P(DeskButtonTest, DeskBarNewDeskButton) {
+TEST_P(DeskBarBasicTest, DeskBarNewDeskButton) {
   OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
 
   auto* desks_controller = DesksController::Get();
@@ -9030,7 +9390,7 @@ TEST_P(DeskButtonTest, DeskBarNewDeskButton) {
 }
 
 // Tests that we can go to saved desk library directly via desk button desk bar.
-TEST_P(DeskButtonTest, DeskBarLibraryButton) {
+TEST_P(DeskBarBasicTest, DeskBarLibraryButton) {
   ui::ScopedAnimationDurationScaleMode animation_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -9053,7 +9413,7 @@ TEST_P(DeskButtonTest, DeskBarLibraryButton) {
 }
 
 // Tests that the desk button desk bar support dragging to reorder desks.
-TEST_P(DeskButtonTest, DeskBarReorderDesk) {
+TEST_P(DeskBarBasicTest, DeskBarReorderDesk) {
   OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
 
   auto* desks_controller = DesksController::Get();
@@ -9123,7 +9483,7 @@ TEST_P(DeskButtonTest, DeskBarReorderDesk) {
   CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
 }
 
-TEST_P(DeskButtonTest, DeskBarActivateDesk) {
+TEST_P(DeskBarBasicTest, DeskBarActivateDesk) {
   auto* desks_controller = DesksController::Get();
 
   NewDesk();
@@ -9147,7 +9507,7 @@ TEST_P(DeskButtonTest, DeskBarActivateDesk) {
   EXPECT_FALSE(GetDeskBarView(DeskBarViewBase::Type::kDeskButton));
 }
 
-TEST_P(DeskButtonTest, DeskBarCombineOrCloseDesk) {
+TEST_P(DeskBarBasicTest, DeskBarCombineOrCloseDesk) {
   // Setup 3 desks, e.g. "Desk 1", "Desk 2", and "Desk 3". Only "Desk 3" has a
   // window.
   NewDesk();
@@ -9170,6 +9530,184 @@ TEST_P(DeskButtonTest, DeskBarCombineOrCloseDesk) {
 
   CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
 }
+
+namespace {
+
+struct DeskButtonTestParams {
+  ShelfAlignment alignment = ShelfAlignment::kBottom;
+};
+
+class DeskButtonTest
+    : public AshTestBase,
+      public ::testing::WithParamInterface<DeskButtonTestParams> {
+ public:
+  DeskButtonTest() = default;
+  DeskButtonTest(const DeskButtonTest&) = delete;
+  DeskButtonTest& operator=(const DeskButtonTest&) = delete;
+  ~DeskButtonTest() override = default;
+
+  // AshTestBase:
+  void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::kDeskButton,
+                              chromeos::features::kJellyroll},
+        /*disabled_features=*/{});
+    AshTestBase::SetUp();
+    shelf_test_api_ = std::make_unique<ShelfViewTestAPI>(
+        GetPrimaryShelf()->GetShelfViewForTesting());
+    Shelf::ForWindow(Shell::GetPrimaryRootWindow())
+        ->SetAlignment(GetParam().alignment);
+  }
+
+  DeskButton* GetDeskButton() {
+    return shelf_test_api_->shelf_view()
+        ->shelf_widget()
+        ->desk_button_widget()
+        ->GetDeskButtonForTest();
+  }
+
+  views::ImageButton* GetPrevDeskButton() {
+    return GetDeskButton()->prev_desk_button();
+  }
+
+  views::ImageButton* GetNextDeskButton() {
+    return GetDeskButton()->next_desk_button();
+  }
+
+  // Clicks on one of the desk switch buttons. `next` determines which button is
+  // pressed; if true, then we press the next desk button, otherwise we press
+  // the previous desk button.
+  void ClickDeskSwitchButton(bool next) {
+    // The buttons will show if we hover the desk button, so we need to do that
+    // first.
+    auto* event_generator = GetEventGenerator();
+    auto* desk_button = GetDeskButton();
+    ASSERT_TRUE(desk_button);
+    event_generator->MoveMouseTo(
+        desk_button->GetBoundsInScreen().CenterPoint());
+    views::ImageButton* target_button =
+        next ? GetNextDeskButton() : GetPrevDeskButton();
+    ASSERT_TRUE(target_button);
+    EXPECT_TRUE(target_button->GetVisible());
+    event_generator->MoveMouseTo(
+        target_button->GetBoundsInScreen().CenterPoint());
+    DeskSwitchAnimationWaiter waiter;
+    event_generator->ClickLeftButton();
+    waiter.Wait();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  std::unique_ptr<ShelfViewTestAPI> shelf_test_api_;
+};
+
+}  // namespace
+
+// Tests functionalities for `DeskSwitchButton`s.
+TEST_P(DeskButtonTest, DeskSwitchButtons) {
+  NewDesk();
+
+  auto* controller = DesksController::Get();
+  const auto& desks = controller->desks();
+
+  auto* desk_1 = desks[0].get();
+  auto* desk_2 = desks[1].get();
+
+  // Check that we are on desk 1.
+  ASSERT_TRUE(desk_1->is_active());
+
+  // Desk switch buttons should not be visible at first.
+  views::ImageButton* prev_desk_button = GetPrevDeskButton();
+  views::ImageButton* next_desk_button = GetNextDeskButton();
+  ASSERT_TRUE(prev_desk_button);
+  ASSERT_TRUE(next_desk_button);
+  EXPECT_FALSE(prev_desk_button->GetVisible());
+  EXPECT_FALSE(next_desk_button->GetVisible());
+
+  // Hovering over the desk button should allow for the buttons to show.
+  auto* event_generator = GetEventGenerator();
+  auto* desk_button = GetDeskButton();
+  ASSERT_TRUE(desk_button);
+  event_generator->MoveMouseTo(desk_button->GetBoundsInScreen().CenterPoint());
+
+  // We are on the leftmost desk, so hovering over the desk button should only
+  // show the next desk button.
+  EXPECT_FALSE(prev_desk_button->GetVisible());
+  EXPECT_TRUE(next_desk_button->GetVisible());
+
+  // Move the mouse away from the button to make sure the switch buttons hide
+  // when the desk button is not hovered.
+  event_generator->MoveMouseTo(gfx::Point(0, 0));
+  EXPECT_FALSE(prev_desk_button->GetVisible());
+  EXPECT_FALSE(next_desk_button->GetVisible());
+
+  ClickDeskSwitchButton(/*next=*/true);
+
+  // The previous desk button should now be visible since we are on the
+  // rightmost desk.
+  EXPECT_TRUE(desk_2->is_active());
+  EXPECT_TRUE(prev_desk_button->GetVisible());
+  EXPECT_FALSE(next_desk_button->GetVisible());
+
+  // Try going back to the first desk.
+  ClickDeskSwitchButton(/*next=*/false);
+  EXPECT_TRUE(desk_1->is_active());
+}
+
+// Tests that button text updates when desk is changed.
+TEST_P(DeskButtonTest, DeskButtonTextReflectsDeskChange) {
+  NewDesk();
+
+  auto* controller = DesksController::Get();
+  const auto& desks = controller->desks();
+
+  auto* desk_1 = desks[0].get();
+  auto* desk_2 = desks[1].get();
+
+  // Check that renaming the active desk changes the text in the button.
+  ASSERT_TRUE(desk_1->is_active());
+
+  desk_1->SetName(u"Work", /*set_by_user=*/true);
+  auto* desk_button = GetDeskButton();
+  ASSERT_TRUE(desk_button);
+  EXPECT_EQ(GetParam().alignment == ShelfAlignment::kBottom ? u"Work" : u"W",
+            desk_button->GetTextForTest());
+
+  desk_2->SetName(u"Fun", /*set_by_user=*/true);
+  EXPECT_EQ(GetParam().alignment == ShelfAlignment::kBottom ? u"Work" : u"W",
+            desk_button->GetTextForTest());
+
+  ClickDeskSwitchButton(/*next=*/true);
+  EXPECT_EQ(u"Fun", desk_button->GetTextForTest());
+
+  // Add a third desk and don't name it to check how default desk names are
+  // handled.
+  NewDesk();
+  ClickDeskSwitchButton(/*next=*/true);
+  EXPECT_EQ(u"Desk 3", desk_button->GetTextForTest());
+
+  GetEventGenerator()->MoveMouseTo(
+      Shell::GetPrimaryRootWindow()->bounds().origin());
+  EXPECT_EQ(GetParam().alignment == ShelfAlignment::kBottom ? u"Desk 3" : u"D3",
+            desk_button->GetTextForTest());
+}
+
+// Tests that emojis show up correctly for desk names.
+TEST_P(DeskButtonTest, DeskButtonTextWorksWithEmojis) {
+  NewDesk();
+
+  auto* controller = DesksController::Get();
+  const auto& desks = controller->desks();
+  desks[0]->SetName(u"😃emoji", /*set_by_user=*/true);
+
+  auto* desk_button = GetDeskButton();
+  ASSERT_TRUE(desk_button);
+  EXPECT_EQ(
+      GetParam().alignment == ShelfAlignment::kBottom ? u"😃emoji" : u"😃",
+      desk_button->GetTextForTest());
+}
+
+// TODO(b/272383056): Add test that switches between different shelf alignments.
 
 // TODO(afakhry): Add more tests:
 // - Always on top windows are not tracked by any desk.
@@ -9212,6 +9750,11 @@ constexpr DesksTestParams kDeskCountOnly[] = {
     {.use_16_desks = true},
 };
 
+constexpr DeskButtonTestParams kDeskButtonTestParamCombinations[] = {
+    {.alignment = ShelfAlignment::kBottom},
+    {.alignment = ShelfAlignment::kLeft},
+    {.alignment = ShelfAlignment::kRight}};
+
 INSTANTIATE_TEST_SUITE_P(All, DesksTest, ValuesIn(kAllCombinations));
 
 INSTANTIATE_TEST_SUITE_P(All, DesksEditableNamesTest, ValuesIn(kDeskCountOnly));
@@ -9220,7 +9763,10 @@ INSTANTIATE_TEST_SUITE_P(All, DesksAcceleratorsTest, ValuesIn(kDeskCountOnly));
 INSTANTIATE_TEST_SUITE_P(All, DesksMockTimeTest, ValuesIn(kDeskCountOnly));
 INSTANTIATE_TEST_SUITE_P(All, DesksCloseAllTest, ValuesIn(kDeskCountOnly));
 INSTANTIATE_TEST_SUITE_P(All, PerDeskShelfTest, ::testing::Bool());
-INSTANTIATE_TEST_SUITE_P(All, DeskButtonTest, ValuesIn(kAllCombinations));
+INSTANTIATE_TEST_SUITE_P(All, DeskBarBasicTest, ValuesIn(kAllCombinations));
+INSTANTIATE_TEST_SUITE_P(All,
+                         DeskButtonTest,
+                         ValuesIn(kDeskButtonTestParamCombinations));
 
 }  // namespace
 

@@ -155,7 +155,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.Duration.ChromeTask.{Task}"
-    units="ms" expires_after="2023-07-01">
+    units="ms" expires_after="2024-07-01">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -286,7 +286,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.ClearBrowsingData.Duration.Task.{Task}" units="ms"
-    expires_after="2023-07-01">
+    expires_after="2024-07-01">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -306,6 +306,7 @@ chromium-metrics-reviews@google.com.
     <variant name="NetworkHistory" summary="NetworkHistory"/>
     <variant name="PreflightCache" summary="PreflightCache"/>
     <variant name="ReportingCache" summary="ReportingCache"/>
+    <variant name="SharedDictionary" summary="SharedDictionary"/>
     <variant name="SharedStorage" summary="SharedStorage"/>
     <variant name="StoragePartition" summary="StoragePartition"/>
     <variant name="Synchronous" summary="Synchronous"/>

@@ -702,6 +702,7 @@ extern const char kWebAppsDailyMetrics[];
 extern const char kWebAppsDailyMetricsDate[];
 extern const char kWebAppsExtensionIDs[];
 extern const char kWebAppsAppAgnosticIphState[];
+extern const char kWebAppsAppAgnosticMlState[];
 extern const char kWebAppsLastPreinstallSynchronizeVersion[];
 extern const char kWebAppsDidMigrateDefaultChromeApps[];
 extern const char kWebAppsUninstalledDefaultChromeApps[];
@@ -1238,6 +1239,7 @@ extern const char kDesktopSharingHubEnabled[];
 
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kLastWhatsNewVersion[];
+extern const char kHasShownRefreshWhatsNew[];
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1293,6 +1295,8 @@ extern const char kOutOfProcessSystemDnsResolutionEnabled[];
 
 extern const char kHttpAllowlist[];
 extern const char kHttpsUpgradesEnabled[];
+
+extern const char kHoverCardImagesEnabled[];
 
 }  // namespace prefs
 

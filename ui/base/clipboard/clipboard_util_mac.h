@@ -8,7 +8,6 @@
 #import <AppKit/AppKit.h>
 
 #include "base/component_export.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "ui/base/clipboard/clipboard_buffer.h"
 
@@ -35,7 +34,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) UniquePasteboard
  private:
   friend class base::RefCounted<UniquePasteboard>;
   ~UniquePasteboard();
-  base::scoped_nsobject<NSPasteboard> pasteboard_;
+  __strong NSPasteboard* pasteboard_;
 };
 
 class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardUtil {

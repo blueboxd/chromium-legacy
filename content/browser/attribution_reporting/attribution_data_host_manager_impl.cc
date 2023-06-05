@@ -654,12 +654,10 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
     return;
   }
 
+  // TODO(csharrison): Remove `nav_type` via reverting crrev.com/c/4070064.
   auto source_type = SourceType::kEvent;
   if (auto nav_type = context->nav_type()) {
     source_type = SourceType::kNavigation;
-
-    base::UmaHistogramEnumeration(
-        "Conversions.SourceRegistration.NavigationType.Background", *nav_type);
   }
 
   attribution_manager_->HandleSource(
@@ -672,7 +670,7 @@ void AttributionDataHostManagerImpl::SourceDataAvailable(
 void AttributionDataHostManagerImpl::TriggerDataAvailable(
     attribution_reporting::SuitableOrigin reporting_origin,
     attribution_reporting::TriggerRegistration data,
-    absl::optional<network::TriggerVerification> verification) {
+    std::vector<network::TriggerVerification> verifications) {
   // This is validated by the Mojo typemapping.
   DCHECK(reporting_origin.IsValid());
 
@@ -684,7 +682,7 @@ void AttributionDataHostManagerImpl::TriggerDataAvailable(
   attribution_manager_->HandleTrigger(
       AttributionTrigger(std::move(reporting_origin), std::move(data),
                          /*destination_origin=*/context->context_origin(),
-                         std::move(verification),
+                         std::move(verifications),
                          context->is_within_fenced_frame()),
       context->render_frame_id());
 }
@@ -836,14 +834,6 @@ void AttributionDataHostManagerImpl::OnWebSourceParsed(
     if (source.has_value()) {
       attribution_manager_->HandleSource(std::move(*source),
                                          registrations->render_frame_id());
-
-      if (const auto* navigation =
-              absl::get_if<SourceRegistrations::ForegroundNavigation>(
-                  &registrations->data())) {
-        base::UmaHistogramEnumeration(
-            "Conversions.SourceRegistration.NavigationType.Foreground",
-            navigation->nav_type);
-      }
     } else {
       attribution_manager_->NotifyFailedSourceRegistration(
           pending_decode.header, registrations->source_origin(),

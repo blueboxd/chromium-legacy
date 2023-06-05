@@ -97,6 +97,10 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #endif
 
+#if BUILDFLAG(IS_IOS)
+#include "base/path_service.h"
+#endif
+
 namespace base {
 
 // See
@@ -1615,8 +1619,16 @@ bool TestLauncher::Init(CommandLine* command_line) {
     for (auto filter_file :
          SplitStringPiece(filter, FILE_PATH_LITERAL(";"), base::TRIM_WHITESPACE,
                           base::SPLIT_WANT_ALL)) {
+#if BUILDFLAG(IS_IOS)
+      // On iOS, the filter files are bundled with the test application.
+      base::FilePath data_dir;
+      PathService::Get(DIR_SRC_TEST_DATA_ROOT, &data_dir);
+      base::FilePath filter_file_path = data_dir.Append(FilePath(filter_file));
+#else
       base::FilePath filter_file_path =
           base::MakeAbsoluteFilePath(FilePath(filter_file));
+#endif  // BUILDFLAG(IS_IOS)
+
       if (!LoadFilterFile(filter_file_path, &positive_file_filter,
                           &negative_test_filter_))
         return false;
@@ -2227,7 +2239,13 @@ size_t NumParallelJobs(unsigned int cores_per_job) {
       ::GetActiveProcessorCount(ALL_PROCESSOR_GROUPS));
 #else
   size_t cores = base::checked_cast<size_t>(SysInfo::NumberOfProcessors());
-#endif
+#if BUILDFLAG(IS_MAC)
+  // This is necessary to allow tests to call SetCpuSecurityMitigationsEnabled()
+  // despite NumberOfProcessors() having already been called in the process.
+  SysInfo::ResetCpuSecurityMitigationsEnabledForTesting();
+#endif  // BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_WIN)
+
 #if BUILDFLAG(IS_IOS) && TARGET_OS_SIMULATOR
   // If we are targeting the simulator increase the number of jobs we use by 2x
   // the number of cores. This is necessary because the startup of each

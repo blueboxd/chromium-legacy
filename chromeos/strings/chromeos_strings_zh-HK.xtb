@@ -4,7 +4,7 @@
 <translation id="1014750484722996375">桌面</translation>
 <translation id="1018219910092211213">無法解析 DNS</translation>
 <translation id="1018656279737460067">已取消</translation>
-<translation id="1022433422498218992">一般控制項</translation>
+<translation id="1020274983236703756">現已推出 <ph name="PRODUCT_NAME" /> 專屬廣告元素</translation>
 <translation id="1022628058306505708">地球動態</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> 個執行緒；<ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">推出咗新功能，請用向上箭咀掣了解詳情。</translation>
@@ -58,6 +58,7 @@
 <translation id="1423591390236870726">未㩒 <ph name="KEY_NAME" /> 制</translation>
 <translation id="1435763214710588005">系統會在每月指定日期自動重設數據用量</translation>
 <translation id="1442433966118452622">圖片來源</translation>
+<translation id="1449035143498573192">在「Google 搜尋」中開啟</translation>
 <translation id="1451536289672181509">裝置類型係鍵盤。</translation>
 <translation id="1459693405370120464">天氣</translation>
 <translation id="1468664791493211953">優惠</translation>
@@ -113,7 +114,6 @@
 <translation id="1768959921651994223">驗證類型</translation>
 <translation id="1776228893584526149">桌布色調</translation>
 <translation id="1782199038061388045">翻譯</translation>
-<translation id="1790209694022261219">視窗和桌面</translation>
 <translation id="1792647875738159689">取消掃瞄中</translation>
 <translation id="1801418420130173017">停用深色主題背景</translation>
 <translation id="1807246157184219062">淺色</translation>
@@ -244,7 +244,6 @@
 <translation id="3008341117444806826">更新</translation>
 <translation id="3009958530611748826">選取儲存的資料夾</translation>
 <translation id="3017079585324758401">背景</translation>
-<translation id="3020183492814296499">快速鍵</translation>
 <translation id="3027578600144895987">閂相機</translation>
 <translation id="3031560714565892478">裝置類型係攝影機。</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -271,6 +270,7 @@
 <translation id="3226405216343213872">正在尋找掃瞄器</translation>
 <translation id="3226657629376379887">版面配置操作選單</translation>
 <translation id="3246869037381808805">超過 1 天前的列印工作將被移除</translation>
+<translation id="3248223063252096240"><ph name="PRODUCT_NAME" /> 獨家設計</translation>
 <translation id="3268178239013324452">失敗 - 機蓋未關</translation>
 <translation id="3275729367986477355">顯示圖片</translation>
 <translation id="3283504360622356314">{0,plural, =1{編輯檔案}other{編輯檔案}}</translation>
@@ -323,6 +323,7 @@
 <translation id="3632579075709132555">私隱保護畫面切換</translation>
 <translation id="3639846061339007994">頂部</translation>
 <translation id="3651050199673793219">揀溫度單位</translation>
+<translation id="3663574643422533538">選取 <ph name="PRODUCT_NAME" /> 獨家藝術圖片</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />測試</translation>
 <translation id="370665806235115550">載入中…</translation>
 <translation id="3708186454126126312">之前已連接的裝置</translation>
@@ -372,6 +373,7 @@
 <translation id="4095829376260267438">WPA2 和 WPA3</translation>
 <translation id="4110686435123617899">揀相簿 <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB 觸控板</translation>
+<translation id="4113067922640381334">您現可使用全新<ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />桌布<ph name="END_LINK_WALLPAPER_SUBPAGE" /></translation>
 <translation id="4117637339509843559">暗光模式</translation>
 <translation id="4130035430755296270">將滑鼠游標懸停在上方，即可查看更多版面配置選項</translation>
 <translation id="4131410914670010031">黑白</translation>
@@ -611,6 +613,7 @@
 <translation id="5972388717451707488">更新引擎</translation>
 <translation id="5984145644188835034">預設桌布</translation>
 <translation id="6017514345406065928">綠色</translation>
+<translation id="6019566113895157499">鍵盤快速鍵</translation>
 <translation id="6034694447310538551">啟用每月自動重設功能</translation>
 <translation id="6037291330010597344">掃瞄器的文件送紙器是空的。請放入文件，然後再試一次。</translation>
 <translation id="6040143037577758943">關閉</translation>
@@ -857,6 +860,7 @@
 <translation id="7953669802889559161">輸入方法</translation>
 <translation id="7955587717700691983">藍牙鍵盤</translation>
 <translation id="7960831585769876809">溫度</translation>
+<translation id="7971535376154084247">一般控制項</translation>
 <translation id="7977800524392185497">如要加入 <ph name="NETWORK_NAME" /> 網絡，請前往「設定」頁面</translation>
 <translation id="7978412674231730200">私密金鑰</translation>
 <translation id="7994702968232966508">EAP 方法</translation>
@@ -920,6 +924,7 @@
 <translation id="8461329675984532579">家庭網絡供應商名稱</translation>
 <translation id="8475690821716466388">已使用防護力較弱的通訊協定 WEP PSK 保護 Wi-Fi 網絡</translation>
 <translation id="8476242415522716722">讓鍵盤變暗</translation>
+<translation id="8476942730579767658">視窗和桌面</translation>
 <translation id="8477551185774834963">DNS 延遲時間稍微超過允許的門檻</translation>
 <translation id="8483248364096924578">IP 位址</translation>
 <translation id="8491311378305535241">無法從 Android 應用程式透過防火牆連線至 HTTP 網站</translation>
@@ -934,6 +939,7 @@
 <translation id="8576249514688522074">未初始化</translation>
 <translation id="8593058461203131755">暫停媒體</translation>
 <translation id="8620617069779373398">漫遊狀態</translation>
+<translation id="8626489604350149811">可對 <ph name="APN_NAME" /> 執行的其他操作</translation>
 <translation id="86356131183441916">淺紫色</translation>
 <translation id="8651481478098336970">靜音</translation>
 <translation id="8655295600908251630">版本</translation>
@@ -1015,7 +1021,7 @@
 <translation id="9149391708638971077">執行記憶體測試</translation>
 <translation id="9161276708550942948">空格鍵</translation>
 <translation id="9173638680043580060">尚餘不到 1 分鐘</translation>
-<translation id="9174334653006917325">UI 顏色</translation>
+<translation id="9174334653006917325">使用者介面顏色</translation>
 <translation id="917720651393141712">測試</translation>
 <translation id="9188992814426075118">鍵盤可自動與桌布配搭</translation>
 <translation id="9189000703457422362">無法透過自動偵測的 APN 連線至此網絡。請聯絡流動網絡供應商以瞭解詳情。</translation>

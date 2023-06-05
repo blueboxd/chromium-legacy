@@ -135,11 +135,13 @@
 <translation id="390528597099634151">Корисник <ph name="EXISTING_USER" /> је већ пријављен на овај Chromium профил. Да би вам прегледање било раздвојено, Chromium може да направи засебан профил за вас.</translation>
 <translation id="391789666908693569">Вашим налогом управља <ph name="MANAGER_NAME" />. Администратор може да види и мења овај профил у Chromium прегледачу и његове податке, попут обележивача, историје и лозинки.</translation>
 <translation id="3945058413678539331">Chromium покушава да копира лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
+<translation id="3962623956404948996">Chromium препоручује скенирање овог фајла јер може да буде опасан</translation>
 <translation id="3997429360543082038">О Chromium ОС-у</translation>
 <translation id="4019629340646866719">Chromium ОС је омогућен захваљујући додатном <ph name="BEGIN_LINK_CROS_OSS" />софтверу са отвореним кодом<ph name="END_LINK_CROS_OSS" />, као што је <ph name="BEGIN_LINK_LINUX_OSS" />Linux окружење за програмирање<ph name="END_LINK_LINUX_OSS" />.</translation>
 <translation id="4036079820698952681">Помозите да побољшамо Chromium тако што ћете послати извештај о <ph name="BEGIN_LINK" />актуелним подешавањима<ph name="END_LINK" /></translation>
 <translation id="4050175100176540509">Важна безбедносна побољшања и нове функције су доступни у најновијој верзији.</translation>
 <translation id="4050599136622776556">Chromium покушава да измени начине плаћања.</translation>
+<translation id="4055805654398742145">Менаџер лозинки</translation>
 <translation id="4148957013307229264">Инсталирање...</translation>
 <translation id="419998258129752635"><ph name="PAGE_TITLE" /> – пријављивање на мрежу – Chromium</translation>
 <translation id="421369550622382712">Откријте одличне апликације, игре, додатке и теме за Chromium.</translation>

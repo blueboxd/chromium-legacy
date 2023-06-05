@@ -29,6 +29,7 @@ using ::chromeos::settings::mojom::kFilesSectionPath;
 using ::chromeos::settings::mojom::kGoogleDriveSubpagePath;
 using ::chromeos::settings::mojom::kNetworkFileSharesSubpagePath;
 using ::chromeos::settings::mojom::kOfficeFilesSubpagePath;
+using ::chromeos::settings::mojom::kOneDriveSubpagePath;
 using ::chromeos::settings::mojom::Section;
 using ::chromeos::settings::mojom::Setting;
 using ::chromeos::settings::mojom::Subpage;
@@ -94,7 +95,7 @@ FilesSection::FilesSection(Profile* profile,
   if (cloud_upload::IsEligibleAndEnabledUploadOfficeToCloud(profile)) {
     updater.AddSearchTags(GetFilesOfficeSearchConcepts());
   }
-  if (drive::util::IsDriveFsBulkPinningEnabled()) {
+  if (drive::util::IsDriveFsBulkPinningEnabled(profile)) {
     updater.AddSearchTags(GetFilesGoogleDriveSearchConcepts());
   }
 }
@@ -165,6 +166,9 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"oneDriveLabel", IDS_SETTINGS_ONE_DRIVE_LABEL},
       {"oneDriveSignedInAs", IDS_SETTINGS_ONE_DRIVE_SIGNED_IN_AS},
       {"oneDriveDisconnected", IDS_SETTINGS_ONE_DRIVE_DISCONNECTED},
+      {"oneDriveConnect", IDS_SETTINGS_ONE_DRIVE_CONNECT},
+      {"oneDriveDisconnect", IDS_SETTINGS_ONE_DRIVE_DISCONNECT},
+      {"openOneDriveFolder", IDS_SETTINGS_OPEN_ONE_DRIVE_FOLDER},
       {"officeLabel", IDS_SETTINGS_OFFICE_LABEL},
       {"officeSublabel", IDS_SETTINGS_OFFICE_SUBLABEL},
       {"officeSubpageTitle", IDS_SETTINGS_OFFICE_SUBPAGE_TITLE},
@@ -203,7 +207,7 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   }
 
   html_source->AddBoolean("enableDriveFsBulkPinning",
-                          drive::util::IsDriveFsBulkPinningEnabled());
+                          drive::util::IsDriveFsBulkPinningEnabled(profile()));
 }
 
 void FilesSection::AddHandlers(content::WebUI* web_ui) {
@@ -242,9 +246,8 @@ void FilesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::kNetworkFileSharesSubpagePath);
 
   // Office.
-  // TODO(b:264314789): Correct string (not smb).
   generator->RegisterTopLevelSubpage(
-      IDS_SETTINGS_DOWNLOADS_SMB_SHARES, mojom::Subpage::kOfficeFiles,
+      IDS_SETTINGS_OFFICE_LABEL, mojom::Subpage::kOfficeFiles,
       mojom::SearchResultIcon::kFolder, mojom::SearchResultDefaultRank::kMedium,
       mojom::kNetworkFileSharesSubpagePath);
 
@@ -252,6 +255,11 @@ void FilesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       IDS_SETTINGS_GOOGLE_DRIVE, mojom::Subpage::kGoogleDrive,
       mojom::SearchResultIcon::kFolder, mojom::SearchResultDefaultRank::kMedium,
       mojom::kGoogleDriveSubpagePath);
+
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_ONE_DRIVE_LABEL, mojom::Subpage::kOneDrive,
+      mojom::SearchResultIcon::kFolder, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kOneDriveSubpagePath);
 }
 
 }  // namespace ash::settings

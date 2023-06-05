@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/base64.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/feature_list.h"
@@ -57,6 +58,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
+#include "third_party/blink/public/common/interest_group/test_interest_group_builder.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy_features.h"
 #include "third_party/blink/public/mojom/interest_group/ad_auction_service.mojom.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
@@ -961,7 +963,7 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
   AllowInterestGroupContentBrowserClient content_browser_client_;
   TestKAnonymityServiceDelegate k_anon_delegate_;
   raw_ptr<ContentBrowserClient> old_content_browser_client_ = nullptr;
-  raw_ptr<InterestGroupManagerImpl> manager_;
+  raw_ptr<InterestGroupManagerImpl, DanglingUntriaged> manager_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   // Must be destroyed before RenderViewHostTestHarness::TearDown().
@@ -4050,7 +4052,7 @@ function scoreAd(
   ASSERT_EQ(1u,
             storage_interest_group->bidding_browser_signals->prev_wins.size());
   ASSERT_EQ(
-      R"({"render_url":"https://example.com/render"})",
+      R"({"renderURL":"https://example.com/render"})",
       storage_interest_group->bidding_browser_signals->prev_wins[0]->ad_json);
 
   // The auction should also trigger a k-anon "join" for the winning ad.
@@ -6668,8 +6670,7 @@ function reportResult() {
   policy.emplace_back(
       blink::mojom::PermissionsPolicyFeature::kSharedStorage,
       /*allowed_origins=*/
-      std::vector<blink::OriginWithPossibleWildcards>{
-          blink::OriginWithPossibleWildcards::FromOrigin(kOriginA)},
+      std::vector{*blink::OriginWithPossibleWildcards::FromOrigin(kOriginA)},
       /*self_if_matches=*/absl::nullopt,
       /*matches_all_origins=*/false,
       /*matches_opaque_src=*/false);
@@ -6882,8 +6883,7 @@ function scoreAd(
     policy.emplace_back(
         blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
         /*allowed_origins=*/
-        std::vector<blink::OriginWithPossibleWildcards>{
-            blink::OriginWithPossibleWildcards::FromOrigin(kOriginA)},
+        std::vector{*blink::OriginWithPossibleWildcards::FromOrigin(kOriginA)},
         /*self_if_matches=*/absl::nullopt,
         /*matches_all_origins=*/false,
         /*matches_opaque_src=*/false);
@@ -6908,9 +6908,8 @@ function scoreAd(
     policy.emplace_back(
         blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
         /*allowed_origins=*/
-        std::vector<blink::OriginWithPossibleWildcards>{
-            blink::OriginWithPossibleWildcards::FromOrigin(kOriginA),
-            blink::OriginWithPossibleWildcards::FromOrigin(kOriginC)},
+        std::vector{*blink::OriginWithPossibleWildcards::FromOrigin(kOriginA),
+                    *blink::OriginWithPossibleWildcards::FromOrigin(kOriginC)},
         /*self_if_matches=*/absl::nullopt,
         /*matches_all_origins=*/false,
         /*matches_opaque_src=*/false);
@@ -6969,8 +6968,7 @@ function scoreAd(
     policy.emplace_back(
         blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
         /*allowed_origins=*/
-        std::vector<blink::OriginWithPossibleWildcards>{
-            blink::OriginWithPossibleWildcards::FromOrigin(kOriginA)},
+        std::vector{*blink::OriginWithPossibleWildcards::FromOrigin(kOriginA)},
         /*self_if_matches=*/absl::nullopt,
         /*matches_all_origins=*/false,
         /*matches_opaque_src=*/false);
@@ -6995,9 +6993,8 @@ function scoreAd(
     policy.emplace_back(
         blink::mojom::PermissionsPolicyFeature::kPrivateAggregation,
         /*allowed_origins=*/
-        std::vector<blink::OriginWithPossibleWildcards>{
-            blink::OriginWithPossibleWildcards::FromOrigin(kOriginA),
-            blink::OriginWithPossibleWildcards::FromOrigin(kOriginC)},
+        std::vector{*blink::OriginWithPossibleWildcards::FromOrigin(kOriginA),
+                    *blink::OriginWithPossibleWildcards::FromOrigin(kOriginC)},
         /*self_if_matches=*/absl::nullopt,
         /*matches_all_origins=*/false,
         /*matches_opaque_src=*/false);
@@ -7483,7 +7480,7 @@ function scoreAd(
       ASSERT_EQ(
           1u,
           storage_interest_group->bidding_browser_signals->prev_wins.size());
-      ASSERT_EQ(R"({"render_url":"https://example.com/render"})",
+      ASSERT_EQ(R"({"renderURL":"https://example.com/render"})",
                 storage_interest_group->bidding_browser_signals->prev_wins[0]
                     ->ad_json);
       EXPECT_THAT(
@@ -7518,5 +7515,192 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(auction_worklet::mojom::KAnonymityBidMode::kNone,
                       auction_worklet::mojom::KAnonymityBidMode::kSimulate,
                       auction_worklet::mojom::KAnonymityBidMode::kEnforce));
+
+TEST_F(AdAuctionServiceImplTest, SerializesAuctionBlob) {
+  url::Origin test_origin = url::Origin::Create(GURL(kOriginStringA));
+  manager_->JoinInterestGroup(
+      blink::TestInterestGroupBuilder(test_origin, "cars")
+          .SetTrustedBiddingSignalsKeys({{"key1", "key2"}})
+          .SetUserBiddingSignals("{}")
+          .SetAds(
+              {{{GURL("https://c.test/ad.html"), /*metadata=*/"do not send",
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "1234"},
+                {GURL("https://c.test/ad2.html"), /*metadata=*/absl::nullopt},
+                {GURL("https://c.test/ad3.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "456"}}})
+          .SetAdComponents(
+              {{{GURL("https://c.test/ad4.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "789"}}})
+          .Build(),
+      GURL("https://a.test/example.html"));
+  task_environment()->FastForwardBy(base::Seconds(1));
+  manager_->RecordInterestGroupWin(
+      {test_origin, "cars"},
+      R"({"renderUrl": "https://c.test/ad.html", "adRenderId": "1234"})");
+  task_environment()->FastForwardBy(base::Seconds(1));
+  manager_->RecordInterestGroupWin(
+      {test_origin, "cars"}, R"({"renderUrl": "https://c.test/ad2.html"})");
+  task_environment()->FastForwardBy(base::Seconds(1));
+  manager_->RecordInterestGroupWin({test_origin, "cars"},
+                                   R"({"renderUrl": "corrupt JSON)");
+  task_environment()->FastForwardBy(base::Seconds(1));
+
+  std::vector<uint8_t> msg;
+  base::RunLoop run_loop;
+  manager_->GetInterestGroupAdAuctionData(
+      /*seller=*/test_origin, /*top_level_origin=*/test_origin,
+      base::BindLambdaForTesting([&](std::vector<uint8_t> inner_msg) {
+        msg = inner_msg;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  std::string expected =
+      "o2d2ZXJzaW9uAGlwdWJsaXNoZXJuaHR0cHM6Ly9hLnRlc3RuaW50ZXJlc3RHcm91cHOhbmh0"
+      "dHBzOi8vYS50ZXN0WJcfiwgAAAAAAAAAVY07DsIwEAX5XSgh/"
+      "FpSUlLQYntXzkKyjtYJyEIU8VkQ58RENDSvmdG84W0U+"
+      "AhZvixMsVoDqwbBKPG1gtI1rWPkzg9ms92xFnf3KEeyrGr/"
+      "soIG2YRFpSm5PXeTqhW8nYh9jLNznI9ZujjiEU8liUBsf4UDhnR9xZB9J5c+xfd/"
+      "hn48P6XlwYuiAAAA";
+  EXPECT_EQ(expected, base::Base64Encode(msg));
+}
+
+TEST_F(AdAuctionServiceImplTest, SerializesAuctionBlobWithNoGroups) {
+  url::Origin test_origin = url::Origin::Create(GURL(kOriginStringA));
+  std::vector<uint8_t> msg;
+  base::RunLoop run_loop;
+  manager_->GetInterestGroupAdAuctionData(
+      /*seller=*/test_origin, /*top_level_origin=*/test_origin,
+      base::BindLambdaForTesting([&](std::vector<uint8_t> inner_msg) {
+        msg = inner_msg;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  EXPECT_EQ("", base::Base64Encode(msg));
+}
+
+TEST_F(AdAuctionServiceImplTest, SerializesAuctionBlobWithEmptyGroup) {
+  url::Origin test_origin = url::Origin::Create(GURL(kOriginStringA));
+  manager_->JoinInterestGroup(
+      blink::TestInterestGroupBuilder(test_origin, "cars").Build(),
+      GURL("https://a.test/example.html"));
+  task_environment()->FastForwardBy(base::Seconds(1));
+
+  std::vector<uint8_t> msg;
+  base::RunLoop run_loop;
+  manager_->GetInterestGroupAdAuctionData(
+      /*seller=*/test_origin, /*top_level_origin=*/test_origin,
+      base::BindLambdaForTesting([&](std::vector<uint8_t> inner_msg) {
+        msg = inner_msg;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  EXPECT_EQ("", base::Base64Encode(msg));
+}
+
+TEST_F(AdAuctionServiceImplTest, SerializesMultipleOwnersAuctionBlob) {
+  url::Origin test_origin_a = url::Origin::Create(GURL(kOriginStringA));
+  url::Origin test_origin_b = url::Origin::Create(GURL(kOriginStringB));
+  manager_->JoinInterestGroup(
+      blink::TestInterestGroupBuilder(test_origin_a, "cars").Build(),
+      test_origin_a.GetURL().Resolve("/example.html"));
+  // fast-forward so second join has different time.
+  task_environment()->FastForwardBy(base::Seconds(1));
+  manager_->JoinInterestGroup(
+      blink::TestInterestGroupBuilder(test_origin_a, "cars")
+          .SetAds(
+              {{{GURL("https://c.test/ad.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "1234"},
+                {GURL("https://c.test/ad2.html"), /*metadata=*/absl::nullopt},
+                {GURL("https://c.test/ad3.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "456"}}})
+          .SetAdComponents(
+              {{{GURL("https://c.test/ad4.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "789"}}})
+          .Build(),
+      test_origin_a.GetURL().Resolve("/example.html"));
+  manager_->RecordInterestGroupWin(
+      {test_origin_a, "cars"},
+      R"({"renderUrl": "https://c.test/ad.html", "adRenderId": "1234"})");
+  task_environment()->FastForwardBy(base::Seconds(1));
+  manager_->RecordInterestGroupWin(
+      {test_origin_a, "cars"}, R"({"renderUrl": "https://c.test/ad2.html"})");
+
+  task_environment()->FastForwardBy(base::Seconds(1));
+  manager_->JoinInterestGroup(
+      blink::TestInterestGroupBuilder(test_origin_a, "boats")
+          .SetAds(
+              {{{GURL("https://c.test/ad6.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "Boat1"},
+                {GURL("https://c.test/ad7.html"), /*metadata=*/absl::nullopt},
+                {GURL("https://c.test/ad8.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "Boat2"}}})
+          .SetAdComponents(
+              {{{GURL("https://c.test/ad9.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "Boat3"}}})
+          .Build(),
+      test_origin_a.GetURL().Resolve("/example.html"));
+
+  task_environment()->FastForwardBy(base::Seconds(1));
+  manager_->JoinInterestGroup(
+      blink::TestInterestGroupBuilder(test_origin_b, "trains")
+          .SetAds(
+              {{{GURL("https://b.test/ad6.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "Train1"},
+                {GURL("https://b.test/ad7.html"), /*metadata=*/absl::nullopt},
+                {GURL("https://b.test/ad8.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "Train2"}}})
+          .SetAdComponents(
+              {{{GURL("https://b.test/ad9.html"), /*metadata=*/absl::nullopt,
+                 /*size_group=*/absl::nullopt,
+                 /*buyer_reporting_id=*/absl::nullopt,
+                 /*buyer_and_seller_reporting_id=*/absl::nullopt, "Train3"}}})
+          .Build(),
+      test_origin_b.GetURL().Resolve("/example.html"));
+  task_environment()->FastForwardBy(base::Seconds(1));
+
+  std::vector<uint8_t> msg;
+  base::RunLoop run_loop;
+  manager_->GetInterestGroupAdAuctionData(
+      /*seller=*/test_origin_a, /*top_level_origin=*/test_origin_a,
+      base::BindLambdaForTesting([&](std::vector<uint8_t> inner_msg) {
+        msg = inner_msg;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  std::string expected =
+      "o2d2ZXJzaW9uAGlwdWJsaXNoZXJuaHR0cHM6Ly9hLnRlc3RuaW50ZXJlc3RHcm91cHOibmh0"
+      "dHBzOi8vYS50ZXN0WJkfiwgAAAAAAAAAdc07DsIwDAZgKL1QH7xWOAIDK45jtUGtU9kBxAY5"
+      "Sw9KFQYkBIv1y7b+L44IViPtPIQizdIy9ERmitqB3ft+"
+      "8Ewc9JnOFRvxNyU5uIah07ERQmK8Z61x0/eFw6wdhK5Hx/"
+      "pwZ+84LedvyBZlVWO9XCXFIsgXguvN9h+R/yBiXJxinmo/"
+      "WPYCdURNadcAAABuaHR0cHM6Ly9iLnRlc3RYch+"
+      "LCAAAAAAAAABrXJKcmFLclBZSlJiZZwihjFLyEnNT00pA7OKcxBTn/NyC/"
+      "LzUvJLiRogC47ykovzy4tSi4Mz0vMSc4iXpRanJqXnJlYwZSZlA5aV5JQwZBUWpZeFAAxoys"
+      "/Iz88CCjADfoTrIbgAAAA==";
+  EXPECT_EQ(expected, base::Base64Encode(msg));
+}
 
 }  // namespace content

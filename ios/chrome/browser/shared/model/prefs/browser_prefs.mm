@@ -47,6 +47,8 @@
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/strings/grit/components_locale_settings.h"
+#import "components/supervised_user/core/browser/supervised_user_metrics_service.h"
+#import "components/supervised_user/core/browser/supervised_user_service.h"
 #import "components/sync/base/sync_prefs.h"
 #import "components/sync/service/glue/sync_transport_data_prefs.h"
 #import "components/sync_device_info/device_info_prefs.h"
@@ -195,6 +197,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                    PrefRegistry::LOSSY_PREF);
   registry->RegisterListPref(prefs::kOverflowMenuNewDestinations,
                              PrefRegistry::LOSSY_PREF);
+  registry->RegisterListPref(prefs::kOverflowMenuDestinationsOrder);
 
   // Preferences related to Enterprise policies.
   registry->RegisterListPref(prefs::kRestrictAccountsToPatterns);
@@ -273,6 +276,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
       registry);
   segmentation_platform::DeviceSwitcherResultDispatcher::RegisterProfilePrefs(
       registry);
+  supervised_user::SupervisedUserService::RegisterProfilePrefs(registry);
+  supervised_user::SupervisedUserMetricsService::RegisterProfilePrefs(registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(registry);
   syncer::SyncPrefs::RegisterProfilePrefs(registry);
@@ -291,6 +296,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   [SigninPromoViewMediator registerBrowserStatePrefs:registry];
 
   registry->RegisterBooleanPref(prefs::kBottomOmnibox, true);
+  registry->RegisterBooleanPref(policy::policy_prefs::kPolicyTestPageEnabled,
+                                true);
   registry->RegisterBooleanPref(kDataSaverEnabled, false);
   registry->RegisterBooleanPref(
       prefs::kEnableDoNotTrack, false,
@@ -396,6 +403,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   // Register pref used to determine if Browser Lockdown Mode is enabled.
   registry->RegisterBooleanPref(prefs::kBrowserLockdownModeEnabled, false);
+
+  // Register pref used to determine if OS Lockdown Mode is enabled.
+  registry->RegisterBooleanPref(prefs::kOSLockdownModeEnabled, false);
 
   ntp_snippets::prefs::RegisterProfilePrefsForMigrationApril2023(registry);
 

@@ -315,6 +315,9 @@
 <translation id="2975121486251958312">Հասանելի է միայն ինկոգնիտո ռեժիմը</translation>
 <translation id="2982481275546140226">Մաքրել տվյալները</translation>
 <translation id="298306318844797842">Ավելացնել վճարման եղանակ...</translation>
+<translation id="2988274366244053197">Վճարման եղանակները և Google Pay-ի հասցեները չեն գաղտնագրվի։ Chrome-ի այցելությունների պատմությունը չի համաժամացվի։
+
+Միայն ձեր անցաբառն ունեցող մարդիկ կարող են կարդալ ձեր գաղտնագրված տվյալները։ Անցաբառը չի ուղարկվում Google-ին կամ պահվում նրա կողմից։ Եթե մոռացել եք ձեր անցաբառը կամ ուզում եք փոխել այս կարգավորումը, <ph name="BEGIN_LINK" />մաքրեք Chrome-ի տվյալները ձեր հաշվում<ph name="END_LINK" />։</translation>
 <translation id="2989805286512600854">Բացել նոր ներդիրում</translation>
 <translation id="3020183492814296499">Դյուրանցումներ</translation>
 <translation id="3037605927509011580">Վա՛յ</translation>
@@ -381,6 +384,7 @@
 <translation id="3471148582064653480">Համաժամացրեք գաղտնաբառերը, պատմությունը և ավելին։</translation>
 <translation id="3474048842645761983">{COUNT,plural, =1{{COUNT} կայքի կամ հավելվածի համար}one{{COUNT} կայքի կամ հավելվածի համար}other{{COUNT} կայքի և հավելվածի համար}}</translation>
 <translation id="3474624961160222204">Շարունակել <ph name="NAME" /> հաշվով</translation>
+<translation id="3476450923187944815">Օգտագործեք ձեր գաղտնաբառերն այլ հավելվածներում։</translation>
 <translation id="3478058380795961209">Ժամկետի սպառման ամիսը</translation>
 <translation id="3482959374254649722">Ներդիրների համաժամացում...</translation>
 <translation id="3484946776651937681">Բացել Ներբեռնումներում</translation>
@@ -652,6 +656,7 @@
 <translation id="5300589172476337783">Ցույց տալ</translation>
 <translation id="5317780077021120954">Պահել</translation>
 <translation id="5318298563956633672">Դուք արդեն հետագծում եք այս ապրանքը։</translation>
+<translation id="5325595483440111327">Դիտեք այցելությունների պատմությունը։</translation>
 <translation id="5339316356165661760">Միացնել համաժամացումը</translation>
 <translation id="536067926684072644">Ցույց տալ էջանիշները</translation>
 <translation id="5360976571138293719">Գաղտնիության, անվտանգության և տվյալների հավաքման հետ կապված լրացուցիչ կարգավորումներին կարող եք ծանոթանալ <ph name="BEGIN_LINK" />Google-ի ծառայություններ<ph name="END_LINK" /> բաժնում։</translation>
@@ -750,6 +755,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="595769230373966252">Որոնել <ph name="SEARCH_PROVIDER" />-ում</translation>
 <translation id="5963939892571022323">Չհաջողվեց ստեղծել ընդգծված տեքստի հղումը։</translation>
 <translation id="5965679971710331625">Դուք մուտք եք գործել</translation>
+<translation id="5971872012779224351">{count,plural, =1{1 էջանիշ ջնջվեց}one{{count} էջանիշ ջնջվեց}other{{count} էջանիշ ջնջվեց}}</translation>
 <translation id="5979837087407522202">Գաղտնաբառերի որոնում</translation>
 <translation id="5981230843984570095">Փակել բոլոր ոչ ակտիվ ներդիրները</translation>
 <translation id="5982717868370722439">Առկա տվյալների ավելացում <ph name="USER_EMAIL" /> հաշվում:</translation>
@@ -919,6 +925,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="681368974849482173">Տարրը ստեղծվեց</translation>
 <translation id="6822587385560699678">Երբ այս գործառույթը միացված է, գաղտնաբառերը պահվում են <ph name="ACCOUNT" /> հաշվում։ Երբ այն անջատված է, գաղտնաբառերը պահվում են միայն այս սարքում։</translation>
 <translation id="6831043979455480757">Թարգմանել</translation>
+<translation id="6839843088069935119">{count,plural, =1{Էջանիշը պահվել է «{title}» պանակում՝ միայն այս սարքում։}one{Էջանիշը պահվել է «{title}» պանակում՝ միայն այս սարքում։}other{Էջանիշները պահվել են «{title}» պանակում՝ միայն այս սարքում։}}</translation>
 <translation id="6842136130964845393">Հաստատեք ձեր ինքնությունը, որպեսզի պահված գաղտնաբառերը միշտ հասանելի լինեն ձեզ</translation>
 <translation id="6851516051005285358">Համակարգչային տարբերակ</translation>
 <translation id="6852222216891664518">Փակել ամրացված ներդիրը</translation>
@@ -997,6 +1004,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7435356471928173109">Անջատվել է ադմինիստրատորի կողմից</translation>
 <translation id="7438481509621345350">Այժմ, երբ նոր ներդիր բացեք, կտեսնեք նորություններ <ph name="CHANNEL_NAME" /> ալիքից։</translation>
 <translation id="7446583256109515732">Ներդիրն ապամրացվեց</translation>
+<translation id="7451023311965289370">{count,plural, =1{Էջանիշը պահվեց այստեղ՝ «{title}»}one{Էջանիշները պահվեցին այստեղ՝ «{title}»}other{Էջանիշները պահվեցին այստեղ՝ «{title}»}}</translation>
 <translation id="7454057999980797137">Նահանգ/շրջան</translation>
 <translation id="7459628154744868585">Բարելավված պաշտպանությունը միացված է</translation>
 <translation id="746684838091935575">3. Ընտրեք Chrome-ը։</translation>

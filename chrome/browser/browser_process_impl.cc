@@ -125,13 +125,13 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/network_quality_observer_factory.h"
 #include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/network_service_util.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/process_visibility_util.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/network_service_util.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
 #include "media/media_buildflags.h"
@@ -139,7 +139,6 @@
 #include "net/log/net_log.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
-#include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "ui/base/idle/idle.h"
@@ -636,11 +635,6 @@ void BrowserProcessImpl::FlushLocalStateAndReply(base::OnceClosure reply) {
   local_state_->CommitPendingWrite(std::move(reply));
 }
 
-device::GeolocationManager* BrowserProcessImpl::geolocation_manager() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return device::GeolocationManager::GetInstance();
-}
-
 void BrowserProcessImpl::EndSession() {
   // Mark all the profiles as clean.
   ProfileManager* pm = profile_manager();
@@ -722,12 +716,6 @@ BrowserProcessImpl::GetMetricsServicesManager() {
 metrics::MetricsService* BrowserProcessImpl::metrics_service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetMetricsServicesManager()->GetMetricsService();
-}
-
-void BrowserProcessImpl::SetGeolocationManager(
-    std::unique_ptr<device::GeolocationManager> geolocation_manager) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  device::GeolocationManager::SetInstance(std::move(geolocation_manager));
 }
 
 embedder_support::OriginTrialsSettingsStorage*

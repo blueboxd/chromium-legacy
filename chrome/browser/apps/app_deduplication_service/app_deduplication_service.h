@@ -51,14 +51,6 @@ class AppDeduplicationService : public KeyedService,
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
  private:
-  friend class AppDeduplicationServiceTest;
-  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceTest,
-                           OnDuplicatedGroupListUpdated);
-  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceTest,
-                           ExactDuplicateAllInstalled);
-  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceTest, Installation);
-  FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceTest, Websites);
-
   friend class AppDeduplicationServiceAlmanacTest;
   FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceAlmanacTest,
                            DeduplicateDataToEntries);
@@ -75,21 +67,10 @@ class AppDeduplicationService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AppDeduplicationServiceAlmanacTest,
                            ValidServiceWithDuplicates);
 
-  enum class EntryStatus {
-    // This entry is not an app entry (could be website, phonehub, etc.).
-    kNonApp = 0,
-    kInstalledApp = 1,
-    kNotInstalledApp = 2
-  };
-
   // Starts the process of calling the server to retrieve duplicate app data.
   // A call is only made to the server if there is a difference of over 24 hours
   // between now and the time stored in the server pref.
   void StartLoginFlow();
-
-  // AppProvisioningDataManager::Observer:
-  void OnDuplicatedGroupListUpdated(
-      const proto::DuplicatedGroupList& duplicated_apps_map) override;
 
   // apps::AppRegistryCache::Observer:
   void OnAppUpdate(const apps::AppUpdate& update) override;
@@ -135,7 +116,6 @@ class AppDeduplicationService : public KeyedService,
 
   std::map<uint32_t, DuplicateGroup> duplication_map_;
   std::map<Entry, uint32_t> entry_to_group_map_;
-  std::map<Entry, EntryStatus> entry_status_;
   raw_ptr<Profile, ExperimentalAsh> profile_;
 
   base::ScopedObservation<AppProvisioningDataManager,

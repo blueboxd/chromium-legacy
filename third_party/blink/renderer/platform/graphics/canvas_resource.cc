@@ -40,8 +40,16 @@
 #include "third_party/blink/renderer/platform/wtf/cross_thread_copier_gpu.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/skia/include/core/SkAlphaType.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+#include "third_party/skia/include/core/SkPixmap.h"
+#include "third_party/skia/include/core/SkSize.h"
+#include "third_party/skia/include/gpu/GpuTypes.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_space.h"
 
@@ -259,7 +267,8 @@ viz::SharedImageFormat CanvasResource::GetSharedImageFormat() const {
 }
 
 gfx::BufferFormat CanvasResource::GetBufferFormat() const {
-  return viz::BufferFormat(GetSharedImageFormat().resource_format());
+  return viz::SinglePlaneSharedImageFormatToBufferFormat(
+      GetSharedImageFormat());
 }
 
 gfx::ColorSpace CanvasResource::GetColorSpace() const {
@@ -560,8 +569,8 @@ GrBackendTexture CanvasResourceRasterSharedImage::CreateGrTexture() const {
   texture_info.fFormat =
       viz::TextureStorageFormat(GetSharedImageFormat().resource_format(),
                                 capabilities.angle_rgbx_internal_format);
-  return GrBackendTexture(Size().width(), Size().height(), GrMipMapped::kNo,
-                          texture_info);
+  return GrBackendTexture(Size().width(), Size().height(),
+                          skgpu::Mipmapped::kNo, texture_info);
 }
 
 CanvasResourceRasterSharedImage::~CanvasResourceRasterSharedImage() {
@@ -572,8 +581,8 @@ void CanvasResourceRasterSharedImage::TearDown() {
   DCHECK(!is_cross_thread());
 
   // The context deletes all shared images on destruction which means no
-  // cleanup is needed if the context was lost.
-  if (ContextProviderWrapper()) {
+  // cleanup is needed if the context or the mailbox was lost.
+  if (ContextProviderWrapper() && !IsLost() && IsValid()) {
     auto* raster_interface = RasterInterface();
     auto* shared_image_interface =
         ContextProviderWrapper()->ContextProvider()->SharedImageInterface();

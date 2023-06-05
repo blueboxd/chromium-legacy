@@ -18,14 +18,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.CANCEL_RUNNABLE;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.CUSTOM_DONE_BUTTON_TEXT;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.DELETE_CONFIRMATION_TEXT;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.DELETE_CONFIRMATION_TITLE;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.DONE_RUNNABLE;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.EDITOR_FIELDS;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.FOOTER_MESSAGE;
-import static org.chromium.chrome.browser.autofill.prefeditor.EditorProperties.SHOW_REQUIRED_INDICATOR;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.CANCEL_RUNNABLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.CUSTOM_DONE_BUTTON_TEXT;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELETE_CONFIRMATION_TEXT;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELETE_CONFIRMATION_TITLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DONE_RUNNABLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.EDITOR_FIELDS;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.FOOTER_MESSAGE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.SHOW_REQUIRED_INDICATOR;
 
 import android.app.Activity;
 
@@ -52,7 +52,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.Source;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.autofill.editors.EditorDialog;
+import org.chromium.chrome.browser.autofill.editors.EditorFieldModel;
+import org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownKeyValue;
+import org.chromium.chrome.browser.autofill.editors.EditorProperties.TextInputType;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.AddressField;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.AddressUiComponent;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -63,8 +66,6 @@ import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.components.autofill.prefeditor.EditorFieldModel;
-import org.chromium.components.autofill.prefeditor.EditorFieldModel.DropdownKeyValue;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.sync.UserSelectableType;
@@ -198,7 +199,6 @@ public class AddressEditorTest {
         setUpSupportedCountries(mSupportedCountries);
 
         when(mEditorDialog.getContext()).thenReturn(mActivity);
-        when(mEditorDialog.getProfile()).thenReturn(mProfile);
         doNothing().when(mEditorDialog).show(mPropertyModelCapture.capture());
     }
 
@@ -250,11 +250,12 @@ public class AddressEditorTest {
         setUpAddressUiComponents(addressUiComponents, "US");
     }
 
-    private static void validateTextField(EditorFieldModel field, String value, int inputTypeHint,
-            String label, boolean isRequired, boolean isFullLine, boolean hasLengthCounter) {
+    private static void validateTextField(EditorFieldModel field, String value,
+            @TextInputType int textInputType, String label, boolean isRequired, boolean isFullLine,
+            boolean hasLengthCounter) {
         Assert.assertTrue(field.isTextField());
         Assert.assertEquals(field.getValue(), value);
-        Assert.assertEquals(inputTypeHint, field.getInputTypeHint());
+        Assert.assertEquals(textInputType, field.getTextInputType());
         Assert.assertEquals(label, field.getLabel());
         Assert.assertEquals(isRequired, field.isRequired());
         Assert.assertEquals(isFullLine, field.isFullLine());
@@ -301,45 +302,44 @@ public class AddressEditorTest {
         // Fields obtained from backend must be placed after the country dropdown.
         // Note: honorific prefix always comes before the full name field.
         validateTextField(editorFields.get(1), profile.getHonorificPrefix(),
-                EditorFieldModel.INPUT_TYPE_HINT_NONE,
+                TextInputType.PLAIN_TEXT_INPUT,
                 mActivity.getString(R.string.autofill_profile_editor_honorific_prefix), false, true,
                 false);
         validateTextField(editorFields.get(2), profile.getFullName(),
-                EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME, "full name label",
-                shouldMarkFieldsRequired, true, false);
-        validateTextField(editorFields.get(3), profile.getRegion(),
-                EditorFieldModel.INPUT_TYPE_HINT_NONE, "admin area label", false, true, false);
+                TextInputType.PERSON_NAME_INPUT, "full name label", shouldMarkFieldsRequired, true,
+                false);
+        validateTextField(editorFields.get(3), profile.getRegion(), TextInputType.PLAIN_TEXT_INPUT,
+                "admin area label", false, true, false);
         // Locality field is forced to occupy full line.
         validateTextField(editorFields.get(4), profile.getLocality(),
-                EditorFieldModel.INPUT_TYPE_HINT_NONE, "locality label", shouldMarkFieldsRequired,
-                true, false);
+                TextInputType.PLAIN_TEXT_INPUT, "locality label", shouldMarkFieldsRequired, true,
+                false);
 
         // Note: dependent locality is a required field for address profiles stored in Google
         // account, but it's still marked as optional by the editor when the corresponding field in
         // the existing address profile is empty. It is considered required for new address
         // profiles.
         validateTextField(editorFields.get(5), profile.getDependentLocality(),
-                EditorFieldModel.INPUT_TYPE_HINT_NONE, "dependent locality label",
+                TextInputType.PLAIN_TEXT_INPUT, "dependent locality label",
                 shouldMarkFieldsRequiredWhenAddressFieldEmpty, true, false);
 
         validateTextField(editorFields.get(6), profile.getCompanyName(),
-                EditorFieldModel.INPUT_TYPE_HINT_NONE, "organization label", false, true, false);
+                TextInputType.PLAIN_TEXT_INPUT, "organization label", false, true, false);
 
         validateTextField(editorFields.get(7), profile.getSortingCode(),
-                EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC, "sorting code label", false, false,
-                false);
+                TextInputType.ALPHA_NUMERIC_INPUT, "sorting code label", false, false, false);
         validateTextField(editorFields.get(8), profile.getPostalCode(),
-                EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC, "postal code label",
-                shouldMarkFieldsRequired, false, false);
+                TextInputType.ALPHA_NUMERIC_INPUT, "postal code label", shouldMarkFieldsRequired,
+                false, false);
         validateTextField(editorFields.get(9), profile.getStreetAddress(),
-                EditorFieldModel.INPUT_TYPE_HINT_STREET_LINES, "street address label",
+                TextInputType.STREET_ADDRESS_INPUT, "street address label",
                 shouldMarkFieldsRequired, true, false);
     }
 
     @Test
     @SmallTest
     public void validateCustomDoneButtonText() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, /*saveToDisk=*/false,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile, /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
         setUpAddressUiComponents(new ArrayList());
@@ -355,7 +355,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateUIStrings_NewAddressProfile() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, /*saveToDisk=*/false,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile, /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
         setUpAddressUiComponents(new ArrayList());
@@ -375,7 +375,7 @@ public class AddressEditorTest {
     @SmallTest
     public void validateUIStrings_NewAddressProfile_EligibleForAddressAccountStorage() {
         when(mPersonalDataManager.isEligibleForAddressAccountStorage()).thenReturn(true);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, /*saveToDisk=*/false,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile, /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
         setUpAddressUiComponents(new ArrayList());
@@ -398,7 +398,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateUIStrings_LocalOrSyncAddressProfile_AddressSyncDisabled() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
@@ -418,7 +418,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateUIStrings_LocalOrSyncAddressProfile_AddressSyncEnabled() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
@@ -442,7 +442,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateUIStrings_UpdateLocalOrSyncAddressProfile_AddressSyncDisabled() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/true,
                 /*isMigrationToAccount=*/false);
@@ -462,7 +462,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateUIStrings_UpdateLocalOrSyncAddressProfile_AddressSyncEnabled() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/true,
                 /*isMigrationToAccount=*/false);
@@ -486,7 +486,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateUIStrings_LocalAddressProfile_MigrationToAccount() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/true);
@@ -511,7 +511,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateUIStrings_SyncAddressProfile_MigrationToAccount() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/true);
@@ -539,7 +539,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateUIStrings_AccountAddressProfile_SaveInAccountFlow() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sAccountProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
@@ -563,7 +563,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateUIStrings_AccountAddressProfile_UpdateAccountProfileFlow() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sAccountProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/true,
                 /*isMigrationToAccount=*/false);
@@ -590,7 +590,7 @@ public class AddressEditorTest {
             ChromeFeatureList.AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES})
     public void
     validateDefaultFields_NicknamesDisabled_HonorificDisabled() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
@@ -619,11 +619,11 @@ public class AddressEditorTest {
                 containsInAnyOrder(countryDropdown.getDropdownKeyValues().toArray()));
 
         validateTextField(editorFields.get(1), sLocalProfile.getPhoneNumber(),
-                EditorFieldModel.INPUT_TYPE_HINT_PHONE,
+                TextInputType.PHONE_NUMBER_INPUT,
                 mActivity.getString(R.string.autofill_profile_editor_phone_number), false, true,
                 false);
         validateTextField(editorFields.get(2), sLocalProfile.getEmailAddress(),
-                EditorFieldModel.INPUT_TYPE_HINT_EMAIL,
+                TextInputType.EMAIL_ADDRESS_INPUT,
                 mActivity.getString(R.string.autofill_profile_editor_email_address), false, true,
                 false);
     }
@@ -631,7 +631,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void validateDefaultFields() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
@@ -648,15 +648,15 @@ public class AddressEditorTest {
         // editorFields[3] - nickname field.
         Assert.assertEquals(4, editorFields.size());
 
-        validateTextField(editorFields.get(3), null, EditorFieldModel.INPUT_TYPE_HINT_NONE, "Label",
-                false, true, false);
+        validateTextField(editorFields.get(3), null, TextInputType.PLAIN_TEXT_INPUT, "Label", false,
+                true, false);
     }
 
     @Test
     @SmallTest
     public void validateShownFields_NewAddressProfile() {
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, /*saveToDisk=*/false,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile, /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
 
@@ -670,7 +670,7 @@ public class AddressEditorTest {
     public void validateShownFields_NewAddressProfile_EligibleForAddressAccountStorage() {
         when(mPersonalDataManager.isEligibleForAddressAccountStorage()).thenReturn(true);
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, /*saveToDisk=*/false,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile, /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
 
@@ -684,7 +684,7 @@ public class AddressEditorTest {
     @SmallTest
     public void validateShownFields_LocalOrSyncAddressProfile_SaveLocally() {
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
@@ -698,7 +698,7 @@ public class AddressEditorTest {
     @SmallTest
     public void validateShownFields_LocalOrSyncAddressProfile_UpdateLocally() {
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/true,
                 /*isMigrationToAccount=*/false);
@@ -712,7 +712,7 @@ public class AddressEditorTest {
     @SmallTest
     public void validateShownFields_LocalOrSyncAddressProfile_MigrationToAccount() {
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/true);
@@ -726,7 +726,7 @@ public class AddressEditorTest {
     @SmallTest
     public void validateShownFields_AccountProfile_SaveInAccountFlow() {
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sAccountProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
@@ -740,7 +740,7 @@ public class AddressEditorTest {
     @SmallTest
     public void validateShownFields_AccountProfile_UpdateAlreadySaved() {
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sAccountProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/true,
                 /*isMigrationToAccount=*/false);
@@ -753,7 +753,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void edit_ChangeCountry_FieldsSetChanges() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, sLocalProfile), /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
@@ -774,14 +774,13 @@ public class AddressEditorTest {
         // editorFields[3] - email field.
         // editorFields[4] - nickname field.
         Assert.assertEquals(5, editorFields.size());
-        assertThat(editorFields.stream()
-                           .map(EditorFieldModel::getInputTypeHint)
+        assertThat(editorFields.subList(1, 5)
+                           .stream()
+                           .map(EditorFieldModel::getTextInputType)
                            .collect(Collectors.toList()),
-                containsInAnyOrder(EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN,
-                        EditorFieldModel.INPUT_TYPE_HINT_ALPHA_NUMERIC,
-                        EditorFieldModel.INPUT_TYPE_HINT_PHONE,
-                        EditorFieldModel.INPUT_TYPE_HINT_EMAIL,
-                        EditorFieldModel.INPUT_TYPE_HINT_NONE));
+                containsInAnyOrder(TextInputType.ALPHA_NUMERIC_INPUT,
+                        TextInputType.PHONE_NUMBER_INPUT, TextInputType.EMAIL_ADDRESS_INPUT,
+                        TextInputType.PLAIN_TEXT_INPUT));
         EditorFieldModel countryDropdown = editorFields.get(0);
 
         countryDropdown.setDropdownKey("DE", () -> {});
@@ -791,21 +790,20 @@ public class AddressEditorTest {
         // editorFields[3] - email field.
         // editorFields[4] - nickname field.
         Assert.assertEquals(5, editorFields.size());
-        assertThat(editorFields.stream()
-                           .map(EditorFieldModel::getInputTypeHint)
+        assertThat(editorFields.subList(1, 5)
+                           .stream()
+                           .map(EditorFieldModel::getTextInputType)
                            .collect(Collectors.toList()),
-                containsInAnyOrder(EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN,
-                        EditorFieldModel.INPUT_TYPE_HINT_STREET_LINES,
-                        EditorFieldModel.INPUT_TYPE_HINT_PHONE,
-                        EditorFieldModel.INPUT_TYPE_HINT_EMAIL,
-                        EditorFieldModel.INPUT_TYPE_HINT_NONE));
+                containsInAnyOrder(TextInputType.STREET_ADDRESS_INPUT,
+                        TextInputType.PHONE_NUMBER_INPUT, TextInputType.EMAIL_ADDRESS_INPUT,
+                        TextInputType.PLAIN_TEXT_INPUT));
     }
 
     @Test
     @SmallTest
     public void edit_NewAddressProfile_EligibleForAddressAccountStorage() {
         when(mPersonalDataManager.isEligibleForAddressAccountStorage()).thenReturn(true);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, /*saveToDisk=*/false,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile, /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS);
@@ -834,7 +832,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void edit_AlterAddressProfile_Cancel() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, new AutofillProfile(sLocalProfile)),
                 /*saveToDisk=*/false,
                 /*isUpdate=*/false,
@@ -860,7 +858,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void edit_AlterAddressProfile_CommitChanges() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, new AutofillProfile(sLocalProfile)),
                 /*saveToDisk=*/false,
                 /*isUpdate=*/false,
@@ -891,7 +889,7 @@ public class AddressEditorTest {
     @Test
     @SmallTest
     public void edit_AlterAddressProfile_CommitChanges_InvisibleFieldsGetReset() {
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, new AutofillProfile(sLocalProfile)),
                 /*saveToDisk=*/false,
                 /*isUpdate=*/false,
@@ -933,7 +931,7 @@ public class AddressEditorTest {
     public void accountSavingDisallowedForUnsupportedCountry() {
         when(mPersonalDataManager.isEligibleForAddressAccountStorage()).thenReturn(true);
         when(mPersonalDataManager.isCountryEligibleForAccountStorage(eq("CU"))).thenReturn(false);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, /*saveToDisk=*/false,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile, /*saveToDisk=*/false,
                 /*isUpdate=*/false,
                 /*isMigrationToAccount=*/false);
         setUpAddressUiComponents(SUPPORTED_ADDRESS_FIELDS, "US");
@@ -967,7 +965,7 @@ public class AddressEditorTest {
     @SmallTest
     public void countryDropDownExcludesUnsupportedCountries_saveInAccountFlow() {
         when(mPersonalDataManager.isCountryEligibleForAccountStorage(eq("CU"))).thenReturn(false);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, new AutofillProfile(sAccountProfile)),
                 /*saveToDisk=*/false,
                 /*isUpdate=*/false,
@@ -987,7 +985,7 @@ public class AddressEditorTest {
     @SmallTest
     public void countryDropDownExcludesUnsupportedCountries_MigrationFlow() {
         when(mPersonalDataManager.isCountryEligibleForAccountStorage(eq("CU"))).thenReturn(false);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, new AutofillProfile(sLocalProfile)),
                 /*saveToDisk=*/false,
                 /*isUpdate=*/false,
@@ -1007,7 +1005,7 @@ public class AddressEditorTest {
     @SmallTest
     public void countryDropDownExcludesUnsupportedCountries_editExistingAccountProfile() {
         when(mPersonalDataManager.isCountryEligibleForAccountStorage(eq("CU"))).thenReturn(false);
-        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate,
+        mAddressEditor = new AddressEditor(mEditorDialog, mDelegate, mProfile,
                 new AutofillAddress(mActivity, new AutofillProfile(sAccountProfile)),
                 /*saveToDisk=*/false, /*isUpdate=*/true,
                 /*isMigrationToAccount=*/false);

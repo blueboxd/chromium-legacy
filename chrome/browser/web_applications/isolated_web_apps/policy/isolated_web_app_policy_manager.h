@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/version.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_external_install_options.h"
@@ -22,12 +23,12 @@
 
 namespace network {
 class SharedURLLoaderFactory;
-class SimpleURLLoader;
 }  // namespace network
 
 namespace web_app {
 
 class UpdateManifest;
+class IsolatedWebAppDownloader;
 
 // This component is responsible for installing, uninstalling, updating etc.
 // of the policy installed IWAs.
@@ -60,6 +61,7 @@ class IsolatedWebAppPolicyManager {
     virtual void Install(
         const IsolatedWebAppLocation& location,
         const IsolatedWebAppUrlInfo& url_info,
+        const base::Version& expected_version,
         WebAppCommandScheduler::InstallIsolatedWebAppCallback callback) = 0;
   };
 
@@ -68,6 +70,7 @@ class IsolatedWebAppPolicyManager {
     explicit IwaInstallCommandWrapperImpl(web_app::WebAppProvider* provider);
     void Install(const IsolatedWebAppLocation& location,
                  const IsolatedWebAppUrlInfo& url_info,
+                 const base::Version& expected_version,
                  WebAppCommandScheduler::InstallIsolatedWebAppCallback callback)
         override;
     ~IwaInstallCommandWrapperImpl() override = default;
@@ -116,9 +119,7 @@ class IsolatedWebAppPolicyManager {
 
   // Downloading of the Signed Web Bundle.
   void DownloadWebBundle();
-  void OnWebBundleDownloaded(
-      std::unique_ptr<network::SimpleURLLoader> simple_loader,
-      base::FilePath path);
+  void OnWebBundleDownloaded(const base::FilePath& path, int32_t net_error);
 
   // Installing of the IWA using the downloaded Signed Web Bundle.
   void InstallIwa(base::FilePath path);
@@ -140,6 +141,7 @@ class IsolatedWebAppPolicyManager {
       ephemeral_iwa_install_options_;
   std::vector<IsolatedWebAppExternalInstallOptions>::iterator current_app_;
   std::unique_ptr<UpdateManifestFetcher> current_update_manifest_fetcher_;
+  std::unique_ptr<IsolatedWebAppDownloader> current_bundle_downloader_;
 
   const base::FilePath installation_dir_;
 

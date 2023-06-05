@@ -14,6 +14,10 @@ BASE_FEATURE(kDefaultBrowserBlueDotPromo,
              "DefaultBrowserBlueDotPromo",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kIOSPaymentsBottomSheet,
+             "IOSPaymentsBottomSheet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 constexpr base::FeatureParam<BlueDotPromoUserGroup>::Option
     kBlueDotPromoUserGroupOptions[] = {
         {BlueDotPromoUserGroup::kAllDBPromosDisabled, "all-db-promos-disabled"},
@@ -44,10 +48,6 @@ BASE_FEATURE(kModernTabStrip,
 
 BASE_FEATURE(kIncognitoNtpRevamp,
              "IncognitoNtpRevamp",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDefaultBrowserFullscreenPromoExperiment,
-             "DefaultBrowserFullscreenPromoExperiment",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDefaultBrowserIntentsShowSettings,
@@ -254,8 +254,4 @@ bool IsBottomOmniboxSteadyStateEnabled() {
 
 BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kReplaceSyncPromosWithSignInPromos,
-             "ReplaceSyncPromosWithSignInPromos",
              base::FEATURE_DISABLED_BY_DEFAULT);

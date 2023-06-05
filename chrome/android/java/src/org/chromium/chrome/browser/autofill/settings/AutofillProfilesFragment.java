@@ -27,9 +27,11 @@ import org.chromium.chrome.browser.autofill.AutofillEditorBase;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.Source;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
+import org.chromium.chrome.browser.autofill.editors.EditorDialog;
+import org.chromium.chrome.browser.autofill.editors.EditorObserverForTest;
 import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
+import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -37,7 +39,6 @@ import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ProfileDependentSetting;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.SyncService;
-import org.chromium.components.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
@@ -224,15 +225,16 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
         mEditorDialog = prepareEditorDialog(editorPreference.getGUID());
         AutofillAddress autofillAddress = getAutofillAddress(editorPreference);
         if (autofillAddress == null) {
-            AddressEditor addressEditor = new AddressEditor(mEditorDialog, sAddressEditorDelegate,
-                    /*saveToDisk=*/true, /*isUpdate=*/autofillAddress != null,
-                    /*isMigrationToAccount=*/false);
-            addressEditor.showEditorDialog();
-        } else {
             AddressEditor addressEditor =
-                    new AddressEditor(mEditorDialog, sAddressEditorDelegate, autofillAddress,
+                    new AddressEditor(mEditorDialog, sAddressEditorDelegate, mProfile,
                             /*saveToDisk=*/true, /*isUpdate=*/autofillAddress != null,
                             /*isMigrationToAccount=*/false);
+            addressEditor.showEditorDialog();
+        } else {
+            AddressEditor addressEditor = new AddressEditor(mEditorDialog, sAddressEditorDelegate,
+                    mProfile, autofillAddress,
+                    /*saveToDisk=*/true, /*isUpdate=*/autofillAddress != null,
+                    /*isMigrationToAccount=*/false);
             addressEditor.showEditorDialog();
         }
     }
@@ -247,7 +249,8 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
             }
         };
 
-        return new EditorDialog(getActivity(), runnable, mProfile);
+        return new EditorDialog(
+                getActivity(), runnable, HelpAndFeedbackLauncherImpl.getForProfile(mProfile));
     }
 
     @Nullable

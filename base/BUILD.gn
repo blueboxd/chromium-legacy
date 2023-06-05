@@ -212,8 +212,24 @@ if (is_apple) {
     sources = [
       "apple/owned_objc.h",
       "apple/owned_objc.mm",
+      "message_loop/message_pump_mac.h",
+      "message_loop/message_pump_mac.mm",
     ]
+    if (is_mac) {
+      sources += [
+        "mac/launch_application.h",
+        "mac/launch_application.mm",
+      ]
+      frameworks = [
+        "AppKit.framework",
+        "Foundation.framework",
+      ]
+    }
     configs += [ "//build/config/compiler:enable_arc" ]
+    deps = [
+      "//base:base_static",
+      "//third_party/abseil-cpp:absl",
+    ]
   }
 }
 
@@ -1302,8 +1318,8 @@ component("base") {
     ]
 
     deps += [
-      "//third_party/android_ndk:cpu_features",
       "//third_party/ashmem",
+      "//third_party/cpu_features:ndk_compat",
     ]
 
     # Needs to be a public config so that dependent targets link against it as
@@ -1992,8 +2008,6 @@ component("base") {
       "mac/authorization_util.h",
       "mac/authorization_util.mm",
       "mac/close_nocancel.cc",
-      "mac/launch_application.h",
-      "mac/launch_application.mm",
       "mac/launchd.cc",
       "mac/launchd.h",
       "mac/mac_util.h",
@@ -2093,8 +2107,6 @@ component("base") {
       "mac/scoped_typeref.h",
       "memory/platform_shared_memory_mapper_mac.cc",
       "memory/platform_shared_memory_region_mac.cc",
-      "message_loop/message_pump_mac.h",
-      "message_loop/message_pump_mac.mm",
       "process/process_metrics_apple_internal.cc",
       "process/process_metrics_apple_internal.h",
       "profiler/module_cache_mac.cc",
@@ -2107,6 +2119,7 @@ component("base") {
     ]
     frameworks += [ "Security.framework" ]
     public_deps += [ ":base_arc" ]
+    allow_circular_includes_from = [ ":base_arc" ]
   }
 
   # Linux.
@@ -2151,16 +2164,6 @@ component("base") {
       "base_paths_mac.h",
       "base_paths_mac.mm",
       "critical_closure_internal_ios.mm",
-      "ios/block_types.h",
-      "ios/device_util.h",
-      "ios/device_util.mm",
-      "ios/ios_util.h",
-      "ios/ios_util.mm",
-      "ios/ns_error_util.h",
-      "ios/ns_error_util.mm",
-      "ios/ns_range.h",
-      "ios/scoped_critical_action.h",
-      "ios/scoped_critical_action.mm",
       "native_library_ios.mm",
       "power_monitor/power_monitor_device_source_ios.mm",
       "process/process_metrics_ios.cc",
@@ -2174,7 +2177,6 @@ component("base") {
         "files/file_path_watcher_kqueue.cc",
         "files/file_path_watcher_kqueue.h",
         "files/file_path_watcher_mac.cc",
-        "ios/sim_header_shims.h",
         "mac/mach_port_rendezvous.cc",
         "mac/mach_port_rendezvous.h",
         "process/kill_mac.cc",
@@ -2197,6 +2199,9 @@ component("base") {
         "process/process_stubs.cc",
       ]
     }
+
+    public_deps += [ "//base/ios" ]
+    allow_circular_includes_from += [ "//base/ios" ]
 
     if (is_cronet_build) {
       sources += [
@@ -2725,6 +2730,10 @@ component("i18n") {
 
   if (is_mac) {
     frameworks = [ "CoreFoundation.framework" ]
+  }
+
+  if (is_ios) {
+    deps += [ "//base/ios" ]
   }
 }
 
@@ -3361,6 +3370,7 @@ test("base_unittests") {
     "test/mock_callback_unittest.cc",
     "test/rectify_callback_unittest.cc",
     "test/repeating_test_future_unittest.cc",
+    "test/run_until_unittest.cc",
     "test/scoped_feature_list_unittest.cc",
     "test/scoped_logging_settings.h",
     "test/scoped_mock_clock_override_unittest.cc",

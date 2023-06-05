@@ -789,9 +789,13 @@ source_set("presence") {
     ":nearby_include_config",
     ":nearby_defines",
   ]
-  sources = [ "src/presence/presence_service.cc" ]
+  sources = [
+    "src/presence/presence_client_impl.cc",
+    "src/presence/presence_service.cc",
+  ]
   public = [
     "src/presence/presence_client.h",
+    "src/presence/presence_client_impl.h",
     "src/presence/presence_service.h",
   ]
   public_deps = [
@@ -803,6 +807,16 @@ source_set("presence") {
   ]
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
+}
+source_set("presence_test") {
+  testonly = true
+  public_configs = [
+    ":nearby_include_config",
+    ":nearby_defines",
+  ]
+  sources = [ "src/presence/fake_presence_client.cc" ]
+  public = [ "src/presence/fake_presence_client.h" ]
+  deps = [ ":presence" ]
 }
 source_set("presence_types") {
   public_configs = [
@@ -989,6 +1003,13 @@ proto_library("connections_metadata_proto") {
 proto_library("offline_wire_formats_proto") {
   proto_in_dir = "src"
   sources = [ "${proto_in_dir}/connections/implementation/proto/offline_wire_formats.proto" ]
+  proto_out_dir = "third_party/nearby"
+}
+
+# src/presence/proto
+proto_library("presence_frame_proto") {
+  proto_in_dir = "src"
+  sources = [ "${proto_in_dir}/presence/proto/presence_frame.proto" ]
   proto_out_dir = "third_party/nearby"
 }
 

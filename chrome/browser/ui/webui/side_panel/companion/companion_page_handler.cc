@@ -12,8 +12,10 @@
 #include "chrome/browser/companion/core/promo_handler.h"
 #include "chrome/browser/companion/text_finder/text_finder_manager.h"
 #include "chrome/browser/companion/text_finder/text_highlighter_manager.h"
+#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/side_panel/companion/companion_side_panel_controller_utils.h"
@@ -24,6 +26,9 @@
 #include "chrome/browser/ui/webui/side_panel/companion/signin_delegate_impl.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/feature_engagement/public/event_constants.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/lens/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "components/unified_consent/pref_names.h"
@@ -53,11 +58,29 @@ CompanionPageHandler::CompanionPageHandler(
       consent_helper_(unified_consent::UrlKeyedDataCollectionConsentHelper::
                           NewAnonymizedDataCollectionConsentHelper(
                               GetProfile()->GetPrefs())) {
-  consent_helper_->AddObserver(this);
+  identity_manager_observation_.Observe(
+      IdentityManagerFactory::GetForProfile(GetProfile()));
+  consent_helper_observation_.Observe(consent_helper_.get());
 }
 
 CompanionPageHandler::~CompanionPageHandler() {
-  consent_helper_->RemoveObserver(this);
+  if (web_contents() && !web_contents()->IsBeingDestroyed()) {
+    auto* tab_helper =
+        companion::CompanionTabHelper::FromWebContents(web_contents());
+    tab_helper->OnCompanionSidePanelClosed();
+  }
+}
+
+void CompanionPageHandler::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event_details) {
+  // We only care about the sign-in state changes. Sync state change is already
+  // captured through consent helper observer.
+  if (event_details.GetEventTypeFor(signin::ConsentLevel::kSignin) ==
+      signin::PrimaryAccountChangeEvent::Type::kNone) {
+    return;
+  }
+
+  NotifyURLChanged(/*is_full_reload=*/true);
 }
 
 void CompanionPageHandler::OnUrlKeyedDataCollectionConsentStateChanged(
@@ -103,16 +126,6 @@ void CompanionPageHandler::DidFinishNavigation(
     return;
   }
   NotifyURLChanged(/*is_full_reload=*/false);
-}
-
-void CompanionPageHandler::OnVisibilityChanged(content::Visibility visibility) {
-  // Refresh companion whenever the tab is back to foreground state.
-  // Do this only when the user didn't have all the access permissions to begin
-  // with.
-  if (visibility == content::Visibility::VISIBLE &&
-      !MeetsAllAccessRequirements()) {
-    NotifyURLChanged(/*is_full_reload=*/true);
-  }
 }
 
 void CompanionPageHandler::ShowUI() {
@@ -176,14 +189,6 @@ void CompanionPageHandler::NotifyURLChanged(bool is_full_reload) {
   }
 }
 
-bool CompanionPageHandler::MeetsAllAccessRequirements() {
-  auto* pref_service = GetProfile()->GetPrefs();
-  bool is_exps_opted_in = pref_service->GetBoolean(kExpsOptInStatusGrantedPref);
-  bool is_msbb_enabled =
-      IsUserPermittedToSharePageInfoWithCompanion(pref_service);
-  return signin_delegate_->IsSignedIn() && is_msbb_enabled && is_exps_opted_in;
-}
-
 void CompanionPageHandler::OnImageQuery(
     side_panel::mojom::ImageQuery image_query) {
   GURL modified_upload_url = url_builder_->AppendCompanionParamsToURL(
@@ -197,6 +202,16 @@ void CompanionPageHandler::OnPromoAction(
     side_panel::mojom::PromoType promo_type,
     side_panel::mojom::PromoAction promo_action,
     const absl::optional<GURL>& exps_promo_url) {
+  if (promo_type == side_panel::mojom::PromoType::kRegionSearchIPH) {
+    if (promo_action == side_panel::mojom::PromoAction::kRejected) {
+      auto* tracker = feature_engagement::TrackerFactory::GetForBrowserContext(
+          GetProfile());
+      tracker->Dismissed(
+          feature_engagement::kIPHCompanionSidePanelRegionSearchFeature);
+    }
+    return;
+  }
+
   promo_handler_->OnPromoAction(promo_type, promo_action, exps_promo_url);
   metrics_logger_->OnPromoAction(promo_type, promo_action);
 }
@@ -207,6 +222,8 @@ void CompanionPageHandler::OnRegionSearchClicked() {
   helper->StartRegionSearch(web_contents(), /*use_fullscreen_capture=*/false);
   metrics_logger_->RecordUiSurfaceClicked(
       side_panel::mojom::UiSurface::kRegionSearch, kInvalidPosition);
+  feature_engagement::TrackerFactory::GetForBrowserContext(GetProfile())
+      ->NotifyEvent("companion_side_panel_region_search_button_clicked");
 }
 
 void CompanionPageHandler::OnExpsOptInStatusAvailable(bool is_exps_opted_in) {

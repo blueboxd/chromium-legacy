@@ -542,7 +542,9 @@ void AutocompleteResult::TrimOmniboxActions(bool is_zero_suggest) {
   // - In every case, HISTORY_CLUSTERS is preferred over PEDALs.
   // - TAB_SWITCH actions are not considered because they're never attached.
   if constexpr (is_android) {
-    static constexpr size_t ACTIONS_IN_SUGGEST_CUTOFF_THRESHOLD = 2;
+    const size_t ACTIONS_IN_SUGGEST_CUTOFF_THRESHOLD =
+        OmniboxFieldTrial::kActionsInSuggestPromoteEntitySuggestion.Get() ? 1
+                                                                          : 2;
     static constexpr size_t PEDALS_CUTOFF_THRESHOLD = 3;
     std::vector<OmniboxActionId> include_all{OmniboxActionId::ACTION_IN_SUGGEST,
                                              OmniboxActionId::HISTORY_CLUSTERS,
@@ -740,8 +742,7 @@ void AutocompleteResult::ConvertOpenTabMatches(
       if (!is_android && !is_ios && match.has_tab_match.value()) {
         // The default action for suggestions from the open tab provider in
         // keyword mode is to switch to the open tab so no button is necessary.
-        if (!OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() ||
-            !match.from_keyword ||
+        if (!match.from_keyword ||
             match.provider->type() != AutocompleteProvider::TYPE_OPEN_TAB) {
           match.actions.push_back(
               base::MakeRefCounted<TabSwitchAction>(match.destination_url));
@@ -1394,13 +1395,9 @@ void AutocompleteResult::GroupSuggestionsBySearchVsURL(iterator begin,
     if (AutocompleteMatch::IsStarterPackType(m.type))
       return 0;
 #if !BUILDFLAG(IS_IOS)
-    // Group history cluster suggestions above or with searches.
-    if (m.type == AutocompleteMatchType::HISTORY_CLUSTER) {
-      return history_clusters::GetConfig()
-                     .omnibox_history_cluster_provider_rank_above_searches
-                 ? 0
-                 : 1;
-    }
+    // Group history cluster suggestions with searches.
+    if (m.type == AutocompleteMatchType::HISTORY_CLUSTER)
+      return 1;
 #endif  // !BUILDFLAG(IS_IOS)
     if (AutocompleteMatch::IsSearchType(m.type))
       return 1;

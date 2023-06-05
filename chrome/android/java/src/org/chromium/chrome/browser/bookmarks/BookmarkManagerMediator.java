@@ -233,14 +233,6 @@ class BookmarkManagerMediator
                 }
             }
         }
-
-        @Override
-        public void onSearchStateSet() {
-            clearHighlight();
-            mDragReorderableRecyclerViewAdapter.disableDrag();
-            // Promo and headers should not appear in search mode.
-            removePromoAndSectionHeaders();
-        }
     };
 
     private final SelectionObserver<BookmarkId> mSelectionObserver = new SelectionObserver<>() {
@@ -601,13 +593,16 @@ class BookmarkManagerMediator
         int state = getCurrentUiMode();
         observer.onUiModeChanged(state);
         switch (state) {
+            case BookmarkUiMode.LOADING:
+                break;
             case BookmarkUiMode.FOLDER:
                 observer.onFolderStateSet(getCurrentFolderId());
                 break;
-            case BookmarkUiMode.LOADING:
-                break;
             case BookmarkUiMode.SEARCHING:
-                observer.onSearchStateSet();
+                clearHighlight();
+                mDragReorderableRecyclerViewAdapter.disableDrag();
+                // Promo and headers should not appear in search mode.
+                removePromoAndSectionHeaders();
                 break;
             default:
                 assert false : "State not valid";
@@ -1194,15 +1189,6 @@ class BookmarkManagerMediator
                 && !Objects.equals(getCurrentFolderId(), mBookmarkModel.getRootFolderId());
         if (getCurrentUiMode() == BookmarkUiMode.SEARCHING) {
             listItems.add(buildMenuListItem(R.string.bookmark_show_in_folder, 0, 0));
-        } else if (getCurrentUiMode() == BookmarkUiMode.FOLDER && location != Location.SOLO
-                && canReorder) {
-            // Only add move up / move down buttons if there is more than 1 item.
-            if (location != Location.TOP) {
-                listItems.add(buildMenuListItem(R.string.menu_item_move_up, 0, 0));
-            }
-            if (location != Location.BOTTOM) {
-                listItems.add(buildMenuListItem(R.string.menu_item_move_down, 0, 0));
-            }
         }
 
         PowerBookmarkMeta meta = entry.getPowerBookmarkMeta();
@@ -1215,6 +1201,7 @@ class BookmarkManagerMediator
                     0, 0));
         }
 
+        // TODO(crbug.com/1448691): Add reordering to new bookmarks manager.
         return listItems;
     }
 

@@ -280,6 +280,8 @@ source_set("web_applications") {
     sources += [
       "chromeos_web_app_experiments.cc",
       "chromeos_web_app_experiments.h",
+      "isolated_web_apps/isolated_web_app_downloader.cc",
+      "isolated_web_apps/isolated_web_app_downloader.h",
       "isolated_web_apps/policy/isolated_web_app_external_install_options.cc",
       "isolated_web_apps/policy/isolated_web_app_external_install_options.h",
       "isolated_web_apps/policy/isolated_web_app_policy_constants.cc",
@@ -334,6 +336,7 @@ source_set("web_applications") {
       "os_integration/web_app_shortcut_mac.h",
       "os_integration/web_app_shortcut_mac.mm",
     ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_win) {
@@ -396,14 +399,7 @@ source_set("web_applications") {
     "//components/policy/core/browser",
     "//components/pref_registry",
     "//components/resources:components_resources_grit",
-    "//components/services/app_service/public/cpp:app_file_handling",
-    "//components/services/app_service/public/cpp:app_types",
-    "//components/services/app_service/public/cpp:app_update",
-    "//components/services/app_service/public/cpp:app_url_handling",
-    "//components/services/app_service/public/cpp:preferred_apps",
-    "//components/services/app_service/public/cpp:protocol_handling",
-    "//components/services/app_service/public/cpp:run_on_os_login",
-    "//components/services/app_service/public/cpp:types",
+    "//components/services/app_service",
     "//components/services/storage:lock_manager",
     "//components/site_engagement/content",
     "//components/site_engagement/core/mojom:mojo_bindings",
@@ -584,12 +580,7 @@ source_set("web_applications_test_support") {
     "//chrome/browser/ui",
     "//components/crx_file:crx_file",
     "//components/keyed_service/content",
-    "//components/services/app_service/public/cpp:app_types",
-    "//components/services/app_service/public/cpp:app_update",
-    "//components/services/app_service/public/cpp:app_url_handling",
-    "//components/services/app_service/public/cpp:intents",
-    "//components/services/app_service/public/cpp:protocol_handling",
-    "//components/services/app_service/public/cpp:types",
+    "//components/services/app_service",
     "//components/sync:test_support",
     "//components/sync_preferences:test_support",
     "//components/web_package/test_support",
@@ -705,6 +696,7 @@ source_set("web_applications_unit_tests") {
       "os_integration/web_app_shortcut_mac_unittest.mm",
       "os_integration/web_app_shortcut_manager_mac_unittest.cc",
     ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_linux) {
@@ -721,7 +713,8 @@ source_set("web_applications_unit_tests") {
 
   if (is_chromeos) {
     sources += [
-      "isolated_web_apps/policy/isolated_web_app_exteral_install_options_unittest.cc",
+      "isolated_web_apps/isolated_web_app_downloader_unittest.cc",
+      "isolated_web_apps/policy/isolated_web_app_external_install_options_unittest.cc",
       "isolated_web_apps/policy/isolated_web_app_policy_manager_unittest.cc",
       "isolated_web_apps/update_manifest/update_manifest_fetcher_unittest.cc",
       "isolated_web_apps/update_manifest/update_manifest_unittest.cc",

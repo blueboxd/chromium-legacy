@@ -1238,6 +1238,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4031179711345676612">Mikrofondan foydalanish mumkin</translation>
 <translation id="4040350669425716613">Kollej va universitetlar</translation>
 <translation id="4047351652147966654">18 x 24 in</translation>
+<translation id="404831776305217138"><ph name="EXTENSION_ID" /> identifikatoriga ega kengaytma uchun URL manzilni yangilang yoki ishlamaydigan andozadan foydalanadi Ishlaydigan andozalar: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> va <ph name="FILE_SCHEME" />.</translation>
 <translation id="4050392779074832022">Undan boshqa Google mahsulotlarida foydalanish mumkin</translation>
 <translation id="405399507749852140">Har qaysi saytda narxi tushganda xabar olish</translation>
 <translation id="4056223980640387499">Sepiya</translation>
@@ -2283,10 +2284,12 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6554732001434021288">Oxirgi tashrif: <ph name="NUM_DAYS" /> kun oldin</translation>
 <translation id="6556866813142980365">Qaytarish</translation>
 <translation id="6557715786897013164">14 x 17 in</translation>
+<translation id="6560786330438719938">Oʻrnatilgan va oʻchirilgan ilovalar va ularning qanday ishlatilishi</translation>
 <translation id="6569060085658103619">Siz kengaytma sahifasidasiz.</translation>
 <translation id="6569366777234823130">Dramalar</translation>
 <translation id="6573200754375280815">Oʻngdan 2 ta teshik ochish</translation>
 <translation id="6576181918031900030">Translatsiya qilish</translation>
+<translation id="6578434528542148658">Yaroqsiz kengaytma identifikatori.</translation>
 <translation id="657902945730878902">Chizish va boʻyash</translation>
 <translation id="6579630537141957243">MIDI qurilma ulansinmi?</translation>
 <translation id="6579990219486187401">Och pushti</translation>
@@ -3026,7 +3029,6 @@ Batafsil axborot:
 <translation id="8298115750975731693">Siz ulangan Wi-Fi (<ph name="WIFI_NAME" />) tarmog‘idan foydalanish uchun <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> sahifaga o‘tish talab qilinishi mumkin.</translation>
 <translation id="8303854710873047864">“<ph name="SECTION" />” rukni ochildi</translation>
 <translation id="830498451218851433">Yarim taxlash</translation>
-<translation id="8307888238279532626">Oʻrnatilgan ilovalar va ularning qanday ishlatilishi</translation>
 <translation id="831997045666694187">Kechqurun</translation>
 <translation id="8321476692217554900">bildirishnomalar</translation>
 <translation id="8329068931308448247">Envelope #14</translation>
@@ -3250,6 +3252,7 @@ Batafsil axborot:
 <translation id="890493561996401738">Taklifni olib tashlash tugmasi, olib tashlash uchun Enter tugmasini bosing, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910898109640902752">8 x 10 duym</translation>
 <translation id="8913778647360618320">Toʻlov usullarini boshqarish tugmasi, Chrome sozlamalari orqali toʻlov va kredit karta axborotini boshqarish uchun Enter tugmasini bosing</translation>
+<translation id="8919895429178014996">Barchasini berkitish</translation>
 <translation id="8922013791253848639">Bu saytda har doim reklama ko‘rsatilsin</translation>
 <translation id="892588693504540538">Yuqori oʻngdan teshik ochish</translation>
 <translation id="8930330541574156305">Koʻchmas mulk</translation>

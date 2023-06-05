@@ -2030,7 +2030,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Apps.ContextMenuShowSourceV2{AppUIComponent}{TabletOrClamshellMode}"
-    enum="MenuSourceType" expires_after="2023-06-01">
+    enum="MenuSourceType" expires_after="2023-12-01">
   <owner>wcwang@chromium.org</owner>
   <owner>mmourgos@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
@@ -2044,7 +2044,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Apps.ContextMenuUserJourneyTimeV2{AppUIComponent}{TabletOrClamshellMode}"
-    units="ms" expires_after="2023-06-01">
+    units="ms" expires_after="2023-12-01">
   <owner>wcwang@chromium.org</owner>
   <owner>mmourgos@chromium.org</owner>
   <owner>tbarzic@chromium.org</owner>
@@ -2255,19 +2255,6 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the result of installing an app on the chrome://apps page. This
     happens when a user drags a link to this page.
-  </summary>
-</histogram>
-
-<histogram name="Apps.Launcher.InstallLocallyShortcutsCreated" enum="Boolean"
-    expires_after="2022-07-03">
-  <owner>dmurph@chromium.org</owner>
-  <owner>desktop-pwas-team@google.com</owner>
-  <summary>
-    Records the result of locally installed an app on the chrome://apps page,
-    which involves hooking up Os integration. Specifically, this records if the
-    shortcuts were created successfully. This happens whena user right-clicks on
-    a greyed out webapp icon in the chrome://apps page and clicks
-    &quot;Install&quot;.
   </summary>
 </histogram>
 

@@ -18,7 +18,10 @@ import("//tools/grit/repack.gni")
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
 group("resources") {
-  public_deps = [ "segmentation_internals:resources" ]
+  public_deps = [
+    "accessibility:resources",
+    "segmentation_internals:resources",
+  ]
 
   if (!is_android) {
     public_deps += [
@@ -47,6 +50,7 @@ group("resources") {
       "settings:resources",
       "settings_shared:resources",
       "side_panel/bookmarks:resources",
+      "side_panel/commerce:resources",
       "side_panel/companion:resources",
       "side_panel/customize_chrome:resources",
       "side_panel/history_clusters:resources",
@@ -136,6 +140,10 @@ group("resources") {
 
   if (is_cfm) {
     public_deps += [ "chromeos/chromebox_for_meetings:resources" ]
+  }
+
+  if (enable_webui_certificate_viewer) {
+    public_deps += [ "certificate_viewer:resources" ]
   }
 }
 
@@ -273,6 +281,7 @@ repack("dev_ui_paks") {
   output = "$root_gen_dir/chrome/dev_ui_resources.pak"
 
   sources = [
+    "$root_gen_dir/chrome/accessibility_resources.pak",
     "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
     "$root_gen_dir/chrome/browsing_topics_internals_resources.pak",
     "$root_gen_dir/chrome/dev_ui_browser_resources.pak",
@@ -300,6 +309,7 @@ repack("dev_ui_paks") {
   ]
   deps = [
     "//chrome/browser:dev_ui_browser_resources",
+    "//chrome/browser/resources/accessibility:resources",
     "//chrome/browser/resources/bluetooth_internals:resources",
     "//chrome/browser/resources/browsing_topics:resources",
     "//chrome/browser/resources/internals:resources",

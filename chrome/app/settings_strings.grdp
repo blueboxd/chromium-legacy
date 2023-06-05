@@ -585,6 +585,12 @@
       =1 {1 weak password}
       other {{NUM_WEAK} weak passwords}}
   </message>
+  <message name="IDS_SETTINGS_REUSED_PASSWORDS_COUNT_SHORT" desc="This short text shows the amount of reused passwords that the Chrome password check found.">
+    {NUM_REUSED, plural,
+      =0 {No reused passwords}
+      =1 {1 reused password}
+      other {{NUM_REUSED} reused passwords}}
+  </message>
   <message name="IDS_SETTINGS_INSECURE_PASSWORDS_COUNT" desc="Number of insecure passwords present in the database">
     {COUNT, plural,
       =0 {No security issues found}
@@ -3988,6 +3994,12 @@
   </message>
   <message name="IDS_SETTINGS_STORAGE_ACCESS_BLOCKED" translateable="false" desc="It explains that an embedded site is blocked from accessing its unpartitioned cookies that it would normally only have access to in a first-party context (i.e. when loaded directly in a browser tab) ">
     Don't allow embedded sites to access info they've saved about you
+  </message>
+  <message name="IDS_SETTINGS_STORAGE_ACCESS_ALLOWED_EXCEPTIONS" translateable="false" desc="It explains that an embedded site is allowed to access its unpartitioned cookies that it would normally only have access to in a first-party context (i.e. when loaded directly in a browser tab) ">
+    Allowed to access info they've about you while embeded in another site
+  </message>
+  <message name="IDS_SETTINGS_STORAGE_ACCESS_BLOCKED_EXCEPTIONS" translateable="false" desc="It explains that an embedded site is blocked from accessing its unpartitioned cookies that it would normally only have access to in a first-party context (i.e. when loaded directly in a browser tab) ">
+    Not allowed to access info they've about you while embeded in another site
   </message>
 
   <message name="IDS_SETTINGS_NO_BLUETOOTH_DEVICES_FOUND" desc="Explanation for not showing Bluetooth devices in site settings.">

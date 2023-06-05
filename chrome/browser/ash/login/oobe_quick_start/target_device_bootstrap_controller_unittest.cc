@@ -23,6 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace ash::quick_start {
 
@@ -239,9 +240,23 @@ TEST_F(TargetDeviceBootstrapControllerTest, CloseConnection) {
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest, GetPhoneInstanceId) {
-  // TODO(b/234655072): Build out this unittest once phone instance ID is
-  // retrieved from Gaia credentials exchange.
-  ASSERT_TRUE(bootstrap_controller_->GetPhoneInstanceId().empty());
+  // Authenticate connection.
+  bootstrap_controller_->StartAdvertising();
+  fake_target_device_connection_broker_->on_start_advertising_callback().Run(
+      /*success=*/true);
+  fake_target_device_connection_broker_->InitiateConnection(kSourceDeviceId);
+  fake_target_device_connection_broker_->AuthenticateConnection(
+      kSourceDeviceId);
+
+  // Set phone instance ID.
+  std::vector<uint8_t> phone_instance_id = {0x01, 0x02, 0x03};
+  std::string expected_phone_instance_id(phone_instance_id.begin(),
+                                         phone_instance_id.end());
+  fake_target_device_connection_broker_->GetFakeConnection()
+      ->set_phone_instance_id(expected_phone_instance_id);
+
+  EXPECT_EQ(bootstrap_controller_->GetPhoneInstanceId(),
+            expected_phone_instance_id);
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest,
@@ -428,6 +443,17 @@ TEST_F(TargetDeviceBootstrapControllerTest,
   EXPECT_EQ(fake_observer_->last_status.step, Step::ERROR);
   EXPECT_EQ(absl::get<ErrorCode>(fake_observer_->last_status.payload),
             ErrorCode::GAIA_ASSERTION_NOT_RECEIVED);
+}
+
+// Ensures that the discoverable name that is shown Chromebook (123) matches
+// the one returned by RandomSessionId
+TEST_F(TargetDeviceBootstrapControllerTest, DiscoverableName) {
+  std::string device_type = base::UTF16ToUTF8(ui::GetChromeOSDeviceName());
+  std::string code =
+      fake_target_device_connection_broker_->GetSessionIdDisplayCode();
+  auto expected_string = device_type + " (" + code + ")";
+
+  EXPECT_EQ(bootstrap_controller_->GetDiscoverableName(), expected_string);
 }
 
 }  // namespace ash::quick_start

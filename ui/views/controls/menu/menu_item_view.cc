@@ -54,6 +54,7 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(IS_MAC)
@@ -64,36 +65,12 @@ namespace views {
 
 namespace {
 
-// EmptyMenuMenuItem ----------------------------------------------------------
-
-// EmptyMenuMenuItem is used when a menu has no menu items. EmptyMenuMenuItem
-// is itself a MenuItemView, but it uses a different ID so that it isn't
-// identified as a MenuItemView.
-
-class EmptyMenuMenuItem : public MenuItemView {
- public:
-  explicit EmptyMenuMenuItem(MenuItemView* parent)
-      : MenuItemView(parent, 0, Type::kEmpty) {
-    // Set this so that we're not identified as a normal menu item.
-    SetID(kEmptyMenuItemViewID);
-    SetTitle(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU));
-    SetEnabled(false);
-  }
-
-  EmptyMenuMenuItem(const EmptyMenuMenuItem&) = delete;
-  EmptyMenuMenuItem& operator=(const EmptyMenuMenuItem&) = delete;
-
-  std::u16string GetTooltipText(const gfx::Point& p) const override {
-    // Empty menu items shouldn't have a tooltip.
-    return std::u16string();
-  }
-};
-
 // VerticalSeparator ----------------------------------------------------------
 
 class VerticalSeparator : public Separator {
  public:
   METADATA_HEADER(VerticalSeparator);
+
   VerticalSeparator();
   VerticalSeparator(const VerticalSeparator&) = delete;
   VerticalSeparator& operator=(const VerticalSeparator&) = delete;
@@ -125,23 +102,16 @@ static constexpr int kChildXPadding = 8;
 // MenuItemView ---------------------------------------------------------------
 
 // static
-const int MenuItemView::kMenuItemViewID = 1001;
-
-// static
-const int MenuItemView::kEmptyMenuItemViewID =
-    MenuItemView::kMenuItemViewID + 1;
-
-// static
 int MenuItemView::icon_area_width_ = 0;
 
 // static
-int MenuItemView::label_start_;
+int MenuItemView::label_start_ = 0;
 
 // static
-int MenuItemView::item_right_margin_;
+int MenuItemView::trailing_padding_ = 0;
 
 // static
-int MenuItemView::pref_menu_height_;
+int MenuItemView::pref_menu_height_ = 0;
 
 MenuItemView::MenuItemView(MenuDelegate* delegate)
     : MenuItemView(/* parent */ nullptr,
@@ -186,8 +156,7 @@ std::u16string MenuItemView::GetTooltipText(const gfx::Point& p) const {
     return std::u16string();
   }
 
-  const MenuItemView* root_menu_item = GetRootMenuItem();
-  if (root_menu_item->canceled_) {
+  if (GetRootMenuItem()->canceled_) {
     // TODO(sky): if |canceled_| is true, controller->exit_type() should be
     // something other than ExitType::kNone, but crash reports seem to indicate
     // otherwise. Figure out why this is needed.
@@ -195,12 +164,9 @@ std::u16string MenuItemView::GetTooltipText(const gfx::Point& p) const {
   }
 
   const MenuDelegate* delegate = GetDelegate();
-  if (!delegate)
-    return std::u16string();
-
-  gfx::Point location(p);
-  ConvertPointToScreen(this, &location);
-  return delegate->GetTooltipText(command_, location);
+  return delegate
+             ? delegate->GetTooltipText(command_, ConvertPointToScreen(this, p))
+             : std::u16string();
 }
 
 void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
@@ -612,8 +578,9 @@ int MenuItemView::GetHeightForWidth(int width) const {
 
   const gfx::Insets margins = GetContainerMargins();
   int height = children().front()->GetHeightForWidth(width - margins.width());
-  if (!icon_view_ && GetRootMenuItem()->has_icons())
+  if (!icon_view_ && GetRootMenuItem()->has_icons_) {
     height = std::max(height, MenuConfig::instance().check_height);
+  }
 
   height += margins.height();
 
@@ -743,7 +710,8 @@ void MenuItemView::Layout() {
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
-    int child_x = width() - (use_right_margin_ ? item_right_margin_ : 0);
+    int child_end =
+        width() - (children_use_full_width_ ? 0 : trailing_padding_);
     for (View* child : base::Reversed(children())) {
       if (icon_view_ == child)
         continue;
@@ -754,8 +722,8 @@ void MenuItemView::Layout() {
       if (vertical_separator_ == child)
         continue;
       int width = child->GetPreferredSize().width();
-      child->SetBounds(child_x - width, 0, width, height());
-      child_x -= width + kChildXPadding;
+      child->SetBounds(child_end - width, 0, width, height());
+      child_end -= width + kChildXPadding;
     }
 
     // Position the icons.
@@ -864,9 +832,14 @@ MenuItemView::~MenuItemView() {
 void MenuItemView::UpdateMenuPartSizes() {
   const MenuConfig& config = MenuConfig::instance();
 
-  item_right_margin_ = config.label_to_arrow_padding + config.arrow_width +
-                       config.arrow_to_edge_padding +
-                       config.item_horizontal_border_padding;
+  const bool have_arrow_column =
+      config.reserve_dedicated_arrow_column &&
+      base::ranges::any_of(submenu_->GetMenuItems(), &MenuItemView::HasSubmenu);
+  trailing_padding_ =
+      config.item_horizontal_padding +
+      (have_arrow_column ? (config.arrow_width + config.arrow_to_edge_padding)
+                         : 0) +
+      config.item_horizontal_border_padding;
   icon_area_width_ = std::max(
       HasChecksOrRadioButtons() ? config.check_width : 0,
       (has_icons_ && !config.icons_in_label) ? GetMaxIconViewWidth() : 0);
@@ -882,7 +855,7 @@ void MenuItemView::UpdateMenuPartSizes() {
           DISTANCE_RELATED_LABEL_HORIZONTAL);
     }
   }
-  if (config.icons_in_label) {
+  if (has_icons_ && config.icons_in_label) {
     icon_area_width_ = GetMaxIconViewWidth();
   }
 
@@ -899,9 +872,6 @@ MenuItemView::MenuItemView(MenuItemView* parent,
       parent_menu_item_(parent),
       type_(type),
       command_(command) {
-  // Assign our ID, this allows SubmenuItemView to find MenuItemViews.
-  SetID(kMenuItemViewID);
-
   if (type_ == Type::kCheckbox || type_ == Type::kRadio) {
     radio_check_image_view_ = AddChildView(std::make_unique<ImageView>());
     bool show_check_radio_icon =
@@ -999,13 +969,12 @@ void MenuItemView::RemoveEmptyMenus() {
   // Copy the children, since we may mutate them as we go.
   const Views children = submenu_->children();
   for (View* child : children) {
-    if (child->GetID() == MenuItemView::kMenuItemViewID) {
-      MenuItemView* menu_item = static_cast<MenuItemView*>(child);
-      if (menu_item->HasSubmenu())
-        menu_item->RemoveEmptyMenus();
-    } else if (child->GetID() == EmptyMenuMenuItem::kEmptyMenuItemViewID) {
+    if (IsViewClass<EmptyMenuMenuItem>(child)) {
       submenu_->RemoveChildView(child);
       delete child;
+    } else if (MenuItemView* menu_item = AsViewClass<MenuItemView>(child);
+               menu_item && menu_item->HasSubmenu()) {
+      menu_item->RemoveEmptyMenus();
     }
   }
 }
@@ -1051,7 +1020,7 @@ void MenuItemView::OnPaintImpl(gfx::Canvas* canvas, PaintMode mode) {
   int accel_width = parent_menu_item_->GetSubmenu()->max_minor_text_width();
   int label_start = GetLabelStartForThisItem();
 
-  int width = this->width() - label_start - accel_width - item_right_margin_;
+  int width = this->width() - trailing_padding_ - accel_width - label_start;
   gfx::Rect text_bounds(label_start, top_margin, width, text_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   int flags = GetDrawStringFlags();
@@ -1143,12 +1112,8 @@ void MenuItemView::PaintMinorIconAndText(gfx::Canvas* canvas, SkColor color) {
   const int max_minor_text_width =
       parent_menu_item_->GetSubmenu()->max_minor_text_width();
   const MenuConfig& config = MenuConfig::instance();
-  const int minor_text_right_margin =
-      config.align_arrow_and_shortcut ? (config.arrow_to_edge_padding +
-                                         config.item_horizontal_border_padding)
-                                      : item_right_margin_;
   gfx::Rect minor_text_bounds(
-      width() - minor_text_right_margin - max_minor_text_width, GetTopMargin(),
+      width() - trailing_padding_ - max_minor_text_width, GetTopMargin(),
       max_minor_text_width, height() - GetTopMargin() - GetBottomMargin());
   minor_text_bounds.set_x(GetMirroredXForRect(minor_text_bounds));
 
@@ -1259,8 +1224,7 @@ void MenuItemView::DestroyAllMenuHosts() {
 int MenuItemView::GetTopMargin() const {
   int margin = top_margin_;
   if (margin < 0) {
-    const MenuItemView* root = GetRootMenuItem();
-    margin = root && root->has_icons_
+    margin = GetRootMenuItem()->has_icons_
                  ? MenuConfig::instance().item_top_margin
                  : MenuConfig::instance().item_no_icon_top_margin;
   }
@@ -1271,8 +1235,7 @@ int MenuItemView::GetTopMargin() const {
 int MenuItemView::GetBottomMargin() const {
   int margin = bottom_margin_;
   if (margin < 0) {
-    const MenuItemView* root = GetRootMenuItem();
-    margin = root && root->has_icons_
+    margin = GetRootMenuItem()->has_icons_
                  ? MenuConfig::instance().item_bottom_margin
                  : MenuConfig::instance().item_no_icon_bottom_margin;
   }
@@ -1314,6 +1277,9 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 
   const gfx::FontList& font_list = GetFontList();
 
+  const int standard_width = GetLabelStartForThisItem() +
+                             gfx::GetStringWidth(title_, font_list) +
+                             trailing_padding_;
   if (GetMenuController() && GetMenuController()->use_ash_system_ui_layout()) {
     dimensions.height = menu_config.touchable_menu_height;
 
@@ -1324,11 +1290,9 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
     if (!IsContainer()) {
       // Calculate total item width to make sure the current |title_|
       // has enough room within the context menu.
-      dimensions.standard_width = std::clamp(
-          GetLabelStartForThisItem() + gfx::GetStringWidth(title_, font_list) +
-              item_right_margin_,
-          menu_config.touchable_menu_min_width,
-          menu_config.touchable_menu_max_width);
+      dimensions.standard_width =
+          std::clamp(standard_width, menu_config.touchable_menu_min_width,
+                     menu_config.touchable_menu_max_width);
 
       if (icon_view_) {
         dimensions.height =
@@ -1345,9 +1309,8 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   dimensions.height = child_size.height();
   // Adjust item content height if menu has both items with and without icons.
   // This way all menu items will have the same height.
-  if (!icon_view_ && GetRootMenuItem()->has_icons()) {
-    dimensions.height =
-        std::max(dimensions.height, MenuConfig::instance().check_height);
+  if (!icon_view_ && GetRootMenuItem()->has_icons_) {
+    dimensions.height = std::max(dimensions.height, menu_config.check_height);
   }
 
   // In the container case, only the child size plus margins need to be
@@ -1362,9 +1325,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 
   dimensions.height += GetBottomMargin() + GetTopMargin();
 
-  dimensions.standard_width = GetLabelStartForThisItem() +
-                              gfx::GetStringWidth(title_, font_list) +
-                              item_right_margin_;
+  dimensions.standard_width = standard_width;
 
   // Determine the length of the right-side text.
   dimensions.minor_text_width =
@@ -1399,12 +1360,7 @@ void MenuItemView::ApplyMinimumDimensions(MenuItemDimensions* dims) const {
   if (type_ == Type::kHighlighted)
     return;
 
-  int used =
-      dims->standard_width + dims->children_width + dims->minor_text_width;
   const MenuConfig& config = MenuConfig::instance();
-  if (used < config.minimum_menu_width)
-    dims->standard_width += (config.minimum_menu_width - used);
-
   dims->height = std::max(dims->height,
                           IsContainer() ? config.minimum_container_item_height
                                         : config.minimum_text_item_height);
@@ -1447,16 +1403,10 @@ int MenuItemView::GetLabelStartForThisItem() const {
 }
 
 std::u16string MenuItemView::GetMinorText() const {
-  if (GetID() == kEmptyMenuItemViewID) {
-    // Don't query the delegate for menus that represent no children.
-    return std::u16string();
-  }
-
   std::u16string accel_text;
-  if (MenuConfig::instance().ShouldShowAcceleratorText(this, &accel_text))
-    return accel_text;
-
-  return minor_text_;
+  return MenuConfig::instance().ShouldShowAcceleratorText(this, &accel_text)
+             ? accel_text
+             : minor_text_;
 }
 
 ui::ImageModel MenuItemView::GetMinorIcon() const {
@@ -1501,15 +1451,15 @@ int MenuItemView::GetMaxIconViewWidth() const {
 
   std::vector<int> widths(menu_items.size());
   base::ranges::transform(menu_items, widths.begin(), [](MenuItemView* item) {
-    if (item->type_ == Type::kCheckbox || item->type_ == Type::kRadio) {
+    if (!MenuConfig::instance().icons_in_label &&
+        (item->type_ == Type::kCheckbox || item->type_ == Type::kRadio)) {
       // If this item has a radio or checkbox, the icon will not affect
       // alignment of other items.
       return 0;
     }
-    if (item->HasSubmenu()) {
-      return item->GetMaxIconViewWidth();
-    }
-    return item->icon_view_ ? item->icon_view_->GetPreferredSize().width() : 0;
+    return std::max(
+        item->icon_view_ ? item->icon_view_->GetPreferredSize().width() : 0,
+        item->HasSubmenu() ? item->GetMaxIconViewWidth() : 0);
   });
   return base::ranges::max(widths);
 }
@@ -1590,6 +1540,17 @@ bool MenuItemView::IsScheduledForDeletion() const {
 }
 
 BEGIN_METADATA(MenuItemView, View)
+END_METADATA
+
+// EmptyMenuMenuItem ----------------------------------------------------------
+
+EmptyMenuMenuItem::EmptyMenuMenuItem(MenuItemView* parent)
+    : MenuItemView(parent, 0, Type::kEmpty) {
+  SetTitle(l10n_util::GetStringUTF16(IDS_APP_MENU_EMPTY_SUBMENU));
+  SetEnabled(false);
+}
+
+BEGIN_METADATA(EmptyMenuMenuItem, MenuItemView)
 END_METADATA
 
 }  // namespace views

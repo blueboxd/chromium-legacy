@@ -47,6 +47,9 @@ const char kESimProfiles[] = "cros_esim.esim_profiles";
 const char kManagedCellularIccidSmdpPair[] =
     "cros_esim.managed_iccid_smdp_pair";
 
+// A boolean pref for whether playing charging sounds is enabled.
+const char kChargingSoundsEnabled[] = "ash.charging_sounds.enabled";
+
 // A dictionary pref to hold the mute setting for all the currently known
 // audio devices.
 const char kAudioDevicesMute[] = "settings.audio.devices.mute";
@@ -1014,6 +1017,14 @@ const char kUserMicrophoneAllowed[] = "ash.user.microphone_allowed";
 // detection.
 const char kUserSpeakOnMuteDetectionEnabled[] =
     "ash.user.speak_on_mute_detection_enabled";
+// A boolean pref indicating whether a speak-on-mute detection opt-in nudge
+// should be displayed to the user.
+const char kShouldShowSpeakOnMuteOptInNudge[] =
+    "ash.user.should_show_speak_on_mute_opt_in_nudge";
+// An integer pref counting the number of times speak-on-mute detection opt-in
+// nudge has been displayed to the user.
+const char kSpeakOnMuteOptInNudgeShownCount[] =
+    "ash.user.speak_on_mute_opt_in_nudge_shown_count";
 
 // A boolean pref indicating whether the geolocation is allowed for the user.
 const char kUserGeolocationAllowed[] = "ash.user.geolocation_allowed";

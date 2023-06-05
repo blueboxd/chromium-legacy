@@ -882,8 +882,6 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(
       feature_info_(new FeatureInfo(group->feature_info()->workarounds(),
                                     group->gpu_feature_info())),
       emulated_back_buffer_(nullptr),
-      offscreen_single_buffer_(false),
-      offscreen_target_buffer_preserved_(false),
       bound_draw_framebuffer_(0),
       bound_read_framebuffer_(0),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
@@ -1247,12 +1245,10 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
       std::min(max_2d_texture_size, max_renderbuffer_size_);
 
   if (offscreen_) {
-    offscreen_single_buffer_ = attrib_helper.single_buffer;
-    offscreen_target_buffer_preserved_ = attrib_helper.buffer_preserved;
     const bool multisampled_framebuffers_supported =
         feature_info_->feature_flags().chromium_framebuffer_multisample;
     if (attrib_helper.samples > 0 && attrib_helper.sample_buffers > 0 &&
-        multisampled_framebuffers_supported && !offscreen_single_buffer_) {
+        multisampled_framebuffers_supported && !attrib_helper.single_buffer) {
       GLint max_sample_count = 0;
       api()->glGetIntegervFn(GL_MAX_SAMPLES_EXT, &max_sample_count);
       emulated_default_framebuffer_format_.samples =
@@ -1448,25 +1444,10 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
     emulated_back_buffer_.reset();
   }
 
-  if (emulated_front_buffer_) {
-    emulated_front_buffer_->Destroy(have_context);
-    emulated_front_buffer_.reset();
-  }
-
   if (external_default_framebuffer_) {
     external_default_framebuffer_->Destroy(have_context);
     external_default_framebuffer_.reset();
   }
-
-  for (auto& in_use_color_texture : in_use_color_textures_) {
-    in_use_color_texture->Destroy(have_context);
-  }
-  in_use_color_textures_.clear();
-
-  for (auto& available_color_texture : available_color_textures_) {
-    available_color_texture->Destroy(have_context);
-  }
-  available_color_textures_.clear();
 
   if (gpu_fence_manager_.get()) {
     gpu_fence_manager_->Destroy(have_context);
@@ -1593,67 +1574,6 @@ void GLES2DecoderPassthroughImpl::SetDefaultFramebufferSharedImage(
   }
 }
 
-void GLES2DecoderPassthroughImpl::TakeFrontBuffer(const Mailbox& mailbox) {
-  if (offscreen_single_buffer_) {
-    DCHECK(emulated_back_buffer_->color_texture != nullptr);
-    mailbox_manager_->ProduceTexture(
-        mailbox, emulated_back_buffer_->color_texture->texture.get());
-    return;
-  }
-
-  if (!emulated_front_buffer_) {
-    DLOG(ERROR) << "Called TakeFrontBuffer on a non-offscreen context";
-    return;
-  }
-
-  mailbox_manager_->ProduceTexture(mailbox,
-                                   emulated_front_buffer_->texture.get());
-  in_use_color_textures_.push_back(std::move(emulated_front_buffer_));
-  emulated_front_buffer_ = nullptr;
-
-  if (available_color_textures_.empty()) {
-    // Create a new color texture to use as the front buffer
-    emulated_front_buffer_ = std::make_unique<EmulatedColorBuffer>(this);
-    emulated_front_buffer_->Resize(emulated_back_buffer_->size);
-    create_color_buffer_count_for_test_++;
-  } else {
-    emulated_front_buffer_ = std::move(available_color_textures_.back());
-    available_color_textures_.pop_back();
-  }
-}
-
-void GLES2DecoderPassthroughImpl::ReturnFrontBuffer(const Mailbox& mailbox,
-                                                    bool is_lost) {
-  TextureBase* texture = mailbox_manager_->ConsumeTexture(mailbox);
-  mailbox_manager_->TextureDeleted(texture);
-
-  if (offscreen_single_buffer_) {
-    return;
-  }
-
-  auto it = in_use_color_textures_.begin();
-  while (it != in_use_color_textures_.end()) {
-    if ((*it)->texture == texture) {
-      break;
-    }
-    it++;
-  }
-  if (it == in_use_color_textures_.end()) {
-    DLOG(ERROR) << "Attempting to return a frontbuffer that was not saved.";
-    return;
-  }
-
-  if (is_lost) {
-    (*it)->texture->MarkContextLost();
-    (*it)->Destroy(false);
-  } else if ((*it)->size != emulated_back_buffer_->size) {
-    (*it)->Destroy(true);
-  } else {
-    available_color_textures_.push_back(std::move(*it));
-  }
-  in_use_color_textures_.erase(it);
-}
-
 bool GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer(
     const gfx::Size& size) {
   DCHECK(offscreen_);
@@ -1690,14 +1610,6 @@ bool GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer(
                   "were generated.";
     return false;
   }
-
-  // Destroy all the available color textures, they should not be the same size
-  // as the back buffer
-  for (auto& available_color_texture : available_color_textures_) {
-    DCHECK_NE(available_color_texture->size, size);
-    available_color_texture->Destroy(true);
-  }
-  available_color_textures_.clear();
 
   return true;
 }
@@ -1900,14 +1812,6 @@ void GLES2DecoderPassthroughImpl::RestoreAllAttributes() const {}
 void GLES2DecoderPassthroughImpl::SetIgnoreCachedStateForTest(bool ignore) {}
 
 void GLES2DecoderPassthroughImpl::SetForceShaderNameHashingForTest(bool force) {
-}
-
-size_t GLES2DecoderPassthroughImpl::GetSavedBackTextureCountForTest() {
-  return in_use_color_textures_.size() + available_color_textures_.size();
-}
-
-size_t GLES2DecoderPassthroughImpl::GetCreatedBackTextureCountForTest() {
-  return create_color_buffer_count_for_test_;
 }
 
 gpu::QueryManager* GLES2DecoderPassthroughImpl::GetQueryManager() {
@@ -2172,57 +2076,6 @@ scoped_refptr<ShaderTranslatorInterface>
 GLES2DecoderPassthroughImpl::GetTranslator(GLenum type) {
   return nullptr;
 }
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-void GLES2DecoderPassthroughImpl::AttachImageToTextureWithDecoderBinding(
-    uint32_t client_texture_id,
-    uint32_t texture_target,
-    gl::GLImage* image) {
-  BindImageInternal(client_texture_id, texture_target, image,
-                    /*can_bind_to_sampler=*/false);
-}
-#elif !BUILDFLAG(IS_ANDROID)
-void GLES2DecoderPassthroughImpl::AttachImageToTextureWithClientBinding(
-    uint32_t client_texture_id,
-    uint32_t texture_target,
-    gl::GLImage* image) {
-  BindImageInternal(client_texture_id, texture_target, image,
-                    /*can_bind_to_sampler=*/true);
-}
-#endif
-
-#if !BUILDFLAG(IS_ANDROID)
-void GLES2DecoderPassthroughImpl::BindImageInternal(uint32_t client_texture_id,
-                                                    uint32_t texture_target,
-                                                    gl::GLImage* image,
-                                                    bool can_bind_to_sampler) {
-  scoped_refptr<TexturePassthrough> passthrough_texture;
-  if (!resources_->texture_object_map.GetServiceID(client_texture_id,
-                                                   &passthrough_texture) ||
-      passthrough_texture == nullptr) {
-    return;
-  }
-
-  DCHECK(passthrough_texture != nullptr);
-
-  // |can_bind_to_sampler| indicates that we don't need to take any action.
-  // Otherwise, we do it when the texture is first used for drawing.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-  CHECK(!can_bind_to_sampler);
-  passthrough_texture->set_bind_pending();
-#else
-  CHECK(can_bind_to_sampler);
-#endif
-
-  GLenum bind_target = GLES2Util::GLFaceTargetToTextureTarget(texture_target);
-  if (passthrough_texture->target() != bind_target) {
-    return;
-  }
-
-  // Reference the image even if it is not bound as a sampler.
-  passthrough_texture->SetLevelImage(texture_target, 0, image);
-}
-#endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 void GLES2DecoderPassthroughImpl::BindOnePendingImage(

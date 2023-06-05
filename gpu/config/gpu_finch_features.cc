@@ -296,12 +296,12 @@ const base::FeatureParam<std::string> kVulkanBlockListByAndroidBuildFP{
     &kVulkan, "BlockListByAndroidBuildFP", ""};
 
 // Blocklists meant for DrDc.
-// crbug.com/1294648
+// crbug.com/1294648, crbug.com/1397578: the screen flickers.
 const base::FeatureParam<std::string> kDrDcBlockListByDevice{
     &kEnableDrDc, "BlockListByDevice",
     "LF9810_2GB|amber|chopin|secret|a03|SO-51B|on7xelte|j7xelte|F41B|doha|"
     "rk322x_box|a20s|HWMAR|HWSTK-HF|HWPOT-H|b2q|channel|galahad|a32|ellis|"
-    "dandelion|tonga|RMX3231"};
+    "dandelion|tonga|RMX3231|ASUS_I006D|ASUS_I004D|bacon"};
 
 // crbug.com/1340059, crbug.com/1340064
 const base::FeatureParam<std::string> kDrDcBlockListByModel{
@@ -331,6 +331,12 @@ const base::FeatureParam<std::string> kDrDcBlockListByAndroidBuildFP{
 // overridden with command line flags for testing on non-official developer
 // builds. See --skia-graphite-backend flag in gpu_switches.h.
 BASE_FEATURE(kSkiaGraphite, "SkiaGraphite", base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_WIN)
+BASE_FEATURE(kSkiaGraphiteDawnUseD3D12,
+             "SkiaGraphiteDawnUseD3D12",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // Enable GrShaderCache to use with Vulkan backend.
 BASE_FEATURE(kEnableGrShaderCacheForVulkan,
@@ -374,7 +380,12 @@ BASE_FEATURE(kForceRestartGpuKillSwitch,
 // Using the new SchedulerDfs GPU scheduler.
 BASE_FEATURE(kUseGpuSchedulerDfs,
              "UseGpuSchedulerDfs",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
 
 // Use the ClientGmb interface to create GpuMemoryBuffers. This is supposed to
 // reduce number of IPCs happening while creating GpuMemoryBuffers by allowing
@@ -393,7 +404,7 @@ BASE_FEATURE(kPassthroughYuvRgbConversion,
 // cleanup when executing deferred requests.
 BASE_FEATURE(kGpuCleanupInBackground,
              "GpuCleanupInBackground",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool UseGles2ForOopR() {
 #if BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_X86_FAMILY)

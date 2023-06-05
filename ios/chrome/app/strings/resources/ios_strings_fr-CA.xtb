@@ -750,6 +750,7 @@ Seule une personne connaissant votre phrase de passe peut lire vos données chif
 <translation id="595769230373966252">Rechercher avec <ph name="SEARCH_PROVIDER" /></translation>
 <translation id="5963939892571022323">Impossible de créer un lien vers l'élément en surbrillance.</translation>
 <translation id="5965679971710331625">Vous êtes connecté</translation>
+<translation id="5971872012779224351">{count,plural, =1{1 favori supprimé}one{{count} favoris supprimés}other{{count} favoris supprimés}}</translation>
 <translation id="5979837087407522202">Rechercher des mots de passe</translation>
 <translation id="5981230843984570095">Fermer tous les onglets inactifs</translation>
 <translation id="5982717868370722439">Ajouter les données existantes à <ph name="USER_EMAIL" />.</translation>
@@ -919,6 +920,7 @@ Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utili
 <translation id="681368974849482173">Élément créé</translation>
 <translation id="6822587385560699678">Lorsque cette option est activée, les mots de passe sont enregistrés dans <ph name="ACCOUNT" />. Si cette option est désactivée, les mots de passe sont enregistrés uniquement sur cet appareil.</translation>
 <translation id="6831043979455480757">Traduire</translation>
+<translation id="6839843088069935119">{count,plural, =1{Favori enregistré dans « {title} ». Il n'est enregistré que sur cet appareil.}one{Favori enregistré dans « {title} ». Il n'est enregistré que sur cet appareil.}other{Favoris enregistrés dans « {title} ». Il ne sont enregistrés que sur cet appareil.}}</translation>
 <translation id="6842136130964845393">Pour vous assurer de toujours pouvoir accéder à vos mots de passe enregistrés, vérifiez qu'il s'agit bien de vous</translation>
 <translation id="6851516051005285358">Voir la version pour ordinateur</translation>
 <translation id="6852222216891664518">Fermer l'onglet épinglé</translation>
@@ -997,6 +999,7 @@ Lorsque vous êtes en mode de navigation privée, les sites ne peuvent pas utili
 <translation id="7435356471928173109">Désactivée par votre administrateur</translation>
 <translation id="7438481509621345350">Vous verrez maintenant des articles de <ph name="CHANNEL_NAME" /> lorsque vous ouvrez un nouvel onglet.</translation>
 <translation id="7446583256109515732">Onglet désépinglé</translation>
+<translation id="7451023311965289370">{count,plural, =1{Favori enregistré dans « {title} »}one{Favoris enregistré dans « {title} »}other{Favoris enregistrés dans « {title} »}}</translation>
 <translation id="7454057999980797137">État / Comté</translation>
 <translation id="7459628154744868585">La protection renforcée est activée</translation>
 <translation id="746684838091935575">3. Sélectionnez Chrome</translation>

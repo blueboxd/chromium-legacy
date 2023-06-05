@@ -209,6 +209,8 @@ static_library("test_support") {
     "../public/test/hit_test_region_observer.h",
     "../public/test/javascript_test_observer.cc",
     "../public/test/javascript_test_observer.h",
+    "../public/test/keep_alive_url_loader_utils.cc",
+    "../public/test/keep_alive_url_loader_utils.h",
     "../public/test/local_frame_host_interceptor.cc",
     "../public/test/local_frame_host_interceptor.h",
     "../public/test/local_network_access_util.cc",
@@ -318,6 +320,8 @@ static_library("test_support") {
     "../public/test/test_renderer_host.cc",
     "../public/test/test_renderer_host.h",
     "../public/test/test_select_url_fenced_frame_config_observer.h",
+    "../public/test/test_shared_storage_header_observer.cc",
+    "../public/test/test_shared_storage_header_observer.h",
     "../public/test/test_storage_partition.cc",
     "../public/test/test_storage_partition.h",
     "../public/test/test_utils.cc",
@@ -1742,23 +1746,24 @@ test("content_browsertests") {
     "//ui/webui:test_support",
   ]
 
+  data_deps = [
+    "//content/shell:pak",
+    "//third_party/mesa_headers",
+  ]
+
   if (is_ios) {
     bundle_deps = [
       ":content_test_bundle_data",
       "//media/test:media_bundle_data",
+      "//testing/buildbot/filters:content_browsertests_filter_bundle_data",
     ]
   } else {
     data = [
       "data/",
       "//media/test/data/",
     ]
+    data_deps += [ "//testing/buildbot/filters:content_browsertests_filters" ]
   }
-
-  data_deps = [
-    "//content/shell:pak",
-    "//testing/buildbot/filters:content_browsertests_filters",
-    "//third_party/mesa_headers",
-  ]
 
   if (enable_plugins) {
     sources += [ "../browser/plugin_service_impl_browsertest.cc" ]
@@ -2201,7 +2206,6 @@ test("content_unittests") {
     "../browser/accessibility/browser_accessibility_state_impl_unittest.cc",
     "../browser/accessibility/browser_accessibility_unittest.cc",
     "../browser/accessibility/one_shot_accessibility_tree_search_unittest.cc",
-    "../browser/accessibility/touch_passthrough_manager_unittest.cc",
     "../browser/aggregation_service/aggregatable_report_assembler_unittest.cc",
     "../browser/aggregation_service/aggregatable_report_scheduler_unittest.cc",
     "../browser/aggregation_service/aggregatable_report_sender_unittest.cc",
@@ -2404,7 +2408,6 @@ test("content_unittests") {
     "../browser/media/session/media_session_controller_unittest.cc",
     "../browser/media/session/media_session_controllers_manager_unittest.cc",
     "../browser/media/session/media_session_impl_service_routing_unittest.cc",
-    "../browser/media/session/media_session_impl_uma_unittest.cc",
     "../browser/media/session/media_session_impl_unittest.cc",
     "../browser/media/session/media_session_uma_helper_unittest.cc",
     "../browser/media/system_media_controls_notifier_unittest.cc",
@@ -2594,6 +2597,7 @@ test("content_unittests") {
     "../browser/service_worker/service_worker_updated_script_loader_unittest.cc",
     "../browser/service_worker/service_worker_version_unittest.cc",
     "../browser/shareable_file_reference_unittest.cc",
+    "../browser/shared_storage/shared_storage_header_observer_unittest.cc",
     "../browser/shared_storage/shared_storage_url_loader_factory_proxy_unittest.cc",
     "../browser/site_instance_group_unittest.cc",
     "../browser/site_instance_impl_unittest.cc",
@@ -2686,6 +2690,7 @@ test("content_unittests") {
     "../common/input/gesture_event_stream_validator_unittest.cc",
     "../common/input/touch_event_stream_validator_unittest.cc",
     "../common/pseudonymization_salt_unittest.cc",
+    "../common/service_worker/service_worker_router_evaluator_unittest.cc",
     "../common/url_utils_unittest.cc",
     "../common/user_agent_unittest.cc",
     "../common/webid/identity_url_loader_throttle_unittest.cc",
@@ -2769,6 +2774,7 @@ test("content_unittests") {
       "../browser/accessibility/browser_accessibility_android_unittest.cc",
       "../browser/android/nfc_host_unittest.cc",
       "../browser/attribution_reporting/attribution_input_event_tracker_android_unittest.cc",
+      "../browser/attribution_reporting/attribution_os_level_manager_android_unittest.cc",
       "../browser/renderer_host/input/web_input_event_builders_android_unittest.cc",
       "../browser/web_contents/color_chooser_unittest.cc",
       "../common/android/cpu_time_metrics_unittest.cc",
@@ -3194,11 +3200,6 @@ test("content_unittests") {
         "//chromeos/dbus/u2f",
       ]
     }
-  }
-
-  if (is_chromeos) {
-    sources +=
-        [ "../browser/smart_card/smart_card_reader_tracker_impl_unittest.cc" ]
   }
 
   if (use_aura) {

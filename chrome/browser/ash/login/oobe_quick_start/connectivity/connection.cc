@@ -6,6 +6,7 @@
 
 #include <array>
 
+#include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/notreached.h"
@@ -30,6 +31,12 @@ namespace {
 
 constexpr base::TimeDelta kNotifySourceOfUpdateResponseTimeout =
     base::Seconds(3);
+
+// TODO(b/280308144): Delete this switch once the host device handles the
+// NotifySourceOfUpdate message. This is used to manually test forced update
+// before Android implements the NotifySourceOfUpdate ack response.
+constexpr char kQuickStartTestForcedUpdateSwitch[] =
+    "quick-start-test-forced-update";
 
 }  // namespace
 
@@ -117,6 +124,13 @@ void Connection::RequestWifiCredentials(
 
 void Connection::NotifySourceOfUpdate(int32_t session_id,
                                       NotifySourceOfUpdateCallback callback) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kQuickStartTestForcedUpdateSwitch)) {
+    HandleNotifySourceOfUpdateResponse(std::move(callback),
+                                       /*ack_received=*/true);
+    return;
+  }
+
   // Send message to source that target device will perform an update.
   response_timeout_timer_.Start(FROM_HERE, kNotifySourceOfUpdateResponseTimeout,
                                 base::BindOnce(&Connection::OnResponseTimeout,
@@ -242,12 +256,20 @@ void Connection::OnBootstrapConfigurationsResponse(
     return;
   }
 
-  // TODO(b/280306851): Finish parsing response and save cryptauth_device_id.
+  auto on_decoding_completed =
+      base::BindOnce(&Connection::ParseBootstrapConfigurationsResponse,
+                     weak_ptr_factory_.GetWeakPtr());
+
   DecodeData<mojom::BootstrapConfigurations>(
       &mojom::QuickStartDecoder::DecodeBootstrapConfigurations,
-      base::DoNothing(), std::move(response_bytes));
+      std::move(on_decoding_completed), std::move(response_bytes));
 
   std::move(callback).Run(absl::nullopt);
+}
+
+void Connection::ParseBootstrapConfigurationsResponse(
+    absl::optional<mojom::BootstrapConfigurations> bootstrap_configurations) {
+  phone_instance_id_ = bootstrap_configurations->cryptauth_device_id;
 }
 
 void Connection::SendMessageAndReadResponse(

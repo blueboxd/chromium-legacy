@@ -123,12 +123,8 @@ std::vector<Entry> AppDeduplicationService::GetDuplicates(
   }
 
   for (const auto& entry : group->second.entries) {
-    auto status_it = entry_status_.find(entry);
-    if (status_it == entry_status_.end()) {
-      continue;
-    }
-    if (status_it->second == EntryStatus::kNonApp ||
-        status_it->second == EntryStatus::kInstalledApp) {
+    if (entry.entry_status == EntryStatus::kNonApp ||
+        entry.entry_status == EntryStatus::kInstalledApp) {
       entries.push_back(entry);
     }
   }
@@ -151,55 +147,6 @@ bool AppDeduplicationService::AreDuplicates(const Entry& entry_1,
   return duplication_index_1 == duplication_index_2;
 }
 
-// This function is only used when the kAppDeduplicationService flag
-// is enabled.
-void AppDeduplicationService::OnDuplicatedGroupListUpdated(
-    const proto::DuplicatedGroupList& duplicated_group_list) {
-  // Use the index as the internal indexing key for fast look up. If the
-  // size of the duplicated groups goes over integer 32 limit, a new indexing
-  // key needs to be introduced.
-  uint32_t index = 1;
-  for (auto const& group : duplicated_group_list.duplicate_group()) {
-    DuplicateGroup duplicate_group;
-    for (auto const& app : group.app()) {
-      const std::string& app_id = app.app_id_for_platform();
-      const std::string& source = app.source_name();
-      Entry entry;
-      // TODO(b/238394602): Add more data type when real data is ready.
-      // TODO(b/238394602): Add server data verification.
-      if (source == "arc") {
-        entry = Entry(app_id, AppType::kArc);
-      } else if (source == "web") {
-        entry = Entry(app_id, AppType::kWeb);
-      } else if (source == "website") {
-        GURL entry_url = GURL(app_id);
-        if (entry_url.is_valid()) {
-          entry = Entry(GURL(app_id));
-        } else {
-          continue;
-        }
-      } else {
-        continue;
-      }
-
-      entry_to_group_map_[entry] = index;
-      // Initialize entry status.
-      entry_status_[entry] = entry.entry_type == EntryType::kApp
-                                 ? EntryStatus::kNotInstalledApp
-                                 : EntryStatus::kNonApp;
-      duplicate_group.entries.push_back(std::move(entry));
-    }
-    duplication_map_[index] = std::move(duplicate_group);
-    index++;
-  }
-
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  proxy->AppRegistryCache().ForEachApp([this](const apps::AppUpdate& update) {
-    UpdateInstallationStatus(update);
-  });
-}
-
 void AppDeduplicationService::OnAppUpdate(const apps::AppUpdate& update) {
   UpdateInstallationStatus(update);
 }
@@ -212,15 +159,9 @@ void AppDeduplicationService::OnAppRegistryCacheWillBeDestroyed(
 void AppDeduplicationService::UpdateInstallationStatus(
     const apps::AppUpdate& update) {
   Entry entry(update.PublisherId(), update.AppType());
-  auto it = entry_status_.find(entry);
-
-  if (it == entry_status_.end()) {
-    return;
-  }
-
-  it->second = apps_util::IsInstalled(update.Readiness())
-                   ? EntryStatus::kInstalledApp
-                   : EntryStatus::kNotInstalledApp;
+  entry.entry_status = apps_util::IsInstalled(update.Readiness())
+                           ? EntryStatus::kInstalledApp
+                           : EntryStatus::kNotInstalledApp;
 }
 
 absl::optional<uint32_t> AppDeduplicationService::FindDuplicationIndex(
@@ -361,11 +302,11 @@ void AppDeduplicationService::DeduplicateDataToEntries(
         entry = Entry(app_id, source);
       }
 
-      entry_to_group_map_[entry] = index;
       // Initialize entry status.
-      entry_status_[entry] = entry.entry_type == EntryType::kApp
-                                 ? EntryStatus::kNotInstalledApp
-                                 : EntryStatus::kNonApp;
+      entry.entry_status = entry.entry_type == EntryType::kApp
+                               ? EntryStatus::kNotInstalledApp
+                               : EntryStatus::kNonApp;
+      entry_to_group_map_[entry] = index;
       duplicate_group.entries.push_back(std::move(entry));
     }
     if (!duplicate_group.entries.empty()) {

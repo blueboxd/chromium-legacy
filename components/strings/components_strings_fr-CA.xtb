@@ -46,6 +46,7 @@
 <translation id="1080116354587839789">Adapter à la largeur</translation>
 <translation id="1081061862829655580">Bac 19</translation>
 <translation id="1089439967362294234">Modifier le mot de passe</translation>
+<translation id="1094777233105318927">Renseignements à propos de votre navigateur, de votre système d'exploitation, de votre appareil, des logiciels installés et des fichiers</translation>
 <translation id="1096545575934602868">Ce champ ne peut pas contenir plus de <ph name="MAX_ITEMS_LIMIT" /> entrées. Toutes les entrées supplémentaires seront supprimées.</translation>
 <translation id="1100782917270858593">Bouton de reprise de votre exploration, appuyez sur Entrée pour reprendre votre exploration et consulter l'activité pertinente dans votre historique de Chrome</translation>
 <translation id="1101672080107056897">Action en cas d'erreur</translation>
@@ -1132,6 +1133,7 @@
 <translation id="3740319564441798148">Bus et train longue distance</translation>
 <translation id="3743765582345153106">Toujours vérifier lors de l'utilisation de la saisie automatique</translation>
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
+<translation id="3744212718085287312">Augmenter la sécurité avec une carte virtuelle la prochaine fois?</translation>
 <translation id="3744286742364977428">Les fichiers que vous téléchargez sont envoyés à Google Cloud ou à des tiers afin d'être analysés. Par exemple, ils peuvent être analysés à la recherche de données confidentielles ou de logiciels malveillants et peuvent être stockés en fonction des politiques de l'entreprise.</translation>
 <translation id="3744899669254331632">Vous ne pas présentement consulter le site <ph name="SITE" />, car il a renvoyé des authentifiants brouillés que Chromium ne peut pas traiter. Les erreurs et attaques réseau étant généralement temporaires, cette page sera peut-être à nouveau accessible plus tard.</translation>
 <translation id="3748148204939282805">Les cyberpirates à l'œuvre sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> peuvent vous inciter à faire quelque chose de dangereux comme installer un logiciel ou révéler vos renseignements personnels (par exemple, des mots de passe, des numéros de téléphone ou des numéros de carte de crédit). <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -1240,6 +1242,7 @@
 <translation id="4031179711345676612">Le microphone est autorisé</translation>
 <translation id="4040350669425716613">Collèges et universités</translation>
 <translation id="4047351652147966654">18 po x 24 po</translation>
+<translation id="404831776305217138">L'URL de mise à jour de l'extension avec l'ID « <ph name="EXTENSION_ID" /> » n'est pas valide ou utilise un schéma non compatible. Les schémas compatibles sont: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> et <ph name="FILE_SCHEME" />.</translation>
 <translation id="4050392779074832022">Vous serez en mesure de l'utiliser dans tous les produits Google</translation>
 <translation id="405399507749852140">Obtenez des alertes si le prix est réduit sur un site</translation>
 <translation id="4056223980640387499">Sépia</translation>
@@ -2285,6 +2288,8 @@
 <translation id="6569060085658103619">Vous consultez une page d'extension</translation>
 <translation id="6569366777234823130">Films dramatiques</translation>
 <translation id="6573200754375280815">Double perforation à droite</translation>
+<translation id="6576181918031900030">Commencer la diffusion</translation>
+<translation id="6578434528542148658">ID d'extension non valide.</translation>
 <translation id="657902945730878902">Dessin et coloriage</translation>
 <translation id="6579630537141957243">Connecter un appareil MIDI?</translation>
 <translation id="6579990219486187401">Rose clair</translation>
@@ -3021,7 +3026,6 @@ Détails supplémentaires :
 <translation id="8298115750975731693">Le réseau Wi-Fi que vous utilisez (<ph name="WIFI_NAME" />) peut vous demander de visiter <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8303854710873047864">Section « <ph name="SECTION" /> » affichée</translation>
 <translation id="830498451218851433">Plier en deux</translation>
-<translation id="8307888238279532626">Les applications installées et leur fréquence d'utilisation</translation>
 <translation id="831997045666694187">Soirée</translation>
 <translation id="8321476692217554900">Notifications</translation>
 <translation id="8329068931308448247">Enveloppe nᵒ 14</translation>

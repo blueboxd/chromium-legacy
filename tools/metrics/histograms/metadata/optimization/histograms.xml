@@ -75,6 +75,8 @@ chromium-metrics-reviews@google.com.
   <variant name="SegmentationVoice" summary="Segmentation: Voice user"/>
   <variant name="TextClassifier" summary="Smart text selection"/>
   <variant name="TextEmbedder" summary="Generic Text Embedding"/>
+  <variant name="VisualSearchClassification"
+      summary="Classifies images on the page"/>
   <variant name="WebAppInstallationPromo"
       summary="PWA: Show web app installation promotion"/>
 </variants>
@@ -122,6 +124,8 @@ chromium-metrics-reviews@google.com.
       summary="Provides the entities that are present on the page"/>
   <variant name="PerformanceHints"
       summary="Provides aggregated performance information about the page"/>
+  <variant name="PriceInsights"
+      summary="Returns price insights data for shopping websites"/>
   <variant name="PriceTracking"
       summary="Returns price related data for shopping websites"/>
   <variant name="SalientImage"

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/cpp/system_tray_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -15,7 +14,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/icon_button.h"
-#include "ash/system/model/system_tray_model.h"
 #include "ash/system/privacy/screen_security_controller.h"
 #include "ash/system/system_notification_controller.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -302,6 +300,14 @@ void VideoConferenceTray::AnchorUpdated() {
   }
 }
 
+void VideoConferenceTray::OnAnimationEnded() {
+  TrayBackgroundView::OnAnimationEnded();
+
+  // `MaybeShowSpeakOnMuteOptInNudge()` will only attempt to show the nudge if
+  // the tray was made visible.
+  VideoConferenceTrayController::Get()->MaybeShowSpeakOnMuteOptInNudge(this);
+}
+
 void VideoConferenceTray::OnHasMediaAppStateChange() {
   SetVisiblePreferred(VideoConferenceTrayController::Get()->ShouldShowTray());
 }
@@ -382,20 +388,13 @@ void VideoConferenceTray::ToggleBubble(const ui::Event& event) {
     return;
   }
 
-  TrayBubbleView::InitParams init_params;
-  init_params.delegate = GetWeakPtr();
-  init_params.parent_window = GetBubbleWindowContainer();
-  init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
-  init_params.anchor_rect = GetAnchorBoundsInScreen();
-  init_params.insets = GetTrayBubbleInsets(GetBubbleWindowContainer());
-  init_params.shelf_alignment = shelf()->alignment();
-  init_params.preferred_width = kTrayMenuWidth;
-  init_params.close_on_deactivate = true;
-  init_params.translucent = true;
+  VideoConferenceTrayController::Get()->CloseAllVcNudges();
 
   // Create top-level bubble.
   auto bubble_view = std::make_unique<video_conference::BubbleView>(
-      init_params, VideoConferenceTrayController::Get());
+      /*init_params=*/CreateInitParamsForTrayBubble(/*tray=*/this),
+      /*controller=*/VideoConferenceTrayController::Get());
+
   bubble_ = std::make_unique<TrayBubbleWrapper>(this);
   bubble_->ShowBubble(std::move(bubble_view));
 
@@ -423,14 +422,6 @@ void VideoConferenceTray::OnScreenShareButtonClicked(const ui::Event& event) {
       ->StopAllSessions(/*is_screen_access=*/true);
 
   base::UmaHistogramBoolean(kStopScreenShareHistogramName, true);
-}
-
-// static
-void VideoConferenceTray::OpenSpeakOnMuteDetectionSettingsPage() {
-  Shell::Get()
-      ->system_tray_model()
-      ->client()
-      ->ShowSpeakOnMuteDetectionSettings();
 }
 
 BEGIN_METADATA(VideoConferenceTray, TrayBackgroundView)

@@ -317,6 +317,29 @@
       "use_remoteexec": true
     }
   },
+  "linux-exp-asan-lsan-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": true,
+      "fail_on_san_warnings": true,
+      "is_asan": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_lsan": true,
+      "symbol_level": 1,
+      "use_remoteexec": true
+    }
+  },
+  "linux-exp-tsan-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "enable_nacl": false,
+      "fail_on_san_warnings": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "is_tsan": true,
+      "use_remoteexec": true
+    }
+  },
   "linux-extended-tracing-rel": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -373,6 +396,18 @@
     }
   },
   "linux-js-code-coverage": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "is_clang": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "optimize_webui": false,
+      "symbol_level": 0,
+      "use_javascript_coverage": true,
+      "use_remoteexec": true
+    }
+  },
+  "linux-js-coverage-rel": {
     "gn_args": {
       "dcheck_always_on": false,
       "is_clang": true,

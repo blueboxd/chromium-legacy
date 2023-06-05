@@ -5,62 +5,15 @@
 #include "ash/user_education/welcome_tour/welcome_tour_scrim.h"
 
 #include <string>
-#include <vector>
 
-#include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
-#include "ash/shell.h"
+#include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/user_education/user_education_ash_test_base.h"
+#include "ash/user_education/welcome_tour/welcome_tour_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/aura/window.h"
-#include "ui/compositor/layer.h"
+#include "ui/color/color_provider.h"
 
 namespace ash {
-namespace {
-
-// Aliases.
-using ::testing::Conditional;
-using ::testing::Contains;
-using ::testing::Eq;
-using ::testing::Matches;
-using ::testing::Not;
-
-// Matchers --------------------------------------------------------------------
-
-MATCHER_P2(Index, i, matcher, "") {
-  return Matches(matcher)(arg.at(i));
-}
-
-MATCHER_P(Name, matcher, "") {
-  return Matches(matcher)(arg->name());
-}
-
-// Helpers ---------------------------------------------------------------------
-
-std::vector<RootWindowController*> GetAllRootWindowControllers() {
-  return Shell::Get()
-      ->window_tree_host_manager()
-      ->GetAllRootWindowControllers();
-}
-
-aura::Window* GetHelpBubbleContainer(RootWindowController* controller) {
-  return controller->GetRootWindow()->GetChildById(
-      kShellWindowId_HelpBubbleContainer);
-}
-
-void ExpectScrimsOnAllRootWindows(bool exist) {
-  for (auto* controller : GetAllRootWindowControllers()) {
-    auto* const help_bubble_container = GetHelpBubbleContainer(controller);
-    EXPECT_THAT(
-        help_bubble_container->layer()->children(),
-        Conditional(exist, Index(0, Name(Eq(WelcomeTourScrim::kLayerName))),
-                    Not(Contains(Name(Eq(WelcomeTourScrim::kLayerName))))));
-  }
-}
-
-}  // namespace
 
 // WelcomeTourScrimTest --------------------------------------------------------
 
@@ -98,6 +51,39 @@ TEST_F(WelcomeTourScrimTest, AddRemoveRootWindows) {
 
   // Case: Remove root window.
   UpdateDisplay("1024x768");
+  ExpectScrimsOnAllRootWindows(true);
+}
+
+// Verifies that root windows can be resized while `WelcomeTourScrim` is in
+// scope and that there will be properly configured scrims on all root windows.
+TEST_F(WelcomeTourScrimTest, ResizeRootWindows) {
+  // Initial state.
+  WelcomeTourScrim scrim;
+  ExpectScrimsOnAllRootWindows(true);
+
+  // Case: Shrink root window.
+  UpdateDisplay("360x640");
+  ExpectScrimsOnAllRootWindows(true);
+
+  // Case: Grow root window.
+  UpdateDisplay("1920x1080");
+  ExpectScrimsOnAllRootWindows(true);
+}
+
+// Verifies that a root window's color provider can be updated while
+// `WelcomeTourScrim` is in scope and that there will be properly configured
+// scrims on all root windows.
+TEST_F(WelcomeTourScrimTest, UpdateRootWindowColorProvider) {
+  // Log in the user so that the prefs backing dark/light mode are available.
+  SimulateUserLogin("user@test");
+
+  // Initial state.
+  WelcomeTourScrim scrim;
+  ExpectScrimsOnAllRootWindows(true);
+
+  // Case: Toggle dark/light mode.
+  auto* const controller = DarkLightModeController::Get();
+  controller->SetDarkModeEnabledForTest(!controller->IsDarkModeEnabled());
   ExpectScrimsOnAllRootWindows(true);
 }
 

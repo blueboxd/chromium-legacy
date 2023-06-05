@@ -159,9 +159,11 @@ CSSValue* ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
 
 CSSValue* ComputedStyleUtils::ValueForPosition(const LengthPoint& position,
                                                const ComputedStyle& style) {
-  DCHECK_EQ(position.X().IsAuto(), position.Y().IsAuto());
   if (position.X().IsAuto()) {
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
+  }
+  if (position.X().IsNone()) {
+    return CSSIdentifierValue::Create(CSSValueID::kNormal);
   }
 
   return MakeGarbageCollected<CSSValuePair>(
@@ -3742,8 +3744,8 @@ CSSValueList* ComputedStyleUtils::ValuesForContainerShorthand(
 
   list->Append(*name);
 
-  if (!(IsA<CSSIdentifierValue>(type) &&
-        To<CSSIdentifierValue>(*type).GetValueID() == CSSValueID::kNormal)) {
+  if (const auto* ident_value = DynamicTo<CSSIdentifierValue>(*type);
+      !ident_value || ident_value->GetValueID() != CSSValueID::kNormal) {
     list->Append(*type);
   }
 

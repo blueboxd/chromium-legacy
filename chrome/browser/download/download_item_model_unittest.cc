@@ -96,7 +96,7 @@ class TestDownloadCoreService : public DownloadCoreServiceImpl {
 
   ChromeDownloadManagerDelegate* GetDownloadManagerDelegate() override;
 
-  raw_ptr<ChromeDownloadManagerDelegate> delegate_;
+  raw_ptr<ChromeDownloadManagerDelegate, DanglingUntriaged> delegate_;
 };
 
 TestDownloadCoreService::TestDownloadCoreService(Profile* profile)
@@ -537,8 +537,13 @@ TEST_F(DownloadItemModelTest, CompletedStatus) {
 
   EXPECT_CALL(item(), GetDangerType())
       .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE));
-  EXPECT_EQ("2 B \xE2\x80\xA2 Scan is done",
-            base::UTF16ToUTF8(model().GetStatusText()));
+  if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
+    EXPECT_EQ("2 B \xE2\x80\xA2 Scan is done",
+              base::UTF16ToUTF8(model().GetStatusText()));
+  } else {
+    EXPECT_EQ("2 B \xE2\x80\xA2 Done, no issues found",
+              base::UTF16ToUTF8(model().GetStatusText()));
+  }
 
 #if BUILDFLAG(IS_MAC)
   EXPECT_EQ("Show in Finder", base::UTF16ToUTF8(model().GetShowInFolderText()));
@@ -602,7 +607,7 @@ TEST_F(DownloadItemModelTest, CompletedBubbleWarningStatusText) {
       {download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK,
        "Blocked by your organization"},
       {download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING,
-       "Scan for malware \xE2\x80\xA2 Suspicious"},
+       "Scan before opening"},
   };
   for (const auto& test_case : kDangerTypeTestCases) {
     SetupDownloadItemDefaults();
@@ -740,7 +745,7 @@ TEST_F(DownloadItemModelTest, DangerousWarningBubbleUIInfo_V2On) {
        {DownloadCommands::Command::DISCARD, DownloadCommands::Command::KEEP}},
       {download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING,
        false,
-       absl::nullopt,
+       DownloadCommands::Command::DEEP_SCAN,
        {DownloadCommands::Command::DEEP_SCAN,
         DownloadCommands::Command::BYPASS_DEEP_SCANNING}},
       {download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING,
@@ -808,7 +813,7 @@ TEST_F(DownloadItemModelTest, DangerousWarningBubbleUIInfo_V2Off) {
        {DownloadCommands::Command::DISCARD, DownloadCommands::Command::KEEP}},
       {download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING,
        false,
-       absl::nullopt,
+       DownloadCommands::Command::DEEP_SCAN,
        {DownloadCommands::Command::DEEP_SCAN,
         DownloadCommands::Command::BYPASS_DEEP_SCANNING}},
       {download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING,

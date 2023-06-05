@@ -20,6 +20,10 @@
 namespace blink {
 namespace features {
 
+constexpr int kBrowsingTopicsConfigVersionDefault = 1;
+
+constexpr int kBrowsingTopicsTaxonomyVersionDefault = 1;
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAnonymousIframeOriginTrial);
 BLINK_COMMON_EXPORT
 BASE_DECLARE_FEATURE(kAutofillDetectRemovedFormControls);
@@ -87,8 +91,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPrivateAggregationApiEnabledInFledge;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kPrivateAggregationApiFledgeExtensionsEnabled;
-BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
-    kPrivateAggregationApiMaxBudgetPerScope;
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSharedStorageAPI);
 // Maximum number of URLs allowed to be included in the input parameter for
@@ -301,6 +303,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasCompressHibernatedImage);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCanvasFreeMemoryWhenHidden);
 
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kUseImageInsteadOfStorageForStagingBuffer);
+
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCreateImageBitmapOrientationNone);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCacheCodeOnIdle);
@@ -501,6 +506,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kBrowsingTopicsBypassIPIsPubliclyRoutableCheck);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBrowsingTopicsXHR);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBrowsingTopicsDocumentAPI);
 
 // Uses page viewport instead of frame viewport in the Largest Contentful Paint
 // heuristic where images occupying the full viewport are ignored.
@@ -882,10 +889,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // applied directly instead of using the property tree builder.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFastPathPaintPropertyUpdates);
 
-// If enabled, SVG images will suspend animations when all instances of the
-// image are outside of the viewport.
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThrottleOffscreenAnimatingSvgImages);
-
 // If enabled, reads and decodes navigation body data off the main thread.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kThreadedBodyLoader);
 
@@ -987,6 +990,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSSVTrailerEnforceExposureAssertion);
 // Forces the attribute powerPreference to be set to "high-performance" for
 // WebGL contexts.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kForceHighPerformanceGPUForWebGL);
+
+// Enable the correction testing for float extension for webgl version 1.
+// This is simply a killswitch in case we need to restore original behavior.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCorrectFloatExtensionTestForWebGL);
 
 // Process device and display capture requests on different queues.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSplitUserMediaQueues);
@@ -1147,6 +1154,11 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMainThreadHighPriorityImageLoading);
 // Enables input IPC to directly target the renderer's compositor thread without
 // hopping through the IO thread first.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDirectCompositorThreadIpc);
+
+// Permissions Policies support subdomain wildcards when the non-wildcard
+// portion of the domain is at least eTLD+1. If this flag is on, the eTLD+1
+// restriction is lifted and wildcards are supported in the port and scheme.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCSPWildcardsInPermissionsPolicies);
 
 }  // namespace features
 }  // namespace blink

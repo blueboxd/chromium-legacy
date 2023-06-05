@@ -29,6 +29,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1104084341931202936">Erişilebilirlik ayarlarını göster</translation>
 <translation id="1104621072296271835">Cihazlarınız birlikte daha da iyi çalışır</translation>
 <translation id="1111021433905331574">Ayarlar &gt; <ph name="APP_TITLE" /> bölümüne giderek klavye arka ışığınızın rengini değiştirebilirsiniz</translation>
+<translation id="1117719261843403176">Mobil veriyi aç/kapat. <ph name="STATE" />.</translation>
 <translation id="112308213915226829">Rafı otomatik gizle</translation>
 <translation id="1142002900084379065">Yeni eklenen fotoğraflar</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> için bilgi iletişim kutusunu aç</translation>
@@ -48,6 +49,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1190609913194133056">Bildirim Merkezi</translation>
 <translation id="1190678134285018527">Cihazın önceki sürüme dönmesi gerekiyor</translation>
 <translation id="1195412055398077112">fazla tarama</translation>
+<translation id="1195667586424773550">Bağlantıyı sekmenin adres çubuğuna sürükleyin</translation>
 <translation id="119944043368869598">Tümünü temizle</translation>
 <translation id="1199716647557067911">Anahtar Erişimi'ni kapatmak istediğinizden emin misiniz?</translation>
 <translation id="1201402288615127009">İleri</translation>
@@ -61,6 +63,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1235458158152011030">Bilinen ağlar</translation>
 <translation id="1239161794459865856"><ph name="FEATURE_NAME" /> bağlı.</translation>
 <translation id="1240638468526743569">Uygulama</translation>
+<translation id="1242704516557658755">En son kullanılan pencere listesinde geriye doğru geçiş yapın</translation>
 <translation id="124678866338384709">Geçerli sekmeyi kapatır</translation>
 <translation id="1246890715821376239">Desteklenmeyen uygulamalar</translation>
 <translation id="1247372569136754018">Mikrofon (dahili)</translation>
@@ -72,6 +75,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1270290102613614947">Dokunmatik klavye devre dışı</translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1275285675049378717"><ph name="POWER_SOURCE" /> güç sağlıyor</translation>
+<translation id="1276975447697633661">Dosyayı seçip <ph name="KEY" /> tuşuna basın</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1285992161347843613">Telefonu bul</translation>
 <translation id="1287002645302686982"><ph name="DESK_TEMPLATE_NAME" /> adında kayıtlı bir masa zaten var</translation>
@@ -84,12 +88,14 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1294929383540927798">Kilit ekranı bildirim ayarlarını değiştir</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1306549533752902673">ÖNERİLEN UYGULAMALAR</translation>
+<translation id="1311294419381837540">Bir sekme yayınlıyorsunuz. İstediğiniz zaman yayını duraklatabilir veya durdurabilirsiniz.</translation>
 <translation id="1312604459020188865"><ph name="SIGNAL_STRENGTH" /> Sinyal Gücü</translation>
 <translation id="1316069254387866896">Rafı her zaman göster</translation>
 <translation id="132346741904777634">Kamera sol üst köşeye tutturuldu. Sistem yüzeyi ile çakışıyor.</translation>
 <translation id="1333308631814936910"><ph name="DISPLAY_NAME" /> bağlandı</translation>
 <translation id="1340378040547539434">Sayfayı uzaklaştır</translation>
 <translation id="1341651618736211726">Taşma</translation>
+<translation id="1344141078024003905">Ekranınızı yayınlıyorsunuz. İstediğiniz zaman ekranınızı yayınlamayı duraklatabilir veya durdurabilirsiniz.</translation>
 <translation id="1346748346194534595">Sağa</translation>
 <translation id="1351937230027495976">Menüyü daralt</translation>
 <translation id="1360220746312242196">Sayfa ararken aramayla ilgili bir önceki eşleşmeye git</translation>
@@ -141,7 +147,6 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1604857178818051494">Medyayı duraklatın</translation>
 <translation id="1610778689852195798">"Geri al"</translation>
 <translation id="1611993646327628135">Açık</translation>
-<translation id="1618835956950524778">Raftaki başlatıcı düğmesini vurgulayın</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1632985212731562677">Anahtar Erişimi, Ayarlar &gt; Erişilebilirlik'te devre dışı bırakılabilir.</translation>
 <translation id="163517899691012366">Rahatsız Etmeyin modu açıkken bildirimler gösterilmez</translation>
@@ -197,6 +202,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1824922790784036530">Konum erişimini aç</translation>
 <translation id="1830308660060964064"><ph name="ITEM_TITLE" /> sabitlemesi kaldırıldı</translation>
+<translation id="183465528887726323">Hotspot'u kullanmak için mobil veriye bağlanın</translation>
 <translation id="1838895407229022812">Gece Işığı kapalı.</translation>
 <translation id="1854180393107901205">Yayını durdur</translation>
 <translation id="1862380676329487333">Güncelle ve oturumu kapat</translation>
@@ -282,6 +288,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2269016722240250274">Bir uygulama mikrofonunuzu kullanıyor</translation>
 <translation id="2277103315734023688">İleri Sar</translation>
 <translation id="2282073721614284166">Bağlantıyı sekmede aç</translation>
+<translation id="2284237890386182187">Açık, hiçbir cihaz bağlı değil</translation>
 <translation id="2292698582925480719">Görüntüyü ölçekle</translation>
 <translation id="229397294990920565">Mobil veriler kapanıyor...</translation>
 <translation id="2295777434187870477">Mikrofon açık, düğmeye basılırsa girişin sesi kapatılacak.</translation>
@@ -301,9 +308,11 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> etkinleştiriliyor</translation>
 <translation id="2359808026110333948">Devam et</translation>
 <translation id="2360398059912971776">pil</translation>
+<translation id="2361210043495191221">Kablosuz bağlantıyı aç/kapat. <ph name="STATE" />.</translation>
 <translation id="2367186422933365202">Chromebook'unuzda oturum açılamıyor</translation>
 <translation id="2367972762794486313">Uygulamaları göster</translation>
 <translation id="2369165858548251131">Çince "Merhaba"</translation>
+<translation id="2382875860893882175">Yayın şu anda duraklatılmış durumda. İstediğiniz zaman yayını devam ettirebilir veya durdurabilirsiniz.</translation>
 <translation id="2386292613071805067">Sayfadaki her şeyi seç</translation>
 <translation id="2397416548179033562">Chrome menüsünü göster</translation>
 <translation id="240006516586367791">Medya denetimleri</translation>
@@ -335,8 +344,10 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2514415433888497495"><ph name="CAPTURE_MEDIUM" /> özelliğini durdurun. <ph name="CAPTURE_MEDIUM" /> özelliği <ph name="CAPTURE_STATE" /> durumda</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">Pencerelerin kilidini açın</translation>
+<translation id="2528111225373402384">Hotspot ayarları</translation>
 <translation id="2530896289327917474">Metin imleciyle göz atmayı açma veya kapatma</translation>
 <translation id="2531025035050312891">cihaz yavaş</translation>
+<translation id="2531107890083353124">Sekmeyi sürüklerken <ph name="KEY_ONE" /> tuşuna basın</translation>
 <translation id="254900897760075745">Seçili içeriği panoya kopyala</translation>
 <translation id="2549711466868162843">Işığı iyileştir</translation>
 <translation id="2549985041256363841">Kaydı başlat</translation>
@@ -382,12 +393,12 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2750932254614666392">"Sil"</translation>
 <translation id="2750941250130734256">Etkin pencere çıkarıldı.</translation>
 <translation id="2761723519669354964">Rafta vurgulanan öğeyi açın</translation>
+<translation id="2774348302533424868"><ph name="MODIFIER" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> - <ph name="KEY_TWO" /></translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" />, <ph name="MANAGER" /> tarafından yönetiliyor</translation>
 <translation id="2782591952652094792">Ekran görüntüsü alma modundan çıkılıyor</translation>
 <translation id="2785499565474703580">1 cihaz bağlandı</translation>
 <translation id="2791421900609674576">Kaldığınız yerden devam edebilmeniz için öneriler gösterilir. Dokunup basılı tutarak önerileri kaldırabilirsiniz.</translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
-<translation id="2797741504905337289">Shelf Party</translation>
 <translation id="2802938996245446490"><ph name="BUTTON_LABEL" />, seçildi</translation>
 <translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2814448776515246190">Kısmi ekran görüntüsü alma</translation>
@@ -416,6 +427,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2942350706960889382">Yerleştirilmiş Büyüteç</translation>
 <translation id="2942516765047364088">Raf konumu</translation>
 <translation id="2946119680249604491">Bağlantı ekle</translation>
+<translation id="2949420361496057765"><ph name="MODIFIER" /> tuşunu basılı tutarken bağlantıyı tıklayın</translation>
 <translation id="295852781144570696">Cihaz sesi</translation>
 <translation id="2960314608273155470">Ekran Görüntüsü Alma Modu, varsayılan <ph name="SOURCE" /> <ph name="TYPE" />. Klavyeyle gezinmek için sekme tuşuna basın.</translation>
 <translation id="2961963223658824723">Bir sorun oluştu. Birkaç saniye sonra tekrar deneyin.</translation>
@@ -425,7 +437,6 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="2970920913501714344">Uygulama, uzantı ve tema yükleme</translation>
 <translation id="2977598380246111477">Sonraki sayı</translation>
 <translation id="2985148236010982088">Tüm uygulamaları göster</translation>
-<translation id="29859347674873492">Keşfet uygulamasında Yardım'ı açın</translation>
 <translation id="2992327365391326550">Cihazın mikrofon düğmesi kapalı.</translation>
 <translation id="2996462380875591307">Yerleştirilmiş Büyüteç etkinleştirildi. Kapatmak için tekrar Ctrl+Arama+H tuşlarına basın.</translation>
 <translation id="3000461861112256445">Mono ses</translation>
@@ -439,6 +450,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3036649622769666520">Dosya Aç</translation>
 <translation id="3038571455154067151">Oturum açmak için Family Link ebeveyn erişim kodunuzu girin</translation>
 <translation id="3039939407102840004">Ekran kalemi pil seviyesi yüzde <ph name="PERCENTAGE" />.</translation>
+<translation id="304097922505898963">Tuş Kısayolları uygulamasını açın</translation>
 <translation id="3045488863354895414">İyi günler,</translation>
 <translation id="3047761520276763270">Şunu demeyi deneyin:</translation>
 <translation id="3055162170959710888">Bugün bu cihazı <ph name="USED_TIME" /> kullandınız</translation>
@@ -516,11 +528,12 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3387527074123400161">ChromiumOS</translation>
 <translation id="3400357268283240774">Ek ayarlar</translation>
 <translation id="3405101454990027959">Mikrofon erişimini aç</translation>
+<translation id="3408735331120433841">Şu anda ekranınızı yayınlıyorsunuz.</translation>
 <translation id="3409584356742878290">Geliştirici Araçları denetleyicisini göster veya gizle</translation>
 <translation id="3410336247007142655">Koyu tema ayarlarını göster</translation>
 <translation id="3413817803639110246">Henüz görülecek bir şey yok</translation>
 <translation id="3417835166382867856">Sekme ara</translation>
-<translation id="3423744722495840645">Başlatıcıyı açın/kapatın</translation>
+<translation id="3426253816581969877"><ph name="MODIFIER_1" /><ph name="MODIFIER_2" /> tuşunu basılı tutarken açmak istediğiniz pencereye gelinceye kadar <ph name="KEY" /> tuşuna basın, daha sonra tuşları bırakın</translation>
 <translation id="3428447136709161042"><ph name="NETWORK_NAME" /> bağlantısını kes</translation>
 <translation id="3430396595145920809">Geri gitmek için sağdan kaydırın</translation>
 <translation id="3431517721463707585">Masa 14</translation>
@@ -535,6 +548,7 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="346243998268439747">Yakınlaştırma düzeyini sıfırlar</translation>
 <translation id="3465223694362104965">Açtığınız son oturumdan sonra bu cihaza başka bir klavye bağlandı. Kullanmadan önce bu klavyeye güvendiğinizden emin olun.</translation>
 <translation id="3465356146291925647">Yöneticiniz tarafından yönetiliyor</translation>
+<translation id="347117769229524881"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" /><ph name="KEY_ONE" />, ardından <ph name="KEY_TWO" /> veya <ph name="KEY_THREE" /></translation>
 <translation id="3477079411857374384">Control-Üst Karakter-Boşluk</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> Sinyal Gücü</translation>
 <translation id="348799646910989694">Raf otomatik olarak gizlenecek</translation>
@@ -547,8 +561,8 @@ Başlamak için şunları deneyebilirsin.</translation>
 <translation id="3526440770046466733">Bağlantıyı yeni sekmede açıp geçerli sekmede kal</translation>
 <translation id="353086728817903341"><ph name="NUM_DEVICES" /> cihaza bağlanıldı</translation>
 <translation id="3533126039236445965">Raftaki uygulamalar</translation>
+<translation id="3539957339480430241"><ph name="DEVICE_NAME" /> hotspot'u</translation>
 <translation id="3542066395059568317">Kaldığınız yerden devam edebilmeniz için öneriler gösterilir. Sağ tıklayarak önerileri kaldırabilirsiniz.</translation>
-<translation id="3546121235777416274">Pencere içinde pencereye odaklanın</translation>
 <translation id="3552189655002856821">Kablosuz bağlantı kapalı</translation>
 <translation id="3554215588514239132">Geliştirici Araçları panelini göster veya gizle</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> sabitlendi</translation>
@@ -599,6 +613,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="3677931086890821290">Bu işlem, konum iznine sahip tüm uygulama ve web siteleri, ayrıca ChromeOS'in kablosuz ve mobil ağların konumunu kullanmasına izin verir.</translation>
 <translation id="3679827876008292680">Penceredeki son sekmeye git</translation>
 <translation id="36813544980941320">Kablosuz ağlar; telefonunuz ve <ph name="DEVICE_NAME" /> arasında paylaşılacak</translation>
+<translation id="3682279812299376603"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" /><ph name="KEY_ONE" />, ardından <ph name="KEY_TWO" /></translation>
 <translation id="3694122362646626770">Web siteleri</translation>
 <translation id="3702809606464356667">Mevcut masadaki pencereler gösteriliyor, tüm masalardaki pencerelerin gösterilmesi için Yukarı ok tuşuna basın</translation>
 <translation id="3702846122927433391">Nijerya'nın nüfusu</translation>
@@ -626,6 +641,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="383058930331066723">Pil tasarrufu modu açık</translation>
 <translation id="383629559565718788">Klavye ayarlarını göster</translation>
 <translation id="384082539148746321">Şablon silinsin mi?</translation>
+<translation id="3844627820291068572"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" />, ardından <ph name="KEY_ONE" /> veya <ph name="KEY_TWO" /> ya da <ph name="KEY_THREE" /> veya <ph name="KEY_FOUR" /></translation>
 <translation id="3846575436967432996">Hiçbir ağ bilgisi yok</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="385300504083504382">Başlangıç</translation>
@@ -669,6 +685,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="4028481283645788203">Daha fazla güvenlik için şifre gerekiyor</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Ekranınızı paylaşıyorsunuz</translation>
+<translation id="4049230407053723315">Hızlı Ayarlar</translation>
 <translation id="4057003836560082631">Tarayıcı sekmesi <ph name="INDEX" />/<ph name="TOTAL_COUNT" />. <ph name="SITE_TITLE" />, <ph name="SITE_URL" /></translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Kapalı, 1 uygulama}other{Kapalı, # uygulama}}</translation>
 <translation id="4066027111132117168">Açık, <ph name="REMAINING_TIME" /></translation>
@@ -706,6 +723,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="4215497585250573029">VPN Ayarları</translation>
 <translation id="4217571870635786043">Dikte</translation>
 <translation id="4221957499226645091"><ph name="APP_NAME" />, Yüklü Uygulama, Duraklatıldı</translation>
+<translation id="4231053948789591973">Yayın şu anda duraklatılmış durumda. İstediğiniz zaman ekranınızı yayınlamayı devam ettirebilir veya durdurabilirsiniz.</translation>
 <translation id="423685346499232137">Şu anda içerik kopyalama veya yapıştırma işlemi yapılamıyor</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4240486403425279990">Genel bakış modu</translation>
@@ -756,6 +774,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 önemli bildirim}other{# önemli bildirim}}</translation>
 <translation id="4450893287417543264">Bir daha gösterme</translation>
 <translation id="4451374464530248585">Alt + Aşağı Ok klavye kısayolu değişti. Page Down tuşunu kullanmak için <ph name="LAUNCHER_KEY_NAME" /> + Aşağı Ok tuşlarına basın.</translation>
+<translation id="4453876312474547652">Ctrl + V tuşlarını basılı tuttuğunuzda panoyu görürsünüz. chrome://flags'de (Lacros kullanıyorsanız os://flags) #clipboard-history-longpress flag'ini devre dışı bırakarak bu kısayolu kapatabilirsiniz.</translation>
 <translation id="4455051983450390249">Telefonunuzdaki bildirimleri <ph name="DEVICE_TYPE" /> cihazınızda görün</translation>
 <translation id="445864333228800152">İyi akşamlar,</translation>
 <translation id="4458688154122353284">Ekran kaydını durdur</translation>
@@ -835,8 +854,10 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="4778095205580009397">Google Asistan, demo oturumunda kullanılamaz.</translation>
 <translation id="4789348252524569426">Konuşma dosyaları yüklenemiyor. Cihazınızın güncellenmesi gerekiyor. Cihazınızı yeniden başlatıp işlemi tekrar deneyin.</translation>
 <translation id="478959186716341421">Yayınlanıyor</translation>
+<translation id="4798622944000246716">Mobil ağınız hotspot'u desteklemiyor</translation>
 <translation id="479989351350248267">ara</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
+<translation id="4813311884204119883">Bağlantıyı sekme şeridindeki boş bir alana sürükleyin</translation>
 <translation id="4814539958450445987">Giriş Ekranı</translation>
 <translation id="481455355267255546">Sıradaki</translation>
 <translation id="4831034276697007977">Otomatik tıklamaları kapatmak istediğinizden emin misiniz?</translation>
@@ -844,6 +865,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="485592688953820832">İşlem yok (duraklat)</translation>
 <translation id="485634149294284819">Klavye menüsüne gir</translation>
 <translation id="485806788160414322">Medyayı oynatın veya duraklatın</translation>
+<translation id="4858764087721901597"><ph name="MODIFIER_ONE" />, ardından <ph name="KEY_ONE" /> veya <ph name="KEY_TWO" /> ya da <ph name="KEY_THREE" /> veya <ph name="KEY_FOUR" /></translation>
 <translation id="4860284199500934869"><ph name="FILENAME" /> dosyasını indirmek için ağ bağlantınızı kontrol edin</translation>
 <translation id="4864369630010738180">Oturum açılıyor...</translation>
 <translation id="4864648187878336334">Masa 15</translation>
@@ -986,6 +1008,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="5463129623250377817">Seçili içeriği kesip panoya yerleştir</translation>
 <translation id="5465662442746197494">Yardıma mı ihtiyacınız var?</translation>
 <translation id="547979256943495781">Raf, ekranın sağ tarafında</translation>
+<translation id="5482205457807971887"><ph name="MODIFIER_ONE" /><ph name="KEY_ONE" /> veya <ph name="MODIFIER_TWO" /><ph name="MODIFIER_THREE" /><ph name="KEY_TWO" /></translation>
 <translation id="5491186829646618080">Donanım yazılımı güncellemeleri mevcut</translation>
 <translation id="5503884284981862082">Google Asistan'ı açın/kapatın</translation>
 <translation id="5506975627792768506">Büyüteci açın veya kapatın</translation>
@@ -1050,7 +1073,6 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="5760866832697883462"><ph name="NAME" /> cihazınızı bağlayın</translation>
 <translation id="5762420912707163638">İşaretçiyi açın/kapatın. <ph name="STATE_TEXT" /> Ekranda çizim yapmak için dokunmatik yüzeyi, dokunmatik ekranı veya ekran kalemini kullanın.</translation>
 <translation id="576341972084747908">Tehlikeli <ph name="FILENAME" /> dosyasını indir</translation>
-<translation id="5763928712329149804">Shelf Party kapalı.</translation>
 <translation id="576453121877257266">Gece Işığı açık.</translation>
 <translation id="5764569119212455782">Seçilen son dile geçiş yapın</translation>
 <translation id="5769373120130404283">Gizlilik ekranı</translation>
@@ -1105,6 +1127,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="6012623610530968780">Sayfa <ph name="SELECTED_PAGE" />/<ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Rafta sonraki öğeyi vurgulayın</translation>
 <translation id="6018164090099858612">Ayna modundan çıkılıyor</translation>
+<translation id="6019566113895157499">Tuş Kısayolları</translation>
 <translation id="602001110135236999">Sola kaydır</translation>
 <translation id="6022924867608035986">Arama kutusu metnini temizle</translation>
 <translation id="602472752137106327">Tüm masalardaki pencereleri göster, radyo düğmesi seçildi</translation>
@@ -1138,6 +1161,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="6129953537138746214">Boşluk</translation>
 <translation id="6137566720514957455"><ph name="USER_EMAIL_ADDRESS" /> için kaldırma iletişim kutusunu aç</translation>
 <translation id="6141988275892716286">İndirme işlemini onaylayın</translation>
+<translation id="6143578372829139382">YouTube'da paylaşın</translation>
 <translation id="6154006699632741460">Çevre birimi desteklenmiyor</translation>
 <translation id="6156960295318603523">Dil Ayarları</translation>
 <translation id="615957422585914272">Dokunmatik klavyeyi göster</translation>
@@ -1176,6 +1200,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="6330012934079202188">Tüm masalardaki pencereler gösteriliyor, mevcut masadaki pencerelerin gösterilmesi için Yukarı ok tuşuna basın</translation>
 <translation id="6338485349199627913"><ph name="DISPLAY_NAME" />, <ph name="MANAGER" /> tarafından yönetilen bir oturumdur</translation>
 <translation id="6344138931392227467"><ph name="DEVICE_NAME" /> bağlandı</translation>
+<translation id="6348449481487610270"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" /><ph name="KEY_ONE" /> ardından <ph name="MODIFIER_THREE" /><ph name="KEY_TWO" /> veya <ph name="KEY_THREE" /></translation>
 <translation id="6351032674660237738">UYGULAMA ÖNERİLERİ</translation>
 <translation id="6352082849089527770">Bilinmeyen ağlar</translation>
 <translation id="6359587239691116345">En son özellikleri ve güvenlik iyileştirmelerini edinin. Bu güncellemeyi reddederseniz cihazınız artık düzgün çalışmayabilir, ayrıca güvenlik ve performans sorunları yaşayabilirsiniz.</translation>
@@ -1199,6 +1224,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="6453179446719226835">Dil değiştirildi</translation>
 <translation id="6459472438155181876">Ekran şuraya genişletiliyor: <ph name="DISPLAY_NAME" /></translation>
 <translation id="6464094930452079790">resimler</translation>
+<translation id="6469104339369989396">Hotspot'u aç/kapat</translation>
 <translation id="6477681113376365978">Dosya indirilemiyor</translation>
 <translation id="6482559668224714696">Tam ekran büyüteci</translation>
 <translation id="6483727822843292440">En az kullanılandan başlayarak pencereler arasında geçiş yap</translation>
@@ -1220,6 +1246,7 @@ Cihazınızı güç kaynağına bağlayın.</translation>
 <translation id="6537924328260219877"><ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, <ph name="BATTERY_STATUS" /> Telefon Pili</translation>
 <translation id="6539852571005954999">İndirilen dosya taranıyor: <ph name="FILENAME" /></translation>
 <translation id="6542521951477560771"><ph name="RECEIVER_NAME" /> alıcısına gönderiliyor</translation>
+<translation id="6555373427270923730">Adres çubuğuna bir web adresi yazın, ardından <ph name="MODIFIER" /><ph name="KEY" /> tuşlarına basın</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Yeni yüklenmiş</translation>
 <translation id="6559976592393364813">Yöneticiye sorun</translation>
@@ -1257,7 +1284,6 @@ Yeni yüklenmiş</translation>
 <translation id="6707693040195709527">Cihazın önceki sürüme geçiş işlemi gecikti</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="6723839937902243910">Güç</translation>
-<translation id="6727005317916125192">Önceki bölme</translation>
 <translation id="6727969043791803658">Bağlandı, %<ph name="BATTERY_PERCENTAGE" /> pil</translation>
 <translation id="6732087373923685049">kamera</translation>
 <translation id="6732800389263199929">+<ph name="COUNT" /></translation>
@@ -1304,7 +1330,6 @@ Yeni yüklenmiş</translation>
 <translation id="6919251195245069855">Akıllı kartınız tanınamadı. Tekrar deneyin.</translation>
 <translation id="6920245099716267363">Hotspot'u aç/kapat. Hotspot açık, 1 cihaz bağlı.</translation>
 <translation id="6931576957638141829">Kaydetme yeri</translation>
-<translation id="6941333068993625698">Geri bildirim gönderir</translation>
 <translation id="6942518653766415536">Kayıt biçimi menüsü</translation>
 <translation id="6945221475159498467">Seç</translation>
 <translation id="6945922087561257829">Telefonunuz bir mobil ağ kullanıyor. Telefonunuz ile Chromebook'unuzun aynı kablosuz ağda olduğundan emin olup tekrar deneyin. <ph name="LEARN_MORE" /></translation>
@@ -1324,7 +1349,6 @@ Yeni yüklenmiş</translation>
 <translation id="7014684956566476813"><ph name="DEVICE_NAME" /> adlı cihaza bağlanıldı</translation>
 <translation id="7015766095477679451">Saat <ph name="COME_BACK_TIME" /> olduğunda geri gelin.</translation>
 <translation id="70168403932084660">Masa 6</translation>
-<translation id="7025325401470358758">Sonraki bölme</translation>
 <translation id="7025533177575372252"><ph name="DEVICE_NAME" /> cihazınızı telefonunuza bağlayın</translation>
 <translation id="7026338066939101231">Azalt</translation>
 <translation id="7029814467594812963">Oturumdan çık</translation>
@@ -1353,7 +1377,6 @@ Yeni yüklenmiş</translation>
 <translation id="7126996685418858413">Geçen hafta açıldı</translation>
 <translation id="7130207228079676353">BÜYÜK İHTİMALLE</translation>
 <translation id="7131634465328662194">Oturumunuz otomatik olarak kapatılacak.</translation>
-<translation id="7138316363520807689">Geçerli sekmeyi yer işareti olarak kaydet</translation>
 <translation id="7143207342074048698">Bağlanıyor</translation>
 <translation id="7144942256906679589">Pil durumu</translation>
 <translation id="7165278925115064263">Alt+Üst Karakter+K</translation>
@@ -1378,7 +1401,6 @@ Yeni yüklenmiş</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7312210124139670355">Yöneticiniz eSIM'inizi sıfırlıyor. Bu işlem birkaç dakika sürebilir.</translation>
 <translation id="7313193732017069507">Kamerayı genişlet</translation>
-<translation id="731589979057211264">Shelf Party açık.</translation>
 <translation id="7340731148882810149">Otomatik tıklamalar menüsü</translation>
 <translation id="7346909386216857016">Tamam, anladım</translation>
 <translation id="7348093485538360975">Dokunmatik klavye</translation>
@@ -1447,7 +1469,6 @@ Cihazı kapatmak için cihazın güç düğmesini tekrar basılı tutun.</transl
 <translation id="7607002721634913082">Duraklatıldı</translation>
 <translation id="7609951632080598826">Takvim görünümü, <ph name="DATE" />, <ph name="TIME" /></translation>
 <translation id="7611213136657090146">Kamera yeniden bağlandı.</translation>
-<translation id="7611271430932669992">Odağı pop-up'lara ve iletişim kutularına taşır</translation>
 <translation id="761736749114493194">Kamera çerçevelemesini açın/kapatın. <ph name="STATE_TEXT" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7634648064048557203">Kamera sağ alt köşeye tutturuldu</translation>
@@ -1611,7 +1632,6 @@ Cihazı kapatmak için cihazın güç düğmesini tekrar basılı tutun.</transl
 <translation id="8345019317483336363"><ph name="WINDOW_TITLE" /> penceresi seçildi</translation>
 <translation id="8349964124165471584">Bağlantıyı yeni pencerede aç</translation>
 <translation id="8351131234907093545">Not oluştur</translation>
-<translation id="8364673525741149932">Shelf Party'yi aç/kapat. <ph name="STATE_TEXT" /></translation>
 <translation id="8367948981300340152"><ph name="CAPTURE_MEDIUM" /> kullanılıyor.</translation>
 <translation id="8369166482916924789">Kayıtlı masa, <ph name="SAVE_AND_RECALL_DESK_NAME" /></translation>
 <translation id="8371779926711439835">Harf bazında ilerle</translation>
@@ -1631,6 +1651,7 @@ Cihazı kapatmak için cihazın güç düğmesini tekrar basılı tutun.</transl
 <translation id="8425213833346101688">Değiştir</translation>
 <translation id="8426708595819210923">İyi akşamlar <ph name="GIVEN_NAME" />,</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
+<translation id="8428810263141909179"><ph name="MODIFIER_ONE" /><ph name="MODIFIER_TWO" /><ph name="DELIMITER" /><ph name="KEY_ONE" /> - <ph name="KEY_TWO" /></translation>
 <translation id="8433186206711564395">Ağ ayarları</translation>
 <translation id="8433977262951327081">Giriş seçenekleri menüsü balonunu rafta görüntüleme kısa yolu değişti. <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="8443879455002739353">"Kopyala"</translation>
@@ -1661,6 +1682,7 @@ Cihazı kapatmak için cihazın güç düğmesini tekrar basılı tutun.</transl
 <translation id="856298576161209842"><ph name="MANAGER" />, <ph name="DEVICE_TYPE" /> cihazınızı güncellemenizi öneriyor</translation>
 <translation id="8563862697512465947">Bildirim Ayarları</translation>
 <translation id="857201607579416096">Menü, ekranın sağ alt köşesine taşındı.</translation>
+<translation id="8581946341807941670"><ph name="MODIFIER_1" /><ph name="MODIFIER_2" /> tuşunu basılı tutarken bağlantıyı tıklayın</translation>
 <translation id="8594115950068821369">-<ph name="FORMATTED_TIME" /></translation>
 <translation id="8598235756057743477">Uygulamalarınızı ada veya renge göre sıralama</translation>
 <translation id="8609384513243082612">Yeni sekme açar</translation>
@@ -1803,12 +1825,14 @@ Cihazı kapatmak için cihazın güç düğmesini tekrar basılı tutun.</transl
 <translation id="925832987464884575">Önizlemeleri gizle</translation>
 <translation id="937214777182567951"><ph name="MANAGER" />, hemen <ph name="DEVICE_TYPE" /> cihazınızı güncellemenizi gerektiriyor</translation>
 <translation id="938963181863597773">Takvimimde ne var?</translation>
+<translation id="945383118875625837">Bağlantıyı yer işaretleri çubuğuna sürükleyin</translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>
 <translation id="951991426597076286">Reddet</translation>
 <translation id="953431725143473984">Cihaz kapatılsın mı?</translation>
 <translation id="954052413789300507"><ph name="FILENAME" /> için yeterli alan yok. Yer açın.</translation>
 <translation id="974545358917229949"><ph name="QUERY" /> için <ph name="RESULT_COUNT" /> sonuç gösteriliyor</translation>
 <translation id="98120814841227350">Dokümanın sonuna gider</translation>
+<translation id="987589956647469042">Mobil veri açık</translation>
 <translation id="989374776391122812">Kamera ve ses kontrolleri</translation>
 <translation id="990277280839877440"><ph name="WINDOW_TITILE" /> penceresi kapandı.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>

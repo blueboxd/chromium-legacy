@@ -1072,6 +1072,9 @@ void FillMiscNavigationParams(
 
   navigation_params->ancestor_or_self_has_cspee =
       commit_params.ancestor_or_self_has_cspee;
+
+  navigation_params->browsing_context_group_info =
+      commit_params.browsing_context_group_info;
 }
 
 std::string GetUniqueNameOfWebFrame(WebFrame* web_frame) {
@@ -4373,9 +4376,10 @@ void RenderFrameImpl::DidObserveNewFeatureUsage(
     observer.DidObserveNewFeatureUsage(feature);
 }
 
-void RenderFrameImpl::DidObserveSoftNavigation(uint32_t count) {
+void RenderFrameImpl::DidObserveSoftNavigation(
+    blink::SoftNavigationMetrics metrics) {
   for (auto& observer : observers_) {
-    observer.DidObserveSoftNavigation(count);
+    observer.DidObserveSoftNavigation(metrics);
   }
 }
 

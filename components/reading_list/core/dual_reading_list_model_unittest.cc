@@ -190,6 +190,24 @@ class DualReadingListModelTest : public testing::Test {
         /*initial_account_entries_builders=*/{});
   }
 
+  bool TriggerAccountStorageLoadCompletionSignedInSyncDisabled(
+      std::vector<TestEntryBuilder> initial_account_entries_builders = {}) {
+    auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
+    sync_pb::ModelTypeState state;
+    state.set_initial_sync_state(
+        sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
+    state.set_authenticated_account_id(kTestAccountId);
+    metadata_batch->SetModelTypeState(state);
+
+    std::vector<scoped_refptr<ReadingListEntry>> initial_account_entries;
+    for (auto entry_builder : initial_account_entries_builders) {
+      initial_account_entries.push_back(entry_builder.Build());
+    }
+
+    return account_model_storage_ptr_->TriggerLoadCompletion(
+        std::move(initial_account_entries), std::move(metadata_batch));
+  }
+
   bool TriggerStorageLoadCompletionSignedInSyncDisabled(
       std::vector<TestEntryBuilder> initial_local_entries_builders = {},
       std::vector<TestEntryBuilder> initial_account_entries_builders = {}) {
@@ -255,8 +273,8 @@ class DualReadingListModelTest : public testing::Test {
       local_or_syncable_model_storage_ptr_;
   base::WeakPtr<FakeReadingListModelStorage> account_model_storage_ptr_;
   // Owned by `dual_model_` and guaranteed to exist while `dual_model_` exists.
-  raw_ptr<ReadingListModelImpl> local_or_syncable_model_ptr_;
-  raw_ptr<ReadingListModelImpl> account_model_ptr_;
+  raw_ptr<ReadingListModelImpl, DanglingUntriaged> local_or_syncable_model_ptr_;
+  raw_ptr<ReadingListModelImpl, DanglingUntriaged> account_model_ptr_;
   std::unique_ptr<reading_list::DualReadingListModel> dual_model_;
 };
 
@@ -302,6 +320,25 @@ TEST_F(DualReadingListModelTest, MetaDataClearedBeforeModelLoaded) {
 
   EXPECT_EQ(0ul, account_model_ptr_->size());
   EXPECT_EQ(0ul, dual_model_->size());
+}
+
+TEST_F(DualReadingListModelTest, UpdatesFromSyncBeforeTheLocalModelIsLoaded) {
+  ResetStorage();
+  TriggerAccountStorageLoadCompletionSignedInSyncDisabled(
+      /*initial_account_entries_builders=*/{
+          TestEntryBuilder(kUrl, clock_.Now())});
+
+  EXPECT_CALL(observer_, ReadingListWillRemoveEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidRemoveEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListWillAddEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidAddEntry).Times(0);
+  EXPECT_CALL(observer_, ReadingListDidApplyChanges).Times(0);
+
+  // DCHECKs verify that sync updates are issued as batch updates.
+  auto token = account_model_ptr_->BeginBatchUpdates();
+  account_model_ptr_->SyncRemoveEntry(kUrl);
+  account_model_ptr_->AddEntry(TestEntryBuilder(kUrl, clock_.Now()).Build(),
+                               reading_list::ADDED_VIA_SYNC);
 }
 
 TEST_F(DualReadingListModelTest, ReturnAccountModelSize) {

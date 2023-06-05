@@ -55,12 +55,39 @@ void SetMetricsForPossibleNoVarySearchHintMatches(
     }
   }
 }
+
+std::tuple<GURL,
+           PrefetchType,
+           blink::mojom::Referrer,
+           network::mojom::NoVarySearchPtr,
+           blink::mojom::SpeculationInjectionWorld>
+SpeculationCandidateToPrefetchUrlParams(
+    const blink::mojom::SpeculationCandidatePtr& candidate) {
+  PrefetchType prefetch_type = PrefetchType(
+      /*use_prefetch_proxy=*/
+      candidate->requires_anonymous_client_ip_when_cross_origin,
+      candidate->eagerness);
+  const GURL& prefetch_url = candidate->url;
+
+  if (const auto& host_to_bypass = PrefetchBypassProxyForHost()) {
+    if (prefetch_type.IsProxyRequiredWhenCrossOrigin() &&
+        prefetch_url.host() == *host_to_bypass) {
+      prefetch_type.SetProxyBypassedForTest();  // IN-TEST
+    }
+  }
+
+  return std::make_tuple(prefetch_url, prefetch_type, *candidate->referrer,
+                         candidate->no_vary_search_hint.Clone(),
+                         candidate->injection_world);
+}
+
 }  // namespace
 
 PrefetchDocumentManager::PrefetchDocumentManager(RenderFrameHost* rfh)
     : DocumentUserData(rfh),
       WebContentsObserver(WebContents::FromRenderFrameHost(rfh)),
-      no_vary_search_helper_(base::MakeRefCounted<NoVarySearchHelper>()) {}
+      no_vary_search_helper_(base::MakeRefCounted<NoVarySearchHelper>()),
+      prefetch_eviction_callback_(base::DoNothing()) {}
 
 PrefetchDocumentManager::~PrefetchDocumentManager() {
   // On destruction, removes any owned prefetches from |PrefetchService|. Other
@@ -162,9 +189,6 @@ void PrefetchDocumentManager::ProcessCandidates(
   // to handle all prefetches and the prefetch proxy code in chrome/browser/ is
   // removed, then we can move the logic of which speculation candidates this
   // code can handle up a layer to |SpeculationHostImpl|.
-  net::SchemefulSite referring_site(
-      render_frame_host().GetLastCommittedOrigin());
-
   std::vector<std::tuple<GURL, PrefetchType, blink::mojom::Referrer,
                          network::mojom::NoVarySearchPtr,
                          blink::mojom::SpeculationInjectionWorld>>
@@ -179,36 +203,32 @@ void PrefetchDocumentManager::ProcessCandidates(
           return false;
         }
 
-        net::SchemefulSite prefetch_site(candidate->url);
-
-        prefetches.emplace_back(
-            candidate->url,
-            PrefetchType(
-                /*use_prefetch_proxy=*/
-                candidate->requires_anonymous_client_ip_when_cross_origin,
-                candidate->eagerness),
-            *candidate->referrer, candidate->no_vary_search_hint.Clone(),
-            candidate->injection_world);
+        prefetches.push_back(
+            SpeculationCandidateToPrefetchUrlParams(candidate));
         return true;
       };
 
   base::EraseIf(candidates, should_process_entry);
-
-  if (const auto& host_to_bypass = PrefetchBypassProxyForHost()) {
-    for (auto& [prefetch_url, prefetch_type, referrer, no_vary_search_expected,
-                world] : prefetches) {
-      if (prefetch_type.IsProxyRequiredWhenCrossOrigin() &&
-          prefetch_url.host() == *host_to_bypass) {
-        prefetch_type.SetProxyBypassedForTest();
-      }
-    }
-  }
 
   for (auto& [prefetch_url, prefetch_type, referrer, no_vary_search_expected,
               world] : prefetches) {
     PrefetchUrl(prefetch_url, prefetch_type, referrer, no_vary_search_expected,
                 world, devtools_observer);
   }
+}
+
+bool PrefetchDocumentManager::MaybePrefetch(
+    blink::mojom::SpeculationCandidatePtr candidate,
+    base::WeakPtr<SpeculationHostDevToolsObserver> devtools_observer) {
+  if (candidate->action != blink::mojom::SpeculationAction::kPrefetch) {
+    return false;
+  }
+
+  auto [prefetch_url, prefetch_type, referrer, no_vary_search_expected, world] =
+      SpeculationCandidateToPrefetchUrlParams(candidate);
+  PrefetchUrl(prefetch_url, prefetch_type, referrer, no_vary_search_expected,
+              world, devtools_observer);
+  return true;
 }
 
 void PrefetchDocumentManager::PrefetchUrl(
@@ -242,9 +262,6 @@ void PrefetchDocumentManager::PrefetchUrl(
       std::move(no_vary_search_expected), world,
       weak_method_factory_.GetWeakPtr());
   container->SetDevToolsObserver(std::move(devtools_observer));
-  if (base::FeatureList::IsEnabled(network::features::kPrefetchNoVarySearch)) {
-    container->SetNoVarySearchHelper(no_vary_search_helper_);
-  }
   DVLOG(1) << *container << ": created";
   base::WeakPtr<PrefetchContainer> weak_container = container->GetWeakPtr();
   owned_prefetches_[url] = std::move(container);
@@ -397,14 +414,20 @@ bool PrefetchDocumentManager::CanPrefetchNow(PrefetchContainer* prefetch) {
     DCHECK(GetPrefetchService());
     base::WeakPtr<PrefetchContainer> oldest_prefetch =
         completed_non_eager_prefetches_.front();
+    auto oldest_prefetch_key = oldest_prefetch->GetPrefetchContainerKey();
     // TODO(crbug.com/1445086): We should also be checking if the prefetch is
     // currently being used to serve a navigation. In that scenario, evicting
     // doesn't make sense.
-    GetPrefetchService()->EvictPrefetch(
-        oldest_prefetch->GetPrefetchContainerKey());
+    GetPrefetchService()->EvictPrefetch(oldest_prefetch_key);
     completed_non_eager_prefetches_.pop_front();
+    prefetch_eviction_callback_.Run(oldest_prefetch_key.second);
     return true;
   }
+}
+
+void PrefetchDocumentManager::SetPrefetchEvictionCallback(
+    PrefetchEvictionCallback callback) {
+  prefetch_eviction_callback_ = std::move(callback);
 }
 
 DOCUMENT_USER_DATA_KEY_IMPL(PrefetchDocumentManager);

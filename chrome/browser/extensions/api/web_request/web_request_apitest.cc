@@ -1002,8 +1002,15 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
       << message_;
 }
 
+// TODO(crbug.com/1450976): test is flaky on Mac11.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_WebRequestCORSWithExtraHeaders \
+  DISABLED_WebRequestCORSWithExtraHeaders
+#else
+#define MAYBE_WebRequestCORSWithExtraHeaders WebRequestCORSWithExtraHeaders
+#endif
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
-                       WebRequestCORSWithExtraHeaders) {
+                       MAYBE_WebRequestCORSWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_cors")) << message_;
 }
@@ -2267,7 +2274,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       frame->GetProcess()->GetBrowserContext(), frame,
       frame->GetProcess()->GetID(),
       content::ContentBrowserClient::URLLoaderFactoryType::kDocumentSubResource,
-      absl::nullopt, ukm::kInvalidSourceIdObj, &pending_receiver, nullptr));
+      absl::nullopt, ukm::kInvalidSourceIdObj, &pending_receiver, nullptr,
+      nullptr));
   temp_web_contents.reset();
   auto params = network::mojom::URLLoaderFactoryParams::New();
   params->process_id = 0;
@@ -5357,6 +5365,7 @@ class ExtensionWebRequestApiFencedFrameTest
     feature_list_.InitWithFeaturesAndParameters(
         {{blink::features::kFencedFrames, {}},
          {blink::features::kFencedFramesAPIChanges, {}},
+         {blink::features::kFencedFramesDefaultMode, {}},
          {features::kPrivacySandboxAdsAPIsOverride, {}}},
         {/* disabled_features */});
     // Fenced frames are only allowed in secure contexts.

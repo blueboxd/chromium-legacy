@@ -773,7 +773,8 @@ class FormDataImporterTestBase {
   // as the destructor of the clients FormDataImporter relies on it.
   std::unique_ptr<PersonalDataManager> personal_data_manager_;
   std::unique_ptr<TestAutofillClient> autofill_client_;
-  raw_ptr<MockVirtualCardEnrollmentManager> virtual_card_enrollment_manager_;
+  raw_ptr<MockVirtualCardEnrollmentManager, DanglingUntriaged>
+      virtual_card_enrollment_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -4020,6 +4021,30 @@ TEST_P(FormDataImporterTest, FormAssociator) {
   EXPECT_EQ(associations->last_address_form_submitted, form_signature);
   EXPECT_EQ(associations->second_last_address_form_submitted, form_signature);
   EXPECT_FALSE(associations->last_credit_card_form_submitted);
+}
+
+// Tests that when `kAutofillPredictionsForAutocompleteUnrecognized` is enabled,
+// ac=unrecognized fields have a prediction, but are not imported.
+TEST_P(FormDataImporterTest, SkipAutocompleteUnrecognizedFields) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(
+      features::kAutofillPredictionsForAutocompleteUnrecognized);
+
+  // Create a `form_structure` where the email field has ac=unrecognized.
+  std::unique_ptr<FormStructure> form_structure =
+      ConstructDefaultProfileFormStructure();
+  AutofillField* email_field = form_structure->field(2);
+  ASSERT_EQ(email_field->Type().GetStorableType(), EMAIL_ADDRESS);
+  email_field->SetHtmlType(HtmlFieldType::kUnrecognized, HtmlFieldMode::kNone);
+
+  // Expect that ac=unrecognized doesn't change the prediction.
+  EXPECT_EQ(email_field->Type().GetStorableType(), EMAIL_ADDRESS);
+
+  // Expect that the email address is not imported.
+  AutofillProfile expected_profile = ConstructDefaultProfile();
+  expected_profile.ClearFields({EMAIL_ADDRESS});
+  ExtractAddressProfilesAndVerifyExpectation(*form_structure,
+                                             {expected_profile});
 }
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)

@@ -5,7 +5,6 @@
 <translation id="1018219910092211213">Can't resolve DNS</translation>
 <translation id="1018656279737460067">Cancelled</translation>
 <translation id="1020274983236703756">Exclusive <ph name="PRODUCT_NAME" /> assets now available</translation>
-<translation id="1022433422498218992">General controls</translation>
 <translation id="1022628058306505708">Earth Flow</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> threads, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">New feature available; use the up arrow key to learn more.</translation>
@@ -59,6 +58,7 @@
 <translation id="1423591390236870726"><ph name="KEY_NAME" /> key not pressed</translation>
 <translation id="1435763214710588005">Automatically resets data usage every month on a selected day</translation>
 <translation id="1442433966118452622">Image source</translation>
+<translation id="1449035143498573192">Open in Google Search</translation>
 <translation id="1451536289672181509">Device is a keyboard.</translation>
 <translation id="1459693405370120464">Weather</translation>
 <translation id="1468664791493211953">Offers</translation>
@@ -114,7 +114,6 @@
 <translation id="1768959921651994223">Authentication type</translation>
 <translation id="1776228893584526149">Wallpaper tone</translation>
 <translation id="1782199038061388045">translation</translation>
-<translation id="1790209694022261219">Windows and desks</translation>
 <translation id="1792647875738159689">Cancelling scanning</translation>
 <translation id="1801418420130173017">Disable Dark theme</translation>
 <translation id="1807246157184219062">Light</translation>
@@ -198,7 +197,7 @@
 <translation id="2418150275289244458">Open in settings</translation>
 <translation id="2421798028054665193">Image <ph name="CURRENT_PAGE" /> of <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">Floating point accuracy</translation>
-<translation id="2448312741937722512">Types</translation>
+<translation id="2448312741937722512">Type</translation>
 <translation id="248546197012830854">Device is offline. Connect to Wi-Fi network to see help content.</translation>
 <translation id="2491955442992294626">Keys aren't tested when you're using another window</translation>
 <translation id="2493126929778606526">Your best photos, selected automatically</translation>
@@ -245,7 +244,6 @@
 <translation id="3008341117444806826">REFRESH</translation>
 <translation id="3009958530611748826">Select a folder to save to</translation>
 <translation id="3017079585324758401">Background</translation>
-<translation id="3020183492814296499">Shortcuts</translation>
 <translation id="3027578600144895987">Close the camera</translation>
 <translation id="3031560714565892478">Device is a video camera.</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -615,6 +613,7 @@
 <translation id="5972388717451707488">Update engine</translation>
 <translation id="5984145644188835034">Default wallpaper</translation>
 <translation id="6017514345406065928">Green</translation>
+<translation id="6019566113895157499">Key Shortcuts</translation>
 <translation id="6034694447310538551">Enable automatic monthly reset</translation>
 <translation id="6037291330010597344">The scanner’s document feeder is empty. Add documents and try again.</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -861,6 +860,7 @@
 <translation id="7953669802889559161">Inputs</translation>
 <translation id="7955587717700691983">Bluetooth keyboard</translation>
 <translation id="7960831585769876809">Temperature</translation>
+<translation id="7971535376154084247">General controls</translation>
 <translation id="7977800524392185497">To join a <ph name="NETWORK_NAME" /> network, go to Settings</translation>
 <translation id="7978412674231730200">Private key</translation>
 <translation id="7994702968232966508">EAP method</translation>
@@ -924,6 +924,7 @@
 <translation id="8461329675984532579">Home provider name</translation>
 <translation id="8475690821716466388">Wi-Fi network is secured with weak protocol WEP PSK</translation>
 <translation id="8476242415522716722">keyboard underglow</translation>
+<translation id="8476942730579767658">Windows and desks</translation>
 <translation id="8477551185774834963">DNS latency slightly above allowable threshold</translation>
 <translation id="8483248364096924578">IP address</translation>
 <translation id="8491311378305535241">Can't connect through firewall to HTTP websites from Android apps</translation>

@@ -762,7 +762,8 @@ class FileTransferConnectorFilesAppBrowserTest : public FilesAppBrowserTest {
         std::make_unique<signin::IdentityTestEnvironment>();
     identity_test_environment_->MakePrimaryAccountAvailable(
         kUserName, signin::ConsentLevel::kSync);
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile())
+    enterprise_connectors::RealtimeReportingClientFactory::GetForProfile(
+        profile())
         ->SetIdentityManagerForTesting(
             identity_test_environment_->identity_manager());
   }
@@ -1563,6 +1564,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveDeleteDialogDoesntMentionPermanentDelete"),
         TestCase("driveInlineSyncStatusSingleFile").EnableInlineSyncStatus(),
         TestCase("driveInlineSyncStatusParentFolder").EnableInlineSyncStatus(),
+        TestCase("driveInlineSyncStatusSingleFileProgressEvents")
+            .EnableInlineSyncStatusProgressEvents(),
+        TestCase("driveInlineSyncStatusParentFolderProgressEvents")
+            .EnableInlineSyncStatusProgressEvents(),
         TestCase("driveFolderShouldShowOfflineTickWhenBulkPinningEnabled")
             .EnableBulkPinning(),
         TestCase("driveFoldersRetainPinnedPropertyWhenBulkPinningEnabled")
@@ -2189,7 +2194,16 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("hideSearchInTrash").EnableSearchV2(),
         TestCase("searchTrashedFiles").EnableSearchV2(),
         TestCase("matchDriveFilesByName").EnableSearchV2(),
-        TestCase("searchSharedWithMe").EnableSearchV2()
+        TestCase("searchSharedWithMe").EnableSearchV2(),
+        TestCase("searchDocumentsProvider")
+            .EnableGenericDocumentsProvider()
+            .EnableSearchV2(),
+        TestCase("searchDocumentsProviderWithTypeOptions")
+            .EnableGenericDocumentsProvider()
+            .EnableSearchV2(),
+        TestCase("searchDocumentsProviderWithRecencyOptions")
+            .EnableGenericDocumentsProvider()
+            .EnableSearchV2()
         // TODO(b/189173190): Enable
         // TestCase("searchQueryLaunchParam")
         ));

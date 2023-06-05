@@ -18,6 +18,7 @@
 #include "base/check.h"
 #include "base/check_op.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/overloaded.h"
@@ -43,6 +44,7 @@
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_attribution_utils.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
+#include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
@@ -61,6 +63,7 @@
 #include "content/public/browser/attribution_data_model.h"
 #include "net/base/schemeful_site.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/trigger_verification.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/recovery.h"
@@ -713,6 +716,20 @@ StoreSourceResult AttributionStorageSql::StoreSource(
     case RateLimitResult::kAllowed:
       break;
     case RateLimitResult::kNotAllowed:
+      return StoreSourceResult(
+          StorableSource::Result::kExcessiveReportingOrigins);
+    case RateLimitResult::kError:
+      return StoreSourceResult(StorableSource::Result::kInternalError);
+  }
+
+  switch (rate_limit_table_.SourceAllowedForReportingOriginPerSiteLimit(
+      &db_, source, source_time)) {
+    case RateLimitResult::kAllowed:
+      break;
+    case RateLimitResult::kNotAllowed:
+      // TODO(https://crbug.com/1448330): Report a different result
+      // type for this limit to avoid overlap with the other reporting
+      // origin limit.
       return StoreSourceResult(
           StorableSource::Result::kExcessiveReportingOrigins);
     case RateLimitResult::kError:
@@ -2507,15 +2524,13 @@ bool AttributionStorageSql::CreateSchema() {
 void AttributionStorageSql::DatabaseErrorCallback(int extended_error,
                                                   sql::Statement* stmt) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Attempt to recover a corrupt database, unless it is setup in memory.
-  if (sql::Recovery::ShouldRecover(extended_error) &&
-      !path_to_database_.empty()) {
-    // Prevent reentrant calls.
-    db_.reset_error_callback();
-
-    // After this call, the |db_| handle is poisoned so that future calls will
-    // return errors until the handle is re-opened.
-    sql::Recovery::RecoverDatabaseWithMetaVersion(&db_, path_to_database_);
+  // Attempt to recover a corrupt database, if it is eligible to be recovered.
+  if (sql::BuiltInRecovery::RecoverIfPossible(
+          &db_, extended_error,
+          sql::BuiltInRecovery::Strategy::kRecoverWithMetaVersionOrRaze,
+          &kAttributionStorageUseBuiltInRecoveryIfSupported)) {
+    // Recovery was attempted. The database handle has been poisoned and the
+    // error callback has been reset.
 
     // The DLOG(FATAL) below is intended to draw immediate attention to errors
     // in newly-written code.  Database corruption is generally a result of OS
@@ -3002,44 +3017,40 @@ void AttributionStorageSql::AssignTriggerVerificationData(
     const AttributionTrigger& trigger) {
   DCHECK(!reports.empty());
 
-  // TODO(crbug.com/1435014): Multiple verification tokens should be
-  // randomly assigned to the reports.
+  // TODO(https://crbug.com/1442578): Add metric to understand the number of
+  // reports sent with a verification token.
 
-  // TODO(crbug.com/1435014): Consider how this metric changes when multiple
-  // verification tokens are supported and whether it can be recorded in
-  // `AttributionManagerImpl`.
-  if (base::FeatureList::IsEnabled(
-          network::features::kAttributionReportingReportVerification)) {
-    base::UmaHistogramBoolean(
-        "Conversions.ReportVerification.ReportHasVerification",
-        trigger.verification().has_value());
-  }
-
-  if (!trigger.verification().has_value()) {
+  if (trigger.verifications().empty()) {
     return;
   }
 
+  // Assign verification tokens according to:
+  // https://wicg.github.io/attribution-reporting-api/#assign-private-state-tokens
   delegate_->ShuffleReports(reports);
 
-  AttributionReport& random_report = reports.front();
+  std::vector<network::TriggerVerification> verifications =
+      trigger.verifications();
+  delegate_->ShuffleTriggerVerifications(verifications);
 
-  const auto assign_trigger_verification =
-      [&](AttributionReport::CommonAggregatableData& data) {
-        data.verification_token = trigger.verification()->token();
-        random_report.set_external_report_id(
-            trigger.verification()->aggregatable_report_id());
-      };
+  for (size_t i = 0; i < verifications.size() && i < reports.size(); ++i) {
+    network::TriggerVerification& verification = verifications.at(i);
+    AttributionReport& report = reports.at(i);
 
-  absl::visit(
-      base::Overloaded{
-          [](const AttributionReport::EventLevelData&) { NOTREACHED(); },
-          [&](AttributionReport::AggregatableAttributionData& data) {
-            assign_trigger_verification(data.common_data);
-          },
-          [&](AttributionReport::NullAggregatableData& data) {
-            assign_trigger_verification(data.common_data);
-          }},
-      random_report.data());
+    report.set_external_report_id(
+        std::move(verification.aggregatable_report_id()));
+    absl::visit(
+        base::Overloaded{
+            [](const AttributionReport::EventLevelData&) { NOTREACHED(); },
+            [&](AttributionReport::AggregatableAttributionData& data) {
+              data.common_data.verification_token =
+                  std::move(verification.token());
+            },
+            [&](AttributionReport::NullAggregatableData& data) {
+              data.common_data.verification_token =
+                  std::move(verification.token());
+            }},
+        report.data());
+  }
 }
 
 std::set<AttributionDataModel::DataKey>

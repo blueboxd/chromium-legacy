@@ -653,7 +653,6 @@ public class CriticalPersistedTabData extends PersistedTabData {
             return;
         }
         mTitle = title;
-        save();
     }
 
     /**
@@ -672,7 +671,6 @@ public class CriticalPersistedTabData extends PersistedTabData {
             return;
         }
         mUrl = url;
-        save();
     }
 
     /**
@@ -867,6 +865,11 @@ public class CriticalPersistedTabData extends PersistedTabData {
      */
     public void setShouldSave() {
         mShouldSave = true;
+    }
+
+    @VisibleForTesting
+    public boolean getShouldSaveForTesting() {
+        return mShouldSave;
     }
 
     /**

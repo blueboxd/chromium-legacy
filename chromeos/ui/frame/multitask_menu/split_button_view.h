@@ -39,6 +39,10 @@ class SplitButtonView : public views::BoxLayoutView {
 
   ~SplitButtonView() override = default;
 
+  // Updates the split button layout and a11y names. The split button callbacks
+  // will be updated in MultitaskMenuView.
+  void UpdateButtons(bool is_portrait_mode, bool is_reversed);
+
   views::Button* GetRightBottomButton();
 
  private:
@@ -59,7 +63,7 @@ class SplitButtonView : public views::BoxLayoutView {
 
   const SplitButtonType type_;
 
-  SkColor border_color_ = kMultitaskButtonDefaultColor;
+  SkColor border_color_ = SK_ColorTRANSPARENT;
   SkColor fill_color_ = SK_ColorTRANSPARENT;
 };
 

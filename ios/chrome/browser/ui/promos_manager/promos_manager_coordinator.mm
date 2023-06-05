@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/promos_manager/features.h"
 #import "ios/chrome/browser/promos_manager/promo_config.h"
 #import "ios/chrome/browser/promos_manager/promos_manager.h"
@@ -45,6 +46,7 @@
 #import "ios/chrome/common/ui/promo_style/promo_style_view_controller.h"
 #import "ios/chrome/common/ui/promo_style/promo_style_view_controller_delegate.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/signin/choice_api.h"
 #import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
@@ -206,8 +208,6 @@
     return;
   }
 
-  CHECK(!current_promo.has_value()) << "Current promo is already set: "
-                                    << NameForPromo(current_promo.value());
   current_promo = promo;
 
   auto handler_it = _displayHandlerPromos.find(promo);
@@ -552,7 +552,7 @@
   }
 
   // CredentialProvider Promo handler
-  if (IsCredentialProviderExtensionPromoEnabled()) {
+  if (IsCredentialProviderExtensionPromoEnabled() || IsIOSSetUpListEnabled()) {
     id<CredentialProviderPromoCommands> handler = HandlerForProtocol(
         self.browser->GetCommandDispatcher(), CredentialProviderPromoCommands);
     _displayHandlerPromos[promos_manager::Promo::CredentialProviderExtension] =
@@ -563,6 +563,12 @@
   if (IsDefaultBrowserInPromoManagerEnabled()) {
     _displayHandlerPromos[promos_manager::Promo::DefaultBrowser] =
         [[DefaultBrowserPromoDisplayHandler alloc] init];
+  }
+
+  // Choice Promo handler
+  if (ios::provider::IsChoiceEnabled()) {
+    _displayHandlerPromos[promos_manager::Promo::Choice] =
+        ios::provider::CreateChoiceDisplayHandler();
   }
 }
 

@@ -35,6 +35,16 @@
           ],
         },
       },
+      'linux-exp-asan-lsan-fyi-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              # TODO(crbug.com/1442303): Move to Jammy when it's compatible.
+              'os': 'Ubuntu-18.04',
+            },
+          ],
+        },
+      },
     },
   },
   'android_browsertests': {
@@ -368,7 +378,17 @@
           'shards': 12,
         },
       },
-      'Mac12 Tests (dbg)': {
+      'Mac13 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 12,
+        },
+      },
+      'Mac13 Tests (dbg)': {
         'experiment_percentage': 100,
         'args': [
           '--debug',
@@ -730,7 +750,17 @@
           'shards': 18,
         },
       },
-      'Mac12 Tests (dbg)': {
+      'Mac13 Tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': None,
+            },
+          ],
+          'shards': 18,
+        },
+      },
+      'Mac13 Tests (dbg)': {
         'experiment_percentage': 100,
         'args': [
           '--debug',
@@ -1012,7 +1042,7 @@
       # off CQ.
       'Mac10.13 Tests', # https://crbug.com/1042757
       'Mac10.15 Tests', # https://crbug.com/1042757
-      'Mac12 Tests (dbg)', # https://crbug.com/1201386
+      'Mac13 Tests (dbg)', # https://crbug.com/1201386
       'mac-code-coverage', # https://crbug.com/1201386
       'mac11-arm64-rel-tests', # https://crbug.com/1406364
       'mac12-arm64-rel-tests', # https://crbug.com/1406364
@@ -1143,7 +1173,13 @@
           'shards': 20,  # crbug.com/1361887
         },
       },
-      'Mac12 Tests (dbg)': {
+      'Mac13 Tests': {
+        'ci_only': True,
+        'swarming': {
+          'shards': 20,  # crbug.com/1361887
+        },
+      },
+      'Mac13 Tests (dbg)': {
         # crbug.com/1042757
         'swarming': {
           'dimension_sets': [
@@ -1233,6 +1269,14 @@
           'shards': 50,
         },
       },
+      'linux-exp-asan-lsan-fyi-rel': {
+        'ci_only': True,
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 40,
+        },
+      },
       # asan tests is slower.
       'linux-lacros-asan-lsan-rel': {
         'swarming': {
@@ -1260,6 +1304,11 @@
         'args': [
           '--coverage-continuous-mode=1',
         ],
+      },
+      'mac-cr23-rel': {
+        'swarming': {
+          'shards': 20,
+        },
       },
       'mac-osxbeta-rel': {
         'swarming': {
@@ -1736,6 +1785,13 @@
           '--gtest_filter=-FieldFormatterTest.DifferentLocales',
         ],
       },
+      'linux-exp-asan-lsan-fyi-rel': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 5,
+        },
+      },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
           'shards': 2,
@@ -1812,7 +1868,12 @@
           'shards': 12,
         },
       },
-      'Mac12 Tests (dbg)': { # https://crbug.com/1279504
+      'Mac13 Tests': {
+        'swarming': {
+          'shards': 12,
+        },
+      },
+      'Mac13 Tests (dbg)': { # https://crbug.com/1279504
         'swarming': {
           'shards': 18,
         },
@@ -2020,6 +2081,11 @@
           'shards': 12,
         },
       },
+      'linux-exp-asan-lsan-fyi-rel': {
+        'swarming': {
+          'shards': 24,
+        },
+      },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
           'shards': 30,
@@ -2048,6 +2114,12 @@
               'cores': '8|12',
             }
           ],
+        },
+      },
+      'mac13-arm64-rel-tests': {
+        'ci_only': False,
+        'swarming': {
+          'shards': 12,
         },
       },
       'win-asan': {
@@ -2184,6 +2256,13 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.lsan.content_unittests.filter',
         ],
+      },
+      'linux-exp-asan-lsan-fyi-rel': {
+        # These are slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 2,
+        },
       },
       'linux-rel-dev': {
         'swarming': {
@@ -2423,6 +2502,7 @@
       'ToTLinuxASan',  # https://crbug.com/831667
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
+      'linux-exp-asan-lsan-fyi-rel',  # https://crbug.com/831667
     ],
     'modifications': {
       'android-arm64-proguard-rel': {
@@ -2491,6 +2571,21 @@
         },
       },
       'Linux TSan Tests': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:2184',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu',
+            },
+          ],
+        },
+      },
+      'linux-exp-asan-lsan-fyi-rel': {
         'args': [
           '--use-gpu-in-tests',
           '--no-xvfb',
@@ -2799,7 +2894,12 @@
           'shards': 6,
         },
       },
-      'Mac12 Tests (dbg)': { # https://crbug.com/1265051
+      'Mac13 Tests': {
+        'swarming': {
+          'shards': 6,
+        },
+      },
+      'Mac13 Tests (dbg)': { # https://crbug.com/1265051
         'experiment_percentage': 100,
         'swarming': {
           'shards':6,
@@ -2844,6 +2944,12 @@
       'linux-code-coverage': {
         'swarming': {
           'shards': 10,
+        },
+      },
+      'linux-exp-asan-lsan-fyi-rel': {
+        # These are slow on the ASan trybot for some reason, crbug.com/1257927
+        'swarming': {
+          'shards': 12,
         },
       },
       'linux-exp-tsan-fyi-rel': {
@@ -2927,17 +3033,12 @@
       },
     },
   },
-  'lacros_all_tast_tests jacuzzi': {
+  'lacros_chrome_browsertests_run_in_series': {
     'modifications': {
-      'lacros-arm-generic-rel': {
-        'ci_only': True,
-      },
-    },
-  },
-  'lacros_cq_tast_tests_jacuzzi jacuzzi': {
-    'modifications': {
-      'lacros-arm-generic-rel': {
-        'ci_only': True,
+      'linux-lacros-asan-lsan-rel': {
+        'swarming': {
+          'shards': 5,
+        },
       },
     },
   },
@@ -3254,6 +3355,13 @@
           'shards': 2,
         },
       },
+      'linux-exp-asan-lsan-fyi-rel': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 16,
+        },
+      },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
           'shards': 4,
@@ -3410,7 +3518,7 @@
   },
   'performance_test_suite': {
     'modifications': {
-      'Mac12 Tests (dbg)': {
+      'Mac13 Tests (dbg)': {
         'args': [
           '--browser=debug',
         ],
@@ -3703,7 +3811,13 @@
           'shards': 4,
         },
       },
-      'Mac12 Tests (dbg)':{
+      'Mac13 Tests': {
+        'ci_only': True,
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      'Mac13 Tests (dbg)':{
         'swarming': {
           'shards': 3,
         }
@@ -3732,6 +3846,11 @@
         },
       },
       'linux-code-coverage': {
+        'swarming': {
+          'shards': 4,
+        },
+      },
+      'linux-exp-asan-lsan-fyi-rel': {
         'swarming': {
           'shards': 4,
         },
@@ -3775,7 +3894,6 @@
       },
       'android-webview-pie-x86-wpt-fyi-rel': {
         'args': [
-          '--log-wptreport',
           '--use-upstream-wpt',
         ],
       },
@@ -3838,6 +3956,9 @@
       'Mac12 Tests': {
         'ci_only': True,
       },
+      'Mac13 Tests': {
+        'ci_only': True,
+      },
       # If you change this, make similar changes in android-x86-code-coverage below
       'android-nougat-x86-rel': {
         'args': [
@@ -3889,7 +4010,7 @@
       'Mac10.13 Tests',
       'Mac10.15 Tests',
       # TODO crbug.com/1277277
-      'Mac12 Tests (dbg)',
+      'Mac13 Tests (dbg)',
       'Linux - Future (dbg)',  # client.v8.chromium
       'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',
@@ -3967,7 +4088,7 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.unit_tests_wayland.filter',
         ],
       },
-      'Mac12 Tests (dbg)': {
+      'Mac13 Tests (dbg)': {
         'swarming': {
           'shards': 2,
         },
@@ -4000,6 +4121,13 @@
       'linux-chromeos-rel': {
         'swarming': {
           'shards': 2,
+        },
+      },
+      'linux-exp-asan-lsan-fyi-rel': {
+        # These are slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 4,
         },
       },
       'linux-exp-tsan-fyi-rel': {
@@ -4257,6 +4385,9 @@
       # Removed from V8 builders since WebGL 1 should provide reasonable
       # upstream test coverage without the capacity hit from WebGL 2.
       'Mac V8 FYI Release (Intel)',
+      # crbug.com/1450207 corrupt Metal shader cache
+      'mac-angle-chromium-intel',
+      'Mac FYI Release (Intel)',
     ],
     'modifications': {
       'Mac FYI ASAN (Intel)': {
@@ -4360,6 +4491,9 @@
       'Mac FYI Retina ASAN (AMD)',
       # crbug.com/1158857: re-enable when switching to Metal by default.
       'Mac FYI Retina Release (NVIDIA)',
+      # crbug.com/1450207 corrupt Metal shader cache
+      'mac-angle-chromium-intel',
+      'Mac FYI Release (Intel)',
     ],
     'modifications': {
       'Mac FYI ASAN (Intel)': {
@@ -4503,10 +4637,11 @@
       'Dawn Android arm64 Release (Pixel 6)': {
         'ci_only': True,
       },
-      'Dawn Mac x64 DEPS Release (AMD)': {
+      # crbug.com/1450207 corrupt Metal shader cache
+      'Dawn Mac x64 DEPS Release (Intel)': {
         'ci_only': True,
       },
-      'Dawn Mac x64 Release (AMD)': {
+      'Dawn Mac x64 Release (Intel)': {
         'ci_only': True,
       },
       # These tests must run with a GPU.
@@ -4594,17 +4729,15 @@
       'Dawn Mac x64 DEPS Release (AMD)': {
         'ci_only': True,
       },
-      'Dawn Mac x64 Release (AMD)': {
-        'ci_only': True,
-      },
-    },
-  },
-  'webgpu_swiftshader_web_platform_cts_tests': {
-    'modifications': {
-      'Dawn Mac x64 DEPS Release (AMD)': {
+      # crbug.com/1450207 corrupt Metal shader cache
+      'Dawn Mac x64 DEPS Release (Intel)': {
         'ci_only': True,
       },
       'Dawn Mac x64 Release (AMD)': {
+        'ci_only': True,
+      },
+      # crbug.com/1450207 corrupt Metal shader cache
+      'Dawn Mac x64 Release (Intel)': {
         'ci_only': True,
       },
     },
@@ -4647,6 +4780,13 @@
           'shards': 2,
         },
       },
+      'linux-exp-asan-lsan-fyi-rel': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/1257927
+        'swarming': {
+          'shards': 5,
+        },
+      },
       'linux-exp-tsan-fyi-rel': {
         'swarming': {
           'shards': 2,
@@ -4680,9 +4820,6 @@
   'webview_64_cts_tests': {
     'modifications': {
       'android-pie-arm64-rel': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_cts_tests_coverage.filter',
-        ],
         # TODO(crbug.com/1111436): Move this back to walleye if/when additional
         # capacity has been deployed.
         'swarming': {
@@ -4701,7 +4838,6 @@
       'android-nougat-x86-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_cts_tests.filter',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_cts_tests_coverage.filter',
         ],
       },
       'android-pie-arm64-rel': {
@@ -4719,7 +4855,6 @@
       'android-x86-code-coverage': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator.webview_cts_tests.filter',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_cts_tests_coverage.filter',
         ],
       },
     },
@@ -4818,26 +4953,6 @@
         },
       },
     },
-  },
-  'webview_trichrome_64_cts_tests full_mode': {
-    'modifications': {
-      'android-12-x64-rel': {
-        'args': [
-          # crbug.com/1401476: Test doesn't work with code coverage.
-          '--gtest_filter=-com.android.cts.webkit.WebViewDeviceSideStartupTest.testStrictModeNotViolatedOnStartup',
-        ],
-      }
-    }
-  },
-  'webview_trichrome_64_cts_tests instant_mode': {
-    'modifications': {
-      'android-12-x64-rel': {
-        'args': [
-          # crbug.com/1401476: Test doesn't work with code coverage.
-          '--gtest_filter=-com.android.cts.webkit.WebViewDeviceSideStartupTest.testStrictModeNotViolatedOnStartup',
-        ],
-      }
-    }
   },
   'webview_ui_test_app_test_apk': {
     'remove_from': [

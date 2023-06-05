@@ -10,18 +10,12 @@
 #include "components/viz/common/viz_resource_format_export.h"
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
-#include "third_party/skia/include/core/SkColorType.h"
-#include "ui/gfx/buffer_types.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include <vulkan/vulkan_core.h>
 #endif
 
 namespace viz {
-
-VIZ_RESOURCE_FORMAT_EXPORT int BitsPerPixel(ResourceFormat format);
-VIZ_RESOURCE_FORMAT_EXPORT ResourceFormat
-SkColorTypeToResourceFormat(SkColorType color_type);
 
 // The following functions use unsigned int instead of GLenum, since including
 // third_party/khronos/GLES2/gl2.h causes redefinition errors as
@@ -31,22 +25,11 @@ VIZ_RESOURCE_FORMAT_EXPORT unsigned int GLDataType(ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT unsigned int GLDataFormat(ResourceFormat format);
 VIZ_RESOURCE_FORMAT_EXPORT unsigned int GLInternalFormat(ResourceFormat format);
 
-// Returns the pixel format of the resource when mapped into client-side memory.
-// Returns a default value when IsGpuMemoryBufferFormatSupported() returns false
-// for a given format, as in this case the resource will not be mapped into
-// client-side memory, and the returned value is not used.
-VIZ_RESOURCE_FORMAT_EXPORT gfx::BufferFormat BufferFormat(
-    ResourceFormat format);
-
 // |use_angle_rgbx_format| should be true when the GL_ANGLE_rgbx_internal_format
 // extension is available.
 VIZ_RESOURCE_FORMAT_EXPORT unsigned int TextureStorageFormat(
     ResourceFormat format,
     bool use_angle_rgbx_format);
-
-// Returns whether the format can be used with GpuMemoryBuffer texture storage.
-VIZ_RESOURCE_FORMAT_EXPORT bool IsGpuMemoryBufferFormatSupported(
-    ResourceFormat format);
 
 #if BUILDFLAG(ENABLE_VULKAN)
 VIZ_RESOURCE_FORMAT_EXPORT bool HasVkFormat(ResourceFormat format);

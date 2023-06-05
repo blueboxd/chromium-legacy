@@ -143,6 +143,7 @@
 <translation id="1750259112639922169">分頁群組 - <ph name="TAB_COUNT" /> 個分頁</translation>
 <translation id="17513872634828108">開啟的分頁</translation>
 <translation id="1754404134430936718">已複製文字</translation>
+<translation id="1757620656501361327">Google 密碼管理工具更新</translation>
 <translation id="1778457539567749232">標示為未讀取</translation>
 <translation id="1779766957982586368">關閉視窗</translation>
 <translation id="1791662854739702043">安裝位置</translation>
@@ -427,6 +428,7 @@
 <translation id="3290249595466894471">另外也會傳送少量網頁、下載內容、擴充功能活動和系統資訊，協助找出新的威脅</translation>
 <translation id="3293181007446299124">在裝置端保留瀏覽記錄，僅供你本人存取。系統會延遲一段時間才傳送報告，保護你的身分</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
+<translation id="3305130791745726624">傳送到裝置</translation>
 <translation id="3305795716056605962">透過「更多選項」按鈕翻譯頁面</translation>
 <translation id="3319664549618064419">為享有更好的瀏覽體驗，建議將這個網站切換成電腦版網站模式</translation>
 <translation id="3334729583274622784">是否要變更副檔名？</translation>
@@ -654,7 +656,7 @@
 <translation id="4619564267100705184">驗證身分</translation>
 <translation id="4634124774493850572">使用密碼</translation>
 <translation id="4637420359569396807">透過廣告評估，網站和應用程式間可分享特定類型的資料，以評估廣告成效，例如在一天中向使用者放送廣告的時段。</translation>
-<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{有 1 組密碼遭外洩}other{有 # 組密碼遭外洩}}</translation>
+<translation id="4640331037679501949">{NUM_PASSWORDS,plural, =1{1 組密碼外洩}other{# 組密碼外洩}}</translation>
 <translation id="4650364565596261010">系統預設</translation>
 <translation id="465657074423018424">「安全瀏覽」功能可協助你防範詐騙網站。如果停用這項功能，在瀏覽網站時請提高警覺，尤其在輸入密碼前請特別留意。</translation>
 <translation id="4662373422909645029">暱稱不可包含數字</translation>
@@ -752,6 +754,7 @@
 <translation id="504456571576643789">注意事項</translation>
 <translation id="5054455334322721892">在你登入後，<ph name="BEGIN_LINK1" />其他形式的活動<ph name="END_LINK1" />可能會儲存至你的 Google 帳戶。你隨時可以刪除這些內容。</translation>
 <translation id="506254248375231072">沒有任何分頁</translation>
+<translation id="5062960805900435602">已關閉密碼合併相關更新</translation>
 <translation id="5091199029769593641">不久後，你就會在開啟新分頁時看到「<ph name="SITE_NAME" />」的網路故事。你追蹤的網站會儲存在 Google 帳戶中，你可以在「探索」設定中管理這些網站。</translation>
 <translation id="5091249083535528968">延伸使用資料</translation>
 <translation id="509429900233858213">發生錯誤。</translation>
@@ -801,6 +804,7 @@
 <translation id="5361107212971249203">文字內容</translation>
 <translation id="5368227114232678694">如果想在這部裝置上進行私密瀏覽，請使用無痕模式</translation>
 <translation id="5375577065097716013">使用 Google 智慧鏡頭搜尋圖片 <ph name="BEGIN_NEW" />新功能<ph name="END_NEW" /></translation>
+<translation id="539881862970320163">建議使用高強度密碼。鍵盤已隱藏。</translation>
 <translation id="5401851137404501592">如要繼續，<ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> 會將你的姓名、電子郵件地址和個人資料相片提供給這個網站。</translation>
 <translation id="5409881200985013443">要在「<ph name="CLIENT_NAME" />」上提交 <ph name="ONE_TIME_CODE" /> 嗎？</translation>
 <translation id="5414836363063783498">驗證中…</translation>
@@ -941,12 +945,11 @@
 <translation id="6138832295072039549">請在這裡變更網站設定</translation>
 <translation id="6140709049082532940">強化防護：</translation>
 <translation id="6140912465461743537">國家/地區</translation>
-<translation id="6148266338772765473">排除連結</translation>
 <translation id="6150320133806434356">書籤已儲存</translation>
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定，即可從這部裝置匯出你的密碼</translation>
 <translation id="6159729262978459665">清除所有同步裝置上的記錄。</translation>
 <translation id="6162892189396105610">預先載入 Chrome 認為你可能造訪的網頁。</translation>
-<translation id="6186394685773237175">未發現任何外洩密碼</translation>
+<translation id="6186394685773237175">沒有任何密碼外洩</translation>
 <translation id="6192907950379606605">取得圖片說明</translation>
 <translation id="6193448654517602979">選取分頁</translation>
 <translation id="6196315980958524839">密碼會儲存至這部裝置上的 Google 密碼管理工具</translation>
@@ -1159,6 +1162,7 @@
 <translation id="7217781228893594884">系統會在你離開 Chrome 後鎖定無痕分頁</translation>
 <translation id="7222235798733126207">限制網站之間分享的資訊</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{1 項下載作業仍待處理}other{# 項下載作業仍待處理}}</translation>
+<translation id="72415438529550637">已關閉密碼建議功能。</translation>
 <translation id="7242755609445462077">風格化醒目顯示內容 (日期：<ph name="CURRENT_DATE" />)</translation>
 <translation id="7248069434667874558">請確認「<ph name="TARGET_DEVICE_NAME" />」的 Chrome 同步功能已開啟</translation>
 <translation id="7252076891734325316">請將手機置於電腦附近</translation>
@@ -1173,6 +1177,7 @@
 <translation id="7304072650267745798">Android 裝置可能會有類似的設定。如果 Chrome 和 Android 裝置上開啟了這項設定，廣告技術公司或許就能在你造訪的網站和使用的應用程式上評估廣告成效。</translation>
 <translation id="7304873321153398381">你目前處於離線狀態，因此 Chrome 無法檢查你的密碼。</translation>
 <translation id="7313188324932846546">輕觸即可設定同步功能</translation>
+<translation id="7324354302972299151">傳送「Do Not Track」要求</translation>
 <translation id="7332075081379534664">登入成功</translation>
 <translation id="7333232495927792353">進行同步處理，取得 Google 提供的最相關內容</translation>
 <translation id="7339898014177206373">開啟新視窗</translation>

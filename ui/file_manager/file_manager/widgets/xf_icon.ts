@@ -112,6 +112,8 @@ function getCSS() {
   return css`
     :host {
       --xf-icon-color: var(--cros-sys-on_surface);
+      --xf-icon-base-color: var(--cros-sys-app_base);
+      --xf-icon-positive-color: var(--cros-sys-positive);
       display: inline-block;
     }
 

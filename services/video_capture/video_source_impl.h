@@ -71,7 +71,7 @@ class VideoSourceImpl : public mojom::VideoSource {
   void StopDeviceAsynchronously();
   void OnStopDeviceComplete();
 
-  const raw_ptr<DeviceFactory> device_factory_;
+  const raw_ptr<DeviceFactory, DanglingUntriaged> device_factory_;
   const std::string device_id_;
   mojo::ReceiverSet<mojom::VideoSource> receivers_;
   base::RepeatingClosure on_last_binding_closed_cb_;
@@ -82,6 +82,7 @@ class VideoSourceImpl : public mojom::VideoSource {
       push_subscriptions_;
   BroadcastingReceiver broadcaster_;
   DeviceStatus device_status_;
+  raw_ptr<Device, DanglingUntriaged> device_{nullptr};
   media::VideoCaptureParams device_start_settings_;
   bool restart_device_once_when_stop_complete_;
 

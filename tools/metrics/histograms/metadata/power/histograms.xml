@@ -41,13 +41,13 @@ chromium-metrics-reviews@google.com.
   -->
 
   <variant name="Actual"
-      summary="Actual capacity of the battery pack. This is usually a few
-               percentage over the design capacity for a new battery and
-               gradully degrade to 80-90% over the course of 2-4 years."/>
+      summary="actual capacity of the battery pack. This is usually a few
+               percent over the design capacity for a new battery and
+               gradually degrades to 80-90% over the course of 2-4 years."/>
   <variant name="Design"
-      summary="The design capacity of the battery pack from the manufacturer.
-               This is used to calculated promised battery life claim when
-               the device is released."/>
+      summary="design capacity of the battery pack from the manufacturer.
+               This is used to calculated the promised battery life claim
+               when a device is released."/>
 </variants>
 
 <variants name="IntervalType">
@@ -1109,12 +1109,12 @@ chromium-metrics-reviews@google.com.
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
-    Chrome OS battery life while in active state, measured in minutes using
-    {BatteryCapacityType} full capacity of the battery pack.
+    Chrome OS battery life while in active state, measured in minutes using the
+    {BatteryCapacityType}.
 
-    This is calculated using size of the battery divide by battery discharge
-    rate sampling in Power.BatteryDischargeRate. Note that the size of the
-    battery is derated by the low battery shutdown percent.
+    This is calculated using size of the battery divided by the battery
+    discharge rate sampling, i.e., Power.BatteryDischargeRate. Note that the
+    size of the battery is derated by the low battery shutdown percent.
   </summary>
   <token key="BatteryCapacityType" variants="BatteryCapacityType"/>
 </histogram>
@@ -1124,11 +1124,11 @@ chromium-metrics-reviews@google.com.
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
-    Chrome OS battery life while suspended, measured in hours using
-    {BatteryCapacityType} full capacity of the battery pack.
+    Chrome OS battery life while suspended, measured in hours using the
+    {BatteryCapacityType}.
 
-    This is calculated using size of the battery divide by battery discharge
-    rate sampling in Power.BatteryDischargeRateWhileSuspended.
+    This is calculated using size of the battery divided by the battery
+    discharge rate sampling, i.e., Power.BatteryDischargeRateWhileSuspended.
   </summary>
   <token key="BatteryCapacityType" variants="BatteryCapacityType"/>
 </histogram>
@@ -2195,6 +2195,26 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Power.PeripheralReadErrorLatencyMs" units="ms"
+    expires_after="2024-03-01">
+  <owner>skyostil@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    The amount of wall time in milliseconds taken to fail a read of the battery
+    capacity of a peripheral.
+  </summary>
+</histogram>
+
+<histogram name="Power.PeripheralReadLatencyMs" units="ms"
+    expires_after="2024-03-01">
+  <owner>skyostil@chromium.org</owner>
+  <owner>chromeos-platform-power@google.com</owner>
+  <summary>
+    The amount of wall time in milliseconds taken to complete a read of the
+    battery capacity of a peripheral.
+  </summary>
+</histogram>
+
 <histogram name="Power.PowerButtonAcknowledgmentDelay" units="ms"
     expires_after="M100">
   <owner>puthik@chromium.org</owner>
@@ -2563,6 +2583,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="PowerML.SmartDimFeature.WebPageInfoSource"
     enum="PowerMLSmartDimWebPageInfoSource" expires_after="2022-11-01">
+  <expired_intentionally>
+    Kept because it's used in tast power.SmartDim.
+  </expired_intentionally>
   <owner>alanlxl@chromium.org</owner>
   <owner>amoylan@chromium.org</owner>
   <owner>napper@chromium.org</owner>

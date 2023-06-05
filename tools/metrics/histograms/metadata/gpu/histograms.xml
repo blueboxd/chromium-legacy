@@ -1272,7 +1272,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Gpu.Rasterization.Raster.MSAASampleCountLog2" units="count"
-    expires_after="2023-06-04">
+    expires_after="2023-12-04">
   <owner>penghuang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -1375,6 +1375,18 @@ chromium-metrics-reviews@google.com.
     multiplanar buffer formats in order of possible support eg. NV12, YV12 and
     whether they can be used on platform that supports native pixmaps. This is
     logged once per gpu process launch.
+  </summary>
+</histogram>
+
+<histogram name="GPU.SharedImage.IsNewMultiplanarFormat" units="Boolean"
+    expires_after="2023-12-01">
+  <owner>hitawala@chromium.org</owner>
+  <owner>vasilyt@chromium.org</owner>
+  <summary>
+    Tracks the multiplanar format used for creating shared image with
+    GpuMemoryBuffers. Result is a bool that checks if the format is a new
+    multiplanar shared image format or legacy multiplanar buffer format. This is
+    logged once per CreateSharedImage with GpuMemoryBuffer call.
   </summary>
 </histogram>
 

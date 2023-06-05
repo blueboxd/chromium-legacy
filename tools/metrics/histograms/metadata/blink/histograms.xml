@@ -830,16 +830,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Blink.CSSPaintValue.PaintOffThread"
-    enum="BooleanCompositorCSSPaint" expires_after="2022-03-08">
-  <owner>xidachen@chromium.org</owner>
-  <owner>kevers@chromium.org</owner>
-  <summary>
-    Records if a CSS Paint is painted on the compositor thread or has fallen
-    back to the main thread.
-  </summary>
-</histogram>
-
 <histogram name="Blink.CSSStyleSheetResource.ParseTime" units="microseconds"
     expires_after="2023-11-12">
   <owner>gjc@chromium.org</owner>
@@ -1020,7 +1010,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.AutoReauthn.ReturningAccounts"
-    enum="FedCmReturningAccounts" expires_after="2023-10-08">
+    enum="FedCmNumAccounts" expires_after="2023-10-08">
   <owner>npm@chromium.org</owner>
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
@@ -1163,6 +1153,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Blink.FedCm.LoginHint" enum="FedCmNumAccounts"
+    expires_after="2023-11-30">
+  <owner>npm@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the number of accounts the match a login hint. Records at the time
+    the accounts received by the FedCM API are filtered.
+  </summary>
+</histogram>
+
 <histogram name="Blink.FedCm.PreventSilentAccessFrameType"
     enum="FedCmPreventSilentAccessFrameType" expires_after="2023-11-10">
   <owner>npm@chromium.org</owner>
@@ -1173,6 +1173,16 @@ chromium-metrics-reviews@google.com.
     some frame in the page invokes the preventSilentAccess() JavaScript call.
     Possible values are: main frame, same-site iframe, and cross-site iframe,
     where the site of the iframe is compared with the site of the main frame.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.RpContext" enum="FedCmRpContext"
+    expires_after="2023-11-30">
+  <owner>npm@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the RP Context used in a FedCM call. Records only when the RP
+    Context flag is enabled.
   </summary>
 </histogram>
 
@@ -1351,6 +1361,38 @@ chromium-metrics-reviews@google.com.
     prior to the start of the window onload event. If RequestToken is called
     during or after the window onload event,
     Blink.FedCm.Timing.PostTaskDelayDuration is recorded instead.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.UserInfo.NumAccounts" enum="FedCmNumAccounts"
+    expires_after="2023-11-30">
+  <owner>npm@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the number of accounts returned by a getUserInfo() call. Records
+    once per request with a successful accounts fetch. Records when the request
+    is completed.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.UserInfo.Status" enum="FedCmUserInfoStatus"
+    expires_after="2023-11-30">
+  <owner>npm@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the status of a getUserInfo() call. Records once per request when
+    the request is completed, right before running the callback.
+  </summary>
+</histogram>
+
+<histogram name="Blink.FedCm.UserInfo.TimeToRequestCompleted" units="ms"
+    expires_after="2023-11-30">
+  <owner>npm@chromium.org</owner>
+  <owner>web-identity-eng@google.com</owner>
+  <summary>
+    Records the time from when a getUserInfo() call is received on the browser
+    process to the time it is completed. Records once per request with a
+    successful accounts fetch. Records when the request is completed.
   </summary>
 </histogram>
 
@@ -2578,20 +2620,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Blink.Navigator.ReducedUserAgent" enum="Boolean"
-    expires_after="2023-08-27">
-  <owner>miketaylr@chromium.org</owner>
-  <owner>victortan@chromium.org</owner>
-  <owner>potassium-katabolism@google.com</owner>
-  <summary>
-    Whether the navigator.userAgent and navigator.appVersion JavaScript getters
-    returned a reduced user agent string value. The reduced user agent string is
-    only returned in the presence of a valid UserAgentReduction origin trial
-    token. This histogram is recorded when the navigator.userAgent and
-    navigator.appVersion JavaScript APIs are invoked.
-  </summary>
-</histogram>
-
 <histogram name="Blink.NotificationManager.GetPermissionStatusTime" units="ms"
     expires_after="2023-11-19">
   <owner>cduvall@chromium.org</owner>
@@ -2992,7 +3020,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.CrossDeviceFailure"
-    enum="WebOTPCrossDeviceFailure" expires_after="2023-07-09">
+    enum="WebOTPCrossDeviceFailure" expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -3002,7 +3030,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.Infobar" enum="WebOTPServiceInfobarAction"
-    expires_after="2023-07-09">
+    expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
@@ -3021,7 +3049,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.SmsParsingStatus" enum="SmsParsingStatus"
-    expires_after="2023-07-09">
+    expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -3033,7 +3061,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeCancel" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
@@ -3044,7 +3072,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeCancelOnKeyboardDismissal" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
@@ -3055,7 +3083,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeCancelOnSuccess" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
@@ -3066,7 +3094,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeContinueOnSuccess" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
@@ -3077,7 +3105,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeSmsReceive" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
@@ -3100,7 +3128,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.Receive.TimeUserCancel" units="ms"
-    expires_after="2023-07-09">
+    expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>goto@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
@@ -3112,7 +3140,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.Sms.WebContentsVisibleOnReceive" enum="Boolean"
-    expires_after="2023-07-09">
+    expires_after="2023-09-09">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>

@@ -1437,6 +1437,13 @@ AXObject* AXObjectCacheImpl::CreateAndInit(Node* node,
   AssociateAXID(new_obj, axid);
   new_obj->Init(parent);
 
+  // Only rebuild the child list of the parent if we had to compute
+  // the parent here, and it wasn't passed in as context. In other situations,
+  // we should know about the child already.
+  if (parent && parent != parent_if_known) {
+    parent->ChildrenChangedWithCleanLayout();
+  }
+
   return new_obj;
 }
 
@@ -2463,15 +2470,13 @@ void AXObjectCacheImpl::UpdateTreeIfNeeded() {
     UpdateTreeIfNeededOnce();
   }
 
-  // TODO(chrishtr): re-enable this once crbug.com/1446721 is fixed.
-  // #if EXPENSIVE_DCHECKS_ARE_ON()
-  //   for (const auto& entry : objects_) {
-  //     const AXObject* object = entry.value;
-  //     DCHECK(!object->HasDirtyDescendants())
-  //         << "No children in the tree should require an update at this
-  //         point.";
-  //   }
-  // #endif
+#if EXPENSIVE_DCHECKS_ARE_ON()
+  for (const auto& entry : objects_) {
+    const AXObject* object = entry.value;
+    DCHECK(!object->HasDirtyDescendants())
+        << "No children in the tree should require an update at this point.";
+  }
+#endif
 }
 
 void AXObjectCacheImpl::ProcessDeferredAccessibilityEvents(Document& document) {
@@ -4497,9 +4502,10 @@ void AXObjectCacheImpl::HandleLoadComplete(Document* document) {
 void AXObjectCacheImpl::HandleLayoutComplete(Document* document) {
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION();
   DCHECK(document);
-  // Do not fire kLayoutComplete for popup document.
-  if (IsPopup(*document))
+  // Do not fire kLayoutComplete for popup document or initial empty document.
+  if (IsPopup(*document) || IsInitialEmptyDocument(*document)) {
     return;
+  }
 
   need_to_send_location_changes_ = true;
   MarkElementDirty(document);

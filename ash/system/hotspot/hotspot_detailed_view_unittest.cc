@@ -19,6 +19,7 @@
 #include "chromeos/ash/services/hotspot_config/public/cpp/cros_hotspot_config_test_helper.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/gfx/image/image_unittest_util.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_utils.h"
@@ -217,9 +218,9 @@ TEST_F(HotspotDetailedViewTest, HotspotEnabledUI) {
   EXPECT_FALSE(extra_icon->GetVisible());
   views::ImageView* hotspot_icon = GetHotspotIcon();
   ASSERT_TRUE(hotspot_icon);
-  ui::ImageModel image_model = ui::ImageModel::FromVectorIcon(
-      kHotspotOnIcon, cros_tokens::kCrosSysOnSurface);
-  EXPECT_EQ(image_model, hotspot_icon->GetImageModel());
+  EXPECT_STREQ(
+      kHotspotOnIcon.name,
+      hotspot_icon->GetImageModel().GetVectorIcon().vector_icon()->name);
 
   UpdateHotspotView(HotspotState::kEnabled, HotspotAllowStatus::kAllowed, 1);
   AssertSubtextLabel(u"1 device connected");
@@ -240,18 +241,18 @@ TEST_F(HotspotDetailedViewTest, HotspotEnablingUI) {
   EXPECT_FALSE(extra_icon->GetVisible());
   views::ImageView* hotspot_icon = GetHotspotIcon();
   ASSERT_TRUE(hotspot_icon);
-  ui::ImageModel image_model = ui::ImageModel::FromVectorIcon(
-      kHotspotDotIcon, cros_tokens::kCrosSysOnSurface);
-  EXPECT_EQ(image_model, hotspot_icon->GetImageModel());
+  EXPECT_STREQ(
+      kHotspotDotIcon.name,
+      hotspot_icon->GetImageModel().GetVectorIcon().vector_icon()->name);
   // Verifies the hotspot icon is animating when enabling.
   task_environment()->FastForwardBy(base::Milliseconds(500));
-  image_model = ui::ImageModel::FromVectorIcon(kHotspotOneArcIcon,
-                                               cros_tokens::kCrosSysOnSurface);
-  EXPECT_EQ(image_model, hotspot_icon->GetImageModel());
+  EXPECT_STREQ(
+      kHotspotOneArcIcon.name,
+      hotspot_icon->GetImageModel().GetVectorIcon().vector_icon()->name);
   task_environment()->FastForwardBy(base::Milliseconds(500));
-  image_model = ui::ImageModel::FromVectorIcon(kHotspotOnIcon,
-                                               cros_tokens::kCrosSysOnSurface);
-  EXPECT_EQ(image_model, hotspot_icon->GetImageModel());
+  EXPECT_STREQ(
+      kHotspotOnIcon.name,
+      hotspot_icon->GetImageModel().GetVectorIcon().vector_icon()->name);
 }
 
 TEST_F(HotspotDetailedViewTest, HotspotDisablingUI) {
@@ -266,9 +267,9 @@ TEST_F(HotspotDetailedViewTest, HotspotDisablingUI) {
   EXPECT_FALSE(extra_icon->GetVisible());
   views::ImageView* hotspot_icon = GetHotspotIcon();
   ASSERT_TRUE(hotspot_icon);
-  ui::ImageModel image_model = ui::ImageModel::FromVectorIcon(
-      kHotspotOffIcon, cros_tokens::kCrosSysOnSurface);
-  EXPECT_EQ(image_model, hotspot_icon->GetImageModel());
+  EXPECT_STREQ(
+      kHotspotOffIcon.name,
+      hotspot_icon->GetImageModel().GetVectorIcon().vector_icon()->name);
 }
 
 TEST_F(HotspotDetailedViewTest, HotspotDisabledAndAllowedUI) {
@@ -283,9 +284,9 @@ TEST_F(HotspotDetailedViewTest, HotspotDisabledAndAllowedUI) {
   EXPECT_FALSE(extra_icon->GetVisible());
   views::ImageView* hotspot_icon = GetHotspotIcon();
   ASSERT_TRUE(hotspot_icon);
-  ui::ImageModel image_model = ui::ImageModel::FromVectorIcon(
-      kHotspotOffIcon, cros_tokens::kCrosSysOnSurface);
-  EXPECT_EQ(image_model, hotspot_icon->GetImageModel());
+  EXPECT_STREQ(
+      kHotspotOffIcon.name,
+      hotspot_icon->GetImageModel().GetVectorIcon().vector_icon()->name);
 }
 
 TEST_F(HotspotDetailedViewTest, HotspotDisabledAndNoMobileNetworkUI) {
@@ -301,9 +302,9 @@ TEST_F(HotspotDetailedViewTest, HotspotDisabledAndNoMobileNetworkUI) {
   EXPECT_FALSE(extra_icon->GetVisible());
   views::ImageView* hotspot_icon = GetHotspotIcon();
   ASSERT_TRUE(hotspot_icon);
-  ui::ImageModel image_model = ui::ImageModel::FromVectorIcon(
-      kHotspotOffIcon, cros_tokens::kCrosSysOnSurface);
-  EXPECT_EQ(image_model, hotspot_icon->GetImageModel());
+  EXPECT_STREQ(
+      kHotspotOffIcon.name,
+      hotspot_icon->GetImageModel().GetVectorIcon().vector_icon()->name);
 }
 
 TEST_F(HotspotDetailedViewTest,
@@ -322,9 +323,9 @@ TEST_F(HotspotDetailedViewTest,
             extra_icon->GetTooltipText());
   views::ImageView* hotspot_icon = GetHotspotIcon();
   ASSERT_TRUE(hotspot_icon);
-  ui::ImageModel image_model = ui::ImageModel::FromVectorIcon(
-      kHotspotOffIcon, cros_tokens::kCrosSysOnSurface);
-  EXPECT_EQ(image_model, hotspot_icon->GetImageModel());
+  EXPECT_STREQ(
+      kHotspotOffIcon.name,
+      hotspot_icon->GetImageModel().GetVectorIcon().vector_icon()->name);
 }
 
 TEST_F(HotspotDetailedViewTest, HotspotDisabledAndBlockedByPolicyUI) {
@@ -342,9 +343,9 @@ TEST_F(HotspotDetailedViewTest, HotspotDisabledAndBlockedByPolicyUI) {
             extra_icon->GetTooltipText());
   views::ImageView* hotspot_icon = GetHotspotIcon();
   ASSERT_TRUE(hotspot_icon);
-  ui::ImageModel image_model = ui::ImageModel::FromVectorIcon(
-      kHotspotOffIcon, cros_tokens::kCrosSysOnSurface);
-  EXPECT_EQ(image_model, hotspot_icon->GetImageModel());
+  EXPECT_STREQ(
+      kHotspotOffIcon.name,
+      hotspot_icon->GetImageModel().GetVectorIcon().vector_icon()->name);
 }
 
 TEST_F(HotspotDetailedViewTest, PressingEntryRowNotifiesDelegate) {

@@ -127,6 +127,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Virtual for testing.
   virtual bool IsRunningOrWillRun() const;
 
+  // Returns true if Lacros is initialized.
   bool IsInitialized() const;
 
   // Returns true if Lacros is terminated.
@@ -234,13 +235,7 @@ class BrowserManager : public session_manager::SessionManagerObserver,
       const std::string& app_name,
       int32_t restore_window_id);
 
-  // Initialize resources and start Lacros. This class provides two approaches
-  // to fulfill different requirements.
-  // - For most sessions, Lacros will be started automatically once
-  // `SessionState` is changed to active.
-  // - For Kiosk sessions, Lacros needs to be started earlier because all
-  // extensions and browser window should be well prepared before the user
-  // enters the session. This method should be called at the appropriate time.
+  // Initialize resources and start Lacros.
   //
   // NOTE: If InitializeAndStartIfNeeded finds Lacros disabled, it unloads
   // Lacros via BrowserLoader::Unload, which also deletes the user data
@@ -405,6 +400,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
     // Lacros-chrome loading depends on user type, so it needs to wait
     // for user session.
     NOT_INITIALIZED,
+
+    // Lacros-chrome is reloading, because the wrong version was
+    // pre-launched at login screen.
+    RELOADING,
 
     // User session started, and now it's mounting lacros-chrome.
     MOUNTING,
@@ -599,6 +598,9 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // killing the process.
   void HandleLacrosChromeTermination(base::TimeDelta timeout);
 
+  // Reload and possibly relaunch Lacros.
+  void HandleReload();
+
   // Called as soon as the login prompt is visible.
   void OnLoginPromptVisible();
 
@@ -725,6 +727,11 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Lacros after terminating it in case pre-loading at login screen
   // was unnecessary (e.g. because the user doesn't have Lacros enabled).
   bool unload_requested_ = false;
+
+  // Tracks whether reloading Lacros was requested. Used to reload the right
+  // Lacros selection (rootfs/stateful) in case the wrong version was pre-loaded
+  // at login screen.
+  bool reload_requested_ = false;
 
   // Tracks whether BrowserManager should attempt to load a newer lacros-chrome
   // browser version (if an update is possible and a new version is available).

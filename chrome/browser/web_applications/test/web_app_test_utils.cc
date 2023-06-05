@@ -210,7 +210,7 @@ blink::ParsedPermissionsPolicy CreateRandomPermissionsPolicy(
       const auto origin =
           url::Origin::Create(GURL("https://app-" + suffix_str + ".com/"));
       permissions_policy[i].allowed_origins.emplace_back(
-          blink::OriginWithPossibleWildcards::FromOrigin(origin));
+          *blink::OriginWithPossibleWildcards::FromOrigin(origin));
     }
   }
   return permissions_policy;
@@ -917,8 +917,15 @@ std::unique_ptr<WebApp> CreateRandomWebApp(CreateRandomWebAppParams params) {
     };
     static_assert(std::size(location_types) == kNumLocationTypes);
 
-    WebApp::IsolationData isolation_data(
-        location_types[random.next_uint(kNumLocationTypes)]);
+    IsolatedWebAppLocation location_type =
+        location_types[random.next_uint(kNumLocationTypes)];
+    base::Version version = base::Version({
+        random.next_uint(),
+        random.next_uint(),
+        random.next_uint(),
+    });
+
+    WebApp::IsolationData isolation_data(location_type, version);
     if (random.next_bool()) {
       isolation_data.controlled_frame_partitions.insert("partition_name");
     }

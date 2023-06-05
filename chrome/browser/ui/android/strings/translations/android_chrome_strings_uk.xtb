@@ -142,6 +142,7 @@
 <translation id="1750259112639922169">Група вкладок – <ph name="TAB_COUNT" /> шт.</translation>
 <translation id="17513872634828108">Відкриті вкладки</translation>
 <translation id="1754404134430936718">Текст скопійовано</translation>
+<translation id="1757620656501361327">Оновлення Google Менеджера паролів</translation>
 <translation id="1778457539567749232">Позначити як непрочитане</translation>
 <translation id="1779766957982586368">Закрити вікно</translation>
 <translation id="1791662854739702043">Установлено</translation>
@@ -426,6 +427,7 @@
 <translation id="3290249595466894471">Також надсилає невеликі зразки сторінок, завантаження, дані про дії розширень та інформацію про систему, щоб виявляти нові загрози</translation>
 <translation id="3293181007446299124">Історія веб-перегляду зберігається на вашому пристрої й доступна лише вам. Звіти надсилаються із затримкою, щоб захистити вашу особу.</translation>
 <translation id="3303414029551471755">Завантажити вміст?</translation>
+<translation id="3305130791745726624">Надіслати на пристрій</translation>
 <translation id="3305795716056605962">Щоб відобразити перемикач "Перекласти сторінки", скористайтеся кнопкою меню "Інші опції"</translation>
 <translation id="3319664549618064419">Перейдіть на комп’ютерну версію сайту – так його буде зручніше переглядати</translation>
 <translation id="3334729583274622784">Змінити розширення файлу?</translation>
@@ -753,6 +755,7 @@
 <translation id="504456571576643789">Що варто врахувати</translation>
 <translation id="5054455334322721892">Коли ви входите в обліковий запис Google, у ньому можуть зберігатися <ph name="BEGIN_LINK1" />дані про інші дії<ph name="END_LINK1" />. Ви можете будь-коли видалити їх.</translation>
 <translation id="506254248375231072">Немає вкладок</translation>
+<translation id="5062960805900435602">Сповіщення про перенесення паролів закрито</translation>
 <translation id="5091199029769593641">Незабаром, відкривши нову вкладку, ви будете бачити історії із сайту <ph name="SITE_NAME" />. Сайти, на які ви підписалися, зберігаються в обліковому записі Google. Керувати ними можна в налаштуваннях рекомендацій.</translation>
 <translation id="5091249083535528968">Розширені дані про використання</translation>
 <translation id="509429900233858213">Сталася помилка.</translation>
@@ -802,6 +805,7 @@
 <translation id="5361107212971249203">текст</translation>
 <translation id="5368227114232678694">Щоб працювати на цьому пристрої в Інтернеті приватно, спробуйте анонімний режим</translation>
 <translation id="5375577065097716013">Шукати через Об'єктив <ph name="BEGIN_NEW" />Нове<ph name="END_NEW" /></translation>
+<translation id="539881862970320163">Запропоновано надійний пароль. Клавіатуру сховано.</translation>
 <translation id="5401851137404501592">Щоб продовжити, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> надасть ваші ім’я, електронну адресу й зображення профілю цьому сайту.</translation>
 <translation id="5409881200985013443">Надіслати код <ph name="ONE_TIME_CODE" /> на пристрій "<ph name="CLIENT_NAME" />"?</translation>
 <translation id="5414836363063783498">Підтвердження…</translation>
@@ -942,7 +946,6 @@
 <translation id="6138832295072039549">Змініть налаштування сайту тут</translation>
 <translation id="6140709049082532940">Покращений захист:</translation>
 <translation id="6140912465461743537">Країна або регіон</translation>
-<translation id="6148266338772765473">Вилучити посилання</translation>
 <translation id="6150320133806434356">Закладку збережено</translation>
 <translation id="6154478581116148741">Щоб експортувати паролі з цього пристрою, увімкніть блокування екрана</translation>
 <translation id="6159729262978459665">Історію буде видалено на всіх синхронізованих пристроях.</translation>
@@ -1053,7 +1056,7 @@
 <translation id="6648977384226967773">{CONTACT,plural, =1{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}one{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}few{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}many{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" />\u2026 і ще <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="6649642165559792194">Переглянути зображення <ph name="BEGIN_NEW" />Нове<ph name="END_NEW" /></translation>
 <translation id="6657585470893396449">Пароль</translation>
-<translation id="6659594942844771486">Вкладка</translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="666731172850799929">Відкрити в програмі <ph name="APP_NAME" /></translation>
 <translation id="6671495933530132209">Копіювати зображення</translation>
 <translation id="6672917148207387131">Додати домен <ph name="DOMAIN" /></translation>
@@ -1160,6 +1163,7 @@
 <translation id="7217781228893594884">Анонімні вкладки блокуватимуться після закриття Chrome</translation>
 <translation id="7222235798733126207">Обмежений обмін даними між сайтами</translation>
 <translation id="7227218174981371415">{FILE_COUNT,plural, =1{Очікується 1 завантаження}one{Очікується # завантаження}few{Очікується # завантаження}many{Очікується # завантажень}other{Очікується # завантаження}}</translation>
+<translation id="72415438529550637">Пропозицію пароля закрито.</translation>
 <translation id="7242755609445462077">Стилізований виділений текст: <ph name="CURRENT_DATE" /></translation>
 <translation id="7248069434667874558">Переконайтеся, що на пристрої <ph name="TARGET_DEVICE_NAME" /> увімкнено синхронізацію в Chrome</translation>
 <translation id="7252076891734325316">Розмістіть телефон біля комп’ютера</translation>
@@ -1174,6 +1178,7 @@
 <translation id="7304072650267745798">На вашому пристрої Android може бути схоже налаштування. Якщо це налаштування ввімкнено в Chrome і на пристрої Android, компанії можуть визначати ефективність своїх оголошень на відвіданих вами веб-сайтах і в додатках, якими ви користуєтеся.</translation>
 <translation id="7304873321153398381">Офлайн. Chrome не може перевірити паролі.</translation>
 <translation id="7313188324932846546">Натисніть, щоб налаштувати синхронізацію</translation>
+<translation id="7324354302972299151">Надіслати запит Do Not Track</translation>
 <translation id="7332075081379534664">Вхід виконано</translation>
 <translation id="7333232495927792353">Увімкніть синхронізацію, щоб отримувати найактуальніший контент від Google</translation>
 <translation id="7339898014177206373">Нове вікно</translation>

@@ -15,6 +15,10 @@
 #include "chrome/browser/chrome_browser_application_mac.h"
 #include "services/device/public/cpp/geolocation/system_geolocation_source_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 BrowserProcessPlatformPart::BrowserProcessPlatformPart() = default;
 
 BrowserProcessPlatformPart::~BrowserProcessPlatformPart() = default;
@@ -70,8 +74,8 @@ void BrowserProcessPlatformPart::PreMainMessageLoopRun() {
   DCHECK(!app_shim_listener_.get());
   app_shim_listener_ = new AppShimListener;
 
-  if (!g_browser_process->geolocation_manager()) {
-    g_browser_process->SetGeolocationManager(
+  if (!device::GeolocationManager::GetInstance()) {
+    device::GeolocationManager::SetInstance(
         device::SystemGeolocationSourceMac::CreateGeolocationManagerOnMac());
   }
 }

@@ -36,8 +36,12 @@
 #include "third_party/blink/renderer/platform/instrumentation/canvas_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GpuTypes.h"
+#include "third_party/skia/include/gpu/GrBackendSurface.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 
 namespace blink {
 
@@ -81,7 +85,8 @@ namespace {
 bool IsGMBAllowed(const SkImageInfo& info, const gpu::Capabilities& caps) {
   const gfx::Size size(info.width(), info.height());
   const gfx::BufferFormat buffer_format =
-      viz::BufferFormat(viz::SkColorTypeToResourceFormat(info.colorType()));
+      viz::SinglePlaneSharedImageFormatToBufferFormat(
+          viz::SkColorTypeToSinglePlaneSharedImageFormat(info.colorType()));
   return gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, buffer_format) &&
          gpu::IsImageFromGpuMemoryBufferFormatSupported(buffer_format, caps);
 }
@@ -543,8 +548,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       // deferred queue in that context so that we don't need to copy.
       GetFlushForImageListener()->NotifyFlushForImage(content_id);
 
-      if (!use_oop_rasterization_)
-        surface_->flushAndSubmit();
+      if (!use_oop_rasterization_) {
+        skgpu::ganesh::FlushAndSubmit(surface_);
+      }
     }
 
     return !resource_->HasOneRef();
@@ -838,11 +844,13 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
     texture_info.fID = resource_->GetBackBufferTextureId();
     texture_info.fTarget = resource_->TextureTarget();
     texture_info.fFormat = viz::TextureStorageFormat(
-        viz::SkColorTypeToResourceFormat(GetSkImageInfo().colorType()),
+        viz::SkColorTypeToSinglePlaneSharedImageFormat(
+            GetSkImageInfo().colorType())
+            .resource_format(),
         capabilities.angle_rgbx_internal_format);
 
-    auto backend_texture = GrBackendTexture(Size().width(), Size().height(),
-                                            GrMipMapped::kNo, texture_info);
+    auto backend_texture = GrBackendTexture(
+        Size().width(), Size().height(), skgpu::Mipmapped::kNo, texture_info);
 
     const auto props = GetSkSurfaceProps();
     return SkSurfaces::WrapBackendTexture(
@@ -1446,7 +1454,7 @@ absl::optional<cc::PaintRecord> CanvasResourceProvider::FlushCanvas(
 void CanvasResourceProvider::RasterRecord(cc::PaintRecord last_recording) {
   EnsureSkiaCanvas();
   skia_canvas_->drawPicture(std::move(last_recording));
-  GetSkSurface()->flushAndSubmit();
+  skgpu::ganesh::FlushAndSubmit(GetSkSurface());
 }
 
 void CanvasResourceProvider::RasterRecordOOP(cc::PaintRecord last_recording,

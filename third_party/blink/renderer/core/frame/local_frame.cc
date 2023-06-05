@@ -2117,28 +2117,19 @@ void LocalFrame::WasShown() {
   }
 }
 
-bool LocalFrame::ClipsContent(ScrollbarDisableReason* out_reason) const {
+bool LocalFrame::ClipsContent() const {
   // A paint preview shouldn't clip to the viewport. Each frame paints to a
   // separate canvas in full to allow scrolling.
   if (GetDocument()->GetPaintPreviewState() != Document::kNotPaintingPreview) {
-    if (out_reason) {
-      *out_reason = ScrollbarDisableReason::kPaintPreview;
-    }
     return false;
   }
 
   if (ShouldUsePrintingLayout()) {
-    if (out_reason) {
-      *out_reason = ScrollbarDisableReason::kPrinting;
-    }
     return false;
   }
 
-  if (IsOutermostMainFrame() && !GetSettings()->GetMainFrameClipsContent()) {
-    if (out_reason) {
-      *out_reason = ScrollbarDisableReason::kMainFrameClipsContentFalse;
-    }
-    return false;
+  if (IsOutermostMainFrame()) {
+    return GetSettings()->GetMainFrameClipsContent();
   }
   // By default clip to viewport.
   return true;
@@ -3273,8 +3264,8 @@ void LocalFrame::PostMessageEvent(
   }
 
   message_event->initMessageEvent(
-      "message", false, false, std::move(message.message), source_origin,
-      "" /*lastEventId*/, window, ports, user_activation,
+      event_type_names::kMessage, false, false, std::move(message.message),
+      source_origin, "" /*lastEventId*/, window, ports, user_activation,
       message.delegated_capability);
 
   // If the agent cluster id had a value it means this was locked when it

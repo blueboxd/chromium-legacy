@@ -426,6 +426,10 @@ void AutocompleteController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
+void AutocompleteController::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void AutocompleteController::Start(const AutocompleteInput& input) {
   TRACE_EVENT1("omnibox", "AutocompleteController::Start", "text",
                base::UTF16ToUTF8(input.text()));
@@ -1540,8 +1544,7 @@ size_t AutocompleteController::InjectAdHocMatch(AutocompleteMatch match) {
 
 bool AutocompleteController::ShouldRunProvider(
     AutocompleteProvider* provider) const {
-  if (OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() &&
-      provider->InKeywordMode(input_)) {
+  if (provider->InKeywordMode(input_)) {
     // Only a subset of providers are run when we're in a starter pack keyword
     // mode. Try to grab the TemplateURL to determine if we're in starter pack
     // mode and whether this provider should be run.

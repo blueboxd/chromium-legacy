@@ -4,7 +4,7 @@
 <translation id="1014750484722996375">ଡେସ୍କଗୁଡ଼ିକ</translation>
 <translation id="1018219910092211213">DNSର ସମାଧାନ କରାଯାଇପାରିବ ନାହିଁ</translation>
 <translation id="1018656279737460067">ବାତିଲ୍‌ କରାଗଲା</translation>
-<translation id="1022433422498218992">ସାଧାରଣ ନିୟନ୍ତ୍ରଣଗୁଡ଼ିକ</translation>
+<translation id="1020274983236703756">ଏକ୍ସକ୍ଲୁସିଭ <ph name="PRODUCT_NAME" /> ଆସେଟଗୁଡ଼ିକ ବର୍ତ୍ତମାନ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="1022628058306505708">ଆର୍ଥ ଫ୍ଲୋ</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" />ଟି ଥ୍ରେଡ୍, <ph name="CPU_MAX_CLOCK_SPEED" />GHz)</translation>
 <translation id="1047773237499189053">ନୂଆ ଫିଚର୍ ଉପଲବ୍ଧ ଅଛି, ଅଧିକ ଜାଣିବାକୁ ଅପ୍ ତୀର କୀ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
@@ -113,7 +113,6 @@
 <translation id="1768959921651994223">ପ୍ରମାଣୀକରଣର ପ୍ରକାର</translation>
 <translation id="1776228893584526149">ୱାଲପେପର ଟୋନ</translation>
 <translation id="1782199038061388045">ଅନୁବାଦ</translation>
-<translation id="1790209694022261219">ୱିଣ୍ଡୋ ଏବଂ ଡେସ୍କଗୁଡ଼ିକ</translation>
 <translation id="1792647875738159689">ସ୍କାନିଂ ବାତିଲ୍ କରାଯାଉଛି</translation>
 <translation id="1801418420130173017">ଗାଢ଼ା ଥିମକୁ ଅକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="1807246157184219062">ଫିକା</translation>
@@ -244,7 +243,6 @@
 <translation id="3008341117444806826">ରିଫ୍ରେଶ୍ କରନ୍ତୁ</translation>
 <translation id="3009958530611748826">ଏଥିରେ ସେଭ୍ କରିବାକୁ ଏକ ଫୋଲ୍ଡର୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="3017079585324758401">ପୃଷ୍ଠପଟ</translation>
-<translation id="3020183492814296499">ସର୍ଟକଟ୍‌ଗୁଡ଼ିକ</translation>
 <translation id="3027578600144895987">କ୍ୟାମେରା ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="3031560714565892478">ଡିଭାଇସଟି ଏକ ଭିଡିଓ କ୍ୟାମେରା ଅଟେ।</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -271,6 +269,7 @@
 <translation id="3226405216343213872">ସ୍କାନରଗୁଡ଼ିକୁ ଖୋଜାଯାଉଛି</translation>
 <translation id="3226657629376379887">ଲେଆଉଟ ଆକ୍ସନ ମେନୁ</translation>
 <translation id="3246869037381808805">1ଦିନରୁ ଅଧିକ ପୁରୁଣା ପ୍ରିଣ୍ଟ କାର୍ଯ୍ୟଗୁଡ଼ିକୁ କାଢ଼ି ଦିଆଯିବ</translation>
+<translation id="3248223063252096240"><ph name="PRODUCT_NAME" /> ଏକ୍ସକ୍ଲୁସିଭ</translation>
 <translation id="3268178239013324452">ବିଫଳ ହୋଇଛି - ପ୍ରିଣ୍ଟରର କଭର୍ ଖୋଲା ଅଛି</translation>
 <translation id="3275729367986477355">ଅବତାର ଇମେଜ</translation>
 <translation id="3283504360622356314">{0,plural, =1{ଫାଇଲକୁ ଏଡିଟ୍ କରନ୍ତୁ}other{ଫାଇଲଗୁଡ଼ିକୁ ଏଡିଟ୍ କରନ୍ତୁ}}</translation>
@@ -323,6 +322,7 @@
 <translation id="3632579075709132555">ଗୋପନୀୟତା ସ୍କ୍ରିନ ଟୋଗଲ</translation>
 <translation id="3639846061339007994">ଶୀର୍ଷ</translation>
 <translation id="3651050199673793219">ଏକ ତାପମାତ୍ରା ୟୁନିଟ ଚୟନ କରନ୍ତୁ</translation>
+<translation id="3663574643422533538"><ph name="PRODUCT_NAME" /> ଏକ୍ସକ୍ଲୁସିଭ କଳାକୃତି ଚୟନ କରନ୍ତୁ</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> ଟେଷ୍ଟ</translation>
 <translation id="370665806235115550">ଲୋଡ୍ କରୁଛି...</translation>
 <translation id="3708186454126126312">ପୂର୍ବରୁ ସଂଯୋଗ କରାଯାଇଛି</translation>
@@ -372,6 +372,7 @@
 <translation id="4095829376260267438">WPA2WPA3</translation>
 <translation id="4110686435123617899">ଆଲବମ୍ <ph name="TITLE" /> <ph name="DESC" /> ଚୟନ କରନ୍ତୁ</translation>
 <translation id="4111761024568264522">USB ଟଚପ୍ୟାଡ</translation>
+<translation id="4113067922640381334">ନୂଆ <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />ୱାଲପେପର<ph name="END_LINK_WALLPAPER_SUBPAGE" />କୁ ଆପଣଙ୍କର ବର୍ତ୍ତମାନ ଆକ୍ସେସ ଅଛି</translation>
 <translation id="4117637339509843559">ଡାର୍କ ମୋଡ୍</translation>
 <translation id="4130035430755296270">ଅଧିକ ଲେଆଉଟ ବିକଳ୍ପ ପାଇଁ ହୋଭର କରିବା ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="4131410914670010031">କଳା ଏବଂ ଧଳା</translation>
@@ -611,6 +612,7 @@
 <translation id="5972388717451707488">ଇଞ୍ଜିନ୍ ଅପଡେଟ୍ କରନ୍ତୁ</translation>
 <translation id="5984145644188835034">ଡିଫଲ୍ଟ ୱାଲପେପର</translation>
 <translation id="6017514345406065928">ସବୁଜ</translation>
+<translation id="6019566113895157499">Key Shortcuts</translation>
 <translation id="6034694447310538551">ସ୍ୱଚାଳିତ ମାସିକ ରିସେଟକୁ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="6037291330010597344">ସ୍କାନରର ଡକ୍ୟୁମେଣ୍ଟ ଫିଡର୍ ଖାଲି ଅଛି। ଡକ୍ୟୁମେଣ୍ଟଗୁଡ଼ିକ ଯୋଗ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।</translation>
 <translation id="6040143037577758943">ବନ୍ଦ</translation>
@@ -934,6 +936,7 @@
 <translation id="8576249514688522074">ଆରମ୍ଭ କରାଯାଇନାହିଁ</translation>
 <translation id="8593058461203131755">ମିଡିଆକୁ ବିରତ କରନ୍ତୁ</translation>
 <translation id="8620617069779373398">ରୋମିଂ ସ୍ଥିତି</translation>
+<translation id="8626489604350149811"><ph name="APN_NAME" /> ପାଇଁ ଅଧିକ ପଦକ୍ଷେପ</translation>
 <translation id="86356131183441916">ହାଲୁକା ବାଇଗଣୀ</translation>
 <translation id="8651481478098336970">ଭଲ୍ୟୁମ୍ ମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
 <translation id="8655295600908251630">ଚ୍ୟାନେଲ୍</translation>

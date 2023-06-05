@@ -573,7 +573,7 @@ struct AddEntriesMessage {
 
     // Maps |value| to base::Time. Returns true on success.
     static bool MapStringToTime(base::StringPiece value, base::Time* time) {
-      return base::Time::FromString(value.data(), time);
+      return base::Time::FromString(std::string(value).c_str(), time);
     }
   };
 };
@@ -1431,6 +1431,41 @@ class DriveFsTestVolume : public TestVolume {
 
     auto& drivefs_delegate = fake_drivefs_helper_->fake_drivefs().delegate();
     drivefs_delegate->OnSyncingStatusUpdate(syncing_status.Clone());
+    drivefs_delegate.FlushForTesting();
+  }
+
+  void SetFileProgress(const std::string* path, const int progress) {
+    const base::FilePath file_path(*path);
+    const auto& md =
+        fake_drivefs_helper_->fake_drivefs().GetItemMetadata(file_path);
+    CHECK(md.has_value()) << "No metadata found for " << file_path.value();
+
+    auto progress_event = drivefs::mojom::ProgressEvent::New();
+    base::FilePath full_path = mount_path();
+    CHECK(base::FilePath("/").AppendRelativePath(base::FilePath(*path),
+                                                 &full_path))
+        << "Failed to convert to full path";
+    progress_event->path = full_path.AsUTF8Unsafe();
+    progress_event->progress = progress;
+    progress_event->stable_id = md.value().stable_id;
+
+    auto& drivefs_delegate = fake_drivefs_helper_->fake_drivefs().delegate();
+    drivefs_delegate->OnItemProgress(std::move(progress_event));
+    drivefs_delegate.FlushForTesting();
+  }
+
+  void SetSyncError(const std::string* path) {
+    const base::FilePath file_path(*path);
+    const auto& md =
+        fake_drivefs_helper_->fake_drivefs().GetItemMetadata(file_path);
+    CHECK(md.has_value()) << "No metadata found for " << file_path.value();
+
+    auto drive_error = drivefs::mojom::DriveError::New();
+    drive_error->path = base::FilePath(*path);
+    drive_error->stable_id = md.value().stable_id;
+
+    auto& drivefs_delegate = fake_drivefs_helper_->fake_drivefs().delegate();
+    drivefs_delegate->OnError(std::move(drive_error));
     drivefs_delegate.FlushForTesting();
   }
 
@@ -3555,6 +3590,22 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     drive_volume_->SetFileSyncStatus(
         path, state, drivefs::mojom::ItemEventReason::kPin,
         bytes_transferred.value(), bytes_to_transfer.value());
+    return;
+  }
+
+  if (name == "setDriveSyncProgress") {
+    auto* path = value.FindString("path");
+    auto progress = value.FindInt("progress");
+    ASSERT_TRUE(path);
+    ASSERT_TRUE(progress.has_value());
+    drive_volume_->SetFileProgress(path, *progress);
+    return;
+  }
+
+  if (name == "setDriveSyncError") {
+    auto* path = value.FindString("path");
+    ASSERT_TRUE(path);
+    drive_volume_->SetSyncError(path);
     return;
   }
 

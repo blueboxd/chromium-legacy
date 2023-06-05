@@ -1243,6 +1243,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="4031179711345676612">Mikrofon on lubatud</translation>
 <translation id="4040350669425716613">Kolledžid ja ülikoolid</translation>
 <translation id="4047351652147966654">18 × 24 tolli</translation>
+<translation id="404831776305217138">ID-ga „<ph name="EXTENSION_ID" />” laienduse URL-i värskendamine on kehtetu või kasutab toetamata skeemi. Toetatud skeemid on: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> ja <ph name="FILE_SCHEME" />.</translation>
 <translation id="4050392779074832022">Saate seda kõigis Google'i teenustes kasutada</translation>
 <translation id="405399507749852140">Teile saadetakse märguanne, kui hind mõnel saidil langeb</translation>
 <translation id="4056223980640387499">Seepia</translation>
@@ -2289,9 +2290,12 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="6554732001434021288">Viimati külastati <ph name="NUM_DAYS" /> päeva tagasi</translation>
 <translation id="6556866813142980365">Tee uuesti</translation>
 <translation id="6557715786897013164">14 × 17 tolli</translation>
+<translation id="6560786330438719938">Installitud või desinstallitud rakendused ja nende kasutussagedus</translation>
 <translation id="6569060085658103619">Vaatate laienduse lehte</translation>
 <translation id="6569366777234823130">Draamafilmid</translation>
 <translation id="6573200754375280815">Kaks auku paremal</translation>
+<translation id="6576181918031900030">Alusta ülekandmist</translation>
+<translation id="6578434528542148658">Sobimatu laienduse ID.</translation>
 <translation id="657902945730878902">Joonistamine ja värvimine</translation>
 <translation id="6579630537141957243">Kas ühendada MIDI-seade?</translation>
 <translation id="6579990219486187401">Heleroosa</translation>
@@ -3031,7 +3035,6 @@ Lisateave:
 <translation id="8298115750975731693">WiFi-võrk, mida kasutate (<ph name="WIFI_NAME" />), võib nõuda veebilehe <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> külastamist.</translation>
 <translation id="8303854710873047864">Jaotis „<ph name="SECTION" />” on kuvatud</translation>
 <translation id="830498451218851433">Pooleks volditud</translation>
-<translation id="8307888238279532626">Installitud rakendused ja nende kasutussagedus</translation>
 <translation id="831997045666694187">Õhtu</translation>
 <translation id="8321476692217554900">märguanded</translation>
 <translation id="8329068931308448247">Ümbrik nr 14</translation>
@@ -3255,6 +3258,7 @@ Lisateave:
 <translation id="890493561996401738">Soovituse eemaldamise nupp, vajutage eemaldamiseks sisestusklahvi, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910898109640902752">8 × 10 tolli</translation>
 <translation id="8913778647360618320">Nupp Makseviiside haldamine, vajutage Chrome'i seadetes maksete ja krediitkaarditeabe haldamiseks sisestusklahvi</translation>
+<translation id="8919895429178014996">Kõigi üksuste peitmine</translation>
 <translation id="8922013791253848639">Luba sellel saidil alati reklaamid</translation>
 <translation id="892588693504540538">Auk ülal paremal</translation>
 <translation id="8930330541574156305">Kinnisvara</translation>

@@ -8,10 +8,11 @@ import {createPageAvailabilityForTesting, CrSettingsPrefs, Router, routes, setCo
 import {setBluetoothConfigForTesting} from 'chrome://resources/ash/common/bluetooth/cros_bluetooth_config.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertNotEquals, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {FakeBluetoothConfig} from 'chrome://webui-test/cr_components/chromeos/bluetooth/fake_bluetooth_config.js';
 import {FakeContactManager} from 'chrome://webui-test/nearby_share/shared/fake_nearby_contact_manager.js';
 import {FakeNearbyShareSettings} from 'chrome://webui-test/nearby_share/shared/fake_nearby_share_settings.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 suite('<main-page-container>', function() {
   /** @type {?MainPageContainerElement} */
@@ -169,7 +170,10 @@ suite('<main-page-container>', function() {
   suite('Revamp: Wayfinding', () => {
     suite('when enabled', () => {
       suiteSetup(async () => {
+        // Simulate feature flag enabled
         loadTimeData.overrideValues({isRevampWayfindingEnabled: true});
+        document.body.classList.add('revamp-wayfinding-enabled');
+
         Router.getInstance().navigateTo(routes.BASIC);
         mainPageContainer = init();
       });
@@ -180,10 +184,101 @@ suite('<main-page-container>', function() {
         Router.getInstance().resetRouteForTesting();
       });
 
+      setup(() => {
+        Router.getInstance().navigateTo(routes.BASIC);
+      });
+
       test('advanced toggle should not render', () => {
         const advancedToggle =
             mainPageContainer.shadowRoot.querySelector('#advancedToggle');
         assertNull(advancedToggle);
+      });
+
+      suite('Route navigations', () => {
+        /**
+         * Asserts the following:
+         * - Only one page is marked active
+         * - Active page does not have style "display: none"
+         * - Inactive pages have style "display: none"
+         */
+        function assertOnlyActivePageIsVisible(pageName) {
+          const pages = mainPageContainer.shadowRoot.querySelectorAll(
+              'os-settings-section');
+          let numActive = 0;
+
+          for (const page of pages) {
+            const displayStyle = getComputedStyle(page).display;
+            if (page.hasAttribute('active')) {
+              numActive++;
+              assertNotEquals('none', displayStyle);
+              assertEquals(pageName, page.section);
+            } else {
+              assertEquals('none', displayStyle);
+            }
+          }
+
+          assertEquals(1, numActive);
+        }
+
+        suite('From Root', () => {
+          test('to Page should result in only one active page', async () => {
+            // Simulate navigating from root to Network page
+            const navigationCompletePromise =
+                eventToPromise('show-container', window);
+            Router.getInstance().navigateTo(routes.INTERNET);
+            await navigationCompletePromise;
+
+            assertOnlyActivePageIsVisible('internet');
+          });
+
+          test('to Subpage should result in only one active page', async () => {
+            // Simulate navigating from root to Bluetooth subpage
+            const navigationCompletePromise =
+                eventToPromise('show-container', window);
+            Router.getInstance().navigateTo(routes.BLUETOOTH_DEVICES);
+            await navigationCompletePromise;
+
+            assertOnlyActivePageIsVisible('bluetooth');
+          });
+        });
+
+        suite('From Page', () => {
+          test(
+              'to another Page should result in only one active page',
+              async () => {
+                // Simulate navigating from Network page to Bluetooth page
+                Router.getInstance().navigateTo(routes.INTERNET);
+                const navigationCompletePromise =
+                    eventToPromise('show-container', window);
+                Router.getInstance().navigateTo(routes.BLUETOOTH);
+                await navigationCompletePromise;
+
+                assertOnlyActivePageIsVisible('bluetooth');
+              });
+
+          test('to Subpage should result in only one active page', async () => {
+            // Simulate navigating from A11y page to A11y display subpage
+            Router.getInstance().navigateTo(routes.OS_ACCESSIBILITY);
+            const navigationCompletePromise =
+                eventToPromise('show-container', window);
+            Router.getInstance().navigateTo(
+                routes.A11Y_DISPLAY_AND_MAGNIFICATION);
+            await navigationCompletePromise;
+
+            assertOnlyActivePageIsVisible('osAccessibility');
+          });
+
+          test('to Root should result in only one active page', async () => {
+            // Simulate navigating from Network page to root
+            Router.getInstance().navigateTo(routes.INTERNET);
+            const navigationCompletePromise =
+                eventToPromise('show-container', window);
+            Router.getInstance().navigateTo(routes.BASIC);
+            await navigationCompletePromise;
+
+            assertOnlyActivePageIsVisible('internet');
+          });
+        });
       });
     });
 

@@ -112,12 +112,12 @@ HRESULT CreateLocalServer(GUID clsid,
 
 [[nodiscard]] bool DeleteRegKey(HKEY root, const std::wstring& path) {
   LONG result =
-      base::win::RegKey(root, L"", Wow6432(KEY_READ)).DeleteKey(path.c_str());
+      base::win::RegKey(root, L"", Wow6432(DELETE)).DeleteKey(path.c_str());
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
 }
 
 [[nodiscard]] bool DeleteRegKeyCOM(HKEY root, const std::wstring& path) {
-  LONG result = base::win::RegKey(root, L"", KEY_READ).DeleteKey(path.c_str());
+  LONG result = base::win::RegKey(root, L"", DELETE).DeleteKey(path.c_str());
   return result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND;
 }
 
@@ -1359,20 +1359,6 @@ int RunVPythonCommand(const base::CommandLine& command_line) {
   return exit_code;
 }
 
-void RunTestServiceCommand(const std::string& sub_command) {
-  base::FilePath path(base::CommandLine::ForCurrentProcess()->GetProgram());
-  path = path.DirName();
-  path = MakeAbsoluteFilePath(path);
-  path = path.Append(FILE_PATH_LITERAL("test_service"))
-             .Append(FILE_PATH_LITERAL("updater_test_service_control.py"));
-  EXPECT_TRUE(base::PathExists(path));
-
-  base::CommandLine command(path);
-  command.AppendArg(sub_command);
-
-  EXPECT_EQ(RunVPythonCommand(command), 0);
-}
-
 void InvokeTestServiceFunction(const std::string& function_name,
                                const base::Value::Dict& arguments) {
   std::string arguments_json_string;
@@ -1714,7 +1700,7 @@ void InstallApp(UpdaterScope scope, const std::string& app_id) {
 void UninstallApp(UpdaterScope scope, const std::string& app_id) {
   base::win::RegKey key;
   ASSERT_EQ(
-      key.Open(UpdaterScopeToHKeyRoot(scope), CLIENTS_KEY, Wow6432(KEY_WRITE)),
+      key.Open(UpdaterScopeToHKeyRoot(scope), CLIENTS_KEY, Wow6432(DELETE)),
       ERROR_SUCCESS);
   ASSERT_EQ(key.DeleteKey(base::SysUTF8ToWide(app_id).c_str()), ERROR_SUCCESS);
 }

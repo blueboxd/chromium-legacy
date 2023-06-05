@@ -166,6 +166,7 @@
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/1125897
 #endif
 #include "chrome/browser/ui/side_panel/customize_chrome/customize_chrome_utils.h"
+#include "chrome/browser/ui/webui/commerce/shopping_insights_side_panel_ui.h"
 #include "chrome/browser/ui/webui/history/history_ui.h"
 #include "chrome/browser/ui/webui/internals/user_education/user_education_internals.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
@@ -749,10 +750,6 @@ void BindMediaFoundationRendererNotifierHandler(
 void BindScreenAIAnnotator(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<screen_ai::mojom::ScreenAIAnnotator> receiver) {
-  // TODO(https://crbug.com/1278249): After user settings are added, add extra
-  // checking here to ensure the service is bound only when user has explicitly
-  // requested it.
-
   content::BrowserContext* browser_context =
       frame_host->GetProcess()->GetBrowserContext();
 
@@ -764,9 +761,6 @@ void BindScreen2xMainContentExtractor(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<screen_ai::mojom::Screen2xMainContentExtractor>
         receiver) {
-  // TODO(https://crbug.com/1278249): After user settings are added, add extra
-  // checking here to ensure the service is bound only when user has explicitly
-  // requested it.
   screen_ai::ScreenAIServiceRouterFactory::GetForBrowserContext(
       frame_host->GetProcess()->GetBrowserContext())
       ->BindMainContentExtractor(std::move(receiver));
@@ -1027,7 +1021,7 @@ void PopulateChromeWebUIFrameBinders(
       HistoryClustersServiceFactory::GetForBrowserContext(
           render_frame_host->GetProcess()->GetBrowserContext());
   if (history_clusters_service &&
-      history_clusters_service->IsJourneysEnabled()) {
+      history_clusters_service->is_journeys_feature_flag_enabled()) {
     if (base::FeatureList::IsEnabled(history_clusters::kSidePanelJourneys)) {
       RegisterWebUIControllerInterfaceBinder<
           history_clusters::mojom::PageHandler, HistoryUI,
@@ -1039,7 +1033,7 @@ void PopulateChromeWebUIFrameBinders(
   }
 
   if ((history_clusters_service &&
-       history_clusters_service->IsJourneysEnabled() &&
+       history_clusters_service->is_journeys_feature_flag_enabled() &&
        history_clusters_service->IsJourneysImagesEnabled()) ||
       base::FeatureList::IsEnabled(ntp_features::kNtpHistoryClustersModule) ||
       base::FeatureList::IsEnabled(
@@ -1119,9 +1113,10 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<
       side_panel::mojom::BookmarksPageHandlerFactory, BookmarksSidePanelUI>(
       map);
+
   RegisterWebUIControllerInterfaceBinder<
-      shopping_list::mojom::ShoppingListHandlerFactory, BookmarksSidePanelUI>(
-      map);
+      shopping_list::mojom::ShoppingListHandlerFactory, BookmarksSidePanelUI,
+      ShoppingInsightsSidePanelUI>(map);
 
   if (customize_chrome::IsSidePanelEnabled()) {
     RegisterWebUIControllerInterfaceBinder<
@@ -1438,7 +1433,7 @@ void PopulateChromeWebUIFrameBinders(
         ash::settings::OSSettingsUI>(map);
   }
 
-  if (drive::util::IsDriveFsBulkPinningEnabled()) {
+  if (drive::util::IsDriveFsBulkPinningEnabled(profile)) {
     RegisterWebUIControllerInterfaceBinder<
         ash::settings::google_drive::mojom::PageHandlerFactory,
         ash::settings::OSSettingsUI>(map);

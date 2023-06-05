@@ -18,85 +18,6 @@
 
 namespace viz {
 
-ResourceFormat SkColorTypeToResourceFormat(SkColorType color_type) {
-  switch (color_type) {
-    case kARGB_4444_SkColorType:
-      return RGBA_4444;
-    case kBGRA_8888_SkColorType:
-      return BGRA_8888;
-    case kRGBA_8888_SkColorType:
-      return RGBA_8888;
-    case kRGBA_F16_SkColorType:
-      return RGBA_F16;
-    case kAlpha_8_SkColorType:
-      return ALPHA_8;
-    case kRGB_565_SkColorType:
-      return RGB_565;
-    case kGray_8_SkColorType:
-      return LUMINANCE_8;
-    case kRGB_888x_SkColorType:
-      return RGBX_8888;
-    case kRGBA_1010102_SkColorType:
-      return RGBA_1010102;
-    case kBGRA_1010102_SkColorType:
-      return BGRA_1010102;
-    // These colortypes are just for reading from - not to render to
-    case kR8G8_unorm_SkColorType:
-    case kA16_float_SkColorType:
-    case kR16G16_float_SkColorType:
-    case kA16_unorm_SkColorType:
-    case kR16G16_unorm_SkColorType:
-    case kR16G16B16A16_unorm_SkColorType:
-    case kUnknown_SkColorType:
-    // These colortypes are don't have an equivalent in ResourceFormat
-    case kRGB_101010x_SkColorType:
-    case kBGR_101010x_SkColorType:
-    case kRGBA_F16Norm_SkColorType:
-    case kRGBA_F32_SkColorType:
-    case kSRGBA_8888_SkColorType:
-    // Default case is for new color types added to Skia
-    default:
-      break;
-  }
-  NOTREACHED_NORETURN();
-}
-
-int BitsPerPixel(ResourceFormat format) {
-  switch (format) {
-    case RGBA_F16:
-      return 64;
-    case BGRA_8888:
-    case RGBA_8888:
-    case RGBX_8888:
-    case BGRX_8888:
-    case RGBA_1010102:
-    case BGRA_1010102:
-    case RG16_EXT:
-      return 32;
-    case P010:
-      return 24;
-    case YUVA_420_TRIPLANAR:
-      return 20;
-    case RGBA_4444:
-    case RGB_565:
-    case LUMINANCE_F16:
-    case R16_EXT:
-    case BGR_565:
-    case RG_88:
-      return 16;
-    case YVU_420:
-    case YUV_420_BIPLANAR:
-      return 12;
-    case ALPHA_8:
-    case LUMINANCE_8:
-    case RED_8:
-      return 8;
-    case ETC1:
-      return 4;
-  }
-  NOTREACHED_NORETURN();
-}
-
 unsigned int GLDataType(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
   static const GLenum format_gl_data_type[] = {
@@ -181,54 +102,6 @@ unsigned int GLInternalFormat(ResourceFormat format) {
   }
 }
 
-gfx::BufferFormat BufferFormat(ResourceFormat format) {
-  switch (format) {
-    case BGRA_8888:
-      return gfx::BufferFormat::BGRA_8888;
-    case RED_8:
-      return gfx::BufferFormat::R_8;
-    case R16_EXT:
-      return gfx::BufferFormat::R_16;
-    case RG16_EXT:
-      return gfx::BufferFormat::RG_1616;
-    case RGBA_4444:
-      return gfx::BufferFormat::RGBA_4444;
-    case RGBA_8888:
-      return gfx::BufferFormat::RGBA_8888;
-    case RGBA_F16:
-      return gfx::BufferFormat::RGBA_F16;
-    case BGR_565:
-      return gfx::BufferFormat::BGR_565;
-    case RG_88:
-      return gfx::BufferFormat::RG_88;
-    case RGBX_8888:
-      return gfx::BufferFormat::RGBX_8888;
-    case BGRX_8888:
-      return gfx::BufferFormat::BGRX_8888;
-    case RGBA_1010102:
-      return gfx::BufferFormat::RGBA_1010102;
-    case BGRA_1010102:
-      return gfx::BufferFormat::BGRA_1010102;
-    case YVU_420:
-      return gfx::BufferFormat::YVU_420;
-    case YUV_420_BIPLANAR:
-      return gfx::BufferFormat::YUV_420_BIPLANAR;
-    case YUVA_420_TRIPLANAR:
-      return gfx::BufferFormat::YUVA_420_TRIPLANAR;
-    case P010:
-      return gfx::BufferFormat::P010;
-    case ETC1:
-    case ALPHA_8:
-    case LUMINANCE_8:
-    case RGB_565:
-    case LUMINANCE_F16:
-      // These types not allowed by IsGpuMemoryBufferFormatSupported(), so
-      // give a default value that will not be used.
-      break;
-  }
-  return gfx::BufferFormat::RGBA_8888;
-}
-
 unsigned int TextureStorageFormat(ResourceFormat format,
                                   bool use_angle_rgbx_format) {
   switch (format) {
@@ -286,53 +159,6 @@ unsigned int TextureStorageFormat(ResourceFormat format,
   }
   NOTREACHED();
   return GL_RGBA8_OES;
-}
-
-bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
-  switch (format) {
-    case BGRA_8888:
-#if !BUILDFLAG(IS_CHROMEOS_LACROS)
-    // TODO(crbug.com/1307837): On ARM devices LaCrOS can't create RED_8
-    // GpuMemoryBuffer Objects with GBM device. This capability should be
-    // plumbed and known by clients requesting shared images as overlay
-    // candidate.
-    case RED_8:
-#endif
-#if BUILDFLAG(IS_APPLE)
-    case BGRX_8888:
-    case RGBX_8888:
-#endif
-    case R16_EXT:
-    case RGBA_4444:
-    case RGBA_8888:
-    case RGBA_1010102:
-    case BGRA_1010102:
-    case RGBA_F16:
-      return true;
-    // These formats have no BufferFormat equivalent or are only used
-    // for external textures, or have no GL equivalent formats.
-    case ETC1:
-    case ALPHA_8:
-    case LUMINANCE_8:
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-    case RED_8:
-#endif
-#if !BUILDFLAG(IS_APPLE)
-    case BGRX_8888:
-    case RGBX_8888:
-#endif
-    case RGB_565:
-    case LUMINANCE_F16:
-    case BGR_565:
-    case RG_88:
-    case RG16_EXT:
-    case YVU_420:
-    case YUV_420_BIPLANAR:
-    case YUVA_420_TRIPLANAR:
-    case P010:
-      return false;
-  }
-  NOTREACHED_NORETURN();
 }
 
 #if BUILDFLAG(ENABLE_VULKAN)

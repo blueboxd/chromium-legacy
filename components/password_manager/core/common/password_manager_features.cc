@@ -200,7 +200,7 @@ BASE_FEATURE(kPasswordsGrouping,
 // Enables showing UI which allows users to easily revert their choice to
 // never save passwords on a certain website.
 BASE_FEATURE(kRecoverFromNeverSaveAndroid,
-             "RecoverFromNeverSaveAndroid",
+             "RecoverFromNeverSaveAndroid_LAUNCHED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
@@ -239,6 +239,16 @@ BASE_FEATURE(kPasswordGenerationBottomSheet,
              "PasswordGenerationBottomSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables the refactored Password Suggestion bottom sheet (Touch-To-Fill).
+// The goal of the refactoring is to transfer the knowledge about the
+// Touch-To-Fill feature to the browser code completely and so to simplify the
+// renderer code. In the refactored version it will be decided inside the the
+// `ContentPasswordManagerDriver::ShowPasswordSuggestions` whether to show the
+// TTF to the user.
+BASE_FEATURE(kPasswordSuggestionBottomSheetV2,
+             "PasswordSuggestionBottomSheetV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the intent fetching for the credential manager in Google Mobile
 // Services. It does not enable launching the credential manager.
 BASE_FEATURE(kUnifiedCredentialManagerDryRun,
@@ -248,7 +258,7 @@ BASE_FEATURE(kUnifiedCredentialManagerDryRun,
 // Enables use of Google Mobile Services for password storage. Chrome's local
 // database will be unused but kept in sync for local passwords.
 BASE_FEATURE(kUnifiedPasswordManagerAndroid,
-             "UnifiedPasswordManagerAndroid",
+             "UnifiedPasswordManagerAndroid_LAUNCHED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables use of Google Mobile services for non-sycned password storage.

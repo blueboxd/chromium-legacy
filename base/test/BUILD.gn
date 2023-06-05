@@ -99,6 +99,8 @@ static_library("test_support") {
     "rectify_callback.h",
     "rectify_callback_internal.h",
     "repeating_test_future.h",
+    "run_until.cc",
+    "run_until.h",
     "scoped_amount_of_physical_memory_override.cc",
     "scoped_amount_of_physical_memory_override.h",
     "scoped_command_line.cc",
@@ -217,6 +219,10 @@ static_library("test_support") {
   if (is_linux || is_chromeos) {
     sources += [ "test_file_util_linux.cc" ]
     public_deps += [ "//third_party/test_fonts/fontconfig:test_support" ]
+  }
+
+  if (is_apple) {
+    public_deps += [ "//base:base_arc" ]
   }
 
   if (is_mac) {

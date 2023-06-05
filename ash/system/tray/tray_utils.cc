@@ -15,6 +15,8 @@
 #include "ash/style/ash_color_id.h"
 #include "ash/style/typography.h"
 #include "ash/system/tray/hover_highlight_view.h"
+#include "ash/system/tray/tray_background_view.h"
+#include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/work_area_insets.h"
@@ -138,25 +140,6 @@ int GetBubbleInsetHotseatCompensation(aura::Window* window) {
   return height_compensation;
 }
 
-gfx::Insets GetSecondaryBubbleInsets() {
-  Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
-  gfx::Insets insets;
-
-  switch (shelf->alignment()) {
-    case ShelfAlignment::kBottom:
-    case ShelfAlignment::kBottomLocked:
-      insets.set_bottom(kBubbleMenuPadding);
-      break;
-    case ShelfAlignment::kLeft:
-      insets.set_left(kBubbleMenuPadding);
-      break;
-    case ShelfAlignment::kRight:
-      insets.set_right(kBubbleMenuPadding);
-      break;
-  }
-  return insets;
-}
-
 gfx::Insets GetInkDropInsets(TrayPopupInkDropStyle ink_drop_style) {
   if (ink_drop_style == TrayPopupInkDropStyle::HOST_CENTERED ||
       ink_drop_style == TrayPopupInkDropStyle::INSET_BOUNDS) {
@@ -184,6 +167,27 @@ int CalculateMaxTrayBubbleHeight(aura::Window* window) {
     free_space_height_above_anchor -= GetBubbleInsetHotseatCompensation(window);
   }
   return free_space_height_above_anchor - kBubbleMenuPadding * 2;
+}
+
+TrayBubbleView::InitParams CreateInitParamsForTrayBubble(
+    TrayBackgroundView* tray,
+    bool anchor_to_shelf_corner) {
+  TrayBubbleView::InitParams init_params;
+  init_params.delegate = tray->GetWeakPtr();
+  init_params.parent_window = tray->GetBubbleWindowContainer();
+  init_params.anchor_mode = TrayBubbleView::AnchorMode::kRect;
+  init_params.anchor_rect = anchor_to_shelf_corner
+                                ? tray->shelf()->GetSystemTrayAnchorRect()
+                                : tray->GetAnchorBoundsInScreen();
+  init_params.insets = GetTrayBubbleInsets(tray->GetBubbleWindowContainer());
+  init_params.shelf_alignment = tray->shelf()->alignment();
+  init_params.preferred_width = kTrayMenuWidth;
+  init_params.close_on_deactivate = true;
+  init_params.translucent = true;
+  init_params.corner_radius = kTrayItemCornerRadius;
+  init_params.reroute_event_handler = true;
+
+  return init_params;
 }
 
 }  // namespace ash

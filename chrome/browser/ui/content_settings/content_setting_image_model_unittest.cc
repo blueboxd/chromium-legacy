@@ -38,6 +38,7 @@
 #include "components/permissions/request_type.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/permissions/test/mock_permission_request.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -50,6 +51,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 #if BUILDFLAG(IS_MAC)
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
@@ -153,8 +155,10 @@ class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
   permissions::MockPermissionRequest request_;
-  raw_ptr<permissions::PermissionRequestManager> manager_ = nullptr;
-  raw_ptr<content::NavigationController> controller_ = nullptr;
+  raw_ptr<permissions::PermissionRequestManager, DanglingUntriaged> manager_ =
+      nullptr;
+  raw_ptr<content::NavigationController, DanglingUntriaged> controller_ =
+      nullptr;
 };
 
 TEST_F(ContentSettingImageModelTest, Update) {
@@ -306,8 +310,7 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsChanged) {
       std::make_unique<device::FakeGeolocationManager>();
   device::FakeGeolocationManager* geolocation_manager =
       test_geolocation_manager.get();
-  TestingBrowserProcess::GetGlobal()->SetGeolocationManager(
-      std::move(test_geolocation_manager));
+  device::GeolocationManager::SetInstance(std::move(test_geolocation_manager));
 
   PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
@@ -365,8 +368,7 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessPermissionsUndetermined) {
       std::make_unique<device::FakeGeolocationManager>();
   test_geolocation_manager->SetSystemPermission(
       device::LocationSystemPermissionStatus::kNotDetermined);
-  TestingBrowserProcess::GetGlobal()->SetGeolocationManager(
-      std::move(test_geolocation_manager));
+  device::GeolocationManager::SetInstance(std::move(test_geolocation_manager));
 
   PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
@@ -413,8 +415,7 @@ TEST_F(ContentSettingImageModelTest, GeolocationAccessDeniedExperiment) {
       std::make_unique<device::FakeGeolocationManager>();
   device::FakeGeolocationManager* geolocation_manager =
       test_geolocation_manager.get();
-  TestingBrowserProcess::GetGlobal()->SetGeolocationManager(
-      std::move(test_geolocation_manager));
+  device::GeolocationManager::SetInstance(std::move(test_geolocation_manager));
 
   PageSpecificContentSettings::CreateForWebContents(
       web_contents(),
@@ -722,6 +723,41 @@ TEST_F(ContentSettingImageModelTest, NotificationsContentAbusive) {
   EXPECT_TRUE(content_setting_image_model->is_visible());
   EXPECT_EQ(0, content_setting_image_model->explanatory_string_id());
   manager_->Accept();
+}
+
+TEST_F(ContentSettingImageModelTest, StorageAccess) {
+  auto content_setting_image_model =
+      ContentSettingImageModel::CreateForContentType(
+          ContentSettingImageModel::ImageType::STORAGE_ACCESS);
+  EXPECT_FALSE(content_setting_image_model->is_visible());
+
+  auto* content_settings = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+
+  // Add an allowed permission.
+  content_settings->OnTwoSitePermissionRequested(
+      ContentSettingsType::STORAGE_ACCESS,
+      net::SchemefulSite(GURL("https://example.com")), true);
+  content_setting_image_model->Update(web_contents());
+  EXPECT_TRUE(content_setting_image_model->is_visible());
+  EXPECT_EQ(content_setting_image_model->get_icon_badge(), &gfx::kNoneIcon);
+
+  // Add a blocked permission.
+  content_settings->OnTwoSitePermissionRequested(
+      ContentSettingsType::STORAGE_ACCESS,
+      net::SchemefulSite(GURL("https://foo.com")), false);
+  content_setting_image_model->Update(web_contents());
+  EXPECT_TRUE(content_setting_image_model->is_visible());
+  EXPECT_EQ(content_setting_image_model->get_icon_badge(),
+            &vector_icons::kBlockedBadgeIcon);
+
+  // Change permission to be allowed.
+  content_settings->OnTwoSitePermissionRequested(
+      ContentSettingsType::STORAGE_ACCESS,
+      net::SchemefulSite(GURL("https://foo.com")), true);
+  content_setting_image_model->Update(web_contents());
+  EXPECT_TRUE(content_setting_image_model->is_visible());
+  EXPECT_EQ(content_setting_image_model->get_icon_badge(), &gfx::kNoneIcon);
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 

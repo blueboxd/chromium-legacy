@@ -173,31 +173,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   friend class FormControlClickDetectionTest;
   friend class AutofillAgentTestApi;
 
-  // Flags passed to ShowSuggestions.
-  struct ShowSuggestionsOptions {
-    // Specifies that suggestions should be shown when |element| contains no
-    // text.
-    bool autofill_on_empty_values{false};
-
-    // Specifies that suggestions should be shown when the caret is not
-    // after the last character in the element.
-    bool requires_caret_at_end{false};
-
-    // Specifies that all autofill suggestions should be shown and none should
-    // be elided because of the current value of |element| (relevant for inline
-    // autocomplete).
-    bool show_full_suggestion_list{false};
-
-    // Specifies that the first suggestion must be auto-selected when the
-    // dropdown is shown. Enabled when the user presses ARROW_DOWN on a field.
-    AutoselectFirstSuggestion autoselect_first_suggestion{false};
-
-    // Signals that suggestions are triggered due to a click on an input
-    // element. The signal is used to understand whether other surfaces (e.g.
-    // TouchToFill, FastCheckout) can be triggered.
-    FormElementWasClicked form_element_was_clicked{false};
-  };
-
   // This class ensures that the driver will only receive notifications only
   // when a focused field or its type (FocusedFieldType) change.
   class FocusStateNotifier {
@@ -305,14 +280,12 @@ class AutofillAgent : public content::RenderFrameObserver,
   // and may or may not lead to the showing of a suggestion popup (no popup is
   // shown if there are no available suggestions).
   void ShowSuggestions(const blink::WebFormControlElement& element,
-                       const ShowSuggestionsOptions& options);
+                       AutofillSuggestionTriggerSource trigger_source);
 
   // Queries the browser for Autocomplete and Autofill suggestions for the given
   // |element|.
-  void QueryAutofillSuggestions(
-      const blink::WebFormControlElement& element,
-      AutoselectFirstSuggestion autoselect_first_suggestion,
-      FormElementWasClicked form_element_was_clicked);
+  void QueryAutofillSuggestions(const blink::WebFormControlElement& element,
+                                AutofillSuggestionTriggerSource trigger_source);
 
   // Sets the selected value of the the field identified by |field_id| to
   // |suggested_value|.

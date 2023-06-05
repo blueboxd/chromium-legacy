@@ -1372,6 +1372,7 @@ def build_perf_builder(**kwargs):
         # rely on the builder dimension for the bot selection.
         builderless = False,
         cores = None,
+        siso_config = "remote_all",
         siso_enable_cloud_profiler = True,
         siso_enable_cloud_trace = True,
         siso_project = siso.project.DEFAULT_UNTRUSTED,
@@ -2241,7 +2242,7 @@ fyi_ios_builder(
 )
 
 fyi_ios_builder(
-    name = "ios15-beta-simulator",
+    name = "ios17-beta-simulator",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "ios"),
         chromium_config = builder_config.chromium_config(
@@ -2259,14 +2260,14 @@ fyi_ios_builder(
     os = os.MAC_13,
     console_view_entry = [
         consoles.console_view_entry(
-            category = "iOS|iOS15",
-            short_name = "ios15",
+            category = "iOS|iOS17",
+            short_name = "ios17",
         ),
     ],
 )
 
 fyi_ios_builder(
-    name = "ios15-sdk-simulator",
+    name = "ios17-sdk-simulator",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(config = "ios"),
         chromium_config = builder_config.chromium_config(
@@ -2285,8 +2286,8 @@ fyi_ios_builder(
     cpu = cpu.ARM64,
     console_view_entry = [
         consoles.console_view_entry(
-            category = "iOS|iOS15",
-            short_name = "sdk15",
+            category = "iOS|iOS17",
+            short_name = "sdk17",
         ),
     ],
 )
@@ -2337,6 +2338,7 @@ fyi_ios_builder(
         build_gs_bucket = "chromium-fyi-archive",
     ),
     os = os.MAC_13,
+    cpu = cpu.ARM64,
     console_view_entry = [
         consoles.console_view_entry(
             category = "iOS|iOS16",
@@ -2367,6 +2369,7 @@ fyi_ios_builder(
         build_gs_bucket = "chromium-fyi-archive",
     ),
     os = os.MAC_13,
+    cpu = cpu.ARM64,
     console_view_entry = consoles.console_view_entry(
         category = "iOS|iOS16",
         short_name = "sdk16",

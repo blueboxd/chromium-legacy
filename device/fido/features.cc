@@ -28,26 +28,15 @@ BASE_FEATURE(kWebAuthCrosPlatformAuthenticator,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_ANDROID)
+// Not yet enabled by default.
+BASE_FEATURE(kWebAuthnAndroidHybridClientUi,
+             "WebAuthenticationAndroidHybridClientUi",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif  // BUILDFLAG(IS_ANDROID)
+
 BASE_FEATURE(kWebAuthnGoogleCorpRemoteDesktopClientPrivilege,
              "WebAuthenticationGoogleCorpRemoteDesktopClientPrivilege",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kWebAuthPasskeysUI,
-             "WebAuthenticationPasskeysUI",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Added in M113. Remove in or after M116.
-BASE_FEATURE(kWebAuthnMacPlatformAuthenticatorOptionalUv,
-             "WebAuthenticationMacPlatformAuthenticatorOptionalUv",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kWebAuthnPhoneConfirmationSheet,
-             "WebAuthenticationPhoneConfirmationSheet",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Add in M113. Remove in or after M116.
-BASE_FEATURE(kWebAuthnNewPrioritiesImpl,
-             "WebAuthenticationNewPrioritiesImpl",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Added in M114. Not yet enabled by default.

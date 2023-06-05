@@ -583,7 +583,7 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
     SetResult(result);
   }
 
-  raw_ptr<StreamSocket> socket_;
+  raw_ptr<StreamSocket, DanglingUntriaged> socket_;
 };
 
 // A mock CTVerifier that records every call to Verify but doesn't verify
@@ -828,7 +828,7 @@ class SSLClientSocketTest : public PlatformTest, public WithTaskEnvironment {
   }
 
   RecordingNetLogObserver log_observer_;
-  raw_ptr<ClientSocketFactory> socket_factory_;
+  raw_ptr<ClientSocketFactory, DanglingUntriaged> socket_factory_;
   std::unique_ptr<TestSSLConfigService> ssl_config_service_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
@@ -2724,18 +2724,12 @@ TEST_P(SSLClientSocketCertRequestInfoTest, CertKeyTypes) {
   config.client_cert_type = SSLServerConfig::OPTIONAL_CLIENT_CERT;
   ASSERT_TRUE(StartEmbeddedTestServer(EmbeddedTestServer::CERT_OK, config));
   scoped_refptr<SSLCertRequestInfo> request_info = GetCertRequest();
-  ASSERT_TRUE(request_info.get());
-  if (version() >= SSL_PROTOCOL_VERSION_TLS1_3) {
-    // TLS 1.3 does not use cert_key_types, only signature algorithms. This
-    // should be migrated to a more modern mechanism. See
-    // https://crbug.com/1270530.
-    EXPECT_EQ(0u, request_info->cert_key_types.size());
-  } else {
-    // BoringSSL always sends rsa_sign and ecdsa_sign.
-    ASSERT_EQ(2u, request_info->cert_key_types.size());
-    EXPECT_EQ(SSLClientCertType::kRsaSign, request_info->cert_key_types[0]);
-    EXPECT_EQ(SSLClientCertType::kEcdsaSign, request_info->cert_key_types[1]);
-  }
+  ASSERT_TRUE(request_info);
+  // Look for some values we expect BoringSSL to always send.
+  EXPECT_THAT(request_info->signature_algorithms,
+              testing::Contains(SSL_SIGN_ECDSA_SECP256R1_SHA256));
+  EXPECT_THAT(request_info->signature_algorithms,
+              testing::Contains(SSL_SIGN_RSA_PSS_RSAE_SHA256));
 }
 #endif  // !IS_IOS
 

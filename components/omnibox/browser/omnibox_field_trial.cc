@@ -165,6 +165,10 @@ OmniboxFieldTrial::MLConfig& GetMLConfigInternal() {
   return s_config;
 }
 
+bool IsKoreanLocale(const std::string& locale) {
+  return locale == "ko" || locale == "ko-KR";
+}
+
 }  // namespace
 
 HUPScoringParams::ScoreBuckets::ScoreBuckets()
@@ -633,6 +637,15 @@ bool OmniboxFieldTrial::ShouldEncodeLeadingSpaceForOnDeviceTailSuggest() {
                                                  /*default_value=*/false);
 }
 
+bool OmniboxFieldTrial::IsOnDeviceHeadSuggestEnabledForLocale(
+    const std::string& locale) {
+  if (IsKoreanLocale(locale) &&
+      !base::FeatureList::IsEnabled(omnibox::kOnDeviceHeadProviderKorean)) {
+    return false;
+  }
+  return IsOnDeviceHeadSuggestEnabledForAnyMode();
+}
+
 std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
     bool is_incognito) {
   const base::Feature* feature =
@@ -646,14 +659,6 @@ std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
   }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   return constraint;
-}
-
-bool OmniboxFieldTrial::ShouldDisableCGIParamMatching() {
-  return base::FeatureList::IsEnabled(omnibox::kDisableCGIParamMatching);
-}
-
-bool OmniboxFieldTrial::IsSiteSearchStarterPackEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kSiteSearchStarterPack);
 }
 
 // Omnibox UI simplification - Uniform Suggestion Row Heights
@@ -699,9 +704,7 @@ bool OmniboxFieldTrial::IsChromeRefreshSuggestIconsEnabled() {
 }
 
 bool OmniboxFieldTrial::IsGM3TextStyleEnabled() {
-  return features::GetChromeRefresh2023Level() ==
-             features::ChromeRefresh2023Level::kLevel2 ||
-         base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateTextStyle);
+  return base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateTextStyle);
 }
 
 // In order to control the value of this "font size" param via Finch, the
@@ -955,11 +958,6 @@ const base::FeatureParam<bool>
         &omnibox::kRichAutocompletion,
         "RichAutocompletionAutocompletePreferUrlsOverPrefixes",
         false);
-
-const base::FeatureParam<int> kSiteSearchStarterPackRelevanceScore(
-    &omnibox::kSiteSearchStarterPack,
-    "SiteSearchStarterPackRelevanceScore",
-    1350);
 
 const base::FeatureParam<bool> kDomainSuggestionsCounterfactual(
     &omnibox::kDomainSuggestions,

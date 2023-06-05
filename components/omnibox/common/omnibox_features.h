@@ -66,10 +66,10 @@ BASE_DECLARE_FEATURE(kZeroSuggestPrefetchingOnWeb);
 // On Device Suggest.
 BASE_DECLARE_FEATURE(kOnDeviceHeadProviderIncognito);
 BASE_DECLARE_FEATURE(kOnDeviceHeadProviderNonIncognito);
+BASE_DECLARE_FEATURE(kOnDeviceHeadProviderKorean);
 BASE_DECLARE_FEATURE(kOnDeviceTailModel);
 
 // Provider-specific - These features change the behavior of specific providers.
-BASE_DECLARE_FEATURE(kDisableCGIParamMatching);
 BASE_DECLARE_FEATURE(kShortcutBoost);
 // TODO(crbug.com/1202964): Clean up feature flag used in staged roll-out of
 // various CLs related to the contents/description clean-up work.
@@ -134,10 +134,6 @@ BASE_DECLARE_FEATURE(kUseExistingAutocompleteClient);
 // popup.
 BASE_DECLARE_FEATURE(kClosePopupWithEscape);
 BASE_DECLARE_FEATURE(kOmniboxModernizeVisualUpdate);
-
-// Settings Page - these affect the appearance of the Search Engines settings
-// page
-BASE_DECLARE_FEATURE(kSiteSearchStarterPack);
 
 // Experiment to introduce new security indicators for HTTPS.
 BASE_DECLARE_FEATURE(kUpdatedConnectionSecurityIndicators);

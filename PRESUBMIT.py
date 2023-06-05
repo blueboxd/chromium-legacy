@@ -15,9 +15,6 @@ from dataclasses import dataclass
 
 PRESUBMIT_VERSION = '2.0.0'
 
-# This line is 'magic' in that git-cl looks for it to decide whether to
-# use Python3 instead of Python2 when running the code in this file.
-USE_PYTHON3 = True
 
 _EXCLUDED_PATHS = (
     # Generated file
@@ -315,7 +312,7 @@ _BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
           # cleaned up.
           'ash/webui/common/resources/cr.m.js',
           'ash/webui/common/resources/multidevice_setup/multidevice_setup_browser_proxy.js',
-          'ash/webui/common/resources/quick_unlock/lock_screen_constants.js',
+          'ash/webui/common/resources/quick_unlock/lock_screen_constants.ts',
           'ash/webui/common/resources/smb_shares/smb_browser_proxy.js',
           'ash/webui/connectivity_diagnostics/resources/connectivity_diagnostics.js',
           'ash/webui/diagnostics_ui/resources/diagnostics_browser_proxy.ts',
@@ -5452,21 +5449,12 @@ def ChecksCommon(input_api, output_api):
         if not input_api.os_path.exists(test_file):
             continue
 
-        use_python3 = False
-        with open(f.LocalPath(), encoding='utf-8') as fp:
-            use_python3 = any(
-                line.startswith('USE_PYTHON3 = True')
-                for line in fp.readlines())
-
         results.extend(
             input_api.canned_checks.RunUnitTestsInDirectory(
                 input_api,
                 output_api,
                 full_path,
-                files_to_check=[r'^PRESUBMIT_test\.py$'],
-                run_on_python2=not use_python3,
-                run_on_python3=use_python3,
-                skip_shebang_check=True))
+                files_to_check=[r'^PRESUBMIT_test\.py$']))
     return results
 
 

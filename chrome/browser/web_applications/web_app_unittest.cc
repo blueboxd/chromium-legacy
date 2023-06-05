@@ -341,8 +341,9 @@ TEST(WebAppTest, IsolationDataStartsEmpty) {
 TEST(WebAppTest, IsolationDataDebugValue) {
   WebApp app{GenerateAppId(/*manifest_id=*/absl::nullopt,
                            GURL("https://example.com"))};
-  app.SetIsolationData(WebApp::IsolationData(InstalledBundle{
-      .path = base::FilePath(FILE_PATH_LITERAL("random_path"))}));
+  app.SetIsolationData(WebApp::IsolationData(
+      InstalledBundle{.path = base::FilePath(FILE_PATH_LITERAL("random_path"))},
+      base::Version("1.0.0")));
 
   EXPECT_TRUE(app.isolation_data().has_value());
 
@@ -352,6 +353,7 @@ TEST(WebAppTest, IsolationDataDebugValue) {
             "path": "random_path"
           }
         },
+        "version": "1.0.0",
         "controlled_frame_partitions": []
       })")
                                             .value();
@@ -378,15 +380,12 @@ TEST(WebAppTest, PermissionsPolicyDebugValue) {
        /*matches_all_origins=*/true,
        /*matches_opaque_src=*/false},
       {blink::mojom::PermissionsPolicyFeature::kGamepad,
-       {blink::OriginWithPossibleWildcards::FromOriginAndWildcardsForTest(
+       {*blink::OriginWithPossibleWildcards::FromOriginAndWildcardsForTest(
             url::Origin::Create(GURL("https://example.com")),
             /*has_subdomain_wildcard=*/false),
-        blink::OriginWithPossibleWildcards::FromOriginAndWildcardsForTest(
+        *blink::OriginWithPossibleWildcards::FromOriginAndWildcardsForTest(
             url::Origin::Create(GURL("https://example.net")),
-            /*has_subdomain_wildcard=*/true),
-        blink::OriginWithPossibleWildcards::FromOriginAndWildcardsForTest(
-            url::Origin::Create(GURL("https://*.example.net")),
-            /*has_subdomain_wildcard=*/false)},
+            /*has_subdomain_wildcard=*/true)},
        /*self_if_matches=*/absl::nullopt,
        /*matches_all_origins=*/false,
        /*matches_opaque_src=*/false},
@@ -408,7 +407,7 @@ TEST(WebAppTest, PermissionsPolicyDebugValue) {
           "matches_opaque_src": false
         }
         , {
-          "allowed_origins": [ "https://example.com", "https://*.example.net", "https://%2A.example.net" ],
+          "allowed_origins": [ "https://example.com", "https://*.example.net" ],
           "feature": "gamepad",
           "matches_all_origins": false,
           "matches_opaque_src": false

@@ -10,12 +10,6 @@
 
 namespace autofill::features {
 
-// Controls whether to flatten and fill cross-iframe forms.
-// TODO(crbug.com/1187842) Remove once launched.
-BASE_FEATURE(kAutofillAcrossIframes,
-             "AutofillAcrossIframes",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether to flatten and fill cross-iframe forms on iOS.
 // TODO(crbug.com/1441921) Remove once launched.
 BASE_FEATURE(kAutofillAcrossIframesIos,
@@ -119,24 +113,18 @@ BASE_FEATURE(kAutofillDeferSubmissionClassificationAfterAjax,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, server/heuristic predictions take precedence over an unrecognized
-// autocomplete attribute. Depending on the parameters, these fields are then
-// filled or imported from. Independently of any parameters, suggestions are
-// suppressed for such fields.
-// Predicting a type for a field can influence other fields due to
-// rationalization and sectioning. This also affects metrics like
-// Autofill.FieldFillingStats, which rely on the types.
-// When only the importing part of this feature is enabled, only the importing
-// metrics are reliable.
-// TODO(crbug.com/1295728): Remove the feature when the experiment is completed.
-BASE_FEATURE(kAutofillFillAndImportFromMoreFields,
-             "AutofillFillAndImportFromMoreFields",
+// autocomplete attribute. Suggestions are suppressed for such fields and they
+// won't be considered for filling or importing. The fields do however affect
+// rationalization and sectioning, and non-(key and quality) metrics.
+// When `kAutofillFillAndImportFromMoreFields` is enabled, fields with
+// unrecognized autocomplete attribute are considered for import.
+// TODO(crbug.com/1446318): Remove the feature when the experiment is completed.
+BASE_FEATURE(kAutofillPredictionsForAutocompleteUnrecognized,
+             "AutofillPredictionsForAutocompleteUnrecognized",
              base::FEATURE_DISABLED_BY_DEFAULT);
-const base::FeatureParam<bool> kAutofillFillAutocompleteUnrecognized{
-    &kAutofillFillAndImportFromMoreFields, "fill_unrecognized_autocomplete",
-    false};
 const base::FeatureParam<bool> kAutofillImportFromAutocompleteUnrecognized{
-    &kAutofillFillAndImportFromMoreFields,
-    "import_from_unrecognized_autocomplete", false};
+    &kAutofillPredictionsForAutocompleteUnrecognized,
+    "import_from_autocomplete_unrecognized", false};
 
 // Kill switch for Autofill filling.
 BASE_FEATURE(kAutofillDisableFilling,
@@ -194,6 +182,13 @@ BASE_FEATURE(kAutofillEnableSelectMenu,
 // TODO(crbug.com/1441904) Remove once launched.
 BASE_FEATURE(kAutofillEnableSupportForBetweenStreets,
              "AutofillEnableSupportForBetweenStreets",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls if Chrome supports filling and importing administrative area
+// level 2. A sub-division of a state, e.g. a Municipio in Brazil or Mexico.
+// TODO(crbug.com/1441904) Remove once launched.
+BASE_FEATURE(kAutofillEnableSupportForAdminLevel2,
+             "AutofillEnableSupportForAdminLevel2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls if Chrome support filling and importing landmarks.
@@ -465,8 +460,7 @@ BASE_FEATURE(kAutofillServerBehaviors,
 const base::FeatureParam<int> kAutofillServerBehaviorsParam{
     &kAutofillServerBehaviors, "server_prediction_source", 0};
 
-// Controls whether Autofill may fill across origins as part of the
-// AutofillAcrossIframes experiment.
+// Controls whether Autofill may fill across origins.
 // TODO(crbug.com/1304721): Clean up when launched.
 BASE_FEATURE(kAutofillSharedAutofill,
              "AutofillSharedAutofill",
@@ -613,13 +607,13 @@ BASE_FEATURE(kAutofillVirtualCardsOnTouchToFillAndroid,
 // When enabled, Autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.
 BASE_FEATURE(kAutofillKeyboardAccessory,
-             "AutofillKeyboardAccessory",
+             "AutofillKeyboardAccessory_LAUNCHED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the Autofill manual fallback for Addresses and Payments is
 // present on Android.
 BASE_FEATURE(kAutofillManualFallbackAndroid,
-             "AutofillManualFallbackAndroid",
+             "AutofillManualFallbackAndroid_LAUNCHED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the touch to fill surface is shown for credit cards on

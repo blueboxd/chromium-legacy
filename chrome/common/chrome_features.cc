@@ -38,12 +38,6 @@ BASE_FEATURE(kAppManagementAppDetails,
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-BASE_FEATURE(kAppDeduplicationService,
-             "AppDeduplicationService",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 BASE_FEATURE(kAppDeduplicationServiceFondue,
              "AppDeduplicationServiceFondue",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -166,6 +160,12 @@ BASE_FEATURE(kCrostiniAnsibleSoftwareManagement,
 BASE_FEATURE(kCrostiniArcSideload,
              "CrostiniArcSideload",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the new UI for browser created shortcut backed by web app system
+// on Chrome OS.
+BASE_FEATURE(kCrosWebAppShortcutUiUpdate,
+             "CrosWebAppShortcutUiUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables distributed model for TPM1.2, i.e., using tpm_managerd and
 // attestationd.
@@ -981,11 +981,6 @@ BASE_FEATURE(kPushMessagingBackgroundMode,
 BASE_FEATURE(kPwaUpdateDialogForIcon,
              "PwaUpdateDialogForIcon",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Shows a confirmation dialog when updates to a PWAs name has been detected.
-BASE_FEATURE(kPwaUpdateDialogForName,
-             "PwaUpdateDialogForName",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables using quiet prompts for notification permission requests.
 BASE_FEATURE(kQuietNotificationPrompts,

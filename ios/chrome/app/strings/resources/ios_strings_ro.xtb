@@ -925,6 +925,7 @@ Folosește o parolă unică pentru fiecare site.</translation>
 <translation id="681368974849482173">Element creat</translation>
 <translation id="6822587385560699678">Când opțiunea este activată, parolele se salvează în <ph name="ACCOUNT" />. Când opțiunea este dezactivată, parolele se salvează numai pe acest dispozitiv.</translation>
 <translation id="6831043979455480757">Tradu</translation>
+<translation id="6839843088069935119">{count,plural, =1{Marcaj salvat în {title}. Se salvează numai pe acest dispozitiv.}few{Marcaje salvate în {title}. Se salvează numai pe acest dispozitiv.}other{Marcaje salvate în {title}. Se salvează numai pe acest dispozitiv.}}</translation>
 <translation id="6842136130964845393">Confirmă-ți identitatea ca să te asiguri că ai în permanență acces la parolele salvate</translation>
 <translation id="6851516051005285358">Solicită site desktop</translation>
 <translation id="6852222216891664518">Închide fila fixată</translation>
@@ -1071,6 +1072,7 @@ Folosește o parolă unică pentru fiecare site.</translation>
 <translation id="7887198238286927132">Pentru a-ți proteja confidențialitatea, Chrome nu va completa automat acest câmp.</translation>
 <translation id="7911190106180361398">Organizația ta nu îți permite să sincronizezi tot.</translation>
 <translation id="7920949005883349320">Confidențialitate și securitate</translation>
+<translation id="792357691529995513">Nu s-au găsit probleme</translation>
 <translation id="7930998711684428189">Te avertizează dacă parolele au fost expuse în urma încălcării securității datelor.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportă parolele...</translation>

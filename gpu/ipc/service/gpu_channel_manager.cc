@@ -28,6 +28,7 @@
 #include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/traced_value.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #if BUILDFLAG(USE_DAWN)
@@ -816,11 +817,13 @@ void GpuChannelManager::PerformImmediateCleanup() {
     auto* fence_helper =
         vulkan_context_provider_->GetDeviceQueue()->GetFenceHelper();
     fence_helper->PerformImmediateCleanup();
+
+    // TODO(lizeb): Also perform this on GL devices.
+    if (auto* context = shared_context_state_->gr_context()) {
+      context->flushAndSubmit(true);
+    }
   }
 #endif
-  if (auto* context = shared_context_state_->gr_context()) {
-    context->flushAndSubmit(true);
-  }
 }
 
 void GpuChannelManager::HandleMemoryPressure(
@@ -1002,8 +1005,10 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   return shared_context_state_;
 }
 
-void GpuChannelManager::OnContextLost(int context_lost_count,
-                                      bool synthetic_loss) {
+void GpuChannelManager::OnContextLost(
+    int context_lost_count,
+    bool synthetic_loss,
+    error::ContextLostReason context_lost_reason) {
   if (context_lost_count < 0)
     context_lost_count = context_lost_count_ + 1;
   // Because of the DrDC, we may receive context loss from the GPU main and
@@ -1063,7 +1068,7 @@ void GpuChannelManager::OnContextLost(int context_lost_count,
   // Work around issues with recovery by allowing a new GPU process to launch.
   if (force_restart || gpu_driver_bug_workarounds_.exit_on_context_lost ||
       (shared_context_state_ && !shared_context_state_->GrContextIsGL())) {
-    delegate_->MaybeExitOnContextLost(synthetic_loss);
+    delegate_->MaybeExitOnContextLost(synthetic_loss, context_lost_reason);
   }
 }
 

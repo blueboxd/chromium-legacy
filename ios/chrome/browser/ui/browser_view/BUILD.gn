@@ -26,6 +26,7 @@ source_set("browser_view") {
   deps = [
     "//base",
     "//base:i18n",
+    "//build:blink_buildflags",
     "//components/bookmarks/browser",
     "//components/feature_engagement/public",
     "//components/image_fetcher/ios",
@@ -232,6 +233,7 @@ source_set("browser_view") {
     "//ios/components/webui:url_constants",
     "//ios/public/provider/chrome/browser/find_in_page:find_in_page_api",
     "//ios/public/provider/chrome/browser/fullscreen:fullscreen_api",
+    "//ios/public/provider/chrome/browser/signin:choice_api",
     "//ios/public/provider/chrome/browser/text_zoom:text_zoom_api",
     "//ios/public/provider/chrome/browser/user_feedback:user_feedback_api",
     "//ios/public/provider/chrome/browser/voice_search:voice_search_api",

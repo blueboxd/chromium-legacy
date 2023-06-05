@@ -1242,6 +1242,7 @@
 <translation id="4031179711345676612">Микрофонду колдонууга уруксат берилди</translation>
 <translation id="4040350669425716613">Колледждер жана университеттер</translation>
 <translation id="4047351652147966654">18 x 24 дюйм</translation>
+<translation id="404831776305217138"><ph name="EXTENSION_ID" /> идентификатору менен кеңейтүүнү жаңыртуу URL'и жараксыз же колдоого алынбаган схеманы пайдаланат. <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> жана <ph name="FILE_SCHEME" /> схемалары колдоого алынат.</translation>
 <translation id="4050392779074832022">Аны бардык Google кызматтарында колдоно аласыз</translation>
 <translation id="405399507749852140">Кандайдыр бир сайтта баасы төмөндөсө, эскертүүлөрдү алыңыз</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -2288,10 +2289,12 @@
 <translation id="6554732001434021288">Акыркы жолу <ph name="NUM_DAYS" /> күн мурун кирген</translation>
 <translation id="6556866813142980365">Кайталоо</translation>
 <translation id="6557715786897013164">14 x 17 дюйм</translation>
+<translation id="6560786330438719938">Орнотулган же чыгарылган колдонмолор жана алар канчалык көп колдонулат</translation>
 <translation id="6569060085658103619">Кеңейтүү баракчасын карап жатасыз</translation>
 <translation id="6569366777234823130">Драма тасмалары</translation>
 <translation id="6573200754375280815">Оң жагын эки жолу тешүү</translation>
 <translation id="6576181918031900030">Тышкы экранга чыгарып баштоо</translation>
+<translation id="6578434528542148658">Кеңейтүүнүн идентификатору туура эмес.</translation>
 <translation id="657902945730878902">Сүрөт тартуу жана боёо</translation>
 <translation id="6579630537141957243">MIDI түзмөгү туташтырылсынбы?</translation>
 <translation id="6579990219486187401">Мала кызгылтым</translation>
@@ -2337,7 +2340,7 @@
 <translation id="6689271823431384964">Аккаунтуңузга кирип турганыңыздан улам, Chrome карталарыңызды Google аккаунтуңузга сактап коюуну сунуштап жатат. Бул параметрди параметрлерге өтүп, өзгөртүп койсоңуз болот. Картанын ээси – аккаунттун ээси болуп эсептелет.</translation>
 <translation id="6691397311652656001"><ph name="REQUIRED_FREE_DISK_SPACE" /> ашуун орунду бошотуңуз</translation>
 <translation id="6694681292321232194"><ph name="FIND_MY_PHONE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google аккаунтуңуз менен түзмөгүңүздү табуу үчүн Tab, андан кийин Enter баскычын басыңыз</translation>
-<translation id="6696588630955820014">Ушул өтмөктү бөлүшүү баскычы. Бул өтмөктү шилтеме аркылуу бөлүшүү, QR кодун түзүү, тышкы экранга чыгаруу жана башка аракеттерди аткаруу үчүн Enter баскычын басыңыз</translation>
+<translation id="6696588630955820014">Ушул өтмөктү бөлүшүү баскычы. Бул өтмөктү шилтеме аркылуу бөлүшүү, QR кодду түзүү, тышкы экранга чыгаруу жана башка аракеттерди аткаруу үчүн Enter баскычын басыңыз</translation>
 <translation id="6698381487523150993">Түзүлгөн:</translation>
 <translation id="6702919718839027939">Презентация</translation>
 <translation id="6704458454638854812">Касиети "custom_size" деп коюлду, бирок ал "custom" болушу керек.</translation>
@@ -2629,7 +2632,7 @@
 <translation id="739728382607845710">Төлөм иштеткичтин сүрөтчөсү</translation>
 <translation id="7399802613464275309">Коопсуздукту текшерүү</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7403392780200267761">Бул өтмөктү шилтемени бөлүшүү, QR кодун түзүү, тышкы экранга чыгаруу жана башка жолдор менен бөлүшүү</translation>
+<translation id="7403392780200267761">Бул өтмөктү шилтемени бөлүшүү, QR кодду түзүү, тышкы экранга чыгаруу жана башка жолдор менен бөлүшүү</translation>
 <translation id="7403591733719184120"><ph name="DEVICE_NAME" /> түзмөгүңүз башкарылып жатат</translation>
 <translation id="7407424307057130981">&lt;p&gt;Бул катаны Windows компьютериңизде Superfish программасы бар болсо, көрөсүз.&lt;/p&gt;
     &lt;p&gt; Интернетти колдонуу максатында, программаны убактылуу өчүрүп коюу үчүн төмөнкү кадамдарды аткарыңыз. Администратордун укуктары керектелет.&lt;/p&gt;
@@ -3031,7 +3034,6 @@
 <translation id="8298115750975731693">Сиз колдонуп жаткан Wi-Fi (<ph name="WIFI_NAME" />), <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> дарегине өтүшүңүздү талап кылышы мүмкүн.</translation>
 <translation id="8303854710873047864">"<ph name="SECTION" />" бөлүмү көрсөтүлдү</translation>
 <translation id="830498451218851433">Жарымынан бүктөө</translation>
-<translation id="8307888238279532626">Орнотулган колдонмолор жана алар канчалык көп колдонулат</translation>
 <translation id="831997045666694187">Кече</translation>
 <translation id="8321476692217554900">билдирмелер</translation>
 <translation id="8329068931308448247">Конверт #14</translation>
@@ -3255,6 +3257,7 @@
 <translation id="890493561996401738">"Сунушту өчүрүү" баскычы. Өчүрүү үчүн "Enter" баскычын басыңыз, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910898109640902752">8 x 10 дюйм</translation>
 <translation id="8913778647360618320">Төлөм ыкмаларын башкаруу баскычы. Chrome'дун параметрлерине өтүп, төлөмдөрүңүздү жана насыя карточкасынын маалыматын башкаруу үчүн, Enter баскычын басыңыз</translation>
+<translation id="8919895429178014996">Бардык элементтерди жашыруу</translation>
 <translation id="8922013791253848639">Бул сайттагы жарнамалар дайыма көрүнсүн</translation>
 <translation id="892588693504540538">Жогорку оң жагын тешүү</translation>
 <translation id="8930330541574156305">Кыймылсыз мүлк</translation>
@@ -3296,7 +3299,7 @@
 <translation id="901834265349196618">электрондук почта</translation>
 <translation id="9020542370529661692">Бул бет <ph name="TARGET_LANGUAGE" /> тилине которулду</translation>
 <translation id="9020742383383852663">A8</translation>
-<translation id="9021429684248523859"><ph name="SHARE_THIS_PAGE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Бул өтмөктү шилтеме аркылуу бөлүшүү, QR кодун түзүү, тышкы экранга чыгаруу жана башка аракеттерди аткаруу үчүн Tab, андан соң Enter баскычын басыңыз</translation>
+<translation id="9021429684248523859"><ph name="SHARE_THIS_PAGE_FOCUSED_FRIENDLY_MATCH_TEXT" />, Бул өтмөктү шилтеме аркылуу бөлүшүү, QR кодду түзүү, тышкы экранга чыгаруу жана башка аракеттерди аткаруу үчүн Tab, андан соң Enter баскычын басыңыз</translation>
 <translation id="9025348182339809926">(Жараксыз)</translation>
 <translation id="9030265603405983977">Монохром</translation>
 <translation id="9035022520814077154">Коопсуздук катасы</translation>

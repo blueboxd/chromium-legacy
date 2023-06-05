@@ -75,7 +75,7 @@ class ContentPasswordManagerDriver
                             const std::u16string& credential) override;
 #if BUILDFLAG(IS_ANDROID)
   void KeyboardReplacingSurfaceClosed(
-      ShowVirtualKeyboard show_virtual_keyboard) override;
+      ToShowVirtualKeyboard show_virtual_keyboard) override;
   void TriggerFormSubmission() override;
 #endif
   void PreviewSuggestion(const std::u16string& username,
@@ -170,7 +170,7 @@ class ContentPasswordManagerDriver
   const mojo::AssociatedRemote<autofill::mojom::PasswordGenerationAgent>&
   GetPasswordGenerationAgent();
 
-  raw_ptr<content::RenderFrameHost> render_frame_host_;
+  raw_ptr<content::RenderFrameHost, DanglingUntriaged> render_frame_host_;
   raw_ptr<PasswordManagerClient> client_;
   PasswordGenerationFrameHelper password_generation_helper_;
   PasswordAutofillManager password_autofill_manager_;

@@ -818,6 +818,7 @@ experimental domain Audits
       Canceled
       RpPageNotVisible
       SilentMediationFailure
+      ThirdPartyCookiesBlocked
 
   # This issue tracks client hints related issues. It's used to deprecate old
   # features, encourage the use of new ones, and provide general guidance.
@@ -3983,7 +3984,7 @@ experimental domain HeadlessExperimental
         jpeg
         png
         webp
-      # Compression quality from range [0..100] (jpeg only).
+      # Compression quality from range [0..100] (jpeg and webp only).
       optional integer quality
       # Optimize image encoding for speed, not for resulting size (defaults to false)
       optional boolean optimizeForSpeed
@@ -6559,10 +6560,22 @@ domain Network
       optional string reportingEndpoint
       optional string reportOnlyReportingEndpoint
 
+  experimental type ContentSecurityPolicySource extends string
+    enum
+      HTTP
+      Meta
+
+  experimental type ContentSecurityPolicyStatus extends object
+    properties
+      string effectiveDirectives
+      boolean isEnforced
+      ContentSecurityPolicySource source
+
   experimental type SecurityIsolationStatus extends object
     properties
       optional CrossOriginOpenerPolicyStatus coop
       optional CrossOriginEmbedderPolicyStatus coep
+      optional array of ContentSecurityPolicyStatus csp
 
   # Returns information about the COEP/COOP isolation status.
   experimental command getSecurityIsolationStatus
@@ -8462,6 +8475,7 @@ domain Page
       ActivationNavigationsDisallowedForBug1234857
       ErrorDocument
       FencedFramesEmbedder
+      CookieDisabled
       #Blocklisted features
       WebSocket
       WebTransport
@@ -8509,6 +8523,7 @@ domain Page
       IndexedDBEvent
       Dummy
       AuthorizationHeader
+      WebSerial
       # Disabled for RenderFrameHost reasons
       # See content/browser/renderer_host/back_forward_cache_disable.h for explanations.
       ContentSecurityHandler

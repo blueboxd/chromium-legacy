@@ -46,6 +46,7 @@
 <translation id="1080116354587839789">Ajustar à largura</translation>
 <translation id="1081061862829655580">Tabuleiro 19</translation>
 <translation id="1089439967362294234">Alterar palavra-passe</translation>
+<translation id="1094777233105318927">Informações sobre o seu navegador, SO, dispositivo, software instalado e ficheiros</translation>
 <translation id="1096545575934602868">Este campo não deve ter mais de <ph name="MAX_ITEMS_LIMIT" /> entradas. Todas as restantes entradas serão rejeitadas.</translation>
 <translation id="1100782917270858593">Botão Retomar percurso, prima Enter para retomar o percurso e ver atividade relevante no seu Histórico do Chrome</translation>
 <translation id="1101672080107056897">Ação com erro.</translation>
@@ -1243,6 +1244,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4031179711345676612">Microfone permitido</translation>
 <translation id="4040350669425716613">Universidades</translation>
 <translation id="4047351652147966654">18 x 24 pol.</translation>
+<translation id="404831776305217138">O URL de atualização da extensão com o ID "<ph name="EXTENSION_ID" />" é inválido ou usa um esquema não suportado. Os esquemas suportados são: <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> e <ph name="FILE_SCHEME" />.</translation>
 <translation id="4050392779074832022">Vai poder usá-la nos produtos da rede Google</translation>
 <translation id="405399507749852140">Obtenha alertas se o preço descer em qualquer site</translation>
 <translation id="4056223980640387499">Sépia</translation>
@@ -2289,10 +2291,12 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6554732001434021288">Última visita há <ph name="NUM_DAYS" /> dias</translation>
 <translation id="6556866813142980365">Refazer</translation>
 <translation id="6557715786897013164">14 x 17 pol.</translation>
+<translation id="6560786330438719938">Apps instaladas ou desinstaladas e a frequência com que são usadas</translation>
 <translation id="6569060085658103619">Está a ver a página de uma extensão</translation>
 <translation id="6569366777234823130">Filmes de drama</translation>
 <translation id="6573200754375280815">Perfuração dupla à direita</translation>
 <translation id="6576181918031900030">Começar a transmitir</translation>
+<translation id="6578434528542148658">ID de extensão inválido.</translation>
 <translation id="657902945730878902">Desenhar e colorir</translation>
 <translation id="6579630537141957243">Pretende ligar o dispositivo MIDI?</translation>
 <translation id="6579990219486187401">Rosa claro</translation>
@@ -3031,7 +3035,6 @@ Detalhes adicionais:
 <translation id="8298115750975731693">A rede Wi-Fi que está a utilizar (<ph name="WIFI_NAME" />) pode exigir que visite <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8303854710873047864">Secção "<ph name="SECTION" />" apresentada</translation>
 <translation id="830498451218851433">Dobrar a meio</translation>
-<translation id="8307888238279532626">Apps instaladas e a frequência com que são utilizadas.</translation>
 <translation id="831997045666694187">Noite</translation>
 <translation id="8321476692217554900">notificações</translation>
 <translation id="8329068931308448247">Envelope n.º 14</translation>
@@ -3256,6 +3259,7 @@ Detalhes adicionais:
 <translation id="890493561996401738">Botão Remover sugestão, prima Enter para remover, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" />.</translation>
 <translation id="8910898109640902752">8 x 10 pol.</translation>
 <translation id="8913778647360618320">Botão Gerir métodos de pagamento; prima Enter para gerir as suas informações de cartões de crédito e pagamentos nas Definições do Chrome.</translation>
+<translation id="8919895429178014996">Ocultar todos os itens</translation>
 <translation id="8922013791253848639">Permitir sempre anúncios neste site</translation>
 <translation id="892588693504540538">Perfurar na parte superior direita</translation>
 <translation id="8930330541574156305">Imobiliário</translation>

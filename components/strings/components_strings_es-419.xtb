@@ -1135,6 +1135,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="3740319564441798148">Autobuses y trenes de larga distancia</translation>
 <translation id="3743765582345153106">Verificar siempre que se use Autocompletar</translation>
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
+<translation id="3744212718085287312">¿Quieres aumentar el nivel de seguridad con una tarjeta virtual la próxima vez?</translation>
 <translation id="3744286742364977428">Los archivos que descargas se envían a Google Cloud o a terceros para su análisis. Por ejemplo, es posible que se analicen en busca de datos sensibles o software malicioso y que se almacenen según las políticas de la empresa.</translation>
 <translation id="3744899669254331632">No puedes visitar <ph name="SITE" /> en este momento porque el sitio web envió credenciales encriptadas que Chromium no puede procesar. Los ataques y errores de red generalmente son temporales, por lo que esta página probablemente funcionará de nuevo más tarde.</translation>
 <translation id="3748148204939282805">Es posible que los atacantes en <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> intenten engañarte para que realices alguna acción peligrosa, como instalar software o revelar información personal (p. ej., contraseñas, números de teléfono o tarjetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
@@ -1243,6 +1244,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4031179711345676612">Micrófono permitido</translation>
 <translation id="4040350669425716613">Colegios universitarios y universidades</translation>
 <translation id="4047351652147966654">45.72 × 60.96 cm</translation>
+<translation id="404831776305217138">La URL de actualización para la extensión con el ID "<ph name="EXTENSION_ID" />" no es válida o utiliza un esquema no compatible. Los esquemas compatibles son <ph name="HTTP_SCHEME" />, <ph name="HTTPS_SCHEME" /> y <ph name="FILE_SCHEME" />.</translation>
 <translation id="4050392779074832022">Podrás usarla en todos los productos de Google</translation>
 <translation id="405399507749852140">Recibe alertas si baja el precio en algún sitio</translation>
 <translation id="4056223980640387499">Sepia</translation>
@@ -2292,6 +2294,8 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6569060085658103619">Estás viendo la página de una extensión</translation>
 <translation id="6569366777234823130">Películas de drama</translation>
 <translation id="6573200754375280815">Perforación doble a la derecha</translation>
+<translation id="6576181918031900030">Comenzar a transmitir contenido</translation>
+<translation id="6578434528542148658">El ID de la extensión no es válido.</translation>
 <translation id="657902945730878902">Dibujo y coloreado</translation>
 <translation id="6579630537141957243">¿Quieres conectar un dispositivo MIDI?</translation>
 <translation id="6579990219486187401">Rosa claro</translation>
@@ -3031,7 +3035,6 @@ Detalles adicionales:
 <translation id="8298115750975731693">Es posible que la red Wi-Fi que estás usando (<ph name="WIFI_NAME" />) requiera que accedas a <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
 <translation id="8303854710873047864">Se muestra la sección "<ph name="SECTION" />"</translation>
 <translation id="830498451218851433">Plegado a la mitad</translation>
-<translation id="8307888238279532626">Las apps instaladas y su frecuencia de uso</translation>
 <translation id="831997045666694187">Tarde</translation>
 <translation id="8321476692217554900">notificaciones</translation>
 <translation id="8329068931308448247">Sobre n.º 14</translation>

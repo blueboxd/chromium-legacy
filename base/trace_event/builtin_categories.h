@@ -33,6 +33,7 @@
   X("accessibility")                                                     \
   X("AccountFetcherService")                                             \
   X("android_webview")                                                   \
+  X("android_webview.timeline")                                          \
   /* Actions on Google Hardware, used in Google-internal code. */        \
   X("aogh")                                                              \
   X("audio")                                                             \
@@ -79,7 +80,6 @@
   X("drm")                                                               \
   X("drmcursor")                                                         \
   X("dwrite")                                                            \
-  X("DXVA_Decoding")                                                     \
   X("evdev")                                                             \
   X("event")                                                             \
   X("exo")                                                               \
@@ -198,7 +198,6 @@
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug"))                            \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"))               \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"))                     \
-  X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.scrollbars"))          \
   X(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"))               \
   X(TRACE_DISABLED_BY_DEFAULT("blink.feature_usage"))                    \
   X(TRACE_DISABLED_BY_DEFAULT("blink.image_decoding"))                   \

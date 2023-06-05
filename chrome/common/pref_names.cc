@@ -572,6 +572,7 @@ const char kLastSessionLength[] = "session.last_session_length";
 // honored for public accounts.
 const char kTermsOfServiceURL[] = "terms_of_service.url";
 
+// TODO(b/285556135): Remove this pref together with AttestationEnabledForUser
 // Indicates whether the remote attestation is enabled for the user.
 const char kAttestationEnabled[] = "attestation.enabled";
 
@@ -2151,6 +2152,9 @@ const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
 // Dictionary that stores IPH state not scoped to a particular app.
 const char kWebAppsAppAgnosticIphState[] = "web_apps.app_agnostic_iph_state";
 
+// Dictionary that stores ML state not scoped to a particular app.
+const char kWebAppsAppAgnosticMlState[] = "web_apps.app_agnostic_ml_state";
+
 // A string representing the last version of Chrome preinstalled web apps were
 // synchronised for.
 const char kWebAppsLastPreinstallSynchronizeVersion[] =
@@ -3557,6 +3561,10 @@ const char kDesktopSharingHubEnabled[] =
 // Pref name for the last major version where the What's New page was
 // successfully shown.
 const char kLastWhatsNewVersion[] = "browser.last_whats_new_version";
+// Pref name for the whether whats new refresh page has been shown
+// successfully.
+const char kHasShownRefreshWhatsNew[] =
+    "browser.has_shown_refresh_2023_whats_new";
 // A boolean indicating whether the Lens Region search feature should be enabled
 // if supported.
 const char kLensRegionSearchEnabled[] = "policy.lens_region_search_enabled";
@@ -3676,5 +3684,8 @@ const char kHttpAllowlist[] = "https_upgrades.policy.http_allowlist";
 // Whether the HTTPS Upgrades feature is enabled or disabled by the
 // `HttpsUpgradesEnabled` enterprise policy.
 const char kHttpsUpgradesEnabled[] = "https_upgrades.policy.upgrades_enabled";
+
+// Whether the hovercard image previews is enabled
+const char kHoverCardImagesEnabled[] = "browser.hovercard_images_enabled";
 
 }  // namespace prefs

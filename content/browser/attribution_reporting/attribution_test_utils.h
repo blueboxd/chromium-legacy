@@ -13,6 +13,7 @@
 
 #include "base/containers/enum_set.h"
 #include "base/containers/flat_set.h"
+#include "base/functional/function_ref.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
@@ -26,6 +27,7 @@
 #include "components/attribution_reporting/test_utils.h"
 #include "components/attribution_reporting/trigger_registration.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
+#include "content/browser/attribution_reporting/attribution_config.h"
 #include "content/browser/attribution_reporting/attribution_info.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_storage_delegate.h"
@@ -66,6 +68,9 @@ base::Time GetExpiryTimeForTesting(base::TimeDelta declared_expiry,
 absl::optional<base::Time> GetReportWindowTimeForTesting(
     absl::optional<base::TimeDelta> declared_window,
     base::Time source_time);
+
+AttributionConfig::RateLimitConfig RateLimitWith(
+    base::FunctionRef<void(AttributionConfig::RateLimitConfig&)> f);
 
 // Helper class to construct a StorableSource for tests using default data.
 // StorableSource members are not mutable after construction requiring a
@@ -210,8 +215,8 @@ class TriggerBuilder {
   TriggerBuilder& SetSourceRegistrationTimeConfig(
       attribution_reporting::mojom::SourceRegistrationTimeConfig);
 
-  TriggerBuilder& SetVerification(
-      absl::optional<network::TriggerVerification> verification);
+  TriggerBuilder& SetVerifications(
+      std::vector<network::TriggerVerification> verifications);
 
   AttributionTrigger Build(bool generate_event_trigger_data = true) const;
 
@@ -232,7 +237,7 @@ class TriggerBuilder {
   ::aggregation_service::mojom::AggregationCoordinator
       aggregation_coordinator_ =
           ::aggregation_service::mojom::AggregationCoordinator::kDefault;
-  absl::optional<network::TriggerVerification> verification_;
+  std::vector<network::TriggerVerification> verifications_;
   attribution_reporting::mojom::SourceRegistrationTimeConfig
       source_registration_time_config_ =
           attribution_reporting::mojom::SourceRegistrationTimeConfig::kInclude;
@@ -693,8 +698,8 @@ struct AttributionTriggerMatcherConfig {
       registration = ::testing::_;
   ::testing::Matcher<const attribution_reporting::SuitableOrigin&>
       destination_origin = ::testing::_;
-  ::testing::Matcher<const absl::optional<network::TriggerVerification>&>
-      verification = ::testing::_;
+  ::testing::Matcher<const std::vector<network::TriggerVerification>&>
+      verifications = ::testing::_;
 
   ::testing::Matcher<bool> is_within_fenced_frame = ::testing::_;
 
@@ -743,6 +748,10 @@ void ExpectValidAttributionReportingEligibleHeaderForImg(
     const std::string& header);
 void ExpectValidAttributionReportingEligibleHeaderForNavigation(
     const std::string& header);
+
+void ExpectValidAttributionReportingSupportHeader(const std::string& header,
+                                                  bool web_expected,
+                                                  bool os_expected);
 
 }  // namespace content
 

@@ -452,7 +452,7 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
 
     // When `kAutofillImportFromAutocompleteUnrecognized` is enabled, Autofill
     // imports from fields despite an unrecognized autocomplete attribute.
-    if (field->HasPredictionDespiteUnrecognizedAutocompleteAttribute()) {
+    if (field->ShouldSuppressSuggestionsAndFillingByDefault()) {
       if (!features::kAutofillImportFromAutocompleteUnrecognized.Get()) {
         continue;
       }
@@ -1053,6 +1053,18 @@ void FormDataImporter::OnBrowsingHistoryCleared(
     const history::DeletionInfo& deletion_info) {
   multistep_importer_.OnBrowsingHistoryCleared(deletion_info);
   form_associator_.OnBrowsingHistoryCleared(deletion_info);
+}
+
+void FormDataImporter::SetGuidOfCardIfNoInteractiveAuthenticationFlowCompleted(
+    absl::optional<std::string>
+        guid_of_card_if_no_interactive_authentication_flow_completed) {
+  guid_of_card_if_no_interactive_authentication_flow_completed_ =
+      std::move(guid_of_card_if_no_interactive_authentication_flow_completed);
+}
+
+absl::optional<std::string>&
+FormDataImporter::GetGuidOfCardIfNoInteractiveAuthenticationFlowCompleted() {
+  return guid_of_card_if_no_interactive_authentication_flow_completed_;
 }
 
 }  // namespace autofill

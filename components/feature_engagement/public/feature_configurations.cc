@@ -265,6 +265,21 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHCompanionSidePanelRegionSearchFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    // Show the promo up to 1 times a year.
+    config->trigger =
+        EventConfig("iph_companion_side_panel_region_search_trigger",
+                    Comparator(LESS_THAN, 1), 360, 360);
+    config->used =
+        EventConfig("companion_side_panel_region_search_button_clicked",
+                    Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
   if (kIPHDesktopCustomizeChromeFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
@@ -294,21 +309,32 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHPasswordManagerShortcutFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->trigger = EventConfig("iph_password_manager_shortcut_triggered",
+                                  Comparator(EQUAL, 0), 360, 360);
+    config->used = EventConfig("password_manager_shortcut_created",
+                               Comparator(EQUAL, 0), 360, 360);
+    return config;
+  }
+
   if (kIPHDownloadToolbarButtonFeature.name == feature->name) {
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
     config->availability = Comparator(ANY, 0);
-    // Don't show if user has already seen an IPH this session.
-    config->session_rate = Comparator(EQUAL, 0);
+    config->session_rate = Comparator(ANY, 0);
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::NONE;
+    config->session_rate_impact = session_rate_impact;
     // Show the promo max once a year if the user hasn't interacted with the
     // download bubble within the last 21 days.
     config->trigger = EventConfig("download_bubble_iph_trigger",
                                   Comparator(EQUAL, 0), 360, 360);
     config->used = EventConfig("download_bubble_interaction",
                                Comparator(EQUAL, 0), 21, 360);
-    // Allow snoozing for 7 days, up to 3 times.
-    config->snooze_params.snooze_interval = 7;
-    config->snooze_params.max_limit = 3;
     return config;
   }
 

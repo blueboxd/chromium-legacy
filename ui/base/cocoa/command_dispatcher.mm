@@ -65,7 +65,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   BOOL _eventHandled;
   BOOL _isRedispatchingKeyEvent;
 
-  NSWindow<CommandDispatchingWindow>* __weak _owner;  // Weak, owns us.
+  NSWindow<CommandDispatchingWindow>* __unsafe_unretained _owner;  // Weak, owns us.
 }
 
 @synthesize delegate = _delegate;

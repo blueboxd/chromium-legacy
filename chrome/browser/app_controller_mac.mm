@@ -2060,7 +2060,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
 - (BOOL)application:(NSApplication*)application
   willContinueUserActivityWithType:(NSString*)userActivityType {
-  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
   if(NSUserActivityTypeBrowsingWebStr)
     return [userActivityType isEqualToString:*NSUserActivityTypeBrowsingWebStr];
   else
@@ -2072,7 +2072,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
       restorationHandler:
           (void (^)(NSArray<id<NSUserActivityRestoring>>*))restorationHandler
 {
-  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
   if(!NSUserActivityTypeBrowsingWebStr)
     return NO;
 

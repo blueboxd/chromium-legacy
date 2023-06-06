@@ -67,12 +67,12 @@ NSString* kFindPasteboardChangedNotification =
 
   DCHECK([NSThread isMainThread]);
 
-  BOOL needToSendNotification = ![_findText.get() isEqualToString:newText];
+  BOOL needToSendNotification = ![_findText isEqualToString:newText];
   if (needToSendNotification) {
-    _findText.reset([newText copy]);
+    _findText = [newText copy];
     NSPasteboard* findPboard = [self findPboard];
     [findPboard declareTypes:@[ NSStringPboardType ] owner:nil];
-    [findPboard setString:_findText.get() forType:NSStringPboardType];
+    [findPboard setString:_findText forType:NSStringPboardType];
     [[NSNotificationCenter defaultCenter]
         postNotificationName:kFindPasteboardChangedNotification
                       object:self];

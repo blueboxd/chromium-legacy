@@ -481,7 +481,7 @@ void ClipboardMac::WriteBookmark(const char* title_data,
   std::string url_str(url_data, url_len);
   NSString* url = base::SysUTF8ToNSString(url_str);
 
-  base::scoped_nsobject<NSPasteboardItem> item(
+  NSPasteboardItem* item(
       ClipboardUtil::PasteboardItemFromUrl(url, title));
   ClipboardUtil::AddDataToPasteboard(GetPasteboard(), item);
 }

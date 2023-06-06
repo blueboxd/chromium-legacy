@@ -135,14 +135,14 @@ UniquePasteboard::~UniquePasteboard() {
 }
 
 // static
-base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
+NSPasteboardItem* ClipboardUtil::PasteboardItemFromUrl(
     NSString* urlString,
     NSString* title) {
   DCHECK(urlString);
   if (!title)
     title = urlString;
 
-  base::scoped_nsobject<NSPasteboardItem> item([[NSPasteboardItem alloc] init]);
+  NSPasteboardItem* item([[NSPasteboardItem alloc] init]);
 
   NSURL* url = [NSURL URLWithString:urlString];
   if ([url isFileURL] &&
@@ -175,10 +175,10 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrl(
 }
 
 // static
-base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrls(
+NSPasteboardItem* ClipboardUtil::PasteboardItemFromUrls(
     NSArray* urls,
     NSArray* titles) {
-  base::scoped_nsobject<NSPasteboardItem> item([[NSPasteboardItem alloc] init]);
+  NSPasteboardItem* item([[NSPasteboardItem alloc] init]);
 
   // Set Safari's URL + title arrays Pboard type.
   NSArray* urlsAndTitles = @[ urls, titles ];
@@ -189,9 +189,9 @@ base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromUrls(
 }
 
 // static
-base::scoped_nsobject<NSPasteboardItem> ClipboardUtil::PasteboardItemFromString(
+NSPasteboardItem* ClipboardUtil::PasteboardItemFromString(
     NSString* string) {
-  base::scoped_nsobject<NSPasteboardItem> item([[NSPasteboardItem alloc] init]);
+  NSPasteboardItem* item([[NSPasteboardItem alloc] init]);
   [item setString:string forType:NSPasteboardTypeString];
   return item;
 }

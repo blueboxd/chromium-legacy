@@ -42,18 +42,18 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardUtil {
   // Returns an NSPasteboardItem that represents the given |url|.
   // |url| must not be nil.
   // If |title| is nil, |url| is used in its place.
-  static base::scoped_nsobject<NSPasteboardItem> PasteboardItemFromUrl(
+  static NSPasteboardItem* PasteboardItemFromUrl(
       NSString* url,
       NSString* title);
 
   // Returns an NSPasteboardItem that represents the given |urls| and |titles|.
-  static base::scoped_nsobject<NSPasteboardItem> PasteboardItemFromUrls(
+  static NSPasteboardItem* PasteboardItemFromUrls(
       NSArray* urls,
       NSArray* titles);
 
   // Returns an NSPasteboardItem that represents the given string.
   // |string| must not be nil.
-  static base::scoped_nsobject<NSPasteboardItem> PasteboardItemFromString(
+  static NSPasteboardItem* PasteboardItemFromString(
       NSString* string);
 
   // Returns the title or url associated with a NSPasteboard which contains an

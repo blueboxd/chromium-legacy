@@ -417,6 +417,7 @@ bool InitializeVideoToolboxInternal() {
 
   session.reset();
 
+#if BUILDFLAG(IS_MAC)
   typedef void (*VTRegisterSupplementalVideoDecoderIfAvailablePtr)(CMVideoCodecType);
   static const VTRegisterSupplementalVideoDecoderIfAvailablePtr VTRegisterSupplementalVideoDecoderIfAvailableFuncPtr =
       reinterpret_cast<VTRegisterSupplementalVideoDecoderIfAvailablePtr>(dlsym(((void *) -2), "VTRegisterSupplementalVideoDecoderIfAvailable"));

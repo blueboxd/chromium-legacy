@@ -4,6 +4,7 @@
 
 #include "chrome/browser/download/download_status_updater.h"
 
+#include "base/apple/bridging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -56,9 +57,9 @@ NSString* ProgressString(NSString* string) {
 
   NSString* result = cache[string];
   if (!result) {
-    NSString** ref = static_cast<NSString**>(
+    NSString* const* ref = static_cast<NSString* const*>(
         CFBundleGetDataPointerForName(foundation,
-                                      base::mac::NSToCFCast(string)));
+                                      base::apple::NSToCFPtrCast(string)));
     if (ref) {
       result = *ref;
       cache[string] = result;
@@ -67,7 +68,7 @@ NSString* ProgressString(NSString* string) {
 
   if (!result && string == kNSProgressEstimatedTimeRemainingKeyName) {
     // Perhaps this is 10.8; try the old name of this key.
-    NSString** ref = static_cast<NSString**>(
+    NSString* const* ref = static_cast<NSString* const*>(
         CFBundleGetDataPointerForName(foundation,
                                       CFSTR("NSProgressEstimatedTimeKey")));
     if (ref) {
@@ -142,10 +143,9 @@ void CreateNSProgress(download::DownloadItem* download) {
   };
 
   Class progress_class = NSClassFromString(@"NSProgress");
-  NSProgress* progress = [progress_class performSelector:@selector(alloc)];
-  progress = [progress performSelector:@selector(initWithParent:userInfo:)
-                            withObject:nil
-                            withObject:user_info];
+  NSProgress* progress = [progress_class alloc];
+  progress = [progress initWithParent:nil
+                            userInfo:user_info];
   progress.kind = ProgressString(kNSProgressKindFileName);
 
   if (source_url) {

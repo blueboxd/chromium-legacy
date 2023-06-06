@@ -139,7 +139,7 @@ BOOL IsAppAtPathAWebBrowser(NSString* app_path) {
   if (!activities)
     return NO;
 
-  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString**>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static NSString * const*NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
   if(NSUserActivityTypeBrowsingWebStr) {
     return [activities containsObject:*NSUserActivityTypeBrowsingWebStr];
   } else {

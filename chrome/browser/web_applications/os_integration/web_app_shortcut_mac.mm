@@ -304,8 +304,7 @@ class BundleInfoPlist {
   // Retrieve info from the specified app shim in |bundle_path|.
   explicit BundleInfoPlist(const base::FilePath& bundle_path)
       : bundle_path_(bundle_path) {
-    plist_ = [NSDictionary dictionaryWithContentsOfURL:GetPlistURL(bundle_path_)
-                                                 error:nil];
+    plist_ = [NSDictionary dictionaryWithContentsOfURL:GetPlistURL(bundle_path_)];
   }
   BundleInfoPlist(const BundleInfoPlist& other) = default;
   BundleInfoPlist& operator=(const BundleInfoPlist& other) = default;
@@ -874,14 +873,14 @@ static const LSCopyApplicationURLsForBundleIdentifierPtr LSCopyApplicationURLsFo
   if(LSCopyApplicationURLsForBundleIdentifierFuncPtr) {
     // First search using LaunchServices
     bundle_urls =
-        base::apple::CFToNSOwnershipCast(LSCopyApplicationURLsForBundleIdentifier(
+        base::apple::CFToNSOwnershipCast(LSCopyApplicationURLsForBundleIdentifierFuncPtr(
             base::SysUTF8ToCFStringRef(bundle_id), /*outError=*/nullptr));
   } else {
     base::ScopedCFTypeRef<CFURLRef> cf_url;
-    LSFindApplicationForInfo(kLSUnknownCreator, bundle_id_cf.get(), NULL, NULL,
+    LSFindApplicationForInfo(kLSUnknownCreator, base::SysUTF8ToCFStringRef(bundle_id), NULL, NULL,
                              cf_url.InitializeInto());
     if (cf_url)
-      bundle_urls.reset([@[ base::mac::CFToNSCast(cf_url) ] retain]);
+      bundle_urls = (@[ base::apple::CFToNSPtrCast(cf_url) ]);
   }
   for (NSURL* url : bundle_urls) {
     base::FilePath bundle_path = base::mac::NSURLToFilePath(url);
@@ -1429,7 +1428,7 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
 
   NSURL* plist_url = GetPlistURL(app_path);
   NSMutableDictionary* plist =
-      [[NSMutableDictionary alloc] initWithContentsOfURL:plist_url error:nil];
+      [[NSMutableDictionary alloc] initWithContentsOfURL:plist_url];
   NSArray* keys = plist.allKeys;
 
   // 1. Fill in variables.
@@ -1558,7 +1557,7 @@ bool WebAppShortcutCreator::UpdatePlist(const base::FilePath& app_path) const {
   plist[base::apple::CFToNSPtrCast(kCFBundleNameKey)] =
       base::mac::FilePathToNSString(app_name);
 
-  return [plist writeToURL:plist_url error:nil];
+  return [plist writeToURL:plist_url atomically:YES];
 }
 
 bool WebAppShortcutCreator::UpdateDisplayName(

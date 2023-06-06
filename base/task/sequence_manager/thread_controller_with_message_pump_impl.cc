@@ -426,6 +426,9 @@ absl::optional<WakeUp> ThreadControllerWithMessagePumpImpl::DoWorkImpl(
   // Keep running tasks for up to 8ms before yielding to the pump when tasks are
   // run by batches.
   const base::TimeDelta batch_duration =
+  #if BUILDFLAG(IS_MAC)
+      __builtin_available(macOS 10.13, *) && 
+  #endif
       RunsTasksByBatches() ? base::Milliseconds(8) : base::Milliseconds(0);
 
   const absl::optional<base::TimeTicks> start_time =

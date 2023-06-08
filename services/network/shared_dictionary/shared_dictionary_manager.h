@@ -36,7 +36,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryManager {
   // Returns a SharedDictionaryManager which keeps the whole dictionary
   // information in memory.
   static std::unique_ptr<SharedDictionaryManager> CreateInMemory(
-      uint64_t cache_max_size);
+      uint64_t cache_max_size,
+      uint64_t cache_max_count);
 
   // Returns a SharedDictionaryManager which keeps the dictionary information
   // on disk.
@@ -44,17 +45,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryManager {
       const base::FilePath& database_path,
       const base::FilePath& cache_directory_path,
       uint64_t cache_max_size,
+      uint64_t cache_max_count,
 #if BUILDFLAG(IS_ANDROID)
       base::android::ApplicationStatusListener* app_status_listener,
 #endif  // BUILDFLAG(IS_ANDROID)
       scoped_refptr<disk_cache::BackendFileOperationsFactory>
           file_operations_factory);
-
-  // TODO(crbug.com/1413922): Implement a manager which supports persistence
-  // and use if for non-incognito mode. Also, if preventing incognito mode
-  // detection isn't that important, and the maintenance cost of two storagee is
-  // large, consider removing  SharedDictionaryManager and stopping incognito
-  // mode support.
 
   SharedDictionaryManager(const SharedDictionaryManager&) = delete;
   SharedDictionaryManager& operator=(const SharedDictionaryManager&) = delete;
@@ -64,10 +60,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SharedDictionaryManager {
   // Returns a SharedDictionaryStorage for the `isolation_key`.
   scoped_refptr<SharedDictionaryStorage> GetStorage(
       const net::SharedDictionaryStorageIsolationKey& isolation_key);
-
-  // TODO(crbug.com/1413922): Add a method to delete dictionaries when the user
-  // clears the browsing data (BrowsingDataRemover::DATA_TYPE_CACHE and
-  // DATA_TYPE_SITE_DATA).
 
   // Called when the SharedDictionaryStorage for the `isolation_key` is
   // deleted.

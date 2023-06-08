@@ -4,8 +4,8 @@
 
 package org.chromium.net.urlconnection;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.fail;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -46,7 +46,7 @@ public class MessageLoopTest {
     @SmallTest
     public void testInterrupt() throws Exception {
         final MessageLoop loop = new MessageLoop();
-        assertFalse(loop.isRunning());
+        assertThat(loop.isRunning()).isFalse();
         Future future = mExecutorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -59,13 +59,13 @@ public class MessageLoopTest {
             }
         });
         Thread.sleep(1000);
-        assertTrue(loop.isRunning());
-        assertFalse(loop.hasLoopFailed());
+        assertThat(loop.isRunning()).isTrue();
+        assertThat(loop.hasLoopFailed()).isFalse();
         mTestThread.interrupt();
         future.get();
-        assertFalse(loop.isRunning());
-        assertTrue(loop.hasLoopFailed());
-        assertFalse(mFailed);
+        assertThat(loop.isRunning()).isFalse();
+        assertThat(loop.hasLoopFailed()).isTrue();
+        assertThat(mFailed).isFalse();
         // Re-spinning the message loop is not allowed after interrupt.
         mExecutorService.submit(new Runnable() {
             @Override
@@ -86,7 +86,7 @@ public class MessageLoopTest {
     @SmallTest
     public void testTaskFailed() throws Exception {
         final MessageLoop loop = new MessageLoop();
-        assertFalse(loop.isRunning());
+        assertThat(loop.isRunning()).isFalse();
         Future future = mExecutorService.submit(new Runnable() {
             @Override
             public void run() {
@@ -107,13 +107,13 @@ public class MessageLoopTest {
             }
         };
         Thread.sleep(1000);
-        assertTrue(loop.isRunning());
-        assertFalse(loop.hasLoopFailed());
+        assertThat(loop.isRunning()).isTrue();
+        assertThat(loop.hasLoopFailed()).isFalse();
         loop.execute(failedTask);
         future.get();
-        assertFalse(loop.isRunning());
-        assertTrue(loop.hasLoopFailed());
-        assertFalse(mFailed);
+        assertThat(loop.isRunning()).isFalse();
+        assertThat(loop.hasLoopFailed()).isTrue();
+        assertThat(mFailed).isFalse();
         // Re-spinning the message loop is not allowed after exception.
         mExecutorService.submit(new Runnable() {
             @Override
@@ -134,7 +134,7 @@ public class MessageLoopTest {
     @SmallTest
     public void testLoopWithTimeout() throws Exception {
         final MessageLoop loop = new MessageLoop();
-        assertFalse(loop.isRunning());
+        assertThat(loop.isRunning()).isFalse();
         // The MessageLoop queue is empty. Use a timeout of 100ms to check that
         // it doesn't block forever.
         try {
@@ -143,6 +143,6 @@ public class MessageLoopTest {
         } catch (SocketTimeoutException e) {
             // Expected.
         }
-        assertFalse(loop.isRunning());
+        assertThat(loop.isRunning()).isFalse();
     }
 }

@@ -7,8 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "base/memory/raw_ptr.h"
-#include "ui/color/color_provider_source_observer.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/touch_selection/touch_selection_magnifier_runner.h"
 
 namespace aura {
@@ -27,10 +25,9 @@ namespace ash {
 
 // Ash implementation for TouchSelectionMagnifierRunner.
 class ASH_EXPORT TouchSelectionMagnifierRunnerAsh
-    : public ui::TouchSelectionMagnifierRunner,
-      public ui::ColorProviderSourceObserver {
+    : public ui::TouchSelectionMagnifierRunner {
  public:
-  TouchSelectionMagnifierRunnerAsh();
+  explicit TouchSelectionMagnifierRunnerAsh(int parent_container_id);
 
   TouchSelectionMagnifierRunnerAsh(const TouchSelectionMagnifierRunnerAsh&) =
       delete;
@@ -45,9 +42,6 @@ class ASH_EXPORT TouchSelectionMagnifierRunnerAsh
   void CloseMagnifier() override;
   bool IsRunning() const override;
 
-  // ui::ColorProviderSourceObserver:
-  void OnColorProviderChanged() override;
-
   const aura::Window* GetCurrentContextForTesting() const;
   const ui::Layer* GetMagnifierLayerForTesting() const;
 
@@ -55,6 +49,12 @@ class ASH_EXPORT TouchSelectionMagnifierRunnerAsh
   class BorderRenderer;
 
   void CreateMagnifierLayer();
+
+  // Returns the container window that should parent the magnifier layer.
+  aura::Window* GetParentContainer() const;
+
+  // The id of the container window that should parent the magnifier layer.
+  const int parent_container_id_;
 
   // Current context window in which the magnifier is being shown, or `nullptr`
   // if no magnifier is running.

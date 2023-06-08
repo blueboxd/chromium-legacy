@@ -17,6 +17,7 @@
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/omnibox/browser/actions/omnibox_action.h"
+#include "components/omnibox/browser/actions/tab_switch_action.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
@@ -107,7 +108,7 @@ class OmniboxEditModelTest : public testing::Test {
  protected:
   base::test::TaskEnvironment task_environment_;
   TestLocationBarModel location_bar_model_;
-  raw_ptr<TestOmniboxClient> omnibox_client_;
+  raw_ptr<TestOmniboxClient, DanglingUntriaged> omnibox_client_;
   std::unique_ptr<TestOmniboxView> view_;
 };
 
@@ -671,7 +672,7 @@ class OmniboxEditModelPopupTest : public ::testing::Test {
     return static_cast<TestOmniboxEditModel*>(view_->model());
   }
 
- private:
+ protected:
   base::test::TaskEnvironment task_environment_;
   TestLocationBarModel location_bar_model_;
   TestingPrefServiceSimple pref_service_;
@@ -1176,151 +1177,107 @@ TEST_F(OmniboxEditModelPopupTest, TestFocusFixing) {
   EXPECT_EQ(Selection::NORMAL, model()->GetPopupSelection().state);
 }
 
+// Android and iOS handle actions and metrics differently from other platforms.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+TEST_F(OmniboxEditModelPopupTest, OpenActionSelectionLogsOmniboxEvent) {
+  base::HistogramTester histogram_tester;
+  ACMatches matches;
+  for (size_t i = 0; i < 4; ++i) {
+    AutocompleteMatch match(nullptr, 1000, false,
+                            AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+    match.keyword = u"match";
+    match.allowed_to_be_default_match = true;
+    matches.push_back(match);
+  }
+  const GURL url = GURL("http://kong-foo.com");
+  matches[1].destination_url = url;
+  matches[1].provider = model()->autocomplete_controller()->search_provider();
+  matches[1].actions.push_back(base::MakeRefCounted<TabSwitchAction>(url));
+  AutocompleteResult* result = &model()->autocomplete_controller()->result_;
+  result->AppendMatches(matches);
+  AutocompleteInput input(u"match", metrics::OmniboxEventProto::NTP,
+                          TestSchemeClassifier());
+  result->SortAndCull(input, /*template_url_service=*/nullptr,
+                      triggered_feature_service());
+  model()->OnPopupResultChanged();
+  model()->OpenSelection(
+      OmniboxPopupSelection(1, OmniboxPopupSelection::FOCUSED_BUTTON_ACTION));
+  histogram_tester.ExpectUniqueSample("Omnibox.EventCount", 1, 1);
+}
+#endif
+
 TEST_F(OmniboxEditModelTest, OmniboxEscapeHistogram) {
+  // Escape should incrementally revert temporary text, close the popup, clear
+  // input, and blur the omnibox.
+  AutocompleteMatch match;
+  match.type = AutocompleteMatchType::NAVSUGGEST;
+  match.destination_url = GURL("https://google.com");
+  model()->SetCurrentMatchForTest(match);
+
+  view()->SetUserText(u"user text");
+  model()->OnSetFocus(false);
+  model()->SetInputInProgress(true);
+  model()->SetPopupIsOpen(true);
+  model()->OnPopupDataChanged(/*temporary_text=*/u"fake_temporary_text",
+                              /*is_temporary_text=*/true, std::u16string(),
+                              std::u16string(), std::u16string(), false,
+                              std::u16string(), {});
+
+  EXPECT_TRUE(model()->HasTemporaryText());
+  EXPECT_TRUE(model()->PopupIsOpen());
+  EXPECT_EQ(view()->GetText(), u"fake_temporary_text");
+  EXPECT_TRUE(model()->user_input_in_progress());
+  EXPECT_TRUE(model()->has_focus());
+
   {
-    // With `kClosePopupWithEscape` enabled, escape should incrementally revert
-    // temporary text, close the popup, clear input, and blur the omnibox.
-    base::test::ScopedFeatureList feature_list{omnibox::kClosePopupWithEscape};
-
-    AutocompleteMatch match;
-    match.type = AutocompleteMatchType::NAVSUGGEST;
-    match.destination_url = GURL("https://google.com");
-    model()->SetCurrentMatchForTest(match);
-
-    view()->SetUserText(u"user text");
-    model()->OnSetFocus(false);
-    model()->SetInputInProgress(true);
-    model()->SetPopupIsOpen(true);
-    model()->OnPopupDataChanged(/*temporary_text=*/u"fake_temporary_text",
-                                /*is_temporary_text=*/true, std::u16string(),
-                                std::u16string(), std::u16string(), false,
-                                std::u16string(), {});
-
-    EXPECT_TRUE(model()->HasTemporaryText());
+    // Revert temporary text.
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(model()->OnEscapeKeyPressed());
+    histogram_tester.ExpectUniqueSample("Omnibox.Escape", 1, 1);
+    EXPECT_FALSE(model()->HasTemporaryText());
     EXPECT_TRUE(model()->PopupIsOpen());
-    EXPECT_EQ(view()->GetText(), u"fake_temporary_text");
+    EXPECT_EQ(view()->GetText(), u"");
     EXPECT_TRUE(model()->user_input_in_progress());
     EXPECT_TRUE(model()->has_focus());
-
-    {
-      // Revert temporary text.
-      base::HistogramTester histogram_tester;
-      EXPECT_TRUE(model()->OnEscapeKeyPressed());
-      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 1, 1);
-      EXPECT_FALSE(model()->HasTemporaryText());
-      EXPECT_TRUE(model()->PopupIsOpen());
-      EXPECT_EQ(view()->GetText(), u"");
-      EXPECT_TRUE(model()->user_input_in_progress());
-      EXPECT_TRUE(model()->has_focus());
-    }
-
-    {
-      // Close the popup.
-      base::HistogramTester histogram_tester;
-      EXPECT_TRUE(model()->OnEscapeKeyPressed());
-      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 2, 1);
-      model()->SetPopupIsOpen(
-          false);  // `TestOmniboxEditModel` stubs the popup.
-      EXPECT_FALSE(model()->HasTemporaryText());
-      EXPECT_FALSE(model()->PopupIsOpen());
-      EXPECT_EQ(view()->GetText(), u"");
-      EXPECT_TRUE(model()->user_input_in_progress());
-      EXPECT_TRUE(model()->has_focus());
-    }
-
-    {
-      // Clear user input.
-      base::HistogramTester histogram_tester;
-      EXPECT_TRUE(model()->OnEscapeKeyPressed());
-      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 3, 1);
-      EXPECT_FALSE(model()->HasTemporaryText());
-      EXPECT_FALSE(model()->PopupIsOpen());
-      EXPECT_EQ(view()->GetText(), u"");
-      EXPECT_FALSE(model()->user_input_in_progress());
-      EXPECT_TRUE(model()->has_focus());
-    }
-
-    {
-      // Blur the omnibox.
-      base::HistogramTester histogram_tester;
-      EXPECT_TRUE(model()->OnEscapeKeyPressed());
-      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 5, 1);
-      model()->OnKillFocus();  // `TestOmniboxEditModel` stubs the client which
-                               // handles blurring the omnibox.
-      EXPECT_FALSE(model()->HasTemporaryText());
-      EXPECT_FALSE(model()->PopupIsOpen());
-      EXPECT_EQ(view()->GetText(), u"");
-      EXPECT_FALSE(model()->user_input_in_progress());
-      EXPECT_FALSE(model()->has_focus());
-    }
   }
 
   {
-    // With `kClosePopupWithEscape` disabled, escape should incrementally revert
-    // temporary text then simultaneously close the popup & clear input, and
-    // lastly blur the omnibox.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitWithFeatures({}, {omnibox::kClosePopupWithEscape});
-
-    AutocompleteMatch match;
-    match.type = AutocompleteMatchType::NAVSUGGEST;
-    match.destination_url = GURL("https://google.com");
-    model()->SetCurrentMatchForTest(match);
-
-    view()->SetUserText(u"user text");
-    model()->OnSetFocus(false);
-    model()->SetInputInProgress(true);
-    model()->SetPopupIsOpen(true);
-    model()->OnPopupDataChanged(/*temporary_text=*/u"fake_temporary_text",
-                                /*is_temporary_text=*/true, std::u16string(),
-                                std::u16string(), std::u16string(), false,
-                                std::u16string(), {});
-
-    EXPECT_TRUE(model()->HasTemporaryText());
-    EXPECT_TRUE(model()->PopupIsOpen());
-    EXPECT_EQ(view()->GetText(), u"fake_temporary_text");
+    // Close the popup.
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(model()->OnEscapeKeyPressed());
+    histogram_tester.ExpectUniqueSample("Omnibox.Escape", 2, 1);
+    model()->SetPopupIsOpen(false);  // `TestOmniboxEditModel` stubs the popup.
+    EXPECT_FALSE(model()->HasTemporaryText());
+    EXPECT_FALSE(model()->PopupIsOpen());
+    EXPECT_EQ(view()->GetText(), u"");
     EXPECT_TRUE(model()->user_input_in_progress());
     EXPECT_TRUE(model()->has_focus());
+  }
 
-    {
-      // Revert temporary text.
-      base::HistogramTester histogram_tester;
-      EXPECT_TRUE(model()->OnEscapeKeyPressed());
-      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 1, 1);
-      EXPECT_FALSE(model()->HasTemporaryText());
-      EXPECT_TRUE(model()->PopupIsOpen());
-      EXPECT_EQ(view()->GetText(), u"");
-      EXPECT_TRUE(model()->user_input_in_progress());
-      EXPECT_TRUE(model()->has_focus());
-    }
+  {
+    // Clear user input.
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(model()->OnEscapeKeyPressed());
+    histogram_tester.ExpectUniqueSample("Omnibox.Escape", 3, 1);
+    EXPECT_FALSE(model()->HasTemporaryText());
+    EXPECT_FALSE(model()->PopupIsOpen());
+    EXPECT_EQ(view()->GetText(), u"");
+    EXPECT_FALSE(model()->user_input_in_progress());
+    EXPECT_TRUE(model()->has_focus());
+  }
 
-    {
-      // Close the popup & clear input.
-      base::HistogramTester histogram_tester;
-      EXPECT_TRUE(model()->OnEscapeKeyPressed());
-      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 4, 1);
-      model()->SetPopupIsOpen(
-          false);  // `TestOmniboxEditModel` stubs the popup.
-      EXPECT_FALSE(model()->HasTemporaryText());
-      EXPECT_FALSE(model()->PopupIsOpen());
-      EXPECT_EQ(view()->GetText(), u"");
-      EXPECT_FALSE(model()->user_input_in_progress());
-      EXPECT_TRUE(model()->has_focus());
-    }
-
-    {
-      // Blur the omnibox.
-      base::HistogramTester histogram_tester;
-      EXPECT_TRUE(model()->OnEscapeKeyPressed());
-      histogram_tester.ExpectUniqueSample("Omnibox.Escape", 5, 1);
-      model()->OnKillFocus();  // `TestOmniboxEditModel` stubs the client which
-                               // handles blurring the omnibox.
-      EXPECT_FALSE(model()->HasTemporaryText());
-      EXPECT_FALSE(model()->PopupIsOpen());
-      EXPECT_EQ(view()->GetText(), u"");
-      EXPECT_FALSE(model()->user_input_in_progress());
-      EXPECT_FALSE(model()->has_focus());
-    }
+  {
+    // Blur the omnibox.
+    base::HistogramTester histogram_tester;
+    EXPECT_TRUE(model()->OnEscapeKeyPressed());
+    histogram_tester.ExpectUniqueSample("Omnibox.Escape", 5, 1);
+    model()->OnKillFocus();  // `TestOmniboxEditModel` stubs the client which
+                             // handles blurring the omnibox.
+    EXPECT_FALSE(model()->HasTemporaryText());
+    EXPECT_FALSE(model()->PopupIsOpen());
+    EXPECT_EQ(view()->GetText(), u"");
+    EXPECT_FALSE(model()->user_input_in_progress());
+    EXPECT_FALSE(model()->has_focus());
   }
 }
 

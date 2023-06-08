@@ -127,21 +127,18 @@ SVGAnimatedPropertyBase* SVGCircleElement::PropertyFromAttribute(
   }
 }
 
-void SVGCircleElement::SynchronizeSVGAttribute(
-    const QualifiedName& name) const {
-  if (name == AnyQName()) {
-    SVGAnimatedPropertyBase* attrs[]{cx_.Get(), cy_.Get(), r_.Get()};
-    SynchronizeAllSVGAttributes(attrs);
-  }
-  SVGGeometryElement::SynchronizeSVGAttribute(name);
+void SVGCircleElement::SynchronizeAllSVGAttributes() const {
+  SVGAnimatedPropertyBase* attrs[]{cx_.Get(), cy_.Get(), r_.Get()};
+  SynchronizeListOfSVGAttributes(attrs);
+  SVGGeometryElement::SynchronizeAllSVGAttributes();
 }
 
 void SVGCircleElement::CollectExtraStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   for (auto* property :
        (SVGAnimatedPropertyBase*[]){cx_.Get(), cy_.Get(), r_.Get()}) {
-    if (property->HasPresentationAttributeMapping() &&
-        property->IsAnimating()) {
+    DCHECK(property->HasPresentationAttributeMapping());
+    if (property->IsAnimating()) {
       CollectStyleForPresentationAttribute(property->AttributeName(),
                                            g_empty_atom, style);
     }

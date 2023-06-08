@@ -9,8 +9,6 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_SHIM_ALLOCATOR_SHIM_OVERRIDE_MAC_DEFAULT_ZONE_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_SHIM_ALLOCATOR_SHIM_OVERRIDE_MAC_DEFAULT_ZONE_H_
 
-#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
-
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #error This header must be included iff PartitionAlloc-Everywhere is enabled.
 #endif
@@ -22,8 +20,11 @@
 
 #include "base/allocator/early_zone_registration_mac.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/bits.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/logging.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/mac/mach_logging.h"
+#include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
-#include "base/logging.h"
 
 namespace partition_alloc {
 
@@ -215,7 +216,7 @@ malloc_zone_t* GetDefaultMallocZone() {
   vm_address_t* zones = nullptr;
   kern_return_t result =
       malloc_get_all_zones(mach_task_self(), nullptr, &zones, &zone_count);
-  MACH_CHECK(result == KERN_SUCCESS, result) << "malloc_get_all_zones";
+  PA_MACH_CHECK(result == KERN_SUCCESS, result) << "malloc_get_all_zones";
   return reinterpret_cast<malloc_zone_t*>(zones[0]);
 }
 
@@ -251,7 +252,7 @@ bool IsAlreadyRegistered() {
   // (in libmalloc).
   kern_return_t result =
       malloc_get_all_zones(mach_task_self(), nullptr, &zones, &zone_count);
-  MACH_CHECK(result == KERN_SUCCESS, result) << "malloc_get_all_zones";
+  PA_MACH_CHECK(result == KERN_SUCCESS, result) << "malloc_get_all_zones";
   // Checking all the zones, in case someone registered their own zone on top of
   // our own.
   for (unsigned int i = 0; i < zone_count; i++) {
@@ -267,9 +268,9 @@ bool IsAlreadyRegistered() {
       //
       // This should be a crash, ideally, but callers do it, so only warn, for
       // now.
-      RAW_LOG(ERROR,
-              "Trying to load the allocator multiple times. This is *not* "
-              "supported.");
+      PA_RAW_LOG(ERROR,
+                 "Trying to load the allocator multiple times. This is *not* "
+                 "supported.");
       return true;
     }
   }
@@ -395,7 +396,7 @@ InitializeDefaultMallocZoneWithPartitionAlloc() {
   malloc_zone_register(system_default_zone);
 
   // Confirm that our own zone is now the default zone.
-  CHECK_EQ(GetDefaultMallocZone(), &g_mac_malloc_zone);
+  PA_CHECK(GetDefaultMallocZone() == &g_mac_malloc_zone);
   g_initialization_is_done.store(true, std::memory_order_release);
 }
 

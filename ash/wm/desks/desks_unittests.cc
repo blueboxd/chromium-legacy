@@ -155,6 +155,7 @@ namespace ash {
 
 namespace {
 
+using ::testing::ElementsAre;
 using ::testing::ValuesIn;
 
 void NewDesk() {
@@ -506,103 +507,6 @@ class DesksTest : public AshTestBase,
                : bar_view->expanded_state_new_desk_button()
                      ->GetInnerButton()
                      ->GetBackgroundColorForTest();
-  }
-
-  desks_storage::DeskModel* desk_model() {
-    return ash_test_helper()->saved_desk_test_helper()->desk_model();
-  }
-
-  void DeleteAllSavedDesks() {
-    base::RunLoop loop;
-    desk_model()->DeleteAllEntries(base::BindLambdaForTesting(
-        [&](desks_storage::DeskModel::DeleteEntryStatus status) {
-          loop.Quit();
-        }));
-    loop.Run();
-  }
-
-  void ClickOrPressOnPoint(gfx::Point p) {
-    auto* event_generator = GetEventGenerator();
-    if (GetParam().use_touch_gestures) {
-      event_generator->set_current_screen_location(p);
-      event_generator->PressTouch();
-      event_generator->ReleaseTouch();
-    } else {
-      event_generator->MoveMouseTo(p);
-      event_generator->ClickLeftButton();
-    }
-  }
-
-  void ClickOrPressOnView(const views::View* view) {
-    const gfx::Point view_center = view->GetBoundsInScreen().CenterPoint();
-    ClickOrPressOnPoint(view_center);
-  }
-
-  void OpenDeskBar(DeskBarViewBase::Type type) {
-    switch (type) {
-      case DeskBarViewBase::Type::kOverview:
-        EnterOverview();
-        break;
-      case DeskBarViewBase::Type::kDeskButton: {
-        auto* root = Shell::Get()->GetPrimaryRootWindow();
-        auto* desk_bar_controller =
-            DesksController::Get()->desk_bar_controller();
-        desk_bar_controller->CreateDeskBar(root);
-        desk_bar_controller->ShowDeskBar(root);
-        break;
-      }
-    }
-  }
-
-  void CloseDeskBar(DeskBarViewBase::Type type) {
-    switch (type) {
-      case DeskBarViewBase::Type::kOverview:
-        ExitOverview();
-        break;
-      case DeskBarViewBase::Type::kDeskButton:
-        DesksController::Get()->desk_bar_controller()->DestroyAllDeskBars();
-        break;
-    }
-  }
-
-  DeskBarViewBase* GetDeskBarView(DeskBarViewBase::Type type) {
-    auto* root = Shell::Get()->GetPrimaryRootWindow();
-    DeskBarViewBase* desk_bar_view = nullptr;
-    switch (type) {
-      case DeskBarViewBase::Type::kOverview:
-        desk_bar_view = GetOverviewGridForRoot(root)->desks_bar_view();
-        break;
-      case DeskBarViewBase::Type::kDeskButton:
-        desk_bar_view =
-            DesksController::Get()->desk_bar_controller()->GetDeskBarView(root);
-        break;
-    }
-    return desk_bar_view;
-  }
-
-  void EnterLibrary(DeskBarViewBase::Type type) {
-    auto* desk_bar_view = GetDeskBarView(type);
-    ASSERT_TRUE(desk_bar_view);
-
-    // Clicking the library button on the desk button desk bar.
-    if (GetParam().enable_jellyroll) {
-      auto* library_button = desk_bar_view->library_button();
-      ClickOrPressOnView(library_button);
-    } else {
-      auto* library_button = desk_bar_view->expanded_state_library_button();
-      ClickOrPressOnView(library_button);
-    }
-
-    // It should enter overview mode and the saved desk library should be
-    // visible. Desk button desk bar should be gone, and the overview desk bar
-    // should show up.
-    auto* overview_controller = Shell::Get()->overview_controller();
-    ASSERT_TRUE(overview_controller->InOverviewSession());
-    auto* overview_session = overview_controller->overview_session();
-    EXPECT_TRUE(overview_session &&
-                overview_session->IsShowingSavedDeskLibrary());
-    EXPECT_FALSE(GetDeskBarView(DeskBarViewBase::Type::kDeskButton));
-    EXPECT_TRUE(GetDeskBarView(DeskBarViewBase::Type::kOverview));
   }
 
  private:
@@ -2888,18 +2792,16 @@ PrefService* GetPrimaryUserPrefService() {
   return Shell::Get()->session_controller()->GetPrimaryUserPrefService();
 }
 
-// Verifies that the desks restore prefs in the given |user_prefs| matches the
-// given list of |desks_names|.
-void VerifyDesksRestoreData(PrefService* user_prefs,
-                            const std::vector<std::string>& desks_names) {
-  const base::Value::List& desks_restore_names =
+// Returns the desk names in the given `user_prefs`.
+std::vector<std::string> GetDeskRestoreNames(PrefService* user_prefs) {
+  const base::Value::List& desk_restore_names =
       user_prefs->GetList(prefs::kDesksNamesList);
-  ASSERT_EQ(desks_names.size(), desks_restore_names.size());
 
-  size_t index = 0;
-  for (const auto& value : desks_restore_names) {
-    EXPECT_EQ(desks_names[index++], value.GetString());
+  std::vector<std::string> names;
+  for (const auto& value : desk_restore_names) {
+    names.push_back(value.GetString());
   }
+  return names;
 }
 
 // Returns the GUIDs in the given `user_prefs`.
@@ -2909,8 +2811,7 @@ std::vector<base::Uuid> GetDeskRestoreGuids(PrefService* user_prefs) {
 
   std::vector<base::Uuid> guids;
   for (const base::Value& value : desks_restore_guids) {
-    const base::Uuid guid = base::Uuid::ParseLowercase(value.GetString());
-    guids.emplace_back(guid);
+    guids.emplace_back(base::Uuid::ParseLowercase(value.GetString()));
   }
   return guids;
 }
@@ -2979,8 +2880,8 @@ TEST_P(DesksEditableNamesTest, DefaultNameChangeAborted) {
   EXPECT_FALSE(desk_2->is_name_set_by_user());
 
   // Desks restore data should reflect two default-named desks.
-  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
-                         {std::string(), std::string()});
+  EXPECT_THAT(GetDeskRestoreNames(GetPrimaryUserPrefService()),
+              ElementsAre("", ""));
 }
 
 TEST_P(DesksEditableNamesTest, NamesSetByUsersAreNotOverwritten) {
@@ -3015,8 +2916,8 @@ TEST_P(DesksEditableNamesTest, NamesSetByUsersAreNotOverwritten) {
 
   // Renaming desks via the mini views trigger an update to the desks restore
   // prefs.
-  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
-                         {std::string("code"), std::string()});
+  EXPECT_THAT(GetDeskRestoreNames(GetPrimaryUserPrefService()),
+              ElementsAre("code", ""));
 
   // Add a third desk and remove the second. Both operations should not affect
   // the user-modified desk names.
@@ -3028,16 +2929,16 @@ TEST_P(DesksEditableNamesTest, NamesSetByUsersAreNotOverwritten) {
   EXPECT_FALSE(desk_3->is_name_set_by_user());
 
   // Adding a desk triggers an update to the restore prefs.
-  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
-                         {std::string("code"), std::string(), std::string()});
+  EXPECT_THAT(GetDeskRestoreNames(GetPrimaryUserPrefService()),
+              ElementsAre("code", "", ""));
 
   RemoveDesk(desk_2);
   EXPECT_TRUE(desk_1->is_name_set_by_user());
   EXPECT_FALSE(desk_3->is_name_set_by_user());
   // Desk 3 will now be renamed to "Desk 2".
   EXPECT_EQ(u"Desk 2", desk_3->name());
-  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
-                         {std::string("code"), std::string()});
+  EXPECT_THAT(GetDeskRestoreNames(GetPrimaryUserPrefService()),
+              ElementsAre("code", ""));
 
   ExitOverview();
   EnterOverview();
@@ -3063,8 +2964,8 @@ TEST_P(DesksEditableNamesTest, DontAllowEmptyNames) {
   EXPECT_FALSE(desk_1->name().empty());
   EXPECT_FALSE(desk_1->is_name_set_by_user());
   EXPECT_EQ(u"Desk 1", desk_1->name());
-  VerifyDesksRestoreData(GetPrimaryUserPrefService(),
-                         {std::string(), std::string()});
+  EXPECT_THAT(GetDeskRestoreNames(GetPrimaryUserPrefService()),
+              ElementsAre("", ""));
 }
 
 TEST_P(DesksEditableNamesTest, RevertDeskNameOnEscape) {
@@ -5160,32 +5061,40 @@ TEST_F(DesksRestoreMultiUserTest,
        ChangesMadeBySecondaryUserAffectsOnlyPrimaryUserPrefs) {
   InitPrefsWithDesksRestoreData(user_1_prefs());
   SimulateUserLogin(GetUser1AccountId());
-  // Switch to user 2 (secondary) and make some desks changes. Those changes
-  // should be persisted to user 1's prefs only.
-  SwitchActiveUser(GetUser2AccountId());
 
   auto* controller = DesksController::Get();
   const auto& desks = controller->desks();
   ASSERT_EQ(3u, desks.size());
 
+  // Activate the last desk and verify that this is reflected in prefs.
+  ActivateDesk(controller->desks().back().get());
+  EXPECT_EQ(user_1_prefs()->GetInteger(prefs::kDesksActiveDesk), 2);
+
+  // Switch to user 2 (secondary) and make some desks changes. Those changes
+  // should be persisted to user 1's prefs only.
+  SwitchActiveUser(GetUser2AccountId());
+
   // Create a fourth desk.
   NewDesk();
-  VerifyDesksRestoreData(user_1_prefs(), {std::string(), std::string(),
-                                          std::string("code"), std::string()});
+  EXPECT_THAT(GetDeskRestoreNames(user_1_prefs()),
+              ElementsAre("", "", "code", ""));
+
   // User 2's prefs are unaffected (empty list of desks).
-  VerifyDesksRestoreData(user_2_prefs(), {});
+  EXPECT_THAT(GetDeskRestoreNames(user_2_prefs()), ElementsAre());
 
   // Delete the second desk.
   RemoveDesk(desks[1].get());
-  VerifyDesksRestoreData(user_1_prefs(),
-                         {std::string(), std::string("code"), std::string()});
-  VerifyDesksRestoreData(user_2_prefs(), {});
+  EXPECT_THAT(GetDeskRestoreNames(user_1_prefs()), ElementsAre("", "code", ""));
+  EXPECT_THAT(GetDeskRestoreNames(user_2_prefs()), ElementsAre());
+  // This should adjust the active desk prefs for the primary user.
+  EXPECT_EQ(user_1_prefs()->GetInteger(prefs::kDesksActiveDesk), 1);
 
   // Move the third desk to the second to test desks reordering.
   controller->ReorderDesk(/*old_index=*/2, /*new_index=*/1);
-  VerifyDesksRestoreData(user_1_prefs(),
-                         {std::string(), std::string(), std::string("code")});
-  VerifyDesksRestoreData(user_2_prefs(), {});
+  EXPECT_THAT(GetDeskRestoreNames(user_1_prefs()), ElementsAre("", "", "code"));
+  EXPECT_THAT(GetDeskRestoreNames(user_2_prefs()), ElementsAre());
+  // This should again adjust the active desk prefs for the primary user.
+  EXPECT_EQ(user_1_prefs()->GetInteger(prefs::kDesksActiveDesk), 2);
 }
 
 // Tests that desks reordering updates workspaces of all windows in affected
@@ -5257,9 +5166,9 @@ TEST_F(DesksRestoreMultiUserTest,
   user_1_active_desk_index = 1;
   user_2_active_desk_index = 3;
   check_window_workspaces(std::vector<int>{0, 3, 1, 2});
-  VerifyDesksRestoreData(user_1_prefs(),
-                         std::vector<std::string>{"0", "3", "1", "2"});
-  VerifyDesksRestoreData(user_2_prefs(), {});
+  EXPECT_THAT(GetDeskRestoreNames(user_1_prefs()),
+              ElementsAre("0", "3", "1", "2"));
+  EXPECT_THAT(GetDeskRestoreNames(user_2_prefs()), ElementsAre());
   EXPECT_EQ(user_1_active_desk_index,
             user_1_prefs()->GetInteger(prefs::kDesksActiveDesk));
   EXPECT_EQ(desks[user_2_active_desk_index]->container_id(),
@@ -5277,9 +5186,9 @@ TEST_F(DesksRestoreMultiUserTest,
   user_1_active_desk_index = 0;
   user_2_active_desk_index = 2;
   check_window_workspaces(std::vector<int>{3, 1, 2, 0});
-  VerifyDesksRestoreData(user_1_prefs(),
-                         std::vector<std::string>{"3", "1", "2", "0"});
-  VerifyDesksRestoreData(user_2_prefs(), {});
+  EXPECT_THAT(GetDeskRestoreNames(user_1_prefs()),
+              ElementsAre("3", "1", "2", "0"));
+  EXPECT_THAT(GetDeskRestoreNames(user_2_prefs()), ElementsAre());
   EXPECT_EQ(user_1_active_desk_index,
             user_1_prefs()->GetInteger(prefs::kDesksActiveDesk));
   EXPECT_EQ(desks[user_1_active_desk_index]->container_id(),
@@ -7096,7 +7005,7 @@ TEST_P(DesksTest, ReorderDesksByMouse) {
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
 
   auto* prefs = Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"0", "1", "2"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "1", "2"));
 
   // Dragging the desk preview will trigger drag & drop.
   StartDragDeskPreview(mini_view_1, event_generator);
@@ -7117,7 +7026,7 @@ TEST_P(DesksTest, ReorderDesksByMouse) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_2));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_1));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"0", "2", "1"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "2", "1"));
 
   // Swap the positions of the second desk and the first desk.
   gfx::Point desk_center_0 =
@@ -7128,7 +7037,7 @@ TEST_P(DesksTest, ReorderDesksByMouse) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_1));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_2));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"1", "0", "2"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("1", "0", "2"));
 
   event_generator->ReleaseLeftButton();
 }
@@ -7165,7 +7074,7 @@ TEST_P(DesksTest, ReorderDesksByGesture) {
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
 
   auto* prefs = Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"0", "1", "2"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "1", "2"));
 
   // If long press on the second desk preview, drag & drop will be triggered.
   // Perform by gesture:
@@ -7199,7 +7108,7 @@ TEST_P(DesksTest, ReorderDesksByGesture) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_2));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_1));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"0", "2", "1"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "2", "1"));
 
   // Swap the positions of the second desk and the first desk.
   gfx::Point desk_center_0 =
@@ -7210,7 +7119,7 @@ TEST_P(DesksTest, ReorderDesksByGesture) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_1));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_2));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"1", "0", "2"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("1", "0", "2"));
 
   event_generator->ReleaseTouch();
 }
@@ -7250,7 +7159,7 @@ TEST_P(DesksTest, ReorderDesksByKeyboard) {
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
 
   auto* prefs = Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"0", "1", "2"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "1", "2"));
 
   // Highlight the second desk.
   overview_controller->overview_session()
@@ -7265,7 +7174,7 @@ TEST_P(DesksTest, ReorderDesksByKeyboard) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_2));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_1));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"0", "2", "1"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "2", "1"));
 
   // Keep pressing -> won't swap desks.
   event_generator->PressKey(ui::VKEY_RIGHT, ui::EF_CONTROL_DOWN);
@@ -7274,7 +7183,7 @@ TEST_P(DesksTest, ReorderDesksByKeyboard) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_2));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_1));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"0", "2", "1"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "2", "1"));
 
   // Press Ctrl + <- twice will swap the positions of the second and first desk.
   event_generator->PressKey(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
@@ -7284,7 +7193,7 @@ TEST_P(DesksTest, ReorderDesksByKeyboard) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_1));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_2));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"1", "0", "2"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("1", "0", "2"));
 
   // Keep pressing <- won't swap desks.
   event_generator->PressKey(ui::VKEY_LEFT, ui::EF_CONTROL_DOWN);
@@ -7293,7 +7202,7 @@ TEST_P(DesksTest, ReorderDesksByKeyboard) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_1));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_2));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"1", "0", "2"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("1", "0", "2"));
 }
 
 // Test reordering desks in RTL mode.
@@ -7336,7 +7245,7 @@ TEST_P(DesksTest, ReorderDesksInRTLMode) {
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
 
   auto* prefs = Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"0", "1", "2"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "1", "2"));
 
   // Swap the positions of the |desk_1| and the |desk_2| by mouse.
   StartDragDeskPreview(mini_view_1, event_generator);
@@ -7350,7 +7259,7 @@ TEST_P(DesksTest, ReorderDesksInRTLMode) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_2));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_1));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"0", "2", "1"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("0", "2", "1"));
   event_generator->ReleaseLeftButton();
 
   // Swap the positions of the |desk_1| and the |desk_0| by gesture.
@@ -7370,7 +7279,7 @@ TEST_P(DesksTest, ReorderDesksInRTLMode) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_1));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_0));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_2));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"1", "0", "2"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("1", "0", "2"));
   event_generator->ReleaseTouch();
 
   // Swap the positions of the |desk_0| and the |desk_2| by keyboard.
@@ -7386,7 +7295,7 @@ TEST_P(DesksTest, ReorderDesksInRTLMode) {
   EXPECT_EQ(0, desks_controller->GetDeskIndex(desk_1));
   EXPECT_EQ(1, desks_controller->GetDeskIndex(desk_2));
   EXPECT_EQ(2, desks_controller->GetDeskIndex(desk_0));
-  VerifyDesksRestoreData(prefs, std::vector<std::string>{"1", "2", "0"});
+  EXPECT_THAT(GetDeskRestoreNames(prefs), ElementsAre("1", "2", "0"));
 
   // Recover to default RTL mode.
   base::i18n::SetRTLForTesting(default_rtl);
@@ -8277,6 +8186,8 @@ TEST_P(DesksCloseAllTest, ClearStoredDeskWhenClosingAnotherDesk) {
     ASSERT_EQ(2u, controller->desks().size());
     ASSERT_TRUE(desk_2->is_active());
     ASSERT_TRUE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
+    EXPECT_EQ(GetPrimaryUserPrefService()->GetInteger(prefs::kDesksActiveDesk),
+              0);
 
     RemoveDesk(desk_2, test_case.desk_close_type);
     EXPECT_EQ(1u, controller->desks().size());
@@ -8340,6 +8251,8 @@ TEST_P(DesksCloseAllTest, RestoreOrDestroyDeskWithToast) {
     ASSERT_TRUE(desk_2->is_active());
     ASSERT_TRUE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
     ASSERT_TRUE(window.is_valid());
+    EXPECT_EQ(GetPrimaryUserPrefService()->GetInteger(prefs::kDesksActiveDesk),
+              0);
 
     if (test_case.restore_desk) {
       // When `desk_1` is restored it should be back in its original position
@@ -8351,6 +8264,8 @@ TEST_P(DesksCloseAllTest, RestoreOrDestroyDeskWithToast) {
       EXPECT_EQ(desk_1, controller->desks()[0].get());
       EXPECT_FALSE(DesksTestApi::DesksControllerCanUndoDeskRemoval());
       EXPECT_TRUE(window.is_valid());
+      EXPECT_EQ(
+          GetPrimaryUserPrefService()->GetInteger(prefs::kDesksActiveDesk), 0);
     } else {
       // Because undo toasts persist on hover, we need to move the cursor
       // outside of the undo toast to start the countdown for its expiration.
@@ -9141,10 +9056,170 @@ TEST_P(DesksCloseAllTest, InteractingWithShelfClosesToast) {
   EXPECT_FALSE(window.is_valid());
 }
 
-using DeskBarBasicTest = DesksTest;
+class DeskBarTest
+    : public AshTestBase,
+      public ::testing::WithParamInterface<
+          testing::tuple<bool, bool, bool, DeskBarViewBase::Type>> {
+ public:
+  DeskBarTest() = default;
+  DeskBarTest(const DeskBarTest&) = delete;
+  DeskBarTest& operator=(const DeskBarTest&) = delete;
+  ~DeskBarTest() override = default;
+
+  void SetUp() override {
+    std::tie(use_touch_gestures_, use_16_desks_, enable_jellyroll_, bar_type_) =
+        GetParam();
+
+    scoped_feature_list_.InitWithFeatureStates(
+        {{features::kDeskButton, true},
+         {features::kFeatureManagement16Desks, use_16_desks_},
+         {chromeos::features::kJellyroll, enable_jellyroll_}});
+
+    AshTestBase::SetUp();
+
+    // Wait for the desk model to have completed its initialization. Not doing
+    // this would lead to flaky tests.
+    ash_test_helper()->saved_desk_test_helper()->WaitForDeskModels();
+  }
+
+  void TearDown() override {
+    AshTestBase::TearDown();
+    scoped_feature_list_.Reset();
+  }
+
+  desks_storage::DeskModel* desk_model() {
+    return ash_test_helper()->saved_desk_test_helper()->desk_model();
+  }
+
+  void DeleteAllSavedDesks() {
+    base::RunLoop loop;
+    desk_model()->DeleteAllEntries(base::BindLambdaForTesting(
+        [&](desks_storage::DeskModel::DeleteEntryStatus status) {
+          loop.Quit();
+        }));
+    loop.Run();
+  }
+
+  const views::LabelButton* GetExpandedStateInnerNewDeskButton(
+      const DeskBarViewBase* bar_view) {
+    if (enable_jellyroll_) {
+      return bar_view->new_desk_button();
+    }
+
+    return bar_view->expanded_state_new_desk_button()->GetInnerButton();
+  }
+
+  void ClickOrPressOnPoint(gfx::Point p) {
+    auto* event_generator = GetEventGenerator();
+    if (use_touch_gestures_) {
+      event_generator->set_current_screen_location(p);
+      event_generator->PressTouch();
+      event_generator->ReleaseTouch();
+    } else {
+      event_generator->MoveMouseTo(p);
+      event_generator->ClickLeftButton();
+    }
+  }
+
+  void ClickOrPressOnView(const views::View* view) {
+    const gfx::Point view_center = view->GetBoundsInScreen().CenterPoint();
+    ClickOrPressOnPoint(view_center);
+  }
+
+  void OpenDeskBar() {
+    switch (bar_type_) {
+      case DeskBarViewBase::Type::kOverview:
+        EnterOverview();
+        break;
+      case DeskBarViewBase::Type::kDeskButton: {
+        auto* root = Shell::Get()->GetPrimaryRootWindow();
+        auto* desk_bar_controller =
+            DesksController::Get()->desk_bar_controller();
+        desk_bar_controller->OpenDeskBar(root);
+        break;
+      }
+    }
+  }
+
+  void CloseDeskBar() {
+    switch (bar_type_) {
+      case DeskBarViewBase::Type::kOverview:
+        ExitOverview();
+        break;
+      case DeskBarViewBase::Type::kDeskButton:
+        DesksController::Get()->desk_bar_controller()->CloseAllDeskBars();
+        break;
+    }
+  }
+
+  void WaitForDeskBarAnimation() {
+    // TODO(yongshun): Find a better way to wait for animation.
+    int wait_time = 1000;
+    while (wait_time > 0 &&
+           (!GetDeskBarView() ||
+            GetDeskBarView()->is_bounds_animation_on_going())) {
+      WaitForMilliseconds(100);
+      wait_time -= 100;
+    }
+  }
+
+  DeskBarViewBase* GetDeskBarView() { return GetDeskBarView(bar_type_); }
+
+  DeskBarViewBase* GetDeskBarView(DeskBarViewBase::Type type) {
+    auto* root = Shell::Get()->GetPrimaryRootWindow();
+    DeskBarViewBase* desk_bar_view = nullptr;
+    switch (type) {
+      case DeskBarViewBase::Type::kOverview:
+        if (Shell::Get()->overview_controller()->InOverviewSession()) {
+          desk_bar_view = GetOverviewGridForRoot(root)->desks_bar_view();
+        }
+        break;
+      case DeskBarViewBase::Type::kDeskButton:
+        desk_bar_view =
+            DesksController::Get()->desk_bar_controller()->GetDeskBarView(root);
+        break;
+    }
+    return desk_bar_view;
+  }
+
+  void EnterLibrary() {
+    auto* desk_bar_view = GetDeskBarView();
+    ASSERT_TRUE(desk_bar_view);
+
+    // Clicking the library button on the desk button desk bar.
+    if (enable_jellyroll_) {
+      ClickOrPressOnView(desk_bar_view->library_button());
+    } else {
+      if (desk_bar_view->IsZeroState()) {
+        ClickOrPressOnView(desk_bar_view->zero_state_library_button());
+      } else {
+        ClickOrPressOnView(desk_bar_view->expanded_state_library_button());
+      }
+    }
+
+    // It should enter overview mode and the saved desk library should be
+    // visible. Desk button desk bar should be gone, and the overview desk bar
+    // should show up.
+    auto* overview_controller = Shell::Get()->overview_controller();
+    ASSERT_TRUE(overview_controller->InOverviewSession());
+    auto* overview_session = overview_controller->overview_session();
+    EXPECT_TRUE(overview_session &&
+                overview_session->IsShowingSavedDeskLibrary());
+    EXPECT_FALSE(GetDeskBarView(DeskBarViewBase::Type::kDeskButton));
+    EXPECT_TRUE(GetDeskBarView(DeskBarViewBase::Type::kOverview));
+  }
+
+  bool use_touch_gestures_;
+  bool use_16_desks_;
+  bool enable_jellyroll_;
+  DeskBarViewBase::Type bar_type_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 // Tests that `DeskTextfield` can be used outside overview.
-TEST_P(DeskBarBasicTest, DeskTextfieldOutsideOverview) {
+TEST_P(DeskBarTest, DeskTextfieldOutsideOverview) {
   auto widget =
       TestWidgetBuilder()
           .SetDelegate(nullptr)
@@ -9161,7 +9236,7 @@ TEST_P(DeskBarBasicTest, DeskTextfieldOutsideOverview) {
   desk_text_view->CommitChanges(widget.get());
 }
 
-struct DeskButtonDeskBarTestCase {
+struct DeskBarTestBasicCase {
   std::string test_name;
 
   // IDs of all desks.
@@ -9176,54 +9251,70 @@ struct DeskButtonDeskBarTestCase {
   // Indicates if there are any saved desks.
   bool has_saved_desks;
 
-  // The expected bar widget bounds.
-  gfx::Rect bar_widget_bounds_expected;
+  // The expected bar widget bounds for desk button desk bar.
+  gfx::Rect desk_button_bar_widget_bounds;
 
-  // The expected bar view bounds.
-  gfx::Rect bar_view_bounds_expected;
+  // The expected bar view bounds for desk button desk bar.
+  gfx::Rect desk_button_bar_view_bounds;
+
+  // The expected bar widget bounds for overview desk bar.
+  gfx::Rect overview_bar_widget_bounds;
+
+  // The expected bar view bounds for overview desk bar.
+  gfx::Rect overview_bar_view_bounds;
 };
 
 // Tests that desk button desk bar can show outside of overview with expected
 // bounds for different shelf alignments.
-TEST_P(DeskBarBasicTest, DeskBarBasic) {
+TEST_P(DeskBarTest, Basic) {
   UpdateDisplay("800x600");
 
-  const DeskButtonDeskBarTestCase tests[] = {
+  const DeskBarTestBasicCase tests[] = {
       {.test_name = "single desk + bottom shelf + saved desks",
        .desks = {0},
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kBottom,
        .has_saved_desks = true,
-       .bar_widget_bounds_expected = {0, 446, 800, 98},
-       .bar_view_bounds_expected = {0, 0, 800, 98}},
+       .desk_button_bar_widget_bounds = {0, 446, 800, 98},
+       .desk_button_bar_view_bounds = {0, 0, 800, 98},
+       .overview_bar_widget_bounds = {0, 0, 800, 40},
+       .overview_bar_view_bounds = {0, 0, 800, 40}},
       {.test_name = "single desk + bottom shelf",
        .desks = {0},
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kBottom,
        .has_saved_desks = false,
-       .bar_widget_bounds_expected = {0, 446, 800, 98},
-       .bar_view_bounds_expected = {0, 0, 800, 98}},
+       .desk_button_bar_widget_bounds = {0, 446, 800, 98},
+       .desk_button_bar_view_bounds = {0, 0, 800, 98},
+       .overview_bar_widget_bounds = {0, 0, 800, 40},
+       .overview_bar_view_bounds = {0, 0, 800, 40}},
       {.test_name = "single desk + left shelf + saved desks",
        .desks = {0},
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kLeft,
        .has_saved_desks = true,
-       .bar_widget_bounds_expected = {56, 254, 744, 98},
-       .bar_view_bounds_expected = {0, 0, 744, 98}},
+       .desk_button_bar_widget_bounds = {56, 254, 744, 98},
+       .desk_button_bar_view_bounds = {0, 0, 744, 98},
+       .overview_bar_widget_bounds = {48, 0, 752, 40},
+       .overview_bar_view_bounds = {0, 0, 752, 40}},
       {.test_name = "single desk + right shelf + saved desks",
        .desks = {0},
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kRight,
        .has_saved_desks = true,
-       .bar_widget_bounds_expected = {0, 254, 744, 98},
-       .bar_view_bounds_expected = {0, 0, 744, 98}},
+       .desk_button_bar_widget_bounds = {0, 254, 744, 98},
+       .desk_button_bar_view_bounds = {0, 0, 744, 98},
+       .overview_bar_widget_bounds = {0, 0, 752, 40},
+       .overview_bar_view_bounds = {0, 0, 752, 40}},
       {.test_name = "multiple desks + bottom shelf + saved desks",
        .desks = {0, 1, 2},
        .active_desk = 0,
        .shelf_alignment = ShelfAlignment::kBottom,
        .has_saved_desks = true,
-       .bar_widget_bounds_expected = {0, 446, 800, 98},
-       .bar_view_bounds_expected = {0, 0, 800, 98}},
+       .desk_button_bar_widget_bounds = {0, 446, 800, 98},
+       .desk_button_bar_view_bounds = {0, 0, 800, 98},
+       .overview_bar_widget_bounds = {0, 0, 800, 98},
+       .overview_bar_view_bounds = {0, 0, 800, 98}},
   };
 
   auto* desks_controller = DesksController::Get();
@@ -9233,7 +9324,7 @@ TEST_P(DeskBarBasicTest, DeskBarBasic) {
     SCOPED_TRACE(test.test_name);
 
     // Set up desks.
-    while (desks_controller->desks().size() < test.desks.size()) {
+    while (desks_controller->GetNumberOfDesks() < (int)test.desks.size()) {
       NewDesk();
     }
     if (!desks_controller->desks()[test.active_desk]->is_active()) {
@@ -9252,29 +9343,39 @@ TEST_P(DeskBarBasicTest, DeskBarBasic) {
 
     // Create the desk bar then verify the bar and its child UI have expected
     // appearance.
-    OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
-    auto* desk_bar_view = GetDeskBarView(DeskBarViewBase::Type::kDeskButton);
+    OpenDeskBar();
+    auto* desk_bar_view = GetDeskBarView();
     auto* desk_bar_widget = desk_bar_view->GetWidget();
-    EXPECT_THAT(desk_bar_widget->GetWindowBoundsInScreen(),
-                test.bar_widget_bounds_expected);
-    EXPECT_TRUE(desk_bar_view && desk_bar_view->GetVisible() &&
-                !desk_bar_view->IsZeroState());
-    EXPECT_THAT(desk_bar_view->bounds(), test.bar_view_bounds_expected);
-    if (GetParam().enable_jellyroll) {
+    EXPECT_TRUE(desk_bar_view && desk_bar_view->GetVisible());
+    if (bar_type_ == DeskBarViewBase::Type::kOverview) {
+      EXPECT_THAT(desk_bar_widget->GetWindowBoundsInScreen(),
+                  test.overview_bar_widget_bounds);
+      EXPECT_THAT(desk_bar_view->bounds(), test.overview_bar_view_bounds);
+      EXPECT_THAT(desk_bar_view->IsZeroState(), test.desks.size() == 1);
+    } else {
+      EXPECT_THAT(desk_bar_widget->GetWindowBoundsInScreen(),
+                  test.desk_button_bar_widget_bounds);
+      EXPECT_THAT(desk_bar_view->bounds(), test.desk_button_bar_view_bounds);
+      EXPECT_FALSE(desk_bar_view->IsZeroState());
+    }
+    if (enable_jellyroll_) {
       auto* new_desk_button = desk_bar_view->new_desk_button();
-      EXPECT_THAT(new_desk_button->state(),
-                  CrOSNextDeskIconButton::State::kExpanded);
+      const auto expected_button_state =
+          bar_type_ == DeskBarViewBase::Type::kOverview &&
+                  test.desks.size() == 1
+              ? CrOSNextDeskIconButton::State::kZero
+              : CrOSNextDeskIconButton::State::kExpanded;
+      EXPECT_THAT(new_desk_button->state(), expected_button_state);
       EXPECT_TRUE(new_desk_button->GetVisible());
       EXPECT_THAT(new_desk_button->GetEnabled(),
                   desks_controller->CanCreateDesks());
       auto* library_button = desk_bar_view->library_button();
-      EXPECT_THAT(library_button->state(),
-                  CrOSNextDeskIconButton::State::kExpanded);
+      EXPECT_THAT(library_button->state(), expected_button_state);
       EXPECT_THAT(library_button->GetVisible(), test.has_saved_desks);
       EXPECT_TRUE(library_button->GetEnabled());
-
-      CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
     }
+
+    CloseDeskBar();
 
     // Reset to clean state, i.e. only 1 desk and no saved desks.
     while (desks_controller->CanRemoveDesks()) {
@@ -9286,7 +9387,7 @@ TEST_P(DeskBarBasicTest, DeskBarBasic) {
 
 // Tests that desk button desk bar shows the scroll arrow buttons when overflow
 // happens.
-TEST_P(DeskBarBasicTest, DeskBarScrollLayout) {
+TEST_P(DeskBarTest, ScrollLayout) {
   UpdateDisplay("600x400");
 
   auto* desks_controller = DesksController::Get();
@@ -9294,12 +9395,12 @@ TEST_P(DeskBarBasicTest, DeskBarScrollLayout) {
     NewDesk();
   }
 
-  OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
+  OpenDeskBar();
 
-  auto* left_scroll_button = DesksTestApi::GetDeskBarLeftScrollButton(
-      DeskBarViewBase::Type::kDeskButton);
-  auto* right_scroll_button = DesksTestApi::GetDeskBarRightScrollButton(
-      DeskBarViewBase::Type::kDeskButton);
+  auto* left_scroll_button =
+      DesksTestApi::GetDeskBarLeftScrollButton(bar_type_);
+  auto* right_scroll_button =
+      DesksTestApi::GetDeskBarRightScrollButton(bar_type_);
   EXPECT_FALSE(left_scroll_button->GetVisible());
   EXPECT_TRUE(right_scroll_button->GetVisible());
 
@@ -9313,10 +9414,10 @@ TEST_P(DeskBarBasicTest, DeskBarScrollLayout) {
     EXPECT_TRUE(right_scroll_button->GetVisible());
   }
 
-  CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
+  CloseDeskBar();
 }
 
-TEST_P(DeskBarBasicTest, DeskBarHoverBasic) {
+TEST_P(DeskBarTest, HoverBasic) {
   auto window_1 = CreateAppWindow(gfx::Rect(0, 0, 100, 100));
   auto window_2 = CreateAppWindow(gfx::Rect(0, 0, 100, 100));
 
@@ -9326,13 +9427,11 @@ TEST_P(DeskBarBasicTest, DeskBarHoverBasic) {
   desks_controller->SendToDeskAtIndex(window_1.get(), 0);
   desks_controller->SendToDeskAtIndex(window_2.get(), 1);
 
-  OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
+  OpenDeskBar();
 
   for (int i = 0; i < desks_controller->GetNumberOfDesks(); i++) {
     auto* event_generator = GetEventGenerator();
-    auto* mini_view = desks_controller->desk_bar_controller()
-                          ->GetDeskBarView(Shell::GetPrimaryRootWindow())
-                          ->mini_views()[i];
+    auto* mini_view = GetDeskBarView()->mini_views()[i];
     event_generator->MoveMouseTo(
         mini_view->desk_preview()->GetBoundsInScreen().CenterPoint());
     EXPECT_TRUE(
@@ -9341,15 +9440,15 @@ TEST_P(DeskBarBasicTest, DeskBarHoverBasic) {
         mini_view->desk_action_view()->close_all_button()->GetVisible());
   }
 
-  CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
+  CloseDeskBar();
 }
 
 // Tests that clicking on new desk button does the expected thing.
-TEST_P(DeskBarBasicTest, DeskBarNewDeskButton) {
-  OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
+TEST_P(DeskBarTest, NewDeskButton) {
+  OpenDeskBar();
 
   auto* desks_controller = DesksController::Get();
-  auto* desk_bar_view = GetDeskBarView(DeskBarViewBase::Type::kDeskButton);
+  auto* desk_bar_view = GetDeskBarView();
   auto* new_desk_button = GetExpandedStateInnerNewDeskButton(desk_bar_view);
 
   auto verify_disabled_new_desk_button = [&]() {
@@ -9358,8 +9457,8 @@ TEST_P(DeskBarBasicTest, DeskBarNewDeskButton) {
     EXPECT_FALSE(desks_controller->CanCreateDesks());
     EXPECT_FALSE(new_desk_button->GetEnabled());
     EXPECT_THAT(new_desk_button->GetState(), views::Button::STATE_DISABLED);
-    EXPECT_EQ(desks_controller->desks().size(),
-              desk_bar_view->mini_views().size());
+    EXPECT_THAT(desk_bar_view->mini_views().size(),
+                desks_controller->GetNumberOfDesks());
   };
   auto verify_enabled_new_desk_button = [&]() {
     EXPECT_LE(desks_controller->GetNumberOfDesks(),
@@ -9367,14 +9466,25 @@ TEST_P(DeskBarBasicTest, DeskBarNewDeskButton) {
     EXPECT_TRUE(desks_controller->CanCreateDesks());
     EXPECT_TRUE(new_desk_button->GetEnabled());
     EXPECT_NE(new_desk_button->GetState(), views::Button::STATE_DISABLED);
-    EXPECT_EQ(desks_controller->desks().size(),
-              desk_bar_view->mini_views().size());
+    EXPECT_THAT(desk_bar_view->mini_views().size(),
+                desk_bar_view->IsZeroState()
+                    ? 0
+                    : desks_controller->GetNumberOfDesks());
   };
 
   // Create max number of desks.
   for (int i = 2; i <= (int)desks_util::GetMaxNumberOfDesks(); i++) {
     verify_enabled_new_desk_button();
-    ClickOrPressOnView(new_desk_button);
+    if (desk_bar_view->IsZeroState()) {
+      if (enable_jellyroll_) {
+        ClickOrPressOnView(desk_bar_view->new_desk_button());
+      } else {
+        ClickOrPressOnView(desk_bar_view->zero_state_new_desk_button());
+      }
+    } else {
+      ClickOrPressOnView(new_desk_button);
+    }
+
     EXPECT_TRUE(desks_controller->CanRemoveDesks());
     EXPECT_THAT(desks_controller->GetNumberOfDesks(), i);
   }
@@ -9386,11 +9496,11 @@ TEST_P(DeskBarBasicTest, DeskBarNewDeskButton) {
   ClickOrPressOnView(new_desk_button);
   verify_disabled_new_desk_button();
 
-  CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
+  CloseDeskBar();
 }
 
 // Tests that we can go to saved desk library directly via desk button desk bar.
-TEST_P(DeskBarBasicTest, DeskBarLibraryButton) {
+TEST_P(DeskBarTest, LibraryButton) {
   ui::ScopedAnimationDurationScaleMode animation_scale(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
@@ -9401,9 +9511,10 @@ TEST_P(DeskBarBasicTest, DeskBarLibraryButton) {
 
   auto test_library_button = [&](const std::string& trace_message) {
     SCOPED_TRACE(trace_message);
-    OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
-    EnterLibrary(DeskBarViewBase::Type::kDeskButton);
-    CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
+    OpenDeskBar();
+    WaitForDeskBarAnimation();
+    EnterLibrary();
+    CloseDeskBar();
   };
 
   test_library_button("no app window");
@@ -9413,11 +9524,11 @@ TEST_P(DeskBarBasicTest, DeskBarLibraryButton) {
 }
 
 // Tests that the desk button desk bar support dragging to reorder desks.
-TEST_P(DeskBarBasicTest, DeskBarReorderDesk) {
-  OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
+TEST_P(DeskBarTest, ReorderDesk) {
+  OpenDeskBar();
 
   auto* desks_controller = DesksController::Get();
-  auto* desk_bar_view = GetDeskBarView(DeskBarViewBase::Type::kDeskButton);
+  auto* desk_bar_view = GetDeskBarView();
   auto* event_generator = GetEventGenerator();
 
   // Create two more desks.
@@ -9428,8 +9539,10 @@ TEST_P(DeskBarBasicTest, DeskBarReorderDesk) {
     }
     desks_controller->desks()[i]->SetName(base::UTF8ToUTF16(desk_name),
                                           /*set_by_user=*/true);
-    EXPECT_EQ(desks_controller->desks().size(),
-              desk_bar_view->mini_views().size());
+    EXPECT_THAT(desk_bar_view->mini_views().size(),
+                GetDeskBarView()->IsZeroState()
+                    ? 0
+                    : desks_controller->GetNumberOfDesks());
     i++;
   }
   desks_restore_util::UpdatePrimaryUserDeskNamesPrefs();
@@ -9441,7 +9554,8 @@ TEST_P(DeskBarBasicTest, DeskBarReorderDesk) {
     }
     auto* prefs =
         Shell::Get()->session_controller()->GetPrimaryUserPrefService();
-    VerifyDesksRestoreData(prefs, desk_names);
+    EXPECT_THAT(GetDeskRestoreNames(prefs),
+                ::testing::ElementsAreArray(desk_names));
   };
 
   auto drag_desk = [&](int from, int to) {
@@ -9480,34 +9594,31 @@ TEST_P(DeskBarBasicTest, DeskBarReorderDesk) {
   drag_desk(/*from=*/0, /*to=*/1);
   drag_desk(/*from=*/2, /*to=*/0);
 
-  CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
+  CloseDeskBar();
 }
 
-TEST_P(DeskBarBasicTest, DeskBarActivateDesk) {
+TEST_P(DeskBarTest, ActivateDesk) {
   auto* desks_controller = DesksController::Get();
 
   NewDesk();
   EXPECT_THAT(desks_controller->GetActiveDeskIndex(), 0);
 
-  OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
-
   // Clicking on active desk would *not* switch desk but just hide the bar.
-  ClickOrPressOnView(
-      GetDeskBarView(DeskBarViewBase::Type::kDeskButton)->mini_views()[0]);
+  OpenDeskBar();
+  ClickOrPressOnView(GetDeskBarView()->mini_views()[0]);
   EXPECT_THAT(desks_controller->GetActiveDeskIndex(), 0);
-  EXPECT_FALSE(GetDeskBarView(DeskBarViewBase::Type::kDeskButton));
+  EXPECT_FALSE(GetDeskBarView());
 
   // Clicking on non-active desk would switch desk and hide the bar.
-  OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
+  OpenDeskBar();
   DeskSwitchAnimationWaiter waiter;
-  ClickOrPressOnView(
-      GetDeskBarView(DeskBarViewBase::Type::kDeskButton)->mini_views()[1]);
+  ClickOrPressOnView(GetDeskBarView()->mini_views()[1]);
   waiter.Wait();
   EXPECT_THAT(desks_controller->GetActiveDeskIndex(), 1);
-  EXPECT_FALSE(GetDeskBarView(DeskBarViewBase::Type::kDeskButton));
+  EXPECT_FALSE(GetDeskBarView());
 }
 
-TEST_P(DeskBarBasicTest, DeskBarCombineOrCloseDesk) {
+TEST_P(DeskBarTest, CombineOrCloseDesk) {
   // Setup 3 desks, e.g. "Desk 1", "Desk 2", and "Desk 3". Only "Desk 3" has a
   // window.
   NewDesk();
@@ -9516,19 +9627,126 @@ TEST_P(DeskBarBasicTest, DeskBarCombineOrCloseDesk) {
   auto* desks_controller = DesksController::Get();
   desks_controller->SendToDeskAtIndex(window.get(), 2);
 
-  OpenDeskBar(DeskBarViewBase::Type::kDeskButton);
+  OpenDeskBar();
 
   for (int desk_index = desks_controller->GetNumberOfDesks() - 1;
        desk_index > 0; desk_index--) {
-    CloseDeskFromMiniView(GetDeskBarView(DeskBarViewBase::Type::kDeskButton)
-                              ->mini_views()[desk_index],
+    CloseDeskFromMiniView(GetDeskBarView()->mini_views()[desk_index],
                           GetEventGenerator());
-    EXPECT_THAT(
-        GetDeskBarView(DeskBarViewBase::Type::kDeskButton)->mini_views().size(),
-        desk_index);
+    EXPECT_THAT(GetDeskBarView()->mini_views().size(),
+                GetDeskBarView()->IsZeroState() ? 0 : desk_index);
   }
 
-  CloseDeskBar(DeskBarViewBase::Type::kDeskButton);
+  CloseDeskBar();
+}
+
+TEST_P(DeskBarTest, DeskRenameEsc) {
+  NewDesk();
+  OpenDeskBar();
+
+  auto* desk_bar_view = GetDeskBarView();
+  Desk* desk = DesksController::Get()->desks().front().get();
+  auto* mini_view = desk_bar_view->FindMiniViewForDesk(desk);
+  auto* desk_name_view = mini_view->desk_name_view();
+
+  ClickOrPressOnView(desk_name_view);
+  ASSERT_TRUE(desk_name_view->HasFocus());
+
+  // Undo by pressing esc on keyboard.
+  SendKey(ui::VKEY_D, ui::EF_SHIFT_DOWN);
+  SendKey(ui::VKEY_1);
+  SendKey(ui::VKEY_ESCAPE);
+  EXPECT_FALSE(desk_name_view->HasFocus());
+  EXPECT_FALSE(desk->is_name_set_by_user());
+  EXPECT_THAT(desk_name_view->GetText(), u"Desk 1");
+
+  CloseDeskBar();
+}
+
+TEST_P(DeskBarTest, DeskRenameReturn) {
+  NewDesk();
+  OpenDeskBar();
+
+  auto* desk_bar_view = GetDeskBarView();
+  Desk* desk = DesksController::Get()->desks().front().get();
+  auto* mini_view = desk_bar_view->FindMiniViewForDesk(desk);
+  auto* desk_name_view = mini_view->desk_name_view();
+
+  ClickOrPressOnView(desk_name_view);
+  ASSERT_TRUE(desk_name_view->HasFocus());
+
+  // Commit by pressing return on keyboard.
+  SendKey(ui::VKEY_D, ui::EF_SHIFT_DOWN);
+  SendKey(ui::VKEY_1);
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_FALSE(desk_name_view->HasFocus());
+  EXPECT_TRUE(desk->is_name_set_by_user());
+  EXPECT_THAT(desk_name_view->GetText(), u"D1");
+
+  CloseDeskBar();
+}
+
+TEST_P(DeskBarTest, DeskRenameClickOnBar) {
+  NewDesk();
+  OpenDeskBar();
+
+  auto* desk_bar_view = GetDeskBarView();
+  Desk* desk = DesksController::Get()->desks().front().get();
+  auto* mini_view = desk_bar_view->FindMiniViewForDesk(desk);
+  auto* desk_name_view = mini_view->desk_name_view();
+
+  ClickOrPressOnView(desk_name_view);
+  ASSERT_TRUE(desk_name_view->HasFocus());
+
+  // Commit by clicking or pressing empty area on the bar.
+  SendKey(ui::VKEY_D, ui::EF_SHIFT_DOWN);
+  SendKey(ui::VKEY_1);
+  gfx::Point empty_point = desk_bar_view->GetBoundsInScreen().top_center();
+  empty_point.Offset(0, 2);
+  ClickOrPressOnPoint(empty_point);
+
+  EXPECT_FALSE(desk_name_view->HasFocus());
+  EXPECT_TRUE(desk->is_name_set_by_user());
+  EXPECT_THAT(desk_name_view->GetText(), u"D1");
+
+  CloseDeskBar();
+}
+
+TEST_P(DeskBarTest, DeskRenameClickOffBar) {
+  NewDesk();
+  OpenDeskBar();
+
+  auto* desk_bar_view = GetDeskBarView();
+  Desk* desk = DesksController::Get()->desks().front().get();
+  auto* mini_view = desk_bar_view->FindMiniViewForDesk(desk);
+  auto* desk_name_view = mini_view->desk_name_view();
+
+  ClickOrPressOnView(desk_name_view);
+  ASSERT_TRUE(desk_name_view->HasFocus());
+  SendKey(ui::VKEY_D, ui::EF_SHIFT_DOWN);
+  SendKey(ui::VKEY_1);
+
+  // Commit by clicking or pressing empty area off the bar.
+  gfx::Point empty_point = desk_bar_view->GetBoundsInScreen().bottom_center();
+  empty_point.Offset(0, 2);
+  ClickOrPressOnPoint(empty_point);
+  EXPECT_FALSE(desk_name_view->HasFocus());
+  EXPECT_TRUE(desk->is_name_set_by_user());
+  EXPECT_THAT(desk_name_view->GetText(), u"D1");
+  EXPECT_TRUE(GetDeskBarView());
+
+  CloseDeskBar();
+}
+
+TEST_P(DeskBarTest, AutoHide) {
+  OpenDeskBar();
+  auto* desk_bar_view = GetDeskBarView();
+
+  // Clicking on wallpaper hides the bar.
+  gfx::Point empty_point = desk_bar_view->GetBoundsInScreen().bottom_center();
+  empty_point.Offset(0, 2);
+  ClickOrPressOnPoint(empty_point);
+  EXPECT_FALSE(GetDeskBarView());
 }
 
 namespace {
@@ -9563,7 +9781,7 @@ class DeskButtonTest
     return shelf_test_api_->shelf_view()
         ->shelf_widget()
         ->desk_button_widget()
-        ->GetDeskButtonForTest();
+        ->GetDeskButton();
   }
 
   views::ImageButton* GetPrevDeskButton() {
@@ -9763,7 +9981,14 @@ INSTANTIATE_TEST_SUITE_P(All, DesksAcceleratorsTest, ValuesIn(kDeskCountOnly));
 INSTANTIATE_TEST_SUITE_P(All, DesksMockTimeTest, ValuesIn(kDeskCountOnly));
 INSTANTIATE_TEST_SUITE_P(All, DesksCloseAllTest, ValuesIn(kDeskCountOnly));
 INSTANTIATE_TEST_SUITE_P(All, PerDeskShelfTest, ::testing::Bool());
-INSTANTIATE_TEST_SUITE_P(All, DeskBarBasicTest, ValuesIn(kAllCombinations));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeskBarTest,
+    testing::Combine(testing::Bool(),
+                     testing::Bool(),
+                     testing::Bool(),
+                     testing::Values(DeskBarViewBase::Type::kDeskButton,
+                                     DeskBarViewBase::Type::kOverview)));
 INSTANTIATE_TEST_SUITE_P(All,
                          DeskButtonTest,
                          ValuesIn(kDeskButtonTestParamCombinations));

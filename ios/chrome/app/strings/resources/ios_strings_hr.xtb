@@ -187,7 +187,6 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />izbrišite podatke Chr
 <translation id="2230173723195178503">Web-stranica učitana</translation>
 <translation id="2239626343334228536">Brisanje podataka o pregledavanju...</translation>
 <translation id="2242467532204595597">Chrome možete upotrebljavati svaki put kad dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
-<translation id="22508856139286506">Odbačena upozorenja (<ph name="COUNT" />)</translation>
 <translation id="2251686759395008410">Izbornik → Povijest</translation>
 <translation id="2252674110805316998">Pretraživanje weba</translation>
 <translation id="2256933947031277845">Vaša organizacija dopušta da se prijavite samo putem određenih računa.</translation>
@@ -356,6 +355,7 @@ Potražite upute za svoju tražilicu da biste saznali kako izbrisati svoju povij
 <translation id="3245744387817103524">Izmjena nije spremljena.</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> od <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3264775633254836593">Automatsko popunjavanje zaporki</translation>
+<translation id="3265534588625245297">Upravljajte web-lokacijama koje pratite</translation>
 <translation id="3268451620468152448">Otvorene kartice</translation>
 <translation id="3272527697863656322">Odustani</translation>
 <translation id="3277021493514034324">Adresa web-lokacije kopirana</translation>
@@ -1084,7 +1084,6 @@ Dok ste u anonimnom načinu, web-lokacije ne mogu upotrebljavati kolačiće za u
 
 Web-lokacije mogu upotrebljavati kolačiće za uvid u vašu aktivnost pregledavanja na različitim web-lokacijama, primjerice radi prilagođavanja oglasa.</translation>
 <translation id="7971521879845308059">Blokiraj skočne</translation>
-<translation id="797413074872316787">Da biste sinkronizirali i prilagodili više uređaja, uključite sinkronizaciju.</translation>
 <translation id="7978018860671536736">3. Dodirnite Automatsko popunjavanje zaporki</translation>
 <translation id="7982789257301363584">Mreža</translation>
 <translation id="7987685713885608670">Radi dodatne sigurnosti šifrirajte zaporke na uređaju prije spremanja na Google upravitelj zaporki.</translation>

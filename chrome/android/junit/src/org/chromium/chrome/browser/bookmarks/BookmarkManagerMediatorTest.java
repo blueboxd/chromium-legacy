@@ -68,8 +68,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
-import org.chromium.chrome.browser.sync.SyncService;
-import org.chromium.chrome.browser.sync.SyncService.SyncStateChangedListener;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.signin.SyncPromoController.SyncPromoState;
 import org.chromium.chrome.test.util.browser.Features;
@@ -97,6 +96,8 @@ import org.chromium.components.power_bookmarks.ShoppingSpecifics;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.sync.SyncService;
+import org.chromium.components.sync.SyncService.SyncStateChangedListener;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.ui.base.TestActivity;
@@ -295,7 +296,7 @@ public class BookmarkManagerMediatorTest {
             mBookmarkUiPrefs.setBookmarkRowDisplayPref(BookmarkRowDisplayPref.COMPACT);
 
             // Setup sync/identify mocks.
-            SyncService.overrideForTests(mSyncService);
+            SyncServiceFactory.overrideForTests(mSyncService);
             IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
             doReturn(mSigninManager).when(mIdentityServicesProvider).getSigninManager(any());
             doReturn(mIdentityManager).when(mSigninManager).getIdentityManager();

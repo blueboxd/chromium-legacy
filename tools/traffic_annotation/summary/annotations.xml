@@ -195,7 +195,7 @@ Refer to README.md for content description and update process.
  <item id="reporting" added_in_milestone="62" content_hash_code="077eedd0" os_list="linux,windows,chromeos,android" file_path="net/reporting/reporting_uploader.cc" />
  <item id="rlz_ping" added_in_milestone="63" content_hash_code="06160e82" os_list="windows,chromeos" file_path="rlz/lib/financial_ping.cc" />
  <item id="safe_browsing_binary_upload_app" added_in_milestone="87" content_hash_code="03da20b9" os_list="linux,windows,chromeos" file_path="chrome/browser/safe_browsing/cloud_content_scanning/cloud_binary_upload_service.cc" />
- <item id="safe_browsing_binary_upload_connector" added_in_milestone="87" content_hash_code="031b9017" os_list="linux,windows,chromeos" file_path="chrome/browser/safe_browsing/cloud_content_scanning/cloud_binary_upload_service.cc" />
+ <item id="safe_browsing_binary_upload_connector" added_in_milestone="87" content_hash_code="03c0c06a" os_list="linux,windows,chromeos" file_path="chrome/browser/safe_browsing/cloud_content_scanning/cloud_binary_upload_service.cc" />
  <item id="safe_browsing_cache_collector" added_in_milestone="62" content_hash_code="03b69135" os_list="linux,windows,chromeos,android" file_path="components/safe_browsing/content/browser/threat_details_cache.cc" />
  <item id="safe_browsing_certificate_error_reporting" added_in_milestone="62" content_hash_code="018e6226" os_list="linux,windows,chromeos,android" file_path="chrome/browser/ssl/certificate_error_reporter.cc" />
  <item id="safe_browsing_client_side_phishing_detector" added_in_milestone="62" content_hash_code="018611e2" os_list="linux,windows,chromeos,android" file_path="components/safe_browsing/content/browser/client_side_detection_service.cc" />
@@ -421,4 +421,5 @@ Refer to README.md for content description and update process.
  <item id="promise_app_service_download_icon" added_in_milestone="115" content_hash_code="00521032" os_list="chromeos" file_path="chrome/browser/apps/app_service/promise_apps/promise_app_service.cc" />
  <item id="iwa_update_manifest_fetcher" added_in_milestone="116" type="completing" content_hash_code="06867096" os_list="chromeos" semantics_fields="4,5,7,8,9" policy_fields="-1" file_path="chrome/browser/web_applications/isolated_web_apps/update_manifest/update_manifest_fetcher.cc" />
  <item id="iwa_bundle_downloader" added_in_milestone="116" type="completing" content_hash_code="04d2beae" os_list="chromeos" semantics_fields="4,5,7,8,9" policy_fields="-1" file_path="chrome/browser/web_applications/isolated_web_apps/isolated_web_app_downloader.cc" />
+ <item id="bidding_and_auction_server_key_fetch" added_in_milestone="116" content_hash_code="07667a22" os_list="linux,windows,android,chromeos" file_path="content/browser/interest_group/bidding_and_auction_server_key_fetcher.cc" />
 </annotations>

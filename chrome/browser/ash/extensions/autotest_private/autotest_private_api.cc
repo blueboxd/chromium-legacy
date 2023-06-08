@@ -155,7 +155,6 @@
 #include "chrome/browser/ui/views/plugin_vm/plugin_vm_installer_view.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_dialog.h"
 #include "chrome/browser/ui/webui/ash/crostini_installer/crostini_installer_ui.h"
-#include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/extensions/api/autotest_private.h"
@@ -635,10 +634,8 @@ chromeos::WindowStateType GetExpectedWindowState(
     case api::autotest_private::WMEventType::kWmeventFullscreen:
       return chromeos::WindowStateType::kFullscreen;
     case api::autotest_private::WMEventType::kWmeventSnapPrimary:
-    case api::autotest_private::WMEventType::kWmeventSnapLeft:
       return chromeos::WindowStateType::kPrimarySnapped;
     case api::autotest_private::WMEventType::kWmeventSnapSecondary:
-    case api::autotest_private::WMEventType::kWmeventSnapRight:
       return chromeos::WindowStateType::kSecondarySnapped;
     case api::autotest_private::WMEventType::kWmeventFloat:
       return chromeos::WindowStateType::kFloated;
@@ -659,10 +656,8 @@ ash::WMEventType ToWMEventType(api::autotest_private::WMEventType event_type) {
     case api::autotest_private::WMEventType::kWmeventFullscreen:
       return ash::WMEventType::WM_EVENT_FULLSCREEN;
     case api::autotest_private::WMEventType::kWmeventSnapPrimary:
-    case api::autotest_private::WMEventType::kWmeventSnapLeft:
       return ash::WMEventType::WM_EVENT_SNAP_PRIMARY;
     case api::autotest_private::WMEventType::kWmeventSnapSecondary:
-    case api::autotest_private::WMEventType::kWmeventSnapRight:
       return ash::WMEventType::WM_EVENT_SNAP_SECONDARY;
     case api::autotest_private::WMEventType::kWmeventFloat:
       return ash::WMEventType::WM_EVENT_FLOAT;
@@ -1977,6 +1972,12 @@ AutotestPrivateSetPlayStoreEnabledFunction::Run() {
     // currently.
     profile->GetPrefs()->SetBoolean(arc::prefs::kArcLocationServiceEnabled,
                                     true);
+    // Since we are settings location to enabled, we don't have to sync this
+    // settings from android.
+    if (base::FeatureList::IsEnabled(ash::features::kCrosPrivacyHub)) {
+      profile->GetPrefs()->SetBoolean(
+          arc::prefs::kArcInitialLocationSettingSyncRequired, false);
+    }
     return RespondNow(NoArguments());
   } else {
     return RespondNow(Error("ARC is not available for the current user"));
@@ -4747,11 +4748,7 @@ AutotestPrivateSetAppWindowStateFunction::Run() {
   if (params->change.event_type ==
           api::autotest_private::WMEventType::kWmeventSnapPrimary ||
       params->change.event_type ==
-          api::autotest_private::WMEventType::kWmeventSnapSecondary ||
-      params->change.event_type ==
-          api::autotest_private::WMEventType::kWmeventSnapLeft ||
-      params->change.event_type ==
-          api::autotest_private::WMEventType::kWmeventSnapRight) {
+          api::autotest_private::WMEventType::kWmeventSnapSecondary) {
     const ash::WindowSnapWMEvent event(
         ToWMEventType(params->change.event_type));
     ash::WindowState::Get(window)->OnWMEvent(&event);

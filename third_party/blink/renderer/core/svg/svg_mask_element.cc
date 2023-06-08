@@ -180,23 +180,21 @@ SVGAnimatedPropertyBase* SVGMaskElement::PropertyFromAttribute(
   }
 }
 
-void SVGMaskElement::SynchronizeSVGAttribute(const QualifiedName& name) const {
-  if (name == AnyQName()) {
-    SVGAnimatedPropertyBase* attrs[]{
-        x_.Get(),      y_.Get(),          width_.Get(),
-        height_.Get(), mask_units_.Get(), mask_content_units_.Get()};
-    SynchronizeAllSVGAttributes(attrs);
-  }
-  SVGTests::SynchronizeSVGAttribute(name);
-  SVGElement::SynchronizeSVGAttribute(name);
+void SVGMaskElement::SynchronizeAllSVGAttributes() const {
+  SVGAnimatedPropertyBase* attrs[]{
+      x_.Get(),      y_.Get(),          width_.Get(),
+      height_.Get(), mask_units_.Get(), mask_content_units_.Get()};
+  SynchronizeListOfSVGAttributes(attrs);
+  SVGTests::SynchronizeAllSVGAttributes();
+  SVGElement::SynchronizeAllSVGAttributes();
 }
 
 void SVGMaskElement::CollectExtraStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   for (auto* property : (SVGAnimatedPropertyBase*[]){
            x_.Get(), y_.Get(), width_.Get(), height_.Get()}) {
-    if (property->HasPresentationAttributeMapping() &&
-        property->IsAnimating()) {
+    DCHECK(property->HasPresentationAttributeMapping());
+    if (property->IsAnimating()) {
       CollectStyleForPresentationAttribute(property->AttributeName(),
                                            g_empty_atom, style);
     }

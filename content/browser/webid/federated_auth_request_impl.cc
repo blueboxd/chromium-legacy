@@ -14,6 +14,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/url_formatter/url_formatter.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -269,7 +270,8 @@ std::string FormatUrlWithDomain(const GURL& url, bool for_display) {
         GURL(url.scheme() + "://" + formatted_url_str),
         url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS));
   }
-  return GURL(url.scheme() + "://" + formatted_url_str).spec();
+  return base::UTF16ToUTF8(
+      url_formatter::FormatUrl(GURL(url.scheme() + "://" + formatted_url_str)));
 }
 
 std::string FormatOriginForDisplay(const url::Origin& origin) {
@@ -738,12 +740,14 @@ void FederatedAuthRequestImpl::RequestUserInfo(
   auto user_info_request = FederatedAuthUserInfoRequest::Create(
       std::move(network_manager), permission_delegate_.get(),
       &render_frame_host(), fedcm_metrics_.get(), std::move(provider));
-  user_info_request->SetCallbackAndStart(
+  FederatedAuthUserInfoRequest* user_info_request_ptr = user_info_request.get();
+  user_info_requests_.insert(std::move(user_info_request));
+
+  user_info_request_ptr->SetCallbackAndStart(
       base::BindOnce(&FederatedAuthRequestImpl::CompleteUserInfoRequest,
-                     weak_ptr_factory_.GetWeakPtr(), user_info_request.get(),
+                     weak_ptr_factory_.GetWeakPtr(), user_info_request_ptr,
                      std::move(callback)),
       api_permission_delegate_.get());
-  user_info_requests_.insert(std::move(user_info_request));
 }
 
 void FederatedAuthRequestImpl::CancelTokenRequest() {
@@ -1423,8 +1427,8 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
       }
 
       if (need_client_metadata &&
-          webid::IsEndpointUrlValid(idp_info->provider->config_url,
-                                    idp_info->endpoints.client_metadata)) {
+          webid::IsEndpointSameOrigin(idp_info->provider->config_url,
+                                      idp_info->endpoints.client_metadata)) {
         // Copy OnClientMetadataResponseReceived() parameters because `idp_info`
         // is moved.
         GURL client_metadata_endpoint = idp_info->endpoints.client_metadata;

@@ -379,6 +379,7 @@ enum class PresentedState {
   [self.bookmarkNavigationController setViewControllers:@[] animated:NO];
   self.bookmarkBrowser.homeDelegate = nil;
   self.bookmarkBrowser = nil;
+  self.bookmarkNavigationController.presentationController.delegate = nil;
   self.bookmarkNavigationController = nil;
   self.currentPresentedState = PresentedState::NONE;
 }
@@ -691,6 +692,15 @@ enum class PresentedState {
             (const BookmarkNode*)displayedFolderNode
                             selectingBookmark:
                                 (const BookmarkNode*)bookmarkNode {
+  if (self.bookmarkNavigationController) {
+    // Since bookmark browser is dismissed asynchronously through
+    // `-presentationControllerDidDismiss:`, it is possible for this method to
+    // be called before `self.bookmarkNavigationController` is reset. In that
+    // case reset `self.bookmarkNavigationController` and continue.
+    DCHECK_EQ(PresentedState::BOOKMARK_BROWSER, self.currentPresentedState)
+        << [self description];
+    [self bookmarkBrowserDismissed];
+  }
   DCHECK_EQ(PresentedState::NONE, self.currentPresentedState);
   DCHECK(!self.bookmarkNavigationController) << [self description];
 

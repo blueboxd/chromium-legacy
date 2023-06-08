@@ -8,7 +8,7 @@
 
 #include <utility>
 
-#include "base/format_macros.h"
+#include "ash/constants/ash_switches.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
@@ -18,7 +18,6 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
-#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace ash {
 
@@ -593,6 +592,18 @@ class CrasAudioClientImpl : public CrasAudioClient {
   void WaitForServiceToBeAvailable(
       chromeos::WaitForServiceToBeAvailableCallback callback) override {
     cras_proxy_->WaitForServiceToBeAvailable(std::move(callback));
+  }
+
+  void SetForceRespectUiGains(bool force_respect_ui_gains) override {
+    VLOG(1) << "cras_audio_client: Setting force_respect_ui_gains state: "
+            << force_respect_ui_gains;
+    dbus::MethodCall method_call(cras::kCrasControlInterface,
+                                 cras::kSetForceRespectUiGains);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(force_respect_ui_gains);
+    cras_proxy_->CallMethod(&method_call,
+                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                            base::DoNothing());
   }
 
  private:
@@ -1301,7 +1312,13 @@ CrasAudioClient::~CrasAudioClient() {
 // static
 void CrasAudioClient::Initialize(dbus::Bus* bus) {
   DCHECK(bus);
-  new CrasAudioClientImpl(bus);
+  if (ash::switches::UseFakeCrasAudioClientForDBus()) {
+    LOG(WARNING) << "Using FakeCrasAudioClient due to switch: "
+                 << ash::switches::kUseFakeCrasAudioClientForDBus;
+    InitializeFake();
+  } else {
+    new CrasAudioClientImpl(bus);
+  }
 }
 
 // static

@@ -12,6 +12,7 @@
 #include "base/barrier_callback.h"
 #include "base/barrier_closure.h"
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/feature_list.h"
@@ -113,18 +114,20 @@ SavedPasswordsPresenter::SavedPasswordsPresenter(
   DCHECK(profile_store_);
 }
 
-SavedPasswordsPresenter::~SavedPasswordsPresenter() {
-  RemoveObservers();
-}
+SavedPasswordsPresenter::~SavedPasswordsPresenter() = default;
 
 void SavedPasswordsPresenter::Init() {
   // Clear old cache.
   sort_key_to_password_forms_.clear();
   passwords_grouper_->ClearCache();
 
-  profile_store_->AddObserver(this);
-  if (account_store_)
-    account_store_->AddObserver(this);
+  profile_store_observation_.Observe(profile_store_.get());
+  if (account_store_) {
+    account_store_observation_.Observe(account_store_.get());
+  }
+  if (passkey_store_) {
+    passkey_store_observation_.Observe(passkey_store_);
+  }
   pending_store_updates_++;
   profile_store_->GetAllLoginsWithAffiliationAndBrandingInformation(
       weak_ptr_factory_.GetWeakPtr());
@@ -139,15 +142,17 @@ bool SavedPasswordsPresenter::IsWaitingForPasswordStore() const {
   return pending_store_updates_ != 0;
 }
 
-void SavedPasswordsPresenter::RemoveObservers() {
-  if (account_store_)
-    account_store_->RemoveObserver(this);
-  profile_store_->RemoveObserver(this);
-}
-
 bool SavedPasswordsPresenter::RemoveCredential(
     const CredentialUIEntry& credential) {
-  // TODO(crbug.com/1432717): support passkeys.
+  if (!credential.passkey_credential_id.empty()) {
+    CHECK(passkey_store_);
+    std::string credential_id(credential.passkey_credential_id.begin(),
+                              credential.passkey_credential_id.end());
+    if (!passkey_store_->DeletePasskey(std::move(credential_id))) {
+      return false;
+    }
+    return true;
+  }
   std::vector<PasswordForm> forms_to_delete =
       GetCorrespondingPasswordForms(credential);
   undo_helper_->StartGroupingActions();
@@ -436,8 +441,8 @@ std::vector<CredentialUIEntry> SavedPasswordsPresenter::GetSavedPasswords()
     const {
   auto credentials = GetSavedCredentials();
   base::EraseIf(credentials, [](const auto& credential) {
-    return credential.is_passkey || credential.blocked_by_user ||
-           !credential.federation_origin.opaque();
+    return !credential.passkey_credential_id.empty() ||
+           credential.blocked_by_user || !credential.federation_origin.opaque();
   });
   return credentials;
 }
@@ -535,6 +540,12 @@ void SavedPasswordsPresenter::OnLoginsRetained(
                           PasswordStoreChangeList()));
 }
 
+void SavedPasswordsPresenter::OnPasskeysChanged() {
+  MaybeGroupCredentials(base::BindOnce(
+      &SavedPasswordsPresenter::NotifySavedPasswordsChanged,
+      weak_ptr_factory_.GetWeakPtr(), PasswordStoreChangeList()));
+}
+
 void SavedPasswordsPresenter::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   // This class overrides OnGetPasswordStoreResultsFrom() (the version of this
@@ -595,8 +606,12 @@ void SavedPasswordsPresenter::AddForms(const std::vector<PasswordForm>& forms,
     std::move(completion).Run();
     return;
   }
+  MaybeGroupCredentials(std::move(completion));
+}
 
-  // Group passwords once we received forms from all password stores.
+void SavedPasswordsPresenter::MaybeGroupCredentials(
+    base::OnceClosure completion) {
+  // Group credentials once we received forms from all password stores.
   if (pending_store_updates_ > 0) {
     return;
   }

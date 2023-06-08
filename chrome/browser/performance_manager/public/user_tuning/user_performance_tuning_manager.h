@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/scoped_observation.h"
@@ -40,9 +41,6 @@ class UserPerformanceTuningManager {
   // The percentage of battery that is considered "low". For instance, this
   // would be `20` for 20%.
   static const uint64_t kLowBatteryThresholdPercent;
-
-  // Command line switch for setting the discard time.
-  static const char kTimeBeforeDiscardInMinutesSwitch[];
 
   class FrameThrottlingDelegate {
    public:
@@ -108,6 +106,23 @@ class UserPerformanceTuningManager {
     virtual void OnMemoryMetricsRefreshed() {}
   };
 
+  class TabResourceUsage : public base::RefCounted<TabResourceUsage> {
+   public:
+    TabResourceUsage() = default;
+
+    uint64_t memory_usage_in_bytes() const { return memory_usage_bytes_; }
+
+    void set_memory_usage_in_bytes(uint64_t memory_usage_bytes) {
+      memory_usage_bytes_ = memory_usage_bytes;
+    }
+
+   private:
+    friend class base::RefCounted<TabResourceUsage>;
+    ~TabResourceUsage() = default;
+
+    uint64_t memory_usage_bytes_ = 0;
+  };
+
   // Per-tab class to keep track of current memory usage for each tab.
   class ResourceUsageTabHelper
       : public content::WebContentsObserver,
@@ -121,10 +136,16 @@ class UserPerformanceTuningManager {
     // content::WebContentsObserver
     void PrimaryPageChanged(content::Page& page) override;
 
-    uint64_t GetMemoryUsageInBytes() { return memory_usage_bytes_; }
+    uint64_t GetMemoryUsageInBytes() {
+      return resource_usage_->memory_usage_in_bytes();
+    }
 
     void SetMemoryUsageInBytes(uint64_t memory_usage_bytes) {
-      memory_usage_bytes_ = memory_usage_bytes;
+      resource_usage_->set_memory_usage_in_bytes(memory_usage_bytes);
+    }
+
+    scoped_refptr<const TabResourceUsage> resource_usage() const {
+      return resource_usage_;
     }
 
    private:
@@ -132,7 +153,7 @@ class UserPerformanceTuningManager {
     explicit ResourceUsageTabHelper(content::WebContents* contents);
     WEB_CONTENTS_USER_DATA_KEY_DECL();
 
-    uint64_t memory_usage_bytes_ = 0;
+    scoped_refptr<TabResourceUsage> resource_usage_;
   };
 
   class PreDiscardResourceUsage
@@ -191,10 +212,6 @@ class UserPerformanceTuningManager {
 
   // Enables high efficiency mode and sets the relevant prefs accordingly.
   void SetHighEfficiencyModeEnabled(bool enabled);
-
-  // Sets the default value of the discard time pref using the command line
-  // switch, if the pref is in the default state.
-  static void SetDefaultTimeBeforeDiscardFromSwitch(PrefService* local_state);
 
   // Discards the given WebContents with the same mechanism as one that is
   // discarded through a natural timeout

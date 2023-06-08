@@ -46,6 +46,7 @@ class SearchCompanionSidePanelCoordinator
 
   std::u16string name() const { return name_; }
   const gfx::VectorIcon& icon() { return *icon_; }
+  const gfx::VectorIcon& disabled_icon() { return *disabled_icon_; }
 
   // TabStripModelObserver:
   void OnTabStripModelChanged(
@@ -74,22 +75,25 @@ class SearchCompanionSidePanelCoordinator
   // Updates CSC availability in side panel.
   void UpdateCompanionAvailabilityInSidePanel();
 
+  // Update companion enabled state based on active tab's url.
+  void MaybeUpdateCompanionEnabledState();
+
   // Update whether the CSC pinned toolbar button is enabled if the button is
-  // pinned based on active tab's url.
-  void MaybeUpdatePinnedButtonEnabledState();
+  // pinned.
+  void MaybeUpdatePinnedButtonEnabledState(bool enabled);
+
+  // Update whether the CSC combobox entry is enabled if the entry exists.
+  void MaybeUpdateComboboxEntryEnabledState(bool enabled);
 
   // Called if there is a change in the state of policy pref.
   void OnPolicyPrefChanged();
 
-  // Returns true if CSC runtime checks pass.
-  bool DoCompanionRuntimeChecksPass() const;
-
   raw_ptr<Browser> browser_;
   std::u16string name_;
   const raw_ref<const gfx::VectorIcon, ExperimentalAsh> icon_;
+  const raw_ref<const gfx::VectorIcon, ExperimentalAsh> disabled_icon_;
   raw_ptr<PrefService> pref_service_;
-  bool dsp_is_google_ = false;
-  bool csc_enabled_via_policy_ = false;
+  bool is_currently_observing_tab_changes_ = false;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 

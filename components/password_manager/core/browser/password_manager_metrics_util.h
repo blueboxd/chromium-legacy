@@ -604,7 +604,9 @@ enum class PasswordViewPageInteractions {
   kCredentialRequestedByUrl = 11,
   // The copy display name button in settings passkey view page is clicked.
   kPasskeyDisplayNameCopyButtonClicked = 12,
-  kMaxValue = kPasskeyDisplayNameCopyButtonClicked,
+  // The delete button in a passkey view page is clicked.
+  kPasskeyDeleteButtonClicked = 13,
+  kMaxValue = kPasskeyDeleteButtonClicked,
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -731,7 +733,7 @@ void LogMoveUIDismissalReason(UIDismissalReason reason,
 void LogUIDisplayDisposition(UIDisplayDisposition disposition);
 
 // When a credential was filled, log whether it came from an Android app.
-void LogFilledCredentialIsFromAndroidApp(bool from_android);
+void LogFilledPasswordFromAndroidApp(bool from_android);
 
 // Log what's preventing passwords from syncing.
 void LogPasswordSyncState(PasswordSyncState state);

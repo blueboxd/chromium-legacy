@@ -333,28 +333,25 @@ SVGAnimatedPropertyBase* SVGPatternElement::PropertyFromAttribute(
   }
 }
 
-void SVGPatternElement::SynchronizeSVGAttribute(
-    const QualifiedName& name) const {
-  if (name == AnyQName()) {
-    SVGAnimatedPropertyBase* attrs[]{x_.Get(),
-                                     y_.Get(),
-                                     width_.Get(),
-                                     height_.Get(),
-                                     pattern_transform_.Get(),
-                                     pattern_units_.Get(),
-                                     pattern_content_units_.Get()};
-    SynchronizeAllSVGAttributes(attrs);
-  }
-  SVGURIReference::SynchronizeSVGAttribute(name);
-  SVGTests::SynchronizeSVGAttribute(name);
-  SVGFitToViewBox::SynchronizeSVGAttribute(name);
-  SVGElement::SynchronizeSVGAttribute(name);
+void SVGPatternElement::SynchronizeAllSVGAttributes() const {
+  SVGAnimatedPropertyBase* attrs[]{x_.Get(),
+                                   y_.Get(),
+                                   width_.Get(),
+                                   height_.Get(),
+                                   pattern_transform_.Get(),
+                                   pattern_units_.Get(),
+                                   pattern_content_units_.Get()};
+  SynchronizeListOfSVGAttributes(attrs);
+  SVGURIReference::SynchronizeAllSVGAttributes();
+  SVGTests::SynchronizeAllSVGAttributes();
+  SVGFitToViewBox::SynchronizeAllSVGAttributes();
+  SVGElement::SynchronizeAllSVGAttributes();
 }
 
 void SVGPatternElement::CollectExtraStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
-  if (pattern_transform_->HasPresentationAttributeMapping() &&
-      pattern_transform_->IsAnimating()) {
+  DCHECK(pattern_transform_->HasPresentationAttributeMapping());
+  if (pattern_transform_->IsAnimating()) {
     CollectStyleForPresentationAttribute(pattern_transform_->AttributeName(),
                                          g_empty_atom, style);
   }

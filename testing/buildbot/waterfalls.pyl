@@ -1156,17 +1156,6 @@
         },
         'os_type': 'android',
       },
-      'android-pie-arm64-wpt-rel-non-cq': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'pie_fleet',
-          'walleye',
-        ],
-        'test_suites': {
-          'isolated_scripts': 'system_webview_wpt',
-        },
-        'os_type': 'android',
-      },
       'android-webview-12-x64-dbg-tests': {
         'mixins': [
           '12-x64-emulator',
@@ -3181,18 +3170,6 @@
           'walleye',
         ],
       },
-      'VR Linux': {
-        'mixins': [
-          'has_native_resultdb_integration',
-          'linux-jammy',
-        ],
-        'additional_compile_targets': [
-          'vr_common_perftests',
-        ],
-        'test_suites': {
-          'gtest_tests': 'vr_platform_specific_chromium_gtests',
-        },
-      },
       'Win 10 Fast Ring': {
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
@@ -3264,7 +3241,7 @@
           'has_native_resultdb_integration',
           'finch-chromium-swarming-pool',
           'pie-x86-emulator',
-          'linux-bionic',
+          'linux-jammy',
           'x86-64',
         ],
         'os_type': 'android',
@@ -3477,7 +3454,7 @@
           'mac_13_x64',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_14_main',
+          'xcode_15_beta',
           'xctest',
         ],
         'test_suites': {
@@ -3493,7 +3470,7 @@
           'mac_13_x64',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_14_main',
+          'xcode_15_beta',
           'xctest',
         ],
         'test_suites': {
@@ -3713,6 +3690,7 @@
         'mixins': [
           'has_native_resultdb_integration',
           'linux-jammy',
+          'isolate_profile_data'
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests_content_shell_multiple_flags',
@@ -4536,8 +4514,7 @@
         # the gpu_noop_sleep_telemetry_test test should be used. Otherwise, this
         # should have the same test_suites as 'Mac FYI Release (Apple M1)'.
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_mac_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_mac_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
         },
       },
       'Mac FYI Experimental Release (Intel)': {
@@ -5320,6 +5297,18 @@
       'linux-exp-asan-lsan-fyi-rel': {
         'mixins': [
           'linux-jammy',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_linux_and_gl_gtests',
+        },
+        'args': [
+          '--test-launcher-print-test-stdio=always',
+        ],
+      },
+      'linux-exp-msan-fyi-rel': {
+        'mixins': [
+          'linux-focal',
+          'x86-64',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',

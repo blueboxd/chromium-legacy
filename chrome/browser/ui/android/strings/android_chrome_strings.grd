@@ -3342,6 +3342,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_FEED_MANAGE_INTERESTS_DESCRIPTION" desc="Content description to manage settings from the feed header overflow menu.">
         Manage the topics you're interested in
       </message>
+      <message name="IDS_FEED_MANAGE_INTERESTS_DESCRIPTION_UI_UPDATE" desc="Content description to manage settings from the feed header overflow menu.">
+        Manage the topics and searches you're interested in
+      </message>
       <message name="IDS_FEED_MANAGE_HIDDEN" desc="Menu item to manage hiding and unhiding topics.">
         Hidden
       </message>
@@ -5296,14 +5299,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
 
       <message name="IDS_SHARING_INCLUDING_LINK_TITLE_TEMPLATE" desc="Title used in share sheet when sharing the highlighted text with a generated link.">
         Including link: <ph name="ORIGIN">%1$s<ex>https://www.example.com</ex></ph>
-      </message>
-
-      <message name="IDS_TEXT_COPIED" desc="Text shown in the toast notification when Copy Text is selected in the sharing hub.">
-        Text Copied
-      </message>
-
-      <message name="IDS_IMAGE_COPIED" desc="Text shown in the toast notification when Copy Image is selected in the sharing hub.">
-        Image Copied
       </message>
 
       <message name="IDS_GIF_COPIED" desc="Text shown in the toast notification when Copy GIF is selected in the sharing hub.">

@@ -210,26 +210,49 @@ if (is_apple) {
   # .mm files are ARCed.
   source_set("base_arc") {
     sources = [
+      "apple/backup_util.h",
+      "apple/backup_util.mm",
+      "apple/bundle_locations.h",
+      "apple/bundle_locations.mm",
       "apple/owned_objc.h",
       "apple/owned_objc.mm",
+      "file_version_info_mac.h",
+      "file_version_info_mac.mm",
+      "files/file_util_mac.mm",
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
+      "strings/sys_string_conversions_mac.mm",
+      "system/sys_info_apple.mm",
+      "threading/platform_thread_mac.mm",
+      "time/time_mac.mm",
+    ]
+    defines = [ "BASE_IMPLEMENTATION" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
+    deps = [
+      "//base:base_static",
+      "//base/numerics:base_numerics",
+      "//build:blink_buildflags",
+      "//third_party/abseil-cpp:absl",
     ]
     if (is_mac) {
       sources += [
+        "enterprise_util_mac.mm",
+        "mac/authorization_util.h",
+        "mac/authorization_util.mm",
         "mac/launch_application.h",
         "mac/launch_application.mm",
+        "system/sys_info_mac.mm",
       ]
       frameworks = [
         "AppKit.framework",
         "Foundation.framework",
+        "OpenDirectory.framework",
+        "Security.framework",
       ]
     }
-    configs += [ "//build/config/compiler:enable_arc" ]
-    deps = [
-      "//base:base_static",
-      "//third_party/abseil-cpp:absl",
-    ]
+    if (is_ios) {
+      deps += [ "//base/ios" ]
+    }
   }
 }
 
@@ -404,7 +427,6 @@ component("base") {
     "functional/overloaded.h",
     "functional/unretained_traits.h",
     "gtest_prod_util.h",
-    "guid.h",
     "hash/hash.cc",
     "hash/hash.h",
     "hash/legacy_hash.cc",
@@ -468,6 +490,7 @@ component("base") {
     "memory/ref_counted_memory.cc",
     "memory/ref_counted_memory.h",
     "memory/safe_ref.h",
+    "memory/safe_ref_traits.h",
     "memory/scoped_policy.h",
     "memory/scoped_refptr.h",
     "memory/shared_memory_hooks.h",
@@ -1142,6 +1165,8 @@ component("base") {
       sources += [
         "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.cc",
         "allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.h",
+        "allocator/partition_allocator/shim/nonscannable_allocator.cc",
+        "allocator/partition_allocator/shim/nonscannable_allocator.h",
       ]
     }
     if (is_android) {
@@ -1999,14 +2024,11 @@ component("base") {
       "allocator/partition_allocator/shim/malloc_zone_functions_mac.h",
       "enterprise_util.cc",
       "enterprise_util.h",
-      "enterprise_util_mac.mm",
       "files/file_path_watcher_fsevents.cc",
       "files/file_path_watcher_fsevents.h",
       "files/file_path_watcher_kqueue.cc",
       "files/file_path_watcher_kqueue.h",
       "files/file_path_watcher_mac.cc",
-      "mac/authorization_util.h",
-      "mac/authorization_util.mm",
       "mac/close_nocancel.cc",
       "mac/launchd.cc",
       "mac/launchd.h",
@@ -2056,7 +2078,6 @@ component("base") {
       "profiler/suspendable_thread_delegate_mac.cc",
       "profiler/suspendable_thread_delegate_mac.h",
       "synchronization/waitable_event_watcher_mac.cc",
-      "system/sys_info_mac.mm",
       "time/time_exploded_posix.cc",
     ]
 
@@ -2075,14 +2096,7 @@ component("base") {
   # Mac or iOS.
   if (is_apple) {
     sources += [
-      "apple/backup_util.h",
-      "apple/backup_util.mm",
       "apple/bridging.h",
-      "apple/bundle_locations.h",
-      "apple/bundle_locations.mm",
-      "file_version_info_mac.h",
-      "file_version_info_mac.mm",
-      "files/file_util_mac.mm",
       "mac/call_with_eh_frame.cc",
       "mac/call_with_eh_frame.h",
       "mac/call_with_eh_frame_asm.S",
@@ -2110,10 +2124,7 @@ component("base") {
       "process/process_metrics_apple_internal.cc",
       "process/process_metrics_apple_internal.h",
       "profiler/module_cache_mac.cc",
-      "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
-      "system/sys_info_apple.mm",
-      "threading/platform_thread_mac.mm",
       "threading/atomic.c",
       "time/time_mac.mm",
     ]
@@ -2734,6 +2745,7 @@ component("i18n") {
 
   if (is_ios) {
     deps += [ "//base/ios" ]
+    allow_circular_includes_from = [ "//base/ios" ]
   }
 }
 
@@ -3489,9 +3501,10 @@ test("base_unittests") {
   }
 
   if (is_apple) {
-    public_deps = [ ":base_unittests_bundle_data" ]
-
-    deps += [ ":base_unittests_noarc" ]
+    public_deps = [
+      ":base_unittests_bundle_data",
+      ":base_unittests_noarc",
+    ]
   }
 
   if (!is_ios) {
@@ -3940,8 +3953,12 @@ test("base_unittests") {
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
 
-    additional_manifest_fragments =
-        [ "//build/config/fuchsia/test/logger.shard.test-cml" ]
+    additional_manifest_fragments = [
+      "//build/config/fuchsia/test/logger.shard.test-cml",
+
+      # Required by PartitionAllocPageAllocatorTest tests with exec capability.
+      "//build/config/fuchsia/test/mark_vmo_executable.shard.test-cml",
+    ]
   }
 
   if (!is_fuchsia && !is_ios) {

@@ -120,6 +120,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_visitor.h"
 #include "extensions/buildflags/buildflags.h"
+#include "extensions/renderer/worker_script_context_set.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
@@ -161,7 +162,6 @@
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "url/origin.h"
@@ -1394,6 +1394,25 @@ bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {
 bool ChromeContentRendererClient::AllowPopup() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeExtensionsRendererClient::GetInstance()->AllowPopup();
+#else
+  return false;
+#endif
+}
+
+bool ChromeContentRendererClient::ShouldNotifyServiceWorkerOnWebSocketActivity(
+    v8::Local<v8::Context> context) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  extensions::ScriptContext* script_context =
+      ChromeExtensionsRendererClient::GetInstance()
+          ->extension_dispatcher()
+          ->GetWorkerScriptContextSet()
+          ->GetContextByV8Context(context);
+  // Only notify on web socket activity if the service worker is the background
+  // service worker for an extension.
+  return script_context &&
+         ChromeExtensionsRendererClient::GetInstance()
+             ->ExtensionAPIEnabledForServiceWorkerScript(
+                 script_context->service_worker_scope(), script_context->url());
 #else
   return false;
 #endif

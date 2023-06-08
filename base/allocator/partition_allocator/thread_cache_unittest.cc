@@ -68,6 +68,7 @@ std::unique_ptr<PartitionAllocatorForTesting> CreateAllocator() {
     .thread_cache = PartitionOptions::ThreadCache::kEnabled,
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
     .quarantine = PartitionOptions::Quarantine::kAllowed,
+    .cookie = PartitionOptions::Cookie::kDisallowed,
   });
   allocator->root()->UncapEmptySlotSpanMemoryForTesting();
 
@@ -77,8 +78,7 @@ std::unique_ptr<PartitionAllocatorForTesting> CreateAllocator() {
 }  // namespace
 
 class PartitionAllocThreadCacheTest
-    : public ::testing::TestWithParam<
-          PartitionRoot<internal::ThreadSafe>::BucketDistribution> {
+    : public ::testing::TestWithParam<PartitionRoot::BucketDistribution> {
  public:
   PartitionAllocThreadCacheTest()
       : allocator_(CreateAllocator()), scope_(allocator_->root()) {}
@@ -144,8 +144,7 @@ class PartitionAllocThreadCacheTest
   }
 
   static size_t SizeToIndex(size_t size) {
-    return PartitionRoot<internal::ThreadSafe>::SizeToBucketIndex(size,
-                                                                  GetParam());
+    return PartitionRoot::SizeToBucketIndex(size, GetParam());
   }
 
   size_t FillThreadCacheAndReturnIndex(size_t size, size_t count = 1) {
@@ -353,8 +352,7 @@ size_t FillThreadCacheAndReturnIndex(ThreadSafePartitionRoot* root,
                                      BucketDistribution bucket_distribution,
                                      size_t count = 1) {
   uint16_t bucket_index =
-      PartitionRoot<internal::ThreadSafe>::SizeToBucketIndex(
-          size, bucket_distribution);
+      PartitionRoot::SizeToBucketIndex(size, bucket_distribution);
   std::vector<void*> allocated_data;
 
   for (size_t i = 0; i < count; ++i) {
@@ -394,7 +392,7 @@ class ThreadDelegateForMultipleThreadCaches
  private:
   ThreadCache* parent_thread_tcache_ = nullptr;
   ThreadSafePartitionRoot* root_ = nullptr;
-  PartitionRoot<internal::ThreadSafe>::BucketDistribution bucket_distribution_;
+  PartitionRoot::BucketDistribution bucket_distribution_;
 };
 
 }  // namespace
@@ -1023,7 +1021,7 @@ class ThreadDelegateForDynamicCountPerBucketMultipleThreads
   std::atomic<bool>& other_thread_started_;
   std::atomic<bool>& threshold_changed_;
   const int bucket_index_;
-  PartitionRoot<internal::ThreadSafe>::BucketDistribution bucket_distribution_;
+  PartitionRoot::BucketDistribution bucket_distribution_;
 };
 
 }  // namespace

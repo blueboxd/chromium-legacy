@@ -574,10 +574,6 @@ const char kFirstExecAfterBoot[] = "first-exec-after-boot";
 const char kForceCryptohomeRecoveryForTesting[] =
     "force-cryptohome-recovery-for-testing";
 
-// Forces developer tools availability, no matter what values the enterprise
-// policies DeveloperToolsDisabled and DeveloperToolsAvailability are set to.
-const char kForceDevToolsAvailable[] = "force-devtools-available";
-
 // Forces first-run UI to be shown for every login.
 const char kForceFirstRunUI[] = "force-first-run-ui";
 
@@ -972,6 +968,10 @@ const char kUnfilteredBluetoothDevices[] = "unfiltered-bluetooth-devices";
 // for testing the policy behaviour on the DUT.
 const char kUpdateRequiredAueForTest[] = "aue-reached-for-update-required-test";
 
+// Use the fake FakeCrasAudioClient to handle system audio controls.
+const char kUseFakeCrasAudioClientForDBus[] =
+    "use-fake-cras-audio-client-for-dbus";
+
 // Flag that stored MyFiles folder inside the user data directory.
 // $HOME/Downloads is used as MyFiles folder for ease access to local files for
 // debugging when running on Linux. By setting this flag, <cryptohome>/MyFiles
@@ -1142,6 +1142,11 @@ bool IsStabilizeTimeDependentViewForTestsEnabled() {
 bool IsCameraEffectsSupportedByHardware() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kCameraEffectsSupportedByHardware);
+}
+
+bool UseFakeCrasAudioClientForDBus() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kUseFakeCrasAudioClientForDBus);
 }
 
 }  // namespace switches

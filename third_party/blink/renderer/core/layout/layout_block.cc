@@ -356,24 +356,6 @@ void LayoutBlock::RemoveLeftoverAnonymousBlock(LayoutBlock* child) {
   child->Destroy();
 }
 
-void LayoutBlock::UpdateLayout() {
-  NOT_DESTROYED();
-
-  UpdateBlockLayout();
-
-  // It's safe to check for control clip here, since controls can never be table
-  // cells. If we have a lightweight clip, there can never be any overflow from
-  // children.
-  if (HasControlClip() && HasLayoutOverflow())
-    ClearLayoutOverflow();
-}
-
-void LayoutBlock::UpdateBlockLayout() {
-  NOT_DESTROYED();
-  ClearNeedsLayout();
-  NOTREACHED_NORETURN();
-}
-
 void LayoutBlock::AddVisualOverflowFromChildren() {
   NOT_DESTROYED();
   // It is an error to call this function on a LayoutBlock that it itself inside
@@ -1055,13 +1037,7 @@ LayoutUnit LayoutBlock::AvailableLogicalHeightForPercentageComputation() const {
       (!style.LogicalHeight().IsAuto() ||
        (!style.LogicalTop().IsAuto() && !style.LogicalBottom().IsAuto()));
 
-  LayoutUnit stretched_flex_height(-1);
-  if (HasOverrideLogicalHeight() && IsOverrideLogicalHeightDefinite()) {
-    stretched_flex_height = OverrideContentLogicalHeight();
-  }
-  if (stretched_flex_height != LayoutUnit(-1)) {
-    available_height = stretched_flex_height;
-  } else if (style.LogicalHeight().IsFixed()) {
+  if (style.LogicalHeight().IsFixed()) {
     LayoutUnit content_box_height = AdjustContentBoxLogicalHeightForBoxSizing(
         style.LogicalHeight().Value());
     available_height =

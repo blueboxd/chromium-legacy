@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/language/language_model_manager_factory.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
@@ -47,6 +48,7 @@
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/settings/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/settings/sync/utils/sync_state.h"
+#import "ios/chrome/browser/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -112,7 +114,6 @@
 #import "ios/chrome/browser/ui/settings/safety_check/safety_check_utils.h"
 #import "ios/chrome/browser/ui/settings/search_engine_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
-#import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 #import "ios/chrome/browser/ui/settings/tabs/tabs_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
@@ -681,13 +682,15 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       SyncServiceFactory::GetForBrowserState(_browserState);
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(_browserState);
-  return [SigninPromoViewMediator
-             shouldDisplaySigninPromoViewWithAccessPoint:
-                 signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
-                                   authenticationService:authenticationService
-                                             prefService:_browserState
-                                                             ->GetPrefs()] &&
-         !syncService->GetUserSettings()->IsInitialSyncFeatureSetupComplete();
+  const BOOL shouldDisplay =
+      [SigninPromoViewMediator
+          shouldDisplaySigninPromoViewWithAccessPoint:
+              signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
+                                authenticationService:authenticationService
+                                          prefService:_browserState
+                                                          ->GetPrefs()] &&
+      !syncService->GetUserSettings()->IsInitialSyncFeatureSetupComplete();
+  return shouldDisplay && !base::FeatureList::IsEnabled(kHideSettingsSyncPromo);
 }
 
 #pragma mark - Model Items
@@ -1394,8 +1397,11 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       break;
     case SettingsItemTypeLanguageSettings: {
       base::RecordAction(base::UserMetricsAction("Settings.Language"));
-      LanguageSettingsMediator* mediator =
-          [[LanguageSettingsMediator alloc] initWithBrowserState:_browserState];
+      language::LanguageModelManager* languageModelManager =
+          LanguageModelManagerFactory::GetForBrowserState(_browserState);
+      LanguageSettingsMediator* mediator = [[LanguageSettingsMediator alloc]
+          initWithLanguageModelManager:languageModelManager
+                           prefService:_browserState->GetPrefs()];
       LanguageSettingsTableViewController* languageSettingsTableViewController =
           [[LanguageSettingsTableViewController alloc]
               initWithDataSource:mediator

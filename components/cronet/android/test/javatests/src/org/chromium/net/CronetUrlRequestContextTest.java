@@ -6,8 +6,6 @@ package org.chromium.net;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
@@ -166,7 +164,7 @@ public class CronetUrlRequestContextTest {
         CronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         NativeTestServer.shutdownNativeTestServer(); // startNativeTestServer returns false if it's
         // already running
-        assertTrue(NativeTestServer.startNativeTestServer(getContext()));
+        assertThat(NativeTestServer.startNativeTestServer(getContext())).isTrue();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder urlRequestBuilder = cronetEngine.newUrlRequestBuilder(
                 NativeTestServer.getEchoHeaderURL(userAgentName), callback, callback.getExecutor());
@@ -324,7 +322,7 @@ public class CronetUrlRequestContextTest {
                 MOCK_CRONET_TEST_FAILED_URL, callback, callback.getExecutor());
         urlRequestBuilder.build().start();
         callback.blockForDone();
-        assertTrue(callback.mOnErrorCalled);
+        assertThat(callback.mOnErrorCalled).isTrue();
         callback.blockForCallbackToComplete();
         callback.shutdownExecutor();
     }
@@ -373,10 +371,9 @@ public class CronetUrlRequestContextTest {
                 cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor());
         urlRequestBuilder.bindToNetwork(defaultNetwork.getNetworkHandle());
         UrlRequest urlRequest = urlRequestBuilder.build();
-
-        assertFalse(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork));
+        assertThat(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork)).isFalse();
         urlRequest.start();
-        assertTrue(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork));
+        assertThat(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork)).isTrue();
 
         // Resume callback execution.
         callback.waitForNextStep();
@@ -388,7 +385,7 @@ public class CronetUrlRequestContextTest {
 
         // The default network should still be active, hence the underlying network-bound context
         // should still be there.
-        assertTrue(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork));
+        assertThat(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork)).isTrue();
 
         // Fake disconnect event for the default network, this should destroy the underlying
         // network-bound context.
@@ -401,7 +398,7 @@ public class CronetUrlRequestContextTest {
         });
         CronetLibraryLoader.postToInitThread(task);
         task.get();
-        assertFalse(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork));
+        assertThat(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork)).isFalse();
     }
 
     @Test
@@ -427,13 +424,13 @@ public class CronetUrlRequestContextTest {
         urlRequestBuilder.bindToNetwork(defaultNetwork.getNetworkHandle());
         UrlRequest urlRequest = urlRequestBuilder.build();
 
-        assertFalse(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork));
+        assertThat(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork)).isFalse();
         urlRequest.start();
-        assertTrue(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork));
+        assertThat(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork)).isTrue();
 
         callback.waitForNextStep();
         assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_RESPONSE_STARTED);
-        assertTrue(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork));
+        assertThat(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork)).isTrue();
         // Cronet registers for NCN notifications on the init thread (see
         // CronetLibraryLoader#ensureInitializedOnInitThread), hence we need to trigger fake
         // notifications from there.
@@ -451,7 +448,7 @@ public class CronetUrlRequestContextTest {
         // mError should be null due to urlRequest.cancel().
         assertThat(callback.mError).isNull();
         // urlRequest.cancel(); should destroy the underlying network bound context.
-        assertFalse(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork));
+        assertThat(ApiHelper.doesContextExistForNetwork(cronetEngine, defaultNetwork)).isFalse();
     }
 
     @Test
@@ -474,11 +471,11 @@ public class CronetUrlRequestContextTest {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         cronetEngine.stopNetLog();
-        assertTrue(file.exists());
+        assertThat(file.exists()).isTrue();
         assertThat(file.length()).isNotEqualTo(0);
-        assertFalse(hasBytesInNetLog(file));
-        assertTrue(file.delete());
-        assertTrue(!file.exists());
+        assertThat(hasBytesInNetLog(file)).isFalse();
+        assertThat(file.delete()).isTrue();
+        assertThat(file.exists()).isFalse();
     }
 
     @Test
@@ -488,8 +485,8 @@ public class CronetUrlRequestContextTest {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
-        assertFalse(netLogDir.exists());
-        assertTrue(netLogDir.mkdir());
+        assertThat(netLogDir.exists()).isFalse();
+        assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         // Start NetLog immediately after the request context is created to make
@@ -504,11 +501,11 @@ public class CronetUrlRequestContextTest {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         cronetEngine.stopNetLog();
-        assertTrue(logFile.exists());
+        assertThat(logFile.exists()).isTrue();
         assertThat(logFile.length()).isNotEqualTo(0);
-        assertFalse(hasBytesInNetLog(logFile));
+        assertThat(hasBytesInNetLog(logFile)).isFalse();
         FileUtils.recursivelyDeleteFile(netLogDir);
-        assertFalse(netLogDir.exists());
+        assertThat(netLogDir.exists()).isFalse();
     }
 
     @Test
@@ -531,11 +528,11 @@ public class CronetUrlRequestContextTest {
         callback.blockForDone();
         // Shut down the engine without calling stopNetLog.
         cronetEngine.shutdown();
-        assertTrue(file.exists());
+        assertThat(file.exists()).isTrue();
         assertThat(file.length()).isNotEqualTo(0);
-        assertFalse(hasBytesInNetLog(file));
-        assertTrue(file.delete());
-        assertTrue(!file.exists());
+        assertThat(hasBytesInNetLog(file)).isFalse();
+        assertThat(file.delete()).isTrue();
+        assertThat(file.exists()).isFalse();
     }
 
     @Test
@@ -547,8 +544,8 @@ public class CronetUrlRequestContextTest {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
-        assertFalse(netLogDir.exists());
-        assertTrue(netLogDir.mkdir());
+        assertThat(netLogDir.exists()).isFalse();
+        assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         cronetEngine.startNetLogToDisk(netLogDir.getPath(), false, MAX_FILE_SIZE);
@@ -561,11 +558,11 @@ public class CronetUrlRequestContextTest {
         callback.blockForDone();
         // Shut down the engine without calling stopNetLog.
         cronetEngine.shutdown();
-        assertTrue(logFile.exists());
+        assertThat(logFile.exists()).isTrue();
         assertThat(logFile.length()).isNotEqualTo(0);
 
         FileUtils.recursivelyDeleteFile(netLogDir);
-        assertFalse(netLogDir.exists());
+        assertThat(netLogDir.exists()).isFalse();
     }
 
     @Test
@@ -634,7 +631,7 @@ public class CronetUrlRequestContextTest {
         callback.blockForDone();
         assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
         callback.setBlockOnTerminalState(false);
-        assertTrue(callback.mOnCanceledCalled);
+        assertThat(callback.mOnCanceledCalled).isTrue();
         assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_CANCELED);
         waitForActiveRequestCount(cronetEngine, 0);
     }
@@ -655,7 +652,7 @@ public class CronetUrlRequestContextTest {
         callback.blockForDone();
         assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
         callback.setBlockOnTerminalState(false);
-        assertTrue(callback.mOnErrorCalled);
+        assertThat(callback.mOnErrorCalled).isTrue();
         assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_FAILED);
         waitForActiveRequestCount(cronetEngine, 0);
     }
@@ -680,7 +677,7 @@ public class CronetUrlRequestContextTest {
         } catch (Exception e) {
             threwException = true;
         }
-        assertTrue(threwException);
+        assertThat(threwException).isTrue();
         assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(1);
         callback.setAutoAdvance(true);
         callback.blockForDone();
@@ -705,7 +702,7 @@ public class CronetUrlRequestContextTest {
         } catch (Exception e) {
             threwException = true;
         }
-        assertTrue(threwException);
+        assertThat(threwException).isTrue();
         assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(0);
     }
 
@@ -727,7 +724,7 @@ public class CronetUrlRequestContextTest {
         assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(2);
         request1.cancel();
         callback1.blockForDone();
-        assertTrue(callback1.mOnCanceledCalled);
+        assertThat(callback1.mOnCanceledCalled).isTrue();
         assertThat(callback1.mResponseStep).isEqualTo(ResponseStep.ON_CANCELED);
         waitForActiveRequestCount(cronetEngine, 1);
         callback2.waitForNextStep();
@@ -758,7 +755,7 @@ public class CronetUrlRequestContextTest {
         assertThat(cronetEngine.getActiveRequestCount()).isEqualTo(2);
         callback1.setBlockOnTerminalState(false);
         callback1.blockForDone();
-        assertTrue(callback1.mOnErrorCalled);
+        assertThat(callback1.mOnErrorCalled).isTrue();
         assertThat(callback1.mResponseStep).isEqualTo(ResponseStep.ON_FAILED);
         waitForActiveRequestCount(cronetEngine, 1);
         callback2.waitForNextStep();
@@ -891,16 +888,16 @@ public class CronetUrlRequestContextTest {
 
         cronetEngine1.stopNetLog();
         cronetEngine2.stopNetLog();
-        assertTrue(file1.exists());
-        assertTrue(file2.exists());
+        assertThat(file1.exists()).isTrue();
+        assertThat(file2.exists()).isTrue();
         // Make sure both files contain the two requests made separately using
         // different engines.
-        assertTrue(containsStringInNetLog(file1, mUrl404));
-        assertTrue(containsStringInNetLog(file1, mUrl500));
-        assertTrue(containsStringInNetLog(file2, mUrl404));
-        assertTrue(containsStringInNetLog(file2, mUrl500));
-        assertTrue(file1.delete());
-        assertTrue(file2.delete());
+        assertThat(containsStringInNetLog(file1, mUrl404)).isTrue();
+        assertThat(containsStringInNetLog(file1, mUrl500)).isTrue();
+        assertThat(containsStringInNetLog(file2, mUrl404)).isTrue();
+        assertThat(containsStringInNetLog(file2, mUrl500)).isTrue();
+        assertThat(file1.delete()).isTrue();
+        assertThat(file2.delete()).isTrue();
     }
 
     @Test
@@ -911,11 +908,11 @@ public class CronetUrlRequestContextTest {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory());
         File netLogDir1 = new File(directory, "NetLog1");
-        assertFalse(netLogDir1.exists());
-        assertTrue(netLogDir1.mkdir());
+        assertThat(netLogDir1.exists()).isFalse();
+        assertThat(netLogDir1.mkdir()).isTrue();
         File netLogDir2 = new File(directory, "NetLog2");
-        assertFalse(netLogDir2.exists());
-        assertTrue(netLogDir2.mkdir());
+        assertThat(netLogDir2.exists()).isFalse();
+        assertThat(netLogDir2.mkdir()).isTrue();
         File logFile1 = new File(netLogDir1, "netlog.json");
         File logFile2 = new File(netLogDir2, "netlog.json");
 
@@ -941,22 +938,22 @@ public class CronetUrlRequestContextTest {
         cronetEngine1.stopNetLog();
         cronetEngine2.stopNetLog();
 
-        assertTrue(logFile1.exists());
-        assertTrue(logFile2.exists());
+        assertThat(logFile1.exists()).isTrue();
+        assertThat(logFile2.exists()).isTrue();
         assertThat(logFile1.length()).isNotEqualTo(0);
         assertThat(logFile2.length()).isNotEqualTo(0);
 
         // Make sure both files contain the two requests made separately using
         // different engines.
-        assertTrue(containsStringInNetLog(logFile1, mUrl404));
-        assertTrue(containsStringInNetLog(logFile1, mUrl500));
-        assertTrue(containsStringInNetLog(logFile2, mUrl404));
-        assertTrue(containsStringInNetLog(logFile2, mUrl500));
+        assertThat(containsStringInNetLog(logFile1, mUrl404)).isTrue();
+        assertThat(containsStringInNetLog(logFile1, mUrl500)).isTrue();
+        assertThat(containsStringInNetLog(logFile2, mUrl404)).isTrue();
+        assertThat(containsStringInNetLog(logFile2, mUrl500)).isTrue();
 
         FileUtils.recursivelyDeleteFile(netLogDir1);
-        assertFalse(netLogDir1.exists());
+        assertThat(netLogDir1.exists()).isFalse();
         FileUtils.recursivelyDeleteFile(netLogDir2);
-        assertFalse(netLogDir2.exists());
+        assertThat(netLogDir2.exists()).isFalse();
     }
 
     private CronetEngine createCronetEngineWithCache(int cacheType) {
@@ -1072,8 +1069,8 @@ public class CronetUrlRequestContextTest {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
-        assertTrue(callback.mResponseInfo.wasCached());
-        assertTrue(callback.mOnCanceledCalled);
+        assertThat(callback.mResponseInfo.wasCached()).isTrue();
+        assertThat(callback.mOnCanceledCalled).isTrue();
     }
 
     @Test
@@ -1096,9 +1093,9 @@ public class CronetUrlRequestContextTest {
         } catch (Exception e) {
             assertThat(e).hasMessageThat().isEqualTo("Engine is shut down.");
         }
-        assertFalse(hasBytesInNetLog(file));
-        assertTrue(file.delete());
-        assertTrue(!file.exists());
+        assertThat(hasBytesInNetLog(file)).isFalse();
+        assertThat(file.delete()).isTrue();
+        assertThat(file.exists()).isFalse();
     }
 
     @Test
@@ -1115,8 +1112,8 @@ public class CronetUrlRequestContextTest {
 
         File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
-        assertFalse(netLogDir.exists());
-        assertTrue(netLogDir.mkdir());
+        assertThat(netLogDir.exists()).isFalse();
+        assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
         try {
             cronetEngine.startNetLogToDisk(netLogDir.getPath(), false, MAX_FILE_SIZE);
@@ -1124,9 +1121,9 @@ public class CronetUrlRequestContextTest {
         } catch (Exception e) {
             assertThat(e).hasMessageThat().isEqualTo("Engine is shut down.");
         }
-        assertFalse(logFile.exists());
+        assertThat(logFile.exists()).isFalse();
         FileUtils.recursivelyDeleteFile(netLogDir);
-        assertFalse(netLogDir.exists());
+        assertThat(netLogDir.exists()).isFalse();
     }
 
     @Test
@@ -1148,11 +1145,11 @@ public class CronetUrlRequestContextTest {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         cronetEngine.stopNetLog();
-        assertTrue(file.exists());
+        assertThat(file.exists()).isTrue();
         assertThat(file.length()).isNotEqualTo(0);
-        assertFalse(hasBytesInNetLog(file));
-        assertTrue(file.delete());
-        assertTrue(!file.exists());
+        assertThat(hasBytesInNetLog(file)).isFalse();
+        assertThat(file.delete()).isTrue();
+        assertThat(file.exists()).isFalse();
     }
 
     @Test
@@ -1162,8 +1159,8 @@ public class CronetUrlRequestContextTest {
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
-        assertFalse(netLogDir.exists());
-        assertTrue(netLogDir.mkdir());
+        assertThat(netLogDir.exists()).isFalse();
+        assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
         // Start NetLog multiple times. This should be equivalent to starting NetLog
         // once. Each subsequent start (without calling stopNetLog) should be a no-op.
@@ -1178,11 +1175,11 @@ public class CronetUrlRequestContextTest {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         cronetEngine.stopNetLog();
-        assertTrue(logFile.exists());
+        assertThat(logFile.exists()).isTrue();
         assertThat(logFile.length()).isNotEqualTo(0);
-        assertFalse(hasBytesInNetLog(logFile));
+        assertThat(hasBytesInNetLog(logFile)).isFalse();
         FileUtils.recursivelyDeleteFile(netLogDir);
-        assertFalse(netLogDir.exists());
+        assertThat(netLogDir.exists()).isFalse();
     }
 
     @Test
@@ -1205,11 +1202,11 @@ public class CronetUrlRequestContextTest {
         cronetEngine.stopNetLog();
         cronetEngine.stopNetLog();
         cronetEngine.stopNetLog();
-        assertTrue(file.exists());
+        assertThat(file.exists()).isTrue();
         assertThat(file.length()).isNotEqualTo(0);
-        assertFalse(hasBytesInNetLog(file));
-        assertTrue(file.delete());
-        assertTrue(!file.exists());
+        assertThat(hasBytesInNetLog(file)).isFalse();
+        assertThat(file.delete()).isTrue();
+        assertThat(file.exists()).isFalse();
     }
 
     @Test
@@ -1219,8 +1216,8 @@ public class CronetUrlRequestContextTest {
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
-        assertFalse(netLogDir.exists());
-        assertTrue(netLogDir.mkdir());
+        assertThat(netLogDir.exists()).isFalse();
+        assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
         cronetEngine.startNetLogToDisk(netLogDir.getPath(), false, MAX_FILE_SIZE);
         // Start a request.
@@ -1236,11 +1233,11 @@ public class CronetUrlRequestContextTest {
         cronetEngine.stopNetLog();
         cronetEngine.stopNetLog();
         cronetEngine.stopNetLog();
-        assertTrue(logFile.exists());
+        assertThat(logFile.exists()).isTrue();
         assertThat(logFile.length()).isNotEqualTo(0);
-        assertFalse(hasBytesInNetLog(logFile));
+        assertThat(hasBytesInNetLog(logFile)).isFalse();
         FileUtils.recursivelyDeleteFile(netLogDir);
-        assertFalse(netLogDir.exists());
+        assertThat(netLogDir.exists()).isFalse();
     }
 
     @Test
@@ -1260,11 +1257,11 @@ public class CronetUrlRequestContextTest {
         urlRequestBuilder.build().start();
         callback.blockForDone();
         cronetEngine.stopNetLog();
-        assertTrue(file.exists());
+        assertThat(file.exists()).isTrue();
         assertThat(file.length()).isNotEqualTo(0);
-        assertTrue(hasBytesInNetLog(file));
-        assertTrue(file.delete());
-        assertTrue(!file.exists());
+        assertThat(hasBytesInNetLog(file)).isTrue();
+        assertThat(file.delete()).isTrue();
+        assertThat(file.exists()).isFalse();
     }
 
     @Test
@@ -1274,8 +1271,8 @@ public class CronetUrlRequestContextTest {
         Context context = getContext();
         File directory = new File(PathUtils.getDataDirectory());
         File netLogDir = new File(directory, "NetLog");
-        assertFalse(netLogDir.exists());
-        assertTrue(netLogDir.mkdir());
+        assertThat(netLogDir.exists()).isFalse();
+        assertThat(netLogDir.mkdir()).isTrue();
         File logFile = new File(netLogDir, "netlog.json");
         ExperimentalCronetEngine cronetEngine = mTestRule.getTestFramework().startEngine();
         // Start NetLog with logAll as true.
@@ -1288,11 +1285,11 @@ public class CronetUrlRequestContextTest {
         callback.blockForDone();
         cronetEngine.stopNetLog();
 
-        assertTrue(logFile.exists());
+        assertThat(logFile.exists()).isTrue();
         assertThat(logFile.length()).isNotEqualTo(0);
-        assertTrue(hasBytesInNetLog(logFile));
+        assertThat(hasBytesInNetLog(logFile)).isTrue();
         FileUtils.recursivelyDeleteFile(netLogDir);
-        assertFalse(netLogDir.exists());
+        assertThat(netLogDir.exists()).isFalse();
     }
 
     private boolean hasBytesInNetLog(File logFile) throws Exception {
@@ -1664,7 +1661,7 @@ public class CronetUrlRequestContextTest {
             builder.build();
             fail("Native library should not be loaded");
         } catch (UnsatisfiedLinkError e) {
-            assertTrue(loader.wasCalled());
+            assertThat(loader.wasCalled()).isTrue();
         }
     }
 
@@ -1678,7 +1675,7 @@ public class CronetUrlRequestContextTest {
         builder.setLibraryLoader(loader);
         CronetEngine engine = builder.build();
         assertThat(engine).isNotNull();
-        assertFalse(loader.wasCalled());
+        assertThat(loader.wasCalled()).isFalse();
     }
 
     // Creates a CronetEngine on another thread and then one on the main thread.  This shouldn't
@@ -1700,14 +1697,13 @@ public class CronetUrlRequestContextTest {
                         otherThreadDone.open();
                         cronetEngine.shutdown();
                     }
-                }
-                        .start();
+                }.start();
                 otherThreadDone.block();
                 builder.build().shutdown();
                 uiThreadDone.open();
             }
         });
-        assertTrue(uiThreadDone.block(1000));
+        assertThat(uiThreadDone.block(1000)).isTrue();
     }
 
     @Test

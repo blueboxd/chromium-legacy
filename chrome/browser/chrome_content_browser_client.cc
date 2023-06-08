@@ -255,6 +255,7 @@
 #include "components/safe_browsing/content/browser/safe_browsing_navigation_throttle.h"
 #include "components/safe_browsing/content/browser/ui_manager.h"
 #include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_service.h"
+#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/browser/ping_manager.h"
 #include "components/safe_browsing/core/browser/realtime/policy_engine.h"
 #include "components/safe_browsing/core/browser/realtime/url_lookup_service.h"
@@ -3694,11 +3695,6 @@ base::OnceClosure ChromeContentBrowserClient::SelectClientCertificate(
     return base::OnceClosure();
   }
 
-  GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
-  DCHECK(requesting_url.is_valid())
-      << "Invalid URL string: https://"
-      << cert_request_info->host_and_port.ToString();
-
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -3728,6 +3724,10 @@ base::OnceClosure ChromeContentBrowserClient::SelectClientCertificate(
     VLOG(1) << "Client cert requested in " << profile_name << " profile.";
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  GURL requesting_url = chrome::enterprise_util::GetRequestingUrl(
+      cert_request_info->host_and_port);
+  DCHECK(requesting_url.is_valid()) << "Invalid URL string: " << requesting_url;
 
   net::ClientCertIdentityList matching_certificates, nonmatching_certificates;
   chrome::enterprise_util::AutoSelectCertificates(
@@ -5417,6 +5417,10 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             ? safe_browsing::ChromePingManagerFactory::GetForBrowserContext(
                   profile)
             : nullptr;
+    safe_browsing::hash_realtime_utils::HashRealTimeSelection
+        hash_realtime_selection =
+            safe_browsing::hash_realtime_utils::DetermineHashRealTimeSelection(
+                profile->IsOffTheRecord(), profile->GetPrefs());
 
     result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
         base::BindOnce(
@@ -5429,7 +5433,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
         wc_getter, frame_tree_node_id,
         url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr,
         hash_realtime_service ? hash_realtime_service->GetWeakPtr() : nullptr,
-        ping_manager ? ping_manager->GetWeakPtr() : nullptr));
+        ping_manager ? ping_manager->GetWeakPtr() : nullptr,
+        hash_realtime_selection));
   }
 #endif
 
@@ -5971,7 +5976,9 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
 ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
     content::NavigationUIData* navigation_ui_data,
-    int frame_tree_node_id) {
+    int frame_tree_node_id,
+    int64_t navigation_id,
+    scoped_refptr<base::SequencedTaskRunner> navigation_response_task_runner) {
   std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>
       interceptors;
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -5990,8 +5997,8 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   }
 #endif
 
-  interceptors.push_back(
-      std::make_unique<SearchPrefetchURLLoaderInterceptor>(frame_tree_node_id));
+  interceptors.push_back(std::make_unique<SearchPrefetchURLLoaderInterceptor>(
+      frame_tree_node_id, navigation_id, navigation_response_task_runner));
 
   if (base::FeatureList::IsEnabled(features::kHttpsFirstModeV2)) {
     auto https_upgrades_interceptor =
@@ -6888,8 +6895,6 @@ ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
     if (pdf_ocr_controller && pdf_ocr_controller->IsEnabled()) {
       ax_mode.set_mode(ui::AXMode::kPDFOcr, true);
     }
-    // TODO(crbug.com/1393069): Destroy PdfOcrController when unused (i.e.
-    // when a screen reader gets turned off later).
   }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   return ax_mode;
@@ -7506,22 +7511,26 @@ ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
     }
   }
 
-  // TODO(b/247618374): Lacros implementation
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ash::features::IsCaptivePortalErrorPageEnabled()) {
-    auto alternative_error_page_override_info =
-        content::mojom::AlternativeErrorPageOverrideInfo::New();
-    // Use the alternative error page dictionary to provide additional
-    // suggestions in the default error page.
-    alternative_error_page_override_info->alternative_error_page_params.Set(
-        error_page::kOverrideErrorPage, base::Value(false));
-    bool is_portal_state =
-        ash::network_health::NetworkHealthManager::GetInstance()
-            ->helper()
-            ->IsWiFiPortalState();
-    alternative_error_page_override_info->alternative_error_page_params.Set(
-        error_page::kIsPortalStateKey, base::Value(is_portal_state));
-    return alternative_error_page_override_info;
+    using PortalState = chromeos::network_config::mojom::PortalState;
+    auto portal_state = ash::network_health::NetworkHealthManager::GetInstance()
+                            ->helper()
+                            ->WiFiPortalState();
+    if (portal_state != PortalState::kUnknown) {
+      auto alternative_error_page_override_info =
+          content::mojom::AlternativeErrorPageOverrideInfo::New();
+      bool is_portal_state = portal_state == PortalState::kPortal ||
+                             portal_state == PortalState::kPortalSuspected ||
+                             portal_state == PortalState::kProxyAuthRequired;
+      // Use the alternative error page dictionary to provide additional
+      // suggestions in the default error page.
+      alternative_error_page_override_info->alternative_error_page_params.Set(
+          error_page::kOverrideErrorPage, base::Value(false));
+      alternative_error_page_override_info->alternative_error_page_params.Set(
+          error_page::kIsPortalStateKey, base::Value(is_portal_state));
+      return alternative_error_page_override_info;
+    }
   }
 #endif
 

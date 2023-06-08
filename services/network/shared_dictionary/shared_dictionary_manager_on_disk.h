@@ -42,6 +42,7 @@ class SharedDictionaryManagerOnDisk : public SharedDictionaryManager {
       const base::FilePath& database_path,
       const base::FilePath& cache_directory_path,
       uint64_t cache_max_size,
+      uint64_t cache_max_count,
 #if BUILDFLAG(IS_ANDROID)
       base::android::ApplicationStatusListener* app_status_listener,
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -77,6 +78,10 @@ class SharedDictionaryManagerOnDisk : public SharedDictionaryManager {
       base::OnceCallback<void(net::SharedDictionaryInfo)> callback);
 
   void UpdateDictionaryLastUsedTime(net::SharedDictionaryInfo& info);
+
+  // Posts a MismatchingEntryDeletionTask if this method is called for the first
+  // time.
+  void MaybePostMismatchingEntryDeletionTask();
 
  private:
   class SerializedTask {
@@ -123,7 +128,6 @@ class SharedDictionaryManagerOnDisk : public SharedDictionaryManager {
   void OnFinishSerializedTask();
   void MaybeStartSerializedTask();
 
-  void MaybePostMismatchingEntryDeletionTask();
   void MaybePostCacheEvictionTask();
   void MaybePostExpiredDictionaryDeletionTask();
 
@@ -137,8 +141,10 @@ class SharedDictionaryManagerOnDisk : public SharedDictionaryManager {
   }
 
   uint64_t cache_max_size() const { return cache_max_size_; }
+  uint64_t cache_max_count() const { return cache_max_count_; }
 
   uint64_t cache_max_size_;
+  const uint64_t cache_max_count_;
   SharedDictionaryDiskCache disk_cache_;
   net::SQLitePersistentSharedDictionaryStore metadata_store_;
 

@@ -66,6 +66,7 @@
 #import "components/sync/base/pref_names.h"
 #import "components/translate/core/browser/translate_prefs.h"
 #import "components/translate/core/common/translate_util.h"
+#import "components/variations/service/google_groups_updater_service.h"
 #import "ios/chrome/app/background_mode_buildflags.h"
 #import "ios/chrome/browser/bring_android_tabs/features.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_features.h"
@@ -95,7 +96,6 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_field_trial_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
-#import "ios/chrome/browser/ui/post_restore_signin/features.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/whats_new/feature_flags.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
@@ -528,12 +528,6 @@ const FeatureEntry::FeatureVariation kAutofillBrandingIOSVariations[] = {
      kAutofillBrandingIOSDismissWhenInteractedWithAnimation,
      std::size(kAutofillBrandingIOSDismissWhenInteractedWithAnimation),
      nullptr}};
-
-const FeatureEntry::FeatureParam kIOSNewPostRestoreExperienceMinimal[] = {
-    {post_restore_signin::features::kIOSNewPostRestoreExperienceParam, "true"}};
-const FeatureEntry::FeatureVariation kIOSNewPostRestoreExperienceVariations[] =
-    {{"minimal", kIOSNewPostRestoreExperienceMinimal,
-      std::size(kIOSNewPostRestoreExperienceMinimal), nullptr}};
 
 const FeatureEntry::FeatureParam kNewTabPageFieldTrialTileAblationHideAll[] = {
     {ntp_tiles::kNewTabPageFieldTrialParam, "1"}};
@@ -1250,14 +1244,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"app-store-rating", flag_descriptions::kAppStoreRatingName,
      flag_descriptions::kAppStoreRatingDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kAppStoreRating)},
-    {"ios-new-post-restore-experience",
-     flag_descriptions::kIOSNewPostRestoreExperienceName,
-     flag_descriptions::kIOSNewPostRestoreExperienceDescription,
-     flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         post_restore_signin::features::kIOSNewPostRestoreExperience,
-         kIOSNewPostRestoreExperienceVariations,
-         "IOSNewPostRestoreExperience")},
     {"most-visited-tiles", flag_descriptions::kMostVisitedTilesName,
      flag_descriptions::kMostVisitedTilesDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(omnibox::kMostVisitedTiles)},
@@ -1564,6 +1550,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillUseTwoDotsForLastFourDigits)},
+    {"enable-variations-google-group-filtering",
+     flag_descriptions::kEnableVariationsGoogleGroupFilteringName,
+     flag_descriptions::kEnableVariationsGoogleGroupFilteringDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kVariationsGoogleGroupFiltering)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

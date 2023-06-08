@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "base/functional/bind.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "build/config/chromebox_for_meetings/buildflags.h"
@@ -187,12 +188,14 @@
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_side_panel_ui.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
+#include "chrome/browser/ui/webui/webui_gallery/webui_gallery_ui.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/commerce/core/mojom/shopping_list.mojom.h"  // nogncheck crbug.com/1125897
 #include "components/page_image_service/mojom/page_image_service.mojom.h"
 #include "components/search/ntp_features.h"
 #include "ui/webui/resources/cr_components/color_change_listener/color_change_listener.mojom.h"
+#include "ui/webui/resources/cr_components/customize_color_scheme_mode/customize_color_scheme_mode.mojom.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
 #include "ui/webui/resources/cr_components/help_bubble/help_bubble.mojom.h"
 #include "ui/webui/resources/cr_components/history_clusters/history_clusters.mojom.h"
@@ -375,6 +378,12 @@
 #include "chromeos/crosapi/mojom/speech_recognition.mojom.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 #endif  // BUILDFLAG(ENABLE_SPEECH_SERVICE)
+
+#if BUILDFLAG(IS_WIN)
+#include "chrome/browser/media/media_foundation_service_monitor.h"
+#include "media/mojo/mojom/media_foundation_preferences.mojom.h"
+#include "media/mojo/services/media_foundation_preferences.h"
+#endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(ENABLE_BROWSER_SPEECH_SERVICE)
 #include "chrome/browser/speech/speech_recognition_service_factory.h"
@@ -746,6 +755,18 @@ void BindMediaFoundationRendererNotifierHandler(
 #endif  // BUILDFLAG(IS_WIN)
 #endif  // BUILDFLAG(ENABLE_SPEECH_SERVICE)
 
+#if BUILDFLAG(IS_WIN)
+void BindMediaFoundationPreferences(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<media::mojom::MediaFoundationPreferences> receiver) {
+  MediaFoundationPreferencesImpl::Create(
+      frame_host->GetSiteInstance()->GetSiteURL(),
+      base::BindRepeating(&MediaFoundationServiceMonitor::
+                              IsHardwareSecureDecryptionAllowedForSite),
+      std::move(receiver));
+}
+#endif  // BUILDFLAG(IS_WIN)
+
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 void BindScreenAIAnnotator(
     content::RenderFrameHost* frame_host,
@@ -918,6 +939,11 @@ void PopulateChromeFrameBinders(
         base::BindRepeating(&BindScreen2xMainContentExtractor));
   }
 #endif
+
+#if BUILDFLAG(IS_WIN)
+  map->Add<media::mojom::MediaFoundationPreferences>(
+      base::BindRepeating(&BindMediaFoundationPreferences));
+#endif
 }
 
 void PopulateChromeWebUIFrameBinders(
@@ -1006,9 +1032,10 @@ void PopulateChromeWebUIFrameBinders(
       ash::InternetConfigDialogUI, ash::InternetDetailDialogUI, ash::SetTimeUI,
       ash::BluetoothPairingDialogUI, nearby_share::NearbyShareDialogUI,
       ash::cloud_upload::CloudUploadUI, ash::office_fallback::OfficeFallbackUI,
+      ash::multidevice_setup::MultiDeviceSetupDialogUI,
 #endif
       NewTabPageUI, OmniboxPopupUI, BookmarksSidePanelUI, CustomizeChromeUI,
-      InternalsUI, ReadingListUI>(map);
+      InternalsUI, ReadingListUI, TabSearchUI, WebuiGalleryUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       new_tab_page::mojom::PageHandlerFactory, NewTabPageUI>(map);
@@ -1053,6 +1080,11 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<suggest_internals::mojom::PageHandler,
                                          SuggestInternalsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      customize_color_scheme_mode::mojom::
+          CustomizeColorSchemeModeHandlerFactory,
+      CustomizeChromeUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       customize_themes::mojom::CustomizeThemesHandlerFactory, NewTabPageUI

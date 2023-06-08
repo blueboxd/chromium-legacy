@@ -3992,11 +3992,6 @@ void NavigationRequest::OnResponseStarted(
   // The navigation may have encountered a header that requests isolation for
   // the url's origin. Before we pick the renderer, make sure we update the
   // origin-isolation opt-ins appropriately.
-  //
-  // TODO(https://crbug.com/1220337): With navigation queueing, the RFH may be
-  // asynchronously chosen later. Does the global OAC walk make any assumptions
-  // about nothing creating other BrowsingInstances and/or committing this
-  // origin elsewhere in between this point and picking the final RFH?
   CheckForIsolationOptIn(GetURL());
 
   // Check if the response should be sent to a renderer.
@@ -4933,7 +4928,8 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->current_frame_host()->devtools_frame_token(),
           std::move(cors_exempt_headers), std::move(client_security_state),
           devtools_accepted_stream_types, is_pdf_, initiator_document_,
-          GetPreviousRenderFrameHostId(), allow_cookies_from_browser_),
+          GetPreviousRenderFrameHostId(), allow_cookies_from_browser_,
+          navigation_id_),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       std::move(prefetched_signed_exchange_cache_), this, loader_type,
       CreateCookieAccessObserver(), CreateTrustTokenAccessObserver(),

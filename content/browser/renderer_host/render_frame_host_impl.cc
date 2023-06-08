@@ -6041,13 +6041,10 @@ void RenderFrameHostImpl::AllowBindings(int bindings_flags) {
     if (!process_lock.is_locked_to_site() ||
         !base::Contains(URLDataManagerBackend::GetWebUISchemes(),
                         process_lock.lock_url().scheme())) {
-      // TODO(nasko): Convert this to CHECK once it has had enough time to
-      // ensure this branch is not hit in production.
       SCOPED_CRASH_KEY_STRING256("AllowBindings", "process_lock",
                                  process_lock.ToString());
-      NOTREACHED() << "Calling AllowBindings for a process not locked to WebUI:"
+      CHECK(false) << "Calling AllowBindings for a process not locked to WebUI:"
                    << process_lock;
-      base::debug::DumpWithoutCrashing();
     }
   }
 
@@ -12855,6 +12852,8 @@ void RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation(
 
   is_overriding_user_agent_ =
       navigation_request->is_overriding_user_agent() && is_main_frame();
+
+  reload_type_ = navigation_request->GetReloadType();
 
   // Mark whether then navigation was intended as a loadDataWithBaseURL or not.
   // If |renderer_url_info_.was_loaded_from_load_data_with_base_url| is true, we

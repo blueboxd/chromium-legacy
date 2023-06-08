@@ -25,6 +25,13 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   ColorMixer& mixer = provider->AddMixer();
 
   mixer[kColorAvatarIconIncognito] = {kColorSysOnSurfaceVariant};
+  mixer[kColorAppMenuProfileRowBackground] = {kColorSysSurface4};
+  mixer[kColorAppMenuProfileRowBackgroundHovered] = {
+      kColorSysStateHoverOnSubtle};
+  mixer[kColorAppMenuProfileRowChipBackground] = {kColorSysTonalContainer};
+  mixer[kColorAppMenuProfileRowChipHovered] = {
+      ui::GetResultingPaintColor(kColorAppMenuProfileRowBackgroundHovered,
+                                 kColorAppMenuProfileRowChipBackground)};
   mixer[kColorBadgeBackground] = {kColorSysTonalContainer};
   mixer[kColorBadgeForeground] = {kColorSysOnTonalContainer};
   mixer[kColorBadgeInCocoaMenuBackground] = {kColorSysPrimary};
@@ -81,6 +88,7 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorSegmentedButtonRipple] = {kColorSysStateRippleNeutralOnSubtle};
   mixer[kColorSegmentedButtonChecked] = {kColorSysTonalContainer};
   mixer[kColorSeparator] = {kColorSysDivider};
+  mixer[kColorSidePanelComboboxBackground] = {SK_ColorTRANSPARENT};
   mixer[kColorSliderThumb] = {kColorSysPrimary};
   mixer[kColorSliderThumbMinimal] = {kColorSysSecondary};
   mixer[kColorSliderTrack] = {kColorSysOnPrimary};

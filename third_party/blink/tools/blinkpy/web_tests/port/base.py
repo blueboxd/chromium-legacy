@@ -129,7 +129,6 @@ ARCHIVED_RESULTS_LIMIT = 25
 
 ENABLE_THREADED_COMPOSITING_FLAG = '--enable-threaded-compositing'
 
-
 class Port(object):
     """Abstract class for Port-specific hooks for the web_test package."""
 
@@ -285,7 +284,6 @@ class Port(object):
             self.set_option_default('wpt_only', False)
         self._test_configuration = None
         self._results_directory = None
-        self._virtual_test_suites = None
         self._used_expectation_files = None
 
     def __str__(self):
@@ -2308,38 +2306,40 @@ class Port(object):
     def sample_process(self, name, pid):
         pass
 
+    @memoized
     def virtual_test_suites(self):
-        if self._virtual_test_suites is None:
-            path_to_virtual_test_suites = self._filesystem.join(
-                self.web_tests_dir(), 'VirtualTestSuites')
-            assert self._filesystem.exists(path_to_virtual_test_suites), \
-                path_to_virtual_test_suites + ' not found'
-            try:
-                test_suite_json = json.loads(
-                    self._filesystem.read_text_file(
-                        path_to_virtual_test_suites))
-                self._virtual_test_suites = []
-                current_time = datetime.now()
-                for json_config in test_suite_json:
-                    # Strings are treated as comments.
-                    if isinstance(json_config, str):
-                        continue
-                    expires = json_config.get('expires', 'never')
-                    if (expires.lower() != 'never' and datetime.strptime(
-                            expires, '%b %d, %Y') <= current_time):
-                        # do not load expired virtual suites
-                        continue
-                    vts = VirtualTestSuite(**json_config)
-                    if any(vts.full_prefix == s.full_prefix
-                           for s in self._virtual_test_suites):
-                        raise ValueError(
-                            '{} contains entries with the same prefix: {!r}. Please combine them'
-                            .format(path_to_virtual_test_suites, json_config))
-                    self._virtual_test_suites.append(vts)
-            except ValueError as error:
-                raise ValueError('{} is not a valid JSON file: {}'.format(
-                    path_to_virtual_test_suites, error))
-        return self._virtual_test_suites
+        include_expired = self.get_option('include_expired', False)
+        path_to_virtual_test_suites = self._filesystem.join(
+            self.web_tests_dir(), 'VirtualTestSuites')
+        assert self._filesystem.exists(path_to_virtual_test_suites), \
+            path_to_virtual_test_suites + ' not found'
+        virtual_test_suites = []
+        try:
+            test_suite_json = json.loads(
+                self._filesystem.read_text_file(path_to_virtual_test_suites))
+            current_time = datetime.now()
+            for json_config in test_suite_json:
+                # Strings are treated as comments.
+                if isinstance(json_config, str):
+                    continue
+                expires = json_config.get('expires', 'never')
+                expired = (expires.lower() != 'never' and datetime.strptime(
+                    expires, '%b %d, %Y') <= current_time)
+                if expired and not include_expired:
+                    # Do not include expired virtual suites, except when requested (such as
+                    # for presubmit checks).
+                    continue
+                vts = VirtualTestSuite(**json_config)
+                if any(vts.full_prefix == s.full_prefix
+                       for s in virtual_test_suites):
+                    raise ValueError(
+                        '{} contains entries with the same prefix: {!r}. Please combine them'
+                        .format(path_to_virtual_test_suites, json_config))
+                virtual_test_suites.append(vts)
+        except ValueError as error:
+            raise ValueError('{} is not a valid JSON file: {}'.format(
+                path_to_virtual_test_suites, error))
+        return virtual_test_suites
 
     def _all_virtual_tests(self, tests_by_dir):
         tests = []
@@ -2554,11 +2554,32 @@ class Port(object):
                 return suite.args
         return []
 
+    @memoized
+    def _get_blocked_tests_for_threaded_compositing_testing(self):
+        path = self._filesystem.join(self.web_tests_dir(),
+                                     'SmokeTests/SingleThreadedTests')
+        return self._filesystem.read_text_file(path).split('\n')
+
     def _is_in_allowlist_for_threaded_compositing(self, test_name):
-        # We start with a very simple and small subset of the tests to create
-        # the infrastructure for an allowlist and plan to move to an external
-        # file soon.
-        return test_name.startswith("vibration")
+        # We currently only turn on threaded compositing tests for Linux
+        if not self.host.platform.is_linux():
+            return False
+        # We currently only turn on threaded compositing for web_tests
+        if self.is_wpt_test(test_name):
+            return False
+
+        block_list = self._get_blocked_tests_for_threaded_compositing_testing()
+
+        # We apply the setting of a base test to all of its virtual versions
+        base_name = self.lookup_virtual_test_base(test_name)
+        if base_name:
+            if base_name in block_list:
+                return False
+
+        if test_name in block_list:
+            return False
+
+        return True
 
     def _build_path(self, *comps):
         """Returns a path from the build directory."""

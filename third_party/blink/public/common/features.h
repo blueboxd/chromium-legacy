@@ -454,6 +454,8 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledge);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFledgeBiddingAndAuctionServer);
+BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
+    kFledgeBiddingAndAuctionKeyURL;
 
 // Configures FLEDGE to consider k-anononymity. If both
 // kFledgeConsiderKAnonymity and kFledgeEnforceKAnonymity are on it will be
@@ -1159,6 +1161,15 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDirectCompositorThreadIpc);
 // portion of the domain is at least eTLD+1. If this flag is on, the eTLD+1
 // restriction is lifted and wildcards are supported in the port and scheme.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kCSPWildcardsInPermissionsPolicies);
+
+// Allows running DevTools main thread debugger even when a renderer process
+// hosts multiple main frames.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kAllowDevToolsMainThreadDebuggerForMultipleMainFrames);
+
+// When enabled, LCP critical path predictor will optimize the subsequent visits
+// to websites using performance hints collected in the past page loads.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPCriticalPathPredictor);
 
 }  // namespace features
 }  // namespace blink

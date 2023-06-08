@@ -1048,7 +1048,7 @@ void Element::SynchronizeAllAttributesExceptStyle() const {
     return;
   }
   if (GetElementData()->svg_attributes_are_dirty()) {
-    To<SVGElement>(this)->SynchronizeSVGAttribute(AnyQName());
+    To<SVGElement>(this)->SynchronizeAllSVGAttributes();
   }
 }
 
@@ -3432,7 +3432,8 @@ static bool NeedsContainerQueryEvaluator(
     const ContainerQueryEvaluator& evaluator,
     const ComputedStyle& new_style) {
   return evaluator.DependsOnStyle() ||
-         new_style.IsContainerForSizeContainerQueries();
+         new_style.IsContainerForSizeContainerQueries() ||
+         new_style.IsContainerForStickyContainerQueries();
 }
 
 static const StyleRecalcChange ApplyComputedStyleDiff(
@@ -3489,7 +3490,9 @@ StyleRecalcChange Element::RecalcOwnStyle(
   DCHECK(GetDocument().InStyleRecalc());
 
   StyleRecalcContext new_style_recalc_context = style_recalc_context;
-  if (change.RecalcChildren() && NeedsStyleRecalc()) {
+  if ((change.RecalcChildren() ||
+       change.RecalcContainerQueryDependent(*this)) &&
+      NeedsStyleRecalc()) {
     if (HasRareData()) {
       // This element needs recalc because its parent changed inherited
       // properties or there was some style change in the ancestry which needed
@@ -3733,6 +3736,19 @@ StyleRecalcChange Element::RecalcOwnStyle(
             .SetContainerQueryEvaluator(nullptr);
       } else if (old_style) {
         evaluator->MarkFontDirtyIfNeeded(*old_style, *new_style);
+        if (RuntimeEnabledFeatures::CSSStickyContainerQueriesEnabled()) {
+          switch (evaluator->ApplyScrollSnapshot()) {
+            case ContainerQueryEvaluator::Change::kNone:
+              break;
+            case ContainerQueryEvaluator::Change::kNearestContainer:
+              child_change = child_change.ForceRecalcStickyContainer();
+              break;
+            case ContainerQueryEvaluator::Change::kDescendantContainers:
+              child_change =
+                  child_change.ForceRecalcDescendantStickyContainers();
+              break;
+          }
+        }
         if (RuntimeEnabledFeatures::CSSStyleQueriesEnabled()) {
           if (diff != ComputedStyle::Difference::kEqual &&
               (!base::ValuesEquivalent(old_style->InheritedVariables(),
@@ -8412,10 +8428,9 @@ void Element::SynchronizeAttributeHinted(
     // XLink NS), this will not do the right thing.
 
     // TODO(fs): svg_attributes_are_dirty_ stays dirty unless
-    // SynchronizeSVGAttribute is called with AnyQName(). This means that even
-    // if Element::SynchronizeAttribute() is called on all attributes,
-    // svg_attributes_are_dirty_ remains true. This information is available in
-    // the attribute->property map in SVGElement.
+    // SynchronizeAllSVGAttributes is called. This means that even if
+    // Element::SynchronizeAttribute() is called on all attributes,
+    // svg_attributes_are_dirty_ remains true.
     To<SVGElement>(this)->SynchronizeSVGAttribute(QualifiedName(local_name));
   }
 }

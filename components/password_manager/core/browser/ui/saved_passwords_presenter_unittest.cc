@@ -847,9 +847,9 @@ TEST_P(SavedPasswordsPresenterTest,
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 TEST_P(SavedPasswordsPresenterTest, GetSavedCredentialsWithPasskeys) {
   // Password grouping is required for passkey support.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kPasswordsGrouping);
+  if (!IsGroupingEnabled()) {
+    return;
+  }
   PasswordForm form =
       CreateTestPasswordForm(PasswordForm::Store::kProfileStore);
 
@@ -888,9 +888,10 @@ TEST_P(SavedPasswordsPresenterTest, GetSavedCredentialsWithPasskeys) {
 }
 
 TEST_P(SavedPasswordsPresenterTest, GetAffiliatedGroupsWithPasskeys) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kPasswordsGrouping);
+  // Password grouping is required for passkey support.
+  if (!IsGroupingEnabled()) {
+    return;
+  }
 
   MockAffiliationService mock_affiliation_service;
   SavedPasswordsPresenter presenter{&mock_affiliation_service, &store(),
@@ -937,6 +938,50 @@ TEST_P(SavedPasswordsPresenterTest, GetAffiliatedGroupsWithPasskeys) {
                            AsCredentialUIEntry(std::move(passkey))},
                           grouped_facets[0].branding_info),
           AffiliatedGroup({credential3}, grouped_facets[1].branding_info)));
+}
+
+TEST_P(SavedPasswordsPresenterTest, DeletePasskey) {
+  // Password grouping is required for passkey support.
+  if (!IsGroupingEnabled()) {
+    return;
+  }
+  sync_pb::WebauthnCredentialSpecifics passkey = CreateTestPasskey();
+  passkey_store().AddNewPasskeyForTesting(passkey);
+  RunUntilIdle();
+
+  std::vector<CredentialUIEntry> passkeys = presenter().GetSavedCredentials();
+  ASSERT_EQ(passkeys.size(), 1u);
+  ASSERT_FALSE(passkeys.at(0).passkey_credential_id.empty());
+
+  MockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+  EXPECT_CALL(observer, OnSavedPasswordsChanged);
+  presenter().RemoveCredential(passkeys.at(0));
+  RunUntilIdle();
+
+  EXPECT_TRUE(presenter().GetSavedCredentials().empty());
+  presenter().RemoveObserver(&observer);
+}
+
+TEST_P(SavedPasswordsPresenterTest, NotifyPasskeyAdded) {
+  // Password grouping is required for passkey support.
+  if (!IsGroupingEnabled()) {
+    return;
+  }
+  RunUntilIdle();
+
+  std::vector<CredentialUIEntry> passkeys = presenter().GetSavedCredentials();
+  ASSERT_TRUE(passkeys.empty());
+
+  MockSavedPasswordsPresenterObserver observer;
+  presenter().AddObserver(&observer);
+  EXPECT_CALL(observer, OnSavedPasswordsChanged);
+  sync_pb::WebauthnCredentialSpecifics passkey = CreateTestPasskey();
+  passkey_store().AddNewPasskeyForTesting(passkey);
+  RunUntilIdle();
+
+  EXPECT_EQ(presenter().GetSavedCredentials().size(), 1u);
+  presenter().RemoveObserver(&observer);
 }
 
 #endif

@@ -676,7 +676,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.CompositingCommit.UpdateTime"
-    units="microseconds" expires_after="2023-10-01">
+    units="microseconds" expires_after="2023-12-04">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -1054,7 +1054,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.CancelReason" enum="FedCmCancelReason"
-    expires_after="2023-09-24">
+    expires_after="2023-12-04">
   <owner>pkotwicz@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1078,7 +1078,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.ClosedSheetType.Desktop" enum="FedCmSheetType"
-    expires_after="2023-07-16">
+    expires_after="2024-01-16">
   <owner>npm@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1303,7 +1303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.FedCm.Timing.IdTokenResponse" units="ms"
-    expires_after="2023-07-16">
+    expires_after="2023-10-16">
   <owner>yigu@chromium.org</owner>
   <owner>web-identity-eng@google.com</owner>
   <summary>
@@ -1472,6 +1472,55 @@ chromium-metrics-reviews@google.com.
     creation fails due to sandbox flags not being permissive enough. If multiple
     sandbox flags are incorrectly set, it will log every sandbox flag that was
     not set correctly for each failed load.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Fetch.KeepAlive.AfterDetached.Duration"
+    units="microseconds" expires_after="2023-12-01">
+  <owner>mych@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    The total microseconds spent between the calls to
+    ResourceFetcher::ClearContext and ResourceFetcher::RemoveResourceLoader,
+    roughly stands for how long a fetch keepalive request stays after the
+    environment (document/context) is gone, including both success and failure.
+
+    The duration is recorded within ResourceFetcher::RemoveResourceLoader when
+    the fetcher is already detached.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Fetch.KeepAlive.AfterDetached.IsSuccess" enum="Boolean"
+    expires_after="2023-12-01">
+  <owner>mych@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Records true when loading a fetch keepalive request succeeds after
+    ResourceFetcher is detached; Records false if the load fails.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Fetch.KeepAlive.Total" enum="Boolean"
+    expires_after="2023-12-01">
+  <owner>mych@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Records true when an attempt is made to prepare to load a fetch keepalive
+    request.
+  </summary>
+</histogram>
+
+<histogram name="Blink.Fetch.KeepAlive.Total.IsSuccess" enum="Boolean"
+    expires_after="2023-12-01">
+  <owner>mych@chromium.org</owner>
+  <owner>bfcache-dev@chromium.org</owner>
+  <summary>
+    Records true when a successful attempt is made to load a fetch keepalive
+    request; Records false if the load fails.
+
+    Note that the sum of the two buckets may still be smaller than
+    Blink.Fetch.KeepAlive.Total, as the requests that were early-terminated due
+    to quota exceeded may not be logged here.
   </summary>
 </histogram>
 
@@ -1908,7 +1957,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.HTMLParsing.YieldedTimeAverage4" units="microseconds"
-    expires_after="2023-09-24">
+    expires_after="2023-12-04">
   <owner>masonf@chromium.org</owner>
   <owner>dom-dev@chromium.org</owner>
   <summary>
@@ -2282,7 +2331,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.Layout.UpdateTime" units="microseconds"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2399,7 +2448,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.MainFrame.UpdateTime" units="microseconds"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2677,7 +2726,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.Paint.UpdateTime" units="microseconds"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2701,7 +2750,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.ParseStyleSheet.UpdateTime"
-    units="microseconds" expires_after="2023-10-01">
+    units="microseconds" expires_after="2023-12-04">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -2756,7 +2805,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Blink.PrePaint.UpdateTime" units="microseconds"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePreFCPSuffixes" -->
 
 <!-- Name completed by histogram_suffixes name="BlinkUpdateTimePostFCPSuffixes" -->
@@ -3444,7 +3493,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.UseCounter.FencedFrames.Features" enum="FeatureObserver"
-    expires_after="2023-08-30">
+    expires_after="2023-12-04">
   <owner>toyoshim@chromium.org</owner>
   <owner>mparc-dev@chromium.org</owner>
   <summary>
@@ -3496,7 +3545,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.UseCounter.FencedFrames.PermissionsPolicy.Header2"
-    enum="FeaturePolicyFeature" expires_after="2023-08-01">
+    enum="FeaturePolicyFeature" expires_after="2023-12-04">
   <owner>lbrady@google.com</owner>
   <owner>shivanisha@chromium.org</owner>
   <owner>dom@chromium.org</owner>
@@ -3655,7 +3704,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Blink.VisibleLoadTime.LazyLoadImages" units="ms"
-    expires_after="2023-11-19">
+    expires_after="2023-12-04">
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>

@@ -4716,7 +4716,11 @@
     # Rust tests run on all targets.
     'rust_common_gtests': {
       'base_unittests': {},
-      'components_unittests': {},  # For go/rusty-qr-code-generator
+      'components_unittests': {  # For go/rusty-qr-code-generator
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/rust.components_unittests.filter',
+        ],
+      },
       'mojo_rust_integration_unittests': {},
       'mojo_rust_unittests': {},
       'rust_gtest_interop_unittests': {},
@@ -6930,41 +6934,36 @@
     'ios17_beta_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPHONE_6S_15_5',
+          'SIM_IPHONE_14_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
-          'SIM_IPHONE_X_15_5',
-          'SIM_IPAD_PRO_3RD_GEN_15_5',
+          'SIM_IPHONE_14_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_0',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPAD_6_GEN_16_2',
-          'SIM_IPHONE_SE_1ST_GEN_15_5',
+          'SIM_IPHONE_14_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_0',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPHONE_SE_3RD_GEN_16_2',
-          'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_SE_1ST_GEN_15_5',
+          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_SE_3RD_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
       'ios_crash_xcuitests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPAD_AIR_2_15_5',
-
+          'SIM_IPHONE_14_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_0',
         ]
       },
     },
@@ -6972,39 +6971,29 @@
     'ios17_sdk_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_14_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_7_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_X_15_5',
-          'SIM_IPHONE_X_16_2',
-          'SIM_IPHONE_8_16_2',
+          'SIM_IPHONE_14_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_0',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_7_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_X_15_5',
-          'SIM_IPAD_AIR_3RD_GEN_16_2',
-          'SIM_IPHONE_8_PLUS_16_2',
+          'SIM_IPAD_AIR_5TH_GEN_17_0',
+          'SIM_IPHONE_14_17_0',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_6S_PLUS_15_5',
-          'SIM_IPHONE_6S_15_5',
-          'SIM_IPHONE_SE_1ST_GEN_15_5',
-          'SIM_IPAD_AIR_2_15_5',
-          'SIM_IPHONE_8_PLUS_16_2',
-          'SIM_IPHONE_SE_3RD_GEN_16_2',
-          'SIM_IPAD_PRO_3RD_GEN_16_2',
+          'SIM_IPHONE_14_17_0',
+          'SIM_IPHONE_SE_3RD_GEN_17_0',
+          'SIM_IPAD_AIR_5TH_GEN_17_0',
         ],
       },
     },
@@ -7451,10 +7440,10 @@
     'lacros_skylab_tests_amd64_generic_rel': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_EVE_PUBLIC_LKGM',
-          'CROS_EVE_PUBLIC_DEV',
-          'CROS_EVE_PUBLIC_BETA',
-          'CROS_EVE_PUBLIC_STABLE',
+          'CROS_VOLTEER_PUBLIC_LKGM',
+          'CROS_VOLTEER_PUBLIC_DEV',
+          'CROS_VOLTEER_PUBLIC_BETA',
+          'CROS_VOLTEER_PUBLIC_STABLE',
         ]
       },
     },

@@ -145,22 +145,18 @@ SVGAnimatedPropertyBase* SVGEllipseElement::PropertyFromAttribute(
   }
 }
 
-void SVGEllipseElement::SynchronizeSVGAttribute(
-    const QualifiedName& name) const {
-  if (name == AnyQName()) {
-    SVGAnimatedPropertyBase* attrs[]{cx_.Get(), cy_.Get(), rx_.Get(),
-                                     ry_.Get()};
-    SynchronizeAllSVGAttributes(attrs);
-  }
-  SVGGeometryElement::SynchronizeSVGAttribute(name);
+void SVGEllipseElement::SynchronizeAllSVGAttributes() const {
+  SVGAnimatedPropertyBase* attrs[]{cx_.Get(), cy_.Get(), rx_.Get(), ry_.Get()};
+  SynchronizeListOfSVGAttributes(attrs);
+  SVGGeometryElement::SynchronizeAllSVGAttributes();
 }
 
 void SVGEllipseElement::CollectExtraStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   for (auto* property : (SVGAnimatedPropertyBase*[]){cx_.Get(), cy_.Get(),
                                                      rx_.Get(), ry_.Get()}) {
-    if (property->HasPresentationAttributeMapping() &&
-        property->IsAnimating()) {
+    DCHECK(property->HasPresentationAttributeMapping());
+    if (property->IsAnimating()) {
       CollectStyleForPresentationAttribute(property->AttributeName(),
                                            g_empty_atom, style);
     }

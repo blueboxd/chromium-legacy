@@ -38,11 +38,15 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/effects/SkHighContrastFilter.h"
 #include "third_party/skia/include/private/SkGainmapInfo.h"
 #include "third_party/skia/include/private/chromium/GrSlug.h"
 #include "third_party/skia/include/private/chromium/SkChromeRemoteGlyphCache.h"
+#include "ui/gfx/hdr_metadata.h"
+#include "ui/gfx/mojom/hdr_metadata.mojom.h"
+#include "ui/gfx/mojom/hdr_metadata_mojom_traits.h"
 
 namespace cc {
 namespace {
@@ -232,6 +236,13 @@ void PaintOpReader::Read(SkRRect* rect) {
 
 void PaintOpReader::Read(SkColor4f* color) {
   ReadSimple(color);
+  // Colors are generally [0, 1], sometimes with a wider gamut, but
+  // infinite and NaN colors don't make sense and shouldn't be produced by a
+  // renderer, so encountering a non-finite color implies the paint op buffer
+  // is invalid.
+  if (!SkScalarsAreFinite(color->vec(), 4)) {
+    SetInvalid(DeserializationError::kNonFiniteSkColor4f);
+  }
 }
 
 void PaintOpReader::Read(SkPath* path) {
@@ -288,7 +299,7 @@ void PaintOpReader::Read(SkPath* path) {
 }
 
 void PaintOpReader::Read(PaintFlags* flags) {
-  ReadSimple(&flags->color_);
+  Read(&flags->color_);
   Read(&flags->width_);
   Read(&flags->miter_limit_);
 
@@ -764,6 +775,23 @@ void PaintOpReader::Read(SkHighContrastConfig* config) {
            SkHighContrastConfig::InvertStyle::kLast>(&config->fInvertStyle);
   ReadSimple(&config->fContrast);
 }
+
+void PaintOpReader::Read(gfx::HDRMetadata* hdr_metadata) {
+  size_t size = 0;
+  ReadSize(&size);
+  if (remaining_bytes_ < size) {
+    valid_ = false;
+  }
+  if (!valid_ || size == 0) {
+    return;
+  }
+  uint8_t* scratch = CopyScratchSpace(size);
+  if (!gfx::mojom::HDRMetadata::Deserialize(scratch, size, hdr_metadata)) {
+    SetInvalid(DeserializationError::kHdrMetadataDeserializeFailure);
+  }
+  DidRead(size);
+}
+
 void PaintOpReader::Read(scoped_refptr<SkottieWrapper>* skottie) {
   if (!options_->is_privileged) {
     valid_ = false;

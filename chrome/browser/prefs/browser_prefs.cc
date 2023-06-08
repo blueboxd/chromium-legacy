@@ -874,6 +874,9 @@ constexpr char kSupervisedUserIncompleteKey[] =
     "SupervisedUserHasIncompleteKey";
 #endif
 
+// Deprecated 06/2023.
+const char kWebAppsExtensionIDs[] = "web_apps.extension_ids";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1237,6 +1240,9 @@ void RegisterProfilePrefsForMigration(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterBooleanPref(kEventRemappedToRightClick, false);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Deprecated 06/2023.
+  registry->RegisterDictionaryPref(kWebAppsExtensionIDs);
 }
 
 }  // namespace
@@ -1638,7 +1644,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   RecentTabsPagePrefs::RegisterProfilePrefs(registry);
   usage_stats::UsageStatsBridge::RegisterProfilePrefs(registry);
   variations::VariationsService::RegisterProfilePrefs(registry);
-  webapps::InstallPromptPrefs::RegisterLocalPrefs(registry);
+  webapps::InstallPromptPrefs::RegisterProfilePrefs(registry);
 #else  // BUILDFLAG(IS_ANDROID)
   bookmarks_webui::RegisterProfilePrefs(registry);
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
@@ -2078,7 +2084,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
 #if BUILDFLAG(IS_ANDROID)
   // Added 06/2022.
-  syncer::SyncPrefs::MigrateSyncRequestedPrefPostMice(profile_prefs);
   profile_prefs->ClearPref(kDownloadLaterPromptStatus);
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -2334,6 +2339,9 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   profile_prefs->ClearPref(kSamlPasswordSyncToken);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // Added 06/2023.
+  profile_prefs->ClearPref(kWebAppsExtensionIDs);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

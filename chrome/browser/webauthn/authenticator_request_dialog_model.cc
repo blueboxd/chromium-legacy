@@ -48,17 +48,6 @@
 
 namespace {
 
-// BleEvent enumerates user-visible BLE events.
-enum class BleEvent {
-  kAlreadyPowered = 0,    // BLE was already powered.
-  kNeedsPowerAuto = 1,    // BLE was not powered and so we asked the user.
-  kNeedsPowerManual = 2,  // BLE was not powered and so we asked the user, but
-                          // they have to do it manually.
-  kNewlyPowered = 3,      // BLE wasn't powered, but the user turned it on.
-
-  kMaxValue = kNewlyPowered,
-};
-
 constexpr int GetMessageIdForTransportDescription(
     AuthenticatorTransport transport) {
   switch (transport) {
@@ -280,6 +269,37 @@ void AuthenticatorRequestDialogModel::OnPhoneContactFailed(
   ContactNextPhoneByName(name);
 }
 
+void AuthenticatorRequestDialogModel::OnCableEvent(
+    device::cablev2::Event event) {
+  switch (event) {
+    case device::cablev2::Event::kPhoneConnected:
+    case device::cablev2::Event::kBLEAdvertReceived:
+      if (current_step_ != Step::kCableV2Connecting) {
+        SetCurrentStep(Step::kCableV2Connecting);
+        cable_connecting_sheet_timer_.Start(
+            FROM_HERE, base::Milliseconds(1250),
+            base::BindOnce(&AuthenticatorRequestDialogModel::
+                               OnCableConnectingTimerComplete,
+                           weak_factory_.GetWeakPtr()));
+      }
+      break;
+    case device::cablev2::Event::kReady:
+      if (cable_connecting_sheet_timer_.IsRunning()) {
+        cable_connecting_ready_to_advance_ = true;
+      } else {
+        SetCurrentStep(Step::kCableV2Connected);
+      }
+      break;
+  }
+}
+
+void AuthenticatorRequestDialogModel::OnCableConnectingTimerComplete() {
+  if (cable_connecting_ready_to_advance_ &&
+      current_step_ == Step::kCableV2Connecting) {
+    SetCurrentStep(Step::kCableV2Connected);
+  }
+}
+
 void AuthenticatorRequestDialogModel::StartPhonePairing() {
   DCHECK(cable_qr_string_);
   SetCurrentStep(Step::kCableV2QRCode);
@@ -310,8 +330,6 @@ void AuthenticatorRequestDialogModel::
 #endif
 
   if (ble_adapter_is_powered()) {
-    base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents",
-                                  BleEvent::kAlreadyPowered);
     SetCurrentStep(step);
     return;
   }
@@ -320,24 +338,17 @@ void AuthenticatorRequestDialogModel::
       base::BindOnce(&AuthenticatorRequestDialogModel::SetCurrentStep,
                      weak_factory_.GetWeakPtr(), step);
 
-  BleEvent event;
   if (transport_availability()->can_power_on_ble_adapter) {
-    event = BleEvent::kNeedsPowerAuto;
     SetCurrentStep(Step::kBlePowerOnAutomatic);
   } else {
-    event = BleEvent::kNeedsPowerManual;
     SetCurrentStep(Step::kBlePowerOnManual);
   }
-
-  base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents", event);
 }
 
 void AuthenticatorRequestDialogModel::ContinueWithFlowAfterBleAdapterPowered() {
   DCHECK(current_step() == Step::kBlePowerOnManual ||
          current_step() == Step::kBlePowerOnAutomatic);
   DCHECK(ble_adapter_is_powered());
-  base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents",
-                                BleEvent::kNewlyPowered);
 
   std::move(after_ble_adapter_powered_).Run();
 }
@@ -587,6 +598,11 @@ bool AuthenticatorRequestDialogModel::OnWinUserCancelled() {
 #endif
 
   return false;
+}
+
+bool AuthenticatorRequestDialogModel::OnHybridTransportError() {
+  SetCurrentStep(Step::kCableV2Error);
+  return true;
 }
 
 void AuthenticatorRequestDialogModel::OnBluetoothPoweredStateChanged(
@@ -896,6 +912,11 @@ void AuthenticatorRequestDialogModel::SetCurrentStep(Step step) {
   }
 
   current_step_ = step;
+
+  // Reset state related to automatically advancing the state.
+  cable_connecting_sheet_timer_.Stop();
+  cable_connecting_ready_to_advance_ = false;
+
   if (should_dialog_be_closed()) {
     // The dialog will close itself.
     showing_dialog_ = false;
@@ -1015,20 +1036,14 @@ void AuthenticatorRequestDialogModel::ContactPhoneAfterOffTheRecordInterstitial(
         &AuthenticatorRequestDialogModel::ContactPhoneAfterBleIsPowered,
         weak_factory_.GetWeakPtr(), std::move(name));
 
-    BleEvent event;
     if (transport_availability()->can_power_on_ble_adapter) {
-      event = BleEvent::kNeedsPowerAuto;
       SetCurrentStep(Step::kBlePowerOnAutomatic);
     } else {
-      event = BleEvent::kNeedsPowerManual;
       SetCurrentStep(Step::kBlePowerOnManual);
     }
-    base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents", event);
     return;
   }
 
-  base::UmaHistogramEnumeration("WebAuthentication.BLEUserEvents",
-                                BleEvent::kAlreadyPowered);
   ContactPhoneAfterBleIsPowered(std::move(name));
 }
 

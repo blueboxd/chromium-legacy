@@ -570,10 +570,7 @@ component("base") {
 
   if (is_mac) {
     public_deps += [ "//ui/base/cursor" ]
-    deps += [
-      "//base:base_arc",
-      "//ui/resources:ui_resources_grd",
-    ]
+    deps += [ "//ui/resources:ui_resources_grd" ]
   }
 
   if (toolkit_views) {
@@ -772,6 +769,26 @@ if (use_blink) {
   }
 }
 
+if (is_mac) {
+  # TODO(https://crbug.com/1280317): Merge back into the `test_support` target
+  # once all .mm files are ARCed.
+  source_set("test_support_arc") {
+    testonly = true
+    sources = [
+      "test/cocoa_helper.h",
+      "test/cocoa_helper.mm",
+    ]
+    configs += [ "//build/config/compiler:enable_arc" ]
+    deps = [
+      "//base:base",
+      "//base/test:test_config",
+      "//base/test:test_support",
+      "//testing/gtest",
+      "//ui/display",
+    ]
+  }
+}
+
 static_library("test_support") {
   testonly = true
   sources = [
@@ -797,8 +814,6 @@ static_library("test_support") {
     sources += [
       "interaction/interaction_test_util_mac.h",
       "interaction/interaction_test_util_mac.mm",
-      "test/cocoa_helper.h",
-      "test/cocoa_helper.mm",
       "test/menu_test_observer.h",
       "test/menu_test_observer.mm",
       "test/ns_ax_tree_validator.h",
@@ -872,6 +887,10 @@ static_library("test_support") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_mac) {
+    public_deps += [ ":test_support_arc" ]
+  }
 
   if (is_ios) {
     deps -= [
@@ -1029,7 +1048,6 @@ test("ui_base_unittests") {
     "interaction/interactive_test_unittest.cc",
     "l10n/l10n_util_unittest.cc",
     "l10n/time_format_unittest.cc",
-    "layout_unittest.cc",
     "models/image_model_unittest.cc",
     "models/simple_combobox_model_unittest.cc",
     "models/simple_menu_model_unittest.cc",
@@ -1051,7 +1069,7 @@ test("ui_base_unittests") {
     "resource/data_pack_literal.h",
     "resource/data_pack_unittest.cc",
     "resource/resource_bundle_unittest.cc",
-    "resource/scale_factor_unittest.cc",
+    "resource/resource_scale_factor_unittest.cc",
     "scoped_visibility_tracker_unittest.cc",
     "template_expressions_unittest.cc",
     "test/page_transition_types_unittest.cc",
@@ -1118,6 +1136,7 @@ test("ui_base_unittests") {
       "l10n/l10n_util_mac_unittest.mm",
       "test/view_tree_validator_unittest.mm",
     ]
+    deps += [ ":ui_base_unittests_arc" ]
   }
 
   if (is_chromeos_lacros) {

@@ -3942,7 +3942,8 @@ enum class BeforeUnloadUse {
   kNoDialogMultipleConfirmationForNavigation,
   kShowDialog,
   kNoDialogAutoCancelTrue,
-  kMaxValue = kNoDialogAutoCancelTrue,
+  kNotSupportedInDocumentPictureInPicture,
+  kMaxValue = kNotSupportedInDocumentPictureInPicture,
 };
 
 void RecordBeforeUnloadUse(BeforeUnloadUse metric) {
@@ -3962,6 +3963,12 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
 
   if (ProcessingBeforeUnload())
     return false;
+
+  if (dom_window_->IsPictureInPictureWindow()) {
+    RecordBeforeUnloadUse(
+        BeforeUnloadUse::kNotSupportedInDocumentPictureInPicture);
+    return true;
+  }
 
   // Since we do not allow registering the beforeunload event handlers in
   // fenced frames, it should not be fired by fencedframes.
@@ -4923,12 +4930,6 @@ void Document::CloneDataFromDocument(const Document& other) {
   SetEncodingData(other.encoding_data_);
   SetContextFeatures(other.GetContextFeatures());
   SetMimeType(other.contentType());
-}
-
-StyleSheetList& Document::StyleSheets() {
-  if (!style_sheet_list_)
-    style_sheet_list_ = MakeGarbageCollected<StyleSheetList>(this);
-  return *style_sheet_list_;
 }
 
 void Document::EvaluateMediaQueryListIfNeeded() {
@@ -8592,9 +8593,7 @@ Element* Document::GetAutofocusDelegate() const {
 }
 
 Element* Document::ActiveElement() const {
-  if (Element* element = AdjustedFocusedElement())
-    return element;
-  return body();
+  return activeElement();
 }
 
 bool Document::hasFocus() const {
@@ -8663,6 +8662,10 @@ const AtomicString& Document::vlinkColor() const {
 void Document::setVlinkColor(const AtomicString& value) {
   if (!IsFrameSet())
     SetBodyAttribute(html_names::kVlinkAttr, value);
+}
+
+FontFaceSet* Document::fonts() {
+  return FontFaceSetDocument::From(*this);
 }
 
 template <unsigned type>
@@ -8807,7 +8810,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(parser_);
   visitor->Trace(context_features_);
   visitor->Trace(http_refresh_scheduler_);
-  visitor->Trace(style_sheet_list_);
   visitor->Trace(document_timing_);
   visitor->Trace(media_query_matcher_);
   visitor->Trace(scripted_animation_controller_);
@@ -9102,6 +9104,8 @@ const Node* Document::GetFindInPageActiveMatchNode() const {
 
 void Document::ActivateForPrerendering(
     const mojom::blink::PrerenderPageActivationParams& params) {
+  TRACE_EVENT0("navigation", "Document::ActivateForPrerendering");
+
   // TODO(bokan): Portals will change this assumption since they mean an active
   // document can be "adopted" into a portal.
   DCHECK(is_prerendering_);
@@ -9138,6 +9142,10 @@ void Document::AddPostPrerenderingActivationStep(base::OnceClosure callback) {
 }
 
 void Document::RunPostPrerenderingActivationSteps() {
+  TRACE_EVENT1("navigation", "Document::RunPostPrerenderingActivationSteps",
+               "deferred_callback",
+               post_prerendering_activation_callbacks_.size());
+
   DCHECK(!is_prerendering_);
   for (auto& callback : post_prerendering_activation_callbacks_)
     std::move(callback).Run();

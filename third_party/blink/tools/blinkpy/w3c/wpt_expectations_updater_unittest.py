@@ -4,6 +4,7 @@
 
 import copy
 import json
+import unittest
 
 from blinkpy.common.host_mock import MockHost
 from blinkpy.common.net.git_cl import TryJobStatus
@@ -362,6 +363,9 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         filtered_results = updater.filter_results_for_update(results)
         self.assertEqual(0, len(filtered_results))
 
+    @unittest.skip(
+        "The webdriver test runner doesn't upload results to ResultDB; "
+        'see crbug.com/1414565')
     def test_run_with_webdriver_failure(self):
         host = self.mock_host()
         host.results_fetcher.set_results(
@@ -1282,13 +1286,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                         expected='PASS', actual='TIMEOUT TIMEOUT', bug='bug'),
                 },
             })
-
-    def test_run_no_issue_number(self):
-        updater = WPTExpectationsUpdater(self.mock_host())
-        updater.git_cl = MockGitCL(updater.host, issue_number='None')
-        with self.assertRaises(ScriptError) as e:
-            updater.run()
-        self.assertEqual(e.exception.message, 'No issue on current branch.')
 
     def test_run_no_builds(self):
         updater = WPTExpectationsUpdater(self.mock_host())

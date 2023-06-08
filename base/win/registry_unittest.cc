@@ -20,6 +20,7 @@
 #include "base/location.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
@@ -310,6 +311,24 @@ TYPED_TEST(RegistryTest, OpenSubKey) {
   ASSERT_EQ(ERROR_SUCCESS, key.DeleteKey(L"foo"));
 }
 
+TYPED_TEST(RegistryTest, InvalidRelativeKeyCreate) {
+  typename TypeParam::RegType key(TypeParam::Create(
+      HKEY_CURRENT_USER,
+      base::StrCat({this->root_key(), L"_DoesNotExist"}).c_str(),
+      KEY_WOW64_32KEY | KEY_READ));
+  ASSERT_EQ(key.CreateKey(L"SomeSubKey", KEY_WOW64_32KEY | KEY_WRITE),
+            ERROR_INVALID_HANDLE);
+}
+
+TYPED_TEST(RegistryTest, InvalidRelativeKeyOpen) {
+  typename TypeParam::RegType key(TypeParam::Create(
+      HKEY_CURRENT_USER,
+      base::StrCat({this->root_key(), L"_DoesNotExist"}).c_str(),
+      KEY_WOW64_32KEY | KEY_READ));
+  ASSERT_EQ(key.OpenKey(L"SomeSubKey", KEY_WOW64_32KEY | KEY_READ),
+            ERROR_INVALID_HANDLE);
+}
+
 namespace {
 
 class TestChangeDelegate {
@@ -544,8 +563,10 @@ class RegistryTestHKLMAdmin : public RegistryTestHKLM<Traits> {
     for (const REGSAM mask :
          {this->kNativeViewMask, this->kRedirectedViewMask}) {
       typename Traits::RegType key(Traits::Create());
-      key.Open(HKEY_LOCAL_MACHINE, L"Software", KEY_SET_VALUE | mask);
-      key.DeleteKey(kRootKey);
+      if (key.Open(HKEY_LOCAL_MACHINE, L"Software", KEY_SET_VALUE | mask) ==
+          ERROR_SUCCESS) {
+        key.DeleteKey(kRootKey);
+      }
     }
   }
 };

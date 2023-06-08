@@ -50,15 +50,15 @@ class SnapshotBrowserAgent : public BrowserObserver,
   void WebStateListChanged(WebStateList* web_state_list,
                            const WebStateListChange& change,
                            const WebStateSelection& selection) override;
-  void WebStateInsertedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index,
-                          bool activating) override;
   void WebStateDetachedAt(WebStateList* web_state_list,
                           web::WebState* web_state,
                           int index) override;
   void WillBeginBatchOperation(WebStateList* web_state_list) override;
   void BatchOperationEnded(WebStateList* web_state_list) override;
+
+  // Helper methods to set a snapshot cache for `web_state`.
+  void InsertWebState(web::WebState* web_state);
+  void DetachWebState(web::WebState* web_state);
 
   // Migrates the snapshot storage if a folder exists in the old snapshots
   // storage location.

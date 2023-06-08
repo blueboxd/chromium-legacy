@@ -359,14 +359,18 @@ BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
 
 // If enabled, adds a grey square background to search icons, and makes answer
 // icon square instead of round.
+// TODO(manukh): Clean up feature code 9/12 when m117 reaches stable; we're
+//   launching the rest of CR23 in m117.
 BASE_FEATURE(kSquareSuggestIcons,
              "OmniboxSquareIcons",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, forces omnibox suggestion rows to be uniformly sized.
+// TODO(manukh): Clean up feature code 9/12 when m117 reaches stable; we're
+//   launching the rest of CR23 in m117.
 BASE_FEATURE(kUniformRowHeight,
              "OmniboxUniformRowHeight",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, shows the omnibox suggestions popup in WebUI.
 BASE_FEATURE(kWebUIOmniboxPopup,
@@ -579,12 +583,6 @@ const base::FeatureParam<std::string> kOmniboxTextColorDimmedLightMode(
 BASE_FEATURE(kDiscardTemporaryInputOnTabSwitch,
              "OmniboxDiscardTemporaryInputOnTabSwitch",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// TODO(manukh): Enabled by default 4/5/23 m114. Clean up feature code 5/30 when
-//   m114 reaches stable.
-BASE_FEATURE(kClosePopupWithEscape,
-             "OmniboxClosePopupWithEscape",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable new Omnibox & Suggestions visual style.
 BASE_FEATURE(kOmniboxModernizeVisualUpdate,

@@ -68,8 +68,8 @@ const float kMagicStackMinimumPaginationScrollVelocity = 0.2f;
 const float kMagicStackSpacing = 10.0f;
 
 // The max width of the SetUpList on phone and tablet.
-const CGFloat kSetUpListWidthPhone = 393;
-const CGFloat kSetUpListWidthTablet = 430;
+const CGFloat kSetUpListWidthRegular = 393;
+const CGFloat kSetUpListWidthWide = 418;
 
 // The duration of the animation that hides the Set Up List.
 const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
@@ -512,9 +512,12 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
     self.setUpListView = setUpListView;
     [self.verticalStackView insertArrangedSubview:setUpListView atIndex:index];
 
-    CGFloat width = kSetUpListWidthPhone;
-    if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-      width = kSetUpListWidthTablet;
+    // The width of the SetUpList should match the Discover Feed. This seems to
+    // closely match the feed's logic.
+    CGFloat width = kSetUpListWidthRegular;
+    CGSize viewSize = self.view.frame.size;
+    if (MIN(viewSize.width, viewSize.height) >= kSetUpListWidthWide) {
+      width = kSetUpListWidthWide;
     }
     // Since this view is put into a StackView, this width constraint acts as
     // a max width constraint - if the StackView is narrower, it will make the
@@ -703,16 +706,14 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
-  if (previousTraitCollection.horizontalSizeClass !=
-      self.traitCollection.horizontalSizeClass) {
-    if ([self shouldShowWiderMagicStackLayer]) {
-      _magicStackScrollView.clipsToBounds = YES;
-      _magicStackScrollViewWidthAnchor.constant = kMagicStackWideWidth;
-    } else {
-      _magicStackScrollView.clipsToBounds = NO;
-      _magicStackScrollViewWidthAnchor.constant = [MagicStackModuleContainer
-          moduleWidthForHorizontalTraitCollection:self.traitCollection];
-    }
+  if (content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
+                                                          self.view.window)) {
+    _magicStackScrollView.clipsToBounds = YES;
+    _magicStackScrollViewWidthAnchor.constant = kMagicStackWideWidth;
+  } else {
+    _magicStackScrollView.clipsToBounds = NO;
+    _magicStackScrollViewWidthAnchor.constant = [MagicStackModuleContainer
+        moduleWidthForHorizontalTraitCollection:self.traitCollection];
   }
 }
 
@@ -852,7 +853,9 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
 - (void)createMagicStack {
   _magicStackScrollView = [[UIScrollView alloc] init];
   [_magicStackScrollView setShowsHorizontalScrollIndicator:NO];
-  _magicStackScrollView.clipsToBounds = [self shouldShowWiderMagicStackLayer];
+  _magicStackScrollView.clipsToBounds =
+      content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
+                                                          self.view.window);
   _magicStackScrollView.delegate = self;
   _magicStackScrollView.accessibilityIdentifier =
       kMagicStackScrollViewAccessibilityIdentifier;
@@ -939,7 +942,8 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
       moduleWidthForHorizontalTraitCollection:self.traitCollection];
   // Magic Stack has a wider width for wider screens so that clipToBounds can be
   // YES with a peeking module still visible.
-  if ([self shouldShowWiderMagicStackLayer]) {
+  if (content_suggestions::ShouldShowWiderMagicStackLayer(self.traitCollection,
+                                                          self.view.window)) {
     width = kMagicStackWideWidth;
   }
   _magicStackScrollViewWidthAnchor =
@@ -950,12 +954,6 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
         constraintEqualToAnchor:_magicStackScrollView.heightAnchor],
     _magicStackScrollViewWidthAnchor
   ]];
-}
-
-// YES if the Magic Stack should be using a wider layout.
-- (BOOL)shouldShowWiderMagicStackLayer {
-  return self.traitCollection.horizontalSizeClass ==
-         UIUserInterfaceSizeClassRegular;
 }
 
 // Returns the index position `moduleType` should be placed in the Magic Stack.

@@ -2455,8 +2455,6 @@ IN_PROC_BROWSER_TEST_F(PdfPluginContextMenuBrowserTest, Rotate) {
   }
 }
 
-// TODO(crbug.com/1393069): Consider removing this build flag when enabling
-// this browser test.
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
                                      public ::testing::WithParamInterface<int> {
@@ -2495,7 +2493,7 @@ class PdfOcrContextMenuBrowserTest : public PdfPluginContextMenuBrowserTest,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug.com/1393069): Re-enable this test.
+// TODO(crbug.com/1443345): Re-enable this test.
 IN_PROC_BROWSER_TEST_P(PdfOcrContextMenuBrowserTest, DISABLED_PdfOcr) {
   std::unique_ptr<TestRenderViewContextMenu> menu = SetupAndCreateMenu();
   ASSERT_EQ(menu->IsItemPresent(IDC_CONTENT_CONTEXT_PDF_OCR),
@@ -2624,6 +2622,38 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
       GURL("blob:http://example.com/00000000-0000-0000-0000-000000000000"), u"",
       blink::mojom::ContextMenuDataMediaType::kVideo, ui::MENU_SOURCE_MOUSE);
   EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYAVLOCATION));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       ContextMenuForVideoWithAvailableFrame) {
+  content::ContextMenuParams params;
+  params.media_type = blink::mojom::ContextMenuDataMediaType::kVideo;
+  params.media_flags |= blink::ContextMenuData::kMediaHasAvailableVideoFrame;
+
+  TestRenderViewContextMenu menu(*browser()
+                                      ->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetPrimaryMainFrame(),
+                                 params);
+  menu.Init();
+
+  EXPECT_TRUE(menu.IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME));
+}
+
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, ContextMenuForEncryptedVideo) {
+  content::ContextMenuParams params;
+  params.media_type = blink::mojom::ContextMenuDataMediaType::kVideo;
+  params.media_flags |= blink::ContextMenuData::kMediaEncrypted;
+
+  TestRenderViewContextMenu menu(*browser()
+                                      ->tab_strip_model()
+                                      ->GetActiveWebContents()
+                                      ->GetPrimaryMainFrame(),
+                                 params);
+  menu.Init();
+
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME));
+  EXPECT_FALSE(menu.IsCommandIdEnabled(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME));
 }
 
 IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,

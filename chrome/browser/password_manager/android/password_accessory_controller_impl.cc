@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
+#include "chrome/browser/webauthn/android/webauthn_request_delegate_android.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_enums.h"
@@ -46,6 +47,7 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/password_manager/core/browser/webauthn_credentials_delegate.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
@@ -212,6 +214,20 @@ PasswordAccessoryControllerImpl::GetSheetData() const {
   footer_commands_to_add.push_back(FooterCommand(
       manage_passwords_title, autofill::AccessoryAction::MANAGE_PASSWORDS));
 
+  if (password_manager::PasswordManagerDriver* driver =
+          driver_supplier_.Run((&GetWebContents()))) {
+    if (password_manager::WebAuthnCredentialsDelegate* credentials_delegate =
+            password_client_->GetWebAuthnCredentialsDelegateForDriver(driver)) {
+      if (credentials_delegate->IsAndroidHybridAvailable()) {
+        std::u16string passkey_other_device_title = l10n_util::GetStringUTF16(
+            IDS_PASSWORD_MANAGER_ACCESSORY_USE_DEVICE_PASSKEY);
+        footer_commands_to_add.emplace_back(
+            passkey_other_device_title,
+            autofill::AccessoryAction::CROSS_DEVICE_PASSKEY);
+      }
+    }
+  }
+
   bool has_suggestions = !info_to_add.empty();
   AccessorySheetData data = autofill::CreateAccessorySheetData(
       autofill::AccessoryTabType::PASSWORDS, GetTitle(has_suggestions, origin),
@@ -279,7 +295,8 @@ void PasswordAccessoryControllerImpl::CreateForWebContents(
         base::WrapUnique(new PasswordAccessoryControllerImpl(
             web_contents, credential_cache, nullptr,
             ChromePasswordManagerClient::FromWebContents(web_contents),
-            base::BindRepeating(GetPasswordManagerDriver))));
+            base::BindRepeating(GetPasswordManagerDriver),
+            base::BindRepeating(&password_manager::ShowWarning))));
   }
 }
 
@@ -289,7 +306,8 @@ void PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
     password_manager::CredentialCache* credential_cache,
     base::WeakPtr<ManualFillingController> manual_filling_controller,
     password_manager::PasswordManagerClient* password_client,
-    PasswordDriverSupplierForFocusedFrame driver_supplier) {
+    PasswordDriverSupplierForFocusedFrame driver_supplier,
+    ShowMigrationWarningCallback show_migration_warning_callback) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
   DCHECK(manual_filling_controller);
@@ -299,7 +317,8 @@ void PasswordAccessoryControllerImpl::CreateForWebContentsForTesting(
       UserDataKey(),
       base::WrapUnique(new PasswordAccessoryControllerImpl(
           web_contents, credential_cache, std::move(manual_filling_controller),
-          password_client, std::move(driver_supplier))));
+          password_client, std::move(driver_supplier),
+          std::move(show_migration_warning_callback))));
 }
 
 void PasswordAccessoryControllerImpl::OnOptionSelected(
@@ -328,6 +347,18 @@ void PasswordAccessoryControllerImpl::OnOptionSelected(
       if (WebAuthnCredManDelegate* delegate =
               WebAuthnCredManDelegate::GetRequestDelegate(&GetWebContents())) {
         delegate->TriggerFullRequest();
+      }
+      return;
+    case autofill::AccessoryAction::CROSS_DEVICE_PASSKEY:
+      if (password_manager::PasswordManagerDriver* driver =
+              driver_supplier_.Run(&GetWebContents())) {
+        if (password_manager::
+                WebAuthnCredentialsDelegate* credentials_delegate =
+                    password_client_->GetWebAuthnCredentialsDelegateForDriver(
+                        driver)) {
+          CHECK(credentials_delegate->IsAndroidHybridAvailable());
+          credentials_delegate->ShowAndroidHybridSignIn();
+        }
       }
       return;
     default:
@@ -444,13 +475,16 @@ PasswordAccessoryControllerImpl::PasswordAccessoryControllerImpl(
     password_manager::CredentialCache* credential_cache,
     base::WeakPtr<ManualFillingController> manual_filling_controller,
     password_manager::PasswordManagerClient* password_client,
-    PasswordDriverSupplierForFocusedFrame driver_supplier)
+    PasswordDriverSupplierForFocusedFrame driver_supplier,
+    ShowMigrationWarningCallback show_migration_warning_callback)
     : content::WebContentsUserData<PasswordAccessoryControllerImpl>(
           *web_contents),
       credential_cache_(credential_cache),
       manual_filling_controller_(std::move(manual_filling_controller)),
       password_client_(password_client),
-      driver_supplier_(std::move(driver_supplier)) {}
+      driver_supplier_(std::move(driver_supplier)),
+      show_migration_warning_callback_(
+          std::move(show_migration_warning_callback)) {}
 
 void PasswordAccessoryControllerImpl::ChangeCurrentOriginSavePasswordsStatus(
     bool saving_enabled) {
@@ -585,6 +619,12 @@ void PasswordAccessoryControllerImpl::FillSelection(
     return;
   driver->FillIntoFocusedField(selection.is_obfuscated(),
                                selection.display_text());
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::
+              kUnifiedPasswordManagerLocalPasswordsMigrationWarning)) {
+    show_migration_warning_callback_.Run(
+        GetWebContents().GetTopLevelNativeWindow());
+  }
 }
 
 void PasswordAccessoryControllerImpl::AllPasswordsSheetDismissed() {

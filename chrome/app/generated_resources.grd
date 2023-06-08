@@ -692,6 +692,9 @@ are declared in tools/grit/grit_rule.gni.
           <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="The name of the Copy Video Location command in the content area context menu">
             C&amp;opy video address
           </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYVIDEOFRAME" desc="The name of the Copy Video Frame command in the content area context menu">
+            C&amp;opy video frame
+          </message>
           <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="The name of the Open Video in New Tab command in the content area context menu">
             &amp;Open video in new tab
           </message>
@@ -960,6 +963,9 @@ are declared in tools/grit/grit_rule.gni.
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="In Title Case: The name of the Copy Video Location command in the content area context menu">
             C&amp;opy Video Address
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_COPYVIDEOFRAME" desc="The name of the Copy Video Frame command in the content area context menu">
+            C&amp;opy Video Frame
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="In Title Case: The name of the Open Video in New Tab command in the content area context menu">
             &amp;Open Video in New Tab
@@ -1547,6 +1553,12 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_SHOW_PERFORMANCE" desc="The text label of the Performance menu item">
           Performance
         </message>
+        <message name="IDS_SHOW_SEARCH_COMPANION" desc="The text label of the Chrome Search Companion menu item">
+          Search this page with Google...
+        </message>
+        <message name="IDS_SHOW_TRANSLATE" desc="The text label of the Translate menu item">
+          Translate...
+        </message>
         <message name="IDS_SETTINGS" desc="The text label of the Settings menu item">
           Settin&amp;gs
         </message>
@@ -1596,6 +1608,12 @@ are declared in tools/grit/grit_rule.gni.
         </message>
         <message name="IDS_SHOW_PERFORMANCE" desc="In Title Case: The text label of the Performance menu item">
           Performance
+        </message>
+        <message name="IDS_SHOW_SEARCH_COMPANION" desc="In Title Case: The text label of the Chrome Search Companion menu item">
+          Search this Page with Google...
+        </message>
+        <message name="IDS_SHOW_TRANSLATE" desc="In Title Case: The text label of the Translate menu item">
+          Translate
         </message>
         <message name="IDS_SETTINGS" desc="In Title Case: The text label of the Settings menu item">
           &amp;Settings
@@ -7170,6 +7188,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST" desc="Undo toast for dismissing middle slot promo on New Tab Page.">
         You won't see this specific message again
       </message>
+      <message name="IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_GROUP_LABEL" desc="The accessibility label description read by the screen reader for color scheme mode group in customize chrome side panel.">
+        Pick a color scheme mode
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_LIGHT_LABEL" desc="A color scheme mode option for browser light mode in customize chrome side panel.">
+        Light
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_DARK_LABEL" desc="A color scheme mode option for browser dark mode in customize chrome side panel.">
+        Dark
+      </message>
+      <message name="IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_SYSTEM_LABEL" desc="A color scheme mode option for browser system mode, which follows the OS color scheme mode in customize chrome side panel.">
+        System
+      </message>
 
       <!-- NTP Modules -->
       <message name="IDS_NTP_MODULES_INFO_BUTTON_TITLE" desc="Text shown in tooltip of info button of an NTP module.">
@@ -7686,6 +7716,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BOOKMARKS_ALL_BOOKMARKS" desc="The name of the root bookmarks folder as displayed to the user">
         All Bookmarks
       </message>
+      <message name="IDS_BOOKMARKS_ALL_BOOKMARKS_OPEN_SIDE_PANEL" desc="The bookmarks bar menu item which opens the side panel">
+        Open Side Panel to see All Bookmarks
+      </message>
       <message name="IDS_BOOKMARKS_LABEL_TRACKED_PRODUCTS" desc="Label on a button within the bookmarks side panel for filtering bookmarks by price tracking data.">
         Tracked products
       </message>
@@ -7829,6 +7862,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_BOOKMARKS_OPEN_BOOKMARK_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a bookmarks side panel folder list item">
         Open <ph name="BOOKMARK_TITLE">$1<ex>New York Times</ex></ph>
+      </message>
+      <message name="IDS_BOOKMARKS_SELECT_FOLDER_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a bookmarks side panel folder list item in edit mode">
+        Select folder <ph name="FOLDER_TITLE">$1<ex>All Bookmarks</ex></ph>
+      </message>
+      <message name="IDS_BOOKMARKS_SELECT_BOOKMARK_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a bookmarks side panel folder list item in edit mode">
+        Select <ph name="BOOKMARK_TITLE">$1<ex>New York Times</ex></ph>
       </message>
       <message name="IDS_BOOKMARK_ACCESSIBLE_DESCRIPTION_PRICE_TRACKING" is_accessibility_with_no_ui="true" desc="Accessible description for price tracking data on a bookmarks side panel list item">
         Price tracking is enabled. Price is <ph name="CURRENT_PRICE">$1<ex>400</ex></ph>.
@@ -8820,6 +8859,9 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         </message>
         <message name="IDS_PASSWORD_MANAGER_ACCESSORY_GENERATE_PASSWORD_BUTTON_TITLE" desc="Text for the button used to generate a password.">
           Suggest strong password
+        </message>
+        <message name ="IDS_PASSWORD_MANAGER_ACCESSORY_USE_DEVICE_PASSKEY" desc="The text of the link in the password sheet that will use a different device’s passkey. This string also exists for desktop password manager and translations should match. See IDS_PASSWORD_MANAGER_USE_DEVICE_PASSKEY in components/password_manager_strings.grdp.">
+          Use a passkey on a different device
         </message>
         <message name="IDS_PASSWORD_GENERATION_DIALOG_DESCRIPTION" desc="Text for password generation dialog, explaining that the password will be saved in Google Account.">
           Password will be saved in your Google Account, <ph name="ACCOUNT">$1<ex>user@gmail.com</ex></ph>. You won’t have to remember it.
@@ -9831,6 +9873,11 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
         <if expr="chromeos_ash and not use_titlecase">
           <message name="IDS_RELAUNCH_BUTTON" desc="The label for the relaunch button that relaunches the browser once update is complete">
             Restart
+          </message>
+        </if>
+        <if expr="not chromeos_ash">
+          <message name="IDS_HELP_MANAGED_BY_YOUR_PARENT" desc="The text label shown in chrome://settings/help for users subject to parental controls.">
+            Your browser is managed by your parent
           </message>
         </if>
       </if> <!-- not is_android -->
@@ -13963,6 +14010,18 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_CABLE_ACTIVATE_DEVICE_NAME_DESCRIPTION" desc="Contents of the dialog shown when the user tries to sign-in using a phone as a security key.">
         A notification was sent to <ph name="DEVICE_NAME">$1<ex>Ted's Pixel 6 Pro</ex></ph>
       </message>
+      <message name="IDS_WEBAUTHN_CABLEV2_CONNECTING_TITLE" desc="The title of a dialog that is shown when the computer is connecting to a phone or tablet.">
+        Connecting to your device
+      </message>
+      <message name="IDS_WEBAUTHN_CABLEV2_CONNECTED_DESCRIPTION" desc="The second line of a dialog that shows once the computer has successfully connected to the user's phone or tablet. That phone/tablet will be showing instructions for what to do next and the user should follow those instuctions.">
+        Follow the steps on your device
+      </message>
+      <message name="IDS_WEBAUTHN_CABLEV2_ERROR_DESCRIPTION" desc="The second line of a dialog that shows once the computer fails to connect to the user's phone or tablet.">
+        On both devices, check your internet connection and turn on Bluetooth. Then, try again.
+      </message>
+      <message name="IDS_WEBAUTHN_CABLEV2_ERROR_CLOSE" desc="The text of a button on a dialog. The button is the user's only option at this point since the process has failed. The dialog contains instructions about how to try again and the button simply closes the dialog.">
+        Close
+      </message>
 
       <message name="IDS_WEBAUTHN_CABLEV2_SERVERLINK_TROUBLE" desc="This message is shown as a link below IDS_WEBAUTHN_CABLEV2_SERVERLINK_DESCRIPTION. The 'it' referenced here is the notification mentioned in that message.">
         Didn't get it?
@@ -14741,11 +14800,17 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_ACCOUNT_SELECTION_DATA_SHARING_CONSENT" desc="The consent text shown to the user before sign up.">
       To continue, <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.com</ex></ph> will share your name, email address, and profile picture with this site. See this site's <ph name="BEGIN_LINK1">$2</ph>privacy policy<ph name="END_LINK1">$3</ph> and <ph name="BEGIN_LINK2">$4</ph>terms of service<ph name="END_LINK2">$5</ph>.
     </message>
-    <message name="IDS_IDP_SIGNIN_STATUS_FAILURE_DIALOG_TITLE" desc="Header for failure dialog which is shown to the user when their sign in status is signed in but they are not signed in to any account." translateable="false">
+    <message name="IDS_IDP_SIGNIN_STATUS_MISMATCH_DIALOG_TITLE" desc="Header for mismatch dialog which is shown to the user when their sign in status is signed in but they are not signed in to any account." translateable="false">
       Failed signing in to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph> with <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$2<ex>idp.example</ex></ph>
     </message>
-    <message name="IDS_IDP_SIGNIN_STATUS_FAILURE_DIALOG_CONTINUE" desc="Title of the button that allows the user to continue with signing in to an account from an identity provider." translateable="false">
+    <message name="IDS_IDP_SIGNIN_STATUS_MISMATCH_DIALOG_CONTINUE" desc="Title of the button that allows the user to continue with signing in to an account from an identity provider." translateable="false">
       Continue
+    </message>
+    <message name="IDS_IDP_SIGNIN_STATUS_MISMATCH_DIALOG_BODY" desc="Body for mismatch dialog which is shown to prompt the user to sign in to a website using an account from an identity provider." translateable="false">
+      Use your <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE">$1<ex>idp.example</ex></ph> account to sign in to <ph name="SITE_ETLD_PLUS_ONE">$2<ex>rp.example</ex></ph>
+    </message>
+    <message name="IDS_IDP_SIGNIN_STATUS_MISMATCH_DIALOG_DESCRIPTION" desc="Describes the sign in process." translateable="false">
+      No more passwords to remember. Signing in is fast, simple and secure.
     </message>
     <message name="IDS_MULTI_IDP_ACCOUNT_SELECTION_SHEET_TITLE_EXPLICIT" desc="Header for sign in sheet when there are multiple identity providers. Sheet is shown to prompt user for sign in consent." translateable="false">
       Sign in to <ph name="SITE_ETLD_PLUS_ONE">$1<ex>rp.example</ex></ph>
@@ -15081,6 +15146,14 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WAFFLE_PAGE_TITLE" desc="The title for the Waffle page."
         translateable="false">
         Want a Waffle?
+      </message>
+      <message name="IDS_WAFFLE_FIRST_BUTTON_TITLE" desc="The title of the first button of the Waffle page."
+        translateable="false">
+        First button
+      </message>
+      <message name="IDS_WAFFLE_SECOND_BUTTON_TITLE" desc="The title of the second button of the Waffle page."
+        translateable="false">
+        Second button
       </message>
     </if>
   </messages>

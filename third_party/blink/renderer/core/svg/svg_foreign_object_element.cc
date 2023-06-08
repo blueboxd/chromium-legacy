@@ -161,22 +161,19 @@ SVGAnimatedPropertyBase* SVGForeignObjectElement::PropertyFromAttribute(
   }
 }
 
-void SVGForeignObjectElement::SynchronizeSVGAttribute(
-    const QualifiedName& name) const {
-  if (name == AnyQName()) {
-    SVGAnimatedPropertyBase* attrs[]{x_.Get(), y_.Get(), width_.Get(),
-                                     height_.Get()};
-    SynchronizeAllSVGAttributes(attrs);
-  }
-  SVGGraphicsElement::SynchronizeSVGAttribute(name);
+void SVGForeignObjectElement::SynchronizeAllSVGAttributes() const {
+  SVGAnimatedPropertyBase* attrs[]{x_.Get(), y_.Get(), width_.Get(),
+                                   height_.Get()};
+  SynchronizeListOfSVGAttributes(attrs);
+  SVGGraphicsElement::SynchronizeAllSVGAttributes();
 }
 
 void SVGForeignObjectElement::CollectExtraStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
   for (auto* property : (SVGAnimatedPropertyBase*[]){
            x_.Get(), y_.Get(), width_.Get(), height_.Get()}) {
-    if (property->HasPresentationAttributeMapping() &&
-        property->IsAnimating()) {
+    DCHECK(property->HasPresentationAttributeMapping());
+    if (property->IsAnimating()) {
       CollectStyleForPresentationAttribute(property->AttributeName(),
                                            g_empty_atom, style);
     }

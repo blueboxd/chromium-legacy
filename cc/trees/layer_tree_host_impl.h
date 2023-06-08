@@ -382,7 +382,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
                                   bool animate) override;
   bool HasScrollLinkedAnimation(ElementId for_scroller) const override;
 
-  bool CanInjectJankOnMain() const;
   FrameSequenceTrackerCollection& frame_trackers() { return frame_trackers_; }
 
   // VisualDeviceViewportSize is the size of the global viewport across all
@@ -599,7 +598,6 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   TileManager* tile_manager() { return &tile_manager_; }
 
   const RasterCapabilities& raster_caps() const { return raster_caps_; }
-  void GetGpuRasterizationCapabilities(RasterCapabilities& gpu_raster_caps);
   bool use_gpu_rasterization() const {
     return raster_caps().use_gpu_rasterization;
   }

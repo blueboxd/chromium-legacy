@@ -211,22 +211,12 @@
   data: [
     {
       name: "AbortSignalAny",
-      status: "experimental",
+      status: "stable",
       depends_on: ["AbortSignalComposition"]
     },
     {
       name: "AbortSignalComposition",
       status: "stable"
-    },
-    {
-      name: "AbortSignalThrowIfAborted",
-      status: "stable",
-      base_feature: "none",
-    },
-    {
-      name: "AbortSignalTimeout",
-      status: "stable",
-      base_feature: "none",
     },
     {
       name: "Accelerated2dCanvas",
@@ -733,7 +723,7 @@
     },
     {
       name: "CriticalCHRestartNavigationTiming",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CrossFramePerformanceTimeline",
@@ -1140,6 +1130,11 @@
     {
       name: "CSSTextWrap",
       status: "stable",
+    },
+    // Use the `NGSCoreLineBreaker` for `text-wrap: balance`. crbug.com/1451205
+    {
+      name: "CSSTextWrapBalanceByScore",
+      depends_on: ["CSSTextWrapPretty"],
     },
     // `text-wrap: pretty`. crbug.com/1432798
     {
@@ -1949,11 +1944,6 @@
       origin_trial_feature_name: "HrefTranslate",
       status: "stable",
       base_feature: "none",
-    },
-    {
-      // A kill-switch for a fix of crbug.com/108489.
-      name: "HTMLMapToImgMatchingByNameAndId",
-      status: "stable",
     },
     {
       // A flag, just for local testing to make the
@@ -2796,11 +2786,6 @@
       status: "stable",
       base_feature: "none",
     },
-    {
-      name: "PriorityHints",
-      status: "stable",
-      base_feature: "none",
-    },
     // The RTE feature encompasses multiple APIs, including: Attribution
     // Reporting, FLEDGE, Topics and Fenced Frames.
     {
@@ -2861,7 +2846,7 @@
     },
     {
       name: "ReadableStreamTeeCloneForBranch2",
-      status: "experimental",
+      status: "stable",
     },
     // If enabled, the Accept-Language header will be reduced.
     {
@@ -3424,6 +3409,10 @@
       name: "SupportsFontFormatTech",
       status: "stable",
       base_feature: "none",
+    },
+    {
+      name: "SvgMapLocalToAncestorFix",
+      status: "stable",
     },
     {
       name: "SvgRasterOptimizations",

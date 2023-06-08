@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.IntentUtils;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
@@ -56,6 +57,7 @@ import org.chromium.chrome.browser.password_check.PasswordCheckComponentUiFactor
 import org.chromium.chrome.browser.password_check.PasswordCheckFragmentView;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEditUiFactory;
 import org.chromium.chrome.browser.password_entry_edit.CredentialEntryFragmentViewBase;
+import org.chromium.chrome.browser.password_manager.settings.PasswordSettings;
 import org.chromium.chrome.browser.privacy_guide.PrivacyGuideFragment;
 import org.chromium.chrome.browser.privacy_sandbox.AdMeasurementFragment;
 import org.chromium.chrome.browser.privacy_sandbox.PrivacySandboxSettingsBaseFragment;
@@ -120,6 +122,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
     private ScrimCoordinator mScrim;
 
     private BottomSheetController mBottomSheetController;
+
+    private OneshotSupplierImpl<BottomSheetController> mBottomSheetControllerSupplier =
+            new OneshotSupplierImpl<>();
 
     @Nullable
     private UiConfig mUiConfig;
@@ -267,6 +272,8 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                 () -> mScrim, (sheet) -> {}, getWindow(),
                 KeyboardVisibilityDelegate.getInstance(), () -> sheetContainer);
         // clang-format on
+
+        mBottomSheetControllerSupplier.set(mBottomSheetController);
     }
 
     // OnPreferenceStartFragmentCallback:
@@ -503,7 +510,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         }
         if (fragment instanceof PrivacyGuideFragment) {
             PrivacyGuideFragment pgFragment = (PrivacyGuideFragment) fragment;
-            pgFragment.setBottomSheetController(mBottomSheetController);
+            pgFragment.setBottomSheetControllerSupplier(mBottomSheetControllerSupplier);
             pgFragment.setCustomTabIntentHelper(
                     LaunchIntentDispatcher::createCustomTabActivityIntent);
             pgFragment.setSettingsLauncher(mSettingsLauncher);
@@ -511,6 +518,9 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         if (fragment instanceof AccessibilitySettings) {
             ((AccessibilitySettings) fragment)
                     .setDelegate(new ChromeAccessibilitySettingsDelegate(mProfile));
+        }
+        if (fragment instanceof PasswordSettings) {
+            ((PasswordSettings) fragment).setBottomSheetController(mBottomSheetController);
         }
     }
 

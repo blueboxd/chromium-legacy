@@ -190,7 +190,7 @@ locale.  The strings in this file are specific to iOS.
         Sync your bookmarks, history &amp; more on all devices
       </message>
       <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_MANAGED_TITLE" desc="Title of the sync description section on the sync consent dialog to explain why sync can be useful for the user when sync types are limited (i.e. managed by policies). [iOS only]">
-        To sync and personalize accross devices, turn on sync.
+        To sync and personalize across devices, turn on sync.
       </message>
       <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_SUBTITLE" desc="Subtitle of the sync description section on the sync consent dialog to explain why sync can be useful for the user. [iOS only]">
         Google may use your history to personalize Search and other Google services.
@@ -1566,6 +1566,9 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_TEXT" desc="Text for the LongPress Toolbar Tip in-product help promotion, explaining that the user can long press on the toolbar's button to display more options. [iOS only]">
         Touch &amp; hold for more tab options
+      </message>
+      <message name="IDS_IOS_MAGIC_STACK_SEE_MORE" desc="The See More button in Magic Stack modules to show a detailed view. [Length: 10em]">
+        See More
       </message>
       <message name="IDS_IOS_MANAGE_YOUR_GOOGLE_ACCOUNT_TITLE" desc="Title for the view in the Settings to open 'Google Account' web page.">
         Manage Your Google Account

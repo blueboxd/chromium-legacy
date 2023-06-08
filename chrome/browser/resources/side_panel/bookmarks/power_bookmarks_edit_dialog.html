@@ -72,7 +72,9 @@
   }
 
   .input-row {
+    align-items: baseline;
     display: grid;
+    gap: 4px;
     grid-template-columns: 52px auto;
   }
 
@@ -106,7 +108,7 @@
         <cr-input class="sp-labelless-input" id="urlInput" type="url"
             value="[[getBookmarkUrl_(selectedBookmarks_.*)]]"
             error-message="$i18n{editInvalidUrl}"
-            aria-label="$i18n{editUrl}"></cr-input>
+            aria-label="$i18n{editUrl}" required></cr-input>
       </div>
     </div>
     <sp-heading hide-back-button="[[!activeFolderPath_.length]]"

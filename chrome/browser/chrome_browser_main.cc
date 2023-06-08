@@ -196,7 +196,6 @@
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
 #include "third_party/blink/public/common/switches.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if BUILDFLAG(ENABLE_COMPONENT_UPDATER)
@@ -294,6 +293,7 @@
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 #include "chrome/browser/headless/headless_mode_metrics.h"  // nogncheck
 #include "chrome/browser/headless/headless_mode_util.h"     // nogncheck
+#include "components/headless/select_file_dialog/headless_select_file_dialog.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
@@ -1411,6 +1411,15 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   ui::SelectFileDialog::SetFactory(new ui::SelectFileDialogLacros::Factory());
 #endif  // BUILDFLAG(IS_WIN)
+
+  // In headless mode provide alternate SelectFileDialog factory overriding
+  // any platform specific SelectFileDialog implementation that may have been
+  // set.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+  if (headless::IsHeadlessMode()) {
+    headless::HeadlessSelectFileDialogFactory::SetUp();
+  }
+#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMakeDefaultBrowser)) {

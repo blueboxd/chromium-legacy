@@ -13,7 +13,7 @@
 
 class Browser;
 namespace views {
-class ImageView;
+class ScrollView;
 }  // namespace views
 
 class DownloadBubbleUIController;
@@ -23,28 +23,21 @@ class DownloadBubbleRowListView : public views::FlexLayoutView {
  public:
   METADATA_HEADER(DownloadBubbleRowListView);
 
-  static std::unique_ptr<views::View> CreateWithScroll(
-      bool is_partial_view,
+  static std::unique_ptr<views::ScrollView> CreateWithScroll(
       base::WeakPtr<Browser> browser,
       base::WeakPtr<DownloadBubbleUIController> bubble_controller,
       base::WeakPtr<DownloadBubbleNavigationHandler> navigation_handler,
       std::vector<DownloadUIModel::DownloadUIModelPtr> rows,
       int fixed_width);
 
-  DownloadBubbleRowListView(bool is_partial_view,
-                            base::WeakPtr<Browser> browser);
+  DownloadBubbleRowListView();
   ~DownloadBubbleRowListView() override;
   DownloadBubbleRowListView(const DownloadBubbleRowListView&) = delete;
   DownloadBubbleRowListView& operator=(const DownloadBubbleRowListView&) =
       delete;
 
- private:
-  bool IsIncognitoInfoRowEnabled();
-
-  bool is_partial_view_;
-  base::Time creation_time_;
-  base::WeakPtr<Browser> browser_ = nullptr;
-  raw_ptr<views::ImageView> info_icon_ = nullptr;
+  // TODO(crbug.com/1344515): Add functionality for adding a new download while
+  // this is already open.
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_DOWNLOAD_BUBBLE_DOWNLOAD_BUBBLE_ROW_LIST_VIEW_H_

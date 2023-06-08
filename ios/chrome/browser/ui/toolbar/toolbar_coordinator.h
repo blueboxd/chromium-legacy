@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_ui_updating.h"
+#import "ios/chrome/browser/ui/toolbar/public/fakebox_focuser.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_coordinating.h"
 
 @protocol OmniboxPopupPresenterDelegate;
@@ -23,8 +24,9 @@
 /// view controller. This object is also an interface between multiple toolbars
 /// and the objects which want to interact with them without having to know to
 /// which one specifically send the call.
-@interface ToolbarCoordinator
-    : ChromeCoordinator <PopupMenuUIUpdating, ToolbarCoordinating>
+@interface ToolbarCoordinator : ChromeCoordinator <FakeboxFocuser,
+                                                   PopupMenuUIUpdating,
+                                                   ToolbarCoordinating>
 
 /// Delegate for focusing omnibox in `locationBarCoordinator`.
 @property(nonatomic, weak) id<OmniboxFocusDelegate> omniboxFocusDelegate;
@@ -38,9 +40,6 @@
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;
 
-/// Returns `primaryToolbarCoordinator`.
-- (PrimaryToolbarCoordinator*)primaryToolbarCoordinator;
-
 /// Returns `primaryToolbarViewController`.
 - (UIViewController*)primaryToolbarViewController;
 /// Returns `secondaryToolbarViewController`.
@@ -48,6 +47,42 @@
 
 /// Returns the sharing positioner for the current toolbar configuration.
 - (id<SharingPositioner>)sharingPositioner;
+
+/// Updates the toolbar's appearance.
+/// TODO(crbug.com/1329087): Remove this once toolbar coordinator owns focus
+/// orchestrator.
+- (void)updateToolbar;
+
+/// YES when a prerendered webstate is being inserted into a webStateList.
+- (BOOL)isLoadingPrerenderer;
+
+#pragma mark Omnibox and LocationBar
+
+/// Coordinates the location bar focusing/defocusing. For example, initiates
+/// transition to the expanded location bar state of the view controller.
+- (void)transitionToLocationBarFocusedState:(BOOL)focused;
+/// Whether the omnibox is currently the first responder.
+- (BOOL)isOmniboxFirstResponder;
+/// Whether the omnibox popup is currently presented.
+- (BOOL)showingOmniboxPopup;
+
+#pragma mark SnapshotProviding
+
+/// Returns the snapshop provider of primary toolbar.
+- (id<SideSwipeToolbarSnapshotProviding>)primaryToolbarSnapshotProvider;
+/// Returns the snapshop provider of secondary toolbar.
+- (id<SideSwipeToolbarSnapshotProviding>)secondaryToolbarSnapshotProvider;
+
+#pragma mark ToolbarHeightProviding
+
+/// The minimum height of the primary toolbar.
+- (CGFloat)collapsedPrimaryToolbarHeight;
+/// The maximum height of the primary toolbar.
+- (CGFloat)expandedPrimaryToolbarHeight;
+/// The minimum height of the secondary toolbar.
+- (CGFloat)collapsedSecondaryToolbarHeight;
+/// The maximum height of the secondary toolbar.
+- (CGFloat)expandedSecondaryToolbarHeight;
 
 #pragma mark ViewRevealing
 
@@ -58,13 +93,6 @@
 /// view revealing.
 - (void)setPanGestureHandler:
     (ViewRevealingVerticalPanHandler*)panGestureHandler;
-
-#pragma mark SnapshotProviding
-
-/// Returns the snapshop provider of primary toolbar.
-- (id<SideSwipeToolbarSnapshotProviding>)primaryToolbarSnapshotProvider;
-/// Returns the snapshop provider of secondary toolbar.
-- (id<SideSwipeToolbarSnapshotProviding>)secondaryToolbarSnapshotProvider;
 
 @end
 

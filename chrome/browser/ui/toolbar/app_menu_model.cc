@@ -91,7 +91,6 @@
 #include "media/base/media_switches.h"
 #include "ui/base/accelerators/menu_label_accelerator_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/layout.h"
 #include "ui/base/models/button_menu_item_model.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -202,8 +201,10 @@ std::u16string GetOpenPWALabel(const Browser* browser) {
   const std::u16string short_name =
       base::UTF8ToUTF16(provider->registrar_unsafe().GetAppShortName(*app_id));
   return l10n_util::GetStringFUTF16(
-      IDS_OPEN_IN_APP_WINDOW, ui::EscapeMenuLabelAmpersands(gfx::TruncateString(
-                                  short_name, 30, gfx::CHARACTER_BREAK)));
+      IDS_OPEN_IN_APP_WINDOW,
+      ui::EscapeMenuLabelAmpersands(gfx::TruncateString(
+          short_name, GetLayoutConstant(APP_MENU_MAXIMUM_CHARACTER_LENGTH),
+          gfx::CHARACTER_BREAK)));
 }
 
 bool IsPasswordManagerPage(const GURL& url) {
@@ -283,7 +284,15 @@ ProfileSubMenuModel::ProfileSubMenuModel(
                 avatar_image, avatar_icon_size, avatar_icon_size,
                 profiles::SHAPE_CIRCLE));
       }
-      profile_name_ = profile_attributes->GetName();
+      // Don't use ProfileAttributesEntry::GetName() to prevent both the GAIA
+      // name and local name from being displayed
+      profile_name_ = profile_attributes->GetGAIANameToDisplay();
+      if (profile_name_.empty()) {
+        profile_name_ = profile_attributes->GetLocalProfileName();
+      }
+      profile_name_ = ui::EscapeMenuLabelAmpersands(gfx::TruncateString(
+          profile_name_, GetLayoutConstant(APP_MENU_MAXIMUM_CHARACTER_LENGTH),
+          gfx::CHARACTER_BREAK));
     }
   }
 }
@@ -1156,6 +1165,7 @@ void AppMenuModel::Build() {
 
   AddSeparator(ui::NORMAL_SEPARATOR);
 
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   if (features::IsChromeRefresh2023()) {
     sub_menus_.push_back(
         std::make_unique<ProfileSubMenuModel>(this, browser()->profile()));
@@ -1166,6 +1176,7 @@ void AppMenuModel::Build() {
     SetIcon(GetIndexOfCommandId(IDC_PROFILE_MENU_IN_APP_MENU).value(),
             profile_submenu_model->avatar_image_model());
   }
+#endif
 
   if (!browser_->profile()->IsGuestSession() &&
       features::IsChromeRefresh2023() &&
@@ -1241,14 +1252,10 @@ void AppMenuModel::Build() {
   if (features::IsChromeRefresh2023()) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     if (companion::IsCompanionFeatureEnabled()) {
-      // TODO(josephjoopark): Update CSC string with StringId when finalized.
-      AddItem(IDC_SHOW_SEARCH_COMPANION, u"Chrome Search Companion");
+      AddItemWithStringId(IDC_SHOW_SEARCH_COMPANION, IDS_SHOW_SEARCH_COMPANION);
     }
 #endif
-
-    // TODO(josephjoopark): Update translate string with StringId when
-    // finalized.
-    AddItem(IDC_TRANSLATE_PAGE, u"Google Translate");
+    AddItemWithStringId(IDC_TRANSLATE_PAGE, IDS_SHOW_TRANSLATE);
 
     sub_menus_.push_back(std::make_unique<FindAndEditSubMenuModel>(this));
     AddSubMenuWithStringId(IDC_FIND_AND_EDIT_MENU, IDS_FIND_AND_EDIT_MENU,

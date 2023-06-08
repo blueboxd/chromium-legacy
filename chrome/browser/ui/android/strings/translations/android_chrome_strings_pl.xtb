@@ -40,7 +40,6 @@ Twoje zaszyfrowane dane może odczytać tylko osoba znająca hasło. Hasło nie 
 <translation id="1201402288615127009">Dalej</translation>
 <translation id="1202892408424955784">Obserwowane produkty</translation>
 <translation id="1204037785786432551">Pobierz link</translation>
-<translation id="1204692632633423444">Przycisk działania Chrome: <ph name="ACTION" /></translation>
 <translation id="1206892813135768548">Kopiuj tekst linku</translation>
 <translation id="1209206284964581585">Na razie ukryj</translation>
 <translation id="1227058898775614466">Historia nawigacji</translation>
@@ -143,7 +142,6 @@ Jeśli usuniesz swoją historię przeglądania – całą lub dotyczącą okre�
 <translation id="1749561566933687563">Synchronizuj swoje zakładki</translation>
 <translation id="1750259112639922169">Grupa <ph name="TAB_COUNT" /> kart</translation>
 <translation id="17513872634828108">Otwarte karty</translation>
-<translation id="1754404134430936718">Tekst został skopiowany</translation>
 <translation id="1757620656501361327">Aktualizacja Menedżera haseł Google</translation>
 <translation id="1778457539567749232">Oznacz jako nieprzeczytane</translation>
 <translation id="1779766957982586368">Zamknij okno</translation>
@@ -1446,7 +1444,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="856481929701340285">Wersja na komputer</translation>
 <translation id="8570677896027847510">Nie można pobrać pliku w bezpieczny sposób</translation>
 <translation id="8571213806525832805">Ostatnie 4 tygodnie</translation>
-<translation id="8572344201470131220">Obraz został skopiowany</translation>
 <translation id="8580884231102452214">Kopiuj GIF</translation>
 <translation id="8583805026567836021">Usuwam dane konta</translation>
 <translation id="859046281437143747">Monitoruj cenę za pomocą przycisku Więcej opcji</translation>

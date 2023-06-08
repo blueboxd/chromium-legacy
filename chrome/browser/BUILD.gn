@@ -1094,6 +1094,8 @@ static_library("browser") {
     "performance_manager/metrics/memory_pressure_metrics.h",
     "performance_manager/metrics/metrics_provider_common.cc",
     "performance_manager/metrics/metrics_provider_common.h",
+    "performance_manager/metrics/page_timeline_cpu_monitor.cc",
+    "performance_manager/metrics/page_timeline_cpu_monitor.h",
     "performance_manager/metrics/page_timeline_monitor.cc",
     "performance_manager/metrics/page_timeline_monitor.h",
     "performance_manager/observers/page_load_metrics_observer.cc",
@@ -1160,8 +1162,6 @@ static_library("browser") {
     "platform_util_internal.h",
     "plugins/pdf_iframe_navigation_throttle.cc",
     "plugins/pdf_iframe_navigation_throttle.h",
-    "policy/boolean_disabling_policy_handler.cc",
-    "policy/boolean_disabling_policy_handler.h",
     "policy/chrome_browser_policy_connector.cc",
     "policy/chrome_browser_policy_connector.h",
     "policy/chrome_policy_conversions_client.cc",
@@ -1896,7 +1896,7 @@ static_library("browser") {
     # TODO(crbug.com/1335199): break this dep when favicon is in its own target
     "//chrome/browser/share",
     "//chrome/browser/ui",
-    "//chrome/browser/storage_access_api:permissions",
+    "//chrome/browser/storage_access_api",
     "//chrome/browser/top_level_storage_access_api:permissions",
     "//chrome/browser/safe_browsing",
     "//chrome/browser/safe_browsing:verdict_cache_manager_factory",
@@ -2018,7 +2018,7 @@ static_library("browser") {
     "//chrome/browser/sharing:buildflags",
     "//chrome/browser/sharing/proto",
     "//chrome/browser/signin:identity_manager_provider",
-    "//chrome/browser/storage_access_api:permissions",
+    "//chrome/browser/storage_access_api",
     "//chrome/browser/thumbnail",
     "//chrome/browser/top_level_storage_access_api:permissions",
     "//chrome/browser/touch_to_fill",
@@ -2131,6 +2131,7 @@ static_library("browser") {
     "//components/flags_ui",
     "//components/gcm_driver",
     "//components/handoff",
+    "//components/headless/select_file_dialog",
     "//components/heavy_ad_intervention",
     "//components/history/content/browser",
     "//components/history/core/browser",
@@ -2262,6 +2263,7 @@ static_library("browser") {
     "//components/safe_browsing/core/browser:verdict_cache_manager",
     "//components/safe_browsing/core/browser/db:database_manager",
     "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_service",
+    "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_utils",
     "//components/safe_browsing/core/browser/password_protection:password_protection_metrics_util",
     "//components/safe_browsing/core/browser/realtime:policy_engine",
     "//components/safe_browsing/core/browser/realtime:url_lookup_service",
@@ -3192,18 +3194,16 @@ static_library("browser") {
       "supervised_user/android/favicon_fetcher.h",
       "supervised_user/android/supervised_user_web_content_handler_impl.cc",
       "supervised_user/android/supervised_user_web_content_handler_impl.h",
-      "sync/android/sync_service_android_bridge.cc",
-      "sync/android/sync_service_android_bridge.h",
       "sync/glue/synced_tab_delegate_android.cc",
       "sync/glue/synced_tab_delegate_android.h",
       "sync/glue/synced_window_delegate_android.cc",
       "sync/glue/synced_window_delegate_android.h",
       "sync/glue/synced_window_delegates_getter_android.cc",
       "sync/glue/synced_window_delegates_getter_android.h",
-      "sync/trusted_vault_client_android.cc",
-      "sync/trusted_vault_client_android.h",
       "tab/web_contents_state.cc",
       "tab/web_contents_state.h",
+      "trusted_vault/trusted_vault_client_android.cc",
+      "trusted_vault/trusted_vault_client_android.h",
 
       # TODO(crbug.com/1426388): Move to its own target in touch_to_fill/.
       "touch_to_fill/payments/android/touch_to_fill_credit_card_controller.cc",
@@ -3249,6 +3249,7 @@ static_library("browser") {
       "//chrome/browser/android/messages:jni_headers",
       "//chrome/browser/android/metrics:jni_headers",
       "//chrome/browser/android/webapk:webapk_sources",
+      "//chrome/browser/autofill/android:jni_headers",
       "//chrome/browser/banners/android:jni_headers",
       "//chrome/browser/bluetooth/android:jni_headers",
       "//chrome/browser/commerce/android:shopping_service_jni",
@@ -4456,6 +4457,7 @@ static_library("browser") {
       "//components/web_modal",
       "//components/webauthn/core/browser",
       "//courgette:courgette_lib",
+      "//services/device/public/cpp/bluetooth",
       "//services/device/public/cpp/hid",
       "//third_party/sqlite",
       "//third_party/zxcvbn-cpp",
@@ -4629,7 +4631,13 @@ static_library("browser") {
       ]
     }
   }
-
+  if (is_chromeos_lacros) {
+    assert(enable_system_notifications)
+    sources += [
+      "feedback/system_logs/log_sources/ozone_wayland_state_dump_source.cc",
+      "feedback/system_logs/log_sources/ozone_wayland_state_dump_source.h",
+    ]
+  }
   if (is_chromeos_ash) {
     assert(enable_system_notifications)
     sources += [
@@ -5171,7 +5179,6 @@ static_library("browser") {
       "//chromeos/dbus/tpm_manager:tpm_manager_proto",
       "//chromeos/services/network_config/public/mojom",
       "//chromeos/services/network_health/public/mojom",
-      "//chromeos/startup:constants",
       "//chromeos/strings",
       "//chromeos/ui/base",
       "//chromeos/ui/vector_icons",
@@ -5820,10 +5827,10 @@ static_library("browser") {
       "//chrome/installer/util:with_no_strings",
       "//chrome/notification_helper:constants",
       "//chrome/services/util_win/public/mojom",
+      "//chrome/updater/app/server/win:updater_legacy_idl_idl",
       "//components/chrome_cleaner/public/constants",
       "//components/crash/core/app",
       "//components/crash/core/app:crash_export_thunk_include",
-      "//google_update",
       "//sandbox/win:sandbox",
       "//services/proxy_resolver_win/public/mojom",
       "//third_party/crashpad/crashpad/client",
@@ -5858,7 +5865,7 @@ static_library("browser") {
         "//chrome/browser/win/conflicts:module_list_proto",
         "//chrome/chrome_elf:sha1",
         "//chrome/chrome_elf:third_party_shared_defines",
-        "//google_update",
+        "//chrome/updater/app/server/win:updater_legacy_idl_idl",
       ]
       libs += [ "msi.lib" ]
       sources += [
@@ -6096,6 +6103,8 @@ static_library("browser") {
       "enterprise/connectors/device_trust/navigation_throttle.h",
       "enterprise/connectors/device_trust/signals/decorators/common/context_signals_decorator.cc",
       "enterprise/connectors/device_trust/signals/decorators/common/context_signals_decorator.h",
+      "enterprise/connectors/device_trust/signals/signals_filterer.cc",
+      "enterprise/connectors/device_trust/signals/signals_filterer.h",
       "enterprise/connectors/device_trust/signals/signals_service_factory.cc",
       "enterprise/connectors/device_trust/signals/signals_service_factory.h",
       "enterprise/connectors/device_trust/signals/signals_service_impl.cc",

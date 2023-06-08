@@ -167,10 +167,6 @@ class WPTExpectationsUpdater:
         # here. See https://crbug.com/1154650 .
         self.port.wpt_manifest.cache_clear()
 
-        issue_number = self.get_issue_number()
-        if issue_number == 'None':
-            raise ScriptError('No issue on current branch.')
-
         build_to_status = self.git_cl.latest_try_jobs(
             builder_names=self._get_try_bots(), patchset=self.patchset)
         _log.debug('Latest try jobs: %r', build_to_status)
@@ -202,17 +198,6 @@ class WPTExpectationsUpdater:
             # TODO(crbug.com/1412527): After switching `webdriver_tests_suite`
             # to ResultDB, use `get_failing_results_dict` instead with
             # `min_attempts_for_update=1` to get failing webdriver results.
-            if self.host.builders.has_webdriver_tests_for_builder(
-                    build.builder_name):
-                main = self.host.builders.main_for_builder(build.builder_name)
-                webdriver_results = fetcher.fetch_webdriver_test_results(
-                    build, main)
-                if not webdriver_results:
-                    webdriver_results = WebTestResults(
-                        [],
-                        step_name=self.WEBDRIVER_SUITE,
-                        builder_name=build.builder_name)
-                results.append(webdriver_results)
 
         results = self._make_results_for_update(results)
         test_expectations = {}
@@ -332,10 +317,6 @@ class WPTExpectationsUpdater:
         for builder_results in results:
             tests.update(result.test_name() for result in builder_results)
         return tests
-
-    def get_issue_number(self):
-        """Returns current CL number. Can be replaced in unit tests."""
-        return self.git_cl.get_issue_number()
 
     def filter_results_for_update(
         self,

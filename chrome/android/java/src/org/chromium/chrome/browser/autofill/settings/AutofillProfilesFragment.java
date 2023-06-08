@@ -23,6 +23,7 @@ import androidx.preference.PreferenceScreen;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.autofill.AutofillAddress;
 import org.chromium.chrome.browser.autofill.AutofillEditorBase;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -32,16 +33,16 @@ import org.chromium.chrome.browser.autofill.editors.EditorObserverForTest;
 import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
-import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.SettingsAutofillAndPaymentsObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ProfileDependentSetting;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.chrome.browser.sync.SyncService;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.sync.SyncService;
 import org.chromium.components.sync.UserSelectableType;
 
 /**
@@ -274,7 +275,7 @@ public class AutofillProfilesFragment extends PreferenceFragmentCompat
         if (profile.getSource() == Source.ACCOUNT) {
             return false;
         }
-        SyncService syncService = SyncService.get();
+        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
         return syncService == null || !syncService.isSyncFeatureEnabled()
                 || !syncService.getSelectedTypes().contains(UserSelectableType.AUTOFILL);
     }

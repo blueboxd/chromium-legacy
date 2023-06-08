@@ -167,17 +167,16 @@ SVGAnimatedPropertyBase* SVGPathElement::PropertyFromAttribute(
   }
 }
 
-void SVGPathElement::SynchronizeSVGAttribute(const QualifiedName& name) const {
-  if (name == AnyQName()) {
-    SVGAnimatedPropertyBase* attrs[]{path_.Get()};
-    SynchronizeAllSVGAttributes(attrs);
-  }
-  SVGGeometryElement::SynchronizeSVGAttribute(name);
+void SVGPathElement::SynchronizeAllSVGAttributes() const {
+  SVGAnimatedPropertyBase* attrs[]{path_.Get()};
+  SynchronizeListOfSVGAttributes(attrs);
+  SVGGeometryElement::SynchronizeAllSVGAttributes();
 }
 
 void SVGPathElement::CollectExtraStyleForPresentationAttribute(
     MutableCSSPropertyValueSet* style) {
-  if (path_->HasPresentationAttributeMapping() && path_->IsAnimating()) {
+  DCHECK(path_->HasPresentationAttributeMapping());
+  if (path_->IsAnimating()) {
     CollectStyleForPresentationAttribute(svg_names::kDAttr, g_empty_atom,
                                          style);
   }

@@ -4,11 +4,11 @@
 
 #import "ios/chrome/browser/sync/sync_error_browser_agent.h"
 
+#import "ios/chrome/browser/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
-#import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -75,14 +75,13 @@ void SyncErrorBrowserAgent::WebStateListChanged(
       CreateReSignInInfoBarDelegate(replace_change.inserted_web_state());
       break;
     }
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insert_change =
+          change.As<WebStateListChangeInsert>();
+      CreateReSignInInfoBarDelegate(insert_change.inserted_web_state());
+      break;
+    }
   }
-}
-
-void SyncErrorBrowserAgent::WebStateInsertedAt(WebStateList* web_state_list,
-                                               web::WebState* web_state,
-                                               int index,
-                                               bool activating) {
-  CreateReSignInInfoBarDelegate(web_state);
 }
 
 void SyncErrorBrowserAgent::WebStateDetachedAt(WebStateList* web_state_list,

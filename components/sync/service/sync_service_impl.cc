@@ -52,6 +52,10 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "components/sync/android/sync_service_android_bridge.h"
+#endif  // BUILDFLAG(IS_ANDROID)
+
 namespace syncer {
 
 namespace {
@@ -668,6 +672,15 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
       break;
   }
 }
+
+#if BUILDFLAG(IS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> SyncServiceImpl::GetJavaObject() {
+  if (!sync_service_android_) {
+    sync_service_android_ = std::make_unique<SyncServiceAndroidBridge>(this);
+  }
+  return sync_service_android_->GetJavaObject();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void SyncServiceImpl::SetSyncFeatureRequested() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1867,11 +1880,17 @@ SyncService::ModelTypeDownloadStatus SyncServiceImpl::GetDownloadStatusFor(
   // Download status doesn't make sense for non-real data types.
   CHECK(IsRealDataType(type));
 
-  if (!IsLocalSyncEnabled() &&
-      !auth_manager_->IsActiveAccountInfoFullyLoaded()) {
-    DVLOG(1) << "Waiting for refresh tokens to be loaded from the disk";
-    // GetDisableReasons() won't be empty until then.
-    return ModelTypeDownloadStatus::kWaitingForUpdates;
+  if (!IsLocalSyncEnabled()) {
+    if (!auth_manager_->IsActiveAccountInfoFullyLoaded()) {
+      DVLOG(1) << "Waiting for refresh tokens to be loaded from the disk";
+      // GetDisableReasons() won't be empty until then.
+      return ModelTypeDownloadStatus::kWaitingForUpdates;
+    }
+
+    if (auth_manager_->IsSyncPaused()) {
+      DVLOG(1) << "Error download status because sync is paused";
+      return ModelTypeDownloadStatus::kError;
+    }
   }
 
   // TODO(crbug.com/1425026): check whether this works when local sync is

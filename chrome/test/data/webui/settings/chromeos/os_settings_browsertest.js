@@ -192,17 +192,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
  ['AppManagementManagedApps', 'app_management/managed_apps_test.js'],
  ['AppManagementPage', 'app_management/app_management_page_tests.js'],
- ['AppManagementPinToShelfItem', 'app_management/pin_to_shelf_item_test.js'],
- [
-   'AppManagementPluginVmDetailView',
-   'app_management/plugin_vm_detail_view_test.js',
- ],
- ['AppManagementReducers', 'app_management/reducers_test.js'],
- ['AppManagementResizeLockItem', 'app_management/resize_lock_item_test.js'],
- [
-   'AppManagementSupportedLinksItem',
-   'app_management/supported_links_item_test.js',
- ],
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
@@ -503,8 +492,28 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'os_apps_page/app_management_page/main_view_test.js'
  ],
  [
+   'OsAppsPageAppManagementPagePinToShelfItem',
+   'os_apps_page/app_management_page/pin_to_shelf_item_test.js'
+ ],
+ [
+   'OsAppsPageAppManagementPagePluginVmDetailView',
+   'os_apps_page/app_management_page/plugin_vm_detail_view_test.js',
+ ],
+ [
    'OsAppsPageAppManagementPagePwaDetailView',
    'os_apps_page/app_management_page/pwa_detail_view_test.js'
+ ],
+ [
+   'OsAppsPageAppManagementPageReducers',
+   'os_apps_page/app_management_page/reducers_test.js'
+ ],
+ [
+   'OsAppsPageAppManagementPageResizeLockItem',
+   'os_apps_page/app_management_page/resize_lock_item_test.js'
+ ],
+ [
+   'OsAppsPageAppManagementPageSupportedLinksItem',
+   'os_apps_page/app_management_page/supported_links_item_test.js',
  ],
  ['OsBluetoothPage', 'os_bluetooth_page/os_bluetooth_page_tests.js'],
  [
@@ -554,6 +563,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'OsPeoplePageFingerprintListSubpage',
    'os_people_page/fingerprint_list_subpage_test.js'
+ ],
+ [
+   'OsPeoplePagePersonalizationOptions',
+   'os_people_page/personalization_options_test.js',
  ],
  ['OsPrintingPage', 'os_printing_page/os_printing_page_test.js'],
  [

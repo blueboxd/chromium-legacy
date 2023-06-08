@@ -10,6 +10,7 @@ interface AbortController
     method constructor
 interface AbortSignal : EventTarget
     static method abort
+    static method any
     static method timeout
     attribute @@toStringTag
     getter aborted
@@ -6139,6 +6140,7 @@ interface PerformanceNavigation
 interface PerformanceNavigationTiming : PerformanceResourceTiming
     attribute @@toStringTag
     getter activationStart
+    getter criticalCHRestart
     getter domComplete
     getter domContentLoadedEventEnd
     getter domContentLoadedEventStart

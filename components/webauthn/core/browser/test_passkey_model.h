@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/observer_list.h"
 #include "components/sync/protocol/webauthn_credential_specifics.pb.h"
 #include "components/webauthn/core/browser/passkey_model.h"
 
@@ -16,6 +17,8 @@ class TestPasskeyModel : public PasskeyModel {
   ~TestPasskeyModel() override;
 
   // PasskeyModel:
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
   GetModelTypeControllerDelegate() override;
   base::flat_set<std::string> GetAllSyncIds() const override;
@@ -24,9 +27,14 @@ class TestPasskeyModel : public PasskeyModel {
   std::string AddNewPasskeyForTesting(
       sync_pb::WebauthnCredentialSpecifics passkey) override;
   bool DeletePasskey(const std::string& credential_id) override;
+  bool UpdatePasskey(const std::string& credential_id,
+                     PasskeyChange change) override;
 
  private:
+  void NotifyPasskeysChanged();
+
   std::vector<sync_pb::WebauthnCredentialSpecifics> credentials_;
+  base::ObserverList<Observer> observers_;
 };
 
 #endif  // COMPONENTS_WEBAUTHN_CORE_BROWSER__TEST_PASSKEY_MODEL_H_

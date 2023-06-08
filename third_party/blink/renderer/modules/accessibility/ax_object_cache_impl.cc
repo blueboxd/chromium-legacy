@@ -1400,7 +1400,16 @@ AXObject* AXObjectCacheImpl::CreateAndInit(Node* node,
     // Must compute the parent, which occurs when an AXObject is being created
     // in the middle of the tree.
     parent = AXObject::ComputeNonARIAParent(*this, node);
-    if (!parent) {
+
+    // Only rebuild the child list of the parent if we had to compute
+    // the parent here, and it wasn't passed in as context. In other situations,
+    // we should know about the child already.
+    if (parent) {
+      DCHECK(!parent->IsDetached());
+      parent->ChildrenChangedWithCleanLayout();
+    }
+    // The parent can become detached in ChildrenChangedWithCleanLayout.
+    if (!parent || parent->IsDetached()) {
       // An AXObject must have a parent, unless it's the root.
       // This because when no parent can be computed, it means that any AXObject
       // we would create would not have a path to the root. We do not create
@@ -1436,13 +1445,6 @@ AXObject* AXObjectCacheImpl::CreateAndInit(Node* node,
   // Give the AXObject its ID and initialize.
   AssociateAXID(new_obj, axid);
   new_obj->Init(parent);
-
-  // Only rebuild the child list of the parent if we had to compute
-  // the parent here, and it wasn't passed in as context. In other situations,
-  // we should know about the child already.
-  if (parent && parent != parent_if_known) {
-    parent->ChildrenChangedWithCleanLayout();
-  }
 
   return new_obj;
 }
@@ -2184,7 +2186,8 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
   if (AXObject::HasARIAOwns(element))
     HandleAttributeChangedWithCleanLayout(html_names::kAriaOwnsAttr, element);
 
-  MaybeNewRelationTarget(*node, Get(node));
+  AXObject* obj = Get(node);
+  MaybeNewRelationTarget(*node, obj);
 
   // Even if the node or parent are ignored, an ancestor may need to include
   // descendants of the attached node, thus ChildrenChangedWithCleanLayout()
@@ -2206,6 +2209,12 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttachedWithCleanLayout(
       HTMLImageElement* primary_image_element = map->ImageElement();
       if (node != primary_image_element) {
         ChildrenChangedWithCleanLayout(SafeGet(primary_image_element));
+      } else if (AXObject* ax_previous_parent = GetAXImageForMap(*map)) {
+        if (ax_previous_parent != obj) {
+          ChildrenChangedWithCleanLayout(ax_previous_parent->GetNode(),
+                                         ax_previous_parent);
+          ax_previous_parent->ClearChildren();
+        }
       }
     }
   }
@@ -2461,12 +2470,14 @@ void AXObjectCacheImpl::UpdateTreeIfNeeded() {
   if (!RuntimeEnabledFeatures::AccessibilityEagerAXTreeUpdateEnabled()) {
     return;
   }
-  UpdateTreeIfNeededOnce();
+  if (Root()->HasDirtyDescendants()) {
+    UpdateTreeIfNeededOnce();
+  }
   // Update a second time because image maps or AX relations may invalidate
   // ancestors. See AXNodeObject::AddImageMapChildren or
   // AXRelationCache::UpdateRelatedText.
   // TODO(chrishtr): find a way to do this without two tree walks.
-  if (Root()->HasDirtyDescendants() || Root()->NeedsToUpdateChildren()) {
+  if (Root()->HasDirtyDescendants()) {
     UpdateTreeIfNeededOnce();
   }
 

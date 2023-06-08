@@ -107,7 +107,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DriveCommon.LocalSearch.SharedSearchTime" units="ms"
-    expires_after="M118">
+    expires_after="2023-12-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -136,7 +136,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DriveCommon.RemoteSearch.TextSearchTime" units="ms"
-    expires_after="M118">
+    expires_after="2023-12-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -197,7 +197,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="FileBrowser.ComputersCount" units="Computers"
-    expires_after="M118">
+    expires_after="2023-12-04">
   <owner>simmonsjosh@google.com</owner>
   <owner>src/ui/file_manager/OWNERS</owner>
   <summary>
@@ -976,6 +976,17 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="FileBrowser.OfficeFiles.Setup.CancelPage"
+    enum="OfficeSetupPage" expires_after="M124">
+  <owner>austinct@chromium.org</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: Records the page at which the user cancels Office
+    setup. NOTE: The OneDrive upload page does not get recorded as you cannot
+    'cancel' setup at that point.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.OfficeFiles.Setup.FileHandlerSelection"
     enum="OfficeSetupFileHandler" expires_after="M124">
   <owner>austinct@chromium.org</owner>
@@ -983,6 +994,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Chrome OS File Browser: The file handler the user selects to open an Office
     file with on the first page of setup.
+  </summary>
+</histogram>
+
+<histogram
+    name="FileBrowser.OfficeFiles.Setup.FirstTimeMicrosoft365Availability"
+    enum="Microsoft365Availability" expires_after="M124">
+  <owner>austinct@chromium.org</owner>
+  <owner>src/ui/file_manager/OWNERS</owner>
+  <summary>
+    Chrome OS File Browser: The state of MS365 PWA and ODFS on first setup
+    launch.
   </summary>
 </histogram>
 

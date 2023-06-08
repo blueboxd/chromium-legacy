@@ -187,13 +187,13 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />hapus data Chrome di akun An
 <translation id="2230173723195178503">Halaman web dimuat</translation>
 <translation id="2239626343334228536">Menghapus data browsing...</translation>
 <translation id="2242467532204595597">Gunakan Chrome kapan saja dengan mengetuk link di pesan, dokumen, dan aplikasi lainnya.</translation>
-<translation id="22508856139286506">Peringatan yang Ditolak (<ph name="COUNT" />)</translation>
 <translation id="2251686759395008410">Menu → Histori</translation>
 <translation id="2252674110805316998">Penelusuran Web</translation>
 <translation id="2256933947031277845">Organisasi mengizinkan Anda login hanya dengan akun tertentu.</translation>
 <translation id="225943865679747347">Kode kesalahan: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">Tambahkan Akun</translation>
 <translation id="2268044343513325586">Saring</translation>
+<translation id="2269277877025820298">Lihat Selengkapnya</translation>
 <translation id="2273327106802955778">Menu lainnya</translation>
 <translation id="2286505070150039482">Teks yang Ditandai</translation>
 <translation id="2287614783861766820">{count,plural, =1{Alamat ini akan dihapus dari perangkat ini.}other{Alamat ini akan dihapus dari perangkat ini.}}</translation>
@@ -356,6 +356,7 @@ Lihat petunjuk mesin telusur untuk menghapus histori penelusuran Anda, jika memu
 <translation id="3245744387817103524">Perubahan Anda tidak dapat disimpan.</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> dari <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3264775633254836593">Isi Otomatis Sandi</translation>
+<translation id="3265534588625245297">Kelola situs yang Anda ikuti</translation>
 <translation id="3268451620468152448">Tab Terbuka</translation>
 <translation id="3272527697863656322">Batal</translation>
 <translation id="3277021493514034324">Alamat situs disalin</translation>
@@ -1084,7 +1085,6 @@ Selama dalam mode Samaran, situs tidak dapat menggunakan cookie untuk melihat ak
 
 Situs dapat menggunakan cookie untuk melihat aktivitas penjelajahan Anda di berbagai situs, misalnya untuk mempersonalisasi iklan.</translation>
 <translation id="7971521879845308059">Blokir Pop-up</translation>
-<translation id="797413074872316787">Untuk menyinkronkan dan mempersonalisasi berbagai perangkat, aktifkan sinkronisasi.</translation>
 <translation id="7978018860671536736">3. Ketuk AutoFill Passwords</translation>
 <translation id="7982789257301363584">Jaringan</translation>
 <translation id="7987685713885608670">Untuk keamanan tambahan, enkripsi sandi di perangkat Anda sebelum disimpan ke Pengelola Sandi Google.</translation>

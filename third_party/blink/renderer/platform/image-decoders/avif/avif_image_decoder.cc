@@ -767,8 +767,7 @@ bool AVIFImageDecoder::UpdateDemuxer() {
   have_parsed_current_data_ = true;
 
   if (!decoder_) {
-    decoder_ = std::unique_ptr<avifDecoder, void (*)(avifDecoder*)>(
-        avifDecoderCreate(), avifDecoderDestroy);
+    decoder_.reset(avifDecoderCreate());
     if (!decoder_)
       return false;
 
@@ -987,12 +986,10 @@ avifResult AVIFImageDecoder::DecodeImage(wtf_size_t index) {
   // |index| should be less than what DecodeFrameCount() returns, so we should
   // not get the AVIF_RESULT_NO_IMAGES_REMAINING error.
   DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
-  if (ret != AVIF_RESULT_OK) {
-    if (ret != AVIF_RESULT_WAITING_ON_IO) {
-      DVLOG(1) << "avifDecoderNthImage(" << index
-               << ") failed: " << avifResultToString(ret) << ": "
-               << AvifDecoderErrorMessage(decoder_.get());
-    }
+  if (ret != AVIF_RESULT_OK && ret != AVIF_RESULT_WAITING_ON_IO) {
+    DVLOG(1) << "avifDecoderNthImage(" << index
+             << ") failed: " << avifResultToString(ret) << ": "
+             << AvifDecoderErrorMessage(decoder_.get());
     return ret;
   }
 
@@ -1014,7 +1011,7 @@ avifResult AVIFImageDecoder::DecodeImage(wtf_size_t index) {
     DVLOG(1) << "Frame YUV format must be equal to container YUV format";
     return AVIF_RESULT_UNKNOWN_ERROR;
   }
-  return AVIF_RESULT_OK;
+  return ret;
 }
 
 void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs,
@@ -1102,7 +1099,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
                                static_cast<uint32_t>(*to_row - from_row)};
     view.reset(avifImageCreateEmpty());
     const avifResult result = avifImageSetViewRect(view.get(), image, &rect);
-    DCHECK_EQ(result, AVIF_RESULT_OK);
+    CHECK_EQ(result, AVIF_RESULT_OK);
     image = view.get();
   }
 

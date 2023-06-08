@@ -622,6 +622,51 @@ TEST(PartitionAllocPageAllocatorTest, MappedPagesAccounting) {
   }
 }
 
+TEST(PartitionAllocPageAllocatorTest, AllocInaccessibleWillJitLater) {
+  // Verify that kInaccessibleWillJitLater allows read/write, and read/execute
+  // permissions to be set.
+  uintptr_t buffer =
+      AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kInaccessibleWillJitLater),
+                 PageTag::kChromium);
+  EXPECT_TRUE(
+      TrySetSystemPagesAccess(buffer, PageAllocationGranularity(),
+                              PageAccessibilityConfiguration(
+                                  PageAccessibilityConfiguration::kReadWrite)));
+  EXPECT_TRUE(TrySetSystemPagesAccess(
+      buffer, PageAllocationGranularity(),
+      PageAccessibilityConfiguration(
+          PageAccessibilityConfiguration::kReadExecute)));
+  FreePages(buffer, PageAllocationGranularity());
+}
+
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_MAC)
+// TODO(crbug.com/1452151): Fix test to GTEST_SKIP() if MAP_JIT is in-use,
+// or to be run otherwise, since kReadWriteExecute is used in some other
+// configurations.
+#define MAYBE_AllocReadWriteExecute DISABLED_AllocReadWriteExecute
+#else
+#define MAYBE_AllocReadWriteExecute AllocReadWriteExecute
+#endif  // BUILDFLAG(IS_IOS) || BUILDFLAG(IS_MAC)
+TEST(PartitionAllocPageAllocatorTest, MAYBE_AllocReadWriteExecute) {
+  // Verify that kReadWriteExecute is similarly functional.
+  uintptr_t buffer =
+      AllocPages(PageAllocationGranularity(), PageAllocationGranularity(),
+                 PageAccessibilityConfiguration(
+                     PageAccessibilityConfiguration::kReadWriteExecute),
+                 PageTag::kChromium);
+  EXPECT_TRUE(
+      TrySetSystemPagesAccess(buffer, PageAllocationGranularity(),
+                              PageAccessibilityConfiguration(
+                                  PageAccessibilityConfiguration::kReadWrite)));
+  EXPECT_TRUE(TrySetSystemPagesAccess(
+      buffer, PageAllocationGranularity(),
+      PageAccessibilityConfiguration(
+          PageAccessibilityConfiguration::kReadExecute)));
+  FreePages(buffer, PageAllocationGranularity());
+}
+
 }  // namespace partition_alloc::internal
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)

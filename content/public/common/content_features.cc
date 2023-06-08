@@ -432,7 +432,7 @@ BASE_FEATURE(kFedCmMultipleIdentityProviders,
 // Enables usage of the FedCM Relying Party Context API.
 BASE_FEATURE(kFedCmRpContext,
              "FedCmRpContext",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM API with the User Info API at the same time.
 // Note that actual exposure of the FedCM API to web content is controlled
@@ -449,7 +449,7 @@ BASE_FEATURE(kFedCmSelectiveDisclosure,
 // Enables usage of the FedCM API with the login hint parameter.
 BASE_FEATURE(kFedCmLoginHint,
              "FedCmLoginHint",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Field trial boolean parameter which indicates whether IdpSigninStatus API is
 // used in FedCM API.
@@ -987,6 +987,12 @@ BASE_FEATURE(kProcessPerSiteUpToMainFrameThreshold,
 constexpr base::FeatureParam<int> kProcessPerSiteMainFrameThreshold{
     &kProcessPerSiteUpToMainFrameThreshold, "ProcessPerSiteMainFrameThreshold",
     2};
+
+// Allows process reuse for localhost and IP based hosts when
+// `kProcessPerSiteUpToMainFrameThreshold` is enabled.
+constexpr base::FeatureParam<bool> kProcessPerSiteMainFrameAllowIPAndLocalhost{
+    &kProcessPerSiteUpToMainFrameThreshold,
+    "ProcessPerSiteMainFrameAllowIPAndLocalhost", false};
 
 // Enables skipping the early call to CommitPending when navigating away from a
 // crashed frame.

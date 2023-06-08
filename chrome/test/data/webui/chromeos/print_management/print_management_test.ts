@@ -1084,6 +1084,27 @@ suite('PrintJobEntryTest', () => {
         querySelector<IronIconElement>(jobEntryTestElement, '#fileIcon')?.icon);
   });
 
+  test('initializePrinterUnreachableStoppedOngoingJobEntry', () => {
+    jobEntryTestElement = initPrintJobEntryElement();
+    const expectedPrinterError = ActivePrintJobState.kStarted;
+    const expectedOngoingError = PrinterErrorCode.kPrinterUnreachable;
+
+    jobEntryTestElement.jobEntry = createJobEntry(
+        /*id=*/ '1', 'title',
+        convertToMojoTime(new Date('June 6, 2023 09:00:00')),
+        expectedOngoingError,
+        /*completedInfo=*/ undefined,
+        createOngoingPrintJobInfo(/*printedPages=*/ 1, expectedPrinterError));
+
+    flush();
+
+    // Assert status displayed correctly.
+    assertEquals(
+        'Stopped - Printer unreachable',
+        querySelector(jobEntryTestElement, '#ongoingError')
+            ?.textContent?.trim());
+  });
+
   test('ensureGoogleFileIconIsShown', () => {
     jobEntryTestElement = initPrintJobEntryElement();
     jobEntryTestElement.jobEntry = createJobEntry(
@@ -1249,5 +1270,15 @@ suite('PrinterSetupInfoTest', () => {
         expectedOpenPrinterSettingsMessage,
         getElementTextContent('.message-detail'));
     assertEquals(expectedButtonLabel, getElementTextContent('cr-button'));
+  });
+
+  // Verify expected illustration used in empty state UI.
+  test('ensureEmptyStateSvg', async () => {
+    const expectedIcon = 'print-management:empty-state';
+    await initPrinterSetupInfoElement();
+
+    const iconEl =
+        querySelector<IronIconElement>(printerSetupInfoElement!, 'iron-icon');
+    assertEquals(expectedIcon, iconEl?.icon);
   });
 });

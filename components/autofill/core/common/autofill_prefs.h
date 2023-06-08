@@ -53,7 +53,7 @@ extern const char kAutofillPaymentMethodsMandatoryReauthPromoShownCounter[];
 // The maximum value for the
 // `kAutofillPaymentMethodsMandatoryReauthPromoShownCounter` pref. If this
 // value is reached, we should not show a mandatory re-auth promo.
-const int kMaxValueForMandatoryReauthPromoShownCounter = 3;
+const int kMaxValueForMandatoryReauthPromoShownCounter = 2;
 
 namespace sync_transport_opt_in {
 enum Flags {
@@ -99,16 +99,14 @@ bool IsPaymentsIntegrationEnabled(const PrefService* prefs);
 
 void SetPaymentsIntegrationEnabled(PrefService* prefs, bool enabled);
 
-bool IsAutofillPaymentMethodsMandatoryReauthEnabled(const PrefService* prefs);
+bool IsPaymentMethodsMandatoryReauthEnabled(const PrefService* prefs);
 
-void SetAutofillPaymentMethodsMandatoryReauth(PrefService* prefs, bool enabled);
+void SetPaymentMethodsMandatoryReauthEnabled(PrefService* prefs, bool enabled);
 
-bool ShouldShowAutofillPaymentMethodsMandatoryReauthPromo(
-    const PrefService* prefs);
+bool ShouldShowPaymentMethodsMandatoryReauthPromo(const PrefService* prefs);
 
-void SetAutofillPaymentMethodsMandatoryReauthPromoShownCounter(
-    PrefService* prefs,
-    int count);
+void IncrementPaymentMethodsMandatoryReauthPromoShownCounter(
+    PrefService* prefs);
 
 void SetUserOptedInWalletSyncTransport(PrefService* prefs,
                                        const CoreAccountId& account_id,

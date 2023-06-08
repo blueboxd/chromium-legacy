@@ -12,7 +12,6 @@
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -1119,7 +1118,9 @@ PasskeysHandler::PasskeysHandler(
 PasskeysHandler::~PasskeysHandler() = default;
 
 void PasskeysHandler::OnJavascriptAllowed() {}
-void PasskeysHandler::OnJavascriptDisallowed() {}
+void PasskeysHandler::OnJavascriptDisallowed() {
+  weak_factory_.InvalidateWeakPtrs();
+}
 
 void PasskeysHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -1207,6 +1208,7 @@ void PasskeysHandler::HandleDelete(const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(2u, args.size());
 
+  AllowJavascript();
   std::vector<uint8_t> credential_id;
   const bool ok = base::HexStringToBytes(args[1].GetString(), &credential_id);
   DCHECK(ok);
@@ -1218,7 +1220,6 @@ void PasskeysHandler::HandleDelete(const base::Value::List& args) {
 }
 
 void PasskeysHandler::OnDeleteComplete(std::string callback_id, bool ok) {
-  base::UmaHistogramBoolean("WebAuthentication.PasskeyManagement.Delete", ok);
   // The ok parameter is ignored. If it were false, it would mean
   // Windows/Mac failed to delete the passkey. This can happen if API support
   // is missing but no passkeys will be shown at all in that case so that
@@ -1232,6 +1233,7 @@ void PasskeysHandler::HandleEdit(const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(3u, args.size());
 
+  AllowJavascript();
   std::vector<uint8_t> credential_id;
   const bool ok = base::HexStringToBytes(args[1].GetString(), &credential_id);
   DCHECK(ok);
@@ -1244,7 +1246,6 @@ void PasskeysHandler::HandleEdit(const base::Value::List& args) {
 }
 
 void PasskeysHandler::OnEditComplete(std::string callback_id, bool ok) {
-  base::UmaHistogramBoolean("WebAuthentication.PasskeyManagement.Edit", ok);
   // The ok parameter is ignored. If it were false, it would mean
   // Windows/Mac failed to edit the passkey.
   DoEnumerate(std::move(callback_id));

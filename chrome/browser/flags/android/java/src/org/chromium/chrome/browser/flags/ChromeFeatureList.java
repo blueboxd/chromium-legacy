@@ -245,6 +245,7 @@ public abstract class ChromeFeatureList {
     public static final String FEATURE_NOTIFICATION_GUIDE = "FeatureNotificationGuide";
     public static final String FEED_BACK_TO_TOP = "FeedBackToTop";
     public static final String FEED_DYNAMIC_COLORS = "FeedDynamicColors";
+    public static final String FEED_FOLLOW_UI_UPDATE = "FeedFollowUiUpdate";
     public static final String FEED_HEADER_STICK_TO_TOP = "FeedHeaderStickToTop";
     public static final String FEED_IMAGE_MEMORY_CACHE_SIZE_PERCENTAGE =
             "FeedImageMemoryCacheSizePercentage";
@@ -334,6 +335,7 @@ public abstract class ChromeFeatureList {
     public static final String PAGE_INFO_ABOUT_THIS_SITE_NEW_ICON = "PageInfoAboutThisSiteNewIcon";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_NON_EN = "PageInfoAboutThisSiteNonEn";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
+    public static final String PARTNER_CUSTOMIZATIONS_UMA = "PartnerCustomizationsUma";
     public static final String PASSKEY_MANAGEMENT_USING_ACCOUNT_SETTINGS_ANDROID =
             "PasskeyManagementUsingAccountSettingsAndroid";
     public static final String PASSWORD_EDIT_DIALOG_WITH_DETAILS = "PasswordEditDialogWithDetails";
@@ -450,6 +452,8 @@ public abstract class ChromeFeatureList {
             "UnifiedPasswordManagerAndroid_LAUNCHED";
     public static final String UNIFIED_PASSWORD_MANAGER_ANDROID_BRANDING =
             "UnifiedPasswordManagerAndroidBranding";
+    public static final String UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING =
+            "UnifiedPasswordManagerLocalPasswordsMigrationWarning";
     public static final String USE_CHIME_ANDROID_SDK = "UseChimeAndroidSdk";
     public static final String USE_LIBUNWINDSTACK_NATIVE_UNWINDER_ANDROID =
             "UseLibunwindstackNativeUnwinderAndroid";
@@ -483,7 +487,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sBackGestureRefactorAndroid =
             new CachedFlag(BACK_GESTURE_REFACTOR, false);
     public static final CachedFlag sBaselineGm3SurfaceColors =
-            new CachedFlag(BASELINE_GM3_SURFACE_COLORS, false);
+            new CachedFlag(BASELINE_GM3_SURFACE_COLORS, true);
     public static final CachedFlag sCctAutoTranslate = new CachedFlag(CCT_AUTO_TRANSLATE, true);
     public static final CachedFlag sCctBottomBarSwipeUpGesture =
             new CachedFlag(CCT_BOTTOM_BAR_SWIPE_UP_GESTURE, true);

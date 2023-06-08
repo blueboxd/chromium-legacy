@@ -86,6 +86,7 @@
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/signin/account_consistency_browser_agent.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
+#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/sync/sync_error_browser_agent.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
@@ -108,6 +109,7 @@
 #import "ios/chrome/browser/ui/browser_view/tab_events_mediator.h"
 #import "ios/chrome/browser/ui/browser_view/tab_lifecycle_mediator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
+#import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_configuration_provider.h"
 #import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_coordinator.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_coordinator.h"
@@ -159,7 +161,7 @@
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_positioner.h"
-#import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
+#import "ios/chrome/browser/ui/side_swipe/side_swipe_mediator.h"
 #import "ios/chrome/browser/ui/spotlight_debugger/spotlight_debugger_coordinator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_legacy_coordinator.h"
@@ -167,9 +169,6 @@
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/accessory/toolbar_accessory_presenter.h"
-#import "ios/chrome/browser/ui/toolbar/primary_toolbar_coordinator.h"
-#import "ios/chrome/browser/ui/toolbar/public/toolbar_coordinating.h"
-#import "ios/chrome/browser/ui/toolbar/secondary_toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
@@ -252,7 +251,8 @@ enum class ToolbarKind {
                                   ToolbarAccessoryCoordinatorDelegate,
                                   URLLoadingDelegate,
                                   WebContentCommands,
-                                  WebNavigationNTPDelegate>
+                                  WebNavigationNTPDelegate,
+                                  BubblePresenterDelegate>
 
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
@@ -448,7 +448,7 @@ enum class ToolbarKind {
   ToolbarCoordinator* _toolbarCoordinator;
   TabStripCoordinator* _tabStripCoordinator;
   TabStripLegacyCoordinator* _legacyTabStripCoordinator;
-  SideSwipeController* _sideSwipeController;
+  SideSwipeMediator* _sideSwipeMediator;
   FullscreenController* _fullscreenController;
   // The coordinator that shows the Send Tab To Self UI.
   SendTabToSelfCoordinator* _sendTabToSelfCoordinator;
@@ -769,6 +769,7 @@ enum class ToolbarKind {
                         hostContentSettingsMap:settingsMap
                                   webStateList:self.browser->GetWebStateList()];
   _bubblePresenter.layoutGuideCenter = _layoutGuideCenter;
+  _bubblePresenter.delegate = self;
   [_dispatcher startDispatchingToTarget:_bubblePresenter
                             forProtocol:@protocol(HelpCommands)];
 
@@ -777,13 +778,17 @@ enum class ToolbarKind {
   _toolbarAccessoryPresenter.toolbarLayoutGuide =
       [_layoutGuideCenter makeLayoutGuideNamed:kPrimaryToolbarGuide];
 
-  _sideSwipeController =
-      [[SideSwipeController alloc] initWithBrowser:self.browser];
-  [_sideSwipeController setSnapshotDelegate:self];
-  _sideSwipeController.toolbarInteractionHandler = _toolbarCoordinator;
-  _sideSwipeController.primaryToolbarSnapshotProvider =
-      _toolbarCoordinator.primaryToolbarSnapshotProvider;
-  _sideSwipeController.secondaryToolbarSnapshotProvider =
+  SnapshotBrowserAgent* snapshotBrowserAgent =
+      SnapshotBrowserAgent::FromBrowser(self.browser);
+  _sideSwipeMediator = [[SideSwipeMediator alloc]
+      initWithFullscreenController:_fullscreenController
+              snapshotBrowserAgent:snapshotBrowserAgent
+                      webStateList:self.browser->GetWebStateList()];
+  [_sideSwipeMediator setSnapshotDelegate:self];
+  _sideSwipeMediator.toolbarInteractionHandler = _toolbarCoordinator;
+  _sideSwipeMediator.primaryToolbarSnapshotProvider =
+      _toolbarCoordinator.primaryToolbarSnapshotProvider;;
+  _sideSwipeMediator.secondaryToolbarSnapshotProvider =
       _toolbarCoordinator.secondaryToolbarSnapshotProvider;
 
   _bookmarksCoordinator =
@@ -824,7 +829,7 @@ enum class ToolbarKind {
       _legacyTabStripCoordinator.animationWaitDuration =
           kLegacyFullscreenControllerToolbarAnimationDuration.InSecondsF();
 
-      [_sideSwipeController setTabStripDelegate:_legacyTabStripCoordinator];
+      [_sideSwipeMediator setTabStripDelegate:_legacyTabStripCoordinator];
     }
   }
 
@@ -851,7 +856,7 @@ enum class ToolbarKind {
   _viewControllerDependencies.tabStripCoordinator = _tabStripCoordinator;
   _viewControllerDependencies.legacyTabStripCoordinator =
       _legacyTabStripCoordinator;
-  _viewControllerDependencies.sideSwipeController = _sideSwipeController;
+  _viewControllerDependencies.sideSwipeMediator = _sideSwipeMediator;
   _viewControllerDependencies.bookmarksCoordinator = _bookmarksCoordinator;
   _viewControllerDependencies.fullscreenController = _fullscreenController;
   _viewControllerDependencies.textZoomHandler =
@@ -888,8 +893,6 @@ enum class ToolbarKind {
 
 - (void)updateViewControllerDependencies {
   _bookmarksCoordinator.baseViewController = self.viewController;
-
-  _bubblePresenter.delegate = self.viewController;
   _bubblePresenter.rootViewController = self.viewController;
 
   _toolbarAccessoryPresenter.baseViewController = self.viewController;
@@ -933,7 +936,7 @@ enum class ToolbarKind {
   _viewControllerDependencies.toolbarCoordinator = nil;
   _viewControllerDependencies.tabStripCoordinator = nil;
   _viewControllerDependencies.legacyTabStripCoordinator = nil;
-  _viewControllerDependencies.sideSwipeController = nil;
+  _viewControllerDependencies.sideSwipeMediator = nil;
   _viewControllerDependencies.bookmarksCoordinator = nil;
   _viewControllerDependencies.fullscreenController = nil;
   _viewControllerDependencies.textZoomHandler = nil;
@@ -952,7 +955,7 @@ enum class ToolbarKind {
 
   _legacyTabStripCoordinator = nil;
   _tabStripCoordinator = nil;
-  _sideSwipeController = nil;
+  _sideSwipeMediator = nil;
   _toolbarCoordinator = nil;
   _loadQueryCommandsHandler = nil;
   _omniboxCommandsHandler = nil;
@@ -2681,6 +2684,23 @@ enum class ToolbarKind {
   [self.readingListCoordinator stop];
   self.readingListCoordinator.delegate = nil;
   self.readingListCoordinator = nil;
+}
+
+#pragma mark - BubblePresenterDelegate
+
+- (BOOL)rootViewVisibleForBubblePresenter:(BubblePresenter*)bubblePresenter {
+  DCHECK(bubblePresenter == _bubblePresenter);
+  return self.viewController.viewVisible;
+}
+
+- (BOOL)isNTPActiveForBubblePresenter:(BubblePresenter*)bubblePresenter {
+  DCHECK(bubblePresenter == _bubblePresenter);
+  return self.NTPCoordinator.isNTPActiveForCurrentWebState;
+}
+
+- (BOOL)isNTPScrolledToTopForBubblePresenter:(BubblePresenter*)bubblePresenter {
+  DCHECK(bubblePresenter == _bubblePresenter);
+  return [self.NTPCoordinator isScrolledToTop];
 }
 
 @end

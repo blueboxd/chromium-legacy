@@ -12,6 +12,7 @@
 
 #include "ash/system/video_conference/video_conference_common.h"
 #include "base/functional/callback.h"
+#include "chromeos/crosapi/mojom/video_conference.mojom-forward.h"
 #include "chromeos/crosapi/mojom/video_conference.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -71,6 +72,8 @@ class VideoConferenceManagerAsh
       crosapi::mojom::VideoConferenceMediaDevice device,
       const std::u16string& app_name,
       NotifyDeviceUsedWhileDisabledCallback callback) override;
+  void NotifyClientUpdate(
+      crosapi::mojom::VideoConferenceClientUpdatePtr update) override;
 
   // Removes entry corresponding to |client_id| from
   // |client_id_to_wrapper_|. Called by the destructor of
@@ -92,6 +95,7 @@ class VideoConferenceManagerAsh
   VideoConferenceTrayController* GetTrayController();
 
  private:
+  friend class VideoConferenceAshfeatureClientTest;
   friend class VideoConferenceAppServiceClientTest;
 
   // A (client_id, client_wrapper) entry is inserted into this map

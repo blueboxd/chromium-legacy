@@ -781,12 +781,6 @@ constexpr base::FeatureParam<std::string> kKAnonymityServiceQueryServer{
 constexpr base::FeatureParam<base::TimeDelta> kKAnonymityServiceQueryInterval{
     &kKAnonymityService, "KAnonymityServiceJoinInterval", base::Days(1)};
 
-// When enabled, LCP critical path predictor will optimize the subsequent visits
-// to websites using performance hints collected in the past page loads.
-BASE_FEATURE(kLCPCriticalPathPredictor,
-             "LCPCriticalPathPredictor",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // When enabled, the k-Anonymity Service will send requests to the Join and
 // Query k-anonymity servers.
 BASE_FEATURE(kKAnonymityServiceOHTTPRequests,
@@ -845,10 +839,6 @@ BASE_FEATURE(kMetricsSettingsAndroid,
              "MetricsSettingsAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-
-BASE_FEATURE(kMigrateExternalPrefsToWebAppDB,
-             "MigrateExternalPrefsToWebAppDB",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMoveWebApp,
              "MoveWebApp",
@@ -1555,10 +1545,6 @@ BASE_FEATURE(kSupportsRtcWakeOver24Hours,
              "SupportsRtcWakeOver24Hours",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-BASE_FEATURE(kUseWebAppDBInsteadOfExternalPrefs,
-             "UseWebAppDBInsteadOfExternalPrefs",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kWebAuthFlowInBrowserTab,
              "WebAuthFlowInBrowserTab",

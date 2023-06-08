@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/commands/autofill_bottom_sheet_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/web/public/js_messaging/script_message.h"
 #import "ios/web/public/navigation/navigation_context.h"
 
@@ -75,31 +76,64 @@ void AutofillBottomSheetTabHelper::AttachPasswordListeners(
     return;
   }
 
+  AttachListeners(renderer_ids, registered_password_renderer_ids_, frame);
+}
+
+void AutofillBottomSheetTabHelper::AttachPaymentsListeners(
+    const std::vector<autofill::FieldRendererId>& renderer_ids,
+    web::WebFrame* frame) {
+  // Verify that the payments bottom sheet feature is enabled
+  if (!base::FeatureList::IsEnabled(kIOSPaymentsBottomSheet)) {
+    return;
+  }
+
+  AttachListeners(renderer_ids, registered_payments_renderer_ids_, frame);
+}
+
+void AutofillBottomSheetTabHelper::AttachListeners(
+    const std::vector<autofill::FieldRendererId>& renderer_ids,
+    std::set<autofill::FieldRendererId>& registered_renderer_ids,
+    web::WebFrame* frame) {
   // Transfer the renderer IDs to a set so that they are sorted and unique.
   std::set<autofill::FieldRendererId> sorted_renderer_ids(renderer_ids.begin(),
                                                           renderer_ids.end());
   // Get vector of new renderer IDs which aren't already registered.
   std::vector<autofill::FieldRendererId> new_renderer_ids;
-  base::ranges::set_difference(sorted_renderer_ids,
-                               registered_password_renderer_ids_,
+  base::ranges::set_difference(sorted_renderer_ids, registered_renderer_ids,
                                std::back_inserter(new_renderer_ids));
 
   if (!new_renderer_ids.empty()) {
-    // Enable the password bottom sheet on the new renderer IDs.
+    // Enable the bottom sheet on the new renderer IDs.
     AutofillBottomSheetJavaScriptFeature::GetInstance()->AttachListeners(
         new_renderer_ids, frame);
 
     // Add new renderer IDs to the list of registered renderer IDs.
-    std::copy(new_renderer_ids.begin(), new_renderer_ids.end(),
-              std::inserter(registered_password_renderer_ids_,
-                            registered_password_renderer_ids_.end()));
+    std::copy(
+        new_renderer_ids.begin(), new_renderer_ids.end(),
+        std::inserter(registered_renderer_ids, registered_renderer_ids.end()));
   }
 }
 
-void AutofillBottomSheetTabHelper::DetachListenersAndRefocus(
+bool AutofillBottomSheetTabHelper::IsPaymentsBottomSheetTriggeringField(
+    autofill::ServerFieldType type) const {
+  switch (type) {
+    case autofill::CREDIT_CARD_NAME_FULL:
+    case autofill::CREDIT_CARD_NUMBER:
+    case autofill::CREDIT_CARD_EXP_MONTH:
+    case autofill::CREDIT_CARD_EXP_2_DIGIT_YEAR:
+    case autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR:
+    case autofill::CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR:
+    case autofill::CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR:
+      return true;
+    default:
+      return false;
+  }
+}
+
+void AutofillBottomSheetTabHelper::DetachPasswordListenersAndRefocus(
     web::WebFrame* frame) {
-  AutofillBottomSheetJavaScriptFeature::GetInstance()
-      ->DetachListenersAndRefocus(frame);
+  AutofillBottomSheetJavaScriptFeature::GetInstance()->DetachListeners(
+      registered_password_renderer_ids_, frame, /*refocus=*/true);
 }
 
 // WebStateObserver
@@ -113,6 +147,7 @@ void AutofillBottomSheetTabHelper::DidFinishNavigation(
 
   // Clear all registered renderer ids
   registered_password_renderer_ids_.clear();
+  registered_payments_renderer_ids_.clear();
 }
 
 void AutofillBottomSheetTabHelper::WebStateDestroyed(web::WebState* web_state) {
@@ -125,12 +160,12 @@ bool AutofillBottomSheetTabHelper::HasReachedDismissLimit() {
   PrefService* const pref_service =
       ChromeBrowserState ::FromBrowserState(web_state_->GetBrowserState())
           ->GetPrefs();
-  bool dimissLimitReached =
+  bool dismissLimitReached =
       pref_service->GetInteger(prefs::kIosPasswordBottomSheetDismissCount) >=
       kPasswordBottomSheetMaxDismissCount;
   base::UmaHistogramBoolean("IOS.IsEnabled.Password.BottomSheet",
-                            !dimissLimitReached);
-  return dimissLimitReached;
+                            !dismissLimitReached);
+  return dismissLimitReached;
 }
 
 WEB_STATE_USER_DATA_KEY_IMPL(AutofillBottomSheetTabHelper)

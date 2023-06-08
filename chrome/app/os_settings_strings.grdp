@@ -903,9 +903,6 @@
   <message name="IDS_SETTINGS_GOOGLE_DRIVE" translateable="false" desc="Label for the settings link that takes the user to the page where they can manage their Google Drive settings.">
     Google Drive
   </message>
-  <message name="IDS_SETTINGS_GOOGLE_DRIVE_ENABLED" translateable="false" desc="Label indicating that Google Drive is enabled in Settings: Files: Google Drive.">
-    Enabled
-  </message>
   <message name="IDS_SETTINGS_GOOGLE_DRIVE_DISABLED" translateable="false" desc="Label indicating that Google Drive is disabled in Settings: Files: Google Drive.">
     Disabled
   </message>
@@ -916,7 +913,7 @@
     Connect account
   </message>
   <message name="IDS_SETTINGS_GOOGLE_DRIVE_SIGNED_IN_AS" translateable="false" desc="Label indicating account signed in with Google Drive in Settings: Files: Google Drive.">
-    Signed in as: <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DRIVE_ACCOUNT_EMAIL">$1<ex>john@google.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>
+    Signed in as <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DRIVE_ACCOUNT_EMAIL">$1<ex>john@google.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_GOOGLE_DRIVE_DISCONNECTED_FROM" translateable="false" desc="Label indicating account that Google Drive would sign in as in Settings: Files: Google Drive.">
     Disconnected from <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DRIVE_ACCOUNT_EMAIL">$1<ex>john@google.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>
@@ -2812,6 +2809,12 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_AUDIO_INPUT_DEVICE_TITLE" desc="In Device Settings, the title of the device row under the input section in audio settings subpage.">
     Microphone
   </message>
+  <message name="IDS_SETTINGS_AUDIO_INPUT_ALLOW_AGC_TITLE" desc="In Device Settings, the title of the allowance of AGC toggle under the input section in audio settings subpage." translateable="false">
+    Allow apps to automatically adjust mic volume
+  </message>
+  <message name="IDS_SETTINGS_AUDIO_INPUT_ALLOW_AGC_DESCRIPTION" desc="In Device Settings, the description of the allowance of AGC toggle under the input section in audio settings subpage." translateable="false">
+    Some apps can automatically adjust mic volume(gain control) to optimize(audio).
+  </message>
   <message name="IDS_SETTINGS_AUDIO_INPUT_GAIN_TITLE" desc="In Device Settings, the title of the slider under the input section in audio settings subpage. This slider controls the microphone's gain setting.">
     Volume
   </message>
@@ -2872,8 +2875,14 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_AUDIO_OUTPUT_MUTE_BUTTON_ARIA_LABEL_MUTED" desc="In Device Settings, the aria label for the output mute button muted.">
     Volume is off. Turn on volume.
   </message>
-    <message name="IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_CHARGING_SOUNDS_LABEL" desc="Label for checkbox which enables charging sounds.">
+  <message name="IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_CHARGING_SOUNDS_LABEL" desc="Label for checkbox which enables charging sounds.">
     Charging sounds
+  </message>
+  <message name="IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_STARTUP_SOUND_LABEL" desc="Label for checkbox which enables the device startup sound.">
+    Device startup sound
+  </message>
+  <message name="IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_TITLE" desc="In Device Settings, the title of the device sounds section of the audio settings subpage.">
+    Device sounds
   </message>
 
   <!-- Device pointer page (OS settings) -->
@@ -3903,6 +3912,9 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_INTERNET_PASSPOINT_SYSTEM_CA" desc="Text displayed when the subscription relies on system CA certificates for server authentication.">
     System CAs
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_PASSPOINT_ASSOCIATED_WIFI_NETWORKS" desc="Label for the list of Wi-Fi networks connected using the Passpoint subscription.">
+    Associated Wi-Fi networks
   </message>
   <message name="IDS_SETTINGS_INTERNET_PASSPOINT_DOMAINS" desc="Label for the list of domains included in the Passpoint subscription.">
     Domains

@@ -240,6 +240,11 @@ BASE_FEATURE(kAvatarsCloudMigration,
              "AvatarsCloudMigration",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Make Battery Saver available.
+BASE_FEATURE(kBatterySaver,
+             "CrosBatterySaver",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables the usage of fixed Bluetooth A2DP packet size to improve
 // audio performance in noisy environment.
 BASE_FEATURE(kBluetoothFixA2dpPacketSize,
@@ -419,6 +424,11 @@ BASE_FEATURE(kCrostiniQtImeSupport,
              "CrostiniQtImeSupport",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables or disables Crostini upgrade to LXD v5.
+BASE_FEATURE(kCrostiniUseLxd5,
+             "CrostiniUseLxd5",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables Crostini Virtual Keyboard support.
 BASE_FEATURE(kCrostiniVirtualKeyboardSupport,
              "CrostiniVirtualKeyboardSupport",
@@ -510,7 +520,7 @@ BASE_FEATURE(kDesksTemplates,
 // Enables diacritics on longpress on the physical keyboard.
 BASE_FEATURE(kDiacriticsOnPhysicalKeyboardLongpress,
              "DiacriticsOnPhysicalKeyboardLongpress",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables diacritics on longpress on the physical keyboard by default.
 BASE_FEATURE(kDiacriticsOnPhysicalKeyboardLongpressDefaultOn,
@@ -662,11 +672,6 @@ BASE_FEATURE(kEnableGetDebugdLogsInParallel,
 BASE_FEATURE(kEnableHostnameSetting,
              "EnableHostnameSetting",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// If enabled, the input device cards will be shown in the diagnostics app.
-BASE_FEATURE(kEnableInputInDiagnosticsApp,
-             "EnableInputInDiagnosticsApp",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the jelly colors will be used in the diagnostics app. Requires
 // jelly-colors flag to also be enabled.
@@ -1425,6 +1430,12 @@ BASE_FEATURE(kLacrosProfileBackwardMigration,
              "LacrosProfileBackwardMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, ash-chrome works as if Lacros SxS mode and Primary mode are
+// removed. This is kill-switch just in case of accident.
+BASE_FEATURE(kLacrosSxSPrimaryRemove,
+             "LacrosSxSPrimaryRemove",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, the Language Pack corresponding to the application locale is
 // downloaded and installed during OOBE. This pre-fetching is aimed at improving
 // user experience so that they have language resources available as early as
@@ -1706,6 +1717,12 @@ BASE_FEATURE(kOsFeedbackJelly,
 // ChromeOS Settings.
 BASE_FEATURE(kOsSettingsAppBadgingToggle,
              "OsSettingsAppBadgingToggle",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Whether the metrics toggle in settings user sync options page should be
+// deprecated.
+BASE_FEATURE(kOsSettingsDeprecateSyncMetricsToggle,
+             "OsSettingsDeprecateSyncMetricsToggle",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the wayfinding improvements for the ChromeOS Settings revamp
@@ -2644,6 +2661,10 @@ bool IsBackgroundBlurEnabled() {
 #endif
 }
 
+bool IsBatterySaverAvailable() {
+  return base::FeatureList::IsEnabled(kBatterySaver);
+}
+
 bool IsBluetoothQualityReportEnabled() {
   return base::FeatureList::IsEnabled(kBluetoothQualityReport);
 }
@@ -3000,10 +3021,6 @@ bool IsImeTrayHideVoiceButtonEnabled() {
   return base::FeatureList::IsEnabled(kImeTrayHideVoiceButton);
 }
 
-bool IsInputInDiagnosticsAppEnabled() {
-  return base::FeatureList::IsEnabled(kEnableInputInDiagnosticsApp);
-}
-
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
   return base::FeatureList::IsEnabled(
       kInstantTetheringBackgroundAdvertisementSupport);
@@ -3282,6 +3299,10 @@ bool IsOobeDisplaySizeEnabled() {
 
 bool IsOsSettingsAppBadgingToggleEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsAppBadgingToggle);
+}
+
+bool IsOsSettingsDeprecateSyncMetricsToggleEnabled() {
+  return base::FeatureList::IsEnabled(kOsSettingsDeprecateSyncMetricsToggle);
 }
 
 bool IsOsSettingsRevampWayfindingEnabled() {

@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_AUTOFILL_BOTTOM_SHEET_AUTOFILL_BOTTOM_SHEET_TAB_HELPER_H_
 #define IOS_CHROME_BROWSER_AUTOFILL_BOTTOM_SHEET_AUTOFILL_BOTTOM_SHEET_TAB_HELPER_H_
 
+#import "components/autofill/core/browser/field_types.h"
 #import "components/autofill/core/common/unique_ids.h"
 #import "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
@@ -44,8 +45,18 @@ class AutofillBottomSheetTabHelper
       const std::vector<autofill::FieldRendererId>& renderer_ids,
       web::WebFrame* frame);
 
-  // Detach the listeners, which will deactivate the bottom sheet.
-  void DetachListenersAndRefocus(web::WebFrame* frame);
+  // Prepare bottom sheet using data from the credit card form prediction.
+  void AttachPaymentsListeners(
+      const std::vector<autofill::FieldRendererId>& renderer_ids,
+      web::WebFrame* frame);
+
+  // Whether the provided field type is one which can trigger the Payments
+  // Bottom Sheet.
+  bool IsPaymentsBottomSheetTriggeringField(
+      autofill::ServerFieldType type) const;
+
+  // Detach the password listeners, which will deactivate the bottom sheet.
+  void DetachPasswordListenersAndRefocus(web::WebFrame* frame);
 
   // WebStateObserver:
   void DidFinishNavigation(web::WebState* web_state,
@@ -64,6 +75,12 @@ class AutofillBottomSheetTabHelper
   // by the user.
   bool HasReachedDismissLimit();
 
+  // Prepare bottom sheet using data from the form prediction.
+  void AttachListeners(
+      const std::vector<autofill::FieldRendererId>& renderer_ids,
+      std::set<autofill::FieldRendererId>& registered_renderer_ids,
+      web::WebFrame* frame);
+
   // Handler used to request showing the password bottom sheet.
   __weak id<AutofillBottomSheetCommands> commands_handler_;
 
@@ -78,6 +95,9 @@ class AutofillBottomSheetTabHelper
 
   // List of password bottom sheet related renderer ids.
   std::set<autofill::FieldRendererId> registered_password_renderer_ids_;
+
+  // List of payments bottom sheet related renderer ids.
+  std::set<autofill::FieldRendererId> registered_payments_renderer_ids_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 };

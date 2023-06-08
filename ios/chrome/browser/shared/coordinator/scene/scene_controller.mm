@@ -152,6 +152,7 @@
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
+#import "ios/public/provider/chrome/browser/signin/choice_api.h"
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_data.h"
@@ -935,6 +936,11 @@ void InjectNTP(Browser* browser) {
   if (IsWhatsNewEnabled()) {
     [self.sceneState addAgent:[[WhatsNewSceneAgent alloc]
                                   initWithPromosManager:promosManager]];
+  }
+
+  if (ios::provider::IsChoiceEnabled()) {
+    [self.sceneState
+        addAgent:ios::provider::CreateChoiceSceneAgent(promosManager)];
   }
 
   // Do not gate by feature flag so it can run for enabled -> disabled
@@ -2941,6 +2947,10 @@ void InjectNTP(Browser* browser) {
 // Close Settings, or Signin or the 3rd-party intents Incognito interstitial.
 - (void)closePresentedViews:(BOOL)animated
                  completion:(ProceduralBlock)completion {
+  // If the Incognito interstitial is active, stop it.
+  [self.incognitoInterstitialCoordinator stop];
+  self.incognitoInterstitialCoordinator = nil;
+
   __weak __typeof(self) weakSelf = self;
   BOOL resetSigninState = self.signinCoordinator != nil;
   completion = ^{
@@ -2993,10 +3003,6 @@ void InjectNTP(Browser* browser) {
     // `self.signinCoordinator` can be presented without settings, from the
     // bookmarks or the recent tabs view.
     [self interruptSigninCoordinatorAnimated:animated completion:completion];
-  } else if (self.incognitoInterstitialCoordinator) {
-    [self.incognitoInterstitialCoordinator stop];
-    self.incognitoInterstitialCoordinator = nil;
-    completion();
   } else {
     completion();
   }

@@ -110,6 +110,8 @@ constexpr char kCustomCapturePathPrefName[] =
 constexpr char kUsesDefaultCapturePathPrefName[] =
     "ash.capture_mode.uses_default_capture_path";
 
+constexpr char kShareToYouTubeURL[] = "https://youtube.com/upload";
+
 // The name of a boolean pref that determines whether we can show the selfie
 // camera user nudge. When this pref is false, it means that we showed the
 // nudge at some point and the user interacted with the capture mode session UI
@@ -130,9 +132,12 @@ enum ScreenshotNotificationButtonIndex {
 };
 
 // The video notification button index.
-enum VideoNotificationButtonIndex {
+enum GameDashboardVideoNotificationButtonIndex {
   BUTTON_SHARE_TO_YOUTUBE = 0,
-  BUTTON_DELETE_VIDEO,
+  BUTTON_DELETE_GAME_VIDEO,
+};
+enum VideoNotificationButtonIndex {
+  BUTTON_DELETE_VIDEO = 0,
 };
 
 // Returns the file extension for the given `recording_type` and the current
@@ -245,6 +250,15 @@ void DeleteFileAsync(scoped_refptr<base::SequencedTaskRunner> task_runner,
                          LOG(ERROR) << "Failed to delete the file: " << path;
                      },
                      path));
+}
+
+// Called when the "Share to YouTube" button is pressed to
+// open the YouTube share video page.
+void OnShareToYouTubeButtonPressed() {
+  NewWindowDelegate::GetPrimary()->OpenUrl(
+      GURL(kShareToYouTubeURL),
+      NewWindowDelegate::OpenUrlFrom::kUserInteraction,
+      NewWindowDelegate::Disposition::kNewForegroundTab);
 }
 
 // Adds the given `notification` to the message center after it removes any
@@ -457,8 +471,6 @@ int GetFileSizeInKB(const base::FilePath& file_path) {
   // Convert the value to KBs.
   return size_in_bytes / 1024;
 }
-
-constexpr char kShareToYouTubeURL[] = "https://youtube.com/upload";
 
 }  // namespace
 
@@ -1493,7 +1505,8 @@ void CaptureModeController::ShowPreviewNotification(
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
           base::BindRepeating(&CaptureModeController::HandleNotificationClicked,
                               weak_ptr_factory_.GetWeakPtr(),
-                              screen_capture_path, type)),
+                              screen_capture_path, type,
+                              behavior->behavior_type())),
       message_center::SystemNotificationWarningLevel::NORMAL, kCaptureModeIcon,
       for_video);
 }
@@ -1501,6 +1514,7 @@ void CaptureModeController::ShowPreviewNotification(
 void CaptureModeController::HandleNotificationClicked(
     const base::FilePath& screen_capture_path,
     const CaptureModeType type,
+    const BehaviorType behavior_type,
     absl::optional<int> button_index) {
   if (!button_index.has_value()) {
     // Show the item in the folder.
@@ -1509,17 +1523,26 @@ void CaptureModeController::HandleNotificationClicked(
   } else {
     const int button_index_value = button_index.value();
     if (type == CaptureModeType::kVideo) {
-      switch (button_index_value) {
-        case VideoNotificationButtonIndex::BUTTON_SHARE_TO_YOUTUBE:
-          OnShareToYouTubeButtonPressed();
-          break;
-        case VideoNotificationButtonIndex::BUTTON_DELETE_VIDEO:
-          DeleteFileAsync(blocking_task_runner_, screen_capture_path,
-                          std::move(on_file_deleted_callback_for_test_));
-          break;
-        default:
-          NOTREACHED();
-          break;
+      if (behavior_type == BehaviorType::kGameDashboard) {
+        switch (button_index_value) {
+          case GameDashboardVideoNotificationButtonIndex::
+              BUTTON_SHARE_TO_YOUTUBE:
+            OnShareToYouTubeButtonPressed();
+            break;
+          case GameDashboardVideoNotificationButtonIndex::
+              BUTTON_DELETE_GAME_VIDEO:
+            DeleteFileAsync(blocking_task_runner_, screen_capture_path,
+                            std::move(on_file_deleted_callback_for_test_));
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+      } else {
+        CHECK_EQ(VideoNotificationButtonIndex::BUTTON_DELETE_VIDEO,
+                 button_index_value);
+        DeleteFileAsync(blocking_task_runner_, screen_capture_path,
+                        std::move(on_file_deleted_callback_for_test_));
       }
     } else {
       CHECK_EQ(type, CaptureModeType::kImage);
@@ -2068,13 +2091,6 @@ CaptureModeSaveToLocation CaptureModeController::GetSaveToOption(
       return CaptureModeSaveToLocation::kDriveFolder;
   }
   return CaptureModeSaveToLocation::kCustomizedFolder;
-}
-
-void CaptureModeController::OnShareToYouTubeButtonPressed() {
-  NewWindowDelegate::GetPrimary()->OpenUrl(
-      GURL(kShareToYouTubeURL),
-      NewWindowDelegate::OpenUrlFrom::kUserInteraction,
-      NewWindowDelegate::Disposition::kNewForegroundTab);
 }
 
 CaptureModeBehavior* CaptureModeController::GetBehavior(

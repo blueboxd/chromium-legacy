@@ -185,7 +185,6 @@
 <translation id="2230173723195178503">已加载网页</translation>
 <translation id="2239626343334228536">正在清除浏览数据…</translation>
 <translation id="2242467532204595597">随时可以使用 Chrome 打开消息、文档和其他应用中的链接。</translation>
-<translation id="22508856139286506">已忽略的警告（<ph name="COUNT" /> 条）</translation>
 <translation id="2251686759395008410">菜单 → 历史记录</translation>
 <translation id="2252674110805316998">网页搜索</translation>
 <translation id="2256933947031277845">贵单位要求您只能使用特定帐号登录。</translation>
@@ -354,6 +353,7 @@
 <translation id="3245744387817103524">无法保存您的更改。</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />，<ph name="ADDITIONAL_INFO" />，第 <ph name="INDEX" /> 项建议（共 <ph name="NUM_SUGGESTIONS" /> 项）</translation>
 <translation id="3264775633254836593">自动填充密码</translation>
+<translation id="3265534588625245297">管理您关注的网站</translation>
 <translation id="3268451620468152448">打开的标签页</translation>
 <translation id="3272527697863656322">取消</translation>
 <translation id="3277021493514034324">已复制网站地址</translation>
@@ -1066,6 +1066,7 @@
 <translation id="7887198238286927132">为保护您的隐私，Chrome 不会自动填充此字段。</translation>
 <translation id="7911190106180361398">贵组织不允许您同步所有内容。</translation>
 <translation id="7920949005883349320">隐私与安全</translation>
+<translation id="792357691529995513">未发现任何问题</translation>
 <translation id="7930998711684428189">密码遭遇数据泄露时向您发出警告。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">导出密码…</translation>
@@ -1077,7 +1078,6 @@
 
 网站还可以使用 Cookie 查看您在各个不同网站上的浏览活动，以便实现某些功能或目的（例如为您展示个性化广告）。</translation>
 <translation id="7971521879845308059">拦截弹出式窗口</translation>
-<translation id="797413074872316787">若要在您的所有设备上保持同步并获享个性化体验，请开启同步功能。</translation>
 <translation id="7978018860671536736">3. 点按“自动填充密码”</translation>
 <translation id="7982789257301363584">网络</translation>
 <translation id="7987685713885608670">为了提高安全性，请先在设备上对密码进行加密，然后再将其保存到 Google 密码管理器中。</translation>

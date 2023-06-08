@@ -19,6 +19,8 @@ int GetLayoutConstant(LayoutConstant constant) {
   switch (constant) {
     case APP_MENU_PROFILE_ROW_AVATAR_ICON_SIZE:
       return 24;
+    case APP_MENU_MAXIMUM_CHARACTER_LENGTH:
+      return 30;
     case BOOKMARK_BAR_HEIGHT: {
       // The fixed margin ensures the bookmark buttons appear centered relative
       // to the white space above and below.
@@ -84,6 +86,10 @@ int GetLayoutConstant(LayoutConstant constant) {
       return touch_ui ? 12 : 16;
     case TAB_HEIGHT:
       return (touch_ui ? 41 : 34) + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
+    case TAB_SEPARATOR_HEIGHT:
+      // TODO (1451400): ChromeRefresh2023 needs different values for this
+      // constant.
+      return touch_ui ? 24 : 20;
     case TAB_PRE_TITLE_PADDING:
       return 8;
     case TAB_STACK_DISTANCE:
@@ -166,6 +172,14 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
         return GetLayoutInsets(TOOLBAR_BUTTON);
       } else {
         return gfx::Insets::TLBR(7, 4, 7, 6);
+      }
+
+    case AVATAR_CHIP_PADDING:
+      if (touch_ui ||
+          !base::FeatureList::IsEnabled(features::kChromeRefresh2023)) {
+        return GetLayoutInsets(TOOLBAR_BUTTON);
+      } else {
+        return gfx::Insets::TLBR(7, 10, 7, 4);
       }
 
     case TOOLBAR_INTERIOR_MARGIN:

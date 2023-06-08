@@ -864,6 +864,8 @@ source_set("browser") {
     "devtools/shared_worker_devtools_agent_host.h",
     "devtools/shared_worker_devtools_manager.cc",
     "devtools/shared_worker_devtools_manager.h",
+    "devtools/tracing_process_set_monitor.cc",
+    "devtools/tracing_process_set_monitor.h",
     "devtools/web_contents_devtools_agent_host.cc",
     "devtools/web_contents_devtools_agent_host.h",
     "devtools/worker_devtools_agent_host.cc",
@@ -1143,6 +1145,10 @@ source_set("browser") {
     "interest_group/auction_url_loader_factory_proxy.h",
     "interest_group/auction_worklet_manager.cc",
     "interest_group/auction_worklet_manager.h",
+    "interest_group/bidding_and_auction_serializer.cc",
+    "interest_group/bidding_and_auction_serializer.h",
+    "interest_group/bidding_and_auction_server_key_fetcher.cc",
+    "interest_group/bidding_and_auction_server_key_fetcher.h",
     "interest_group/debuggable_auction_worklet.cc",
     "interest_group/debuggable_auction_worklet.h",
     "interest_group/debuggable_auction_worklet_tracker.cc",
@@ -2621,7 +2627,6 @@ source_set("browser") {
     ]
     deps += [
       ":mac_helpers",
-      "//base:base_arc",
       "//components/remote_cocoa/app_shim",
       "//components/remote_cocoa/browser",
       "//components/remote_cocoa/common:mojo",

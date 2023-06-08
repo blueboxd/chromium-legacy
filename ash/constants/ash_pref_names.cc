@@ -842,6 +842,9 @@ const char kPowerAdaptiveChargingEnabled[] = "power.adaptive_charging_enabled";
 const char kPowerAdaptiveChargingNudgeShown[] =
     "power.adaptive_charging_nudge_shown";
 
+// Boolean pref for if ChromeOS battery saver is active.
+const char kPowerBatterySaver[] = "power.cros_battery_saver_active";
+
 // Screen brightness percent values to be used when running on battery power.
 // Specified by the policy.
 const char kPowerBatteryScreenBrightnessPercent[] =
@@ -1548,6 +1551,10 @@ const char kAshLoginSessionStartedTime[] = "ash.Login.SessionStarted.Time";
 // flag for UMA.
 const char kAshLoginSessionStartedIsFirstSession[] =
     "ash.Login.SessionStarted.IsFirstSession";
+
+// A boolean pref that controls whether input force respect ui gains is enabled.
+const char kInputForceRespectUiGainsEnabled[] =
+    "ash.input_force_respect_ui_gains_enabled";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

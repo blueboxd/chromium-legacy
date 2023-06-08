@@ -194,7 +194,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFingerprintSensorLocation[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFirstExecAfterBoot[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kForceCryptohomeRecoveryForTesting[];
-COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceDevToolsAvailable[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceFirstRunUI[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kForceHWIDCheckResultForTest[];
@@ -326,6 +325,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kTpmIsDynamic[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUnfilteredBluetoothDevices[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kUpdateRequiredAueForTest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kUseFakeCrasAudioClientForDBus[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kUseMyFilesInUserDataDirForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kWebUiDataSourcePathForTesting[];
@@ -432,6 +433,9 @@ bool IsStabilizeTimeDependentViewForTestsEnabled();
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsCameraEffectsSupportedByHardware();
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool UseFakeCrasAudioClientForDBus();
 
 }  // namespace ash::switches
 

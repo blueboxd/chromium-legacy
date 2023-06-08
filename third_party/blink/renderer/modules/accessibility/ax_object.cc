@@ -689,15 +689,22 @@ void AXObject::Init(AXObject* parent) {
   // determine whether an AXObject can have children.
   children_dirty_ = CanHaveChildren();
 
-  // Ensure that the aria-owns relationship is set before attempting
-  // to update cached attribute values.
-  if (GetNode())
-    AXObjectCache().MaybeNewRelationTarget(*GetNode(), this);
-
   UpdateCachedAttributeValuesIfNeeded(false);
 
   DCHECK(GetDocument()) << "All AXObjects must have a document: "
                         << ToString(true, true);
+
+  // Set the dirty bit for the root AX object when created. For all other
+  // objects, this is set by a descendant needing to be updated, and
+  // AXObjectCacheImpl::UpdateTreeIfNeeded will therefore process an object
+  // if its parent has has_dirty_descendants_ set. The root, however, has no
+  // parent, so there is no parent to mark in order to cause the root to update
+  // itself. Therefore this bit serves a second purpose of determining
+  // whether AXObjectCacheImpl::UpdateTreeIfNeeded needs to update the root
+  // object.
+  if (IsRoot()) {
+    has_dirty_descendants_ = true;
+  }
 }
 
 void AXObject::Detach() {
@@ -1004,9 +1011,13 @@ bool AXObject::CanHaveChildren(Element& element) {
   // so there's no need to add its text children. Placeholder text is a separate
   // node that gets removed when it disappears, so this will only be present if
   // the placeholder is visible.
-  if (element.ShadowPseudoId() ==
-      shadow_element_names::kPseudoInputPlaceholder) {
-    return false;
+  if (Element* host = element.OwnerShadowHost()) {
+    if (auto* ancestor_input = DynamicTo<TextControlElement>(host)) {
+      if (ancestor_input->PlaceholderElement() == &element) {
+        // |element| is a placeholder.
+        return false;
+      }
+    }
   }
 
   if (IsA<HTMLBRElement>(element)) {
@@ -1471,6 +1482,11 @@ void AXObject::SerializeChildTreeID(ui::AXNodeData* node_data) {
     SANITIZER_CHECK(!IsFrame(GetNode()))
         << "If this is an iframe, it should also be a child tree owner: "
         << ToString(true, true);
+    return;
+  }
+
+  // Do not attach hidden child trees.
+  if (!IsVisible()) {
     return;
   }
 
@@ -2403,7 +2419,8 @@ AXObject* AXObject::GetControlsListboxForTextfieldCombobox() {
   Vector<String> ids;
   AXObject* listbox_candidate = nullptr;
   if (ElementsFromAttribute(GetElement(), owned_elements,
-                            html_names::kAriaOwnsAttr, ids)) {
+                            html_names::kAriaOwnsAttr, ids) &&
+      owned_elements.size() > 0) {
     DCHECK(owned_elements[0]);
     listbox_candidate = AXObjectCache().GetOrCreate(owned_elements[0]);
   }
@@ -3624,8 +3641,11 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
     // Allow the browser side ax tree to access "aria-hidden" nodes.
     // This is useful for APIs that return the node referenced by
     // aria-labeledby and aria-describedby.
-    if (IsAriaHidden())
-      return true;
+    // Exception: iframes, in order to stop exposing aria-hidden iframes, where
+    // there is no possibility for the content within to know it's aria-hidden.
+    if (IsAriaHidden()) {
+      return !IsChildTreeOwner();
+    }
   }
 
   if (const Element* owner = node->OwnerShadowHost()) {
@@ -4470,16 +4490,15 @@ bool AXObject::ElementsFromAttribute(Element* from,
   // We compute the attr-associated elements, which are either explicitly set
   // element references set via the IDL, or computed from the content attribute.
   TokenVectorFromAttribute(from, ids, attribute);
-
   HeapVector<Member<Element>>* attr_associated_elements =
       from->GetElementArrayAttribute(attribute);
   if (!attr_associated_elements)
-    return false;
+    return ids.size();
 
   for (const auto& element : *attr_associated_elements)
     elements.push_back(element);
 
-  return elements.size();
+  return ids.size();
 }
 
 // static
@@ -4489,12 +4508,14 @@ bool AXObject::AriaLabelledbyElementVector(
     Vector<String>& ids) {
   // Try both spellings, but prefer aria-labelledby, which is the official spec.
   if (ElementsFromAttribute(from, elements, html_names::kAriaLabelledbyAttr,
-                            ids)) {
+                            ids) &&
+      elements.size() > 0) {
     return true;
   }
 
   return ElementsFromAttribute(from, elements, html_names::kAriaLabeledbyAttr,
-                               ids);
+                               ids) &&
+         elements.size() > 0;
 }
 
 // static
@@ -4809,6 +4830,9 @@ const AtomicString& AXObject::LiveRegionRelevant() const {
 bool AXObject::IsDisabled() const {
   // <embed> or <object> with unsupported plugin, or more iframes than allowed.
   if (IsChildTreeOwner()) {
+    if (IsAriaHidden()) {
+      return true;
+    }
     auto* html_frame_owner_element = To<HTMLFrameOwnerElement>(GetElement());
     return !html_frame_owner_element->ContentFrame();
   }

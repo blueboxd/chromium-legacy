@@ -128,6 +128,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feed::kCormorant,
     &feed::kFeedBackToTop,
     &feed::kFeedDynamicColors,
+    &feed::kFeedFollowUiUpdate,
     &feed::kFeedHeaderStickToTop,
     &feed::kFeedImageMemoryCacheSizePercentage,
     &feed::kFeedLoadingPlaceholder,
@@ -250,6 +251,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kOmniboxConsumesImeInsets,
     &kOmniboxWarmRecycledViewPool,
     &kOpaqueOriginForIncomingIntents,
+    &kPartnerCustomizationsUma,
     &kProbabilisticCryptidRenderer,
     &kQuickDeleteForAndroid,
     &kReachedCodeProfiler,
@@ -358,11 +360,13 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kBiometricTouchToFill,
     &password_manager::features::kEnablePasswordsAccountStorage,
     &password_manager::features::kPasskeyManagementUsingAccountSettingsAndroid,
+    &password_manager::features::kPasswordEditDialogWithDetails,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
     &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
     &password_manager::features::kUnifiedPasswordManagerAndroidBranding,
-    &password_manager::features::kPasswordEditDialogWithDetails,
+    &password_manager::features::
+        kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
     &permissions::features::kBlockMidiByDefault,
     &privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
     &privacy_sandbox::kPrivacySandboxSettings3,
@@ -466,7 +470,7 @@ BASE_FEATURE(kBackgroundThreadPool,
 
 BASE_FEATURE(kBaselineGM3SurfaceColors,
              "BaselineGM3SurfaceColors",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Used in downstream code.
 BASE_FEATURE(kCastDeviceFilter,
@@ -811,6 +815,9 @@ BASE_FEATURE(kOpaqueOriginForIncomingIntents,
              "OpaqueOriginForIncomingIntents",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPartnerCustomizationsUma,
+             "PartnerCustomizationsUma",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kProbabilisticCryptidRenderer,
              "ProbabilisticCryptidRenderer",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1022,7 +1029,7 @@ BASE_FEATURE(kToolbarScrollAblationAndroid,
 
 BASE_FEATURE(kTrustedWebActivityPostMessage,
              "TrustedWebActivityPostMessage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kResizeOnlyActiveTab,
              "ResizeOnlyActiveTab",

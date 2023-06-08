@@ -59,6 +59,11 @@ class SegmentInfoDatabase {
       const base::flat_set<SegmentId>& segment_ids,
       MultipleSegmentInfoCallback callback);
 
+  // Called to get metadata for a given list of both server and default model
+  // segments.
+  virtual std::unique_ptr<SegmentInfoDatabase::SegmentInfoList>
+  GetSegmentInfoForBothModels(const base::flat_set<SegmentId>& segment_ids);
+
   // Called to get the metadata for a given segment. ModelSource defines whether
   // to give metadata from server/default models for the given segment.
   virtual void GetSegmentInfo(SegmentId segment_id,
@@ -84,6 +89,7 @@ class SegmentInfoDatabase {
   // The database will be updated asynchronously after.
   // TODO(shaktisahu): How does the client know if a segment is to be deleted?
   virtual void UpdateSegment(SegmentId segment_id,
+                             ModelSource model_source,
                              absl::optional<proto::SegmentInfo> segment_info,
                              SuccessCallback callback);
 
@@ -93,19 +99,22 @@ class SegmentInfoDatabase {
   // segment ids to be deleted from the database.
   virtual void UpdateMultipleSegments(
       const SegmentInfoList& segments_to_update,
-      const std::vector<SegmentId>& segments_to_delete,
+      const std::vector<std::pair<SegmentId, ModelSource>>& segments_to_delete,
       SuccessCallback callback);
 
   // Called to write the model execution results for a given segment. It will
-  // first read the currently stored result, and then overwrite it with
-  // |result|. If |result| is null, the existing result will be deleted.
+  // first read the currently stored result for given model source, and then
+  // overwrite it with |result|. If |result| is null, the existing result will
+  // be deleted.
   virtual void SaveSegmentResult(SegmentId segment_id,
+                                 ModelSource model_source,
                                  absl::optional<proto::PredictionResult> result,
                                  SuccessCallback callback);
 
-  // Called to write partial training data for a given segment. New training
-  // data are appended to the existing ones.
+  // Called to write partial training data for a given segment and model source.
+  // New training data are appended to the existing ones.
   virtual void SaveTrainingData(SegmentId segment_id,
+                                ModelSource model_source,
                                 const proto::TrainingData& data,
                                 SuccessCallback callback);
 

@@ -107,6 +107,8 @@ generated_callback_interface_sources_in_modules = [
 generated_dictionary_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_aac_encoder_config.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_aac_encoder_config.h",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ad_auction_data.cc",
+  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ad_auction_data.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ad_auction_data_config.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ad_auction_data_config.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_ad_properties.cc",
@@ -2447,8 +2449,6 @@ generated_interface_sources_in_modules = [
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_service_worker_global_scope.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_service_worker_registration.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_service_worker_registration.h",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_shadow_root.cc",
-  "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_shadow_root.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_shared_storage.cc",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_shared_storage.h",
   "$root_gen_dir/third_party/blink/renderer/bindings/modules/v8/v8_shared_storage_iterator.cc",

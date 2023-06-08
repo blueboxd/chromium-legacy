@@ -1277,6 +1277,11 @@
           'shards': 40,
         },
       },
+      'linux-exp-msan-fyi-rel': {
+        'swarming': {
+          'shards': 23,
+        },
+      },
       # asan tests is slower.
       'linux-lacros-asan-lsan-rel': {
         'swarming': {
@@ -2536,6 +2541,7 @@
       # Can't run on MSAN because gl_tests uses the hardware driver,
       # which isn't instrumented.
       'Linux MSan Tests',
+      'linux-exp-msan-fyi-rel',
     ],
     'modifications': {
       # TODO(kbr): figure out a better way to specify blocks of
@@ -2715,6 +2721,7 @@
       # Can't run on MSAN because gl_unittests uses the hardware driver,
       # which isn't instrumented.
       'Linux MSan Tests',
+      'linux-exp-msan-fyi-rel',
     ],
     'modifications': {
       'android-12-x64-rel': {
@@ -2950,6 +2957,11 @@
         # These are slow on the ASan trybot for some reason, crbug.com/1257927
         'swarming': {
           'shards': 12,
+        },
+      },
+      'linux-exp-msan-fyi-rel': {
+        'swarming': {
+          'shards': 4,
         },
       },
       'linux-exp-tsan-fyi-rel': {
@@ -3716,6 +3728,7 @@
       'Mac Pro FYI Release (AMD)',
       'Linux ChromiumOS MSan Tests',  # https://crbug.com/831676
       'Linux MSan Tests',  # https://crbug.com/831676
+      'linux-exp-msan-fyi-rel',  # https://crbug.com/831676
     ],
     'modifications': {
       'android-11-x86-rel': {
@@ -3889,9 +3902,6 @@
   },
   'system_webview_wpt': {
     'modifications': {
-      'android-pie-arm64-wpt-rel-non-cq': {
-        'experiment_percentage': 100,
-      },
       'android-webview-pie-x86-wpt-fyi-rel': {
         'args': [
           '--use-upstream-wpt',
@@ -4385,9 +4395,6 @@
       # Removed from V8 builders since WebGL 1 should provide reasonable
       # upstream test coverage without the capacity hit from WebGL 2.
       'Mac V8 FYI Release (Intel)',
-      # crbug.com/1450207 corrupt Metal shader cache
-      'mac-angle-chromium-intel',
-      'Mac FYI Release (Intel)',
     ],
     'modifications': {
       'Mac FYI ASAN (Intel)': {
@@ -4491,9 +4498,6 @@
       'Mac FYI Retina ASAN (AMD)',
       # crbug.com/1158857: re-enable when switching to Metal by default.
       'Mac FYI Retina Release (NVIDIA)',
-      # crbug.com/1450207 corrupt Metal shader cache
-      'mac-angle-chromium-intel',
-      'Mac FYI Release (Intel)',
     ],
     'modifications': {
       'Mac FYI ASAN (Intel)': {
@@ -4637,13 +4641,6 @@
       'Dawn Android arm64 Release (Pixel 6)': {
         'ci_only': True,
       },
-      # crbug.com/1450207 corrupt Metal shader cache
-      'Dawn Mac x64 DEPS Release (Intel)': {
-        'ci_only': True,
-      },
-      'Dawn Mac x64 Release (Intel)': {
-        'ci_only': True,
-      },
       # These tests must run with a GPU.
       'linux-code-coverage': {
         'swarming': {
@@ -4724,13 +4721,6 @@
         'ci_only': True,
       },
       'Dawn Linux x64 Release (Intel UHD 630)': {
-        'ci_only': True,
-      },
-      # crbug.com/1450207 corrupt Metal shader cache
-      'Dawn Mac x64 DEPS Release (Intel)': {
-        'ci_only': True,
-      },
-      'Dawn Mac x64 Release (Intel)': {
         'ci_only': True,
       },
     },

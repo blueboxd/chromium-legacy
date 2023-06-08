@@ -97,7 +97,6 @@
 <translation id="7018284295775193585">Chromium 無法更新</translation>
 <translation id="7045244423563602563">自訂屬於您的 Chromium</translation>
 <translation id="7099326575020694068">Chromium 無法在「分割檢視」模式中使用相機</translation>
-<translation id="7118091470949186573">您現在只要在訊息、文件或其他應用程式中輕按連結，即可使用 Chromium。</translation>
 <translation id="7165402419892018581">選擇使用 Chromium 的自動填入功能</translation>
 <translation id="7175400662502680481">您的密碼因資料外洩而被洩露。密碼管理工具建議您立即變更密碼。</translation>
 <translation id="7192111075364461693">目前未在裝置設定中開啟 Chromium 通知。</translation>
@@ -105,7 +104,7 @@
 <translation id="725427773388857052">Chromium 能確保系統安全，避免發生資料外洩或瀏覽不安全網站等問題。</translation>
 <translation id="7269362888766543920">部份外掛程式導致 Chromium 當機，請解除安裝那些外掛程式。</translation>
 <translation id="7313655110045230863">如要將 Chromium 設定為預設瀏覽器，請開啟 [設定]。輕按 [預設的瀏覽器應用程式]，然後選取 Chromium。</translation>
-<translation id="7337881442233988129">ChromiumHelper</translation>
+<translation id="7337881442233988129">Chromium</translation>
 <translation id="7357211569052832586">所選資料已從 Chromium 和已同步的裝置中移除。不過，您仍可前往 history.google.com 存取 Google 帳戶中保存的其他各種瀏覽紀錄，例如在其他 Google 服務中的搜尋和活動紀錄。</translation>
 <translation id="7395825497086981028">系統會將密碼儲存在 <ph name="EMAIL" /> 的「密碼管理工具」。</translation>
 <translation id="7400689562045506105">隨時隨地使用 Chromium</translation>

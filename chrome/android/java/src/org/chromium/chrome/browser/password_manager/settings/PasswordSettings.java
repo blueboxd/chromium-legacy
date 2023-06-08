@@ -32,6 +32,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feedback.FragmentHelpAndFeedbackLauncher;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncher;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.password_check.PasswordCheck;
 import org.chromium.chrome.browser.password_check.PasswordCheckFactory;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
@@ -39,11 +40,13 @@ import org.chromium.chrome.browser.password_manager.PasswordCheckReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerHelper;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningCoordinator;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ProfileDependentSetting;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.sync.SyncService;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SearchUtils;
@@ -52,6 +55,7 @@ import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.sync.PassphraseType;
+import org.chromium.components.sync.SyncService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.text.SpanApplier;
 
@@ -129,6 +133,7 @@ public class PasswordSettings extends PreferenceFragmentCompat
     private @ManagePasswordsReferrer int mManagePasswordsReferrer;
     private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
     private Profile mProfile;
+    private BottomSheetController mBottomSheetController;
 
     /**
      * For controlling the UX flow of exporting passwords.
@@ -161,8 +166,8 @@ public class PasswordSettings extends PreferenceFragmentCompat
         setPreferenceScreen(getPreferenceManager().createPreferenceScreen(getStyledContext()));
         PasswordManagerHandlerProvider.getInstance().addObserver(this);
 
-        if (SyncService.get() != null) {
-            SyncService.get().addSyncStateChangedListener(this);
+        if (SyncServiceFactory.getForProfile(mProfile) != null) {
+            SyncServiceFactory.getForProfile(mProfile).addSyncStateChangedListener(this);
         }
 
         setHasOptionsMenu(true); // Password Export might be optional but Search is always present.
@@ -397,6 +402,14 @@ public class PasswordSettings extends PreferenceFragmentCompat
                         getString(R.string.accessible_find_in_page_no_results));
             }
         }
+
+        if (!mNoPasswords
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.UNIFIED_PASSWORD_MANAGER_LOCAL_PWD_MIGRATION_WARNING)) {
+            PasswordMigrationWarningCoordinator passwordMigrationWarningCoordinator =
+                    new PasswordMigrationWarningCoordinator(getContext(), mBottomSheetController);
+            passwordMigrationWarningCoordinator.showWarning();
+        }
     }
 
     /**
@@ -469,8 +482,8 @@ public class PasswordSettings extends PreferenceFragmentCompat
     public void onDestroy() {
         super.onDestroy();
 
-        if (SyncService.get() != null) {
-            SyncService.get().removeSyncStateChangedListener(this);
+        if (SyncServiceFactory.getForProfile(mProfile) != null) {
+            SyncServiceFactory.getForProfile(mProfile).removeSyncStateChangedListener(this);
         }
         // The component should only be destroyed when the activity has been closed by the user
         // (e.g. by pressing on the back button) and not when the activity is temporarily destroyed
@@ -589,11 +602,11 @@ public class PasswordSettings extends PreferenceFragmentCompat
     }
 
     private void displayManageAccountLink() {
-        SyncService syncService = SyncService.get();
+        SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
         if (syncService == null || !syncService.isEngineInitialized()) {
             return;
         }
-        if (!PasswordManagerHelper.isSyncingPasswordsWithNoCustomPassphrase(SyncService.get())) {
+        if (!PasswordManagerHelper.isSyncingPasswordsWithNoCustomPassphrase(syncService)) {
             return;
         }
         if (mSearchQuery != null && !mNoPasswords) {
@@ -637,7 +650,7 @@ public class PasswordSettings extends PreferenceFragmentCompat
     }
 
     private void computeTrustedVaultBannerState() {
-        final SyncService syncService = SyncService.get();
+        final SyncService syncService = SyncServiceFactory.getForProfile(mProfile);
         if (syncService == null) {
             mTrustedVaultBannerState = TrustedVaultBannerState.NOT_SHOWN;
             return;
@@ -659,8 +672,8 @@ public class PasswordSettings extends PreferenceFragmentCompat
     }
 
     private boolean openTrustedVaultOptInDialog(Preference unused) {
-        assert SyncService.get() != null;
-        CoreAccountInfo accountInfo = SyncService.get().getAccountInfo();
+        assert SyncServiceFactory.getForProfile(mProfile) != null;
+        CoreAccountInfo accountInfo = SyncServiceFactory.getForProfile(mProfile).getAccountInfo();
         assert accountInfo != null;
         SyncSettingsUtils.openTrustedVaultOptInDialog(
                 this, accountInfo, REQUEST_CODE_TRUSTED_VAULT_OPT_IN);
@@ -685,6 +698,10 @@ public class PasswordSettings extends PreferenceFragmentCompat
     @Override
     public void setProfile(Profile profile) {
         mProfile = profile;
+    }
+
+    public void setBottomSheetController(BottomSheetController bottomSheetController) {
+        mBottomSheetController = bottomSheetController;
     }
 
     @VisibleForTesting

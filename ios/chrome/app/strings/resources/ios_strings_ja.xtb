@@ -187,13 +187,13 @@
 <translation id="2230173723195178503">ウェブページを読み込みました</translation>
 <translation id="2239626343334228536">閲覧データを削除しています...</translation>
 <translation id="2242467532204595597">メッセージ、ドキュメント、他のアプリのリンクをタップしたときに、常に Chrome で開くよう設定できます。</translation>
-<translation id="22508856139286506">閉じた警告（<ph name="COUNT" /> 件）</translation>
 <translation id="2251686759395008410">メニュー → 履歴</translation>
 <translation id="2252674110805316998">ウェブ検索</translation>
 <translation id="2256933947031277845">組織が特定のアカウントでのログインしか許可していません。</translation>
 <translation id="225943865679747347">エラー コード: <ph name="ERROR_CODE" /></translation>
 <translation id="2267753748892043616">アカウントを追加</translation>
 <translation id="2268044343513325586">絞り込み</translation>
+<translation id="2269277877025820298">もっと見る</translation>
 <translation id="2273327106802955778">その他のメニュー</translation>
 <translation id="2286505070150039482">選択したテキスト</translation>
 <translation id="2287614783861766820">{count,plural, =1{この住所はこのデバイスから削除されます。}other{これらの住所はこのデバイスから削除されます。}}</translation>
@@ -356,6 +356,7 @@
 <translation id="3245744387817103524">変更を保存できませんでした。</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />、<ph name="ADDITIONAL_INFO" />、<ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3264775633254836593">パスワードの自動入力</translation>
+<translation id="3265534588625245297">フォローするサイトを管理</translation>
 <translation id="3268451620468152448">開いているタブ</translation>
 <translation id="3272527697863656322">キャンセル</translation>
 <translation id="3277021493514034324">サイトのアドレスがコピーされました</translation>
@@ -1072,6 +1073,7 @@
 <translation id="7887198238286927132">プライバシー保護のため、Chrome ではこの欄の自動入力は行われません。</translation>
 <translation id="7911190106180361398">お客様の組織では、[すべてを同期する] の設定は許可されていません。</translation>
 <translation id="7920949005883349320">プライバシーとセキュリティ</translation>
+<translation id="792357691529995513">問題は検出されませんでした</translation>
 <translation id="7930998711684428189">データ侵害によりパスワードが漏洩した場合に警告します。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">パスワードをエクスポート...</translation>
@@ -1083,7 +1085,6 @@
 
 サイトは、Cookie を使用して別のサイトでのあなたの閲覧アクティビティを確認することができます。広告のカスタマイズなどが可能になります。</translation>
 <translation id="7971521879845308059">ポップアップのブロック</translation>
-<translation id="797413074872316787">カスタマイズした設定を複数のデバイスで同期して使用するには、同期を有効にします。</translation>
 <translation id="7978018860671536736">3.[パスワードを自動入力] をタップする</translation>
 <translation id="7982789257301363584">ネットワーク</translation>
 <translation id="7987685713885608670">セキュリティ強化のため、Google パスワード マネージャーに保存する前にデバイス上でパスワードを暗号化します。</translation>

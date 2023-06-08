@@ -10,9 +10,9 @@
 #import "components/password_manager/core/browser/password_store_interface.h"
 #import "components/password_manager/core/browser/password_ui_utils.h"
 #import "components/password_manager/core/browser/ui/credential_ui_entry.h"
-#import "components/password_manager/ios/password_manager_java_script_feature.h"
 #import "components/password_manager/ios/shared_password_controller.h"
 #import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
 #import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_input_suggestions_provider.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
@@ -265,14 +265,14 @@ using ReauthenticationEvent::kSuccess;
     [self incrementDismissCount];
 
     web::WebState* activeWebState = _webStateList->GetActiveWebState();
-    password_manager::PasswordManagerJavaScriptFeature* feature =
-        password_manager::PasswordManagerJavaScriptFeature::GetInstance();
+    AutofillBottomSheetJavaScriptFeature* feature =
+        AutofillBottomSheetJavaScriptFeature::GetInstance();
     web::WebFramesManager* framesManager =
         feature->GetWebFramesManager(activeWebState);
     if (framesManager) {
       web::WebFrame* frame = framesManager->GetFrameWithId(_frameId);
       AutofillBottomSheetTabHelper::FromWebState(activeWebState)
-          ->DetachListenersAndRefocus(frame);
+          ->DetachPasswordListenersAndRefocus(frame);
       [self disconnect];
     }
   }
@@ -309,6 +309,9 @@ using ReauthenticationEvent::kSuccess;
       }
       break;
     }
+    case WebStateListChange::Type::kInsert:
+      // Do nothing when a new WebState is inserted.
+      break;
   }
 }
 
@@ -398,13 +401,13 @@ using ReauthenticationEvent::kSuccess;
 // Increments the dismiss count preference.
 - (void)incrementDismissCount {
   if (_prefService) {
-    int newDismissCount =
-        _prefService->GetInteger(prefs::kIosPasswordBottomSheetDismissCount) +
-        1;
-    CHECK(newDismissCount <=
-          AutofillBottomSheetTabHelper::kPasswordBottomSheetMaxDismissCount);
-    _prefService->SetInteger(prefs::kIosPasswordBottomSheetDismissCount,
-                             newDismissCount);
+    int currentDismissCount =
+        _prefService->GetInteger(prefs::kIosPasswordBottomSheetDismissCount);
+    if (currentDismissCount <
+        AutofillBottomSheetTabHelper::kPasswordBottomSheetMaxDismissCount) {
+      _prefService->SetInteger(prefs::kIosPasswordBottomSheetDismissCount,
+                               currentDismissCount + 1);
+    }
   }
 }
 

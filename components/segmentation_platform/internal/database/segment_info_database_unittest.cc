@@ -24,10 +24,13 @@ const SegmentId kSegmentId =
     SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
 const SegmentId kSegmentId2 = SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE;
 
+const ModelSource kDefaultModelSource = ModelSource::DEFAULT_MODEL_SOURCE;
 const ModelSource kServerModelSource = ModelSource::SERVER_MODEL_SOURCE;
 
 std::string ToString(SegmentId segment_id, ModelSource model_source) {
-  return base::NumberToString(static_cast<int>(segment_id));
+  std::string prefix =
+      (model_source == ModelSource::DEFAULT_MODEL_SOURCE ? "DEFAULT_" : "");
+  return prefix + base::NumberToString(static_cast<int>(segment_id));
 }
 
 proto::SegmentInfo CreateSegment(SegmentId segment_id,
@@ -99,12 +102,13 @@ class SegmentInfoDatabaseTest : public testing::Test {
     if (result.has_value())
       prediction_result.add_result(result.value());
 
-    segment_db_->SaveSegmentResult(segment_id,
+    segment_db_->SaveSegmentResult(segment_id, model_source,
                                    result.has_value()
                                        ? absl::make_optional(prediction_result)
                                        : absl::nullopt,
                                    base::DoNothing());
-    if (!segment_info_cache_->GetSegmentInfo(segment_id).has_value()) {
+    if (!segment_info_cache_->GetSegmentInfo(segment_id, model_source)
+             .has_value()) {
       db_->GetCallback(true);
     }
     db_->UpdateCallback(true);
@@ -118,8 +122,10 @@ class SegmentInfoDatabaseTest : public testing::Test {
     training_data.add_inputs(data);
     training_data.set_request_id(request_id);
 
-    segment_db_->SaveTrainingData(segment_id, training_data, base::DoNothing());
-    if (!segment_info_cache_->GetSegmentInfo(segment_id).has_value()) {
+    segment_db_->SaveTrainingData(segment_id, model_source, training_data,
+                                  base::DoNothing());
+    if (!segment_info_cache_->GetSegmentInfo(segment_id, model_source)
+             .has_value()) {
       db_->GetCallback(true);
     }
     db_->UpdateCallback(true);
@@ -134,7 +140,8 @@ class SegmentInfoDatabaseTest : public testing::Test {
         segment_id, model_source,
         base::BindOnce(&SegmentInfoDatabaseTest::OnGetSegment,
                        base::Unretained(this)));
-    if (!segment_info_cache_->GetSegmentInfo(segment_id).has_value()) {
+    if (!segment_info_cache_->GetSegmentInfo(segment_id, model_source)
+             .has_value()) {
       db_->GetCallback(true);
     }
 
@@ -165,7 +172,8 @@ class SegmentInfoDatabaseTest : public testing::Test {
                        base::Unretained(this), loop.QuitClosure()));
 
     for (SegmentId segment_id : segment_ids) {
-      if (!segment_info_cache_->GetSegmentInfo(segment_id).has_value()) {
+      if (!segment_info_cache_->GetSegmentInfo(segment_id, kServerModelSource)
+               .has_value()) {
         db_->LoadCallback(true);
         break;
       }
@@ -210,11 +218,41 @@ TEST_F(SegmentInfoDatabaseTest, Get) {
       kSegmentId, kServerModelSource,
       base::BindOnce(&SegmentInfoDatabaseTest::OnGetSegment,
                      base::Unretained(this)));
-  if (!segment_info_cache_->GetSegmentInfo(kSegmentId).has_value()) {
+  if (!segment_info_cache_->GetSegmentInfo(kSegmentId, kServerModelSource)
+           .has_value()) {
     db_->GetCallback(true);
   }
   EXPECT_TRUE(get_segment_result_.has_value());
   EXPECT_EQ(kSegmentId, get_segment_result_->segment_id());
+}
+
+TEST_F(SegmentInfoDatabaseTest, GetSegmentInfoForBothModels) {
+  // Initialize DB with entry for both server and default model.
+  db_entries_.insert(
+      std::make_pair(ToString(kSegmentId, kServerModelSource),
+                     CreateSegment(kSegmentId, kServerModelSource)));
+
+  db_entries_.insert(
+      std::make_pair(ToString(kSegmentId, kDefaultModelSource),
+                     CreateSegment(kSegmentId, kDefaultModelSource)));
+  SetUpDB();
+
+  segment_db_->Initialize(base::DoNothing());
+  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->LoadCallback(true);
+  VerifyDb({std::make_pair(kSegmentId, kServerModelSource),
+            std::make_pair(kSegmentId, kDefaultModelSource)});
+
+  // Get all segments.
+  std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> segments =
+      segment_db_->GetSegmentInfoForBothModels({kSegmentId});
+
+  EXPECT_EQ(2u, segments->size());
+  EXPECT_EQ(kSegmentId, segments->at(0).first);
+  EXPECT_EQ(kServerModelSource, segments->at(0).second.model_source());
+
+  EXPECT_EQ(kSegmentId, segments->at(1).first);
+  EXPECT_EQ(kDefaultModelSource, segments->at(1).second.model_source());
 }
 
 TEST_F(SegmentInfoDatabaseTest, Update) {
@@ -229,19 +267,20 @@ TEST_F(SegmentInfoDatabaseTest, Update) {
   db_->LoadCallback(true);
 
   // Delete a segment.
-  segment_db_->UpdateSegment(kSegmentId, absl::nullopt, base::DoNothing());
+  segment_db_->UpdateSegment(kSegmentId, kServerModelSource, absl::nullopt,
+                             base::DoNothing());
   db_->UpdateCallback(true);
   VerifyDb({});
 
   // Insert a segment and verify.
-  segment_db_->UpdateSegment(kSegmentId,
+  segment_db_->UpdateSegment(kSegmentId, kServerModelSource,
                              CreateSegment(kSegmentId, kServerModelSource),
                              base::DoNothing());
   db_->UpdateCallback(true);
   VerifyDb({std::make_pair(kSegmentId, kServerModelSource)});
 
   // Insert another segment and verify.
-  segment_db_->UpdateSegment(kSegmentId2,
+  segment_db_->UpdateSegment(kSegmentId2, kServerModelSource,
                              CreateSegment(kSegmentId2, kServerModelSource),
                              base::DoNothing());
   db_->UpdateCallback(true);
@@ -254,6 +293,37 @@ TEST_F(SegmentInfoDatabaseTest, Update) {
   ExecuteAndVerifyGetSegmentInfoForSegments({kSegmentId});
 
   ExecuteAndVerifyGetSegmentInfoForSegments({kSegmentId, kSegmentId2});
+}
+
+TEST_F(SegmentInfoDatabaseTest, UpdateWithModelSource) {
+  // Initialize DB with one entry.
+  db_entries_.insert(
+      std::make_pair(ToString(kSegmentId, kServerModelSource),
+                     CreateSegment(kSegmentId, kServerModelSource)));
+  SetUpDB();
+
+  segment_db_->Initialize(base::DoNothing());
+  db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
+  db_->LoadCallback(true);
+
+  // Insert a segment and verify.
+  segment_db_->UpdateSegment(
+      kSegmentId, ModelSource::UNKNOWN_MODEL_SOURCE,
+      CreateSegment(kSegmentId, ModelSource::UNKNOWN_MODEL_SOURCE),
+      base::DoNothing());
+  db_->UpdateCallback(true);
+  VerifyDb({std::make_pair(kSegmentId, ModelSource::UNKNOWN_MODEL_SOURCE)});
+
+  // Insert another segment and verify.
+  segment_db_->UpdateSegment(kSegmentId2, kDefaultModelSource,
+                             CreateSegment(kSegmentId2, kDefaultModelSource),
+                             base::DoNothing());
+  db_->UpdateCallback(true);
+  VerifyDb({std::make_pair(kSegmentId, kServerModelSource),
+            std::make_pair(kSegmentId2, kDefaultModelSource)});
+
+  // Verify GetSegmentInfoForSegments.
+  ExecuteAndVerifyGetSegmentInfoForSegments({kSegmentId});
 }
 
 TEST_F(SegmentInfoDatabaseTest, UpdateMultipleSegments) {
@@ -271,8 +341,11 @@ TEST_F(SegmentInfoDatabaseTest, UpdateMultipleSegments) {
   db_->LoadCallback(true);
 
   // Delete both segments.
-  segment_db_->UpdateMultipleSegments({}, {kSegmentId, kSegmentId2},
-                                      base::DoNothing());
+  segment_db_->UpdateMultipleSegments(
+      {},
+      {std::make_pair(kSegmentId, kServerModelSource),
+       std::make_pair(kSegmentId2, kServerModelSource)},
+      base::DoNothing());
   db_->UpdateCallback(true);
   VerifyDb({});
 
@@ -321,11 +394,15 @@ TEST_F(SegmentInfoDatabaseTest, WriteResult) {
 
   segment_db_->Initialize(base::DoNothing());
   db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
-  EXPECT_FALSE(segment_info_cache_->GetSegmentInfo(kSegmentId).has_value());
+  EXPECT_FALSE(
+      segment_info_cache_->GetSegmentInfo(kSegmentId, kServerModelSource)
+          .has_value());
 
   // Verify that all DB entries are loaded into cache on initialization.
   db_->LoadCallback(true);
-  EXPECT_TRUE(segment_info_cache_->GetSegmentInfo(kSegmentId).has_value());
+  EXPECT_TRUE(
+      segment_info_cache_->GetSegmentInfo(kSegmentId, kServerModelSource)
+          .has_value());
 
   // Update results and verify that db is updated.
   WriteResult(kSegmentId, kServerModelSource, 0.4f);
@@ -352,7 +429,9 @@ TEST_F(SegmentInfoDatabaseTest, WriteTrainingData) {
   segment_db_->Initialize(base::DoNothing());
   db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
   db_->LoadCallback(true);
-  EXPECT_TRUE(segment_info_cache_->GetSegmentInfo(kSegmentId).has_value());
+  EXPECT_TRUE(
+      segment_info_cache_->GetSegmentInfo(kSegmentId, kServerModelSource)
+          .has_value());
 
   std::vector<ModelProvider::Request> expected_training_inputs;
 

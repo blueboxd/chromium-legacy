@@ -383,7 +383,6 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       handled_leading_floats_index_(handled_leading_floats_index),
       base_direction_(node_.BaseDirection()) {
   UpdateAvailableWidth();
-  break_iterator_.SetBreakSpace(BreakSpaceType::kAfterSpaceRun);
   if (is_svg_text_) {
     const auto& char_data_list = node_.SvgCharacterDataList();
     if (node_.SvgTextPathRangeList().empty() &&
@@ -681,6 +680,7 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
   //   <p>...<span>....</span></p>
   // When the line wraps in <span>, the 2nd line needs to start with the style
   // of the <span>.
+  disable_score_line_break_ = false;
   if (!current_style_)
     SetCurrentStyle(line_info->LineStyle());
   ComputeBaseDirection();
@@ -691,8 +691,6 @@ void NGLineBreaker::PrepareNextLine(NGLineInfo* line_info) {
   // Use 'text-indent' as the initial position. This lets tab positions to align
   // regardless of 'text-indent'.
   position_ = line_info->TextIndent();
-
-  disable_score_line_break_ = false;
 
   has_cloned_box_decorations_ = false;
   if (UNLIKELY((break_token_ && break_token_->HasClonedBoxDecorations()) ||
@@ -927,10 +925,8 @@ bool NGLineBreaker::CanBreakAfterAtomicInline(const NGInlineItem& item) const {
   }
 
   DCHECK_EQ(Text(), break_iterator_.GetString());
-  LazyLineBreakIterator break_iterator(text_content.ReleaseString(),
-                                       break_iterator_.Locale(),
-                                       break_iterator_.BreakType());
-  break_iterator.SetBreakSpace(break_iterator_.BreakSpace());
+  LazyLineBreakIterator break_iterator(break_iterator_,
+                                       text_content.ReleaseString());
   return break_iterator.IsBreakable(text_combine_end_offset);
 }
 
@@ -984,10 +980,8 @@ bool NGLineBreaker::CanBreakAfter(const NGInlineItem& item) const {
   text_content.Append(text_combine->GetTextContent());
 
   DCHECK_EQ(Text(), break_iterator_.GetString());
-  LazyLineBreakIterator break_iterator(text_content.ReleaseString(),
-                                       break_iterator_.Locale(),
-                                       break_iterator_.BreakType());
-  break_iterator.SetBreakSpace(break_iterator_.BreakSpace());
+  LazyLineBreakIterator break_iterator(break_iterator_,
+                                       text_content.ReleaseString());
   return break_iterator.IsBreakable(item_end_offset);
 }
 
@@ -1330,8 +1324,6 @@ NGLineBreaker::BreakResult NGLineBreaker::BreakText(
       };
   ShapingLineBreaker breaker(&item_shape_result, &break_iterator_, hyphenation_,
                              shape_callback, &shape_callback_context);
-  if (!enable_soft_hyphen_)
-    breaker.DisableSoftHyphen();
 
   // Use kStartShouldBeSafe if at the beginning of a line.
   unsigned options = ShapingLineBreaker::kDefaultOptions;
@@ -1588,14 +1580,6 @@ bool NGLineBreaker::HandleTextForFastMinContent(NGInlineItemResult* item_result,
     if (wtf_size_t word_len = non_hangable_run_end - start_offset) {
       // Ignore soft-hyphen opportunities if `hyphens: none`.
       bool has_hyphen = text[non_hangable_run_end - 1] == kSoftHyphenCharacter;
-      if (UNLIKELY(has_hyphen && !enable_soft_hyphen_ &&
-                   non_hangable_run_end == end_offset)) {
-        ++end_offset;
-        if (end_offset < item.EndOffset())
-          continue;
-        has_hyphen = false;
-      }
-
       if (UNLIKELY(hyphenation_)) {
         // When 'hyphens: auto', compute all hyphenation opportunities.
         if (!hyphen_inline_size) {
@@ -1828,12 +1812,7 @@ void NGLineBreaker::AppendCandidates(const NGInlineItemResult& item_result,
     wtf_size_t next_offset;
     if (auto_wrap_) {
       const wtf_size_t len = std::min(offset.end + 1, text_content.length());
-      next_offset = offset.start;
-      do {
-        next_offset =
-            break_iterator_.NextBreakOpportunity(next_offset + 1, len);
-      } while (UNLIKELY(!enable_soft_hyphen_) && next_offset < len &&
-               text_content[next_offset - 1] == kSoftHyphenCharacter);
+      next_offset = break_iterator_.NextBreakOpportunity(offset.start + 1, len);
     } else {
       next_offset = offset.end + 1;
     }
@@ -1996,7 +1975,6 @@ bool NGLineBreaker::CanBreakInside(const NGInlineItemResult& item_result) {
   }
   const wtf_size_t next_offset =
       break_iterator_.NextBreakOpportunity(offset.start + 1);
-  // TODO: soft-hyphen
   return next_offset < offset.end;
 }
 
@@ -3411,7 +3389,8 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
     // Check that cache fields are already setup correctly.
     DCHECK_EQ(auto_wrap_, ShouldAutoWrap(style));
     if (auto_wrap_) {
-      DCHECK_EQ(enable_soft_hyphen_, style.GetHyphens() != Hyphens::kNone);
+      DCHECK_EQ(break_iterator_.IsSoftHyphenEnabled(),
+                style.GetHyphens() != Hyphens::kNone);
       DCHECK_EQ(break_iterator_.Locale(), style.LocaleForLineBreakIterator());
     }
     ShapeResultSpacing<String> spacing(spacing_.Text(), is_svg_text_);
@@ -3456,12 +3435,14 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
     }
     break_iterator_.SetBreakType(line_break_type);
 
-    enable_soft_hyphen_ = style.GetHyphens() != Hyphens::kNone;
+    break_iterator_.EnableSoftHyphen(style.GetHyphens() != Hyphens::kNone);
     hyphenation_ = style.GetHyphenationWithLimits();
 
     if (style.ShouldBreakSpaces()) {
       break_iterator_.SetBreakSpace(BreakSpaceType::kAfterEverySpace);
       disable_score_line_break_ = true;
+    } else {
+      break_iterator_.SetBreakSpace(BreakSpaceType::kAfterSpaceRun);
     }
 
     break_iterator_.SetLocale(style.LocaleForLineBreakIterator());

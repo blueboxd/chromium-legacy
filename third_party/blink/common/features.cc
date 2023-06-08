@@ -1066,6 +1066,8 @@ BASE_FEATURE(kFledge, "Fledge", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kFledgeBiddingAndAuctionServer,
              "FledgeBiddingAndAuctionServer",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<std::string> kFledgeBiddingAndAuctionKeyURL{
+    &kFledgeBiddingAndAuctionServer, "FledgeBiddingAndAuctionKeyURL", ""};
 
 // See in the header.
 BASE_FEATURE(kFledgeConsiderKAnonymity,
@@ -1901,7 +1903,7 @@ BASE_FEATURE(kKeepAliveInBrowserMigration,
 
 BASE_FEATURE(kGainmapHdrImages,
              "GainmapHdrImages",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMainThreadHighPriorityImageLoading,
              "MainThreadHighPriorityImageLoading",
@@ -1913,6 +1915,14 @@ BASE_FEATURE(kDirectCompositorThreadIpc,
 
 BASE_FEATURE(kCSPWildcardsInPermissionsPolicies,
              "CSPWildcardsInPermissionsPolicies",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAllowDevToolsMainThreadDebuggerForMultipleMainFrames,
+             "AllowDevToolsMainThreadDebuggerForMultipleMainFrames",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kLCPCriticalPathPredictor,
+             "LCPCriticalPathPredictor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

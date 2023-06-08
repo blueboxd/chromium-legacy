@@ -548,7 +548,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-10-01">
+    units="microseconds" expires_after="2023-12-04">
   <owner>flackr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -618,7 +618,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyDurationPercentage" units="%"
-    expires_after="2023-10-01">
+    expires_after="2023-12-04">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -836,7 +836,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-10-01">
+    units="microseconds" expires_after="2023-12-04">
   <owner>flackr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -1164,7 +1164,13 @@ chromium-metrics-reviews@google.com.
     <variant name="FirstGestureScrollUpdate"
         summary="gesture-scroll-update events that are the first one in a
                  scroll sequence"/>
-    <variant name="GestureScrollBegin" summary="gesture-scroll-begin events"/>
+    <variant name="GestureScrollBegin"
+        summary="gesture-scroll-begin event. These are rarely handled, as
+                 most user initiated scrolls will start with
+                 FirstGestureScrollUpdate. Which was added to match the
+                 legacy
+                 Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4.
+                 This tracks GestureScrollBegin"/>
     <variant name="GestureScrollEnd" summary="gesture-scroll-end events"/>
     <variant name="InertialGestureScrollUpdate"
         summary="gesture-scroll-update events that are inertial (i.e.

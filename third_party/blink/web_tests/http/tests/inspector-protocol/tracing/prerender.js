@@ -24,11 +24,17 @@
   await dp.Preload.enable();
   await tracingHelper.startTracing();
 
+  const prerenderReadyPromise = dp.Preload.oncePrerenderStatusUpdated(e => e.params.status == 'Ready');
+  tp.Target.setAutoAttach({autoAttach: true, flatten: true, waitForDebuggerOnStart: false});
   page.navigate('../prerender/resources/simple-prerender.html');
-  await dp.Preload.oncePrerenderStatusUpdated(e => e.params.status == 'Ready');
-
+  const prerenderSessionId = (await tp.Target.onceAttachedToTarget(
+      e => e.params.targetInfo.subtype === 'prerender')).params.sessionId;
+  const pp = session.createChild(prerenderSessionId).protocol;
+  await Promise.all([pp.Preload.enable(), prerenderReadyPromise]);
   session.evaluate(`document.getElementById('link').click()`);
-  await dp.Preload.oncePrerenderAttemptCompleted();
+
+  await pp.Preload.oncePrerenderAttemptCompleted();
+
   const devtoolsEvents = await tracingHelper.stopTracing();
   const prerenderFrameCommitted =
       tracingHelper

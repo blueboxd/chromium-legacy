@@ -12,11 +12,7 @@
 
 BASE_FEATURE(kDefaultBrowserBlueDotPromo,
              "DefaultBrowserBlueDotPromo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kIOSPaymentsBottomSheet,
-             "IOSPaymentsBottomSheet",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 constexpr base::FeatureParam<BlueDotPromoUserGroup>::Option
     kBlueDotPromoUserGroupOptions[] = {
@@ -27,8 +23,11 @@ constexpr base::FeatureParam<BlueDotPromoUserGroup>::Option
 
 constexpr base::FeatureParam<BlueDotPromoUserGroup> kBlueDotPromoUserGroupParam{
     &kDefaultBrowserBlueDotPromo, "user-group",
-    BlueDotPromoUserGroup::kOnlyBlueDotPromoEnabled,
-    &kBlueDotPromoUserGroupOptions};
+    BlueDotPromoUserGroup::kAllDBPromosEnabled, &kBlueDotPromoUserGroupOptions};
+
+BASE_FEATURE(kIOSPaymentsBottomSheet,
+             "IOSPaymentsBottomSheet",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExpandedTabStrip,
              "ExpandedTabStrip",
@@ -254,4 +253,8 @@ bool IsBottomOmniboxSteadyStateEnabled() {
 
 BASE_FEATURE(kOnlyAccessClipboardAsync,
              "OnlyAccessClipboardAsync",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kHideSettingsSyncPromo,
+             "HideSettingsSyncPromo",
              base::FEATURE_DISABLED_BY_DEFAULT);

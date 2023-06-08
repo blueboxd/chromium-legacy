@@ -689,6 +689,18 @@
       },
     },
   },
+  'ios_runtime_cache_17_0': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_17_0',
+            'path': 'Runtime-ios-17.0',
+          },
+        ],
+      },
+    },
+  },
   'isolate_profile_data': {
     'isolate_profile_data': True,
   },
@@ -951,7 +963,7 @@
       'dimensions': {
         'cpu': 'arm64',
         'mac_model': 'Macmini9,1',
-        'os': 'Mac-13.2',
+        'os': 'Mac-13.4',
         'pool': 'chromium.tests',
         'display_attached': '1',
       },
@@ -962,7 +974,7 @@
       'dimensions': {
         'cpu': 'arm64',
         'mac_model': 'Macmini9,1',
-        'os': 'Mac-12.5',
+        'os': 'Mac-13.4',
         'pool': 'chromium.tests',
         'display_attached': '1',
       },
@@ -1086,7 +1098,7 @@
         {
           "cipd_package": 'infra/tools/mac_toolchain/${platform}',
           'location': '.',
-          'revision': 'git_revision:3e597065cb23c1fe03aeb2ebd792d83e0709c5c2',
+          'revision': 'git_revision:0ecab437ae2532a879b1203efc48f54bc6cadb77',
         },
       ],
     },
@@ -1575,6 +1587,22 @@
       'args': [
         '--readline-timeout',
         '600',
+      ],
+    },
+  },
+  'xcode_15_beta': {
+    '$mixin_append': {
+      'args': [
+        '--xcode-build-version',
+        '15a5160n'
+      ],
+    },
+    'swarming': {
+      'named_caches': [
+        {
+          'name': 'xcode_ios_15a5160n',
+          'path': 'Xcode.app',
+        },
       ],
     },
   },

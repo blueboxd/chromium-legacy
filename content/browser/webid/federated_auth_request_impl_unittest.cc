@@ -88,6 +88,7 @@ constexpr char kTokenEndpoint[] = "https://idp.example/token";
 constexpr char kClientMetadataEndpoint[] =
     "https://idp.example/client_metadata";
 constexpr char kMetricsEndpoint[] = "https://idp.example/metrics";
+constexpr char kIdpSigninUrl[] = "https://idp.example/signin_url";
 constexpr char kPrivacyPolicyUrl[] = "https://rp.example/pp";
 constexpr char kTermsOfServiceUrl[] = "https://rp.example/tos";
 constexpr char kClientId[] = "client_id_123";
@@ -237,6 +238,7 @@ struct MockConfig {
   std::string token_endpoint;
   std::string client_metadata_endpoint;
   std::string metrics_endpoint;
+  std::string idp_signin_url;
 };
 
 struct MockIdpInfo {
@@ -293,6 +295,7 @@ static const MockIdpInfo kDefaultIdentityProviderInfo{
         kTokenEndpoint,
         kClientMetadataEndpoint,
         kMetricsEndpoint,
+        kIdpSigninUrl,
     },
     kDefaultClientMetadata,
     {ParseStatus::kSuccess, net::HTTP_OK},
@@ -311,6 +314,7 @@ static const MockIdpInfo kProviderTwoInfo{
         "https://idp2.example/token",
         "https://idp2.example/client_metadata",
         "https://idp2.example/metrics",
+        "https://idp2.example/signin_url",
     },
     kDefaultClientMetadata,
     {ParseStatus::kSuccess, net::HTTP_OK},
@@ -404,6 +408,8 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
 
     IdentityProviderMetadata idp_metadata;
     idp_metadata.config_url = provider;
+    idp_metadata.idp_signin_url =
+        GURL(config_.idp_info[provider_key].config.idp_signin_url);
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
@@ -1312,8 +1318,7 @@ TEST_F(FederatedAuthRequestImplTest, MissingTokenEndpoint) {
       RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
   ASSERT_EQ(2U, messages.size());
   EXPECT_EQ(
-      "Config file is missing or has an invalid URL for the following "
-      "endpoints:\n"
+      "Config file is missing or has an invalid URL for the following:\n"
       "\"id_assertion_endpoint\"\n",
       messages[0]);
   EXPECT_EQ("Provider's FedCM config file is invalid.", messages[1]);
@@ -1336,11 +1341,18 @@ TEST_F(FederatedAuthRequestImplTest, MissingAccountsEndpoint) {
       RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
   ASSERT_EQ(2U, messages.size());
   EXPECT_EQ(
-      "Config file is missing or has an invalid URL for the following "
-      "endpoints:\n"
+      "Config file is missing or has an invalid URL for the following:\n"
       "\"accounts_endpoint\"\n",
       messages[0]);
   EXPECT_EQ("Provider's FedCM config file is invalid.", messages[1]);
+}
+
+// Test that request does not fail if config is missing an IDP signin URL.
+TEST_F(FederatedAuthRequestImplTest, MissingSigninURL) {
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.idp_info[kProviderUrlFull].config.idp_signin_url = "";
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, configuration);
+  EXPECT_TRUE(DidFetchWellKnownAndConfig());
 }
 
 // Test that client metadata endpoint is not required in config.
@@ -1365,6 +1377,30 @@ TEST_F(FederatedAuthRequestImplTest, AccountEndpointDifferentOriginIdp) {
   RunAuthTest(kDefaultRequestParameters, expectations, configuration);
   EXPECT_TRUE(DidFetchWellKnownAndConfig());
   EXPECT_FALSE(DidFetch(FetchedEndpoint::ACCOUNTS));
+}
+
+// Test that request fails if IDP signin URL is different origin from IDP config
+// URL.
+TEST_F(FederatedAuthRequestImplTest, SigninUrlDifferentOriginIdp) {
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.idp_info[kProviderUrlFull].config.idp_signin_url =
+      "https://idp2.example/signin_url";
+  RequestExpectations expectations = {
+      RequestTokenStatus::kError,
+      {FederatedAuthRequestResult::kErrorFetchingConfigInvalidResponse},
+      /*standalone_console_messages=*/{},
+      /*selected_idp_config_url=*/absl::nullopt};
+  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+  EXPECT_TRUE(DidFetchWellKnownAndConfig());
+
+  std::vector<std::string> messages =
+      RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
+  ASSERT_EQ(2U, messages.size());
+  EXPECT_EQ(
+      "Config file is missing or has an invalid URL for the following:\n"
+      "\"signin_url\"\n",
+      messages[0]);
+  EXPECT_EQ("Provider's FedCM config file is invalid.", messages[1]);
 }
 
 // Test that request fails if the idp is not https.
@@ -1469,8 +1505,7 @@ TEST_F(FederatedAuthRequestImplTest, AllInvalidEndpoints) {
       RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
   ASSERT_EQ(2U, messages.size());
   EXPECT_EQ(
-      "Config file is missing or has an invalid URL for the following "
-      "endpoints:\n"
+      "Config file is missing or has an invalid URL for the following:\n"
       "\"id_assertion_endpoint\"\n"
       "\"accounts_endpoint\"\n",
       messages[0]);
@@ -3960,21 +3995,6 @@ TEST_F(FederatedAuthRequestImplTest, RpContextIsSetToNonDefaultValue) {
             blink::mojom::RpContext::kContinue);
 }
 
-// Test that when FedCmRpContext flag is at its default setting and rp_context
-// is specified, the FedCM request ignores the specified rp_context and defaults
-// to sign in.
-TEST_F(FederatedAuthRequestImplTest, RpContextIsDefaultToSignIn) {
-  RequestParameters request_parameters = kDefaultRequestParameters;
-  request_parameters.rp_context = blink::mojom::RpContext::kContinue;
-  MockConfiguration configuration = kConfigurationValid;
-  configuration.accounts_dialog_action =
-      AccountsDialogAction::kSelectFirstAccount;
-  RunAuthTest(request_parameters, kExpectationSuccess, configuration);
-
-  EXPECT_EQ(dialog_controller_state_.rp_context,
-            blink::mojom::RpContext::kSignIn);
-}
-
 TEST_F(FederatedAuthRequestImplTest, WellKnownInvalidContentType) {
   MockConfiguration configuration = kConfigurationValid;
   configuration.idp_info[kProviderUrlFull]
@@ -4244,6 +4264,90 @@ TEST_F(FederatedAuthRequestImplTest,
   // is not enabled.
   EXPECT_TRUE(
       FederatedAuthRequestImpl::ShouldMediateAuthz({"profile", "email"}));
+}
+
+class FederatedAuthRequestImplNewTabTest : public FederatedAuthRequestImplTest {
+ protected:
+  void SetUp() override {
+    RenderViewHostImplTestHarness::SetUp();
+    test_api_permission_delegate_ =
+        std::make_unique<TestApiPermissionDelegate>();
+    test_permission_delegate_ = std::make_unique<TestPermissionDelegate>();
+    test_auto_reauthn_permission_delegate_ =
+        std::make_unique<TestAutoReauthnPermissionDelegate>();
+    test_identity_registry_ = std::make_unique<TestIdentityRegistry>(
+        web_contents(), federated_auth_request_impl_,
+        url::Origin::Create(GURL(kIdpUrl)));
+
+    static_cast<TestWebContents*>(web_contents())
+        ->NavigateAndCommit(GURL("chrome://newtab/"), ui::PAGE_TRANSITION_LINK);
+
+    federated_auth_request_impl_ = &FederatedAuthRequestImpl::CreateForTesting(
+        *main_test_rfh(), test_api_permission_delegate_.get(),
+        test_auto_reauthn_permission_delegate_.get(),
+        test_permission_delegate_.get(), test_identity_registry_.get(),
+        request_remote_.BindNewPipeAndPassReceiver());
+
+    std::unique_ptr<TestIdpNetworkRequestManager> network_request_manager =
+        std::make_unique<TestIdpNetworkRequestManager>();
+    SetNetworkRequestManager(std::move(network_request_manager));
+
+    federated_auth_request_impl_->SetTokenRequestDelayForTests(
+        base::TimeDelta());
+  }
+};
+
+TEST_F(FederatedAuthRequestImplNewTabTest, SuccessfulFlow) {
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
+              kConfigurationValid);
+}
+
+class UserInfoCallbackHelper {
+ public:
+  UserInfoCallbackHelper() = default;
+  ~UserInfoCallbackHelper() = default;
+
+  // This can only be called once per lifetime of this object.
+  blink::mojom::FederatedAuthRequest::RequestUserInfoCallback callback() {
+    return base::BindOnce(&UserInfoCallbackHelper::Complete,
+                          base::Unretained(this));
+  }
+
+  // Returns when callback() is called, which can be immediately if it has
+  // already been called.
+  void WaitForCallback() {
+    if (was_called_) {
+      return;
+    }
+    wait_for_callback_loop_.Run();
+  }
+
+  void Complete(blink::mojom::RequestUserInfoStatus user_info_status,
+                absl::optional<std::vector<blink::mojom::IdentityUserInfoPtr>>
+                    user_info) {
+    CHECK(!was_called_);
+    was_called_ = true;
+    wait_for_callback_loop_.Quit();
+  }
+
+ private:
+  bool was_called_{false};
+  base::RunLoop wait_for_callback_loop_;
+};
+
+TEST_F(FederatedAuthRequestImplTest, RequestUserInfoFailure) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmUserInfo);
+  blink::mojom::IdentityProviderConfigPtr config =
+      blink::mojom::IdentityProviderConfig::New();
+  config->config_url = GURL(kIdpUrl);
+  UserInfoCallbackHelper callback_helper;
+  // This request will fail right away (not from IDP origin).
+  federated_auth_request_impl_->RequestUserInfo(
+      std::move(config), base::BindOnce(&UserInfoCallbackHelper::Complete,
+                                        base::Unretained(&callback_helper)));
+  // This is a regression test and it passes if the test does not crash.
+  callback_helper.WaitForCallback();
 }
 
 }  // namespace content

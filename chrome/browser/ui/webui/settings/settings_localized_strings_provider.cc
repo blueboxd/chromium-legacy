@@ -36,6 +36,7 @@
 #include "chrome/browser/signin/account_consistency_mode_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/management/management_ui.h"
@@ -83,6 +84,7 @@
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/supervised_user/core/common/features.h"
 #include "components/sync/base/features.h"
 #include "components/sync/service/sync_service.h"
 #include "components/sync/service/sync_service_utils.h"
@@ -319,8 +321,16 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
-  html_source->AddString("managementPage",
-                         ManagementUI::GetManagementPageSubtitle(profile));
+  html_source->AddString(
+      "managementPage",
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+      base::FeatureList::IsEnabled(supervised_user::kEnableManagedByParentUi)
+          ? chrome::GetDeviceManagedUiHelpLabel(profile)
+          : ManagementUI::GetManagementPageSubtitle(profile)
+#else
+      ManagementUI::GetManagementPageSubtitle(profile)
+#endif
+  );
   html_source->AddString(
       "aboutUpgradeUpToDate",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -371,6 +381,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"chromeColors", IDS_SETTINGS_CHROME_COLORS},
     {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
     {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
+    {"showHoverCardImages", IDS_SETTINGS_SHOW_HOVER_CARD_IMAGES},
     {"sidePanel", IDS_SETTINGS_SIDE_PANEL},
     {"homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP},
     {"changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE},
@@ -418,6 +429,9 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean("showReaderModeOption",
                           dom_distiller::OfferReaderModeInSettings());
   html_source->AddBoolean("showSidePanelOptions", true);
+  html_source->AddBoolean(
+      "showHoverCardImagesOption",
+      base::FeatureList::IsEnabled(features::kTabHoverCardImageSettings));
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
@@ -658,6 +672,8 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_ON_TIMER_LABEL},
       {"highEfficiencyModeRadioGroupAriaLabel",
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_RADIO_GROUP_ARIA_LABEL},
+      {"highEfficiencyChooseDiscardTimeAriaLabel",
+       IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_CHOOSE_DISCARD_TIME_ARIA_LABEL},
       {"batteryPageTitle", IDS_SETTINGS_BATTERY_PAGE_TITLE},
       {"batterySaverModeLabel",
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING},
@@ -1555,6 +1571,17 @@ void AddBrowserSyncPageStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(
       "osSyncSetupSettingsUrl",
       BuildOSSettingsUrl(chromeos::settings::mojom::kSyncSetupSubpagePath));
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  html_source->AddString(
+      "osPrivacySettingsUrl",
+      BuildOSSettingsUrl(
+          chromeos::settings::mojom::kPrivacyAndSecuritySectionPath));
+
+  html_source->AddBoolean(
+      "osDeprecateSyncMetricsToggle",
+      ash::features::IsOsSettingsDeprecateSyncMetricsToggleEnabled());
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)

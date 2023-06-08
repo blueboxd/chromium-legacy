@@ -55,8 +55,7 @@ LLVM_INSTRUMENTED_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-instrumented')
 LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
 LLVM_BUILD_TOOLS_DIR = os.path.abspath(
     os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
-ANDROID_NDK_DIR = os.path.join(
-    CHROMIUM_DIR, 'third_party', 'android_ndk')
+ANDROID_NDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'android_toolchain')
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
                                'sdk')
 PINNED_CLANG_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'pinned-clang')
@@ -199,14 +198,14 @@ def GetCommitDescription(commit):
 def AddCMakeToPath():
   """Download CMake and add it to PATH."""
   if sys.platform == 'win32':
-    zip_name = 'cmake-3.23.0-windows-x86_64.zip'
-    dir_name = ['cmake-3.23.0-windows-x86_64', 'bin']
+    zip_name = 'cmake-3.26.4-windows-x86_64.zip'
+    dir_name = ['cmake-3.26.4-windows-x86_64', 'bin']
   elif sys.platform == 'darwin':
-    zip_name = 'cmake-3.23.0-macos-universal.tar.gz'
-    dir_name = ['cmake-3.23.0-macos-universal', 'CMake.app', 'Contents', 'bin']
+    zip_name = 'cmake-3.26.4-macos-universal.tar.gz'
+    dir_name = ['cmake-3.26.4-macos-universal', 'CMake.app', 'Contents', 'bin']
   else:
-    zip_name = 'cmake-3.23.0-linux-x86_64.tar.gz'
-    dir_name = ['cmake-3.23.0-linux-x86_64', 'bin']
+    zip_name = 'cmake-3.26.4-linux-x86_64.tar.gz'
+    dir_name = ['cmake-3.26.4-linux-x86_64', 'bin']
 
   cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, *dir_name)
   if not os.path.exists(cmake_dir):
@@ -425,7 +424,7 @@ def StartGomaAndGetGomaCCPath():
 
 
 def DownloadPinnedClang():
-  PINNED_CLANG_VERSION = 'llvmorg-16-init-3375-gfed71b04-1'
+  PINNED_CLANG_VERSION = 'llvmorg-17-init-12166-g7586aeab-3'
   DownloadAndUnpackPackage('clang', PINNED_CLANG_DIR, GetDefaultHostOs(),
                            PINNED_CLANG_VERSION)
 

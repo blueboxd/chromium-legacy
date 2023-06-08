@@ -9,9 +9,11 @@
 
 #import "base/check.h"
 #import "base/containers/small_map.h"
+#import "base/debug/dump_without_crashing.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
+#import "components/crash/core/common/crash_key.h"
 #import "components/feature_engagement/public/tracker.h"
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
@@ -32,7 +34,6 @@
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_display_handler.h"
 #import "ios/chrome/browser/ui/default_promo/promo_handler/default_browser_promo_display_handler.h"
-#import "ios/chrome/browser/ui/post_restore_signin/features.h"
 #import "ios/chrome/browser/ui/post_restore_signin/post_restore_signin_provider.h"
 #import "ios/chrome/browser/ui/promos_manager/bannered_promo_view_provider.h"
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_mediator.h"
@@ -206,6 +207,16 @@
 - (void)displayPromo:(promos_manager::Promo)promo {
   if (tests_hook::DisablePromoManagerFullScreenPromos()) {
     return;
+  }
+
+  // Trying to display a promo while the previous dismissal was not communicated
+  // back to the promos manager.
+  // TODO(crbug.com/1452233): Remove once all promos dismiss themselves.
+  if (current_promo.has_value()) {
+    static crash_reporter::CrashKeyString<40> key("current-promo");
+    crash_reporter::ScopedCrashKeyString crashKey(
+        &key, ShortNameForPromo(current_promo.value()));
+    base::debug::DumpWithoutCrashing();
   }
 
   current_promo = promo;
@@ -530,18 +541,9 @@
   // Add StandardPromoViewProvider promos here. For example:
   // TODO(crbug.com/1360880): Create first StandardPromoViewProvider promo.
 
-  // BanneredPromoViewProvider promo(s) below:
-  if (post_restore_signin::features::CurrentPostRestoreSignInType() ==
-      post_restore_signin::features::PostRestoreSignInType::kFullscreen)
-    _banneredViewProviderPromos
-        [promos_manager::Promo::PostRestoreSignInFullscreen] =
-            [[PostRestoreSignInProvider alloc] init];
-
   // StandardPromoAlertProvider promo(s) below:
-  if (post_restore_signin::features::CurrentPostRestoreSignInType() ==
-      post_restore_signin::features::PostRestoreSignInType::kAlert)
-    _alertProviderPromos[promos_manager::Promo::PostRestoreSignInAlert] =
-        [[PostRestoreSignInProvider alloc] init];
+  _alertProviderPromos[promos_manager::Promo::PostRestoreSignInAlert] =
+      [[PostRestoreSignInProvider alloc] init];
 
   // WhatsNewPromoHandler promo below:
   if (IsWhatsNewEnabled()) {

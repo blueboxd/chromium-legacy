@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/sync/base/progress_marker_map.h"
@@ -135,6 +136,14 @@ void TestSyncService::SetIsUsingExplicitPassphrase(bool enabled) {
   user_settings_.SetIsUsingExplicitPassphrase(enabled);
 }
 
+void TestSyncService::SetDownloadStatusFor(
+    const ModelTypeSet& types,
+    ModelTypeDownloadStatus download_status) {
+  for (const auto type : types) {
+    download_statuses_[type] = download_status;
+  }
+}
+
 void TestSyncService::FireStateChanged() {
   for (SyncServiceObserver& observer : observers_)
     observer.OnStateChanged(this);
@@ -144,6 +153,12 @@ void TestSyncService::FireSyncCycleCompleted() {
   for (SyncServiceObserver& observer : observers_)
     observer.OnSyncCycleCompleted(this);
 }
+
+#if BUILDFLAG(IS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> TestSyncService::GetJavaObject() {
+  return base::android::ScopedJavaLocalRef<jobject>();
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void TestSyncService::SetSyncFeatureRequested() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -309,6 +324,9 @@ void TestSyncService::GetAllNodesForDebugging(
 
 SyncService::ModelTypeDownloadStatus TestSyncService::GetDownloadStatusFor(
     ModelType type) const {
+  if (base::Contains(download_statuses_, type)) {
+    return download_statuses_.at(type);
+  }
   return ModelTypeDownloadStatus::kUpToDate;
 }
 

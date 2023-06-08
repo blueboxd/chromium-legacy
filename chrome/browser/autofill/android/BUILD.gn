@@ -14,16 +14,18 @@ java_cpp_enum("autofill_generated_enums") {
 
 android_library("java") {
   sources = [
+    "java/src/org/chromium/chrome/browser/autofill/AutofillAddress.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillEditorBase.java",
+    "java/src/org/chromium/chrome/browser/autofill/AutofillProfileBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/AutofillUiUtils.java",
     "java/src/org/chromium/chrome/browser/autofill/LegalMessageLine.java",
     "java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java",
+    "java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/DropdownFieldAdapter.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorBase.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorDialog.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorDialogToolbar.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorDropdownField.java",
-    "java/src/org/chromium/chrome/browser/autofill/editors/EditorFieldModel.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorFieldView.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorObserverForTest.java",
     "java/src/org/chromium/chrome/browser/autofill/editors/EditorProperties.java",
@@ -58,6 +60,7 @@ android_library("java") {
     "//components/browser_ui/widget/android:java",
     "//components/browser_ui/widget/android:java_resources",
     "//components/image_fetcher:java",
+    "//components/payments/mojom:mojom_java",
     "//components/prefs/android:java",
     "//components/user_prefs/android:java",
     "//content/public/android:content_full_java",
@@ -75,9 +78,10 @@ android_library("java") {
     "//url:gurl_java",
   ]
 
-  srcjar_deps = [ ":autofill_generated_enums" ]
-
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  srcjar_deps = [
+    ":autofill_generated_enums",
+    ":jni_headers",
+  ]
 }
 
 android_library("bottom_sheet_utils_java") {
@@ -93,7 +97,9 @@ android_library("bottom_sheet_utils_java") {
 
 generate_jni("jni_headers") {
   sources = [
+    "java/src/org/chromium/chrome/browser/autofill/AutofillProfileBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java",
+    "java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
   ]
 }
 

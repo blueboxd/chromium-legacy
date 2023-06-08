@@ -473,13 +473,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK, 129},
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB, 130},
        {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 131},
+       {IDC_CONTENT_CONTEXT_COPYVIDEOFRAME, 132},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 132}});
+       {0, 133}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -1189,12 +1190,14 @@ void RenderViewContextMenu::InitMenu() {
   }
 
   // Accessibility label items are appended to all menus (with the exception of
-  // within the dev tools) when a screen reader is enabled. It can be difficult
-  // to open a specific context menu with a screen reader, so this is a UX
-  // approved solution.
+  // within the dev tools and PDF Viewer) when a screen reader is enabled. It
+  // can be difficult to open a specific context menu with a screen reader, so
+  // this is a UX approved solution.
   bool added_accessibility_labels_items = false;
-  if (!IsDevToolsURL(params_.page_url))
+  if (!IsDevToolsURL(params_.page_url) &&
+      !IsFrameInPdfViewer(GetRenderFrameHost())) {
     added_accessibility_labels_items = AppendAccessibilityLabelsItems();
+  }
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_DEVELOPER)) {
@@ -1862,6 +1865,8 @@ void RenderViewContextMenu::AppendVideoItems() {
                                   IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME,
+                                  IDS_CONTENT_CONTEXT_COPYVIDEOFRAME);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
   menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_PICTUREINPICTURE,
@@ -2536,6 +2541,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
              (params_.media_flags & ContextMenuData::kMediaCanRotate) != 0;
     }
 
+    case IDC_CONTENT_CONTEXT_COPYVIDEOFRAME:
+      return (params_.media_flags & ContextMenuData::kMediaEncrypted) == 0 &&
+             (params_.media_flags &
+              ContextMenuData::kMediaHasAvailableVideoFrame) != 0;
+
     case IDC_CONTENT_CONTEXT_COPYAVLOCATION:
       return params_.src_url.is_valid() && !params_.src_url.SchemeIsBlob();
 
@@ -2864,6 +2874,10 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_COPYIMAGE:
       ExecCopyImageAt();
+      break;
+
+    case IDC_CONTENT_CONTEXT_COPYVIDEOFRAME:
+      ExecCopyVideoFrame();
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
@@ -3985,6 +3999,15 @@ void RenderViewContextMenu::ExecControls() {
                       blink::mojom::MediaPlayerAction(
                           blink::mojom::MediaPlayerActionType::kControls,
                           !IsCommandIdChecked(IDC_CONTENT_CONTEXT_CONTROLS)));
+}
+
+void RenderViewContextMenu::ExecCopyVideoFrame() {
+  base::RecordAction(UserMetricsAction("MediaContextMenu_CopyVideoFrame"));
+  MediaPlayerActionAt(
+      gfx::Point(params_.x, params_.y),
+      blink::mojom::MediaPlayerAction(
+          blink::mojom::MediaPlayerActionType::kCopyVideoFrame,
+          !IsCommandIdChecked(IDC_CONTENT_CONTEXT_COPYVIDEOFRAME)));
 }
 
 void RenderViewContextMenu::ExecLiveCaption() {

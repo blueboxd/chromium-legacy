@@ -961,7 +961,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       CloseOtherTabs(browser_);
       break;
     case IDC_SHOW_MANAGEMENT_PAGE: {
-      ShowSingletonTab(browser_, GetManagedUiMenuLinkUrl(profile()));
+      ShowSingletonTab(browser_, GetManagedUiUrl(profile()));
       break;
     }
     case IDC_MUTE_TARGET_SITE:
@@ -1338,12 +1338,17 @@ void BrowserCommandController::InitCommandState() {
   }
 #endif
 
+  if (browser_->is_type_normal() &&
+      (features::IsChromeRefresh2023() ||
+       base::FeatureList::IsEnabled(features::kPowerBookmarksSidePanel))) {
+    command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_SIDE_PANEL, true);
+  }
+
   if (features::IsChromeRefresh2023()) {
     if (browser_->is_type_normal()) {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       command_updater_.UpdateCommandEnabled(IDC_SHOW_SEARCH_COMPANION, true);
 #endif
-      command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_SIDE_PANEL, true);
       // Reading list commands.
       command_updater_.UpdateCommandEnabled(IDC_READING_LIST_MENU, true);
       command_updater_.UpdateCommandEnabled(IDC_READING_LIST_MENU_ADD_TAB,

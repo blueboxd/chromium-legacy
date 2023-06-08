@@ -128,6 +128,16 @@ try_.builder(
 # TODO(crbug.com/1442587): Remove this builder after burning down failures
 # found when we now post-process stdout.
 try_.builder(
+    name = "linux-exp-msan-fyi-rel",
+    mirrors = [
+        "ci/linux-exp-msan-fyi-rel",
+    ],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+# TODO(crbug.com/1442587): Remove this builder after burning down failures
+# found when we now post-process stdout.
+try_.builder(
     name = "linux-exp-tsan-fyi-rel",
     mirrors = [
         "ci/linux-exp-tsan-fyi-rel",
@@ -335,7 +345,9 @@ try_.builder(
     mirrors = [
         "ci/linux-wpt-content-shell-fyi-rel",
     ],
+    coverage_test_types = ["unit", "overall"],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+    use_clang_coverage = True,
 )
 
 try_.builder(
@@ -635,22 +647,6 @@ try_.builder(
     os = os.LINUX_BIONIC,
     execution_timeout = 5 * time.hour,
     notifies = ["chrome-rust-toolchain"],
-)
-
-try_.builder(
-    name = "linux_vr",
-    branch_selector = branches.selector.LINUX_BRANCHES,
-    mirrors = [
-        "ci/VR Linux",
-    ],
-    main_list_view = "try",
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-    tryjob = try_.job(
-        location_filters = [
-            "chrome/browser/vr/.+",
-            "content/browser/xr/.+",
-        ],
-    ),
 )
 
 try_.builder(

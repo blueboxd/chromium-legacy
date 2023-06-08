@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_NTP_new_tab_page_field_trial_CONSTANTS_H_
-#define IOS_CHROME_BROWSER_UI_NTP_new_tab_page_field_trial_CONSTANTS_H_
+#ifndef IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_FIELD_TRIAL_CONSTANTS_H_
+#define IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_FIELD_TRIAL_CONSTANTS_H_
 
 #import "components/variations/variations_associated_data.h"
 
@@ -25,9 +25,9 @@ const char kTileAblationControlGroup[] = "TileAblation_Control";
 const char kNewTabPageFieldTrialDefaultGroup[] = "Default";
 
 // Group weights for the tile ablation experiments.
-const int kTileAblationStableWeight = 5;
-const int kTileAblationPrestableWeight = 16;
+const int kTileAblationStableWeight = 0;
+const int kTileAblationPrestableWeight = 0;
 
 }  // namespace field_trial_constants
 
-#endif  // IOS_CHROME_BROWSER_UI_NTP_new_tab_page_field_trial_CONSTANTS_H_
+#endif  // IOS_CHROME_BROWSER_UI_NTP_NEW_TAB_PAGE_FIELD_TRIAL_CONSTANTS_H_

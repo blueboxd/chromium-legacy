@@ -127,7 +127,7 @@ bool SwapGoogleUpdate(UpdaterScope scope,
 
   const absl::optional<base::FilePath> target_path =
       GetGoogleUpdateExePath(scope);
-  if (!target_path) {
+  if (!target_path || !base::CreateDirectory(target_path->DirName())) {
     return false;
   }
   list->AddCopyTreeWorkItem(updater_path, *target_path, temp_path,
@@ -350,7 +350,6 @@ void ComServerApp::ActiveDutyInternal(
 }
 
 void ComServerApp::Start(base::OnceCallback<HRESULT()> register_callback) {
-  main_task_runner_ = base::SequencedTaskRunner::GetCurrentDefault();
   CreateWRLModule();
   HRESULT hr = std::move(register_callback).Run();
   if (FAILED(hr)) {

@@ -398,6 +398,8 @@ class SearchPreloadUnifiedBrowserTest : public PlatformBrowserTest,
 // corresponding prefetch request succeeds.
 IN_PROC_BROWSER_TEST_F(SearchPreloadUnifiedBrowserTest,
                        PrerenderHintReceivedBeforeSucceed) {
+
+  SearchPrefetchServiceFactory::GetForProfile(chrome_test_utils::GetProfile(this));
   base::HistogramTester histogram_tester;
   const GURL kInitialUrl = embedded_test_server()->GetURL("/empty.html");
   ASSERT_TRUE(GetActiveWebContents());
@@ -2027,6 +2029,11 @@ IN_PROC_BROWSER_TEST_F(NoCancelSearchPreloadUnifiedFallbackBrowserTest,
     ChangeAutocompleteResult(search_query, prerender_query,
                              PrerenderHint::kEnabled, PrefetchHint::kEnabled);
     registry_observer.WaitForTrigger(expected_prerender_url);
+
+    // This ensures that the request handler from
+    // SearchPrefetchURLLoaderInterceptor fully process the request.
+    base::RunLoop run_loop;
+    run_loop.RunUntilIdle();
   }
   content::test::PrerenderHostObserver prerender_observer(
       *GetActiveWebContents(), expected_prerender_url);

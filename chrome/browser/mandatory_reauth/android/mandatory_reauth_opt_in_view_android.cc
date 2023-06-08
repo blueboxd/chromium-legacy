@@ -7,33 +7,56 @@
 #include <jni.h>
 
 #include "chrome/browser/mandatory_reauth/android/jni_headers/MandatoryReauthOptInBottomSheetViewBridge_jni.h"
+#include "ui/android/view_android.h"
+#include "ui/android/window_android.h"
 
 namespace autofill {
 
 std::unique_ptr<MandatoryReauthOptInViewAndroid>
-MandatoryReauthOptInViewAndroid::CreateAndShow() {
+MandatoryReauthOptInViewAndroid::CreateAndShow(
+    content::WebContents* web_contents,
+    MandatoryReauthBubbleController* controller) {
   std::unique_ptr<MandatoryReauthOptInViewAndroid> view =
       std::make_unique<MandatoryReauthOptInViewAndroid>();
-  view->Show();
-  return view;
+  if (view->Show(web_contents, controller)) {
+    return view;
+  }
+
+  return nullptr;
 }
 
 MandatoryReauthOptInViewAndroid::MandatoryReauthOptInViewAndroid() = default;
 
 MandatoryReauthOptInViewAndroid::~MandatoryReauthOptInViewAndroid() = default;
 
-void MandatoryReauthOptInViewAndroid::Show() {
+bool MandatoryReauthOptInViewAndroid::Show(
+    content::WebContents* web_contents,
+    MandatoryReauthBubbleController* controller) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  java_bridge_.Reset(
-      Java_MandatoryReauthOptInBottomSheetViewBridge_create(env));
-  CHECK(java_bridge_);
-  Java_MandatoryReauthOptInBottomSheetViewBridge_show(env, java_bridge_);
+  ui::ViewAndroid* view_android = web_contents->GetNativeView();
+  if (!view_android) {
+    return false;
+  }
+  ui::WindowAndroid* window_android = view_android->GetWindowAndroid();
+  if (!window_android) {
+    return false;
+  }
+
+  java_view_bridge_.Reset(Java_MandatoryReauthOptInBottomSheetViewBridge_create(
+      env, window_android->GetJavaObject(),
+      controller->GetJavaControllerBridge()));
+  if (!java_view_bridge_) {
+    return false;
+  }
+
+  return Java_MandatoryReauthOptInBottomSheetViewBridge_show(env,
+                                                             java_view_bridge_);
 }
 
 void MandatoryReauthOptInViewAndroid::Hide() {
-  if (java_bridge_) {
+  if (java_view_bridge_) {
     Java_MandatoryReauthOptInBottomSheetViewBridge_close(
-        base::android::AttachCurrentThread(), java_bridge_);
+        base::android::AttachCurrentThread(), java_view_bridge_);
   }
 }
 

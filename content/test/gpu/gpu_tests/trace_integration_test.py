@@ -285,6 +285,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       serial_tests |= {
           # Flaky when run in parallel on Mac.
           'WebGPUTraceTest_WebGPUCanvasOneCopyCapture',
+          'WebGPUTraceTest_WebGPUCanvasDisableOneCopyCapture_Accelerated',
       }
     return serial_tests
 
@@ -372,6 +373,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     #   reloaded in a restarted browser to expect some cache condition.
     webgpu_cache_test_browser_args = cba.ENABLE_WEBGPU_FOR_TESTING + [
         cba.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES,
+        '--enable-features=WebGPUBlobCache',
     ]
     # For the tests to run properly on Linux, we need additional args.
     if sys.platform.startswith('linux'):

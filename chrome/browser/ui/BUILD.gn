@@ -532,6 +532,7 @@ static_library("ui") {
     "//chrome/browser/resources/usb_internals:resources",
     "//chrome/browser/safe_browsing",
     "//chrome/browser/share",
+    "//chrome/browser/storage_access_api",
     "//chrome/browser/ui/side_panel:side_panel_enums",
     "//chrome/browser/ui/webui:configs",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
@@ -1620,6 +1621,8 @@ static_library("ui") {
       "webui/commerce/shopping_list_context_menu_controller.h",
       "webui/commerce/shopping_ui_handler_delegate.cc",
       "webui/commerce/shopping_ui_handler_delegate.h",
+      "webui/cr_components/customize_color_scheme_mode/customize_color_scheme_mode_handler.cc",
+      "webui/cr_components/customize_color_scheme_mode/customize_color_scheme_mode_handler.h",
       "webui/cr_components/history_clusters/history_clusters_util.cc",
       "webui/cr_components/history_clusters/history_clusters_util.h",
       "webui/cr_components/most_visited/most_visited_handler.cc",
@@ -3299,7 +3302,7 @@ static_library("ui") {
       "webui/settings/ash/parental_controls_handler.cc",
       "webui/settings/ash/parental_controls_handler.h",
 
-      # TODO(crbug.com/1393069): Move to under `enable_screen_ai_service` when
+      # TODO(crbug.com/1442928): Move to under `enable_screen_ai_service` when
       # PDF OCR becomes available on windows, macOS, and linux.
       "webui/settings/ash/pdf_ocr_handler.cc",
       "webui/settings/ash/pdf_ocr_handler.h",
@@ -4130,9 +4133,8 @@ static_library("ui") {
       "//chrome/browser/apps/app_shim",
     ]
 
+    public_deps += [ ":ui_arc" ]
     deps += [
-      ":ui_arc",
-      "//base:base_arc",
       "//chrome/browser/apps/app_shim",
       "//chrome/browser/mac:keystone_glue",
       "//chrome/browser/updater:browser_updater_client",
@@ -4262,7 +4264,7 @@ static_library("ui") {
         "webui/settings/incompatible_applications_handler_win.cc",
         "webui/settings/incompatible_applications_handler_win.h",
       ]
-      deps += [ "//google_update" ]
+      deps += [ "//chrome/updater/app/server/win:updater_legacy_idl_idl" ]
     } else {
       sources += [
         "webui/help/version_updater_basic.cc",
@@ -4757,6 +4759,8 @@ static_library("ui") {
       "views/download/bubble/download_bubble_contents_view.h",
       "views/download/bubble/download_bubble_partial_view.cc",
       "views/download/bubble/download_bubble_partial_view.h",
+      "views/download/bubble/download_bubble_primary_view.cc",
+      "views/download/bubble/download_bubble_primary_view.h",
       "views/download/bubble/download_bubble_row_list_view.cc",
       "views/download/bubble/download_bubble_row_list_view.h",
       "views/download/bubble/download_bubble_row_view.cc",

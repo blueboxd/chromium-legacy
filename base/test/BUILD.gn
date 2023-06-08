@@ -222,7 +222,7 @@ static_library("test_support") {
   }
 
   if (is_apple) {
-    public_deps += [ "//base:base_arc" ]
+    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_mac) {

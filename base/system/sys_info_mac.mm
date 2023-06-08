@@ -27,6 +27,10 @@
 #include "base/system/sys_info_internal.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace base {
 
 namespace {
@@ -93,7 +97,7 @@ void SysInfo::OperatingSystemVersionNumbers(int32_t* major_version,
                                             int32_t* bugfix_version) {
   if (@available(macOS 10.10, *)) {
     NSOperatingSystemVersion version =
-        [[NSProcessInfo processInfo] operatingSystemVersion];
+        NSProcessInfo.processInfo.operatingSystemVersion;
     *major_version = saturated_cast<int32_t>(version.majorVersion);
     *minor_version = saturated_cast<int32_t>(version.minorVersion);
     *bugfix_version = saturated_cast<int32_t>(version.patchVersion);

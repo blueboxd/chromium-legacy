@@ -6,9 +6,7 @@ package org.chromium.net;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import static org.chromium.net.CronetTestRule.getContext;
@@ -66,12 +64,12 @@ public class BidirectionalStreamTest {
                                 builder, QuicTestServer.createMockCertVerifier()));
 
         mCronetEngine = mTestRule.getTestFramework().startEngine();
-        assertTrue(Http2TestServer.startHttp2TestServer(getContext()));
+        assertThat(Http2TestServer.startHttp2TestServer(getContext())).isTrue();
     }
 
     @After
     public void tearDown() throws Exception {
-        assertTrue(Http2TestServer.shutdownHttp2TestServer());
+        assertThat(Http2TestServer.shutdownHttp2TestServer()).isTrue();
     }
 
     private static void checkResponseInfo(UrlResponseInfo responseInfo, String expectedUrl,
@@ -80,7 +78,7 @@ public class BidirectionalStreamTest {
         assertThat(responseInfo.getUrlChain()).containsExactly(expectedUrl);
         assertThat(responseInfo.getHttpStatusCode()).isEqualTo(expectedHttpStatusCode);
         assertThat(responseInfo.getHttpStatusText()).isEqualTo(expectedHttpStatusText);
-        assertFalse(responseInfo.wasCached());
+        assertThat(responseInfo.wasCached()).isFalse();
         assertThat(responseInfo.toString()).isNotEmpty();
     }
 
@@ -118,7 +116,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         requestFinishedListener.blockUntilDone();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         // Default method is 'GET'.
@@ -211,7 +209,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mError)
                 .hasMessageThat()
                 .contains("Exception in BidirectionalStream: net::ERR_DISALLOWED_URL_SCHEME");
@@ -241,7 +239,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString).isEqualTo("HEAD");
         UrlResponseInfo urlResponseInfo =
@@ -273,7 +271,7 @@ public class BidirectionalStreamTest {
         Date startTime = new Date();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         requestFinishedListener.blockUntilDone();
         Date endTime = new Date();
         RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
@@ -342,7 +340,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         requestFinishedListener.blockUntilDone();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         // Default method is 'GET'.
@@ -373,7 +371,7 @@ public class BidirectionalStreamTest {
 
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
 
         // Flush after stream is completed is no-op. It shouldn't call into the destroyed adapter.
         stream.flush();
@@ -419,7 +417,7 @@ public class BidirectionalStreamTest {
                     ByteBuffer pendingBuffer = pendingData.get(0);
                     byte[] content = new byte[pendingBuffer.remaining()];
                     pendingBuffer.get(content);
-                    assertTrue(Arrays.equals("6".getBytes(), content));
+                    assertThat(content).isEqualTo("6".getBytes());
 
                     // "4" and "5" have been flushed.
                     assertThat(((CronetBidirectionalStream) stream).getFlushDataForTesting())
@@ -432,7 +430,7 @@ public class BidirectionalStreamTest {
                     ByteBuffer pendingBuffer = pendingData.get(0);
                     byte[] content = new byte[pendingBuffer.remaining()];
                     pendingBuffer.get(content);
-                    assertTrue(Arrays.equals("6".getBytes(), content));
+                    assertThat(content).isEqualTo("6".getBytes());
 
                     stream.flush();
 
@@ -495,6 +493,7 @@ public class BidirectionalStreamTest {
                 stream.write(getDummyData(), false);
                 stream.flush();
             }
+
             @Override
             public void onReadCompleted(BidirectionalStream stream, UrlResponseInfo info,
                     ByteBuffer byteBuffer, boolean endOfStream) {
@@ -502,6 +501,7 @@ public class BidirectionalStreamTest {
                 // Cancel now when the write side is busy.
                 stream.cancel();
             }
+
             @Override
             public void onWriteCompleted(BidirectionalStream stream, UrlResponseInfo info,
                     ByteBuffer buffer, boolean endOfStream) {
@@ -511,6 +511,7 @@ public class BidirectionalStreamTest {
                 stream.write(getDummyData(), false);
                 stream.flush();
             }
+
             // Returns a piece of dummy data to send to the server.
             private ByteBuffer getDummyData() {
                 byte[] data = new byte[100];
@@ -529,7 +530,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(callback.mOnCanceledCalled);
+        assertThat(callback.mOnCanceledCalled).isTrue();
     }
 
     @Test
@@ -573,7 +574,7 @@ public class BidirectionalStreamTest {
 
             stream.start();
             callback.blockForDone();
-            assertTrue(stream.isDone());
+            assertThat(stream.isDone()).isTrue();
 
             // Flush after stream is completed is no-op. It shouldn't call into the destroyed
             // adapter.
@@ -607,7 +608,7 @@ public class BidirectionalStreamTest {
                             .build();
             stream.start();
             callback.blockForDone();
-            assertTrue(stream.isDone());
+            assertThat(stream.isDone()).isTrue();
 
             assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
             assertThat(callback.mResponseAsString).isEqualTo("Test String");
@@ -644,7 +645,7 @@ public class BidirectionalStreamTest {
                             .build();
             stream.start();
             callback.blockForDone();
-            assertTrue(stream.isDone());
+            assertThat(stream.isDone()).isTrue();
             assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
             assertThat(callback.mResponseAsString)
                     .isEqualTo("Test String1234567890woot!Test String1234567890woot!");
@@ -669,6 +670,7 @@ public class BidirectionalStreamTest {
                 super.onStreamReady(stream);
                 startNextRead(stream);
             }
+
             @Override
             public void onResponseHeadersReceived(
                     BidirectionalStream stream, UrlResponseInfo info) {
@@ -686,7 +688,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString).isEqualTo("Test String1234567890woot!");
         assertThat(callback.mResponseInfo.getAllHeaders())
@@ -727,7 +729,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString)
                 .isEqualTo("Test String1234567890woot!Test String1234567890woot!");
@@ -947,7 +949,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString).isEqualTo(stringData.toString());
         assertThat(callback.mResponseInfo.getAllHeaders())
@@ -969,7 +971,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString).isEmpty();
     }
@@ -998,7 +1000,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString).isEqualTo("12");
     }
@@ -1032,7 +1034,7 @@ public class BidirectionalStreamTest {
                         .build();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString).isEqualTo("12");
     }
@@ -1065,7 +1067,7 @@ public class BidirectionalStreamTest {
         callback.setAutoAdvance(true);
         callback.startNextRead(stream);
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString).isEqualTo("12");
     }
@@ -1103,13 +1105,13 @@ public class BidirectionalStreamTest {
         callback.startNextRead(stream);
         callback.waitForNextReadStep(); // onReadCompleted
         // Verify that some part of proper response is read.
-        assertTrue(callback.mResponseAsString.startsWith(testData[0]));
-        assertTrue(stringData.toString().startsWith(callback.mResponseAsString));
+        assertThat(callback.mResponseAsString).startsWith(testData[0]);
+        assertThat(callback.mResponseAsString).startsWith(stringData.toString());
         // Read the rest of the response.
         callback.setAutoAdvance(true);
         callback.startNextRead(stream);
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString).isEqualTo(stringData.toString());
     }
@@ -1145,13 +1147,13 @@ public class BidirectionalStreamTest {
             callback.startNextRead(stream, readBuffer);
             callback.waitForNextReadStep();
             assertThat(readBuffer.position()).isEqualTo(expected.length());
-            assertFalse(stream.isDone());
+            assertThat(stream.isDone()).isFalse();
         }
 
         callback.setAutoAdvance(true);
         callback.startNextRead(stream);
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo.getHttpStatusCode()).isEqualTo(200);
         assertThat(callback.mResponseAsString).isEqualTo(stringData.toString());
     }
@@ -1175,7 +1177,7 @@ public class BidirectionalStreamTest {
         callback.waitForNextReadStep();
 
         assertThat(callback.mError).isNull();
-        assertFalse(callback.isDone());
+        assertThat(callback.isDone()).isFalse();
         assertThat(callback.mResponseStep)
                 .isEqualTo(TestBidirectionalStreamCallback.ResponseStep.ON_RESPONSE_STARTED);
 
@@ -1187,7 +1189,7 @@ public class BidirectionalStreamTest {
         // possible to need one read per character, though in practice,
         // shouldn't happen.
         while (callback.mResponseAsString.length() < 2) {
-            assertFalse(callback.isDone());
+            assertThat(callback.isDone()).isFalse();
             callback.startNextRead(stream, readBuffer);
             callback.waitForNextReadStep();
         }
@@ -1273,7 +1275,7 @@ public class BidirectionalStreamTest {
         callback.waitForNextReadStep();
 
         assertThat(callback.mError).isNull();
-        assertFalse(callback.isDone());
+        assertThat(callback.isDone()).isFalse();
         assertThat(callback.mResponseStep)
                 .isEqualTo(TestBidirectionalStreamCallback.ResponseStep.ON_RESPONSE_STARTED);
 
@@ -1323,7 +1325,7 @@ public class BidirectionalStreamTest {
         Date startTime = new Date();
         stream.start();
         callback.blockForDone();
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         requestFinishedListener.blockUntilDone();
         Date endTime = new Date();
         RequestFinishedInfo finishedInfo = requestFinishedListener.getRequestInfo();
@@ -1403,11 +1405,11 @@ public class BidirectionalStreamTest {
         stream.start();
         callback.blockForDone();
         assertThat(ResponseStep.ON_SUCCEEDED).isEqualTo(callback.mResponseStep);
-        assertTrue(stream.isDone());
+        assertThat(stream.isDone()).isTrue();
         assertThat(callback.mResponseInfo).isNotNull();
         // Check that error thrown from 'onSucceeded' callback is not reported.
         assertThat(callback.mError).isNull();
-        assertFalse(callback.mOnErrorCalled);
+        assertThat(callback.mOnErrorCalled).isFalse();
     }
 
     @Test
@@ -1423,8 +1425,8 @@ public class BidirectionalStreamTest {
                 (CronetBidirectionalStream) builder.setHttpMethod("GET").build();
         stream.start();
         callback.waitForNextReadStep();
-        assertFalse(callback.isDone());
-        assertFalse(stream.isDone());
+        assertThat(callback.isDone()).isFalse();
+        assertThat(stream.isDone()).isFalse();
 
         final ConditionVariable streamDestroyed = new ConditionVariable(false);
         stream.setOnDestroyedCallbackForTesting(new Runnable() {
@@ -1442,8 +1444,8 @@ public class BidirectionalStreamTest {
         // but stream will be destroyed from network thread.
         streamDestroyed.block();
 
-        assertFalse(callback.isDone());
-        assertTrue(stream.isDone());
+        assertThat(callback.isDone()).isFalse();
+        assertThat(stream.isDone()).isTrue();
     }
 
     /**
@@ -1537,7 +1539,7 @@ public class BidirectionalStreamTest {
         stream.start();
         callback.setFailure(FailureType.THROW_SYNC, ResponseStep.ON_READ_COMPLETED);
         callback.blockForDone();
-        assertTrue(callback.mOnErrorCalled);
+        assertThat(callback.mOnErrorCalled).isTrue();
         assertThat(mCronetEngine).isNull();
     }
 
@@ -1566,7 +1568,7 @@ public class BidirectionalStreamTest {
         assertThat(callback.mResponseStep).isEqualTo(ResponseStep.ON_RESPONSE_STARTED);
         stream.cancel();
         callback.blockForDone();
-        assertTrue(callback.mOnCanceledCalled);
+        assertThat(callback.mOnCanceledCalled).isTrue();
         assertThat(mCronetEngine).isNull();
     }
 

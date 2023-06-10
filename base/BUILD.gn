@@ -2126,7 +2126,6 @@ component("base") {
       "profiler/module_cache_mac.cc",
       "synchronization/waitable_event_mac.cc",
       "threading/atomic.c",
-      "time/time_mac.mm",
     ]
     frameworks += [ "Security.framework" ]
     public_deps += [ ":base_arc" ]

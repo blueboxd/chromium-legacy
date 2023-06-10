@@ -1462,7 +1462,6 @@
     "prefix": "shared-storage-fenced-frame-mparch",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "wpt_internal/shared_storage",
       "external/wpt/shared-storage",
       "http/tests/inspector-protocol/storage/shared-storage.js",
       "http/tests/inspector-protocol/storage/shared-storage-delete.js",
@@ -1470,7 +1469,6 @@
       "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
     ],
     "exclusive_tests": [
-      "wpt_internal/shared_storage",
       "external/wpt/shared-storage"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode"],
@@ -1480,10 +1478,10 @@
     "prefix": "shared-storage-fenced-frame-mparch-selecturl-limit",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "wpt_internal/shared_storage_selecturl_limit/"
+      "external/wpt/shared-storage-selecturl-limit/"
     ],
     "exclusive_tests": [
-      "wpt_internal/shared_storage_selecturl_limit/"
+      "external/wpt/shared-storage-selecturl-limit/"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,FencedFramesAPIChanges,FencedFramesDefaultMode,PrivacySandboxAdsAPIsOverride,SharedStorageSelectURLLimit"],
     "expires": "Jan 1, 2024"
@@ -1504,17 +1502,21 @@
       "wpt_internal/fenced_frame",
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/html/anonymous-iframe",
-      "external/wpt/fenced-frame"
+      "external/wpt/fenced-frame",
+      "external/wpt/fetch/local-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
+      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js"
     ],
     "exclusive_tests": [
       "http/tests/fenced_frame",
       "wpt_internal/fenced_frame",
       "external/wpt/fenced-frame",
-      "http/tests/inspector-protocol/fenced-frame"
+      "http/tests/inspector-protocol/fenced-frame",
+      "external/wpt/fetch/local-network-access/fenced-frame-subresource-fetch.tentative.https.window.js",
+      "external/wpt/fetch/local-network-access/fenced-frame.tentative.https.window.js"
     ],
     "args": ["--enable-features=FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,SharedStorageAPI,NoncedPartitionedCookies,Fledge,InterestGroupStorage,AdInterestGroupAPI,AllowURNsInIframes,BiddingAndScoringDebugReportingAPI,ComputePressure",
              "--enable-blink-features=FencedFramesAPIChanges,FencedFramesDefaultMode"],
-    "expires": "Jul 1, 2023"
+    "expires": "Dec 31, 2023"
   },
   {
     "prefix": "cors-non-wildcard-request-headers",

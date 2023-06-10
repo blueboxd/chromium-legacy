@@ -1050,7 +1050,7 @@ public class AwContents implements SmartClipProvider {
                         }
                     }, containerView);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                    && AwFeatureMap.getInstance().isEnabled(AwFeatures.WEBVIEW_DISPLAY_CUTOUT)) {
+                    && AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_DISPLAY_CUTOUT)) {
                 mDisplayCutoutController =
                         new AwDisplayCutoutController(new AwDisplayCutoutController.Delegate() {
                             @Override
@@ -1629,8 +1629,8 @@ public class AwContents implements SmartClipProvider {
 
     private JavascriptInjector getJavascriptInjector() {
         if (mJavascriptInjector == null) {
-            mJavascriptInjector = JavascriptInjector.fromWebContents(mWebContents,
-                    AwFeatureMap.getInstance().isEnabled(AwFeatures.WEBVIEW_JAVA_JS_BRIDGE_MOJO));
+            mJavascriptInjector = JavascriptInjector.fromWebContents(
+                    mWebContents, AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_JAVA_JS_BRIDGE_MOJO));
         }
         return mJavascriptInjector;
     }
@@ -1845,6 +1845,9 @@ public class AwContents implements SmartClipProvider {
     }
 
     public void setOnscreenContentProvider(OnscreenContentProvider onscreenContentProvider) {
+        if (mOnscreenContentProvider != null) {
+            mOnscreenContentProvider.destroy();
+        }
         mOnscreenContentProvider = onscreenContentProvider;
     }
 
@@ -1981,7 +1984,8 @@ public class AwContents implements SmartClipProvider {
         if (url == null) {
             return;
         }
-        // TODO: We may actually want to do some sanity checks here (like filter about://chrome).
+        // TODO: We may actually want to do some preliminary checks here (like filter
+        // about://chrome).
 
         // For backwards compatibility, apps targeting less than K will have JS URLs evaluated
         // directly and any result of the evaluation will not replace the current page content.
@@ -3308,8 +3312,7 @@ public class AwContents implements SmartClipProvider {
 
     private void afterWindowHiddenTask() {
         try (TraceEvent e = TraceEvent.scoped("afterWindowHiddenTask")) {
-            if (!AwFeatureMap.getInstance().isEnabled(
-                        AwFeatures.WEBVIEW_CLEAR_FUNCTOR_IN_BACKGROUND)) {
+            if (!AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_CLEAR_FUNCTOR_IN_BACKGROUND)) {
                 return;
             }
 
@@ -3659,10 +3662,13 @@ public class AwContents implements SmartClipProvider {
 
     @CalledByNative
     private void onReceivedHttpAuthRequest(AwHttpAuthHandler handler, String host, String realm) {
-        mContentsClient.onReceivedHttpAuthRequest(handler, host, realm);
+        try (TraceEvent event =
+                        TraceEvent.scoped("WebView.APICallback.ON_RECEIVED_HTTP_AUTH_REQUEST")) {
+            mContentsClient.onReceivedHttpAuthRequest(handler, host, realm);
 
-        AwHistogramRecorder.recordCallbackInvocation(
-                AwHistogramRecorder.WebViewCallbackType.ON_RECEIVED_HTTP_AUTH_REQUEST);
+            AwHistogramRecorder.recordCallbackInvocation(
+                    AwHistogramRecorder.WebViewCallbackType.ON_RECEIVED_HTTP_AUTH_REQUEST);
+        }
     }
 
     public AwGeolocationPermissions getGeolocationPermissions() {
@@ -4026,8 +4032,8 @@ public class AwContents implements SmartClipProvider {
             boolean visibleRectEmpty = getGlobalVisibleRect().isEmpty();
             final boolean visible = mIsViewVisible && mIsWindowVisible && !visibleRectEmpty;
 
-            boolean clearFunctor = AwFeatureMap.getInstance().isEnabled(
-                    AwFeatures.WEBVIEW_CLEAR_FUNCTOR_IN_BACKGROUND);
+            boolean clearFunctor =
+                    AwFeatureMap.isEnabled(AwFeatures.WEBVIEW_CLEAR_FUNCTOR_IN_BACKGROUND);
             int trimThreshold = clearFunctor ? ComponentCallbacks2.TRIM_MEMORY_BACKGROUND
                                              : ComponentCallbacks2.TRIM_MEMORY_MODERATE;
             ThreadUtils.runOnUiThreadBlocking(() -> {

@@ -20,7 +20,6 @@ import {getInstance as getAnnouncerInstance} from 'chrome://resources/cr_element
 import {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -29,8 +28,7 @@ import {castExists} from '../assert_extras.js';
 import {recordSearch} from '../metrics_recorder.js';
 import {SearchResultsObserverInterface as PersonalizationSearchResultsObserverInterface, SearchResultsObserverReceiver as PersonalizationSearchResultsObserverReceiver} from '../mojom-webui/personalization_search.mojom-webui.js';
 import {ParentResultBehavior, SearchResultsObserverInterface, SearchResultsObserverReceiver} from '../mojom-webui/search.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
-import {Router} from '../router.js';
+import {Router, routes} from '../router.js';
 import {combinedSearch, getPersonalizationSearchHandler, getSettingsSearchHandler, SearchResult} from '../search/combined_search_handler.js';
 
 import {OsSearchResultRowElement} from './os_search_result_row.js';
@@ -175,13 +173,6 @@ export class OsSettingsSearchBoxElement extends OsSettingsSearchBoxElementBase
       searchRequestCount_: {
         type: Number,
         value: 0,
-      },
-
-      showFeedbackButton_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('searchFeedbackEnabled');
-        },
       },
     };
   }

@@ -1555,13 +1555,14 @@
         "args": [],
         "autotest_name": "tast.chrome-from-tls",
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R115-15465.0.0",
+        "cros_img": "octopus-release/R116-15489.0.0",
         "name": "chrome_all_tast_tests OCTOPUS_RELEASE_CHROME_FROM_TLS_LKGM",
         "shards": 10,
         "swarming": {},
         "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
+        "test_level_retries": 2,
         "timeout_sec": 21600,
         "variant_id": "OCTOPUS_RELEASE_CHROME_FROM_TLS_LKGM"
       }
@@ -1575,7 +1576,8 @@
       {
         "args": [
           "--tast-retries=1",
-          "--magic-vm-cache=magic_cros_reven_vm_cache"
+          "--magic-vm-cache=magic_cros_reven_vm_cache",
+          "--tast-shard-method=hash"
         ],
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3387,6 +3389,25 @@
         },
         "test": "printing_unittests",
         "test_id_prefix": "ninja://printing:printing_unittests/"
+      },
+      {
+        "ci_only": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04",
+              "pool": "chrome.tests",
+              "ssd": "0"
+            }
+          ],
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pthreadpool_unittests",
+        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
       },
       {
         "merge": {

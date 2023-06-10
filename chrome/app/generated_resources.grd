@@ -1554,10 +1554,10 @@ are declared in tools/grit/grit_rule.gni.
           Performance
         </message>
         <message name="IDS_SHOW_SEARCH_COMPANION" desc="The text label of the Chrome Search Companion menu item">
-          Search this page with Google...
+          Sear&amp;ch this page with Google...
         </message>
         <message name="IDS_SHOW_TRANSLATE" desc="The text label of the Translate menu item">
-          Translate...
+          T&amp;ranslate...
         </message>
         <message name="IDS_SETTINGS" desc="The text label of the Settings menu item">
           Settin&amp;gs
@@ -1610,10 +1610,10 @@ are declared in tools/grit/grit_rule.gni.
           Performance
         </message>
         <message name="IDS_SHOW_SEARCH_COMPANION" desc="In Title Case: The text label of the Chrome Search Companion menu item">
-          Search this Page with Google...
+          Sear&amp;ch this Page with Google...
         </message>
         <message name="IDS_SHOW_TRANSLATE" desc="In Title Case: The text label of the Translate menu item">
-          Translate
+          T&amp;ranslate
         </message>
         <message name="IDS_SETTINGS" desc="In Title Case: The text label of the Settings menu item">
           &amp;Settings
@@ -2896,6 +2896,22 @@ You can send it to Google to check if it's unsafe. Scans usually take a few seco
       <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_DEEP_SCANNING_LINK"
         desc="Text of link within IDS_DOWNLOAD_BUBBLE_SUBPAGE_DEEP_SCANNING_LINK_WRAPPER">
         Google Safe Browsing
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING"
+        desc="Subpage summary when download deep scanning is in progress">
+        This file might be a virus or malware
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_SECONDARY"
+        desc="Subpage secondary text when download deep scanning is in progress">
+        Scanning for malware...
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_DISCARD"
+        desc="Subpage button to discard a file when download deep scanning is in progress">
+        Delete file
+      </message>
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_CANCEL"
+        desc="Subpage button to cancel a download deep scan">
+        Cancel
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_TRY_AGAIN"
                desc="Retry button when a download is failed">
@@ -5873,10 +5889,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         These extensions don't need to see and change information on this site.
       </message>
       <message name="IDS_EXTENSIONS_MENU_SITE_SETTINGS_TOGGLE_ON_TOOLTIP" desc="Tooltip text for the site setting toggle button when is on.">
-        Extensions are allowed on this site
+        Extensions allowed on this site
       </message>
       <message name="IDS_EXTENSIONS_MENU_SITE_SETTINGS_TOGGLE_OFF_TOOLTIP" desc="Tooltip text for the site setting toggle button when is off.'">
-        Extensions are blocked on this site
+        Extensions not allowed on this site
+      </message>
+       <message name="IDS_EXTENSIONS_MENU_SITE_SETTINGS_TOGGLE_ACCESSIBLE_NAME" desc="Accessibility string for the site setting toggle button.">
+        Allow extensions on this site
       </message>
       <message name="IDS_EXTENSIONS_MENU_SITE_SETTINGS_TOGGLE_ON_ACCESSIBLE_NAME" desc="Accessibility string for the site setting toggle button when is on.">
         Select to block all extensions on this site
@@ -5896,8 +5915,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_DESCRIPTION_TEXT" desc="Text of the message section when the user has to reload the page to apply the updated user site settings.">
         To apply your updated settings to this site, reload this page
       </message>
-       <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TEXT" desc="Text of the button in the message section to reload the page when the user has to reload the page to apply the updated user site settings.">
+      <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TEXT" desc="Text of the button in the message section to reload the page when the user has to reload the page to apply the updated user site settings.">
         Reload
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TOOLTIP" desc="Tooltip text of the button in the message section to reload the page when the user has to reload the page to apply the updated user site settings.">
+        Reload page
       </message>
       <message name="IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_TITLE" desc="Title of the requests access section that lists the extensions requesting site access">
         Requests access
@@ -5905,8 +5927,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_ALLOW_BUTTON_TEXT" desc="Title on the allow button for each extension in the requests access section that grants site access to such extension.">
         Allow
       </message>
+      <message name="IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_ALLOW_BUTTON_TOOLTIP" desc="Tooltip text on the allow button for each extension in the requests access section that grants site access to such extension.">
+        Allow extension to read and change this site
+      </message>
       <message name="IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_DISMISS_BUTTON_TEXT" desc="Title on the dismiss button for each extension in the requests access section that dismiss the extensions's access requests on this tab's current origin.">
         Dismiss
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_DISMISS_BUTTON_TOOLTIP" desc="Tooltip text on the dismiss button for each extension in the requests access section that dismiss the extensions's access requests on this tab's current origin.">
+        Dismiss request
       </message>
       <message name="IDS_EXTENSIONS_MENU_EXTENSION_SITE_ACCESS_TOGGLE_ON_TOOLTIP" desc="Tooltip text for the site access toggle of an extensions menu item when is on.">
         Allowed to request access
@@ -5914,11 +5942,29 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSIONS_MENU_EXTENSION_SITE_ACCESS_TOGGLE_OFF_TOOLTIP" desc="Tooltip text for the site access toggle of an extensions menu item when is off.">
         Not allowed to request access
       </message>
+      <message name="IDS_EXTENSIONS_MENU_EXTENSION_SITE_ACCESS_TOGGLE_ACCESSIBLE_NAME" desc="Accessibility string for the site access toggle of an extensions menu item.">
+        Allow <ph name="EXTENSION_NAME">$1<ex>AdBlock</ex></ph> on this site
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_EXTENSION_CONTEXT_MENU_BUTTON_TOOLTIP" desc="Tooltip text for the the context menu button of an extensions menu item.">
+        More options
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_EXTENSION_CONTEXT_MENU_BUTTON_ACCESSIBLE_NAME" desc="Accessible string for the the context menu button of an extensions menu item.">
+        Select to see more options
+      </message>
+       <message name="IDS_EXTENSIONS_MENU_EXTENSION_CONTEXT_MENU_BUTTON_PINNED_ACCESSIBLE_NAME" desc="Accessible string for the the context menu button of an extensions menu item when the extension is pinned.">
+        Extension is pinned. Select to see more options
+      </message>
       <message name="IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_NONE" desc="Text of the site permissions button when extension doesn't have site access to the site">
         No access needed
       </message>
       <message name="IDS_EXTENSIONS_MENU_MAIN_PAGE_OPEN_CHROME_WEBSTORE_ACCESSIBLE_NAME" desc="Accessibility string for the button that opens the chrome webstore.">
         Open webstore
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_TOOLTIP" desc="Tooltip text of an extension's site permissions button.">
+        Change site permissions
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ACCESSIBLE_NAME" desc="Accessibility string of an extension's site permissions button.">
+        <ph name="SITE_ACCESS">$1<ex>Always on this site</ex></ph>. Select to change site permissions
       </message>
       <message name="IDS_EXTENSIONS_MENU_MAIN_PAGE_EXTENSION_SITE_ACCESS_ON_CLICK" desc="Text of the site permissions button when extension has site access only when clicked.">
         Ask on every visit
@@ -5931,6 +5977,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
        <message name="IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SETTINGS_BUTTON" desc="Text of the extension settings button in the site permissions page">
         Manage this extension
+      </message>
+      <message name="IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SETTINGS_BUTTON_TOOLTIP" desc="Tooltip text of the extension settings button in the site permissions page">
+        Manage extension settings
       </message>
       <message name="IDS_EXTENSIONS_MENU_SITE_PERMISSIONS_PAGE_SHOW_REQUESTS_LABEL" desc="Text of the label next to the show requests toggle button in the site permissions page that controls whether the extension can show site access requests in the toolbar.">
         Allowed to show requests in the toolbar
@@ -7860,14 +7909,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_BOOKMARKS_OPEN_FOLDER_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a bookmarks side panel folder list item">
         Open folder <ph name="FOLDER_TITLE">$1<ex>All Bookmarks</ex></ph>
       </message>
-      <message name="IDS_BOOKMARKS_OPEN_BOOKMARK_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a bookmarks side panel folder list item">
+      <message name="IDS_BOOKMARKS_OPEN_BOOKMARK_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a bookmarks side panel url list item">
         Open <ph name="BOOKMARK_TITLE">$1<ex>New York Times</ex></ph>
       </message>
-      <message name="IDS_BOOKMARKS_SELECT_FOLDER_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a bookmarks side panel folder list item in edit mode">
+      <message name="IDS_BOOKMARKS_SELECT_FOLDER_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for an unselected bookmarks side panel folder list item in edit mode">
         Select folder <ph name="FOLDER_TITLE">$1<ex>All Bookmarks</ex></ph>
       </message>
-      <message name="IDS_BOOKMARKS_SELECT_BOOKMARK_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a bookmarks side panel folder list item in edit mode">
+      <message name="IDS_BOOKMARKS_SELECT_BOOKMARK_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for an unselected bookmarks side panel url list item in edit mode">
         Select <ph name="BOOKMARK_TITLE">$1<ex>New York Times</ex></ph>
+      </message>
+      <message name="IDS_BOOKMARKS_DESELECT_FOLDER_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a selected bookmarks side panel folder list item in edit mode">
+        Deselect folder <ph name="FOLDER_TITLE">$1<ex>All Bookmarks</ex></ph>
+      </message>
+      <message name="IDS_BOOKMARKS_DESELECT_BOOKMARK_LABEL" is_accessibility_with_no_ui="true" desc="Accessible label for a selected bookmarks side panel url list item in edit mode">
+        Deselect <ph name="BOOKMARK_TITLE">$1<ex>New York Times</ex></ph>
       </message>
       <message name="IDS_BOOKMARK_ACCESSIBLE_DESCRIPTION_PRICE_TRACKING" is_accessibility_with_no_ui="true" desc="Accessible description for price tracking data on a bookmarks side panel list item">
         Price tracking is enabled. Price is <ph name="CURRENT_PRICE">$1<ex>400</ex></ph>.
@@ -8223,6 +8278,43 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </if>
       </if>
 
+      <!--iOS password promo strings-->
+      <if expr="_google_chrome">
+        <if expr="not is_android">
+          <if expr="use_titlecase">
+            <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_TITLE" desc="In Title Case: The title for the iOS promo bubble letting users know their password is saved.">
+              Your Password Is Saved
+            </message>
+            <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_FOOTER_TITLE" desc="In Title Case: The title for the footer of the iOS promo bubble suggesting to users that they can use their passwords on their iOS devices.">
+              Use Your Passwords on Your iOS Devices
+            </message>
+            <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_BUTTON" desc="In Title Case: The text inside the button inviting the user to get started.">
+              Get Started
+            </message>
+          </if>
+          <if expr="not use_titlecase">
+            <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_TITLE" desc="The title for the iOS promo bubble letting users know their password is saved.">
+              Your password is saved
+            </message>
+            <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_FOOTER_TITLE" desc="The title for the footer of the iOS promo bubble suggesting to users that they can use their passwords on their iOS devices.">
+              Use your passwords on your iOS devices
+            </message>
+            <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_BUTTON" desc="The text inside the button inviting the user to get started.">
+              Get started
+            </message>
+          </if>
+          <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_SUBTITLE" desc="The subtitle for the iOS promo bubble which lets the user know they can access their saved password on the Google Password Manager.">
+            You can access it on Google Password Manager.
+          </message>
+          <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_FOOTER_DESCRIPTION_GENERIC" desc="The description for the iOS promo bubble footer which lets the user know how to use their saved passwords on their phone: download Chrome for iOS and sync their account.">
+            To use your saved passwords on your phone, download Chrome for iOS and sync your account.
+          </message>
+          <message name="IDS_IOS_PASSWORD_PROMO_BUBBLE_FOOTER_DESCRIPTION_QR" desc="The description for the iOS promo bubble footer which lets the user know how to use their saved passwords on their phone: follow the QR code, download Chrome for iOS and sync their account.">
+            To use your saved passwords on your phone, follow the QR code, download Chrome for iOS and sync your account.
+          </message>
+        </if>
+      </if>
+
       <!--Accessible name/action strings-->
       <message name="IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT" desc="The format for the accessible title of an Incognito window">
         <ph name="WINDOW_TITLE">$1</ph> (Incognito)
@@ -8543,7 +8635,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Customize Chrome to give your browser a new look
       </message>
       <message name="IDS_TUTORIAL_CUSTOMIZE_CHROME_OPEN_SIDE_PANEL" desc="The description of the 'open side panel' step in customize chrome tutorial">
-        Click “Customize Chrome”
+        Click to customize Chrome
       </message>
       <message name="IDS_TUTORIAL_CUSTOMIZE_CHROME_CHANGE_THEME" desc="The description of the 'change theme' step in customize chrome tutorial">
         Click “Change theme” to explore themes inspired by artists, nature and more
@@ -10328,6 +10420,10 @@ Check your passwords anytime in <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google 
       <message name="IDS_CONTEXT_MENU_SHOW_CLIPBOARD_HISTORY_MENU"
           desc="Show the clipboard history menu.">
           Clipboard
+      </message>
+      <message name="IDS_CONTEXT_MENU_PASTE_FROM_CLIPBOARD"
+          desc="Open the context menu submenu that shows clipboard history items the user can paste.">
+          Paste from clipboard
       </message>
 
       <!-- Sharing features. -->
@@ -12961,40 +13057,40 @@ Please help our engineers fix this problem. Tell us what happened right before y
 
       <!--Tab alert tooltip strings-->
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_MEDIA_RECORDING" desc="Extra tool tip text, when the tab is recording media.">
-        This tab is using your camera or microphone.
+        This tab is using your camera or microphone
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_TAB_CAPTURING" desc="Extra tool tip text, when the tab content is being captured.">
-        This tab's content is being shared.
+        This tab's content is being shared
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_AUDIO_PLAYING" desc="Extra tool tip text, when the tab is playing audio.">
-        This tab is playing audio.
+        This tab is playing audio
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_AUDIO_MUTING" desc="Extra tool tip text, when all tab audio output is muted.">
-        This tab's audio is being muted.
+        This tab's audio is being muted
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_CONNECTED" desc="Extra tool tip text, when tab is connected to a Bluetooth device.">
-        This tab is connected to a Bluetooth Device.
+        This tab is connected to a Bluetooth device
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_BLUETOOTH_SCAN_ACTIVE" desc="Extra tool tip text, when tab is actively scanning for Bluetooth devices.">
-        This tab is actively scanning for Bluetooth devices.
+        This tab is actively scanning for Bluetooth devices
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_USB_CONNECTED" desc="Extra tool tip text, when tab is connected to a USB device.">
-        This tab is connected to a USB device.
+        This tab is connected to a USB device
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_HID_CONNECTED" desc="Extra tool tip text, when tab is connected to a HID device.">
-        This tab is connected to a HID device.
+        This tab is connected to a HID device
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_SERIAL_CONNECTED" desc="Extra tool tip text, when tab is connected to a serial port.">
-        This tab is connected to a serial port.
+        This tab is connected to a serial port
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_PIP_PLAYING" desc="Extra tool tip text, when tab is playing a video in Picture-in-Picture.">
-        This tab is playing a video in picture-in-picture mode.
+        This tab is playing a video in picture-in-picture mode
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_DESKTOP_CAPTURING" desc="Extra tool tip text, when the tab is capturing desktop contents.">
-        This tab is sharing your screen.
+        This tab is sharing your screen
       </message>
       <message name="IDS_TOOLTIP_TAB_ALERT_STATE_VR_PRESENTING" desc="Extra tool tip text, when the tab is presenting VR content to a headset.">
-        This tab is presenting VR content to a headset.
+        This tab is presenting VR content to a headset
       </message>
 
       <!-- Tab accessibility labels -->
@@ -13946,12 +14042,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_WINDOWS_HELLO_NOT_ENABLED_DESCRIPTION" desc="Description of the dialog shown when a website requires Windows Hello to sign in with a passkey, but Windows Hello is not enabled for the user's device.">
         To sign into this site with a passkey, you need to turn on Windows Hello in settings. Then return to this site and try again.
       </message>
-      <message name="IDS_WEBAUTHN_ERROR_NO_TRANSPORTS_TITLE" desc="Title of the dialog shown when the user could not sign in to a web site, because their computer did not support any of the hardware-based authentication mechanisms desired by the web site.">
-        Your identity couldn't be verified
-      </message>
-      <message name="IDS_WEBAUTHN_ERROR_NO_TRANSPORTS_DESCRIPTION" desc="Description in the dialog shown when the user could not sign in to a web site, because their computer did not support any of the hardware-based authentication mechanisms desired by the web site.">
-        This device doesn't support the type of security key requested by this website
-      </message>
       <message name="IDS_WEBAUTHN_ERROR_NO_PASSKEYS_TITLE" desc="Title of the dialog shown when the user could not sign in to a web site because their computer did not have any of the passkeys registered with the site.">
         No passkeys available
       </message>
@@ -14137,11 +14227,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_WEBAUTHN_RESIDENT_KEY_PREFERRED_PRIVACY" desc="A message included in dialogs when activating a security key (an external physical device for user authentication) may cause information about a site visit to be recorded on that security key. Since this is a privacy concern, a message is shown to the user. Whether the information is actually kept depends on which type of security key the user presents in response to this prompt. The translation of this message should mirror TC ID 6581223593622729386 (but 'may' replaces 'will').">
         A record of your visit to this site may be kept on your security key.
       </message>
-      <message name="IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE" desc="Title of the dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support some capability that the site requested.">
-        Your security key can't be used with this site
+      <message name="IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_TITLE" desc="Title of the dialog informing the user that the authenticator device (an external physical device for user authentication, like a phone) that they selected does not support some capability that the site requested.">
+        Your device can't be used with this site
       </message>
-      <message name="IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not support some capability that the site requested.">
-        <ph name="WEBSITE"><ex>accounts.google.com</ex>$1</ph> may require a newer or different kind of security key
+      <message name="IDS_WEBAUTHN_ERROR_MISSING_CAPABILITY_DESC" desc="The description on a dialog informing the user that the authenticator device (an external physical device for user authentication, like a phone) that they selected does not support some capability that the site requested.">
+        <ph name="WEBSITE"><ex>accounts.google.com</ex>$1</ph> may require a newer or different kind of device
       </message>
       <message name="IDS_WEBAUTHN_STORAGE_FULL_DESC" desc="The description on a dialog informing the user that the security key (an external physical device for user authentication) that they selected does not have enough storage capacity to create the requested account.">
         Your security key does not have enough space for any more accounts.
@@ -15145,7 +15235,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <if expr="not chromeos_lacros and not is_android and _google_chrome">
       <message name="IDS_WAFFLE_PAGE_TITLE" desc="The title for the Waffle page."
         translateable="false">
-        Want a Waffle?
+        Lorem ipsum dolor sit amet
+      </message>
+      <message name="IDS_WAFFLE_PAGE_SUBTITLE" desc="The subtitle for the Waffle page."
+        translateable="false">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore.
       </message>
       <message name="IDS_WAFFLE_FIRST_BUTTON_TITLE" desc="The title of the first button of the Waffle page."
         translateable="false">

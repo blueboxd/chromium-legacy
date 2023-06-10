@@ -121,6 +121,30 @@
             ]
         }
     ],
+    "AllowUndamagedNonrootRenderPassToSkip": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "chromeos_lacros",
+                "fuchsia",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AllowUndamagedNonrootRenderPassToSkip"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidAnimatedImageDragShadow": [
         {
             "platforms": [
@@ -1124,6 +1148,27 @@
             ]
         }
     ],
+    "AutofillEnableNewCardProfileRankingAlgorithm": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableRankingFormulaAddressProfiles",
+                        "AutofillEnableRankingFormulaCreditCards"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillEnableSupportForParsingWithSharedLabels": [
         {
             "platforms": [
@@ -1423,7 +1468,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Card_20230526",
+                    "name": "Card_20230606",
                     "params": {
                         "en_site_id": "F2fsskHvB0ugnJ3q1cK0NXLjUaK5",
                         "probability": "1.0"
@@ -1437,7 +1482,7 @@
                     ]
                 },
                 {
-                    "name": "Password_20230526",
+                    "name": "Password_20230606",
                     "params": {
                         "en_site_id": "6VQ4NCCaq0ugnJ3q1cK0TR13rB8t",
                         "probability": "1.0"
@@ -1451,7 +1496,7 @@
                     ]
                 },
                 {
-                    "name": "Address_20230526",
+                    "name": "Address_20230606",
                     "params": {
                         "en_site_id": "qQW9c2ho10ugnJ3q1cK0X48UQjZs",
                         "probability": "1.0"
@@ -1627,21 +1672,6 @@
                     "disable_features": [
                         "AutomaticLazyFrameLoadingToAds",
                         "AutomaticLazyFrameLoadingToEmbeds"
-                    ]
-                }
-            ]
-        }
-    ],
-    "AutoupgradeMixedContent": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "AutoupgradeMixedContent",
-                    "enable_features": [
-                        "AutoupgradeMixedContentWebKit"
                     ]
                 }
             ]
@@ -3979,24 +4009,6 @@
             ]
         }
     ],
-    "DefaultBrowserBlueDotPromo": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "EnabledGroupAllDBPromosEnabled2023_05_08",
-                    "params": {
-                        "user-group": "all-db-promos-enabled"
-                    },
-                    "enable_features": [
-                        "DefaultBrowserBlueDotPromo"
-                    ]
-                }
-            ]
-        }
-    ],
     "DefaultOfflineExperience": [
         {
             "platforms": [
@@ -4532,23 +4544,6 @@
                     "enable_features": [
                         "DiacriticsOnPhysicalKeyboardLongpress",
                         "DiacriticsOnPhysicalKeyboardLongpressDefaultOn"
-                    ]
-                }
-            ]
-        }
-    ],
-    "DirectCompositorThreadIpc": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "linux"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "DirectCompositorThreadIpc"
                     ]
                 }
             ]
@@ -5487,31 +5482,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "SafeBrowsingExtensionTelemetryDeclarativeNetRequestSignal"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ExtensionTelemetryOffstoreFileDataStudy": [
-        {
-            "platforms": [
-                "chromeos",
-                "chromeos_lacros",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "CollectionIntervalSeconds": "7200",
-                        "MaxFileSizeBytes": "102400",
-                        "MaxFilesToProcess": "50",
-                        "StartupDelaySeconds": "300"
-                    },
-                    "enable_features": [
-                        "SafeBrowsingExtensionTelemetryFileData"
                     ]
                 }
             ]
@@ -6689,6 +6659,21 @@
             ]
         }
     ],
+    "HideSettingsSyncPromo": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "HideSettingsSyncPromo"
+                    ]
+                }
+            ]
+        }
+    ],
     "HoldbackRemoveMobileViewportDoubleTap": [
         {
             "platforms": [
@@ -6946,22 +6931,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "FastApplicationWillTerminate"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IOSFeedAttentionLog": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20221020",
-                    "enable_features": [
-                        "EnableCheckVisibilityOnAttentionLogStart",
-                        "EnableRefineDataSourceReloadReporting"
                     ]
                 }
             ]
@@ -7489,21 +7458,6 @@
             "experiments": [
                 {
                     "name": "Enabled",
-                    "enable_features": [
-                        "IdentityStatusConsistency"
-                    ]
-                }
-            ]
-        }
-    ],
-    "IdentityStatusConsistencyIOS": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_20230328",
                     "enable_features": [
                         "IdentityStatusConsistency"
                     ]
@@ -8538,9 +8492,13 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_20230608",
+                    "params": {
+                        "MmapSafeBrowsingDatabaseAsync": "true"
+                    },
                     "enable_features": [
-                        "MmapSafeBrowsingDatabase"
+                        "MmapSafeBrowsingDatabase",
+                        "SafeBrowsingOnUIThread"
                     ]
                 }
             ]
@@ -14403,14 +14361,11 @@
     "VariationsGoogleGroupFiltering": [
         {
             "platforms": [
-                "android",
-                "linux",
-                "mac",
-                "windows"
+                "android"
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20230511",
+                    "name": "Enabled_20230525",
                     "enable_features": [
                         "VariationsGoogleGroupFiltering"
                     ]

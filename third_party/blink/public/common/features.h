@@ -24,7 +24,6 @@ constexpr int kBrowsingTopicsConfigVersionDefault = 1;
 
 constexpr int kBrowsingTopicsTaxonomyVersionDefault = 1;
 
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAnonymousIframeOriginTrial);
 BLINK_COMMON_EXPORT
 BASE_DECLARE_FEATURE(kAutofillDetectRemovedFormControls);
 BLINK_COMMON_EXPORT
@@ -76,10 +75,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kEditingNG);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMixedContentAutoupgrade);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kNavigationPredictor);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAnchorElementInteraction);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kAnchorElementMouseMotionEstimator);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPlzDedicatedWorker);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPortalsCrossOrigin);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFencedFrames);
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kFullUserAgent);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPath2DPaintCache);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrivacySandboxAdsAPIs);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDefaultViewportIsDeviceWidth);
@@ -1093,6 +1092,10 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 // the requesting origin are not in the same First-Party Set.
 BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
     kStorageAccessAPIAutoDenyOutsideFPS;
+// Whether to renew Storage Access API permission grants after user interaction
+// in the relevant contexts.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
+    kStorageAccessAPIRefreshGrantsOnUserInteraction;
 
 // Kill-switch for a deprecation trial that unpartitions storage in third-party
 // contexts under the registered top-level site. If

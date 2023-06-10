@@ -146,6 +146,9 @@ fyi_reclient_staging_builder(
     ),
     os = os.LINUX_DEFAULT,
     console_view_category = "linux",
+    reclient_bootstrap_env = {
+        "RBE_clang_depscan_archive": "true",
+    },
 )
 
 fyi_reclient_test_builder(
@@ -165,6 +168,9 @@ fyi_reclient_test_builder(
     ),
     os = os.LINUX_DEFAULT,
     console_view_category = "linux",
+    reclient_bootstrap_env = {
+        "RBE_clang_depscan_archive": "true",
+    },
 )
 
 fyi_reclient_test_builder(
@@ -443,27 +449,6 @@ ci.builder(
     reclient_bootstrap_env = {
         "RBE_ip_reset_min_delay": "-1s",
         "RBE_clang_depscan_archive": "true",
-    },
-    reclient_cache_silo = "Comparison Linux remote links - cache siloed",
-    reclient_instance = reclient.instance.TEST_TRUSTED,
-    reclient_jobs = reclient.jobs.DEFAULT,
-)
-
-ci.builder(
-    name = "Comparison Linux (reclient vs reclient remote links)(small)",
-    executable = "recipe:reclient_reclient_comparison",
-    os = os.LINUX_DEFAULT,
-    console_view_entry = consoles.console_view_entry(
-        category = "linux",
-        short_name = "cmp",
-    ),
-    execution_timeout = 6 * time.hour,
-    reclient_bootstrap_env = {
-        "RBE_ip_reset_min_delay": "-1s",
-        "RBE_clang_depscan_archive": "true",
-        "RBE_use_unified_uploads": "false",
-        "RBE_experimental_sysroot_do_not_upload": "true",
-        "GOMA_DEPS_CACHE_TABLE_THRESHOLD": "40000",
     },
     reclient_cache_silo = "Comparison Linux remote links - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,

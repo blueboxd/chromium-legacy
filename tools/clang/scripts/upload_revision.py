@@ -10,11 +10,9 @@ a CL, triggers Clang Upload try bots, and tells what to do next"""
 from __future__ import print_function
 
 import argparse
-import fnmatch
 import itertools
 import os
 import re
-import shutil
 import subprocess
 import sys
 import urllib.request
@@ -223,13 +221,13 @@ def PatchRustStage0():
     f.write(content)
 
 
-def PatchRustRemoveFallback():
+def PatchRustRemoveOverride():
   with open(RUST_UPDATE_PY_PATH) as f:
     content = f.read()
 
   REV = '([0-9a-z-]+)'
-  content = re.sub(f'FALLBACK_REVISION = \'{REV}\'',
-                   f'FALLBACK_REVISION = \'\'',
+  content = re.sub(f'OVERRIDE_CLANG_REVISION = \'{REV}\'',
+                   f'OVERRIDE_CLANG_REVISION = None',
                    content,
                    count=1)
   with open(RUST_UPDATE_PY_PATH, 'w') as f:
@@ -303,7 +301,9 @@ def main():
     print('Cannot set both --skip-clang and --skip-rust.')
     sys.exit(1)
 
-  if not args.skip_clang:
+  if args.skip_clang:
+    clang_version = '-skipped-'
+  else:
     if args.clang_git_hash:
       clang_git_hash = args.clang_git_hash
     else:
@@ -315,10 +315,10 @@ def main():
     clang_version = ClangVersion(GetCommitDescription(clang_git_hash),
                                  args.clang_sub_revision)
     os.chdir(CHROMIUM_DIR)
-  else:
-    clang_version = '-skipped-'
 
-  if not args.skip_rust:
+  if args.skip_rust:
+    rust_version = '-skipped-'
+  else:
     if args.rust_git_hash:
       rust_git_hash = args.rust_git_hash
     else:
@@ -326,8 +326,6 @@ def main():
     CheckoutGitRepo("Rust", RUST_GIT_URL, rust_git_hash, RUST_SRC_DIR)
     rust_version = RustVersion(rust_git_hash, args.rust_sub_revision)
     os.chdir(CHROMIUM_DIR)
-  else:
-    rust_version = '-skipped-'
 
   print(f'Making a patch for Clang {clang_version} and Rust {rust_version}')
 
@@ -348,9 +346,8 @@ def main():
                 'Change the sub-revision of Clang or Rust if there is '
                 'no major version change.')
     PatchRustStage0()
-    # TODO: Do this when we block Clang updates without a matching Rust
-    # compiler.
-    # PatchRustRemoveFallback()
+    if not args.skip_clang:
+      PatchRustRemoveOverride()
 
     # Changes to this file may require changes to gnrt or build_rust.py.
     has_bootstrap_dist_changes = GitDiffHasChanges(old_rust_version.git_hash,
@@ -421,6 +418,12 @@ def main():
 
   print('Please, wait until the try bots succeeded '
         'and then push the binaries to goma.')
+  print()
+  print('To regenerate BUILD.gn rules for Rust stdlib (needed if dep versions '
+        'in the stdlib change for example), run:\n  tools/rust/gnrt_stdlib.py.')
+  print()
+  print('To update Abseil .def files, run:\n  '
+        'third_party/abseil-cpp/generate_def_files.py')
 
 
 if __name__ == '__main__':

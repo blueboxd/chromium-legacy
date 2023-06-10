@@ -381,7 +381,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            raw_ref(features::kEnableBluetoothSerialPortProfileInSerialApi)},
           {"WGIGamepadTriggerRumble",
            raw_ref(features::kEnableWindowsGamingInputDataFetcher)},
-          {"UserAgentFull", raw_ref(blink::features::kFullUserAgent)},
           {"MediaStreamTrackTransfer",
            raw_ref(features::kMediaStreamTrackTransfer)}};
   for (const auto& mapping : runtimeFeatureNameToChromiumFeatureMapping) {
@@ -679,15 +678,20 @@ void ResolveInvalidConfigurations() {
     }
   }
 
-  if (!base::FeatureList::IsEnabled(blink::features::kInterestGroupStorage) ||
-      !base::FeatureList::IsEnabled(
-          blink::features::kFledgeBiddingAndAuctionServer)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kInterestGroupStorage)) {
+    LOG_IF(WARNING, WebRuntimeFeatures::IsAdInterestGroupAPIEnabled())
+        << "AdInterestGroupAPI cannot be enabled in this "
+           "configuration. Use --"
+        << switches::kEnableFeatures << "="
+        << blink::features::kInterestGroupStorage.name << " in addition.";
+    WebRuntimeFeatures::EnableAdInterestGroupAPI(false);
+  } else if (!base::FeatureList::IsEnabled(
+                 blink::features::kFledgeBiddingAndAuctionServer)) {
     LOG_IF(WARNING,
            WebRuntimeFeatures::IsFledgeBiddingAndAuctionServerEnabled())
         << "FledgeBiddingAndAuctionServer cannot be enabled in this "
            "configuration. Use --"
         << switches::kEnableFeatures << "="
-        << blink::features::kInterestGroupStorage.name << ","
         << blink::features::kFledgeBiddingAndAuctionServer.name
         << " in addition.";
     WebRuntimeFeatures::EnableFledgeBiddingAndAuctionServer(false);

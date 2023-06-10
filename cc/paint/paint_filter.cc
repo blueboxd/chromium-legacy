@@ -25,6 +25,7 @@
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/core/SkString.h"
@@ -414,17 +415,47 @@ bool ComposePaintFilter::EqualsForTesting(
 }
 
 AlphaThresholdPaintFilter::AlphaThresholdPaintFilter(const SkRegion& region,
-                                                     SkScalar inner_min,
-                                                     SkScalar outer_max,
                                                      sk_sp<PaintFilter> input,
                                                      const CropRect* crop_rect)
     : PaintFilter(kType, crop_rect, HasDiscardableImages(input)),
       region_(region),
-      inner_min_(inner_min),
-      outer_max_(outer_max),
       input_(std::move(input)) {
-  cached_sk_filter_ = SkImageFilters::AlphaThreshold(
-      region_, inner_min_, outer_max_, GetSkFilter(input_.get()), crop_rect);
+  // Historically, Skia had a specialized AlphaThreshold effect that took an
+  // inner and outer alpha threshold. If a pixel inside the region had an alpha
+  // lower than the inner threshold, its opacity would be increased to that
+  // threshold. If a pixel outside the region had an alpha higher than the
+  // outer threshold, its opacity would be lowered to that threshold.
+  //
+  // The actual usage in chrome used an inner and outer threshold of 0, which
+  // has the equivalent behavior of leaving pixels inside the region unmodified,
+  // and clearing pixels outside the region to transparent black.
+
+  SkRect cull_rect = SkRect::Make(region.getBounds());
+  if (crop_rect) {
+    if (!cull_rect.intersect(*crop_rect)) {
+      cull_rect = SkRect::MakeEmpty();
+    }
+  }
+
+  if (region.isRect()) {
+    // `cull_rect` can entirely represent the threshold effect, so avoid
+    // producing a mask image that has to be blended against and just crop it.
+    // TODO(michaelludwig): Replace with a dedicated SkImageFilters::Crop once
+    // that has been made public, but Offset(0,0) is equivalent.
+    cached_sk_filter_ =
+        SkImageFilters::Offset(0, 0, GetSkFilter(input_.get()), cull_rect);
+  } else {
+    SkPictureRecorder recorder;
+    SkCanvas* canvas = recorder.beginRecording(cull_rect, nullptr);
+    canvas->clear(SK_ColorTRANSPARENT);
+    canvas->drawRegion(region, SkPaint(SkColors::kBlack));
+    sk_sp<SkPicture> shape_mask = recorder.finishRecordingAsPicture();
+    // kSrcIn multiplies the source (input_) by the dest's alpha (shape_mask)
+    cached_sk_filter_ = SkImageFilters::Blend(
+        SkBlendMode::kSrcIn,
+        /*dst=*/SkImageFilters::Picture(std::move(shape_mask)),
+        /*src=*/GetSkFilter(input_.get()), crop_rect);
+  }
 }
 
 AlphaThresholdPaintFilter::~AlphaThresholdPaintFilter() = default;
@@ -432,25 +463,21 @@ AlphaThresholdPaintFilter::~AlphaThresholdPaintFilter() = default;
 size_t AlphaThresholdPaintFilter::SerializedSize() const {
   size_t region_size = region_.writeToMemory(nullptr);
   base::CheckedNumeric<size_t> total_size;
-  total_size = BaseSerializedSize() +
-               PaintOpWriter::SerializedSizeOfBytes(region_size) +
-               PaintOpWriter::SerializedSize(inner_min_) +
-               PaintOpWriter::SerializedSize(outer_max_);
+  total_size =
+      BaseSerializedSize() + PaintOpWriter::SerializedSizeOfBytes(region_size);
   total_size += PaintOpWriter::SerializedSize(input_.get());
   return total_size.ValueOrDefault(0u);
 }
 
 sk_sp<PaintFilter> AlphaThresholdPaintFilter::SnapshotWithImagesInternal(
     ImageProvider* image_provider) const {
-  return sk_make_sp<AlphaThresholdPaintFilter>(region_, inner_min_, outer_max_,
-                                               Snapshot(input_, image_provider),
-                                               GetCropRect());
+  return sk_make_sp<AlphaThresholdPaintFilter>(
+      region_, Snapshot(input_, image_provider), GetCropRect());
 }
 
 bool AlphaThresholdPaintFilter::EqualsForTesting(
     const AlphaThresholdPaintFilter& other) const {
-  return region_ == other.region_ && inner_min_ == other.inner_min_ &&
-         outer_max_ == other.outer_max_ &&
+  return region_ == other.region_ &&
          AreValuesEqualForTesting(input_, other.input_);  // IN-TEST
 }
 

@@ -17,15 +17,6 @@
 namespace blink {
 namespace features {
 
-// Gate access to the AnonymousIframe origin trial. This is useful on its own,
-// because the OT infrastructure doesn't check Chrome's version. It means token
-// generated for the OT applies immediately to every Chrome versions. The
-// feature flag allows Chrome developers to restrict the access to the first
-// fully supported version.
-BASE_FEATURE(kAnonymousIframeOriginTrial,
-             "AnonymousIframeOriginTrial",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // If enabled, whenever form controls are removed from the DOM, the ChromeClient
 // is informed about this. This enables Autofill to trigger a reparsing of
 // forms.
@@ -188,13 +179,6 @@ BASE_FEATURE(kUserLevelMemoryPressureSignal,
              "UserLevelMemoryPressureSignal",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables the `sec-ch-ua-full` client hint to be sent along with the full user
-// agent string in the HTTP request headers, as well as surfacing the full user
-// agent string in the JS APIs (navigator.userAgent, etc).
-BASE_FEATURE(kFullUserAgent,
-             "FullUserAgent",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables the frequency capping for detecting overlay popups. Overlay-popups
 // are the interstitials that pop up and block the main content of the page.
 BASE_FEATURE(kFrequencyCappingForOverlayPopupDetection,
@@ -251,6 +235,11 @@ BASE_FEATURE(kNavigationPredictor,
 // Anchor Element Interaction
 BASE_FEATURE(kAnchorElementInteraction,
              "AnchorElementInteraction",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable anchor element mouse motion estimator.
+BASE_FEATURE(kAnchorElementMouseMotionEstimator,
+             "AnchorElementMouseMotionEstimator",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable browser-initiated dedicated worker script loading
@@ -1865,6 +1854,9 @@ const base::FeatureParam<bool> kStorageAccessAPIAutoGrantInFPS{
     &kStorageAccessAPI, "storage_access_api_auto_grant_in_fps", true};
 const base::FeatureParam<bool> kStorageAccessAPIAutoDenyOutsideFPS{
     &kStorageAccessAPI, "storage_access_api_auto_deny_outside_fps", true};
+const base::FeatureParam<bool> kStorageAccessAPIRefreshGrantsOnUserInteraction{
+    &kStorageAccessAPI, "storage_access_api_refresh_grants_on_user_interaction",
+    true};
 
 BASE_FEATURE(kDisableThirdPartyStoragePartitioningDeprecationTrial,
              "DisableThirdPartyStoragePartitioningDeprecationTrial",

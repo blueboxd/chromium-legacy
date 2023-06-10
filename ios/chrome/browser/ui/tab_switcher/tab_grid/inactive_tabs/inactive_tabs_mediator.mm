@@ -247,17 +247,28 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 - (void)snapshotCache:(SnapshotCache*)snapshotCache
     didUpdateSnapshotForIdentifier:(NSString*)identifier {
-  web::WebState* webState =
-      GetWebState(_webStateList, WebStateSearchCriteria{
-                                     .identifier = identifier,
-                                 });
+  // The given identifier is a snapshot identifier, not to be confused with a
+  // web state stable identifier (being phased out), nor a web state unique
+  // identifier.
+  web::WebState* webState = nullptr;
+  for (int i = 0; i < _webStateList->count(); i++) {
+    SnapshotTabHelper* snapshotTabHelper =
+        SnapshotTabHelper::FromWebState(_webStateList->GetWebStateAt(i));
+    NSString* snapshotIdentifier = snapshotTabHelper->GetSnapshotIdentifier();
+    if ([identifier isEqualToString:snapshotIdentifier]) {
+      webState = _webStateList->GetWebStateAt(i);
+      break;
+    }
+  }
   if (webState) {
     // It is possible to observe an updated snapshot for a WebState before
     // observing that the WebState has been added to the WebStateList. It is the
     // consumer's responsibility to ignore any updates before inserts.
     TabSwitcherItem* item =
         [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
-    [_consumer replaceItemID:identifier withItem:item];
+    // Items are indexed with the stable identifier. Don't pass a snapshot
+    // identifier here.
+    [_consumer replaceItemID:webState->GetStableIdentifier() withItem:item];
   }
 }
 
@@ -266,35 +277,44 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
-  switch (change.type()) {
-    case WebStateListChange::Type::kReplace:
-      NOTREACHED_NORETURN();
-    case WebStateListChange::Type::kInsert:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // -webStateList:didInsertWebState:atIndex:activating: to here.
-      break;
-  }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
   DCHECK_EQ(_webStateList, webStateList);
   if (_webStateList->IsBatchInProgress()) {
     // Updates are handled in the batch operation observer methods.
     return;
   }
-  // Insertions are only supported for iPad multiwindow support when changing
-  // the user settings for Inactive Tabs (i.e. when picking a longer inactivity
-  // threshold).
-  DCHECK_EQ(ui::GetDeviceFormFactor(), ui::DEVICE_FORM_FACTOR_TABLET);
 
-  TabSwitcherItem* item =
-      [[WebStateTabSwitcherItem alloc] initWithWebState:webState];
-  [_consumer insertItem:item atIndex:index selectedItemID:nil];
+  switch (change.type()) {
+    case WebStateListChange::Type::kDestroy:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateListDestroyed: to here.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didDetachWebState:atIndex: to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didMoveWebState:fromIndex:toIndex: to here.
+      break;
+    case WebStateListChange::Type::kReplace:
+      NOTREACHED_NORETURN();
+    case WebStateListChange::Type::kInsert: {
+      // Insertions are only supported for iPad multiwindow support when
+      // changing the user settings for Inactive Tabs (i.e. when picking a
+      // longer inactivity threshold).
+      DCHECK_EQ(ui::GetDeviceFormFactor(), ui::DEVICE_FORM_FACTOR_TABLET);
 
-  _scopedWebStateObservation->AddObservation(webState);
+      const WebStateListChangeInsert& insertChange =
+          change.As<WebStateListChangeInsert>();
+      web::WebState* insertedWebState = insertChange.inserted_web_state();
+      TabSwitcherItem* item =
+          [[WebStateTabSwitcherItem alloc] initWithWebState:insertedWebState];
+      [_consumer insertItem:item atIndex:selection.index selectedItemID:nil];
+
+      _scopedWebStateObservation->AddObservation(insertedWebState);
+      break;
+    }
+  }
 }
 
 - (void)webStateList:(WebStateList*)webStateList

@@ -2828,6 +2828,17 @@
         "test_id_prefix": "ninja://printing:printing_unittests/"
       },
       {
+        "ci_only": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "pthreadpool_unittests",
+        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
+      },
+      {
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -18129,7 +18140,7 @@
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -18142,7 +18153,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "absl_hardening_tests iPhone X 16.4",
+        "name": "absl_hardening_tests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18175,12 +18186,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/abseil-cpp:absl_hardening_tests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -18193,7 +18204,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests iPad Air (3rd generation) 16.4",
+        "name": "base_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18226,12 +18237,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -18244,7 +18255,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "base_unittests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18277,12 +18288,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -18295,7 +18306,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests iPhone SE (3rd generation) 16.4",
+        "name": "base_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18328,12 +18339,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -18346,7 +18357,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "base_unittests iPhone X 16.4",
+        "name": "base_unittests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18379,12 +18390,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://base:base_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -18397,7 +18408,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_crypto_tests iPhone X 16.4",
+        "name": "boringssl_crypto_tests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18430,12 +18441,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_crypto_tests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -18448,7 +18459,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "boringssl_ssl_tests iPhone X 16.4",
+        "name": "boringssl_ssl_tests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18481,12 +18492,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/boringssl:boringssl_ssl_tests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -18499,7 +18510,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests iPad Air (3rd generation) 16.4",
+        "name": "components_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18532,12 +18543,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -18550,7 +18561,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "components_unittests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18583,12 +18594,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -18601,7 +18612,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests iPhone SE (3rd generation) 16.4",
+        "name": "components_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18634,12 +18645,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -18652,7 +18663,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "components_unittests iPhone X 16.4",
+        "name": "components_unittests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18685,12 +18696,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -18703,7 +18714,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crashpad_tests iPhone X 16.4",
+        "name": "crashpad_tests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18736,12 +18747,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/crashpad/crashpad:crashpad_tests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -18754,7 +18765,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "crypto_unittests iPhone X 16.4",
+        "name": "crypto_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18787,12 +18798,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://crypto:crypto_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -18805,7 +18816,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests iPad Air (3rd generation) 16.4",
+        "name": "gfx_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18838,12 +18849,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -18856,7 +18867,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "gfx_unittests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18889,12 +18900,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -18907,7 +18918,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests iPhone SE (3rd generation) 16.4",
+        "name": "gfx_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18940,12 +18951,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -18958,7 +18969,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "gfx_unittests iPhone X 16.4",
+        "name": "gfx_unittests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -18991,12 +19002,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/gfx:gfx_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -19009,7 +19020,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "google_apis_unittests iPhone X 16.4",
+        "name": "google_apis_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19042,12 +19053,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://google_apis:google_apis_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad (6th generation)",
+          "iPad (10th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19063,7 +19074,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module iPad (6th generation) 16.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPad (10th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19096,12 +19107,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPad (6th generation) 16.4"
+        "variant_id": "iPad (10th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19117,7 +19128,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module iPad Air (3rd generation) 16.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19150,12 +19161,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19171,7 +19182,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19204,12 +19215,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -19225,7 +19236,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_bookmarks_eg2tests_module iPhone X 16.4",
+        "name": "ios_chrome_bookmarks_eg2tests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19258,12 +19269,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_eg2tests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad (6th generation)",
+          "iPad (10th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19279,7 +19290,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module iPad (6th generation) 16.4",
+        "name": "ios_chrome_integration_eg2tests_module iPad (10th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19313,12 +19324,12 @@
           "shards": 8
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPad (6th generation) 16.4"
+        "variant_id": "iPad (10th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19334,7 +19345,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_chrome_integration_eg2tests_module iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19368,12 +19379,12 @@
           "shards": 8
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -19389,7 +19400,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_integration_eg2tests_module iPhone X 16.4",
+        "name": "ios_chrome_integration_eg2tests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19423,12 +19434,12 @@
           "shards": 8
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_integration_eg2tests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad (6th generation)",
+          "iPad (10th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19444,7 +19455,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module iPad (6th generation) 16.4",
+        "name": "ios_chrome_settings_eg2tests_module iPad (10th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19478,12 +19489,12 @@
           "shards": 4
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPad (6th generation) 16.4"
+        "variant_id": "iPad (10th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19499,7 +19510,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module iPad Air (3rd generation) 16.4",
+        "name": "ios_chrome_settings_eg2tests_module iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19533,12 +19544,12 @@
           "shards": 4
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19554,7 +19565,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_chrome_settings_eg2tests_module iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19588,12 +19599,12 @@
           "shards": 4
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -19609,7 +19620,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_settings_eg2tests_module iPhone X 16.4",
+        "name": "ios_chrome_settings_eg2tests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19643,12 +19654,12 @@
           "shards": 4
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_settings_eg2tests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad (6th generation)",
+          "iPad (10th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19664,7 +19675,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module iPad (6th generation) 16.4",
+        "name": "ios_chrome_signin_eg2tests_module iPad (10th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19698,12 +19709,12 @@
           "shards": 6
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPad (6th generation) 16.4"
+        "variant_id": "iPad (10th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19719,7 +19730,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module iPad Air (3rd generation) 16.4",
+        "name": "ios_chrome_signin_eg2tests_module iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19753,12 +19764,12 @@
           "shards": 6
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19774,7 +19785,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_chrome_signin_eg2tests_module iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19808,12 +19819,12 @@
           "shards": 6
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -19829,7 +19840,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_signin_eg2tests_module iPhone X 16.4",
+        "name": "ios_chrome_signin_eg2tests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19863,12 +19874,12 @@
           "shards": 6
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_signin_eg2tests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad (6th generation)",
+          "iPad (10th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19884,7 +19895,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module iPad (6th generation) 16.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPad (10th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19917,12 +19928,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPad (6th generation) 16.4"
+        "variant_id": "iPad (10th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19938,7 +19949,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module iPad Air (3rd generation) 16.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -19971,12 +19982,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -19992,7 +20003,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20025,12 +20036,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -20046,7 +20057,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_smoke_eg2tests_module iPhone X 16.4",
+        "name": "ios_chrome_smoke_eg2tests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20079,12 +20090,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_smoke_eg2tests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad (6th generation)",
+          "iPad (10th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -20100,7 +20111,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module iPad (6th generation) 16.4",
+        "name": "ios_chrome_ui_eg2tests_module iPad (10th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20134,12 +20145,12 @@
           "shards": 12
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPad (6th generation) 16.4"
+        "variant_id": "iPad (10th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -20155,7 +20166,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module iPad Air (3rd generation) 16.4",
+        "name": "ios_chrome_ui_eg2tests_module iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20189,12 +20200,12 @@
           "shards": 12
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -20210,7 +20221,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_chrome_ui_eg2tests_module iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20244,12 +20255,12 @@
           "shards": 12
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -20265,7 +20276,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_ui_eg2tests_module iPhone X 16.4",
+        "name": "ios_chrome_ui_eg2tests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20299,12 +20310,12 @@
           "shards": 12
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_ui_eg2tests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -20317,7 +20328,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests iPad Air (3rd generation) 16.4",
+        "name": "ios_chrome_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20350,12 +20361,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -20368,7 +20379,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_chrome_unittests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20401,12 +20412,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -20419,7 +20430,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests iPhone SE (3rd generation) 16.4",
+        "name": "ios_chrome_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20452,12 +20463,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -20470,7 +20481,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_unittests iPhone X 16.4",
+        "name": "ios_chrome_unittests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20503,12 +20514,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/chrome/test:ios_chrome_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad (6th generation)",
+          "iPad (10th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -20524,7 +20535,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module iPad (6th generation) 16.4",
+        "name": "ios_chrome_web_eg2tests_module iPad (10th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20558,12 +20569,12 @@
           "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPad (6th generation) 16.4"
+        "variant_id": "iPad (10th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -20579,7 +20590,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module iPad Air (3rd generation) 16.4",
+        "name": "ios_chrome_web_eg2tests_module iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20613,12 +20624,12 @@
           "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -20634,7 +20645,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_chrome_web_eg2tests_module iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20668,12 +20679,12 @@
           "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -20689,7 +20700,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_chrome_web_eg2tests_module iPhone X 16.4",
+        "name": "ios_chrome_web_eg2tests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20723,12 +20734,12 @@
           "shards": 2
         },
         "test_id_prefix": "ninja://ios/chrome/test/earl_grey2:ios_chrome_web_eg2tests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -20741,7 +20752,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_components_unittests iPhone X 16.4",
+        "name": "ios_components_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20774,12 +20785,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/components:ios_components_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -20793,7 +20804,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_crash_xcuitests_module iPhone X 16.4",
+        "name": "ios_crash_xcuitests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20826,12 +20837,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/crashpad/crashpad/test/ios:ios_crash_xcuitests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -20844,7 +20855,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_net_unittests iPhone X 16.4",
+        "name": "ios_net_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20878,12 +20889,12 @@
           "shards": 3
         },
         "test_id_prefix": "ninja://ios/net:ios_net_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -20896,7 +20907,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_remoting_unittests iPhone X 16.4",
+        "name": "ios_remoting_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20929,12 +20940,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://remoting/ios:ios_remoting_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad (6th generation)",
+          "iPad (10th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -20950,7 +20961,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module iPad (6th generation) 16.4",
+        "name": "ios_showcase_eg2tests_module iPad (10th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -20983,12 +20994,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPad (6th generation) 16.4"
+        "variant_id": "iPad (10th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21004,7 +21015,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module iPad Air (3rd generation) 16.4",
+        "name": "ios_showcase_eg2tests_module iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21037,12 +21048,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21058,7 +21069,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_showcase_eg2tests_module iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21091,12 +21102,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -21112,7 +21123,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_showcase_eg2tests_module iPhone X 16.4",
+        "name": "ios_showcase_eg2tests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21145,12 +21156,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/showcase:ios_showcase_eg2tests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -21163,7 +21174,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_testing_unittests iPhone X 16.4",
+        "name": "ios_testing_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21196,12 +21207,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/testing:ios_testing_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21214,7 +21225,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests iPad Air (3rd generation) 16.4",
+        "name": "ios_web_inttests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21247,12 +21258,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21265,7 +21276,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_web_inttests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21298,12 +21309,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -21316,7 +21327,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests iPhone SE (3rd generation) 16.4",
+        "name": "ios_web_inttests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21349,12 +21360,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -21367,7 +21378,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_inttests iPhone X 16.4",
+        "name": "ios_web_inttests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21400,12 +21411,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_inttests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad (6th generation)",
+          "iPad (10th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21421,7 +21432,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module iPad (6th generation) 16.4",
+        "name": "ios_web_shell_eg2tests_module iPad (10th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21454,12 +21465,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPad (6th generation) 16.4"
+        "variant_id": "iPad (10th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21475,7 +21486,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_web_shell_eg2tests_module iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21508,12 +21519,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -21529,7 +21540,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_shell_eg2tests_module iPhone X 16.4",
+        "name": "ios_web_shell_eg2tests_module iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21562,12 +21573,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21580,7 +21591,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests iPad Air (3rd generation) 16.4",
+        "name": "ios_web_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21613,12 +21624,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21631,7 +21642,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_web_unittests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21664,12 +21675,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -21682,7 +21693,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests iPhone SE (3rd generation) 16.4",
+        "name": "ios_web_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21715,12 +21726,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -21733,7 +21744,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_unittests iPhone X 16.4",
+        "name": "ios_web_unittests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21766,12 +21777,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web:ios_web_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21784,7 +21795,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests iPad Air (3rd generation) 16.4",
+        "name": "ios_web_view_inttests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21817,12 +21828,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21835,7 +21846,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_web_view_inttests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21868,12 +21879,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -21886,7 +21897,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests iPhone SE (3rd generation) 16.4",
+        "name": "ios_web_view_inttests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21919,12 +21930,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -21937,7 +21948,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_inttests iPhone X 16.4",
+        "name": "ios_web_view_inttests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -21970,12 +21981,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_inttests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -21988,7 +21999,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests iPad Air (3rd generation) 16.4",
+        "name": "ios_web_view_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22021,12 +22032,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -22039,7 +22050,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ios_web_view_unittests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22072,12 +22083,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -22090,7 +22101,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests iPhone SE (3rd generation) 16.4",
+        "name": "ios_web_view_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22123,12 +22134,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -22141,7 +22152,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ios_web_view_unittests iPhone X 16.4",
+        "name": "ios_web_view_unittests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22174,12 +22185,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ios/web_view:ios_web_view_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -22192,7 +22203,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "net_unittests iPhone X 16.4",
+        "name": "net_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22225,12 +22236,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://net:net_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -22243,7 +22254,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "services_unittests iPhone X 16.4",
+        "name": "services_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22276,12 +22287,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://services:services_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -22294,7 +22305,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests iPad Air (3rd generation) 16.4",
+        "name": "skia_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22327,12 +22338,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -22345,7 +22356,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "skia_unittests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22378,12 +22389,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -22396,7 +22407,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests iPhone SE (3rd generation) 16.4",
+        "name": "skia_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22429,12 +22440,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -22447,7 +22458,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "skia_unittests iPhone X 16.4",
+        "name": "skia_unittests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22480,12 +22491,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://skia:skia_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -22498,7 +22509,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "sql_unittests iPhone X 16.4",
+        "name": "sql_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22531,12 +22542,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://sql:sql_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Air (3rd generation)",
+          "iPad Air (5th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -22549,7 +22560,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests iPad Air (3rd generation) 16.4",
+        "name": "ui_base_unittests iPad Air (5th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22582,12 +22593,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPad Air (3rd generation) 16.4"
+        "variant_id": "iPad Air (5th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPad Pro (12.9-inch) (3rd generation)",
+          "iPad Pro (12.9-inch) (6th generation)",
           "--version",
           "16.4",
           "--out-dir",
@@ -22600,7 +22611,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests iPad Pro (12.9-inch) (3rd generation) 16.4",
+        "name": "ui_base_unittests iPad Pro (12.9-inch) (6th generation) 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22633,12 +22644,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPad Pro (12.9-inch) (3rd generation) 16.4"
+        "variant_id": "iPad Pro (12.9-inch) (6th generation) 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone SE (3rd generation)",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -22651,7 +22662,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests iPhone SE (3rd generation) 16.4",
+        "name": "ui_base_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22684,12 +22695,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone SE (3rd generation) 16.4"
+        "variant_id": "iPhone 14 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14 Pro Max",
           "--version",
           "16.4",
           "--out-dir",
@@ -22702,7 +22713,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "ui_base_unittests iPhone X 16.4",
+        "name": "ui_base_unittests iPhone 14 Pro Max 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22735,12 +22746,12 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/base:ui_base_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 Pro Max 16.4"
       },
       {
         "args": [
           "--platform",
-          "iPhone X",
+          "iPhone 14",
           "--version",
           "16.4",
           "--out-dir",
@@ -22753,7 +22764,7 @@
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
-        "name": "url_unittests iPhone X 16.4",
+        "name": "url_unittests iPhone 14 16.4",
         "resultdb": {
           "enable": true,
           "has_native_resultdb_integration": true
@@ -22786,7 +22797,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://url:url_unittests/",
-        "variant_id": "iPhone X 16.4"
+        "variant_id": "iPhone 14 16.4"
       }
     ]
   },
@@ -38322,9 +38333,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5819.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5822.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 116.0.5819.0",
+        "description": "Run with ash-chrome version 116.0.5822.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -38334,8 +38345,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v116.0.5819.0",
-              "revision": "version:116.0.5819.0"
+              "location": "lacros_version_skew_tests_v116.0.5822.0",
+              "revision": "version:116.0.5822.0"
             }
           ],
           "dimension_sets": [
@@ -38354,9 +38365,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.dev.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v115.0.5790.13/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5804.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 115.0.5790.13",
+        "description": "Run with ash-chrome version 116.0.5804.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -38366,8 +38377,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v115.0.5790.13",
-              "revision": "version:115.0.5790.13"
+              "location": "lacros_version_skew_tests_v116.0.5804.0",
+              "revision": "version:116.0.5804.0"
             }
           ],
           "dimension_sets": [
@@ -38487,9 +38498,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5819.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5822.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 116.0.5819.0",
+        "description": "Run with ash-chrome version 116.0.5822.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -38499,8 +38510,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v116.0.5819.0",
-              "revision": "version:116.0.5819.0"
+              "location": "lacros_version_skew_tests_v116.0.5822.0",
+              "revision": "version:116.0.5822.0"
             }
           ],
           "dimension_sets": [
@@ -38518,9 +38529,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v115.0.5790.13/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5804.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 115.0.5790.13",
+        "description": "Run with ash-chrome version 116.0.5804.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -38530,8 +38541,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v115.0.5790.13",
-              "revision": "version:115.0.5790.13"
+              "location": "lacros_version_skew_tests_v116.0.5804.0",
+              "revision": "version:116.0.5804.0"
             }
           ],
           "dimension_sets": [
@@ -38634,9 +38645,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5819.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5822.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 116.0.5819.0",
+        "description": "Run with ash-chrome version 116.0.5822.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -38646,8 +38657,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v116.0.5819.0",
-              "revision": "version:116.0.5819.0"
+              "location": "lacros_version_skew_tests_v116.0.5822.0",
+              "revision": "version:116.0.5822.0"
             }
           ],
           "dimension_sets": [
@@ -38666,9 +38677,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v115.0.5790.13/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5804.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 115.0.5790.13",
+        "description": "Run with ash-chrome version 116.0.5804.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -38678,8 +38689,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v115.0.5790.13",
-              "revision": "version:115.0.5790.13"
+              "location": "lacros_version_skew_tests_v116.0.5804.0",
+              "revision": "version:116.0.5804.0"
             }
           ],
           "dimension_sets": [
@@ -39016,6 +39027,24 @@
         },
         "test": "printing_unittests",
         "test_id_prefix": "ninja://printing:printing_unittests/"
+      },
+      {
+        "ci_only": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04",
+              "ssd": "0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pthreadpool_unittests",
+        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
       },
       {
         "merge": {
@@ -40111,9 +40140,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5819.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5822.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 116.0.5819.0",
+        "description": "Run with ash-chrome version 116.0.5822.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -40123,8 +40152,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v116.0.5819.0",
-              "revision": "version:116.0.5819.0"
+              "location": "lacros_version_skew_tests_v116.0.5822.0",
+              "revision": "version:116.0.5822.0"
             }
           ],
           "dimension_sets": [
@@ -40143,9 +40172,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.dev.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v115.0.5790.13/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5804.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 115.0.5790.13",
+        "description": "Run with ash-chrome version 116.0.5804.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -40155,8 +40184,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v115.0.5790.13",
-              "revision": "version:115.0.5790.13"
+              "location": "lacros_version_skew_tests_v116.0.5804.0",
+              "revision": "version:116.0.5804.0"
             }
           ],
           "dimension_sets": [
@@ -40276,9 +40305,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5819.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5822.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 116.0.5819.0",
+        "description": "Run with ash-chrome version 116.0.5822.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -40288,8 +40317,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v116.0.5819.0",
-              "revision": "version:116.0.5819.0"
+              "location": "lacros_version_skew_tests_v116.0.5822.0",
+              "revision": "version:116.0.5822.0"
             }
           ],
           "dimension_sets": [
@@ -40307,9 +40336,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v115.0.5790.13/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5804.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 115.0.5790.13",
+        "description": "Run with ash-chrome version 116.0.5804.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -40319,8 +40348,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v115.0.5790.13",
-              "revision": "version:115.0.5790.13"
+              "location": "lacros_version_skew_tests_v116.0.5804.0",
+              "revision": "version:116.0.5804.0"
             }
           ],
           "dimension_sets": [
@@ -40423,9 +40452,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5819.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5822.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 116.0.5819.0",
+        "description": "Run with ash-chrome version 116.0.5822.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -40435,8 +40464,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v116.0.5819.0",
-              "revision": "version:116.0.5819.0"
+              "location": "lacros_version_skew_tests_v116.0.5822.0",
+              "revision": "version:116.0.5822.0"
             }
           ],
           "dimension_sets": [
@@ -40455,9 +40484,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v115.0.5790.13/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5804.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 115.0.5790.13",
+        "description": "Run with ash-chrome version 116.0.5804.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -40467,8 +40496,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v115.0.5790.13",
-              "revision": "version:115.0.5790.13"
+              "location": "lacros_version_skew_tests_v116.0.5804.0",
+              "revision": "version:116.0.5804.0"
             }
           ],
           "dimension_sets": [
@@ -40805,6 +40834,24 @@
         },
         "test": "printing_unittests",
         "test_id_prefix": "ninja://printing:printing_unittests/"
+      },
+      {
+        "ci_only": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04",
+              "ssd": "0"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pthreadpool_unittests",
+        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
       },
       {
         "merge": {
@@ -41171,9 +41218,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5819.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5822.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 116.0.5819.0",
+        "description": "Run with ash-chrome version 116.0.5822.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -41183,8 +41230,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v116.0.5819.0",
-              "revision": "version:116.0.5819.0"
+              "location": "lacros_version_skew_tests_v116.0.5822.0",
+              "revision": "version:116.0.5822.0"
             }
           ],
           "dimension_sets": [
@@ -41202,9 +41249,9 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v115.0.5790.13/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v116.0.5804.0/test_ash_chrome"
         ],
-        "description": "Run with ash-chrome version 115.0.5790.13",
+        "description": "Run with ash-chrome version 116.0.5804.0",
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -41214,8 +41261,8 @@
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v115.0.5790.13",
-              "revision": "version:115.0.5790.13"
+              "location": "lacros_version_skew_tests_v116.0.5804.0",
+              "revision": "version:116.0.5804.0"
             }
           ],
           "dimension_sets": [
@@ -42707,6 +42754,26 @@
         },
         "test": "printing_unittests",
         "test_id_prefix": "ninja://printing:printing_unittests/"
+      },
+      {
+        "ci_only": true,
+        "isolate_profile_data": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04",
+              "pool": "chromium.tests.no-external-ip"
+            }
+          ],
+          "expiration": 43200,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pthreadpool_unittests",
+        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
       },
       {
         "isolate_profile_data": true,
@@ -48198,6 +48265,27 @@
         },
         "test": "printing_unittests",
         "test_id_prefix": "ninja://printing:printing_unittests/"
+      },
+      {
+        "ci_only": true,
+        "isolate_profile_data": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-19045",
+              "pool": "chromium.tests.no-external-ip"
+            }
+          ],
+          "expiration": 43200,
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pthreadpool_unittests",
+        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
       },
       {
         "isolate_profile_data": true,

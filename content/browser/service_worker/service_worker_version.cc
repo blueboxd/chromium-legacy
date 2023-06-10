@@ -2184,16 +2184,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       outside_fetch_client_settings_object_.Clone();
 
   ContentBrowserClient* browser_client = GetContentClient()->browser();
-  if (origin_trial_tokens_ &&
-      origin_trial_tokens_->contains("SendFullUserAgentAfterReduction")) {
-    params->user_agent = browser_client->GetFullUserAgent();
-  } else if (origin_trial_tokens_ &&
-             origin_trial_tokens_->contains("UserAgentReduction")) {
-    params->user_agent = browser_client->GetReducedUserAgent();
-  } else {
-    params->user_agent = browser_client->GetUserAgentBasedOnPolicy(
-        context_->wrapper()->browser_context());
-  }
+  params->user_agent = browser_client->GetUserAgentBasedOnPolicy(
+      context_->wrapper()->browser_context());
   params->ua_metadata = browser_client->GetUserAgentMetadata();
   params->is_installed = IsInstalled(status_);
   params->script_url_to_skip_throttling = updated_script_url_;
@@ -2866,6 +2858,17 @@ void ServiceWorkerVersion::SetResources(
   script_cache_map_.SetResources(resources);
   sha256_script_checksum_ =
       MergeResourceRecordSHA256ScriptChecksum(script_url_, script_cache_map_);
+}
+
+bool ServiceWorkerVersion::SetupRouterEvaluator(
+    const blink::ServiceWorkerRouterRules& rules) {
+  CHECK(!router_evaluator_);
+  router_evaluator_ = std::make_unique<ServiceWorkerRouterEvaluator>(rules);
+  if (!router_evaluator_->IsValid()) {
+    router_evaluator_.reset();
+    return false;
+  }
+  return true;
 }
 
 base::WeakPtr<ServiceWorkerVersion> ServiceWorkerVersion::GetWeakPtr() {

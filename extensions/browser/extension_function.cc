@@ -366,6 +366,10 @@ ExtensionFunction::~ExtensionFunction() {
   if (dispatcher() && (render_frame_host() || is_from_service_worker())) {
     dispatcher()->OnExtensionFunctionCompleted(*this);
   }
+  // Delete the WebContentsObserver before updating the extension function
+  // crash keys so we capture the extension ID if this call hangs or crashes.
+  // http://crbug.com/1435545
+  tracker_.reset();
   // The function may not have run due to quota limits.
   if (extension() && did_run_) {
     extensions::extension_function_crash_keys::EndExtensionFunctionCall(
@@ -591,6 +595,10 @@ content::WebContents* ExtensionFunction::GetSenderWebContents() {
   return render_frame_host_
              ? content::WebContents::FromRenderFrameHost(render_frame_host_)
              : nullptr;
+}
+
+bool ExtensionFunction::ShouldKeepWorkerAliveIndefinitely() {
+  return false;
 }
 
 void ExtensionFunction::OnServiceWorkerAck() {

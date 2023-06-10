@@ -398,6 +398,13 @@ bool HTMLVideoElement::HasAvailableVideoFrame() const {
   return false;
 }
 
+bool HTMLVideoElement::HasReadableVideoFrame() const {
+  if (auto* wmp = GetWebMediaPlayer()) {
+    return wmp->HasReadableVideoFrame();
+  }
+  return false;
+}
+
 void HTMLVideoElement::OnFirstFrame(base::TimeTicks frame_time,
                                     size_t bytes_to_first_frame) {
   DCHECK(GetWebMediaPlayer());
@@ -773,7 +780,9 @@ void HTMLVideoElement::AttributeChanged(
 }
 
 void HTMLVideoElement::OnRequestVideoFrameCallback() {
-  VideoFrameCallbackRequester::From(*this)->OnRequestVideoFrameCallback();
+  if (auto* vfc_requester = VideoFrameCallbackRequester::From(*this)) {
+    vfc_requester->OnRequestVideoFrameCallback();
+  }
 }
 
 }  // namespace blink

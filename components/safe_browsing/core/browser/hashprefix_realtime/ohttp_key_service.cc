@@ -7,11 +7,14 @@
 #include "base/base64.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
+#include "base/strings/escape.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #include "components/safe_browsing/core/browser/utils/backoff_operator.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/common/utils.h"
+#include "google_apis/google_api_keys.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -101,20 +104,28 @@ constexpr net::NetworkTrafficAnnotationTag kOhttpKeyTrafficAnnotation =
       "default."
   )");
 
-bool IsEnabled(const PrefService& pref_service) {
+bool IsEnabled(PrefService* pref_service) {
   safe_browsing::SafeBrowsingState state =
-      safe_browsing::GetSafeBrowsingState(pref_service);
-  // TODO(crbug.com/1441654) [Also TODO(thefrog)]: This may need to change (e.g.
-  // call into HashRealTimeUtils).
-  return (state == safe_browsing::SafeBrowsingState::STANDARD_PROTECTION &&
-          !base::FeatureList::IsEnabled(
-              safe_browsing::kSafeBrowsingLookupMechanismExperiment)) ||
-         // The service is enabled when enhanced protection and lookup mechanism
-         // experiment are both enabled, because Chrome needs to send HPRT
-         // requests to conduct the experiment.
+      safe_browsing::GetSafeBrowsingState(*pref_service);
+  return safe_browsing::hash_realtime_utils::DetermineHashRealTimeSelection(
+             /*is_off_the_record=*/false, pref_service) ==
+             safe_browsing::hash_realtime_utils::HashRealTimeSelection::
+                 kHashRealTimeService ||
+         // The service is enabled when enhanced protection and
+         // kHashRealTimeOverOhttp are both enabled, because when this is true,
+         // Chrome needs to send HPRT requests over OHTTP when conducting the
+         // lookup mechanism experiment.
          (state == safe_browsing::SafeBrowsingState::ENHANCED_PROTECTION &&
-          base::FeatureList::IsEnabled(
-              safe_browsing::kSafeBrowsingLookupMechanismExperiment));
+          base::FeatureList::IsEnabled(safe_browsing::kHashRealTimeOverOhttp));
+}
+
+GURL GetKeyFetchingUrl() {
+  GURL url(kKeyFetchServerUrl);
+  std::string api_key = google_apis::GetAPIKey();
+  if (!api_key.empty()) {
+    url = url.Resolve("?key=" + base::EscapeQueryParamValue(api_key, true));
+  }
+  return url;
 }
 
 }  // namespace
@@ -149,13 +160,13 @@ OhttpKeyService::OhttpKeyService(
       base::BindRepeating(&OhttpKeyService::OnSafeBrowsingStateChanged,
                           weak_factory_.GetWeakPtr()));
 
-  SetEnabled(IsEnabled(*pref_service_));
+  SetEnabled(IsEnabled(pref_service_));
 }
 
 OhttpKeyService::~OhttpKeyService() = default;
 
 void OhttpKeyService::OnSafeBrowsingStateChanged() {
-  SetEnabled(IsEnabled(*pref_service_));
+  SetEnabled(IsEnabled(pref_service_));
 }
 
 void OhttpKeyService::SetEnabled(bool enable) {
@@ -256,7 +267,7 @@ void OhttpKeyService::StartFetch(Callback callback) {
     return;
   }
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = GURL(kKeyFetchServerUrl);
+  resource_request->url = GetKeyFetchingUrl();
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  kOhttpKeyTrafficAnnotation);

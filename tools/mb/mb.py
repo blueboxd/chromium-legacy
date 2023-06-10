@@ -15,7 +15,7 @@ import collections
 import errno
 import json
 import os
-import pipes
+import shlex
 import platform
 import re
 import shutil
@@ -1295,7 +1295,6 @@ class MetaBuildWrapper:
     file_ignore_list = [
         re.compile(r'.*build/chromeos.*'),
         re.compile(r'.*build/cros_cache.*'),
-        re.compile(r'.*third_party/chromite.*'),
         # No test target should rely on files in [output_dir]/gen.
         re.compile(r'^gen/.*'),
     ]
@@ -2072,7 +2071,7 @@ class MetaBuildWrapper:
     if self.platform == 'win32':
       shell_quoter = QuoteForCmd
     else:
-      shell_quoter = pipes.quote
+      shell_quoter = shlex.quote
 
     if cmd[0] == self.executable:
       cmd = ['python'] + cmd[1:]

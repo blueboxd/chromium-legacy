@@ -1046,6 +1046,7 @@
       'mac-code-coverage', # https://crbug.com/1201386
       'mac11-arm64-rel-tests', # https://crbug.com/1406364
       'mac12-arm64-rel-tests', # https://crbug.com/1406364
+      'mac13-arm64-rel-tests', # https://crbug.com/1406364
       'Linux TSan Tests',  # https://crbug.com/368525
       'linux-exp-tsan-fyi-rel',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
@@ -1467,6 +1468,11 @@
           'hard_timeout': 10800,
         }
       },
+      'chromeos-reven-chrome': {
+        'args': [
+          '--tast-shard-method=hash',
+        ],
+      },
     },
   },
   'chrome_java_test_pagecontroller_tests': {
@@ -1524,6 +1530,10 @@
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l.chrome_public_test_apk.filter',
         ],
+        # TODO(crbug.com/1439624): Remove experiment and ci_only
+        # once the test suite is stable.
+        'ci_only': True,
+        'experiment_percentage': 100,
       },
       'android-12l-x64-fyi-dbg': {
         'args': [
@@ -1826,6 +1836,8 @@
   },
   'content_browsertests': {
     'remove_from': [
+      # TODO(crbug.com/1431581): Temporarily remove it from android-12L builder due to infra flakiness.
+      'android-12l-x64-dbg-tests',
       'CrWinAsan(dll)', # https://crbug.com/935598
       # TODO(crbug.com/1371630): Enable on Fuchsia dbg/asan/clang builders.
       'fuchsia-fyi-arm64-dbg',
@@ -1942,6 +1954,10 @@
         },
       },
       'android-12l-x64-dbg-tests': {
+        # TODO(crbug.com/1439624): Remove experiment and ci_only
+        # once the test suite is stable.
+        'ci_only': True,
+        'experiment_percentage': 100,
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l_13.content_browsertests.filter',
         ],
@@ -2770,6 +2786,8 @@
       'mac11-arm64-rel-tests',
       # TODO(https://crbug.com/1267125): Re-enable.
       'mac12-arm64-rel-tests',
+      # TODO(https://crbug.com/1267125): Re-enable.
+      'mac13-arm64-rel-tests',
     ],
   },
   'hardware_accelerated_feature_tests': {
@@ -3652,6 +3670,14 @@
       },
     },
   },
+  'pthreadpool_unittests': {
+    'remove_from': [
+      # pthreadpool is not built for ChromeOS currently.
+      'linux-chromeos-dbg',
+      'linux-chromeos-rel',
+      'linux-lacros-tester-rel',
+    ],
+  },
   'sandbox_linux_unittests': {
     'modifications': {
       # If you change this, make similar changes in android-x86-code-coverage below
@@ -4049,6 +4075,8 @@
       'mac11-arm64-rel-tests',
       # TODO(https://crbug.com/1267161): Re-enable when platform is supported.
       'mac12-arm64-rel-tests',
+      # TODO(https://crbug.com/1267161): Re-enable when platform is supported.
+      'mac13-arm64-rel-tests',
     ],
   },
   'test_buildbucket_api_gpu_use_cases GTX 1660': {

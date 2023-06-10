@@ -42,8 +42,8 @@
 #include "third_party/skia/include/core/SkSerialProcs.h"
 #include "third_party/skia/include/effects/SkHighContrastFilter.h"
 #include "third_party/skia/include/private/SkGainmapInfo.h"
-#include "third_party/skia/include/private/chromium/GrSlug.h"
 #include "third_party/skia/include/private/chromium/SkChromeRemoteGlyphCache.h"
+#include "third_party/skia/include/private/chromium/Slug.h"
 #include "ui/gfx/hdr_metadata.h"
 #include "ui/gfx/mojom/hdr_metadata.mojom.h"
 #include "ui/gfx/mojom/hdr_metadata_mojom_traits.h"
@@ -240,7 +240,7 @@ void PaintOpReader::Read(SkColor4f* color) {
   // infinite and NaN colors don't make sense and shouldn't be produced by a
   // renderer, so encountering a non-finite color implies the paint op buffer
   // is invalid.
-  if (!SkScalarsAreFinite(color->vec(), 4)) {
+  if (valid_ && !SkScalarsAreFinite(color->vec(), 4)) {
     SetInvalid(DeserializationError::kNonFiniteSkColor4f);
   }
 }
@@ -539,7 +539,7 @@ void PaintOpReader::Read(SkGainmapInfo* gainmap_info) {
   }
 }
 
-void PaintOpReader::Read(sk_sp<GrSlug>* slug) {
+void PaintOpReader::Read(sk_sp<sktext::gpu::Slug>* slug) {
   AssertFieldAlignment();
 
   size_t data_bytes = 0u;
@@ -550,16 +550,16 @@ void PaintOpReader::Read(sk_sp<GrSlug>* slug) {
   }
 
   if (remaining_bytes_ < data_bytes) {
-    SetInvalid(DeserializationError::kInsufficientRemainingBytes_Read_GrSlug);
+    SetInvalid(DeserializationError::kInsufficientRemainingBytes_Read_Slug);
     return;
   }
 
-  *slug = GrSlug::Deserialize(const_cast<const char*>(memory_), data_bytes,
-                              options_->strike_client);
+  *slug = sktext::gpu::Slug::Deserialize(const_cast<const char*>(memory_),
+                                         data_bytes, options_->strike_client);
   DidRead(data_bytes);
 
   if (!*slug) {
-    SetInvalid(DeserializationError::kGrSlugDeserializeFailure);
+    SetInvalid(DeserializationError::kSlugDeserializeFailure);
     return;
   }
 }
@@ -1064,18 +1064,13 @@ void PaintOpReader::ReadAlphaThresholdPaintFilter(
     sk_sp<PaintFilter>* filter,
     const absl::optional<PaintFilter::CropRect>& crop_rect) {
   SkRegion region;
-  SkScalar inner_min = 0.f;
-  SkScalar outer_max = 0.f;
   sk_sp<PaintFilter> input;
 
   Read(&region);
-  ReadSimple(&inner_min);
-  ReadSimple(&outer_max);
   Read(&input);
   if (!valid_)
     return;
-  filter->reset(new AlphaThresholdPaintFilter(region, inner_min, outer_max,
-                                              std::move(input),
+  filter->reset(new AlphaThresholdPaintFilter(region, std::move(input),
                                               base::OptionalToPtr(crop_rect)));
 }
 

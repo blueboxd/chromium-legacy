@@ -1181,6 +1181,7 @@ component("base") {
         "allocator/early_zone_registration_mac.h",
         "allocator/partition_allocator/shim/allocator_shim_override_mac_default_zone.h",
         "allocator/partition_allocator/shim/allocator_shim_override_mac_symbols.h",
+        "allocator/partition_allocator/shim/early_zone_registration_constants.h",
       ]
       # configs += [ "//base/allocator:mac_no_default_new_delete_symbols" ]
     }
@@ -2658,7 +2659,7 @@ static_library("base_static") {
   }
 }
 
-if (use_custom_libcxx && enable_safe_libcxx && !is_debug) {
+if (use_safe_libcxx && !is_debug) {
   # nodebug_assertion.cc has to be in its own source_set instead of being
   # included as a source in //base as otherwise its symbols won't be linked in
   # if they end up in an archive.
@@ -3457,7 +3458,7 @@ test("base_unittests") {
     ]
   }
 
-  if (use_custom_libcxx && enable_safe_libcxx) {
+  if (use_safe_libcxx) {
     sources += [ "libcpp_hardening_test.cc" ]
   }
 

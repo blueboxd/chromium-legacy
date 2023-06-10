@@ -138,6 +138,10 @@ class MessageSection : public views::BoxLayoutView {
   // Removes all extension entries.
   void ClearExtensions();
 
+  // Updates the visibility of the view based on `state_` and
+  // `extension_entries_`.
+  void UpdateVisibility();
+
   // The current state of the section.
   ExtensionsMenuMainPageView::MessageSectionState state_;
 
@@ -225,7 +229,9 @@ MessageSection::MessageSection(
                           views::kMarginsKey,
                           gfx::Insets::TLBR(control_vertical_margin, 0, 0, 0))
                       .SetText(l10n_util::GetStringUTF16(
-                          IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TEXT))),
+                          IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TEXT))
+                      .SetTooltipText(l10n_util::GetStringUTF16(
+                          IDS_EXTENSIONS_MENU_MESSAGE_SECTION_RELOAD_CONTAINER_BUTTON_TOOLTIP))),
           // Requests access container.
           views::Builder<views::BoxLayoutView>()
               .CopyAddressTo(&requests_access_container_)
@@ -292,6 +298,7 @@ void MessageSection::Update(
               IDS_EXTENSIONS_MENU_MESSAGE_SECTION_USER_BLOCKED_ACCESS_TEXT));
       break;
   }
+  UpdateVisibility();
 }
 
 void MessageSection::AddOrUpdateExtension(const extensions::ExtensionId& id,
@@ -329,12 +336,15 @@ void MessageSection::AddOrUpdateExtension(const extensions::ExtensionId& id,
                 views::Builder<views::MdTextButton>()
                     .SetCallback(base::BindRepeating(dismiss_callback_, id))
                     .SetText(l10n_util::GetStringUTF16(
-
-                        IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_DISMISS_BUTTON_TEXT)),
+                        IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_DISMISS_BUTTON_TEXT))
+                    .SetTooltipText(l10n_util::GetStringUTF16(
+                        IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_DISMISS_BUTTON_TOOLTIP)),
                 views::Builder<views::MdTextButton>()
                     .SetCallback(base::BindRepeating(allow_callback_, id))
                     .SetText(l10n_util::GetStringUTF16(
                         IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_ALLOW_BUTTON_TEXT))
+                    .SetTooltipText(l10n_util::GetStringUTF16(
+                        IDS_EXTENSIONS_MENU_REQUESTS_ACCESS_SECTION_ALLOW_BUTTON_TOOLTIP))
                     .SetProperty(
                         views::kMarginsKey,
                         gfx::Insets::TLBR(0, related_control_horizontal_margin,
@@ -343,8 +353,8 @@ void MessageSection::AddOrUpdateExtension(const extensions::ExtensionId& id,
     extension_entries_.insert({id, item.get()});
     requests_access_container_->children()[1]->AddChildViewAt(std::move(item),
                                                               index);
-
     requests_access_container_->SetVisible(!extension_entries_.empty());
+    UpdateVisibility();
   } else {
     // Update extension entry.
     std::vector<View*> extension_items = extension_iter->second->children();
@@ -372,12 +382,23 @@ void MessageSection::RemoveExtension(const extensions::ExtensionId& id) {
   extension_entries_.erase(extension_iter);
 
   requests_access_container_->SetVisible(!extension_entries_.empty());
+  UpdateVisibility();
 }
 
 void MessageSection::ClearExtensions() {
   requests_access_container_->children()[kExtensionItemsContainerIndex]
       ->RemoveAllChildViews();
   extension_entries_.clear();
+}
+
+void MessageSection::UpdateVisibility() {
+  // Section is always visible unless state is "user customized access" and no
+  // extension is requesting site access.
+  bool is_visible = state_ == ExtensionsMenuMainPageView::MessageSectionState::
+                                  kUserCustomizedAccess
+                        ? !extension_entries_.empty()
+                        : true;
+  SetVisible(is_visible);
 }
 
 std::vector<extensions::ExtensionId> MessageSection::GetExtensionsForTesting() {
@@ -493,7 +514,7 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                       .SetProperty(
                           views::kMarginsKey,
                           gfx::Insets::TLBR(0, horizontal_spacing, 0, 0))
-                      .SetAccessibleName(
+                      .SetTooltipText(
                           l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS))
                       .CustomConfigure(
                           base::BindOnce([](views::ImageButton* view) {
@@ -506,6 +527,8 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                       .SetProperty(
                           views::kMarginsKey,
                           gfx::Insets::TLBR(0, horizontal_spacing, 0, 0))
+                      .SetAccessibleName(l10n_util::GetStringUTF16(
+                          IDS_EXTENSIONS_MENU_SITE_SETTINGS_TOGGLE_ACCESSIBLE_NAME))
                       .SetCallback(base::BindRepeating(
                           [](views::ToggleButton* toggle_button,
                              base::RepeatingCallback<void(bool)> callback) {
@@ -605,8 +628,6 @@ void ExtensionsMenuMainPageView::UpdateSubheader(
   site_settings_toggle_->SetVisible(is_site_settings_toggle_visible);
   site_settings_toggle_->SetIsOn(is_site_settings_toggle_on);
   site_settings_toggle_->SetTooltipText(
-      GetSiteSettingToggleText(is_site_settings_toggle_on));
-  site_settings_toggle_->SetAccessibleName(
       GetSiteSettingToggleText(is_site_settings_toggle_on));
 }
 

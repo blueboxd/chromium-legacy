@@ -11,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ash/arc/input_overlay/arc_input_overlay_uma.h"
+#include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
@@ -31,15 +32,15 @@ ActionView::ActionView(Action* action,
       beta_(display_overlay_controller->touch_injector()->beta()) {}
 ActionView::~ActionView() = default;
 
+void ActionView::OnActionUpdated() {
+  SetViewContent(BindingOption::kCurrent);
+}
+
 void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
   DCHECK(mode != DisplayMode::kEducation && mode != DisplayMode::kMenu &&
          mode != DisplayMode::kPreMenu);
   if (mode == DisplayMode::kEducation || mode == DisplayMode::kMenu ||
       mode == DisplayMode::kPreMenu) {
-    return;
-  }
-
-  if (!editable_ && mode == DisplayMode::kEdit) {
     return;
   }
 
@@ -54,7 +55,6 @@ void ActionView::SetDisplayMode(DisplayMode mode, ActionLabel* editing_label) {
 
   if (mode == DisplayMode::kView) {
     display_mode_ = DisplayMode::kView;
-    RemoveTrashButton();
     if (!IsInputBound(action_->GetCurrentDisplayedInput())) {
       SetVisible(false);
     }
@@ -224,15 +224,6 @@ void ActionView::SetTouchPointCenter(const gfx::Point& touch_point_center) {
 void ActionView::ShowButtonOptionsMenu() {
   DCHECK(display_overlay_controller_);
   display_overlay_controller_->AddButtonOptionsMenu(action_);
-}
-
-void ActionView::RemoveTrashButton() {
-  if (!editable_ || !trash_button_) {
-    return;
-  }
-
-  RemoveChildViewT(trash_button_);
-  trash_button_ = nullptr;
 }
 
 void ActionView::AddTouchPoint(ActionType action_type) {

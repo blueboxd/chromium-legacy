@@ -36,9 +36,8 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {KeyboardPolicies, MousePolicies} from '../mojom-webui/input_device_settings.mojom-webui.js';
 import {KeyboardSettingsObserverReceiver, MouseSettingsObserverReceiver, PointingStickSettingsObserverReceiver, TouchpadSettingsObserverReceiver} from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Router} from '../router.js';
+import {Router, routes} from '../router.js';
 
 import {getTemplate} from './device_page.html.js';
 import {DevicePageBrowserProxy, DevicePageBrowserProxyImpl} from './device_page_browser_proxy.js';
@@ -97,17 +96,6 @@ class SettingsDevicePageElement extends SettingsDevicePageElementBase {
       hasStylus_: {
         type: Boolean,
         value: false,
-      },
-
-      /**
-       * Whether audio management info should be shown.
-       */
-      showAudioInfo_: {
-        type: Boolean,
-        value() {
-          return loadTimeData.getBoolean('enableAudioSettingsPage');
-        },
-        readOnly: true,
       },
 
       /**

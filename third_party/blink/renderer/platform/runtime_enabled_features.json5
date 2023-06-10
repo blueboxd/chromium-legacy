@@ -290,6 +290,7 @@
       name: "AdInterestGroupAPI",
       origin_trial_feature_name: "AdInterestGroupAPI",
       implied_by: ["Fledge", "Parakeet"],
+      public: true,
     },
     {
       name: "AdTagging",
@@ -316,8 +317,6 @@
     },
     {
       name: "AnonymousIframe",
-      origin_trial_allows_third_party: true,
-      origin_trial_feature_name: "AnonymousIframeOriginTrial",
       public: true,
       status: "stable",
       base_feature: "none",
@@ -449,6 +448,11 @@
       base_feature: "none",
     },
     {
+      // There are two different code changes guarded by this feature. Both
+      // are about triggering a beforeunload cancel dialog and need adoption
+      // from developers.
+      // 1. If event.preventDefault() is called, prompt cancel dialog.
+      // 2. If event.returnValue is the empty string, do not prompt cancel dialog.
       name: "BeforeunloadEventCancelByPreventDefault",
       status: "experimental",
       public: true,
@@ -716,6 +720,11 @@
       name: "CooperativeScheduling",
       base_feature: "none",
       public: true,
+    },
+    {
+      name: "CoopRestrictProperties",
+      origin_trial_feature_name: "CoopRestrictProperties",
+      base_feature: "none",
     },
     {
       name: "CorsRFC1918",
@@ -1233,6 +1242,11 @@
       status: "stable",
     },
     {
+      // https://github.com/whatwg/html/pull/9195
+      name: "CustomElementsGetName",
+      status: "experimental",
+    },
+    {
       name: "Database",
       public: true,
       status: "stable",
@@ -1460,6 +1474,10 @@
     {
       name: "DocumentWrite",
       base_feature: "none",
+    },
+    {
+      name: "DOMPartsAPI",
+      status: "experimental",
     },
     {
       // Kill-switch for fixes to a bug that detached input elements are retained.
@@ -2074,6 +2092,11 @@
     {
       name: "LayoutFlexNewRowAlgorithm",
       status: "test",
+      implied_by: ["LayoutFlexNewRowAlgorithmV2",],
+    },
+    {
+      name: "LayoutFlexNewRowAlgorithmV2",
+      status: "stable",
     },
     {
       name: "LayoutFlexSafeAlignment",
@@ -2907,7 +2930,6 @@
     {
       name: "RemoveDataUrlInSvgUse",
       status: "experimental",
-      base_feature: "none",
     },
     {
       name: "RemoveLegacySizeComputation",
@@ -3111,6 +3133,10 @@
       name: "ScrollTimelineCurrentTime",
       status: "experimental"
     },
+    {
+      name: "ScrollTimelineOnCompositor",
+      status: "test"
+    },
     // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
     // as per the spec, matching other Web engines.
     {
@@ -3155,12 +3181,6 @@
       base_feature: "none",
     },
     {
-      name: "SendFullUserAgentAfterReduction",
-      base_feature: "none",
-      origin_trial_feature_name: "SendFullUserAgentAfterReduction",
-      origin_trial_allows_third_party: true
-    },
-    {
       name: "SendMouseEventsDisabledFormControls",
       status: "experimental",
       public: true,
@@ -3196,6 +3216,10 @@
       base_feature: "none",
       origin_trial_feature_name: "ServiceWorkerBypassFetchHandlerWithRaceNetworkRequest",
       public: true,
+    },
+    {
+      name: "ServiceWorkerRouter",
+      base_feature: "none",
     },
     {
       name: "SharedArrayBuffer",
@@ -3621,14 +3645,6 @@
     {
       name: "UserAgentClientHint",
       status: "stable",
-    },
-    {
-      name: "UserAgentReduction",
-      origin_trial_feature_name: "UserAgentReduction",
-      origin_trial_allows_third_party: true,
-      // iOS not included as it should not send a reduced User-Agent string.
-      origin_trial_os: ["android", "chromeos", "fuchsia", "linux", "mac", "win"],
-      base_feature: "ReduceUserAgent",
     },
     {
       name: "V8IdleTasks",

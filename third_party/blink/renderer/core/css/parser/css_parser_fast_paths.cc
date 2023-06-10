@@ -4,6 +4,12 @@
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_fast_paths.h"
 
+#ifdef __SSE2__
+#include <immintrin.h>
+#elif defined(__ARM_NEON__)
+#include <arm_neon.h>
+#endif
+
 #include "build/build_config.h"
 #include "third_party/blink/public/public_buildflags.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
@@ -168,48 +174,57 @@ static CSSValue* ParseSimpleLengthValue(CSSPropertyID property_id,
   return CSSNumericLiteralValue::Create(number, unit);
 }
 
-ALWAYS_INLINE static bool ParseSimpleAngle(const LChar* characters,
-                                           unsigned length,
-                                           CSSPrimitiveValue::UnitType& unit,
-                                           double& number) {
-  if (length > 3 && (characters[length - 3] | 0x20) == 'd' &&
-      (characters[length - 2] | 0x20) == 'e' &&
-      (characters[length - 1] | 0x20) == 'g') {
-    length -= 3;
+// Returns the length of the angle, or 0 if the parse failed.
+ALWAYS_INLINE static unsigned ParseSimpleAngle(
+    const LChar* characters,
+    unsigned length,
+    CSSPrimitiveValue::UnitType& unit,
+    double& number) {
+  int number_length;
+  if (length > 0 && *characters == '-') {
+    number_length =
+        ParsePositiveDouble(characters + 1, characters + length, number);
+    if (number_length == 0) {
+      return number_length;
+    }
+    ++number_length;
+    number = -std::min<double>(number, std::numeric_limits<float>::max());
+  } else {
+    number_length =
+        ParsePositiveDouble(characters, characters + length, number);
+    if (number_length == 0) {
+      return number_length;
+    }
+    number = std::min<double>(number, std::numeric_limits<float>::max());
+  }
+
+  characters += number_length;
+  length -= number_length;
+
+  if (length >= 3 && (characters[0] | 0x20) == 'd' &&
+      (characters[1] | 0x20) == 'e' && (characters[2] | 0x20) == 'g') {
     unit = CSSPrimitiveValue::UnitType::kDegrees;
-  } else if (length > 4 && (characters[length - 4] | 0x20) == 'g' &&
-             (characters[length - 3] | 0x20) == 'r' &&
-             (characters[length - 2] | 0x20) == 'a' &&
-             (characters[length - 1] | 0x20) ==
-                 'd') {  // Note: 'grad' must be checked before 'rad'.
-    length -= 4;
+    return number_length + 3;
+  } else if (length >= 4 && (characters[0] | 0x20) == 'g' &&
+             (characters[1] | 0x20) == 'r' && (characters[2] | 0x20) == 'a' &&
+             (characters[3] | 0x20) == 'd') {
     unit = CSSPrimitiveValue::UnitType::kGradians;
-  } else if (length > 3 && (characters[length - 3] | 0x20) == 'r' &&
-             (characters[length - 2] | 0x20) == 'a' &&
-             (characters[length - 1] | 0x20) == 'd') {
-    length -= 3;
+    return number_length + 4;
+  } else if (length >= 3 && (characters[0] | 0x20) == 'r' &&
+             (characters[1] | 0x20) == 'a' && (characters[2] | 0x20) == 'd') {
     unit = CSSPrimitiveValue::UnitType::kRadians;
-  } else if (length > 4 && (characters[length - 4] | 0x20) == 't' &&
-             (characters[length - 3] | 0x20) == 'u' &&
-             (characters[length - 2] | 0x20) == 'r' &&
-             (characters[length - 1] | 0x20) == 'n') {
-    length -= 4;
+    return number_length + 3;
+  } else if (length >= 4 && (characters[0] | 0x20) == 't' &&
+             (characters[1] | 0x20) == 'u' && (characters[2] | 0x20) == 'r' &&
+             (characters[3] | 0x20) == 'n') {
     unit = CSSPrimitiveValue::UnitType::kTurns;
+    return number_length + 4;
   } else {
     // For rotate: Only valid for zero (we'll check that in the caller).
     // For hsl(): To be treated as angles (also done in the caller).
     unit = CSSPrimitiveValue::UnitType::kNumber;
+    return number_length;
   }
-
-  // We rely on ParseDoubleWithPrefix() for validation as well. The function
-  // will return a length different from “length” if the entire passed-in
-  // character range does not represent a double.
-  if (!ParseDoubleWithPrefix(characters, characters + length, number)) {
-    return false;
-  }
-  number = ClampTo<double>(number, -std::numeric_limits<float>::max(),
-                           std::numeric_limits<float>::max());
-  return true;
 }
 
 static inline bool IsColorPropertyID(CSSPropertyID property_id) {
@@ -261,11 +276,68 @@ static unsigned FindLengthOfValidDouble(const LChar* string, const LChar* end) {
   }
 
   bool decimal_mark_seen = false;
-  int processed_length = 0;
+  int valid_length = 0;
+#if defined(__SSE2__) || defined(__ARM_NEON__)
+  if (length >= 16) {
+    uint8_t b __attribute__((vector_size(16)));
+    memcpy(&b, string, sizeof(b));
+    auto is_decimal_mask = (b >= '0' && b <= '9');
+    auto is_mark_mask = (b == '.');
+#ifdef __SSE2__
+    uint16_t is_decimal_bits = _mm_movemask_epi8(is_decimal_mask);
+    uint16_t is_mark_bits = _mm_movemask_epi8(is_mark_mask);
 
-  for (int i = 0; i < length; ++i, ++processed_length) {
-    if (!IsASCIIDigit(string[i])) {
-      if (!decimal_mark_seen && string[i] == '.') {
+    // Only count the first decimal mark.
+    is_mark_bits &= -is_mark_bits;
+
+    if ((is_decimal_bits | is_mark_bits) == 0xffff) {
+      decimal_mark_seen = (is_mark_bits != 0);
+      valid_length = 16;
+      // Do the rest of the parsing using the scalar loop below.
+      // It's unlikely that numbers will be much more than 16 bytes,
+      // so we don't bother with a loop (which would also need logic
+      // for checking for two decimal marks in separate 16-byte chunks).
+    } else {
+      // Get rid of any stray final period; i.e., one that is not
+      // followed by a decimal.
+      is_mark_bits &= (is_decimal_bits >> 1);
+      uint16_t accept_bits = is_decimal_bits | is_mark_bits;
+      return __builtin_ctz(~accept_bits);
+    }
+#else  // __ARM_NEON__
+
+    // https://community.arm.com/arm-community-blogs/b/infrastructure-solutions-blog/posts/porting-x86-vector-bitmask-optimizations-to-arm-neon
+    uint64_t is_decimal_bits =
+        vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(is_decimal_mask, 4)), 0);
+    uint64_t is_mark_bits =
+        vget_lane_u64(vreinterpret_u64_u8(vshrn_n_u16(is_mark_mask, 4)), 0);
+
+    // Only count the first decimal mark.
+    is_mark_bits &= -is_mark_bits;
+    is_mark_bits |= (is_mark_bits << 1);
+    is_mark_bits |= (is_mark_bits << 2);
+
+    if ((is_decimal_bits | is_mark_bits) == 0xffffffffffffffffULL) {
+      decimal_mark_seen = (is_mark_bits != 0);
+      valid_length = 16;
+      // Do the rest of the parsing using the scalar loop below.
+      // It's unlikely that numbers will be much more than 16 bytes,
+      // so we don't bother with a loop (which would also need logic
+      // for checking for two decimal marks in separate 16-byte chunks).
+    } else {
+      // Get rid of any stray final period; i.e., one that is not
+      // followed by a decimal.
+      is_mark_bits &= (is_decimal_bits >> 4);
+      uint64_t accept_bits = is_decimal_bits | is_mark_bits;
+      return __builtin_ctzll(~accept_bits) >> 2;
+    }
+#endif
+  }
+#endif  // defined(__SSE2__) || defined(__ARM_NEON__)
+
+  for (; valid_length < length; ++valid_length) {
+    if (!IsASCIIDigit(string[valid_length])) {
+      if (!decimal_mark_seen && string[valid_length] == '.') {
         decimal_mark_seen = true;
       } else {
         break;
@@ -273,11 +345,11 @@ static unsigned FindLengthOfValidDouble(const LChar* string, const LChar* end) {
     }
   }
 
-  if (processed_length > 0 && string[processed_length - 1] == '.') {
+  if (valid_length > 0 && string[valid_length - 1] == '.') {
     return 0;
   }
 
-  return processed_length;
+  return valid_length;
 }
 
 // If also_accept_whitespace is true: Checks whether string[pos] is the given
@@ -808,17 +880,11 @@ static bool FastParseColorInternal(Color& color,
       current++;
     }
 
-    // Find the end of the hue. This isn't optimal, but allows us to reuse
-    // ParseAngle() cleanly.
-    const LChar* hue_end = current;
-    while (hue_end != end && !IsHTMLSpace(*hue_end) && *hue_end != ',') {
-      hue_end++;
-    }
-
     CSSPrimitiveValue::UnitType hue_unit = CSSPrimitiveValue::UnitType::kNumber;
     double hue;
-    if (!ParseSimpleAngle(current, static_cast<unsigned>(hue_end - current),
-                          hue_unit, hue)) {
+    unsigned hue_length = ParseSimpleAngle(
+        current, static_cast<unsigned>(end - current), hue_unit, hue);
+    if (hue_length == 0) {
       return false;
     }
 
@@ -852,7 +918,7 @@ static bool FastParseColorInternal(Color& color,
       hue = fmod(hue, 6.0);
     }
 
-    current = hue_end;
+    current += hue_length;
 
     TerminatorStatus terminator_status = kCouldWhitespaceTerminate;
     if (!SkipToTerminator(current, end, ',', terminator_status)) {
@@ -1694,7 +1760,7 @@ static bool ParseTransformRotateArgument(const LChar*& pos,
   unsigned argument_length = static_cast<unsigned>(delimiter);
   CSSPrimitiveValue::UnitType unit = CSSPrimitiveValue::UnitType::kNumber;
   double number;
-  if (!ParseSimpleAngle(pos, argument_length, unit, number)) {
+  if (ParseSimpleAngle(pos, argument_length, unit, number) != argument_length) {
     return false;
   }
   if (unit == CSSPrimitiveValue::UnitType::kNumber) {

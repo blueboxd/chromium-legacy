@@ -119,6 +119,7 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_field_trial.h"
 #include "components/ntp_tiles/features.h"
 #include "components/offline_pages/core/offline_page_feature.h"
+#include "components/omnibox/browser/omnibox_feature_configs.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -3979,13 +3980,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrasSplitAlsaUsbInternalName,
      flag_descriptions::kCrasSplitAlsaUsbInternalDescription, kOsCrOS,
      PLATFORM_FEATURE_NAME_TYPE("CrOSLateBootCrasSplitAlsaUSBInternal")},
-    {
-        "audio-settings-page",
-        flag_descriptions::kAudioSettingsPageName,
-        flag_descriptions::kAudioSettingsPageDescription,
-        kOsCrOS,
-        FEATURE_VALUE_TYPE(ash::features::kAudioSettingsPage),
-    },
     {"disable-explicit-dma-fences",
      flag_descriptions::kDisableExplicitDmaFencesName,
      flag_descriptions::kDisableExplicitDmaFencesDescription, kOsCrOS,
@@ -4003,6 +3997,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAdaptiveChargingForTestingName,
      flag_descriptions::kAdaptiveChargingForTestingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kAdaptiveChargingForTesting)},
+    {"ash-capture-mode-audio-mixing",
+     flag_descriptions::kCaptureModeAudioMixingName,
+     flag_descriptions::kCaptureModeAudioMixingDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kCaptureModeAudioMixing)},
     {"ash-capture-mode-demo-tools",
      flag_descriptions::kCaptureModeDemoToolsName,
      flag_descriptions::kCaptureModeDemoToolsDescription, kOsCrOS,
@@ -4099,10 +4097,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOsSettingsRevampWayfindingName,
      flag_descriptions::kOsSettingsRevampWayfindingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kOsSettingsRevampWayfinding)},
-    {"os-settings-search-feedback",
-     flag_descriptions::kOsSettingsSearchFeedbackName,
-     flag_descriptions::kOsSettingsSearchFeedbackDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kOsSettingsSearchFeedback)},
     {"qs-revamp", flag_descriptions::kQsRevampName,
      flag_descriptions::kQsRevampDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kQsRevamp)},
@@ -4825,6 +4819,11 @@ const FeatureEntry kFeatureEntries[] = {
          switches::kCastStreamingForceEnableHardwareVp8,
          switches::kCastStreamingForceDisableHardwareVp8)},
 
+    {"cast-streaming-performance-overlay",
+     flag_descriptions::kCastStreamingPerformanceOverlayName,
+     flag_descriptions::kCastStreamingPerformanceOverlayDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(media::kCastStreamingPerformanceOverlay)},
+
     {"enable-openscreen-cast-streaming-session",
      flag_descriptions::kOpenscreenCastStreamingSessionName,
      flag_descriptions::kOpenscreenCastStreamingSessionDescription, kOsDesktop,
@@ -5465,6 +5464,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"arc-rt-vcpu-quad-core", flag_descriptions::kArcRtVcpuQuadCoreName,
      flag_descriptions::kArcRtVcpuQuadCoreDesc, kOsCrOS,
      FEATURE_VALUE_TYPE(arc::kRtVcpuQuadCore)},
+    {"arc-switch-to-keymint-daemon",
+     flag_descriptions::kArcSwitchToKeyMintDaemonName,
+     flag_descriptions::kArcSwitchToKeyMintDaemonDesc, kOsCrOS,
+     PLATFORM_FEATURE_NAME_TYPE("CrOSLateBootArcSwitchToKeyMintDaemon")},
     {"arc-switch-to-keymint-on-t",
      flag_descriptions::kArcSwitchToKeyMintOnTName,
      flag_descriptions::kArcSwitchToKeyMintOnTDesc, kOsCrOS,
@@ -5820,7 +5823,7 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(omnibox::kDocumentProvider)},
     {"omnibox-shortcut-boost", flag_descriptions::kOmniboxShortcutBoostName,
      flag_descriptions::kOmniboxShortcutBoostDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kShortcutBoost,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox_feature_configs::kShortcutBoost,
                                     kOmniboxShortcutBoostVariations,
                                     "OmniboxBundledExperimentV1")},
     {"omnibox-rich-autocompletion-promising",
@@ -7344,10 +7347,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePeripheralCustomizationName,
      flag_descriptions::kEnablePeripheralCustomizationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPeripheralCustomization)},
-
-    {"enable-rgb-keyboard", flag_descriptions::kEnableRgbKeyboardName,
-     flag_descriptions::kEnableRgbKeyboardDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kRgbKeyboard)},
 
     {"enable-accessibility-accelerators-notifications-timeout",
      flag_descriptions::kAccessibilityAcceleratorNotificationsTimeoutName,
@@ -10357,6 +10356,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(policy::features::kEnablePolicyTestPage)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"allow-devtools-in-system-ui",
+     flag_descriptions::kAllowDevtoolsInSystemUIName,
+     flag_descriptions::kAllowDevtoolsInSystemUIDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kAllowDevtoolsInSystemUI)},
     {"cros-web-app-shortcut-ui-update",
      flag_descriptions::kCrosWebAppShortcutUiUpdateName,
      flag_descriptions::kCrosWebAppShortcutUiUpdateDescription, kOsCrOS,
@@ -10376,6 +10379,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrosBatterySaverDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kBatterySaver)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+    {"enable-process-per-site-up-to-main-frame-threshold",
+     flag_descriptions::kEnableProcessPerSiteUpToMainFrameThresholdName,
+     flag_descriptions::kEnableProcessPerSiteUpToMainFrameThresholdDescription,
+     kOsDesktop | kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kProcessPerSiteUpToMainFrameThreshold)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

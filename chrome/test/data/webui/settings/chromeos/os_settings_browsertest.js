@@ -46,7 +46,6 @@ var OSSettingsDevicePageTest = class extends OSSettingsBrowserTest {
   get featureList() {
     return {
       enabled: [
-        'ash::features::kAudioSettingsPage',
         'ash::features::kInputDeviceSettingsSplit',
       ],
     };
@@ -188,10 +187,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  ],
  ['AppsPage', 'apps_page_test.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.js'],
- ['AppManagementDomSwitch', 'app_management/dom_switch_test.js'],
  ['AppManagementFileHandlingItem', 'app_management/file_handling_item_test.js'],
  ['AppManagementManagedApps', 'app_management/managed_apps_test.js'],
- ['AppManagementPage', 'app_management/app_management_page_tests.js'],
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
@@ -314,6 +311,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
      ]
    }
  ],
+ [
+   'InternetPageNetworkAlwaysOnVpn',
+   'internet_page/network_always_on_vpn_test.js'
+ ],
  ['InternetPageNetworkSummary', 'internet_page/network_summary_test.js'],
  [
    'InternetPageNetworkSummaryItem',
@@ -410,7 +411,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'nearby_share_subpage_tests.js',
    {enabled: ['features::kNearbySharing']},
  ],
- ['NetworkAlwaysOnVpn', 'network_always_on_vpn_test.js'],
  ['NetworkProxySection', 'network_proxy_section_test.js'],
  ['NetworkDeviceInfoDialog', 'network_device_info_dialog_test.js'],
  ['OncMojoTest', 'onc_mojo_test.js'],
@@ -476,6 +476,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
    'os_apps_page/app_management_page/app_item_test.js'
  ],
  [
+   'OsAppsPageAppManagementPage',
+   'os_apps_page/app_management_page/app_management_page_test.js'
+ ],
+ [
    'OsAppsPageAppManagementPageArcDetailView',
    'os_apps_page/app_management_page/arc_detail_view_test.js'
  ],
@@ -486,6 +490,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageTest', 'AllJsTests', () => {
  [
    'OsAppsPageAppManagementPageChromeAppDetailView',
    'os_apps_page/app_management_page/chrome_app_detail_view_test.js',
+ ],
+ [
+   'OsAppsPageAppManagementPageDomSwitch',
+   'os_apps_page/app_management_page/dom_switch_test.js'
  ],
  [
    'OsAppsPageAppManagementPageMainView',

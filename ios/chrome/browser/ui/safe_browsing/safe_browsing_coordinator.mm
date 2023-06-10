@@ -69,6 +69,16 @@
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
   switch (change.type()) {
+    case WebStateListChange::Type::kDestroy:
+      // Do nothing when a WebStateList is destroyed.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didDetachWebState:atIndex: to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
     case WebStateListChange::Type::kReplace: {
       const WebStateListChangeReplace& replaceChange =
           change.As<WebStateListChangeReplace>();
@@ -76,18 +86,14 @@
           ->SetDelegate(self);
       break;
     }
-    case WebStateListChange::Type::kInsert:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // -webStateList:didInsertWebState:atIndex:activating: to here.
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insertChange =
+          change.As<WebStateListChangeInsert>();
+      SafeBrowsingTabHelper::FromWebState(insertChange.inserted_web_state())
+          ->SetDelegate(self);
       break;
+    }
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
-  SafeBrowsingTabHelper::FromWebState(webState)->SetDelegate(self);
 }
 
 - (void)webStateList:(WebStateList*)webStateList

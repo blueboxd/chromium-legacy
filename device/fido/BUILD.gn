@@ -252,6 +252,8 @@ component("fido") {
       "AuthenticationServices.framework",
     ]
     configs += [ "//build/config/compiler:enable_arc" ]
+
+    deps += [ "//build:branding_buildflags" ]
   }
 
   if (is_win) {

@@ -9,10 +9,7 @@
 #include "ash/shell.h"
 #include "ash/wm/desks/templates/admin_template_launch_tracker.h"
 #include "ash/wm/desks/templates/saved_desk_metrics_util.h"
-#include "base/json/json_string_value_serializer.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "components/app_restore/app_restore_data.h"
 #include "components/app_restore/restore_data.h"
 #include "components/desks_storage/core/admin_template_model.h"
@@ -23,43 +20,12 @@ namespace ash {
 
 namespace {
 
+// Updates to the admin template are throttled to this interval.
 constexpr base::TimeDelta kAdminTemplateUpdateDelay = base::Seconds(5);
 
-constexpr char kPlaceholderUuid[] = "2a0fe322-c912-468e-bd9c-5e8fddcc1606";
-constexpr char kPlaceholderName[] = "Test template";
-constexpr char kPlaceholderJson[] = R"json(
-{
-   "mgndgikekgjfcpckkfioiadnlibdjbkf": {
-      "1": {
-         "active_tab_index": 0,
-         "app_name": "",
-         "index": 0,
-         "title": "Chrome",
-         "urls": [ "https://www.google.com/" ],
-         "window_state_type": 0
-      }
-   }
-})json";
-
-// Creates a placeholder template that will be used during development.
-std::unique_ptr<DeskTemplate> CreatePlaceholderTemplate() {
-  auto desk_template = std::make_unique<DeskTemplate>(
-      base::Uuid::ParseLowercase(kPlaceholderUuid), DeskTemplateSource::kPolicy,
-      kPlaceholderName, base::Time::Now(), DeskTemplateType::kTemplate);
-
-  // Create restore data from json.
-  base::JSONReader::Result restore_data =
-      base::JSONReader::ReadAndReturnValueWithError(kPlaceholderJson);
-  if (!restore_data.has_value()) {
-    return nullptr;
-  }
-
-  desk_template->set_desk_restore_data(
-      std::make_unique<app_restore::RestoreData>(
-          std::move(restore_data).value()));
-
-  return desk_template;
-}
+// If the admin storage model isn't available when an auto launch is initiated,
+// we will keep retrying for this amount of time before giving up.
+constexpr base::TimeDelta kMaxAutoLaunchAttempt = base::Seconds(10);
 
 void PopulateAdminTemplateMetadata(
     const desks_storage::DeskModel::GetAllEntriesResult& entries_lookup_result,
@@ -77,10 +43,21 @@ void PopulateAdminTemplateMetadata(
   }
 }
 
+// A simple exponential back-off with a max cap.
+base::TimeDelta GetModelWaitDuration(base::TimeDelta last_wait_duration) {
+  return std::min(base::Seconds(1), last_wait_duration * 2);
+}
+
 // Pointer to the global `SavedDeskController` instance.
 SavedDeskController* g_instance = nullptr;
 
 }  // namespace
+
+SavedDeskController::AdminTemplateAutoLaunch::AdminTemplateAutoLaunch() =
+    default;
+
+SavedDeskController::AdminTemplateAutoLaunch::~AdminTemplateAutoLaunch() =
+    default;
 
 // SavedDeskController
 SavedDeskController::SavedDeskController() {
@@ -104,11 +81,6 @@ SavedDeskController::GetAdminTemplateMetadata() const {
     PopulateAdminTemplateMetadata(admin_model->GetAllEntries(), &metadata);
   }
 
-  // Make sure we always at least have the placeholder.
-  metadata.push_back(AdminTemplateMetadata{
-      .uuid = base::Uuid::ParseLowercase(kPlaceholderUuid),
-      .name = base::UTF8ToUTF16(base::StringPiece(kPlaceholderName))});
-
   return metadata;
 }
 
@@ -120,24 +92,25 @@ bool SavedDeskController::LaunchAdminTemplate(const base::Uuid& template_uuid,
   }
 
   RecordAdminTemplateWindowAndTabCountHistogram(*admin_template);
-
-  auto& tracker = admin_template_launch_trackers_[template_uuid];
-  // Note: if there is an existing launch tracker for this template, this will
-  // implicitly destroy it - no more updates will be received from the previous
-  // instance.
-  tracker = std::make_unique<AdminTemplateLaunchTracker>(
-      std::move(admin_template),
-      base::BindRepeating(&SavedDeskController::OnAdminTemplateUpdate,
-                          base::Unretained(this)),
-      kAdminTemplateUpdateDelay);
-  tracker->LaunchTemplate(Shell::Get()->saved_desk_delegate(),
-                          default_display_id);
-
-  // TODO(dandersson): Remove the launch tracker when all its windows have been
-  // closed.
-
   RecordLaunchAdminTemplateHistogram();
+
+  LaunchAdminTemplateImpl(std::move(admin_template), default_display_id);
   return true;
+}
+
+void SavedDeskController::InitiateAdminTemplateAutoLaunch(
+    base::OnceCallback<void()> done) {
+  // We do not allow concurrent auto launch requests.
+  if (admin_template_auto_launch_) {
+    return;
+  }
+
+  admin_template_auto_launch_ = std::make_unique<AdminTemplateAutoLaunch>();
+  admin_template_auto_launch_->done_callback = std::move(done);
+  admin_template_auto_launch_->launch_timer.Start(
+      FROM_HERE, base::Milliseconds(50),
+      base::BindOnce(&SavedDeskController::AttemptAdminTemplateAutoLaunch,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SavedDeskController::OnAdminTemplateUpdate(
@@ -147,11 +120,77 @@ void SavedDeskController::OnAdminTemplateUpdate(
   }
 }
 
+void SavedDeskController::AttemptAdminTemplateAutoLaunch() {
+  if (!admin_template_auto_launch_) {
+    return;
+  }
+
+  auto* admin_model = GetAdminModel();
+  if (!admin_model) {
+    if (admin_template_auto_launch_->elapsed_since_initiation.Elapsed() >
+        kMaxAutoLaunchAttempt) {
+      return;
+    }
+    admin_template_auto_launch_->launch_timer.Start(
+        FROM_HERE,
+        GetModelWaitDuration(
+            admin_template_auto_launch_->launch_timer.GetCurrentDelay()),
+        base::BindOnce(&SavedDeskController::AttemptAdminTemplateAutoLaunch,
+                       weak_ptr_factory_.GetWeakPtr()));
+
+    return;
+  }
+
+  // Moves to a local pointer so that the auto launch data is destroyed at the
+  // end of this function.
+  auto auto_launch = std::move(admin_template_auto_launch_);
+
+  // The model is now ready. We'll now retrieve all entries and launch the ones
+  // that are marked for launching on startup.
+  auto result = admin_model->GetAllEntries();
+  if (result.status == desks_storage::DeskModel::GetAllEntriesStatus::kOk) {
+    for (const auto* admin_template : result.entries) {
+      if (admin_template->should_launch_on_startup()) {
+        LaunchAdminTemplateImpl(
+            admin_template->Clone(),
+            display::Screen::GetScreen()->GetPrimaryDisplay().id());
+      }
+    }
+  }
+
+  if (auto_launch->done_callback) {
+    std::move(auto_launch->done_callback).Run();
+  }
+}
+
 desks_storage::AdminTemplateModel* SavedDeskController::GetAdminModel() const {
   auto* admin_template_service =
       ash::Shell::Get()->saved_desk_delegate()->GetAdminTemplateService();
 
+  if (!admin_template_service || !admin_template_service->IsReady()) {
+    return nullptr;
+  }
+
   return admin_template_service->GetAdminModel();
+}
+
+void SavedDeskController::LaunchAdminTemplateImpl(
+    std::unique_ptr<DeskTemplate> admin_template,
+    int64_t default_display_id) {
+  auto& tracker = admin_template_launch_trackers_[admin_template->uuid()];
+  // Note: if there is an existing launch tracker for this template, this will
+  // implicitly destroy it - no more updates will be received from the previous
+  // instance.
+  tracker = std::make_unique<AdminTemplateLaunchTracker>(
+      std::move(admin_template),
+      base::BindRepeating(&SavedDeskController::OnAdminTemplateUpdate,
+                          weak_ptr_factory_.GetWeakPtr()),
+      kAdminTemplateUpdateDelay);
+  tracker->LaunchTemplate(Shell::Get()->saved_desk_delegate(),
+                          default_display_id);
+
+  // TODO(dandersson): Remove the launch tracker when all its windows have been
+  // closed.
 }
 
 std::unique_ptr<DeskTemplate> SavedDeskController::GetAdminTemplate(
@@ -159,11 +198,6 @@ std::unique_ptr<DeskTemplate> SavedDeskController::GetAdminTemplate(
   if (admin_template_for_testing_ &&
       admin_template_for_testing_->uuid() == template_uuid) {
     return admin_template_for_testing_->Clone();
-  }
-
-  auto placeholder_template = CreatePlaceholderTemplate();
-  if (placeholder_template && template_uuid == placeholder_template->uuid()) {
-    return placeholder_template;
   }
 
   if (auto* admin_model = GetAdminModel()) {
@@ -184,6 +218,10 @@ std::unique_ptr<DeskTemplate> SavedDeskController::GetAdminTemplate(
 void SavedDeskController::SetAdminTemplateForTesting(
     std::unique_ptr<DeskTemplate> admin_template) {
   admin_template_for_testing_ = std::move(admin_template);
+}
+
+void SavedDeskController::ResetAutoLaunchForTesting() {
+  admin_template_auto_launch_.reset();
 }
 
 }  // namespace ash

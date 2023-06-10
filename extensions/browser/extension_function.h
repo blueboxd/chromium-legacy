@@ -305,8 +305,8 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   void set_request_id(int request_id) { request_id_ = request_id; }
   int request_id() { return request_id_; }
 
-  void set_request_uuid(std::string uuid) { request_uuid_ = std::move(uuid); }
-  const std::string& request_uuid() const { return request_uuid_; }
+  void set_request_uuid(base::Uuid uuid) { request_uuid_ = std::move(uuid); }
+  const base::Uuid& request_uuid() const { return request_uuid_; }
 
   void set_source_url(const GURL& source_url) { source_url_ = source_url; }
   const GURL& source_url() const { return source_url_; }
@@ -396,6 +396,15 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   // Returns the web contents associated with the sending |render_frame_host_|.
   // This can be null.
   content::WebContents* GetSenderWebContents();
+
+  // Returns whether this API call should allow the extension service worker (if
+  // any) to stay alive beyond the typical 5 minute-per-task limit (i.e.,
+  // indicates this API is expected to potentially take longer than 5 minutes
+  // to execute).
+  // The default implementation returns false. In general, this should only
+  // return true for APIs that trigger some sort of user prompt. If you are
+  // unsure, please consult the extensions team.
+  virtual bool ShouldKeepWorkerAliveIndefinitely();
 
   // Sets did_respond_ to true so that the function won't DCHECK if it never
   // sends a response. Typically, this shouldn't be used, even in testing. It's
@@ -589,9 +598,8 @@ class ExtensionFunction : public base::RefCountedThreadSafe<
   int request_id_ = -1;
 
   // UUID for this request. Currently only set for worker calls.
-  // TODO(crbug.com/1444561): Make this a base::Uuid and replace
-  // `request_id_` with this.
-  std::string request_uuid_;
+  // TODO(crbug.com/1444561): Replace `request_id_` with this.
+  base::Uuid request_uuid_;
 
   // The name of this function.
   const char* name_ = nullptr;

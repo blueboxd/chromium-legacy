@@ -237,7 +237,7 @@ bool ActionTap::RewriteEvent(const ui::Event& origin,
                              const gfx::Transform* rotation_transform,
                              std::list<ui::TouchEvent>& touch_events,
                              bool& keep_original_event) {
-  if (deleted() || !IsInputBound(*current_input_) ||
+  if (!IsInputBound(*current_input_) ||
       (IsKeyboardBound(*current_input_) && !origin.IsKeyEvent()) ||
       (IsMouseBound(*current_input_) && !origin.IsMouseEvent())) {
     return false;
@@ -273,7 +273,6 @@ gfx::PointF ActionTap::GetUICenterPosition() {
 std::unique_ptr<ActionView> ActionTap::CreateView(
     DisplayOverlayController* display_overlay_controller) {
   auto view = std::make_unique<ActionTapView>(this, display_overlay_controller);
-  view->set_editable(true);
   action_view_ = view.get();
   return view;
 }
@@ -283,7 +282,7 @@ void ActionTap::UnbindInput(const InputElement& input_element) {
     pending_input_.reset();
   }
   pending_input_ = std::make_unique<InputElement>();
-  if (action_view_) {
+  if (!IsBeta() && action_view_) {
     action_view_->set_unbind_label_index(0);
   }
   PostUnbindInputProcess();

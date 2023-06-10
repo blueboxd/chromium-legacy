@@ -182,8 +182,8 @@ class StyleBuilderConverter {
   static GridPosition ConvertGridPosition(StyleResolverState&, const CSSValue&);
   static GridTrackSize ConvertGridTrackSize(StyleResolverState&,
                                             const CSSValue&);
-  static GridTrackList ConvertGridTrackSizeList(StyleResolverState&,
-                                                const CSSValue&);
+  static NGGridTrackList ConvertGridTrackSizeList(StyleResolverState&,
+                                                  const CSSValue&);
   static StyleHyphenateLimitChars ConvertHyphenateLimitChars(
       StyleResolverState&,
       const CSSValue&);
@@ -324,8 +324,6 @@ class StyleBuilderConverter {
 
   static bool ConvertInternalAlignContentBlock(StyleResolverState& state,
                                                const CSSValue& value);
-  static bool ConvertInternalAlignSelfBlock(StyleResolverState& state,
-                                            const CSSValue& value);
   static bool ConvertInternalEmptyLineHeight(StyleResolverState& state,
                                              const CSSValue& value);
 

@@ -649,6 +649,7 @@
     'chromeos_chrome_all_tast_tests': {
       'chrome_all_tast_tests': {
         'tast_expr': '("group:mainline" && "dep:chrome" && !informational)',
+        'test_level_retries': 2,
         'timeout_sec': 21600,
       },
     },
@@ -657,6 +658,7 @@
     'chromeos_chrome_criticalstaging_tast_tests': {
       'chrome_criticalstaging_tast_tests': {
         'tast_expr': '("group:mainline" && "dep:chrome" && informational && "group:criticalstaging")',
+        'test_level_retries': 2,
         'timeout_sec': 7200,
         'experiment_percentage': 100,
       },
@@ -849,20 +851,6 @@
           '--gtest_filter="VaapiTest.*"',
         ],
       },
-    },
-
-    'chromium_android_asan_gtests': {
-      # TODO(kbr): reduce duplication among these tests, and with other
-      # test suites.
-      'base_unittests': {
-        'args': [
-          '--tool=asan',
-        ],
-      },
-    },
-
-    'chromium_android_asan_junit_tests': {
-      'base_junit_tests': {},
     },
 
     'chromium_android_scripts': {
@@ -1086,6 +1074,12 @@
     },
 
     'chromium_gtests_for_win_and_linux_only': {
+      # pthreadpool is only built on Windows and Linux platforms, that is
+      # determined by `build_tflite_with_xnnpack` defined in
+      # third_party/tflite/features.gni.
+      'pthreadpool_unittests': {
+        'ci_only': True,
+      },
     },
 
     'chromium_ios_scripts': {
@@ -1658,6 +1652,10 @@
       'webkit_lint': {
         'script': 'blink_lint_expectations.py',
       },
+    },
+
+    'clang_tot_gtests' : {
+      'base_unittests': {},
     },
 
     'client_v8_chromium_gtests': {
@@ -3833,27 +3831,6 @@
       'viz_unittests': {},
       'wtf_unittests': {},
       'zlib_unittests': {},
-    },
-
-    'ios_clang_tests': {
-      'absl_hardening_tests': {},
-      'base_unittests': {},
-      'boringssl_crypto_tests': {},
-      'boringssl_ssl_tests': {},
-      'components_unittests': {},
-      'crypto_unittests': {},
-      'gfx_unittests': {},
-      'google_apis_unittests': {},
-      'ios_chrome_unittests': {},
-      'ios_net_unittests': {},
-      'ios_web_inttests': {},
-      'ios_web_unittests': {},
-      'ios_web_view_inttests': {},
-      'net_unittests': {},
-      'skia_unittests': {},
-      'sql_unittests': {},
-      'ui_base_unittests': {},
-      'url_unittests': {},
     },
 
     'ios_common_tests': {
@@ -6568,11 +6545,6 @@
     #  'telemetry_perf_unittests_isolated_scripts_android',
     #],
 
-    'monochrome_public_apk_checker_isolated_script_and_sizes': [
-      'chrome_sizes_android',
-      'monochrome_public_apk_checker_isolated_script',
-    ],
-
     'network_service_extra_gtests': [
       'network_service_fyi_gtests',
     ],
@@ -6857,38 +6829,38 @@
     'ios16_beta_simulator_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPHONE_X_16_4',
+          'SIM_IPHONE_14_16_4',
         ],
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_X_16_4',
-          'SIM_IPAD_AIR_3RD_GEN_16_4',
-          'SIM_IPAD_6_GEN_16_4',
-          'SIM_IPAD_PRO_3RD_GEN_16_4',
+          'SIM_IPHONE_14_16_4',
+          'SIM_IPAD_AIR_5TH_GEN_16_4',
+          'SIM_IPAD_10TH_GEN_16_4',
+          'SIM_IPAD_PRO_6TH_GEN_16_4',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization', 'record_failed_tests'],
         'variants': [
-          'SIM_IPHONE_X_16_4',
-          'SIM_IPAD_6_GEN_16_4',
-          'SIM_IPAD_PRO_3RD_GEN_16_4',
+          'SIM_IPHONE_14_16_4',
+          'SIM_IPAD_10TH_GEN_16_4',
+          'SIM_IPAD_AIR_5TH_GEN_16_4',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPHONE_X_16_4',
-          'SIM_IPHONE_SE_3RD_GEN_16_4',
-          'SIM_IPAD_AIR_3RD_GEN_16_4',
-          'SIM_IPAD_PRO_3RD_GEN_16_4',
+          'SIM_IPHONE_14_16_4',
+          'SIM_IPHONE_14_PRO_MAX_16_4',
+          'SIM_IPAD_AIR_5TH_GEN_16_4',
+          'SIM_IPAD_PRO_6TH_GEN_16_4',
         ],
       },
       'ios_crash_xcuitests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPHONE_X_16_4',
+          'SIM_IPHONE_14_16_4',
         ]
       },
     },
@@ -7022,7 +6994,7 @@
     },
 
     'ios_clang_tot_device_tests': {
-      'ios_clang_tests': {
+      'clang_tot_gtests': {
         'variants': [
           'IPHONE_7_15_4_1',
         ],
@@ -7030,7 +7002,7 @@
     },
 
     'ios_clang_tot_sim_tests': {
-      'ios_clang_tests': {
+      'clang_tot_gtests': {
         'variants': [
           'SIM_IPHONE_6S_15_5',
         ]

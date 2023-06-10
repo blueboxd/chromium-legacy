@@ -77,7 +77,8 @@ struct IdentityManagerBuildParams {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   scoped_refptr<TokenWebData> token_web_data;
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
-  raw_ptr<unexportable_keys::UnexportableKeyService> unexportable_key_service;
+  raw_ptr<unexportable_keys::UnexportableKeyService> unexportable_key_service =
+      nullptr;
 #endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 #endif
 

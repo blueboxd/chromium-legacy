@@ -6486,6 +6486,75 @@ function reportResult(auctionConfig, browserSignals) {
   EXPECT_TRUE(network_responder_->ReportSent("/seller_debug_win_2"));
 }
 
+// TODO(crbug.com/1422301): The auction must operate on the same fenced frame
+// mapping that was used at the beginning of the auction. If not, we fail the
+// auction and dump without crashing the browser. Once the root cause is known
+// and the issue fixed, remove this test.
+TEST_F(AdAuctionServiceImplTest, FencedFrameUrlMappingChangedDuringAuction) {
+  network_responder_->RegisterDeferredScriptResponse(kBiddingUrlPath);
+  network_responder_->RegisterScriptResponse(kDecisionUrlPath,
+                                             BasicSellerReportScript());
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+
+  JoinInterestGroupAndFlush(interest_group);
+  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
+
+  blink::AuctionConfig auction_config;
+  auction_config.seller = kOriginA;
+  auction_config.decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
+  auction_config.non_shared_params.interest_group_buyers = {kOriginA};
+
+  AdAuctionServiceImpl::CreateMojoService(
+      main_rfh(), ad_auction_service_.BindNewPipeAndPassReceiver());
+
+  // Start the auction.
+  base::RunLoop run_loop;
+  absl::optional<blink::FencedFrame::RedactedFencedFrameConfig> maybe_config;
+  ad_auction_service_->RunAdAuction(
+      auction_config, mojo::NullReceiver(),
+      base::BindLambdaForTesting(
+          [&run_loop, &maybe_config](
+              bool manually_aborted,
+              const absl::optional<
+                  blink::FencedFrame::RedactedFencedFrameConfig>& config) {
+            EXPECT_FALSE(manually_aborted);
+            maybe_config = config;
+            run_loop.Quit();
+          }));
+
+  // Wait for the NetworkResponder to see the request for the bidding URL, then
+  // respond.
+  task_environment()->RunUntilIdle();
+  EXPECT_FALSE(run_loop.AnyQuitCalled());
+  network_responder_->DoDeferredScriptResponse(kBiddingUrlPath,
+                                               BasicBiddingReportScript());
+
+  FencedFrameURLMapping& fenced_frame_urls_map =
+      static_cast<RenderFrameHostImpl*>(main_rfh())
+          ->GetPage()
+          .fenced_frame_urls_map();
+
+  FencedFrameURLMappingTestPeer test_peer(&fenced_frame_urls_map);
+
+  // Change the id of the fenced frame url mapping used by the current auction
+  // to simulate the scenario we've seen in crbug.com/1422301: the fenced frame
+  // url mapping used at the beginning of the auction is not the same as the one
+  // at the end of the auction.
+  test_peer.SetId(test_peer.GetNextId());
+
+  // Complete the auction. It should fail due to the fenced frame url mapping
+  // mismatch.
+  run_loop.Run();
+  EXPECT_FALSE(maybe_config.has_value());
+}
+
 class AdAuctionServiceImplSharedStorageEnabledTest
     : public AdAuctionServiceImplTest {
  public:
@@ -7637,12 +7706,50 @@ TEST_F(AdAuctionServiceImplTest, SerializesAuctionBlob) {
       }));
   run_loop.Run();
   std::string expected =
-      "o2d2ZXJzaW9uAGlwdWJsaXNoZXJuaHR0cHM6Ly9hLnRlc3RuaW50ZXJlc3RHcm91cHOhbmh0"
-      "dHBzOi8vYS50ZXN0WJcfiwgAAAAAAAAAVY07DsIwEAX5XSgh/"
-      "FpSUlLQYntXzkKyjtYJyEIU8VkQ58RENDSvmdG84W0U+"
-      "AhZvixMsVoDqwbBKPG1gtI1rWPkzg9ms92xFnf3KEeyrGr/"
-      "soIG2YRFpSm5PXeTqhW8nYh9jLNznI9ZujjiEU8liUBsf4UDhnR9xZB9J5c+xfd/"
-      "hn48P6XlwYuiAAAA";
+      "pABYIgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABndmVyc2lvbgBpcHVibGlz"
+      "aGVybmh0dHBzOi8vYS50ZXN0bmludGVyZXN0R3JvdXBzoW5odHRwczovL2EudGVzdFiXH4sI"
+      "AAAAAAAAAFWNOw7CMBAF+"
+      "V0oIfxaUlJS0GJ7V85Cso7WCchCFPFZEOfERDQ0r5nRvOFtFPgIWb4sTLFaA6sGwSjxtYLSN"
+      "a1j5M4PZrPdsRZ39yhHsqxq/"
+      "7KCBtmERaUpuT13k6oVvJ2IfYyzc5yPWbo44hFPJYlAbH+FA4Z0fcWQfSeXPsX3f4Z+PD+"
+      "l5cGLogAAAA==";
+  EXPECT_EQ(1, absl::popcount(msg.size()));  // Should be a power of 2.
+  EXPECT_EQ(expected, base::Base64Encode(msg));
+}
+
+TEST_F(AdAuctionServiceImplTest, SerializesAuctionBlobWithAnomalousPadding) {
+  url::Origin test_origin = url::Origin::Create(GURL(kOriginStringA));
+  // To trigger the edge case we need to generate a message that needs 26 bytes
+  // of padding. This request was carefully designed to create a 230 byte
+  // request.
+  manager_->JoinInterestGroup(
+      blink::TestInterestGroupBuilder(test_origin, "cars")
+          .SetUserBiddingSignals(R"("ABCDEFGHIJKLMNOPQRSTUVWXYZ")")
+          .SetAds({{{GURL("https://c.test/ad.html"), /*metadata=*/"",
+                     /*size_group=*/absl::nullopt,
+                     /*buyer_reporting_id=*/absl::nullopt,
+                     /*buyer_and_seller_reporting_id=*/absl::nullopt, "1234"}}})
+          .Build(),
+      GURL("https://a.test/example.html"));
+  std::vector<uint8_t> msg;
+  base::RunLoop run_loop;
+  manager_->GetInterestGroupAdAuctionData(
+      /*seller=*/test_origin, /*top_level_origin=*/
+      url::Origin::Create(GURL("https://the.new.top.level.origin.test")),
+      base::BindLambdaForTesting([&](std::vector<uint8_t> inner_msg) {
+        msg = inner_msg;
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+  std::string expected =
+      "pQBWAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAZ3ZlcnNpb24AaXB1Ymxpc2hlcnglaHR0cHM6"
+      "Ly90aGUubmV3LnRvcC5sZXZlbC5vcmlnaW4udGVzdG5pbnRlcmVzdEdyb3Vwc6FuaHR0cHM6"
+      "Ly9hLnRlc3RYih+"
+      "LCAAAAAAAAABrXJKcmFLcmGJoZGySkpeYm5qSnFhUnJdUlF9enFoUnJmel5hTvCS9KDU5NS+"
+      "5kiEjKTPFOb80r4Qho6AotSw8M6+"
+      "4ITMrPzMPLMhYVArU5JSZkpKZlw7VWyGj5Ojk7OLq5u7h6eXt4+"
+      "vnHxAYFBwSGhYeERmlBAD8GWK6fwAAAA==";
+  EXPECT_EQ(1, absl::popcount(msg.size()));  // Should be a power of 2.
   EXPECT_EQ(expected, base::Base64Encode(msg));
 }
 
@@ -7767,15 +7874,19 @@ TEST_F(AdAuctionServiceImplTest, SerializesMultipleOwnersAuctionBlob) {
   run_loop.Run();
 
   std::string expected =
-      "o2d2ZXJzaW9uAGlwdWJsaXNoZXJuaHR0cHM6Ly9hLnRlc3RuaW50ZXJlc3RHcm91cHOibmh0"
-      "dHBzOi8vYS50ZXN0WJkfiwgAAAAAAAAAdc07DsIwDAZgKL1QH7xWOAIDK45jtUGtU9kBxAY5"
-      "Sw9KFQYkBIv1y7b+L44IViPtPIQizdIy9ERmitqB3ft+"
-      "8Ewc9JnOFRvxNyU5uIah07ERQmK8Z61x0/eFw6wdhK5Hx/"
-      "pwZ+84LedvyBZlVWO9XCXFIsgXguvN9h+R/yBiXJxinmo/"
-      "WPYCdURNadcAAABuaHR0cHM6Ly9iLnRlc3RYch+"
-      "LCAAAAAAAAABrXJKcmFLclBZSlJiZZwihjFLyEnNT00pA7OKcxBTn/NyC/"
-      "LzUvJLiRogC47ykovzy4tSi4Mz0vMSc4iXpRanJqXnJlYwZSZlA5aV5JQwZBUWpZeFAAxoys"
-      "/Iz88CCjADfoTrIbgAAAA==";
+      "pABYnQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABn"
+      "dmVyc2lvbgBpcHVibGlzaGVybmh0dHBzOi8vYS50ZXN0bmludGVyZXN0R3JvdXBzom5odHRw"
+      "czovL2EudGVzdFiZH4sIAAAAAAAAAHXNOw7CMAwGYCi9UB+"
+      "8VjgCAyuOY7VBrVPZAcQGOUsPShUGJASL9cu2/"
+      "i+"
+      "OCFYj7TyEIs3SMvREZoragd37fvBMHPSZzhUb8TclObiGodOxEUJivGetcdP3hcOsHYSuR8f"
+      "6cGfvOC3nb8gWZVVjvVwlxSLIF4LrzfYfkf8gYlycYp5qP1j2AnVETWnXAAAAbmh0dHBzOi8"
+      "vYi50ZXN0WHIfiwgAAAAAAAAAa1ySnJhS3JQWUpSYmWcIoYxS8hJzU9NKQOzinMQU5/"
+      "zcgvy81LyS4kaIAuO8pKL88uLUouDM9LzEnOIl6UWpyal5yZWMGUmZQOWleSUMGQVFqWXhQA"
+      "MaMrPyM/PAgowA36E6yG4AAAA=";
+  EXPECT_EQ(1, absl::popcount(msg.size()));  // Should be a power of 2.
   EXPECT_EQ(expected, base::Base64Encode(msg));
 }
 
@@ -7827,13 +7938,15 @@ TEST_F(AdAuctionServiceImplBAndATest, EncryptsPayload) {
   auto request = ohttp_gateway.DecryptObliviousHttpRequest(result.value());
   EXPECT_TRUE(request.ok()) << request.status();
   std::string expected =
-      "o2d2ZXJzaW9uAGlwdWJsaXNoZXJuaHR0cHM6Ly9hLnRlc3RuaW50ZXJlc3RHcm91cHOhbmh0"
-      "dHBzOi8vYS50ZXN0WHkfiwgAAAAAAAAAHcxLDoJQDEZh0RWp+"
-      "Bq7BAdOLW0DNfBf0qKEIXctLFTD+Hw588IkkWV/"
-      "OJZcns4C6lSYPFqSe+r6BMUQM1+uN1SexlB/"
-      "WA1qY6ldWcHTrqnsbz8YNk3v+n0aIufilbfr1t7JsObiB1scuEduAAAA";
+      "pABYQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAABndmVyc2lvbgBpcHVibGlzaGVybmh0dHBzOi8vYS50ZXN0bmludGVy"
+      "ZXN0R3JvdXBzoW5odHRwczovL2EudGVzdFh5H4sIAAAAAAAAAB3MSw6CUAxGYdEVqfgauwQH"
+      "Ti1tAzXwX9KihCF3LSxUw/"
+      "h8OfPCJJFlfziWXJ7OAupUmDxaknvq+gTFEDNfrjdUnsZQf1gNamOpXVnB066p7G8/GDZN7/"
+      "p9GiLn4pW369beybDm4gdbHLhHbgAAAA==";
   const auto got = request->GetPlaintextData();
   const auto* bytes = reinterpret_cast<const uint8_t*>(got.data());
+  EXPECT_EQ(1, absl::popcount(got.size()));  // Should be a power of 2.
   EXPECT_EQ(expected, base::Base64Encode(
                           base::make_span(bytes, got.size() * sizeof(char))));
 }

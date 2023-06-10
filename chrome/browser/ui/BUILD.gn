@@ -1725,10 +1725,6 @@ static_library("ui") {
       "webui/page_not_available_for_guest/page_not_available_for_guest_ui.h",
       "webui/password_manager/password_manager_ui.cc",
       "webui/password_manager/password_manager_ui.h",
-      "webui/password_manager/promo_card.cc",
-      "webui/password_manager/promo_card.h",
-      "webui/password_manager/promo_cards_handler.cc",
-      "webui/password_manager/promo_cards_handler.h",
       "webui/password_manager/sync_handler.cc",
       "webui/password_manager/sync_handler.h",
       "webui/plural_string_handler.cc",
@@ -1912,6 +1908,10 @@ static_library("ui") {
       sources += [
         "webui/media_router/cast_feedback_ui.cc",
         "webui/media_router/cast_feedback_ui.h",
+        "webui/password_manager/promo_card.cc",
+        "webui/password_manager/promo_card.h",
+        "webui/password_manager/promo_cards_handler.cc",
+        "webui/password_manager/promo_cards_handler.h",
       ]
     }
 
@@ -3431,6 +3431,7 @@ static_library("ui") {
       "//chrome/browser/ash/app_list/search/util:proto",
       "//chrome/browser/ash/app_list/vector_icons",
       "//chrome/browser/ash/crosapi",
+      "//chrome/browser/ash/crosapi:browser_util",
       "//chrome/browser/ash/crostini:crostini_installer_types_mojom",
       "//chrome/browser/ash/login/oobe_quick_start",
       "//chrome/browser/ash/system_web_apps",
@@ -3584,6 +3585,7 @@ static_library("ui") {
       "//components/login",
       "//components/metrics/structured:structured_events",
       "//components/services/app_service",
+      "//components/services/app_service/public/cpp/shortcut",
       "//components/session_manager/core",
       "//components/supervised_user/core/browser:fetcher",
       "//components/tab_groups",
@@ -4481,6 +4483,8 @@ static_library("ui") {
       "side_panel/companion/companion_tab_helper.h",
       "side_panel/companion/companion_utils.cc",
       "side_panel/companion/companion_utils.h",
+      "side_panel/companion/exps_registration_success_observer.cc",
+      "side_panel/companion/exps_registration_success_observer.h",
       "side_panel/customize_chrome/customize_chrome_side_panel_controller_utils.h",
       "side_panel/customize_chrome/customize_chrome_tab_helper.cc",
       "side_panel/customize_chrome/customize_chrome_tab_helper.h",
@@ -4522,6 +4526,8 @@ static_library("ui") {
       "sync/one_click_signin_links_delegate_impl.cc",
       "sync/one_click_signin_links_delegate_impl.h",
       "translate/translate_bubble_test_utils.h",
+      "views/accelerator_table.cc",
+      "views/accelerator_table.h",
       "views/accessibility/caption_bubble_context_views.cc",
       "views/accessibility/caption_bubble_context_views.h",
       "views/accessibility/caption_bubble_session_observer_views.cc",
@@ -4712,6 +4718,8 @@ static_library("ui") {
       "views/commander_frontend_views.h",
       "views/commerce/ntp_discount_consent_dialog_view.cc",
       "views/commerce/ntp_discount_consent_dialog_view.h",
+      "views/commerce/price_insights_icon_view.cc",
+      "views/commerce/price_insights_icon_view.h",
       "views/commerce/price_tracking_bubble_dialog_view.cc",
       "views/commerce/price_tracking_bubble_dialog_view.h",
       "views/commerce/price_tracking_icon_view.cc",
@@ -5690,6 +5698,13 @@ static_library("ui") {
     public_deps += [ "//ui/base/dragdrop/mojom:mojom_headers" ]
 
     allow_circular_includes_from += [ "//chrome/browser/ui/views" ]
+
+    if (is_chrome_branded && !is_android) {
+      sources += [
+        "views/promos/ios_promo_password_bubble.cc",
+        "views/promos/ios_promo_password_bubble.h",
+      ]
+    }
 
     if (is_linux || is_chromeos_lacros) {
       sources += [

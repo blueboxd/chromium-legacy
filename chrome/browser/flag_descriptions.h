@@ -749,8 +749,8 @@ extern const char kEnablePeripheralCustomizationDescription[];
 extern const char kEnablePixelCanvasRecordingName[];
 extern const char kEnablePixelCanvasRecordingDescription[];
 
-extern const char kEnableRgbKeyboardName[];
-extern const char kEnableRgbKeyboardDescription[];
+extern const char kEnableProcessPerSiteUpToMainFrameThresholdName[];
+extern const char kEnableProcessPerSiteUpToMainFrameThresholdDescription[];
 
 extern const char kEnableShortcutCustomizationAppName[];
 extern const char kEnableShortcutCustomizationAppDescription[];
@@ -945,6 +945,9 @@ extern const char kCastStreamingHardwareH264Description[];
 
 extern const char kCastStreamingHardwareVp8Name[];
 extern const char kCastStreamingHardwareVp8Description[];
+
+extern const char kCastStreamingPerformanceOverlayName[];
+extern const char kCastStreamingPerformanceOverlayDescription[];
 
 extern const char kCastStreamingVp9Name[];
 extern const char kCastStreamingVp9Description[];
@@ -2884,6 +2887,9 @@ extern const char kAdaptiveChargingDescription[];
 extern const char kAdaptiveChargingForTestingName[];
 extern const char kAdaptiveChargingForTestingDescription[];
 
+extern const char kAllowDevtoolsInSystemUIName[];
+extern const char kAllowDevtoolsInSystemUIDescription[];
+
 extern const char kAllowEapDefaultCasWithoutSubjectVerificationName[];
 extern const char kAllowEapDefaultCasWithoutSubjectVerificationDescription[];
 
@@ -2948,6 +2954,9 @@ extern const char kArcRtVcpuDualCoreDesc[];
 extern const char kArcRtVcpuQuadCoreName[];
 extern const char kArcRtVcpuQuadCoreDesc[];
 
+extern const char kArcSwitchToKeyMintDaemonName[];
+extern const char kArcSwitchToKeyMintDaemonDesc[];
+
 extern const char kArcSwitchToKeyMintOnTName[];
 extern const char kArcSwitchToKeyMintOnTDesc[];
 
@@ -2989,9 +2998,6 @@ extern const char kAudioHFPSwbDescription[];
 
 extern const char kAudioHFPOffloadName[];
 extern const char kAudioHFPOffloadDescription[];
-
-extern const char kAudioSettingsPageName[];
-extern const char kAudioSettingsPageDescription[];
 
 extern const char kAutoFramingOverrideName[];
 extern const char kAutoFramingOverrideDescription[];
@@ -3043,6 +3049,9 @@ extern const char kBluetoothLongAutosuspendDescription[];
 
 extern const char kCalendarJellyName[];
 extern const char kCalendarJellyDescription[];
+
+extern const char kCaptureModeAudioMixingName[];
+extern const char kCaptureModeAudioMixingDescription[];
 
 extern const char kCaptureModeDemoToolsName[];
 extern const char kCaptureModeDemoToolsDescription[];
@@ -3562,9 +3571,6 @@ extern const char kOsSettingsAppBadgingToggleDescription[];
 
 extern const char kOsSettingsRevampWayfindingName[];
 extern const char kOsSettingsRevampWayfindingDescription[];
-
-extern const char kOsSettingsSearchFeedbackName[];
-extern const char kOsSettingsSearchFeedbackDescription[];
 
 extern const char kPcieBillboardNotificationName[];
 extern const char kPcieBillboardNotificationDescription[];

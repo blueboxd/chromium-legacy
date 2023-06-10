@@ -1149,10 +1149,6 @@ const char kEnableIwaControlledFrameDescription[] =
     "https://github.com/chasephillips/controlled-frame/blob/main/EXPLAINER.md "
     "for more information.";
 
-const char kEnableRgbKeyboardName[] = "Enable RGB Keyboard Support";
-const char kEnableRgbKeyboardDescription[] =
-    "Enable RGB Keyboard support on supported devices.";
-
 const char kEnableShortcutCustomizationAppName[] =
     "Enable shortcut customization app";
 const char kEnableShortcutCustomizationAppDescription[] =
@@ -1372,6 +1368,12 @@ const char kEnablePixelCanvasRecordingDescription[] =
     "with the pixel and improves text rendering. This should be enabled when a "
     "device is using fractional scale factor.";
 
+const char kEnableProcessPerSiteUpToMainFrameThresholdName[] =
+    "Enable ProcessPerSite up to main frame threshold";
+const char kEnableProcessPerSiteUpToMainFrameThresholdDescription[] =
+    "Proactively reuses same-site renderer processes to host multiple main "
+    "frames, up to a certain threshold.";
+
 extern const char kDropInputEventsBeforeFirstPaintName[] =
     "Drop Input Events Before First Paint";
 extern const char kDropInputEventsBeforeFirstPaintDescription[] =
@@ -1429,7 +1431,7 @@ const char kExperimentalWebAssemblyJSPIDescription[] =
     "API.";
 
 const char kEnablePolicyTestPageName[] =
-    "Enables access to the policy test page.";
+    "Enable access to the policy test page";
 const char kEnablePolicyTestPageDescription[] =
     "When enabled, allows the policy test page to be accessed at "
     "chrome://policy/test.";
@@ -1698,6 +1700,14 @@ const char kCastStreamingHardwareVp8Description[] =
     "platform. If enabled, hardware VP8 encoding will always be allowed when "
     "supported by the platform (regardless of recommendation). If disabled, "
     "hardware VP8 encoding will never be used.";
+
+const char kCastStreamingPerformanceOverlayName[] =
+    "Toggle a performance metrics overlay while Cast Streaming";
+const char kCastStreamingPerformanceOverlayDescription[] =
+    "When enabled, a text overlay is rendered on top of each frame sent while "
+    "Cast Streaming that includes frame duration, resolution, timestamp, "
+    "low latency mode, capture duration, target playout delay, target bitrate, "
+    "and encoder utilitization.";
 
 const char kCastStreamingVp9Name[] =
     "Enable VP9 video encoding for Cast Streaming";
@@ -5014,6 +5024,14 @@ const char kAdaptiveChargingName[] = "Enable adaptive charging feature";
 const char kAdaptiveChargingDescription[] =
     "Show settings to enable/disable adaptive charging feature.";
 
+const char kAllowDevtoolsInSystemUIName[] = "Enable DevTools in System UI";
+const char kAllowDevtoolsInSystemUIDescription[] =
+    "Enable the developer tools (DevTools) including the page source viewer "
+    "(view-source) in Ash. By default, these tools are disabled if Lacros is "
+    "the only browser, so as not to confuse the user by opening an Ash window. "
+    "By enabling this flag, you can access them via the context menu or "
+    "shortcuts to debug the system UI.";
+
 const char kAllowEapDefaultCasWithoutSubjectVerificationName[] =
     "Allow EAP network configs with default server CAs without subject "
     "verification";
@@ -5135,9 +5153,15 @@ const char kArcRtVcpuQuadCoreDesc[] =
     "Enable ARC real time vcpu on a device with 3+ logical cores online to "
     "reduce media playback glitch.";
 
+const char kArcSwitchToKeyMintDaemonName[] = "Switch to KeyMint Daemon.";
+const char kArcSwitchToKeyMintDaemonDesc[] =
+    "Switch from Keymaster Daemon to KeyMint Daemon. Must be switched on/off "
+    "at the same time with \"Switch To KeyMint on ARC-T\"";
+
 const char kArcSwitchToKeyMintOnTName[] = "Switch to KeyMint on ARC-T.";
 const char kArcSwitchToKeyMintOnTDesc[] =
-    "Switch from Keymaster to KeyMint on ARC-T.";
+    "Switch from Keymaster to KeyMint on ARC-T. Must be switched on/off at the "
+    "same time with \"Switch to KeyMint Daemon\"";
 
 const char kArcSyncInstallPriorityName[] =
     "Enable supporting install priority for synced ARC apps.";
@@ -5205,11 +5229,6 @@ const char kAudioHFPOffloadDescription[] =
 const char kAudioHFPSwbName[] = "Audio Bluetooth HFP Super-wide-band support";
 const char kAudioHFPSwbDescription[] =
     "Enable Bluetooth HFP Super-wide-band codec if supported.";
-
-const char kAudioSettingsPageName[] = "Audio Settings Page";
-const char kAudioSettingsPageDescription[] =
-    "Enables the dedicated Audio Settings Page in system settings, which "
-    "allows for greater audio configuration.";
 
 const char kAutoFramingOverrideName[] = "Auto-framing control override";
 const char kAutoFramingOverrideDescription[] =
@@ -5305,6 +5324,13 @@ const char kCalendarJellyName[] = "Enable Calendar Jelly features";
 const char kCalendarJellyDescription[] =
     "Enables Jelly changes for the sys tray Calendar views.";
 
+const char kCaptureModeAudioMixingName[] =
+    "Enable screen capture advanced audio settings";
+const char kCaptureModeAudioMixingDescription[] =
+    "Enables the ability to record the microphone, or system audio each "
+    "separately, or mix them together in a single stream in the screen capture "
+    "tool.";
+
 const char kCaptureModeDemoToolsName[] =
     "Enable demo tools feature in screen capture";
 const char kCaptureModeDemoToolsDescription[] =
@@ -5314,7 +5340,7 @@ const char kCaptureModeDemoToolsDescription[] =
 const char kCaptureModeGifRecordingName[] =
     "Enable GIF recording in screen capture";
 const char kCaptureModeGifRecordingDescription[] =
-    "Enables the ability to record the screen into animated GIFs";
+    "Enables the ability to record the screen into animated GIFs.";
 
 const char kCrosWebAppShortcutUiUpdateName[] =
     "New ChromeOS Web app Shortcut UI";
@@ -6219,12 +6245,6 @@ const char kOsSettingsRevampWayfindingName[] =
     "ChromeOS Settings Revamp: Wayfinding Improvements";
 const char kOsSettingsRevampWayfindingDescription[] =
     "Enables wayfinding improvements in the ChromeOS Settings UI.";
-
-const char kOsSettingsSearchFeedbackName[] =
-    "ChromeOS Settings Search Feedback";
-const char kOsSettingsSearchFeedbackDescription[] =
-    "Enables search result feedback in ChromeOS Settings when no search "
-    "results are returned.";
 
 const char kPcieBillboardNotificationName[] = "Pcie billboard notification";
 const char kPcieBillboardNotificationDescription[] =

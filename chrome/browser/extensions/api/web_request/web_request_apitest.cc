@@ -959,14 +959,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
 // Slower and flaky tests should be isolated in the "slow" group of tests in
 // the JS file. This prevents losing test coverage for those tests that are
 // not causing timeouts and flakes.
-#if BUILDFLAG(IS_WIN) || !defined(NDEBUG) || defined(ADDRESS_SANITIZER) || \
-    defined(MEMORY_SANITIZER)
-#define MAYBE_WebRequestBlockingSlow DISABLED_WebRequestBlockingSlow
-#else
-#define MAYBE_WebRequestBlockingSlow WebRequestBlockingSlow
-#endif
+// TODO(https://crbug.com/1453477): Investigate the flakiness across all
+// platforms and re-enable.
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
-                       MAYBE_WebRequestBlockingSlow) {
+                       DISABLED_WebRequestBlockingSlow) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_blocking",
                                {.custom_arg = R"({"testSuite": "slow"})"}))
@@ -1087,15 +1083,30 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
       << message_;
 }
 
+// TODO(crbug.com/1453477): test is flaky on linux, mac and chromeos.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_WebRequestSubresourceRedirects \
+  DISABLED_WebRequestSubresourceRedirects
+#else
+#define MAYBE_WebRequestSubresourceRedirects WebRequestSubresourceRedirects
+#endif
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
-                       WebRequestSubresourceRedirects) {
+                       MAYBE_WebRequestSubresourceRedirects) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_subresource_redirects"))
       << message_;
 }
 
+// TODO(crbug.com/1453477): test is flaky on linux, mac and chromeos.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#define MAYBE_WebRequestSubresourceRedirectsWithExtraHeaders \
+  DISABLED_WebRequestSubresourceRedirectsWithExtraHeaders
+#else
+#define MAYBE_WebRequestSubresourceRedirectsWithExtraHeaders \
+  WebRequestSubresourceRedirectsWithExtraHeaders
+#endif
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
-                       WebRequestSubresourceRedirectsWithExtraHeaders) {
+                       MAYBE_WebRequestSubresourceRedirectsWithExtraHeaders) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_subresource_redirects",
                                {.custom_arg = R"({"useExtraHeaders": true})"}))

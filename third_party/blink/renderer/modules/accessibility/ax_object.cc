@@ -2410,6 +2410,11 @@ AXObject* AXObject::GetControlsListboxForTextfieldCombobox() {
   if (!ui::IsTextField(RoleValue()))
     return nullptr;
 
+  // Object is ignored for some reason, most likely hidden.
+  if (AccessibilityIsIgnored()) {
+    return nullptr;
+  }
+
   // Authors used to be told to use aria-owns to point from the textfield to the
   // listbox. However, the aria-owns  on a textfield must be ignored for its
   // normal purpose because a textfield cannot have children. This code allows
@@ -5766,15 +5771,6 @@ void AXObject::ChildrenChangedWithCleanLayout() {
         ax_parent->ChildrenChangedWithCleanLayout();
       }
     }
-  }
-
-  // When pseudo element layout changes, we need to make sure we clear up all
-  // descendant objects, because we may not receive ChildrenChanged() calls for
-  // all of them, and we don't want to leave any parentless objects around. This
-  // will force re-creation of any AXObjects for this subtree.
-  if (GetNode() && GetNode()->IsPseudoElement()) {
-    AXObjectCache().RemoveSubtreeWithFlatTraversal(this,
-                                                   /* notify_parent */ false);
   }
 }
 

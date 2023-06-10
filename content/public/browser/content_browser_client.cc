@@ -891,6 +891,15 @@ ContentBrowserClient::CreateURLLoaderThrottles(
   return std::vector<std::unique_ptr<blink::URLLoaderThrottle>>();
 }
 
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+ContentBrowserClient::CreateURLLoaderThrottlesForKeepAlive(
+    const network::ResourceRequest& request,
+    BrowserContext* browser_context,
+    const base::RepeatingCallback<WebContents*()>& wc_getter,
+    int frame_tree_node_id) {
+  return std::vector<std::unique_ptr<blink::URLLoaderThrottle>>();
+}
+
 void ContentBrowserClient::RegisterNonNetworkNavigationURLLoaderFactories(
     int frame_tree_node_id,
     ukm::SourceIdObj ukm_source_id,
@@ -1193,14 +1202,6 @@ std::string ContentBrowserClient::GetUserAgentBasedOnPolicy(
   return GetUserAgent();
 }
 
-std::string ContentBrowserClient::GetFullUserAgent() {
-  return GetUserAgent();
-}
-
-std::string ContentBrowserClient::GetReducedUserAgent() {
-  return GetUserAgent();
-}
-
 blink::UserAgentMetadata ContentBrowserClient::GetUserAgentMetadata() {
   return blink::UserAgentMetadata();
 }
@@ -1450,8 +1451,7 @@ ContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
   return nullptr;
 }
 
-bool ContentBrowserClient::OpenExternally(RenderFrameHost* opener,
-                                          const GURL& url,
+bool ContentBrowserClient::OpenExternally(const GURL& url,
                                           WindowOpenDisposition disposition) {
   return false;
 }

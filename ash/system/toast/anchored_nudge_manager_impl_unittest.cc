@@ -4,6 +4,7 @@
 
 #include "ash/system/toast/anchored_nudge_manager_impl.h"
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/system/anchored_nudge_data.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -13,6 +14,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
@@ -22,11 +24,9 @@ namespace ash {
 class AnchoredNudgeManagerImplTest : public AshTestBase {
  public:
   AnchoredNudgeManagerImplTest()
-      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  AnchoredNudgeManagerImplTest(const AnchoredNudgeManagerImplTest&) = delete;
-  AnchoredNudgeManagerImplTest& operator=(const AnchoredNudgeManagerImplTest&) =
-      delete;
-  ~AnchoredNudgeManagerImplTest() override = default;
+      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+    scoped_feature_list_.InitAndEnableFeature(features::kSystemNudgeV2);
+  }
 
   AnchoredNudgeManagerImpl* anchored_nudge_manager() {
     return Shell::Get()->anchored_nudge_manager();
@@ -50,6 +50,9 @@ class AnchoredNudgeManagerImplTest : public AshTestBase {
   std::map<std::string, raw_ptr<AnchoredNudge>> GetShownNudges() {
     return anchored_nudge_manager()->shown_nudges_;
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 // Tests that a nudge can be shown and its contents are properly sent.
@@ -68,7 +71,7 @@ TEST_F(AnchoredNudgeManagerImplTest, ShowNudge_SingleNudge) {
   auto nudge = GetShownNudges()[id];
   ASSERT_TRUE(nudge);
   EXPECT_TRUE(nudge->GetVisible());
-  EXPECT_EQ(text, nudge->GetText());
+  EXPECT_EQ(text, nudge->GetBodyText());
   EXPECT_EQ(anchor_view, nudge->GetAnchorView());
 
   // Cancel the nudge, expect it to be removed from the shown nudges map.
@@ -215,7 +218,7 @@ TEST_F(AnchoredNudgeManagerImplTest, ShowNudge_NudgeWithIdAlreadyExists) {
   // Show a nudge with some initial contents.
   ShowNudge(id, anchor_view, text);
   auto nudge = GetShownNudges()[id];
-  EXPECT_EQ(text, nudge->GetText());
+  EXPECT_EQ(text, nudge->GetBodyText());
   EXPECT_EQ(anchor_view, nudge->GetAnchorView());
 
   // Attempt to show a nudge with different contents but with the same id.
@@ -223,7 +226,7 @@ TEST_F(AnchoredNudgeManagerImplTest, ShowNudge_NudgeWithIdAlreadyExists) {
 
   // Previously shown nudge should be cancelled and replaced with new nudge.
   nudge = GetShownNudges()[id];
-  EXPECT_EQ(text_2, nudge->GetText());
+  EXPECT_EQ(text_2, nudge->GetBodyText());
   EXPECT_EQ(anchor_view_2, nudge->GetAnchorView());
 
   // Cleanup.

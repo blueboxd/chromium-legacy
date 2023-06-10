@@ -6,7 +6,7 @@ package org.chromium.net.urlconnection;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import static org.chromium.net.CronetTestRule.getContext;
 
@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.Batch;
 import org.chromium.net.CronetTestRule;
+import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.NativeTestServer;
 
 import java.net.HttpURLConnection;
@@ -32,6 +33,7 @@ import java.net.URL;
  * Tests for CronetHttpURLStreamHandler class.
  */
 @Batch(Batch.UNIT_TESTS)
+@OnlyRunNativeCronet
 @RunWith(AndroidJUnit4.class)
 public class CronetHttpURLStreamHandlerTest {
     @Rule
@@ -76,12 +78,9 @@ public class CronetHttpURLStreamHandlerTest {
         URL url = new URL("ftp://example.com");
         CronetHttpURLStreamHandler streamHandler =
                 new CronetHttpURLStreamHandler(mTestRule.getTestFramework().getEngine());
-        try {
-            streamHandler.openConnection(url);
-            fail();
-        } catch (UnsupportedOperationException e) {
-            assertThat(e).hasMessageThat().isEqualTo("Unexpected protocol:ftp");
-        }
+        UnsupportedOperationException e = assertThrows(
+                UnsupportedOperationException.class, () -> streamHandler.openConnection(url));
+        assertThat(e).hasMessageThat().isEqualTo("Unexpected protocol:ftp");
     }
 
     @Test
@@ -90,13 +89,8 @@ public class CronetHttpURLStreamHandlerTest {
         URL url = new URL(NativeTestServer.getEchoMethodURL());
         CronetHttpURLStreamHandler streamHandler =
                 new CronetHttpURLStreamHandler(mTestRule.getTestFramework().getEngine());
-        Proxy proxy = new Proxy(Proxy.Type.HTTP,
-                new InetSocketAddress("127.0.0.1", 8080));
-        try {
-            streamHandler.openConnection(url, proxy);
-            fail();
-        } catch (UnsupportedOperationException e) {
-            // Expected.
-        }
+        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("127.0.0.1", 8080));
+        assertThrows(UnsupportedOperationException.class,
+                () -> streamHandler.openConnection(url, proxy));
     }
 }

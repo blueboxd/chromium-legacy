@@ -469,6 +469,13 @@ void EcheTray::OnConnectionStatusChanged(
         eche_connection_status_handler_->SetConnectionStatusForUi(
             eche_app::mojom::ConnectionStatus::kConnectionStatusFailed);
       }
+      // If the status is changed kConnectionStatusDisconnected before the
+      // timeout, manually cancel the timeout task. Also notify that the
+      // connection has been closed so that each component can clean up.
+      if (initializer_timeout_) {
+        initializer_timeout_.reset();
+        eche_connection_status_handler_->NotifyConnectionClosed();
+      }
       initializer_webview_.reset();
       break;
   }
@@ -504,8 +511,6 @@ void EcheTray::OnBackgroundConnectionTimeout() {
   // timeouts, this happens automatically for other failures.
   eche_connection_status_handler_->SetConnectionStatusForUi(
       eche_app::mojom::ConnectionStatus::kConnectionStatusFailed);
-  eche_connection_status_handler_->OnConnectionStatusChanged(
-      eche_app::mojom::ConnectionStatus::kConnectionStatusDisconnected);
   StartGracefulCloseInitializer();
 }
 
@@ -700,6 +705,7 @@ void EcheTray::InitBubble(
   init_params.translucent = true;
   init_params.reroute_event_handler = false;
   init_params.corner_radius = kTrayItemCornerRadius;
+  init_params.anchor_to_shelf_corner = true;
   phone_name_ = phone_name;
 
   auto bubble_view = std::make_unique<TrayBubbleView>(init_params);

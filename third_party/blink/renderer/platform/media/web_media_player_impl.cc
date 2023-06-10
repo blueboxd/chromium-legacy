@@ -1492,6 +1492,10 @@ bool WebMediaPlayerImpl::HasAvailableVideoFrame() const {
   return has_first_frame_;
 }
 
+bool WebMediaPlayerImpl::HasReadableVideoFrame() const {
+  return has_first_frame_ && is_frame_readable_;
+}
+
 void WebMediaPlayerImpl::SetContentDecryptionModule(
     WebContentDecryptionModule* cdm,
     WebContentDecryptionModuleResult result) {
@@ -2784,6 +2788,11 @@ std::unique_ptr<media::Renderer> WebMediaPlayerImpl::CreateRenderer(
   bool old_uses_audio_service = UsesAudioService(renderer_type_);
   renderer_type_ = renderer_factory_selector_->GetCurrentRendererType();
 
+  // TODO(crbug/1426179): Support codec changing for Media Foundation.
+  if (renderer_type_ == media::RendererType::kMediaFoundation) {
+    demuxer_manager_->DisableDemuxerCanChangeType();
+  }
+
   bool new_uses_audio_service = UsesAudioService(renderer_type_);
   if (new_uses_audio_service != old_uses_audio_service)
     client_->DidUseAudioServiceChange(new_uses_audio_service);
@@ -3771,11 +3780,15 @@ void WebMediaPlayerImpl::SetTickClockForTest(
   buffered_data_source_host_->SetTickClockForTest(tick_clock);
 }
 
-void WebMediaPlayerImpl::OnFirstFrame(base::TimeTicks frame_time) {
+void WebMediaPlayerImpl::OnFirstFrame(base::TimeTicks frame_time,
+                                      bool is_frame_readable) {
   DCHECK(!load_start_time_.is_null());
   DCHECK(!skip_metrics_due_to_startup_suspend_);
+
   has_first_frame_ = true;
   needs_first_frame_ = false;
+  is_frame_readable_ = is_frame_readable;
+
   const base::TimeDelta elapsed = frame_time - load_start_time_;
   media_metrics_provider_->SetTimeToFirstFrame(elapsed);
   WriteSplitHistogram<kPlaybackType | kEncrypted>(

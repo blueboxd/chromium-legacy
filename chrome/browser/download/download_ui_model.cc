@@ -343,6 +343,7 @@ std::u16string DownloadUIModel::GetWarningText(const std::u16string& filename,
                                         offset);
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -747,6 +748,14 @@ DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddSubpageSummary(
   warning_summary = summary;
   return *this;
 }
+DownloadUIModel::BubbleUIInfo&
+DownloadUIModel::BubbleUIInfo::AddSubpageSecondaryIconAndText(
+    const gfx::VectorIcon& icon,
+    const std::u16string& secondary_text) {
+  warning_secondary_icon = &icon;
+  warning_secondary_text = secondary_text;
+  return *this;
+}
 DownloadUIModel::BubbleUIInfo& DownloadUIModel::BubbleUIInfo::AddProgressBar() {
   has_progress_bar = true;
   return *this;
@@ -874,6 +883,7 @@ DownloadUIModel::BubbleUIInfo DownloadUIModel::GetBubbleUIInfoForInterrupted(
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -1246,20 +1256,50 @@ DownloadUIModel::GetBubbleUIInfoForInProgressOrComplete(
       }
 
       return ui_info;
-    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING: {
-      BubbleUIInfo bubble_ui_info = DownloadUIModel::BubbleUIInfo()
-                                        .AddProgressBar()
-                                        .SetProgressBarLooping();
-      if (!download::IsDownloadConnectorEnabled(profile())) {
-        bubble_ui_info.AddPrimaryButton(
-            DownloadCommands::Command::BYPASS_DEEP_SCANNING);
+    case download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING:
+      if (base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
+        ui_info =
+            DownloadUIModel::BubbleUIInfo()
+                .AddProgressBar()
+                .SetProgressBarLooping()
+                .AddSubpageSummary(l10n_util::GetStringUTF16(
+                    IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING))
+                .AddSubpageSecondaryIconAndText(
+                    vector_icons::kDocumentScannerIcon,
+                    l10n_util::GetStringUTF16(
+                        IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_SECONDARY))
+                .AddIconAndColor(
+                    features::IsChromeRefresh2023()
+                        ? vector_icons::kNotSecureWarningChromeRefreshIcon
+                        : vector_icons::kNotSecureWarningIcon,
+                    ui::kColorAlertMediumSeverityIcon)
+                .AddPrimarySubpageButton(
+                    l10n_util::GetStringUTF16(
+                        IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_DISCARD),
+                    DownloadCommands::Command::DISCARD);
+        ui_info.subpage_buttons[0].is_prominent = false;
+        if (!download::IsDownloadConnectorEnabled(profile())) {
+          ui_info.AddSecondarySubpageButton(
+              l10n_util::GetStringUTF16(
+                  IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_ASYNC_SCANNING_CANCEL),
+              DownloadCommands::Command::CANCEL_DEEP_SCAN,
+              ui::kColorButtonForeground);
+        }
+      } else {
+        ui_info = DownloadUIModel::BubbleUIInfo()
+                      .AddProgressBar()
+                      .SetProgressBarLooping();
+        if (!download::IsDownloadConnectorEnabled(profile())) {
+          ui_info.AddPrimaryButton(
+              DownloadCommands::Command::BYPASS_DEEP_SCANNING);
+        }
       }
-      return bubble_ui_info;
-    }
+      return ui_info;
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE:
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK:
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
@@ -1575,6 +1615,7 @@ DownloadUIModel::BubbleStatusTextBuilder::GetBubbleWarningStatusText() const {
                        IDS_DOWNLOAD_BUBBLE_STATUS_ASYNC_SCANNING);
 #endif
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
+    case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:

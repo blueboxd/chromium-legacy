@@ -287,6 +287,8 @@ PreloadingEligibility ToEligibility(PrerenderFinalStatus status) {
       NOTREACHED_NORETURN();
     case PrerenderFinalStatus::kPrerenderingDisabledByDevTools:
       return PreloadingEligibility::kPreloadingDisabledByDevTools;
+    case PrerenderFinalStatus::kResourceLoadBlockedByClient:
+      return PreloadingEligibility::kPreloadingDisabledByDevTools;
   }
 
   NOTREACHED_NORETURN();
@@ -438,6 +440,15 @@ void PrerenderHostBuilder::RejectAsFailure(
 // excessive memory usage. See https://crbug.com/1444521 for details.
 BASE_FEATURE(kPrerender2IgnoreFailureOnMemoryFootprintQuery,
              "Prerender2IgnoreFailureOnMemoryFootprintQuery",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Kill-switch controlled by the field trial. When this feature is enabled,
+// PrerenderHostRegistry doesn't query about the current memory footprint and
+// bypasses the memory limit check, while it still checks the limit on the
+// number of ongoing prerendering requests and memory pressure events to prevent
+// excessive memory usage. See https://crbug.com/1382697 for details.
+BASE_FEATURE(kPrerender2BypassMemoryLimitCheck,
+             "Prerender2BypassMemoryLimitCheck",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 PrerenderHostRegistry::PrerenderHostRegistry(WebContents& web_contents)
@@ -1369,7 +1380,7 @@ void PrerenderHostRegistry::ResourceLoadComplete(
     RecordBlockedByClientResourceType(resource_load_info.request_destination,
                                       host->trigger_type(),
                                       host->embedder_histogram_suffix());
-    CancelHost(host_id, PrerenderFinalStatus::kBlockedByClient);
+    CancelHost(host_id, PrerenderFinalStatus::kResourceLoadBlockedByClient);
     break;
   }
 }
@@ -1563,8 +1574,14 @@ bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
 
 void PrerenderHostRegistry::DestroyWhenUsingExcessiveMemory(
     int frame_tree_node_id) {
-  if (!base::FeatureList::IsEnabled(blink::features::kPrerender2MemoryControls))
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kPrerender2MemoryControls)) {
     return;
+  }
+
+  if (base::FeatureList::IsEnabled(kPrerender2BypassMemoryLimitCheck)) {
+    return;
+  }
 
   // Override the memory restriction when the DevTools is open.
   if (IsDevToolsOpen(*web_contents())) {

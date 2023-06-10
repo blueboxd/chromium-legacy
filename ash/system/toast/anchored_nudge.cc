@@ -6,8 +6,9 @@
 
 #include <algorithm>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/style/system_toast_style.h"
+#include "ash/system/toast/system_nudge_view.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "ui/aura/window.h"
@@ -22,8 +23,6 @@
 
 namespace ash {
 
-///////////////////////////////////////////////////////////////////////////////
-//  AnchoredNudge
 AnchoredNudge::AnchoredNudge(const AnchoredNudgeData& nudge_data)
     : views::BubbleDialogDelegateView(nudge_data.anchor_view,
                                       nudge_data.arrow,
@@ -31,19 +30,15 @@ AnchoredNudge::AnchoredNudge(const AnchoredNudgeData& nudge_data)
       id_(nudge_data.id),
       nudge_click_callback_(std::move(nudge_data.nudge_click_callback)),
       nudge_dismiss_callback_(std::move(nudge_data.nudge_dimiss_callback)) {
+  DCHECK(features::IsSystemNudgeV2Enabled());
+
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_color(SK_ColorTRANSPARENT);
   set_margins(gfx::Insets());
   set_close_on_deactivate(false);
   SetLayoutManager(std::make_unique<views::FlexLayout>());
-  toast_contents_view_ = AddChildView(std::make_unique<SystemToastStyle>(
-      nudge_data.dismiss_callback, nudge_data.text, nudge_data.dismiss_text));
-  // TODO(b/283159669): Will use `SystemToastStyle` with a second button
-  // temporarily for M116, migrate to `DialogStyle` once implemented.
-  if (nudge_data.second_button_text != std::u16string()) {
-    toast_contents_view_->AddSecondButton(nudge_data.second_button_callback,
-                                          nudge_data.second_button_text);
-  }
+  system_nudge_view_ =
+      AddChildView(std::make_unique<SystemNudgeView>(nudge_data));
 }
 
 AnchoredNudge::~AnchoredNudge() {
@@ -52,20 +47,26 @@ AnchoredNudge::~AnchoredNudge() {
   }
 }
 
-const std::u16string& AnchoredNudge::GetText() {
-  CHECK(toast_contents_view_);
-  CHECK(toast_contents_view_->label());
-  return toast_contents_view_->label()->GetText();
+views::ImageView* AnchoredNudge::GetImageView() {
+  return system_nudge_view_->image_view();
+}
+
+const std::u16string& AnchoredNudge::GetBodyText() {
+  CHECK(system_nudge_view_->body_label());
+  return system_nudge_view_->body_label()->GetText();
+}
+
+const std::u16string& AnchoredNudge::GetTitleText() {
+  CHECK(system_nudge_view_->title_label());
+  return system_nudge_view_->title_label()->GetText();
 }
 
 views::LabelButton* AnchoredNudge::GetDismissButton() {
-  CHECK(toast_contents_view_);
-  return toast_contents_view_->dismiss_button();
+  return system_nudge_view_->dismiss_button();
 }
 
 views::LabelButton* AnchoredNudge::GetSecondButton() {
-  CHECK(toast_contents_view_);
-  return toast_contents_view_->second_button();
+  return system_nudge_view_->second_button();
 }
 
 std::unique_ptr<views::NonClientFrameView>

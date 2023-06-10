@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/system/anchored_nudge_data.h"
 #include "ash/system/toast/anchored_nudge.h"
 #include "base/containers/contains.h"
@@ -180,7 +181,9 @@ class AnchoredNudgeManagerImpl::NudgeWidgetObserver
   raw_ptr<AnchoredNudgeManagerImpl> anchored_nudge_manager_;
 };
 
-AnchoredNudgeManagerImpl::AnchoredNudgeManagerImpl() = default;
+AnchoredNudgeManagerImpl::AnchoredNudgeManagerImpl() {
+  DCHECK(features::IsSystemNudgeV2Enabled());
+}
 
 AnchoredNudgeManagerImpl::~AnchoredNudgeManagerImpl() {
   CloseAllNudges();
@@ -292,10 +295,10 @@ bool AnchoredNudgeManagerImpl::IsNudgeShown(const std::string& id) {
   return base::Contains(shown_nudges_, id);
 }
 
-const std::u16string& AnchoredNudgeManagerImpl::GetNudgeTextForTest(
+const std::u16string& AnchoredNudgeManagerImpl::GetNudgeBodyTextForTest(
     const std::string& id) {
   CHECK(IsNudgeShown(id));
-  return shown_nudges_[id]->GetText();
+  return shown_nudges_[id]->GetBodyText();
 }
 
 views::View* AnchoredNudgeManagerImpl::GetNudgeAnchorViewForTest(

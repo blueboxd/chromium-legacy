@@ -49,4 +49,14 @@ void FakeNearbyPresence::OnDisconnect() {
   on_disconnect_called_ = true;
 }
 
+void FakeNearbyPresence::UpdateLocalDeviceMetadata(
+    mojom::MetadataPtr metadata) {}
+
+void FakeNearbyPresence::UpdateLocalDeviceMetadataAndGenerateCredentials(
+    mojom::MetadataPtr metadata,
+    FakeNearbyPresence::UpdateLocalDeviceMetadataAndGenerateCredentialsCallback
+        callback) {
+  std::move(callback).Run(std::move(shared_credentials_), status_);
+}
+
 }  // namespace ash::nearby::presence

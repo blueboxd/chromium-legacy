@@ -53,6 +53,12 @@ BASE_FEATURE(kAllowAmbientEQ,
              "AllowAmbientEQ",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Allows DevTools to open from the context menu and shortcut keys in Ash if
+// Lacros is the only browser.
+BASE_FEATURE(kAllowDevtoolsInSystemUI,
+             "kAllowDevtoolsInSystemUI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Allows network connections which use EAP methods that validate the
 // server certificate to use the default server CA certificate without
 // verifying the servers identity.
@@ -180,12 +186,6 @@ BASE_FEATURE(kAudioPeripheralVolumeGranularity,
 BASE_FEATURE(kAudioSourceFetcherResampling,
              "AudioSourceFetcherResampling",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the Audio Settings Page in System Settings, which allows
-// audio configuration. crbug.com/1092970.
-BASE_FEATURE(kAudioSettingsPage,
-             "AudioSettingsPage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Audio URL that is designed to help user debug or troubleshoot
 // common issues on ChromeOS.
@@ -417,7 +417,7 @@ BASE_FEATURE(kCrostiniMultiContainer,
 // Enables or disables Crostini IME support.
 BASE_FEATURE(kCrostiniImeSupport,
              "CrostiniImeSupport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables Crostini Qt application IME support.
 BASE_FEATURE(kCrostiniQtImeSupport,
@@ -446,7 +446,7 @@ BASE_FEATURE(kBruschettaAlphaMigrate,
 // the Chrome error page on ChromeOS when behind a captive portal.
 BASE_FEATURE(kCaptivePortalErrorPage,
              "CaptivePortalErrorPage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables always using device-activity-status data to filter
 // eligible host phones.
@@ -839,7 +839,7 @@ BASE_FEATURE(kExoExtendedConfirmComposition,
 // or not (=decides using heuristics based on key code etc.).
 BASE_FEATURE(kExoSurroundingTextOffset,
              "ExoSurroundingTextOffset",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows RGB Keyboard to test new animations/patterns.
 BASE_FEATURE(kExperimentalRgbKeyboardPatterns,
@@ -1460,6 +1460,12 @@ BASE_FEATURE(kLicensePackagedOobeFlow,
              "LicensePackagedOobeFlow",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables cross device supported reports within the feedback tool.
+// (This feature is only available for dogfooders)
+BASE_FEATURE(kLinkCrossDeviceDogfoodFeedback,
+             "LinkCrossDeviceDogFoodFeedback",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Supports the feature to hide sensitive content in notifications on the lock
 // screen. This option is effective when |kLockScreenNotification| is enabled.
 BASE_FEATURE(kLockScreenHideSensitiveNotificationsSupport,
@@ -1582,6 +1588,11 @@ BASE_FEATURE(kNearbyKeepAliveFix,
 BASE_FEATURE(kNewLockScreenReauthLayout,
              "NewLockScreenReauthLayout",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables the use of the new System Nudges. (go/cros-educationalnudge-spec)
+BASE_FEATURE(kSystemNudgeV2,
+             "SystemNudgeV2",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the Night Light feature.
 BASE_FEATURE(kNightLight, "NightLight", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1729,12 +1740,6 @@ BASE_FEATURE(kOsSettingsDeprecateSyncMetricsToggle,
 BASE_FEATURE(kOsSettingsRevampWayfinding,
              "OsSettingsRevampWayfinding",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables search result feedback in ChromeOS Settings when no search results
-// are returned.
-BASE_FEATURE(kOsSettingsSearchFeedback,
-             "OsSettingsSearchFeedback",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kOverviewButton,
              "OverviewButton",
@@ -2006,8 +2011,6 @@ BASE_FEATURE(kReleaseNotesSuggestionChip,
 BASE_FEATURE(kRenderArcNotificationsByChrome,
              "RenderArcNotificationsByChrome",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kRgbKeyboard, "RgbKeyboard", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables ChromeOS scalable IPH.
 BASE_FEATURE(kScalableIph, "ScalableIph", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -2639,10 +2642,6 @@ bool IsAssistantNativeIconsEnabled() {
   return base::FeatureList::IsEnabled(kAssistantNativeIcons);
 }
 
-bool IsAudioSettingsPageEnabled() {
-  return base::FeatureList::IsEnabled(kAudioSettingsPage);
-}
-
 bool IsAutoNightLightEnabled() {
   return base::FeatureList::IsEnabled(kAutoNightLight);
 }
@@ -3118,6 +3117,10 @@ bool IsLicensePackagedOobeFlowEnabled() {
   return base::FeatureList::IsEnabled(kLicensePackagedOobeFlow);
 }
 
+bool IsLinkCrossDeviceDogfoodFeedbackEnabled() {
+  return base::FeatureList::IsEnabled(kLinkCrossDeviceDogfoodFeedback);
+}
+
 bool IsLockScreenHideSensitiveNotificationsSupported() {
   return base::FeatureList::IsEnabled(
       kLockScreenHideSensitiveNotificationsSupport);
@@ -3205,6 +3208,12 @@ bool IsOAuthIppEnabled() {
 
 bool IsNewLockScreenReauthLayoutEnabled() {
   return base::FeatureList::IsEnabled(kNewLockScreenReauthLayout);
+}
+
+bool IsSystemNudgeV2Enabled() {
+  return base::FeatureList::IsEnabled(kSystemNudgeV2) ||
+         IsVideoConferenceEnabled();  // System Nudge V2 is launching
+                                      // together with the VC project.
 }
 
 bool IsNotificationExpansionAnimationEnabled() {
@@ -3307,10 +3316,6 @@ bool IsOsSettingsDeprecateSyncMetricsToggleEnabled() {
 
 bool IsOsSettingsRevampWayfindingEnabled() {
   return base::FeatureList::IsEnabled(kOsSettingsRevampWayfinding);
-}
-
-bool IsOsSettingsSearchFeedbackEnabled() {
-  return base::FeatureList::IsEnabled(kOsSettingsSearchFeedback);
 }
 
 bool IsOsSyncConsentRevampEnabled() {
@@ -3480,10 +3485,6 @@ bool IsPerDeskZOrderEnabled() {
 
 bool IsRenderArcNotificationsByChromeEnabled() {
   return base::FeatureList::IsEnabled(kRenderArcNotificationsByChrome);
-}
-
-bool IsRgbKeyboardEnabled() {
-  return base::FeatureList::IsEnabled(kRgbKeyboard);
 }
 
 bool IsSameAppWindowCycleEnabled() {

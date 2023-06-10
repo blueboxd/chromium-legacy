@@ -2984,6 +2984,24 @@
         "test_id_prefix": "ninja://printing:printing_unittests/"
       },
       {
+        "ci_only": true,
+        "isolate_profile_data": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pthreadpool_unittests",
+        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
+      },
+      {
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3983,6 +4001,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4004,6 +4023,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4025,6 +4045,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
         },
@@ -4047,6 +4068,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4068,6 +4090,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4089,6 +4112,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4110,6 +4134,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4131,6 +4156,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4152,6 +4178,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4173,6 +4200,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4194,6 +4222,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4216,6 +4245,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4237,6 +4267,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4259,6 +4290,7 @@
           "--ozone-platform=wayland",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_browser_tests.filter"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4282,6 +4314,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4303,6 +4336,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4324,6 +4358,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4345,6 +4380,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4366,6 +4402,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4387,6 +4424,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4408,6 +4446,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4429,6 +4468,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4450,6 +4490,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4471,6 +4512,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4493,6 +4535,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4514,6 +4557,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4535,6 +4579,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4556,6 +4601,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4577,6 +4623,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4598,6 +4645,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4619,6 +4667,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4640,6 +4689,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4662,6 +4712,7 @@
           "--ozone-platform=wayland"
         ],
         "ci_only": true,
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4683,6 +4734,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4704,6 +4756,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4725,6 +4778,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4746,6 +4800,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4767,6 +4822,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4788,6 +4844,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4809,6 +4866,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4830,6 +4888,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4851,6 +4910,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4872,6 +4932,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4893,6 +4954,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4915,6 +4977,7 @@
           "--ozone-platform=wayland",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.interactive_ui_tests_wayland.filter"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4937,6 +5000,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4958,6 +5022,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -4980,6 +5045,7 @@
           "--ozone-platform=wayland"
         ],
         "ci_only": true,
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5001,6 +5067,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5022,6 +5089,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5043,6 +5111,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5064,6 +5133,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5085,6 +5155,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5106,6 +5177,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5127,6 +5199,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5148,6 +5221,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5169,6 +5243,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5190,6 +5265,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5211,6 +5287,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5232,6 +5309,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5253,6 +5331,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5274,6 +5353,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5295,6 +5375,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5316,6 +5397,30 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "ci_only": true,
+        "isolate_profile_data": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pthreadpool_unittests",
+        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
+      },
+      {
+        "args": [
+          "--no-xvfb",
+          "--use-weston",
+          "--ozone-platform=wayland"
+        ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5337,6 +5442,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5358,6 +5464,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5379,6 +5486,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5400,6 +5508,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5421,6 +5530,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5442,6 +5552,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5463,6 +5574,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5484,6 +5596,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5505,6 +5618,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5527,6 +5641,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5548,6 +5663,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5570,6 +5686,7 @@
           "--ozone-platform=wayland",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.unit_tests_wayland.filter"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5591,6 +5708,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5613,6 +5731,7 @@
           "--ozone-platform=wayland",
           "--test-launcher-filter-file=../../testing/buildbot/filters/ozone-linux.wayland_views_unittests.filter"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5634,6 +5753,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5655,6 +5775,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5676,6 +5797,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5697,6 +5819,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5718,6 +5841,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -5740,6 +5864,7 @@
           "--use-weston",
           "--ozone-platform=wayland"
         ],
+        "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
@@ -6809,6 +6934,23 @@
         },
         "test": "printing_unittests",
         "test_id_prefix": "ninja://printing:printing_unittests/"
+      },
+      {
+        "ci_only": true,
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Ubuntu-22.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "pthreadpool_unittests",
+        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
       },
       {
         "merge": {

@@ -29,9 +29,8 @@ import {cast, castExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {KerberosAccount, KerberosAccountsBrowserProxy, KerberosAccountsBrowserProxyImpl, KerberosErrorType} from './kerberos_accounts_browser_proxy.js';
 import {getTemplate} from './kerberos_accounts_subpage.html.js';
@@ -39,7 +38,7 @@ import {getTemplate} from './kerberos_accounts_subpage.html.js';
 const SettingsKerberosAccountsSubpageElementBase = DeepLinkingMixin(
     RouteObserverMixin(WebUiListenerMixin(I18nMixin(PolymerElement))));
 
-class SettingsKerberosAccountsSubpageElement extends
+export class SettingsKerberosAccountsSubpageElement extends
     SettingsKerberosAccountsSubpageElementBase {
   static get is() {
     return 'settings-kerberos-accounts-subpage' as const;

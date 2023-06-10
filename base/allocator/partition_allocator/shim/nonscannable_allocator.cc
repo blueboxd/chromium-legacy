@@ -7,7 +7,6 @@
 #include "base/allocator/partition_allocator/partition_root.h"
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
 
 #if BUILDFLAG(USE_STARSCAN)
@@ -64,7 +63,6 @@ void NonScannableAllocatorImpl<quarantinable>::NotifyPCScanEnabled() {
           quarantinable
               ? partition_alloc::PartitionOptions::Quarantine::kAllowed
               : partition_alloc::PartitionOptions::Quarantine::kDisallowed,
-      .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
       .backup_ref_ptr =
           partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
   });

@@ -1160,10 +1160,8 @@ void Shell::Init(
 
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
 
-  if (features::IsRgbKeyboardEnabled()) {
-    rgb_keyboard_manager_ =
-        std::make_unique<RgbKeyboardManager>(ime_controller_.get());
-  }
+  rgb_keyboard_manager_ =
+      std::make_unique<RgbKeyboardManager>(ime_controller_.get());
 
   // Observes the tablet mode controller if any hps feature is enabled.
   if (features::IsSnoopingProtectionEnabled() ||
@@ -1196,7 +1194,9 @@ void Shell::Init(
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
   accessibility_controller_ = std::make_unique<AccessibilityControllerImpl>();
   toast_manager_ = std::make_unique<ToastManagerImpl>();
-  anchored_nudge_manager_ = std::make_unique<AnchoredNudgeManagerImpl>();
+  if (features::IsSystemNudgeV2Enabled()) {
+    anchored_nudge_manager_ = std::make_unique<AnchoredNudgeManagerImpl>();
+  }
 
   peripheral_battery_listener_ = std::make_unique<PeripheralBatteryListener>();
 
@@ -1222,13 +1222,11 @@ void Shell::Init(
 
   wallpaper_controller_ = WallpaperControllerImpl::Create(local_state_);
 
-  if (features::IsRgbKeyboardEnabled()) {
-    // Initialized after |rgb_keyboard_manager_| to observe the state of rgb
-    // keyboard and |wallpaper_controller_| because we will need to observe when
-    // the extracted wallpaper color changes.
-    keyboard_backlight_color_controller_ =
-        std::make_unique<KeyboardBacklightColorController>(local_state_);
-  }
+  // Initialized after |rgb_keyboard_manager_| to observe the state of rgb
+  // keyboard and |wallpaper_controller_| because we will need to observe when
+  // the extracted wallpaper color changes.
+  keyboard_backlight_color_controller_ =
+      std::make_unique<KeyboardBacklightColorController>(local_state_);
 
   native_cursor_manager_ = new NativeCursorManagerAsh;
   cursor_manager_ = std::make_unique<CursorManager>(

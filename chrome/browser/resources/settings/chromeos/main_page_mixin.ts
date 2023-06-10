@@ -11,7 +11,7 @@ import {Constructor} from './common/types.js';
 import {ensureLazyLoaded} from './ensure_lazy_loaded.js';
 import {SettingsIdleLoadElement} from './os_settings_page/settings_idle_load.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from './route_observer_mixin.js';
-import {isAdvancedRoute, Route, Router} from './router.js';
+import {isAdvancedRoute, Route, Router, routes} from './router.js';
 
 /**
  * A categorization of every possible Settings URL, necessary for implementing
@@ -77,11 +77,10 @@ const VALID_TRANSITIONS = new Map([
 /**
  * The route for the first page listed in the Settings menu.
  */
-const FIRST_PAGE_ROUTE: Route = Router.getInstance().routes.INTERNET;
+const FIRST_PAGE_ROUTE: Route = routes.INTERNET;
 
 export interface MainPageMixinInterface extends RouteObserverMixinInterface {
   containsRoute(route: Route|undefined): boolean;
-  querySection(section: string): HTMLElement|null;
   loadAdvancedPage(): Promise<Element>;
 }
 
@@ -169,8 +168,6 @@ export const MainPageMixin = dedupingMixin(
 
           const section = await this.ensureSectionForRoute_(route);
           section.classList.add('expanded');
-          // Fire event used by a11y tests only.
-          this.dispatchCustomEvent_('settings-section-expanded');
           this.dispatchCustomEvent_('show-container');
         }
 
@@ -428,10 +425,7 @@ export const MainPageMixin = dedupingMixin(
         /**
          * Helper function to get a section from the local DOM.
          */
-        querySection(section: string): HTMLElement|null {
-          if (!section) {
-            return null;
-          }
+        private querySection(section: string): HTMLElement|null {
           return this.shadowRoot!.querySelector(
               `os-settings-section[section="${section}"]`);
         }

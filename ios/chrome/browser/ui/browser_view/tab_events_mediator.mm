@@ -128,6 +128,16 @@
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
   switch (change.type()) {
+    case WebStateListChange::Type::kDestroy:
+      // Do nothing when a WebStateList is destroyed.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didDetachWebState:atIndex: to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
     case WebStateListChange::Type::kReplace: {
       const WebStateListChangeReplace& replaceChange =
           change.As<WebStateListChangeReplace>();
@@ -148,10 +158,15 @@
       }
       break;
     }
-    case WebStateListChange::Type::kInsert:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // -webStateList:didInsertWebState:atIndex:activating: to here.
+    case WebStateListChange::Type::kInsert: {
+      // If a tab is inserted in the background (not activating), trigger an
+      // animation. (The animation for foreground tab insertion is handled in
+      // `didChangeActiveWebState`).
+      if (!selection.activating) {
+        [self.consumer initiateNewTabBackgroundAnimation];
+      }
       break;
+    }
   }
 }
 
@@ -162,18 +177,6 @@
   web::WebState* currentWebState = _webStateList->GetActiveWebState();
   if (webState == currentWebState) {
     [self.consumer resetTab];
-  }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
-  // If a tab is inserted in the background (not activating), trigger an
-  // animation. (The animation for foreground tab insertion is handled in
-  // `didChangeActiveWebState`).
-  if (!activating) {
-    [self.consumer initiateNewTabBackgroundAnimation];
   }
 }
 

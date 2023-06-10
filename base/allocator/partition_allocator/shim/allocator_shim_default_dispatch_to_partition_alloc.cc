@@ -10,7 +10,6 @@
 #include <string>
 #include <tuple>
 
-#include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/allocation_guard.h"
 #include "base/allocator/partition_allocator/chromecast_buildflags.h"
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
@@ -162,7 +161,6 @@ class MainPartitionConstructor {
             .thread_cache = thread_cache,
             .quarantine =
                 partition_alloc::PartitionOptions::Quarantine::kAllowed,
-            .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
             .backup_ref_ptr =
                 partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
         });
@@ -491,7 +489,7 @@ void PartitionTryFreeDefault(const AllocatorDispatch*,
                              void* context) {
   partition_alloc::ScopedDisallowAllocations guard{};
 
-  if (UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
+  if (PA_UNLIKELY(!partition_alloc::IsManagedByPartitionAlloc(
           reinterpret_cast<uintptr_t>(address)))) {
     // The object pointed to by `address` is not allocated by the
     // PartitionAlloc. Call find_zone_and_free.
@@ -584,7 +582,7 @@ void ConfigurePartitions(
     }
     PA_DCHECK(!enable_brp);
     PA_DCHECK(!use_dedicated_aligned_partition);
-    PA_DCHECK(!current_root->flags.with_thread_cache);
+    PA_DCHECK(!current_root->settings.with_thread_cache);
     return;
   }
 
@@ -605,7 +603,6 @@ void ConfigurePartitions(
           .thread_cache =
               partition_alloc::PartitionOptions::ThreadCache::kDisabled,
           .quarantine = partition_alloc::PartitionOptions::Quarantine::kAllowed,
-          .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
           .backup_ref_ptr =
               enable_brp
                   ? partition_alloc::PartitionOptions::BackupRefPtr::kEnabled
@@ -631,7 +628,6 @@ void ConfigurePartitions(
                 partition_alloc::PartitionOptions::ThreadCache::kDisabled,
             .quarantine =
                 partition_alloc::PartitionOptions::Quarantine::kAllowed,
-            .cookie = partition_alloc::PartitionOptions::Cookie::kAllowed,
             .backup_ref_ptr =
                 partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
         });
@@ -683,7 +679,7 @@ void ConfigurePartitions(
 // to in `PartitionRoot::Init()`.
 uint32_t GetMainPartitionRootExtrasSize() {
 #if PA_CONFIG(EXTRAS_REQUIRED)
-  return g_root.Get()->flags.extras_size;
+  return g_root.Get()->settings.extras_size;
 #else
   return 0;
 #endif  // PA_CONFIG(EXTRAS_REQUIRED)

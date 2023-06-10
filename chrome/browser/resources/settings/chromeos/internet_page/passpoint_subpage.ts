@@ -21,9 +21,8 @@ import {NetworkType} from 'chrome://resources/mojo/chromeos/services/network_con
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {castExists} from '../assert_extras.js';
-import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
-import {Route, Router} from '../router.js';
+import {Route, Router, routes} from '../router.js';
 
 import {PasspointListenerMixin} from './passpoint_listener_mixin.js';
 import {getTemplate} from './passpoint_subpage.html.js';
@@ -223,9 +222,12 @@ export class SettingsPasspointSubpageElement extends PasspointListenerMixin
     event.stopPropagation();
   }
 
-  private getRemovalDialogDescription_(): string {
-    return this.i18n(
-        'passpointRemovalDescription', this.subscription_!.friendlyName);
+  private getRemovalDialogDescription_(): TrustedHTML {
+    return this.i18nAdvanced('passpointRemovalDescription', {
+      substitutions: [
+        this.subscription_!.friendlyName,
+      ],
+    });
   }
 
   private getRemovalDialog_(): HTMLDialogElement {

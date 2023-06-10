@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/scoped_active_install.h"
+#include "chrome/browser/extensions/webstore_installer_callback_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_observer.h"
@@ -70,11 +71,16 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 // TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
 // flag to #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/supervised_user/supervised_user_browser_utils.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/common/features.h"
 #include "extensions/browser/api/management/management_api.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+#if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/supervised_user/chromeos/parent_access_extension_approvals_manager.h"
+#endif
 
 using safe_browsing::SafeBrowsingNavigationObserverManager;
 
@@ -904,10 +910,13 @@ void WebstorePrivateBeginInstallWithManifest3Function::ShowInstallDialog(
       prompt->AddObserver(&supervised_user_extensions_metrics_recorder_);
       // Bypass the install prompt dialog if V2 is enabled. The
       // ParentAccessDialog handles both the blocked and install use case.
-      if (supervised_user::IsLocalExtensionApprovalsV2Enabled()) {
+#if BUILDFLAG(IS_CHROMEOS)
+      if (ParentAccessExtensionApprovalsManager::
+              ShouldShowExtensionApprovalsV2()) {
         RequestExtensionApproval(contents);
         return;
       }
+#endif  // BUILDFLAG(IS_CHROMEOS)
     }
   }
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -1012,7 +1021,15 @@ WebstorePrivateCompleteInstallFunction::Run() {
   // The extension will install through the normal extension install flow, but
   // the allowlist entry will bypass the normal permissions install dialog.
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
-      profile, this, web_contents, params->expected_id, std::move(approval_),
+      profile,
+      std::make_unique<WebstoreInstallerCallbackDelegate>(
+          base::BindOnce(&WebstorePrivateCompleteInstallFunction::
+                             OnExtensionInstallSuccess,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&WebstorePrivateCompleteInstallFunction::
+                             OnExtensionInstallFailure,
+                         weak_ptr_factory_.GetWeakPtr())),
+      web_contents, params->expected_id, std::move(approval_),
       WebstoreInstaller::INSTALL_SOURCE_OTHER);
   installer->Start();
 

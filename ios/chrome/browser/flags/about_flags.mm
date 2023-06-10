@@ -97,7 +97,6 @@
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
-#import "ios/chrome/browser/ui/whats_new/feature_flags.h"
 #import "ios/chrome/browser/ui/whats_new/whats_new_util.h"
 #import "ios/chrome/browser/web/features.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -218,14 +217,6 @@ const FeatureEntry::FeatureVariation kOmniboxMaxURLMatchesVariations[] = {
      nullptr},
     {"7 matches", kOmniboxMaxURLMatches7, std::size(kOmniboxMaxURLMatches7),
      nullptr},
-};
-
-const FeatureEntry::FeatureParam kWhatsNewModuleLayout[] = {
-    {kWhatsNewModuleBasedLayoutParam, "true"}};
-
-const FeatureEntry::FeatureVariation kWhatsNewLayoutVariations[] = {
-    {"Display module layout", kWhatsNewModuleLayout,
-     std::size(kWhatsNewModuleLayout), nullptr},
 };
 
 const FeatureEntry::FeatureParam kDefaultBrowserVideoPromoHalfscreen[] = {
@@ -807,10 +798,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForceStartupSigninPromoName,
      flag_descriptions::kForceStartupSigninPromoDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(switches::kForceStartupSigninPromo)},
-    {"identity-status-consistency",
-     flag_descriptions::kIdentityStatusConsistencyName,
-     flag_descriptions::kIdentityStatusConsistencyDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(switches::kIdentityStatusConsistency)},
     {"restore-session-from-cache",
      flag_descriptions::kRestoreSessionFromCacheName,
      flag_descriptions::kRestoreSessionFromCacheDescription, flags_ui::kOsIos,
@@ -1227,12 +1214,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxKeyboardPasteButtonName,
      flag_descriptions::kOmniboxKeyboardPasteButtonDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kOmniboxKeyboardPasteButton)},
-
-    {"whats-new-ios", flag_descriptions::kWhatsNewIOSName,
-     flag_descriptions::kWhatsNewIOSDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kWhatsNewIOS,
-                                    kWhatsNewLayoutVariations,
-                                    "WhatsNewLayoutVariations")},
     {"whats-new-ios-m116", flag_descriptions::kWhatsNewIOSM116Name,
      flag_descriptions::kWhatsNewIOSM116Description, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kWhatsNewIOSM116)},
@@ -1554,6 +1535,35 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableVariationsGoogleGroupFilteringName,
      flag_descriptions::kEnableVariationsGoogleGroupFilteringDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kVariationsGoogleGroupFiltering)},
+    {"autofill-disable-profile-updates",
+     flag_descriptions::kAutofillDisableProfileUpdatesName,
+     flag_descriptions::kAutofillDisableProfileUpdatesDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::test::kAutofillDisableProfileUpdates)},
+    {"autofill-disable-silent-profile-updates",
+     flag_descriptions::kAutofillDisableSilentProfileUpdatesName,
+     flag_descriptions::kAutofillDisableSilentProfileUpdatesDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::test::kAutofillDisableSilentProfileUpdates)},
+    {"autofill-enable-admin-level-2",
+     flag_descriptions::kAutofillEnableSupportForAdminLevel2Name,
+     flag_descriptions::kAutofillEnableSupportForAdminLevel2Description,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableSupportForAdminLevel2)},
+    {"autofill-enable-between-streets",
+     flag_descriptions::kAutofillEnableSupportForBetweenStreetsName,
+     flag_descriptions::kAutofillEnableSupportForBetweenStreetsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         autofill::features::kAutofillEnableSupportForBetweenStreets)},
+    {"autofill-enable-landmark",
+     flag_descriptions::kAutofillEnableSupportForLandmarkName,
+     flag_descriptions::kAutofillEnableSupportForLandmarkDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableSupportForLandmark)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

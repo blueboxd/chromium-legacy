@@ -1119,8 +1119,8 @@ const CGFloat kSymbolSize = 18;
 #pragma mark - CRWWebStateObserver methods
 
 - (void)webStateDidStartLoading:(web::WebState*)webState {
-  // webState can start loading before  didInsertWebState is called, in that
-  // case early return as there is no view to update yet.
+  // webState can start loading before didChangeWebStateList with kInsert is
+  // called, in that case early return as there is no view to update yet.
   if (static_cast<NSUInteger>(_webStateList->count()) >
       _tabArray.count - _closingTabs.count)
     return;
@@ -1170,6 +1170,17 @@ const CGFloat kSymbolSize = 18;
                        change:(const WebStateListChange&)change
                     selection:(const WebStateSelection&)selection {
   switch (change.type()) {
+    case WebStateListChange::Type::kDestroy:
+      // Do nothing when a WebStateList is destroyed.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didDetachWebState:atIndex: to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didMoveWebState:fromIndex:toIndex: to here.
+      break;
     case WebStateListChange::Type::kReplace: {
       const WebStateListChangeReplace& replaceChange =
           change.As<WebStateListChangeReplace>();
@@ -1178,10 +1189,22 @@ const CGFloat kSymbolSize = 18;
       [self updateTabView:view withWebState:insertedWebState];
       break;
     }
-    case WebStateListChange::Type::kInsert:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // -webStateList:didInsertWebState:atIndex:activating: to here.
+    case WebStateListChange::Type::kInsert: {
+      const WebStateListChangeInsert& insertChange =
+          change.As<WebStateListChangeInsert>();
+      TabView* view =
+          [self createTabViewForWebState:insertChange.inserted_web_state()
+                              isSelected:selection.activating];
+      [_tabArray insertObject:view
+                      atIndex:[self indexForWebStateListIndex:selection.index]];
+      [[self tabStripView] addSubview:view];
+
+      [self updateContentSizeAndRepositionViews];
+      [self setNeedsLayoutWithAnimation];
+      [self updateContentOffsetForWebStateIndex:selection.index
+                                  isNewWebState:YES];
       break;
+    }
   }
 }
 
@@ -1263,21 +1286,6 @@ const CGFloat kSymbolSize = 18;
   [view removeFromSuperview];
   [_tabArray removeObject:view];
   [_closingTabs removeObject:view];
-}
-
-// Observer method. `webState` inserted on `webStateList`.
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
-  TabView* view = [self createTabViewForWebState:webState
-                                      isSelected:activating];
-  [_tabArray insertObject:view atIndex:[self indexForWebStateListIndex:index]];
-  [[self tabStripView] addSubview:view];
-
-  [self updateContentSizeAndRepositionViews];
-  [self setNeedsLayoutWithAnimation];
-  [self updateContentOffsetForWebStateIndex:index isNewWebState:YES];
 }
 
 #pragma mark - WebStateFaviconDriverObserver

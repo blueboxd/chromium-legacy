@@ -142,7 +142,8 @@
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller_autofill_delegate.h"
 #include "components/messages/android/messages_feature.h"
 #include "components/password_manager/core/browser/credential_cache.h"
-#include "components/webauthn/android/webauthn_cred_man_delegate.h"
+#include "components/password_manager/core/browser/password_credential_filler_impl.h"
+#include "components/webauthn/android/webauthn_cred_man_delegate_factory.h"
 #include "ui/base/ui_base_features.h"
 #else
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
@@ -422,17 +423,21 @@ void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
     passkeys = *webauthn_delegate->GetPasskeys();
     should_show_hybrid_option = webauthn_delegate->IsAndroidHybridAvailable();
   }
+  auto filler =
+      std::make_unique<password_manager::PasswordCredentialFillerImpl>(
+          driver->AsWeakPtr(), submission_readiness);
+  auto ttf_controller_autofill_delegate =
+      std::make_unique<TouchToFillControllerAutofillDelegate>(
+          this, GetDeviceAuthenticator(), webauthn_delegate->AsWeakPtr(),
+          std::move(filler),
+          TouchToFillControllerAutofillDelegate::ShowHybridOption(
+              should_show_hybrid_option));
   GetOrCreateTouchToFillController()->Show(
       credential_cache_
           .GetCredentialStore(url::Origin::Create(
               driver->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
           .GetCredentials(),
-      passkeys,
-      std::make_unique<TouchToFillControllerAutofillDelegate>(
-          this, GetDeviceAuthenticator(), driver->AsWeakPtr(),
-          submission_readiness,
-          TouchToFillControllerAutofillDelegate::ShowHybridOption(
-              should_show_hybrid_option)));
+      passkeys, std::move(ttf_controller_autofill_delegate));
 }
 #endif
 
@@ -975,14 +980,14 @@ ChromePasswordManagerClient::GetWebAuthnCredentialsDelegateForDriver(
 }
 
 #if BUILDFLAG(IS_ANDROID)
-WebAuthnCredManDelegate*
+webauthn::WebAuthnCredManDelegate*
 ChromePasswordManagerClient::GetWebAuthnCredManDelegateForDriver(
     PasswordManagerDriver* driver) {
   auto* frame_host =
       static_cast<password_manager::ContentPasswordManagerDriver*>(driver)
           ->render_frame_host();
-  return WebAuthnCredManDelegate::GetRequestDelegate(
-      content::WebContents::FromRenderFrameHost(frame_host));
+  return webauthn::WebAuthnCredManDelegateFactory::GetFactory(web_contents())
+      ->GetRequestDelegate(frame_host);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 

@@ -4028,6 +4028,7 @@ Connect your device to power.
       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_ZOOM_MINUS" desc="Label for accelerator action - Zoom out on page.">
         Zoom out on page
       </message>
+      <!-- TODO(b/286268215): Translate this string -->
       <message name="IDS_BROWSER_ACCELERATOR_DESCRIPTION_FOCUS_LOCATION" translateable="false" desc="Label for accelerator action - Focus address bar.">
         Focus address bar
       </message>
@@ -4094,6 +4095,7 @@ Connect your device to power.
       <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_CYCLE_BACKWARD_MRU" desc="Label for accelerator description - Cycle backwards in the most recently used window list.">
         Cycle backwards in the most recently used window list
       </message>
+      <!-- TODO(b/286268215): Translate this string -->
       <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_RIGHT_CLICK" translateable="false" desc="Label for accelerator description - Right-click a link.">
         Right-click a link
       </message>
@@ -4184,9 +4186,11 @@ Connect your device to power.
       <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_GO_TO_END_OF_DOCUMENT" desc="Label for accelerator description - Go to end of document.">
         Go to end of document
       </message>
+      <!-- TODO(b/286268215): Translate this string -->
       <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_GO_TO_BEGINNING_OF_LINE" translateable="false" desc="Label for accelerator description - Move cursor to beginning of line.">
         Move cursor to beginning of line
       </message>
+      <!-- TODO(b/286268215): Translate this string -->
       <message name="IDS_AMBIENT_ACCELERATOR_DESCRIPTION_GO_TO_END_OF_LINE" translateable="false" desc="Label for accelerator description - Move cursor to end of line.">
         Move cursor to end of line
       </message>
@@ -6708,6 +6712,18 @@ To shut down the device, press and hold the power button on the device again.
       </message>
 
       <!-- Welcome Tour -->
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_ACCEPT_BUTTON_TEXT" desc="Text shown on the dialog's button that starts the System UI Welcome Tour tutorial when triggered." translateable="false">
+        [i18n] Quick tour
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_CANCEL_BUTTON_TEXT" desc="Text shown on the dialog's button that closes the dialog without starting the System UI Welcome Tour tutorial when triggered." translateable="false">
+        [i18n] No thanks
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_DESCRIPTION_TEXT" desc="Text shown in the body of the dialog as part of the System UI Welcome Tour." translateable="false">
+        [i18n] Take a quick tour to get off to a smooth start. With 6 steps, it will just take a few minutes.
+      </message>
+      <message name="IDS_ASH_WELCOME_TOUR_DIALOG_TITLE_TEXT" desc="Text shown as the Welcome Tour dialog title." translateable="false">
+        [i18n] Hi there. Chromebooks are a little different.
+      </message>
       <message name="IDS_ASH_WELCOME_TOUR_EXPLORE_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Explore app as part of the System UI Welcome Tour." translateable="false">
         [i18n] Those were the basics! Continue in Explore to make the most of your Chromebook. You'll find the best apps for Chromebook, tips on getting started, special offers, and more.
       </message>
@@ -6727,9 +6743,22 @@ To shut down the device, press and hold the power button on the device again.
         [i18n] Frequently used controls like Wi-Fi, Bluetooth and volume controls are in Quick Settings. You can also go here to take screenshots.
       </message>
 
+      <!-- TODO(b/286455407): Update strings once finalized with UX Writing -->
       <!-- Game Dashboard strings -->
+      <message name="IDS_ASH_GAME_DASHBOARD_CONTROLS_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard game controls tile.">
+        Controls
+      </message>
       <message name="IDS_ASH_GAME_DASHBOARD_MAIN_MENU_BUTTON_TITLE" desc="The title of the Game Dashboard main menu button.">
         Game Dashboard
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard record game tile.">
+        Record game
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_SCREENSHOT_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard screenshot tile.">
+        Take screenshot
+      </message>
+      <message name="IDS_ASH_GAME_DASHBOARD_TOOLBAR_TILE_BUTTON_TITLE" translateable="false" desc="The display name for the Game Dashboard toolbar tile.">
+        Toolbar
       </message>
      </messages>
     </release>

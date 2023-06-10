@@ -132,6 +132,7 @@
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser_timing.h"
+#include "third_party/blink/renderer/core/dom/document_part.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -2474,6 +2475,10 @@ CSSToggleInference& Document::EnsureCSSToggleInference() {
   return *css_toggle_inference_;
 }
 
+DocumentPart* Document::getDocumentPart() {
+  return MakeGarbageCollected<DocumentPart>(this);
+}
+
 void Document::ApplyScrollRestorationLogic() {
   DCHECK(View());
   // This function is not re-entrant. However, the places that invoke this are
@@ -3996,14 +4001,15 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   if (!before_unload_event.defaultPrevented())
     DefaultEventHandler(before_unload_event);
 
-  if (before_unload_event.returnValue().IsNull()) {
+  bool cancelled_by_script =
+      RuntimeEnabledFeatures::BeforeunloadEventCancelByPreventDefaultEnabled()
+          ? !before_unload_event.returnValue().empty() ||
+                before_unload_event.defaultPrevented()
+          : !before_unload_event.returnValue().IsNull();
+
+  if (cancelled_by_script) {
     RecordBeforeUnloadUse(BeforeUnloadUse::kNoDialogNoText);
   }
-  bool cancelled_by_script =
-      !before_unload_event.returnValue().IsNull() ||
-      (RuntimeEnabledFeatures::
-           BeforeunloadEventCancelByPreventDefaultEnabled() &&
-       before_unload_event.defaultPrevented());
 
   if (!GetFrame() || !cancelled_by_script) {
     return true;

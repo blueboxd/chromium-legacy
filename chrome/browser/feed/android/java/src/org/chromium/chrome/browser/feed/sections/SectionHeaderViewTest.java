@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import androidx.test.filters.SmallTest;
 
@@ -52,12 +54,16 @@ public final class SectionHeaderViewTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.setupActivity(Activity.class);
-        mActivity.setTheme(R.style.Theme_MaterialComponents);
+        mActivity.setTheme(R.style.Theme_BrowserUI_DayNight);
         TrackerFactory.setTrackerForTests(mTracker);
 
         // Build the class under test, and set up the fake UI.
         mSectionHeaderView = (SectionHeaderView) LayoutInflater.from(mActivity).inflate(
                 R.layout.new_tab_page_multi_feed_header, null, false);
+        ViewGroup contentView = new LinearLayout(mActivity);
+        mActivity.setContentView(contentView);
+        contentView.addView(mSectionHeaderView);
+
         mSectionHeaderView.addTab();
         mSectionHeaderView.addTab();
     }

@@ -4,12 +4,31 @@
 
 #include "content/common/service_worker/service_worker_router_evaluator.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "third_party/liburlpattern/options.h"
 #include "third_party/liburlpattern/pattern.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "third_party/re2/src/re2/set.h"
 
 namespace {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ServiceWorkerRouterEvaluatorErrorEnums {
+  kNoError = 0,
+  kInvalidType = 1,
+  kParseError = 2,
+  kCompileError = 3,
+  kEmptyCondition = 4,
+  kEmptySource = 5,
+  kInvalidSource = 6,
+
+  kMaxValue = kInvalidSource,
+};
+
+void RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums e) {
+  base::UmaHistogramEnumeration("ServiceWorker.RouterEvaluator.Error", e);
+}
 
 std::string ConvertToRegex(const blink::UrlPattern& url_pattern) {
   liburlpattern::Options options = {.delimiter_list = "/",
@@ -19,6 +38,25 @@ std::string ConvertToRegex(const blink::UrlPattern& url_pattern) {
   liburlpattern::Pattern pattern(url_pattern.pathname, options, "[^/]+?");
   VLOG(3) << "regex string:" << pattern.GenerateRegexString();
   return pattern.GenerateRegexString();
+}
+
+bool IsValidSources(
+    const std::vector<blink::ServiceWorkerRouterSource> sources) {
+  if (sources.empty()) {
+    // At least a source must exist.
+    RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kEmptySource);
+    return false;
+  }
+  // TODO(crbug.com/1371756): support other sources in the future.
+  // Currently, only network source is supported.
+  for (const auto& s : sources) {
+    if (s.type != blink::ServiceWorkerRouterSource::SourceType::kNetwork ||
+        !s.network_source) {
+      RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kInvalidSource);
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace
@@ -45,23 +83,38 @@ ServiceWorkerRouterEvaluator::~ServiceWorkerRouterEvaluator() = default;
 void ServiceWorkerRouterEvaluator::Compile() {
   for (const auto& r : rules_.rules) {
     std::unique_ptr<RouterRule> rule = absl::make_unique<RouterRule>();
+    if (r.conditions.empty()) {
+      // At least one condition must be set.
+      RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kEmptyCondition);
+      return;
+    }
     for (const auto& condition : r.conditions) {
-      CHECK_EQ(condition.type,
-               blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern);
+      if (condition.type !=
+          blink::ServiceWorkerRouterCondition::ConditionType::kUrlPattern) {
+        // Unexpected condition type.
+        RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kInvalidType);
+        return;
+      }
       if (rule->url_patterns.Add(ConvertToRegex(*condition.url_pattern),
                                  nullptr) == -1) {
         // Failed to parse the regex.
+        RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kParseError);
         return;
       }
     }
     rule->url_pattern_length = r.conditions.size();
     if (!rule->url_patterns.Compile()) {
       // Failed to compile the regex.
+      RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kCompileError);
+      return;
+    }
+    if (!IsValidSources(r.sources)) {
       return;
     }
     rule->sources = r.sources;
     compiled_rules_.emplace_back(std::move(rule));
   }
+  RecordSetupError(ServiceWorkerRouterEvaluatorErrorEnums::kNoError);
   is_valid_ = true;
 }
 

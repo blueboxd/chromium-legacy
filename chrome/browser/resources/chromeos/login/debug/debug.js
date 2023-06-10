@@ -1588,7 +1588,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
               },
               {
                 screenID: 'screenID3',
-                icon: 'oobe-40:pin-choobe',
+                icon: 'oobe-40:scroll-choobe',
                 title: 'choobeThemeSelectionTitle',
                 synced: false,
                 is_revisitable: false,
@@ -1597,7 +1597,7 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
               },
               {
                 screenID: 'screenID4',
-                icon: 'oobe-40:keyboard-choobe',
+                icon: 'oobe-40:scroll-choobe',
                 title: 'choobeThemeSelectionTitle',
                 subtitle: 'choobeThemeSelectionTitle',
                 synced: true,
@@ -1683,6 +1683,30 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
           trigger: (screen) => {
             screen.setUIStep('overview');
             screen.updateA11ySettingsButtonVisibility(true);
+          },
+        },
+      ],
+    },
+    {
+      id: 'display-size',
+      kind: ScreenKind.NORMAL,
+      handledSteps: 'overview',
+      states: [
+        {
+          id: 'overview',
+          data: {
+            availableSizes: [
+              0.8999999761581421,
+              1,
+              1.0499999523162842,
+              1.100000023841858,
+              1.149999976158142,
+              1.2000000476837158,
+              1.25,
+              1.2999999523162842,
+              1.5,
+            ],
+            currentSize: 1,
           },
         },
       ],

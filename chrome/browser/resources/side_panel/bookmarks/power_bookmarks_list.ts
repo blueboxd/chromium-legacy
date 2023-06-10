@@ -544,12 +544,20 @@ export class PowerBookmarksListElement extends PolymerElement {
     }
   }
 
-  private getBookmarkA11yLabel_(url: string, title: string): string {
+  private getBookmarkA11yLabel_(id: string, url: string, title: string):
+      string {
     if (this.editing_) {
-      if (url) {
-        return loadTimeData.getStringF('selectBookmarkLabel', title);
+      if (this.selectedBookmarks_.findIndex(b => b.id === id) > -1) {
+        if (url) {
+          return loadTimeData.getStringF('deselectBookmarkLabel', title);
+        }
+        return loadTimeData.getStringF('deselectFolderLabel', title);
+      } else {
+        if (url) {
+          return loadTimeData.getStringF('selectBookmarkLabel', title);
+        }
+        return loadTimeData.getStringF('selectFolderLabel', title);
       }
-      return loadTimeData.getStringF('selectFolderLabel', title);
     }
     if (url) {
       return loadTimeData.getStringF('openBookmarkLabel', title);
@@ -934,7 +942,12 @@ export class PowerBookmarksListElement extends PolymerElement {
   }
 
   private onContextMenuClosed_() {
-    this.contextMenuBookmark_ = undefined;
+    // This check is needed to avoid the case where the context menu is closed
+    // via right-click a new row, and is already re-opened by the time this
+    // executes.
+    if (!this.$.contextMenu.isOpen()) {
+      this.contextMenuBookmark_ = undefined;
+    }
   }
 
   private showDeletionToastWithCount_(deletionCount: number) {

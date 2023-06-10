@@ -110,7 +110,7 @@ BASE_FEATURE(kLacrosResourcesFileSharing,
 // Enabling this fixes b/265853952.
 BASE_FEATURE(kAlwaysConfirmComposition,
              "AlwaysConfirmComposition",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Update of the virtual keyboard settings UI as described in
@@ -431,8 +431,7 @@ BASE_FEATURE(kEnableVariableRefreshRate,
              "EnableVariableRefreshRate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 bool IsVariableRefreshRateEnabled() {
-  return base::FeatureList::GetStateIfOverridden(kEnableVariableRefreshRate)
-      .value_or(base::FeatureList::IsEnabled(kEnableVariableRefreshRate));
+  return base::FeatureList::IsEnabled(kEnableVariableRefreshRate);
 }
 
 // Fixes b/267944900.

@@ -359,10 +359,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.REPORTING_SERVICE_FLUSH_PREFS_ON_UPLOAD_IN_BACKGROUND,
                     "Controls whether we immediately flush Local State after "
                             + "uploading a UMA log while in background."),
-            Flag.baseFeature(MetricsFeatures.SUBPROCESS_METRICS_PROVIDER_LEAKY,
-                    "Whether SubprocessMetricsProvider should be leaky, so that it can listen "
-                            + "to subprocesses exiting even after the MetricsService has been "
-                            + "destroyed."),
             Flag.baseFeature(ContentFeatures.MAIN_THREAD_COMPOSITING_PRIORITY,
                     "When enabled runs the main thread at compositing priority."),
             Flag.baseFeature(AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT,
@@ -441,6 +437,9 @@ public final class ProductionSupportedFlagList {
                     "If enabled, allows navigations to be queued when there is "
                             + "an existing pending commit navigation in progress."),
             Flag.baseFeature("NetworkServiceCookiesHighPriorityTaskRunner"),
+            Flag.baseFeature(VizFeatures.ON_BEGIN_FRAME_THROTTLE_VIDEO,
+                    "Enables throttling OnBeginFrame for video frame sinks"
+                            + "with a preferred framerate defined."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

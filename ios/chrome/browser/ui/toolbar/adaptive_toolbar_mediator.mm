@@ -156,17 +156,33 @@
 
 #pragma mark - WebStateListObserving
 
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
-  DCHECK_EQ(_webStateList, webStateList);
-  if (_inBatchOperation) {
-    return;
-  }
+- (void)didChangeWebStateList:(WebStateList*)webStateList
+                       change:(const WebStateListChange&)change
+                    selection:(const WebStateSelection&)selection {
+  switch (change.type()) {
+    case WebStateListChange::Type::kDestroy:
+      // Do nothing when a WebStateList is destroyed.
+      break;
+    case WebStateListChange::Type::kDetach:
+      // TODO(crbug.com/1442546): Move the implementation from
+      // webStateList:didDetachWebState:atIndex: to here.
+      break;
+    case WebStateListChange::Type::kMove:
+      // Do nothing when a WebState is moved.
+      break;
+    case WebStateListChange::Type::kReplace:
+      // Do nothing when a WebState is replaced.
+      break;
+    case WebStateListChange::Type::kInsert: {
+      DCHECK_EQ(_webStateList, webStateList);
+      if (_inBatchOperation) {
+        return;
+      }
 
-  [self.consumer setTabCount:_webStateList->count()
-           addedInBackground:!activating];
+      [self.consumer setTabCount:_webStateList->count()
+               addedInBackground:!selection.activating];
+    }
+  }
 }
 
 - (void)webStateList:(WebStateList*)webStateList

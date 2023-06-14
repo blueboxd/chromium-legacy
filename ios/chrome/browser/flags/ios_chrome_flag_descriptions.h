@@ -423,6 +423,11 @@ extern const char kFullscreenPromosManagerSkipInternalLimitsDescription[];
 extern const char kFullscreenSmoothScrollingName[];
 extern const char kFullscreenSmoothScrollingDescription[];
 
+// Title and description for the flag that hides the content suggestion tiles
+// from the NTP.
+extern const char kHideContentSuggestionTilesName[];
+extern const char kHideContentSuggestionTilesDescription[];
+
 // Title and description for the flag to enable HTTPS-Only Mode setting.
 extern const char kHttpsOnlyModeName[];
 extern const char kHttpsOnlyModeDescription[];
@@ -497,8 +502,8 @@ extern const char kIOSPasswordBottomSheetDescription[];
 
 // Title and description of the flag to enable client side new tab page
 // experiments aimed at improving user retention.
-extern const char kNewTabPageRetentionName[];
-extern const char kNewTabPageRetentionDescription[];
+extern const char kNewTabPageFieldTrialName[];
+extern const char kNewTabPageFieldTrialDescription[];
 
 // Title and description for the flag to enable Shared Highlighting color
 // change in iOS.

@@ -495,6 +495,11 @@ const char kFullscreenSmoothScrollingDescription[] =
     "When enabled, the web view's insets are updated for scoll events. If "
     "disabled, the the web view's frame are updated.";
 
+extern const char kHideContentSuggestionTilesName[] =
+    "Hide content suggestions tiles";
+extern const char kHideContentSuggestionTilesDescription[] =
+    "Hides content suggestions tiles from the new tab page.";
+
 const char kHttpsOnlyModeName[] = "HTTPS-Only Mode Setting";
 const char kHttpsOnlyModeDescription[] = "Enables the HTTPS-Only Mode setting";
 
@@ -572,9 +577,9 @@ const char kIOSPasswordBottomSheetName[] = "IOS Password Manager Bottom Sheet";
 const char kIOSPasswordBottomSheetDescription[] =
     "Enables the display of the password bottom sheet on IOS.";
 
-const char kNewTabPageRetentionName[] =
+const char kNewTabPageFieldTrialName[] =
     "New tab page features that target new users";
-const char kNewTabPageRetentionDescription[] =
+const char kNewTabPageFieldTrialDescription[] =
     "Enables new tab page features that are available on first run for new "
     "Chrome iOS users.";
 

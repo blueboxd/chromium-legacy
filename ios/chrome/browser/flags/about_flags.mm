@@ -92,7 +92,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_retention_field_trial_constants.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_field_trial_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
 #import "ios/chrome/browser/ui/open_in/features.h"
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
@@ -354,6 +354,28 @@ const FeatureEntry::FeatureVariation kStartSurfaceVariations[] = {
      std::size(kStartSurfaceOneHourHideShortcutsReturnToRecentTab), nullptr},
 };
 
+const FeatureEntry::FeatureParam kHideAllContentSuggestionsTilesAll[] = {
+    {kHideContentSuggestionsTilesParamMostVisited, "true"},
+    {kHideContentSuggestionsTilesParamShortcuts, "true"},
+};
+const FeatureEntry::FeatureParam kHideAllContentSuggestionsTilesMVT[] = {
+    {kHideContentSuggestionsTilesParamMostVisited, "true"},
+    {kHideContentSuggestionsTilesParamShortcuts, "false"},
+};
+const FeatureEntry::FeatureParam kHideAllContentSuggestionsTilesShortcuts[] = {
+    {kHideContentSuggestionsTilesParamMostVisited, "false"},
+    {kHideContentSuggestionsTilesParamShortcuts, "true"},
+};
+
+const FeatureEntry::FeatureVariation kHideContentSuggestionTilesVariations[]{
+    {"Hide all tiles", kHideAllContentSuggestionsTilesAll,
+     std::size(kHideAllContentSuggestionsTilesAll), nullptr},
+    {"Hide Most Visited tiles", kHideAllContentSuggestionsTilesMVT,
+     std::size(kHideAllContentSuggestionsTilesMVT), nullptr},
+    {"Hide Shortcuts tiles", kHideAllContentSuggestionsTilesShortcuts,
+     std::size(kHideAllContentSuggestionsTilesShortcuts), nullptr},
+};
+
 #if BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
 // Feed Background Refresh Feature Params.
 const FeatureEntry::FeatureParam kOneHourIntervalOneHourMaxAgeOnce[] = {
@@ -486,16 +508,17 @@ const FeatureEntry::FeatureVariation kIOSNewPostRestoreExperienceVariations[] =
     {{"minimal", kIOSNewPostRestoreExperienceMinimal,
       std::size(kIOSNewPostRestoreExperienceMinimal), nullptr}};
 
-const FeatureEntry::FeatureParam kNewTabPageRetentionTileAblationHideAll[] = {
-    {ntp_tiles::kNewTabPageRetentionParam, "1"}};
-const FeatureEntry::FeatureParam kNewTabPageRetentionTileAblationHideMVTOnly[] =
-    {{ntp_tiles::kNewTabPageRetentionParam, "2"}};
-const FeatureEntry::FeatureVariation kNewTabPageRetentionVariations[] = {
-    {"- Tile ablation, Hide all", kNewTabPageRetentionTileAblationHideAll,
-     std::size(kNewTabPageRetentionTileAblationHideAll), nullptr},
+const FeatureEntry::FeatureParam kNewTabPageFieldTrialTileAblationHideAll[] = {
+    {ntp_tiles::kNewTabPageFieldTrialParam, "1"}};
+const FeatureEntry::FeatureParam
+    kNewTabPageFieldTrialTileAblationHideMVTOnly[] = {
+        {ntp_tiles::kNewTabPageFieldTrialParam, "2"}};
+const FeatureEntry::FeatureVariation kNewTabPageFieldTrialVariations[] = {
+    {"- Tile ablation, Hide all", kNewTabPageFieldTrialTileAblationHideAll,
+     std::size(kNewTabPageFieldTrialTileAblationHideAll), nullptr},
     {"- Tile ablation, Hide MVT only",
-     kNewTabPageRetentionTileAblationHideMVTOnly,
-     std::size(kNewTabPageRetentionTileAblationHideMVTOnly), nullptr}};
+     kNewTabPageFieldTrialTileAblationHideMVTOnly,
+     std::size(kNewTabPageFieldTrialTileAblationHideMVTOnly), nullptr}};
 
 const FeatureEntry::FeatureParam kEnableExpKitTextClassifierDate[] = {
     {"date", "true"}};
@@ -1100,11 +1123,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSPasswordBottomSheetName,
      flag_descriptions::kIOSPasswordBottomSheetDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kIOSPasswordBottomSheet)},
-    {"ios-new-tab-page-retention", flag_descriptions::kNewTabPageRetentionName,
-     flag_descriptions::kNewTabPageRetentionDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_tiles::kNewTabPageRetention,
-                                    kNewTabPageRetentionVariations,
-                                    ntp_tiles::kNewTabPageRetentionName)},
+    {"ios-new-tab-page-retention", flag_descriptions::kNewTabPageFieldTrialName,
+     flag_descriptions::kNewTabPageFieldTrialDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_tiles::kNewTabPageFieldTrial,
+                                    kNewTabPageFieldTrialVariations,
+                                    ntp_tiles::kNewTabPageFieldTrialName)},
     {"omnibox-adaptive-suggestions-count",
      flag_descriptions::kAdaptiveSuggestionsCountName,
      flag_descriptions::kAdaptiveSuggestionsCountDescription, flags_ui::kOsIos,
@@ -1513,6 +1536,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSEditMenuHideSearchWebName,
      flag_descriptions::kIOSEditMenuHideSearchWebDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSEditMenuHideSearchWeb)},
+    {"hide-content-suggestions-tiles",
+     flag_descriptions::kHideContentSuggestionTilesName,
+     flag_descriptions::kHideContentSuggestionTilesDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         kHideContentSuggestionsTiles,
+         kHideContentSuggestionTilesVariations,
+         flag_descriptions::kHideContentSuggestionTilesName)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

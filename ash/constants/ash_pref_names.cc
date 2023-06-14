@@ -50,6 +50,9 @@ const char kManagedCellularIccidSmdpPair[] =
 // A boolean pref for whether playing charging sounds is enabled.
 const char kChargingSoundsEnabled[] = "ash.charging_sounds.enabled";
 
+// A boolean pref for whether playing a low battery sound is enabled.
+const char kLowBatterySoundEnabled[] = "ash.low_battery_sound.enabled";
+
 // A dictionary pref to hold the mute setting for all the currently known
 // audio devices.
 const char kAudioDevicesMute[] = "settings.audio.devices.mute";
@@ -428,18 +431,10 @@ const char kAccessibilityAutoclickMenuPosition[] =
 // Whether to enable color filtering settings.
 const char kAccessibilityColorFiltering[] =
     "settings.a11y.color_filtering.enabled";
-// How much to greyscale the display.
-const char kAccessibilityGreyscaleAmount[] =
-    "settings.a11y.color_filtering.greyscale_amount";
-// How much to saturate the display.
-const char kAccessibilitySaturationAmount[] =
-    "settings.a11y.color_filtering.saturation_amount";
-// How much sepia the display.
-const char kAccessibilitySepiaAmount[] =
-    "settings.a11y.color_filtering.sepia_amount";
-// How much to rotate the hue on the display.
-const char kAccessibilityHueRotationAmount[] =
-    "settings.a11y.color_filtering.hue_rotation_amount";
+// Whether color filtering has been set up yet. It should be set up on first
+// use.
+const char kAccessibilityColorFilteringHasBeenSetup[] =
+    "settings.a11y.color_filtering.setup";
 // The amount of a color vision correction filter to apply.
 const char kAccessibilityColorVisionCorrectionAmount[] =
     "settings.a11y.color_filtering.color_vision_correction_amount";
@@ -962,6 +957,15 @@ const char kShelfLauncherNudge[] = "ash.shelf.launcher_nudge";
 // its value is a dictionary whose keys are kShelfAlignment and
 // kShelfAutoHideBehavior.
 const char kShelfPreferences[] = "shelf_preferences";
+
+// String pref indicating that the user has manually chosen to show or hide the
+// desk button.
+const char kShowDeskButtonInShelf[] = "show_desk_button_in_shelf";
+
+// Boolean pref indicating that a virtual desk (other than the default desk)
+// has been used on this device at any point in time after the addition of this
+// pref.
+const char kDeviceUsesDesks[] = "device_uses_desks";
 
 // Boolean pref indicating whether to show a logout button in the system tray.
 const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";

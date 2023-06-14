@@ -139,7 +139,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Android.ActivityStop.NumberOfTabsUsed" units="count"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>gauravjj@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -293,7 +293,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AppLaunch.DurationDrawWasBlocked.OnIncognitoReauth"
-    units="ms" expires_after="2023-10-08">
+    units="ms" expires_after="2023-12-10">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -341,7 +341,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.ApplicationState.TimeInBackgroundBeforeForegroundedAgain"
-    units="ms" expires_after="2023-10-08">
+    units="ms" expires_after="2023-12-10">
   <owner>lizeb@google.com</owner>
   <owner>clank-performance-team@google.com</owner>
   <summary>
@@ -1183,7 +1183,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.TargetType"
-    enum="AndroidDragTargetType" expires_after="2023-10-08">
+    enum="AndroidDragTargetType" expires_after="2023-12-10">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1285,7 +1285,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DynamicColors.IsAvailable" enum="Boolean"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>skym@chromium.org</owner>
   <owner>clank-sbui-team@google.com</owner>
   <summary>
@@ -1458,7 +1458,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.FetchAllFontFiles.Time" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -1594,7 +1594,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.HistoryPage.ClearBrowsingData.PerProfileType"
-    enum="BrowserProfileType" expires_after="2023-10-08">
+    enum="BrowserProfileType" expires_after="2023-12-10">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1635,7 +1635,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.IncognitoReauth.PrefToggledFromSettingPage"
-    enum="IncognitoReauthToggleValueType" expires_after="2023-10-08">
+    enum="IncognitoReauthToggleValueType" expires_after="2023-12-10">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1799,6 +1799,41 @@ chromium-metrics-reviews@google.com.
 
     Seeing the distribution of PENDING vs RUNNING tasks will give us a better
     idea for how to approach these hangs.
+  </summary>
+</histogram>
+
+<histogram name="Android.Jank.FrameDuration" units="ms"
+    expires_after="2024-04-30">
+  <owner>oksamyt@chromium.org</owner>
+  <owner>woa-performance@google.com</owner>
+  <summary>
+    Amount of time it takes to draw Android UI frames as measured by Android's
+    FrameMetrics API. Each frame's draw duration is stored individually.
+
+    The samples for this metric (along with Android.Jank.JankyFrames) are
+    manually passed from Java to C++ to be recorded. This is done instead of
+    recording in real time from Java due to the large number of generated
+    samples (potentially ~60 per second). Recording them directly from Java
+    would result in a JNI call for each sample which could cause performance
+    issues.
+
+    FrameMetrics only reports frames with Android UI updates. An idle input
+    field would report only 2 frames per second due to the cursor blink
+    animation. Scrolling through a web page may record no frames if no Android
+    UI (like the address bar) updates.
+  </summary>
+</histogram>
+
+<histogram name="Android.Jank.FrameJankStatus" enum="FrameJankStatus"
+    expires_after="2024-04-30">
+  <owner>oksamyt@chromium.org</owner>
+  <owner>woa-performance@google.com</owner>
+  <summary>
+    Jankiness of frames according to the Android's FrameMetrics API. Samples are
+    recorded into the Janky bucket for frames for which their total duration
+    exceeded the given deadline and into the NonJanky bucket for all other
+    frames. This metric is recorded at the same time as
+    Android.Jank.FrameDuration histogram.
   </summary>
 </histogram>
 
@@ -2575,7 +2610,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.OmniboxFocusReason" enum="OmniboxFocusReason"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>amaralp@chromium.org</owner>
@@ -2840,7 +2875,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.PhotoPicker.DialogAction"
-    enum="PhotoPickerDialogAction" expires_after="2023-10-08">
+    enum="PhotoPickerDialogAction" expires_after="2023-12-10">
   <owner>finnur@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3109,7 +3144,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.RequestDesktopSite.UserSwitchToDesktop.SubDomainSettingAdded"
-    enum="Boolean" expires_after="2023-08-13">
+    enum="Boolean" expires_after="2023-12-10">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3235,7 +3270,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SpareTab.FinalStatus" enum="SpareTabFinalStatus"
-    expires_after="2023-10-10">
+    expires_after="2023-12-10">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -3576,7 +3611,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabSwitcher.CreationTime" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>skavuluru@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -4501,17 +4536,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.WebView.onReceivedHttpError.StatusCode"
-    enum="HttpResponseCode" expires_after="2023-04-19">
-  <owner>ntfschr@chromium.org</owner>
-  <owner>src/android_webview/OWNERS</owner>
-  <summary>
-    The WebViewClient HTTP response status code as returned by the
-    onReceivedHttpError callback. This callback is only called for HTTP errors,
-    so this does not include any successful HTTP responses (code 200).
-  </summary>
-</histogram>
-
 <histogram name="Android.WebView.OnRenderProcessGoneResult"
     enum="AndroidWebViewRenderProcessGoneResult" expires_after="2023-06-30">
   <owner>ntfschr@chromium.org</owner>
@@ -4943,7 +4967,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.WebView.UniversalAccess.OriginUrlMismatchInHistoryUtil"
-    enum="BooleanAllowed" expires_after="2023-10-08">
+    enum="BooleanAllowed" expires_after="2023-12-10">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>

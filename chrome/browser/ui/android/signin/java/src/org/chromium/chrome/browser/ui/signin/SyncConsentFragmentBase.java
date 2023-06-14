@@ -699,9 +699,7 @@ public abstract class SyncConsentFragmentBase extends Fragment
 
         mSigninView.getAccountImageView().setImageDrawable(profileData.getImage());
 
-        final boolean canShowEmailAddress = profileData.hasDisplayableEmailAddress()
-                || !ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.HIDE_NON_DISPLAYABLE_ACCOUNT_EMAIL);
+        final boolean canShowEmailAddress = profileData.hasDisplayableEmailAddress();
 
         // The primary TextView is always visible.
         mConsentTextTracker.setTextNonRecordable(mSigninView.getAccountTextPrimary(),
@@ -766,7 +764,7 @@ public abstract class SyncConsentFragmentBase extends Fragment
         addAccount();
     }
 
-    private void onSettingsLinkClicked(View view) {
+    protected void onSettingsLinkClicked(View view) {
         if (!areControlsEnabled()) return;
         mIsSigninInProgress = true;
         RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");

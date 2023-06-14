@@ -15,7 +15,7 @@ Refer to README.md for content description and update process.
  <item id="aggregation_service_report" added_in_milestone="95" content_hash_code="037768da" os_list="linux,windows,chromeos,android" file_path="content/browser/aggregation_service/aggregatable_report_sender.cc" />
  <item id="android_device_manager_socket" added_in_milestone="65" content_hash_code="00623801" os_list="linux,windows,chromeos" file_path="chrome/browser/devtools/device/android_device_manager.cc" />
  <item id="android_web_socket" added_in_milestone="65" content_hash_code="00bbd661" os_list="linux,windows,chromeos" file_path="chrome/browser/devtools/device/android_web_socket.cc" />
- <item id="auction_downloader" added_in_milestone="92" content_hash_code="0713f212" os_list="linux,windows,chromeos,android" file_path="content/services/auction_worklet/auction_downloader.cc" />
+ <item id="auction_downloader" added_in_milestone="92" content_hash_code="01f53427" os_list="linux,windows,chromeos,android" file_path="content/services/auction_worklet/public/cpp/auction_downloader.cc" />
  <item id="auction_report_sender" added_in_milestone="92" content_hash_code="029b766e" os_list="linux,windows,chromeos,android" file_path="content/browser/interest_group/interest_group_manager_impl.cc" />
  <item id="autofill_image_fetcher_card_art_image" added_in_milestone="93" content_hash_code="038b8696" os_list="linux,windows,chromeos,android" file_path="components/autofill/core/browser/ui/autofill_image_fetcher.cc" />
  <item id="autofill_query" added_in_milestone="62" content_hash_code="00ed7a4b" os_list="linux,windows,chromeos,android" file_path="components/autofill/core/browser/autofill_download_manager.cc" />
@@ -375,7 +375,7 @@ Refer to README.md for content description and update process.
  <item id="ntp_custom_background" added_in_milestone="109" content_hash_code="08080082" os_list="linux,windows,chromeos" file_path="chrome/browser/search/background/ntp_custom_background_service.cc" />
  <item id="iwa_policy_update_manifest" added_in_milestone="110" second_id="iwa_update_manifest_fetcher" content_hash_code="07d65fe9" os_list="chromeos" file_path="chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_manager.cc" />
  <item id="iwa_policy_signed_web_bundle" added_in_milestone="110" second_id="iwa_bundle_downloader" content_hash_code="00a27db9" os_list="chromeos" file_path="chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_manager.cc" />
- <item id="quick_start_challenge_bytes_fetcher" added_in_milestone="110" content_hash_code="050ba600" os_list="chromeos" file_path="chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.cc" />
+ <item id="quick_start_challenge_bytes_fetcher" added_in_milestone="110" content_hash_code="0546c0a2" os_list="chromeos" file_path="chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.cc" />
  <item id="customization_document" added_in_milestone="110" content_hash_code="007a3dda" os_list="chromeos" file_path="chrome/browser/ash/customization/customization_document.cc" />
  <item id="nearby_webrtc_connection" added_in_milestone="110" content_hash_code="070e1f72" os_list="chromeos" file_path="chrome/services/sharing/nearby/platform/webrtc.cc" />
  <item id="fenced_frame_reporting_beacon" added_in_milestone="110" content_hash_code="03fd07f7" os_list="linux,windows,android,chromeos" file_path="content/browser/fenced_frame/fenced_frame_reporter.cc" />

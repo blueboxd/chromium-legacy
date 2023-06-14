@@ -883,6 +883,13 @@ const char kPolicyLogsPageIOSDescription[] =
     "Enable the new chrome://policy/logs page containing logs for debugging "
     "policy related issues on IOS.";
 
+const char kPostRestoreDefaultBrowserPromoName[] =
+    "Post Restore Default Browser Promo";
+const char kPostRestoreDefaultBrowserPromoDescription[] =
+    "When enabled, the user will be presented a promo showing how to set "
+    "Chrome as default browser after losing their default browser status from "
+    "an iOS restore.";
+
 const char kPromosManagerUsesFETName[] = "Promos Manager using FET";
 const char kPromosManagerUsesFETDescription[] =
     "Migrates the Promos Manager to use the Feature Engagement Tracker as its "
@@ -969,6 +976,10 @@ const char kSmartSortingPriceTrackingDestinationName[] =
 const char kSmartSortingPriceTrackingDestinationDescription[] =
     "Adds the Price Tracking destination (with Smart Sorting) to the "
     "new overflow menu.";
+
+const char kSpotlightOpenTabsSourceName[] = "Show Open local tabs in Spotlight";
+const char kSpotlightOpenTabsSourceDescription[] =
+    "Donate local open tabs items to iOS Search Engine Spotlight";
 
 const char kSpotlightReadingListSourceName[] = "Show Reading List in Spotlight";
 const char kSpotlightReadingListSourceDescription[] =

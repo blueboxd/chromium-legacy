@@ -9,9 +9,9 @@
 #include "base/functional/bind.h"
 #include "chrome/browser/ash/scalable_iph/customizable_test_env_browser_test_base.h"
 #include "chrome/browser/ash/scalable_iph/mock_scalable_iph_delegate.h"
-#include "chrome/browser/ash/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_delegate.h"
@@ -21,6 +21,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace ash {
+
+ScalableIphBrowserTestBase::ScalableIphBrowserTestBase() = default;
+ScalableIphBrowserTestBase::~ScalableIphBrowserTestBase() = default;
 
 void ScalableIphBrowserTestBase::SetUp() {
   // Keyed service is a service which is tied to an object. For our use cases,
@@ -70,6 +73,12 @@ void ScalableIphBrowserTestBase::SetUpOnMainThread() {
 
   ON_CALL(*mock_tracker_, IsInitialized).WillByDefault(testing::Return(true));
 
+  // A timer for time tick event will be created in
+  // `ScalableIphFactory::GetForProfile` below. Create a scoped context of the
+  // mock time task runner for it.
+  task_runner_ = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  base::TestMockTimeTaskRunner::ScopedContext context(task_runner());
+
   CHECK(ScalableIphFactory::GetInstance()->has_delegate_factory_for_testing())
       << "This test uses MockScalableIphDelegate. A factory for testing must "
          "be set.";
@@ -91,6 +100,20 @@ void ScalableIphBrowserTestBase::TearDownOnMainThread() {
   mock_delegate_ = nullptr;
 
   InProcessBrowserTest::TearDownOnMainThread();
+}
+
+void ScalableIphBrowserTestBase::ShutdownScalableIph() {
+  scalable_iph::ScalableIph* scalable_iph =
+      ScalableIphFactory::GetForProfile(browser()->profile());
+  CHECK(scalable_iph) << "ScalableIph does not exist for a current profile";
+
+  // `ScalableIph::Shutdown` destructs a delegate. Release the pointer to the
+  // mock delegate to avoid having a dangling pointer. We can retain a pointer
+  // to the mock tracker as a tracker is not destructed by the
+  // `ScalableIph::Shutdown`.
+  mock_delegate_ = nullptr;
+
+  scalable_iph->Shutdown();
 }
 
 // static

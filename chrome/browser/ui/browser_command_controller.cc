@@ -26,21 +26,26 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/commander/commander.h"
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
+#include "chrome/browser/ui/profile_view_utils.h"
+#include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/side_panel/side_panel_entry_id.h"
 #include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "chrome/browser/ui/side_panel/side_panel_ui.h"
@@ -72,6 +77,7 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -232,10 +238,6 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
           &BrowserCommandController::UpdateCommandsForFullscreenMode,
           base::Unretained(this)));
 #endif
-  pref_signin_allowed_.Init(
-      prefs::kSigninAllowed, profile()->GetOriginalProfile()->GetPrefs(),
-      base::BindRepeating(&BrowserCommandController::OnSigninAllowedPrefChange,
-                          base::Unretained(this)));
 
   InitCommandState();
 
@@ -933,12 +935,6 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_TOGGLE_QUICK_COMMANDS:
       ToggleCommander(browser_);
       break;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    case IDC_SHOW_SIGNIN:
-      ShowBrowserSigninOrSettings(
-          browser_, signin_metrics::AccessPoint::ACCESS_POINT_MENU);
-      break;
-#endif
     case IDC_DISTILL_PAGE:
       ToggleDistilledView(browser_);
       break;
@@ -1031,7 +1027,31 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       SidePanelUI::GetSidePanelUIForBrowser(browser_)->Show(
           SidePanelEntryId::kReadingList, SidePanelOpenTrigger::kAppMenu);
       break;
-
+    // Profile submenu commands.
+    case IDC_CUSTOMIZE_CHROME:
+      chrome::ShowSettingsSubPage(browser_, chrome::kManageProfileSubPage);
+      break;
+    case IDC_CLOSE_PROFILE: {
+      if (browser_->profile()->IsIncognitoProfile()) {
+        BrowserList::CloseAllBrowsersWithIncognitoProfile(
+            browser_->profile(), base::DoNothing(), base::DoNothing(), true);
+      } else {
+        profiles::CloseProfileWindows(browser_->profile());
+      }
+      break;
+    }
+    case IDC_MANAGE_GOOGLE_ACCOUNT: {
+      Profile* profile = browser_->profile();
+      signin::IdentityManager* identity_manager =
+          IdentityManagerFactory::GetForProfile(profile);
+      DCHECK(
+          identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+      NavigateToGoogleAccountPage(
+          profile,
+          identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
+              .email);
+      break;
+    }
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
       break;
@@ -1061,16 +1081,6 @@ bool BrowserCommandController::UpdateCommandEnabled(int id, bool state) {
     return false;
 
   return command_updater_.UpdateCommandEnabled(id, state);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// BrowserCommandController, SigninPrefObserver implementation:
-
-void BrowserCommandController::OnSigninAllowedPrefChange() {
-  // For unit tests, we don't have a window.
-  if (!window())
-    return;
-  UpdateShowSyncState(IsShowingMainUI());
 }
 
 // BrowserCommandController, TabStripModelObserver implementation:
@@ -1238,6 +1248,11 @@ void BrowserCommandController::InitCommandState() {
       IDC_RECENT_TABS_LOGIN_FOR_DEVICE_TABS,
       (!guest_session && !profile()->IsSystemProfile() &&
        !profile()->IsIncognitoProfile()));
+  command_updater_.UpdateCommandEnabled(IDC_CUSTOMIZE_CHROME, true);
+  command_updater_.UpdateCommandEnabled(IDC_CLOSE_PROFILE, true);
+  command_updater_.UpdateCommandEnabled(
+      IDC_MANAGE_GOOGLE_ACCOUNT,
+      HasUnconstentedProfile(profile()) && !IsSyncPaused(profile()));
 
   if (profile()->IsIncognitoProfile()) {
     command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, true);
@@ -1263,8 +1278,6 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_CARET_BROWSING_TOGGLE, true);
   command_updater_.UpdateCommandEnabled(IDC_TOGGLE_QUICK_COMMANDS,
                                         commander::IsEnabled());
-  UpdateShowSyncState(true);
-
   // Navigation commands
   command_updater_.UpdateCommandEnabled(
       IDC_HOME, normal_window || browser_->is_type_app() ||
@@ -1408,8 +1421,6 @@ void BrowserCommandController::UpdateSharedCommandsForIncognitoAvailability(
                                         !forced_incognito && !is_guest);
   command_updater->UpdateCommandEnabled(IDC_OPTIONS,
                                         !forced_incognito || is_guest);
-  command_updater->UpdateCommandEnabled(IDC_SHOW_SIGNIN,
-                                        !forced_incognito && !is_guest);
   command_updater->UpdateCommandEnabled(IDC_PERFORMANCE,
                                         !forced_incognito && !is_guest);
 }
@@ -1501,6 +1512,10 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   command_updater_.UpdateCommandEnabled(
       IDC_TOGGLE_REQUEST_TABLET_SITE,
       CanRequestTabletSite(current_web_contents));
+
+  command_updater_.UpdateCommandEnabled(
+      IDC_SHOW_SEARCH_COMPANION,
+      companion::IsCompanionAvailableForCurrentActiveTab(browser_));
 
   UpdateCommandsForContentRestrictionState();
   UpdateCommandsForBookmarkEditing();
@@ -1635,7 +1650,6 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
   command_updater_.UpdateCommandEnabled(
       IDC_FEEDBACK, show_main_ui || browser_->is_type_devtools());
 #endif
-  UpdateShowSyncState(show_main_ui);
 
   command_updater_.UpdateCommandEnabled(IDC_EDIT_SEARCH_ENGINES, show_main_ui);
   command_updater_.UpdateCommandEnabled(IDC_VIEW_PASSWORDS, show_main_ui);
@@ -1752,14 +1766,6 @@ void BrowserCommandController::UpdateSaveAsState() {
     return;
 
   command_updater_.UpdateCommandEnabled(IDC_SAVE_PAGE, CanSavePage(browser_));
-}
-
-void BrowserCommandController::UpdateShowSyncState(bool show_main_ui) {
-  if (is_locked_fullscreen_)
-    return;
-
-  command_updater_.UpdateCommandEnabled(
-      IDC_SHOW_SIGNIN, show_main_ui && pref_signin_allowed_.GetValue());
 }
 
 void BrowserCommandController::UpdateReloadStopState(bool is_loading,

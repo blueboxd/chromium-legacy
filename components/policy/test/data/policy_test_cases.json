@@ -18780,7 +18780,7 @@
           "BrowsingDataLifetime": [
             {
               "data_types": [
-                "browsing_history"
+                "autofill"
               ],
               "time_to_live_in_hours": 2
             }
@@ -18789,7 +18789,17 @@
         },
         "prefs": {
           "browser.clear_data.browsing_data_lifetime": {
-            "default_value": []
+            "value": [
+              {
+                "data_types": [
+                  "autofill"
+                ],
+                "time_to_live_in_hours": 2
+              }
+            ]
+          },
+          "sync.autofill": {
+            "value": false
           }
         }
       }
@@ -18839,13 +18849,16 @@
         "note": "Simple value when SyncDisabled is false.",
         "policies": {
           "ClearBrowsingDataOnExitList": [
-            "browsing_history"
+            "autofill"
           ],
           "SyncDisabled": false
         },
         "prefs": {
           "browser.clear_data.clear_on_exit": {
-            "default_value": []
+            "value": ["autofill"]
+          },
+          "sync.autofill": {
+            "value": false
           }
         }
       }
@@ -21512,8 +21525,7 @@
     "os": [
       "win",
       "linux",
-      "mac",
-      "chromeos_ash"
+      "mac"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -21540,8 +21552,13 @@
           }
         }
       }
+    ]
+  },
+  "UnmanagedDeviceSignalsConsentFlowEnabled.CrOS": {
+    "os": [
+      "chromeos_ash"
     ],
-    "reason_for_missing_test": "Policy does not cover Lacros"
+    "reason_for_missing_test": "not supported on CrOS yet"
   },
   "PersistentQuotaEnabled": {
     "reason_for_missing_test": "Policy was removed"
@@ -23349,6 +23366,46 @@
           "profile.content_settings.data_url_in_svg_use_enabled": {
             "value": false,
             "location": "user_profile"
+          }
+        }
+      }
+    ]
+  },
+  "AllowBackForwardCacheForCacheControlNoStorePageEnabled": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "policy.allow_back_forward_cache_for_cache_control_no_store_page_enabled": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "AllowBackForwardCacheForCacheControlNoStorePageEnabled": true
+        },
+        "prefs": {
+          "policy.allow_back_forward_cache_for_cache_control_no_store_page_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "AllowBackForwardCacheForCacheControlNoStorePageEnabled": false
+        },
+        "prefs": {
+          "policy.allow_back_forward_cache_for_cache_control_no_store_page_enabled": {
+            "value": false
           }
         }
       }

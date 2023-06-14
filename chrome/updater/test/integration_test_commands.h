@@ -30,7 +30,8 @@ class IntegrationTestCommands
  public:
   virtual void EnterTestMode(const GURL& update_url,
                              const GURL& crash_upload_url,
-                             const GURL& device_management_url) const = 0;
+                             const GURL& device_management_url,
+                             const base::TimeDelta& idle_timeout) const = 0;
   virtual void ExitTestMode() const = 0;
   virtual void SetGroupPolicies(const base::Value::Dict& values) const = 0;
   virtual void Clean() const = 0;
@@ -84,6 +85,7 @@ class IntegrationTestCommands
   virtual void RunWakeAll() const = 0;
   virtual void RunWakeActive(int exit_code) const = 0;
   virtual void RunCrashMe() const = 0;
+  virtual void RunServer(int exit_code, bool internal) const = 0;
 
   virtual void CheckForUpdate(const std::string& app_id) const = 0;
   virtual void Update(const std::string& app_id,

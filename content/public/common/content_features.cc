@@ -735,7 +735,7 @@ BASE_FEATURE(kMojoVideoCaptureSecondary,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When NavigationNetworkResponseQueue is enabled, the browser will schedule
-// some tasks related to navigation network responses in a kHighest priority
+// some tasks related to navigation network responses in a kHigh priority
 // queue.
 BASE_FEATURE(kNavigationNetworkResponseQueue,
              "NavigationNetworkResponseQueue",
@@ -935,6 +935,18 @@ BASE_FEATURE(kQueueNavigationsWhileWaitingForCommit,
              "QueueNavigationsWhileWaitingForCommit",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, sends SubresourceResponseStarted IPC only when the user has
+// allowed any HTTPS-related warning exceptions. From field data, (see
+// `SSL.Experimental.SubresourceResponse`), ~100% of subresource notifications
+// are not required, since allowing certificate exceptions by users is a rare
+// event. Hence, if user has never allowed any certificate or HTTP exceptions,
+// notifications are not sent to the browser. Once we start sending these
+// messages, we keep sending them until all exceptions are revoked and browser
+// restart occurs.
+BASE_FEATURE(kReduceSubresourceResponseStartedIPC,
+             "ReduceSubresourceResponseStartedIPC",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Causes hidden tabs with crashed subframes to be marked for reload, meaning
 // that if a user later switches to that tab, the current page will be
 // reloaded.  This will hide crashed subframes from the user at the cost of
@@ -1096,6 +1108,12 @@ constexpr base::FeatureParam<int>
         0,
     };
 
+// Enables ServiceWorker static routing API.
+// https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api
+BASE_FEATURE(kServiceWorkerStaticRouter,
+             "ServiceWorkerStaticRouter",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
 BASE_FEATURE(kRunVideoCaptureServiceInBrowserProcess,
@@ -1164,20 +1182,6 @@ BASE_FEATURE(kSignedExchangeReportingForDistributors,
 BASE_FEATURE(kSignedHTTPExchange,
              "SignedHTTPExchange",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Delays RenderProcessHost shutdown by a few seconds to allow the subframe's
-// process to be potentially reused. This aims to reduce process churn in
-// navigations where the source and destination share subframes.
-// This is enabled only on platforms where the behavior leads to performance
-// gains, i.e., those where process startup is expensive.
-BASE_FEATURE(kSubframeShutdownDelay,
-             "SubframeShutdownDelay",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-);
 
 // If enabled, GetUserMedia API will only work when the concerned tab is in
 // focus

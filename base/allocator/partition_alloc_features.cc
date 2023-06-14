@@ -16,7 +16,7 @@ namespace features {
 
 BASE_FEATURE(kPartitionAllocUnretainedDanglingPtr,
              "PartitionAllocUnretainedDanglingPtr",
-             FEATURE_DISABLED_BY_DEFAULT);
+             FEATURE_ENABLED_BY_DEFAULT);
 
 constexpr FeatureParam<UnretainedDanglingPtrMode>::Option
     kUnretainedDanglingPtrModeOption[] = {
@@ -163,8 +163,8 @@ constexpr FeatureParam<BackupRefPtrMode>::Option kBackupRefPtrModeOptions[] = {
 };
 
 const base::FeatureParam<BackupRefPtrMode> kBackupRefPtrModeParam{
-    &kPartitionAllocBackupRefPtr, "brp-mode", BackupRefPtrMode::kEnabled,
-    &kBackupRefPtrModeOptions};
+    &kPartitionAllocBackupRefPtr, "brp-mode",
+    BackupRefPtrMode::kEnabledWithMemoryReclaimer, &kBackupRefPtrModeOptions};
 
 BASE_FEATURE(kPartitionAllocMemoryTagging,
              "PartitionAllocMemoryTagging",

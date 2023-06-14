@@ -65,7 +65,6 @@ public abstract class AsyncInitializationActivity
         extends ChromeBaseAppCompatActivity implements ChromeActivityNativeDelegate, BrowserParts {
     @VisibleForTesting
     public static final String FIRST_DRAW_COMPLETED_TIME_MS_UMA = "FirstDrawCompletedTime";
-    private static final String TAG = "AsyncInitActivity";
     static Boolean sOverrideNativeLibraryCannotBeLoadedForTesting;
     protected final Handler mHandler;
 
@@ -769,7 +768,8 @@ public abstract class AsyncInitializationActivity
                     display, Math.min(bounds.right - bounds.left, bounds.bottom - bounds.top));
 
             if (BuildInfo.getInstance().isAutomotive) {
-                smallestScreenWidth = (int) (smallestScreenWidth / UI_SCALING_FACTOR_FOR_AUTO);
+                smallestScreenWidth =
+                        (int) (smallestScreenWidth / DisplayUtil.UI_SCALING_FACTOR_FOR_AUTO);
             }
             return smallestScreenWidth;
         }

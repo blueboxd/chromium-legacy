@@ -565,21 +565,11 @@ void TexturePassthrough::MarkContextLost() {
 }
 
 #if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_APPLE)
 void TexturePassthrough::SetLevelImage(GLenum target,
                                        GLint level,
                                        gl::GLImage* image) {
   SetLevelImageInternal(target, level, image, owned_service_id_);
-}
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-gl::GLImage* TexturePassthrough::GetLevelImage(GLenum target,
-                                               GLint level) const {
-  size_t face_idx = 0;
-  if (!LevelInfoExists(target, level, &face_idx)) {
-    return nullptr;
-  }
-
-  return level_images_[face_idx][level].image.get();
 }
 #endif
 #endif
@@ -632,7 +622,7 @@ bool TexturePassthrough::LevelInfoExists(GLenum target,
   return true;
 }
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_APPLE)
 void TexturePassthrough::SetLevelImageInternal(
     GLenum target,
     GLint level,
@@ -1895,15 +1885,6 @@ void Texture::SetBoundLevelImage(GLenum target,
   SetLevelImageInternal(target, level, image, ImageState::BOUND);
 }
 
-#if BUILDFLAG(IS_APPLE)
-void Texture::SetUnboundLevelImage(GLenum target,
-                                   GLint level,
-                                   gl::GLImage* image) {
-  SetStreamTextureServiceId(0);
-  SetLevelImageInternal(target, level, image, ImageState::UNBOUND);
-}
-#endif
-
 void Texture::UnsetLevelImage(GLenum target, GLint level) {
   SetStreamTextureServiceId(0);
   SetLevelImageInternal(target, level, nullptr, ImageState::NOIMAGE);
@@ -1913,20 +1894,6 @@ void Texture::UnsetLevelImage(GLenum target, GLint level) {
 void Texture::BindToServiceId(GLuint service_id) {
   SetStreamTextureServiceId(service_id);
   UpdateCanRenderCondition();
-}
-#endif
-
-#if BUILDFLAG(IS_MAC)
-void Texture::MarkLevelImageBound(GLenum target, GLint level) {
-  DCHECK_GE(level, 0);
-  size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
-  DCHECK_LT(face_index, face_infos_.size());
-  DCHECK_LT(static_cast<size_t>(level),
-            face_infos_[face_index].level_infos.size());
-  Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
-  DCHECK_EQ(info.target, target);
-  DCHECK_EQ(info.level, level);
-  info.image_state = ImageState::BOUND;
 }
 #endif
 
@@ -1946,33 +1913,6 @@ const Texture::LevelInfo* Texture::GetLevelInfo(GLint target,
   }
   return nullptr;
 }
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-gl::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
-  const LevelInfo* info = GetLevelInfo(target, level);
-  if (!info)
-    return nullptr;
-
-  return info->image.get();
-}
-#endif
-
-#if BUILDFLAG(IS_MAC)
-bool Texture::HasUnboundLevelImage(GLint target, GLint level) const {
-  const LevelInfo* info = GetLevelInfo(target, level);
-  if (!info) {
-    return false;
-  }
-
-  if (!info->image.get()) {
-    DCHECK(info->image_state == ImageState::NOIMAGE);
-    return false;
-  }
-
-  DCHECK(info->image_state != ImageState::NOIMAGE);
-  return info->image_state == ImageState::UNBOUND;
-}
-#endif
 
 void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
                               uint64_t client_tracing_id,
@@ -2611,16 +2551,6 @@ void TextureManager::SetBoundLevelImage(TextureRef* ref,
   DCHECK(ref);
   ref->texture()->SetBoundLevelImage(target, level, image);
 }
-
-#if BUILDFLAG(IS_APPLE)
-void TextureManager::SetUnboundLevelImage(TextureRef* ref,
-                                          GLenum target,
-                                          GLint level,
-                                          gl::GLImage* image) {
-  DCHECK(ref);
-  ref->texture()->SetUnboundLevelImage(target, level, image);
-}
-#endif
 
 void TextureManager::UnsetLevelImage(TextureRef* ref,
                                      GLenum target,

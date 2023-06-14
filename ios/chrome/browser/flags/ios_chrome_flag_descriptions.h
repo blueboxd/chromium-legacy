@@ -776,6 +776,11 @@ extern const char kPasswordReuseDetectionDescription[];
 extern const char kPolicyLogsPageIOSName[];
 extern const char kPolicyLogsPageIOSDescription[];
 
+// Title and description for the flag to enable the post restore default browser
+// promo.
+extern const char kPostRestoreDefaultBrowserPromoName[];
+extern const char kPostRestoreDefaultBrowserPromoDescription[];
+
 // Title and description for the flag to have the Promos Manager use the FET as
 // its impression tracking system.
 extern const char kPromosManagerUsesFETName[];
@@ -849,6 +854,10 @@ extern const char kShowInactiveTabsCountDescription[];
 // (with Smart Sorting) to the new overflow menu.
 extern const char kSmartSortingPriceTrackingDestinationName[];
 extern const char kSmartSortingPriceTrackingDestinationDescription[];
+
+// Title and description for the flag to index open tabs items in Spotlight.
+extern const char kSpotlightOpenTabsSourceName[];
+extern const char kSpotlightOpenTabsSourceDescription[];
 
 // Title and description for th eflag to index Reading List items in Spotlight.
 extern const char kSpotlightReadingListSourceName[];

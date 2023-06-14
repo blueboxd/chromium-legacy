@@ -8,7 +8,7 @@ import {assert} from '//resources/js/assert_ts.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {Url} from '//resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {ImageQuery, MethodType, PromoAction, PromoType} from './companion.mojom-webui.js';
+import {ImageQuery, MethodType, PromoAction, PromoType, VisualSearchResult} from './companion.mojom-webui.js';
 import {CompanionProxy, CompanionProxyImpl} from './companion_proxy.js';
 
 /**
@@ -32,11 +32,9 @@ enum ParamType {
   // Arguments for MethodType.kOnPromoAction.
   PROMO_ACTION = 'promoAction',
   PROMO_TYPE = 'promoType',
-  EXPS_PROMO_URL = 'expsPromoUrl',
 
   // Arguments for MethodType.kOnPhFeedback.
   PH_FEEDBACK = 'phFeedback',
-  REPORTING_URL = 'reportingUrl',
 
   // Arguments for MethodType.kOnOpenInNewTabButtonURLChanged.
   URL_FOR_OPEN_IN_NEW_TAB = 'urlForOpenInNewTab',
@@ -55,11 +53,18 @@ enum ParamType {
   // Arguments for MethodType.kOnCqJamptagClicked.
   CQ_JUMPTAG_TEXT = 'cqJumptagText',
 
+  // Arguments for MethodType.kOpenUrlInBrowser
+  URL_TO_OPEN = 'urlToOpen',
+  USE_NEW_TAB = 'useNewTab',
+
   // Arguments for browser -> iframe communication.
   COMPANION_UPDATE_PARAMS = 'companionUpdateParams',
 
   // Arguments for sending text find results from browser to iframe.
   CQ_TEXT_FIND_RESULTS = 'cqTextFindResults',
+
+  // Arguments for sending Visual Search results from browser to iframe.
+  VISUAL_SEARCH_PARAMS = 'visualSearchParams',
 }
 
 const companionProxy: CompanionProxy = CompanionProxyImpl.getInstance();
@@ -166,6 +171,21 @@ function initialize() {
   companionProxy.handler.showUI();
 }
 
+// POST dataUris from the Visual Search classification results to the iframe
+companionProxy.callbackRouter.onDeviceVisualClassificationResult.addListener(
+    (results: VisualSearchResult[]) => {
+      const dataUris = results.map(result => result.dataUri);
+      const message = {[ParamType.VISUAL_SEARCH_PARAMS]: dataUris};
+
+      const companionOrigin =
+          new URL(loadTimeData.getString('companion_origin')).origin;
+      const frame = document.body.querySelector('iframe');
+      assert(frame);
+      if (frame.contentWindow) {
+        frame.contentWindow.postMessage(message, companionOrigin);
+      }
+    });
+
 // Handler for postMessage() calls from the embedded iframe.
 function onCompanionMessageEvent(event: MessageEvent) {
   // Because the |companion_origin| string has a trailing slash that can cause
@@ -185,11 +205,8 @@ function onCompanionMessageEvent(event: MessageEvent) {
   } else if (methodType === MethodType.kOnPromoAction) {
     const promoType = data[ParamType.PROMO_TYPE];
     const promoAction = data[ParamType.PROMO_ACTION];
-    const expsPromoUrl = new Url();
-    expsPromoUrl.url = data[ParamType.EXPS_PROMO_URL] || '';
     if (validatePromoArguments(promoType, promoAction)) {
-      companionProxy.handler.onPromoAction(
-          promoType, promoAction, expsPromoUrl);
+      companionProxy.handler.onPromoAction(promoType, promoAction);
     }
   } else if (methodType === MethodType.kOnExpsOptInStatusAvailable) {
     companionProxy.handler.onExpsOptInStatusAvailable(
@@ -215,12 +232,14 @@ function onCompanionMessageEvent(event: MessageEvent) {
     companionProxy.handler.onCqCandidatesAvailable(
         data[ParamType.CQ_TEXT_DIRECTIVES]);
   } else if (methodType === MethodType.kOnPhFeedback) {
-    const reportingUrl = new Url();
-    reportingUrl.url = data[ParamType.REPORTING_URL] || '';
-    companionProxy.handler.onPhFeedback(
-        data[ParamType.PH_FEEDBACK], reportingUrl);
+    companionProxy.handler.onPhFeedback(data[ParamType.PH_FEEDBACK]);
   } else if (methodType === MethodType.kOnCqJumptagClicked) {
     companionProxy.handler.onCqJumptagClicked(data[ParamType.CQ_JUMPTAG_TEXT]);
+  } else if (methodType === MethodType.kOpenUrlInBrowser) {
+    const urlToOpen = new Url();
+    urlToOpen.url = data[ParamType.URL_TO_OPEN] || '';
+    companionProxy.handler.openUrlInBrowser(
+        urlToOpen, data[ParamType.USE_NEW_TAB]);
   }
 }
 

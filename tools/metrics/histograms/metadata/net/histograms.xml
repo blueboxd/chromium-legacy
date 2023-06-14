@@ -232,7 +232,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="HttpCache.BeforeSend" units="ms" expires_after="2023-10-08">
+<histogram name="HttpCache.BeforeSend" units="ms" expires_after="2023-12-10">
   <owner>morlovich@chromium.org</owner>
   <owner>yhirano@chromium.org</owner>
   <summary>
@@ -254,7 +254,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="HttpCache.IsNoStore{Type}" enum="Boolean"
-    expires_after="2023-07-27">
+    expires_after="2024-06-13">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>
@@ -375,7 +375,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.AlternateProtocolUsageGoogle"
-    enum="AlternateProtocolUsage" expires_after="2023-10-08">
+    enum="AlternateProtocolUsage" expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -511,7 +511,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.CertificateTransparency.SCTOrigin" enum="SCTOrigin"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>estark@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -743,7 +743,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.Cors.PreflightCheckError2" enum="CorsAccessCheckError"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>toyoshim@chromium.org</owner>
   <owner>src/services/network/OWNERS</owner>
   <summary>
@@ -755,7 +755,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.Cors.PreflightCheckWarning" enum="CorsAccessCheckError"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>titouan@chromium.org</owner>
   <owner>clamy@chromium.org</owner>
   <owner>src/services/network/OWNERS</owner>
@@ -851,7 +851,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.DnsConfig.Nsswitch.IncompatibleService"
-    enum="NsswitchService" expires_after="2023-10-07">
+    enum="NsswitchService" expires_after="2023-12-10">
   <owner>horo@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -949,7 +949,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.DnsConfig.SecureDnsMode" enum="SecureDnsModeDetails"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>horo@chromium.org</owner>
   <owner>doh-core@google.com</owner>
   <summary>
@@ -1333,7 +1333,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.JobQueueTime.PerTransaction" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>horo@chromium.org</owner>
   <owner>net-dev@chromium.org</owner>
   <summary>
@@ -1357,9 +1357,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.ConfigChange.Failure.AttemptTime"
-    units="ms" expires_after="2023-10-08">
+    units="ms" expires_after="2023-11-30">
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by a probe attempt to fail. The time is measured
     since the probe sequence was initiated due to a DNS config change.
@@ -1367,9 +1367,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.ConfigChange.Success.AttemptTime"
-    units="ms" expires_after="2023-10-08">
+    units="ms" expires_after="2023-11-30">
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by a probe attempt to succeed. The time is measured
     since the probe sequence was initiated due to a DNS config change.
@@ -1377,9 +1377,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.NetworkChange.Failure.AttemptTime"
-    units="ms" expires_after="2023-06-11">
+    units="ms" expires_after="2023-11-30">
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by a probe attempt to fail. The time is measured
     since the probe sequence was initiated due to a network change.
@@ -1387,9 +1387,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.ProbeSequence.NetworkChange.Success.AttemptTime"
-    units="ms" expires_after="2023-06-11">
+    units="ms" expires_after="2023-11-30">
   <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     Duration of time taken by a probe attempt to succeed. The time is measured
     since the probe sequence was initiated due to a network change.
@@ -1627,9 +1627,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.UpgradeConfig.DotUpgradeSucceeded" enum="Boolean"
-    expires_after="2023-10-08">
+    expires_after="2024-06-12">
   <owner>horo@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     True if upgrade to DoH from a DoT hostname was attempted and succeeded.
     False if it was attempted and failed.
@@ -1637,20 +1637,23 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.UpgradeConfig.HasPublicInsecureNameserver"
-    enum="Boolean" expires_after="2023-04-23">
+    enum="Boolean" expires_after="2024-06-12">
   <owner>horo@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     True if there was at least one public nameserver during an attempt to
     upgrade to DoH from insecure DNS. False if there were no public nameservers
     during an attempt to upgrade to DoH from insecure DNS.
+
+    Warning: this histogram was expired from 2023-04-23 to 2023-06-12; data may
+    be missing.
   </summary>
 </histogram>
 
 <histogram name="Net.DNS.UpgradeConfig.Ineligible.DohSpecified" enum="Boolean"
-    expires_after="2023-11-12">
+    expires_after="2024-06-12">
   <owner>horo@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     True if upgrade to DoH was not attempted because the DoH config was already
     specified. False if upgrade to DoH was not attempted for some other reason.
@@ -1658,9 +1661,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.UpgradeConfig.Ineligible.UnhandledOptions"
-    enum="Boolean" expires_after="2023-06-14">
-  <owner>awillia@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+    enum="Boolean" expires_after="2024-06-12">
+  <owner>horo@chromium.org</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     True if upgrade to DoH was not attempted because of unhandled options in the
     system config. False if upgrade to DoH was not attempted for some other
@@ -1669,9 +1672,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.DNS.UpgradeConfig.InsecureUpgradeSucceeded" enum="Boolean"
-    expires_after="2023-12-04">
+    expires_after="2024-06-12">
   <owner>horo@chromium.org</owner>
-  <owner>doh-core@google.com</owner>
+  <owner>src/net/dns/OWNERS</owner>
   <summary>
     True if upgrade to DoH from insecure DNS was attempted and succeeded. False
     if it was attempted and failed.
@@ -2204,7 +2207,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.NumQuicSessionsAtShutdown" units="units"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -2223,25 +2226,6 @@ chromium-metrics-reviews@google.com.
     calls being made to this method and will help see the reductions in IPC when
     we implement a prototype (b/257057692) where we remove unnecessary
     URLLoaderClient::OnTransferSizeUpdated IPCs.
-  </summary>
-</histogram>
-
-<histogram name="Net.Prefetch.HitBytes" units="bytes" expires_after="M87">
-  <owner>jkarlin@chromium.org</owner>
-  <summary>
-    Bytes read for requests that were served from a cache entry whose
-    unused_since_prefetch bit is true.
-  </summary>
-</histogram>
-
-<histogram name="Net.Prefetch.PrefilterBytesReadFromNetwork" units="bytes"
-    expires_after="M85">
-  <owner>jkarlin@chromium.org</owner>
-  <summary>
-    Number of bytes read from the network on behalf of prefetch requests. This
-    is prefilter, so before any decompression.
-
-    This applies to requests with RESOURCE_TYPE_PREFETCH.
   </summary>
 </histogram>
 
@@ -2793,7 +2777,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.AcceptChForOrigin" enum="Boolean"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>bnc@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -3034,7 +3018,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ConnectionClose.NumOpenStreams.TimedOut"
-    units="units" expires_after="2023-10-08">
+    units="units" expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>The number of streams open when a QUIC session timed out.</summary>
@@ -3163,7 +3147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ConnectionDurationWithPublicReset" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>fayang@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>Duration of connections received PUBLIC_RESET.</summary>
@@ -3189,7 +3173,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ConnectionMigration"
-    enum="QuicConnectionMigrationStatus" expires_after="2023-10-08">
+    enum="QuicConnectionMigrationStatus" expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3215,7 +3199,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ConnectRandomPortRequiringConfirmation"
-    units="RTTs" expires_after="2023-10-08">
+    units="RTTs" expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3526,7 +3510,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Net.QuicSession.LastInFlightPacketSentTimeFromHandshakeCompletionWithPublicReset"
-    units="ms" expires_after="2023-10-08">
+    units="ms" expires_after="2023-12-10">
   <owner>fayang@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -3851,7 +3835,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.PortMigration"
-    enum="QuicConnectionMigrationStatus" expires_after="2023-10-08">
+    enum="QuicConnectionMigrationStatus" expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>The result of a QUIC port migration attempt.</summary>
@@ -3966,7 +3950,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.QuicVersion" units="units"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>Version of the QUIC protocol used for this connection.</summary>
@@ -4152,7 +4136,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.SmoothedRTT" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4225,7 +4209,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.StreamCloseErrorCodeServer.HandshakeConfirmed"
-    enum="QuicErrorCodes" expires_after="2023-10-08">
+    enum="QuicErrorCodes" expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -4461,7 +4445,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.QuicSession.ZeroRttReason"
-    enum="SSLHandshakeEarlyDataReason" expires_after="2023-10-08">
+    enum="SSLHandshakeEarlyDataReason" expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/quic/OWNERS</owner>
   <summary>
@@ -5266,7 +5250,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SSLLegacyCryptoFallback2" enum="SSLLegacyCryptoFallback"
-    expires_after="2023-09-24">
+    expires_after="2023-12-10">
   <owner>davidben@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -5282,7 +5266,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SSLNegotiatedAlpnProtocol"
-    enum="SSLNegotiatedAlpnProtocol" expires_after="2023-10-08">
+    enum="SSLNegotiatedAlpnProtocol" expires_after="2023-12-10">
   <owner>dschinazi@chromium.org</owner>
   <owner>src/net/OWNERS</owner>
   <summary>
@@ -5305,7 +5289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Net.SSLRSAKeyUsage.UnknownRoot" enum="RSAKeyUsage"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>davidben@chromium.org</owner>
   <summary>
     For each TLS connection which uses a unknown root, an RSA key, and TLS 1.2

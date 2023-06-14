@@ -1993,12 +1993,7 @@ int LayerTreeHostImpl::GetMSAASampleCountForRaster(
   }
 
   if (display_list->HasNonAAPaint()) {
-    UMA_HISTOGRAM_BOOLEAN("GPU.SupportsDisableMsaa",
-                          raster_caps().supports_disable_msaa);
-    if (!raster_caps().supports_disable_msaa ||
-        raster_caps().use_dmsaa_for_tiles) {
-      return 0;
-    }
+    return 0;
   }
 
   return RequestedMSAASampleCount();
@@ -2420,7 +2415,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
       browser_controls_offset_manager_->TopControlsHeight();
   metadata.top_controls_shown_ratio =
       browser_controls_offset_manager_->TopControlsShownRatio();
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   metadata.bottom_controls_height =
       browser_controls_offset_manager_->BottomControlsHeight();
   metadata.bottom_controls_shown_ratio =
@@ -2471,7 +2466,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
   }
 
   bool allocate_new_local_surface_id =
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
       last_draw_render_frame_metadata_ &&
       (last_draw_render_frame_metadata_->top_controls_height !=
            metadata.top_controls_height ||
@@ -2676,11 +2671,7 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
     TRACE_EVENT0("cc", "DrawLayers.UpdateHudTexture");
     active_tree_->hud_layer()->UpdateHudTexture(
         draw_mode, layer_tree_frame_sink_, &resource_provider_,
-        // The hud uses Gpu rasterization if the device is capable, not related
-        // to the content of the web page.
-        raster_caps().gpu_rasterization_status !=
-            GpuRasterizationStatus::OFF_DEVICE,
-        frame->render_passes);
+        raster_caps().use_gpu_rasterization, frame->render_passes);
   }
 
   viz::CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
@@ -2907,14 +2898,7 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
 
     DCHECK(caps.supports_oop_raster);
     gpu_caps.can_use_msaa = !caps.msaa_is_slow && !caps.avoid_stencil_buffers;
-    gpu_caps.supports_disable_msaa = caps.multisample_compatibility;
   }(new_raster_caps);
-
-  if (!new_raster_caps.use_gpu_rasterization) {
-    raster_caps_.gpu_rasterization_status = GpuRasterizationStatus::OFF_DEVICE;
-  } else {
-    raster_caps_.gpu_rasterization_status = GpuRasterizationStatus::ON;
-  }
 
   // Changes in MSAA settings require that we re-raster resources for the
   // settings to take effect. But we don't need to trigger any raster
@@ -2922,15 +2906,12 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
   // changed. In this case we already re-allocate and re-raster all resources.
   if (new_raster_caps.use_gpu_rasterization ==
           raster_caps().use_gpu_rasterization &&
-      new_raster_caps.can_use_msaa == raster_caps().can_use_msaa &&
-      new_raster_caps.supports_disable_msaa ==
-          raster_caps().supports_disable_msaa) {
+      new_raster_caps.can_use_msaa == raster_caps().can_use_msaa) {
     return false;
   }
 
   raster_caps_.use_gpu_rasterization = new_raster_caps.use_gpu_rasterization;
   raster_caps_.can_use_msaa = new_raster_caps.can_use_msaa;
-  raster_caps_.supports_disable_msaa = new_raster_caps.supports_disable_msaa;
   return true;
 }
 
@@ -3845,10 +3826,11 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
 #endif
 
   if (should_finish && layer_tree_frame_sink_->context_provider()) {
-    // TODO(ericrk): Remove this once all uses of ContextGL from LTFS are
-    // removed.
-    auto* gl = layer_tree_frame_sink_->context_provider()->ContextGL();
-    gl->Finish();
+    // TODO(kylechar): Exactly where this finish call is still required is not
+    // obvious. Attempts have been made to remove it which caused problems, eg.
+    // https://crbug.com/846709. We should test removing it via finch to find
+    // out if this is still needed on any platforms.
+    layer_tree_frame_sink_->context_provider()->RasterInterface()->Finish();
   }
 
   // Release any context visibility before we destroy the LayerTreeFrameSink.
@@ -5274,23 +5256,6 @@ void LayerTreeHostImpl::ApplyFirstScrollTracking(const ui::LatencyInfo& latency,
   // to the given `frame_token`.
   presentation_time_callbacks_.RegisterCompositorThreadSuccessfulCallbacks(
       frame_token, std::move(callbacks));
-}
-
-std::string LayerTreeHostImpl::GetHungCommitDebugInfo() const {
-  return base::StringPrintf(
-             "ptfp%d pwpd%d tmrta%d as%d gpur%d%d ltfs%d%d zc%d ",
-             static_cast<int>(pending_tree_fully_painted_),
-             static_cast<int>(paint_worklet_painter_ &&
-                              paint_worklet_painter_->HasOngoingDispatch()),
-             static_cast<int>(tile_manager_.IsReadyToActivate()),
-             static_cast<int>(GetActivelyScrollingType()),
-             static_cast<int>(raster_caps().use_gpu_rasterization),
-             static_cast<int>(raster_caps().gpu_rasterization_status),
-             static_cast<int>(has_valid_layer_tree_frame_sink_),
-             static_cast<int>(layer_tree_frame_sink_ &&
-                              layer_tree_frame_sink_->context_provider()),
-             static_cast<int>(settings_.use_zero_copy)) +
-         tile_manager_.GetHungCommitDebugInfo();
 }
 
 }  // namespace cc

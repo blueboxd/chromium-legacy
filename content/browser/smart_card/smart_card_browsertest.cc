@@ -81,6 +81,8 @@ class MockSmartCardConnection : public device::mojom::SmartCardConnection {
                const std::vector<uint8_t>& data,
                SetAttribCallback callback),
               (override));
+
+  MOCK_METHOD(void, Status, (StatusCallback callback), (override));
 };
 
 class FakeSmartCardDelegate : public SmartCardDelegate {
@@ -448,6 +450,34 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, ListReaders) {
 
   auto expected_reader_names =
       base::Value(base::Value::List().Append("Foo").Append("Bar"));
+
+  EXPECT_EQ(expected_reader_names, EvalJs(shell(), R"((async () => {
+       let context = await navigator.smartCard.establishContext();
+       return await context.listReaders();
+     })())"));
+}
+
+/*
+This test checks that in case there are no readers available, listReaders() call
+will return an empty list of readers with no errors.
+
+Note that internally we will receive a kNoReadersAvailable error from
+SmartCardDelegate. However, we should not forward this error to Javascript.
+*/
+IN_PROC_BROWSER_TEST_F(SmartCardTest, ListReadersEmpty) {
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+
+  EXPECT_CALL(mock_context_factory, ListReaders(_))
+      .WillOnce([](SmartCardContext::ListReadersCallback callback) {
+        auto result = device::mojom::SmartCardListReadersResult::NewError(
+            SmartCardError::kNoReadersAvailable);
+        std::move(callback).Run(std::move(result));
+      });
+
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  auto expected_reader_names = base::Value(base::Value::List());
 
   EXPECT_EQ(expected_reader_names, EvalJs(shell(), R"((async () => {
        let context = await navigator.smartCard.establishContext();

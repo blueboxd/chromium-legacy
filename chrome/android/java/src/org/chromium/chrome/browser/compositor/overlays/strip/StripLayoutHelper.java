@@ -129,14 +129,13 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private static final float REORDER_EDGE_SCROLL_START_MIN_DP = 87.4f;
     private static final float REORDER_EDGE_SCROLL_START_MAX_DP = 18.4f;
     private static final float NEW_TAB_BUTTON_Y_OFFSET_DP = 10.f;
-    private static final float NEW_TAB_BUTTON_BACKGROUND_Y_OFFSET_DP = 0.f;
+    private static final float NEW_TAB_BUTTON_BACKGROUND_Y_OFFSET_DP_FOLIO = 3.f;
+    private static final float NEW_TAB_BUTTON_BACKGROUND_Y_OFFSET_DP_DETACHED = 5.f;
     private static final float NEW_TAB_BUTTON_CLICK_SLOP_DP = 12.f;
     private static final float NEW_TAB_BUTTON_WIDTH_DP = 24.f;
     private static final float NEW_TAB_BUTTON_HEIGHT_DP = 24.f;
-    private static final float NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_FOLIO = 36.f;
-    private static final float NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_FOLIO = 36.f;
-    private static final float NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_DETACHED = 38.f;
-    private static final float NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_DETACHED = 38.f;
+    private static final float NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_TSR = 32.f;
+    private static final float NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_TSR = 32.f;
     private static final float NEW_TAB_BUTTON_PADDING_DP = 24.f;
     private static final float NEW_TAB_BUTTON_TOUCH_TARGET_OFFSET = 12.f;
     private static final float FOLIO_ATTACHED_BOTTOM_MARGIN_DP = 0.f;
@@ -250,6 +249,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
     private int mActiveTabIndexOnStartup;
     private int mCurrentPlaceholderIndex;
 
+    // Tab Drag and Drop state to hold clicked tab being dragged.
+    private StripLayoutTab mActiveClickedTab;
+
     /**
      * Creates an instance of the {@link StripLayoutHelper}.
      * @param context         The current Android {@link Context}.
@@ -267,11 +269,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
                 ? TAB_OVERLAP_WIDTH_LARGE_DP
                 : TAB_OVERLAP_WIDTH_DP;
         if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
-            if (TabManagementFieldTrial.isTabStripFolioEnabled()) {
-                mNewTabButtonWidth = NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_FOLIO;
-            } else {
-                mNewTabButtonWidth = NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_DETACHED;
-            }
+            mNewTabButtonWidth = NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_TSR;
         } else {
             mNewTabButtonWidth = NEW_TAB_BUTTON_WIDTH_DP;
         }
@@ -311,21 +309,10 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         if (ChromeFeatureList.sTabStripRedesign.isEnabled()) {
             // Set new tab button background resource based on which TSR is enabled, background has
             // different size.
-            if (TabManagementFieldTrial.isTabStripFolioEnabled()) {
-                // Tab strip redesign folio enabled, bg size 36 * 36.
-                mNewTabButton = new TintedCompositorButton(context,
-                        NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_FOLIO,
-                        NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_FOLIO, newTabClickHandler,
-                        R.drawable.ic_new_tab_button);
-                mNewTabButton.setBackgroundResourceId(R.drawable.bg_circle_new_tab_button_folio);
-            } else {
-                // Tab strip redesign detached enabled, bg size 38 * 38.
-                mNewTabButton = new TintedCompositorButton(context,
-                        NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_DETACHED,
-                        NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_DETACHED, newTabClickHandler,
-                        R.drawable.ic_new_tab_button);
-                mNewTabButton.setBackgroundResourceId(R.drawable.bg_circle_new_tab_button_detached);
-            }
+            mNewTabButton = new TintedCompositorButton(context,
+                    NEW_TAB_BUTTON_BACKGROUND_WIDTH_DP_TSR, NEW_TAB_BUTTON_BACKGROUND_HEIGHT_DP_TSR,
+                    newTabClickHandler, R.drawable.ic_new_tab_button_tsr);
+            mNewTabButton.setBackgroundResourceId(R.drawable.bg_circle_tab_strip_button);
 
             // Primary container for default bg color.
             int defaultNTBBackgroundTint = TabUiThemeProvider.getDefaultNTBContainerColor(context);
@@ -382,7 +369,16 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             mNewTabButton.setTintResources(R.color.default_icon_color_tint_list,
                     R.color.default_icon_color_tint_list, R.color.modern_white,
                     R.color.modern_white);
-            mNewTabButton.setY(NEW_TAB_BUTTON_BACKGROUND_Y_OFFSET_DP);
+
+            if (TabManagementFieldTrial.isTabStripFolioEnabled()) {
+                // y-offset for folio = lowered tab container + (tab container size - bg size)/2 -
+                // folio tab title y-offset = 2 + (38 - 32)/2 - 2 = 3dp
+                mNewTabButton.setY(NEW_TAB_BUTTON_BACKGROUND_Y_OFFSET_DP_FOLIO);
+            } else if (TabManagementFieldTrial.isTabStripDetachedEnabled()) {
+                // y-offset for detached = lowered tab container + (tab container size - bg size)/2
+                // = 2 + (38 - 32)/2 = 5dp
+                mNewTabButton.setY(NEW_TAB_BUTTON_BACKGROUND_Y_OFFSET_DP_DETACHED);
+            }
         } else {
             // when TSR disabled
             mNewTabButton = new TintedCompositorButton(context, NEW_TAB_BUTTON_WIDTH_DP,
@@ -1251,6 +1247,33 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
      * @param buttons   State of all buttons that are pressed.
      */
     public void onDown(long time, float x, float y, boolean fromMouse, int buttons) {
+        // Prepare for drag and drop beyond the StripLayout view, if needed.
+        // The first onDown is passed by the Chrome pipeline directly by GestureHandler. The
+        // subsequent ones may be simulated by the DragDrop handler if the pointer goes beyond the
+        // strip layout view.
+        mActiveClickedTab = null;
+        onDownInternal(time, x, y, fromMouse, buttons);
+    }
+
+    /**
+     * Called when the Android Drag and Drop framework is initiated and takes over receiving the
+     * pointer motion events. The tab being moved is already selected. A simulated down event is
+     * sent to the @{link StripLayoutHelper#onInternalDown} when the user reenters the tabs layout
+     * area so that it can continue with the local reordering of the tabs of the previously selected
+     * tab. When a user leaves the tab strip area a simulated up event is sent using @{link
+     * StripLayoutHelper#onUpOrCancel}.
+     *
+     * The @{link DragEvent} are also forwarded using @{link StripLayoutHelper#drag} to handle the
+     * local reordering of the tabs when the user hovers over the StripLayout area of the toolbar
+     * container.
+     *
+     * @param time      The time stamp in millisecond of the event.
+     * @param x         The x position of the event.
+     * @param y         The y position of the event.
+     * @param fromMouse Whether the event originates from a mouse.
+     * @param buttons   State of all buttons that are pressed.
+     */
+    protected void onDownInternal(long time, float x, float y, boolean fromMouse, int buttons) {
         resetResizeTimeout(false);
 
         if (mNewTabButton.onDown(x, y)) {
@@ -1258,7 +1281,8 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
             return;
         }
 
-        final StripLayoutTab clickedTab = getTabAtPosition(x);
+        final StripLayoutTab clickedTab =
+                (mActiveClickedTab == null) ? getTabAtPosition(x) : mActiveClickedTab;
         final int index = clickedTab != null
                 ? TabModelUtils.getTabIndexById(mModel, clickedTab.getId())
                 : TabModel.INVALID_TAB_INDEX;
@@ -3079,5 +3103,9 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         View tabView = tab.getView();
         if (tabView == null) return;
         tabView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+    }
+
+    protected void clearActiveClickedTab() {
+        mActiveClickedTab = null;
     }
 }

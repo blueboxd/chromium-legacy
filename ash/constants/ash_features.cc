@@ -245,6 +245,11 @@ BASE_FEATURE(kBatterySaver,
              "CrosBatterySaver",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Make Battery Saver on all the time, even when charged or charging.
+BASE_FEATURE(kBatterySaverAlwaysOn,
+             "CrosBatterySaverAlwaysOn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables the usage of fixed Bluetooth A2DP packet size to improve
 // audio performance in noisy environment.
 BASE_FEATURE(kBluetoothFixA2dpPacketSize,
@@ -417,7 +422,7 @@ BASE_FEATURE(kCrostiniMultiContainer,
 // Enables or disables Crostini IME support.
 BASE_FEATURE(kCrostiniImeSupport,
              "CrostiniImeSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables Crostini Qt application IME support.
 BASE_FEATURE(kCrostiniQtImeSupport,
@@ -1054,6 +1059,9 @@ constexpr base::FeatureParam<base::TimeDelta>
     kFloatingWorkspaceV2PeriodicJobIntervalInSeconds{
         &kFloatingWorkspaceV2, "PeriodicJobIntervalInSeconds",
         base::Seconds(30)};
+
+// Enables or disables Focus Mode feature on ChromeOS.
+BASE_FEATURE(kFocusMode, "FocusMode", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, makes the Projector app use server side speech
 // recognition instead of on-device speech recognition.
@@ -1697,6 +1705,11 @@ BASE_FEATURE(kOnlyShowNewShortcutsApp,
              "OnlyShowNewShortcutsApp",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables or disables search customizable shortcuts in launcher.
+BASE_FEATURE(kSearchCustomizableShortcutsInLauncher,
+             "SearchCustomizableShortcutsInLauncher",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSearchInShortcutsApp,
              "SearchInShortcutsApp",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1734,7 +1747,7 @@ BASE_FEATURE(kOsSettingsAppBadgingToggle,
 // deprecated.
 BASE_FEATURE(kOsSettingsDeprecateSyncMetricsToggle,
              "OsSettingsDeprecateSyncMetricsToggle",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the wayfinding improvements for the ChromeOS Settings revamp
 BASE_FEATURE(kOsSettingsRevampWayfinding,
@@ -1750,6 +1763,13 @@ BASE_FEATURE(kOverviewButton,
 BASE_FEATURE(kOverviewDeskNavigation,
              "OverviewDeskNavigation",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables a new layout for overview mode in clamshell, preventing the overview
+// mode display from getting too cluttered. Similar to current overview mode
+// layout in tablet mode.
+BASE_FEATURE(kOverviewScrollLayoutForClamshell,
+             "OverviewScrollLayoutForClamshell",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables user to provision PasspointARCSupport credentials.
 BASE_FEATURE(kPasspointARCSupport,
@@ -2123,6 +2143,14 @@ BASE_FEATURE(kShowBluetoothDebugLogToggle,
 BASE_FEATURE(kShowPlayInDemoMode,
              "ShowPlayInDemoMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Allow the system to suspend to disk via hibernate.
+BASE_FEATURE(kSuspendToDisk,
+             "CrOSSuspendToDisk",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kHibernateAfterTimeHours{
+    &kSuspendToDisk, "HibernateAfterTimeHours", 8};
 
 // Enables custom Demo Mode behavior on feature-aware devices, as controlled by
 // the feature management module.
@@ -2664,6 +2692,10 @@ bool IsBatterySaverAvailable() {
   return base::FeatureList::IsEnabled(kBatterySaver);
 }
 
+bool IsBatterySaverAlwaysOn() {
+  return base::FeatureList::IsEnabled(kBatterySaverAlwaysOn);
+}
+
 bool IsBluetoothQualityReportEnabled() {
   return base::FeatureList::IsEnabled(kBluetoothQualityReport);
 }
@@ -2898,6 +2930,10 @@ bool IsFloatingWorkspaceEnabled() {
 
 bool IsFloatingWorkspaceV2Enabled() {
   return base::FeatureList::IsEnabled(kFloatingWorkspaceV2);
+}
+
+bool IsFocusModeEnabled() {
+  return base::FeatureList::IsEnabled(kFocusMode);
 }
 
 bool ShouldForceEnableServerSideSpeechRecognitionForDev() {
@@ -3326,6 +3362,11 @@ bool IsOverviewDeskNavigationEnabled() {
   return base::FeatureList::IsEnabled(kOverviewDeskNavigation);
 }
 
+bool IsOverviewScrollLayoutForClamshellEnabled() {
+  return base::FeatureList::IsEnabled(kOverviewScrollLayoutForClamshell) &&
+         chromeos::features::IsJellyEnabled();
+}
+
 bool IsPasspointARCSupportEnabled() {
   return base::FeatureList::IsEnabled(kPasspointARCSupport);
 }
@@ -3681,6 +3722,10 @@ bool ShouldArcFileTasksUseAppService() {
 
 bool ShouldOnlyShowNewShortcutApp() {
   return base::FeatureList::IsEnabled(kOnlyShowNewShortcutsApp);
+}
+
+bool isSearchCustomizableShortcutsInLauncherEnabled() {
+  return base::FeatureList::IsEnabled(kSearchCustomizableShortcutsInLauncher);
 }
 
 bool IsSearchInShortcutsAppEnabled() {

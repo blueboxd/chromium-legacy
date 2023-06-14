@@ -559,6 +559,8 @@ void RealboxHandler::SetupWebUIDataSource(content::WebUIDataSource* source,
                     base::GetFieldTrialParamValueByFeature(
                         ntp_features::kRealboxWidthBehavior,
                         ntp_features::kNtpRealboxWidthBehaviorParam));
+  source->AddBoolean("realboxIsTall", base::FeatureList::IsEnabled(
+                                          ntp_features::kRealboxIsTall));
 
   source->AddString(
       "realboxDefaultIcon",
@@ -650,8 +652,6 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
   } else if (icon.name == omnibox::kPageIcon.name ||
              icon.name == omnibox::kPageChromeRefreshIcon.name) {
     return kPageIconResourceName;
-  } else if (icon.name == omnibox::kPedalIcon.name) {
-    return kPedalsIconResourceName;
   } else if (icon.name == omnibox::kProductIcon.name ||
              icon.name == omnibox::kProductChromeRefreshIcon.name) {
     return kChromeProductIconResourceName;
@@ -674,12 +674,17 @@ std::string RealboxHandler::AutocompleteMatchVectorIconToResourceName(
 }
 
 // static
+//
+// TODO(jdonnelly): Rename this to ActionVectorIconToResourceName, since this
+// logic is not limited to Pedals but also includes tab switch and Journeys.
 std::string RealboxHandler::PedalVectorIconToResourceName(
     const gfx::VectorIcon& icon) {
-  if (icon.name == omnibox::kSwitchIcon.name) {
+  if (icon.name == omnibox::kSwitchIcon.name ||
+      icon.name == omnibox::kSwitchCr2023Icon.name) {
     return kTabIconResourceName;
   }
-  if (icon.name == omnibox::kDinoIcon.name) {
+  if (icon.name == omnibox::kDinoIcon.name ||
+      icon.name == omnibox::kDinoCr2023Icon.name) {
     return kDinoIconResourceName;
   }
   if (icon.name == omnibox::kDriveFormsIcon.name) {
@@ -715,7 +720,8 @@ std::string RealboxHandler::PedalVectorIconToResourceName(
       icon.name == omnibox::kJourneysChromeRefreshIcon.name) {
     return kJourneysIconResourceName;
   }
-  if (icon.name == omnibox::kPedalIcon.name) {
+  if (icon.name == omnibox::kPedalIcon.name ||
+      icon.name == omnibox::kProductChromeRefreshIcon.name) {
     return kPedalsIconResourceName;
   }
 #if BUILDFLAG(IS_MAC)
@@ -786,6 +792,15 @@ void RealboxHandler::SetPage(
   page_.Bind(std::move(pending_page));
 }
 
+void RealboxHandler::OnFocusChanged(bool focused) {
+  if (focused) {
+    edit_model()->OnSetFocus(false);
+  } else {
+    edit_model()->OnWillKillFocus();
+    edit_model()->OnKillFocus();
+  }
+}
+
 void RealboxHandler::QueryAutocomplete(const std::u16string& input,
                                        bool prevent_inline_autocomplete) {
   // TODO(tommycli): We use the input being empty as a signal we are requesting
@@ -822,16 +837,14 @@ void RealboxHandler::StopAutocomplete(bool clear_result) {
   autocomplete_controller()->Stop(clear_result);
 }
 
-void RealboxHandler::OpenAutocompleteMatch(
-    uint8_t line,
-    const GURL& url,
-    bool are_matches_showing,
-    base::TimeDelta time_elapsed_since_last_focus,
-    uint8_t mouse_button,
-    bool alt_key,
-    bool ctrl_key,
-    bool meta_key,
-    bool shift_key) {
+void RealboxHandler::OpenAutocompleteMatch(uint8_t line,
+                                           const GURL& url,
+                                           bool are_matches_showing,
+                                           uint8_t mouse_button,
+                                           bool alt_key,
+                                           bool ctrl_key,
+                                           bool meta_key,
+                                           bool shift_key) {
   const AutocompleteMatch* match = GetMatchWithUrl(line, url);
   if (!match) {
     // This can happen due to asynchronous updates changing the result while

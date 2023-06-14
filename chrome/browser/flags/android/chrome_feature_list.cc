@@ -159,6 +159,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAddToHomescreenIPH,
     &kAllowNewIncognitoTabIntents,
     &kAndroidAppIntegration,
+    &kAndroidAppIntegrationSafeSearch,
     &kAndroidSearchEngineChoiceNotification,
     &kAndroidImprovedBookmarks,
     &kAnimatedImageDragShadow,
@@ -230,7 +231,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kFocusOmniboxInIncognitoTabIntents,
     &kFoldableJankFix,
     &kGridTabSwitcherForTablets,
-    &kHideNonDisplayableAccountEmail,
+    &kImprovedIncognitoScreenshot,
     &kIncognitoReauthenticationForAndroid,
     &kIncognitoScreenshot,
     &kInfobarScrollOptimization,
@@ -282,6 +283,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kShowScrollableMVTOnNTPAndroid,
     &kFeedPositionAndroid,
     &kSearchResumptionModuleAndroid,
+    &kScrollToTLDOptimization,
     &kShareSheetMigrationAndroid,
     &kShareSheetCustomActionsPolish,
     &kShouldIgnoreIntentSkipInternalCheck,
@@ -446,6 +448,10 @@ BASE_FEATURE(kFocusOmniboxInIncognitoTabIntents,
 
 BASE_FEATURE(kAndroidAppIntegration,
              "AndroidAppIntegration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAndroidAppIntegrationSafeSearch,
+             "AndroidAppIntegrationSafeSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAndroidSearchEngineChoiceNotification,
@@ -727,8 +733,9 @@ BASE_FEATURE(kGridTabSwitcherForTablets,
              "GridTabSwitcherForTablets",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kHideNonDisplayableAccountEmail,
-             "HideNonDisplayableAccountEmail",
+// Only affects devices on API version >= 33.
+BASE_FEATURE(kImprovedIncognitoScreenshot,
+             "ImprovedIncognitoScreenshot",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kIncognitoReauthenticationForAndroid,
@@ -925,6 +932,10 @@ BASE_FEATURE(kRequestDesktopSitePerSiteIph,
 BASE_FEATURE(kSafeModeForCachedFlags,
              "SafeModeForCachedFlags",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kScrollToTLDOptimization,
+             "ScrollToTLDOptimization",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,
              "ShowScrollableMVTOnNTPAndroid",

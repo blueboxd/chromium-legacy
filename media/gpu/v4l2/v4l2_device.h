@@ -60,22 +60,6 @@
   v4l2_fourcc('S', '2', '6', '5') /* HEVC parsed slices */
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS)
-#ifndef V4L2_CID_MPEG_VIDEO_AV1_PROFILE
-#define V4L2_CID_MPEG_VIDEO_AV1_PROFILE V4L2_CID_STATELESS_AV1_PROFILE
-#endif
-#ifndef V4L2_MPEG_VIDEO_AV1_PROFILE_MAIN
-#define V4L2_MPEG_VIDEO_AV1_PROFILE_MAIN V4L2_STATELESS_AV1_PROFILE_MAIN
-#endif
-#ifndef V4L2_MPEG_VIDEO_AV1_PROFILE_HIGH
-#define V4L2_MPEG_VIDEO_AV1_PROFILE_HIGH V4L2_STATELESS_AV1_PROFILE_HIGH
-#endif
-#ifndef V4L2_MPEG_VIDEO_AV1_PROFILE_PROFESSIONAL
-#define V4L2_MPEG_VIDEO_AV1_PROFILE_PROFESSIONAL \
-  V4L2_STATELESS_AV1_PROFILE_PROFESSIONAL
-#endif
-#endif
-
 // TODO(b/260863940): Remove this once V4L2 header is updated
 #ifndef V4L2_CID_MPEG_VIDEO_HEVC_PROFILE
 #define V4L2_CID_MPEG_VIDEO_HEVC_PROFILE (V4L2_CID_MPEG_BASE + 615)
@@ -206,14 +190,6 @@ class MEDIA_GPU_EXPORT V4L2Device
              int flags,
              unsigned int offset);
   void Munmap(void* addr, unsigned int len);
-
-  // Return a vector of dmabuf file descriptors, exported for V4L2 buffer with
-  // |index|, assuming the buffer contains |num_planes| V4L2 planes and is of
-  // |type|. Return an empty vector on failure.
-  // The caller is responsible for closing the file descriptors after use.
-  std::vector<base::ScopedFD> GetDmabufsForV4L2Buffer(int index,
-                                                      size_t num_planes,
-                                                      enum v4l2_buf_type type);
 
   // Return true if the given V4L2 pixfmt can be used in CreateEGLImage()
   // for the current platform.

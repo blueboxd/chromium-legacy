@@ -1001,6 +1001,20 @@ const FeatureEntry::Choice kUXStudy1Choices[] = {
     {memory::kUXStudy1D, memory::kUXStudy1Switch, memory::kUXStudy1D},
 };
 
+const FeatureEntry::FeatureParam kHibernate6 = {"HibernateAfterTimeHours", "6"};
+const FeatureEntry::FeatureParam kHibernate8 = {"HibernateAfterTimeHours", "8"};
+const FeatureEntry::FeatureParam kHibernate12 = {"HibernateAfterTimeHours",
+                                                 "12"};
+const FeatureEntry::FeatureParam kHibernate24 = {"HibernateAfterTimeHours",
+                                                 "24"};
+
+const FeatureEntry::FeatureVariation kHibernateFeatureVariations[] = {
+    {"Hibernate after 6 hours", &kHibernate6, 1, nullptr},
+    {"Hibernate after 8 hours", &kHibernate8, 1, nullptr},
+    {"Hibernate after 12 hours", &kHibernate12, 1, nullptr},
+    {"Hibernate after 24 hours", &kHibernate24, 1, nullptr},
+};
+
 const char kPreferDcheckInternalName[] = "prefer-dcheck";
 
 const char kLacrosAvailabilityIgnoreInternalName[] =
@@ -2433,6 +2447,23 @@ const FeatureEntry::FeatureVariation kStartSurfaceAndroidVariations[] = {
      std::size(kStartSurfaceAndroid_CandidateB_AlwaysShowIncognito), nullptr},
     {"Single Surface", kStartSurfaceAndroid_SingleSurface,
      std::size(kStartSurfaceAndroid_SingleSurface), nullptr},
+};
+
+const FeatureEntry::FeatureParam kSurfacePolish_polish_omnibox_size[] = {
+    {"polish_omnibox_size", "true"},
+    {"polish_omnibox_color", "false"}};
+
+const FeatureEntry::FeatureParam
+    kSurfacePolish_polish_omnibox_size_and_color[] = {
+        {"polish_omnibox_size", "true"},
+        {"polish_omnibox_color", "true"}};
+
+const FeatureEntry::FeatureVariation kSurfacePolishVariations[] = {
+    {"Polish omnibox size", kSurfacePolish_polish_omnibox_size,
+     std::size(kSurfacePolish_polish_omnibox_size), nullptr},
+    {"Polish omnibox size and color",
+     kSurfacePolish_polish_omnibox_size_and_color,
+     std::size(kSurfacePolish_polish_omnibox_size_and_color), nullptr},
 };
 
 const FeatureEntry::FeatureParam kFeedPositionAndroid_push_down_feed_small[] = {
@@ -4093,6 +4124,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOsSettingsAppBadgingToggleName,
      flag_descriptions::kOsSettingsAppBadgingToggleDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kOsSettingsAppBadgingToggle)},
+    {"os-settings-deprecate-sync-metrics-toggle",
+     flag_descriptions::kOsSettingsDeprecateSyncMetricsToggleName,
+     flag_descriptions::kOsSettingsDeprecateSyncMetricsToggleDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kOsSettingsDeprecateSyncMetricsToggle)},
     {"os-settings-revamp-wayfinding",
      flag_descriptions::kOsSettingsRevampWayfindingName,
      flag_descriptions::kOsSettingsRevampWayfindingDescription, kOsCrOS,
@@ -4121,6 +4157,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-zram-writeback", flag_descriptions::kEnableZramWriteback,
      flag_descriptions::kEnableZramWritebackDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::kCrOSEnableZramWriteback)},
+    {"enable-suspend-to-disk", flag_descriptions::kEnableSuspendToDisk,
+     flag_descriptions::kEnableSuspendToDiskDescription, kOsCrOS,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(ash::features::kSuspendToDisk,
+                                    kHibernateFeatureVariations,
+                                    "SuspendToDisk")},
     // Used to carry the policy value crossing the Chrome process lifetime.
     {crosapi::browser_util::kLacrosAvailabilityPolicyInternalName, "", "",
      kOsCrOS, MULTI_VALUE_TYPE(kLacrosAvailabilityPolicyChoices)},
@@ -4563,10 +4604,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"cormorant", flag_descriptions::kCormorantName,
      flag_descriptions::kCormorantDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kCormorant)},
-    {"hide-non-displayable-account-email",
-     flag_descriptions::kHideNonDisplayableAccountEmailName,
-     flag_descriptions::kHideNonDisplayableAccountEmailDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kHideNonDisplayableAccountEmail)},
     {"default-viewport-is-device-width",
      flag_descriptions::kDefaultViewportIsDeviceWidthName,
      flag_descriptions::kDefaultViewportIsDeviceWidthDescription, kOsAndroid,
@@ -5732,6 +5769,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"android-app-inintegration", flag_descriptions::kAndroidAppIntegrationName,
      flag_descriptions::kAndroidAppIntegrationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidAppIntegration)},
+
+    {"android-app-inintegration-safesearch",
+     flag_descriptions::kAndroidAppIntegrationSafeSearchName,
+     flag_descriptions::kAndroidAppIntegrationSafeSearchDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidAppIntegrationSafeSearch)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
     {"omnibox-local-history-zero-suggest-beyond-ntp",
@@ -6325,6 +6367,12 @@ const FeatureEntry kFeatureEntries[] = {
      commerce::flag_descriptions::kShoppingListDescription,
      kOsAndroid | kOsDesktop, FEATURE_VALUE_TYPE(commerce::kShoppingList)},
 
+    {"shopping-list-track-by-default",
+     commerce::flag_descriptions::kShoppingListTrackByDefaultName,
+     commerce::flag_descriptions::kShoppingListTrackByDefaultDescription,
+     kOsAndroid | kOsDesktop,
+     FEATURE_VALUE_TYPE(commerce::kShoppingListTrackByDefault)},
+
     {"local-pdp-detection",
      commerce::flag_descriptions::kCommerceLocalPDPDetectionName,
      commerce::flag_descriptions::kCommerceLocalPDPDetectionDescription,
@@ -6484,6 +6532,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(ntp_features::kNtpRecipeTasksModule,
                                     kNtpRecipeTasksModuleVariations,
                                     "DesktopNtpModules")},
+
+    {"ntp-realbox-is-tall", flag_descriptions::kNtpRealboxIsTallName,
+     flag_descriptions::kNtpRealboxIsTallDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kRealboxIsTall)},
 
     {"ntp-realbox-match-searchbox-theme",
      flag_descriptions::kNtpRealboxMatchSearchboxThemeName,
@@ -6708,7 +6760,9 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"enable-surface-polish", flag_descriptions::kSurfacePolishName,
      flag_descriptions::kSurfacePolishDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kSurfacePolish)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kSurfacePolish,
+                                    kSurfacePolishVariations,
+                                    "SurfacePolish")},
 
     {"enable-show-scrollable-mvt-on-ntp",
      flag_descriptions::kShowScrollableMVTOnNTPAndroidName,
@@ -7333,6 +7387,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableShortcutCustomizationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kShortcutCustomization)},
 
+    {"enable-search-customizable-shortcuts-in-launcher",
+     flag_descriptions::kEnableSearchCustomizableShortcutsInLauncherName,
+     flag_descriptions::kEnableSearchCustomizableShortcutsInLauncherDescription,
+     kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kSearchCustomizableShortcutsInLauncher)},
+
     {"enable-search-in-shortcuts-app",
      flag_descriptions::kEnableSearchInShortcutsAppName,
      flag_descriptions::kEnableSearchInShortcutsAppDescription, kOsCrOS,
@@ -7553,12 +7613,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"use-client-gmb-interface", flag_descriptions::kUseClientGmbInterfaceName,
      flag_descriptions::kUseClientGmbInterfaceDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kUseClientGmbInterface)},
-
-#if BUILDFLAG(IS_ANDROID)
-    {"use-toast-manager", flag_descriptions::kUseToastManagerName,
-     flag_descriptions::kUseToastManagerDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(::features::kUseToastManager)},
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"contextual-nudges", flag_descriptions::kContextualNudgesName,
@@ -8293,6 +8347,12 @@ const FeatureEntry kFeatureEntries[] = {
          "EsbIphBubbleAndCollapseSettingsVariations")},
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+    {"enable-friendlier-safe-browsing-settings",
+     flag_descriptions::kEnableFriendlierSafeBrowsingSettingsName,
+     flag_descriptions::kEnableFriendlierSafeBrowsingSettingsDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(safe_browsing::kFriendlierSafeBrowsingSettings)},
+
     {"enable-tailored-security-updated-messages",
      flag_descriptions::kEnableTailoredSecurityUpdatedMessagesName,
      flag_descriptions::kEnableTailoredSecurityUpdatedMessagesDescription,
@@ -8308,6 +8368,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_ANDROID)
+    // TODO(https://crbug.com/985245): remove flag when API version 33 is the
+    // lowest supported version and the kImprovedIncognitoScreenshot flag is
+    // cleaned up, Since this flag has no effect when
+    // kImprovedIncognitoScreenshot is enabled and is used as a fallback when
+    // kImprovedIncognitoScreenshot is disabled.
     {"incognito-screenshot", flag_descriptions::kIncognitoScreenshotName,
      flag_descriptions::kIncognitoScreenshotDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kIncognitoScreenshot)},
@@ -8316,6 +8381,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIncognitoDownloadsWarningName,
      flag_descriptions::kIncognitoDownloadsWarningDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kIncognitoDownloadsWarning)},
+
+    {"improved-incognito-screenshot",
+     flag_descriptions::kImprovedIncognitoScreenshotName,
+     flag_descriptions::kImprovedIncognitoScreenshotDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kImprovedIncognitoScreenshot)},
 #endif
 
     {"incognito-ntp-revamp", flag_descriptions::kIncognitoNtpRevampName,
@@ -10024,6 +10094,11 @@ const FeatureEntry kFeatureEntries[] = {
          kServiceWorkerBypassFetchHandlerForMainResourceDescription,
      kOsAll, FEATURE_VALUE_TYPE(features::kServiceWorkerBypassFetchHandler)},
 
+    {"service-worker-static-router",
+     flag_descriptions::kServiceWorkerStaticRouterName,
+     flag_descriptions::kServiceWorkerStaticRouterDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kServiceWorkerStaticRouter)},
+
     {"autofill-remove-card-expiration-and-type-titles",
      flag_descriptions::kAutofillRemoveCardExpirationAndTypeTitlesName,
      flag_descriptions::kAutofillRemoveCardExpirationAndTypeTitlesDescription,
@@ -10385,6 +10460,21 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableProcessPerSiteUpToMainFrameThresholdDescription,
      kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kProcessPerSiteUpToMainFrameThreshold)},
+
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
+    {"camera-mic-preview", flag_descriptions::kCameraMicPreviewName,
+     flag_descriptions::kCameraMicPreviewDescription,
+     static_cast<unsigned short>(kOsMac | kOsWin | kOsLinux | kOsFuchsia),
+     FEATURE_VALUE_TYPE(features::kCameraMicPreview)},
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    {"cros-battery-saver-always-on",
+     flag_descriptions::kCrosBatterySaverAlwaysOnName,
+     flag_descriptions::kCrosBatterySaverAlwaysOnDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kBatterySaverAlwaysOn)},
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

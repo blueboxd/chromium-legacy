@@ -130,6 +130,12 @@ BASE_FEATURE(kConversionMeasurement,
              "ConversionMeasurement",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// TODO(https://crbug.com/1453572): Remove this if this behavior does not need
+// to be rolled back on stable.
+BASE_FEATURE(kCrossOriginAccessOnDetachedWindowDoesNotThrow,
+             "CrossOriginAccessOnDetachedWindowDoesNotThrow",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether LCP calculations should exclude low-entropy images. If
 // enabled, then the associated parameter sets the cutoff, expressed as the
 // minimum number of bits of encoded image data used to encode each rendered
@@ -352,6 +358,10 @@ const char kPrerender2MemoryAcceptablePercentOfSystemMemoryParamName[] =
 
 BASE_FEATURE(kPrerender2InNewTab,
              "Prerender2InNewTab",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRetriggerPreloadingOnBFCacheRestoration,
+             "RetriggerPreloadingOnBFCacheRestoration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsFencedFramesEnabled() {

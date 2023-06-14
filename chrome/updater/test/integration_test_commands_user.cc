@@ -67,9 +67,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
 
   void EnterTestMode(const GURL& update_url,
                      const GURL& crash_upload_url,
-                     const GURL& device_management_url) const override {
+                     const GURL& device_management_url,
+                     const base::TimeDelta& idle_timeout) const override {
     updater::test::EnterTestMode(update_url, crash_upload_url,
-                                 device_management_url);
+                                 device_management_url, idle_timeout);
   }
 
   void ExitTestMode() const override {
@@ -195,6 +196,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
 
   void RunWakeActive(int exit_code) const override {
     updater::test::RunWakeActive(updater_scope_, exit_code);
+  }
+
+  void RunServer(int exit_code, bool internal) const override {
+    updater::test::RunServer(updater_scope_, exit_code, internal);
   }
 
   void CheckForUpdate(const std::string& app_id) const override {

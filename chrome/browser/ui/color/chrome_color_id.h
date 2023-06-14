@@ -56,6 +56,7 @@
   /* Download bubble colors. */\
   E_CPONLY(kColorDownloadBubbleInfoBackground) \
   E_CPONLY(kColorDownloadBubbleInfoIcon) \
+  E_CPONLY(kColorDownloadBubbleRowHover) \
   /* Download shelf colors. */ \
   E_CPONLY(kColorDownloadItemForeground) \
   E_CPONLY(kColorDownloadItemForegroundDangerous) \
@@ -477,6 +478,10 @@
   E_CPONLY(kColorTabstripScrollContainerShadow) \
   E_CPONLY(kColorTabThrobber) \
   E_CPONLY(kColorTabThrobberPreconnect) \
+  /* Tab Search colors */ \
+  E_CPONLY(kColorTabSearchBackground) \
+  E_CPONLY(kColorTabSearchPrimaryForeground) \
+  E_CPONLY(kColorTabSearchSecondaryForeground) \
   /* Thumbnail tab colors. */ \
   E_CPONLY(kColorThumbnailTabBackground) \
   E_CPONLY(kColorThumbnailTabForeground) \

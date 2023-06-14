@@ -206,13 +206,14 @@ class FrameSchedulerDelegateForTesting : public FrameScheduler::Delegate {
 };
 
 MATCHER(BlockingDetailsHasCCNS, "Blocking details has CCNS.") {
-  bool vector_empty = arg.non_sticky_features_and_js_locations.empty();
+  bool vector_empty =
+      arg.non_sticky_features_and_js_locations.details_list.empty();
   bool vector_has_ccns =
-      arg.sticky_features_and_js_locations.Contains(
+      arg.sticky_features_and_js_locations.details_list.Contains(
           FeatureAndJSLocationBlockingBFCache(
               SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore,
               nullptr)) &&
-      arg.sticky_features_and_js_locations.Contains(
+      arg.sticky_features_and_js_locations.details_list.Contains(
           FeatureAndJSLocationBlockingBFCache(
               SchedulingPolicy::Feature::kMainResourceHasCacheControlNoCache,
               nullptr));
@@ -226,14 +227,15 @@ MATCHER_P(BlockingDetailsHasWebSocket,
       (handle->GetFeatureAndJSLocationBlockingBFCache() ==
        FeatureAndJSLocationBlockingBFCache(
            SchedulingPolicy::Feature::kWebSocket, nullptr));
-  bool vector_empty = arg.sticky_features_and_js_locations.empty();
+  bool vector_empty = arg.sticky_features_and_js_locations.details_list.empty();
   return handle_has_web_socket && vector_empty;
 }
 
 MATCHER(BlockingDetailsIsEmpty, "BlockingDetails is empty.") {
   bool non_sticky_vector_empty =
-      arg.non_sticky_features_and_js_locations.empty();
-  bool sticky_vector_empty = arg.sticky_features_and_js_locations.empty();
+      arg.non_sticky_features_and_js_locations.details_list.empty();
+  bool sticky_vector_empty =
+      arg.sticky_features_and_js_locations.details_list.empty();
   return non_sticky_vector_empty && sticky_vector_empty;
 }
 class FrameSchedulerImplTest : public testing::Test {
@@ -426,12 +428,6 @@ class FrameSchedulerImplTest : public testing::Test {
         now.SnappedToNextTick(base::TimeTicks(), interval);
     if (aligned != now)
       task_environment_.FastForwardBy(aligned - now);
-  }
-
-  static uint64_t GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-      FrameSchedulerImpl* frame_scheduler) {
-    return frame_scheduler
-        ->GetActiveFeaturesTrackedForBackForwardCacheMetricsMask();
   }
 
  protected:
@@ -1575,29 +1571,10 @@ TEST_F(FrameSchedulerImplTest,
   EXPECT_EQ(TaskPriority::kBestEffortPriority, task_queue->GetQueuePriority());
 }
 
-namespace {
-
-// Mask is a preferred way of plumbing the list of features, but a list
-// is more convenient to read in the tests.
-// Here we ensure that these two methods are equivalent.
-uint64_t ComputeMaskFromFeatures(FrameSchedulerImpl* frame_scheduler) {
-  uint64_t result = 0;
-  for (SchedulingPolicy::Feature feature :
-       frame_scheduler->GetActiveFeaturesTrackedForBackForwardCacheMetrics()) {
-    result |= (1 << static_cast<size_t>(feature));
-  }
-  return result;
-}
-
-}  // namespace
-
 TEST_F(FrameSchedulerImplTest, BackForwardCacheOptOut) {
   EXPECT_THAT(
       frame_scheduler_->GetActiveFeaturesTrackedForBackForwardCacheMetrics(),
       testing::UnorderedElementsAre());
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 
   auto feature_handle1 = frame_scheduler_->RegisterFeature(
       SchedulingPolicy::Feature::kWebSocket,
@@ -1606,9 +1583,6 @@ TEST_F(FrameSchedulerImplTest, BackForwardCacheOptOut) {
   EXPECT_THAT(
       frame_scheduler_->GetActiveFeaturesTrackedForBackForwardCacheMetrics(),
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 
   auto feature_handle2 = frame_scheduler_->RegisterFeature(
       SchedulingPolicy::Feature::kWebRTC,
@@ -1618,36 +1592,24 @@ TEST_F(FrameSchedulerImplTest, BackForwardCacheOptOut) {
       frame_scheduler_->GetActiveFeaturesTrackedForBackForwardCacheMetrics(),
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket,
                                     SchedulingPolicy::Feature::kWebRTC));
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 
   feature_handle1.reset();
 
   EXPECT_THAT(
       frame_scheduler_->GetActiveFeaturesTrackedForBackForwardCacheMetrics(),
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebRTC));
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 
   feature_handle2.reset();
 
   EXPECT_THAT(
       frame_scheduler_->GetActiveFeaturesTrackedForBackForwardCacheMetrics(),
       testing::UnorderedElementsAre());
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 }
 
 TEST_F(FrameSchedulerImplTest, BackForwardCacheOptOut_FrameNavigated) {
   EXPECT_THAT(
       frame_scheduler_->GetActiveFeaturesTrackedForBackForwardCacheMetrics(),
       testing::UnorderedElementsAre());
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 
   auto feature_handle = frame_scheduler_->RegisterFeature(
       SchedulingPolicy::Feature::kWebSocket,
@@ -1656,9 +1618,6 @@ TEST_F(FrameSchedulerImplTest, BackForwardCacheOptOut_FrameNavigated) {
   EXPECT_THAT(
       frame_scheduler_->GetActiveFeaturesTrackedForBackForwardCacheMetrics(),
       testing::UnorderedElementsAre(SchedulingPolicy::Feature::kWebSocket));
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 
   frame_scheduler_->RegisterStickyFeature(
       SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore,
@@ -1669,9 +1628,6 @@ TEST_F(FrameSchedulerImplTest, BackForwardCacheOptOut_FrameNavigated) {
       testing::UnorderedElementsAre(
           SchedulingPolicy::Feature::kWebSocket,
           SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore));
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 
   // Same document navigations don't affect anything.
   frame_scheduler_->DidCommitProvisionalLoad(
@@ -1681,9 +1637,6 @@ TEST_F(FrameSchedulerImplTest, BackForwardCacheOptOut_FrameNavigated) {
       testing::UnorderedElementsAre(
           SchedulingPolicy::Feature::kWebSocket,
           SchedulingPolicy::Feature::kMainResourceHasCacheControlNoStore));
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 
   // Regular navigations reset all features.
   frame_scheduler_->DidCommitProvisionalLoad(
@@ -1691,9 +1644,6 @@ TEST_F(FrameSchedulerImplTest, BackForwardCacheOptOut_FrameNavigated) {
   EXPECT_THAT(
       frame_scheduler_->GetActiveFeaturesTrackedForBackForwardCacheMetrics(),
       testing::UnorderedElementsAre());
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 
   // Resetting a feature handle after navigation shouldn't do anything.
   feature_handle.reset();
@@ -1701,9 +1651,6 @@ TEST_F(FrameSchedulerImplTest, BackForwardCacheOptOut_FrameNavigated) {
   EXPECT_THAT(
       frame_scheduler_->GetActiveFeaturesTrackedForBackForwardCacheMetrics(),
       testing::UnorderedElementsAre());
-  EXPECT_EQ(ComputeMaskFromFeatures(frame_scheduler_.get()),
-            GetActiveFeaturesTrackedForBackForwardCacheMetricsMask(
-                frame_scheduler_.get()));
 }
 
 TEST_F(FrameSchedulerImplTest, FeatureUpload) {

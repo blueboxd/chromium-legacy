@@ -277,6 +277,8 @@ component("capture_lib") {
 
   if (is_linux) {
     sources += [
+      "video/linux/v4l2_gpu_memory_buffer_tracker.cc",
+      "video/linux/v4l2_gpu_memory_buffer_tracker.h",
       "video/linux/video_capture_gpu_memory_buffer_manager.cc",
       "video/linux/video_capture_gpu_memory_buffer_manager.h",
     ]
@@ -354,6 +356,7 @@ component("capture_lib") {
       "//media/capture/video/chromeos/mojom:cros_camera",
       "//third_party/libsync",
     ]
+    data_deps = [ ":mojo_service_manager_policy" ]
   }
 
   if (is_fuchsia) {
@@ -470,6 +473,10 @@ test("capture_unittests") {
     ]
   }
 
+  if (is_linux) {
+    sources += [ "video/linux/v4l2_gpu_memory_buffer_tracker_unittest.cc" ]
+  }
+
   if (is_android) {
     deps += [
       "//media/capture/video/android",
@@ -573,4 +580,9 @@ test("capture_unittests") {
       "//third_party/minigbm",
     ]
   }
+}
+
+copy("mojo_service_manager_policy") {
+  sources = [ "video/chromeos/camera_hal_dispatcher_mojo_policy.jsonc" ]
+  outputs = [ "$root_out_dir/mojo_service_manager/{{source_file_part}}" ]
 }

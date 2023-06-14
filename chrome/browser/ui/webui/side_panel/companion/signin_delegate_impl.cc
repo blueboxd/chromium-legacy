@@ -21,6 +21,7 @@
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/service/sync_service.h"
 #include "components/unified_consent/unified_consent_service.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
@@ -45,8 +46,13 @@ bool SigninDelegateImpl::AllowedSignin() {
 }
 
 bool SigninDelegateImpl::IsSignedIn() {
-  return IdentityManagerFactory::GetForProfile(GetProfile())
-      ->HasPrimaryAccount(signin::ConsentLevel::kSignin);
+  return GetProfile() &&
+         IdentityManagerFactory::GetForProfile(GetProfile())
+             ->HasPrimaryAccount(signin::ConsentLevel::kSignin) &&
+         SyncServiceFactory::GetForProfile(GetProfile()) &&
+         (SyncServiceFactory::GetForProfile(GetProfile())
+              ->GetTransportState() !=
+          syncer::SyncService::TransportState::PAUSED);
 }
 
 void SigninDelegateImpl::StartSigninFlow() {
@@ -70,10 +76,11 @@ void SigninDelegateImpl::EnableMsbb(bool enable_msbb) {
   consent_service->SetUrlKeyedAnonymizedDataCollectionEnabled(enable_msbb);
 }
 
-void SigninDelegateImpl::LoadUrlInNewTab(const GURL& url) {
-  CHECK(url.is_valid());
+void SigninDelegateImpl::OpenUrlInBrowser(const GURL& url, bool use_new_tab) {
   content::OpenURLParams params(url, content::Referrer(),
-                                WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                                use_new_tab
+                                    ? WindowOpenDisposition::NEW_FOREGROUND_TAB
+                                    : WindowOpenDisposition::CURRENT_TAB,
                                 ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                 /*is_renderer_initiated*/ false);
   auto* browser = companion::GetBrowserForWebContents(webui_contents_);

@@ -954,6 +954,9 @@
   <message name="IDS_SETTINGS_GOOGLE_DRIVE_TURN_OFF_BODY_TEXT" translateable="false" desc="Body text for the confirmation dialog that spawns when attempting to turn off bulk pinning in Settings: Files: Google Drive.">
     New Google Drive files will no longer be synced automatically, but files that are already synced will remain available.
   </message>
+  <message name="IDS_SETTINGS_GOOGLE_DRIVE_OFFLINE_CLEAR_DISABLED_TOOLTIP" translateable="false" desc="Tooltip text that shows when hovering over the clear offline storage button in the Settings: Files: Google Drive.">
+    Can’t clean up storage while files are automatically syncing.
+  </message>
   <message name="IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_NOT_ENOUGH_SPACE_TITLE_TEXT" translateable="false" desc="Title text for the confirmation dialog that spawns when attempting to turn on bulk pinning but the user doesn't have enough free space in Settings: Files: Google Drive.">
     Low disk space
   </message>
@@ -1101,43 +1104,61 @@
     Turn light screens dark, and dark screens light. Press Search + Ctrl + H to turn color inversion on and off.
   </message>
   <message name="IDS_SETTINGS_COLOR_FILTERING_LABEL" desc="Label for a checkbox which enables color filtering settings.">
-    Color filters
+    Color correction
   </message>
   <message name="IDS_SETTINGS_COLOR_FILTERING_DESCRIPTION" desc="Description for a checkbox which enables color filtering settings.">
-    Adjust how colors appear on your screen
+    Adjust how colors display on your screen
   </message>
-  <message name="IDS_SETTINGS_GREYSCALE_LABEL" desc="Label for slider which controls greyscale UI filter.">
-    Greyscale
-  </message>
-  <message name="IDS_SETTINGS_SEPIA_LABEL" desc="Label for slider which controls sepia UI filter.">
-    Sepia
-  </message>
-  <message name="IDS_SETTINGS_SATURATION_LABEL" desc="Label for slider which controls saturation filter UI.">
-    Saturation
-  </message>
-  <message name="IDS_SETTINGS_HUE_ROTATION_LABEL" desc="Label for slider which controls hue rotation filter UI.">
-    Hue rotation
+  <message name="IDS_SETTINGS_GREYSCALE_LABEL" desc="Label for slider which controls grayscale UI filter.">
+    Grayscale
   </message>
   <message name="IDS_SETTINGS_PROTANOMALY_FILTER" desc="Label for a setting drop-down menu option for a color filter that helps people with protanomaly.">
-    Red-green filter (red weak, protanomaly)
+    Red-green, red weak (Protanomaly)
   </message>
   <message name="IDS_SETTINGS_TRITANOMALY_FILTER" desc="Label for a setting drop-down menu option for a color filter that helps people with tritanomaly.">
-    Blue-yellow filter (tritanomaly)
+    Blue-yellow (Tritanomaly)
   </message>
   <message name="IDS_SETTINGS_DEUTERANOMALY_FILTER" desc="Label for a setting drop-down menu option for a color filter that helps people with deuteranomaly.">
-    Red-green filter (green weak, deuteranomaly)
+    Red-green, green weak (Deuteranomaly)
   </message>
   <message name="IDS_SETTINGS_COLOR_VISION_DEFICIENCY_TYPE_LABEL" desc="Label for a drop-down menu option that provides color vision correction filters">
-    Filter type
+    Filter
   </message>
   <message name="IDS_SETTINGS_COLOR_VISION_FILTER_INTENSITY_LABEL" desc="Label for a slider that allows people to control the intensity of the color vision correction filter">
     Intensity
   </message>
   <message name="IDS_SETTINGS_COLOR_FILTER_MINIMUM_LABEL" desc="Label for the side of the color filter slider control that causes the least visual change.">
-    Less
+    0
   </message>
   <message name="IDS_SETTINGS_COLOR_FILTER_MAXIMUM_LABEL" desc="Label for the side of the color filter slider control that causes the most visual change.">
-    More
+    100
+  </message>
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_INSTRUCTIONS" desc="The insructions for users to preview the effects of color filtering by looking at how some color swatches change as the filter settings change">
+    Adjust the color correction settings to make sure colors are distinct
+  </message>
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_RED" desc="The label for a swatch of red color which is shown for users to preview the effects of color filtering">
+    Red
+  </message>
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_ORANGE" desc="The label for a swatch of orange color which is shown for users to preview the effects of color filtering">
+    Orange
+  </message>
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_YELLOW" desc="The label for a swatch of yellow color which is shown for users to preview the effects of color filtering">
+    Yellow
+  </message>
+    <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_GREEN" desc="The label for a swatch of green color which is shown for users to preview the effects of color filtering">
+    Green
+  </message>
+    <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_CYAN" desc="The label for a swatch of cyan color which is shown for users to preview the effects of color filtering">
+    Cyan
+  </message>
+    <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_BLUE" desc="The label for a swatch of blue color which is shown for users to preview the effects of color filtering">
+    Blue
+  </message>
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_PURPLE" desc="The label for a swatch of purple color which is shown for users to preview the effects of color filtering">
+    Purple
+  </message>
+  <message name="IDS_SETTINGS_COLOR_FILTERING_PREVIEW_COLOR_GRAY" desc="The label for a swatch of gray color which is shown for users to preview the effects of color filtering">
+    Gray
   </message>
   <message name="IDS_SETTINGS_STICKY_KEYS_LABEL" desc="Label for checkbox which enables sticky keys, with an explanation of the term 'sticky keys'.">
     Sticky keys
@@ -2878,6 +2899,9 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_CHARGING_SOUNDS_LABEL" desc="Label for checkbox which enables charging sounds.">
     Charging sounds
   </message>
+  <message name="IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_LOW_BATTERY_SOUND_LABEL" desc="Label for checkbox which enables the low battery sound.">
+    Low battery sound
+  </message>
   <message name="IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_STARTUP_SOUND_LABEL" desc="Label for checkbox which enables the device startup sound.">
     Device startup sound
   </message>
@@ -4590,6 +4614,12 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_BATTERY_STATUS_SHORT" desc="In Device Settings > Power, the battery status when the time left cannot be shown.">
     <ph name="percentage">$1<ex>56</ex></ph>%
+  </message>
+  <message name="IDS_SETTINGS_POWER_BATTERY_SAVER_LABEL" desc="In Device Settings > Power, label for toggling battery saver mode" translateable="false">
+    Battery Saver
+  </message>
+  <message name="IDS_SETTINGS_POWER_BATTERY_SAVER_SUBTEXT" desc="In Device Settings > Power, description of the behavior of battery saver mode" translateable="false">
+    Enable Energy saver to extend battery life by turning off background functions such as[...]
   </message>
 
   <!-- Reset Page (OS settings)-->

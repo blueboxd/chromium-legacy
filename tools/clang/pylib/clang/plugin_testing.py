@@ -57,8 +57,8 @@ class ClangPluginTest(object):
     with open(clang_exe, 'rb') as f:
       if 'diagnostics-show-line-numbers'.encode('ascii') in f.read():
         clang_cmd.extend([
-            '-fno-diagnostics-show-line-numbers', '-Xclang',
-            '-fcaret-diagnostics-max-lines', '-Xclang', '1'
+            '-fno-diagnostics-show-line-numbers',
+            '-fcaret-diagnostics-max-lines=1'
         ])
 
     clang_cmd.extend(['-Xclang', '-add-plugin', '-Xclang', self._plugin_name])

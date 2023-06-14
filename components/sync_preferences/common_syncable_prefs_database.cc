@@ -37,10 +37,10 @@ namespace {
 namespace syncable_prefs_ids {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. When adding a new entry, append the
-// enumerator to the end. When removing an unused enumerator, comment it out,
-// making it clear the value was previously used.
-// Please also add new entries to `SyncablePref` enum in
-// tools/metrics/histograms/enums.xml.
+// enumerator to the end and add it to the `SyncablePref` enum in
+// tools/metrics/histograms/enums.xml. When removing an unused enumerator,
+// comment it out here, making it clear the value was previously used, and
+// add "(obsolete)" to the corresponding entry in enums.xml.
 enum {
   kSyncablePrefForTesting = 0,  // For tests.
   kAutofillCreditCardEnabled = 1,
@@ -106,6 +106,12 @@ enum {
   kPrefTranslateRecentTarget = 61,
   kPrefDogfoodGroups = 62,
   kSyncableMergeableDictPrefForTesting = 63,  // For tests.
+  // See components/sync_preferences/README.md about adding new entries here.
+  // vvvvv IMPORTANT! vvvvv
+  // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
+  // prefs follow privacy guidelines! See the readme file linked above for
+  // guidance and escalation path in case anything is unclear.
+  // ^^^^^ IMPORTANT! ^^^^^
 };
 }  // namespace syncable_prefs_ids
 

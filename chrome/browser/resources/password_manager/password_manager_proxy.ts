@@ -66,8 +66,9 @@ export enum PasswordViewPageInteractions {
   CREDENTIAL_REQUESTED_BY_URL = 11,
   PASSKEY_DISPLAY_NAME_COPY_BUTTON_CLICKED = 12,
   PASSKEY_DELETE_BUTTON_CLICKED = 13,
+  PASSKEY_EDIT_BUTTON_CLICKED = 14,
   // Must be last.
-  COUNT = 14,
+  COUNT = 15,
 }
 
 /**
@@ -200,14 +201,13 @@ export interface PasswordManagerProxy {
       Promise<void>;
 
   /**
-   * Changes the saved password corresponding to |ids|.
-   * @param ids The ids for the password entry being updated.
-   * @return A promise that resolves with the new IDs when the password is
-   *     updated for all ids.
+   * Updates the given credential. Not all parameters can be updated.
+   * @param credential the credential to update.
+   * @return A promise that resolves if the credential was found and updated,
+   *     rejects otherwise.
    */
-  changeSavedPassword(
-      ids: number, params: chrome.passwordsPrivate.ChangeSavedPasswordParams):
-      Promise<number>;
+  changeCredential(credential: chrome.passwordsPrivate.PasswordUiEntry):
+      Promise<void>;
 
   /**
    * Should remove the credential and notify that the list has changed.
@@ -471,9 +471,8 @@ export class PasswordManagerImpl implements PasswordManagerProxy {
     return chrome.passwordsPrivate.addPassword(options);
   }
 
-  changeSavedPassword(
-      id: number, params: chrome.passwordsPrivate.ChangeSavedPasswordParams) {
-    return chrome.passwordsPrivate.changeSavedPassword(id, params);
+  changeCredential(credential: chrome.passwordsPrivate.PasswordUiEntry) {
+    return chrome.passwordsPrivate.changeCredential(credential);
   }
 
   removeCredential(

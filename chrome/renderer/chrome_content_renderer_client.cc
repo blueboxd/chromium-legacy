@@ -60,7 +60,7 @@
 #include "chrome/renderer/plugins/non_loadable_plugin_placeholder.h"
 #include "chrome/renderer/plugins/pdf_plugin_placeholder.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
-#include "chrome/renderer/sync_encryption_keys_extension.h"
+#include "chrome/renderer/trusted_vault_encryption_keys_extension.h"
 #include "chrome/renderer/url_loader_throttle_provider_impl.h"
 #include "chrome/renderer/v8_unwinder.h"
 #include "chrome/renderer/websocket_handshake_throttle_provider_impl.h"
@@ -621,7 +621,7 @@ void ChromeContentRendererClient::RenderFrameCreated(
   SandboxStatusExtension::Create(render_frame);
 #endif
 
-  SyncEncryptionKeysExtension::Create(render_frame);
+  TrustedVaultEncryptionKeysExtension::Create(render_frame);
   if (base::FeatureList::IsEnabled(features::kWebAuthFlowInBrowserTab)) {
     GoogleAccountsPrivateApiExtension::Create(render_frame);
   }
@@ -996,7 +996,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           render_frame, params, info, identifier, group_name, template_id,
           message);
     };
-    WebLocalFrame* frame = render_frame->GetWebFrame();
     switch (status) {
       case chrome::mojom::PluginStatus::kNotFound: {
         NOTREACHED();
@@ -1005,6 +1004,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
       case chrome::mojom::PluginStatus::kAllowed:
       case chrome::mojom::PluginStatus::kPlayImportantContent: {
 #if BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
+        WebLocalFrame* frame = render_frame->GetWebFrame();
         const bool is_nacl_plugin =
             info.name == ASCIIToUTF16(nacl::kNaClPluginName);
         const bool is_nacl_mime_type =
@@ -1075,17 +1075,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         }
 #endif  // BUILDFLAG(ENABLE_NACL) && BUILDFLAG(ENABLE_EXTENSIONS)
 
-        if (GURL(frame->GetDocument().Url()).host_piece() ==
-            extension_misc::kPdfExtensionId) {
-          if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-            auto* web_view = render_frame->GetWebView();
-            if (web_view) {
-              web_view->GetSettings()->SetPreferredColorScheme(
-                  blink::mojom::PreferredColorScheme::kLight);
-            }
-          }
-        } else if (info.path.value() ==
-                   ChromeContentClient::kPDFExtensionPluginPath) {
+        if (info.path.value() == ChromeContentClient::kPDFExtensionPluginPath) {
           // Report PDF load metrics. Since the PDF plugin is comprised of an
           // extension that loads a second plugin, avoid double counting by
           // ignoring the creation of the second plugin.

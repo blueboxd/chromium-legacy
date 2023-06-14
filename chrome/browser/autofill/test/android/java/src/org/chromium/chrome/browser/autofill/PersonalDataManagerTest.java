@@ -529,6 +529,8 @@ public class PersonalDataManagerTest {
     @Test
     @SmallTest
     @Feature({"Autofill"})
+    @Features.DisableFeatures(ChromeFeatureList.AUTOFILL_ENABLE_RANKING_FORMULA_ADDRESS_PROFILES)
+    // TODO(crbug.com/1454591): Add test for ranking profiles with new algorithm.
     public void testProfilesFrecency() throws TimeoutException {
         // Create 3 profiles.
         AutofillProfile profile1 = AutofillProfile.builder()
@@ -592,6 +594,8 @@ public class PersonalDataManagerTest {
     @Test
     @SmallTest
     @Feature({"Autofill"})
+    @Features.DisableFeatures(ChromeFeatureList.AUTOFILL_ENABLE_RANKING_FORMULA_CREDIT_CARDS)
+    // TODO(crbug.com/1454591): Add test for ranking credit cards with new algorithm.
     public void testCreditCardsFrecency() throws TimeoutException {
         // Create 3 credit cards.
         CreditCard card1 = createLocalCreditCard("Visa", "1234123412341234", "5", "2020");

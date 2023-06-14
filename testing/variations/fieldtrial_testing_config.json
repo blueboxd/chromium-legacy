@@ -794,9 +794,11 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "ArcVmmSwapPolicy"
+                        "ArcVmmSwapPolicy",
+                        "ArcVmmSwapoutGhostWindow",
+                        "ArcvmSwapoutKeyboardShortcut"
                     ],
-                    "min_os_version": "15474.2.0"
+                    "min_os_version": "15489.0.0"
                 }
             ]
         }
@@ -865,6 +867,26 @@
                     },
                     "enable_features": [
                         "AssistMultiWord"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AsyncCacheLock": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AsyncCacheLock"
                     ]
                 }
             ]
@@ -1013,6 +1035,30 @@
                     "name": "Enabled",
                     "enable_features": [
                         "AutofillAlwaysParsePlaceholders"
+                    ]
+                }
+            ]
+        }
+    ],
+    "AutofillConvergeToExtremeLengthStreetAddress": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Converge_To_Shorter",
+                    "params": {
+                        "converge_to_longer": "false"
+                    },
+                    "enable_features": [
+                        "AutofillConvergeToExtremeLengthStreetAddress"
                     ]
                 }
             ]
@@ -3989,6 +4035,26 @@
             ]
         }
     ],
+    "DataRetentionPoliciesDisableSyncTypesNeeded": [
+        {
+            "platforms": [
+                "android",
+                "linux",
+                "windows",
+                "mac",
+                "chromeos",
+                "chromeos_lacros"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "DataRetentionPoliciesDisableSyncTypesNeeded"
+                    ]
+                }
+            ]
+        }
+    ],
     "DecreaseProcessingAudioFifoSize": [
         {
             "platforms": [
@@ -6706,6 +6772,13 @@
                     "enable_features": [
                         "HttpsUpgrades"
                     ]
+                },
+                {
+                    "name": "EnabledWithHttpsFirstModeForEngagedSites",
+                    "enable_features": [
+                        "HttpsFirstModeV2ForEngagedSites",
+                        "HttpsUpgrades"
+                    ]
                 }
             ]
         }
@@ -7141,6 +7214,21 @@
                     "name": "Disabled",
                     "disable_features": [
                         "KeepsRenderProcessAlive"
+                    ]
+                }
+            ]
+        }
+    ],
+    "IOSLogApplicationStorageSizeMetrics": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "LogApplicationStorageSizeMetrics"
                     ]
                 }
             ]
@@ -7995,28 +8083,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "LeakSkiaEventTracerAtExit"
-                    ]
-                }
-            ]
-        }
-    ],
-    "LessChattyNetworkService": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "chromeos",
-                "chromeos_lacros",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "LessChattyNetworkService"
                     ]
                 }
             ]
@@ -10111,6 +10177,21 @@
             ]
         }
     ],
+    "PdfOcr": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "PdfOcr"
+                    ]
+                }
+            ]
+        }
+    ],
     "PdfUseSkiaRenderer": [
         {
             "platforms": [
@@ -10938,6 +11019,9 @@
                     "name": "Enabled",
                     "enable_features": [
                         "ProcessPerSiteUpToMainFrameThreshold"
+                    ],
+                    "disable_features": [
+                        "AllowDevToolsMainThreadDebuggerForMultipleMainFrames"
                     ]
                 }
             ]
@@ -11400,23 +11484,6 @@
                     "params": {
                         "sendingThreshold": "1.0"
                     }
-                }
-            ]
-        }
-    ],
-    "ReportingServiceFlushPrefsOnUploadInBackground": [
-        {
-            "platforms": [
-                "android",
-                "android_webview",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ReportingServiceFlushPrefsOnUploadInBackground"
-                    ]
                 }
             ]
         }
@@ -12629,22 +12696,34 @@
             ],
             "experiments": [
                 {
-                    "name": "FindRegistrationImprovements_20230222",
+                    "name": "FindReg_20230609",
                     "enable_features": [
+                        "ServiceWorkerFetchResponseCallbackUseHighPriority",
                         "ServiceWorkerMergeFindRegistrationForClientUrl",
+                        "ServiceWorkerRegistrationCache",
                         "ServiceWorkerScopeCache",
                         "ServiceWorkerStorageControlOnThreadPool",
                         "ServiceWorkerStorageControlResponseUseHighPriority"
-                    ],
-                    "disable_features": [
-                        "SpeculativeServiceWorkerStartup"
                     ]
-                },
+                }
+            ]
+        }
+    ],
+    "SpeculativeServiceWorkerWarmUp": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "chromeos_lacros",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
                 {
-                    "name": "FindRegistrationImprovements_20221130",
+                    "name": "EnableWarmUp_20230613",
                     "enable_features": [
-                        "ServiceWorkerStorageControlOnThreadPool",
-                        "ServiceWorkerStorageControlResponseUseHighPriority"
+                        "SpeculativeServiceWorkerWarmUp"
                     ],
                     "disable_features": [
                         "SpeculativeServiceWorkerStartup"
@@ -13676,6 +13755,30 @@
             ]
         }
     ],
+    "UseClientGmbInterface": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "android_weblayer",
+                "chromeos",
+                "chromeos_lacros",
+                "fuchsia",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UseClientGmbInterface"
+                    ]
+                }
+            ]
+        }
+    ],
     "UseDMSAAForTiles": [
         {
             "platforms": [
@@ -14098,7 +14201,7 @@
             ]
         }
     ],
-    "V8MaglevStability": [
+    "V8Maglev": [
         {
             "platforms": [
                 "chromeos",
@@ -14460,7 +14563,9 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
+                        "CrOSLateBootAudioAPNoiseCancellation",
                         "CrOSLateBootAudioFlexibleLoopback",
+                        "CrosPrivacyHubV2",
                         "SpeakOnMuteEnabled",
                         "SystemLiveCaption",
                         "VideoConference"

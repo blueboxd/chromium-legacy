@@ -108,6 +108,8 @@ public abstract class ChromeFeatureList {
     public static final String ADD_TO_HOMESCREEN_IPH = "AddToHomescreenIPH";
     public static final String ALLOW_NEW_INCOGNITO_TAB_INTENTS = "AllowNewIncognitoTabIntents";
     public static final String ANDROID_APP_INTEGRATION = "AndroidAppIntegration";
+    public static final String ANDROID_APP_INTEGRATION_SAFE_SEARCH =
+            "AndroidAppIntegrationSafeSearch";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
     public static final String ANDROID_IMPROVED_BOOKMARKS = "AndroidImprovedBookmarks";
@@ -127,6 +129,10 @@ public abstract class ChromeFeatureList {
             "AutofillEnableNewCardArtAndNetworkImages";
     public static final String AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH =
             "AutofillEnablePaymentsMandatoryReauth";
+    public static final String AUTOFILL_ENABLE_RANKING_FORMULA_ADDRESS_PROFILES =
+            "AutofillEnableRankingFormulaAddressProfiles";
+    public static final String AUTOFILL_ENABLE_RANKING_FORMULA_CREDIT_CARDS =
+            "AutofillEnableRankingFormulaCreditCards";
     public static final String AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES =
             "AutofillEnableSupportForHonorificPrefixes";
     public static final String AUTOFILL_ENABLE_UPDATE_VIRTUAL_CARD_ENROLLMENT =
@@ -265,12 +271,11 @@ public abstract class ChromeFeatureList {
             "ForceDisableExtendedSyncPromos";
     public static final String FORCE_STARTUP_SIGNIN_PROMO = "ForceStartupSigninPromo";
     public static final String FORCE_WEB_CONTENTS_DARK_MODE = "WebContentsForceDark";
-    public static final String HIDE_NON_DISPLAYABLE_ACCOUNT_EMAIL =
-            "HideNonDisplayableAccountEmail";
     public static final String HISTORY_JOURNEYS = "Journeys";
     public static final String HISTORY_ORGANIC_REPEATABLE_QUERIES = "OrganicRepeatableQueries";
     public static final String HTTPS_FIRST_MODE = "HttpsOnlyMode";
     public static final String IDENTITY_STATUS_CONSISTENCY = "IdentityStatusConsistency";
+    public static final String IMPROVED_INCOGNITO_SCREENSHOT = "ImprovedIncognitoScreenshot";
     public static final String INCOGNITO_DOWNLOADS_WARNING = "IncognitoDownloadsWarning";
     public static final String INCOGNITO_NTP_REVAMP = "IncognitoNtpRevamp";
     public static final String INCOGNITO_REAUTHENTICATION_FOR_ANDROID =
@@ -393,6 +398,7 @@ public abstract class ChromeFeatureList {
     public static final String SAFE_BROWSING_DELAYED_WARNINGS = "SafeBrowsingDelayedWarnings";
     public static final String SAFE_MODE_FOR_CACHED_FLAGS = "SafeModeForCachedFlags";
     public static final String SCREENSHOTS_FOR_ANDROID_V2 = "ScreenshotsForAndroidV2";
+    public static final String SCROLL_TO_TLD_OPTIMIZATION = "ScrollToTLDOptimization";
     public static final String SEARCH_RESUMPTION_MODULE_ANDROID = "SearchResumptionModuleAndroid";
     public static final String SHOULD_IGNORE_INTENT_SKIP_INTERNAL_CHECK =
             "ShouldIgnoreIntentSkipInternalCheck";
@@ -532,8 +538,6 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sFeedLoadingPlaceholder =
             new CachedFlag(FEED_LOADING_PLACEHOLDER, false);
     public static final CachedFlag sFoldableJankFix = new CachedFlag(FOLDABLE_JANK_FIX, true);
-    public static final CachedFlag sHideNonDisplayableAccountEmail =
-            new CachedFlag(HIDE_NON_DISPLAYABLE_ACCOUNT_EMAIL, true);
     public static final CachedFlag sIncognitoReauthenticationForAndroid =
             new CachedFlag(INCOGNITO_REAUTHENTICATION_FOR_ANDROID, false);
     public static final CachedFlag sInstanceSwitcher = new CachedFlag(INSTANCE_SWITCHER, true);
@@ -630,7 +634,6 @@ public abstract class ChromeFeatureList {
         sEarlyLibraryLoad,
         sFeedLoadingPlaceholder,
         sFoldableJankFix,
-        sHideNonDisplayableAccountEmail,
         sIncognitoReauthenticationForAndroid,
         sInstanceSwitcher,
         sInstantStart,

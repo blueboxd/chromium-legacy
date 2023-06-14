@@ -38,7 +38,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.DismissEvent" enum="AppBannersDismissEvent"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -50,7 +50,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.DisplayEvent" enum="AppBannersDisplayEvent"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>pjmclachlan@google.com</owner>
   <owner>pcovell@google.com</owner>
   <summary>
@@ -551,7 +551,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.FileHandlersRegistration.Result" enum="BooleanSuccess"
-    expires_after="2023-10-10">
+    expires_after="2023-12-10">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -563,7 +563,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.FileHandlersUnregistration.Result"
-    enum="BooleanSuccess" expires_after="2023-10-10">
+    enum="BooleanSuccess" expires_after="2023-12-10">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1038,7 +1038,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.OsSettingsUninstallRegistration.Result"
-    enum="BooleanSuccess" expires_after="2023-10-10">
+    enum="BooleanSuccess" expires_after="2023-12-10">
   <owner>dmurph@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1056,7 +1056,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.OsSettingsUninstallUnregistration.Result"
-    enum="BooleanSuccess" expires_after="2023-10-10">
+    enum="BooleanSuccess" expires_after="2023-12-10">
   <owner>dmurph@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1442,6 +1442,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="WebApp.ShortcutsMenuBitmapAndItemCount.Results"
+    enum="ShortcutsMenuIconAndDataDifference" expires_after="2024-07-13">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@google.com</owner>
+  <summary>
+    Records the difference in result between the shortcuts menu icons downloaded
+    compared to the shortcuts menu item information stored in the web
+    applications/ DB for that web app. This is measured during OS integration
+    registration, unregistration or update during the Configuration phase of the
+    sub managers. This is not measured when the app is not installed, or if
+    there are no shortcuts menu items infos in the DB.
+  </summary>
+</histogram>
+
 <histogram name="WebApp.ShortcutsMenuRegistration.Result" enum="BooleanSuccess"
     expires_after="2023-11-12">
   <owner>dibyapal@chromium.org</owner>
@@ -1487,7 +1501,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.SystemApps.FreshInstallDuration" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>ortuno@chromium.org</owner>
   <owner>qjw@chromium.org</owner>
   <summary>
@@ -1612,7 +1626,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.WebAppUrlLoaderPrepareForLoadResult"
-    enum="WebAppUrlLoaderResult" expires_after="2023-10-08">
+    enum="WebAppUrlLoaderResult" expires_after="2023-12-10">
   <owner>qjw@chromium.org</owner>
   <owner>ortuno@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>

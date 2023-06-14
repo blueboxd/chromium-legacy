@@ -451,6 +451,10 @@ crbug.com/1152599 [ win amd-0x7340 angle-d3d11 ] conformance/rendering/polygon-o
 
 ## D3D9 / AMD RX 5500 XT / Passthrough command decoder ##
 
+# Random GPU process hangs on this bot are causing random D3D9 test faiures. Retry
+# all tests for the moment so that the test suite can remain enabled on this bot.
+crbug.com/1446091 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/* [ RetryOnFailure ]
+
 crbug.com/1159126 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/ogles/GL/* [ RetryOnFailure ]
 crbug.com/1159126 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/uniforms/* [ RetryOnFailure ]
 crbug.com/1361088 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/textures/webgl_canvas/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
@@ -561,11 +565,6 @@ crbug.com/1165751 [ android-nougat ] conformance/glsl/bugs/vector-matrix-constru
 
 # These video tests are flakey on many configurations.
 crbug.com/1347077 [ android-nexus-5x android-nougat angle-opengles passthrough qualcomm renderer-skia-gl target-cpu-64 ] conformance/textures/misc/video-rotation.html [ Failure ]
-
-# Overlay scheduling issue can leave destroyed overlays around for tests that follow these. Creating confusing flakes.
-# Seen on Pixel-6 and Samsung, skipping generically for now.
-crbug.com/1445548 [ android no-passthrough ] conformance/extensions/oes-texture-float-with-video.html [ Skip ]
-crbug.com/1445548 [ android no-passthrough ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
 
 ## Nexus 5X ##
 
@@ -685,6 +684,8 @@ crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] 
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/limits/gl-max-texture-dimensions.html [ Failure ]
 crbug.com/1446435 [ chromeos lacros-chrome chromeos-board-jacuzzi passthrough ] conformance/misc/shader-precision-format.html [ Failure ]
 
+crbug.com/1454201 [ chromeos lacros-chrome chromeos-board-jacuzzi ] conformance/extensions/ext-disjoint-timer-query.html [ Failure ]
+
 ###########################
 # Lacros/Wayland failures #
 ###########################
@@ -700,9 +701,9 @@ crbug.com/angleproject/5038 [ linux intel display-server-wayland ] conformance/e
 # Roll WebGL d1b65aa..b934957.
 crbug.com/1448573 [ android angle-disabled no-passthrough qualcomm renderer-skia-gl ] conformance/extensions/oes-texture-float.html [ Failure ]
 crbug.com/1448573 [ android-pie android-shield-android-tv angle-disabled no-clang-coverage no-passthrough nvidia renderer-skia-gl target-cpu-32 ] conformance/extensions/oes-texture-float.html [ Failure ]
-crbug.com/1448573 [ chromeos chromeos-board-amd64-generic ] conformance/extensions/oes-texture-float.html [ Failure ]
+crbug.com/1448573 [ angle-disabled chromeos chromeos-board-amd64-generic no-passthrough ] conformance/extensions/oes-texture-float.html [ Failure ]
 crbug.com/1448743 [ android-nexus-5x ] conformance/textures/misc/texture-srgb-upload.html [ Failure ]
-crbug.com/1448743 [ chromeos chromeos-board-amd64-generic ] conformance/textures/misc/texture-srgb-upload.html [ Failure ]
+crbug.com/1448743 [ angle-disabled chromeos chromeos-board-amd64-generic no-passthrough ] conformance/textures/misc/texture-srgb-upload.html [ Failure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

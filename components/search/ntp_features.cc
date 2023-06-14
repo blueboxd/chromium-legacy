@@ -59,6 +59,11 @@ BASE_FEATURE(kRealboxWidthBehavior,
              "NtpRealboxWidthBehavior",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, the realbox will be taller.
+BASE_FEATURE(kRealboxIsTall,
+             "NtpRealboxIsTall",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, the NTP "realbox" will have the same rounded corners as
 // searchbox.
 BASE_FEATURE(kRealboxRoundedCorners,
@@ -219,7 +224,7 @@ BASE_FEATURE(kNtpFeedModule,
 // If enabled, Google Lens image search will be shown in the NTP Realbox.
 BASE_FEATURE(kNtpRealboxLensSearch,
              "NtpRealboxLensSearch",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, recipe tasks module will be shown.
 BASE_FEATURE(kNtpRecipeTasksModule,

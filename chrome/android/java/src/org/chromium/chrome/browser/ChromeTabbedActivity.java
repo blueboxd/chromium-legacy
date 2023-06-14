@@ -140,8 +140,10 @@ import org.chromium.chrome.browser.reengagement.ReengagementNotificationControll
 import org.chromium.chrome.browser.search_engines.SearchEngineChoiceNotification;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBridge;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.survey.ChromeSurveyController;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.sync.ui.SyncErrorMessage;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.RedirectHandlerTabHelper;
@@ -235,8 +237,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent>
         implements ChromeAccessibilityUtil.Observer {
     private static final String TAG = "ChromeTabbedActivity";
-
-    private static final String HELP_URL_PREFIX = "https://support.google.com/chrome/";
 
     protected static final String WINDOW_INDEX = "window_index";
 
@@ -635,6 +635,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         }
                     }
 
+                    // Incognito tabs can't be restored, so don't finish the Activity if there are
+                    // still Incognito tabs existing.
+                    if (mTabModelSelector.getModel(true).getCount() > 0) {
+                        return;
+                    }
+
                     boolean gridTabSwitcherEnabled = TabUiFeatureUtilities.isGridTabSwitcherEnabled(
                             ChromeTabbedActivity.this);
                     boolean overviewVisible = isLayoutManagerCreated()
@@ -903,8 +909,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                      "ChromeTabbedActivity.maybeCreateIncognitoTabSnapshotController")) {
             if (!CommandLine.getInstance().hasSwitch(
                         ChromeSwitches.ENABLE_INCOGNITO_SNAPSHOTS_IN_ANDROID_RECENTS)) {
-                IncognitoTabbedSnapshotController.createIncognitoTabSnapshotController(this,
-                        getWindow(), mLayoutManager, mTabModelSelector, getLifecycleDispatcher());
+                IncognitoTabbedSnapshotController.createIncognitoTabSnapshotController(
+                        this, mLayoutManager, mTabModelSelector, getLifecycleDispatcher());
             }
 
             mUIWithNativeInitialized = true;
@@ -1998,8 +2004,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     Tab tab, NavigationHandle navigation) {
                 if (!navigation.hasCommitted()) return;
 
+                // Show the sync error message even if the navigation happened on incognito.
+                Profile profile = mTabModelProfileSupplier.get().getOriginalProfile();
+
                 try (TraceEvent e = TraceEvent.scoped("CheckSyncErrorOnDidFinishNavigation")) {
-                    SyncErrorMessage.maybeShowMessageUi(getWindowAndroid());
+                    SyncErrorMessage.maybeShowMessageUi(getWindowAndroid(),
+                            IdentityServicesProvider.get().getIdentityManager(profile),
+                            SyncServiceFactory.getForProfile(profile));
                 }
                 try (TraceEvent te = TraceEvent.scoped("updateActiveWebContents")) {
                     SendTabToSelfAndroidBridge.updateActiveWebContents(tab.getWebContents());
@@ -2200,6 +2211,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         final Tab currentTab = getActivityTab();
         boolean currentTabIsNtp = isTabNtp(currentTab);
         if (id == R.id.new_tab_menu_id) {
+            if (!mTabModelSelector.isTabStateInitialized()) return false;
+
             getTabModelSelector().getModel(false).commitAllTabClosures();
             RecordUserAction.record("MobileMenuNewTab");
             RecordUserAction.record("MobileNewTabOpened");
@@ -2211,6 +2224,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             mLocaleManager.showSearchEnginePromoIfNeeded(this, null);
         } else if (id == R.id.new_incognito_tab_menu_id) {
             if (IncognitoUtils.isIncognitoModeEnabled()) {
+                if (!mTabModelSelector.isTabStateInitialized()) return false;
+
                 getTabModelSelector().getModel(false).commitAllTabClosures();
                 // This action must be recorded before opening the incognito tab since UMA actions
                 // are dropped when an incognito tab is open.

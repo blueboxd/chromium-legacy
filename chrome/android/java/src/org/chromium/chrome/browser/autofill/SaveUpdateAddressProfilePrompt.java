@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import static org.chromium.chrome.browser.autofill.editors.AddressEditor.UserFlow.MIGRATE_EXISTING_ADDRESS_PROFILE;
-import static org.chromium.chrome.browser.autofill.editors.AddressEditor.UserFlow.SAVE_NEW_ADDRESS_PROFILE;
-import static org.chromium.chrome.browser.autofill.editors.AddressEditor.UserFlow.UPDATE_EXISTING_ADDRESS_PROFILE;
+import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.MIGRATE_EXISTING_ADDRESS_PROFILE;
+import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.SAVE_NEW_ADDRESS_PROFILE;
+import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.UPDATE_EXISTING_ADDRESS_PROFILE;
 
 import android.app.Activity;
 import android.text.TextUtils;
@@ -23,9 +23,9 @@ import com.google.android.material.textfield.TextInputLayout;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.autofill.editors.AddressEditor;
-import org.chromium.chrome.browser.autofill.editors.AddressEditor.UserFlow;
-import org.chromium.chrome.browser.autofill.editors.EditorDialog;
+import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator;
+import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.Delegate;
+import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -47,8 +47,7 @@ public class SaveUpdateAddressProfilePrompt {
     private final ModalDialogManager mModalDialogManager;
     private final PropertyModel mDialogModel;
     private final View mDialogView;
-    private final EditorDialog mEditorDialog;
-    private AddressEditor mAddressEditor;
+    private AddressEditorCoordinator mAddressEditor;
     private boolean mEditorClosingPending;
 
     /**
@@ -86,18 +85,17 @@ public class SaveUpdateAddressProfilePrompt {
                         .with(ModalDialogProperties.CUSTOM_VIEW, mDialogView);
         mDialogModel = builder.build();
 
-        mEditorDialog = new EditorDialog(activity, /*deleteRunnable=*/null,
-                HelpAndFeedbackLauncherImpl.getForProfile(browserProfile));
-        mEditorDialog.setShouldTriggerDoneCallbackBeforeCloseAnimation(true);
-        AddressEditor.Delegate delegate = new AddressEditor.Delegate() {
+        Delegate delegate = new Delegate() {
             @Override
             public void onDone(AutofillAddress address) {
                 onEdited(address);
             }
         };
-        mAddressEditor = new AddressEditor(mEditorDialog, delegate, browserProfile,
+        mAddressEditor = new AddressEditorCoordinator(activity,
+                HelpAndFeedbackLauncherImpl.getForProfile(browserProfile), delegate, browserProfile,
                 new AutofillAddress(activity, autofillProfile), userFlow,
                 /*saveToDisk=*/false);
+        mAddressEditor.setShouldTriggerDoneCallbackBeforeCloseAnimation(true);
         mDialogView.findViewById(R.id.edit_button).setOnClickListener(v -> {
             mAddressEditor.showEditorDialog();
         });
@@ -208,7 +206,7 @@ public class SaveUpdateAddressProfilePrompt {
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     void dismiss() {
         // Do not dismiss the editor if closing is pending to not abort the animation.
-        if (!mEditorClosingPending && mEditorDialog.isShowing()) mEditorDialog.dismiss();
+        if (!mEditorClosingPending && mAddressEditor.isShowing()) mAddressEditor.dismiss();
         mModalDialogManager.dismissDialog(mDialogModel, DialogDismissalCause.DISMISSED_BY_NATIVE);
     }
 
@@ -272,7 +270,7 @@ public class SaveUpdateAddressProfilePrompt {
         });
     }
 
-    void setAddressEditorForTesting(AddressEditor addressEditor) {
+    void setAddressEditorForTesting(AddressEditorCoordinator addressEditor) {
         mAddressEditor = addressEditor;
     }
 

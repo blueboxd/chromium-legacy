@@ -18,8 +18,10 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/quota/quota_manager_impl.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 
 namespace webapps {
@@ -28,6 +30,7 @@ SiteQualityMetricsTask::~SiteQualityMetricsTask() = default;
 
 // static
 std::unique_ptr<SiteQualityMetricsTask> SiteQualityMetricsTask::CreateAndStart(
+    const GURL& site_url,
     content::WebContents& web_contents,
     content::StoragePartition& storage_partition,
     content::ServiceWorkerContext& service_worker_context,
@@ -35,19 +38,20 @@ std::unique_ptr<SiteQualityMetricsTask> SiteQualityMetricsTask::CreateAndStart(
     ResultCallback on_complete) {
   std::unique_ptr<SiteQualityMetricsTask> result =
       base::WrapUnique(new SiteQualityMetricsTask(
-          web_contents, storage_partition, service_worker_context, task_runner,
-          std::move(on_complete)));
+          site_url, web_contents, storage_partition, service_worker_context,
+          task_runner, std::move(on_complete)));
   result->Start();
   return result;
 }
 
 SiteQualityMetricsTask::SiteQualityMetricsTask(
+    const GURL& site_url,
     content::WebContents& web_contents,
     content::StoragePartition& storage_partition,
     content::ServiceWorkerContext& service_worker_context,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     ResultCallback on_complete)
-    : site_url_(web_contents.GetLastCommittedURL()),
+    : site_url_(site_url),
       web_contents_(web_contents),
       storage_partition_(storage_partition),
       service_worker_context_(service_worker_context),
@@ -68,12 +72,15 @@ void SiteQualityMetricsTask::Start() {
 
   // Quota.
   CHECK(storage_partition_->GetQuotaManager());
-  storage_partition_->GetQuotaManager()->proxy()->GetUsageAndQuotaWithBreakdown(
-      storage_key, blink::mojom::StorageType::kTemporary,
-      base::SequencedTaskRunner::GetCurrentDefault(),
-      base::BindOnce(&SiteQualityMetricsTask::OnQuotaRetrieved,
-                     weak_factory_.GetWeakPtr())
-          .Then(barrier));
+
+  storage_partition_->GetQuotaManager()
+      ->proxy()
+      ->GetStorageKeyUsageWithBreakdown(
+          storage_key, blink::mojom::StorageType::kTemporary,
+          base::SequencedTaskRunner::GetCurrentDefault(),
+          base::BindOnce(&SiteQualityMetricsTask::OnQuotaUsageRetrieved,
+                         weak_factory_.GetWeakPtr())
+              .Then(barrier));
 
   // Service worker.
   service_worker_context_->CheckHasServiceWorker(
@@ -83,13 +90,10 @@ void SiteQualityMetricsTask::Start() {
           .Then(barrier));
 }
 
-void SiteQualityMetricsTask::OnQuotaRetrieved(
-    blink::mojom::QuotaStatusCode code,
+void SiteQualityMetricsTask::OnQuotaUsageRetrieved(
     int64_t usage,
-    int64_t quota,
     blink::mojom::UsageBreakdownPtr usage_breakdown) {
-  if (code != blink::mojom::QuotaStatusCode::kOk) {
-    // Sizes are left as 0 if there is an error returning quota stats.
+  if (!usage_breakdown) {
     return;
   }
 

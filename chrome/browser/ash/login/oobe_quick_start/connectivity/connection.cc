@@ -16,8 +16,8 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/handshake_helpers.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/target_device_connection_broker.h"
-#include "chrome/browser/ash/login/oobe_quick_start/logging/logging.h"
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connection.h"
+#include "chromeos/ash/components/quick_start/logging.h"
 #include "chromeos/ash/components/quick_start/quick_start_message.h"
 #include "chromeos/ash/components/quick_start/quick_start_requests.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
@@ -236,7 +236,12 @@ void Connection::GenerateFidoAssertionInfo(
       mojom::GetAssertionResponse::GetAssertionStatus::kSuccess;
 
   if (response->status != success) {
-    std::move(callback).Run(absl::nullopt);
+    // TODO (b/286877412): Update this logic once we've aligned on an unknown
+    // message strategy.
+    QS_LOG(INFO) << "Ignoring message and re-reading";
+    nearby_connection_->Read(
+        base::BindOnce(&Connection::OnRequestAccountTransferAssertionResponse,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
     return;
   }
 

@@ -63,10 +63,6 @@ void MLInstallabilityPromoter::SetTaskRunnerForTesting(
 }
 
 void MLInstallabilityPromoter::StartGatheringMetricsForSiteUrl() {
-  if (!base::FeatureList::IsEnabled(features::kWebAppsMlUkmCollection)) {
-    return;
-  }
-
   CHECK(web_contents());
   const GURL& site_url = web_contents()->GetLastCommittedURL();
 
@@ -93,7 +89,7 @@ void MLInstallabilityPromoter::StartGatheringMetricsForSiteUrl() {
   }
 
   site_quality_metrics_task_ = SiteQualityMetricsTask::CreateAndStart(
-      *web_contents(), *storage_partition_, *service_worker_context_,
+      site_url_, *web_contents(), *storage_partition_, *service_worker_context_,
       sequenced_task_runner_,
       base::BindOnce(&MLInstallabilityPromoter::OnDidCollectSiteQualityMetrics,
                      weak_factory_.GetWeakPtr()));
@@ -241,8 +237,18 @@ void MLInstallabilityPromoter::EmitUKMs() {
   manifest_builder.Record(ukm_recorder->Get());
 
   state_ = MLPipelineState::kUKMCollectionComplete;
+  TriggerMLModel();
+}
+
+void MLInstallabilityPromoter::TriggerMLModel() {
   // TODO(b/283998203): Trigger the ML Model to start generating
   // insights based on the UKMs.
+  CHECK_EQ(state_, MLPipelineState::kUKMCollectionComplete);
+
+  if (!base::FeatureList::IsEnabled(
+          features::kWebAppsEnableMLModelForPromotion)) {
+    return;
+  }
 }
 
 void MLInstallabilityPromoter::DidFinishNavigation(
@@ -311,7 +317,7 @@ void MLInstallabilityPromoter::OnRegistrationStored(int64_t registration_id,
   // Restart the SiteQualityMetricsTask to read data from the QuotaManagerProxy
   // and the ServiceWorkerContext with registered service worker.
   site_quality_metrics_task_ = SiteQualityMetricsTask::CreateAndStart(
-      *web_contents(), *storage_partition_, *service_worker_context_,
+      site_url_, *web_contents(), *storage_partition_, *service_worker_context_,
       sequenced_task_runner_,
       base::BindOnce(&MLInstallabilityPromoter::OnDidCollectSiteQualityMetrics,
                      weak_factory_.GetWeakPtr()));

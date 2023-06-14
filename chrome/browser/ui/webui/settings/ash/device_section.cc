@@ -578,6 +578,14 @@ const std::vector<SearchConcept>& GetAudioPowerSoundsSearchConcepts() {
           mojom::SearchResultType::kSetting,
           {.setting = mojom::Setting::kChargingSounds},
       },
+      {
+          IDS_OS_SETTINGS_TAG_LOW_BATTERY_SOUND,
+          mojom::kAudioSubpagePath,
+          mojom::SearchResultIcon::kAudio,
+          mojom::SearchResultDefaultRank::kMedium,
+          mojom::SearchResultType::kSetting,
+          {.setting = mojom::Setting::kLowBatterySound},
+      },
   });
   return *tags;
 }
@@ -1011,6 +1019,8 @@ void AddDeviceAudioStrings(content::WebUIDataSource* html_source) {
       {"deviceStartupSoundLabel",
        IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_STARTUP_SOUND_LABEL},
       {"deviceSoundsTitle", IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_TITLE},
+      {"lowBatterySoundLabel",
+       IDS_SETTINGS_AUDIO_DEVICE_SOUNDS_LOW_BATTERY_SOUND_LABEL},
   };
 
   html_source->AddLocalizedStrings(kAudioStrings);
@@ -1049,11 +1059,16 @@ void AddDevicePowerStrings(content::WebUIDataSource* html_source) {
       {"powerSourceLowPowerCharger",
        IDS_SETTINGS_POWER_SOURCE_LOW_POWER_CHARGER},
       {"powerTitle", IDS_SETTINGS_POWER_TITLE},
+      {"powerBatterySaverLabel", IDS_SETTINGS_POWER_BATTERY_SAVER_LABEL},
+      {"powerBatterySaverSubtext", IDS_SETTINGS_POWER_BATTERY_SAVER_SUBTEXT},
   };
   html_source->AddLocalizedStrings(kPowerStrings);
 
   // TODO(b:216035280): create and link to real "learn more" webpage.
   html_source->AddString("powerAdaptiveChargingLearnMoreUrl", u"about://blank");
+
+  // TODO(b:278957245): create and link to real "learn more" webpage.
+  html_source->AddString("powerBatterySaverLearnMoreUrl", "about://blank");
 }
 
 // Mirrors enum of the same name in enums.xml.
@@ -1370,6 +1385,8 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::kAudioSubpagePath);
   generator->RegisterNestedSetting(mojom::Setting::kChargingSounds,
                                    mojom::Subpage::kAudio);
+  generator->RegisterNestedSetting(mojom::Setting::kLowBatterySound,
+                                   mojom::Subpage::kAudio);
 
   // Power.
   generator->RegisterTopLevelSubpage(
@@ -1382,6 +1399,7 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Setting::kPowerSource,
       mojom::Setting::kSleepWhenLaptopLidClosed,
       mojom::Setting::kAdaptiveCharging,
+      mojom::Setting::kBatterySaver,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kPower, kPowerSettings, generator);
 }

@@ -455,8 +455,8 @@ void UnusedSitePermissionsService::StorePermissionInRevokedPermissionSetting(
 
   dict.Set(kRevokedKey, base::Value::List(std::move(permission_type_list)));
 
-  const content_settings::ContentSettingConstraints default_constraint = {
-      .expiration = clock_->Now() + GetCleanUpThreshold()};
+  content_settings::ContentSettingConstraints default_constraint(clock_->Now());
+  default_constraint.set_lifetime(GetCleanUpThreshold());
 
   // Set website setting for the list of recently revoked permissions and
   // previously revoked permissions, if exists.

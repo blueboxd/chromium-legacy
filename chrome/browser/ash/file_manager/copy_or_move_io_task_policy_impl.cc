@@ -20,7 +20,8 @@
 #include "chrome/browser/ash/file_manager/file_manager_copy_or_move_hook_file_check_delegate.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_notification_manager.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_notification_manager_factory.h"
 #include "chrome/browser/enterprise/connectors/analysis/file_transfer_analysis_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/common/task_util.h"
@@ -106,14 +107,6 @@ void StartReportOnlyScanning(
                        std::move(outputs), profile, file_system_context);
 }
 
-// Returns DlpFilesControllerAsh* if exists.
-policy::DlpFilesControllerAsh* GetDlpFilesController() {
-  policy::DlpRulesManager* rules_manager =
-      policy::DlpRulesManagerFactory::GetForPrimaryProfile();
-  return static_cast<policy::DlpFilesControllerAsh*>(
-      rules_manager ? rules_manager->GetDlpFilesController() : nullptr);
-}
-
 }  // namespace
 
 CopyOrMoveIOTaskPolicyImpl::CopyOrMoveIOTaskPolicyImpl(
@@ -175,8 +168,17 @@ void CopyOrMoveIOTaskPolicyImpl::Resume(ResumeParams params) {
     return;
   }
 
+  auto* files_policy_manager =
+      policy::FilesPolicyNotificationManagerFactory::GetForBrowserContext(
+          profile_);
+  if (!files_policy_manager) {
+    LOG(ERROR) << "Couldn't find FilesPolicyNotificationManager";
+    Complete(State::kError);
+    return;
+  }
+
   if (params.policy_params->type == policy::Policy::kDlp) {
-    // TODO(b/281047180): Start scanning.
+    files_policy_manager->ResumeIOTask(progress_->task_id);
   }
 
   if (params.policy_params->type == policy::Policy::kEnterpriseConnectors) {
@@ -189,15 +191,21 @@ void CopyOrMoveIOTaskPolicyImpl::VerifyTransfer() {
       base::BindOnce(&CopyOrMoveIOTaskPolicyImpl::OnCheckIfTransferAllowed,
                      weak_ptr_factory_.GetWeakPtr());
 
-  if (auto* files_controller = GetDlpFilesController();
-      policy::DlpFilesController::kCopyTaskFlowEnabled && files_controller) {
+  if (auto* files_controller =
+          policy::DlpFilesControllerAsh::GetForPrimaryProfile();
+      policy::DlpFilesController::kNewFilesPolicyUXEnabled &&
+      files_controller) {
     std::vector<storage::FileSystemURL> transferred_urls;
     for (const auto& entry : progress_->sources) {
       transferred_urls.push_back(entry.url);
     }
+    bool is_move =
+        progress_->type == file_manager::io_task::OperationType::kMove ? true
+                                                                       : false;
     files_controller->CheckIfTransferAllowed(
         progress_->task_id, std::move(transferred_urls),
-        progress_->GetDestinationFolder(), std::move(on_check_transfer_cb));
+        progress_->GetDestinationFolder(), is_move,
+        std::move(on_check_transfer_cb));
     return;
   }
 
@@ -314,10 +322,11 @@ CopyOrMoveIOTaskPolicyImpl::GetHookDelegate(size_t idx) {
 }
 
 void CopyOrMoveIOTaskPolicyImpl::OnCheckIfTransferAllowed(
-    std::set<storage::FileSystemURL> blocked_entries) {
-  // TODO(b/279029167): This function shouldn't be reached if the user cancelled
-  // the DLP warning or the DLP warning timed out. If there's any file blocked
-  // by DLP, skip Enterprise Connectors scanning for them.
+    std::vector<storage::FileSystemURL> blocked_entries) {
+  // This function won't be reached if the user cancelled the DLP warning or the
+  // DLP warning timed out.
+  // TODO(b/279029167): If there's any file blocked by DLP, skip Enterprise
+  // Connectors scanning for them.
 
   if (report_only_scans_) {
     // Don't do any scans. Instead, the scans are performed after the copy/move

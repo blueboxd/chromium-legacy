@@ -14,6 +14,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/login/login_screen_controller.h"
 #include "ash/public/cpp/image_downloader.h"
 #include "ash/public/cpp/schedule_enums.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -79,8 +80,6 @@
 #include "url/gurl.h"
 
 using color_utils::ColorProfile;
-using color_utils::LumaRange;
-using color_utils::SaturationRange;
 
 using FilePathCallback = base::OnceCallback<void(const base::FilePath&)>;
 
@@ -196,39 +195,6 @@ gfx::ImageSkia CreateSolidColorWallpaper(SkColor color) {
   bitmap.allocN32Pixels(1, 1);
   bitmap.eraseColor(color);
   return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-}
-
-// Gets the color profiles for extracting wallpaper prominent colors.
-std::vector<ColorProfile> GetProminentColorProfiles() {
-  return {ColorProfile(LumaRange::DARK, SaturationRange::VIBRANT),
-          ColorProfile(LumaRange::NORMAL, SaturationRange::VIBRANT),
-          ColorProfile(LumaRange::LIGHT, SaturationRange::VIBRANT),
-          ColorProfile(LumaRange::DARK, SaturationRange::MUTED),
-          ColorProfile(LumaRange::NORMAL, SaturationRange::MUTED),
-          ColorProfile(LumaRange::LIGHT, SaturationRange::MUTED)};
-}
-
-// Gets the corresponding color profile type based on the given
-// |color_profile|.
-ColorProfileType GetColorProfileType(ColorProfile color_profile) {
-  bool vibrant = color_profile.saturation == SaturationRange::VIBRANT;
-  switch (color_profile.luma) {
-    case LumaRange::ANY:
-      // There should be no color profiles with the ANY luma range.
-      NOTREACHED();
-      break;
-    case LumaRange::DARK:
-      return vibrant ? ColorProfileType::DARK_VIBRANT
-                     : ColorProfileType::DARK_MUTED;
-    case LumaRange::NORMAL:
-      return vibrant ? ColorProfileType::NORMAL_VIBRANT
-                     : ColorProfileType::NORMAL_MUTED;
-    case LumaRange::LIGHT:
-      return vibrant ? ColorProfileType::LIGHT_VIBRANT
-                     : ColorProfileType::LIGHT_MUTED;
-  }
-  NOTREACHED();
-  return ColorProfileType::DARK_MUTED;
 }
 
 // Deletes a list of wallpaper files in |file_list|.
@@ -532,15 +498,14 @@ WallpaperControllerImpl::WallpaperControllerImpl(
     : pref_manager_(std::move(pref_manager)),
       variant_info_fetcher_(std::move(online_fetcher)),
       blur_manager_(std::make_unique<WallpaperBlurManager>()),
-      color_profiles_(GetProminentColorProfiles()),
       wallpaper_reload_delay_(kWallpaperReloadDelay),
       wallpaper_image_downloader_(std::move(image_downloader)),
       sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {
-  DCHECK(!color_profiles_.empty());
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
+  Shell::Get()->login_screen_controller()->data_dispatcher()->AddObserver(this);
   theme_observation_.Observe(ui::NativeTheme::GetInstanceForNativeUi());
   wallpaper_metrics_manager_ = std::make_unique<WallpaperMetricsManager>();
 }
@@ -548,6 +513,9 @@ WallpaperControllerImpl::WallpaperControllerImpl(
 WallpaperControllerImpl::~WallpaperControllerImpl() {
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
+  // Per ash/shell.cc, wallpaper_controller_impl outlives
+  // login_screen_controller. Therefore don't remove the observer from
+  // data_dispatcher on destruction.
 }
 
 // static
@@ -571,11 +539,7 @@ SkColor WallpaperControllerImpl::GetProminentColor(
   if (!calculated_colors_) {
     return kInvalidWallpaperColor;
   }
-
-  ColorProfileType type = GetColorProfileType(color_profile);
-  size_t index = static_cast<size_t>(type);
-  DCHECK_LT(index, calculated_colors_->prominent_colors.size());
-  return calculated_colors_->prominent_colors[index];
+  return calculated_colors_->GetProminentColor(color_profile);
 }
 
 SkColor WallpaperControllerImpl::GetKMeanColor() const {
@@ -1711,6 +1675,10 @@ void WallpaperControllerImpl::OnActiveUserSessionChanged(
     CheckGooglePhotosStaleness(account_id, info);
 }
 
+void WallpaperControllerImpl::OnOobeDialogStateChanged(OobeDialogState state) {
+  oobe_state_ = state;
+}
+
 void WallpaperControllerImpl::OnSessionStateChanged(
     session_manager::SessionState state) {
   // Replace the device policy wallpaper with a user wallpaper if necessary.
@@ -2759,8 +2727,8 @@ void WallpaperControllerImpl::CalculateWallpaperColors() {
     return;
   }
 
-  color_calculator_ = std::make_unique<WallpaperColorCalculator>(
-      GetWallpaper(), color_profiles_);
+  color_calculator_ =
+      std::make_unique<WallpaperColorCalculator>(GetWallpaper());
   if (!color_calculator_->StartCalculation(base::BindOnce(
           &WallpaperControllerImpl::OnColorCalculationComplete,
           weak_factory_.GetWeakPtr(), current_wallpaper_->wallpaper_info()))) {
@@ -2769,12 +2737,28 @@ void WallpaperControllerImpl::CalculateWallpaperColors() {
 }
 
 bool WallpaperControllerImpl::ShouldCalculateColors() const {
+  gfx::ImageSkia image = GetWallpaper();
+  if (image.isNull()) {
+    return false;
+  }
+
   session_manager::SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
-  gfx::ImageSkia image = GetWallpaper();
-  return (session_state == session_manager::SessionState::ACTIVE ||
-          session_state == session_manager::SessionState::OOBE) &&
-         !image.isNull();
+  // Default OOBE flow
+  if (session_state == session_manager::SessionState::OOBE) {
+    return true;
+  }
+  // OOBE enterprise enrollment -> add person flow
+  if (session_state == session_manager::SessionState::LOGIN_PRIMARY &&
+      oobe_state_ != OobeDialogState::HIDDEN) {
+    return true;
+  }
+  // Active session
+  if (session_state == session_manager::SessionState::ACTIVE) {
+    return true;
+  }
+
+  return false;
 }
 
 void WallpaperControllerImpl::OnOverrideWallpaperDecoded(

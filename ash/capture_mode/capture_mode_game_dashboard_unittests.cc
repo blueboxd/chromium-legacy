@@ -86,7 +86,7 @@ class GameDashboardCaptureModeTest : public AshTestBase {
     const gfx::Rect bar_bounds = bar_widget->GetWindowBoundsInScreen();
     EXPECT_TRUE(window_bounds.Contains(bar_bounds));
     EXPECT_EQ(bar_bounds.CenterPoint().x(), window_bounds.CenterPoint().x());
-    EXPECT_EQ(bar_bounds.bottom() + capture_mode::kCaptureBarBottomPadding,
+    EXPECT_EQ(bar_bounds.bottom() + capture_mode::kGameCaptureBarBottomPadding,
               window_bounds.bottom());
   }
 
@@ -535,8 +535,9 @@ TEST_P(GameDashboardCaptureModeHistogramTest,
       /*sample=*/1, /*expected_bucket_count=*/1);
 }
 
+// TODO(crbug.com/1454389): Disabled due to flakiness.
 TEST_P(GameDashboardCaptureModeHistogramTest,
-       GameScreenRecordingFileSizeHistogram) {
+       DISABLED_GameScreenRecordingFileSizeHistogram) {
   constexpr char kHistogramNameBase[] = "ScreenRecordingFileSize";
 
   CaptureModeTestApi test_api;
@@ -649,6 +650,24 @@ TEST_P(GameDashboardCaptureModeHistogramTest,
   }
 }
 
+TEST_P(GameDashboardCaptureModeHistogramTest, GameAudioRecordingModeHistogram) {
+  constexpr char kHistogramNameBase[] = "AudioRecordingMode";
+  CaptureModeTestApi test_api;
+  for (const auto audio_mode :
+       {AudioRecordingMode::kOff, AudioRecordingMode::kMicrophone,
+        AudioRecordingMode::kSystem,
+        AudioRecordingMode::kSystemAndMicrophone}) {
+    const auto histogram_name = BuildHistogramName(
+        kHistogramNameBase, test_api.GetBehavior(BehaviorType::kGameDashboard),
+        /*append_ui_mode_suffix=*/true);
+    histogram_tester_.ExpectBucketCount(histogram_name, audio_mode, 0);
+    auto* controller = StartGameCaptureModeSession();
+    controller->SetAudioRecordingMode(audio_mode);
+    controller->Stop();
+    histogram_tester_.ExpectBucketCount(histogram_name, audio_mode, 1);
+  }
+}
+
 TEST_P(GameDashboardCaptureModeHistogramTest,
        GameDashboardEndRecordingReasonHistogram) {
   constexpr char kHistogramNameBase[] = "EndRecordingReason";
@@ -688,6 +707,26 @@ TEST_P(GameDashboardCaptureModeHistogramTest,
       histogram_name,
       /*sample=*/EndRecordingReason::kGameToolbarStopRecordingButton,
       /*expected_count=*/1);
+}
+
+TEST_P(GameDashboardCaptureModeHistogramTest,
+       CaptureScreenshotOfGivenWindowMetric) {
+  constexpr char kHistogramNameBase[] = "SaveLocation";
+  const base::FilePath custom_folder =
+      CreateCustomFolderInUserDownloadsPath("test");
+  const auto histogram_name = BuildHistogramName(
+      kHistogramNameBase,
+      CaptureModeTestApi().GetBehavior(BehaviorType::kGameDashboard),
+      /*append_ui_mode_suffix=*/true);
+
+  histogram_tester_.ExpectBucketCount(
+      histogram_name, CaptureModeSaveToLocation::kCustomizedFolder, 0);
+  CaptureModeController* controller = CaptureModeController::Get();
+  controller->SetCustomCaptureFolder(custom_folder);
+  controller->CaptureScreenshotOfGivenWindow(game_window());
+  const auto file_saved_path = WaitForCaptureFileToBeSaved();
+  histogram_tester_.ExpectBucketCount(
+      histogram_name, CaptureModeSaveToLocation::kCustomizedFolder, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

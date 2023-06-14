@@ -432,6 +432,22 @@ void RunCrashMe(UpdaterScope scope) {
                        absl::nullopt);
 }
 
+void RunServer(UpdaterScope scope, int expected_exit_code, bool internal) {
+  const absl::optional<base::FilePath> installed_executable_path =
+      GetVersionedInstallDirectory(scope, base::Version(kUpdaterVersion))
+          ->Append(GetExecutableRelativePath());
+  ASSERT_TRUE(installed_executable_path);
+  ASSERT_TRUE(base::PathExists(*installed_executable_path));
+  base::CommandLine command_line(*installed_executable_path);
+  command_line.AppendSwitch(kServerSwitch);
+  command_line.AppendSwitchASCII(
+      kServerServiceSwitch, internal ? kServerUpdateServiceInternalSwitchValue
+                                     : kServerUpdateServiceSwitchValue);
+  int exit_code = -1;
+  Run(scope, command_line, &exit_code);
+  ASSERT_EQ(exit_code, expected_exit_code);
+}
+
 void CheckForUpdate(UpdaterScope scope, const std::string& app_id) {
   scoped_refptr<UpdateService> update_service = CreateUpdateServiceProxy(scope);
   base::RunLoop loop;
@@ -476,46 +492,16 @@ void DeleteFile(UpdaterScope /*scope*/, const base::FilePath& path) {
   ASSERT_TRUE(base::DeleteFile(path));
 }
 
-void SetupFakeUpdaterPrefs(UpdaterScope scope, const base::Version& version) {
-  scoped_refptr<GlobalPrefs> global_prefs = CreateGlobalPrefs(scope);
-  ASSERT_TRUE(global_prefs) << "No global prefs.";
-  global_prefs->SetActiveVersion(version.GetString());
-  global_prefs->SetSwapping(false);
-  PrefsCommitPendingWrites(global_prefs->GetPrefService());
-
-  ASSERT_EQ(version.GetString(), global_prefs->GetActiveVersion());
-}
-
-void SetupFakeUpdaterInstallFolder(UpdaterScope scope,
-                                   const base::Version& version) {
-  absl::optional<base::FilePath> folder_path =
-      GetVersionedInstallDirectory(scope, version);
-  ASSERT_TRUE(folder_path);
-  ASSERT_TRUE(base::CreateDirectory(
-      folder_path->Append(GetExecutableRelativePath()).DirName()));
-}
-
-void SetupFakeUpdater(UpdaterScope scope, const base::Version& version) {
-  SetupFakeUpdaterPrefs(scope, version);
-  SetupFakeUpdaterInstallFolder(scope, version);
-}
-
-void SetupFakeUpdaterVersion(UpdaterScope scope, int offset) {
-  ASSERT_NE(offset, 0);
-  std::vector<uint32_t> components =
-      base::Version(kUpdaterVersion).components();
-  base::CheckedNumeric<uint32_t> new_version = components[0];
-  new_version += offset;
-  ASSERT_TRUE(new_version.AssignIfValid(&components[0]));
-  SetupFakeUpdater(scope, base::Version(std::move(components)));
-}
-
 void SetupFakeUpdaterLowerVersion(UpdaterScope scope) {
-  SetupFakeUpdaterVersion(scope, -1);
+  SetupFakeUpdaterVersion(scope, base::Version(kUpdaterVersion),
+                          /*major_version_offset=*/-1,
+                          /*should_create_updater_executable=*/false);
 }
 
 void SetupFakeUpdaterHigherVersion(UpdaterScope scope) {
-  SetupFakeUpdaterVersion(scope, 1);
+  SetupFakeUpdaterVersion(scope, base::Version(kUpdaterVersion),
+                          /*major_version_offset=*/1,
+                          /*should_create_updater_executable=*/false);
 }
 
 void SetExistenceCheckerPath(UpdaterScope scope,

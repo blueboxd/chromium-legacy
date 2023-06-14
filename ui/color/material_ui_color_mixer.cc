@@ -74,6 +74,7 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorMenuIcon] = {kColorSysOnSurfaceSubtle};
   mixer[kColorMenuItemForegroundSecondary] = {kColorSysOnSurfaceSubtle};
   mixer[kColorMenuItemForeground] = {kColorSysOnSurface};
+  mixer[kColorPrimaryBackground] = {kColorSysSurface};
   mixer[kColorProgressBar] = {ui::kColorSysPrimary};
   mixer[kColorProgressBarBackground] = {ui::kColorSysNeutralOutline};
   mixer[kColorProgressBarPaused] = {ui::kColorSysStateDisabled};
@@ -88,6 +89,7 @@ void AddMaterialUiColorMixer(ColorProvider* provider,
   mixer[kColorSegmentedButtonRipple] = {kColorSysStateRippleNeutralOnSubtle};
   mixer[kColorSegmentedButtonChecked] = {kColorSysTonalContainer};
   mixer[kColorSeparator] = {kColorSysDivider};
+  mixer[kColorSidePanelComboboxBackground] = {kColorSysBaseContainer};
   mixer[kColorSliderThumb] = {kColorSysPrimary};
   mixer[kColorSliderThumbMinimal] = {kColorSysSecondary};
   mixer[kColorSliderTrack] = {kColorSysOnPrimary};

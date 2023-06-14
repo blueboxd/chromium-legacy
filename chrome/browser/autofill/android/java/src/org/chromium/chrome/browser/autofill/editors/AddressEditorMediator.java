@@ -4,15 +4,17 @@
 
 package org.chromium.chrome.browser.autofill.editors;
 
-import static org.chromium.chrome.browser.autofill.editors.AddressEditor.UserFlow.CREATE_NEW_ADDRESS_PROFILE;
-import static org.chromium.chrome.browser.autofill.editors.AddressEditor.UserFlow.MIGRATE_EXISTING_ADDRESS_PROFILE;
-import static org.chromium.chrome.browser.autofill.editors.AddressEditor.UserFlow.SAVE_NEW_ADDRESS_PROFILE;
-import static org.chromium.chrome.browser.autofill.editors.AddressEditor.UserFlow.UPDATE_EXISTING_ADDRESS_PROFILE;
+import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.CREATE_NEW_ADDRESS_PROFILE;
+import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.MIGRATE_EXISTING_ADDRESS_PROFILE;
+import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.SAVE_NEW_ADDRESS_PROFILE;
+import static org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow.UPDATE_EXISTING_ADDRESS_PROFILE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ALLOW_DELETE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ALL_KEYS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.CANCEL_RUNNABLE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.CUSTOM_DONE_BUTTON_TEXT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELETE_CONFIRMATION_TEXT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELETE_CONFIRMATION_TITLE;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DELETE_RUNNABLE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DONE_RUNNABLE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownFieldProperties.DROPDOWN_ALL_KEYS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownFieldProperties.DROPDOWN_CALLBACK;
@@ -30,6 +32,7 @@ import static org.chromium.chrome.browser.autofill.editors.EditorProperties.Fiel
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ItemType.DROPDOWN;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.ItemType.TEXT_INPUT;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.SHOW_REQUIRED_INDICATOR;
+import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TRIGGER_DONE_CALLBACK_BEFORE_CLOSE_ANIMATION;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.LENGTH_COUNTER_LIMIT_NONE;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_ALL_KEYS;
 import static org.chromium.chrome.browser.autofill.editors.EditorProperties.TextFieldProperties.TEXT_FORMATTER;
@@ -61,13 +64,11 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
 import org.chromium.chrome.browser.autofill.R;
 import org.chromium.chrome.browser.autofill.Source;
-import org.chromium.chrome.browser.autofill.editors.AddressEditor.UserFlow;
+import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.Delegate;
+import org.chromium.chrome.browser.autofill.editors.AddressEditorCoordinator.UserFlow;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.DropdownKeyValue;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.EditorFieldValidator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
-import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -87,36 +88,37 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Contains the logic for the AddressEditor component. It sets the state of the model and reacts to
- * events like address country selection.
+ * Contains the logic for the autofill address editor component. It sets the state of the model and
+ * reacts to events like address country selection.
  */
 class AddressEditorMediator {
-    private Handler mHandler = new Handler();
-    private Set<String> mPhoneNumbers = new HashSet<>();
+    private final Handler mHandler = new Handler();
+    private final Set<String> mPhoneNumbers = new HashSet<>();
+    private final PhoneNumberUtil.CountryAwareFormatTextWatcher mPhoneFormatter =
+            new PhoneNumberUtil.CountryAwareFormatTextWatcher();
+    private final CountryAwarePhoneNumberValidator mPhoneValidator =
+            new CountryAwarePhoneNumberValidator(true);
+    private final AutofillProfileBridge mAutofillProfileBridge = new AutofillProfileBridge();
+    private final Context mContext;
+    private final Delegate mDelegate;
+    private final IdentityManager mIdentityManager;
+    private final @Nullable SyncService mSyncService;
+    private final AutofillProfile mProfileToEdit;
+    private final AutofillAddress mAddressToEdit;
+    private final @UserFlow int mUserFlow;
+    private final boolean mSaveToDisk;
+    private final Map<Integer, PropertyModel> mAddressFields = new HashMap<>();
+    private final PropertyModel mCountryField;
+    private final @Nullable PropertyModel mHonorificField;
+    private final PropertyModel mPhoneField;
+    private final PropertyModel mEmailField;
+    private final @Nullable PropertyModel mNicknameField;
 
-    private PhoneNumberUtil.CountryAwareFormatTextWatcher mPhoneFormatter;
-    private CountryAwarePhoneNumberValidator mPhoneValidator;
-    private AutofillProfileBridge mAutofillProfileBridge;
-
-    private Context mContext;
-    private AddressEditor.Delegate mDelegate;
-    private Profile mProfile;
-    private AutofillProfile mProfileToEdit;
-    private AutofillAddress mAddressToEdit;
-    private @UserFlow int mUserFlow;
-
-    private boolean mSaveToDisk;
-
-    private Map<Integer, PropertyModel> mAddressFields = new HashMap<>();
     private List<AddressUiComponent> mVisibleEditorFields;
-    private PropertyModel mCountryField;
-    private PropertyModel mHonorificField;
-    private PropertyModel mPhoneField;
-    private PropertyModel mEmailField;
-    private PropertyModel mNicknameField;
-
     @Nullable
     private String mCustomDoneButtonText;
+    private boolean mAllowDelete;
+    private boolean mShouldTriggerDoneCallbackBeforeCloseAnimation;
 
     /**
      * The list of possible address fields for editing is determined statically.
@@ -185,27 +187,18 @@ class AddressEditorMediator {
         return supportedCountries;
     }
 
-    AddressEditorMediator() {
-        mPhoneFormatter = new PhoneNumberUtil.CountryAwareFormatTextWatcher();
-        mPhoneValidator = new CountryAwarePhoneNumberValidator(true);
-        mAutofillProfileBridge = new AutofillProfileBridge();
-    }
-
-    void initialize(Context context, AddressEditor.Delegate delegate, Profile profile,
-            AutofillAddress addressToEdit, @UserFlow int userFlow, boolean saveToDisk) {
+    AddressEditorMediator(Context context, Delegate delegate, IdentityManager identityManager,
+            @Nullable SyncService syncService, AutofillAddress addressToEdit,
+            @UserFlow int userFlow, boolean saveToDisk) {
         mContext = context;
         mDelegate = delegate;
-        mProfile = profile;
+        mIdentityManager = identityManager;
+        mSyncService = syncService;
         mProfileToEdit = addressToEdit.getProfile();
         mAddressToEdit = addressToEdit;
         mUserFlow = userFlow;
-
         mSaveToDisk = saveToDisk;
 
-        initializeEditorFields();
-    }
-
-    private void initializeEditorFields() {
         // The country dropdown is always present on the editor.
         mCountryField =
                 new PropertyModel.Builder(DROPDOWN_ALL_KEYS)
@@ -217,17 +210,16 @@ class AddressEditorMediator {
                         .build();
 
         // Honorific prefix is present only for autofill settings.
-        if (ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES)) {
-            mHonorificField =
-                    new PropertyModel.Builder(TEXT_ALL_KEYS)
-                            .with(TEXT_INPUT_TYPE, PLAIN_TEXT_INPUT)
-                            .with(LABEL,
-                                    mContext.getString(
-                                            R.string.autofill_profile_editor_honorific_prefix))
-                            .with(IS_FULL_LINE, true)
-                            .build();
-        }
+        mHonorificField = ChromeFeatureList.isEnabled(
+                                  ChromeFeatureList.AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES)
+                ? new PropertyModel.Builder(TEXT_ALL_KEYS)
+                          .with(TEXT_INPUT_TYPE, PLAIN_TEXT_INPUT)
+                          .with(LABEL,
+                                  mContext.getString(
+                                          R.string.autofill_profile_editor_honorific_prefix))
+                          .with(IS_FULL_LINE, true)
+                          .build()
+                : null;
 
         // There's a finite number of fields for address editing. Changing the country will re-order
         // and relabel the fields. The meaning of each field remains the same.
@@ -264,15 +256,16 @@ class AddressEditorMediator {
                         .with(TEXT_LENGTH_COUNTER_LIMIT, LENGTH_COUNTER_LIMIT_NONE)
                         .build();
 
-        if (ChromeFeatureList.isEnabled(
-                    ChromeFeatureList.AUTOFILL_ADDRESS_PROFILE_SAVE_PROMPT_NICKNAME_SUPPORT)) {
-            // TODO(crbug.com/1445020): Use localized string.
-            mNicknameField = new PropertyModel.Builder(TEXT_ALL_KEYS)
-                                     .with(TEXT_INPUT_TYPE, PLAIN_TEXT_INPUT)
-                                     .with(LABEL, "Label")
-                                     .with(IS_FULL_LINE, true)
-                                     .build();
-        }
+        // TODO(crbug.com/1445020): Use localized string.
+        mNicknameField =
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.AUTOFILL_ADDRESS_PROFILE_SAVE_PROMPT_NICKNAME_SUPPORT)
+                ? new PropertyModel.Builder(TEXT_ALL_KEYS)
+                          .with(TEXT_INPUT_TYPE, PLAIN_TEXT_INPUT)
+                          .with(LABEL, "Label")
+                          .with(IS_FULL_LINE, true)
+                          .build()
+                : null;
 
         // This should be called when all required fields are put in mAddressField.
         setAddressFieldValues();
@@ -280,6 +273,10 @@ class AddressEditorMediator {
         assert mCountryField.get(VALUE) != null;
         mPhoneValidator.setCountryCode(mCountryField.get(VALUE));
         mPhoneFormatter.setCountryCode(mCountryField.get(VALUE));
+    }
+
+    public void setAllowDelete(boolean allowDelete) {
+        mAllowDelete = allowDelete;
     }
 
     private void setAddressFieldValues() {
@@ -295,6 +292,10 @@ class AddressEditorMediator {
         }
         mPhoneField.set(VALUE, mProfileToEdit.getPhoneNumber());
         mEmailField.set(VALUE, mProfileToEdit.getEmailAddress());
+    }
+
+    public void setShouldTriggerDoneCallbackBeforeCloseAnimation(boolean shouldTrigger) {
+        mShouldTriggerDoneCallbackBeforeCloseAnimation = shouldTrigger;
     }
 
     void setCustomDoneButtonText(@Nullable String customDoneButtonText) {
@@ -324,6 +325,8 @@ class AddressEditorMediator {
                         .with(DELETE_CONFIRMATION_TITLE, getDeleteConfirmationTitle())
                         .with(DELETE_CONFIRMATION_TEXT, getDeleteConfirmationText())
                         .with(SHOW_REQUIRED_INDICATOR, false)
+                        .with(TRIGGER_DONE_CALLBACK_BEFORE_CLOSE_ANIMATION,
+                                mShouldTriggerDoneCallbackBeforeCloseAnimation)
                         .with(EDITOR_FIELDS,
                                 buildEditorFieldList(AutofillAddress.getCountryCode(mProfileToEdit),
                                         mProfileToEdit.getLanguageCode()))
@@ -332,6 +335,8 @@ class AddressEditorMediator {
                         // which was the original state (could be null, a complete address, a
                         // partial address).
                         .with(CANCEL_RUNNABLE, mDelegate::onCancel)
+                        .with(ALLOW_DELETE, mAllowDelete)
+                        .with(DELETE_RUNNABLE, () -> mDelegate.onDelete(mAddressToEdit))
                         .build();
 
         // Changing the country will update which fields are in the model. The actual fields are not
@@ -568,9 +573,7 @@ class AddressEditorMediator {
 
     @Nullable
     private String getUserEmail() {
-        final IdentityManager identityManager =
-                IdentityServicesProvider.get().getIdentityManager(mProfile);
-        CoreAccountInfo accountInfo = identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
+        CoreAccountInfo accountInfo = mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
         return CoreAccountInfo.getEmailFrom(accountInfo);
     }
 
@@ -618,10 +621,9 @@ class AddressEditorMediator {
     }
 
     private boolean isAddressSyncOn() {
-        SyncService service = SyncServiceFactory.get();
-        if (service == null) return false;
-        return service.isSyncFeatureEnabled()
-                && service.getSelectedTypes().contains(UserSelectableType.AUTOFILL);
+        if (mSyncService == null) return false;
+        return mSyncService.isSyncFeatureEnabled()
+                && mSyncService.getSelectedTypes().contains(UserSelectableType.AUTOFILL);
     }
 
     /** Country based phone number validator. */

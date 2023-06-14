@@ -95,7 +95,9 @@ std::unique_ptr<message_center::Notification> CreateSystemNotification(
     const std::string& notification_id,
     const std::u16string& title,
     const std::u16string& message,
-    scoped_refptr<message_center::NotificationDelegate> delegate);
+    scoped_refptr<message_center::NotificationDelegate> delegate,
+    message_center::RichNotificationData optional_fields =
+        message_center::RichNotificationData());
 
 // Returns an instance of an 'ash' Notification with title and message specified
 // by string ID values (for 110n) with a bound click delegate.
@@ -243,11 +245,6 @@ class SystemNotificationManager {
   NotificationPtr MakeRemovableNotification(
       file_manager_private::MountCompletedEvent& event,
       const Volume& volume);
-
-  // Makes a notification instance Data Protection errors and warnings.
-  NotificationPtr MakeDataProtectionPolicyNotification(
-      const std::string& notification_id,
-      const file_manager::io_task::ProgressStatus& status);
 
   // Makes a notification instance for Data Protection progress notifications.
   NotificationPtr MakeDataProtectionPolicyProgressNotification(

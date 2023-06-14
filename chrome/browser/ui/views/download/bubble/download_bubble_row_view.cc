@@ -391,8 +391,13 @@ DownloadBubbleRowView::DownloadBubbleRowView(
   views::InkDrop::UseInkDropForFloodFillRipple(views::InkDrop::Get(this),
                                                /*highlight_on_hover=*/true,
                                                /*highlight_on_focus=*/true);
-  views::InkDrop::Get(this)->SetBaseColorId(views::style::GetColorId(
-      views::style::CONTEXT_BUTTON, views::style::STYLE_SECONDARY));
+  if (features::IsChromeRefresh2023()) {
+    views::InkDrop::Get(this)->SetBaseColorId(kColorDownloadBubbleRowHover);
+    views::InkDrop::Get(this)->SetHighlightOpacity(1.0f);
+  } else {
+    views::InkDrop::Get(this)->SetBaseColorId(views::style::GetColorId(
+        views::style::CONTEXT_BUTTON, views::style::STYLE_SECONDARY));
+  }
 
   const int icon_label_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_LABEL_HORIZONTAL);
@@ -825,8 +830,8 @@ void DownloadBubbleRowView::OnDownloadDestroyed(const ContentId& id) {
   // This will return ownership and destroy this object at the end of the
   // method.
   std::unique_ptr<DownloadBubbleRowView> row_view_ptr =
-      row_list_view_->RemoveChildViewT(this);
-  if (row_list_view_->children().empty()) {
+      row_list_view_->RemoveRow(this);
+  if (row_list_view_->NumRows() == 0) {
     navigation_handler_->CloseDialog(views::Widget::ClosedReason::kUnspecified);
   } else {
     navigation_handler_->ResizeDialog();

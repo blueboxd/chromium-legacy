@@ -92,6 +92,7 @@
 crbug.com/613672 [ Mac ] compositing/gestures/gesture-tapHighlight-lines-and-float-in-multicol.html [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/coalesced_events_attributes_under_load.html?touch [ Skip ]
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/pointerevent_contextmenu_is_a_pointerevent.html?touch [ Skip ]
+crbug.com/613672 [ Mac ] external/wpt/pointerevents/touch-action-with-swipe-dir-change.html?touch [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/pointer-event-in-slop-region.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/touch/gesture/* [ Skip ]
@@ -1963,3 +1964,9 @@ crbug.com/1378476 [ Mac13-arm64 ] virtual/threaded/fast/idleToBlob/OffscreenCanv
 crbug.com/1378476 [ Mac11-arm64 ] virtual/threaded/fast/idleToBlob/OffscreenCanvas-convertToBlob-webgl-worker.html [ Skip ]
 crbug.com/1378476 [ Mac12-arm64 ] virtual/threaded/fast/idleToBlob/OffscreenCanvas-convertToBlob-webgl-worker.html [ Skip ]
 crbug.com/1378476 [ Mac13-arm64 ] virtual/threaded/fast/idleToBlob/OffscreenCanvas-convertToBlob-webgl-worker.html [ Skip ]
+
+# Chrome for Testing specific tests that only run on Linux due to requiring FlagSpecific overrides.
+crbug.com/1446931 [ Android ] inspector-protocol/heap-profiler/heap-snapshot-exposes-cpp-internals.js [ Skip ]
+crbug.com/1446931 [ Fuchsia ] inspector-protocol/heap-profiler/heap-snapshot-exposes-cpp-internals.js [ Skip ]
+crbug.com/1446931 [ Mac ] inspector-protocol/heap-profiler/heap-snapshot-exposes-cpp-internals.js [ Skip ]
+crbug.com/1446931 [ Win ] inspector-protocol/heap-profiler/heap-snapshot-exposes-cpp-internals.js [ Skip ]

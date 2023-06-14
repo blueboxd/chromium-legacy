@@ -618,7 +618,8 @@ void Clean(UpdaterScope scope) {
 
 void EnterTestMode(const GURL& update_url,
                    const GURL& crash_upload_url,
-                   const GURL& device_management_url) {
+                   const GURL& device_management_url,
+                   const base::TimeDelta& idle_timeout) {
   ASSERT_TRUE(ExternalConstantsBuilder()
                   .SetUpdateURL(std::vector<std::string>{update_url.spec()})
                   .SetCrashUploadURL(crash_upload_url.spec())
@@ -628,6 +629,7 @@ void EnterTestMode(const GURL& update_url,
                   .SetServerKeepAliveTime(base::Seconds(1))
                   .SetCrxVerifierFormat(crx_file::VerifierFormat::CRX3)
                   .SetOverinstallTimeout(base::Seconds(11))
+                  .SetIdleCheckPeriod(idle_timeout)
                   .Modify());
 }
 
@@ -767,6 +769,19 @@ void VerifyInterfacesRegistryEntries(UpdaterScope scope) {
   }
 }
 
+void ExpectNoLegacyEntriesPerUser() {
+  // The IProcessLauncher and IProcessLauncher2 interfaces are now only
+  // registered for system since r1154562. So verify that these do not exist in
+  // the user hive.
+  for (const auto& iid :
+       {__uuidof(IProcessLauncher), __uuidof(IProcessLauncher2)}) {
+    for (const auto& reg_path :
+         {GetComIidRegistryPath(iid), GetComTypeLibRegistryPath(iid)}) {
+      EXPECT_FALSE(RegKeyExistsCOM(HKEY_CURRENT_USER, reg_path));
+    }
+  }
+}
+
 // Tests if the typelibs and some of the public, internal, and
 // legacy interfaces are available. Failure to query these interfaces indicates
 // an issue with typelib registration.
@@ -844,6 +859,9 @@ void ExpectInterfacesRegistered(UpdaterScope scope) {
   }
 
   VerifyInterfacesRegistryEntries(scope);
+  if (!IsSystemInstall(scope)) {
+    ExpectNoLegacyEntriesPerUser();
+  }
 }
 
 void ExpectMarshalInterfaceSucceeds(UpdaterScope scope) {
@@ -1859,10 +1877,12 @@ void RunOfflineInstall(UpdaterScope scope,
   }
 
   // Updater should have written "pv".
-  EXPECT_EQ(base::MakeRefCounted<PersistedData>(
-                scope, CreateGlobalPrefs(scope)->GetPrefService())
-                ->GetProductVersion(base::WideToASCII(kTestAppID)),
-            kTestPV);
+  const base::Version pv =
+      base::MakeRefCounted<PersistedData>(
+          scope, CreateGlobalPrefs(scope)->GetPrefService())
+          ->GetProductVersion(base::WideToASCII(kTestAppID));
+  ASSERT_TRUE(pv.IsValid());
+  EXPECT_EQ(pv, kTestPV);
 
   // App installer should have created the expected reg value.
   base::win::RegKey key;

@@ -941,8 +941,9 @@ FileManagerPrivateInternalGetDisallowedTransfersFunction::Run() {
   policy::DlpFilesControllerAsh* files_controller =
       static_cast<policy::DlpFilesControllerAsh*>(
           rules_manager->GetDlpFilesController());
-  files_controller->GetDisallowedTransfers(
-      source_urls_, destination_url_, params->is_move,
+  files_controller->CheckIfTransferAllowed(
+      /*task_id=*/absl::nullopt, source_urls_, destination_url_,
+      params->is_move,
       base::BindOnce(&FileManagerPrivateInternalGetDisallowedTransfersFunction::
                          OnGetDisallowedFiles,
                      this));
@@ -1464,7 +1465,7 @@ FileManagerPrivateInternalSearchFilesFunction::Run() {
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &SearchByPattern, root_path, excluded_paths, search_params.query,
-          base::Time::FromJsTime(search_params.timestamp), file_type,
+          base::Time::FromJsTime(search_params.modified_timestamp), file_type,
           base::internal::checked_cast<size_t>(search_params.max_results)),
       base::BindOnce(
           &FileManagerPrivateInternalSearchFilesFunction::OnSearchByPatternDone,

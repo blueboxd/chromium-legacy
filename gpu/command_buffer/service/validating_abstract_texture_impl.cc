@@ -51,26 +51,7 @@ void ValidatingAbstractTextureImpl::SetParameteri(GLenum pname, GLint param) {
                                      texture_ref_.get(), pname, param);
 }
 
-#if BUILDFLAG(IS_APPLE)
-void ValidatingAbstractTextureImpl::SetUnboundImage(gl::GLImage* image) {
-  if (!texture_ref_)
-    return;
-
-  const GLuint target = texture_ref_->texture()->target();
-  const GLint level = 0;
-
-  // Configure the new image.
-  if (image) {
-    GetTextureManager()->SetUnboundLevelImage(texture_ref_.get(), target, level,
-                                              image);
-  } else {
-    GetTextureManager()->UnsetLevelImage(texture_ref_.get(), target, level);
-  }
-
-  GetTextureManager()->SetLevelCleared(texture_ref_.get(), target, level,
-                                       image);
-}
-#elif !BUILDFLAG(IS_WIN)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_APPLE)
 void ValidatingAbstractTextureImpl::SetBoundImage(gl::GLImage* image) {
   if (!texture_ref_) {
     return;
@@ -89,17 +70,6 @@ void ValidatingAbstractTextureImpl::SetBoundImage(gl::GLImage* image) {
 
   GetTextureManager()->SetLevelCleared(texture_ref_.get(), target, level,
                                        image);
-}
-#endif
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-gl::GLImage* ValidatingAbstractTextureImpl::GetImageForTesting() const {
-  if (!texture_ref_)
-    return nullptr;
-
-  const GLuint target = texture_ref_->texture()->target();
-  const GLint level = 0;
-  return texture_ref_->texture()->GetLevelImage(target, level);
 }
 #endif
 

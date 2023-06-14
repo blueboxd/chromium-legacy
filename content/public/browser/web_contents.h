@@ -47,6 +47,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -525,6 +526,9 @@ class WebContents : public PageNavigator,
   // always return a valid ColorProvider instance.
   virtual const ui::ColorProvider& GetColorProvider() const = 0;
 
+  // Gets the color mode for the ColorProvider associated with this WebContents.
+  virtual ui::ColorProviderManager::ColorMode GetColorMode() const = 0;
+
   // Returns the committed WebUI if one exists.
   virtual WebUI* GetWebUI() = 0;
 
@@ -550,6 +554,11 @@ class WebContents : public PageNavigator,
       NavigationController::UserAgentOverrideOption option) = 0;
 
   virtual const blink::UserAgentOverride& GetUserAgentOverride() = 0;
+
+  // Updates all renderers to start sending subresource notifications since a
+  // certificate error or HTTP exception has been allowed by the user.
+  virtual void SetAlwaysSendSubresourceNotifications() = 0;
+  virtual bool GetSendSubresourceNotification() = 0;
 
   // Set the accessibility mode so that accessibility events are forwarded
   // to each WebContentsObserver.

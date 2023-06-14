@@ -68,8 +68,10 @@ GetUnusedSitePermissionsFromDict(
   CHECK(js_expiration);
   auto expiration = base::ValueToTime(js_expiration);
 
-  const content_settings::ContentSettingConstraints constraints{
-      .expiration = *expiration};
+  content_settings::ContentSettingConstraints constraints;
+  // TODO(https://crbug.com/1450356): we should store the lifetime of the
+  // permission, rather than just its expiration.
+  constraints.set_lifetime(constraints.DeltaFromCreationTime(*expiration));
 
   return std::make_tuple(origin, permission_types, constraints);
 }

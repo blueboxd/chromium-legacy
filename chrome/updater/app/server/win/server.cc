@@ -314,16 +314,14 @@ void ComServerApp::TaskStarted() {
       Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule()
           .IncrementObjectCount();
   VLOG(2) << "Starting task, Microsoft::WRL::Module count: " << count;
+  AppServer::TaskStarted();
 }
 
-void ComServerApp::TaskCompleted() {
-  main_task_runner_->PostDelayedTask(
-      FROM_HERE, base::BindOnce(&ComServerApp::AcknowledgeTaskCompletion, this),
-      external_constants()->ServerKeepAliveTime());
+bool ComServerApp::ShutdownIfIdleAfterTask() {
+  return false;
 }
 
-void ComServerApp::AcknowledgeTaskCompletion() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+void ComServerApp::OnDelayedTaskComplete() {
   const auto count =
       Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::GetModule()
           .DecrementObjectCount();
@@ -402,20 +400,23 @@ bool ComServerApp::SwapInNewVersion() {
     StopProcessesUnderPath(target->DirName(), base::Seconds(45));
   }
 
-  const bool succeeded = list->Do();
-  if (succeeded) {
-    LOG_IF(ERROR,
-           UninstallGoogleUpdate(updater_scope(), temp_dir->GetPath(),
-                                 UpdaterScopeToHKeyRoot(updater_scope())));
-
-    // TODO(crbug.com/1425609) - revert the CL that introduced this logging
-    // after the bug is resolved.
-    for (const auto& clsid : GetServers(false, updater_scope())) {
-      LogClsidEntries(clsid);
-    }
+  if (!list->Do()) {
+    return false;
   }
 
-  return succeeded;
+  LOG_IF(ERROR, UninstallGoogleUpdate(updater_scope(), temp_dir->GetPath(),
+                                      UpdaterScopeToHKeyRoot(updater_scope())));
+  if (!IsSystemInstall(updater_scope())) {
+    LOG_IF(ERROR, DeleteLegacyEntriesPerUser());
+  }
+
+  // TODO(crbug.com/1425609) - revert the CL that introduced this logging
+  // after the bug is resolved.
+  for (const auto& clsid : GetServers(false, updater_scope())) {
+    LogClsidEntries(clsid);
+  }
+
+  return true;
 }
 
 bool ComServerApp::MigrateLegacyUpdaters(

@@ -198,7 +198,6 @@
 #include "media/media_buildflags.h"
 #include "media/mojo/mojom/remoting.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "media/render_frame_audio_output_stream_factory.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
@@ -882,14 +881,15 @@ void WriteRenderFrameImplDeletion(perfetto::EventContext& ctx,
   data->set_intent(FrameDeleteIntentionToProto(intent));
 }
 
-// Returns an experimental process shutdown delay if the SubframeShutdownDelay
-// experiment is enabled, 0 if not or if under memory pressure. This is used to
-// keep subframe processes alive for a few seconds in case they can be reused.
+// Returns the amount of time to keep subframe processes alive in case they can
+// be reused. Returns zero if under memory pressure, as memory should be freed
+// up as soon as possible if it's limited.
 base::TimeDelta GetSubframeProcessShutdownDelay(
     BrowserContext* browser_context) {
   static constexpr base::TimeDelta kZeroDelay;
-  if (!base::FeatureList::IsEnabled(features::kSubframeShutdownDelay))
+  if (!RenderProcessHostImpl::ShouldDelayProcessShutdown()) {
     return kZeroDelay;
+  }
 
   // Don't delay process shutdown under memory pressure. Does not cancel
   // existing shutdown delays for processes already in delayed-shutdown state.
@@ -11133,26 +11133,8 @@ void RenderFrameHostImpl::CreateAudioOutputStreamFactory(
       BrowserMainLoop::GetInstance()->audio_system();
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
-
-  // This message can be received before navigation commit, because the renderer
-  // requests this when initializing the main frame of `blink::WebView` which
-  // happens before commit. Use FrameTree::is_prerendering() rather than
-  // lifecycle_state() because prerendering lifecycle state only is set after
-  // navigation commit.
-  bool restricted_mode = frame_tree()->is_prerendering();
-  if (restricted_mode) {
-    audio_service_audio_output_stream_factory_.emplace(
-        this, audio_system, media_stream_manager, std::move(receiver),
-        base::BindOnce(
-            base::IgnoreResult(&RenderFrameHostImpl::CancelPrerendering),
-            base::Unretained(this),
-            PrerenderCancellationReason(
-                PrerenderFinalStatus::kAudioOutputDeviceRequested)));
-  } else {
-    audio_service_audio_output_stream_factory_.emplace(
-        this, audio_system, media_stream_manager, std::move(receiver),
-        /*restricted_callback=*/absl::nullopt);
-  }
+  audio_service_audio_output_stream_factory_.emplace(
+      this, audio_system, media_stream_manager, std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetFeatureObserver(
@@ -11250,9 +11232,6 @@ void RenderFrameHostImpl::CancelPrerenderingByMojoBinderPolicy(
 }
 
 void RenderFrameHostImpl::RendererWillActivateForPrerendering() {
-  if (audio_service_audio_output_stream_factory_) {
-    audio_service_audio_output_stream_factory_->ReleaseRestriction();
-  }
   // Loosen the policies of the Mojo capability control during dispatching the
   // prerenderingchange event in Blink, because the page may start legitimately
   // using controlled interfaces once prerenderingchange is dispatched. We
@@ -11313,6 +11292,12 @@ void RenderFrameHostImpl::BindMediaMetricsProviderReceiver(
           &RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback,
           base::Unretained(this)),
       std::move(is_shutting_down_cb), std::move(receiver));
+}
+
+void RenderFrameHostImpl::BindVideoEncoderMetricsProviderReceiver(
+    mojo::PendingReceiver<media::mojom::VideoEncoderMetricsProvider> receiver) {
+  media::VideoEncoderMetricsProvider::Create(GetPageUkmSourceId(),
+                                             std::move(receiver));
 }
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -13377,15 +13362,20 @@ void RenderFrameHostImpl::SendBeforeUnload(
                                        ->common_params()
                                        .navigation_start);
     }
-    base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            [](blink::mojom::LocalFrame::BeforeUnloadCallback callback,
-               base::TimeTicks start_time, base::TimeTicks end_time) {
-              std::move(callback).Run(/*proceed=*/true, start_time, end_time);
-            },
-            std::move(before_unload_closure), send_before_unload_start_time_,
-            base::TimeTicks::Now()));
+    // Use a high-priority task to continue the navigation. This is safe as it
+    // happens early in the navigation flow and shouldn't race with any other
+    // tasks associated with this navigation.
+    GetUIThreadTaskRunner({BrowserTaskType::kBeforeUnloadBrowserResponse})
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                [](blink::mojom::LocalFrame::BeforeUnloadCallback callback,
+                   base::TimeTicks start_time, base::TimeTicks end_time) {
+                  std::move(callback).Run(/*proceed=*/true, start_time,
+                                          end_time);
+                },
+                std::move(before_unload_closure),
+                send_before_unload_start_time_, base::TimeTicks::Now()));
     return;
   }
   // Experiment to run beforeunload handlers at a higher priority in the

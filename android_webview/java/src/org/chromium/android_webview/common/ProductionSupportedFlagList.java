@@ -112,7 +112,7 @@ public final class ProductionSupportedFlagList {
                     "Disables WebView from checking for app recovery mitigations."),
             Flag.commandLine(AwSwitches.WEBVIEW_ENABLE_APP_RECOVERY,
                     "Enables WebView to check for app recovery mitigations."),
-            Flag.commandLine(AwSwitches.WEBVIEW_ENABLE_USER_AGENT_CLIENT_HINTS,
+            Flag.commandLine(BlinkFeatures.USER_AGENT_CLIENT_HINT,
                     "Enables user-agent client hints in WebView."),
             Flag.baseFeature("DefaultPassthroughCommandDecoder",
                     "Use the passthrough GLES2 command decoder."),
@@ -356,9 +356,6 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.METRICS_CLEAR_LOGS_ON_CLONED_INSTALL,
                     "Controls whether UMA logs are cleared when a cloned "
                             + "install is detected."),
-            Flag.baseFeature(MetricsFeatures.REPORTING_SERVICE_FLUSH_PREFS_ON_UPLOAD_IN_BACKGROUND,
-                    "Controls whether we immediately flush Local State after "
-                            + "uploading a UMA log while in background."),
             Flag.baseFeature(ContentFeatures.MAIN_THREAD_COMPOSITING_PRIORITY,
                     "When enabled runs the main thread at compositing priority."),
             Flag.baseFeature(AwFeatures.WEBVIEW_UMA_UPLOAD_QUALITY_OF_SERVICE_SET_TO_DEFAULT,
@@ -440,6 +437,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(VizFeatures.ON_BEGIN_FRAME_THROTTLE_VIDEO,
                     "Enables throttling OnBeginFrame for video frame sinks"
                             + "with a preferred framerate defined."),
+            Flag.baseFeature(AwFeatures.WEBVIEW_REPORT_FRAME_METRICS,
+                    "Report frame metrics to Google, if metrics reporting has been enabled."),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

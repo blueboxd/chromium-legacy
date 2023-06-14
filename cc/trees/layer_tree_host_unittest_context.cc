@@ -65,7 +65,6 @@ class LayerTreeHostContextTest : public LayerTreeTest {
         times_to_expect_create_failed_(0),
         times_create_failed_(0),
         committed_at_least_once_(false),
-        context_should_support_io_surface_(false),
         fallback_context_works_(false),
         async_layer_tree_frame_sink_creation_(false) {
     media::InitializeMediaLibrary();
@@ -93,9 +92,6 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     base::AutoLock lock(gl_lock_);
 
     auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
-    if (context_should_support_io_surface_) {
-      gl_owned->set_have_extension_egl_image(true);
-    }
 
     gl_ = gl_owned.get();
 
@@ -173,7 +169,6 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   int times_to_expect_create_failed_;
   int times_create_failed_;
   bool committed_at_least_once_;
-  bool context_should_support_io_surface_;
   bool fallback_context_works_;
   bool async_layer_tree_frame_sink_creation_;
 };
@@ -815,9 +810,7 @@ class LayerTreeHostContextTestDontUseLostResources
     : public LayerTreeHostContextTest {
  public:
   LayerTreeHostContextTestDontUseLostResources() : lost_context_(false) {
-    context_should_support_io_surface_ = true;
-
-    child_context_provider_ = viz::TestContextProvider::Create();
+    child_context_provider_ = viz::TestContextProvider::CreateRaster();
     auto result = child_context_provider_->BindToCurrentSequence();
     CHECK_EQ(result, gpu::ContextResult::kSuccess);
     shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
@@ -828,12 +821,12 @@ class LayerTreeHostContextTestDontUseLostResources
                                    bool lost) {}
 
   void SetupTree() override {
-    gpu::gles2::GLES2Interface* gl = child_context_provider_->ContextGL();
+    auto* ri = child_context_provider_->RasterInterface();
 
     gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
 
     gpu::SyncToken sync_token;
-    gl->GenSyncTokenCHROMIUM(sync_token.GetData());
+    ri->GenSyncTokenCHROMIUM(sync_token.GetData());
 
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));

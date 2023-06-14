@@ -93,7 +93,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.EntryPoints" enum="IOSMenuScenario"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@chromium.org</owner>
   <summary>
@@ -452,6 +452,17 @@ chromium-metrics-reviews@google.com.
     <variant name="TabGridSelectionMode" summary="tab grid selection mode"/>
     <variant name="TabShareButton" summary="current tab"/>
   </token>
+</histogram>
+
+<histogram name="Mobile.Spotlight.LensSupportStatus"
+    enum="IOSLensSupportStatus" expires_after="2023-08-26">
+  <owner>hujasonx@google.com</owner>
+  <owner>lens-in-bling-team@google.com</owner>
+  <summary>
+    Whether or not Lens is supported in iOS spotlight search, and if not, the
+    reason why. Recorded once when the spotlight actions are populated, which
+    happens after app startup.
+  </summary>
 </histogram>
 
 <histogram name="Mobile.SystemNotification.Action.Click"
@@ -1275,7 +1286,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

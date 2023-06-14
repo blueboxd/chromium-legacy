@@ -196,6 +196,7 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kProcessSharingWithDefaultSiteInstances);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kProcessSharingWithStrictSiteInstances);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kPushSubscriptionChangeEvent);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kQueueNavigationsWhileWaitingForCommit);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kReduceSubresourceResponseStartedIPC);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kReloadHiddenTabsWithCrashedSubframes);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kRenderDocument);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kRetryGetVideoCaptureDeviceInfos);
@@ -281,6 +282,7 @@ CONTENT_EXPORT extern const base::FeatureParam<bool>
     kAsyncStartServiceWorkerForEmptyFetchHandler;
 CONTENT_EXPORT extern const base::FeatureParam<int>
     kAsyncStartServiceWorkerForEmptyFetchHandlerDurationInMs;
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kServiceWorkerStaticRouter);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kUserMediaCaptureOnFocus);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebLockScreenApi);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebOTP);
@@ -288,7 +290,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kWebOTPAssertionFeaturePolicy);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSpareRendererForSitePerProcess);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kStopVideoCaptureOnScreenLock);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kStrictOriginIsolation);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kSubframeShutdownDelay);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSuppressDifferentOriginSubframeJSDialogs);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSurfaceSyncFullscreenKillswitch);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSyntheticPointerActions);

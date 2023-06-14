@@ -1966,6 +1966,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_THANKS" desc="The action button to dismiss the password bottom sheet and revert to using the keyboard to fill in username and password information on the webpage.">
         No Thanks
       </message>
+      <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_NO_USERNAME" desc="Text shown for an option in a list of the user's saved passwords, when the user did not save a username along with the password.">
+        No Username ••••••••
+      </message>
       <message name="IDS_IOS_PASSWORD_BOTTOM_SHEET_PASSWORD_MANAGER" desc="The password bottom sheet's long press menu item to open the password manager.">
         Password Manager
       </message>
@@ -2059,8 +2062,20 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_TRACKING_PRICE_EMAIL_NOTIFICATIONS_DETAILS" desc="Subtitle that describes to which email address price tracking notifications would be sent.">
         Send to <ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>
       </message>
-      <message name="IDS_IOS_PRIVACY_LOCKDOWN_MODE_TITLE" desc="Title for Lockdown Mode.">
+      <message name="IDS_IOS_LOCKDOWN_MODE_TITLE" desc="Title for Lockdown Mode.">
         Lockdown Mode
+      </message>
+      <message name="IDS_IOS_LOCKDOWN_MODE_SWITCH_BUTTON_SUMMARY" desc="Title for Lockdown Mode.">
+        Extreme optional protection for your browser. It should only be used if you believe you may be targeted by a highly sophisticated cyberattack.
+      </message>
+      <message name="IDS_IOS_LOCKDOWN_MODE_INFO_BUTTON_TITLE" desc="Title for Lockdown Mode.">
+        This setting is enabled on your device
+      </message>
+      <message name="IDS_IOS_LOCKDOWN_MODE_INFO_BUTTON_SUMMARY" desc="Title for Lockdown Mode.">
+        To disable Lockdown Mode in Chrome turn it off on your device.
+      </message>
+      <message name="IDS_IOS_LOCKDOWN_MODE_FOOTER" desc="Title for Lockdown Mode.">
+        When Chrome is in Lockdown Mode, certain web technologies are blocked, which might cause some websites to load more slowly or not operate correctly.
       </message>
       <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_ENHANCED_PROTECTION_SUMMARY" desc="Summary for Privacy Safe Browsing enhanced protection mode.">
         Faster, proactive protection against dangerous websites, downloads, and extensions. Warns you about password breaches. Requires browsing data to be sent to Google.
@@ -2756,6 +2771,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SET_UP_LIST_AUTOFILL_DESCRIPTION" desc="Description for the Set Up List item that encourages the user to set up Chrome's autofill settings.">
         Access your Chrome passwords and more across other apps on this device.
       </message>
+      <message name="IDS_IOS_SET_UP_LIST_AUTOFILL_MAGIC_STACK_DESCRIPTION" desc="Description for the Set Up List item in the Magic Stack that encourages the user to set up Chrome's autofill settings.">
+        Access your Chrome passwords and more across other apps.
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_AUTOFILL_MAGIC_STACK_SEE_MORE_DESCRIPTION" desc="Description for the Set Up List item in the See More modal that encourages the user to set up Chrome's autofill settings.">
+        Access your passwords and more across other apps.
+      </message>
       <message name="IDS_IOS_SET_UP_LIST_AUTOFILL_SHORT_DESCRIPTION" desc="Shortened description for the Set Up List item that encourages the user to set up Chrome's autofill settings.">
         Access your passwords across other apps.
       </message>
@@ -2768,11 +2789,20 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_DESCRIPTION" desc="Description for the Set Up List item that encourages the user to set Chrome as their default browser.">
         Use Chrome anytime you tap links in messages, documents, and other apps.
       </message>
+      <message name="IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_MAGIC_STACK_DESCRIPTION" desc="Description for the Set Up List item in the Magic Stack that encourages the user to set Chrome as their default browser.">
+        Use Chrome anytime you tap links in messages and other apps.
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_SEE_MORE_DESCRIPTION" desc="Description for the Set Up List item in the See More modal that encourages the user to set Chrome as their default browser.">
+        Use Chrome anytime you tap links in other apps.
+      </message>
       <message name="IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_SHORT_DESCRIPTION" desc="Shortened description for the Set Up List item that encourages the user to set Chrome as their default browser.">
         Use Chrome in other apps.
       </message>
       <message name="IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_TITLE" desc="Title for the Set Up List item that encourages the user to set Chrome as their default browser.">
         Use Chrome by Default
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_DESCRIPTION" desc="Description for the Set Up List - a list of tasks the user might want to complete when first using Chrome.">
+          Complete these suggested actions below to get the most out of Chrome.
       </message>
       <message name="IDS_IOS_SET_UP_LIST_EXPAND" desc="Accessibility label for the button to expand the Set Up List.">
         Expand list
@@ -2789,6 +2819,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_DESCRIPTION" desc="Description for the Set Up List item that encourages the user to sign in and set up syncing.">
         Sign in with your Google Account to sync your passwords, history, and more.
       </message>
+      <message name="IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_MAGIC_STACK_DESCRIPTION" desc="Description for the Set Up List item in the Magic Stack that encourages the user to sign in and set up syncing.">
+        Sign in with your Google Account to sync your passwords and more.
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_SEE_MORE_DESCRIPTION" desc="Description for the Set Up List item in the See More modal that encourages the user to sign in and set up syncing.">
+          New menu to help you get to where you want to go.
+      </message>
       <message name="IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_SHORT_DESCRIPTION" desc="Shortened description for the Set Up List item that encourages the user to sign in and set up syncing.">
         Sync your passwords, history, and more.
       </message>
@@ -2797,6 +2833,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_SET_UP_LIST_TITLE" desc="Title for the Set Up List - a list of tasks the user might want to complete when first using Chrome.">
         Get the most out of Chrome
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_TRY_BUTTON_TEXT" desc="Button text next to a Set Up List item suggesting to the user to try the action.">
+        Try
       </message>
       <message name="IDS_IOS_LEAK_CHECK_SWITCH" desc="Title for the switch toggling whether Chrome should check that entered credentials have been part of a leak.">
         Warn You if Passwords Are Exposed in a Data Breach

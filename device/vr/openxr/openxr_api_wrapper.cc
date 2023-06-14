@@ -277,7 +277,7 @@ bool OpenXrApiWrapper::HasSession() const {
 }
 
 bool OpenXrApiWrapper::HasColorSwapChain() const {
-  return color_swapchain_ != XR_NULL_HANDLE &&
+  return color_swapchain_ != XR_NULL_HANDLE && graphics_binding_ &&
          graphics_binding_->GetSwapChainInfo().size() > 0;
 }
 
@@ -664,7 +664,7 @@ void OpenXrApiWrapper::OnContextProviderCreated(
 }
 
 void OpenXrApiWrapper::OnContextProviderLost() {
-  if (context_provider_) {
+  if (context_provider_ && graphics_binding_) {
     // Mark the shared mailboxes as invalid since the underlying GPU process
     // associated with them has gone down.
     for (SwapChainInfo& info : graphics_binding_->GetSwapChainInfo()) {
@@ -675,7 +675,7 @@ void OpenXrApiWrapper::OnContextProviderLost() {
 }
 
 void OpenXrApiWrapper::ReleaseColorSwapchainImages() {
-  if (context_provider_) {
+  if (context_provider_ && graphics_binding_) {
     gpu::SharedImageInterface* shared_image_interface =
         context_provider_->SharedImageInterface();
     for (SwapChainInfo& info : graphics_binding_->GetSwapChainInfo()) {
@@ -769,6 +769,10 @@ void OpenXrApiWrapper::CreateSharedMailboxes() {
 }
 
 bool OpenXrApiWrapper::IsUsingSharedImages() const {
+  if (!graphics_binding_) {
+    return false;
+  }
+
   const auto swapchain_info = graphics_binding_->GetSwapChainInfo();
   return ((swapchain_info.size() > 1) &&
           !swapchain_info[0].mailbox_holder.mailbox.IsZero());

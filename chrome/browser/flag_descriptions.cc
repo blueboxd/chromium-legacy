@@ -4,6 +4,7 @@
 
 #include "chrome/browser/flag_descriptions.h"
 
+#include "ash/constants/ash_features.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/supervised_user/core/common/buildflags.h"
@@ -70,6 +71,11 @@ const char kWindowLayoutMenuDescription[] =
 const char kAndroidAppIntegrationName[] = "Integrate with Android App Search";
 const char kAndroidAppIntegrationDescription[] =
     "If enabled, allows Chrome to integrate with the Android App Search.";
+
+const char kAndroidAppIntegrationSafeSearchName[] =
+    "SafeSearch in Android App Search";
+const char kAndroidAppIntegrationSafeSearchDescription[] =
+    "If enabled, allows Chrome to filter out sensitive urls";
 
 const char kAndroidExtendedKeyboardShortcutsName[] =
     "Android Extended Keyboard Shortcuts";
@@ -739,6 +745,17 @@ const char kServiceWorkerBypassFetchHandlerForMainResourceDescription[] =
     "fetch handler, the feature may affect the page load. This feature will be "
     "overridden by chrome://flags/#service-worker-bypass-fetch-handler";
 
+const char kServiceWorkerStaticRouterName[] = "Service Worker Static Router";
+const char kServiceWorkerStaticRouterDescription[] =
+    "When enabled, Chrome will enable the Service Worker Static Routing API. "
+    "https://chromestatus.com/feature/5185352976826368";
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+const char kCameraMicPreviewName[] = "Camera and Mic Preview";
+const char kCameraMicPreviewDescription[] =
+    "Enables camera and mic preview in permission bubble and site settings.";
+#endif
+
 const char kChromeLabsName[] = "Chrome Labs";
 const char kChromeLabsDescription[] =
     "Access Chrome Labs through the toolbar menu to see featured user-facing "
@@ -1160,6 +1177,11 @@ extern const char kEnableShortcutCustomizationName[] =
 extern const char kEnableShortcutCustomizationDescription[] =
     "Enable customization of shortcuts in the new shortcuts app.";
 
+extern const char kEnableSearchCustomizableShortcutsInLauncherName[] =
+    "Enable search for customizable shortcuts in launcher";
+extern const char kEnableSearchCustomizableShortcutsInLauncherDescription[] =
+    "Enable searching for customizable shortcuts in launcher.";
+
 extern const char kEnableSearchInShortcutsAppName[] =
     "Enable search in new shortcuts app";
 extern const char kEnableSearchInShortcutsAppDescription[] =
@@ -1201,6 +1223,12 @@ const char kEnableEnhancedSafeBrowsingSettingsImprovementsDescription[] =
     "Adds an in-product-help bubble to the ESB settings options when users are "
     "directed to the chrome security settings page through ESB promotions and "
     "also collapses the ESB option.";
+
+const char kEnableFriendlierSafeBrowsingSettingsName[] =
+    "Enable friendlier safe browsing settings";
+const char kEnableFriendlierSafeBrowsingSettingsDescription[] =
+    "Updates the text, layout, and icons on both the privacy guide and the "
+    "security settings page.";
 
 const char kEnableTailoredSecurityUpdatedMessagesName[] =
     "Enable tailored security updated messages";
@@ -1786,13 +1814,6 @@ const char kHiddenNetworkMigrationDescription[] =
     "Enables a privacy improvement that removes wrongly configured hidden"
     "networks and mitigates the creation of these networks.";
 
-const char kHideNonDisplayableAccountEmailName[] =
-    "Hide non-displayable account email";
-
-const char kHideNonDisplayableAccountEmailDescription[] =
-    "Hide the Google account email that should not be displayed on various UI "
-    "surfaces";
-
 extern const char kHotspotName[] = "Hotspot";
 extern const char kHotspotDescription[] =
     "Enables the Chromebook to share its cellular internet connection to other "
@@ -1859,6 +1880,13 @@ const char kIgnoreSyncEncryptionKeysLongMissingDescription[] =
     "resets the counter. The threshold is configurable via the "
     "MinGuResponsesToIgnoreKey feature parameter.";
 
+const char kImprovedIncognitoScreenshotName[] =
+    "Improved Incognito Screenshots";
+const char kImprovedIncognitoScreenshotDescription[] =
+    "Enable Incognito screenshots on Android except while the user is on "
+    "recents screen. Only affects devices on API version >= 33. The "
+    "IncognitoScreenshot flag will be ignored when this flag is enabled.";
+
 const char kImprovedKeyboardShortcutsName[] =
     "Enable improved keyboard shortcuts";
 const char kImprovedKeyboardShortcutsDescription[] =
@@ -1884,7 +1912,8 @@ const char kIncognitoNtpRevampDescription[] =
 const char kIncognitoScreenshotName[] = "Incognito Screenshot";
 const char kIncognitoScreenshotDescription[] =
     "Enables Incognito screenshots on Android. It will also make Incognito "
-    "thumbnails visible.";
+    "thumbnails visible. This flag will be ignored when the "
+    "ImprovedIncognitoScreenshot flag is enabled.";
 
 const char kInfobarScrollOptimizationName[] = "Infobar scroll optimiaztion";
 const char kInfobarScrollOptimizationDescription[] =
@@ -4360,10 +4389,6 @@ const char kAdaptiveButtonInTopToolbarCustomizationName[] =
 const char kAdaptiveButtonInTopToolbarCustomizationDescription[] =
     "Enables UI for customizing the adaptive action button in the top toolbar";
 
-const char kUseToastManagerName[] = "Use Toast manager";
-const char kUseToastManagerDescription[] =
-    "Use Toast manager for queueing and managing Android Toast UI.";
-
 const char kWebAuthnAndroidCredManName[] =
     "Android Credential Management for passkeys";
 const char kWebAuthnAndroidCredManDescription[] =
@@ -4658,6 +4683,10 @@ const char kNtpPhotosModuleOptInTitleDescription[] =
 const char kNtpPhotosModuleSoftOptOutName[] = "NTP Photos Module Soft Opt-Out";
 const char kNtpPhotosModuleSoftOptOutDescription[] =
     "Enables soft opt-out option in Photos opt-in card";
+
+const char kNtpRealboxIsTallName[] = "NTP Realbox Is Tall";
+const char kNtpRealboxIsTallDescription[] =
+    "Makes NTP Realbox taller when enabled.";
 
 const char kNtpRealboxMatchSearchboxThemeName[] =
     "NTP Realbox Matches Searchbox Theme";
@@ -5353,6 +5382,12 @@ extern const char kDeskButtonDescription[] =
     "Show a desk button that provides quick access to the desk menu in the "
     "shelf in clamshell mode when there is more than one desk.";
 
+const char kCrosBatterySaverAlwaysOnName[] =
+    "Make ChromeOS Battery Saver on all the time";
+const char kCrosBatterySaverAlwaysOnDescription[] =
+    "Turns on ChomeOS Battery Saver all the time, even when charging or fully "
+    "charged. Used for testing ChromeOS Battery Saver Mode.";
+
 const char kCrosBatterySaverName[] =
     "Enable ChromeOS Battery Saver Mode Support";
 const char kCrosBatterySaverDescription[] =
@@ -5750,6 +5785,12 @@ const char kEnableZramWriteback[] = "Enable Zram Writeback";
 const char kEnableZramWritebackDescription[] =
     "If enabled zram swap will be able to write back to disk increasing "
     "overall swap capacity";
+
+const char kEnableSuspendToDisk[] = "Enable Suspend to Disk";
+const char kEnableSuspendToDiskDescription[] =
+    "If enabled the system will attempt to suspend to disk (hibernate) "
+    "after 6 hours or more hours. This is a best effort and might fail, in "
+    "which case the legacy suspend or shutdown behavior will remain";
 
 const char kEnableVariableRefreshRateName[] = "Enable Variable Refresh Rate";
 const char kEnableVariableRefreshRateDescription[] =
@@ -6239,6 +6280,12 @@ const char kOsSettingsAppBadgingToggleName[] =
     "ChromeOS Settings App Badging Toggle";
 const char kOsSettingsAppBadgingToggleDescription[] =
     "Enables app badging toggle to be displayed in app notification page in"
+    "ChromeOS Settings.";
+
+const char kOsSettingsDeprecateSyncMetricsToggleName[] =
+    "ChromeOS Settings Deprecate Sync Metrics Toggle";
+const char kOsSettingsDeprecateSyncMetricsToggleDescription[] =
+    "If enabled, deprecate the metrics in sync settings page in "
     "ChromeOS Settings.";
 
 const char kOsSettingsRevampWayfindingName[] =

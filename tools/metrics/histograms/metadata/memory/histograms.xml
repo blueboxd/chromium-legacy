@@ -1551,29 +1551,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Memory.OOMKill.Contents.MemAvailableMB" units="MB"
-    expires_after="2022-04-24">
-  <owner>oshima@chromium.org</owner>
-  <owner>alemate@chromium.org</owner>
-  <summary>
-    System-wide file-backed memory plus free memory right after a renderer was
-    killed by oom-killer, which should be smaller than or close to what the
-    kernel uses to trigger low-memory notifications for tab discards. If this is
-    higher than the kernel's threshold for tab discards, renderers may be killed
-    due to reasons other than out-of-memory.
-  </summary>
-</histogram>
-
-<histogram name="Memory.OOMKill.Contents.MemGraphicsMB" units="MB"
-    expires_after="2022-05-01">
-  <owner>oshima@chromium.org</owner>
-  <owner>alemate@chromium.org</owner>
-  <summary>
-    Graphics driver (GEM object) memory right after a renderer was killed by
-    oom-killer.
-  </summary>
-</histogram>
-
 <histogram name="Memory.OOMKill.Contents.MemShmemMB" units="MB"
     expires_after="2021-02-25">
   <owner>oshima@chromium.org</owner>
@@ -1638,7 +1615,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.OOMKills.Daily" units="kills"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>vovoy@google.com</owner>
   <owner>src/chromeos/ash/components/memory/OWNERS</owner>
   <summary>
@@ -1830,7 +1807,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Compression.SizeKb" units="KB"
-    expires_after="2023-08-06">
+    expires_after="2023-12-10">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -1903,7 +1880,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.DiskReadTime.5min" units="ms"
-    expires_after="2023-08-06">
+    expires_after="2023-12-10">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2479,7 +2456,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.HibernatedCanvas.OriginalSize" units="MB"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>lizeb@chromium.org</owner>
   <owner>chrome-memory@chromium.org</owner>
   <summary>
@@ -2492,7 +2469,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.HibernatedCanvas.Size" units="MB"
-    expires_after="2023-10-08">
+    expires_after="2023-12-10">
   <owner>lizeb@chromium.org</owner>
   <owner>chrome-memory@chromium.org</owner>
   <summary>
@@ -2551,7 +2528,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.PrivateMemoryFootprintExcludingWaivedRenderers"
-    units="MB" expires_after="2023-10-08">
+    units="MB" expires_after="2023-12-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2565,7 +2542,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Total.PrivateMemoryFootprintVisibleOrHigherPriorityRenderers"
-    units="MB" expires_after="2023-10-08">
+    units="MB" expires_after="2023-12-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2609,7 +2586,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.RendererPrivateMemoryFootprintExcludingWaived"
-    units="MB" expires_after="2023-10-08">
+    units="MB" expires_after="2023-12-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -2623,7 +2600,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.Total.RendererPrivateMemoryFootprintVisibleOrHigherPriority"
-    units="MB" expires_after="2023-10-08">
+    units="MB" expires_after="2023-12-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>

@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.sync.SyncServiceFactory;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
 import org.chromium.chrome.browser.ui.signin.SyncPromoController.SyncPromoState;
@@ -363,7 +364,8 @@ class BookmarkManagerMediator
             mBookmarkQueryHandler =
                     new ImprovedBookmarkQueryHandler(mBookmarkModel, bookmarkUiPrefs);
         } else {
-            mBookmarkQueryHandler = new LegacyBookmarkQueryHandler(mBookmarkModel, bookmarkUiPrefs);
+            mBookmarkQueryHandler = new LegacyBookmarkQueryHandler(
+                    mBookmarkModel, bookmarkUiPrefs, SyncServiceFactory.getForProfile(mProfile));
         }
 
         mModelList = modelList;
@@ -1033,11 +1035,9 @@ class BookmarkManagerMediator
     }
 
     private ListItem buildSearchBoxRow() {
-        // TODO(https://crbug.com/1439583): On search, also hide back button, update title, toolbar
-        // menu buttons.
         PropertyModel propertyModel =
                 new PropertyModel.Builder(BookmarkSearchBoxRowProperties.ALL_KEYS)
-                        .with(BookmarkSearchBoxRowProperties.QUERY_CALLBACK, this::search)
+                        .with(BookmarkSearchBoxRowProperties.QUERY_CALLBACK, this::onQueryCallback)
                         .build();
         return new ListItem(ViewType.SEARCH_BOX, propertyModel);
     }
@@ -1091,7 +1091,7 @@ class BookmarkManagerMediator
         propertyModel.set(ImprovedBookmarkRowProperties.SELECTED, false);
         propertyModel.set(ImprovedBookmarkRowProperties.SELECTION_ACTIVE, false);
         propertyModel.set(ImprovedBookmarkRowProperties.DRAG_ENABLED, false);
-        // TODO(crbug.com/1442044): Invesigate caching ModelList for the menu.
+        // TODO(crbug.com/1442044): Investigate caching ModelList for the menu.
         propertyModel.set(ImprovedBookmarkRowProperties.LIST_MENU_BUTTON_DELEGATE,
                 () -> createListMenuForBookmark(propertyModel));
         propertyModel.set(ImprovedBookmarkRowProperties.EDITABLE, item.isEditable());
@@ -1116,17 +1116,16 @@ class BookmarkManagerMediator
     // ImprovedBookmarkRow methods.
 
     private void resolveIconForBookmark(BookmarkItem item, PropertyModel model) {
-        @BookmarkRowDisplayPref
-        int displayPref = mBookmarkUiPrefs.getBookmarkRowDisplayPref();
-        boolean useImages = BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
-                && displayPref == BookmarkRowDisplayPref.VISUAL;
+        final @BookmarkRowDisplayPref int displayPref =
+                mBookmarkUiPrefs.getBookmarkRowDisplayPref();
+        boolean useImages = displayPref == BookmarkRowDisplayPref.VISUAL;
         model.set(ImprovedBookmarkRowProperties.START_IMAGE_VISIBILITY,
                 item.isFolder() && useImages ? StartImageVisibility.FOLDER_DRAWABLE
                                              : StartImageVisibility.DRAWABLE);
 
         if (item.isFolder()) {
             int type = item.getId().getType();
-            Drawable folderDrawable = null;
+            Drawable folderDrawable;
             if (useImages) {
                 model.set(ImprovedBookmarkRowProperties.FOLDER_CHILD_COUNT,
                         BookmarkUtils.getChildCountForDisplay(item.getId(), mBookmarkModel));
@@ -1198,8 +1197,6 @@ class BookmarkManagerMediator
         listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0, canMove));
         listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
 
-        boolean canReorder = bookmarkItem != null && bookmarkItem.isReorderable()
-                && !Objects.equals(getCurrentFolderId(), mBookmarkModel.getRootFolderId());
         if (getCurrentUiMode() == BookmarkUiMode.SEARCHING) {
             listItems.add(buildMenuListItem(R.string.bookmark_show_in_folder, 0, 0));
         }
@@ -1276,9 +1273,6 @@ class BookmarkManagerMediator
 
     void setPriceTrackingEnabled(PropertyModel model, boolean enabled) {
         BookmarkListEntry entry = model.get(BookmarkManagerProperties.BOOKMARK_LIST_ENTRY);
-        PowerBookmarkMeta meta = entry.getPowerBookmarkMeta();
-        CommerceSubscription sub =
-                PowerBookmarkUtils.createCommerceSubscriptionForPowerBookmarkMeta(meta);
 
         Callback<Boolean> callback = success -> {
             if (!success) return;
@@ -1298,6 +1292,17 @@ class BookmarkManagerMediator
             openFolder(id);
         } else {
             openBookmark(id);
+        }
+    }
+
+    private void onQueryCallback(String text) {
+        final @BookmarkUiMode int currentUiMode = getCurrentUiMode();
+        if (!TextUtils.isEmpty(text)) {
+            // #setState will no-op if we're already in a search state.
+            setState(BookmarkUiState.createSearchState());
+            search(text);
+        } else if (currentUiMode == BookmarkUiMode.SEARCHING) {
+            onEndSearch();
         }
     }
 

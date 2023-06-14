@@ -54,6 +54,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kBackgroundResourceFetch);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kBlockingDownloadsInAdFrameWithoutUserActivation);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kConversionMeasurement);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kCrossOriginAccessOnDetachedWindowDoesNotThrow);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kExcludeLowEntropyImagesFromLCP);
 BLINK_COMMON_EXPORT extern const base::FeatureParam<double>
     kMinimumEntropyForLCP;
@@ -184,6 +186,11 @@ BLINK_COMMON_EXPORT extern const char
 // Enables to run prerendering for new tabs (e.g., target="_blank").
 // See https://crbug.com/1350676.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPrerender2InNewTab);
+
+// Enables to retrigger speculation rules preloading on BFCache restoration.
+// See crbug.com/1449163 for more details.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kRetriggerPreloadingOnBFCacheRestoration);
 
 // Fenced Frames:
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();

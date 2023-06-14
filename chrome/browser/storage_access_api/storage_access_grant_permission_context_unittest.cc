@@ -5,13 +5,14 @@
 #include "chrome/browser/storage_access_api/storage_access_grant_permission_context.h"
 
 #include "base/barrier_callback.h"
-#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/version.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
+#include "chrome/browser/dips/dips_service.h"
+#include "chrome/browser/dips/dips_utils.h"
 #include "chrome/browser/first_party_sets/scoped_mock_first_party_sets_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
@@ -122,6 +123,16 @@ class StorageAccessGrantPermissionContextTest
         web_contents(),
         std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
+
+    DIPSService* dips_service = DIPSService::Get(browser_context());
+    CHECK(dips_service);
+    base::test::TestFuture<void> future;
+    dips_service->storage()
+        ->AsyncCall(&DIPSStorage::RecordInteraction)
+        .WithArgs(GetRequesterURL(), base::Time::Now(),
+                  DIPSCookieMode::kBlock3PC)
+        .Then(future.GetCallback());
+    ASSERT_TRUE(future.Wait());
   }
 
   void TearDown() override {
@@ -167,10 +178,26 @@ class StorageAccessGrantPermissionContextTest
         request_id_generator_.GenerateNextId());
   }
 
+  void WaitUntilPrompt() {
+    mock_permission_prompt_factory_->WaitForPermissionBubble();
+    ASSERT_TRUE(request_manager()->IsRequestInProgress());
+  }
+
   content_settings::PageSpecificContentSettings*
   page_specific_content_settings() {
     return content_settings::PageSpecificContentSettings::GetForFrame(
         web_contents()->GetPrimaryMainFrame());
+  }
+
+  permissions::PermissionRequestManager* request_manager() {
+    permissions::PermissionRequestManager* manager =
+        permissions::PermissionRequestManager::FromWebContents(web_contents());
+    CHECK(manager);
+    return manager;
+  }
+
+  permissions::MockPermissionPromptFactory& prompt_factory() {
+    return *mock_permission_prompt_factory_;
   }
 
  private:
@@ -245,17 +272,11 @@ TEST_F(StorageAccessGrantPermissionContextAPIEnabledTest,
       CreateFakeID(), GetRequesterURL(), GetTopLevelURL(),
       /*user_gesture=*/true, future.GetCallback());
 
-  // Run until the prompt is ready.
-  base::RunLoop().RunUntilIdle();
-
-  permissions::PermissionRequestManager* manager =
-      permissions::PermissionRequestManager::FromWebContents(web_contents());
-  ASSERT_TRUE(manager);
-  ASSERT_TRUE(manager->IsRequestInProgress());
+  WaitUntilPrompt();
 
   // Accept the prompt and validate we get the expected setting back in our
   // callback.
-  manager->Accept();
+  request_manager()->Accept();
   EXPECT_EQ(CONTENT_SETTING_ALLOW, future.Get());
 
   histogram_tester().ExpectUniqueSample(kGrantIsImplicitHistogram,
@@ -286,29 +307,24 @@ TEST_F(StorageAccessGrantPermissionContextAPIEnabledTest, PermissionDecided) {
       fake_id, GetRequesterURL(), GetTopLevelURL(),
       /*user_gesture=*/true, future.GetCallback());
 
-  // Run until the prompt is ready.
-  base::RunLoop().RunUntilIdle();
+  WaitUntilPrompt();
 
-  permissions::PermissionRequestManager* manager =
-      permissions::PermissionRequestManager::FromWebContents(web_contents());
-  ASSERT_TRUE(manager);
-  ASSERT_TRUE(manager->IsRequestInProgress());
-
-  permissions::PermissionRequest* request = manager->Requests().front();
+  permissions::PermissionRequest* request =
+      request_manager()->Requests().front();
   ASSERT_TRUE(request);
-  ASSERT_EQ(1u, manager->Requests().size());
+  ASSERT_EQ(1u, request_manager()->Requests().size());
   // Prompt should have both origins.
-  EXPECT_EQ(GetRequesterURL(), manager->GetRequestingOrigin());
-  EXPECT_EQ(GetTopLevelURL(), manager->GetEmbeddingOrigin());
+  EXPECT_EQ(GetRequesterURL(), request_manager()->GetRequestingOrigin());
+  EXPECT_EQ(GetTopLevelURL(), request_manager()->GetEmbeddingOrigin());
 
-  manager->Dismiss();
+  request_manager()->Dismiss();
   EXPECT_EQ(CONTENT_SETTING_ASK, future.Get());
   histogram_tester().ExpectUniqueSample(kRequestOutcomeHistogram,
                                         RequestOutcome::kDismissedByUser, 1);
-
+  // Expect no pscs entry for dismissed permissions.
   EXPECT_THAT(page_specific_content_settings()->GetTwoSiteRequests(
                   ContentSettingsType::STORAGE_ACCESS),
-              UnorderedElementsAre(Pair(GetRequesterSite(), false)));
+              IsEmpty());
 }
 
 // No user gesture should force a permission rejection.
@@ -385,25 +401,18 @@ class StorageAccessGrantPermissionContextAPIWithImplicitGrantsTest
       StorageAccessGrantPermissionContext& permission_context) {
     permissions::PermissionRequestID fake_id = CreateFakeID();
 
-    permissions::PermissionRequestManager* manager =
-        permissions::PermissionRequestManager::FromWebContents(web_contents());
-    DCHECK(manager);
     const int implicit_grant_limit =
         blink::features::kStorageAccessAPIImplicitGrantLimit.Get();
-    base::RunLoop run_loop;
-    auto barrier = base::BarrierCallback<ContentSetting>(
-        implicit_grant_limit,
-        base::BindLambdaForTesting(
-            [&](const std::vector<ContentSetting> results) {
-              run_loop.Quit();
-            }));
+    base::test::TestFuture<const std::vector<ContentSetting>> future;
+    auto barrier = base::BarrierCallback<ContentSetting>(implicit_grant_limit,
+                                                         future.GetCallback());
     for (int grant_id = 0; grant_id < implicit_grant_limit; grant_id++) {
       permission_context.DecidePermissionForTesting(
           fake_id, requesting_origin, GetDummyEmbeddingUrl(grant_id),
           /*user_gesture=*/true, barrier);
     }
-    run_loop.Run();
-    EXPECT_FALSE(manager->IsRequestInProgress());
+    ASSERT_TRUE(future.Wait());
+    EXPECT_FALSE(request_manager()->IsRequestInProgress());
   }
 
  private:
@@ -426,9 +435,6 @@ TEST_F(StorageAccessGrantPermissionContextAPIWithImplicitGrantsTest,
   EXPECT_EQ(histogram_tester().GetBucketCount(
                 kRequestOutcomeHistogram, RequestOutcome::kGrantedByAllowance),
             5);
-  permissions::PermissionRequestManager* manager =
-      permissions::PermissionRequestManager::FromWebContents(web_contents());
-  ASSERT_TRUE(manager);
 
   EXPECT_THAT(page_specific_content_settings()->GetTwoSiteRequests(
                   ContentSettingsType::STORAGE_ACCESS),
@@ -440,14 +446,11 @@ TEST_F(StorageAccessGrantPermissionContextAPIWithImplicitGrantsTest,
         fake_id, GetRequesterURL(), GetTopLevelURL(),
         /*user_gesture=*/true, future.GetCallback());
 
-    // Run until the prompt is ready.
-    base::RunLoop().RunUntilIdle();
-
-    ASSERT_TRUE(manager->IsRequestInProgress());
+    WaitUntilPrompt();
 
     // Close the prompt and validate we get the expected setting back in our
     // callback.
-    manager->Dismiss();
+    request_manager()->Dismiss();
     EXPECT_EQ(CONTENT_SETTING_ASK, future.Get());
   }
   EXPECT_EQ(histogram_tester().GetBucketCount(kRequestOutcomeHistogram,
@@ -473,7 +476,7 @@ TEST_F(StorageAccessGrantPermissionContextAPIWithImplicitGrantsTest,
 
   // We should have no prompts still and our latest result should be an allow.
   EXPECT_EQ(CONTENT_SETTING_ALLOW, future.Get());
-  EXPECT_FALSE(manager->IsRequestInProgress());
+  EXPECT_FALSE(request_manager()->IsRequestInProgress());
   EXPECT_EQ(histogram_tester().GetBucketCount(
                 kRequestOutcomeHistogram, RequestOutcome::kGrantedByAllowance),
             6);
@@ -495,9 +498,6 @@ TEST_F(StorageAccessGrantPermissionContextAPIWithImplicitGrantsTest,
 
   ExhaustImplicitGrants(GetRequesterURL(), permission_context);
 
-  permissions::PermissionRequestManager* manager =
-      permissions::PermissionRequestManager::FromWebContents(web_contents());
-
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GetDummyEmbeddingUrlWithSubdomain());
 
@@ -514,7 +514,7 @@ TEST_F(StorageAccessGrantPermissionContextAPIWithImplicitGrantsTest,
 
   // We should have no prompts still and our latest result should be an allow.
   EXPECT_EQ(CONTENT_SETTING_ALLOW, future.Get());
-  EXPECT_FALSE(manager->IsRequestInProgress());
+  EXPECT_FALSE(request_manager()->IsRequestInProgress());
   EXPECT_EQ(histogram_tester().GetBucketCount(
                 kRequestOutcomeHistogram, RequestOutcome::kGrantedByAllowance),
             implicit_grant_limit);
@@ -546,17 +546,11 @@ TEST_F(StorageAccessGrantPermissionContextAPIEnabledTest, ExplicitGrantDenial) {
       fake_id, GetRequesterURL(), GetTopLevelURL(),
       /*user_gesture=*/true, future.GetCallback());
 
-  // Run until the prompt is ready.
-  base::RunLoop().RunUntilIdle();
-
-  permissions::PermissionRequestManager* manager =
-      permissions::PermissionRequestManager::FromWebContents(web_contents());
-  ASSERT_TRUE(manager);
-  ASSERT_TRUE(manager->IsRequestInProgress());
+  WaitUntilPrompt();
 
   // Deny the prompt and validate we get the expected setting back in our
   // callback.
-  manager->Deny();
+  request_manager()->Deny();
   EXPECT_EQ(CONTENT_SETTING_BLOCK, future.Get());
 
   histogram_tester().ExpectTotalCount(kGrantIsImplicitHistogram, 0);
@@ -584,18 +578,16 @@ TEST_F(StorageAccessGrantPermissionContextAPIEnabledTest,
       GetRequesterURL(), GetTopLevelURL(), ContentSettingsType::STORAGE_ACCESS,
       CONTENT_SETTING_BLOCK);
 
+  prompt_factory().set_response_type(
+      permissions::PermissionRequestManager::AutoResponseType::NONE);
+
   base::test::TestFuture<ContentSetting> future;
   permission_context.DecidePermissionForTesting(
       fake_id, GetRequesterURL(), GetTopLevelURL(),
       /*user_gesture=*/true, future.GetCallback());
 
   // Ensure the prompt is not shown.
-  base::RunLoop().RunUntilIdle();
-
-  permissions::PermissionRequestManager* manager =
-      permissions::PermissionRequestManager::FromWebContents(web_contents());
-  ASSERT_TRUE(manager);
-  ASSERT_FALSE(manager->IsRequestInProgress());
+  ASSERT_FALSE(request_manager()->IsRequestInProgress());
   EXPECT_EQ(CONTENT_SETTING_BLOCK, future.Get());
 
   // However, ensure that the user's denial is not exposed when querying the
@@ -623,17 +615,11 @@ TEST_F(StorageAccessGrantPermissionContextAPIEnabledTest, ExplicitGrantAccept) {
       fake_id, GetRequesterURL(), GetTopLevelURL(),
       /*user_gesture=*/true, future.GetCallback());
 
-  // Run until the prompt is ready.
-  base::RunLoop().RunUntilIdle();
-
-  permissions::PermissionRequestManager* manager =
-      permissions::PermissionRequestManager::FromWebContents(web_contents());
-  ASSERT_TRUE(manager);
-  ASSERT_TRUE(manager->IsRequestInProgress());
+  WaitUntilPrompt();
 
   // Accept the prompt and validate we get the expected setting back in our
   // callback.
-  manager->Accept();
+  request_manager()->Accept();
   EXPECT_EQ(CONTENT_SETTING_ALLOW, future.Get());
 
   histogram_tester().ExpectUniqueSample(kGrantIsImplicitHistogram,

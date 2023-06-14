@@ -17,6 +17,7 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
+#import "components/autofill/core/browser/data_model/credit_card.h"
 #import "components/breadcrumbs/core/features.h"
 #import "components/feature_engagement/public/event_constants.h"
 #import "components/feature_engagement/public/tracker.h"
@@ -2069,6 +2070,22 @@ void InjectNTP(Browser* browser) {
                  completion:nil];
 }
 
+- (void)showCreditCardDetails:(const autofill::CreditCard*)creditCard {
+  UIViewController* baseViewController = self.currentInterface.viewController;
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController showCreditCardDetails:creditCard];
+    return;
+  }
+  Browser* browser = self.mainInterface.browser;
+  self.settingsNavigationController = [SettingsNavigationController
+      autofillCreditCardEditControllerForBrowser:browser
+                                        delegate:self
+                                      creditCard:creditCard];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
 - (void)showDefaultBrowserSettingsFromViewController:
             (UIViewController*)baseViewController
                                         sourceForUMA:
@@ -2289,6 +2306,10 @@ void InjectNTP(Browser* browser) {
     case START_LENS_FROM_APP_ICON_LONG_PRESS:
       return ^{
         [weakSelf startLensWithEntryPoint:LensEntrypoint::AppIconLongPress];
+      };
+    case START_LENS_FROM_SPOTLIGHT:
+      return ^{
+        [weakSelf startLensWithEntryPoint:LensEntrypoint::Spotlight];
       };
     case FOCUS_OMNIBOX:
       return ^{

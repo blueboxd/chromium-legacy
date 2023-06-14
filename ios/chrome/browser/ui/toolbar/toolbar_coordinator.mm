@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
 
 #import "base/mac/foundation_util.h"
+#import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
@@ -94,9 +95,13 @@
       startDispatchingToTarget:self
                    forProtocol:@protocol(FakeboxFocuser)];
 
+  PrefService* prefs =
+      ChromeBrowserState::FromBrowserState(browser->GetBrowserState())
+          ->GetPrefs();
   self.toolbarMediator =
       [[ToolbarMediator alloc] initWithWebStateList:browser->GetWebStateList()];
   self.toolbarMediator.delegate = self;
+  self.toolbarMediator.prefService = prefs;
 
   self.locationBarCoordinator =
       [[LocationBarCoordinator alloc] initWithBrowser:browser];
@@ -356,8 +361,8 @@
   if (webState == self.browser->GetWebStateList()->GetActiveWebState() &&
       !isNTP) {
     [self.locationBarCoordinator.locationBarViewController.view setHidden:NO];
-    self.primaryToolbarViewController.view.hidden = NO;
   } else {
+    self.primaryToolbarViewController.view.hidden = NO;
     [self.locationBarCoordinator.locationBarViewController.view setHidden:YES];
   }
 }

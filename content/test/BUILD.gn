@@ -21,6 +21,7 @@ import("//testing/test.gni")
 import("//third_party/blink/public/public_features.gni")
 import("//third_party/closure_compiler/closure_args.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//third_party/protobuf/proto_library.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/typescript/ts_library.gni")
@@ -510,7 +511,6 @@ static_library("test_support") {
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
     "//cc:test_support",
-    "//components/aggregation_service:mojom",
     "//components/attribution_reporting:mojom",
     "//components/attribution_reporting:source_type_mojom",
     "//components/breadcrumbs/core",
@@ -801,6 +801,34 @@ static_library("test_support") {
   if (is_fuchsia) {
     public_deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec:fuchsia.mediacodec_hlcpp" ]
   }
+}
+
+component("proto_test_support") {
+  testonly = true
+
+  sources = [
+    "../public/test/test_proto_loader.cc",
+    "../public/test/test_proto_loader.h",
+  ]
+
+  defines = [ "PROTO_TEST_IMPLEMENTATION" ]
+
+  deps = [
+    "//base",
+    "//third_party/protobuf:protobuf_full",
+  ]
+}
+
+proto_library("test_proto") {
+  sources = [ "test.proto" ]
+  cc_generator_options = "lite"
+}
+
+proto_library("test_proto_descriptor") {
+  sources = [ "test.proto" ]
+  generate_cc = false
+  generate_python = false
+  generate_descriptor = "test_proto.descriptor"
 }
 
 # Fuchsia performance tests on smart displays use web_engine and a browser
@@ -1634,7 +1662,6 @@ test("content_browsertests") {
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
     "//cc/slim",
-    "//components/aggregation_service:mojom",
     "//components/attribution_reporting:mojom",
     "//components/discardable_memory/client",
     "//components/discardable_memory/common",
@@ -1727,6 +1754,7 @@ test("content_browsertests") {
     "//third_party/zlib",
     "//ui/accessibility:ax_base",
     "//ui/accessibility:ax_enums_mojo",
+    "//ui/accessibility:test_support",
     "//ui/base:test_support",
     "//ui/base/clipboard",
     "//ui/base/cursor",
@@ -2722,6 +2750,7 @@ test("content_unittests") {
     "navigation_simulator_unittest.cc",
     "test_aggregation_service_impl_unittest.cc",
     "test_page_unittest.cc",
+    "test_proto_loader_unittest.cc",
     "test_render_frame_host_unittest.cc",
   ]
 
@@ -2810,6 +2839,8 @@ test("content_unittests") {
     bundle_deps = [
       ":content_shell_pak_bundle_data",
       ":content_test_bundle_data",
+      ":content_test_perfetto_bundle_data",
+      ":content_test_proto_bundle_data",
       "//media/test:media_bundle_data",
     ]
   }
@@ -2820,8 +2851,10 @@ test("content_unittests") {
 
   deps = [
     ":content_test_mojo_bindings",
+    ":proto_test_support",
     ":run_all_unittests",
     ":test_interfaces",
+    ":test_proto",
     ":test_support",
     "web_ui:test_webui_js_bridge2_webui_js_bridge_impl",
     "web_ui:test_webui_js_bridge_webui_js_bridge_impl",
@@ -2834,7 +2867,6 @@ test("content_unittests") {
     "//cc",
     "//cc:test_support",
     "//cc/mojom",
-    "//components/aggregation_service:mojom",
     "//components/attribution_reporting:mojom",
     "//components/cbor",
     "//components/network_session_configurator/browser",
@@ -2975,6 +3007,17 @@ test("content_unittests") {
     "//testing/buildbot/filters:content_unittests_filters",
     "//third_party/mesa_headers",
   ]
+
+  if (!is_ios) {
+    data_deps += [
+      ":test_proto_descriptor",
+      "//third_party/perfetto/protos/perfetto/config/chrome:scenario_descriptor",
+    ]
+    data += [
+      "$root_gen_dir/third_party/perfetto/protos/perfetto/config/chrome/scenario_config.descriptor",
+      "$root_gen_dir/content/test/test_proto.descriptor",
+    ]
+  }
 
   # Platforms where sqlite_dev_shell is defined.
   if (is_win || is_mac || is_linux || is_chromeos) {
@@ -3271,6 +3314,23 @@ if (is_ios) {
     public_deps = [ "//content/shell:pak" ]
     sources = [ "$root_out_dir/content_shell.pak" ]
     outputs = [ "{{bundle_resources_dir}}/content_shell.pak" ]
+  }
+
+  bundle_data("content_test_proto_bundle_data") {
+    testonly = true
+    public_deps = [ ":test_proto_descriptor" ]
+    sources = [ "$root_gen_dir/content/test/test_proto.descriptor" ]
+    outputs =
+        [ "{{bundle_resources_dir}}/gen/content/test/{{source_file_part}}" ]
+  }
+
+  bundle_data("content_test_perfetto_bundle_data") {
+    testonly = true
+    _relative_path = "third_party/perfetto/protos/perfetto/config/chrome"
+    public_deps = [ "//third_party/perfetto/protos/perfetto/config/chrome:scenario_descriptor" ]
+    sources = [ "$root_gen_dir/$_relative_path/scenario_config.descriptor" ]
+    outputs =
+        [ "{{bundle_resources_dir}}/gen/$_relative_path/{{source_file_part}}" ]
   }
 
   bundle_data_from_filelist("content_test_bundle_data") {

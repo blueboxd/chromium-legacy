@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/form_structure_rationalizer.h"
 
 #include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 #include "components/autofill/core/browser/form_parsing/credit_card_field.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/rationalization_util.h"
@@ -91,9 +92,8 @@ class FormStructureRationalizer::SectionedFieldsIndexes {
 };
 
 FormStructureRationalizer::FormStructureRationalizer(
-    std::vector<std::unique_ptr<AutofillField>>* fields,
-    FormSignature form_signature)
-    : fields_(*fields), form_signature_(form_signature) {}
+    std::vector<std::unique_ptr<AutofillField>>* fields)
+    : fields_(*fields) {}
 FormStructureRationalizer::~FormStructureRationalizer() = default;
 
 void FormStructureRationalizer::RationalizeAutocompleteAttributes(
@@ -332,6 +332,43 @@ void FormStructureRationalizer::RationalizeCreditCardFieldPredictions(
   }
 }
 
+void FormStructureRationalizer::RationalizeMultiOriginCreditCardFields(
+    const url::Origin& main_origin,
+    LogManager* log_manager) {
+  auto is_in_subframe = [&main_origin](const FormFieldData& field) {
+    return field.origin != main_origin;
+  };
+  auto rationalize = [&](ServerFieldType relevant_type) {
+    auto is_relevant = [relevant_type](const AutofillField& field) {
+      return field.ComputedType().GetStorableType() == relevant_type;
+    };
+    auto is_relevant_in_subframe = [&](const auto& field) {
+      return is_relevant(*field) && is_in_subframe(*field);
+    };
+    // If a relevant field exists in a sub-frame, we can ignore the
+    // corresponding field in the main frame as it is probably a
+    // misclassification.
+    if (base::ranges::any_of(*fields_, is_relevant_in_subframe)) {
+      for (auto& field : *fields_) {
+        if (is_relevant(*field) && !is_in_subframe(*field)) {
+          field->SetTypeTo(AutofillType(UNKNOWN_TYPE));
+          LOG_AF(log_manager)
+              << LoggingScope::kRationalization << LogMessage::kRationalization
+              << "Multi-origin Credit Card Rationalization: Converting type of "
+              << field->global_id() << " from "
+              << AutofillType::ServerFieldTypeToString(relevant_type)
+              << " to UNKNOWN_TYPE";
+        }
+      }
+    }
+  };
+  // These fields do usually not occur on the main frame's origin due to
+  // PCI-DSS. By contrast, cardholder name and expiration dates do commonly
+  // appear in the main frame and in cross-origin iframes.
+  rationalize(CREDIT_CARD_NUMBER);
+  rationalize(CREDIT_CARD_VERIFICATION_CODE);
+}
+
 void FormStructureRationalizer::RationalizeCreditCardNumberOffsets(
     LogManager* log_manager) {
   // Credit card numbers are 8 to 19 digits in length.
@@ -504,6 +541,7 @@ void FormStructureRationalizer::RationalizePhoneNumbersInSection(
 void FormStructureRationalizer::ApplyRationalizationsToFieldAndLog(
     size_t field_index,
     ServerFieldType new_type,
+    FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   if (field_index >= fields_->size())
     return;
@@ -511,12 +549,13 @@ void FormStructureRationalizer::ApplyRationalizationsToFieldAndLog(
   (*fields_)[field_index]->SetTypeTo(AutofillType(new_type));
   if (form_interactions_ukm_logger) {
     form_interactions_ukm_logger->LogRepeatedServerTypePredictionRationalized(
-        form_signature_, *(*fields_)[field_index], old_type);
+        form_signature, *(*fields_)[field_index], old_type);
   }
 }
 
 void FormStructureRationalizer::RationalizeAddressLineFields(
     SectionedFieldsIndexes* sections_of_address_indexes,
+    FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     LogManager* log_manager) {
   // The rationalization happens within sections.
@@ -540,6 +579,7 @@ void FormStructureRationalizer::RationalizeAddressLineFields(
       switch (nb_address_rationalized) {
         case 0:
           ApplyRationalizationsToFieldAndLog(field_index, ADDRESS_HOME_LINE1,
+                                             form_signature,
                                              form_interactions_ukm_logger);
           LOG_AF(log_manager)
               << LoggingScope::kRationalization << LogMessage::kRationalization
@@ -547,6 +587,7 @@ void FormStructureRationalizer::RationalizeAddressLineFields(
           break;
         case 1:
           ApplyRationalizationsToFieldAndLog(field_index, ADDRESS_HOME_LINE2,
+                                             form_signature,
                                              form_interactions_ukm_logger);
           LOG_AF(log_manager)
               << LoggingScope::kRationalization << LogMessage::kRationalization
@@ -554,6 +595,7 @@ void FormStructureRationalizer::RationalizeAddressLineFields(
           break;
         case 2:
           ApplyRationalizationsToFieldAndLog(field_index, ADDRESS_HOME_LINE3,
+                                             form_signature,
                                              form_interactions_ukm_logger);
           LOG_AF(log_manager)
               << LoggingScope::kRationalization << LogMessage::kRationalization
@@ -571,6 +613,7 @@ void FormStructureRationalizer::RationalizeAddressLineFields(
 void FormStructureRationalizer::ApplyRationalizationsToHiddenSelects(
     size_t field_index,
     ServerFieldType new_type,
+    FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   ServerFieldType old_type = (*fields_)[field_index]->Type().GetStorableType();
 
@@ -584,7 +627,7 @@ void FormStructureRationalizer::ApplyRationalizationsToHiddenSelects(
         (*fields_)[current_index]->form_control_type != "select-one" ||
         (*fields_)[current_index]->Type().GetStorableType() != old_type)
       break;
-    ApplyRationalizationsToFieldAndLog(current_index, new_type,
+    ApplyRationalizationsToFieldAndLog(current_index, new_type, form_signature,
                                        form_interactions_ukm_logger);
   }
 
@@ -597,7 +640,7 @@ void FormStructureRationalizer::ApplyRationalizationsToHiddenSelects(
         (*fields_)[current_index]->form_control_type != "select-one" ||
         (*fields_)[current_index]->Type().GetStorableType() != old_type)
       break;
-    ApplyRationalizationsToFieldAndLog(current_index, new_type,
+    ApplyRationalizationsToFieldAndLog(current_index, new_type, form_signature,
                                        form_interactions_ukm_logger);
     if (current_index == 0)
       break;
@@ -627,20 +670,21 @@ void FormStructureRationalizer::ApplyRationalizationsToFields(
     size_t lower_index,
     ServerFieldType upper_type,
     ServerFieldType lower_type,
+    FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // Unfocusable fields are ignored during the rationalization, but unfocusable
   // 'select' fields also get autofilled to support their corresponding visible
   // 'synthetic fields'. So, if a field's type is rationalized, we should make
   // sure that the rationalization is also applied to its corresponding
   // unfocusable fields, if any.
-  ApplyRationalizationsToHiddenSelects(upper_index, upper_type,
+  ApplyRationalizationsToHiddenSelects(upper_index, upper_type, form_signature,
                                        form_interactions_ukm_logger);
-  ApplyRationalizationsToFieldAndLog(upper_index, upper_type,
+  ApplyRationalizationsToFieldAndLog(upper_index, upper_type, form_signature,
                                      form_interactions_ukm_logger);
 
-  ApplyRationalizationsToHiddenSelects(lower_index, lower_type,
+  ApplyRationalizationsToHiddenSelects(lower_index, lower_type, form_signature,
                                        form_interactions_ukm_logger);
-  ApplyRationalizationsToFieldAndLog(lower_index, lower_type,
+  ApplyRationalizationsToFieldAndLog(lower_index, lower_type, form_signature,
                                      form_interactions_ukm_logger);
 }
 
@@ -663,6 +707,7 @@ bool FormStructureRationalizer::FieldShouldBeRationalizedToCountry(
 void FormStructureRationalizer::RationalizeAddressStateCountry(
     SectionedFieldsIndexes* sections_of_state_indexes,
     SectionedFieldsIndexes* sections_of_country_indexes,
+    FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     LogManager* log_manager) {
   // Walk on the sections of state and country indexes simultaneously. If they
@@ -730,10 +775,10 @@ void FormStructureRationalizer::RationalizeAddressStateCountry(
     if (HeuristicsPredictionsAreApplicable(upper_index, lower_index,
                                            ADDRESS_HOME_STATE,
                                            ADDRESS_HOME_COUNTRY)) {
-      ApplyRationalizationsToFields(upper_index, lower_index,
-                                    (*fields_)[upper_index]->heuristic_type(),
-                                    (*fields_)[lower_index]->heuristic_type(),
-                                    form_interactions_ukm_logger);
+      ApplyRationalizationsToFields(
+          upper_index, lower_index, (*fields_)[upper_index]->heuristic_type(),
+          (*fields_)[lower_index]->heuristic_type(), form_signature,
+          form_interactions_ukm_logger);
       LOG_AF(log_manager)
           << LoggingScope::kRationalization << LogMessage::kRationalization
           << "RationalizeAddressStateCountry: Heuristics are applicable";
@@ -741,17 +786,17 @@ void FormStructureRationalizer::RationalizeAddressStateCountry(
     }
 
     if (FieldShouldBeRationalizedToCountry(upper_index)) {
-      ApplyRationalizationsToFields(upper_index, lower_index,
-                                    ADDRESS_HOME_COUNTRY, ADDRESS_HOME_STATE,
-                                    form_interactions_ukm_logger);
+      ApplyRationalizationsToFields(
+          upper_index, lower_index, ADDRESS_HOME_COUNTRY, ADDRESS_HOME_STATE,
+          form_signature, form_interactions_ukm_logger);
       LOG_AF(log_manager) << LoggingScope::kRationalization
                           << LogMessage::kRationalization
                           << "RationalizeAddressStateCountry: "
                              "FieldShouldBeRationalizedToCountry";
     } else {
-      ApplyRationalizationsToFields(upper_index, lower_index,
-                                    ADDRESS_HOME_STATE, ADDRESS_HOME_COUNTRY,
-                                    form_interactions_ukm_logger);
+      ApplyRationalizationsToFields(
+          upper_index, lower_index, ADDRESS_HOME_STATE, ADDRESS_HOME_COUNTRY,
+          form_signature, form_interactions_ukm_logger);
       LOG_AF(log_manager) << LoggingScope::kRationalization
                           << LogMessage::kRationalization
                           << "RationalizeAddressStateCountry: "
@@ -761,6 +806,7 @@ void FormStructureRationalizer::RationalizeAddressStateCountry(
 }
 
 void FormStructureRationalizer::RationalizeRepeatedFields(
+    FormSignature form_signature,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     LogManager* log_manager) {
   // The type of every field whose index is in
@@ -794,16 +840,18 @@ void FormStructureRationalizer::RationalizeRepeatedFields(
 
   RationalizeAddressLineFields(
       &(sectioned_field_indexes_by_type[ADDRESS_HOME_STREET_ADDRESS]),
-      form_interactions_ukm_logger, log_manager);
+      form_signature, form_interactions_ukm_logger, log_manager);
   RationalizeAddressStateCountry(
       &(sectioned_field_indexes_by_type[ADDRESS_HOME_STATE]),
-      &(sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY]),
+      &(sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY]), form_signature,
       form_interactions_ukm_logger, log_manager);
 }
 
 void FormStructureRationalizer::RationalizeFieldTypePredictions(
+    const url::Origin& main_origin,
     LogManager* log_manager) {
   RationalizeCreditCardFieldPredictions(log_manager);
+  RationalizeMultiOriginCreditCardFields(main_origin, log_manager);
   if (base::FeatureList::IsEnabled(
           features::kAutofillSplitCreditCardNumbersCautiously)) {
     RationalizeCreditCardNumberOffsets(log_manager);

@@ -1654,6 +1654,11 @@ void ChromeContentBrowserClient::RegisterProfilePrefs(
       policy::policy_prefs::kBeforeunloadEventCancelByPreventDefaultEnabled,
       true);
 
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::
+          kAllowBackForwardCacheForCacheControlNoStorePageEnabled,
+      true);
+
 #if BUILDFLAG(IS_CHROMEOS)
   registry->RegisterListPref(prefs::kMandatoryExtensionsForIncognitoNavigation);
 #endif
@@ -2725,6 +2730,16 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         command_line->AppendSwitch(blink::switches::kDataUrlInSvgUseEnabled);
       }
 
+      if (prefs->HasPrefPath(
+              policy::policy_prefs::
+                  kAllowBackForwardCacheForCacheControlNoStorePageEnabled) &&
+          !prefs->GetBoolean(
+              policy::policy_prefs::
+                  kAllowBackForwardCacheForCacheControlNoStorePageEnabled)) {
+        command_line->AppendSwitch(
+            switches::kDisableBackForwardCacheForCacheControlNoStorePage);
+      }
+
 #if !BUILDFLAG(IS_ANDROID)
       InstantService* instant_service =
           InstantServiceFactory::GetForProfile(profile);
@@ -3624,24 +3639,23 @@ bool UpdatePreferredColorScheme(WebPreferences* web_prefs,
       ToBlinkPreferredColorScheme(native_theme->GetPreferredColorScheme());
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  bool force_light = false;
-  // Force a light preferred color scheme on certain URLs if kWebUIDarkMode is
-  // disabled; some of the UI is not yet correctly themed.
-  if (!base::FeatureList::IsEnabled(features::kWebUIDarkMode)) {
-    // Update based on last committed url.
-    force_light = force_light || url.SchemeIs(content::kChromeUIScheme);
-    force_light = force_light || IsPdfExtensionOrigin(url::Origin::Create(url));
-  }
-
   // Reauth WebUI doesn't support dark mode yet because it shares the dialog
   // with GAIA web contents that is not correctly themed.
-  force_light =
-      force_light || (url.SchemeIs(content::kChromeUIScheme) &&
-                      url.host_piece() == chrome::kChromeUISigninReauthHost);
+  const bool force_light =
+      url.SchemeIs(content::kChromeUIScheme) &&
+      url.host_piece() == chrome::kChromeUISigninReauthHost;
 
   if (force_light) {
     web_prefs->preferred_color_scheme =
         blink::mojom::PreferredColorScheme::kLight;
+  } else if (url.SchemeIs(content::kChromeUIScheme)) {
+    // If color scheme is not forced, WebUI should track the color mode of the
+    // ColorProvider associated with `web_contents`.
+    web_prefs->preferred_color_scheme =
+        web_contents->GetColorMode() ==
+                ui::ColorProviderManager::ColorMode::kLight
+            ? blink::mojom::PreferredColorScheme::kLight
+            : blink::mojom::PreferredColorScheme::kDark;
   }
 
   return old_preferred_color_scheme != web_prefs->preferred_color_scheme;
@@ -7751,4 +7765,18 @@ bool ChromeContentBrowserClient::DoesGaiaOriginRequireDedicatedProcess() {
 
   return true;
 #endif  // !BUILDFLAG(IS_ANDROID)
+}
+
+bool ChromeContentBrowserClient::CanBackForwardCachedPageReceiveCookieChanges(
+    content::BrowserContext& browser_context,
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    const absl::optional<url::Origin>& top_frame_origin,
+    const net::CookieSettingOverrides overrides) {
+  scoped_refptr<content_settings::CookieSettings> cookie_settings =
+      CookieSettingsFactory::GetForProfile(
+          Profile::FromBrowserContext(&browser_context));
+  CHECK(cookie_settings);
+  return cookie_settings->IsFullCookieAccessAllowed(
+      url, site_for_cookies, top_frame_origin, overrides);
 }

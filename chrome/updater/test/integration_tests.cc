@@ -100,9 +100,9 @@ class IntegrationTest : public ::testing::Test {
     ASSERT_TRUE(WaitForUpdaterExit());
     ASSERT_NO_FATAL_FAILURE(Clean());
     ASSERT_NO_FATAL_FAILURE(ExpectClean());
-    ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234"),
-                                          GURL("http://localhost:1235"),
-                                          GURL("http://localhost:1236")));
+    ASSERT_NO_FATAL_FAILURE(EnterTestMode(
+        GURL("http://localhost:1234"), GURL("http://localhost:1235"),
+        GURL("http://localhost:1236"), base::Minutes(5)));
 #if BUILDFLAG(IS_LINUX)
     // On LUCI the XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS environment
     // variables may not be set. These are required for systemctl to connect to
@@ -175,9 +175,10 @@ class IntegrationTest : public ::testing::Test {
 
   void EnterTestMode(const GURL& update_url,
                      const GURL& crash_upload_url,
-                     const GURL& device_management_url) {
+                     const GURL& device_management_url,
+                     const base::TimeDelta& idle_timeout) {
     test_commands_->EnterTestMode(update_url, crash_upload_url,
-                                  device_management_url);
+                                  device_management_url, idle_timeout);
   }
 
   void ExitTestMode() { test_commands_->ExitTestMode(); }
@@ -307,6 +308,11 @@ class IntegrationTest : public ::testing::Test {
   void RunWakeActive(int exit_code) {
     ASSERT_TRUE(WaitForUpdaterExit());
     test_commands_->RunWakeActive(exit_code);
+  }
+
+  void RunServer(int exit_code, bool internal) {
+    ASSERT_TRUE(WaitForUpdaterExit());
+    test_commands_->RunServer(exit_code, internal);
   }
 
   void CheckForUpdate(const std::string& app_id) {
@@ -785,7 +791,8 @@ TEST_F(IntegrationTest, MarshalInterface) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-TEST_F(IntegrationTest, LegacyProcessLauncher) {
+// TODO(https://crbug.com/1453749): Flaky on bots
+TEST_F(IntegrationTest, DISABLED_LegacyProcessLauncher) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectLegacyProcessLauncherSucceeds());
   ASSERT_NO_FATAL_FAILURE(Uninstall());
@@ -1021,6 +1028,22 @@ TEST_F(IntegrationTest, UpdateServiceStress) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
   ASSERT_NO_FATAL_FAILURE(StressUpdateService());
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+
+TEST_F(IntegrationTest, IdleServerExits) {
+#if BUILDFLAG(IS_WIN)
+  if (GetTestScope() == UpdaterScope::kSystem) {
+    GTEST_SKIP() << "System server startup is complicated on Windows.";
+  }
+#endif
+  ASSERT_NO_FATAL_FAILURE(EnterTestMode(
+      GURL("http://localhost:1234"), GURL("http://localhost:1234"),
+      GURL("http://localhost:1234"), base::Seconds(1)));
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
+  ASSERT_NO_FATAL_FAILURE(RunServer(kErrorIdle, true));
+  ASSERT_NO_FATAL_FAILURE(RunServer(kErrorIdle, false));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 

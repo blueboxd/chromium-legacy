@@ -33,7 +33,8 @@ void PopulateAdminTemplateMetadata(
   // If something goes wrong, log it and exit.
   if (entries_lookup_result.status !=
       desks_storage::DeskModel::GetAllEntriesStatus::kOk) {
-    LOG(WARNING) << "Get all entries did not return OK status!";
+    LOG(WARNING) << "GetAllEntries returned "
+                 << static_cast<int>(entries_lookup_result.status);
     return;
   }
 
@@ -86,6 +87,21 @@ SavedDeskController::GetAdminTemplateMetadata() const {
 
 bool SavedDeskController::LaunchAdminTemplate(const base::Uuid& template_uuid,
                                               int64_t default_display_id) {
+  // Check if we are currently tracking a previous launched instance of this
+  // template. If so, we will flush any pending updates and then destroy the
+  // tracker.  This will ensure that we get the most recent version when
+  // querying the admin model.
+  auto it = admin_template_launch_trackers_.find(template_uuid);
+  if (it != admin_template_launch_trackers_.end()) {
+    it->second->FlushPendingUpdate();
+    admin_template_launch_trackers_.erase(it);
+  }
+
+  // This will remove any admin template trackers that are no longer tracking
+  // any windows. Note that for the common case of only having a single admin
+  // template, the previous operation will have already removed the tracker.
+  RemoveInactiveAdminTemplateTrackers();
+
   auto admin_template = GetAdminTemplate(template_uuid);
   if (!admin_template) {
     return false;
@@ -188,9 +204,6 @@ void SavedDeskController::LaunchAdminTemplateImpl(
       kAdminTemplateUpdateDelay);
   tracker->LaunchTemplate(Shell::Get()->saved_desk_delegate(),
                           default_display_id);
-
-  // TODO(dandersson): Remove the launch tracker when all its windows have been
-  // closed.
 }
 
 std::unique_ptr<DeskTemplate> SavedDeskController::GetAdminTemplate(
@@ -204,7 +217,8 @@ std::unique_ptr<DeskTemplate> SavedDeskController::GetAdminTemplate(
     auto result = admin_model->GetEntryByUUID(template_uuid);
 
     if (result.status != desks_storage::DeskModel::GetEntryByUuidStatus::kOk) {
-      LOG(WARNING) << "Entry lookup failure!";
+      LOG(WARNING) << "GetEntryByUUID returned "
+                   << static_cast<int>(result.status);
       return nullptr;
     }
 
@@ -213,6 +227,18 @@ std::unique_ptr<DeskTemplate> SavedDeskController::GetAdminTemplate(
 
   // Failed to get model, return nullptr.
   return nullptr;
+}
+
+void SavedDeskController::RemoveInactiveAdminTemplateTrackers() {
+  for (auto it = admin_template_launch_trackers_.begin();
+       it != admin_template_launch_trackers_.end();) {
+    if (!it->second->IsActive()) {
+      it->second->FlushPendingUpdate();
+      it = admin_template_launch_trackers_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void SavedDeskController::SetAdminTemplateForTesting(

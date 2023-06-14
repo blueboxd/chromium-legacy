@@ -17,13 +17,13 @@ source_set("oobe_quick_start") {
   deps = [
     ":oobe_quick_start_pref_names",
     "connectivity",
-    "logging",
     "//base",
     "//chrome/browser:browser_process",
     "//chrome/common:channel_info",
     "//chromeos/ash/components/attestation:attestation",
     "//chromeos/ash/components/dbus/attestation:attestation_proto",
     "//chromeos/ash/components/dbus/constants:constants",
+    "//chromeos/ash/components/quick_start:quick_start",
     "//chromeos/ash/services/nearby/public/mojom",
     "//chromeos/dbus/power:power",
     "//components/account_id:account_id",
@@ -42,8 +42,6 @@ source_set("oobe_quick_start") {
     "second_device_auth_broker.h",
     "target_device_bootstrap_controller.cc",
     "target_device_bootstrap_controller.h",
-    "verification_shapes.cc",
-    "verification_shapes.h",
   ]
 }
 
@@ -53,7 +51,6 @@ source_set("unit_tests") {
     ":oobe_quick_start",
     "connectivity:test_support",
     "connectivity:unit_tests",
-    "logging:unit_tests",
     "//base",
     "//base/test:test_support",
     "//chrome/test:test_support",
@@ -72,6 +69,5 @@ source_set("unit_tests") {
   sources = [
     "second_device_auth_broker_unittest.cc",
     "target_device_bootstrap_controller_unittest.cc",
-    "verification_shapes_unittest.cc",
   ]
 }

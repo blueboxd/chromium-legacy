@@ -360,6 +360,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   absl::optional<SkColor> GetBackgroundColor() override;
   void SetPageBaseBackgroundColor(absl::optional<SkColor> color) override;
   void SetColorProviderSource(ui::ColorProviderSource* source) override;
+  ui::ColorProviderManager::ColorMode GetColorMode() const override;
   WebUI* GetWebUI() override;
   void SetUserAgentOverride(const blink::UserAgentOverride& ua_override,
                             bool override_in_new_tabs) override;
@@ -367,6 +368,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       NavigationController::UserAgentOverrideOption option) override;
   const blink::UserAgentOverride& GetUserAgentOverride() override;
   bool ShouldOverrideUserAgentForRendererInitiatedNavigation() override;
+  void SetAlwaysSendSubresourceNotifications() override;
+  bool GetSendSubresourceNotification() override;
   void EnableWebContentsOnlyAccessibilityMode() override;
   bool IsWebContentsOnlyAccessibilityModeForTesting() override;
   bool IsFullAccessibilityModeForTesting() override;

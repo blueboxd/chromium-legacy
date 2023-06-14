@@ -39,10 +39,10 @@ namespace {
 namespace syncable_prefs_ids {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. When adding a new entry, append the
-// enumerator to the end. When removing an unused enumerator, comment it out,
-// making it clear the value was previously used.
-// Please also add new entries to `SyncablePref` enum in
-// tools/metrics/histograms/enums.xml.
+// enumerator to the end and add it to the `SyncablePref` enum in
+// tools/metrics/histograms/enums.xml. When removing an unused enumerator,
+// comment it out here, making it clear the value was previously used, and
+// add "(obsolete)" to the corresponding entry in enums.xml.
 enum {
   // Starts with 100000 to avoid clash with prefs listed in
   // common_syncable_prefs_database.cc and
@@ -85,9 +85,9 @@ enum {
   kAccessibilityCursorColor = 100035,
   kAccessibilityEnhancedNetworkVoicesInSelectToSpeakAllowed = 100036,
   kAccessibilityFloatingMenuPosition = 100037,
-  kAccessibilityGreyscaleAmount = 100038,
-  kAccessibilityHueRotationAmount = 100039,
-  kAccessibilitySaturationAmount = 100040,
+  // kAccessibilityGreyscaleAmount = 100038,  // deprecated
+  // kAccessibilityHueRotationAmount = 100039,  // deprecated
+  // kAccessibilitySaturationAmount = 100040,  // deprecated
   kAccessibilityScreenMagnifierCenterFocus = 100041,
   kAccessibilityScreenMagnifierFocusFollowingEnabled = 100042,
   kAccessibilityScreenMagnifierMouseFollowingMode = 100043,
@@ -100,7 +100,7 @@ enum {
   kAccessibilitySelectToSpeakVoiceName = 100050,
   kAccessibilitySelectToSpeakVoiceSwitching = 100051,
   kAccessibilitySelectToSpeakWordHighlight = 100052,
-  kAccessibilitySepiaAmount = 100053,
+  // kAccessibilitySepiaAmount = 100053,  // deprecated
   kAccessibilitySwitchAccessAutoScanEnabled = 100054,
   kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs = 100055,
   kAccessibilitySwitchAccessAutoScanSpeedMs = 100056,
@@ -252,6 +252,13 @@ enum {
   kAccessibilityColorFiltering = 100200,
   kAccessibilityColorVisionCorrectionAmount = 100201,
   kAccessibilityColorVisionDeficiencyType = 100202,
+  kShowDeskButtonInShelf = 100203,
+  // See components/sync_preferences/README.md about adding new entries here.
+  // vvvvv IMPORTANT! vvvvv
+  // Note to the reviewer: IT IS YOUR RESPONSIBILITY to ensure that new syncable
+  // prefs follow privacy guidelines! See the readme file linked above for
+  // guidance and escalation path in case anything is unclear.
+  // ^^^^^ IMPORTANT! ^^^^^
 };
 }  // namespace syncable_prefs_ids
 
@@ -394,15 +401,6 @@ const auto& SyncablePreferences() {
         {ash::prefs::kAccessibilityFloatingMenuPosition,
          {syncable_prefs_ids::kAccessibilityFloatingMenuPosition,
           syncer::OS_PREFERENCES, false}},
-        {ash::prefs::kAccessibilityGreyscaleAmount,
-         {syncable_prefs_ids::kAccessibilityGreyscaleAmount,
-          syncer::OS_PREFERENCES, false}},
-        {ash::prefs::kAccessibilityHueRotationAmount,
-         {syncable_prefs_ids::kAccessibilityHueRotationAmount,
-          syncer::OS_PREFERENCES, false}},
-        {ash::prefs::kAccessibilitySaturationAmount,
-         {syncable_prefs_ids::kAccessibilitySaturationAmount,
-          syncer::OS_PREFERENCES, false}},
         {ash::prefs::kAccessibilityScreenMagnifierCenterFocus,
          {syncable_prefs_ids::kAccessibilityScreenMagnifierCenterFocus,
           syncer::OS_PREFERENCES, false}},
@@ -441,9 +439,6 @@ const auto& SyncablePreferences() {
         {ash::prefs::kAccessibilitySelectToSpeakWordHighlight,
          {syncable_prefs_ids::kAccessibilitySelectToSpeakWordHighlight,
           syncer::OS_PREFERENCES, false}},
-        {ash::prefs::kAccessibilitySepiaAmount,
-         {syncable_prefs_ids::kAccessibilitySepiaAmount, syncer::OS_PREFERENCES,
-          false}},
         {ash::prefs::kAccessibilitySwitchAccessAutoScanEnabled,
          {syncable_prefs_ids::kAccessibilitySwitchAccessAutoScanEnabled,
           syncer::OS_PREFERENCES, false}},
@@ -566,6 +561,9 @@ const auto& SyncablePreferences() {
          {syncable_prefs_ids::kShelfAlignment, syncer::OS_PREFERENCES, false}},
         {ash::prefs::kShelfAutoHideBehavior,
          {syncable_prefs_ids::kShelfAutoHideBehavior, syncer::OS_PREFERENCES,
+          false}},
+        {ash::prefs::kShowDeskButtonInShelf,
+         {syncable_prefs_ids::kShowDeskButtonInShelf, syncer::OS_PREFERENCES,
           false}},
         {ash::prefs::kSuggestedContentEnabled,
          {syncable_prefs_ids::kSuggestedContentEnabled, syncer::OS_PREFERENCES,

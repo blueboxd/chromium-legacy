@@ -12,6 +12,8 @@
 #include "chrome/browser/companion/core/promo_handler.h"
 #include "chrome/browser/companion/text_finder/text_finder_manager.h"
 #include "chrome/browser/companion/text_finder/text_highlighter_manager.h"
+#include "chrome/browser/companion/visual_search/features.h"
+#include "chrome/browser/companion/visual_search/visual_search_suggestions_service_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -61,6 +63,13 @@ CompanionPageHandler::CompanionPageHandler(
   identity_manager_observation_.Observe(
       IdentityManagerFactory::GetForProfile(GetProfile()));
   consent_helper_observation_.Observe(consent_helper_.get());
+  if (base::FeatureList::IsEnabled(
+          visual_search::features::kVisualSearchSuggestions)) {
+    visual_search_host_ =
+        std::make_unique<visual_search::VisualSearchClassifierHost>(
+            visual_search::VisualSearchSuggestionsServiceFactory::GetForProfile(
+                GetProfile()));
+  }
 }
 
 CompanionPageHandler::~CompanionPageHandler() {
@@ -126,6 +135,22 @@ void CompanionPageHandler::DidFinishNavigation(
     return;
   }
   NotifyURLChanged(/*is_full_reload=*/false);
+}
+
+void CompanionPageHandler::DidFinishLoad(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& validated_url) {
+  // We only want to classify images in the main frame.
+  if (!render_frame_host->IsInPrimaryMainFrame()) {
+    return;
+  }
+
+  // TODO(b/284640445) - Add browser test to verify side effect of feature
+  // on/off, use histogram check to determine whether or not classification was
+  // called.
+  if (visual_search_host_) {
+    visual_search_host_->StartClassification(render_frame_host, validated_url);
+  }
 }
 
 void CompanionPageHandler::ShowUI() {
@@ -200,8 +225,7 @@ void CompanionPageHandler::OnImageQuery(
 
 void CompanionPageHandler::OnPromoAction(
     side_panel::mojom::PromoType promo_type,
-    side_panel::mojom::PromoAction promo_action,
-    const absl::optional<GURL>& exps_promo_url) {
+    side_panel::mojom::PromoAction promo_action) {
   if (promo_type == side_panel::mojom::PromoType::kRegionSearchIPH) {
     if (promo_action == side_panel::mojom::PromoAction::kRejected) {
       auto* tracker = feature_engagement::TrackerFactory::GetForBrowserContext(
@@ -212,7 +236,7 @@ void CompanionPageHandler::OnPromoAction(
     return;
   }
 
-  promo_handler_->OnPromoAction(promo_type, promo_action, exps_promo_url);
+  promo_handler_->OnPromoAction(promo_type, promo_action);
   metrics_logger_->OnPromoAction(promo_type, promo_action);
 }
 
@@ -271,11 +295,7 @@ void CompanionPageHandler::OnCqCandidatesAvailable(
 }
 
 void CompanionPageHandler::OnPhFeedback(
-    side_panel::mojom::PhFeedback ph_feedback,
-    const absl::optional<GURL>& reporting_url) {
-  if (reporting_url.has_value()) {
-    signin_delegate_->LoadUrlInNewTab(reporting_url.value());
-  }
+    side_panel::mojom::PhFeedback ph_feedback) {
   metrics_logger_->OnPhFeedback(ph_feedback);
 }
 
@@ -285,6 +305,16 @@ void CompanionPageHandler::OnCqJumptagClicked(
       web_contents()->GetPrimaryPage());
   text_highlighter_manager->CreateTextHighlighterAndRemoveExistingInstance(
       text_directive);
+}
+
+void CompanionPageHandler::OpenUrlInBrowser(
+    const absl::optional<GURL>& url_to_open,
+    bool use_new_tab) {
+  if (!url_to_open.has_value() || !url_to_open.value().is_valid()) {
+    return;
+  }
+
+  signin_delegate_->OpenUrlInBrowser(url_to_open.value(), use_new_tab);
 }
 
 Browser* CompanionPageHandler::GetBrowser() {

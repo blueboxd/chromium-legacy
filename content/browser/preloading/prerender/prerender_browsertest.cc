@@ -230,7 +230,10 @@ class PrerenderBrowserTest : public ContentBrowserTest,
             &PrerenderBrowserTest::web_contents, base::Unretained(this)));
     feature_list_.InitWithFeatures(
         {blink::features::kPrerender2InNewTab,
-         blink::features::kPrerender2MainFrameNavigation},
+         blink::features::kPrerender2MainFrameNavigation,
+
+         // To enable Content-Security-Policy navigate-to support.
+         features::kExperimentalContentSecurityPolicyFeatures},
         {});
   }
   ~PrerenderBrowserTest() override = default;
@@ -467,9 +470,6 @@ class PrerenderBrowserTest : public ContentBrowserTest,
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Useful for testing CSP:prefetch-src
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExperimentalWebPlatformFeatures);
     // The viewport meta tag is only enabled on Android.
 #if BUILDFLAG(IS_ANDROID)
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
@@ -4728,59 +4728,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DownloadInSubframe) {
   ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kDownload);
 }
 
-// Tests that requesting audio output devices from prerendering documents result
-// in cancellation of prerendering. Prerender2 decides to cancel prerendering
-// here, because browser cannot defer this request as the renderer's main thread
-// blocks while it waits for the response.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, RequestAudioOutputDevice) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderingUrl = GetUrl("/title1.html");
-
-  // Navigate to an initial page.
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-
-  // Make a prerendered page.
-  int host_id = AddPrerender(kPrerenderingUrl);
-  RenderFrameHostImpl* prerender_rfh = GetPrerenderedMainFrameHost(host_id);
-  test::PrerenderHostObserver host_observer(*web_contents(), host_id);
-
-  // Create a output audio context which request audio output devices.
-  // Prerendering should be cancelled in this case.
-  // Whether using the EXECUTE_SCRIPT_NO_USER_GESTURE flag or not does not
-  // affect the test result. The purpose of using it is to simulate real
-  // scenarios since prerendering pages cannot have user gestures.
-  std::ignore = ExecJs(prerender_rfh, "const context = new AudioContext();",
-                       EvalJsOptions::EXECUTE_SCRIPT_NO_USER_GESTURE);
-  host_observer.WaitForDestroyed();
-  EXPECT_FALSE(HasHostForUrl(kPrerenderingUrl));
-  ExpectFinalStatusForSpeculationRule(
-      PrerenderFinalStatus::kAudioOutputDeviceRequested);
-}
-
-// Tests that an activated page is allowed to request output devices.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       RequestAudioOutputDeviceAfterActivation) {
-  const GURL kInitialUrl = GetUrl("/empty.html");
-  const GURL kPrerenderingUrl = GetUrl("/title1.html");
-
-  // Navigate to an initial page.
-  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
-  int host_id = AddPrerender(kPrerenderingUrl);
-  test::PrerenderHostObserver host_observer(*web_contents(), host_id);
-
-  // After being activated, the document can play audio and it should work as a
-  // normal document.
-  prerender_helper()->NavigatePrimaryPage(kPrerenderingUrl);
-  EXPECT_TRUE(host_observer.was_activated());
-  std::string audio_script = R"(
-      const context = new AudioContext();
-      const osc = new OscillatorNode(context);
-      osc.connect(context.destination);
-      osc.start();
-  )";
-  EXPECT_TRUE(ExecJs(web_contents()->GetPrimaryMainFrame(), audio_script));
-}
-
 // The viewport meta tag is only enabled on Android.
 #if BUILDFLAG(IS_ANDROID)
 namespace {
@@ -7636,16 +7583,31 @@ IN_PROC_BROWSER_TEST_P(PrerenderWithBackForwardCacheBrowserTest,
 
 class PrerenderBackForwardCacheRestorationBrowserTest
     : public PrerenderBrowserTest,
-      public BackForwardCacheMetricsTestMatcher {
+      public BackForwardCacheMetricsTestMatcher,
+      public testing::WithParamInterface<bool> {
  public:
   PrerenderBackForwardCacheRestorationBrowserTest() {
-    feature_list_.InitWithFeaturesAndParameters(
-        GetDefaultEnabledBackForwardCacheFeaturesForTesting(
-            /*ignore_outstanding_network_request=*/false),
-        GetDefaultDisabledBackForwardCacheFeaturesForTesting());
+    auto enabled_features = GetDefaultEnabledBackForwardCacheFeaturesForTesting(
+        /*ignore_outstanding_network_request=*/false);
+    auto disabled_features =
+        GetDefaultDisabledBackForwardCacheFeaturesForTesting();
+
+    if (IsRetriggerPreloadingOnBFCacheRestorationEnabled()) {
+      enabled_features.emplace_back(
+          blink::features::kRetriggerPreloadingOnBFCacheRestoration,
+          base::FieldTrialParams{});
+    } else {
+      disabled_features.emplace_back(
+          blink::features::kRetriggerPreloadingOnBFCacheRestoration);
+    }
+
+    feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                disabled_features);
   }
 
  protected:
+  bool IsRetriggerPreloadingOnBFCacheRestorationEnabled() { return GetParam(); }
+
   // implementation for `BackForwardCacheMetricsTestMatcher`
 
   const ukm::TestAutoSetUkmRecorder& ukm_recorder() override {
@@ -7660,14 +7622,16 @@ class PrerenderBackForwardCacheRestorationBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-// TODO(crbug.com/1449163): Fix this behavior to retrigger prerendering on
-// BFCache restoration.
+INSTANTIATE_TEST_SUITE_P(All,
+                         PrerenderBackForwardCacheRestorationBrowserTest,
+                         testing::Bool());
+
 // Test whether speculation rules prerendering is processed again on pages
 // restored from BFCache via forward navigation.
 // When the eagerness is kEager(default), speculation rules prerendering will no
 // longer be processed after restoration.
 // TODO(crbug.com/1449163): add test cases on kModerate, kConservative.
-IN_PROC_BROWSER_TEST_F(PrerenderBackForwardCacheRestorationBrowserTest,
+IN_PROC_BROWSER_TEST_P(PrerenderBackForwardCacheRestorationBrowserTest,
                        RestoredViaForwardNavigation) {
   const GURL initial_url = GetUrl("/empty.html");
   const GURL next_url = GetUrl("/empty.html?next");
@@ -7693,19 +7657,33 @@ IN_PROC_BROWSER_TEST_F(PrerenderBackForwardCacheRestorationBrowserTest,
   GoForward();
   ASSERT_EQ(web_contents()->GetLastCommittedURL(), next_url);
   ExpectRestored(FROM_HERE);
-  // The next page contains speculation rules for the prerendering page, but
-  // it's not processed on BFCache restoration.
-  EXPECT_FALSE(HasHostForUrl(prerendering_url));
+
+  if (IsRetriggerPreloadingOnBFCacheRestorationEnabled()) {
+    // preredering will be processed by retriggering.
+    WaitForPrerenderLoadCompletion(prerendering_url);
+    int host_id_retriggered = GetHostForUrl(prerendering_url);
+
+    test::PrerenderHostObserver prerender_observer(*web_contents(),
+                                                   host_id_retriggered);
+
+    // Activate the prerendered page.
+    NavigatePrimaryPage(prerendering_url);
+    prerender_observer.WaitForActivation();
+    ASSERT_EQ(web_contents()->GetLastCommittedURL(), prerendering_url);
+    EXPECT_TRUE(prerender_observer.was_activated());
+  } else {
+    // The next page contains speculation rules for the prerendering page, but
+    // it's not processed on BFCache restoration.
+    EXPECT_FALSE(HasHostForUrl(prerendering_url));
+  }
 }
 
-// TODO(crbug.com/1449163): Fix this behavior to retrigger prerendering on
-// BFCache restoration.
 // Test whether speculation rules prerendering is processed again on pages
 // restored from BFCache via backward navigation.
 // When the eagerness is kEager(default), speculation rules prerendering will no
 // longer be processed after restoration.
 // TODO(crbug.com/1449163): add test cases on kModerate, kConservative.
-IN_PROC_BROWSER_TEST_F(PrerenderBackForwardCacheRestorationBrowserTest,
+IN_PROC_BROWSER_TEST_P(PrerenderBackForwardCacheRestorationBrowserTest,
                        RestoredViaBackwardNavigation) {
   const GURL initial_url = GetUrl("/empty.html");
   const GURL prerendering_url_a = GetUrl("/empty.html?prerender_a");
@@ -7734,10 +7712,27 @@ IN_PROC_BROWSER_TEST_F(PrerenderBackForwardCacheRestorationBrowserTest,
   ASSERT_EQ(web_contents()->GetLastCommittedURL(), initial_url);
   ExpectRestored(FROM_HERE);
 
-  // The initial page contains speculation rules for page A/B, but neither of
-  // them are processed on BFCache restoration.
-  EXPECT_FALSE(HasHostForUrl(prerendering_url_a));
-  EXPECT_FALSE(HasHostForUrl(prerendering_url_b));
+  if (IsRetriggerPreloadingOnBFCacheRestorationEnabled()) {
+    // Preredering for both the page A and the page B will be processed by
+    // retriggering.
+    WaitForPrerenderLoadCompletion(prerendering_url_a);
+    WaitForPrerenderLoadCompletion(prerendering_url_b);
+    int host_id_a_retriggered = GetHostForUrl(prerendering_url_a);
+
+    test::PrerenderHostObserver prerender_observer_a_retriggered(
+        *web_contents(), host_id_a_retriggered);
+
+    // Activate the page A again.
+    NavigatePrimaryPage(prerendering_url_a);
+    prerender_observer_a_retriggered.WaitForActivation();
+    ASSERT_EQ(web_contents()->GetLastCommittedURL(), prerendering_url_a);
+    EXPECT_TRUE(prerender_observer_a_retriggered.was_activated());
+  } else {
+    // The initial page contains speculation rules for page A/B, but neither of
+    // them are processed on BFCache restoration.
+    EXPECT_FALSE(HasHostForUrl(prerendering_url_a));
+    EXPECT_FALSE(HasHostForUrl(prerendering_url_b));
+  }
 }
 
 // Tests that PrerenderHostRegistry can hold up to two prerendering for the
@@ -8248,13 +8243,12 @@ IN_PROC_BROWSER_TEST_F(
   // Add a same-site cross-origin prerender rule.
   test::PrerenderHostRegistryObserver registry_observer(*web_contents_impl());
   AddPrerenderAsync(kPrerenderingUrl);
-  // Wait for PrerenderHostRegistry to receive the cross-origin prerender
-  // request, but it will be ignored because the flag
-  // SameSiteCrossOriginForSpeculationRulesPrerender2 is enabled without an
-  // opt-in header.
+  // Wait for PrerenderHostRegistry to receive the same-site cross-origin
+  // prerender request, but it will be ignored because the opt-in header is
+  // missing.
   registry_observer.WaitForTrigger(kPrerenderingUrl);
-  // Navigate to the prerendered page and this should trigger cancellation
-  // because of a lack of the opt in header.
+  // Navigate to the prerendering URL. This should result in regular navigation,
+  // not prerender activation.
   NavigatePrimaryPage(kPrerenderingUrl);
 
   ExpectFinalStatusForSpeculationRule(
@@ -9053,6 +9047,41 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, MixedContent) {
             RenderFrameHost::kNoFrameTreeNodeId);
 
   ExpectFinalStatusForSpeculationRule(PrerenderFinalStatus::kMixedContent);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderBlockedByCspNavigateTo) {
+  const GURL initial_url = GetUrl("/empty.html");
+  ASSERT_TRUE(NavigateToURL(shell(), initial_url));
+
+  // Add a Content-Security-Policy meta tag that restricts prerendering
+  // navigation URLs.
+  EXPECT_TRUE(ExecJs(current_frame_host(), R"(
+    const meta = document.createElement('meta');
+    meta.httpEquiv = "Content-Security-Policy";
+    meta.content = "navigate-to https://a.test:*/empty.html";
+    document.getElementsByTagName('head')[0].appendChild(meta);
+  )"));
+
+  const char* console_pattern =
+      "Refused to navigate to 'https://a.test:*/title1.html' because it "
+      "violates the following Content Security Policy directive: \"navigate-to "
+      "https://a.test:*/empty.html\".\n";
+
+  // Prerender a URL that will be blocked by the navigate-to. As navigation
+  // fails, AddPrerender() doesn't finish. We need to wait its failure by
+  // monitoring a console error for the navigation blocking.
+  WebContentsConsoleObserver console_observer(web_contents());
+  console_observer.SetPattern(console_pattern);
+  const GURL disallowed_url = GetUrl("/title1.html");
+  AddPrerenderAsync(disallowed_url);
+  ASSERT_TRUE(console_observer.Wait());
+
+  EXPECT_FALSE(
+      web_contents_impl()->GetPrerenderHostRegistry()->FindHostByUrlForTesting(
+          disallowed_url));
+  ASSERT_EQ(1u, console_observer.messages().size());
+  // Just in case, no server access should be observed.
+  EXPECT_EQ(GetRequestCount(disallowed_url), 0);
 }
 
 // Check that the Content-Security-Policy set via HTTP header applies after the

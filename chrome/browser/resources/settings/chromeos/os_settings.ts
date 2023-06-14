@@ -95,6 +95,7 @@ export {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/p
 export {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 export {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 export {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
+export {SettingsAudioElement} from './device_page/audio.js';
 export {setCrosAudioConfigForTesting} from './device_page/cros_audio_config.js';
 export {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, IdleBehavior, LidClosedBehavior, NoteAppInfo, NoteAppLockScreenSupport, setDisplayApiForTesting, StorageSpaceState} from './device_page/device_page_browser_proxy.js';
 export * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
@@ -115,6 +116,7 @@ export {SettingsPerDeviceTouchpadSubsectionElement} from './device_page/per_devi
 export {OsSettingsCellularSetupDialogElement} from './internet_page/cellular_setup_dialog.js';
 export {HotspotConfigDialogElement, WiFiSecurityType} from './internet_page/hotspot_config_dialog.js';
 export {HotspotSummaryItemElement} from './internet_page/hotspot_summary_item.js';
+export {InternetConfigElement} from './internet_page/internet_config.js';
 export {InternetPageBrowserProxy, InternetPageBrowserProxyImpl} from './internet_page/internet_page_browser_proxy.js';
 export {NetworkSummaryElement} from './internet_page/network_summary.js';
 export {NetworkSummaryItemElement} from './internet_page/network_summary_item.js';

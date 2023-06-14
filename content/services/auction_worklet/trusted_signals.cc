@@ -20,8 +20,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
-#include "content/services/auction_worklet/auction_downloader.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
+#include "content/services/auction_worklet/public/cpp/auction_downloader.h"
 #include "gin/converter.h"
 #include "net/base/parse_number.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
@@ -445,7 +445,9 @@ void TrustedSignals::StartDownload(
     const GURL& full_signals_url) {
   download_start_time_ = base::TimeTicks::Now();
   auction_downloader_ = std::make_unique<AuctionDownloader>(
-      url_loader_factory, full_signals_url, AuctionDownloader::MimeType::kJson,
+      url_loader_factory, full_signals_url,
+      AuctionDownloader::DownloadMode::kActualDownload,
+      AuctionDownloader::MimeType::kJson,
       base::BindOnce(&TrustedSignals::OnDownloadComplete,
                      base::Unretained(this)));
 }

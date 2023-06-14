@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_controls.h"
 
+#include "base/strings/strcat.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
@@ -139,8 +140,6 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 
 TEST_F(ExtensionsToolbarControlsUnitTest,
        RequestAccessButtonVisibility_NavigationBetweenPages) {
-  content::WebContentsTester* web_contents_tester =
-      AddWebContentsAndGetTester();
   const GURL url_a("http://www.a.com");
   const GURL url_b("http://www.b.com");
 
@@ -152,21 +151,19 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   EXPECT_FALSE(IsRequestAccessButtonVisible());
 
   // Navigate to an url the extension requests access to.
-  web_contents_tester->NavigateAndCommit(url_a);
+  NavigateAndCommit(url_a);
   EXPECT_TRUE(IsRequestAccessButtonVisible());
   EXPECT_EQ(
       request_access_button()->GetText(),
       l10n_util::GetStringFUTF16Int(IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON, 1));
 
   // Navigate to an url the extension does not request access to.
-  web_contents_tester->NavigateAndCommit(url_b);
+  NavigateAndCommit(url_b);
   EXPECT_FALSE(IsRequestAccessButtonVisible());
 }
 
 TEST_F(ExtensionsToolbarControlsUnitTest,
        RequestAccessButtonVisibility_ContextMenuChangesHostPermissions) {
-  content::WebContentsTester* web_contents_tester =
-      AddWebContentsAndGetTester();
   const GURL url_a("http://www.a.com");
   const GURL url_b("http://www.b.com");
 
@@ -178,7 +175,7 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 
   // Navigate to an url the extension should have access to as part of
   // <all_urls>, since permissions are granted by default.
-  web_contents_tester->NavigateAndCommit(url_a);
+  NavigateAndCommit(url_a);
   EXPECT_FALSE(IsRequestAccessButtonVisible());
 
   extensions::ExtensionContextMenuModel context_menu(
@@ -220,14 +217,12 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 
 TEST_F(ExtensionsToolbarControlsUnitTest,
        RequestAccessButtonVisibility_MultipleExtensions) {
-  content::WebContentsTester* web_contents_tester =
-      AddWebContentsAndGetTester();
   const GURL url_a("http://www.a.com");
   const GURL url_b("http://www.b.com");
 
   // Navigate to a.com and since there are no extensions installed yet, no
   // extension is requesting access to the current site.
-  web_contents_tester->NavigateAndCommit(url_a);
+  NavigateAndCommit(url_a);
   EXPECT_FALSE(IsRequestAccessButtonVisible());
 
   // Add an extension that doesn't request host permissions.
@@ -236,13 +231,16 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 
   // Add an extension that only requests access to a.com, and
   // withhold host permissions.
-  auto extension_a =
-      InstallExtensionWithHostPermissions("Extension A", {url_a.spec()});
-  WithholdHostPermissions(extension_a.get());
+  auto extension =
+      InstallExtensionWithHostPermissions("Extension", {url_a.spec()});
+  WithholdHostPermissions(extension.get());
   EXPECT_TRUE(IsRequestAccessButtonVisible());
   EXPECT_EQ(
       request_access_button()->GetText(),
       l10n_util::GetStringFUTF16Int(IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON, 1));
+  std::u16string tooltip = base::UTF8ToUTF16(
+      base::StrCat({"Click to allow on a.com:\n", extension->name()}));
+  EXPECT_EQ(request_access_button()->GetTooltipText(gfx::Point()), tooltip);
 
   // Add an extension with all urls host permissions, and withhold host
   // permissions.
@@ -253,13 +251,20 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
   EXPECT_EQ(
       request_access_button()->GetText(),
       l10n_util::GetStringFUTF16Int(IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON, 2));
+  tooltip = base::UTF8ToUTF16(
+      base::StrCat({"Click to allow on a.com:\n", extension->name(), "\n",
+                    extension_all_urls->name()}));
+  EXPECT_EQ(request_access_button()->GetTooltipText(gfx::Point()), tooltip);
 
   // Navigate to a different url. Only "all_urls" should request access.
-  web_contents_tester->NavigateAndCommit(url_b);
+  NavigateAndCommit(url_b);
   EXPECT_TRUE(IsRequestAccessButtonVisible());
   EXPECT_EQ(
       request_access_button()->GetText(),
       l10n_util::GetStringFUTF16Int(IDS_EXTENSIONS_REQUEST_ACCESS_BUTTON, 1));
+  tooltip = base::UTF8ToUTF16(
+      base::StrCat({"Click to allow on b.com:\n", extension_all_urls->name()}));
+  EXPECT_EQ(request_access_button()->GetTooltipText(gfx::Point()), tooltip);
 
   // Remove the only extension that requests access to the current site.
   UninstallExtension(extension_all_urls->id());
@@ -272,8 +277,6 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 // ones with just activeTab.
 TEST_F(ExtensionsToolbarControlsUnitTest,
        RequestAccessButtonVisibility_ActiveTabExtensions) {
-  content::WebContentsTester* web_contents_tester =
-      AddWebContentsAndGetTester();
   const GURL requested_url("http://www.requested-url.com");
 
   InstallExtensionWithPermissions("Extension A", {"activeTab"});
@@ -281,13 +284,12 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
       "Extension B", {requested_url.spec(), "activeTab"});
   WithholdHostPermissions(extension.get());
 
-  web_contents_tester->NavigateAndCommit(requested_url);
+  NavigateAndCommit(requested_url);
   EXPECT_TRUE(IsRequestAccessButtonVisible());
   EXPECT_THAT(request_access_button()->GetExtensionIdsForTesting(),
               testing::ElementsAre(extension->id()));
 
-  web_contents_tester->NavigateAndCommit(
-      GURL("http://www.non-requested-url.com"));
+  NavigateAndCommit(GURL("http://www.non-requested-url.com"));
   EXPECT_FALSE(IsRequestAccessButtonVisible());
 }
 
@@ -295,8 +297,6 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 // selected.
 TEST_F(ExtensionsToolbarControlsUnitTest,
        RequestAccessButtonVisibility_UserSiteSetting) {
-  content::WebContentsTester* web_contents_tester =
-      AddWebContentsAndGetTester();
   const GURL url("http://www.url.com");
   auto url_origin = url::Origin::Create(url);
 
@@ -306,8 +306,7 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
       InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
   WithholdHostPermissions(extension.get());
 
-  web_contents_tester->NavigateAndCommit(url);
-  WaitForAnimation();
+  NavigateAndCommit(url);
 
   // A site has "customize by extensions" site setting by default,
   ASSERT_EQ(
@@ -341,9 +340,6 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 // the button is not shown in the request access button.
 TEST_F(ExtensionsToolbarControlsUnitTest,
        RequestAccessButtonVisibility_ExtensionsNotAllowedInButton) {
-  content::WebContentsTester* web_contents_tester =
-      AddWebContentsAndGetTester();
-
   // Add two extensions that request access to all urls, and withhold their
   // site access.
   auto extension_a =
@@ -365,7 +361,7 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 
   // Navigate to an url that both extensions requests access to.
   const GURL url("http://www.example.com");
-  web_contents_tester->NavigateAndCommit(url);
+  NavigateAndCommit(url);
   EXPECT_TRUE(IsRequestAccessButtonVisible());
   EXPECT_EQ(
       request_access_button()->GetText(),
@@ -387,9 +383,6 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 
 TEST_F(ExtensionsToolbarControlsUnitTest,
        RequestAccessButtonVisibility_ExtensionDismissedRequests) {
-  content::WebContentsTester* web_contents_tester =
-      AddWebContentsAndGetTester();
-
   // Add two extensions that request access to all urls, and withhold their
   // site access.
   auto extension_a =
@@ -411,7 +404,7 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 
   // Navigate to an url that both extensions requests access to.
   const GURL url("http://www.example.com");
-  web_contents_tester->NavigateAndCommit(url);
+  NavigateAndCommit(url);
   EXPECT_TRUE(IsRequestAccessButtonVisible());
   EXPECT_EQ(
       request_access_button()->GetText(),
@@ -434,16 +427,12 @@ TEST_F(ExtensionsToolbarControlsUnitTest,
 
 TEST_F(ExtensionsToolbarControlsUnitTest,
        RequestAccessButton_OnPressedExecuteAction) {
-  content::WebContentsTester* web_contents_tester =
-      AddWebContentsAndGetTester();
-
   auto extension =
       InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
   WithholdHostPermissions(extension.get());
 
   const GURL url("http://www.example.com");
-  web_contents_tester->NavigateAndCommit(url);
-  WaitForAnimation();
+  NavigateAndCommit(url);
   LayoutContainerIfNecessary();
 
   constexpr char kActivatedUserAction[] =
@@ -505,8 +494,6 @@ class ExtensionsToolbarControlsWithPermittedSitesUnitTest
 // selected.
 TEST_F(ExtensionsToolbarControlsWithPermittedSitesUnitTest,
        RequestAccessButtonVisibilityOnPermittedSites) {
-  content::WebContentsTester* web_contents_tester =
-      AddWebContentsAndGetTester();
   const GURL url("http://www.url.com");
   auto url_origin = url::Origin::Create(url);
 
@@ -516,8 +503,7 @@ TEST_F(ExtensionsToolbarControlsWithPermittedSitesUnitTest,
       InstallExtensionWithHostPermissions("Extension", {"<all_urls>"});
   WithholdHostPermissions(extension.get());
 
-  web_contents_tester->NavigateAndCommit(url);
-  WaitForAnimation();
+  NavigateAndCommit(url);
 
   // A site has "customize by extensions" site setting by default,
   ASSERT_EQ(

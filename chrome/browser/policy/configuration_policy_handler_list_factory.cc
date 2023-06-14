@@ -895,9 +895,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kChromeOsLockOnIdleSuspend,
     ash::prefs::kEnableAutoScreenLock,
     base::Value::Type::BOOLEAN },
-  { key::kChromeOsReleaseChannel,
-    prefs::kChromeOsReleaseChannel,
-    base::Value::Type::STRING },
   { key::kDriveDisabled,
     drive::prefs::kDisableDrive,
     base::Value::Type::BOOLEAN },
@@ -1898,6 +1895,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kBeforeunloadEventCancelByPreventDefaultEnabled,
     policy_prefs::kBeforeunloadEventCancelByPreventDefaultEnabled,
     base::Value::Type::BOOLEAN},
+#if !BUILDFLAG(IS_FUCHSIA)
+  { key::kAllowBackForwardCacheForCacheControlNoStorePageEnabled,
+    policy_prefs::kAllowBackForwardCacheForCacheControlNoStorePageEnabled,
+    base::Value::Type::BOOLEAN},
+#endif  // !BUILDFLAG(IS_FUCHSIA)
 };
 // clang-format on
 

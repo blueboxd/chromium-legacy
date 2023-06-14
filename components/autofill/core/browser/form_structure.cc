@@ -376,13 +376,13 @@ void FormStructure::DetermineHeuristicTypes(
   UpdateAutofillCount();
   IdentifySections(/*ignore_autocomplete=*/false);
 
-  FormStructureRationalizer rationalizer(&fields_, form_signature_);
+  FormStructureRationalizer rationalizer(&fields_);
   rationalizer.RationalizeAutocompleteAttributes(log_manager);
   if (base::FeatureList::IsEnabled(features::kAutofillPageLanguageDetection)) {
-    rationalizer.RationalizeRepeatedFields(form_interactions_ukm_logger,
-                                           log_manager);
+    rationalizer.RationalizeRepeatedFields(
+        form_signature_, form_interactions_ukm_logger, log_manager);
   }
-  rationalizer.RationalizeFieldTypePredictions(log_manager);
+  rationalizer.RationalizeFieldTypePredictions(main_frame_origin_, log_manager);
 
   // Log the field type predicted by rationalization.
   // The sections are mapped to consecutive natural numbers starting at 1.
@@ -698,12 +698,12 @@ void FormStructure::ProcessQueryResponse(
         &AutofillField::server_type));
 
     form->UpdateAutofillCount();
-    FormStructureRationalizer rationalizer(&(form->fields_),
-                                           form->form_signature_);
+    FormStructureRationalizer rationalizer(&form->fields_);
     rationalizer.RationalizeAutocompleteAttributes(log_manager);
-    rationalizer.RationalizeRepeatedFields(form_interactions_ukm_logger,
-                                           log_manager);
-    rationalizer.RationalizeFieldTypePredictions(log_manager);
+    rationalizer.RationalizeRepeatedFields(
+        form->form_signature_, form_interactions_ukm_logger, log_manager);
+    rationalizer.RationalizeFieldTypePredictions(form->main_frame_origin_,
+                                                 log_manager);
     // TODO(crbug.com/1154080): By calling this with true, autocomplete section
     // attributes will be ignored.
     form->IdentifySections(/*ignore_autocomplete=*/true);
@@ -1703,7 +1703,7 @@ void FormStructure::set_randomized_encoder(
 void FormStructure::RationalizePhoneNumbersInSection(const Section& section) {
   if (base::Contains(phone_rationalized_, section))
     return;
-  FormStructureRationalizer rationalizer(&fields_, form_signature_);
+  FormStructureRationalizer rationalizer(&fields_);
   rationalizer.RationalizePhoneNumbersInSection(section);
   phone_rationalized_.insert(section);
 }

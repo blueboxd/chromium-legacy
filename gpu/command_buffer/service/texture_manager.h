@@ -79,11 +79,8 @@ class GPU_GLES2_EXPORT TexturePassthrough final
   // native GL texture in the destructor
   void MarkContextLost();
 
-#if !BUILDFLAG(IS_ANDROID)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_APPLE)
   void SetLevelImage(GLenum target, GLint level, gl::GLImage* image);
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-  gl::GLImage* GetLevelImage(GLenum target, GLint level) const;
-#endif
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -139,7 +136,9 @@ class GPU_GLES2_EXPORT TexturePassthrough final
     GLenum format = 0;
     GLenum type = 0;
 
+#if !BUILDFLAG(IS_APPLE)
     scoped_refptr<gl::GLImage> image;
+#endif
   };
 
   LevelInfo* GetLevelInfo(GLenum target, GLint level);
@@ -153,12 +152,6 @@ class GPU_GLES2_EXPORT TexturePassthrough final
 class GPU_GLES2_EXPORT Texture final : public TextureBase {
  public:
   enum ImageState {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-    // If an image is associated with the texture and image state is UNBOUND,
-    // then sampling out of the texture or using it as a target for drawing
-    // will not read/write from/to the image.
-    UNBOUND,
-#endif
     // If image state is BOUND, then sampling from the texture will return the
     // contents of the image and using it as a target will modify the image.
     BOUND,
@@ -198,7 +191,7 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
     friend class Texture;
 
     // Nothing outside of Texture should directly access the binding state of
-    // the image; clients can use Texture::HasUnboundLevelImage().
+    // the image.
     ImageState image_state = NOIMAGE;
   };
 
@@ -319,14 +312,6 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   // set by the BindToServiceId.
   void SetBoundLevelImage(GLenum target, GLint level, gl::GLImage* image);
 
-#if BUILDFLAG(IS_APPLE)
-  // Set an image that needs binding for a particular level. If a
-  // GLImage was previously set with BindToServiceId(), this will reset
-  // |service_id_| back to |owned_service_id_|, removing the service id
-  // override set by the BindToServiceId.
-  void SetUnboundLevelImage(GLenum target, GLint level, gl::GLImage* image);
-#endif
-
   // Unset the image for a particular level. After this call, GetLevelImage()
   // will return nullptr.
   void UnsetLevelImage(GLenum target, GLint level);
@@ -338,26 +323,9 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   void BindToServiceId(GLuint service_id);
 #endif
 
-#if BUILDFLAG(IS_MAC)
-  // Marks the image for the given level as bound.
-  void MarkLevelImageBound(GLenum target, GLint level);
-#endif
-
   bool CompatibleWithSamplerUniformType(
       GLenum type,
       const SamplerState& sampler_state) const;
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
-  // Get the image associated with a particular level. Returns NULL if level
-  // does not exist.
-  gl::GLImage* GetLevelImage(GLint target, GLint level) const;
-#endif
-
-#if BUILDFLAG(IS_MAC)
-  // Returns true iff (a) there is an image associated with the particular
-  // level, and (b) the image is unbound.
-  bool HasUnboundLevelImage(GLint target, GLint level) const;
-#endif
 
   bool HasImages() const {
     return has_images_;
@@ -1128,13 +1096,6 @@ class GPU_GLES2_EXPORT TextureManager
                           GLenum target,
                           GLint level,
                           gl::GLImage* image);
-
-#if BUILDFLAG(IS_APPLE)
-  void SetUnboundLevelImage(TextureRef* ref,
-                            GLenum target,
-                            GLint level,
-                            gl::GLImage* image);
-#endif
 
   void UnsetLevelImage(TextureRef* ref, GLenum target, GLint level);
 

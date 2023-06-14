@@ -523,6 +523,10 @@ enum class ToolbarKind {
   [self destroyViewControllerDependencies];
 }
 
+- (void)dealloc {
+  DCHECK(!_bookmarksCoordinator);
+}
+
 #pragma mark - Public
 
 - (BOOL)isPlayingTTS {
@@ -1277,15 +1281,11 @@ enum class ToolbarKind {
   browserViewController.reauthHandler =
       HandlerForProtocol(self.dispatcher, IncognitoReauthCommands);
 
-  SceneState* sceneState =
-      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-
-  browserViewController.nonModalPromoScheduler =
-      [NonModalDefaultBrowserPromoSchedulerSceneAgent
-          agentFromScene:sceneState];
   browserViewController.nonModalPromoPresentationDelegate = self;
 
   if (browserState->IsOffTheRecord()) {
+    SceneState* sceneState =
+        SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
     IncognitoReauthSceneAgent* reauthAgent =
         [IncognitoReauthSceneAgent agentFromScene:sceneState];
 
@@ -1426,11 +1426,6 @@ enum class ToolbarKind {
 }
 
 - (void)showReadingList {
-  // TODO(crbug.com/1434711) Convert the DCHECK to CHECK and remove the if block
-  // below when the DCHECK will be fixed. The coordinator should be nil at this
-  // point.
-  DCHECK(!self.readingListCoordinator)
-      << base::SysNSStringToUTF8(self.readingListCoordinator.description);
   if (self.readingListCoordinator) {
     [self closeReadingList];
   }

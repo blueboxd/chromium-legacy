@@ -1772,14 +1772,14 @@ static_library("browser") {
     "sync/sessions/sync_sessions_web_contents_router.h",
     "sync/sessions/sync_sessions_web_contents_router_factory.cc",
     "sync/sessions/sync_sessions_web_contents_router_factory.h",
-    "sync/sync_encryption_keys_tab_helper.cc",
-    "sync/sync_encryption_keys_tab_helper.h",
     "sync/sync_invalidations_service_factory.cc",
     "sync/sync_invalidations_service_factory.h",
     "sync/sync_service_factory.cc",
     "sync/sync_service_factory.h",
     "sync/sync_startup_tracker.cc",
     "sync/sync_startup_tracker.h",
+    "sync/trusted_vault_encryption_keys_tab_helper.cc",
+    "sync/trusted_vault_encryption_keys_tab_helper.h",
     "sync/user_event_service_factory.cc",
     "sync/user_event_service_factory.h",
     "tab_contents/navigation_metrics_recorder.cc",
@@ -2012,6 +2012,7 @@ static_library("browser") {
     "//chrome/browser/push_messaging:budget_proto",
     "//chrome/browser/resource_coordinator:mojo_bindings",
     "//chrome/browser/resource_coordinator:tab_manager_features",
+    "//chrome/browser/resources/accessibility:resources",
     "//chrome/browser/safe_browsing",
     "//chrome/browser/safe_browsing:advanced_protection",
     "//chrome/browser/safe_browsing:metrics_collector",
@@ -4921,6 +4922,8 @@ static_library("browser") {
       "policy/status_provider/user_cloud_policy_status_provider_chromeos.h",
       "resource_coordinator/tab_manager_delegate_chromeos.cc",
       "resource_coordinator/tab_manager_delegate_chromeos.h",
+      "scalable_iph/scalable_iph_factory.cc",
+      "scalable_iph/scalable_iph_factory.h",
       "sharesheet/share_action/example_action.cc",
       "sharesheet/share_action/example_action.h",
       "sharesheet/share_action/share_action.cc",
@@ -5141,6 +5144,8 @@ static_library("browser") {
       "//chromeos/ash/components/memory",
       "//chromeos/ash/components/nearby/common/client",
       "//chromeos/ash/components/network",
+      "//chromeos/ash/components/scalable_iph",
+      "//chromeos/ash/components/scalable_iph:scalable_iph_delegate",
       "//chromeos/ash/components/settings",
       "//chromeos/ash/components/standalone_browser",
       "//chromeos/ash/components/sync_wifi",
@@ -7925,16 +7930,6 @@ grit("dev_ui_browser_resources") {
     "grit/dev_ui_browser_resources.h",
     "dev_ui_browser_resources.pak",
   ]
-
-  deps = []
-
-  if (is_android || is_linux || is_chromeos || is_win) {
-    deps += [ "//chrome/browser/resources/sandbox_internals:build_ts" ]
-  }
-
-  if (is_android) {
-    deps += [ "//chrome/browser/resources/internals/query_tiles:build_ts" ]
-  }
 }
 
 action("expired_flags_list_gen") {

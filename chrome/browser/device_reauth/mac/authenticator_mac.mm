@@ -28,6 +28,12 @@ bool AuthenticatorMac::CheckIfBiometricsAvailable() {
   }
 }
 
+bool AuthenticatorMac::CheckIfBiometricsOrScreenLockAvailable() {
+  LAContext* context = [[LAContext alloc] init];
+  return [context canEvaluatePolicy:LAPolicyDeviceOwnerAuthentication
+                              error:nil];
+}
+
 bool AuthenticatorMac::AuthenticateUserWithNonBiometrics(
     const std::u16string& message) {
   return password_manager_util_mac::AuthenticateUser(message);

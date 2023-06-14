@@ -29,6 +29,7 @@ extern const char kEmojiSuggestionEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kEmojiSuggestionEnterpriseAllowed[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChargingSoundsEnabled[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLowBatterySoundEnabled[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kAudioDevicesMute[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAudioDevicesGainPercent[];
@@ -211,13 +212,7 @@ extern const char kAccessibilityAutoclickMenuPosition[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityColorFiltering[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kAccessibilityGreyscaleAmount[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kAccessibilitySaturationAmount[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kAccessibilitySepiaAmount[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kAccessibilityHueRotationAmount[];
+extern const char kAccessibilityColorFilteringHasBeenSetup[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kAccessibilityColorVisionCorrectionAmount[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -448,6 +443,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kShelfAutoHideTabletModeBehaviorLocal[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfLauncherNudge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShelfPreferences[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowDeskButtonInShelf[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDeviceUsesDesks[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowLogoutButtonInTray[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLogoutDialogDurationMs[];

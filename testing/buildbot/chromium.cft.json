@@ -1187,25 +1187,6 @@
         "test_id_prefix": "ninja://printing:printing_unittests/"
       },
       {
-        "ci_only": true,
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "pthreadpool_unittests",
-        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
-      },
-      {
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3388,24 +3369,6 @@
         "test_id_prefix": "ninja://printing:printing_unittests/"
       },
       {
-        "ci_only": true,
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-18.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "pthreadpool_unittests",
-        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
-      },
-      {
         "isolate_profile_data": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -4108,7 +4071,8 @@
           "--flag-specific=disable-site-isolation-trials",
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json",
-          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw"
+          "--additional-env-var=LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%2m.profraw",
+          "--flag-specific=chrome-for-testing"
         ],
         "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
@@ -7492,25 +7456,6 @@
         },
         "test": "printing_unittests",
         "test_id_prefix": "ninja://printing:printing_unittests/"
-      },
-      {
-        "ci_only": true,
-        "isolate_profile_data": true,
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "pthreadpool_unittests",
-        "test_id_prefix": "ninja://third_party/pthreadpool:pthreadpool_unittests/"
       },
       {
         "isolate_profile_data": true,

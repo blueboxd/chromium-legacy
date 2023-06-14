@@ -333,15 +333,14 @@ class RasterBufferProviderTest
 
  private:
   void Create3dResourceProvider() {
-    auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
-    gl_owned->set_support_sync_query(true);
-    context_provider_ = viz::TestContextProvider::Create(std::move(gl_owned));
+    context_provider_ = viz::TestContextProvider::Create();
     context_provider_->BindToCurrentSequence();
 
     worker_context_provider_ = viz::TestContextProvider::CreateWorker();
     DCHECK(worker_context_provider_);
 
-    layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
+    layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d(
+        context_provider_, worker_context_provider_);
     resource_provider_ = std::make_unique<viz::ClientResourceProvider>();
 
     pending_raster_queries_ =
@@ -388,21 +387,6 @@ TEST_P(RasterBufferProviderTest, Basic) {
   ASSERT_EQ(2u, completed_tasks().size());
   EXPECT_FALSE(completed_tasks()[0].canceled);
   EXPECT_FALSE(completed_tasks()[1].canceled);
-}
-
-TEST_P(RasterBufferProviderTest, FailedMapResource) {
-  if (GetParam() == RASTER_BUFFER_PROVIDER_TYPE_BITMAP)
-    return;
-
-  viz::TestGLES2Interface* gl = context_provider_->TestContextGL();
-  gl->set_times_map_buffer_chromium_succeeds(0);
-  AppendTask(0u);
-  ScheduleTasks();
-
-  RunMessageLoopUntilAllTasksHaveCompleted();
-
-  ASSERT_EQ(1u, completed_tasks().size());
-  EXPECT_FALSE(completed_tasks()[0].canceled);
 }
 
 // This test checks that replacing a pending raster task with another does

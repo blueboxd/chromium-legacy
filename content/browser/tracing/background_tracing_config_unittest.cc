@@ -4,17 +4,24 @@
 
 #include <memory>
 
+#include "base/base_paths.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/system/sys_info.h"
+#include "base/test/bind.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_proto_loader.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/perfetto/protos/perfetto/config/chrome/scenario_config.gen.h"
 
 namespace content {
 
@@ -29,6 +36,27 @@ class MockNetworkChangeNotifier : public net::NetworkChangeNotifier {
   ConnectionType type_;
 };
 
+base::FilePath GetTestDataRoot() {
+  base::FilePath test_data_root =
+      base::PathService::CheckedGet(base::DIR_GEN_TEST_DATA_ROOT);
+#if !BUILDFLAG(IS_FUCHSIA)
+  test_data_root = test_data_root.Append(FILE_PATH_LITERAL("gen"));
+#endif  // !BUILDFLAG(IS_FUCHSIA)
+  return test_data_root;
+}
+
+void CreateRuleConfig(const std::string& proto_text,
+                      perfetto::protos::gen::TriggerRule& destination) {
+  content::TestProtoLoader loader;
+  std::string serialized_message;
+  loader.ParseFromText(GetTestDataRoot().Append(FILE_PATH_LITERAL(
+                           "third_party/perfetto/protos/perfetto/"
+                           "config/chrome/scenario_config.descriptor")),
+                       "perfetto.protos.TriggerRule", proto_text,
+                       serialized_message);
+  ASSERT_TRUE(destination.ParseFromString(serialized_message));
+}
+
 }  // namespace
 
 class BackgroundTracingConfigTest : public testing::Test {
@@ -36,7 +64,8 @@ class BackgroundTracingConfigTest : public testing::Test {
   BackgroundTracingConfigTest() = default;
 
  protected:
-  BrowserTaskEnvironment task_environment_;
+  BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
 
 std::unique_ptr<BackgroundTracingConfigImpl> ReadFromJSONString(
@@ -598,6 +627,156 @@ TEST_F(BackgroundTracingConfigTest, BufferLimitConfig) {
   notifier.set_type(net::NetworkChangeNotifier::CONNECTION_WIFI);
   EXPECT_LE(800u, config->GetTraceConfig().GetTraceBufferSizeInKb());
   EXPECT_EQ(500u, config->GetTraceUploadLimitKb());
+}
+
+TEST_F(BackgroundTracingConfigTest, HistogramRuleFromValidProto) {
+  perfetto::protos::gen::TriggerRule config;
+  CreateRuleConfig(
+      R"pb(
+        name: "test_rule"
+        trigger_chance: 0.5
+        delay_ms: 500
+        histogram: { histogram_name: "foo" min_value: 1 max_value: 2 }
+      )pb",
+      config);
+  auto rule = BackgroundTracingRule::Create(config);
+  auto result = rule->ToProtoForTesting();
+  EXPECT_EQ("test_rule", result.name());
+  EXPECT_EQ(0.5, result.trigger_chance());
+  EXPECT_EQ(500U, result.delay_ms());
+  EXPECT_TRUE(result.has_histogram());
+  EXPECT_EQ("foo", result.histogram().histogram_name());
+  EXPECT_EQ(1, result.histogram().min_value());
+  EXPECT_EQ(2, result.histogram().max_value());
+}
+
+TEST_F(BackgroundTracingConfigTest, NamedRuleFromValidProto) {
+  perfetto::protos::gen::TriggerRule config;
+  CreateRuleConfig(R"pb(
+                     name: "test_rule"
+                     trigger_chance: 0.5
+                     delay_ms: 500
+                     manual_trigger_name: "test_trigger"
+                   )pb",
+                   config);
+  auto rule = BackgroundTracingRule::Create(config);
+  auto result = rule->ToProtoForTesting();
+  EXPECT_EQ("test_rule", result.name());
+  EXPECT_EQ(0.5, result.trigger_chance());
+  EXPECT_EQ(500U, result.delay_ms());
+  EXPECT_EQ("test_trigger", result.manual_trigger_name());
+}
+
+TEST_F(BackgroundTracingConfigTest, TimerRuleFromValidProto) {
+  perfetto::protos::gen::TriggerRule config;
+  CreateRuleConfig(R"pb(
+                     name: "test_rule" trigger_chance: 0.5 delay_ms: 500
+                   )pb",
+                   config);
+  auto rule = BackgroundTracingRule::Create(config);
+  auto result = rule->ToProtoForTesting();
+  EXPECT_EQ("test_rule", result.name());
+  EXPECT_EQ(0.5, result.trigger_chance());
+  EXPECT_EQ(500U, result.delay_ms());
+}
+
+TEST_F(BackgroundTracingConfigTest, TimerRuleTriggersAfterDelay) {
+  perfetto::protos::gen::TriggerRule config;
+  CreateRuleConfig(R"pb(
+                     name: "test_rule" delay_ms: 10000
+                   )pb",
+                   config);
+
+  base::TimeTicks start = base::TimeTicks::Now();
+  auto rule = BackgroundTracingRule::Create(config);
+  base::RunLoop run_loop;
+  rule->Install(base::BindLambdaForTesting([&](const BackgroundTracingRule*) {
+    run_loop.Quit();
+    return true;
+  }));
+  run_loop.Run();
+  DCHECK_GE(base::TimeTicks::Now(), start + base::Milliseconds(10000));
+  rule->Uninstall();
+}
+
+TEST_F(BackgroundTracingConfigTest, RepeatingIntervalRuleFromValidProto) {
+  perfetto::protos::gen::TriggerRule config;
+  CreateRuleConfig(
+      R"pb(
+        name: "test_rule"
+        trigger_chance: 0.5
+        delay_ms: 500
+        repeating_interval: { period_ms: 1000 randomized: true }
+      )pb",
+      config);
+  auto rule = BackgroundTracingRule::Create(config);
+  auto result = rule->ToProtoForTesting();
+  EXPECT_EQ("test_rule", result.name());
+  EXPECT_EQ(0.5, result.trigger_chance());
+  EXPECT_EQ(500U, result.delay_ms());
+  EXPECT_TRUE(result.has_repeating_interval());
+  EXPECT_EQ(1000U, result.repeating_interval().period_ms());
+  EXPECT_TRUE(result.repeating_interval().randomized());
+}
+
+TEST_F(BackgroundTracingConfigTest, RepeatingIntervalRuleTriggersAfterDelay) {
+  perfetto::protos::gen::TriggerRule config;
+  CreateRuleConfig(R"pb(
+                     name: "test_rule"
+                     repeating_interval: { period_ms: 2000 }
+                   )pb",
+                   config);
+
+  base::TimeTicks start = base::TimeTicks::Now();
+  auto rule = BackgroundTracingRule::Create(config);
+  std::vector<base::TimeTicks> trigger_times;
+  auto callback = base::BindLambdaForTesting([&](const BackgroundTracingRule*) {
+    trigger_times.push_back(base::TimeTicks::Now());
+    return true;
+  });
+  rule->Install(callback);
+  task_environment_.FastForwardBy(base::Seconds(2));  // Triggers at 2s
+  rule->Uninstall();
+  task_environment_.FastForwardBy(base::Seconds(1));
+  rule->Install(callback);
+  task_environment_.FastForwardBy(base::Seconds(2));  // Triggers at 4s
+  rule->Uninstall();
+  task_environment_.FastForwardBy(base::Seconds(2));  // Skips 6s
+  rule->Install(callback);
+  task_environment_.FastForwardBy(base::Seconds(1));  // Triggers at 8s
+
+  EXPECT_EQ(std::vector<base::TimeTicks>({
+                start + base::Seconds(2),
+                start + base::Seconds(4),
+                start + base::Seconds(8),
+            }),
+            trigger_times);
+  rule->Uninstall();
+}
+
+TEST_F(BackgroundTracingConfigTest, RepeatingIntervalRuleTriggersRandomized) {
+  perfetto::protos::gen::TriggerRule config;
+  CreateRuleConfig(
+      R"pb(
+        name: "test_rule"
+        repeating_interval: { period_ms: 2000 randomized: true }
+      )pb",
+      config);
+
+  base::TimeTicks start = base::TimeTicks::Now();
+  auto rule = BackgroundTracingRule::Create(config);
+  std::vector<base::TimeTicks> trigger_times;
+  auto callback = base::BindLambdaForTesting([&](const BackgroundTracingRule*) {
+    trigger_times.push_back(base::TimeTicks::Now());
+    return true;
+  });
+  rule->Install(callback);
+  task_environment_.FastForwardBy(base::Seconds(4));  // Triggers twice
+  ASSERT_EQ(2U, trigger_times.size());
+  EXPECT_GE(trigger_times[0], start);
+  EXPECT_LT(trigger_times[0], trigger_times[1]);
+  EXPECT_GE(trigger_times[1], start + base::Seconds(2));
+  rule->Uninstall();
 }
 
 }  // namespace content

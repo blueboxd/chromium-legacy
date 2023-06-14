@@ -88,11 +88,14 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void EnterTestMode(const GURL& update_url,
                      const GURL& crash_upload_url,
-                     const GURL& device_management_url) const override {
+                     const GURL& device_management_url,
+                     const base::TimeDelta& idle_timeout) const override {
     RunCommand("enter_test_mode",
                {Param("update_url", update_url.spec()),
                 Param("crash_upload_url", crash_upload_url.spec()),
-                Param("device_management_url", device_management_url.spec())});
+                Param("device_management_url", device_management_url.spec()),
+                Param("idle_timeout",
+                      base::NumberToString(idle_timeout.InSeconds()))});
   }
 
   void ExitTestMode() const override { RunCommand("exit_test_mode"); }
@@ -217,6 +220,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   }
 
   void RunCrashMe() const override { RunCommand("run_crash_me", {}); }
+
+  void RunServer(int expected_exit_code, bool internal) const override {
+    RunCommand("run_server",
+               {Param("internal", internal ? "true" : "false"),
+                Param("exit_code", base::NumberToString(expected_exit_code))});
+  }
 
   void CheckForUpdate(const std::string& app_id) const override {
     RunCommand("check_for_update", {Param("app_id", app_id)});

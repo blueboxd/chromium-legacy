@@ -2844,7 +2844,7 @@
         'browser_config': 'web-engine-shell',
         'os_type': 'fuchsia',
         'mixins': [
-          'linux-bionic',
+          'linux-jammy',
         ],
         'swarming': {
           'dimension_sets': [
@@ -2881,7 +2881,7 @@
       },
       'fuchsia-fyi-x64-asan': {
         'mixins': [
-          'linux-bionic',
+          'linux-jammy',
         ],
         'swarming': {
           'dimension_sets': [
@@ -2900,7 +2900,7 @@
           'all',
         ],
         'mixins': [
-          'linux-bionic',
+          'linux-jammy',
         ],
         'swarming': {
           'dimension_sets': [
@@ -3513,6 +3513,12 @@
         },
         'os_type': 'chromeos',
       },
+      'lacros-arm64-generic-rel-skylab-fyi-tests': {
+        'test_suites': {
+          'skylab_tests': 'lacros_arm64_generic_rel_skylab_fyi',
+        },
+        'os_type': 'chromeos',
+      },
       'linux-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
@@ -3558,7 +3564,7 @@
           'x86-64',
         ],
         'test_suites': {
-          'gtest_tests': 'cr23_gtests'
+          'gtest_tests': 'cr23_linux_gtests'
         },
         'os_type': 'linux',
       },
@@ -3726,7 +3732,7 @@
       },
       'mac-cr23-rel': {
         'test_suites': {
-          'gtest_tests': 'cr23_gtests',
+          'gtest_tests': 'cr23_mac_gtests',
         },
         'mixins': [
           'mac_x64',
@@ -3841,7 +3847,7 @@
       },
       'win-cr23-rel': {
         'test_suites': {
-          'gtest_tests': 'cr23_gtests',
+          'gtest_tests': 'cr23_win_gtests',
         },
         'mixins': [
           'win10-any',

@@ -10,6 +10,7 @@
 #include "base/scoped_observation.h"
 #include "chrome/browser/companion/core/constants.h"
 #include "chrome/browser/companion/core/mojom/companion.mojom.h"
+#include "chrome/browser/companion/visual_search/visual_search_classifier_host.h"
 #include "chrome/browser/ui/side_panel/side_panel_enums.h"
 #include "components/lens/buildflags.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -48,8 +49,7 @@ class CompanionPageHandler
   // side_panel::mojom::CompanionPageHandler:
   void ShowUI() override;
   void OnPromoAction(side_panel::mojom::PromoType promo_type,
-                     side_panel::mojom::PromoAction promo_action,
-                     const absl::optional<GURL>& exps_promo_url) override;
+                     side_panel::mojom::PromoAction promo_action) override;
   void OnRegionSearchClicked() override;
   void OnExpsOptInStatusAvailable(bool is_exps_opted_in) override;
   void OnOpenInNewTabButtonURLChanged(const GURL& url_to_open) override;
@@ -61,9 +61,10 @@ class CompanionPageHandler
                               int32_t click_position) override;
   void OnCqCandidatesAvailable(
       const std::vector<std::string>& text_directives) override;
-  void OnPhFeedback(side_panel::mojom::PhFeedback ph_feedback,
-                    const absl::optional<GURL>& reporting_url) override;
+  void OnPhFeedback(side_panel::mojom::PhFeedback ph_feedback) override;
   void OnCqJumptagClicked(const std::string& text_directive) override;
+  void OpenUrlInBrowser(const absl::optional<GURL>& url_to_open,
+                        bool use_new_tab) override;
 
   // content::WebContentsObserver overrides.
   void DidFinishNavigation(
@@ -72,6 +73,8 @@ class CompanionPageHandler
   // IdentityManager::Observer overrides.
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event) override;
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override;
 
   // UrlKeyedDataCollectionConsentHelper::Observer overrides.
   void OnUrlKeyedDataCollectionConsentStateChanged(
@@ -109,6 +112,10 @@ class CompanionPageHandler
   std::unique_ptr<PromoHandler> promo_handler_;
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       consent_helper_;
+
+  // Owns the orchestrator for visual search suggestions.
+  std::unique_ptr<visual_search::VisualSearchClassifierHost>
+      visual_search_host_;
 
   // Logs metrics for companion page. Reset when there is a new navigation.
   std::unique_ptr<CompanionMetricsLogger> metrics_logger_;

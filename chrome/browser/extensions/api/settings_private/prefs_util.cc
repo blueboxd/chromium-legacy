@@ -551,14 +551,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[ash::prefs::kAccessibilityColorFiltering] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_allowlist)[ash::prefs::kAccessibilityGreyscaleAmount] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_allowlist)[ash::prefs::kAccessibilitySaturationAmount] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_allowlist)[ash::prefs::kAccessibilitySepiaAmount] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
-  (*s_allowlist)[ash::prefs::kAccessibilityHueRotationAmount] =
-      settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[ash::prefs::kAccessibilityColorVisionCorrectionAmount] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_allowlist)[ash::prefs::kAccessibilityColorVisionDeficiencyType] =
@@ -936,9 +928,13 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_allowlist)[ash::prefs::kPowerAdaptiveChargingEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[ash::prefs::kPowerBatterySaver] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::prefs::kConsumerAutoUpdateToggle] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_allowlist)[::ash::prefs::kChargingSoundsEnabled] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_allowlist)[::ash::prefs::kLowBatterySoundEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Native Printing settings.
